@@ -1,0 +1,71 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace Iceshrimp.Backend.Core.Database.Tables;
+
+[Table("abuse_user_report")]
+[Index("ReporterId", Name = "IDX_04cc96756f89d0b7f9473e8cdf")]
+[Index("Resolved", Name = "IDX_2b15aaf4a0dc5be3499af7ab6a")]
+[Index("TargetUserHost", Name = "IDX_4ebbf7f93cdc10e8d1ef2fc6cd")]
+[Index("TargetUserId", Name = "IDX_a9021cc2e1feb5f72d3db6e9f5")]
+[Index("CreatedAt", Name = "IDX_db2098070b2b5a523c58181f74")]
+[Index("ReporterHost", Name = "IDX_f8d8b93740ad12c4ce8213a199")]
+public class AbuseUserReport {
+	[Key]
+	[Column("id")]
+	[StringLength(32)]
+	public string Id { get; set; } = null!;
+
+	/// <summary>
+	///     The created date of the AbuseUserReport.
+	/// </summary>
+	[Column("createdAt")]
+	public DateTime CreatedAt { get; set; }
+
+	[Column("targetUserId")]
+	[StringLength(32)]
+	public string TargetUserId { get; set; } = null!;
+
+	[Column("reporterId")]
+	[StringLength(32)]
+	public string ReporterId { get; set; } = null!;
+
+	[Column("assigneeId")]
+	[StringLength(32)]
+	public string? AssigneeId { get; set; }
+
+	[Column("resolved")] public bool Resolved { get; set; }
+
+	[Column("comment")]
+	[StringLength(2048)]
+	public string Comment { get; set; } = null!;
+
+	/// <summary>
+	///     [Denormalized]
+	/// </summary>
+	[Column("targetUserHost")]
+	[StringLength(512)]
+	public string? TargetUserHost { get; set; }
+
+	/// <summary>
+	///     [Denormalized]
+	/// </summary>
+	[Column("reporterHost")]
+	[StringLength(512)]
+	public string? ReporterHost { get; set; }
+
+	[Column("forwarded")] public bool Forwarded { get; set; }
+
+	[ForeignKey("AssigneeId")]
+	[InverseProperty("AbuseUserReportAssignees")]
+	public virtual User? Assignee { get; set; }
+
+	[ForeignKey("ReporterId")]
+	[InverseProperty("AbuseUserReportReporters")]
+	public virtual User Reporter { get; set; } = null!;
+
+	[ForeignKey("TargetUserId")]
+	[InverseProperty("AbuseUserReportTargetUsers")]
+	public virtual User TargetUser { get; set; } = null!;
+}
