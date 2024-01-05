@@ -77,3 +77,5 @@ public class ASActor : ASObject {
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? Url { get; set; }
 }
+
+public class ASActorConverter : ASSerializer.ListSingleObjectConverter<ASActor>;
