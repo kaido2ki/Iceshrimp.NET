@@ -1,5 +1,6 @@
 ﻿using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Iceshrimp.Backend.Core.Database;
 
@@ -9,227 +10,234 @@ public partial class DatabaseContext : DbContext {
 	public DatabaseContext(DbContextOptions<DatabaseContext> options)
 		: base(options) { }
 
-	public virtual DbSet<AbuseUserReport> AbuseUserReports { get; set; }
+	public virtual DbSet<AbuseUserReport> AbuseUserReports { get; init; }
 
-	public virtual DbSet<AccessToken> AccessTokens { get; set; }
+	public virtual DbSet<AccessToken> AccessTokens { get; init; }
 
-	public virtual DbSet<Announcement> Announcements { get; set; }
+	public virtual DbSet<Announcement> Announcements { get; init; }
 
-	public virtual DbSet<AnnouncementRead> AnnouncementReads { get; set; }
+	public virtual DbSet<AnnouncementRead> AnnouncementReads { get; init; }
 
-	public virtual DbSet<Antenna> Antennas { get; set; }
+	public virtual DbSet<Antenna> Antennas { get; init; }
 
-	public virtual DbSet<App> Apps { get; set; }
+	public virtual DbSet<App> Apps { get; init; }
 
-	public virtual DbSet<AttestationChallenge> AttestationChallenges { get; set; }
+	public virtual DbSet<AttestationChallenge> AttestationChallenges { get; init; }
 
-	public virtual DbSet<AuthSession> AuthSessions { get; set; }
+	public virtual DbSet<AuthSession> AuthSessions { get; init; }
 
-	public virtual DbSet<Blocking> Blockings { get; set; }
+	public virtual DbSet<Blocking> Blockings { get; init; }
 
-	public virtual DbSet<Channel> Channels { get; set; }
+	public virtual DbSet<Channel> Channels { get; init; }
 
-	public virtual DbSet<ChannelFollowing> ChannelFollowings { get; set; }
+	public virtual DbSet<ChannelFollowing> ChannelFollowings { get; init; }
 
-	public virtual DbSet<ChannelNotePining> ChannelNotePinings { get; set; }
+	public virtual DbSet<ChannelNotePining> ChannelNotePinings { get; init; }
 
-	public virtual DbSet<ChartActiveUser> ChartActiveUsers { get; set; }
+	public virtual DbSet<ChartActiveUser> ChartActiveUsers { get; init; }
 
-	public virtual DbSet<ChartApRequest> ChartApRequests { get; set; }
+	public virtual DbSet<ChartApRequest> ChartApRequests { get; init; }
 
-	public virtual DbSet<ChartDayActiveUser> ChartDayActiveUsers { get; set; }
+	public virtual DbSet<ChartDayActiveUser> ChartDayActiveUsers { get; init; }
 
-	public virtual DbSet<ChartDayApRequest> ChartDayApRequests { get; set; }
+	public virtual DbSet<ChartDayApRequest> ChartDayApRequests { get; init; }
 
-	public virtual DbSet<ChartDayDrive> ChartDayDrives { get; set; }
+	public virtual DbSet<ChartDayDrive> ChartDayDrives { get; init; }
 
-	public virtual DbSet<ChartDayFederation> ChartDayFederations { get; set; }
+	public virtual DbSet<ChartDayFederation> ChartDayFederations { get; init; }
 
-	public virtual DbSet<ChartDayHashtag> ChartDayHashtags { get; set; }
+	public virtual DbSet<ChartDayHashtag> ChartDayHashtags { get; init; }
 
-	public virtual DbSet<ChartDayInstance> ChartDayInstances { get; set; }
+	public virtual DbSet<ChartDayInstance> ChartDayInstances { get; init; }
 
-	public virtual DbSet<ChartDayNetwork> ChartDayNetworks { get; set; }
+	public virtual DbSet<ChartDayNetwork> ChartDayNetworks { get; init; }
 
-	public virtual DbSet<ChartDayNote> ChartDayNotes { get; set; }
+	public virtual DbSet<ChartDayNote> ChartDayNotes { get; init; }
 
-	public virtual DbSet<ChartDayPerUserDrive> ChartDayPerUserDrives { get; set; }
+	public virtual DbSet<ChartDayPerUserDrive> ChartDayPerUserDrives { get; init; }
 
-	public virtual DbSet<ChartDayPerUserFollowing> ChartDayPerUserFollowings { get; set; }
+	public virtual DbSet<ChartDayPerUserFollowing> ChartDayPerUserFollowings { get; init; }
 
-	public virtual DbSet<ChartDayPerUserNote> ChartDayPerUserNotes { get; set; }
+	public virtual DbSet<ChartDayPerUserNote> ChartDayPerUserNotes { get; init; }
 
-	public virtual DbSet<ChartDayPerUserReaction> ChartDayPerUserReactions { get; set; }
+	public virtual DbSet<ChartDayPerUserReaction> ChartDayPerUserReactions { get; init; }
 
-	public virtual DbSet<ChartDayUser> ChartDayUsers { get; set; }
+	public virtual DbSet<ChartDayUser> ChartDayUsers { get; init; }
 
-	public virtual DbSet<ChartDrive> ChartDrives { get; set; }
+	public virtual DbSet<ChartDrive> ChartDrives { get; init; }
 
-	public virtual DbSet<ChartFederation> ChartFederations { get; set; }
+	public virtual DbSet<ChartFederation> ChartFederations { get; init; }
 
-	public virtual DbSet<ChartHashtag> ChartHashtags { get; set; }
+	public virtual DbSet<ChartHashtag> ChartHashtags { get; init; }
 
-	public virtual DbSet<ChartInstance> ChartInstances { get; set; }
+	public virtual DbSet<ChartInstance> ChartInstances { get; init; }
 
-	public virtual DbSet<ChartNetwork> ChartNetworks { get; set; }
+	public virtual DbSet<ChartNetwork> ChartNetworks { get; init; }
 
-	public virtual DbSet<ChartNote> ChartNotes { get; set; }
+	public virtual DbSet<ChartNote> ChartNotes { get; init; }
 
-	public virtual DbSet<ChartPerUserDrive> ChartPerUserDrives { get; set; }
+	public virtual DbSet<ChartPerUserDrive> ChartPerUserDrives { get; init; }
 
-	public virtual DbSet<ChartPerUserFollowing> ChartPerUserFollowings { get; set; }
+	public virtual DbSet<ChartPerUserFollowing> ChartPerUserFollowings { get; init; }
 
-	public virtual DbSet<ChartPerUserNote> ChartPerUserNotes { get; set; }
+	public virtual DbSet<ChartPerUserNote> ChartPerUserNotes { get; init; }
 
-	public virtual DbSet<ChartPerUserReaction> ChartPerUserReactions { get; set; }
+	public virtual DbSet<ChartPerUserReaction> ChartPerUserReactions { get; init; }
 
-	public virtual DbSet<ChartTest> ChartTests { get; set; }
+	public virtual DbSet<ChartTest> ChartTests { get; init; }
 
-	public virtual DbSet<ChartTestGrouped> ChartTestGroupeds { get; set; }
+	public virtual DbSet<ChartTestGrouped> ChartTestGroupeds { get; init; }
 
-	public virtual DbSet<ChartTestUnique> ChartTestUniques { get; set; }
+	public virtual DbSet<ChartTestUnique> ChartTestUniques { get; init; }
 
-	public virtual DbSet<ChartUser> ChartUsers { get; set; }
+	public virtual DbSet<ChartUser> ChartUsers { get; init; }
 
-	public virtual DbSet<Clip> Clips { get; set; }
+	public virtual DbSet<Clip> Clips { get; init; }
 
-	public virtual DbSet<ClipNote> ClipNotes { get; set; }
+	public virtual DbSet<ClipNote> ClipNotes { get; init; }
 
-	public virtual DbSet<DriveFile> DriveFiles { get; set; }
+	public virtual DbSet<DriveFile> DriveFiles { get; init; }
 
-	public virtual DbSet<DriveFolder> DriveFolders { get; set; }
+	public virtual DbSet<DriveFolder> DriveFolders { get; init; }
 
-	public virtual DbSet<Emoji> Emojis { get; set; }
+	public virtual DbSet<Emoji> Emojis { get; init; }
 
-	public virtual DbSet<FollowRequest> FollowRequests { get; set; }
+	public virtual DbSet<FollowRequest> FollowRequests { get; init; }
 
-	public virtual DbSet<Following> Followings { get; set; }
+	public virtual DbSet<Following> Followings { get; init; }
 
-	public virtual DbSet<GalleryLike> GalleryLikes { get; set; }
+	public virtual DbSet<GalleryLike> GalleryLikes { get; init; }
 
-	public virtual DbSet<GalleryPost> GalleryPosts { get; set; }
+	public virtual DbSet<GalleryPost> GalleryPosts { get; init; }
 
-	public virtual DbSet<Hashtag> Hashtags { get; set; }
+	public virtual DbSet<Hashtag> Hashtags { get; init; }
 
-	public virtual DbSet<HtmlNoteCacheEntry> HtmlNoteCacheEntries { get; set; }
+	public virtual DbSet<HtmlNoteCacheEntry> HtmlNoteCacheEntries { get; init; }
 
-	public virtual DbSet<HtmlUserCacheEntry> HtmlUserCacheEntries { get; set; }
+	public virtual DbSet<HtmlUserCacheEntry> HtmlUserCacheEntries { get; init; }
 
-	public virtual DbSet<Instance> Instances { get; set; }
+	public virtual DbSet<Instance> Instances { get; init; }
 
-	public virtual DbSet<MessagingMessage> MessagingMessages { get; set; }
+	public virtual DbSet<MessagingMessage> MessagingMessages { get; init; }
 
-	public virtual DbSet<Metum> Meta { get; set; }
+	public virtual DbSet<Metum> Meta { get; init; }
 
-	public virtual DbSet<Migration> Migrations { get; set; }
+	public virtual DbSet<LegacyMigrations> Migrations { get; init; }
 
-	public virtual DbSet<ModerationLog> ModerationLogs { get; set; }
+	public virtual DbSet<ModerationLog> ModerationLogs { get; init; }
 
-	public virtual DbSet<Muting> Mutings { get; set; }
+	public virtual DbSet<Muting> Mutings { get; init; }
 
-	public virtual DbSet<Note> Notes { get; set; }
+	public virtual DbSet<Note> Notes { get; init; }
 
-	public virtual DbSet<NoteEdit> NoteEdits { get; set; }
+	public virtual DbSet<NoteEdit> NoteEdits { get; init; }
 
-	public virtual DbSet<NoteFavorite> NoteFavorites { get; set; }
+	public virtual DbSet<NoteFavorite> NoteFavorites { get; init; }
 
-	public virtual DbSet<NoteReaction> NoteReactions { get; set; }
+	public virtual DbSet<NoteReaction> NoteReactions { get; init; }
 
-	public virtual DbSet<NoteThreadMuting> NoteThreadMutings { get; set; }
+	public virtual DbSet<NoteThreadMuting> NoteThreadMutings { get; init; }
 
-	public virtual DbSet<NoteUnread> NoteUnreads { get; set; }
+	public virtual DbSet<NoteUnread> NoteUnreads { get; init; }
 
-	public virtual DbSet<NoteWatching> NoteWatchings { get; set; }
+	public virtual DbSet<NoteWatching> NoteWatchings { get; init; }
 
-	public virtual DbSet<Notification> Notifications { get; set; }
+	public virtual DbSet<Notification> Notifications { get; init; }
 
-	public virtual DbSet<OauthApp> OauthApps { get; set; }
+	public virtual DbSet<OauthApp> OauthApps { get; init; }
 
-	public virtual DbSet<OauthToken> OauthTokens { get; set; }
+	public virtual DbSet<OauthToken> OauthTokens { get; init; }
 
-	public virtual DbSet<Page> Pages { get; set; }
+	public virtual DbSet<Page> Pages { get; init; }
 
-	public virtual DbSet<PageLike> PageLikes { get; set; }
+	public virtual DbSet<PageLike> PageLikes { get; init; }
 
-	public virtual DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
+	public virtual DbSet<PasswordResetRequest> PasswordResetRequests { get; init; }
 
-	public virtual DbSet<Poll> Polls { get; set; }
+	public virtual DbSet<Poll> Polls { get; init; }
 
-	public virtual DbSet<PollVote> PollVotes { get; set; }
+	public virtual DbSet<PollVote> PollVotes { get; init; }
 
-	public virtual DbSet<PromoNote> PromoNotes { get; set; }
+	public virtual DbSet<PromoNote> PromoNotes { get; init; }
 
-	public virtual DbSet<PromoRead> PromoReads { get; set; }
+	public virtual DbSet<PromoRead> PromoReads { get; init; }
 
-	public virtual DbSet<RegistrationTicket> RegistrationTickets { get; set; }
+	public virtual DbSet<RegistrationTicket> RegistrationTickets { get; init; }
 
-	public virtual DbSet<RegistryItem> RegistryItems { get; set; }
+	public virtual DbSet<RegistryItem> RegistryItems { get; init; }
 
-	public virtual DbSet<Relay> Relays { get; set; }
+	public virtual DbSet<Relay> Relays { get; init; }
 
-	public virtual DbSet<RenoteMuting> RenoteMutings { get; set; }
+	public virtual DbSet<RenoteMuting> RenoteMutings { get; init; }
 
-	public virtual DbSet<Session> Sessions { get; set; }
+	public virtual DbSet<Session> Sessions { get; init; }
 
-	public virtual DbSet<Signin> Signins { get; set; }
+	public virtual DbSet<Signin> Signins { get; init; }
 
-	public virtual DbSet<SwSubscription> SwSubscriptions { get; set; }
+	public virtual DbSet<SwSubscription> SwSubscriptions { get; init; }
 
-	public virtual DbSet<UsedUsername> UsedUsernames { get; set; }
+	public virtual DbSet<UsedUsername> UsedUsernames { get; init; }
 
-	public virtual DbSet<User> Users { get; set; }
+	public virtual DbSet<User> Users { get; init; }
 
-	public virtual DbSet<UserGroup> UserGroups { get; set; }
+	public virtual DbSet<UserGroup> UserGroups { get; init; }
 
-	public virtual DbSet<UserGroupInvitation> UserGroupInvitations { get; set; }
+	public virtual DbSet<UserGroupInvitation> UserGroupInvitations { get; init; }
 
-	public virtual DbSet<UserGroupInvite> UserGroupInvites { get; set; }
+	public virtual DbSet<UserGroupInvite> UserGroupInvites { get; init; }
 
-	public virtual DbSet<UserGroupJoining> UserGroupJoinings { get; set; }
+	public virtual DbSet<UserGroupJoining> UserGroupJoinings { get; init; }
 
-	public virtual DbSet<UserIp> UserIps { get; set; }
+	public virtual DbSet<UserIp> UserIps { get; init; }
 
-	public virtual DbSet<UserKeypair> UserKeypairs { get; set; }
+	public virtual DbSet<UserKeypair> UserKeypairs { get; init; }
 
-	public virtual DbSet<UserList> UserLists { get; set; }
+	public virtual DbSet<UserList> UserLists { get; init; }
 
-	public virtual DbSet<UserListJoining> UserListJoinings { get; set; }
+	public virtual DbSet<UserListJoining> UserListJoinings { get; init; }
 
-	public virtual DbSet<UserNotePining> UserNotePinings { get; set; }
+	public virtual DbSet<UserNotePining> UserNotePinings { get; init; }
 
-	public virtual DbSet<UserPending> UserPendings { get; set; }
+	public virtual DbSet<UserPending> UserPendings { get; init; }
 
-	public virtual DbSet<UserProfile> UserProfiles { get; set; }
+	public virtual DbSet<UserProfile> UserProfiles { get; init; }
 
-	public virtual DbSet<UserPublickey> UserPublickeys { get; set; }
+	public virtual DbSet<UserPublickey> UserPublickeys { get; init; }
 
-	public virtual DbSet<UserSecurityKey> UserSecurityKeys { get; set; }
+	public virtual DbSet<UserSecurityKey> UserSecurityKeys { get; init; }
 
-	public virtual DbSet<Webhook> Webhooks { get; set; }
+	public virtual DbSet<Webhook> Webhooks { get; init; }
 
-	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https: //go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-		=> optionsBuilder.UseNpgsql("Host=localhost;Username=zotan;Database=iceshrimp");
+	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+		//TODO: load from configuration
+		var dataSourceBuilder = new NpgsqlDataSourceBuilder("Host=localhost;Username=zotan;Database=iceshrimp");
+		dataSourceBuilder.MapEnum<Antenna.AntennaSource>();
+		dataSourceBuilder.MapEnum<Note.NoteVisibility>();
+		dataSourceBuilder.MapEnum<Notification.NotificationType>();
+		dataSourceBuilder.MapEnum<Page.PageVisibility>();
+		//dataSourceBuilder.MapEnum<Poll.PollNoteVisibility>(); // FIXME: WHY IS THIS ITS OWN ENUM
+		dataSourceBuilder.MapEnum<Relay.RelayStatus>();
+		dataSourceBuilder.MapEnum<UserProfile.UserProfileFFVisibility>();
+		//dataSourceBuilder.MapEnum<UserProfile.MutingNotificationTypes>(); // FIXME: WHY IS THIS ITS OWN ENUM
+		
+		optionsBuilder.UseNpgsql(dataSourceBuilder.Build());
+	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder) {
 		modelBuilder
-			.HasPostgresEnum("antenna_src_enum", new[] { "home", "all", "users", "list", "group", "instances" })
-			.HasPostgresEnum("log_level_enum", new[] { "error", "warning", "info", "success", "debug" })
-			.HasPostgresEnum("note_visibility_enum", new[] { "public", "home", "followers", "specified", "hidden" })
-			.HasPostgresEnum("notification_type_enum",
-			                 new[] {
-				                 "follow", "mention", "reply", "renote", "quote", "reaction", "pollVote", "pollEnded",
-				                 "receiveFollowRequest", "followRequestAccepted", "groupInvited", "app"
-			                 })
-			.HasPostgresEnum("page_visibility_enum", new[] { "public", "followers", "specified" })
-			.HasPostgresEnum("poll_notevisibility_enum", new[] { "public", "home", "followers", "specified", "hidden" })
-			.HasPostgresEnum("relay_status_enum", new[] { "requesting", "accepted", "rejected" })
-			.HasPostgresEnum("user_profile_ffvisibility_enum", new[] { "public", "followers", "private" })
+			.HasPostgresEnum<Antenna.AntennaSource>()
+			//.HasPostgresEnum("log_level_enum", ["error", "warning", "info", "success", "debug"]) // TODO: not in use, add migration that removes this if it exists
+			.HasPostgresEnum<Note.NoteVisibility>()
+			.HasPostgresEnum<Notification.NotificationType>()
+			.HasPostgresEnum<Page.PageVisibility>()
+			.HasPostgresEnum("poll_notevisibility_enum", ["public", "home", "followers", "specified", "hidden"])
+			.HasPostgresEnum<Relay.RelayStatus>()
+			.HasPostgresEnum<UserProfile.UserProfileFFVisibility>()
 			.HasPostgresEnum("user_profile_mutingnotificationtypes_enum",
-			                 new[] {
-				                 "follow", "mention", "reply", "renote", "quote", "reaction", "pollVote", "pollEnded",
+			[
+				"follow", "mention", "reply", "renote", "quote", "reaction", "pollVote", "pollEnded",
 				                 "receiveFollowRequest", "followRequestAccepted", "groupInvited", "app"
-			                 })
+			])
 			.HasPostgresExtension("pg_trgm");
 
 		modelBuilder.Entity<AbuseUserReport>(entity => {
@@ -1095,7 +1103,7 @@ public partial class DatabaseContext : DbContext {
 			entity.Property(e => e.UseObjectStorage).HasDefaultValue(false);
 		});
 
-		modelBuilder.Entity<Migration>(entity => {
+		modelBuilder.Entity<LegacyMigrations>(entity => {
 			entity.HasKey(e => e.Id).HasName("PK_8c82d7f526340ab734260ea46be");
 		});
 

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using NpgsqlTypes;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -43,6 +44,12 @@ public class UserProfile {
 	[Column("url")]
 	[StringLength(512)]
 	public string? Url { get; set; }
+	
+	[Column("ffVisibility")]
+	public UserProfileFFVisibility FFVisibility { get; set; }
+
+	[Column("mutingNotificationTypes")]
+	public List<Notification.NotificationType> MutingNotificationTypes { get; set; } = null!;
 
 	/// <summary>
 	///     The email address of the User.
@@ -154,4 +161,11 @@ public class UserProfile {
 	[ForeignKey("UserId")]
 	[InverseProperty("UserProfile")]
 	public virtual User User { get; set; } = null!;
+
+	[PgName("user_profile_ffvisibility_enum")]
+	public enum UserProfileFFVisibility {
+		[PgName("public")]    Public,
+		[PgName("followers")] Followers,
+		[PgName("private")]   Private,
+	}
 }

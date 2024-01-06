@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("migrations")]
-public class Migration {
+public class LegacyMigrations {
 	[Key] [Column("id")] public int Id { get; set; }
 
 	[Column("timestamp")] public long Timestamp { get; set; }

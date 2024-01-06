@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using NpgsqlTypes;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -41,6 +42,8 @@ public class Notification {
 	/// </summary>
 	[Column("isRead")]
 	public bool IsRead { get; set; }
+	
+	[Column("type")] public NotificationType Type { get; set; }
 
 	[Column("noteId")] [StringLength(32)] public string? NoteId { get; set; }
 
@@ -97,4 +100,20 @@ public class Notification {
 	[ForeignKey("UserGroupInvitationId")]
 	[InverseProperty("Notifications")]
 	public virtual UserGroupInvitation? UserGroupInvitation { get; set; }
+
+	[PgName("notification_type_enum")]
+	public enum NotificationType {
+		[PgName("follow")]                Follow,
+		[PgName("mention")]               Mention,
+		[PgName("reply")]                 Reply,
+		[PgName("renote")]                Renote,
+		[PgName("quote")]                 Quote,
+		[PgName("reaction")]              Reaction,
+		[PgName("pollVote")]              PollVote,
+		[PgName("pollEnded")]             PollEnded,
+		[PgName("receiveFollowRequest")]  FollowRequestReceived,
+		[PgName("followRequestAccepted")] FollowRequestAccepted,
+		[PgName("groupInvited")]          GroupInvited,
+		[PgName("app")]                   App,
+	}
 }

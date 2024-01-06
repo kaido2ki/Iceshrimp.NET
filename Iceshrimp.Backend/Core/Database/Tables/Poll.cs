@@ -39,4 +39,10 @@ public class Poll {
 	[ForeignKey("NoteId")]
 	[InverseProperty("Poll")]
 	public virtual Note Note { get; set; } = null!;
+
+	/// <summary>
+	///     [Denormalized]
+	/// </summary>
+	[Column("noteVisibility")]
+	public Note.NoteVisibility NoteVisibility { get; set; }
 }

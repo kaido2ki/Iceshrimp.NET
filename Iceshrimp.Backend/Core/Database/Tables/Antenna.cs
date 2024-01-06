@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using NpgsqlTypes;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -31,6 +32,8 @@ public class Antenna {
 	[Column("name")]
 	[StringLength(128)]
 	public string Name { get; set; } = null!;
+	
+	[Column("src")] public AntennaSource Source { get; set; }
 
 	[Column("userListId")]
 	[StringLength(32)]
@@ -75,4 +78,14 @@ public class Antenna {
 	[ForeignKey("UserListId")]
 	[InverseProperty("Antennas")]
 	public virtual UserList? UserList { get; set; }
+
+	[PgName("antenna_src_enum")]
+	public enum AntennaSource {
+		[PgName("home")]      Home,
+		[PgName("all")]       All,
+		[PgName("users")]     Users,
+		[PgName("list")]      List,
+		[PgName("group")]     Group,
+		[PgName("instances")] Instances
+	}
 }

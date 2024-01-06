@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using NpgsqlTypes;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -60,6 +61,8 @@ public class Note {
 	[Column("userId")]
 	[StringLength(32)]
 	public string UserId { get; set; } = null!;
+
+	[Column("visibility")] public NoteVisibility Visibility { get; set; }
 
 	[Column("localOnly")] public bool LocalOnly { get; set; }
 
@@ -213,4 +216,13 @@ public class Note {
 
 	[InverseProperty("Note")]
 	public virtual ICollection<UserNotePining> UserNotePinings { get; set; } = new List<UserNotePining>();
+
+	[PgName("note_visibility_enum")]
+	public enum NoteVisibility {
+		[PgName("public")]    Public,
+		[PgName("home")]      Home,
+		[PgName("followers")] Followers,
+		[PgName("specified")] Specified,
+		[PgName("hidden")]    Hidden
+	}
 }
