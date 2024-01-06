@@ -5,10 +5,14 @@ using Npgsql;
 namespace Iceshrimp.Backend.Core.Database;
 
 public partial class DatabaseContext : DbContext {
-	public DatabaseContext() { }
+	private readonly IConfiguration _config;
 
-	public DatabaseContext(DbContextOptions<DatabaseContext> options)
-		: base(options) { }
+	public DatabaseContext() {}
+
+	public DatabaseContext(DbContextOptions<DatabaseContext> options, IConfiguration config)
+		: base(options) {
+		_config = config;
+	}
 
 	public virtual DbSet<AbuseUserReport> AbuseUserReports { get; init; }
 
@@ -210,7 +214,14 @@ public partial class DatabaseContext : DbContext {
 
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
 		//TODO: load from configuration
-		var dataSourceBuilder = new NpgsqlDataSourceBuilder("Host=localhost;Username=zotan;Database=iceshrimp");
+		var dataSourceBuilder = new NpgsqlDataSourceBuilder();
+		
+		var config = _config.GetSection("Database");
+		dataSourceBuilder.ConnectionStringBuilder.Host     = config["Host"]; 
+		dataSourceBuilder.ConnectionStringBuilder.Username = config["Username"]; 
+		dataSourceBuilder.ConnectionStringBuilder.Password = config["Password"]; 
+		dataSourceBuilder.ConnectionStringBuilder.Database = config["Database"];
+
 		dataSourceBuilder.MapEnum<Antenna.AntennaSource>();
 		dataSourceBuilder.MapEnum<Note.NoteVisibility>();
 		dataSourceBuilder.MapEnum<Notification.NotificationType>();

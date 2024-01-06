@@ -27,8 +27,7 @@ public class AuthController : Controller {
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
 	[SuppressMessage("Performance",
 	                 "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
-	public async Task<IActionResult> Login([FromBody] AuthRequest request) {
-		var db = new DatabaseContext();
+	public async Task<IActionResult> Login([FromBody] AuthRequest request, [FromServices] DatabaseContext db) {
 		var user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == request.Username.ToLowerInvariant() &&
 		                                                   p.Host == null);
 		if (user == null) return Unauthorized();

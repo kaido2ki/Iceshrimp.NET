@@ -29,8 +29,7 @@ public class ActivityPubController : Controller {
 	[HttpGet("/users/{id}")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUser(string id) {
-		var db   = new DatabaseContext();
+	public async Task<IActionResult> GetUser(string id, [FromServices] DatabaseContext db) {
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
 		var rendered  = await ActivityPubUserRenderer.Render(user);

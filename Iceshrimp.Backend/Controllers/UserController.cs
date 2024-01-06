@@ -13,8 +13,7 @@ public class UserController : Controller {
 	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUser(string id) {
-		var db   = new DatabaseContext();
+	public async Task<IActionResult> GetUser(string id, [FromServices] DatabaseContext db) {
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
 		return Ok(user);
@@ -23,8 +22,7 @@ public class UserController : Controller {
 	[HttpGet("notes")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TimelineResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUserNotes(string id) {
-		var db   = new DatabaseContext();
+	public async Task<IActionResult> GetUserNotes(string id, [FromServices] DatabaseContext db) {
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
 

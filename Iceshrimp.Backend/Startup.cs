@@ -4,6 +4,10 @@ using Vite.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.Sources.Clear();
+builder.Configuration.AddIniFile("configuration.ini", false, true);
+builder.Configuration.AddIniFile("configuration.overrides.ini", true, true);
+
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddApiVersioning(options => {
 	options.DefaultApiVersion               = new ApiVersion(1);
@@ -13,6 +17,7 @@ builder.Services.AddApiVersioning(options => {
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddRazorPages();
+//TODO: load built assets in production
 builder.Services.AddViteServices(options => {
 	options.PackageDirectory     = "../Iceshrimp.Frontend";
 	options.PackageManager       = "yarn";
@@ -24,8 +29,6 @@ builder.Services.AddLogging(logging => logging.AddSimpleConsole(options => {
 	options.SingleLine = true;
 }));
 builder.Services.AddDbContext<DatabaseContext>();
-
-//TODO: load built assets in production
 
 var app = builder.Build();
 app.Logger.LogInformation("Initializing, please wait...");
