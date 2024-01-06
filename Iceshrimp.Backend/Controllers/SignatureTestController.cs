@@ -17,27 +17,12 @@ namespace Iceshrimp.Backend.Controllers;
 public class SignatureTestController : Controller {
 	[HttpPost]
 	[Consumes(MediaTypeNames.Application.Json)]
-	public async Task<IActionResult> Inbox() {
-		var sig = new HttpSignature(Request, ["(request-target)", "digest", "host", "date"]);
-	
-		//TODO: fetch key from db (duh)
-		
-		const string key = """
-		                   -----BEGIN PUBLIC KEY-----
-		                   MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtCFuaufkSCpsDZ2twSrH
-		                   GAFcJTGQ7ZspaFekVM7gBP1GQ/jfjwO3qT9fMgbsCuQXNTIw0U9zlsTIPB91yNPw
-		                   w5UpbqQ3dnpnYnwXg1BsqfX7EOLR1Dlnw6dk+5yeginJsNno15SRQ7CDqbEXj7Nc
-		                   lhNOGgU+LaXHhN59Paye3sfsvUHu4fmTp/rALWGPl/Rvx7RVRcR76CcTfTaHPYdb
-		                   OQAtqPJBfWgHpPLAUjRypzZoN/ExMgiCbFuxI7UFNNXxU3te8GNZaaob8bSwyUB6
-		                   Xuq7Rw+Me3eYiDxrYHQ99ZytsgoHBNVrVh/X7wIl0AlpjyWeGug3uIUjXR0twuGj
-		                   wwIDAQAB
-		                   -----END PUBLIC KEY-----
-		                   """;
-		
-		return Ok(new ErrorResponse {
-			StatusCode = 200,
-			Error = "null",
-			Message = sig.Verify(key).ToString()
-		});
+	public async Task<IActionResult> Inbox([FromServices] ILogger<SignatureTestController> logger,
+	                                       [FromServices] DatabaseContext                  db) {
+		var sig      = new HttpSignature(Request, ["(request-target)", "digest", "host", "date"]);
+		var key      = await db.UserPublickeys.SingleOrDefaultAsync(p => p.KeyId == sig.KeyId);
+		var verified = key != null && sig.Verify(key.KeyPem);
+		logger.LogInformation("sig.Verify returned {result} for key {keyId}", verified, sig.KeyId);
+		return verified ? Ok() : StatusCode(StatusCodes.Status403Forbidden);
 	}
 }

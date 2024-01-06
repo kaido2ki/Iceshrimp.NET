@@ -1,8 +1,6 @@
 using Asp.Versioning;
+using Iceshrimp.Backend.Core.Database;
 using Vite.AspNetCore.Extensions;
-
-//TODO: Add proper logger
-Console.WriteLine("-- Iceshrimp.NET (alpha) --");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,10 +20,15 @@ builder.Services.AddViteServices(options => {
 	options.Server.UseFullDevUrl = true;
 	options.Base                 = "frontend"; // relative to wwwroot
 });
+builder.Services.AddLogging(logging => logging.AddSimpleConsole(options => {
+	options.SingleLine = true;
+}));
+builder.Services.AddDbContext<DatabaseContext>();
 
 //TODO: load built assets in production
 
 var app = builder.Build();
+app.Logger.LogInformation("Initializing, please wait...");
 
 app.UseSwagger();
 app.UseSwaggerUI(options => { options.DocumentTitle = "Iceshrimp API documentation"; });

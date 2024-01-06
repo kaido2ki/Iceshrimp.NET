@@ -5,7 +5,7 @@ using System.Text;
 namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
 public class HttpSignature {
-	private readonly string _keyId;
+	public readonly string KeyId;
 	private readonly string _algo;
 	private readonly byte[] _signature;
 	private readonly byte[] _signatureData;
@@ -23,7 +23,7 @@ public class HttpSignature {
 		
 		var signatureBase64 = sig["signature"] ?? throw new ConstraintException("Signature string is missing the signature field");
 
-		_keyId     = sig["keyId"] ?? throw new ConstraintException("Signature string is missing the keyId field");
+		KeyId     = sig["keyId"] ?? throw new ConstraintException("Signature string is missing the keyId field");
 		_algo      = sig["algorithm"] ?? throw new ConstraintException("Signature string is missing the algorithm field");
 		_signature = Convert.FromBase64String(signatureBase64);
 

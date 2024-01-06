@@ -13,6 +13,7 @@ public class Fetch {
 
 	//TODO: required attribute doesn't work with Newtonsoft.Json it appears
 	//TODO: enforce @type values
+	//TODO: firstordefault -> singleordefault
 
 	public static void Test2() {
 		var thing      = FetchActivity("https://staging.e2net.social/users/9esresfwle/outbox?page=true");
