@@ -54,7 +54,7 @@ public class Antenna {
 
 	[Column("withReplies")] public bool WithReplies { get; set; }
 
-	[Column("UserGroupMemberId")]
+	[Column("userGroupMemberId")]
 	[StringLength(32)]
 	public string? UserGroupMemberId { get; set; }
 
