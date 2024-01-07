@@ -122,8 +122,6 @@ public class DatabaseContext : DbContext {
 			.HasPostgresExtension("pg_trgm");
 
 		modelBuilder.Entity<AbuseUserReport>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_87873f5f5cc5c321a1306b2d18c");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the AbuseUserReport.");
 			entity.Property(e => e.Forwarded).HasDefaultValue(false);
 			entity.Property(e => e.ReporterHost).HasComment("[Denormalized]");
@@ -131,34 +129,25 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.TargetUserHost).HasComment("[Denormalized]");
 
 			entity.HasOne(d => d.Assignee).WithMany(p => p.AbuseUserReportAssignees)
-			      .OnDelete(DeleteBehavior.SetNull)
-			      .HasConstraintName("FK_08b883dd5fdd6f9c4c1572b36de");
+			      .OnDelete(DeleteBehavior.SetNull);
 
-			entity.HasOne(d => d.Reporter).WithMany(p => p.AbuseUserReportReporters)
-			      .HasConstraintName("FK_04cc96756f89d0b7f9473e8cdf3");
+			entity.HasOne(d => d.Reporter).WithMany(p => p.AbuseUserReportReporters);
 
-			entity.HasOne(d => d.TargetUser).WithMany(p => p.AbuseUserReportTargetUsers)
-			      .HasConstraintName("FK_a9021cc2e1feb5f72d3db6e9f5f");
+			entity.HasOne(d => d.TargetUser).WithMany(p => p.AbuseUserReportTargetUsers);
 		});
 
 		modelBuilder.Entity<AccessToken>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_f20f028607b2603deabd8182d12");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the AccessToken.");
 			entity.Property(e => e.Fetched).HasDefaultValue(false);
 			entity.Property(e => e.Permission).HasDefaultValueSql("'{}'::character varying[]");
 
 			entity.HasOne(d => d.App).WithMany(p => p.AccessTokens)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_a3ff16c90cc87a82a0b5959e560");
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.AccessTokens)
-			      .HasConstraintName("FK_9949557d0e1b2c19e5344c171e9");
+			entity.HasOne(d => d.User).WithMany(p => p.AccessTokens);
 		});
 
 		modelBuilder.Entity<Announcement>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_e0ef0550174fd1099a308fd18a0");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Announcement.");
 			entity.Property(e => e.IsGoodNews).HasDefaultValue(false);
 			entity.Property(e => e.ShowPopup).HasDefaultValue(false);
@@ -166,20 +155,14 @@ public class DatabaseContext : DbContext {
 		});
 
 		modelBuilder.Entity<AnnouncementRead>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_4b90ad1f42681d97b2683890c5e");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the AnnouncementRead.");
 
-			entity.HasOne(d => d.Announcement).WithMany(p => p.AnnouncementReads)
-			      .HasConstraintName("FK_603a7b1e7aa0533c6c88e9bfafe");
+			entity.HasOne(d => d.Announcement).WithMany(p => p.AnnouncementReads);
 
-			entity.HasOne(d => d.User).WithMany(p => p.AnnouncementReads)
-			      .HasConstraintName("FK_8288151386172b8109f7239ab28");
+			entity.HasOne(d => d.User).WithMany(p => p.AnnouncementReads);
 		});
 
 		modelBuilder.Entity<Antenna>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_c170b99775e1dccca947c9f2d5f");
-
 			entity.Property(e => e.CaseSensitive).HasDefaultValue(false);
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Antenna.");
 			entity.Property(e => e.ExcludeKeywords).HasDefaultValueSql("'[]'::jsonb");
@@ -191,19 +174,15 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.WithReplies).HasDefaultValue(false);
 
 			entity.HasOne(d => d.UserGroupMember).WithMany(p => p.Antennas)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_ccbf5a8c0be4511133dcc50ddeb");
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.Antennas).HasConstraintName("FK_6446c571a0e8d0f05f01c789096");
+			entity.HasOne(d => d.User).WithMany(p => p.Antennas);
 
 			entity.HasOne(d => d.UserList).WithMany(p => p.Antennas)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_709d7d32053d0dd7620f678eeb9");
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<App>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_9478629fc093d229df09e560aea");
-
 			entity.Property(e => e.CallbackUrl).HasComment("The callbackUrl of the App.");
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the App.");
 			entity.Property(e => e.Description).HasComment("The description of the App.");
@@ -213,52 +192,39 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.UserId).HasComment("The owner ID.");
 
 			entity.HasOne(d => d.User).WithMany(p => p.Apps)
-			      .OnDelete(DeleteBehavior.SetNull)
-			      .HasConstraintName("FK_3f5b0899ef90527a3462d7c2cb3");
+			      .OnDelete(DeleteBehavior.SetNull);
 		});
 
 		modelBuilder.Entity<AttestationChallenge>(entity => {
-			entity.HasKey(e => new { e.Id, e.UserId }).HasName("PK_d0ba6786e093f1bcb497572a6b5");
-
 			entity.Property(e => e.Challenge).HasComment("Hex-encoded sha256 hash of the challenge.");
 			entity.Property(e => e.CreatedAt).HasComment("The date challenge was created for expiry purposes.");
 			entity.Property(e => e.RegistrationChallenge)
 			      .HasDefaultValue(false)
 			      .HasComment("Indicates that the challenge is only for registration purposes if true to prevent the challenge for being used as authentication.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.AttestationChallenges)
-			      .HasConstraintName("FK_f1a461a618fa1755692d0e0d592");
+			entity.HasOne(d => d.User).WithMany(p => p.AttestationChallenges);
 		});
 
 		modelBuilder.Entity<AuthSession>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_19354ed146424a728c1112a8cbf");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the AuthSession.");
 
-			entity.HasOne(d => d.App).WithMany(p => p.AuthSessions).HasConstraintName("FK_dbe037d4bddd17b03a1dc778dee");
+			entity.HasOne(d => d.App).WithMany(p => p.AuthSessions);
 
 			entity.HasOne(d => d.User).WithMany(p => p.AuthSessions)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_c072b729d71697f959bde66ade0");
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Blocking>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_e5d9a541cc1965ee7e048ea09dd");
-
 			entity.Property(e => e.BlockeeId).HasComment("The blockee user ID.");
 			entity.Property(e => e.BlockerId).HasComment("The blocker user ID.");
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Blocking.");
 
-			entity.HasOne(d => d.Blockee).WithMany(p => p.BlockingBlockees)
-			      .HasConstraintName("FK_2cd4a2743a99671308f5417759e");
+			entity.HasOne(d => d.Blockee).WithMany(p => p.BlockingBlockees);
 
-			entity.HasOne(d => d.Blocker).WithMany(p => p.BlockingBlockers)
-			      .HasConstraintName("FK_0627125f1a8a42c9a1929edb552");
+			entity.HasOne(d => d.Blocker).WithMany(p => p.BlockingBlockers);
 		});
 
 		modelBuilder.Entity<Channel>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_590f33ee6ee7d76437acf362e39");
-
 			entity.Property(e => e.BannerId).HasComment("The ID of banner Channel.");
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Channel.");
 			entity.Property(e => e.Description).HasComment("The description of the Channel.");
@@ -272,66 +238,50 @@ public class DatabaseContext : DbContext {
 			      .HasComment("The count of users.");
 
 			entity.HasOne(d => d.Banner).WithMany(p => p.Channels)
-			      .OnDelete(DeleteBehavior.SetNull)
-			      .HasConstraintName("FK_999da2bcc7efadbfe0e92d3bc19");
+			      .OnDelete(DeleteBehavior.SetNull);
 
 			entity.HasOne(d => d.User).WithMany(p => p.Channels)
-			      .OnDelete(DeleteBehavior.SetNull)
-			      .HasConstraintName("FK_823bae55bd81b3be6e05cff4383");
+			      .OnDelete(DeleteBehavior.SetNull);
 		});
 
 		modelBuilder.Entity<ChannelFollowing>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_8b104be7f7415113f2a02cd5bdd");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the ChannelFollowing.");
 			entity.Property(e => e.FolloweeId).HasComment("The followee channel ID.");
 			entity.Property(e => e.FollowerId).HasComment("The follower user ID.");
 
-			entity.HasOne(d => d.Followee).WithMany(p => p.ChannelFollowings)
-			      .HasConstraintName("FK_0e43068c3f92cab197c3d3cd86e");
+			entity.HasOne(d => d.Followee).WithMany(p => p.ChannelFollowings);
 
-			entity.HasOne(d => d.Follower).WithMany(p => p.ChannelFollowings)
-			      .HasConstraintName("FK_6d8084ec9496e7334a4602707e1");
+			entity.HasOne(d => d.Follower).WithMany(p => p.ChannelFollowings);
 		});
 
 		modelBuilder.Entity<ChannelNotePin>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_44f7474496bcf2e4b741681146d");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the ChannelNotePin.");
 
-			entity.HasOne(d => d.Channel).WithMany(p => p.ChannelNotePins)
-			      .HasConstraintName("FK_8125f950afd3093acb10d2db8a8");
+			entity.HasOne(d => d.Channel).WithMany(p => p.ChannelNotePins);
 
-			entity.HasOne(d => d.Note).WithMany(p => p.ChannelNotePins)
-			      .HasConstraintName("FK_10b19ef67d297ea9de325cd4502");
+			entity.HasOne(d => d.Note).WithMany(p => p.ChannelNotePins);
 		});
 
 		modelBuilder.Entity<Clip>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_f0685dac8d4dd056d7255670b75");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Clip.");
 			entity.Property(e => e.Description).HasComment("The description of the Clip.");
 			entity.Property(e => e.IsPublic).HasDefaultValue(false);
 			entity.Property(e => e.Name).HasComment("The name of the Clip.");
 			entity.Property(e => e.UserId).HasComment("The owner ID.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.Clips).HasConstraintName("FK_2b5ec6c574d6802c94c80313fb2");
+			entity.HasOne(d => d.User).WithMany(p => p.Clips);
 		});
 
 		modelBuilder.Entity<ClipNote>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_e94cda2f40a99b57e032a1a738b");
-
 			entity.Property(e => e.ClipId).HasComment("The clip ID.");
 			entity.Property(e => e.NoteId).HasComment("The note ID.");
 
-			entity.HasOne(d => d.Clip).WithMany(p => p.ClipNotes).HasConstraintName("FK_ebe99317bbbe9968a0c6f579adf");
+			entity.HasOne(d => d.Clip).WithMany(p => p.ClipNotes);
 
-			entity.HasOne(d => d.Note).WithMany(p => p.ClipNotes).HasConstraintName("FK_a012eaf5c87c65da1deb5fdbfa3");
+			entity.HasOne(d => d.Note).WithMany(p => p.ClipNotes);
 		});
 
 		modelBuilder.Entity<DriveFile>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_43ddaaaf18c9e68029b7cbb032e");
-
 			entity.Property(e => e.Blurhash).HasComment("The BlurHash string.");
 			entity.Property(e => e.Comment).HasComment("The comment of the DriveFile.");
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the DriveFile.");
@@ -360,17 +310,13 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.WebpublicUrl).HasComment("The URL of the webpublic of the DriveFile.");
 
 			entity.HasOne(d => d.Folder).WithMany(p => p.DriveFiles)
-			      .OnDelete(DeleteBehavior.SetNull)
-			      .HasConstraintName("FK_bb90d1956dafc4068c28aa7560a");
+			      .OnDelete(DeleteBehavior.SetNull);
 
 			entity.HasOne(d => d.User).WithMany(p => p.DriveFiles)
-			      .OnDelete(DeleteBehavior.SetNull)
-			      .HasConstraintName("FK_860fa6f6c7df5bb887249fba22e");
+			      .OnDelete(DeleteBehavior.SetNull);
 		});
 
 		modelBuilder.Entity<DriveFolder>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_7a0c089191f5ebdc214e0af808a");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the DriveFolder.");
 			entity.Property(e => e.Name).HasComment("The name of the DriveFolder.");
 			entity.Property(e => e.ParentId)
@@ -378,17 +324,13 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.UserId).HasComment("The owner ID.");
 
 			entity.HasOne(d => d.Parent).WithMany(p => p.InverseParent)
-			      .OnDelete(DeleteBehavior.SetNull)
-			      .HasConstraintName("FK_00ceffb0cdc238b3233294f08f2");
+			      .OnDelete(DeleteBehavior.SetNull);
 
 			entity.HasOne(d => d.User).WithMany(p => p.DriveFolders)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_f4fc06e49c0171c85f1c48060d2");
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Emoji>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_df74ce05e24999ee01ea0bc50a3");
-
 			entity.Property(e => e.Aliases).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.Height).HasComment("Image height");
 			entity.Property(e => e.PublicUrl).HasDefaultValueSql("''::character varying");
@@ -396,8 +338,6 @@ public class DatabaseContext : DbContext {
 		});
 
 		modelBuilder.Entity<FollowRequest>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_53a9aa3725f7a3deb150b39dbfc");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the FollowRequest.");
 			entity.Property(e => e.FolloweeHost).HasComment("[Denormalized]");
 			entity.Property(e => e.FolloweeId).HasComment("The followee user ID.");
@@ -409,16 +349,12 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.FollowerSharedInbox).HasComment("[Denormalized]");
 			entity.Property(e => e.RequestId).HasComment("id of Follow Activity.");
 
-			entity.HasOne(d => d.Followee).WithMany(p => p.FollowRequestFollowees)
-			      .HasConstraintName("FK_12c01c0d1a79f77d9f6c15fadd2");
+			entity.HasOne(d => d.Followee).WithMany(p => p.FollowRequestFollowees);
 
-			entity.HasOne(d => d.Follower).WithMany(p => p.FollowRequestFollowers)
-			      .HasConstraintName("FK_a7fd92dd6dc519e6fb435dd108f");
+			entity.HasOne(d => d.Follower).WithMany(p => p.FollowRequestFollowers);
 		});
 
 		modelBuilder.Entity<Following>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_c76c6e044bdf76ecf8bfb82a645");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Following.");
 			entity.Property(e => e.FolloweeHost).HasComment("[Denormalized]");
 			entity.Property(e => e.FolloweeId).HasComment("The followee user ID.");
@@ -429,26 +365,18 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.FollowerInbox).HasComment("[Denormalized]");
 			entity.Property(e => e.FollowerSharedInbox).HasComment("[Denormalized]");
 
-			entity.HasOne(d => d.Followee).WithMany(p => p.FollowingFollowees)
-			      .HasConstraintName("FK_24e0042143a18157b234df186c3");
+			entity.HasOne(d => d.Followee).WithMany(p => p.FollowingFollowees);
 
-			entity.HasOne(d => d.Follower).WithMany(p => p.FollowingFollowers)
-			      .HasConstraintName("FK_6516c5a6f3c015b4eed39978be5");
+			entity.HasOne(d => d.Follower).WithMany(p => p.FollowingFollowers);
 		});
 
 		modelBuilder.Entity<GalleryLike>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_853ab02be39b8de45cd720cc15f");
+			entity.HasOne(d => d.Post).WithMany(p => p.GalleryLikes);
 
-			entity.HasOne(d => d.Post).WithMany(p => p.GalleryLikes)
-			      .HasConstraintName("FK_b1cb568bfe569e47b7051699fc8");
-
-			entity.HasOne(d => d.User).WithMany(p => p.GalleryLikes)
-			      .HasConstraintName("FK_8fd5215095473061855ceb948cf");
+			entity.HasOne(d => d.User).WithMany(p => p.GalleryLikes);
 		});
 
 		modelBuilder.Entity<GalleryPost>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_8e90d7b6015f2c4518881b14753");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the GalleryPost.");
 			entity.Property(e => e.FileIds).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.IsSensitive)
@@ -459,13 +387,10 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.UpdatedAt).HasComment("The updated date of the GalleryPost.");
 			entity.Property(e => e.UserId).HasComment("The ID of author.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.GalleryPosts)
-			      .HasConstraintName("FK_985b836dddd8615e432d7043ddb");
+			entity.HasOne(d => d.User).WithMany(p => p.GalleryPosts);
 		});
 
 		modelBuilder.Entity<Hashtag>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_cb36eb8af8412bfa978f1165d78");
-
 			entity.Property(e => e.AttachedLocalUsersCount).HasDefaultValue(0);
 			entity.Property(e => e.AttachedRemoteUsersCount).HasDefaultValue(0);
 			entity.Property(e => e.AttachedUsersCount).HasDefaultValue(0);
@@ -475,24 +400,16 @@ public class DatabaseContext : DbContext {
 		});
 
 		modelBuilder.Entity<HtmlNoteCacheEntry>(entity => {
-			entity.HasKey(e => e.NoteId).HasName("PK_6ef86ec901b2017cbe82d3a8286");
-
-			entity.HasOne(d => d.Note).WithOne(p => p.HtmlNoteCacheEntry)
-			      .HasConstraintName("FK_6ef86ec901b2017cbe82d3a8286");
+			entity.HasOne(d => d.Note).WithOne(p => p.HtmlNoteCacheEntry);
 		});
 
 		modelBuilder.Entity<HtmlUserCacheEntry>(entity => {
-			entity.HasKey(e => e.UserId).HasName("PK_920b9474e3c9cae3f3c37c057e1");
-
 			entity.Property(e => e.Fields).HasDefaultValueSql("'[]'::jsonb");
 
-			entity.HasOne(d => d.User).WithOne(p => p.HtmlUserCacheEntry)
-			      .HasConstraintName("FK_920b9474e3c9cae3f3c37c057e1");
+			entity.HasOne(d => d.User).WithOne(p => p.HtmlUserCacheEntry);
 		});
 
 		modelBuilder.Entity<Instance>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_eaf60e4a0c399c9935413e06474");
-
 			entity.Property(e => e.CaughtAt).HasComment("The caught date of the Instance.");
 			entity.Property(e => e.FollowersCount).HasDefaultValue(0);
 			entity.Property(e => e.FollowingCount).HasDefaultValue(0);
@@ -509,8 +426,6 @@ public class DatabaseContext : DbContext {
 		});
 
 		modelBuilder.Entity<MessagingMessage>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_db398fd79dc95d0eb8c30456eaa");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the MessagingMessage.");
 			entity.Property(e => e.GroupId).HasComment("The recipient group ID.");
 			entity.Property(e => e.IsRead).HasDefaultValue(false);
@@ -519,24 +434,18 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.UserId).HasComment("The sender user ID.");
 
 			entity.HasOne(d => d.File).WithMany(p => p.MessagingMessages)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_535def119223ac05ad3fa9ef64b");
+			      .OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasOne(d => d.Group).WithMany(p => p.MessagingMessages)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_2c4be03b446884f9e9c502135be");
+			      .OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasOne(d => d.Recipient).WithMany(p => p.MessagingMessageRecipients)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_cac14a4e3944454a5ce7daa5142");
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.MessagingMessageUsers)
-			      .HasConstraintName("FK_5377c307783fce2b6d352e1203b");
+			entity.HasOne(d => d.User).WithMany(p => p.MessagingMessageUsers);
 		});
 
 		modelBuilder.Entity<Meta>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_c4c17a6c2bd7651338b60fc590b");
-
 			entity.Property(e => e.AllowedHosts).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.BlockedHosts).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.CacheRemoteFiles).HasDefaultValue(false);
@@ -591,31 +500,22 @@ public class DatabaseContext : DbContext {
 		});
 
 		modelBuilder.Entity<ModerationLog>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_d0adca6ecfd068db83e4526cc26");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the ModerationLog.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.ModerationLogs)
-			      .HasConstraintName("FK_a08ad074601d204e0f69da9a954");
+			entity.HasOne(d => d.User).WithMany(p => p.ModerationLogs);
 		});
 
 		modelBuilder.Entity<Muting>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_2e92d06c8b5c602eeb27ca9ba48");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Muting.");
 			entity.Property(e => e.MuteeId).HasComment("The mutee user ID.");
 			entity.Property(e => e.MuterId).HasComment("The muter user ID.");
 
-			entity.HasOne(d => d.Mutee).WithMany(p => p.MutingMutees)
-			      .HasConstraintName("FK_ec96b4fed9dae517e0dbbe0675c");
+			entity.HasOne(d => d.Mutee).WithMany(p => p.MutingMutees);
 
-			entity.HasOne(d => d.Muter).WithMany(p => p.MutingMuters)
-			      .HasConstraintName("FK_93060675b4a79a577f31d260c67");
+			entity.HasOne(d => d.Muter).WithMany(p => p.MutingMuters);
 		});
 
 		modelBuilder.Entity<Note>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_96d0c172a4fba276b1bbed43058");
-
 			entity.HasIndex(e => e.Mentions, "IDX_NOTE_MENTIONS").HasMethod("gin");
 
 			entity.HasIndex(e => e.Tags, "IDX_NOTE_TAGS").HasMethod("gin");
@@ -655,90 +555,66 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.VisibleUserIds).HasDefaultValueSql("'{}'::character varying[]");
 
 			entity.HasOne(d => d.Channel).WithMany(p => p.Notes)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_f22169eb10657bded6d875ac8f9");
+			      .OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasOne(d => d.Renote).WithMany(p => p.InverseRenote)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_52ccc804d7c69037d558bac4c96");
+			      .OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasOne(d => d.Reply).WithMany(p => p.InverseReply)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_17cb3553c700a4985dff5a30ff5");
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.Notes).HasConstraintName("FK_5b87d9d19127bd5d92026017a7b");
+			entity.HasOne(d => d.User).WithMany(p => p.Notes);
 		});
 
 		modelBuilder.Entity<NoteEdit>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_736fc6e0d4e222ecc6f82058e08");
-
 			entity.Property(e => e.FileIds).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.NoteId).HasComment("The ID of note.");
 			entity.Property(e => e.UpdatedAt).HasComment("The updated date of the Note.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.NoteEdits).HasConstraintName("FK_702ad5ae993a672e4fbffbcd38c");
+			entity.HasOne(d => d.Note).WithMany(p => p.NoteEdits);
 		});
 
 		modelBuilder.Entity<NoteFavorite>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_af0da35a60b9fa4463a62082b36");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the NoteFavorite.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.NoteFavorites)
-			      .HasConstraintName("FK_0e00498f180193423c992bc4370");
+			entity.HasOne(d => d.Note).WithMany(p => p.NoteFavorites);
 
-			entity.HasOne(d => d.User).WithMany(p => p.NoteFavorites)
-			      .HasConstraintName("FK_47f4b1892f5d6ba8efb3057d81a");
+			entity.HasOne(d => d.User).WithMany(p => p.NoteFavorites);
 		});
 
 		modelBuilder.Entity<NoteReaction>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_767ec729b108799b587a3fcc9cf");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the NoteReaction.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.NoteReactions)
-			      .HasConstraintName("FK_45145e4953780f3cd5656f0ea6a");
+			entity.HasOne(d => d.Note).WithMany(p => p.NoteReactions);
 
-			entity.HasOne(d => d.User).WithMany(p => p.NoteReactions)
-			      .HasConstraintName("FK_13761f64257f40c5636d0ff95ee");
+			entity.HasOne(d => d.User).WithMany(p => p.NoteReactions);
 		});
 
 		modelBuilder.Entity<NoteThreadMuting>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_ec5936d94d1a0369646d12a3a47");
-
-			entity.HasOne(d => d.User).WithMany(p => p.NoteThreadMutings)
-			      .HasConstraintName("FK_29c11c7deb06615076f8c95b80a");
+			entity.HasOne(d => d.User).WithMany(p => p.NoteThreadMutings);
 		});
 
 		modelBuilder.Entity<NoteUnread>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_1904eda61a784f57e6e51fa9c1f");
-
 			entity.Property(e => e.NoteChannelId).HasComment("[Denormalized]");
 			entity.Property(e => e.NoteUserId).HasComment("[Denormalized]");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.NoteUnreads).HasConstraintName("FK_e637cba4dc4410218c4251260e4");
+			entity.HasOne(d => d.Note).WithMany(p => p.NoteUnreads);
 
-			entity.HasOne(d => d.User).WithMany(p => p.NoteUnreads).HasConstraintName("FK_56b0166d34ddae49d8ef7610bb9");
+			entity.HasOne(d => d.User).WithMany(p => p.NoteUnreads);
 		});
 
 		modelBuilder.Entity<NoteWatching>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_49286fdb23725945a74aa27d757");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the NoteWatching.");
 			entity.Property(e => e.NoteId).HasComment("The target Note ID.");
 			entity.Property(e => e.NoteUserId).HasComment("[Denormalized]");
 			entity.Property(e => e.UserId).HasComment("The watcher ID.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.NoteWatchings)
-			      .HasConstraintName("FK_03e7028ab8388a3f5e3ce2a8619");
+			entity.HasOne(d => d.Note).WithMany(p => p.NoteWatchings);
 
-			entity.HasOne(d => d.User).WithMany(p => p.NoteWatchings)
-			      .HasConstraintName("FK_b0134ec406e8d09a540f8182888");
+			entity.HasOne(d => d.User).WithMany(p => p.NoteWatchings);
 		});
 
 		modelBuilder.Entity<Notification>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_705b6c7cdf9b2c2ff7ac7872cb7");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Notification.");
 			entity.Property(e => e.IsRead)
 			      .HasDefaultValue(false)
@@ -748,32 +624,24 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.Type).HasComment("The type of the Notification.");
 
 			entity.HasOne(d => d.AppAccessToken).WithMany(p => p.Notifications)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_e22bf6bda77b6adc1fd9e75c8c9");
+			      .OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasOne(d => d.FollowRequest).WithMany(p => p.Notifications)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_bd7fab507621e635b32cd31892c");
+			      .OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasOne(d => d.Note).WithMany(p => p.Notifications)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_769cb6b73a1efe22ddf733ac453");
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.Notifiee).WithMany(p => p.NotificationNotifiees)
-			      .HasConstraintName("FK_3c601b70a1066d2c8b517094cb9");
+			entity.HasOne(d => d.Notifiee).WithMany(p => p.NotificationNotifiees);
 
 			entity.HasOne(d => d.Notifier).WithMany(p => p.NotificationNotifiers)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_3b4e96eec8d36a8bbb9d02aa710");
+			      .OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasOne(d => d.UserGroupInvitation).WithMany(p => p.Notifications)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_8fe87814e978053a53b1beb7e98");
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<OauthApp>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_3256b97c0a3ee2d67240805dca4");
-
 			entity.Property(e => e.ClientId).HasComment("The client id of the OAuth application");
 			entity.Property(e => e.ClientSecret).HasComment("The client secret of the OAuth application");
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the OAuth application");
@@ -784,8 +652,6 @@ public class DatabaseContext : DbContext {
 		});
 
 		modelBuilder.Entity<OauthToken>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_7e6a25a3cc4395d1658f5b89c73");
-
 			entity.Property(e => e.Active).HasComment("Whether or not the token has been activated");
 			entity.Property(e => e.Code).HasComment("The auth code for the OAuth token");
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the OAuth token");
@@ -793,14 +659,12 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.Scopes).HasComment("The scopes requested by the OAuth token");
 			entity.Property(e => e.Token).HasComment("The OAuth token");
 
-			entity.HasOne(d => d.App).WithMany(p => p.OauthTokens).HasConstraintName("FK_6d3ef28ea647b1449ba79690874");
+			entity.HasOne(d => d.App).WithMany(p => p.OauthTokens);
 
-			entity.HasOne(d => d.User).WithMany(p => p.OauthTokens).HasConstraintName("FK_f6b4b1ac66b753feab5d831ba04");
+			entity.HasOne(d => d.User).WithMany(p => p.OauthTokens);
 		});
 
 		modelBuilder.Entity<Page>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_742f4117e065c5b6ad21b37ba1f");
-
 			entity.Property(e => e.Content).HasDefaultValueSql("'[]'::jsonb");
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Page.");
 			entity.Property(e => e.HideTitleWhenPinned).HasDefaultValue(false);
@@ -812,73 +676,55 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.VisibleUserIds).HasDefaultValueSql("'{}'::character varying[]");
 
 			entity.HasOne(d => d.EyeCatchingImage).WithMany(p => p.Pages)
-			      .OnDelete(DeleteBehavior.Cascade)
-			      .HasConstraintName("FK_a9ca79ad939bf06066b81c9d3aa");
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.Pages).HasConstraintName("FK_ae1d917992dd0c9d9bbdad06c4a");
+			entity.HasOne(d => d.User).WithMany(p => p.Pages);
 		});
 
 		modelBuilder.Entity<PageLike>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_813f034843af992d3ae0f43c64c");
+			entity.HasOne(d => d.Page).WithMany(p => p.PageLikes);
 
-			entity.HasOne(d => d.Page).WithMany(p => p.PageLikes).HasConstraintName("FK_cf8782626dced3176038176a847");
-
-			entity.HasOne(d => d.User).WithMany(p => p.PageLikes).HasConstraintName("FK_0e61efab7f88dbb79c9166dbb48");
+			entity.HasOne(d => d.User).WithMany(p => p.PageLikes);
 		});
 
 		modelBuilder.Entity<PasswordResetRequest>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_fcf4b02eae1403a2edaf87fd074");
-
-			entity.HasOne(d => d.User).WithMany(p => p.PasswordResetRequests)
-			      .HasConstraintName("FK_4bb7fd4a34492ae0e6cc8d30ac8");
+			entity.HasOne(d => d.User).WithMany(p => p.PasswordResetRequests);
 		});
 
 		modelBuilder.Entity<Poll>(entity => {
-			entity.HasKey(e => e.NoteId).HasName("PK_da851e06d0dfe2ef397d8b1bf1b");
-
 			entity.Property(e => e.Choices).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.UserHost).HasComment("[Denormalized]");
 			entity.Property(e => e.UserId).HasComment("[Denormalized]");
 			entity.Property(e => e.NoteVisibility).HasComment("[Denormalized]");
 
-			entity.HasOne(d => d.Note).WithOne(p => p.Poll).HasConstraintName("FK_da851e06d0dfe2ef397d8b1bf1b");
+			entity.HasOne(d => d.Note).WithOne(p => p.Poll);
 		});
 
 		modelBuilder.Entity<PollVote>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_fd002d371201c472490ba89c6a0");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the PollVote.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.PollVotes).HasConstraintName("FK_aecfbd5ef60374918e63ee95fa7");
+			entity.HasOne(d => d.Note).WithMany(p => p.PollVotes);
 
-			entity.HasOne(d => d.User).WithMany(p => p.PollVotes).HasConstraintName("FK_66d2bd2ee31d14bcc23069a89f8");
+			entity.HasOne(d => d.User).WithMany(p => p.PollVotes);
 		});
 
 		modelBuilder.Entity<PromoNote>(entity => {
-			entity.HasKey(e => e.NoteId).HasName("PK_e263909ca4fe5d57f8d4230dd5c");
-
 			entity.Property(e => e.UserId).HasComment("[Denormalized]");
 
-			entity.HasOne(d => d.Note).WithOne(p => p.PromoNote).HasConstraintName("FK_e263909ca4fe5d57f8d4230dd5c");
+			entity.HasOne(d => d.Note).WithOne(p => p.PromoNote);
 		});
 
 		modelBuilder.Entity<PromoRead>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_61917c1541002422b703318b7c9");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the PromoRead.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.PromoReads).HasConstraintName("FK_a46a1a603ecee695d7db26da5f4");
+			entity.HasOne(d => d.Note).WithMany(p => p.PromoReads);
 
-			entity.HasOne(d => d.User).WithMany(p => p.PromoReads).HasConstraintName("FK_9657d55550c3d37bfafaf7d4b05");
+			entity.HasOne(d => d.User).WithMany(p => p.PromoReads);
 		});
 
-		modelBuilder.Entity<RegistrationTicket>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_f11696b6fafcf3662d4292734f8");
-		});
+		modelBuilder.Entity<RegistrationTicket>(entity => { });
 
 		modelBuilder.Entity<RegistryItem>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_64b3f7e6008b4d89b826cd3af95");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the RegistryItem.");
 			entity.Property(e => e.Key).HasComment("The key of the RegistryItem.");
 			entity.Property(e => e.Scope).HasDefaultValueSql("'{}'::character varying[]");
@@ -888,61 +734,45 @@ public class DatabaseContext : DbContext {
 			      .HasDefaultValueSql("'{}'::jsonb")
 			      .HasComment("The value of the RegistryItem.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.RegistryItems)
-			      .HasConstraintName("FK_fb9d21ba0abb83223263df6bcb3");
+			entity.HasOne(d => d.User).WithMany(p => p.RegistryItems);
 		});
 
-		modelBuilder.Entity<Relay>(entity => { entity.HasKey(e => e.Id).HasName("PK_78ebc9cfddf4292633b7ba57aee"); });
+		modelBuilder.Entity<Relay>(entity => { });
 
 		modelBuilder.Entity<RenoteMuting>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_renoteMuting_id");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Muting.");
 			entity.Property(e => e.MuteeId).HasComment("The mutee user ID.");
 			entity.Property(e => e.MuterId).HasComment("The muter user ID.");
 
-			entity.HasOne(d => d.Mutee).WithMany(p => p.RenoteMutingMutees)
-			      .HasConstraintName("FK_7eac97594bcac5ffcf2068089b6");
+			entity.HasOne(d => d.Mutee).WithMany(p => p.RenoteMutingMutees);
 
-			entity.HasOne(d => d.Muter).WithMany(p => p.RenoteMutingMuters)
-			      .HasConstraintName("FK_7aa72a5fe76019bfe8e5e0e8b7d");
+			entity.HasOne(d => d.Muter).WithMany(p => p.RenoteMutingMuters);
 		});
 
 		modelBuilder.Entity<Session>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_f55da76ac1c3ac420f444d2ff11");
-
 			entity.Property(e => e.Active)
 			      .HasComment("Whether or not the token has been activated (i.e. 2fa has been confirmed)");
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the OAuth token");
 			entity.Property(e => e.Token).HasComment("The authorization token");
 
-			entity.HasOne(d => d.User).WithMany(p => p.Sessions).HasConstraintName("FK_3d2f174ef04fb312fdebd0ddc53");
+			entity.HasOne(d => d.User).WithMany(p => p.Sessions);
 		});
 
 		modelBuilder.Entity<Signin>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_9e96ddc025712616fc492b3b588");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Signin.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.Signins).HasConstraintName("FK_2c308dbdc50d94dc625670055f7");
+			entity.HasOne(d => d.User).WithMany(p => p.Signins);
 		});
 
 		modelBuilder.Entity<SwSubscription>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_e8f763631530051b95eb6279b91");
-
 			entity.Property(e => e.SendReadMessage).HasDefaultValue(false);
 
-			entity.HasOne(d => d.User).WithMany(p => p.SwSubscriptions)
-			      .HasConstraintName("FK_97754ca6f2baff9b4abb7f853dd");
+			entity.HasOne(d => d.User).WithMany(p => p.SwSubscriptions);
 		});
 
-		modelBuilder.Entity<UsedUsername>(entity => {
-			entity.HasKey(e => e.Username).HasName("PK_78fd79d2d24c6ac2f4cc9a31a5d");
-		});
+		modelBuilder.Entity<UsedUsername>(entity => { });
 
 		modelBuilder.Entity<User>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_cace4a159ff9f2512dd42373760");
-
 			entity.Property(e => e.AlsoKnownAs).HasComment("URIs the user is known as too");
 			entity.Property(e => e.AvatarBlurhash).HasComment("The blurhash of the avatar DriveFile");
 			entity.Property(e => e.AvatarId).HasComment("The ID of avatar DriveFile.");
@@ -1016,71 +846,49 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.UsernameLower).HasComment("The username (lowercased) of the User.");
 
 			entity.HasOne(d => d.Avatar).WithOne(p => p.UserAvatar)
-			      .OnDelete(DeleteBehavior.SetNull)
-			      .HasConstraintName("FK_58f5c71eaab331645112cf8cfa5");
+			      .OnDelete(DeleteBehavior.SetNull);
 
 			entity.HasOne(d => d.Banner).WithOne(p => p.UserBanner)
-			      .OnDelete(DeleteBehavior.SetNull)
-			      .HasConstraintName("FK_afc64b53f8db3707ceb34eb28e2");
+			      .OnDelete(DeleteBehavior.SetNull);
 		});
 
 		modelBuilder.Entity<UserGroup>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_3c29fba6fe013ec8724378ce7c9");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserGroup.");
 			entity.Property(e => e.IsPrivate).HasDefaultValue(false);
 			entity.Property(e => e.UserId).HasComment("The ID of owner.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserGroups).HasConstraintName("FK_3d6b372788ab01be58853003c93");
+			entity.HasOne(d => d.User).WithMany(p => p.UserGroups);
 		});
 
 		modelBuilder.Entity<UserGroupInvitation>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_160c63ec02bf23f6a5c5e8140d6");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserGroupInvitation.");
 			entity.Property(e => e.UserGroupId).HasComment("The group ID.");
 			entity.Property(e => e.UserId).HasComment("The user ID.");
 
-			entity.HasOne(d => d.UserGroup).WithMany(p => p.UserGroupInvitations)
-			      .HasConstraintName("FK_5cc8c468090e129857e9fecce5a");
+			entity.HasOne(d => d.UserGroup).WithMany(p => p.UserGroupInvitations);
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserGroupInvitations)
-			      .HasConstraintName("FK_bfbc6305547539369fe73eb144a");
+			entity.HasOne(d => d.User).WithMany(p => p.UserGroupInvitations);
 		});
 
 		modelBuilder.Entity<UserGroupInvite>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_3893884af0d3a5f4d01e7921a97");
+			entity.HasOne(d => d.UserGroup).WithMany(p => p.UserGroupInvites);
 
-			entity.HasOne(d => d.UserGroup).WithMany(p => p.UserGroupInvites)
-			      .HasConstraintName("FK_e10924607d058004304611a436a");
-
-			entity.HasOne(d => d.User).WithMany(p => p.UserGroupInvites)
-			      .HasConstraintName("FK_1039988afa3bf991185b277fe03");
+			entity.HasOne(d => d.User).WithMany(p => p.UserGroupInvites);
 		});
 
 		modelBuilder.Entity<UserGroupMember>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_15f2425885253c5507e1599cfe7");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserGroupMember.");
 			entity.Property(e => e.UserGroupId).HasComment("The group ID.");
 			entity.Property(e => e.UserId).HasComment("The user ID.");
 
-			entity.HasOne(d => d.UserGroup).WithMany(p => p.UserGroupMembers)
-			      .HasConstraintName("FK_67dc758bc0566985d1b3d399865");
+			entity.HasOne(d => d.UserGroup).WithMany(p => p.UserGroupMembers);
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserGroupMembers)
-			      .HasConstraintName("FK_f3a1b4bd0c7cabba958a0c0b231");
+			entity.HasOne(d => d.User).WithMany(p => p.UserGroupMembers);
 		});
 
-		modelBuilder.Entity<UserKeypair>(entity => {
-			entity.HasKey(e => e.UserId).HasName("PK_f4853eb41ab722fe05f81cedeb6");
-
-			entity.HasOne(d => d.User).WithOne(p => p.UserKeypair).HasConstraintName("FK_f4853eb41ab722fe05f81cedeb6");
-		});
+		modelBuilder.Entity<UserKeypair>(entity => { entity.HasOne(d => d.User).WithOne(p => p.UserKeypair); });
 
 		modelBuilder.Entity<UserList>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_87bab75775fd9b1ff822b656402");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserList.");
 			entity.Property(e => e.HideFromHomeTl)
 			      .HasDefaultValue(false)
@@ -1088,42 +896,30 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.Name).HasComment("The name of the UserList.");
 			entity.Property(e => e.UserId).HasComment("The owner ID.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserLists).HasConstraintName("FK_b7fcefbdd1c18dce86687531f99");
+			entity.HasOne(d => d.User).WithMany(p => p.UserLists);
 		});
 
 		modelBuilder.Entity<UserListMember>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_11abb3768da1c5f8de101c9df45");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserListMember.");
 			entity.Property(e => e.UserId).HasComment("The user ID.");
 			entity.Property(e => e.UserListId).HasComment("The list ID.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserListMembers)
-			      .HasConstraintName("FK_d844bfc6f3f523a05189076efaa");
+			entity.HasOne(d => d.User).WithMany(p => p.UserListMembers);
 
-			entity.HasOne(d => d.UserList).WithMany(p => p.UserListMembers)
-			      .HasConstraintName("FK_605472305f26818cc93d1baaa74");
+			entity.HasOne(d => d.UserList).WithMany(p => p.UserListMembers);
 		});
 
 		modelBuilder.Entity<UserNotePin>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_a6a2dad4ae000abce2ea9d9b103");
-
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserNotePins.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.UserNotePins)
-			      .HasConstraintName("FK_68881008f7c3588ad7ecae471cf");
+			entity.HasOne(d => d.Note).WithMany(p => p.UserNotePins);
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserNotePins)
-			      .HasConstraintName("FK_bfbc6f79ba4007b4ce5097f08d6");
+			entity.HasOne(d => d.User).WithMany(p => p.UserNotePins);
 		});
 
-		modelBuilder.Entity<UserPending>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_d4c84e013c98ec02d19b8fbbafa");
-		});
+		modelBuilder.Entity<UserPending>(entity => { });
 
 		modelBuilder.Entity<UserProfile>(entity => {
-			entity.HasKey(e => e.UserId).HasName("PK_51cb79b5555effaf7d69ba1cff9");
-
 			entity.Property(e => e.AlwaysMarkNsfw).HasDefaultValue(false);
 			entity.Property(e => e.AutoAcceptFollowed).HasDefaultValue(false);
 			entity.Property(e => e.Birthday)
@@ -1171,22 +967,14 @@ public class DatabaseContext : DbContext {
 			      .HasDefaultValue(UserProfile.UserProfileFFVisibility.Public);
 
 			entity.HasOne(d => d.PinnedPage).WithOne(p => p.UserProfile)
-			      .OnDelete(DeleteBehavior.SetNull)
-			      .HasConstraintName("FK_6dc44f1ceb65b1e72bacef2ca27");
+			      .OnDelete(DeleteBehavior.SetNull);
 
-			entity.HasOne(d => d.User).WithOne(p => p.UserProfile).HasConstraintName("FK_51cb79b5555effaf7d69ba1cff9");
+			entity.HasOne(d => d.User).WithOne(p => p.UserProfile);
 		});
 
-		modelBuilder.Entity<UserPublickey>(entity => {
-			entity.HasKey(e => e.UserId).HasName("PK_10c146e4b39b443ede016f6736d");
-
-			entity.HasOne(d => d.User).WithOne(p => p.UserPublickey)
-			      .HasConstraintName("FK_10c146e4b39b443ede016f6736d");
-		});
+		modelBuilder.Entity<UserPublickey>(entity => { entity.HasOne(d => d.User).WithOne(p => p.UserPublickey); });
 
 		modelBuilder.Entity<UserSecurityKey>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_3e508571121ab39c5f85d10c166");
-
 			entity.Property(e => e.Id).HasComment("Variable-length id given to navigator.credentials.get()");
 			entity.Property(e => e.LastUsed)
 			      .HasComment("The date of the last time the UserSecurityKey was successfully validated.");
@@ -1194,20 +982,17 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.PublicKey)
 			      .HasComment("Variable-length public key used to verify attestations (hex-encoded).");
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserSecurityKeys)
-			      .HasConstraintName("FK_ff9ca3b5f3ee3d0681367a9b447");
+			entity.HasOne(d => d.User).WithMany(p => p.UserSecurityKeys);
 		});
 
 		modelBuilder.Entity<Webhook>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_e6765510c2d078db49632b59020");
-
 			entity.Property(e => e.Active).HasDefaultValue(true);
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Antenna.");
 			entity.Property(e => e.Name).HasComment("The name of the Antenna.");
 			entity.Property(e => e.On).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.UserId).HasComment("The owner ID.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.Webhooks).HasConstraintName("FK_f272c8c8805969e6a6449c77b3c");
+			entity.HasOne(d => d.User).WithMany(p => p.Webhooks);
 		});
 	}
 }
