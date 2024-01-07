@@ -132,10 +132,10 @@ public class DatabaseContext : DbContext {
 		dataSourceBuilder.MapEnum<Note.NoteVisibility>();
 		dataSourceBuilder.MapEnum<Notification.NotificationType>();
 		dataSourceBuilder.MapEnum<Page.PageVisibility>();
-		//dataSourceBuilder.MapEnum<Poll.PollNoteVisibility>(); // FIXME: WHY IS THIS ITS OWN ENUM
+		dataSourceBuilder.MapEnum<Poll.PollNoteVisibility>(); // FIXME: WHY IS THIS ITS OWN ENUM
 		dataSourceBuilder.MapEnum<Relay.RelayStatus>();
 		dataSourceBuilder.MapEnum<UserProfile.UserProfileFFVisibility>();
-		//dataSourceBuilder.MapEnum<UserProfile.MutingNotificationTypes>(); // FIXME: WHY IS THIS ITS OWN ENUM
+		dataSourceBuilder.MapEnum<UserProfile.MutingNotificationType>(); // FIXME: WHY IS THIS ITS OWN ENUM
 
 		optionsBuilder.UseNpgsql(dataSourceBuilder.Build());
 	}
@@ -143,18 +143,14 @@ public class DatabaseContext : DbContext {
 	protected override void OnModelCreating(ModelBuilder modelBuilder) {
 		modelBuilder
 			.HasPostgresEnum<Antenna.AntennaSource>()
-			//.HasPostgresEnum("log_level_enum", ["error", "warning", "info", "success", "debug"]) // TODO: not in use, add migration that removes this if it exists
+			.HasPostgresEnum("log_level_enum", ["error", "warning", "info", "success", "debug"]) // TODO: not in use, add migration that removes this if it exists
 			.HasPostgresEnum<Note.NoteVisibility>()
 			.HasPostgresEnum<Notification.NotificationType>()
 			.HasPostgresEnum<Page.PageVisibility>()
-			.HasPostgresEnum("poll_notevisibility_enum", ["public", "home", "followers", "specified", "hidden"])
+			.HasPostgresEnum<Poll.PollNoteVisibility>() //TODO: merge with regular notevisibility enum
 			.HasPostgresEnum<Relay.RelayStatus>()
 			.HasPostgresEnum<UserProfile.UserProfileFFVisibility>()
-			.HasPostgresEnum("user_profile_mutingnotificationtypes_enum",
-			[
-				"follow", "mention", "reply", "renote", "quote", "reaction", "pollVote", "pollEnded",
-				"receiveFollowRequest", "followRequestAccepted", "groupInvited", "app"
-			])
+			.HasPostgresEnum<UserProfile.MutingNotificationType>() //TODO: merge with regular notification types enum
 			.HasPostgresExtension("pg_trgm");
 
 		modelBuilder.Entity<AbuseUserReport>(entity => {
