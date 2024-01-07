@@ -112,10 +112,6 @@ public class DatabaseContext : DbContext {
 	protected override void OnModelCreating(ModelBuilder modelBuilder) {
 		modelBuilder
 			.HasPostgresEnum<Antenna.AntennaSource>()
-			.HasPostgresEnum("log_level_enum",
-			[
-				"error", "warning", "info", "success", "debug"
-			]) // TODO: not in use, add migration that removes this if it exists
 			.HasPostgresEnum<Note.NoteVisibility>()
 			.HasPostgresEnum<Notification.NotificationType>()
 			.HasPostgresEnum<Page.PageVisibility>()
