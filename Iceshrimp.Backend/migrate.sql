@@ -34,12 +34,6 @@ DROP TABLE __chart_day__users;
 DROP TABLE migrations;
 DROP TABLE user_ip;
 
-ALTER TABLE user_publickey DROP CONSTRAINT "PK_10c146e4b39b443ede016f6736d";
-ALTER TABLE "user" DROP CONSTRAINT "REL_58f5c71eaab331645112cf8cfa";
-ALTER TABLE "user" DROP CONSTRAINT "REL_afc64b53f8db3707ceb34eb28e";
-ALTER TABLE "user" DROP CONSTRAINT "UQ_a854e557b1b14814750c7c7b0c9";
-ALTER TABLE user_profile DROP CONSTRAINT "UQ_6dc44f1ceb65b1e72bacef2ca27";
-
 CREATE INDEX "IX_abuse_user_report_assigneeId" ON abuse_user_report USING btree ("assigneeId");
 CREATE INDEX "IX_access_token_appId" ON access_token USING btree ("appId");
 CREATE INDEX "IX_antenna_userGroupJoiningId" ON antenna USING btree ("userGroupJoiningId");
@@ -62,16 +56,11 @@ CREATE INDEX "IX_promo_read_noteId" ON promo_read USING btree ("noteId");
 CREATE INDEX "IX_session_userId" ON "session" USING btree ("userId");
 CREATE INDEX "IX_user_note_pining_noteId" ON user_note_pining USING btree ("noteId");
 
-CREATE UNIQUE INDEX "REL_58f5c71eaab331645112cf8cfa" ON "user" USING btree ("avatarId");
-CREATE UNIQUE INDEX "REL_afc64b53f8db3707ceb34eb28e" ON "user" USING btree ("bannerId");
-CREATE UNIQUE INDEX "UQ_a854e557b1b14814750c7c7b0c9" ON "user" USING btree (token);
-CREATE UNIQUE INDEX "UQ_6dc44f1ceb65b1e72bacef2ca27" ON user_profile USING btree ("pinnedPageId");
-
 CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
     "MigrationId" character varying(150) NOT NULL,
     "ProductVersion" character varying(32) NOT NULL,
     CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
 );
-INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion") VALUES ('20240107155500_Initial', '8.0.0');
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion") VALUES ('20240107171910_Initial', '8.0.0');
 
 COMMIT;
