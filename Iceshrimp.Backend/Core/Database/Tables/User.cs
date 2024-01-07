@@ -403,19 +403,19 @@ public class User {
 	public virtual ICollection<UserGroupInvite> UserGroupInvites { get; set; } = new List<UserGroupInvite>();
 
 	[InverseProperty("User")]
-	public virtual ICollection<UserGroupJoining> UserGroupJoinings { get; set; } = new List<UserGroupJoining>();
+	public virtual ICollection<UserGroupMember> UserGroupMembers { get; set; } = new List<UserGroupMember>();
 
 	[InverseProperty("User")] public virtual ICollection<UserGroup> UserGroups { get; set; } = new List<UserGroup>();
 
 	[InverseProperty("User")] public virtual UserKeypair? UserKeypair { get; set; }
 
 	[InverseProperty("User")]
-	public virtual ICollection<UserListJoining> UserListJoinings { get; set; } = new List<UserListJoining>();
+	public virtual ICollection<UserListMember> UserListMembers { get; set; } = new List<UserListMember>();
 
 	[InverseProperty("User")] public virtual ICollection<UserList> UserLists { get; set; } = new List<UserList>();
 
 	[InverseProperty("User")]
-	public virtual ICollection<UserNotePining> UserNotePinings { get; set; } = new List<UserNotePining>();
+	public virtual ICollection<UserNotePin> UserNotePins { get; set; } = new List<UserNotePin>();
 
 	[InverseProperty("User")] public virtual UserProfile? UserProfile { get; set; }
 

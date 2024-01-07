@@ -54,9 +54,9 @@ public class Antenna {
 
 	[Column("withReplies")] public bool WithReplies { get; set; }
 
-	[Column("userGroupJoiningId")]
+	[Column("UserGroupMemberId")]
 	[StringLength(32)]
-	public string? UserGroupJoiningId { get; set; }
+	public string? UserGroupMemberId { get; set; }
 
 	[Column("users", TypeName = "character varying(1024)[]")]
 	public List<string> Users { get; set; } = null!;
@@ -71,9 +71,9 @@ public class Antenna {
 	[InverseProperty("Antennas")]
 	public virtual User User { get; set; } = null!;
 
-	[ForeignKey("UserGroupJoiningId")]
+	[ForeignKey("UserGroupMemberId")]
 	[InverseProperty("Antennas")]
-	public virtual UserGroupJoining? UserGroupJoining { get; set; }
+	public virtual UserGroupMember? UserGroupMember { get; set; }
 
 	[ForeignKey("UserListId")]
 	[InverseProperty("Antennas")]

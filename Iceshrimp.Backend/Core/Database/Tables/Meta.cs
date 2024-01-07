@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("meta")]
-public class Metum {
+public class Meta {
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

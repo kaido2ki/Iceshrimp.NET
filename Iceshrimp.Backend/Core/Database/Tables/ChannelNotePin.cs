@@ -4,17 +4,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
-[Table("channel_note_pining")]
+[Table("channel_note_pin")]
 [Index("ChannelId", Name = "IDX_8125f950afd3093acb10d2db8a")]
 [Index("ChannelId", "NoteId", Name = "IDX_f36fed37d6d4cdcc68c803cd9c", IsUnique = true)]
-public class ChannelNotePining {
+public class ChannelNotePin {
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
 
 	/// <summary>
-	///     The created date of the ChannelNotePining.
+	///     The created date of the ChannelNotePin.
 	/// </summary>
 	[Column("createdAt")]
 	public DateTime CreatedAt { get; set; }
@@ -26,10 +26,10 @@ public class ChannelNotePining {
 	[Column("noteId")] [StringLength(32)] public string NoteId { get; set; } = null!;
 
 	[ForeignKey("ChannelId")]
-	[InverseProperty("ChannelNotePinings")]
+	[InverseProperty("ChannelNotePins")]
 	public virtual Channel Channel { get; set; } = null!;
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("ChannelNotePinings")]
+	[InverseProperty("ChannelNotePins")]
 	public virtual Note Note { get; set; } = null!;
 }

@@ -168,7 +168,7 @@ public class Note {
 	public virtual Channel? Channel { get; set; }
 
 	[InverseProperty("Note")]
-	public virtual ICollection<ChannelNotePining> ChannelNotePinings { get; set; } = new List<ChannelNotePining>();
+	public virtual ICollection<ChannelNotePin> ChannelNotePins { get; set; } = new List<ChannelNotePin>();
 
 	[InverseProperty("Note")] public virtual ICollection<ClipNote> ClipNotes { get; set; } = new List<ClipNote>();
 
@@ -215,7 +215,7 @@ public class Note {
 	public virtual User User { get; set; } = null!;
 
 	[InverseProperty("Note")]
-	public virtual ICollection<UserNotePining> UserNotePinings { get; set; } = new List<UserNotePining>();
+	public virtual ICollection<UserNotePin> UserNotePins { get; set; } = new List<UserNotePin>();
 
 	[PgName("note_visibility_enum")]
 	public enum NoteVisibility {

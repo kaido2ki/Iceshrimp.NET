@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20240107181428_RenameProperties")]
+    partial class RenameProperties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -731,7 +734,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.HasIndex(new[] { "ChannelId", "NoteId" }, "IDX_f36fed37d6d4cdcc68c803cd9c")
                         .IsUnique();
 
-                    b.ToTable("channel_note_pin");
+                    b.ToTable("channel_note_pining");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Clip", b =>
@@ -4213,7 +4216,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex(new[] { "UserId" }, "IDX_f3a1b4bd0c7cabba958a0c0b23");
 
-                    b.ToTable("user_group_member");
+                    b.ToTable("user_group_joining");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.UserKeypair", b =>
@@ -4318,7 +4321,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex(new[] { "UserId" }, "IDX_d844bfc6f3f523a05189076efa");
 
-                    b.ToTable("user_list_member");
+                    b.ToTable("user_list_joining");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.UserNotePin", b =>
@@ -4355,7 +4358,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex(new[] { "UserId" }, "IDX_bfbc6f79ba4007b4ce5097f08d");
 
-                    b.ToTable("user_note_pin");
+                    b.ToTable("user_note_pining");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.UserPending", b =>

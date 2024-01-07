@@ -72,7 +72,7 @@ public class Channel {
 	public virtual ICollection<ChannelFollowing> ChannelFollowings { get; set; } = new List<ChannelFollowing>();
 
 	[InverseProperty("Channel")]
-	public virtual ICollection<ChannelNotePining> ChannelNotePinings { get; set; } = new List<ChannelNotePining>();
+	public virtual ICollection<ChannelNotePin> ChannelNotePins { get; set; } = new List<ChannelNotePin>();
 
 	[InverseProperty("Channel")] public virtual ICollection<Note> Notes { get; set; } = new List<Note>();
 

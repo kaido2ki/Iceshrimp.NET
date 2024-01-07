@@ -17,74 +17,74 @@ public class DatabaseContext : DbContext {
 		_config = config;
 	}
 
-	public virtual DbSet<AbuseUserReport>          AbuseUserReports          { get; init; } = null!;
-	public virtual DbSet<AccessToken>              AccessTokens              { get; init; } = null!;
-	public virtual DbSet<Announcement>             Announcements             { get; init; } = null!;
-	public virtual DbSet<AnnouncementRead>         AnnouncementReads         { get; init; } = null!;
-	public virtual DbSet<Antenna>                  Antennas                  { get; init; } = null!;
-	public virtual DbSet<App>                      Apps                      { get; init; } = null!;
-	public virtual DbSet<AttestationChallenge>     AttestationChallenges     { get; init; } = null!;
-	public virtual DbSet<AuthSession>              AuthSessions              { get; init; } = null!;
-	public virtual DbSet<Blocking>                 Blockings                 { get; init; } = null!;
-	public virtual DbSet<Channel>                  Channels                  { get; init; } = null!;
-	public virtual DbSet<ChannelFollowing>         ChannelFollowings         { get; init; } = null!;
-	public virtual DbSet<ChannelNotePining>        ChannelNotePinings        { get; init; } = null!;
-	public virtual DbSet<Clip>                     Clips                     { get; init; } = null!;
-	public virtual DbSet<ClipNote>                 ClipNotes                 { get; init; } = null!;
-	public virtual DbSet<DriveFile>                DriveFiles                { get; init; } = null!;
-	public virtual DbSet<DriveFolder>              DriveFolders              { get; init; } = null!;
-	public virtual DbSet<Emoji>                    Emojis                    { get; init; } = null!;
-	public virtual DbSet<FollowRequest>            FollowRequests            { get; init; } = null!;
-	public virtual DbSet<Following>                Followings                { get; init; } = null!;
-	public virtual DbSet<GalleryLike>              GalleryLikes              { get; init; } = null!;
-	public virtual DbSet<GalleryPost>              GalleryPosts              { get; init; } = null!;
-	public virtual DbSet<Hashtag>                  Hashtags                  { get; init; } = null!;
-	public virtual DbSet<HtmlNoteCacheEntry>       HtmlNoteCacheEntries      { get; init; } = null!;
-	public virtual DbSet<HtmlUserCacheEntry>       HtmlUserCacheEntries      { get; init; } = null!;
-	public virtual DbSet<Instance>                 Instances                 { get; init; } = null!;
-	public virtual DbSet<MessagingMessage>         MessagingMessages         { get; init; } = null!;
-	public virtual DbSet<Metum>                    Meta                      { get; init; } = null!;
-	public virtual DbSet<ModerationLog>            ModerationLogs            { get; init; } = null!;
-	public virtual DbSet<Muting>                   Mutings                   { get; init; } = null!;
-	public virtual DbSet<Note>                     Notes                     { get; init; } = null!;
-	public virtual DbSet<NoteEdit>                 NoteEdits                 { get; init; } = null!;
-	public virtual DbSet<NoteFavorite>             NoteFavorites             { get; init; } = null!;
-	public virtual DbSet<NoteReaction>             NoteReactions             { get; init; } = null!;
-	public virtual DbSet<NoteThreadMuting>         NoteThreadMutings         { get; init; } = null!;
-	public virtual DbSet<NoteUnread>               NoteUnreads               { get; init; } = null!;
-	public virtual DbSet<NoteWatching>             NoteWatchings             { get; init; } = null!;
-	public virtual DbSet<Notification>             Notifications             { get; init; } = null!;
-	public virtual DbSet<OauthApp>                 OauthApps                 { get; init; } = null!;
-	public virtual DbSet<OauthToken>               OauthTokens               { get; init; } = null!;
-	public virtual DbSet<Page>                     Pages                     { get; init; } = null!;
-	public virtual DbSet<PageLike>                 PageLikes                 { get; init; } = null!;
-	public virtual DbSet<PasswordResetRequest>     PasswordResetRequests     { get; init; } = null!;
-	public virtual DbSet<Poll>                     Polls                     { get; init; } = null!;
-	public virtual DbSet<PollVote>                 PollVotes                 { get; init; } = null!;
-	public virtual DbSet<PromoNote>                PromoNotes                { get; init; } = null!;
-	public virtual DbSet<PromoRead>                PromoReads                { get; init; } = null!;
-	public virtual DbSet<RegistrationTicket>       RegistrationTickets       { get; init; } = null!;
-	public virtual DbSet<RegistryItem>             RegistryItems             { get; init; } = null!;
-	public virtual DbSet<Relay>                    Relays                    { get; init; } = null!;
-	public virtual DbSet<RenoteMuting>             RenoteMutings             { get; init; } = null!;
-	public virtual DbSet<Session>                  Sessions                  { get; init; } = null!;
-	public virtual DbSet<Signin>                   Signins                   { get; init; } = null!;
-	public virtual DbSet<SwSubscription>           SwSubscriptions           { get; init; } = null!;
-	public virtual DbSet<UsedUsername>             UsedUsernames             { get; init; } = null!;
-	public virtual DbSet<User>                     Users                     { get; init; } = null!;
-	public virtual DbSet<UserGroup>                UserGroups                { get; init; } = null!;
-	public virtual DbSet<UserGroupInvitation>      UserGroupInvitations      { get; init; } = null!;
-	public virtual DbSet<UserGroupInvite>          UserGroupInvites          { get; init; } = null!;
-	public virtual DbSet<UserGroupJoining>         UserGroupJoinings         { get; init; } = null!;
-	public virtual DbSet<UserKeypair>              UserKeypairs              { get; init; } = null!;
-	public virtual DbSet<UserList>                 UserLists                 { get; init; } = null!;
-	public virtual DbSet<UserListJoining>          UserListJoinings          { get; init; } = null!;
-	public virtual DbSet<UserNotePining>           UserNotePinings           { get; init; } = null!;
-	public virtual DbSet<UserPending>              UserPendings              { get; init; } = null!;
-	public virtual DbSet<UserProfile>              UserProfiles              { get; init; } = null!;
-	public virtual DbSet<UserPublickey>            UserPublickeys            { get; init; } = null!;
-	public virtual DbSet<UserSecurityKey>          UserSecurityKeys          { get; init; } = null!;
-	public virtual DbSet<Webhook>                  Webhooks                  { get; init; } = null!;
+	public virtual DbSet<AbuseUserReport>      AbuseUserReports      { get; init; } = null!;
+	public virtual DbSet<AccessToken>          AccessTokens          { get; init; } = null!;
+	public virtual DbSet<Announcement>         Announcements         { get; init; } = null!;
+	public virtual DbSet<AnnouncementRead>     AnnouncementReads     { get; init; } = null!;
+	public virtual DbSet<Antenna>              Antennas              { get; init; } = null!;
+	public virtual DbSet<App>                  Apps                  { get; init; } = null!;
+	public virtual DbSet<AttestationChallenge> AttestationChallenges { get; init; } = null!;
+	public virtual DbSet<AuthSession>          AuthSessions          { get; init; } = null!;
+	public virtual DbSet<Blocking>             Blockings             { get; init; } = null!;
+	public virtual DbSet<Channel>              Channels              { get; init; } = null!;
+	public virtual DbSet<ChannelFollowing>     ChannelFollowings     { get; init; } = null!;
+	public virtual DbSet<ChannelNotePin>       ChannelNotePins       { get; init; } = null!;
+	public virtual DbSet<Clip>                 Clips                 { get; init; } = null!;
+	public virtual DbSet<ClipNote>             ClipNotes             { get; init; } = null!;
+	public virtual DbSet<DriveFile>            DriveFiles            { get; init; } = null!;
+	public virtual DbSet<DriveFolder>          DriveFolders          { get; init; } = null!;
+	public virtual DbSet<Emoji>                Emojis                { get; init; } = null!;
+	public virtual DbSet<FollowRequest>        FollowRequests        { get; init; } = null!;
+	public virtual DbSet<Following>            Followings            { get; init; } = null!;
+	public virtual DbSet<GalleryLike>          GalleryLikes          { get; init; } = null!;
+	public virtual DbSet<GalleryPost>          GalleryPosts          { get; init; } = null!;
+	public virtual DbSet<Hashtag>              Hashtags              { get; init; } = null!;
+	public virtual DbSet<HtmlNoteCacheEntry>   HtmlNoteCacheEntries  { get; init; } = null!;
+	public virtual DbSet<HtmlUserCacheEntry>   HtmlUserCacheEntries  { get; init; } = null!;
+	public virtual DbSet<Instance>             Instances             { get; init; } = null!;
+	public virtual DbSet<MessagingMessage>     MessagingMessages     { get; init; } = null!;
+	public virtual DbSet<Meta>                 Meta                  { get; init; } = null!;
+	public virtual DbSet<ModerationLog>        ModerationLogs        { get; init; } = null!;
+	public virtual DbSet<Muting>               Mutings               { get; init; } = null!;
+	public virtual DbSet<Note>                 Notes                 { get; init; } = null!;
+	public virtual DbSet<NoteEdit>             NoteEdits             { get; init; } = null!;
+	public virtual DbSet<NoteFavorite>         NoteFavorites         { get; init; } = null!;
+	public virtual DbSet<NoteReaction>         NoteReactions         { get; init; } = null!;
+	public virtual DbSet<NoteThreadMuting>     NoteThreadMutings     { get; init; } = null!;
+	public virtual DbSet<NoteUnread>           NoteUnreads           { get; init; } = null!;
+	public virtual DbSet<NoteWatching>         NoteWatchings         { get; init; } = null!;
+	public virtual DbSet<Notification>         Notifications         { get; init; } = null!;
+	public virtual DbSet<OauthApp>             OauthApps             { get; init; } = null!;
+	public virtual DbSet<OauthToken>           OauthTokens           { get; init; } = null!;
+	public virtual DbSet<Page>                 Pages                 { get; init; } = null!;
+	public virtual DbSet<PageLike>             PageLikes             { get; init; } = null!;
+	public virtual DbSet<PasswordResetRequest> PasswordResetRequests { get; init; } = null!;
+	public virtual DbSet<Poll>                 Polls                 { get; init; } = null!;
+	public virtual DbSet<PollVote>             PollVotes             { get; init; } = null!;
+	public virtual DbSet<PromoNote>            PromoNotes            { get; init; } = null!;
+	public virtual DbSet<PromoRead>            PromoReads            { get; init; } = null!;
+	public virtual DbSet<RegistrationTicket>   RegistrationTickets   { get; init; } = null!;
+	public virtual DbSet<RegistryItem>         RegistryItems         { get; init; } = null!;
+	public virtual DbSet<Relay>                Relays                { get; init; } = null!;
+	public virtual DbSet<RenoteMuting>         RenoteMutings         { get; init; } = null!;
+	public virtual DbSet<Session>              Sessions              { get; init; } = null!;
+	public virtual DbSet<Signin>               Signins               { get; init; } = null!;
+	public virtual DbSet<SwSubscription>       SwSubscriptions       { get; init; } = null!;
+	public virtual DbSet<UsedUsername>         UsedUsernames         { get; init; } = null!;
+	public virtual DbSet<User>                 Users                 { get; init; } = null!;
+	public virtual DbSet<UserGroup>            UserGroups            { get; init; } = null!;
+	public virtual DbSet<UserGroupInvitation>  UserGroupInvitations  { get; init; } = null!;
+	public virtual DbSet<UserGroupInvite>      UserGroupInvites      { get; init; } = null!;
+	public virtual DbSet<UserGroupMember>      UserGroupMembers      { get; init; } = null!;
+	public virtual DbSet<UserKeypair>          UserKeypairs          { get; init; } = null!;
+	public virtual DbSet<UserList>             UserLists             { get; init; } = null!;
+	public virtual DbSet<UserListMember>       UserListMembers       { get; init; } = null!;
+	public virtual DbSet<UserNotePin>          UserNotePins          { get; init; } = null!;
+	public virtual DbSet<UserPending>          UserPendings          { get; init; } = null!;
+	public virtual DbSet<UserProfile>          UserProfiles          { get; init; } = null!;
+	public virtual DbSet<UserPublickey>        UserPublickeys        { get; init; } = null!;
+	public virtual DbSet<UserSecurityKey>      UserSecurityKeys      { get; init; } = null!;
+	public virtual DbSet<Webhook>              Webhooks              { get; init; } = null!;
 
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
 		var dataSourceBuilder = new NpgsqlDataSourceBuilder();
@@ -112,7 +112,10 @@ public class DatabaseContext : DbContext {
 	protected override void OnModelCreating(ModelBuilder modelBuilder) {
 		modelBuilder
 			.HasPostgresEnum<Antenna.AntennaSource>()
-			.HasPostgresEnum("log_level_enum", ["error", "warning", "info", "success", "debug"]) // TODO: not in use, add migration that removes this if it exists
+			.HasPostgresEnum("log_level_enum",
+			[
+				"error", "warning", "info", "success", "debug"
+			]) // TODO: not in use, add migration that removes this if it exists
 			.HasPostgresEnum<Note.NoteVisibility>()
 			.HasPostgresEnum<Notification.NotificationType>()
 			.HasPostgresEnum<Page.PageVisibility>()
@@ -191,7 +194,7 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.Users).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.WithReplies).HasDefaultValue(false);
 
-			entity.HasOne(d => d.UserGroupJoining).WithMany(p => p.Antennas)
+			entity.HasOne(d => d.UserGroupMember).WithMany(p => p.Antennas)
 			      .OnDelete(DeleteBehavior.Cascade)
 			      .HasConstraintName("FK_ccbf5a8c0be4511133dcc50ddeb");
 
@@ -295,15 +298,15 @@ public class DatabaseContext : DbContext {
 			      .HasConstraintName("FK_6d8084ec9496e7334a4602707e1");
 		});
 
-		modelBuilder.Entity<ChannelNotePining>(entity => {
+		modelBuilder.Entity<ChannelNotePin>(entity => {
 			entity.HasKey(e => e.Id).HasName("PK_44f7474496bcf2e4b741681146d");
 
-			entity.Property(e => e.CreatedAt).HasComment("The created date of the ChannelNotePining.");
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the ChannelNotePin.");
 
-			entity.HasOne(d => d.Channel).WithMany(p => p.ChannelNotePinings)
+			entity.HasOne(d => d.Channel).WithMany(p => p.ChannelNotePins)
 			      .HasConstraintName("FK_8125f950afd3093acb10d2db8a8");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.ChannelNotePinings)
+			entity.HasOne(d => d.Note).WithMany(p => p.ChannelNotePins)
 			      .HasConstraintName("FK_10b19ef67d297ea9de325cd4502");
 		});
 
@@ -535,7 +538,7 @@ public class DatabaseContext : DbContext {
 			      .HasConstraintName("FK_5377c307783fce2b6d352e1203b");
 		});
 
-		modelBuilder.Entity<Metum>(entity => {
+		modelBuilder.Entity<Meta>(entity => {
 			entity.HasKey(e => e.Id).HasName("PK_c4c17a6c2bd7651338b60fc590b");
 
 			entity.Property(e => e.AllowedHosts).HasDefaultValueSql("'{}'::character varying[]");
@@ -1059,17 +1062,17 @@ public class DatabaseContext : DbContext {
 			      .HasConstraintName("FK_1039988afa3bf991185b277fe03");
 		});
 
-		modelBuilder.Entity<UserGroupJoining>(entity => {
+		modelBuilder.Entity<UserGroupMember>(entity => {
 			entity.HasKey(e => e.Id).HasName("PK_15f2425885253c5507e1599cfe7");
 
-			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserGroupJoining.");
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserGroupMember.");
 			entity.Property(e => e.UserGroupId).HasComment("The group ID.");
 			entity.Property(e => e.UserId).HasComment("The user ID.");
 
-			entity.HasOne(d => d.UserGroup).WithMany(p => p.UserGroupJoinings)
+			entity.HasOne(d => d.UserGroup).WithMany(p => p.UserGroupMembers)
 			      .HasConstraintName("FK_67dc758bc0566985d1b3d399865");
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserGroupJoinings)
+			entity.HasOne(d => d.User).WithMany(p => p.UserGroupMembers)
 			      .HasConstraintName("FK_f3a1b4bd0c7cabba958a0c0b231");
 		});
 
@@ -1092,29 +1095,29 @@ public class DatabaseContext : DbContext {
 			entity.HasOne(d => d.User).WithMany(p => p.UserLists).HasConstraintName("FK_b7fcefbdd1c18dce86687531f99");
 		});
 
-		modelBuilder.Entity<UserListJoining>(entity => {
+		modelBuilder.Entity<UserListMember>(entity => {
 			entity.HasKey(e => e.Id).HasName("PK_11abb3768da1c5f8de101c9df45");
 
-			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserListJoining.");
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserListMember.");
 			entity.Property(e => e.UserId).HasComment("The user ID.");
 			entity.Property(e => e.UserListId).HasComment("The list ID.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserListJoinings)
+			entity.HasOne(d => d.User).WithMany(p => p.UserListMembers)
 			      .HasConstraintName("FK_d844bfc6f3f523a05189076efaa");
 
-			entity.HasOne(d => d.UserList).WithMany(p => p.UserListJoinings)
+			entity.HasOne(d => d.UserList).WithMany(p => p.UserListMembers)
 			      .HasConstraintName("FK_605472305f26818cc93d1baaa74");
 		});
 
-		modelBuilder.Entity<UserNotePining>(entity => {
+		modelBuilder.Entity<UserNotePin>(entity => {
 			entity.HasKey(e => e.Id).HasName("PK_a6a2dad4ae000abce2ea9d9b103");
 
-			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserNotePinings.");
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserNotePins.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.UserNotePinings)
+			entity.HasOne(d => d.Note).WithMany(p => p.UserNotePins)
 			      .HasConstraintName("FK_68881008f7c3588ad7ecae471cf");
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserNotePinings)
+			entity.HasOne(d => d.User).WithMany(p => p.UserNotePins)
 			      .HasConstraintName("FK_bfbc6f79ba4007b4ce5097f08d6");
 		});
 

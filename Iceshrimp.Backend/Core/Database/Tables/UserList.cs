@@ -45,5 +45,5 @@ public class UserList {
 	public virtual User User { get; set; } = null!;
 
 	[InverseProperty("UserList")]
-	public virtual ICollection<UserListJoining> UserListJoinings { get; set; } = new List<UserListJoining>();
+	public virtual ICollection<UserListMember> UserListMembers { get; set; } = new List<UserListMember>();
 }
