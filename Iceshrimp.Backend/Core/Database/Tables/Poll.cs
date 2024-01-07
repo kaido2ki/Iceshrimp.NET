@@ -6,8 +6,8 @@ using NpgsqlTypes;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("poll")]
-[Index("UserId", Name = "IDX_0610ebcfcfb4a18441a9bcdab2")]
-[Index("UserHost", Name = "IDX_7fa20a12319c7f6dc3aed98c0a")]
+[Index("UserId")]
+[Index("UserHost")]
 public class Poll {
 	[Key]
 	[Column("noteId")]

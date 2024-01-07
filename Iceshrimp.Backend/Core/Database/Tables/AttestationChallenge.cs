@@ -6,8 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [PrimaryKey("Id", "UserId")]
 [Table("attestation_challenge")]
-[Index("Challenge", Name = "IDX_47efb914aed1f72dd39a306c7b")]
-[Index("UserId", Name = "IDX_f1a461a618fa1755692d0e0d59")]
+[Index("Challenge")]
+[Index("UserId")]
 public class AttestationChallenge {
 	[Key]
 	[Column("id")]

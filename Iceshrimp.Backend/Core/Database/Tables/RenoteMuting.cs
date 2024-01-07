@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("renote_muting")]
-[Index("MuterId", "MuteeId", Name = "IDX_0d801c609cec4e9eb4b6b4490c", IsUnique = true)]
-[Index("MuterId", Name = "IDX_7aa72a5fe76019bfe8e5e0e8b7")]
-[Index("MuteeId", Name = "IDX_7eac97594bcac5ffcf2068089b")]
-[Index("CreatedAt", Name = "IDX_d1259a2c2b7bb413ff449e8711")]
+[Index("MuterId", "MuteeId", IsUnique = true)]
+[Index("MuterId")]
+[Index("MuteeId")]
+[Index("CreatedAt")]
 public class RenoteMuting {
 	[Key]
 	[Column("id")]

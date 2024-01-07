@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_list")]
-[Index("UserId", Name = "IDX_b7fcefbdd1c18dce86687531f9")]
+[Index("UserId")]
 public class UserList {
 	[Key]
 	[Column("id")]

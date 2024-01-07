@@ -6,9 +6,9 @@ using NpgsqlTypes;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_profile")]
-[Index("EnableWordMute", Name = "IDX_3befe6f999c86aff06eb0257b4")]
-[Index("UserHost", Name = "IDX_dce530b98e454793dac5ec2f5a")]
-[Index("PinnedPageId", Name = "UQ_6dc44f1ceb65b1e72bacef2ca27", IsUnique = true)]
+[Index("EnableWordMute")]
+[Index("UserHost")]
+[Index("PinnedPageId", IsUnique = true)]
 public class UserProfile {
 	[Key]
 	[Column("userId")]

@@ -6,12 +6,12 @@ using NpgsqlTypes;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("notification")]
-[Index("Type", Name = "IDX_33f33cc8ef29d805a97ff4628b")]
-[Index("IsRead", Name = "IDX_080ab397c379af09b9d2169e5b")]
-[Index("NotifierId", Name = "IDX_3b4e96eec8d36a8bbb9d02aa71")]
-[Index("NotifieeId", Name = "IDX_3c601b70a1066d2c8b517094cb")]
-[Index("CreatedAt", Name = "IDX_b11a5e627c41d4dc3170f1d370")]
-[Index("AppAccessTokenId", Name = "IDX_e22bf6bda77b6adc1fd9e75c8c")]
+[Index("Type")]
+[Index("IsRead")]
+[Index("NotifierId")]
+[Index("NotifieeId")]
+[Index("CreatedAt")]
+[Index("AppAccessTokenId")]
 public class Notification {
 	[Key]
 	[Column("id")]

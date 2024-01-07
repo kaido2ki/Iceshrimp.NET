@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("clip_note")]
-[Index("NoteId", "ClipId", Name = "IDX_6fc0ec357d55a18646262fdfff", IsUnique = true)]
-[Index("NoteId", Name = "IDX_a012eaf5c87c65da1deb5fdbfa")]
-[Index("ClipId", Name = "IDX_ebe99317bbbe9968a0c6f579ad")]
+[Index("NoteId", "ClipId", IsUnique = true)]
+[Index("NoteId")]
+[Index("ClipId")]
 public class ClipNote {
 	[Key]
 	[Column("id")]

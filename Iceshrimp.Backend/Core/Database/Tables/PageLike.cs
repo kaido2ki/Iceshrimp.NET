@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("page_like")]
-[Index("UserId", Name = "IDX_0e61efab7f88dbb79c9166dbb4")]
-[Index("UserId", "PageId", Name = "IDX_4ce6fb9c70529b4c8ac46c9bfa", IsUnique = true)]
+[Index("UserId")]
+[Index("UserId", "PageId", IsUnique = true)]
 public class PageLike {
 	[Key]
 	[Column("id")]

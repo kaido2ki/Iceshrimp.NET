@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("registration_ticket")]
-[Index("Code", Name = "IDX_0ff69e8dfa9fe31bb4a4660f59", IsUnique = true)]
+[Index("Code", IsUnique = true)]
 public class RegistrationTicket {
 	[Key]
 	[Column("id")]

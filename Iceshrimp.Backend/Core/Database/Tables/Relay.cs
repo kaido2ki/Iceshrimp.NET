@@ -6,7 +6,7 @@ using NpgsqlTypes;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("relay")]
-[Index("Inbox", Name = "IDX_0d9a1738f2cf7f3b1c3334dfab", IsUnique = true)]
+[Index("Inbox", IsUnique = true)]
 public class Relay {
 	[Key]
 	[Column("id")]

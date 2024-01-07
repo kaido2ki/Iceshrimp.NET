@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("password_reset_request")]
-[Index("Token", Name = "IDX_0b575fa9a4cfe638a925949285", IsUnique = true)]
-[Index("UserId", Name = "IDX_4bb7fd4a34492ae0e6cc8d30ac")]
+[Index("Token", IsUnique = true)]
+[Index("UserId")]
 public class PasswordResetRequest {
 	[Key]
 	[Column("id")]

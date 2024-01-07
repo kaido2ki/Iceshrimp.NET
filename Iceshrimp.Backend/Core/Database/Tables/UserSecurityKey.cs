@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_security_key")]
-[Index("PublicKey", Name = "IDX_0d7718e562dcedd0aa5cf2c9f7")]
-[Index("UserId", Name = "IDX_ff9ca3b5f3ee3d0681367a9b44")]
+[Index("PublicKey")]
+[Index("UserId")]
 public class UserSecurityKey {
 	/// <summary>
 	///     Variable-length id given to navigator.credentials.get()

@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_group_member")]
-[Index("UserGroupId", Name = "IDX_67dc758bc0566985d1b3d39986")]
-[Index("UserId", "UserGroupId", Name = "IDX_d9ecaed8c6dc43f3592c229282", IsUnique = true)]
-[Index("UserId", Name = "IDX_f3a1b4bd0c7cabba958a0c0b23")]
+[Index("UserGroupId")]
+[Index("UserId", "UserGroupId", IsUnique = true)]
+[Index("UserId")]
 public class UserGroupMember {
 	[Key]
 	[Column("id")]

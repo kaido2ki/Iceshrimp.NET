@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("note_watching")]
-[Index("NoteId", Name = "IDX_03e7028ab8388a3f5e3ce2a861")]
-[Index("CreatedAt", Name = "IDX_318cdf42a9cfc11f479bd802bb")]
-[Index("NoteUserId", Name = "IDX_44499765eec6b5489d72c4253b")]
-[Index("UserId", "NoteId", Name = "IDX_a42c93c69989ce1d09959df4cf", IsUnique = true)]
-[Index("UserId", Name = "IDX_b0134ec406e8d09a540f818288")]
+[Index("NoteId")]
+[Index("CreatedAt")]
+[Index("NoteUserId")]
+[Index("UserId", "NoteId", IsUnique = true)]
+[Index("UserId")]
 public class NoteWatching {
 	[Key]
 	[Column("id")]

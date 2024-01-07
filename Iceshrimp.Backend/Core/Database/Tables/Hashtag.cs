@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("hashtag")]
-[Index("AttachedRemoteUsersCount", Name = "IDX_0b03cbcd7e6a7ce068efa8ecc2")]
-[Index("AttachedLocalUsersCount", Name = "IDX_0c44bf4f680964145f2a68a341")]
-[Index("MentionedLocalUsersCount", Name = "IDX_0e206cec573f1edff4a3062923")]
-[Index("MentionedUsersCount", Name = "IDX_2710a55f826ee236ea1a62698f")]
-[Index("Name", Name = "IDX_347fec870eafea7b26c8a73bac", IsUnique = true)]
-[Index("MentionedRemoteUsersCount", Name = "IDX_4c02d38a976c3ae132228c6fce")]
-[Index("AttachedUsersCount", Name = "IDX_d57f9030cd3af7f63ffb1c267c")]
+[Index("AttachedRemoteUsersCount")]
+[Index("AttachedLocalUsersCount")]
+[Index("MentionedLocalUsersCount")]
+[Index("MentionedUsersCount")]
+[Index("Name", IsUnique = true)]
+[Index("MentionedRemoteUsersCount")]
+[Index("AttachedUsersCount")]
 public class Hashtag {
 	[Key]
 	[Column("id")]

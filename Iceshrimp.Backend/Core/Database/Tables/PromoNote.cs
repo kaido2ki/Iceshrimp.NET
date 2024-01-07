@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("promo_note")]
-[Index("UserId", Name = "IDX_83f0862e9bae44af52ced7099e")]
+[Index("UserId")]
 public class PromoNote {
 	[Key]
 	[Column("noteId")]

@@ -6,12 +6,12 @@ using NpgsqlTypes;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("page")]
-[Index("UserId", "Name", Name = "IDX_2133ef8317e4bdb839c0dcbf13", IsUnique = true)]
-[Index("VisibleUserIds", Name = "IDX_90148bbc2bf0854428786bfc15")]
-[Index("UserId", Name = "IDX_ae1d917992dd0c9d9bbdad06c4")]
-[Index("UpdatedAt", Name = "IDX_af639b066dfbca78b01a920f8a")]
-[Index("Name", Name = "IDX_b82c19c08afb292de4600d99e4")]
-[Index("CreatedAt", Name = "IDX_fbb4297c927a9b85e9cefa2eb1")]
+[Index("UserId", "Name", IsUnique = true)]
+[Index("VisibleUserIds")]
+[Index("UserId")]
+[Index("UpdatedAt")]
+[Index("Name")]
+[Index("CreatedAt")]
 public class Page {
 	[Key]
 	[Column("id")]

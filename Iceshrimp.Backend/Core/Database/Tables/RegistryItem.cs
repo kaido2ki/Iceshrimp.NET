@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("registry_item")]
-[Index("Domain", Name = "IDX_0a72bdfcdb97c0eca11fe7ecad")]
-[Index("Scope", Name = "IDX_22baca135bb8a3ea1a83d13df3")]
-[Index("UserId", Name = "IDX_fb9d21ba0abb83223263df6bcb")]
+[Index("Domain")]
+[Index("Scope")]
+[Index("UserId")]
 public class RegistryItem {
 	[Key]
 	[Column("id")]

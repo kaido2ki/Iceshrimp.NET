@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("muting")]
-[Index("MuterId", "MuteeId", Name = "IDX_1eb9d9824a630321a29fd3b290", IsUnique = true)]
-[Index("MuterId", Name = "IDX_93060675b4a79a577f31d260c6")]
-[Index("ExpiresAt", Name = "IDX_c1fd1c3dfb0627aa36c253fd14")]
-[Index("MuteeId", Name = "IDX_ec96b4fed9dae517e0dbbe0675")]
-[Index("CreatedAt", Name = "IDX_f86d57fbca33c7a4e6897490cc")]
+[Index("MuterId", "MuteeId", IsUnique = true)]
+[Index("MuterId")]
+[Index("ExpiresAt")]
+[Index("MuteeId")]
+[Index("CreatedAt")]
 public class Muting {
 	[Key]
 	[Column("id")]

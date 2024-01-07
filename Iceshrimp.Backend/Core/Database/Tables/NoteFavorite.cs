@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("note_favorite")]
-[Index("UserId", "NoteId", Name = "IDX_0f4fb9ad355f3effff221ef245", IsUnique = true)]
-[Index("UserId", Name = "IDX_47f4b1892f5d6ba8efb3057d81")]
+[Index("UserId", "NoteId", IsUnique = true)]
+[Index("UserId")]
 public class NoteFavorite {
 	[Key]
 	[Column("id")]

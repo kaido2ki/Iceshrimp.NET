@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_publickey")]
-[Index("KeyId", Name = "IDX_171e64971c780ebd23fae140bb", IsUnique = true)]
+[Index("KeyId", IsUnique = true)]
 public class UserPublickey {
 	[Key]
 	[Column("userId")]

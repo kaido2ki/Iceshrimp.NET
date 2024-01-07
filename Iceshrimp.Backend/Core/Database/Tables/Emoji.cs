@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("emoji")]
-[Index("Name", "Host", Name = "IDX_4f4d35e1256c84ae3d1f0eab10", IsUnique = true)]
-[Index("Host", Name = "IDX_5900e907bb46516ddf2871327c")]
-[Index("Name", Name = "IDX_b37dafc86e9af007e3295c2781")]
+[Index("Name", "Host", IsUnique = true)]
+[Index("Host")]
+[Index("Name")]
 public class Emoji {
 	[Key]
 	[Column("id")]

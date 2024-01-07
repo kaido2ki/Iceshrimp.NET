@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("blocking")]
-[Index("BlockerId", Name = "IDX_0627125f1a8a42c9a1929edb55")]
-[Index("BlockeeId", Name = "IDX_2cd4a2743a99671308f5417759")]
-[Index("BlockerId", "BlockeeId", Name = "IDX_98a1bc5cb30dfd159de056549f", IsUnique = true)]
-[Index("CreatedAt", Name = "IDX_b9a354f7941c1e779f3b33aea6")]
+[Index("BlockerId")]
+[Index("BlockeeId")]
+[Index("BlockerId", "BlockeeId", IsUnique = true)]
+[Index("CreatedAt")]
 public class Blocking {
 	[Key]
 	[Column("id")]

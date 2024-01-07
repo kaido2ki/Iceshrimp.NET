@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("clip")]
-[Index("UserId", Name = "IDX_2b5ec6c574d6802c94c80313fb")]
+[Index("UserId")]
 public class Clip {
 	[Key]
 	[Column("id")]

@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("webhook")]
-[Index("Active", Name = "IDX_5a056076f76b2efe08216ba655")]
-[Index("On", Name = "IDX_8063a0586ed1dfbe86e982d961")]
-[Index("UserId", Name = "IDX_f272c8c8805969e6a6449c77b3")]
+[Index("Active")]
+[Index("On")]
+[Index("UserId")]
 public class Webhook {
 	[Key]
 	[Column("id")]

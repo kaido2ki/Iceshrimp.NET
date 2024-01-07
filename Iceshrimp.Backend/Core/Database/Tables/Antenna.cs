@@ -6,7 +6,7 @@ using NpgsqlTypes;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("antenna")]
-[Index("UserId", Name = "IDX_6446c571a0e8d0f05f01c78909")]
+[Index("UserId")]
 public class Antenna {
 	[Key]
 	[Column("id")]

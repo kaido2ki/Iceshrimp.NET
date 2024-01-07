@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("note_unread")]
-[Index("IsMentioned", Name = "IDX_25b1dd384bec391b07b74b861c")]
-[Index("NoteUserId", Name = "IDX_29e8c1d579af54d4232939f994")]
-[Index("UserId", Name = "IDX_56b0166d34ddae49d8ef7610bb")]
-[Index("NoteChannelId", Name = "IDX_6a57f051d82c6d4036c141e107")]
-[Index("IsSpecified", Name = "IDX_89a29c9237b8c3b6b3cbb4cb30")]
-[Index("UserId", "NoteId", Name = "IDX_d908433a4953cc13216cd9c274", IsUnique = true)]
-[Index("NoteId", Name = "IDX_e637cba4dc4410218c4251260e")]
+[Index("IsMentioned")]
+[Index("NoteUserId")]
+[Index("UserId")]
+[Index("NoteChannelId")]
+[Index("IsSpecified")]
+[Index("UserId", "NoteId", IsUnique = true)]
+[Index("NoteId")]
 public class NoteUnread {
 	[Key]
 	[Column("id")]

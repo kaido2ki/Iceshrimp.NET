@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_pending")]
-[Index("Code", Name = "IDX_4e5c4c99175638ec0761714ab0", IsUnique = true)]
+[Index("Code", IsUnique = true)]
 public class UserPending {
 	[Key]
 	[Column("id")]

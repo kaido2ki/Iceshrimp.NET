@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("access_token")]
-[Index("Hash", Name = "IDX_64c327441248bae40f7d92f34f")]
-[Index("Token", Name = "IDX_70ba8f6af34bc924fc9e12adb8")]
-[Index("UserId", Name = "IDX_9949557d0e1b2c19e5344c171e")]
-[Index("Session", Name = "IDX_bf3a053c07d9fb5d87317c56ee")]
+[Index("Hash")]
+[Index("Token")]
+[Index("UserId")]
+[Index("Session")]
 public class AccessToken {
 	[Key]
 	[Column("id")]

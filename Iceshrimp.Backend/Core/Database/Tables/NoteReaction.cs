@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("note_reaction")]
-[Index("CreatedAt", Name = "IDX_01f4581f114e0ebd2bbb876f0b")]
-[Index("UserId", Name = "IDX_13761f64257f40c5636d0ff95e")]
-[Index("NoteId", Name = "IDX_45145e4953780f3cd5656f0ea6")]
-[Index("UserId", "NoteId", Name = "IDX_ad0c221b25672daf2df320a817", IsUnique = true)]
+[Index("CreatedAt")]
+[Index("UserId")]
+[Index("NoteId")]
+[Index("UserId", "NoteId", IsUnique = true)]
 public class NoteReaction {
 	[Key]
 	[Column("id")]

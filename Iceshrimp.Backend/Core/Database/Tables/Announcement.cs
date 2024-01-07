@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("announcement")]
-[Index("CreatedAt", Name = "IDX_118ec703e596086fc4515acb39")]
+[Index("CreatedAt")]
 public class Announcement {
 	[Key]
 	[Column("id")]
