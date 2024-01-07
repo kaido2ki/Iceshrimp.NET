@@ -29,35 +29,6 @@ public class DatabaseContext : DbContext {
 	public virtual DbSet<Channel>                  Channels                  { get; init; } = null!;
 	public virtual DbSet<ChannelFollowing>         ChannelFollowings         { get; init; } = null!;
 	public virtual DbSet<ChannelNotePining>        ChannelNotePinings        { get; init; } = null!;
-	public virtual DbSet<ChartActiveUser>          ChartActiveUsers          { get; init; } = null!;
-	public virtual DbSet<ChartApRequest>           ChartApRequests           { get; init; } = null!;
-	public virtual DbSet<ChartDayActiveUser>       ChartDayActiveUsers       { get; init; } = null!;
-	public virtual DbSet<ChartDayApRequest>        ChartDayApRequests        { get; init; } = null!;
-	public virtual DbSet<ChartDayDrive>            ChartDayDrives            { get; init; } = null!;
-	public virtual DbSet<ChartDayFederation>       ChartDayFederations       { get; init; } = null!;
-	public virtual DbSet<ChartDayHashtag>          ChartDayHashtags          { get; init; } = null!;
-	public virtual DbSet<ChartDayInstance>         ChartDayInstances         { get; init; } = null!;
-	public virtual DbSet<ChartDayNetwork>          ChartDayNetworks          { get; init; } = null!;
-	public virtual DbSet<ChartDayNote>             ChartDayNotes             { get; init; } = null!;
-	public virtual DbSet<ChartDayPerUserDrive>     ChartDayPerUserDrives     { get; init; } = null!;
-	public virtual DbSet<ChartDayPerUserFollowing> ChartDayPerUserFollowings { get; init; } = null!;
-	public virtual DbSet<ChartDayPerUserNote>      ChartDayPerUserNotes      { get; init; } = null!;
-	public virtual DbSet<ChartDayPerUserReaction>  ChartDayPerUserReactions  { get; init; } = null!;
-	public virtual DbSet<ChartDayUser>             ChartDayUsers             { get; init; } = null!;
-	public virtual DbSet<ChartDrive>               ChartDrives               { get; init; } = null!;
-	public virtual DbSet<ChartFederation>          ChartFederations          { get; init; } = null!;
-	public virtual DbSet<ChartHashtag>             ChartHashtags             { get; init; } = null!;
-	public virtual DbSet<ChartInstance>            ChartInstances            { get; init; } = null!;
-	public virtual DbSet<ChartNetwork>             ChartNetworks             { get; init; } = null!;
-	public virtual DbSet<ChartNote>                ChartNotes                { get; init; } = null!;
-	public virtual DbSet<ChartPerUserDrive>        ChartPerUserDrives        { get; init; } = null!;
-	public virtual DbSet<ChartPerUserFollowing>    ChartPerUserFollowings    { get; init; } = null!;
-	public virtual DbSet<ChartPerUserNote>         ChartPerUserNotes         { get; init; } = null!;
-	public virtual DbSet<ChartPerUserReaction>     ChartPerUserReactions     { get; init; } = null!;
-	public virtual DbSet<ChartTest>                ChartTests                { get; init; } = null!;
-	public virtual DbSet<ChartTestGrouped>         ChartTestGroupeds         { get; init; } = null!;
-	public virtual DbSet<ChartTestUnique>          ChartTestUniques          { get; init; } = null!;
-	public virtual DbSet<ChartUser>                ChartUsers                { get; init; } = null!;
 	public virtual DbSet<Clip>                     Clips                     { get; init; } = null!;
 	public virtual DbSet<ClipNote>                 ClipNotes                 { get; init; } = null!;
 	public virtual DbSet<DriveFile>                DriveFiles                { get; init; } = null!;
@@ -73,7 +44,6 @@ public class DatabaseContext : DbContext {
 	public virtual DbSet<Instance>                 Instances                 { get; init; } = null!;
 	public virtual DbSet<MessagingMessage>         MessagingMessages         { get; init; } = null!;
 	public virtual DbSet<Metum>                    Meta                      { get; init; } = null!;
-	public virtual DbSet<LegacyMigrations>         Migrations                { get; init; } = null!;
 	public virtual DbSet<ModerationLog>            ModerationLogs            { get; init; } = null!;
 	public virtual DbSet<Muting>                   Mutings                   { get; init; } = null!;
 	public virtual DbSet<Note>                     Notes                     { get; init; } = null!;
@@ -106,7 +76,6 @@ public class DatabaseContext : DbContext {
 	public virtual DbSet<UserGroupInvitation>      UserGroupInvitations      { get; init; } = null!;
 	public virtual DbSet<UserGroupInvite>          UserGroupInvites          { get; init; } = null!;
 	public virtual DbSet<UserGroupJoining>         UserGroupJoinings         { get; init; } = null!;
-	public virtual DbSet<UserIp>                   UserIps                   { get; init; } = null!;
 	public virtual DbSet<UserKeypair>              UserKeypairs              { get; init; } = null!;
 	public virtual DbSet<UserList>                 UserLists                 { get; init; } = null!;
 	public virtual DbSet<UserListJoining>          UserListJoinings          { get; init; } = null!;
@@ -336,400 +305,6 @@ public class DatabaseContext : DbContext {
 
 			entity.HasOne(d => d.Note).WithMany(p => p.ChannelNotePinings)
 			      .HasConstraintName("FK_10b19ef67d297ea9de325cd4502");
-		});
-
-		modelBuilder.Entity<ChartActiveUser>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_317237a9f733b970604a11e314f");
-
-			entity.Property(e => e.Read).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.ReadWrite).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.RegisteredOutsideMonth).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.RegisteredOutsideWeek).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.RegisteredOutsideYear).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.RegisteredWithinMonth).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.RegisteredWithinWeek).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.RegisteredWithinYear).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.UniqueTempRead).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRegisteredOutsideMonth).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRegisteredOutsideWeek).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRegisteredOutsideYear).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRegisteredWithinMonth).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRegisteredWithinWeek).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRegisteredWithinYear).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempWrite).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.Write).HasDefaultValueSql("'0'::smallint");
-		});
-
-		modelBuilder.Entity<ChartApRequest>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_56a25cd447c7ee08876b3baf8d8");
-
-			entity.Property(e => e.DeliverFailed).HasDefaultValue(0);
-			entity.Property(e => e.DeliverSucceeded).HasDefaultValue(0);
-			entity.Property(e => e.InboxReceived).HasDefaultValue(0);
-		});
-
-		modelBuilder.Entity<ChartDayActiveUser>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_b1790489b14f005ae8f404f5795");
-
-			entity.Property(e => e.Read).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.ReadWrite).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.RegisteredOutsideMonth).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.RegisteredOutsideWeek).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.RegisteredOutsideYear).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.RegisteredWithinMonth).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.RegisteredWithinWeek).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.RegisteredWithinYear).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.UniqueTempRead).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRegisteredOutsideMonth).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRegisteredOutsideWeek).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRegisteredOutsideYear).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRegisteredWithinMonth).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRegisteredWithinWeek).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRegisteredWithinYear).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempWrite).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.Write).HasDefaultValueSql("'0'::smallint");
-		});
-
-		modelBuilder.Entity<ChartDayApRequest>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_9318b49daee320194e23f712e69");
-
-			entity.Property(e => e.DeliverFailed).HasDefaultValue(0);
-			entity.Property(e => e.DeliverSucceeded).HasDefaultValue(0);
-			entity.Property(e => e.InboxReceived).HasDefaultValue(0);
-		});
-
-		modelBuilder.Entity<ChartDayDrive>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_e7ec0de057c77c40fc8d8b62151");
-
-			entity.Property(e => e.LocalDecCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalDecSize).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalIncCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalIncSize).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDecCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDecSize).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteIncCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteIncSize).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartDayFederation>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_7ca721c769f31698e0e1331e8e6");
-
-			entity.Property(e => e.DeliveredInstances).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.InboxInstances).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.Pub).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.PubActive).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.Pubsub).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.Stalled).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.Sub).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.SubActive).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.UniqueTempDeliveredInstances).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempInboxInstances).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempStalled).HasDefaultValueSql("'{}'::character varying[]");
-		});
-
-		modelBuilder.Entity<ChartDayHashtag>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_13d5a3b089344e5557f8e0980b4");
-
-			entity.Property(e => e.LocalUsers).HasDefaultValue(0);
-			entity.Property(e => e.RemoteUsers).HasDefaultValue(0);
-			entity.Property(e => e.UniqueTempLocalUsers).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRemoteUsers).HasDefaultValueSql("'{}'::character varying[]");
-		});
-
-		modelBuilder.Entity<ChartDayInstance>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_479a8ff9d959274981087043023");
-
-			entity.Property(e => e.DriveDecFiles).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DriveDecUsage).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DriveIncFiles).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DriveIncUsage).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DriveTotalFiles).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.FollowersDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.FollowersInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.FollowersTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.FollowingDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.FollowingInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.FollowingTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.NotesDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.NotesDiffsNormal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.NotesDiffsRenote).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.NotesDiffsReply).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.NotesDiffsWithFile).HasDefaultValue(0);
-			entity.Property(e => e.NotesInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.NotesTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RequestsFailed).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RequestsReceived).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RequestsSucceeded).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.UsersDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.UsersInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.UsersTotal).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartDayNetwork>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_cac499d6f471042dfed1e7e0132");
-
-			entity.Property(e => e.IncomingBytes).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.IncomingRequests).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.OutgoingBytes).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.OutgoingRequests).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.TotalTime).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartDayNote>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_1fa4139e1f338272b758d05e090");
-
-			entity.Property(e => e.LocalDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalDiffsNormal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalDiffsRenote).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalDiffsReply).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalDiffsWithFile).HasDefaultValue(0);
-			entity.Property(e => e.LocalInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDiffsNormal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDiffsRenote).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDiffsReply).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDiffsWithFile).HasDefaultValue(0);
-			entity.Property(e => e.RemoteInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteTotal).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartDayPerUserDrive>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_1ae135254c137011645da7f4045");
-
-			entity.Property(e => e.DecCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DecSize).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.IncCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.IncSize).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.TotalCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.TotalSize).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartDayPerUserFollowing>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_68ce6b67da57166da66fc8fb27e");
-
-			entity.Property(e => e.LocalFollowersDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalFollowersInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalFollowersTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalFollowingsDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalFollowingsInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalFollowingsTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteFollowersDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteFollowersInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteFollowersTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteFollowingsDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteFollowingsInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteFollowingsTotal).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartDayPerUserNote>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_58bab6b6d3ad9310cbc7460fd28");
-
-			entity.Property(e => e.Dec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DiffsNormal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DiffsRenote).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DiffsReply).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DiffsWithFile).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.Inc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.Total).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartDayPerUserReaction>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_8af24e2d51ff781a354fe595eda");
-
-			entity.Property(e => e.LocalCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteCount).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartDayUser>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_d7f7185abb9851f70c4726c54bd");
-
-			entity.Property(e => e.LocalDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteTotal).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartDrive>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_f96bc548a765cd4b3b354221ce7");
-
-			entity.Property(e => e.LocalDecCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalDecSize).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalIncCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalIncSize).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDecCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDecSize).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteIncCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteIncSize).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartFederation>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_b39dcd31a0fe1a7757e348e85fd");
-
-			entity.Property(e => e.DeliveredInstances).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.InboxInstances).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.Pub).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.PubActive).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.Pubsub).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.Stalled).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.Sub).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.SubActive).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.UniqueTempDeliveredInstances).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempInboxInstances).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempStalled).HasDefaultValueSql("'{}'::character varying[]");
-		});
-
-		modelBuilder.Entity<ChartHashtag>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_c32f1ea2b44a5d2f7881e37f8f9");
-
-			entity.Property(e => e.LocalUsers).HasDefaultValue(0);
-			entity.Property(e => e.RemoteUsers).HasDefaultValue(0);
-			entity.Property(e => e.UniqueTempLocalUsers).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.UniqueTempRemoteUsers).HasDefaultValueSql("'{}'::character varying[]");
-		});
-
-		modelBuilder.Entity<ChartInstance>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_1267c67c7c2d47b4903975f2c00");
-
-			entity.Property(e => e.DriveDecFiles).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DriveDecUsage).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DriveIncFiles).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DriveIncUsage).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DriveTotalFiles).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.FollowersDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.FollowersInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.FollowersTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.FollowingDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.FollowingInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.FollowingTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.NotesDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.NotesDiffsNormal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.NotesDiffsRenote).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.NotesDiffsReply).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.NotesDiffsWithFile).HasDefaultValue(0);
-			entity.Property(e => e.NotesInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.NotesTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RequestsFailed).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RequestsReceived).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RequestsSucceeded).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.UsersDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.UsersInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.UsersTotal).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartNetwork>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_bc4290c2e27fad14ef0c1ca93f3");
-
-			entity.Property(e => e.IncomingBytes).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.IncomingRequests).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.OutgoingBytes).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.OutgoingRequests).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.TotalTime).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartNote>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_0aec823fa85c7f901bdb3863b14");
-
-			entity.Property(e => e.LocalDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalDiffsNormal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalDiffsRenote).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalDiffsReply).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalDiffsWithFile).HasDefaultValue(0);
-			entity.Property(e => e.LocalInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDiffsNormal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDiffsRenote).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDiffsReply).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDiffsWithFile).HasDefaultValue(0);
-			entity.Property(e => e.RemoteInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteTotal).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartPerUserDrive>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_d0ef23d24d666e1a44a0cd3d208");
-
-			entity.Property(e => e.DecCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DecSize).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.IncCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.IncSize).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.TotalCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.TotalSize).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartPerUserFollowing>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_85bb1b540363a29c2fec83bd907");
-
-			entity.Property(e => e.LocalFollowersDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalFollowersInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalFollowersTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalFollowingsDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalFollowingsInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalFollowingsTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteFollowersDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteFollowersInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteFollowersTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteFollowingsDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteFollowingsInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteFollowingsTotal).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartPerUserNote>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_334acf6e915af2f29edc11b8e50");
-
-			entity.Property(e => e.Dec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DiffsNormal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DiffsRenote).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DiffsReply).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.DiffsWithFile).HasDefaultValueSql("'0'::smallint");
-			entity.Property(e => e.Inc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.Total).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartPerUserReaction>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_984f54dae441e65b633e8d27a7f");
-
-			entity.Property(e => e.LocalCount).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteCount).HasDefaultValueSql("'0'::bigint");
-		});
-
-		modelBuilder.Entity<ChartTest>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_b4bc31dffbd1b785276a3ecfc1e");
-
-			entity.HasIndex(e => e.Date, "IDX_dab383a36f3c9db4a0c9b02cf3")
-			      .IsUnique()
-			      .HasFilter("(\"group\" IS NULL)");
-		});
-
-		modelBuilder.Entity<ChartTestGrouped>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_f4a2b175d308695af30d4293272");
-
-			entity.HasIndex(e => e.Date, "IDX_da522b4008a9f5d7743b87ad55")
-			      .IsUnique()
-			      .HasFilter("(\"group\" IS NULL)");
-		});
-
-		modelBuilder.Entity<ChartTestUnique>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_409bac9c97cc612d8500012319d");
-
-			entity.HasIndex(e => e.Date, "IDX_16effb2e888f6763673b579f80")
-			      .IsUnique()
-			      .HasFilter("(\"group\" IS NULL)");
-
-			entity.Property(e => e.Foo).HasDefaultValueSql("'{}'::character varying[]");
-		});
-
-		modelBuilder.Entity<ChartUser>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_4dfcf2c78d03524b9eb2c99d328");
-
-			entity.Property(e => e.LocalDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.LocalTotal).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteDec).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteInc).HasDefaultValueSql("'0'::bigint");
-			entity.Property(e => e.RemoteTotal).HasDefaultValueSql("'0'::bigint");
 		});
 
 		modelBuilder.Entity<Clip>(entity => {
@@ -1016,10 +591,6 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.UseObjectStorage).HasDefaultValue(false);
 		});
 
-		modelBuilder.Entity<LegacyMigrations>(entity => {
-			entity.HasKey(e => e.Id).HasName("PK_8c82d7f526340ab734260ea46be");
-		});
-
 		modelBuilder.Entity<ModerationLog>(entity => {
 			entity.HasKey(e => e.Id).HasName("PK_d0adca6ecfd068db83e4526cc26");
 
@@ -1175,6 +746,7 @@ public class DatabaseContext : DbContext {
 			      .HasComment("Whether the notification was read.");
 			entity.Property(e => e.NotifieeId).HasComment("The ID of recipient user of the Notification.");
 			entity.Property(e => e.NotifierId).HasComment("The ID of sender user of the Notification.");
+			entity.Property(e => e.Type).HasComment("The type of the Notification.");
 
 			entity.HasOne(d => d.AppAccessToken).WithMany(p => p.Notifications)
 			      .OnDelete(DeleteBehavior.Cascade)
@@ -1268,6 +840,7 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.Choices).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.UserHost).HasComment("[Denormalized]");
 			entity.Property(e => e.UserId).HasComment("[Denormalized]");
+			entity.Property(e => e.NoteVisibility).HasComment("[Denormalized]");
 
 			entity.HasOne(d => d.Note).WithOne(p => p.Poll).HasConstraintName("FK_da851e06d0dfe2ef397d8b1bf1b");
 		});
@@ -1500,8 +1073,6 @@ public class DatabaseContext : DbContext {
 			      .HasConstraintName("FK_f3a1b4bd0c7cabba958a0c0b231");
 		});
 
-		modelBuilder.Entity<UserIp>(entity => { entity.HasKey(e => e.Id).HasName("PK_2c44ddfbf7c0464d028dcef325e"); });
-
 		modelBuilder.Entity<UserKeypair>(entity => {
 			entity.HasKey(e => e.UserId).HasName("PK_f4853eb41ab722fe05f81cedeb6");
 
@@ -1595,6 +1166,10 @@ public class DatabaseContext : DbContext {
 			entity.Property(e => e.Url).HasComment("Remote URL of the user.");
 			entity.Property(e => e.UsePasswordLessLogin).HasDefaultValue(false);
 			entity.Property(e => e.UserHost).HasComment("[Denormalized]");
+			entity.Property(e => e.MutingNotificationTypes)
+			      .HasDefaultValueSql("'{}'::public.user_profile_mutingnotificationtypes_enum[]");
+			entity.Property(e => e.FFVisibility)
+			      .HasDefaultValue(UserProfile.UserProfileFFVisibility.Public);
 
 			entity.HasOne(d => d.PinnedPage).WithOne(p => p.UserProfile)
 			      .OnDelete(DeleteBehavior.SetNull)

@@ -49,7 +49,7 @@ public class UserProfile {
 	public UserProfileFFVisibility FFVisibility { get; set; }
 
 	[Column("mutingNotificationTypes")]
-	public List<Notification.NotificationType> MutingNotificationTypes { get; set; } = null!;
+	public List<MutingNotificationType> MutingNotificationTypes { get; set; } = null!;
 
 	/// <summary>
 	///     The email address of the User.
