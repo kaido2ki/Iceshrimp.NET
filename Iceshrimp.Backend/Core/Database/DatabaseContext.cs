@@ -516,13 +516,10 @@ public class DatabaseContext : DbContext {
 		});
 
 		modelBuilder.Entity<Note>(entity => {
-			entity.HasIndex(e => e.Mentions, "IDX_NOTE_MENTIONS").HasMethod("gin");
-
-			entity.HasIndex(e => e.Tags, "IDX_NOTE_TAGS").HasMethod("gin");
-
-			entity.HasIndex(e => e.VisibleUserIds, "IDX_NOTE_VISIBLE_USER_IDS").HasMethod("gin");
-
-			entity.HasIndex(e => e.Text, "note_text_fts_idx")
+			entity.HasIndex(e => e.Mentions, "GIN_note_mentions").HasMethod("gin");
+			entity.HasIndex(e => e.Tags, "GIN_note_tags").HasMethod("gin");
+			entity.HasIndex(e => e.VisibleUserIds, "GIN_note_visibleUserIds").HasMethod("gin");
+			entity.HasIndex(e => e.Text, "GIN_TRGM_note_text")
 			      .HasMethod("gin")
 			      .HasOperators("gin_trgm_ops");
 
