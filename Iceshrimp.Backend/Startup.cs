@@ -5,8 +5,12 @@ using Vite.AspNetCore.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.Sources.Clear();
-builder.Configuration.AddIniFile("configuration.ini", false, true);
-builder.Configuration.AddIniFile("configuration.overrides.ini", true, true);
+builder.Configuration
+       .AddIniFile(Environment.GetEnvironmentVariable("ICESHRIMP_CONFIG") ?? "configuration.ini",
+                   false, true);
+builder.Configuration
+       .AddIniFile(Environment.GetEnvironmentVariable("ICESHRIMP_CONFIG_OVERRIDES") ?? "configuration.overrides.ini",
+                   true, true);
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddApiVersioning(options => {
@@ -24,9 +28,7 @@ builder.Services.AddViteServices(options => {
 	options.Server.AutoRun       = false; //TODO: Fix script generation on macOS
 	options.Server.UseFullDevUrl = true;
 });
-builder.Services.AddLogging(logging => logging.AddSimpleConsole(options => {
-	options.SingleLine = true;
-}));
+builder.Services.AddLogging(logging => logging.AddSimpleConsole(options => { options.SingleLine = true; }));
 builder.Services.AddDbContext<DatabaseContext>();
 
 var app = builder.Build();
