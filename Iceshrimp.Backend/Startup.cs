@@ -43,4 +43,9 @@ app.MapFallbackToPage("/Shared/FrontendSPA");
 
 if (app.Environment.IsDevelopment()) app.UseViteDevMiddleware();
 
+var instanceConfig = app.Configuration.GetSection("Instance");
+
+app.Urls.Clear();
+app.Urls.Add($"http://{instanceConfig["WebDomain"]}:{instanceConfig["ListenPort"]}");
+
 app.Run();
