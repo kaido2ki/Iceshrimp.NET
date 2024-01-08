@@ -23,7 +23,6 @@ builder.Services.AddViteServices(options => {
 	options.PackageManager       = "yarn";
 	options.Server.AutoRun       = false; //TODO: Fix script generation on macOS
 	options.Server.UseFullDevUrl = true;
-	options.Base                 = "frontend"; // relative to wwwroot
 });
 builder.Services.AddLogging(logging => logging.AddSimpleConsole(options => {
 	options.SingleLine = true;

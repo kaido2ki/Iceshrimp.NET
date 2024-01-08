@@ -12,7 +12,6 @@ export default defineConfig({
 		}),
 	],
 	build: {
-		outDir: '../Iceshrimp.Backend/wwwroot/frontend',
 		emptyOutDir: true,
 		manifest: true,
 		rollupOptions: {
