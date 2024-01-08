@@ -14,7 +14,7 @@ public static class ActivityPubUserRenderer {
 		var db      = new DatabaseContext();
 		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
 
-		var id = $"{Config.Instance.Url}/users/{user.Id}";
+		var id = $"https://{Config.StartupConfig.Instance.WebDomain}/users/{user.Id}";
 		var type = Constants.SystemUsers.Contains(user.UsernameLower)
 			? "Application"
 			: user.IsBot
@@ -30,7 +30,7 @@ public static class ActivityPubUserRenderer {
 			//Following = $"{id}/following",
 			//SharedInbox = $"{Config.Instance.Url}/inbox",
 			//Endpoints = new Dictionary<string, string> { { "SharedInbox", $"{Config.Instance.Url}/inbox" } },
-			Url            = new ASLink($"{Config.Instance.Url}/@{user.Username}"),
+			Url            = new ASLink($"https://{Config.StartupConfig.Instance.WebDomain}/@{user.Username}"),
 			Username       = user.Username,
 			DisplayName    = user.Name ?? user.Username,
 			Summary        = profile?.Description != null ? "Not implemented" : null, //TODO: convert to html

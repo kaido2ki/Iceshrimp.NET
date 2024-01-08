@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace Iceshrimp.Backend.Core.Database;
@@ -8,11 +10,11 @@ namespace Iceshrimp.Backend.Core.Database;
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 public class DatabaseContext : DbContext {
-	private readonly IConfiguration? _config;
+	private readonly IOptions<Config.DatabaseSection>? _config;
 
 	public DatabaseContext() { }
 
-	public DatabaseContext(DbContextOptions<DatabaseContext> options, IConfiguration? config)
+	public DatabaseContext(DbContextOptions<DatabaseContext> options, IOptions<Config.DatabaseSection> config)
 		: base(options) {
 		_config = config;
 	}
@@ -88,13 +90,13 @@ public class DatabaseContext : DbContext {
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
 		var dataSourceBuilder = new NpgsqlDataSourceBuilder();
 
-		var config = _config?.GetSection("Database") ??
-		             throw new Exception("Configuration is missing the [Database] section");
+		if (_config == null)
+			throw new Exception("Failed to initialize database: Failed to load configuration");
 
-		dataSourceBuilder.ConnectionStringBuilder.Host     = config["Host"];
-		dataSourceBuilder.ConnectionStringBuilder.Username = config["Username"];
-		dataSourceBuilder.ConnectionStringBuilder.Password = config["Password"];
-		dataSourceBuilder.ConnectionStringBuilder.Database = config["Database"];
+		dataSourceBuilder.ConnectionStringBuilder.Host     = _config.Value.Host;
+		dataSourceBuilder.ConnectionStringBuilder.Username = _config.Value.Username;
+		dataSourceBuilder.ConnectionStringBuilder.Password = _config.Value.Password;
+		dataSourceBuilder.ConnectionStringBuilder.Database = _config.Value.Database;
 
 		dataSourceBuilder.MapEnum<Antenna.AntennaSource>();
 		dataSourceBuilder.MapEnum<Note.NoteVisibility>();

@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Vite.AspNetCore.Extensions;
 
@@ -31,8 +32,17 @@ builder.Services.AddViteServices(options => {
 builder.Services.AddLogging(logging => logging.AddSimpleConsole(options => { options.SingleLine = true; }));
 builder.Services.AddDbContext<DatabaseContext>();
 
+//TODO: fail if config doesn't parse correctly / required things are missing
+builder.Services.Configure<Config.InstanceSection>(builder.Configuration.GetSection("Instance"));
+builder.Services.Configure<Config.DatabaseSection>(builder.Configuration.GetSection("Database"));
+builder.Services.AddScoped<Config.InstanceSection>();
+builder.Services.AddScoped<Config.DatabaseSection>();
+
+Config.StartupConfig = builder.Configuration.Get<Config>()!;
+
 var app = builder.Build();
 app.Logger.LogInformation("Initializing, please wait...");
+app.Logger.LogInformation("Account domain: {AccountDomain}", Config.StartupConfig.Instance.AccountDomain);
 
 app.UseSwagger();
 app.UseSwaggerUI(options => { options.DocumentTitle = "Iceshrimp API documentation"; });
@@ -45,9 +55,7 @@ app.MapFallbackToPage("/Shared/FrontendSPA");
 
 if (app.Environment.IsDevelopment()) app.UseViteDevMiddleware();
 
-var instanceConfig = app.Configuration.GetSection("Instance");
-
 app.Urls.Clear();
-app.Urls.Add($"http://{instanceConfig["WebDomain"]}:{instanceConfig["ListenPort"]}");
+app.Urls.Add($"http://{Config.StartupConfig.Instance.WebDomain}:{Config.StartupConfig.Instance.ListenPort}");
 
 app.Run();
