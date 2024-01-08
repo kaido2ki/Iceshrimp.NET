@@ -1,13 +1,27 @@
-# TODO: build frontend
+FROM alpine:3.18 AS frontend
+WORKDIR /frontend
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS backend-builder
-WORKDIR /source
+RUN apk add --no-cache --no-progress nodejs-current npm
+
+# copy frontend package.json and yarn.lock
+COPY Iceshrimp.Frontend/package.json Iceshrimp.Frontend/yarn.lock .
+
+# Configure corepack and install dev mode dependencies for compilation
+RUN corepack enable && corepack prepare --activate && yarn --immutable
+
+# copy and build frontend
+COPY Iceshrimp.Frontend/. .
+RUN yarn --immutable && yarn build
+#TODO: why is a second yarn pass required here?
+
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS backend
+WORKDIR /backend
 
 # copy csproj and restore as distinct layers
 COPY Iceshrimp.Backend/*.csproj .
 RUN dotnet restore -a amd64 #TODO: make this configurable but defaulting to the current architecture
 
-# copy and publish app and libraries
+# copy and build backend
 COPY Iceshrimp.Backend/. .
 RUN dotnet publish --no-restore -a amd64 -o /app #TODO: make this configurable but defaulting to the current architecture
 
@@ -17,5 +31,6 @@ RUN dotnet publish --no-restore -a amd64 -o /app #TODO: make this configurable b
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine-composite
 EXPOSE 8080
 WORKDIR /app
-COPY --from=backend-builder /app .
+COPY --from=backend /app .
+COPY --from=frontend /frontend/dist ./wwwroot
 ENTRYPOINT ["./Iceshrimp.Backend"]
