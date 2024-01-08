@@ -74,7 +74,6 @@ public class DatabaseContext : DbContext {
 	public virtual DbSet<User>                 Users                 { get; init; } = null!;
 	public virtual DbSet<UserGroup>            UserGroups            { get; init; } = null!;
 	public virtual DbSet<UserGroupInvitation>  UserGroupInvitations  { get; init; } = null!;
-	public virtual DbSet<UserGroupInvite>      UserGroupInvites      { get; init; } = null!;
 	public virtual DbSet<UserGroupMember>      UserGroupMembers      { get; init; } = null!;
 	public virtual DbSet<UserKeypair>          UserKeypairs          { get; init; } = null!;
 	public virtual DbSet<UserList>             UserLists             { get; init; } = null!;
@@ -867,12 +866,6 @@ public class DatabaseContext : DbContext {
 			entity.HasOne(d => d.User).WithMany(p => p.UserGroupInvitations);
 		});
 
-		modelBuilder.Entity<UserGroupInvite>(entity => {
-			entity.HasOne(d => d.UserGroup).WithMany(p => p.UserGroupInvites);
-
-			entity.HasOne(d => d.User).WithMany(p => p.UserGroupInvites);
-		});
-
 		modelBuilder.Entity<UserGroupMember>(entity => {
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserGroupMember.");
 			entity.Property(e => e.UserGroupId).HasComment("The group ID.");
@@ -880,7 +873,7 @@ public class DatabaseContext : DbContext {
 
 			entity.HasOne(d => d.UserGroup).WithMany(p => p.UserGroupMembers);
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserGroupMembers);
+			entity.HasOne(d => d.User).WithMany(p => p.UserGroupMemberships);
 		});
 
 		modelBuilder.Entity<UserKeypair>(entity => { entity.HasOne(d => d.User).WithOne(p => p.UserKeypair); });

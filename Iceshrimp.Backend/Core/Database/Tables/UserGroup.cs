@@ -42,8 +42,5 @@ public class UserGroup {
 		new List<UserGroupInvitation>();
 
 	[InverseProperty("UserGroup")]
-	public virtual ICollection<UserGroupInvite> UserGroupInvites { get; set; } = new List<UserGroupInvite>();
-
-	[InverseProperty("UserGroup")]
 	public virtual ICollection<UserGroupMember> UserGroupMembers { get; set; } = new List<UserGroupMember>();
 }

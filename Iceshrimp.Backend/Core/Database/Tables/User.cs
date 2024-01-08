@@ -399,10 +399,7 @@ public class User {
 		new List<UserGroupInvitation>();
 
 	[InverseProperty("User")]
-	public virtual ICollection<UserGroupInvite> UserGroupInvites { get; set; } = new List<UserGroupInvite>();
-
-	[InverseProperty("User")]
-	public virtual ICollection<UserGroupMember> UserGroupMembers { get; set; } = new List<UserGroupMember>();
+	public virtual ICollection<UserGroupMember> UserGroupMemberships { get; set; } = new List<UserGroupMember>();
 
 	[InverseProperty("User")] public virtual ICollection<UserGroup> UserGroups { get; set; } = new List<UserGroup>();
 
