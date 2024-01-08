@@ -14,8 +14,8 @@ RUN dotnet publish --no-restore -a amd64 -o /app #TODO: make this configurable b
 # Enable globalization and time zones:
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
 # final stage/image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine-composite
 EXPOSE 8080
 WORKDIR /app
-COPY --from=build /app .
+COPY --from=backend-builder /app .
 ENTRYPOINT ["./Iceshrimp.Backend"]
