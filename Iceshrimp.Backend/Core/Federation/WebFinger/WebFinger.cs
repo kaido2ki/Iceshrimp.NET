@@ -1,7 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text.Encodings.Web;
 using System.Xml;
-using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Helpers;
 
 namespace Iceshrimp.Backend.Core.Federation.WebFinger;
@@ -16,18 +15,21 @@ namespace Iceshrimp.Backend.Core.Federation.WebFinger;
  * - doesn't have a query url template
  */
 
+//FIXME: handle cursed person/group acct collisions like https://lemmy.ml/.well-known/webfinger?resource=acct:linux@lemmy.ml
+
 public class WebFinger {
 	private readonly string  _query;
 	private readonly string  _proto;
 	private readonly string  _domain;
-	private readonly string? _username;
 	private          string? _webFingerUrl;
+
+	public string Domain => _domain;
 
 	private string HostMetaUrl              => $"{_proto}://{_domain}/.well-known/host-meta";
 	private string DefaultWebFingerTemplate => $"{_proto}://{_domain}/.well-known/webfinger?resource={{uri}}";
 
 	public WebFinger(string query) {
-		_query = query;
+		_query = query.StartsWith("acct:") ? $"@{query[5..]}" : query;
 		if (_query.StartsWith("http://") || _query.StartsWith("https://")) {
 			var uri = new Uri(_query);
 			_domain = uri.Host;
@@ -37,17 +39,12 @@ public class WebFinger {
 			_proto = "https";
 
 			var split = _query.Split('@');
-			if (split.Length == 2) {
-				throw new Exception("Can't run WebFinger for local user");
-			}
-
-			if (split.Length == 3) {
-				_username = split[1];
-				_domain   = split[2];
-			}
-			else {
+			if (split.Length is < 2 or > 3)
 				throw new Exception("Invalid query");
-			}
+			if (split.Length is 2)
+				throw new Exception("Can't run WebFinger for local user");
+
+			_domain = split[2];
 		}
 		else {
 			throw new Exception("Invalid query");
