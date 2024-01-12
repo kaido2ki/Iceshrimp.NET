@@ -9,11 +9,11 @@ namespace Iceshrimp.Backend.Controllers;
 [ApiController]
 [Produces("application/json")]
 [Route("/api/iceshrimp/v1/user/{id}")]
-public class UserController : Controller {
+public class UserController(ILogger<UserController> logger, DatabaseContext db) : Controller {
 	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUser(string id, [FromServices] DatabaseContext db) {
+	public async Task<IActionResult> GetUser(string id) {
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
 		return Ok(user);
@@ -22,7 +22,7 @@ public class UserController : Controller {
 	[HttpGet("notes")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TimelineResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUserNotes(string id, [FromServices] DatabaseContext db) {
+	public async Task<IActionResult> GetUserNotes(string id) {
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
 

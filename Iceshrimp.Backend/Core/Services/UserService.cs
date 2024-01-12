@@ -1,7 +1,10 @@
+using Iceshrimp.Backend.Core.Database;
+
 namespace Iceshrimp.Backend.Core.Services;
 
-public static class UserService {
-	public static async Task CreateUser() {
+public class UserService(ILogger<UserService> logger, DatabaseContext db) {
+
+	public async Task CreateUser() {
 		
 	}
 }

@@ -4,7 +4,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 
 namespace Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 
-public class NoteRenderer {
+public static class ActivityPubNoteRenderer {
 	public static NoteResponse RenderOne(Note note) {
 		return new NoteResponse {
 			Id   = note.Id,

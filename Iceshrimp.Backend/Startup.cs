@@ -1,6 +1,8 @@
 using Asp.Versioning;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Services;
 using Vite.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +24,6 @@ builder.Services.AddApiVersioning(options => {
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddRazorPages();
-//TODO: load built assets in production
 builder.Services.AddViteServices(options => {
 	options.PackageDirectory     = "../Iceshrimp.Frontend";
 	options.PackageManager       = "yarn";
@@ -32,13 +33,8 @@ builder.Services.AddViteServices(options => {
 builder.Services.AddLogging(logging => logging.AddSimpleConsole(options => { options.SingleLine = true; }));
 builder.Services.AddDbContext<DatabaseContext>();
 
-//TODO: fail if config doesn't parse correctly / required things are missing
-builder.Services.Configure<Config.InstanceSection>(builder.Configuration.GetSection("Instance"));
-builder.Services.Configure<Config.DatabaseSection>(builder.Configuration.GetSection("Database"));
-builder.Services.AddScoped<Config.InstanceSection>();
-builder.Services.AddScoped<Config.DatabaseSection>();
-
-Config.StartupConfig = builder.Configuration.Get<Config>()!;
+builder.Services.AddServices();
+builder.Services.ConfigureServices(builder.Configuration);
 
 var app = builder.Build();
 app.Logger.LogInformation("Initializing, please wait...");
