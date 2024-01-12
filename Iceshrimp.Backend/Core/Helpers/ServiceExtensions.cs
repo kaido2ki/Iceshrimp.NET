@@ -1,4 +1,6 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Federation;
+using Iceshrimp.Backend.Core.Federation.Services;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Services;
 
@@ -6,9 +8,18 @@ namespace Iceshrimp.Backend.Core.Helpers;
 
 public static class ServiceExtensions {
 	public static void AddServices(this IServiceCollection services) {
+		// Transient = instantiated per request and class
+		//services.AddTransient<T>();
+
+		// Scoped = instantiated per request
 		services.AddScoped<UserResolver>();
 		services.AddScoped<UserService>();
 		services.AddScoped<NoteService>();
+
+		// Singleton = instantiated once across application lifetime
+		services.AddSingleton<HttpClient>();
+		services.AddSingleton<HttpRequestService>();
+		services.AddSingleton<ActivityPubService>();
 	}
 	
 	public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration) {

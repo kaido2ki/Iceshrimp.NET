@@ -1,5 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
+// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Iceshrimp.Backend.Core.Federation.WebFinger;
 
@@ -9,6 +11,7 @@ public sealed class Link {
 	[J("href")]    public string? Href { get; set; }
 }
 
+[SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 public sealed class WebFingerResponse {
 	[J("links"), JR]   public List<Link>   Links   { get; set; } = null!;
 	[J("subject"), JR] public string       Subject { get; set; } = null!;

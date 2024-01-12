@@ -63,11 +63,11 @@ public class ASActor : ASObject {
 
 	[J("https://www.w3.org/ns/activitystreams#followers")]
 	[JC(typeof(ASCollectionConverter))]
-	public ASCollection<ASActor>? Followers { get; set; }
+	public ASCollection? Followers { get; set; } //FIXME: <ASActor>
 
 	[J("https://www.w3.org/ns/activitystreams#following")]
 	[JC(typeof(ASCollectionConverter))]
-	public ASCollection<ASActor>? Following { get; set; }
+	public ASCollection? Following { get; set; } //FIXME: <ASActor>
 
 	[J("https://www.w3.org/ns/activitystreams#sharedInbox")]
 	[JC(typeof(ASLinkConverter))]

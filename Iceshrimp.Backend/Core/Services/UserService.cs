@@ -1,10 +1,12 @@
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Federation;
+using Iceshrimp.Backend.Core.Federation.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class UserService(ILogger<UserService> logger, DatabaseContext db) {
+public class UserService(ILogger<UserService> logger, DatabaseContext db, HttpClient client, ActivityPubService apSvc) {
 	private static (string Username, string Host) AcctToTuple(string acct) {
 		if (!acct.StartsWith("acct:")) throw new Exception("Invalid query");
 
@@ -24,6 +26,10 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db) {
 	}
 
 	public async Task<User> CreateUser(string uri, string acct) {
+		logger.LogInformation("Creating user {acct} with uri {uri}", acct, uri);
+		var actor = await apSvc.FetchActor(uri);
+		logger.LogInformation("Got actor: {inbox}", actor.Inbox);
+		
 		throw new NotImplementedException(); //FIXME
 	}
 }

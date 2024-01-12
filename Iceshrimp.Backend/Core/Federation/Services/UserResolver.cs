@@ -1,8 +1,9 @@
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Services;
 
-namespace Iceshrimp.Backend.Core.Federation.WebFinger;
+namespace Iceshrimp.Backend.Core.Federation.Services;
 
 public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, DatabaseContext db) {
 	private static string AcctToDomain(string acct) =>
@@ -24,7 +25,7 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Dat
 	private async Task<(string Acct, string Uri)> WebFinger(string query) {
 		logger.LogDebug("Running WebFinger for query '{query}'", query);
 
-		var finger    = new WebFinger(query);
+		var finger    = new WebFinger.WebFinger(query);
 		var responses = new Dictionary<string, WebFingerResponse>();
 		var fingerRes = await finger.Resolve();
 		if (fingerRes == null) throw new Exception($"Failed to WebFinger '{query}'");
@@ -38,7 +39,7 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Dat
 		if (fingerRes == null) {
 			logger.LogDebug("AP uri didn't match query, re-running WebFinger for '{apUri}'", apUri);
 
-			finger    = new WebFinger(apUri);
+			finger    = new WebFinger.WebFinger(apUri);
 			fingerRes = await finger.Resolve();
 
 			if (fingerRes == null) throw new Exception($"Failed to WebFinger '{apUri}'");
@@ -52,7 +53,7 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Dat
 		if (fingerRes == null) {
 			logger.LogDebug("Acct uri didn't match query, re-running WebFinger for '{acctUri}'", acctUri);
 
-			finger    = new WebFinger(acctUri);
+			finger    = new WebFinger.WebFinger(acctUri);
 			fingerRes = await finger.Resolve();
 
 			if (fingerRes == null) throw new Exception($"Failed to WebFinger '{acctUri}'");
@@ -84,6 +85,6 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Dat
 		if (user != null) return user;
 		
 		// Pass the job on to userSvc, which will create the user
-		return await userSvc.CreateUser(acct, uri);
+		return await userSvc.CreateUser(uri, acct);
 	}
 }
