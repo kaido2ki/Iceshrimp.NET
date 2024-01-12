@@ -66,7 +66,7 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Dat
 		return (finalAcct, finalUri);
 	}
 
-	private static string NormalizeQuery(string query) => query.StartsWith("acct:") ? query[5..] : query;
+	private static string NormalizeQuery(string query) => query.StartsWith('@') ? $"acct:{query[1..]}" : query;
 
 	public async Task<User> Resolve(string query) {
 		query = NormalizeQuery(query);
