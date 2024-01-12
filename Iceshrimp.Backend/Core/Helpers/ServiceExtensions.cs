@@ -1,10 +1,12 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Services;
 
 namespace Iceshrimp.Backend.Core.Helpers;
 
 public static class ServiceExtensions {
 	public static void AddServices(this IServiceCollection services) {
+		services.AddScoped<UserResolver>();
 		services.AddScoped<UserService>();
 		services.AddScoped<NoteService>();
 	}
