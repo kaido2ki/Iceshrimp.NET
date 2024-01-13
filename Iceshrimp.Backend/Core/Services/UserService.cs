@@ -1,6 +1,6 @@
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Federation.Services;
+using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;

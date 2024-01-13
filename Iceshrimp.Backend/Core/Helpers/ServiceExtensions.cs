@@ -1,6 +1,6 @@
 using Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 using Iceshrimp.Backend.Core.Configuration;
-using Iceshrimp.Backend.Core.Federation.Services;
+using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Services;
 

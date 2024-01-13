@@ -3,7 +3,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Services;
 
-namespace Iceshrimp.Backend.Core.Federation.Services;
+namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
 public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, WebFingerService webFingerSvc, DatabaseContext db) {
 	private static string AcctToDomain(string acct) =>

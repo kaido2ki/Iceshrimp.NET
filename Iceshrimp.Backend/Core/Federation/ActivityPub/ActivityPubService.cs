@@ -4,7 +4,7 @@ using Iceshrimp.Backend.Core.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Iceshrimp.Backend.Core.Federation.Services;
+namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
 //TODO: required attribute doesn't work with Newtonsoft.Json it appears
 //TODO: enforce @type values
