@@ -1,6 +1,5 @@
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Federation;
 using Iceshrimp.Backend.Core.Federation.Services;
 using Microsoft.EntityFrameworkCore;
 

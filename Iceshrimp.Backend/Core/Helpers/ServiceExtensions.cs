@@ -1,6 +1,5 @@
 using Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 using Iceshrimp.Backend.Core.Configuration;
-using Iceshrimp.Backend.Core.Federation;
 using Iceshrimp.Backend.Core.Federation.Services;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Services;
@@ -17,6 +16,7 @@ public static class ServiceExtensions {
 		services.AddScoped<UserService>();
 		services.AddScoped<NoteService>();
 		services.AddScoped<APUserRenderer>();
+		services.AddScoped<WebFingerService>();
 
 		// Singleton = instantiated once across application lifetime
 		services.AddSingleton<HttpClient>();
