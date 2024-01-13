@@ -22,8 +22,13 @@ WORKDIR /backend
 COPY Iceshrimp.Backend/*.csproj .
 RUN dotnet restore -a $TARGETARCH
 
-# copy and build backend
+# copy backend files
 COPY Iceshrimp.Backend/. .
+
+# it's faster if we copy this later because we can parallelize it with buildkit, but the build fails if this file doesn't exist
+RUN mkdir -p ./wwwroot/.vite/ && touch ./wwwroot/.vite/manifest.json
+
+# build backend
 RUN dotnet publish --no-restore -a $TARGETARCH -o /app
 
 # Enable globalization and time zones:
