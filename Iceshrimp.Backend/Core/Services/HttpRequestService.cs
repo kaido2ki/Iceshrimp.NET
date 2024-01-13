@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class HttpRequestService(IOptions<Config.StaticSection> options) {
+public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 	private HttpRequestMessage GenerateRequest(string url, IEnumerable<string>? accept, HttpMethod method) {
 		var message = new HttpRequestMessage {
 			RequestUri = new Uri(url),

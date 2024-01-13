@@ -32,8 +32,7 @@ public class Fetch {
 		//notes?.ForEach(p => Console.WriteLine(p.PublishedAt));
 	}
 
-	public static void PerformActivity(ASNote note) {
-		var db       = new DatabaseContext();
+	public static void PerformActivity(ASNote note, DatabaseContext db) {
 		var actorUri = note.AttributedTo?.FirstOrDefault()?.Id;
 		if (actorUri == null) return;
 		var user = db.Users.FirstOrDefault(p => p.Uri == actorUri) ?? FetchUser(actorUri);

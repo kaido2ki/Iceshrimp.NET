@@ -12,7 +12,7 @@ namespace Iceshrimp.Backend.Controllers;
 [ApiController]
 [MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
 [Produces("application/activity+json", "application/ld+json")]
-public class ActivityPubController(ILogger<ActivityPubController> logger, DatabaseContext db) : Controller {
+public class ActivityPubController(ILogger<ActivityPubController> logger, DatabaseContext db, APUserRenderer userRenderer) : Controller {
 	/*
 	[HttpGet("/notes/{id}")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Note))]
@@ -31,7 +31,7 @@ public class ActivityPubController(ILogger<ActivityPubController> logger, Databa
 	public async Task<IActionResult> GetUser(string id) {
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
-		var rendered  = await ActivityPubUserRenderer.Render(user);
+		var rendered  = await userRenderer.Render(user);
 		var compacted = LDHelpers.Compact(rendered);
 		return Ok(compacted);
 	}

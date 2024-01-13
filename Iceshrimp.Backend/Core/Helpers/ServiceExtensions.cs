@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Federation;
 using Iceshrimp.Backend.Core.Federation.Services;
@@ -15,20 +16,18 @@ public static class ServiceExtensions {
 		services.AddScoped<UserResolver>();
 		services.AddScoped<UserService>();
 		services.AddScoped<NoteService>();
+		services.AddScoped<APUserRenderer>();
 
 		// Singleton = instantiated once across application lifetime
 		services.AddSingleton<HttpClient>();
 		services.AddSingleton<HttpRequestService>();
 		services.AddSingleton<ActivityPubService>();
 	}
-	
+
 	public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration) {
 		//TODO: fail if config doesn't parse correctly / required things are missing
+		services.Configure<Config>(configuration);
 		services.Configure<Config.InstanceSection>(configuration.GetSection("Instance"));
 		services.Configure<Config.DatabaseSection>(configuration.GetSection("Database"));
-		services.AddScoped<Config.InstanceSection>();
-		services.AddScoped<Config.DatabaseSection>();
-		
-		Config.StartupConfig = configuration.Get<Config>()!;
 	}
 }

@@ -5,6 +5,8 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <VersionPrefix>2024.1</VersionPrefix>
+        <VersionSuffix>prealpha</VersionSuffix>
     </PropertyGroup>
 
     <ItemGroup>

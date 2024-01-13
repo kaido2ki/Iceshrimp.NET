@@ -9,16 +9,8 @@ namespace Iceshrimp.Backend.Core.Database;
 
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
 [SuppressMessage("ReSharper", "IdentifierTypo")]
-public class DatabaseContext : DbContext {
-	private readonly IOptions<Config.DatabaseSection>? _config;
-
-	public DatabaseContext() { }
-
-	public DatabaseContext(DbContextOptions<DatabaseContext> options, IOptions<Config.DatabaseSection> config)
-		: base(options) {
-		_config = config;
-	}
-
+public class DatabaseContext(DbContextOptions<DatabaseContext> options, IOptions<Config.DatabaseSection> config)
+	: DbContext(options) {
 	public virtual DbSet<AbuseUserReport>      AbuseUserReports      { get; init; } = null!;
 	public virtual DbSet<AccessToken>          AccessTokens          { get; init; } = null!;
 	public virtual DbSet<Announcement>         Announcements         { get; init; } = null!;
@@ -90,13 +82,13 @@ public class DatabaseContext : DbContext {
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
 		var dataSourceBuilder = new NpgsqlDataSourceBuilder();
 
-		if (_config == null)
+		if (config == null)
 			throw new Exception("Failed to initialize database: Failed to load configuration");
 
-		dataSourceBuilder.ConnectionStringBuilder.Host     = _config.Value.Host;
-		dataSourceBuilder.ConnectionStringBuilder.Username = _config.Value.Username;
-		dataSourceBuilder.ConnectionStringBuilder.Password = _config.Value.Password;
-		dataSourceBuilder.ConnectionStringBuilder.Database = _config.Value.Database;
+		dataSourceBuilder.ConnectionStringBuilder.Host     = config.Value.Host;
+		dataSourceBuilder.ConnectionStringBuilder.Username = config.Value.Username;
+		dataSourceBuilder.ConnectionStringBuilder.Password = config.Value.Password;
+		dataSourceBuilder.ConnectionStringBuilder.Database = config.Value.Database;
 
 		dataSourceBuilder.MapEnum<Antenna.AntennaSource>();
 		dataSourceBuilder.MapEnum<Note.NoteVisibility>();

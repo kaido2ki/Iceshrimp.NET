@@ -38,8 +38,11 @@ builder.Services.AddServices();
 builder.Services.ConfigureServices(builder.Configuration);
 
 var app = builder.Build();
+var instanceConfig = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
+                     throw new Exception("Failed to read Instance config section");
+
+app.Logger.LogInformation("Iceshrimp.NET v{version} ({domain})", instanceConfig.Version, instanceConfig.AccountDomain);
 app.Logger.LogInformation("Initializing, please wait...");
-app.Logger.LogInformation("Account domain: {AccountDomain}", Config.StartupConfig.Instance.AccountDomain);
 
 app.UseSwagger();
 app.UseSwaggerUI(options => { options.DocumentTitle = "Iceshrimp API documentation"; });
@@ -53,6 +56,6 @@ app.MapFallbackToPage("/Shared/FrontendSPA");
 if (app.Environment.IsDevelopment()) app.UseViteDevMiddleware();
 
 app.Urls.Clear();
-app.Urls.Add($"http://{Config.StartupConfig.Instance.WebDomain}:{Config.StartupConfig.Instance.ListenPort}");
+app.Urls.Add($"http://{instanceConfig.WebDomain}:{instanceConfig.ListenPort}");
 
 app.Run();
