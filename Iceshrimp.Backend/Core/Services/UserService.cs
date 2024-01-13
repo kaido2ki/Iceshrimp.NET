@@ -1,11 +1,15 @@
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
+using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
 public class UserService(ILogger<UserService> logger, DatabaseContext db, HttpClient client, ActivityPubService apSvc) {
+	private const int NameLength    = 128;
+	private const int SummaryLength = 2048;
+
 	private static (string Username, string Host) AcctToTuple(string acct) {
 		if (!acct.StartsWith("acct:")) throw new Exception("Invalid query");
 
@@ -27,8 +31,34 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, HttpCl
 	public async Task<User> CreateUser(string uri, string acct) {
 		logger.LogInformation("Creating user {acct} with uri {uri}", acct, uri);
 		var actor = await apSvc.FetchActor(uri);
-		logger.LogInformation("Got actor: {inbox}", actor.Inbox);
-		
-		throw new NotImplementedException(); //FIXME
+		logger.LogDebug("Got actor: {inbox}", actor.Url);
+		if (actor.Id != uri) throw new Exception("Actor URI mismatch");
+
+		var user = new User {
+			Id            = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt     = DateTime.UtcNow,
+			LastFetchedAt = DateTime.UtcNow,
+			Name          = actor.DisplayName?.Truncate(NameLength) ?? actor.Username,
+			IsLocked      = actor.IsLocked ?? false,
+			IsBot         = actor.IsBot ?? false,
+			Username      = actor.Username!,
+			UsernameLower = actor.Username!.ToLowerInvariant(),
+			Host          = AcctToTuple(acct).Host,
+			//MovedToUri = actor.MovedTo
+			//AlsoKnownAs
+			IsExplorable = actor.IsDiscoverable ?? false,
+			Inbox        = actor.Inbox?.Link,
+			SharedInbox  = actor.SharedInbox?.Link,
+			FollowersUri = actor.Followers?.Id,
+			Uri          = actor.Id,
+			IsCat        = actor.IsCat ?? false,
+			Emojis       = [],
+			Tags         = [],
+		};
+
+		await db.Users.AddAsync(user);
+		await db.SaveChangesAsync();
+
+		return user;
 	}
 }

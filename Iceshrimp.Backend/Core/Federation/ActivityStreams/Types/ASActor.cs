@@ -76,6 +76,8 @@ public class ASActor : ASObject {
 	[J("https://www.w3.org/ns/activitystreams#url")]
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? Url { get; set; }
+
+	public bool? IsBot => Type?.Any(p => p == "https://www.w3.org/ns/activitystreams#Service");
 }
 
 public class ASActorConverter : ASSerializer.ListSingleObjectConverter<ASActor>;
