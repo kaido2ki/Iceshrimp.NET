@@ -1,8 +1,7 @@
 {
   "@context": {
-    "as": "https://www.w3.org/ns/activitystreams#",
     "movedTo": {
-      "@id": "as:movedTo",
+      "@id": "https://www.w3.org/ns/activitystreams#movedTo",
       "@type": "@id"
     }
   }
