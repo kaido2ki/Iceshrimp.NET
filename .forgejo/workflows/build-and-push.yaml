@@ -7,6 +7,7 @@ jobs:
     runs-on: docker
     container:
       image: node:16-bullseye
+      options: --volume /opt/iceshrimp-cache/rewrite:/buildkit-cache
     permissions:
       packages: write
     steps:
@@ -35,3 +36,5 @@ jobs:
           tags: iceshrimp.dev/iceshrimp/iceshrimp-rewrite:dev
           platforms: linux/amd64,linux/arm64
           provenance: false
+          cache-from: type=local,src=/buildkit-cache
+          cache-to: type=local,dest=/buildkit-cache
