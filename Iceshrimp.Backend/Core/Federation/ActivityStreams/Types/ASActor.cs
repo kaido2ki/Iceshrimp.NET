@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+using Iceshrimp.Backend.Core.Helpers;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
@@ -78,6 +80,41 @@ public class ASActor : ASObject {
 	public ASLink? Url { get; set; }
 
 	public bool? IsBot => Type?.Any(p => p == "https://www.w3.org/ns/activitystreams#Service");
+
+	private const int NameLength    = 128;
+	private const int SummaryLength = 2048;
+
+	private static readonly List<string> ActorTypes = [
+		"https://www.w3.org/ns/activitystreams#Person",
+		"https://www.w3.org/ns/activitystreams#Service",
+		"https://www.w3.org/ns/activitystreams#Group",
+		"https://www.w3.org/ns/activitystreams#Organization",
+		"https://www.w3.org/ns/activitystreams#Application"
+	];
+
+	public void Normalize(string uri, string acct) {
+		if (!Type?.Any(t => ActorTypes.Contains(t)) ?? false) throw new Exception("Actor is of invalid type");
+
+		// in case this is ever removed - check for hostname match instead
+		if (Id != uri) throw new Exception("Actor URI mismatch");
+
+		if (Inbox?.Link == null) throw new Exception("Actor inbox is invalid");
+		if (Username == null || Username.Length > NameLength ||
+		    Regex.IsMatch(Username, @"^\w([\w-.]*\w)?$"))
+			throw new Exception("Actor username is invalid");
+
+		//TODO: validate publicKey id host
+
+		DisplayName = DisplayName switch {
+			{ Length: > 0 } => DisplayName.Truncate(NameLength),
+			_               => null
+		};
+
+		Summary = Summary switch {
+			{ Length: > 0 } => Summary.Truncate(SummaryLength),
+			_               => null
+		};
+	}
 }
 
 public class ASActorConverter : ASSerializer.ListSingleObjectConverter<ASActor>;
