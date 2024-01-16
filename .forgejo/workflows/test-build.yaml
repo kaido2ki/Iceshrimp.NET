@@ -1,0 +1,28 @@
+on:
+  - push
+jobs:
+  test-frontend:
+    runs-on: docker
+    container:
+      image: iceshrimp.dev/iceshrimp/ci-env:latest
+    steps:
+      - name: Clone repository
+        run: git clone https://iceshrimp.dev/iceshrimp/iceshrimp-rewrite.git --branch=${{ github.ref_name }} --depth=1 /iceshrimp
+      - name: Build the frontend
+        run: |
+          cd /iceshrimp/Iceshrimp.Frontend
+          yarn --immutable
+          yarn build
+  test-backend:
+    runs-on: docker
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:8.0-alpine
+    steps:
+      - name: Clone repository
+        run: git clone https://iceshrimp.dev/iceshrimp/iceshrimp-rewrite.git --branch=${{ github.ref_name }} --depth=1 /iceshrimp
+      - name: Build the backend
+        run: |
+          cd /iceshrimp/Iceshrimp.Backend
+          dotnet restore
+          mkdir -p ./wwwroot/.vite/ && touch ./wwwroot/.vite/manifest.json
+          dotnet build
