@@ -1,5 +1,7 @@
 on:
-  - push
+  push:
+    branches-ignore:
+      - 'dev'
 jobs:
   test-frontend:
     runs-on: docker
