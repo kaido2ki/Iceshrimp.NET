@@ -27,7 +27,7 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, HttpCl
 	}
 
 	public async Task<User> CreateUser(string uri, string acct) {
-		logger.LogInformation("Creating user {acct} with uri {uri}", acct, uri);
+		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
 		var actor = await apSvc.FetchActor(uri);
 		logger.LogDebug("Got actor: {url}", actor.Url);
 

@@ -16,7 +16,7 @@ public class SignatureTestController(ILogger<SignatureTestController> logger, Da
 		var sig      = new HttpSignature(Request, ["(request-target)", "digest", "host", "date"]);
 		var key      = await db.UserPublickeys.SingleOrDefaultAsync(p => p.KeyId == sig.KeyId);
 		var verified = key != null && sig.Verify(key.KeyPem);
-		logger.LogInformation("sig.Verify returned {result} for key {keyId}", verified, sig.KeyId);
+		logger.LogDebug("sig.Verify returned {result} for key {keyId}", verified, sig.KeyId);
 		return verified ? Ok() : StatusCode(StatusCodes.Status403Forbidden);
 	}
 }
