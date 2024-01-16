@@ -79,10 +79,34 @@ public class ASActor : ASObject {
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? Url { get; set; }
 
-	public bool? IsBot => Type?.Any(p => p == "https://www.w3.org/ns/activitystreams#Service");
+	[J("https://www.w3.org/ns/activitystreams#movedTo")]
+	[JC(typeof(ASLinkConverter))]
+	public ASLink? MovedTo { get; set; }
 
-	private const int NameLength    = 128;
-	private const int SummaryLength = 2048;
+	// This is necessary because some AP implementations don't add this to the context, resulting in the expand operation failing to deserialize it 
+	[J("_:movedTo")]
+	[JC(typeof(ASLinkConverter))]
+	private ASLink? MovedToFallback {
+		set => MovedTo = value;
+	}
+
+	[J("https://www.w3.org/ns/activitystreams#alsoKnownAs")]
+	[JC(typeof(ASLinkConverter))]
+	public ASLink? AlsoKnownAs { get; set; }
+
+	[J("http://joinmastodon.org/ns#featured")]
+	[JC(typeof(ASLinkConverter))]
+	public ASLink? Featured { get; set; }
+
+	[J("http://joinmastodon.org/ns#featuredTags")]
+	[JC(typeof(ASLinkConverter))]
+	public ASLink? FeaturedTags { get; set; }
+
+	public bool IsBot => Type?.Any(p => p == "https://www.w3.org/ns/activitystreams#Service") ?? false;
+
+	private const int DisplayNameLength = 128;
+	private const int UsernameLength    = 128;
+	private const int SummaryLength     = 2048;
 
 	private static readonly List<string> ActorTypes = [
 		"https://www.w3.org/ns/activitystreams#Person",
@@ -99,14 +123,14 @@ public class ASActor : ASObject {
 		if (Id != uri) throw new Exception("Actor URI mismatch");
 
 		if (Inbox?.Link == null) throw new Exception("Actor inbox is invalid");
-		if (Username == null || Username.Length > NameLength ||
-		    Regex.IsMatch(Username, @"^\w([\w-.]*\w)?$"))
+		if (Username == null || Username.Length > UsernameLength ||
+		    !Regex.IsMatch(Username, @"^\w([\w-.]*\w)?$"))
 			throw new Exception("Actor username is invalid");
 
 		//TODO: validate publicKey id host
 
 		DisplayName = DisplayName switch {
-			{ Length: > 0 } => DisplayName.Truncate(NameLength),
+			{ Length: > 0 } => DisplayName.Truncate(DisplayNameLength),
 			_               => null
 		};
 

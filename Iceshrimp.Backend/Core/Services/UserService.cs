@@ -39,21 +39,26 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, HttpCl
 			LastFetchedAt = DateTime.UtcNow,
 			Name          = actor.DisplayName,
 			IsLocked      = actor.IsLocked ?? false,
-			IsBot         = actor.IsBot ?? false,
+			IsBot         = actor.IsBot,
 			Username      = actor.Username!,
 			UsernameLower = actor.Username!.ToLowerInvariant(),
 			Host          = AcctToTuple(acct).Host,
-			//MovedToUri = actor.MovedTo
-			//AlsoKnownAs
-			IsExplorable = actor.IsDiscoverable ?? false,
-			Inbox        = actor.Inbox?.Link,
-			SharedInbox  = actor.SharedInbox?.Link,
-			FollowersUri = actor.Followers?.Id,
-			Uri          = actor.Id,
-			IsCat        = actor.IsCat ?? false,
-			Emojis       = [],
-			Tags         = [],
+			MovedToUri    = actor.MovedTo?.Link,
+			AlsoKnownAs   = actor.AlsoKnownAs?.Link,
+			IsExplorable  = actor.IsDiscoverable ?? false,
+			Inbox         = actor.Inbox?.Link,
+			SharedInbox   = actor.SharedInbox?.Link,
+			FollowersUri  = actor.Followers?.Id,
+			Uri           = actor.Id,
+			IsCat         = actor.IsCat ?? false,
+			Featured      = actor.Featured?.Link,
+			//FollowersCount
+			//FollowingCount
+			Emojis        = [], //FIXME
+			Tags          = [], //FIXME
 		};
+
+		//TODO: add UserProfile as well
 
 		await db.Users.AddAsync(user);
 		await db.SaveChangesAsync();
