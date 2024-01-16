@@ -10,9 +10,7 @@ using VDS.RDF.Writing.Formatting;
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams;
 
 public static class LDHelpers {
-	private static readonly JsonLdProcessorOptions Options = new() { DocumentLoader = CustomLoader };
-
-	public static readonly Dictionary<string, RemoteDocument> ContextCache = new() {
+	private static readonly Dictionary<string, RemoteDocument> ContextCache = new() {
 		{
 			"https://www.w3.org/ns/activitystreams", new RemoteDocument {
 				ContextUrl  = new Uri("https://www.w3.org/ns/activitystreams"),
@@ -30,9 +28,18 @@ public static class LDHelpers {
 		}
 	};
 
-	public static readonly JToken DefaultContext =
+	private static readonly JToken DefaultContext =
 		JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams", "Contexts",
 		                                           "default.json")));
+
+	// Nonstandard extensions to the AS context need to be loaded in to fix federation with certain AP implementations
+	private static readonly JToken ASExtensions =
+		JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams", "Contexts",
+		                                           "as-extensions.json")));
+
+	private static readonly JsonLdProcessorOptions Options = new() {
+		DocumentLoader = CustomLoader, ExpandContext = ASExtensions
+	};
 
 	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions) {
 		//TODO: cache in redis

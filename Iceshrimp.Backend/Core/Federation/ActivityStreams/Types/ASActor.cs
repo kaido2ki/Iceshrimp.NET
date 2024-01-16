@@ -83,13 +83,6 @@ public class ASActor : ASObject {
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? MovedTo { get; set; }
 
-	// This is necessary because some AP implementations don't add this to the context, resulting in the expand operation failing to deserialize it 
-	[J("_:movedTo")]
-	[JC(typeof(ASLinkConverter))]
-	private ASLink? MovedToFallback {
-		set => MovedTo = value;
-	}
-
 	[J("https://www.w3.org/ns/activitystreams#alsoKnownAs")]
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? AlsoKnownAs { get; set; }

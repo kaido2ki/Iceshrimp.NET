@@ -3,6 +3,10 @@
     "https://www.w3.org/ns/activitystreams",
     "https://w3id.org/security/v1",
     {
+      "movedTo": {
+        "@id": "as:movedTo",
+        "@type": "@id"
+      },
       "manuallyApprovesFollowers": "as:manuallyApprovesFollowers",
       "movedToUri": "as:movedTo",
       "sensitive": "as:sensitive",
