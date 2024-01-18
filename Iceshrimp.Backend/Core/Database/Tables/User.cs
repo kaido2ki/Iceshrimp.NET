@@ -12,6 +12,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("Uri")]
 [Index("LastActiveDate")]
 [Index("IsExplorable")]
+[Index("IsAdmin")]
+[Index("IsModerator")]
 [Index("CreatedAt")]
 [Index("Tags")]
 [Index("AvatarId", IsUnique = true)]
