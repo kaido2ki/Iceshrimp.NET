@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Globalization;
+using Iceshrimp.Backend.Core.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using VDS.RDF;
@@ -43,8 +44,7 @@ public static class LDHelpers {
 
 	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions) {
 		//TODO: cache in redis
-		RemoteDocument? result;
-		ContextCache.TryGetValue(uri.ToString(), out result);
+		ContextCache.TryGetValue(uri.ToString(), out var result);
 		if (result != null) return result;
 		result = DefaultDocumentLoader.LoadJson(uri, jsonLdLoaderOptions);
 		ContextCache.Add(uri.ToString(), result);
@@ -52,34 +52,8 @@ public static class LDHelpers {
 		return result;
 	}
 
-	private static string NormalizeForSignature(IEnumerable input) {
-		//TODO: Find a way to convert JSON-LD to RDF directly
-		//TODO: Fix XMLSchema#string thingy /properly/
-		var store = new TripleStore();
-		new JsonLdParser(new JsonLdProcessorOptions { DocumentLoader = CustomLoader, PruneBlankNodeIdentifiers = true })
-			.Load(store, new StringReader(JsonConvert.SerializeObject(input)));
-		//Console.WriteLine(store.Triples.SkipLast(1).Last().Object);
-
-		var formatter = new NQuadsFormatter(NQuadsSyntax.Rdf11);
-		Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-		var ordered = store.Triples
-		                   .Select(p => formatter.Format(p).Replace("^^<http://www.w3.org/2001/XMLSchema#string>", ""))
-		                   .Order().ToList();
-		var processedP1 = ordered.Where(p => p.StartsWith('_')).ToList();
-		var processedP2 = ordered.Except(processedP1);
-
-		return string.Join('\n', processedP2.Union(processedP1));
-	}
-
-	public static JArray? Expand(JToken? json) {
-		return JsonLdProcessor.Expand(json, Options);
-	}
-
-	public static JObject? Compact(JToken? json) {
-		return JsonLdProcessor.Compact(json, DefaultContext, Options);
-	}
-
-	public static JObject? Compact(object obj) {
-		return Compact(JToken.FromObject(obj));
-	}
+	public static JObject? Compact(object      obj)  => Compact(JToken.FromObject(obj));
+	public static JObject? Compact(JToken?     json) => JsonLdProcessor.Compact(json, DefaultContext, Options);
+	public static JArray?  Expand(JToken?      json) => JsonLdProcessor.Expand(json, Options);
+	public static string   Canonicalize(JArray json) => JsonLdProcessor.Canonicalize(json);
 }

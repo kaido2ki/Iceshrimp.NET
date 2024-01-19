@@ -6,11 +6,6 @@ using Iceshrimp.Backend.Core.Services;
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
 public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, WebFingerService webFingerSvc, DatabaseContext db) {
-	private static string AcctToDomain(string acct) =>
-		acct.StartsWith("acct:") && acct.Contains('@')
-			? acct[5..].Split('@')[1]
-			: throw new Exception("Invalid acct");
-
 	/*
 	 * The full web finger algorithm:
 	 *

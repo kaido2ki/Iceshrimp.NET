@@ -10,11 +10,13 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 //TODO: enforce @type values
 
 public class ActivityPubService(HttpClient client, HttpRequestService httpRqSvc) {
-	private async Task<JArray> FetchActivity(string url) {
+	private static readonly JsonSerializerSettings JsonSerializerSettings = new() { DateParseHandling = DateParseHandling.None };
+
+	public async Task<JArray> FetchActivity(string url) {
 		var request  = httpRqSvc.Get(url, ["application/activity+json"]);
 		var response = await client.SendAsync(request);
 		var input    = await response.Content.ReadAsStringAsync();
-		var json     = JsonConvert.DeserializeObject<JObject?>(input);
+		var json     = JsonConvert.DeserializeObject<JObject?>(input, JsonSerializerSettings);
 
 		var res = LDHelpers.Expand(json);
 		if (res == null) throw new Exception("Failed to expand JSON-LD object");
