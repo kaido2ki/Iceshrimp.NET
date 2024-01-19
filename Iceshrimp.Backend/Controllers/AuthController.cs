@@ -40,7 +40,7 @@ public class AuthController(DatabaseContext db) : Controller {
 			UserId    = user.Id,
 			Active    = !profile.TwoFactorEnabled,
 			CreatedAt = new DateTime(),
-			Token     = IdHelpers.GenerateRandomString(32)
+			Token     = CryptographyHelpers.GenerateRandomString(32)
 		});
 
 		var session = res.Entity;

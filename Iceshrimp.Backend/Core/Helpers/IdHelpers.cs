@@ -13,8 +13,4 @@ public static class IdHelpers {
 		var timestamp = time.ToBase36().PadLeft(8, '0');
 		return timestamp + cuid;
 	}
-
-	public static string GenerateRandomString(int length) {
-		return Convert.ToBase64String(RandomNumberGenerator.GetBytes(length));
-	}
 }
