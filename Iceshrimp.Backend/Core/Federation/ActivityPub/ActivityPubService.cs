@@ -28,4 +28,9 @@ public class ActivityPubService(HttpClient client, HttpRequestService httpRqSvc)
 		var activity = await FetchActivity(uri);
 		return activity.OfType<ASActor>().FirstOrDefault() ?? throw new Exception("Failed to fetch actor");
 	}
+	
+	public async Task<ASNote> FetchNote(string uri) {
+		var activity = await FetchActivity(uri);
+		return activity.OfType<ASNote>().FirstOrDefault() ?? throw new Exception("Failed to fetch note");
+	}
 }
