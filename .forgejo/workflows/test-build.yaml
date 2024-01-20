@@ -28,3 +28,7 @@ jobs:
           dotnet restore
           mkdir -p ./wwwroot/.vite/ && touch ./wwwroot/.vite/manifest.json
           dotnet build
+      - name: Test the backend
+        run: |
+          cd /iceshrimp/Iceshrimp.Tests
+          dotnet test
