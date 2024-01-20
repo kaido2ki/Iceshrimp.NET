@@ -7,12 +7,15 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <VersionPrefix>2024.1</VersionPrefix>
         <VersionSuffix>prealpha</VersionSuffix>
+        <RestoreAdditionalProjectSources>
+            https://iceshrimp.dev/api/packages/iceshrimp/nuget/index.json;
+        </RestoreAdditionalProjectSources>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Asp.Versioning.Http" Version="8.0.0" />
         <PackageReference Include="cuid.net" Version="5.0.2" />
-        <PackageReference Include="dotNetRdf.Core" Version="3.1.1" />
+        <PackageReference Include="dotNetRdf.Core" Version="3.2.0-dev" />
         <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
