@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 
@@ -23,5 +24,32 @@ public class ASObject {
 			JTokenType.String => new ASObject { Id = token.Value<string>() },
 			_                 => throw new ArgumentOutOfRangeException()
 		};
+	}
+}
+
+internal sealed class ASObjectConverter : JsonConverter {
+	public override bool CanWrite => false;
+
+	public override bool CanConvert(Type objectType) {
+		return true;
+	}
+
+	public override object? ReadJson(JsonReader     reader, Type objectType, object? existingValue,
+	                                 JsonSerializer serializer) {
+		if (reader.TokenType == JsonToken.StartArray) {
+			var obj = JArray.Load(reader);
+			return ASObject.Deserialize(obj[0]);
+		}
+
+		if (reader.TokenType == JsonToken.StartObject) {
+			var obj = JObject.Load(reader);
+			return ASObject.Deserialize(obj);
+		}
+
+		throw new Exception("this shouldn't happen");
+	}
+
+	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) {
+		throw new NotImplementedException();
 	}
 }

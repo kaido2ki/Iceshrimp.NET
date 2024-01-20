@@ -11,35 +11,8 @@ public class ASActivity : ASObject {
 	public ASActor? Actor { get; set; }
 
 	[J("https://www.w3.org/ns/activitystreams#object")]
-	[JC(typeof(ASActivityObjectConverter))]
+	[JC(typeof(ASObjectConverter))]
 	public ASObject? Object { get; set; }
 }
 
 public sealed class ASActivityConverter : ASSerializer.ListSingleObjectConverter<ASActivity>;
-
-internal sealed class ASActivityObjectConverter : JsonConverter {
-	public override bool CanWrite => false;
-
-	public override bool CanConvert(Type objectType) {
-		return true;
-	}
-
-	public override object? ReadJson(JsonReader     reader, Type objectType, object? existingValue,
-	                                 JsonSerializer serializer) {
-		if (reader.TokenType == JsonToken.StartArray) {
-			var obj = JArray.Load(reader);
-			return ASObject.Deserialize(obj[0]);
-		}
-
-		if (reader.TokenType == JsonToken.StartObject) {
-			var obj = JObject.Load(reader);
-			return ASObject.Deserialize(obj);
-		}
-		
-		throw new Exception("this shouldn't happen");
-	}
-
-	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) {
-		throw new NotImplementedException();
-	}
-}

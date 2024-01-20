@@ -1,12 +1,5 @@
-using System.Collections;
-using System.Globalization;
-using Iceshrimp.Backend.Core.Helpers;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using VDS.RDF;
 using VDS.RDF.JsonLd;
-using VDS.RDF.Parsing;
-using VDS.RDF.Writing.Formatting;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams;
 
