@@ -5,6 +5,10 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
+        <RestoreAdditionalProjectSources>
+            https://iceshrimp.dev/api/packages/iceshrimp/nuget/index.json;
+        </RestoreAdditionalProjectSources>
+
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>

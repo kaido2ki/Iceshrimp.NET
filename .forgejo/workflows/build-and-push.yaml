@@ -10,15 +10,9 @@ jobs:
     steps:
       - name: Clone repository
         run: git clone https://iceshrimp.dev/iceshrimp/iceshrimp-rewrite.git --branch=${{ github.ref_name }} --depth=1 /iceshrimp
-      - name: Build the backend
+      - name: Run unit tests
         run: |
-          cd /iceshrimp/Iceshrimp.Backend
-          dotnet restore
-          mkdir -p ./wwwroot/.vite/ && touch ./wwwroot/.vite/manifest.json
-          dotnet build
-      - name: Test the backend
-        run: |
-          cd /iceshrimp/Iceshrimp.Tests
+          cd /iceshrimp
           dotnet test
   build-and-push:
     runs-on: docker
