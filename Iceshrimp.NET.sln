@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iceshrimp.Backend", "Iceshrimp.Backend\Iceshrimp.Backend.csproj", "{74D636F2-3A0B-4214-B302-178C3D5525F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iceshrimp.Tests", "Iceshrimp.Tests\Iceshrimp.Tests.csproj", "{6321DFB0-9F35-4C0E-A4DA-CD90E6920E80}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iceshrimp.Tests", "Iceshrimp.Tests\Iceshrimp.Tests.csproj", "{0C93C33B-3D68-41DE-8BD6-2C19EB1C95F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,9 +14,9 @@ Global
 		{74D636F2-3A0B-4214-B302-178C3D5525F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{74D636F2-3A0B-4214-B302-178C3D5525F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74D636F2-3A0B-4214-B302-178C3D5525F5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6321DFB0-9F35-4C0E-A4DA-CD90E6920E80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6321DFB0-9F35-4C0E-A4DA-CD90E6920E80}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6321DFB0-9F35-4C0E-A4DA-CD90E6920E80}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6321DFB0-9F35-4C0E-A4DA-CD90E6920E80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C93C33B-3D68-41DE-8BD6-2C19EB1C95F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C93C33B-3D68-41DE-8BD6-2C19EB1C95F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C93C33B-3D68-41DE-8BD6-2C19EB1C95F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C93C33B-3D68-41DE-8BD6-2C19EB1C95F7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
