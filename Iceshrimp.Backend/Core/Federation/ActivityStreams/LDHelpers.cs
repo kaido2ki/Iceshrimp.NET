@@ -56,6 +56,6 @@ public static class LdHelpers {
 	public static JArray?  Expand(object        obj)  => Expand(JToken.FromObject(obj));
 	public static JObject? Compact(JToken?      json) => JsonLdProcessor.Compact(json, DefaultContext, Options);
 	public static JArray?  Expand(JToken?       json) => JsonLdProcessor.Expand(json, Options);
-	public static string   Canonicalize(JArray  json) => JsonLdProcessor.Canonicalize(json.DeepClone() as JArray);
-	public static string   Canonicalize(JObject json) => JsonLdProcessor.Canonicalize([json.DeepClone()]);
+	public static string   Canonicalize(JArray  json) => JsonLdProcessor.Canonicalize(json);
+	public static string   Canonicalize(JObject json) => JsonLdProcessor.Canonicalize([json]);
 }
