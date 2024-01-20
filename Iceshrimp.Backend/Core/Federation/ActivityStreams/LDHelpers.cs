@@ -10,7 +10,7 @@ using VDS.RDF.Writing.Formatting;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams;
 
-public static class LDHelpers {
+public static class LdHelpers {
 	private static readonly Dictionary<string, RemoteDocument> ContextCache = new() {
 		{
 			"https://www.w3.org/ns/activitystreams", new RemoteDocument {
@@ -53,6 +53,7 @@ public static class LDHelpers {
 	}
 
 	public static JObject? Compact(object       obj)  => Compact(JToken.FromObject(obj));
+	public static JArray?  Expand(object        obj)  => Expand(JToken.FromObject(obj));
 	public static JObject? Compact(JToken?      json) => JsonLdProcessor.Compact(json, DefaultContext, Options);
 	public static JArray?  Expand(JToken?       json) => JsonLdProcessor.Expand(json, Options);
 	public static string   Canonicalize(JArray  json) => JsonLdProcessor.Canonicalize(json);

@@ -18,7 +18,7 @@ public class ActivityPubService(HttpClient client, HttpRequestService httpRqSvc)
 		var input    = await response.Content.ReadAsStringAsync();
 		var json     = JsonConvert.DeserializeObject<JObject?>(input, JsonSerializerSettings);
 
-		var res = LDHelpers.Expand(json);
+		var res = LdHelpers.Expand(json);
 		if (res == null) throw new Exception("Failed to expand JSON-LD object");
 		return res;
 	}

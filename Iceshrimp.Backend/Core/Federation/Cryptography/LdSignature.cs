@@ -11,28 +11,33 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
 public static class LdSignature {
-	public static async Task<bool> Verify(JArray activity, string key) {
-		foreach (var act in activity) {
-			var options = act["https://w3id.org/security#signature"];
-			if (options?.ToObject<SignatureOptions[]>() is not { Length: 1 } signatures) return false;
-			var signature = signatures[0];
-			if (signature.Type is not ["_:RsaSignature2017"]) return false;
-			if (signature.Signature is null) return false;
-
-			var signatureData = await GetSignatureData(act, options);
-			if (signatureData is null) return false;
-
-			var rsa = RSA.Create();
-			rsa.ImportFromPem(key);
-			var verify = rsa.VerifyData(signatureData, Convert.FromBase64String(signature.Signature),
-			                            HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-			if (!verify) return false;
-		}
-
-		return true;
+	public static Task<bool> Verify(JArray activity, string key) {
+		if (activity.ToArray() is not [JObject obj]) throw new Exception("Invalid activity");
+		return Verify(obj, key);
 	}
 
-	public static async Task<JToken> Sign(JToken data, string key, string? creator) {
+	public static async Task<bool> Verify(JObject activity, string key) {
+		var options = activity["https://w3id.org/security#signature"];
+		if (options?.ToObject<SignatureOptions[]>() is not { Length: 1 } signatures) return false;
+		var signature = signatures[0];
+		if (signature.Type is not ["_:RsaSignature2017"]) return false;
+		if (signature.Signature is null) return false;
+
+		var signatureData = await GetSignatureData(activity, options);
+		if (signatureData is null) return false;
+
+		var rsa = RSA.Create();
+		rsa.ImportFromPem(key);
+		return rsa.VerifyData(signatureData, Convert.FromBase64String(signature.Signature),
+		                      HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+	}
+
+	public static Task<JObject> Sign(JArray activity, string key, string? creator) {
+		if (activity.ToArray() is not [JObject obj]) throw new Exception("Invalid activity");
+		return Sign(obj, key, creator);
+	}
+
+	public static async Task<JObject> Sign(JObject activity, string key, string? creator) {
 		var options = new SignatureOptions {
 			Created = DateTime.Now,
 			Creator = creator,
@@ -41,24 +46,23 @@ public static class LdSignature {
 			Domain  = null,
 		};
 
-		var signatureData = await GetSignatureData(data, options);
+		var signatureData = await GetSignatureData(activity, options);
 		if (signatureData == null) throw new NullReferenceException("Signature data must not be null");
 
 		var rsa = RSA.Create();
 		rsa.ImportFromPem(key);
 		var signatureBytes = rsa.SignData(signatureData, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
-		var signature = Convert.ToBase64String(signatureBytes);
+		var signature      = Convert.ToBase64String(signatureBytes);
 
 		options.Signature = signature;
-		
-		if (data is not JObject obj) throw new Exception();
-		obj.Add("https://w3id.org/security#signature", JToken.FromObject(options));
-		
-		return obj;
+
+		activity.Add("https://w3id.org/security#signature", JToken.FromObject(options));
+
+		return LdHelpers.Expand(activity)?[0] as JObject ?? throw new Exception("Failed to expand signed activity");
 	}
 
 	private static Task<byte[]?> GetSignatureData(JToken data, SignatureOptions options) =>
-		GetSignatureData(data, LDHelpers.Expand(JObject.FromObject(options))!);
+		GetSignatureData(data, LdHelpers.Expand(JObject.FromObject(options))!);
 
 	private static async Task<byte[]?> GetSignatureData(JToken data, JToken options) {
 		if (data is not JObject inputData) return null;
@@ -71,8 +75,8 @@ public static class LdSignature {
 
 		inputData.Remove("https://w3id.org/security#signature");
 
-		var canonicalData    = LDHelpers.Canonicalize(inputData);
-		var canonicalOptions = LDHelpers.Canonicalize(inputOptions);
+		var canonicalData    = LdHelpers.Canonicalize(inputData);
+		var canonicalOptions = LdHelpers.Canonicalize(inputOptions);
 
 		var dataHash    = await DigestHelpers.Sha256Digest(canonicalData);
 		var optionsHash = await DigestHelpers.Sha256Digest(canonicalOptions);
@@ -81,7 +85,7 @@ public static class LdSignature {
 	}
 
 	private class SignatureOptions {
-		[J("@type")]    public required List<string> Type    { get; set; }
+		[J("@type")] public required List<string> Type { get; set; }
 
 		[J("https://w3id.org/security#signatureValue")]
 		[JC(typeof(VC))]

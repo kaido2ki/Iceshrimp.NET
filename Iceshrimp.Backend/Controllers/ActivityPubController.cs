@@ -32,7 +32,7 @@ public class ActivityPubController(ILogger<ActivityPubController> logger, Databa
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
 		var rendered  = await userRenderer.Render(user);
-		var compacted = LDHelpers.Compact(rendered);
+		var compacted = LdHelpers.Compact(rendered);
 		return Ok(compacted);
 	}
 }
