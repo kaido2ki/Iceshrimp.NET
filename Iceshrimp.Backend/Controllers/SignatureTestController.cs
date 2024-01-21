@@ -1,3 +1,4 @@
+using System.Data;
 using System.Net.Mime;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
@@ -13,10 +14,16 @@ public class SignatureTestController(ILogger<SignatureTestController> logger, Da
 	[HttpPost]
 	[Consumes(MediaTypeNames.Application.Json)]
 	public async Task<IActionResult> Inbox() {
-		var sig      = new HttpSignature(Request, ["(request-target)", "digest", "host", "date"]);
-		var key      = await db.UserPublickeys.SingleOrDefaultAsync(p => p.KeyId == sig.KeyId);
-		var verified = key != null && sig.Verify(key.KeyPem);
-		logger.LogDebug("sig.Verify returned {result} for key {keyId}", verified, sig.KeyId);
+		if (!Request.Headers.TryGetValue("signature", out var sigHeader))
+			throw new ConstraintException("Signature string is missing the signature header");
+
+		var sig = HttpSignature.Parse(sigHeader.ToString());
+		var key = await db.UserPublickeys.SingleOrDefaultAsync(p => p.KeyId == sig.KeyId);
+		var verified = key != null &&
+		               await HttpSignature.Verify(Request, sig, ["(request-target)", "digest", "host", "date"],
+		                                          key.KeyPem);
+		
+		logger.LogDebug("HttpSignature.Verify returned {result} for key {keyId}", verified, sig.KeyId);
 		return verified ? Ok() : StatusCode(StatusCodes.Status403Forbidden);
 	}
 }
