@@ -38,4 +38,4 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine-composite
 WORKDIR /app
 COPY --from=backend /app .
 COPY --from=frontend /frontend/dist ./wwwroot
-ENTRYPOINT ["./Iceshrimp.Backend"]
+ENTRYPOINT ["./Iceshrimp.Backend", "--environment", "Production", "--migrate-and-start"]
