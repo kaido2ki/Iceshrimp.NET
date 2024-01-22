@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Vite.AspNetCore.Extensions;
+using StringExtensions = AngleSharp.Text.StringExtensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,13 +44,13 @@ var instanceConfig = app.Configuration.GetSection("Instance").Get<Config.Instanc
 
 app.Logger.LogInformation("Iceshrimp.NET v{version} ({domain})", instanceConfig.Version, instanceConfig.AccountDomain);
 
-if (args is ["migrate"] or ["migrate-and-start"]) {
+if (args.Contains("--migrate") || args.Contains("--migrate-and-start")) {
 	app.Logger.LogInformation("Running migrations...");
 	var provider = app.Services.CreateScope();
 	var context  = provider.ServiceProvider.GetService<DatabaseContext>();
 	if (context == null) throw new NullReferenceException("Failed to get database context");
 	context.Database.Migrate();
-	if (args is ["migrate"]) Environment.Exit(0);
+	if (args.Contains("--migrate")) Environment.Exit(0);
 }
 
 app.Logger.LogInformation("Initializing, please wait...");
