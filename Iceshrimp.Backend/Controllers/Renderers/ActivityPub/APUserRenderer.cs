@@ -10,12 +10,15 @@ namespace Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 
 public class APUserRenderer(
 	IOptions<Config.InstanceSection> config,
-	ILogger<APUserRenderer>          logger,
-	DatabaseContext                  db) {
+	ILogger<APUserRenderer> logger,
+	DatabaseContext db) {
 	public async Task<ASActor> Render(User user) {
-		if (user.Host != null) throw new Exception();
+		if (user.Host != null) throw new Exception("Refusing to render remote user");
 
 		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
+		var keypair = await db.UserKeypairs.FirstOrDefaultAsync(p => p.UserId == user.Id);
+
+		if (keypair == null) throw new Exception("User has no keypair");
 
 		var id = $"https://{config.Value.WebDomain}/users/{user.Id}";
 		var type = Constants.SystemUsers.Contains(user.UsernameLower)
@@ -40,7 +43,13 @@ public class APUserRenderer(
 			MkSummary      = profile?.Description,
 			IsCat          = user.IsCat,
 			IsDiscoverable = user.IsExplorable,
-			IsLocked       = user.IsLocked
+			IsLocked       = user.IsLocked,
+			PublicKey = new ASPublicKey {
+				Id        = $"{id}#main-key",
+				Owner     = new LDIdObject(id),
+				PublicKey = keypair.PublicKey,
+				Type      = ["Key"]
+			}
 		};
 	}
 }

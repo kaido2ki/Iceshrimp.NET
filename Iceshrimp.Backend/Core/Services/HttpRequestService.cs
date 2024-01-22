@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Microsoft.Extensions.Options;
 
@@ -41,12 +42,13 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 		return GenerateRequest(url, HttpMethod.Post, body, contentType);
 	}
 
-	public HttpRequestMessage GetSigned(string url, IEnumerable<string>? accept, string key, string keyId) {
-		return Get(url, accept).Sign(["(request-target)", "date", "host", "accept"], key, keyId);
+	public HttpRequestMessage GetSigned(string url, IEnumerable<string>? accept, User user, UserKeypair keypair) {
+		return Get(url, accept).Sign(["(request-target)", "date", "host", "accept"], keypair.PrivateKey,
+		                             $"https://{options.Value.WebDomain}/users/{user.Id}#main-key");
 	}
 
-	public async Task<HttpRequestMessage> PostSigned(string url, string body, string contentType, string key,
-	                                                 string keyId) {
+	public async Task<HttpRequestMessage> PostSigned(string url, string body, string contentType, User user,
+	                                                 UserKeypair keypair) {
 		var message = Post(url, body, contentType);
 		ArgumentNullException.ThrowIfNull(message.Content);
 
@@ -56,6 +58,7 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 		message.Headers.Add("Digest", Convert.ToBase64String(digest));
 
 		// Return the signed message
-		return message.Sign(["(request-target)", "date", "host", "digest"], key, keyId);
+		return message.Sign(["(request-target)", "date", "host", "digest"], keypair.PrivateKey,
+		                    $"https://{options.Value.WebDomain}/users/{user.Id}#main-key");
 	}
 }

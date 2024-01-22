@@ -94,6 +94,10 @@ public class ASActor : ASObject {
 	[J("http://joinmastodon.org/ns#featuredTags")]
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? FeaturedTags { get; set; }
+	
+	[J("https://w3id.org/security#publicKey")]
+	[JC(typeof(ASPublicKeyConverter))]
+	public ASPublicKey? PublicKey { get; set; }
 
 	public bool IsBot => Type?.Any(p => p == "https://www.w3.org/ns/activitystreams#Service") ?? false;
 

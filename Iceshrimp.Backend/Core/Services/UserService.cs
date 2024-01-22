@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+using System.Security.Cryptography;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
@@ -28,7 +28,9 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, HttpCl
 
 	public async Task<User> CreateUser(string uri, string acct) {
 		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
-		var actor = await apSvc.FetchActor(uri);
+		var instanceActor        = await GetInstanceActor();
+		var instanceActorKeypair = await db.UserKeypairs.FirstAsync(p => p.UserId == instanceActor.Id);
+		var actor                = await apSvc.FetchActor(uri, instanceActor, instanceActorKeypair);
 		logger.LogDebug("Got actor: {url}", actor.Url);
 
 		actor.Normalize(uri, acct);
@@ -54,13 +56,61 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, HttpCl
 			Featured      = actor.Featured?.Link,
 			//FollowersCount
 			//FollowingCount
-			Emojis        = [], //FIXME
-			Tags          = [], //FIXME
+			Emojis = [], //FIXME
+			Tags   = [], //FIXME
 		};
 
 		//TODO: add UserProfile as well
 
 		await db.Users.AddAsync(user);
+		await db.SaveChangesAsync();
+
+		return user;
+	}
+
+	public async Task<User> GetInstanceActor() => await GetOrCreateSystemUser("instance.actor");
+	public async Task<User> GetRelayActor()    => await GetOrCreateSystemUser("relay.actor");
+
+	//TODO: cache in redis
+	private async Task<User> GetOrCreateSystemUser(string username) =>
+		await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username && p.Host == null) ??
+		await CreateSystemUser(username);
+
+	private async Task<User> CreateSystemUser(string username) {
+		if (await db.Users.AnyAsync(p => p.UsernameLower == username.ToLowerInvariant() && p.Host == null))
+			throw new Exception("User already exists");
+
+		var keypair = RSA.Create(4096);
+		var user = new User {
+			Id            = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt     = DateTime.UtcNow,
+			Username      = username,
+			UsernameLower = username.ToLowerInvariant(),
+			Host          = null,
+			IsAdmin       = false,
+			IsLocked      = true,
+			IsExplorable  = false,
+			IsBot         = true
+		};
+
+		var userKeypair = new UserKeypair {
+			UserId     = user.Id,
+			PrivateKey = keypair.ExportPkcs8PrivateKeyPem(),
+			PublicKey  = keypair.ExportSubjectPublicKeyInfoPem()
+		};
+
+		var userProfile = new UserProfile {
+			UserId             = user.Id,
+			AutoAcceptFollowed = false,
+			Password           = null
+		};
+
+		var usedUsername = new UsedUsername {
+			CreatedAt = DateTime.UtcNow,
+			Username  = username.ToLowerInvariant()
+		};
+
+		await db.AddRangeAsync(user, userKeypair, userProfile, usedUsername);
 		await db.SaveChangesAsync();
 
 		return user;

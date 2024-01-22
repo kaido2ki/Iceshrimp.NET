@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Services;
@@ -13,8 +14,8 @@ public class ActivityPubService(HttpClient client, HttpRequestService httpRqSvc)
 	private static readonly JsonSerializerSettings JsonSerializerSettings =
 		new() { DateParseHandling = DateParseHandling.None };
 
-	public async Task<IEnumerable<ASObject>> FetchActivity(string url) {
-		var request  = httpRqSvc.Get(url, ["application/activity+json"]);
+	public async Task<IEnumerable<ASObject>> FetchActivity(string url, User actor, UserKeypair keypair) {
+		var request  = httpRqSvc.GetSigned(url, ["application/activity+json"], actor, keypair);
 		var response = await client.SendAsync(request);
 		var input    = await response.Content.ReadAsStringAsync();
 		var json     = JsonConvert.DeserializeObject<JObject?>(input, JsonSerializerSettings);
@@ -24,13 +25,13 @@ public class ActivityPubService(HttpClient client, HttpRequestService httpRqSvc)
 		                       throw new Exception("Failed to deserialize activity"));
 	}
 
-	public async Task<ASActor> FetchActor(string uri) {
-		var activity = await FetchActivity(uri);
+	public async Task<ASActor> FetchActor(string uri, User actor, UserKeypair keypair) {
+		var activity = await FetchActivity(uri, actor, keypair);
 		return activity.OfType<ASActor>().FirstOrDefault() ?? throw new Exception("Failed to fetch actor");
 	}
-	
-	public async Task<ASNote> FetchNote(string uri) {
-		var activity = await FetchActivity(uri);
+
+	public async Task<ASNote> FetchNote(string uri, User actor, UserKeypair keypair) {
+		var activity = await FetchActivity(uri, actor, keypair);
 		return activity.OfType<ASNote>().FirstOrDefault() ?? throw new Exception("Failed to fetch note");
 	}
 }

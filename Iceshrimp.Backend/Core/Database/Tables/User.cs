@@ -93,7 +93,7 @@ public class User {
 	public string? BannerId { get; set; }
 
 	[Column("tags", TypeName = "character varying(128)[]")]
-	public List<string> Tags { get; set; } = null!;
+	public List<string> Tags { get; set; } = [];
 
 	/// <summary>
 	///     Whether the User is suspended.
@@ -138,7 +138,7 @@ public class User {
 	public bool IsModerator { get; set; }
 
 	[Column("emojis", TypeName = "character varying(128)[]")]
-	public List<string> Emojis { get; set; } = null!;
+	public List<string> Emojis { get; set; } = [];
 
 	/// <summary>
 	///     The host of the User. It will be null if the origin of the user is local.
