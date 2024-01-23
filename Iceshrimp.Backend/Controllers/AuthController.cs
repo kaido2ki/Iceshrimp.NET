@@ -1,10 +1,10 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,10 +13,10 @@ namespace Iceshrimp.Backend.Controllers;
 [ApiController]
 [Produces("application/json")]
 [Route("/api/iceshrimp/v1/auth")]
-public class AuthController(DatabaseContext db) : Controller {
+public class AuthController(DatabaseContext db, UserService userSvc) : Controller {
 	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
-	public async Task<IActionResult> GetAuthStatus() {
+	public IActionResult GetAuthStatus() {
 		return new StatusCodeResult((int)HttpStatusCode.NotImplemented);
 	}
 
@@ -25,11 +25,9 @@ public class AuthController(DatabaseContext db) : Controller {
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TimelineResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
-	[SuppressMessage("Performance",
-	                 "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 	public async Task<IActionResult> Login([FromBody] AuthRequest request) {
-		var user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == request.Username.ToLowerInvariant() &&
-		                                                   p.Host == null);
+		var user = await db.Users.FirstOrDefaultAsync(p => p.Host == null &&
+		                                                   p.UsernameLower == request.Username.ToLowerInvariant());
 		if (user == null) return Unauthorized();
 		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
 		if (profile?.Password == null) return Unauthorized();
@@ -56,4 +54,19 @@ public class AuthController(DatabaseContext db) : Controller {
 			}
 		});
 	}
+
+	[HttpPut]
+	[Consumes(MediaTypeNames.Application.Json)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TimelineResponse))]
+	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> Register([FromBody] AuthRequest request) {
+		//TODO: captcha support
+		//TODO: invite support
+
+		await userSvc.CreateLocalUser(request.Username, request.Password);
+		return await Login(request);
+	}
+
+	//TODO: PATCH = update password
 }

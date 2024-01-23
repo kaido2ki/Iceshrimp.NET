@@ -12,10 +12,7 @@ namespace Iceshrimp.Backend.Controllers;
 [ApiController]
 [MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
 [Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-public class ActivityPubController(
-	ILogger<ActivityPubController> logger,
-	DatabaseContext db,
-	APUserRenderer userRenderer) : Controller {
+public class ActivityPubController(DatabaseContext db, APUserRenderer userRenderer) : Controller {
 	/*
 	[HttpGet("/notes/{id}")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Note))]

@@ -1,11 +1,10 @@
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Services;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, WebFingerService webFingerSvc, DatabaseContext db) {
+public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, WebFingerService webFingerSvc) {
 	/*
 	 * The full web finger algorithm:
 	 *
@@ -59,23 +58,25 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 		return (finalAcct, finalUri);
 	}
 
-	private static string NormalizeQuery(string query) => query.StartsWith('@') ? $"acct:{query[1..]}" : query;
+	private static string NormalizeQuery(string query) {
+		return query.StartsWith('@') ? $"acct:{query[1..]}" : query;
+	}
 
 	public async Task<User> Resolve(string query) {
 		query = NormalizeQuery(query);
-		
+
 		// First, let's see if we already know the user
 		var user = await userSvc.GetUserFromQuery(query);
 		if (user != null) return user;
 
 		// We don't, so we need to run WebFinger
 		var (acct, uri) = await WebFinger(query);
-		
+
 		// Check the database again with the new data
 		if (uri != query) user = await userSvc.GetUserFromQuery(uri);
 		if (user == null && acct != query) await userSvc.GetUserFromQuery(acct);
 		if (user != null) return user;
-		
+
 		// Pass the job on to userSvc, which will create the user
 		return await userSvc.CreateUser(uri, acct);
 	}

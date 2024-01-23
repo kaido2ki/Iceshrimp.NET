@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class UserService(ILogger<UserService> logger, DatabaseContext db, HttpClient client, ActivityPubService apSvc) {
+public class UserService(ILogger<UserService> logger, DatabaseContext db, ActivityPubService apSvc) {
 	private static (string Username, string Host) AcctToTuple(string acct) {
 		if (!acct.StartsWith("acct:")) throw new Exception("Invalid query");
 
@@ -18,9 +18,8 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, HttpCl
 	}
 
 	public Task<User?> GetUserFromQuery(string query) {
-		if (query.StartsWith("http://") || query.StartsWith("https://")) {
+		if (query.StartsWith("http://") || query.StartsWith("https://"))
 			return db.Users.FirstOrDefaultAsync(p => p.Uri == query);
-		}
 
 		var tuple = AcctToTuple(query);
 		return db.Users.FirstOrDefaultAsync(p => p.Username == tuple.Username && p.Host == tuple.Host);
@@ -57,7 +56,7 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, HttpCl
 			//FollowersCount
 			//FollowingCount
 			Emojis = [], //FIXME
-			Tags   = [], //FIXME
+			Tags   = []  //FIXME
 		};
 
 		//TODO: add UserProfile as well
@@ -68,13 +67,58 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, HttpCl
 		return user;
 	}
 
-	public async Task<User> GetInstanceActor() => await GetOrCreateSystemUser("instance.actor");
-	public async Task<User> GetRelayActor()    => await GetOrCreateSystemUser("relay.actor");
+	public async Task<User> CreateLocalUser(string username, string password) {
+		if (await db.Users.AnyAsync(p => p.Host == null && p.UsernameLower == username.ToLowerInvariant()))
+			throw new Exception("User already exists");
+
+		if (await db.UsedUsernames.AnyAsync(p => p.Username.ToLower() == username.ToLowerInvariant()))
+			throw new Exception("Username was already used");
+
+		var keypair = RSA.Create(4096);
+		var user = new User {
+			Id            = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt     = DateTime.UtcNow,
+			Username      = username,
+			UsernameLower = username.ToLowerInvariant(),
+			Host          = null
+		};
+
+		var userKeypair = new UserKeypair {
+			UserId     = user.Id,
+			PrivateKey = keypair.ExportPkcs8PrivateKeyPem(),
+			PublicKey  = keypair.ExportSubjectPublicKeyInfoPem()
+		};
+
+		var userProfile = new UserProfile {
+			UserId   = user.Id,
+			Password = AuthHelpers.HashPassword(password)
+		};
+
+		var usedUsername = new UsedUsername {
+			CreatedAt = DateTime.UtcNow,
+			Username  = username.ToLowerInvariant()
+		};
+
+		await db.AddRangeAsync(user, userKeypair, userProfile, usedUsername);
+		await db.SaveChangesAsync();
+
+		return user;
+	}
+
+
+	public async Task<User> GetInstanceActor() {
+		return await GetOrCreateSystemUser("instance.actor");
+	}
+
+	public async Task<User> GetRelayActor() {
+		return await GetOrCreateSystemUser("relay.actor");
+	}
 
 	//TODO: cache in redis
-	private async Task<User> GetOrCreateSystemUser(string username) =>
-		await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username && p.Host == null) ??
-		await CreateSystemUser(username);
+	private async Task<User> GetOrCreateSystemUser(string username) {
+		return await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username && p.Host == null) ??
+		       await CreateSystemUser(username);
+	}
 
 	private async Task<User> CreateSystemUser(string username) {
 		if (await db.Users.AnyAsync(p => p.UsernameLower == username.ToLowerInvariant() && p.Host == null))

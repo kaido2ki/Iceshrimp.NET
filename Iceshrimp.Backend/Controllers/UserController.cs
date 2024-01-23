@@ -9,7 +9,7 @@ namespace Iceshrimp.Backend.Controllers;
 [ApiController]
 [Produces("application/json")]
 [Route("/api/iceshrimp/v1/user/{id}")]
-public class UserController(ILogger<UserController> logger, DatabaseContext db) : Controller {
+public class UserController(DatabaseContext db) : Controller {
 	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
