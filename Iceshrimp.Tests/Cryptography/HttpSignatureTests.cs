@@ -10,12 +10,11 @@ namespace Iceshrimp.Tests.Cryptography;
 
 [TestClass]
 public class HttpSignatureTests {
-	private ASActor _actor    = null!;
-	private JArray  _expanded = null!;
+	private readonly ASActor _actor    = MockObjects.ASActor;
+	private          JArray  _expanded = null!;
 
 	[TestInitialize]
 	public void Initialize() {
-		_actor    = MockObjects.ASActor;
 		_expanded = LdHelpers.Expand(_actor)!;
 		_expanded.Should().NotBeNull();
 	}

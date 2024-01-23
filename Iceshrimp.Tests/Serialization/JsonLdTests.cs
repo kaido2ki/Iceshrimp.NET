@@ -5,12 +5,7 @@ namespace Iceshrimp.Tests.Serialization;
 
 [TestClass]
 public class JsonLdTests {
-	private ASActor _actor = null!;
-
-	[TestInitialize]
-	public void Initialize() {
-		_actor = MockObjects.ASActor;
-	}
+	private readonly ASActor _actor = MockObjects.ASActor;
 
 	[TestMethod]
 	public void RoundtripTest() {
