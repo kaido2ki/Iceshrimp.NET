@@ -32,6 +32,7 @@ public static class HttpSignature {
 		                      HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 	}
 
+	//TODO: make this share code with the the regular Verify function
 	public static bool VerifySign(this HttpRequestMessage request, string key) {
 		var signatureHeader = request.Headers.GetValues("Signature").First();
 		var signature       = Parse(signatureHeader);
