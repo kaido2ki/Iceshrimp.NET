@@ -5,7 +5,7 @@ This repository contains our efforts to rewrite both the backend and the fronten
 ---
 
 > **Warning**
-> This is pre-alpha software, do **not** use with a production database.
+> This is alpha software, do **not** use with a production database.
 
 ---
 
