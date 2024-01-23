@@ -54,7 +54,7 @@ public class HttpSignatureTests {
 		                                   MockObjects.User, MockObjects.UserKeypair);
 
 		var sig = request.Headers.GetValues("Signature").First();
-		sig = new StringBuilder(sig) { [sig.Length - 10] = (char)(sig[10] + 1) }.ToString();
+		sig = new StringBuilder(sig) { [sig.Length - 10] = (char)(sig[10] + 1 % char.MaxValue) }.ToString();
 
 		request.Headers.Remove("Signature");
 		request.Headers.Add("Signature", sig);
