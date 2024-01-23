@@ -6,10 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Helpers;
 
 public static class WebApplicationExtensions {
-	public static WebApplication UseCustomMiddleware(this WebApplication app) {
-		app.UseMiddleware<RequestBufferingMiddleware>();
-
-		return app;
+	public static IApplicationBuilder UseCustomMiddleware(this IApplicationBuilder app) {
+		return app.UseMiddleware<RequestBufferingMiddleware>();
 	}
 
 	public static Config.InstanceSection Initialize(this WebApplication app, string[] args) {

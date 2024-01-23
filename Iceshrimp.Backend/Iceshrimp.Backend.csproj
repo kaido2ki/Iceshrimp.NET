@@ -6,7 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <InvariantGlobalization>true</InvariantGlobalization>
         <VersionPrefix>2024.1</VersionPrefix>
-        <VersionSuffix>prealpha</VersionSuffix>
+        <VersionSuffix>alpha</VersionSuffix>
 
         <RestoreAdditionalProjectSources>
             https://iceshrimp.dev/api/packages/iceshrimp/nuget/index.json;
