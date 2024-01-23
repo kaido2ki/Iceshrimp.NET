@@ -51,6 +51,8 @@ public static class HttpSignature {
 		ArgumentNullException.ThrowIfNull(request.RequestUri);
 
 		request.Headers.Date = DateTime.Now;
+		request.Headers.Host = request.RequestUri.Host;
+
 		var requiredHeadersEnum = requiredHeaders.ToList();
 		var signingString = GenerateSigningString(requiredHeadersEnum, request.Method.Method,
 		                                          request.RequestUri.AbsolutePath,
@@ -70,7 +72,7 @@ public static class HttpSignature {
 	}
 
 	private static string GenerateSigningString(IEnumerable<string> headers, string requestMethod, string requestPath,
-	                                            IHeaderDictionary requestHeaders) {
+	                                            IHeaderDictionary requestHeaders, string? host = null) {
 		var sb = new StringBuilder();
 
 		//TODO: handle additional params, see https://github.com/Chocobozzz/node-http-signature/blob/master/lib/parser.js#L294-L310
@@ -78,6 +80,7 @@ public static class HttpSignature {
 			sb.Append($"{header}: ");
 			sb.AppendLine(header switch {
 				"(request-target)" => $"{requestMethod.ToLowerInvariant()} {requestPath}",
+				"host"             => $"{host ?? requestHeaders[header]}",
 				_                  => requestHeaders[header]
 			});
 		}
