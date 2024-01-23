@@ -4,7 +4,6 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Vite.AspNetCore.Extensions;
-using StringExtensions = AngleSharp.Text.StringExtensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,6 +58,8 @@ app.UseSwagger();
 app.UseSwaggerUI(options => { options.DocumentTitle = "Iceshrimp API documentation"; });
 app.UseStaticFiles();
 app.UseAuthorization();
+app.UseCustomMiddleware();
+
 app.MapControllers();
 app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback");
 app.MapRazorPages();

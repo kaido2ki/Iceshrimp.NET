@@ -1,6 +1,5 @@
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
-using Iceshrimp.Backend.Core.Helpers;
 
 namespace Iceshrimp.Tests.Serialization;
 
@@ -10,16 +9,7 @@ public class JsonLdTests {
 
 	[TestInitialize]
 	public void Initialize() {
-		_actor = new ASActor {
-			Id             = $"https://example.org/users/{IdHelpers.GenerateSlowflakeId()}",
-			Type           = ["https://www.w3.org/ns/activitystreams#Person"],
-			Url            = new ASLink("https://example.org/@test"),
-			Username       = "test",
-			DisplayName    = "Test account",
-			IsCat          = false,
-			IsDiscoverable = true,
-			IsLocked       = true
-		};
+		_actor = MockObjects.ASActor;
 	}
 
 	[TestMethod]

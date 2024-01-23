@@ -2,32 +2,19 @@ using System.Security.Cryptography;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
-using Iceshrimp.Backend.Core.Helpers;
 using Newtonsoft.Json.Linq;
 
 namespace Iceshrimp.Tests.Cryptography;
 
 [TestClass]
 public class LdSignatureTests {
-	private ASActor _actor    = null!;
-	private RSA     _keypair  = null!;
-	private JArray  _expanded = null!;
-	private JObject _signed   = null!;
+	private readonly ASActor _actor    = MockObjects.ASActor;
+	private readonly RSA     _keypair  = MockObjects.Keypair;
+	private          JArray  _expanded = null!;
+	private          JObject _signed   = null!;
 
 	[TestInitialize]
 	public async Task Initialize() {
-		_keypair = RSA.Create();
-		_actor = new ASActor {
-			Id             = $"https://example.org/users/{IdHelpers.GenerateSlowflakeId()}",
-			Type           = ["https://www.w3.org/ns/activitystreams#Person"],
-			Url            = new ASLink("https://example.org/@test"),
-			Username       = "test",
-			DisplayName    = "Test account",
-			IsCat          = false,
-			IsDiscoverable = true,
-			IsLocked       = true
-		};
-
 		_expanded = LdHelpers.Expand(_actor)!;
 		_signed   = await LdSignature.Sign(_expanded, _keypair.ExportRSAPrivateKeyPem(), _actor.Id + "#main-key");
 
@@ -70,25 +57,30 @@ public class LdSignatureTests {
 		var verify = await LdSignature.Verify(data, _keypair.ExportRSAPublicKeyPem());
 		verify.Should().BeFalse();
 	}
-	
+
 	[TestMethod]
 	public async Task InvalidSignatureTest() {
 		var data = (_signed.DeepClone() as JObject)!;
 		data.Should().NotBeNull();
 
-		var signature = data["https://w3id.org/security#signature"]?[0]?["https://w3id.org/security#signatureValue"]?[0]?["@value"];
+		var signature =
+			data["https://w3id.org/security#signature"]?[0]?["https://w3id.org/security#signatureValue"]?[0]?["@value"];
 		signature.Should().NotBeNull();
 
-		data["https://w3id.org/security#signature"]![0]!["https://w3id.org/security#signatureValue"]![0]!["@value"] += "test";
-		await Assert.ThrowsExceptionAsync<FormatException>(async () => await LdSignature.Verify(data, _keypair.ExportRSAPublicKeyPem()));
+		data["https://w3id.org/security#signature"]![0]!["https://w3id.org/security#signatureValue"]![0]!["@value"] +=
+			"test";
+		await Assert.ThrowsExceptionAsync<FormatException>(async () =>
+			                                                   await LdSignature.Verify(data,
+					                                                    _keypair.ExportRSAPublicKeyPem()));
 	}
-	
+
 	[TestMethod]
 	public async Task InvalidSignatureOptionsTest() {
 		var data = (_signed.DeepClone() as JObject)!;
 		data.Should().NotBeNull();
 
-		var creator = data["https://w3id.org/security#signature"]?[0]?["http://purl.org/dc/terms/creator"]?[0]?["@value"];
+		var creator =
+			data["https://w3id.org/security#signature"]?[0]?["http://purl.org/dc/terms/creator"]?[0]?["@value"];
 		creator.Should().NotBeNull();
 
 		data["https://w3id.org/security#signature"]![0]!["http://purl.org/dc/terms/creator"]![0]!["@value"] += "test";

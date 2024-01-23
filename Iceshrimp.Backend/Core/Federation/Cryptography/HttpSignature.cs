@@ -7,8 +7,8 @@ using Microsoft.Extensions.Primitives;
 namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
 public static class HttpSignature {
-	public static Task<bool> Verify(HttpRequest request, HttpSignatureHeader signature,
-	                                IEnumerable<string> requiredHeaders, string key) {
+	public static async Task<bool> Verify(HttpRequest request, HttpSignatureHeader signature,
+	                                      IEnumerable<string> requiredHeaders, string key) {
 		if (!requiredHeaders.All(signature.Headers.Contains))
 			throw new ConstraintException("Request is missing required headers");
 
@@ -16,19 +16,22 @@ public static class HttpSignature {
 		                                          request.Path,
 		                                          request.Headers);
 
-		return VerifySignature(key, signingString, signature, request.Headers, request.Body);
+		request.Body.Position = 0;
+		return await VerifySignature(key, signingString, signature, request.Headers, request.Body);
 	}
 
-	//TODO: make this share code with the the regular Verify function
-	public static Task<bool> Verify(this HttpRequestMessage request, string key) {
+	public static async Task<bool> Verify(this HttpRequestMessage request, string key) {
 		var signatureHeader = request.Headers.GetValues("Signature").First();
 		var signature       = Parse(signatureHeader);
 		var signingString = GenerateSigningString(signature.Headers, request.Method.Method,
 		                                          request.RequestUri!.AbsolutePath,
 		                                          request.Headers.ToHeaderDictionary());
 
-		return VerifySignature(key, signingString, signature, request.Headers.ToHeaderDictionary(),
-		                       request.Content?.ReadAsStream());
+		Stream? body = null;
+
+		if (request.Content != null) body = await request.Content.ReadAsStreamAsync();
+
+		return await VerifySignature(key, signingString, signature, request.Headers.ToHeaderDictionary(), body);
 	}
 
 	private static async Task<bool> VerifySignature(string key, string signingString, HttpSignatureHeader signature,
@@ -36,13 +39,15 @@ public static class HttpSignature {
 		if (!headers.TryGetValue("date", out var date)) throw new Exception("Date header is missing");
 		if (DateTime.Now - DateTime.Parse(date!) > TimeSpan.FromHours(12)) throw new Exception("Signature too old");
 
-		//TODO: does this break for requests without a body?
-		if (body != null) {
+		if (body is { Length: > 0 }) {
+			if (body.Position != 0)
+				body.Position = 0;
 			var digest = await SHA256.HashDataAsync(body);
+			body.Position = 0;
 
-			//TODO: check for the SHA256= prefix instead of blindly removing the first 8 chars
+			//TODO: check for the SHA-256= prefix instead of blindly removing the first 8 chars
 			if (Convert.ToBase64String(digest) != headers["digest"].ToString().Remove(0, 8))
-				throw new ConstraintException("Request digest mismatch");
+				return false;
 		}
 
 		var rsa = RSA.Create();
@@ -123,9 +128,9 @@ public static class HttpSignature {
 	}
 
 	public class HttpSignatureHeader(string keyId, string algo, byte[] signature, IEnumerable<string> headers) {
-		public readonly string              KeyId     = keyId;
 		public readonly string              Algo      = algo;
-		public readonly byte[]              Signature = signature;
 		public readonly IEnumerable<string> Headers   = headers;
+		public readonly string              KeyId     = keyId;
+		public readonly byte[]              Signature = signature;
 	}
 }

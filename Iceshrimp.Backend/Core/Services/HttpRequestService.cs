@@ -14,7 +14,7 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 	                                           IEnumerable<string>? accept = null) {
 		var message = new HttpRequestMessage {
 			RequestUri = new Uri(url),
-			Method     = method,
+			Method     = method
 			//Headers    = { UserAgent = { ProductInfoHeaderValue.Parse(options.Value.UserAgent) } }
 		};
 
@@ -26,10 +26,9 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 			message.Content = new StringContent(body, MediaTypeHeaderValue.Parse(contentType));
 		}
 
-		if (accept != null) {
+		if (accept != null)
 			foreach (var type in accept.Select(MediaTypeWithQualityHeaderValue.Parse))
 				message.Headers.Accept.Add(type);
-		}
 
 		return message;
 	}
@@ -56,7 +55,7 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 		// Generate and attach digest header
 		var content = await message.Content.ReadAsStreamAsync();
 		var digest  = await SHA256.HashDataAsync(content);
-		message.Headers.Add("Digest", Convert.ToBase64String(digest));
+		message.Headers.Add("Digest", "SHA-256=" + Convert.ToBase64String(digest));
 
 		// Return the signed message
 		return message.Sign(["(request-target)", "date", "host", "digest"], keypair.PrivateKey,
