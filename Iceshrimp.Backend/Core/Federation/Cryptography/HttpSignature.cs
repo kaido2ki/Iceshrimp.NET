@@ -7,38 +7,43 @@ using Microsoft.Extensions.Primitives;
 namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
 public static class HttpSignature {
-	public static async Task<bool> Verify(HttpRequest request, HttpSignatureHeader signature,
-	                                      IEnumerable<string> requiredHeaders, string key) {
+	public static Task<bool> Verify(HttpRequest request, HttpSignatureHeader signature,
+	                                IEnumerable<string> requiredHeaders, string key) {
 		if (!requiredHeaders.All(signature.Headers.Contains))
 			throw new ConstraintException("Request is missing required headers");
-
-		//TODO: verify date header exists and is set to something the last 12 hours
 
 		var signingString = GenerateSigningString(signature.Headers, request.Method,
 		                                          request.Path,
 		                                          request.Headers);
 
-		//TODO: does this break for requests without a body?
-		var digest = await SHA256.HashDataAsync(request.BodyReader.AsStream());
-
-		//TODO: this definitely breaks if there's no body
-		//TODO: check for the SHA256= prefix instead of blindly removing the first 8 chars
-		if (Convert.ToBase64String(digest) != request.Headers["digest"].ToString().Remove(0, 8))
-			throw new ConstraintException("Request digest mismatch");
-
-		var rsa = RSA.Create();
-		rsa.ImportFromPem(key);
-		return rsa.VerifyData(Encoding.UTF8.GetBytes(signingString), signature.Signature,
-		                      HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+		return VerifySignature(key, signingString, signature, request.Headers, request.Body);
 	}
 
 	//TODO: make this share code with the the regular Verify function
-	public static bool VerifySign(this HttpRequestMessage request, string key) {
+	public static Task<bool> Verify(this HttpRequestMessage request, string key) {
 		var signatureHeader = request.Headers.GetValues("Signature").First();
 		var signature       = Parse(signatureHeader);
 		var signingString = GenerateSigningString(signature.Headers, request.Method.Method,
 		                                          request.RequestUri!.AbsolutePath,
 		                                          request.Headers.ToHeaderDictionary());
+
+		return VerifySignature(key, signingString, signature, request.Headers.ToHeaderDictionary(),
+		                       request.Content?.ReadAsStream());
+	}
+
+	private static async Task<bool> VerifySignature(string key, string signingString, HttpSignatureHeader signature,
+	                                                IHeaderDictionary headers, Stream? body) {
+		if (!headers.TryGetValue("date", out var date)) throw new Exception("Date header is missing");
+		if (DateTime.Now - DateTime.Parse(date!) > TimeSpan.FromHours(12)) throw new Exception("Signature too old");
+
+		//TODO: does this break for requests without a body?
+		if (body != null) {
+			var digest = await SHA256.HashDataAsync(body);
+
+			//TODO: check for the SHA256= prefix instead of blindly removing the first 8 chars
+			if (Convert.ToBase64String(digest) != headers["digest"].ToString().Remove(0, 8))
+				throw new ConstraintException("Request digest mismatch");
+		}
 
 		var rsa = RSA.Create();
 		rsa.ImportFromPem(key);

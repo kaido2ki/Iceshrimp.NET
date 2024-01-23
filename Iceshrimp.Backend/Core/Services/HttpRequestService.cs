@@ -42,11 +42,10 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 		return GenerateRequest(url, HttpMethod.Post, body, contentType);
 	}
 
-	public HttpRequestMessage GetSigned(string url, IEnumerable<string>? accept, User user, UserKeypair keypair) {
-		var msg = Get(url, accept).Sign(["(request-target)", "date", "host", "accept"], keypair.PrivateKey,
+	public HttpRequestMessage GetSigned(string url, IEnumerable<string>? accept, User user,
+	                                    UserKeypair keypair) {
+		return Get(url, accept).Sign(["(request-target)", "date", "host", "accept"], keypair.PrivateKey,
 		                             $"https://{options.Value.WebDomain}/users/{user.Id}#main-key");
-		if (!msg.VerifySign(keypair.PublicKey)) throw new Exception("Failed to sign request");
-		return msg;
 	}
 
 	public async Task<HttpRequestMessage> PostSigned(string url, string body, string contentType, User user,
