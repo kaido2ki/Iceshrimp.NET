@@ -70,4 +70,6 @@ if (app.Environment.IsDevelopment()) app.UseViteDevMiddleware();
 app.Urls.Clear();
 app.Urls.Add($"http://{instanceConfig.WebDomain}:{instanceConfig.ListenPort}");
 
+//TODO: init database, grab meta table data
+
 app.Run();
