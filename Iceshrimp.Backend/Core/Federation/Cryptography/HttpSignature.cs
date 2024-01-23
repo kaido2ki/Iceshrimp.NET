@@ -11,7 +11,7 @@ public static class HttpSignature {
 	                                      IEnumerable<string> requiredHeaders, string key) {
 		if (!requiredHeaders.All(signature.Headers.Contains))
 			throw new ConstraintException("Request is missing required headers");
-		
+
 		//TODO: verify date header exists and is set to something the last 12 hours
 
 		var signingString = GenerateSigningString(signature.Headers, request.Method,
@@ -86,7 +86,8 @@ public static class HttpSignature {
 	}
 
 	private static HeaderDictionary ToHeaderDictionary(this HttpRequestHeaders headers) {
-		return new HeaderDictionary(headers.ToDictionary(p => p.Key, p => new StringValues(p.Value.ToArray())));
+		return new HeaderDictionary(headers.ToDictionary(p => p.Key.ToLowerInvariant(),
+		                                                 p => new StringValues(p.Value.ToArray())));
 	}
 
 	public static HttpSignatureHeader Parse(string header) {
