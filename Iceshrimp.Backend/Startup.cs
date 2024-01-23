@@ -15,7 +15,9 @@ builder.Configuration
        .AddIniFile(Environment.GetEnvironmentVariable("ICESHRIMP_CONFIG_OVERRIDES") ?? "configuration.overrides.ini",
                    true, true);
 
-builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddControllers()
+       .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json
+       .AddMultiFormatter();
 builder.Services.AddApiVersioning(options => {
 	options.DefaultApiVersion               = new ApiVersion(1);
 	options.ReportApiVersions               = true;

@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
+[UseNewtonsoftJson]
 [MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
 [Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 public class ActivityPubController(DatabaseContext db, APUserRenderer userRenderer) : Controller {

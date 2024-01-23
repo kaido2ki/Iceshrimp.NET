@@ -63,6 +63,26 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 		return Ok(response);
 	}
 
+	[HttpGet("nodeinfo")]
+	[Produces("application/json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NodeInfoIndexResponse))]
+	public IActionResult NodeInfo() {
+		var response = new NodeInfoIndexResponse {
+			Links = [
+				new WebFingerLink {
+					Rel  = "http://nodeinfo.diaspora.software/ns/schema/2.1",
+					Href = $"https://{config.Value.WebDomain}/nodeinfo/2.1"
+				},
+				new WebFingerLink {
+					Rel  = "http://nodeinfo.diaspora.software/ns/schema/2.0",
+					Href = $"https://{config.Value.WebDomain}/nodeinfo/2.0"
+				}
+			]
+		};
+
+		return Ok(response);
+	}
+
 	[HttpGet("host-meta")]
 	[Produces("application/xrd+xml")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
