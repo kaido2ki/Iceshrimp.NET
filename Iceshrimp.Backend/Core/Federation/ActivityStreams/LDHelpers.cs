@@ -19,6 +19,13 @@ public static class LdHelpers {
 				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
 				                                                      "Contexts", "security.json")))
 			}
+		}, {
+			"http://joinmastodon.org/ns", new RemoteDocument {
+				ContextUrl  = new Uri("http://joinmastodon.org/ns"),
+				DocumentUrl = new Uri("http://joinmastodon.org/ns"),
+				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
+				                                                      "Contexts", "toot.json")))
+			}
 		}
 	};
 
@@ -45,10 +52,10 @@ public static class LdHelpers {
 		return result;
 	}
 
-	public static JObject? Compact(object       obj)  => Compact(JToken.FromObject(obj));
-	public static JArray?  Expand(object        obj)  => Expand(JToken.FromObject(obj));
-	public static JObject? Compact(JToken?      json) => JsonLdProcessor.Compact(json, DefaultContext, Options);
-	public static JArray?  Expand(JToken?       json) => JsonLdProcessor.Expand(json, Options);
-	public static string   Canonicalize(JArray  json) => JsonLdProcessor.Canonicalize(json);
+	public static JObject? Compact(object obj)        => Compact(JToken.FromObject(obj));
+	public static JArray?  Expand(object obj)         => Expand(JToken.FromObject(obj));
+	public static JObject? Compact(JToken? json)      => JsonLdProcessor.Compact(json, DefaultContext, Options);
+	public static JArray?  Expand(JToken? json)       => JsonLdProcessor.Expand(json, Options);
+	public static string   Canonicalize(JArray json)  => JsonLdProcessor.Canonicalize(json);
 	public static string   Canonicalize(JObject json) => JsonLdProcessor.Canonicalize([json]);
 }

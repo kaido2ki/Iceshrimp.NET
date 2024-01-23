@@ -1,0 +1,9 @@
+{
+  "@context": {
+    "toot": "http://joinmastodon.org/ns#",
+    "discoverable": "toot:discoverable",
+    "devices": "toot:devices",
+    "featured": "toot:featured",
+    "featuredTags": "toot:featuredTags"
+  }
+}
