@@ -29,6 +29,7 @@ public static class ServiceExtensions {
 		//TODO: fail if config doesn't parse correctly / required things are missing
 		services.Configure<Config>(configuration);
 		services.Configure<Config.InstanceSection>(configuration.GetSection("Instance"));
+		services.Configure<Config.SecuritySection>(configuration.GetSection("Security"));
 		services.Configure<Config.DatabaseSection>(configuration.GetSection("Database"));
 	}
 }

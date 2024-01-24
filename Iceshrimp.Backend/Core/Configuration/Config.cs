@@ -34,7 +34,7 @@ public sealed class Config {
 	}
 
 	public sealed class SecuritySection {
-		public required bool AuthorizedFetch { get; set; }
+		public required bool AuthorizedFetch { get; init; }
 	}
 
 	public sealed class DatabaseSection {
