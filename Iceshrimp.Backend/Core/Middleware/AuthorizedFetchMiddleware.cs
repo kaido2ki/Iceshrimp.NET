@@ -37,8 +37,6 @@ public class AuthorizedFetchMiddleware(
 			// If we still don't have the key, something went wrong and we need to throw an exception
 			if (key == null) throw new GracefulException("Failed to fetch key of signature user");
 
-			//TODO: re-fetch key once if signature validation fails, to properly support key rotation
-
 			List<string> headers = request.Body.Length > 0 || attribute.ForceBody
 				? ["(request-target)", "digest", "host", "date"]
 				: ["(request-target)", "host", "date"];
@@ -47,6 +45,9 @@ public class AuthorizedFetchMiddleware(
 			logger.LogDebug("HttpSignature.Verify returned {result} for key {keyId}", verified, sig.KeyId);
 			if (!verified)
 				throw new GracefulException(HttpStatusCode.Forbidden, "Request signature validation failed");
+
+			//TODO: re-fetch key once if signature validation fails, to properly support key rotation
+			//TODO: Check for LD signature as well
 		}
 
 		await next(ctx);

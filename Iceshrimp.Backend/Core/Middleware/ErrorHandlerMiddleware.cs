@@ -34,8 +34,12 @@ public class ErrorHandlerMiddleware(IOptions<Config.SecuritySection> options, IL
 					Source     = verbosity == ExceptionVerbosity.Full ? type : null,
 					RequestId  = ctx.TraceIdentifier
 				});
-				logger.LogDebug("Request {id} was rejected with {statusCode} {error} due to: {message}",
-				                ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message);
+				if (ce.Details != null)
+					logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message} - {details}",
+					                ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message, ce.Details);
+				else
+					logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message}",
+					                ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message);
 			}
 			else {
 				ctx.Response.StatusCode = 500;
@@ -54,16 +58,17 @@ public class ErrorHandlerMiddleware(IOptions<Config.SecuritySection> options, IL
 	}
 }
 
-public class GracefulException(HttpStatusCode statusCode, string error, string message) : Exception(message) {
-	public readonly string?        Details    = null; //TODO: implement this
+public class GracefulException(HttpStatusCode statusCode, string error, string message, string? details = null)
+	: Exception(message) {
+	public readonly string?        Details    = details;
 	public readonly string         Error      = error;
 	public readonly HttpStatusCode StatusCode = statusCode;
 
-	public GracefulException(HttpStatusCode statusCode, string message) :
-		this(statusCode, statusCode.ToString(), message) { }
+	public GracefulException(HttpStatusCode statusCode, string message, string? details = null) :
+		this(statusCode, statusCode.ToString(), message, details) { }
 
-	public GracefulException(string message) :
-		this(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError.ToString(), message) { }
+	public GracefulException(string message, string? details = null) :
+		this(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError.ToString(), message, details) { }
 }
 
 public enum ExceptionVerbosity {
