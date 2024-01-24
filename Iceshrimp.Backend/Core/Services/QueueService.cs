@@ -4,8 +4,8 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class QueueService(ILogger<QueueService> logger, IServiceScopeFactory serviceScopeFactory) : BackgroundService {
 	private readonly List<IJobQueue>      _queues      = [];
-	public readonly  JobQueue<InboxJob>   InboxQueue   = Queues.InboxQueue.Create();
 	public readonly  JobQueue<DeliverJob> DeliverQueue = Queues.DeliverQueue.Create();
+	public readonly  JobQueue<InboxJob>   InboxQueue   = Queues.InboxQueue.Create();
 
 	protected override async Task ExecuteAsync(CancellationToken token) {
 		_queues.AddRange([InboxQueue, DeliverQueue]);
@@ -22,7 +22,7 @@ public interface IJobQueue {
 	public Task Tick(IServiceScopeFactory scopeFactory, CancellationToken token);
 }
 
-public class JobQueue<T>(Func<T, IServiceScope, CancellationToken, Task> handler, int parallelism)
+public class JobQueue<T>(Func<T, IServiceProvider, CancellationToken, Task> handler, int parallelism)
 	: IJobQueue where T : Job {
 	private readonly List<T>  _jobs  = [];
 	private readonly Queue<T> _queue = new();
@@ -43,7 +43,7 @@ public class JobQueue<T>(Func<T, IServiceScope, CancellationToken, Task> handler
 		job.Status = Job.JobStatus.Running;
 		var scope = scopeFactory.CreateScope();
 		try {
-			await handler(job, scope, token);
+			await handler(job, scope.ServiceProvider, token);
 		}
 		catch (Exception e) {
 			job.Status    = Job.JobStatus.Failed;

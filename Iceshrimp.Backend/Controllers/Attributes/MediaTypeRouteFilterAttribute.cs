@@ -6,7 +6,6 @@ namespace Iceshrimp.Backend.Controllers.Attributes;
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class MediaTypeRouteFilterAttribute(params string[] mediaTypes) : Attribute, IActionConstraint {
 	public bool Accept(ActionConstraintContext context) {
-		//TODO: this should set the correct content type for the response as well
 		if (!context.RouteContext.HttpContext.Request.Headers.ContainsKey("Accept")) return false;
 
 		var accept = context.RouteContext.HttpContext.Request.Headers.Accept.ToString().Split(',')

@@ -26,6 +26,7 @@ public class ASObject {
 				"https://www.w3.org/ns/activitystreams#Create"       => token.ToObject<ASActivity>(),
 				_                                                    => null
 			},
+			JTokenType.Array  => Deserialize(token.First()),
 			JTokenType.String => new ASObject { Id = token.Value<string>() ?? "" },
 			_                 => throw new ArgumentOutOfRangeException()
 		};
