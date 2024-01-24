@@ -1,9 +1,14 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Iceshrimp.Backend.Controllers.Schemas;
+using Iceshrimp.Backend.Core.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
-public class ErrorHandlerMiddleware(ILoggerFactory loggerFactory) : IMiddleware {
+//TODO: If we make this a scoped service instead of a singleton, we can use IOptionsSnapshot
+public class ErrorHandlerMiddleware(IOptions<Config.SecuritySection> options, ILoggerFactory loggerFactory)
+	: IMiddleware {
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next) {
 		try {
 			await next(ctx);
@@ -16,14 +21,17 @@ public class ErrorHandlerMiddleware(ILoggerFactory loggerFactory) : IMiddleware 
 			if (type.Contains('>'))
 				type = type[..(type.IndexOf('>') + 1)];
 
-			var logger = loggerFactory.CreateLogger(type);
+			var logger    = loggerFactory.CreateLogger(type);
+			var verbosity = options.Value.ExceptionVerbosity;
 
 			if (e is GracefulException ce) {
 				ctx.Response.StatusCode = (int)ce.StatusCode;
 				await ctx.Response.WriteAsJsonAsync(new ErrorResponse {
 					StatusCode = ctx.Response.StatusCode,
-					Error      = ce.Error,
-					Message    = ce.Message,
+					Error      = verbosity >= ExceptionVerbosity.Basic ? ce.Error : ce.StatusCode.ToString(),
+					Message    = verbosity >= ExceptionVerbosity.Basic ? ce.Message : null,
+					Details    = verbosity == ExceptionVerbosity.Full ? ce.Details : null,
+					Source     = verbosity == ExceptionVerbosity.Full ? type : null,
 					RequestId  = ctx.TraceIdentifier
 				});
 				logger.LogDebug("Request {id} was rejected with {statusCode} {error} due to: {message}",
@@ -34,7 +42,8 @@ public class ErrorHandlerMiddleware(ILoggerFactory loggerFactory) : IMiddleware 
 				await ctx.Response.WriteAsJsonAsync(new ErrorResponse {
 					StatusCode = 500,
 					Error      = "Internal Server Error",
-					Message    = e.Message,
+					Message    = verbosity >= ExceptionVerbosity.Basic ? e.Message : null,
+					Source     = verbosity == ExceptionVerbosity.Full ? type : null,
 					RequestId  = ctx.TraceIdentifier
 				});
 				//TODO: use the overload that takes an exception instead of printing it ourselves
@@ -45,9 +54,8 @@ public class ErrorHandlerMiddleware(ILoggerFactory loggerFactory) : IMiddleware 
 	}
 }
 
-//TODO: Allow specifying differing messages for api response and server logs
-//TODO: Make this configurable
 public class GracefulException(HttpStatusCode statusCode, string error, string message) : Exception(message) {
+	public readonly string?        Details    = null; //TODO: implement this
 	public readonly string         Error      = error;
 	public readonly HttpStatusCode StatusCode = statusCode;
 
@@ -56,4 +64,11 @@ public class GracefulException(HttpStatusCode statusCode, string error, string m
 
 	public GracefulException(string message) :
 		this(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError.ToString(), message) { }
+}
+
+public enum ExceptionVerbosity {
+	[SuppressMessage("ReSharper", "UnusedMember.Global")]
+	None = 0,
+	Basic = 1,
+	Full  = 2
 }

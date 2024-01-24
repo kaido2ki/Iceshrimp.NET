@@ -1,4 +1,5 @@
 using System.Reflection;
+using Iceshrimp.Backend.Core.Middleware;
 
 namespace Iceshrimp.Backend.Core.Configuration;
 
@@ -34,7 +35,8 @@ public sealed class Config {
 	}
 
 	public sealed class SecuritySection {
-		public required bool AuthorizedFetch { get; init; }
+		public required bool               AuthorizedFetch    { get; init; }
+		public required ExceptionVerbosity ExceptionVerbosity { get; init; }
 	}
 
 	public sealed class DatabaseSection {
