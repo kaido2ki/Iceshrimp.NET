@@ -2,6 +2,7 @@ using System.Text;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
+using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
@@ -41,8 +42,8 @@ public class HttpSignatureTests {
 
 		request.Headers.Date = DateTimeOffset.Now - TimeSpan.FromHours(13);
 
-		await Assert.ThrowsExceptionAsync<Exception>(async () =>
-			                                             await request.Verify(MockObjects.UserKeypair.PublicKey));
+		await Assert.ThrowsExceptionAsync<CustomException>(async () =>
+			                                                   await request.Verify(MockObjects.UserKeypair.PublicKey));
 	}
 
 	[TestMethod]
