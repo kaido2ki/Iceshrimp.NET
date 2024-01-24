@@ -18,7 +18,7 @@ public class ErrorHandlerMiddleware(ILoggerFactory loggerFactory) : IMiddleware 
 
 			var logger = loggerFactory.CreateLogger(type);
 
-			if (e is CustomException ce) {
+			if (e is GracefulException ce) {
 				ctx.Response.StatusCode = (int)ce.StatusCode;
 				await ctx.Response.WriteAsJsonAsync(new ErrorResponse {
 					StatusCode = ctx.Response.StatusCode,
@@ -45,16 +45,15 @@ public class ErrorHandlerMiddleware(ILoggerFactory loggerFactory) : IMiddleware 
 	}
 }
 
-//TODO: Find a better name for this class
-public class CustomException(HttpStatusCode statusCode, string error, string message)
-	: Exception(message) {
-	public readonly string Error = error;
-
+//TODO: Allow specifying differing messages for api response and server logs
+//TODO: Make this configurable
+public class GracefulException(HttpStatusCode statusCode, string error, string message) : Exception(message) {
+	public readonly string         Error      = error;
 	public readonly HttpStatusCode StatusCode = statusCode;
 
-	public CustomException(HttpStatusCode statusCode, string message) :
+	public GracefulException(HttpStatusCode statusCode, string message) :
 		this(statusCode, statusCode.ToString(), message) { }
 
-	public CustomException(string message) :
+	public GracefulException(string message) :
 		this(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError.ToString(), message) { }
 }

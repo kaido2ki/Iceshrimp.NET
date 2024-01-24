@@ -43,7 +43,7 @@ public class HttpSignatureTests {
 
 		request.Headers.Date = DateTimeOffset.Now - TimeSpan.FromHours(13);
 
-		var e = await Assert.ThrowsExceptionAsync<CustomException>(async () =>
+		var e = await Assert.ThrowsExceptionAsync<GracefulException>(async () =>
 			                                                           await request.Verify(MockObjects.UserKeypair
 						                                                            .PublicKey));
 		e.StatusCode.Should().Be(HttpStatusCode.Forbidden);

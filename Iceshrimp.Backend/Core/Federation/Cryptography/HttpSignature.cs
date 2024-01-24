@@ -11,7 +11,7 @@ public static class HttpSignature {
 	public static async Task<bool> Verify(HttpRequest request, HttpSignatureHeader signature,
 	                                      IEnumerable<string> requiredHeaders, string key) {
 		if (!requiredHeaders.All(signature.Headers.Contains))
-			throw new CustomException(HttpStatusCode.Forbidden, "Request is missing required headers");
+			throw new GracefulException(HttpStatusCode.Forbidden, "Request is missing required headers");
 
 		var signingString = GenerateSigningString(signature.Headers, request.Method,
 		                                          request.Path,
@@ -38,9 +38,9 @@ public static class HttpSignature {
 	private static async Task<bool> VerifySignature(string key, string signingString, HttpSignatureHeader signature,
 	                                                IHeaderDictionary headers, Stream? body) {
 		if (!headers.TryGetValue("date", out var date))
-			throw new CustomException(HttpStatusCode.Forbidden, "Date header is missing");
+			throw new GracefulException(HttpStatusCode.Forbidden, "Date header is missing");
 		if (DateTime.Now - DateTime.Parse(date!) > TimeSpan.FromHours(12))
-			throw new CustomException(HttpStatusCode.Forbidden, "Request signature too old");
+			throw new GracefulException(HttpStatusCode.Forbidden, "Request signature too old");
 
 		if (body is { Length: > 0 }) {
 			if (body.Position != 0)
@@ -113,18 +113,18 @@ public static class HttpSignature {
 
 		//TODO: these fail if the dictionary doesn't contain the key, use TryGetValue instead
 		var signatureBase64 = sig["signature"] ??
-		                      throw new CustomException(HttpStatusCode.Forbidden,
+		                      throw new GracefulException(HttpStatusCode.Forbidden,
 		                                                "Signature string is missing the signature field");
 		var headers = sig["headers"].Split(" ") ??
-		              throw new CustomException(HttpStatusCode.Forbidden,
+		              throw new GracefulException(HttpStatusCode.Forbidden,
 		                                        "Signature data is missing the headers field");
 
 		var keyId = sig["keyId"] ??
-		            throw new CustomException(HttpStatusCode.Forbidden, "Signature string is missing the keyId field");
+		            throw new GracefulException(HttpStatusCode.Forbidden, "Signature string is missing the keyId field");
 
 		//TODO: this should fallback to sha256
 		var algo = sig["algorithm"] ??
-		           throw new CustomException(HttpStatusCode.Forbidden,
+		           throw new GracefulException(HttpStatusCode.Forbidden,
 		                                     "Signature string is missing the algorithm field");
 
 		var signature = Convert.FromBase64String(signatureBase64);

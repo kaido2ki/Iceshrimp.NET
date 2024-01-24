@@ -44,13 +44,13 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc, I
 
 			var split = query.Split('@');
 			domain = split.Length switch {
-				< 2 or > 3 => throw new CustomException(HttpStatusCode.BadRequest, "Invalid query"),
-				2 => throw new CustomException(HttpStatusCode.BadRequest, "Can't run WebFinger for local user"),
+				< 2 or > 3 => throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query"),
+				2 => throw new GracefulException(HttpStatusCode.BadRequest, "Can't run WebFinger for local user"),
 				_ => split[2]
 			};
 		}
 		else {
-			throw new CustomException(HttpStatusCode.BadRequest, "Invalid query");
+			throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
 		}
 
 		return (query, proto, domain);

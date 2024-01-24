@@ -15,7 +15,7 @@ namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 public static class LdSignature {
 	public static Task<bool> Verify(JArray activity, string key) {
 		if (activity.ToArray() is not [JObject obj])
-			throw new CustomException(HttpStatusCode.UnprocessableEntity, "Invalid activity");
+			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Invalid activity");
 		return Verify(obj, key);
 	}
 
@@ -37,7 +37,7 @@ public static class LdSignature {
 
 	public static Task<JObject> Sign(JArray activity, string key, string? creator) {
 		if (activity.ToArray() is not [JObject obj])
-			throw new CustomException(HttpStatusCode.UnprocessableEntity, "Invalid activity");
+			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Invalid activity");
 		return Sign(obj, key, creator);
 	}
 
@@ -52,7 +52,7 @@ public static class LdSignature {
 
 		var signatureData = await GetSignatureData(activity, options);
 		if (signatureData == null)
-			throw new CustomException(HttpStatusCode.Forbidden, "Signature data must not be null");
+			throw new GracefulException(HttpStatusCode.Forbidden, "Signature data must not be null");
 
 		var rsa = RSA.Create();
 		rsa.ImportFromPem(key);
@@ -64,7 +64,7 @@ public static class LdSignature {
 		activity.Add("https://w3id.org/security#signature", JToken.FromObject(options));
 
 		return LdHelpers.Expand(activity)?[0] as JObject ??
-		       throw new CustomException(HttpStatusCode.UnprocessableEntity, "Failed to expand signed activity");
+		       throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Failed to expand signed activity");
 	}
 
 	private static Task<byte[]?> GetSignatureData(JToken data, SignatureOptions options) {

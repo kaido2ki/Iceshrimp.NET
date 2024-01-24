@@ -22,13 +22,13 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 
 		var responses = new Dictionary<string, WebFingerResponse>();
 		var fingerRes = await webFingerSvc.Resolve(query);
-		if (fingerRes == null) throw new CustomException($"Failed to WebFinger '{query}'");
+		if (fingerRes == null) throw new GracefulException($"Failed to WebFinger '{query}'");
 		responses.Add(query, fingerRes);
 
 		var apUri = fingerRes.Links.FirstOrDefault(p => p.Rel == "self" && p.Type == "application/activity+json")
 		                     ?.Href;
 		if (apUri == null)
-			throw new CustomException($"WebFinger response for '{query}' didn't contain a candidate link");
+			throw new GracefulException($"WebFinger response for '{query}' didn't contain a candidate link");
 
 		fingerRes = responses.GetValueOrDefault(apUri);
 		if (fingerRes == null) {
@@ -36,13 +36,13 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 
 			fingerRes = await webFingerSvc.Resolve(apUri);
 
-			if (fingerRes == null) throw new CustomException($"Failed to WebFinger '{apUri}'");
+			if (fingerRes == null) throw new GracefulException($"Failed to WebFinger '{apUri}'");
 			responses.Add(apUri, fingerRes);
 		}
 
 		var acctUri = (fingerRes.Aliases ?? []).Prepend(fingerRes.Subject).FirstOrDefault(p => p.StartsWith("acct:"));
 		if (acctUri == null)
-			throw new CustomException($"WebFinger response for '{apUri}' didn't contain any acct uris");
+			throw new GracefulException($"WebFinger response for '{apUri}' didn't contain any acct uris");
 
 		fingerRes = responses.GetValueOrDefault(acctUri);
 		if (fingerRes == null) {
@@ -50,13 +50,13 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 
 			fingerRes = await webFingerSvc.Resolve(acctUri);
 
-			if (fingerRes == null) throw new CustomException($"Failed to WebFinger '{acctUri}'");
+			if (fingerRes == null) throw new GracefulException($"Failed to WebFinger '{acctUri}'");
 			responses.Add(acctUri, fingerRes);
 		}
 
 		var finalAcct = fingerRes.Subject;
 		var finalUri = fingerRes.Links.FirstOrDefault(p => p.Rel == "self" && p.Type == "application/activity+json")
-		                        ?.Href ?? throw new CustomException("Final AP URI was null");
+		                        ?.Href ?? throw new GracefulException("Final AP URI was null");
 
 		return (finalAcct, finalUri);
 	}

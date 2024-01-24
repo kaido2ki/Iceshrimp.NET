@@ -21,7 +21,7 @@ public class AuthorizedFetchMiddleware(
 		if (attribute != null && config.Value.AuthorizedFetch) {
 			var request = ctx.Request;
 			if (!request.Headers.TryGetValue("signature", out var sigHeader))
-				throw new CustomException(HttpStatusCode.Unauthorized, "Request is missing the signature header");
+				throw new GracefulException(HttpStatusCode.Unauthorized, "Request is missing the signature header");
 
 			var sig = HttpSignature.Parse(sigHeader.ToString());
 
@@ -35,7 +35,7 @@ public class AuthorizedFetchMiddleware(
 			}
 
 			// If we still don't have the key, something went wrong and we need to throw an exception
-			if (key == null) throw new CustomException("Failed to fetch key of signature user");
+			if (key == null) throw new GracefulException("Failed to fetch key of signature user");
 
 			//TODO: re-fetch key once if signature validation fails, to properly support key rotation
 
@@ -46,7 +46,7 @@ public class AuthorizedFetchMiddleware(
 			var verified = await HttpSignature.Verify(ctx.Request, sig, headers, key.KeyPem);
 			logger.LogDebug("HttpSignature.Verify returned {result} for key {keyId}", verified, sig.KeyId);
 			if (!verified)
-				throw new CustomException(HttpStatusCode.Forbidden, "Request signature validation failed");
+				throw new GracefulException(HttpStatusCode.Forbidden, "Request signature validation failed");
 		}
 
 		await next(ctx);

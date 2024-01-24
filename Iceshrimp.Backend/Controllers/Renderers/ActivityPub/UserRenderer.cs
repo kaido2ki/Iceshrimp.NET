@@ -12,12 +12,12 @@ namespace Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db, ILogger<UserRenderer> logger) {
 	public async Task<ASActor> Render(User user) {
 		if (user.Host != null)
-			throw new CustomException("Refusing to render remote user");
+			throw new GracefulException("Refusing to render remote user");
 
 		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
 		var keypair = await db.UserKeypairs.FirstOrDefaultAsync(p => p.UserId == user.Id);
 
-		if (keypair == null) throw new CustomException("User has no keypair");
+		if (keypair == null) throw new GracefulException("User has no keypair");
 
 		var id = $"https://{config.Value.WebDomain}/users/{user.Id}";
 		var type = Constants.SystemUsers.Contains(user.UsernameLower)

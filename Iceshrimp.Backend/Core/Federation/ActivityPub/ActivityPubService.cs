@@ -21,19 +21,19 @@ public class ActivityPubService(HttpClient client, HttpRequestService httpRqSvc)
 		var input    = await response.Content.ReadAsStringAsync();
 		var json     = JsonConvert.DeserializeObject<JObject?>(input, JsonSerializerSettings);
 
-		var res = LdHelpers.Expand(json) ?? throw new CustomException("Failed to expand JSON-LD object");
+		var res = LdHelpers.Expand(json) ?? throw new GracefulException("Failed to expand JSON-LD object");
 		return res.Select(p => p.ToObject<ASObject>(new JsonSerializer { Converters = { new ASObjectConverter() } }) ??
-		                       throw new CustomException("Failed to deserialize activity"));
+		                       throw new GracefulException("Failed to deserialize activity"));
 	}
 
 	public async Task<ASActor> FetchActor(string uri, User actor, UserKeypair keypair) {
 		var activity = await FetchActivity(uri, actor, keypair);
 		return activity.OfType<ASActor>().FirstOrDefault() ??
-		       throw new CustomException("Failed to fetch actor");
+		       throw new GracefulException("Failed to fetch actor");
 	}
 
 	public async Task<ASNote> FetchNote(string uri, User actor, UserKeypair keypair) {
 		var activity = await FetchActivity(uri, actor, keypair);
-		return activity.OfType<ASNote>().FirstOrDefault() ?? throw new CustomException("Failed to fetch note");
+		return activity.OfType<ASNote>().FirstOrDefault() ?? throw new GracefulException("Failed to fetch note");
 	}
 }
