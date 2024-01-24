@@ -30,6 +30,7 @@ public class ErrorHandlerMiddleware(RequestDelegate next) {
 					Message    = e.Message,
 					RequestId  = ctx.TraceIdentifier
 				});
+				//TODO: use the overload that takes an exception instead of printing it ourselves
 				logger.LogError("Request {id} encountered an unexpected error: {exception}", ctx.TraceIdentifier,
 				                e.ToString());
 			}
@@ -38,6 +39,7 @@ public class ErrorHandlerMiddleware(RequestDelegate next) {
 }
 
 //TODO: Find a better name for this class
+//TODO: is there a better way to resolve the originating class than passing the logger? Maybe CustomException<T>, or reflection
 public class CustomException(HttpStatusCode statusCode, string error, string message, ILogger? logger)
 	: Exception(message) {
 	public readonly string   Error  = error;
