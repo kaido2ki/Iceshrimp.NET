@@ -1,4 +1,4 @@
-using Iceshrimp.Backend.Controllers.Schemas;
+using System.Net;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
@@ -19,7 +19,8 @@ public class AuthorizedFetchMiddleware(RequestDelegate next) {
 		if (attribute != null && config.Value.AuthorizedFetch) {
 			var request = context.Request;
 			if (!request.Headers.TryGetValue("signature", out var sigHeader))
-				throw new Exception("Request is missing the signature header");
+				throw new CustomException(HttpStatusCode.Unauthorized, "Request is missing the signature header",
+				                          logger);
 
 			var sig = HttpSignature.Parse(sigHeader.ToString());
 
@@ -33,7 +34,9 @@ public class AuthorizedFetchMiddleware(RequestDelegate next) {
 			}
 
 			// If we still don't have the key, something went wrong and we need to throw an exception
-			if (key == null) throw new Exception("Failed to fetch key");
+			if (key == null) throw new CustomException("Failed to fetch key of signature user", logger);
+
+			//TODO: re-fetch key once if signature validation fails, to properly support key rotation
 
 			List<string> headers = request.Body.Length > 0 || attribute.ForceBody
 				? ["(request-target)", "digest", "host", "date"]
@@ -41,16 +44,8 @@ public class AuthorizedFetchMiddleware(RequestDelegate next) {
 
 			var verified = await HttpSignature.Verify(context.Request, sig, headers, key.KeyPem);
 			logger.LogDebug("HttpSignature.Verify returned {result} for key {keyId}", verified, sig.KeyId);
-			if (!verified) {
-				context.Response.StatusCode  = StatusCodes.Status403Forbidden;
-				context.Response.ContentType = "application/json";
-				await context.Response.WriteAsJsonAsync(new ErrorResponse {
-					StatusCode = StatusCodes.Status403Forbidden,
-					Error      = "Unauthorized",
-					Message    = "Request signature validation failed"
-				});
-				return;
-			}
+			if (!verified)
+				throw new CustomException(HttpStatusCode.Forbidden, "Request signature validation failed", logger);
 		}
 
 		await next(context);

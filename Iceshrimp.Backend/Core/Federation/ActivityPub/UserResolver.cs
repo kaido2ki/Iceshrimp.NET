@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
+using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
@@ -21,12 +22,13 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 
 		var responses = new Dictionary<string, WebFingerResponse>();
 		var fingerRes = await webFingerSvc.Resolve(query);
-		if (fingerRes == null) throw new Exception($"Failed to WebFinger '{query}'");
+		if (fingerRes == null) throw new CustomException($"Failed to WebFinger '{query}'", logger);
 		responses.Add(query, fingerRes);
 
 		var apUri = fingerRes.Links.FirstOrDefault(p => p.Rel == "self" && p.Type == "application/activity+json")
 		                     ?.Href;
-		if (apUri == null) throw new Exception($"WebFinger response for '{query}' didn't contain a candidate link");
+		if (apUri == null)
+			throw new CustomException($"WebFinger response for '{query}' didn't contain a candidate link", logger);
 
 		fingerRes = responses.GetValueOrDefault(apUri);
 		if (fingerRes == null) {
@@ -34,12 +36,13 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 
 			fingerRes = await webFingerSvc.Resolve(apUri);
 
-			if (fingerRes == null) throw new Exception($"Failed to WebFinger '{apUri}'");
+			if (fingerRes == null) throw new CustomException($"Failed to WebFinger '{apUri}'", logger);
 			responses.Add(apUri, fingerRes);
 		}
 
 		var acctUri = (fingerRes.Aliases ?? []).Prepend(fingerRes.Subject).FirstOrDefault(p => p.StartsWith("acct:"));
-		if (acctUri == null) throw new Exception($"WebFinger response for '{apUri}' didn't contain any acct uris");
+		if (acctUri == null)
+			throw new CustomException($"WebFinger response for '{apUri}' didn't contain any acct uris", logger);
 
 		fingerRes = responses.GetValueOrDefault(acctUri);
 		if (fingerRes == null) {
@@ -47,13 +50,13 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 
 			fingerRes = await webFingerSvc.Resolve(acctUri);
 
-			if (fingerRes == null) throw new Exception($"Failed to WebFinger '{acctUri}'");
+			if (fingerRes == null) throw new CustomException($"Failed to WebFinger '{acctUri}'", logger);
 			responses.Add(acctUri, fingerRes);
 		}
 
 		var finalAcct = fingerRes.Subject;
 		var finalUri = fingerRes.Links.FirstOrDefault(p => p.Rel == "self" && p.Type == "application/activity+json")
-		                        ?.Href ?? throw new Exception("Final AP URI was null");
+		                        ?.Href ?? throw new CustomException("Final AP URI was null", logger);
 
 		return (finalAcct, finalUri);
 	}

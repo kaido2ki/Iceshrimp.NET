@@ -1,7 +1,9 @@
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Middleware;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
@@ -12,7 +14,8 @@ namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
 public static class LdSignature {
 	public static Task<bool> Verify(JArray activity, string key) {
-		if (activity.ToArray() is not [JObject obj]) throw new Exception("Invalid activity");
+		if (activity.ToArray() is not [JObject obj])
+			throw new CustomException(HttpStatusCode.UnprocessableEntity, "Invalid activity");
 		return Verify(obj, key);
 	}
 
@@ -33,7 +36,8 @@ public static class LdSignature {
 	}
 
 	public static Task<JObject> Sign(JArray activity, string key, string? creator) {
-		if (activity.ToArray() is not [JObject obj]) throw new Exception("Invalid activity");
+		if (activity.ToArray() is not [JObject obj])
+			throw new CustomException(HttpStatusCode.UnprocessableEntity, "Invalid activity");
 		return Sign(obj, key, creator);
 	}
 
@@ -43,11 +47,12 @@ public static class LdSignature {
 			Creator = creator,
 			Nonce   = CryptographyHelpers.GenerateRandomHexString(16),
 			Type    = ["_:RsaSignature2017"],
-			Domain  = null,
+			Domain  = null
 		};
 
 		var signatureData = await GetSignatureData(activity, options);
-		if (signatureData == null) throw new NullReferenceException("Signature data must not be null");
+		if (signatureData == null)
+			throw new CustomException(HttpStatusCode.Forbidden, "Signature data must not be null");
 
 		var rsa = RSA.Create();
 		rsa.ImportFromPem(key);
@@ -58,11 +63,13 @@ public static class LdSignature {
 
 		activity.Add("https://w3id.org/security#signature", JToken.FromObject(options));
 
-		return LdHelpers.Expand(activity)?[0] as JObject ?? throw new Exception("Failed to expand signed activity");
+		return LdHelpers.Expand(activity)?[0] as JObject ??
+		       throw new CustomException(HttpStatusCode.UnprocessableEntity, "Failed to expand signed activity");
 	}
 
-	private static Task<byte[]?> GetSignatureData(JToken data, SignatureOptions options) =>
-		GetSignatureData(data, LdHelpers.Expand(JObject.FromObject(options))!);
+	private static Task<byte[]?> GetSignatureData(JToken data, SignatureOptions options) {
+		return GetSignatureData(data, LdHelpers.Expand(JObject.FromObject(options))!);
+	}
 
 	private static async Task<byte[]?> GetSignatureData(JToken data, JToken options) {
 		if (data is not JObject inputData) return null;

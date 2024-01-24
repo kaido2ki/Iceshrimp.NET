@@ -1,5 +1,7 @@
+using System.Net;
 using System.Text.Encodings.Web;
 using System.Xml;
+using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 
 namespace Iceshrimp.Backend.Core.Federation.WebFinger;
@@ -15,8 +17,9 @@ namespace Iceshrimp.Backend.Core.Federation.WebFinger;
  */
 
 //FIXME: handle cursed person/group acct collisions like https://lemmy.ml/.well-known/webfinger?resource=acct:linux@lemmy.ml
+//FIXME: also check if the query references the local instance in other ways (e.g. @user@{WebDomain}, @user@{AccountDomain}, https://{WebDomain}/..., etc)
 
-public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
+public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc, ILogger<WebFingerService> logger) {
 	public async Task<WebFingerResponse?> Resolve(string query) {
 		(query, var proto, var domain) = ParseQuery(query);
 		var webFingerUrl = GetWebFingerUrl(query, proto, domain);
@@ -27,7 +30,7 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 		return await res.Content.ReadFromJsonAsync<WebFingerResponse>();
 	}
 
-	private static (string query, string proto, string domain) ParseQuery(string query) {
+	private (string query, string proto, string domain) ParseQuery(string query) {
 		string domain;
 		string proto;
 		query = query.StartsWith("acct:") ? $"@{query[5..]}" : query;
@@ -40,15 +43,14 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 			proto = "https";
 
 			var split = query.Split('@');
-			if (split.Length is < 2 or > 3)
-				throw new Exception("Invalid query");
-			if (split.Length is 2)
-				throw new Exception("Can't run WebFinger for local user");
-
-			domain = split[2];
+			domain = split.Length switch {
+				< 2 or > 3 => throw new CustomException(HttpStatusCode.BadRequest, "Invalid query", logger),
+				2 => throw new CustomException(HttpStatusCode.BadRequest, "Can't run WebFinger for local user", logger),
+				_ => split[2]
+			};
 		}
 		else {
-			throw new Exception("Invalid query");
+			throw new CustomException(HttpStatusCode.BadRequest, "Invalid query", logger);
 		}
 
 		return (query, proto, domain);
@@ -71,11 +73,9 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 
 		//TODO: implement https://stackoverflow.com/a/37322614/18402176 instead
 
-		for (var i = 0; i < section.Count; i++) {
-			if (section[i]?.Attributes?["rel"]?.InnerText == "lrdd") {
+		for (var i = 0; i < section.Count; i++)
+			if (section[i]?.Attributes?["rel"]?.InnerText == "lrdd")
 				return section[i]?.Attributes?["template"]?.InnerText;
-			}
-		}
 
 		return null;
 	}

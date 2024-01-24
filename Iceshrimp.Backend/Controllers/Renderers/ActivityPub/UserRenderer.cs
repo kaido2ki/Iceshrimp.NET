@@ -3,19 +3,21 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
+using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 
-public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db) {
+public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db, ILogger<UserRenderer> logger) {
 	public async Task<ASActor> Render(User user) {
-		if (user.Host != null) throw new Exception("Refusing to render remote user");
+		if (user.Host != null)
+			throw new CustomException("Refusing to render remote user", logger);
 
 		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
 		var keypair = await db.UserKeypairs.FirstOrDefaultAsync(p => p.UserId == user.Id);
 
-		if (keypair == null) throw new Exception("User has no keypair");
+		if (keypair == null) throw new CustomException("User has no keypair", logger);
 
 		var id = $"https://{config.Value.WebDomain}/users/{user.Id}";
 		var type = Constants.SystemUsers.Contains(user.UsernameLower)
