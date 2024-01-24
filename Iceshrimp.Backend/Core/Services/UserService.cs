@@ -25,6 +25,8 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, Activi
 		return db.Users.FirstOrDefaultAsync(p => p.Username == tuple.Username && p.Host == tuple.Host);
 	}
 
+	//TODO: UpdateUser
+
 	public async Task<User> CreateUser(string uri, string acct) {
 		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
 		var instanceActor        = await GetInstanceActor();
@@ -53,8 +55,8 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, Activi
 			Uri           = actor.Id,
 			IsCat         = actor.IsCat ?? false,
 			Featured      = actor.Featured?.Link,
-			//FollowersCount
-			//FollowingCount
+			//TODO: FollowersCount
+			//TODO: FollowingCount
 			Emojis = [], //FIXME
 			Tags   = []  //FIXME
 		};
@@ -106,7 +108,7 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, Activi
 	}
 
 
-	public async Task<User> GetInstanceActor() {
+	private async Task<User> GetInstanceActor() {
 		return await GetOrCreateSystemUser("instance.actor");
 	}
 

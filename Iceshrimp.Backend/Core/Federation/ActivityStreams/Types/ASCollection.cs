@@ -6,7 +6,11 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASCollection<T>(string id) : LDIdObject(id) where T : ASObject {
+public class ASCollection<T>() : LDIdObject where T : ASObject {
+	public ASCollection(string id) : this() {
+		Id = id;
+	}
+
 	[J("https://www.w3.org/ns/activitystreams#items")]
 	[JC(typeof(ASCollectionItemsConverter))]
 	public List<T>? Items { get; set; }
@@ -16,9 +20,7 @@ public class ASCollection<T>(string id) : LDIdObject(id) where T : ASObject {
 	public long? TotalItems { get; set; }
 }
 
-public sealed class ASCollection(string id) : ASCollection<ASObject>(id);
-
-public sealed class ASCollectionConverter : ASSerializer.ListSingleObjectConverter<ASCollection>;
+public sealed class ASCollectionConverter : ASSerializer.ListSingleObjectConverter<ASCollection<ASObject>>;
 
 internal sealed class ASCollectionItemsConverter : JsonConverter {
 	public override bool CanWrite => false;
@@ -27,7 +29,7 @@ internal sealed class ASCollectionItemsConverter : JsonConverter {
 		return true;
 	}
 
-	public override object? ReadJson(JsonReader     reader, Type objectType, object? existingValue,
+	public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue,
 	                                 JsonSerializer serializer) {
 		if (reader.TokenType != JsonToken.StartArray) throw new Exception("this shouldn't happen");
 

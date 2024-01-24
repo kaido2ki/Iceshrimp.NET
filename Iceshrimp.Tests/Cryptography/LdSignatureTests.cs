@@ -40,7 +40,7 @@ public class LdSignatureTests {
 		var data = (_signed.DeepClone() as JObject)!;
 		data.Should().NotBeNull();
 
-		data!.Add("https://example.org/ns#test", JToken.FromObject("value"));
+		data.Add("https://example.org/ns#test", JToken.FromObject("value"));
 		var expanded = LdHelpers.Expand(data)!;
 		expanded.Should().NotBeNull();
 

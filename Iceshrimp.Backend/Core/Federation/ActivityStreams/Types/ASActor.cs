@@ -7,6 +7,18 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASActor : ASObject {
+	private const int DisplayNameLength = 128;
+	private const int UsernameLength    = 128;
+	private const int SummaryLength     = 2048;
+
+	private static readonly List<string> ActorTypes = [
+		"https://www.w3.org/ns/activitystreams#Person",
+		"https://www.w3.org/ns/activitystreams#Service",
+		"https://www.w3.org/ns/activitystreams#Group",
+		"https://www.w3.org/ns/activitystreams#Organization",
+		"https://www.w3.org/ns/activitystreams#Application"
+	];
+
 	[J("https://misskey-hub.net/ns#_misskey_summary")]
 	[JC(typeof(VC))]
 	public string? MkSummary { get; set; }
@@ -57,7 +69,7 @@ public class ASActor : ASObject {
 
 	[J("https://www.w3.org/ns/activitystreams#outbox")]
 	[JC(typeof(ASCollectionConverter))]
-	public ASCollection? Outbox { get; set; }
+	public ASCollection<ASActivity>? Outbox { get; set; }
 
 	[J("http://www.w3.org/ns/ldp#inbox")]
 	[JC(typeof(ASLinkConverter))]
@@ -65,11 +77,11 @@ public class ASActor : ASObject {
 
 	[J("https://www.w3.org/ns/activitystreams#followers")]
 	[JC(typeof(ASCollectionConverter))]
-	public ASCollection? Followers { get; set; } //FIXME: <ASActor>
+	public ASCollection<ASActor>? Followers { get; set; }
 
 	[J("https://www.w3.org/ns/activitystreams#following")]
 	[JC(typeof(ASCollectionConverter))]
-	public ASCollection? Following { get; set; } //FIXME: <ASActor>
+	public ASCollection<ASActor>? Following { get; set; }
 
 	[J("https://www.w3.org/ns/activitystreams#sharedInbox")]
 	[JC(typeof(ASLinkConverter))]
@@ -94,27 +106,15 @@ public class ASActor : ASObject {
 	[J("http://joinmastodon.org/ns#featuredTags")]
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? FeaturedTags { get; set; }
-	
+
 	[J("https://w3id.org/security#publicKey")]
 	[JC(typeof(ASPublicKeyConverter))]
 	public ASPublicKey? PublicKey { get; set; }
 
-	public bool IsBot => Type?.Any(p => p == "https://www.w3.org/ns/activitystreams#Service") ?? false;
-
-	private const int DisplayNameLength = 128;
-	private const int UsernameLength    = 128;
-	private const int SummaryLength     = 2048;
-
-	private static readonly List<string> ActorTypes = [
-		"https://www.w3.org/ns/activitystreams#Person",
-		"https://www.w3.org/ns/activitystreams#Service",
-		"https://www.w3.org/ns/activitystreams#Group",
-		"https://www.w3.org/ns/activitystreams#Organization",
-		"https://www.w3.org/ns/activitystreams#Application"
-	];
+	public bool IsBot => Type == "https://www.w3.org/ns/activitystreams#Service";
 
 	public void Normalize(string uri, string acct) {
-		if (!Type?.Any(t => ActorTypes.Contains(t)) ?? false) throw new Exception("Actor is of invalid type");
+		if (Type == null || !ActorTypes.Contains(Type)) throw new Exception("Actor is of invalid type");
 
 		// in case this is ever removed - check for hostname match instead
 		if (Id != uri) throw new Exception("Actor URI mismatch");

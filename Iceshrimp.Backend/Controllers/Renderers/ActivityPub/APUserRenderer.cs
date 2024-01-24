@@ -25,27 +25,29 @@ public class APUserRenderer(IOptions<Config.InstanceSection> config, DatabaseCon
 				: "Person";
 
 		return new ASActor {
-			Id    = id,
-			Type  = [type],
-			Inbox = new ASLink($"{id}/inbox"),
-			//Outbox = $"{id}/outbox",
-			//Followers = $"{id}/followers",
-			//Following = $"{id}/following",
-			SharedInbox = new ASLink($"https://{config.Value.WebDomain}/inbox"),
-			Endpoints = new ASEndpoints { SharedInbox = new LDIdObject($"https://{config.Value.WebDomain}/inbox") },
-			Url = new ASLink($"https://{config.Value.WebDomain}/@{user.Username}"),
-			Username = user.Username,
-			DisplayName = user.Name ?? user.Username,
-			Summary = profile?.Description != null ? "Not implemented" : null, //TODO: convert to html
-			MkSummary = profile?.Description,
-			IsCat = user.IsCat,
+			Id             = id,
+			Type           = type,
+			Inbox          = new ASLink($"{id}/inbox"),
+			Outbox         = new ASCollection<ASActivity>($"{id}/outbox"),
+			Followers      = new ASCollection<ASActor>($"{id}/followers"),
+			Following      = new ASCollection<ASActor>($"{id}/following"),
+			SharedInbox    = new ASLink($"https://{config.Value.WebDomain}/inbox"),
+			Url            = new ASLink($"https://{config.Value.WebDomain}/@{user.Username}"),
+			Username       = user.Username,
+			DisplayName    = user.Name ?? user.Username,
+			Summary        = profile?.Description != null ? "Not implemented" : null, //TODO: convert to html
+			MkSummary      = profile?.Description,
+			IsCat          = user.IsCat,
 			IsDiscoverable = user.IsExplorable,
-			IsLocked = user.IsLocked,
+			IsLocked       = user.IsLocked,
+			Endpoints = new ASEndpoints {
+				SharedInbox = new LDIdObject($"https://{config.Value.WebDomain}/inbox")
+			},
 			PublicKey = new ASPublicKey {
 				Id        = $"{id}#main-key",
 				Owner     = new LDIdObject(id),
 				PublicKey = keypair.PublicKey,
-				Type      = ["Key"]
+				Type      = "Key"
 			}
 		};
 	}

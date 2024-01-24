@@ -10,7 +10,7 @@ namespace Iceshrimp.Tests;
 public static class MockObjects {
 	public static readonly ASActor ASActor = new() {
 		Id             = $"https://example.org/users/{IdHelpers.GenerateSlowflakeId()}",
-		Type           = ["https://www.w3.org/ns/activitystreams#Person"],
+		Type           = "https://www.w3.org/ns/activitystreams#Person",
 		Url            = new ASLink("https://example.org/@test"),
 		Username       = "test",
 		DisplayName    = "Test account",
