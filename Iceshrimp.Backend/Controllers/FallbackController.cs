@@ -9,6 +9,6 @@ namespace Iceshrimp.Backend.Controllers;
 public class FallbackController(ILogger<FallbackController> logger) : Controller {
 	[ProducesResponseType(StatusCodes.Status501NotImplemented, Type = typeof(ErrorResponse))]
 	public IActionResult FallbackAction() {
-		throw new CustomException(HttpStatusCode.NotImplemented, "This API method has not been implemented", logger);
+		throw new CustomException(HttpStatusCode.NotImplemented, "This API method has not been implemented");
 	}
 }

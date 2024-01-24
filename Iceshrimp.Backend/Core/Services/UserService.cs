@@ -11,10 +11,10 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class UserService(ILogger<UserService> logger, DatabaseContext db, ActivityPubService apSvc) {
 	private (string Username, string Host) AcctToTuple(string acct) {
-		if (!acct.StartsWith("acct:")) throw new CustomException(HttpStatusCode.BadRequest, "Invalid query", logger);
+		if (!acct.StartsWith("acct:")) throw new CustomException(HttpStatusCode.BadRequest, "Invalid query");
 
 		var split = acct[5..].Split('@');
-		if (split.Length != 2) throw new CustomException(HttpStatusCode.BadRequest, "Invalid query", logger);
+		if (split.Length != 2) throw new CustomException(HttpStatusCode.BadRequest, "Invalid query");
 
 		return (split[0], split[1]);
 	}
@@ -73,10 +73,10 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, Activi
 
 	public async Task<User> CreateLocalUser(string username, string password) {
 		if (await db.Users.AnyAsync(p => p.Host == null && p.UsernameLower == username.ToLowerInvariant()))
-			throw new CustomException(HttpStatusCode.BadRequest, "User already exists", logger);
+			throw new CustomException(HttpStatusCode.BadRequest, "User already exists");
 
 		if (await db.UsedUsernames.AnyAsync(p => p.Username.ToLower() == username.ToLowerInvariant()))
-			throw new CustomException(HttpStatusCode.BadRequest, "Username was already used", logger);
+			throw new CustomException(HttpStatusCode.BadRequest, "Username was already used");
 
 		var keypair = RSA.Create(4096);
 		var user = new User {
@@ -126,7 +126,7 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, Activi
 
 	private async Task<User> CreateSystemUser(string username) {
 		if (await db.Users.AnyAsync(p => p.UsernameLower == username.ToLowerInvariant() && p.Host == null))
-			throw new CustomException($"System user {username} already exists", logger);
+			throw new CustomException($"System user {username} already exists");
 
 		var keypair = RSA.Create(4096);
 		var user = new User {

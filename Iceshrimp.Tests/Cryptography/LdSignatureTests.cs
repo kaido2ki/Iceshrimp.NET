@@ -69,9 +69,12 @@ public class LdSignatureTests {
 
 		data["https://w3id.org/security#signature"]![0]!["https://w3id.org/security#signatureValue"]![0]!["@value"] +=
 			"test";
-		await Assert.ThrowsExceptionAsync<FormatException>(async () =>
-			                                                   await LdSignature.Verify(data,
-					                                                    _keypair.ExportRSAPublicKeyPem()));
+		var e = await Assert.ThrowsExceptionAsync<FormatException>(async () =>
+			                                                           await LdSignature.Verify(data,
+					                                                            _keypair.ExportRSAPublicKeyPem()));
+
+		e.Message.Should()
+		 .Be("The input is not a valid Base-64 string as it contains a non-base 64 character, more than two padding characters, or an illegal character among the padding characters.");
 	}
 
 	[TestMethod]

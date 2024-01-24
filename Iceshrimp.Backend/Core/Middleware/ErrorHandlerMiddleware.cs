@@ -4,12 +4,19 @@ using Iceshrimp.Backend.Controllers.Schemas;
 namespace Iceshrimp.Backend.Core.Middleware;
 
 public class ErrorHandlerMiddleware(RequestDelegate next) {
-	public async Task InvokeAsync(HttpContext ctx, ILogger<ErrorHandlerMiddleware> logger) {
+	public async Task InvokeAsync(HttpContext ctx, ILoggerFactory loggerFactory) {
 		try {
 			await next(ctx);
 		}
 		catch (Exception e) {
 			ctx.Response.ContentType = "application/json";
+
+			// Get the name of the class & function where the exception originated, falling back to this one
+			var type = e.TargetSite?.DeclaringType?.FullName ?? typeof(ErrorHandlerMiddleware).FullName!;
+			if (type.Contains('>'))
+				type = type[..(type.IndexOf('>') + 1)];
+
+			var logger = loggerFactory.CreateLogger(type);
 
 			if (e is CustomException ce) {
 				ctx.Response.StatusCode = (int)ce.StatusCode;
@@ -19,8 +26,8 @@ public class ErrorHandlerMiddleware(RequestDelegate next) {
 					Message    = ce.Message,
 					RequestId  = ctx.TraceIdentifier
 				});
-				(ce.Logger ?? logger).LogDebug("Request {id} was rejected with {statusCode} {error} due to: {message}",
-				                               ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message);
+				logger.LogDebug("Request {id} was rejected with {statusCode} {error} due to: {message}",
+				                ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message);
 			}
 			else {
 				ctx.Response.StatusCode = 500;
@@ -39,21 +46,15 @@ public class ErrorHandlerMiddleware(RequestDelegate next) {
 }
 
 //TODO: Find a better name for this class
-//TODO: is there a better way to resolve the originating class than passing the logger? Maybe CustomException<T>, or reflection
-public class CustomException(HttpStatusCode statusCode, string error, string message, ILogger? logger)
+public class CustomException(HttpStatusCode statusCode, string error, string message)
 	: Exception(message) {
-	public readonly string   Error  = error;
-	public readonly ILogger? Logger = logger;
+	public readonly string Error = error;
 
 	public readonly HttpStatusCode StatusCode = statusCode;
 
-	public CustomException(HttpStatusCode statusCode, string message, ILogger logger) :
-		this(statusCode, statusCode.ToString(), message, logger) { }
-
-	public CustomException(string message, ILogger logger) :
-		this(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError.ToString(), message, logger) { }
-
-	[Obsolete("Please refactor this usage and specify the ILogger<CallingClass> constructor argument")]
 	public CustomException(HttpStatusCode statusCode, string message) :
-		this(statusCode, statusCode.ToString(), message, null) { }
+		this(statusCode, statusCode.ToString(), message) { }
+
+	public CustomException(string message) :
+		this(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError.ToString(), message) { }
 }

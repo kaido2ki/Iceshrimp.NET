@@ -11,7 +11,7 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 //TODO: required attribute doesn't work with Newtonsoft.Json it appears
 //TODO: enforce @type values
 
-public class ActivityPubService(HttpClient client, HttpRequestService httpRqSvc, ILogger<ActivityPubService> logger) {
+public class ActivityPubService(HttpClient client, HttpRequestService httpRqSvc) {
 	private static readonly JsonSerializerSettings JsonSerializerSettings =
 		new() { DateParseHandling = DateParseHandling.None };
 
@@ -21,19 +21,19 @@ public class ActivityPubService(HttpClient client, HttpRequestService httpRqSvc,
 		var input    = await response.Content.ReadAsStringAsync();
 		var json     = JsonConvert.DeserializeObject<JObject?>(input, JsonSerializerSettings);
 
-		var res = LdHelpers.Expand(json) ?? throw new CustomException("Failed to expand JSON-LD object", logger);
+		var res = LdHelpers.Expand(json) ?? throw new CustomException("Failed to expand JSON-LD object");
 		return res.Select(p => p.ToObject<ASObject>(new JsonSerializer { Converters = { new ASObjectConverter() } }) ??
-		                       throw new CustomException("Failed to deserialize activity", logger));
+		                       throw new CustomException("Failed to deserialize activity"));
 	}
 
 	public async Task<ASActor> FetchActor(string uri, User actor, UserKeypair keypair) {
 		var activity = await FetchActivity(uri, actor, keypair);
 		return activity.OfType<ASActor>().FirstOrDefault() ??
-		       throw new CustomException("Failed to fetch actor", logger);
+		       throw new CustomException("Failed to fetch actor");
 	}
 
 	public async Task<ASNote> FetchNote(string uri, User actor, UserKeypair keypair) {
 		var activity = await FetchActivity(uri, actor, keypair);
-		return activity.OfType<ASNote>().FirstOrDefault() ?? throw new CustomException("Failed to fetch note", logger);
+		return activity.OfType<ASNote>().FirstOrDefault() ?? throw new CustomException("Failed to fetch note");
 	}
 }

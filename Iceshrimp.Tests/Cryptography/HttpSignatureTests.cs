@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
@@ -42,8 +43,12 @@ public class HttpSignatureTests {
 
 		request.Headers.Date = DateTimeOffset.Now - TimeSpan.FromHours(13);
 
-		await Assert.ThrowsExceptionAsync<CustomException>(async () =>
-			                                                   await request.Verify(MockObjects.UserKeypair.PublicKey));
+		var e = await Assert.ThrowsExceptionAsync<CustomException>(async () =>
+			                                                           await request.Verify(MockObjects.UserKeypair
+						                                                            .PublicKey));
+		e.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+		e.Message.Should().Be("Request signature too old");
+		e.Error.Should().Be("Forbidden");
 	}
 
 	[TestMethod]
