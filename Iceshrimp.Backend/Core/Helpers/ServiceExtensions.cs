@@ -15,7 +15,8 @@ public static class ServiceExtensions {
 		services.AddScoped<UserResolver>();
 		services.AddScoped<UserService>();
 		services.AddScoped<NoteService>();
-		services.AddScoped<APUserRenderer>();
+		services.AddScoped<UserRenderer>();
+		services.AddScoped<NoteRenderer>();
 		services.AddScoped<WebFingerService>();
 
 		// Singleton = instantiated once across application lifetime

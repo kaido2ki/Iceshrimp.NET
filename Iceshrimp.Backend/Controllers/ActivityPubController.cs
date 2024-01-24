@@ -13,18 +13,21 @@ namespace Iceshrimp.Backend.Controllers;
 [UseNewtonsoftJson]
 [MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
 [Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-public class ActivityPubController(DatabaseContext db, APUserRenderer userRenderer) : Controller {
-	/*
+public class ActivityPubController(
+	DatabaseContext db,
+	UserRenderer userRenderer,
+	NoteRenderer noteRenderer) : Controller {
 	[HttpGet("/notes/{id}")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Note))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASNote))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> GetNote(string id) {
 		var note = await db.Notes.FirstOrDefaultAsync(p => p.Id == id);
 		if (note == null) return NotFound();
-		return Ok(note);
+		var rendered  = noteRenderer.Render(note);
+		var compacted = LdHelpers.Compact(rendered);
+		return Ok(compacted);
 	}
-	*/
 
 	[HttpGet("/users/{id}")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]

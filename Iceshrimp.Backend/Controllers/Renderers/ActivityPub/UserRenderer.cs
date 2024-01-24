@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 
-public class APUserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db) {
+public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db) {
 	public async Task<ASActor> Render(User user) {
 		if (user.Host != null) throw new Exception("Refusing to render remote user");
 
