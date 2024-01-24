@@ -3,8 +3,8 @@ using Iceshrimp.Backend.Controllers.Schemas;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
-public class ErrorHandlerMiddleware(RequestDelegate next) {
-	public async Task InvokeAsync(HttpContext ctx, ILoggerFactory loggerFactory) {
+public class ErrorHandlerMiddleware(ILoggerFactory loggerFactory) : IMiddleware {
+	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next) {
 		try {
 			await next(ctx);
 		}

@@ -9,15 +9,17 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
-public class AuthorizedFetchMiddleware(RequestDelegate next) {
-	public async Task InvokeAsync(HttpContext context, IOptionsSnapshot<Config.SecuritySection> config,
-	                              DatabaseContext db, UserResolver userResolver,
-	                              ILogger<AuthorizedFetchMiddleware> logger) {
-		var endpoint  = context.Features.Get<IEndpointFeature>()?.Endpoint;
+public class AuthorizedFetchMiddleware(
+	IOptionsSnapshot<Config.SecuritySection> config,
+	DatabaseContext db,
+	UserResolver userResolver,
+	ILogger<AuthorizedFetchMiddleware> logger) : IMiddleware {
+	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next) {
+		var endpoint  = ctx.Features.Get<IEndpointFeature>()?.Endpoint;
 		var attribute = endpoint?.Metadata.GetMetadata<AuthorizedFetchAttribute>();
 
 		if (attribute != null && config.Value.AuthorizedFetch) {
-			var request = context.Request;
+			var request = ctx.Request;
 			if (!request.Headers.TryGetValue("signature", out var sigHeader))
 				throw new CustomException(HttpStatusCode.Unauthorized, "Request is missing the signature header");
 
@@ -41,13 +43,13 @@ public class AuthorizedFetchMiddleware(RequestDelegate next) {
 				? ["(request-target)", "digest", "host", "date"]
 				: ["(request-target)", "host", "date"];
 
-			var verified = await HttpSignature.Verify(context.Request, sig, headers, key.KeyPem);
+			var verified = await HttpSignature.Verify(ctx.Request, sig, headers, key.KeyPem);
 			logger.LogDebug("HttpSignature.Verify returned {result} for key {keyId}", verified, sig.KeyId);
 			if (!verified)
 				throw new CustomException(HttpStatusCode.Forbidden, "Request signature validation failed");
 		}
 
-		await next(context);
+		await next(ctx);
 	}
 }
 
