@@ -472,7 +472,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options, IOptions
 			      .HasComment("Drive capacity of a local user (MB)");
 			entity.Property(e => e.MascotImageUrl)
 			      .HasDefaultValueSql("'/static-assets/badges/info.png'::character varying");
-			entity.Property(e => e.ObjectStorageS3forcePathStyle).HasDefaultValue(true);
+			entity.Property(e => e.ObjectStorageS3ForcePathStyle).HasDefaultValue(true);
 			entity.Property(e => e.ObjectStorageSetPublicRead).HasDefaultValue(false);
 			entity.Property(e => e.ObjectStorageUseProxy).HasDefaultValue(true);
 			entity.Property(e => e.ObjectStorageUseSsl).HasDefaultValue(true);
@@ -712,7 +712,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options, IOptions
 			entity.HasOne(d => d.User).WithMany(p => p.PromoReads);
 		});
 
-		modelBuilder.Entity<RegistrationTicket>(entity => { });
+		modelBuilder.Entity<RegistrationTicket>(_ => { });
 
 		modelBuilder.Entity<RegistryItem>(entity => {
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the RegistryItem.");
@@ -727,7 +727,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options, IOptions
 			entity.HasOne(d => d.User).WithMany(p => p.RegistryItems);
 		});
 
-		modelBuilder.Entity<Relay>(entity => { });
+		modelBuilder.Entity<Relay>(_ => { });
 
 		modelBuilder.Entity<RenoteMuting>(entity => {
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Muting.");
@@ -760,7 +760,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options, IOptions
 			entity.HasOne(d => d.User).WithMany(p => p.SwSubscriptions);
 		});
 
-		modelBuilder.Entity<UsedUsername>(entity => { });
+		modelBuilder.Entity<UsedUsername>(_ => { });
 
 		modelBuilder.Entity<User>(entity => {
 			entity.Property(e => e.AlsoKnownAs).HasComment("URIs the user is known as too");
@@ -901,7 +901,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options, IOptions
 			entity.HasOne(d => d.User).WithMany(p => p.UserNotePins);
 		});
 
-		modelBuilder.Entity<UserPending>(entity => { });
+		modelBuilder.Entity<UserPending>(_ => { });
 
 		modelBuilder.Entity<UserProfile>(entity => {
 			entity.Property(e => e.AlwaysMarkNsfw).HasDefaultValue(false);

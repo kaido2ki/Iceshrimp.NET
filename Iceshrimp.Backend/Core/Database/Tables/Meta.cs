@@ -208,7 +208,7 @@ public class Meta {
 	public string? PinnedClipId { get; set; }
 
 	[Column("objectStorageS3ForcePathStyle")]
-	public bool ObjectStorageS3forcePathStyle { get; set; }
+	public bool ObjectStorageS3ForcePathStyle { get; set; }
 
 	[Column("allowedHosts", TypeName = "character varying(256)[]")]
 	public List<string> AllowedHosts { get; set; } = null!;

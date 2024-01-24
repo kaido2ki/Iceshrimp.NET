@@ -38,7 +38,7 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 			responses.Add(apUri, fingerRes);
 		}
 
-		var acctUri = fingerRes.Aliases.Prepend(fingerRes.Subject).FirstOrDefault(p => p.StartsWith("acct:"));
+		var acctUri = (fingerRes.Aliases ?? []).Prepend(fingerRes.Subject).FirstOrDefault(p => p.StartsWith("acct:"));
 		if (acctUri == null) throw new Exception($"WebFinger response for '{apUri}' didn't contain any acct uris");
 
 		fingerRes = responses.GetValueOrDefault(acctUri);
