@@ -1,6 +1,6 @@
 using Asp.Versioning;
 using Iceshrimp.Backend.Core.Database;
-using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Extensions;
 using Vite.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);

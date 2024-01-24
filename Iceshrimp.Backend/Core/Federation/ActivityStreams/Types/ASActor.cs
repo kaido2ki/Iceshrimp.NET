@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Extensions;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;

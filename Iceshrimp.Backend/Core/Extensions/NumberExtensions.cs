@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Iceshrimp.Backend.Core.Helpers;
+namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class NumberExtensions {
 	private const string Base36Charset = "0123456789abcdefghijklmnopqrstuvwxyz";

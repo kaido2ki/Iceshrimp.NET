@@ -3,12 +3,12 @@ using System.Reflection;
 namespace Iceshrimp.Backend.Core.Configuration;
 
 public sealed class Config {
-	public required InstanceSection Instance { get; set; }
-	public required DatabaseSection Database { get; set; }
+	public required InstanceSection Instance { get; init; }
+	public required DatabaseSection Database { get; init; }
+	public required SecuritySection Security { get; init; }
 
 	public sealed class InstanceSection {
 		public readonly string Version;
-		public          string UserAgent => $"Iceshrimp.NET/{Version} (https://{WebDomain})";
 
 		public InstanceSection() {
 			// Get version information from assembly
@@ -26,15 +26,21 @@ public sealed class Config {
 			}
 		}
 
-		public required int    ListenPort    { get; set; } = 3000;
-		public required string WebDomain     { get; set; }
-		public required string AccountDomain { get; set; }
+		public string UserAgent => $"Iceshrimp.NET/{Version} (https://{WebDomain})";
+
+		public required int    ListenPort    { get; init; } = 3000;
+		public required string WebDomain     { get; init; }
+		public required string AccountDomain { get; init; }
+	}
+
+	public sealed class SecuritySection {
+		public required bool AuthorizedFetch { get; set; }
 	}
 
 	public sealed class DatabaseSection {
-		public required string  Host     { get; set; }
-		public required string  Database { get; set; }
-		public required string  Username { get; set; }
-		public          string? Password { get; set; }
+		public required string  Host     { get; init; }
+		public required string  Database { get; init; }
+		public required string  Username { get; init; }
+		public          string? Password { get; init; }
 	}
 }

@@ -3,11 +3,12 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 
-namespace Iceshrimp.Backend.Core.Helpers;
+namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class WebApplicationExtensions {
 	public static IApplicationBuilder UseCustomMiddleware(this IApplicationBuilder app) {
-		return app.UseMiddleware<RequestBufferingMiddleware>();
+		return app.UseMiddleware<RequestBufferingMiddleware>()
+		          .UseMiddleware<AuthorizedFetchMiddleware>();
 	}
 
 	public static Config.InstanceSection Initialize(this WebApplication app, string[] args) {

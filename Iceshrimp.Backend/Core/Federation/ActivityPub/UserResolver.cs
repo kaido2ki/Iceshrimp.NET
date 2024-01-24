@@ -59,7 +59,12 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 	}
 
 	private static string NormalizeQuery(string query) {
-		return query.StartsWith('@') ? $"acct:{query[1..]}" : query;
+		if ((query.StartsWith("https://") || query.StartsWith("http://")) && query.Contains('#'))
+			query = query.Split("#")[0];
+		if (query.StartsWith('@'))
+			query = $"acct:{query[1..]}";
+
+		return query;
 	}
 
 	public async Task<User> Resolve(string query) {

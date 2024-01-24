@@ -11,14 +11,16 @@ namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
 [Route("/inbox")]
+[Route("/users/{id}/inbox")]
+[AuthorizedFetch(true)]
 [Produces("application/json")]
 [EnableRequestBuffering(1024 * 1024)]
-public class SignatureTestController(ILogger<SignatureTestController> logger, DatabaseContext db) : Controller {
+public class InboxController(ILogger<InboxController> logger, DatabaseContext db) : Controller {
 	[HttpPost]
 	[Consumes(MediaTypeNames.Application.Json)]
 	public async Task<IActionResult> Inbox([FromBody] JToken content) {
 		if (!Request.Headers.TryGetValue("signature", out var sigHeader))
-			throw new ConstraintException("Signature string is missing the signature header");
+			throw new ConstraintException("Request is missing the signature header");
 
 		var sig = HttpSignature.Parse(sigHeader.ToString());
 		var key = await db.UserPublickeys.SingleOrDefaultAsync(p => p.KeyId == sig.KeyId);

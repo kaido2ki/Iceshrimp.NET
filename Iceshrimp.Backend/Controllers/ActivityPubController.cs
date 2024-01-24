@@ -4,12 +4,14 @@ using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
+using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
+[AuthorizedFetch]
 [UseNewtonsoftJson]
 [MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
 [Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]

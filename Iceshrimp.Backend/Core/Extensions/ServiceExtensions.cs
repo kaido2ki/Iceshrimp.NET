@@ -4,7 +4,7 @@ using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Services;
 
-namespace Iceshrimp.Backend.Core.Helpers;
+namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class ServiceExtensions {
 	public static void AddServices(this IServiceCollection services) {
