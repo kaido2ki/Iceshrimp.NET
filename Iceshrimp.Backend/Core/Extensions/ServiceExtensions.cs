@@ -27,6 +27,9 @@ public static class ServiceExtensions {
 		services.AddSingleton<ActivityPubService>();
 		services.AddSingleton<ErrorHandlerMiddleware>();
 		services.AddSingleton<RequestBufferingMiddleware>();
+
+		// Hosted services = long running background tasks
+		services.AddHostedService<QueueService>();
 	}
 
 	public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration) {
