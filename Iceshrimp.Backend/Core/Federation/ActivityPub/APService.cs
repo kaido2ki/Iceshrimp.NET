@@ -3,7 +3,7 @@ using Iceshrimp.Backend.Core.Services;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class APService(ILogger<APFetchService> logger, NoteService noteSvc) {
+public class APService(ILogger<APService> logger, NoteService noteSvc) {
 	public async Task PerformActivity(ASActivity activity, string? inboxUserId) {
 		logger.LogDebug("Processing activity: {activity}", activity.Id);
 		if (activity.Actor == null) throw new Exception("Cannot perform activity as actor 'null'");
