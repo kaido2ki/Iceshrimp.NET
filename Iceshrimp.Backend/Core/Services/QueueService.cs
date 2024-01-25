@@ -2,7 +2,7 @@ using Iceshrimp.Backend.Core.Queues;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class QueueService(ILogger<QueueService> logger, IServiceScopeFactory serviceScopeFactory) : BackgroundService {
+public class QueueService(IServiceScopeFactory serviceScopeFactory) : BackgroundService {
 	private readonly List<IJobQueue>      _queues      = [];
 	public readonly  JobQueue<DeliverJob> DeliverQueue = Queues.DeliverQueue.Create();
 	public readonly  JobQueue<InboxJob>   InboxQueue   = Queues.InboxQueue.Create();

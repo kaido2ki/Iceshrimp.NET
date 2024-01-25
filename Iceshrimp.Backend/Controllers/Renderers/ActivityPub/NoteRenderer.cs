@@ -1,12 +1,11 @@
 using Iceshrimp.Backend.Core.Configuration;
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 
-public class NoteRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db, UserRenderer userRenderer) {
+public class NoteRenderer(IOptions<Config.InstanceSection> config) {
 	public ASNote Render(Note note) {
 		var id     = $"https://{config.Value.WebDomain}/notes/{note.Id}";
 		var userId = $"https://{config.Value.WebDomain}/users/{note.User.Id}";

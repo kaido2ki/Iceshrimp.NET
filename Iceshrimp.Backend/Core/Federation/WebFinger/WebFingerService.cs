@@ -19,7 +19,7 @@ namespace Iceshrimp.Backend.Core.Federation.WebFinger;
 //FIXME: handle cursed person/group acct collisions like https://lemmy.ml/.well-known/webfinger?resource=acct:linux@lemmy.ml
 //FIXME: also check if the query references the local instance in other ways (e.g. @user@{WebDomain}, @user@{AccountDomain}, https://{WebDomain}/..., etc)
 
-public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc, ILogger<WebFingerService> logger) {
+public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 	public async Task<WebFingerResponse?> Resolve(string query) {
 		(query, var proto, var domain) = ParseQuery(query);
 		var webFingerUrl = GetWebFingerUrl(query, proto, domain);
