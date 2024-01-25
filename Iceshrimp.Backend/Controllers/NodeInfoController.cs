@@ -19,9 +19,9 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config) : Contr
 			Software = new NodeInfoResponse.NodeInfoSoftware {
 				Version  = instance.Version,
 				Name     = "Iceshrimp.NET",
-				Homepage = new Uri("https://iceshrimp.dev/iceshrimp/iceshrimp-rewrite"),
+				Homepage = new Uri("https://iceshrimp.dev/iceshrimp/Iceshrimp.NET"),
 				Repository = Request.Path.Value?.EndsWith("2.1") ?? false
-					? new Uri("https://iceshrimp.dev/iceshrimp/iceshrimp-rewrite")
+					? new Uri("https://iceshrimp.dev/iceshrimp/Iceshrimp.NET")
 					: null
 			},
 			Protocols = ["activitypub"],
@@ -49,8 +49,8 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config) : Contr
 				},
 				Languages                  = [],
 				TosUrl                     = "todo",
-				RepositoryUrl              = new Uri("https://iceshrimp.dev/iceshrimp/iceshrimp-rewrite"),
-				FeedbackUrl                = new Uri("https://iceshrimp.dev/iceshrimp/iceshrimp-rewrite/issues"),
+				RepositoryUrl              = new Uri("https://iceshrimp.dev/iceshrimp/Iceshrimp.NET"),
+				FeedbackUrl                = new Uri("https://iceshrimp.dev/iceshrimp/Iceshrimp.NET"),
 				ThemeColor                 = "#000000",
 				DisableRegistration        = true,
 				DisableLocalTimeline       = false,
