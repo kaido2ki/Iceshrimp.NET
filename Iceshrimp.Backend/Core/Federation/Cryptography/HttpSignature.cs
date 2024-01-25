@@ -17,8 +17,9 @@ public static class HttpSignature {
 		                                          request.Path,
 		                                          request.Headers);
 
-		request.Body.Position = 0;
-		return await VerifySignature(key, signingString, signature, request.Headers, request.Body);
+		if (request.Body.CanSeek) request.Body.Position = 0;
+		return await VerifySignature(key, signingString, signature, request.Headers,
+		                             request.ContentLength > 0 ? request.Body : null);
 	}
 
 	public static async Task<bool> Verify(this HttpRequestMessage request, string key) {
@@ -114,18 +115,19 @@ public static class HttpSignature {
 		//TODO: these fail if the dictionary doesn't contain the key, use TryGetValue instead
 		var signatureBase64 = sig["signature"] ??
 		                      throw new GracefulException(HttpStatusCode.Forbidden,
-		                                                "Signature string is missing the signature field");
+		                                                  "Signature string is missing the signature field");
 		var headers = sig["headers"].Split(" ") ??
 		              throw new GracefulException(HttpStatusCode.Forbidden,
-		                                        "Signature data is missing the headers field");
+		                                          "Signature data is missing the headers field");
 
 		var keyId = sig["keyId"] ??
-		            throw new GracefulException(HttpStatusCode.Forbidden, "Signature string is missing the keyId field");
+		            throw new GracefulException(HttpStatusCode.Forbidden,
+		                                        "Signature string is missing the keyId field");
 
 		//TODO: this should fallback to sha256
 		var algo = sig["algorithm"] ??
 		           throw new GracefulException(HttpStatusCode.Forbidden,
-		                                     "Signature string is missing the algorithm field");
+		                                       "Signature string is missing the algorithm field");
 
 		var signature = Convert.FromBase64String(signatureBase64);
 

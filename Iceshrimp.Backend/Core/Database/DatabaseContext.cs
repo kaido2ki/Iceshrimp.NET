@@ -2,15 +2,13 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace Iceshrimp.Backend.Core.Database;
 
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
 [SuppressMessage("ReSharper", "IdentifierTypo")]
-public class DatabaseContext(DbContextOptions<DatabaseContext> options, IOptions<Config.DatabaseSection> config)
-	: DbContext(options) {
+public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options) {
 	public virtual DbSet<AbuseUserReport>      AbuseUserReports      { get; init; } = null!;
 	public virtual DbSet<AccessToken>          AccessTokens          { get; init; } = null!;
 	public virtual DbSet<Announcement>         Announcements         { get; init; } = null!;
@@ -79,16 +77,16 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options, IOptions
 	public virtual DbSet<UserSecurityKey>      UserSecurityKeys      { get; init; } = null!;
 	public virtual DbSet<Webhook>              Webhooks              { get; init; } = null!;
 
-	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+	public static NpgsqlDataSource GetDataSource(Config.DatabaseSection? config) {
 		var dataSourceBuilder = new NpgsqlDataSourceBuilder();
 
 		if (config == null)
 			throw new Exception("Failed to initialize database: Failed to load configuration");
 
-		dataSourceBuilder.ConnectionStringBuilder.Host     = config.Value.Host;
-		dataSourceBuilder.ConnectionStringBuilder.Username = config.Value.Username;
-		dataSourceBuilder.ConnectionStringBuilder.Password = config.Value.Password;
-		dataSourceBuilder.ConnectionStringBuilder.Database = config.Value.Database;
+		dataSourceBuilder.ConnectionStringBuilder.Host     = config.Host;
+		dataSourceBuilder.ConnectionStringBuilder.Username = config.Username;
+		dataSourceBuilder.ConnectionStringBuilder.Password = config.Password;
+		dataSourceBuilder.ConnectionStringBuilder.Database = config.Database;
 
 		dataSourceBuilder.MapEnum<Antenna.AntennaSource>();
 		dataSourceBuilder.MapEnum<Note.NoteVisibility>();
@@ -99,7 +97,11 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options, IOptions
 		dataSourceBuilder.MapEnum<UserProfile.UserProfileFFVisibility>();
 		dataSourceBuilder.MapEnum<UserProfile.MutingNotificationType>(); // FIXME: WHY IS THIS ITS OWN ENUM
 
-		optionsBuilder.UseNpgsql(dataSourceBuilder.Build());
+		return dataSourceBuilder.Build();
+	}
+
+	public static void Configure(DbContextOptionsBuilder optionsBuilder, NpgsqlDataSource dataSource) {
+		optionsBuilder.UseNpgsql(dataSource);
 	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder) {

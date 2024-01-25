@@ -37,7 +37,7 @@ public class AuthorizedFetchMiddleware(
 			// If we still don't have the key, something went wrong and we need to throw an exception
 			if (key == null) throw new GracefulException("Failed to fetch key of signature user");
 
-			List<string> headers = request.Body.Length > 0 || attribute.ForceBody
+			List<string> headers = request.ContentLength > 0 || attribute.ForceBody
 				? ["(request-target)", "digest", "host", "date"]
 				: ["(request-target)", "host", "date"];
 

@@ -13,6 +13,10 @@ public class ASNote : ASObject {
 	[JC(typeof(VC))]
 	public string? Content { get; set; }
 
+	[J("https://www.w3.org/ns/activitystreams#url")]
+	[JC(typeof(LDIdObjectConverter))]
+	public LDIdObject? Url { get; set; }
+
 	[J("https://www.w3.org/ns/activitystreams#sensitive")]
 	[JC(typeof(VC))]
 	public bool? Sensitive { get; set; }

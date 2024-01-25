@@ -24,6 +24,15 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("Url")]
 [Index("UserId", "Id")]
 public class Note {
+	[PgName("note_visibility_enum")]
+	public enum NoteVisibility {
+		[PgName("public")]    Public,
+		[PgName("home")]      Home,
+		[PgName("followers")] Followers,
+		[PgName("specified")] Specified,
+		[PgName("hidden")]    Hidden
+	}
+
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
@@ -83,24 +92,24 @@ public class Note {
 	[Column("score")] public int Score { get; set; }
 
 	[Column("fileIds", TypeName = "character varying(32)[]")]
-	public List<string> FileIds { get; set; } = null!;
+	public List<string> FileIds { get; set; } = [];
 
 	[Column("attachedFileTypes", TypeName = "character varying(256)[]")]
-	public List<string> AttachedFileTypes { get; set; } = null!;
+	public List<string> AttachedFileTypes { get; set; } = [];
 
 	[Column("visibleUserIds", TypeName = "character varying(32)[]")]
-	public List<string> VisibleUserIds { get; set; } = null!;
+	public List<string> VisibleUserIds { get; set; } = [];
 
 	[Column("mentions", TypeName = "character varying(32)[]")]
-	public List<string> Mentions { get; set; } = null!;
+	public List<string> Mentions { get; set; } = [];
 
 	[Column("mentionedRemoteUsers")] public string MentionedRemoteUsers { get; set; } = null!;
 
 	[Column("emojis", TypeName = "character varying(128)[]")]
-	public List<string> Emojis { get; set; } = null!;
+	public List<string> Emojis { get; set; } = [];
 
 	[Column("tags", TypeName = "character varying(128)[]")]
-	public List<string> Tags { get; set; } = null!;
+	public List<string> Tags { get; set; } = [];
 
 	[Column("hasPoll")] public bool HasPoll { get; set; }
 
@@ -216,13 +225,4 @@ public class Note {
 
 	[InverseProperty("Note")]
 	public virtual ICollection<UserNotePin> UserNotePins { get; set; } = new List<UserNotePin>();
-
-	[PgName("note_visibility_enum")]
-	public enum NoteVisibility {
-		[PgName("public")]    Public,
-		[PgName("home")]      Home,
-		[PgName("followers")] Followers,
-		[PgName("specified")] Specified,
-		[PgName("hidden")]    Hidden
-	}
 }

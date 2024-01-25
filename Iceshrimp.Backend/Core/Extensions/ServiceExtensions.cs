@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Middleware;
@@ -41,5 +42,11 @@ public static class ServiceExtensions {
 		services.Configure<Config.InstanceSection>(configuration.GetSection("Instance"));
 		services.Configure<Config.SecuritySection>(configuration.GetSection("Security"));
 		services.Configure<Config.DatabaseSection>(configuration.GetSection("Database"));
+	}
+
+	public static void AddDatabaseContext(this IServiceCollection services, IConfiguration configuration) {
+		var config     = configuration.GetSection("Database").Get<Config.DatabaseSection>();
+		var dataSource = DatabaseContext.GetDataSource(config);
+		services.AddDbContext<DatabaseContext>(options => { DatabaseContext.Configure(options, dataSource); });
 	}
 }

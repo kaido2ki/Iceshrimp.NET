@@ -1,5 +1,4 @@
 using Asp.Versioning;
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
 using Vite.AspNetCore.Extensions;
 
@@ -32,7 +31,7 @@ builder.Services.AddViteServices(options => {
 });
 //TODO: single line only if there's no \n in the log msg (otherwise stacktraces don't work)
 builder.Services.AddLogging(logging => logging.AddSimpleConsole(options => { options.SingleLine = true; }));
-builder.Services.AddDbContext<DatabaseContext>();
+builder.Services.AddDatabaseContext(builder.Configuration); //TODO: maybe use a dbcontext factory?
 
 builder.Services.AddServices();
 builder.Services.ConfigureServices(builder.Configuration);

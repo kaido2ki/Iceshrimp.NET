@@ -50,10 +50,10 @@ public class JobQueue<T>(string name, Func<T, IServiceProvider, CancellationToke
 			job.Exception = e;
 
 			var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
-			logger.LogError("Failed to process job in {queue} queue: {error}", name, _queue);
+			logger.LogError("Failed to process job in {queue} queue: {error}", name, e.Message);
 		}
 
-		if (job.Status is Job.JobStatus.Completed or Job.JobStatus.Failed) {
+		if (job.Status is Job.JobStatus.Failed) {
 			job.FinishedAt = DateTime.Now;
 		}
 		else if (job.Status is Job.JobStatus.Delayed && job.DelayedUntil == null) {
@@ -62,7 +62,11 @@ public class JobQueue<T>(string name, Func<T, IServiceProvider, CancellationToke
 			job.FinishedAt = DateTime.Now;
 		}
 		else {
-			job.Status = Job.JobStatus.Completed;
+			job.Status     = Job.JobStatus.Completed;
+			job.FinishedAt = DateTime.Now;
+
+			var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
+			logger.LogTrace("Job in queue {queue} completed after {ms} ms", name, job.Duration);
 		}
 
 		scope.Dispose();
@@ -99,6 +103,7 @@ public abstract class Job {
 	public DateTime   QueuedAt = DateTime.Now;
 
 	public JobStatus Status = JobStatus.Queued;
+	public long      Duration => (long)((FinishedAt ?? DateTime.Now) - QueuedAt).TotalMilliseconds;
 }
 
 //TODO: handle delayed jobs

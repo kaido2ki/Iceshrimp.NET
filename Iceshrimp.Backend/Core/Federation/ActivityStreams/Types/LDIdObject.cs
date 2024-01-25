@@ -14,4 +14,4 @@ public class LDIdObject() {
 	}
 }
 
-public sealed class LDIdObjectConverter : ASSerializer.ListSingleObjectConverter<ASLink>;
+public sealed class LDIdObjectConverter : ASSerializer.ListSingleObjectConverter<LDIdObject>;
