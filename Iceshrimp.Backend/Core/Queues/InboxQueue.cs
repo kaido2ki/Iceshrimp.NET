@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Services;
@@ -7,7 +8,7 @@ namespace Iceshrimp.Backend.Core.Queues;
 
 public class InboxQueue {
 	public static JobQueue<InboxJob> Create() {
-		return new JobQueue<InboxJob>(InboxQueueProcessor, 4);
+		return new JobQueue<InboxJob>("inbox", InboxQueueProcessor, 4);
 	}
 
 	private static async Task InboxQueueProcessor(InboxJob job, IServiceProvider scope, CancellationToken token) {
@@ -15,14 +16,14 @@ public class InboxQueue {
 		if (expanded == null) throw new Exception("Failed to expand ASObject");
 		var obj = ASObject.Deserialize(expanded);
 		if (obj == null) throw new Exception("Failed to deserialize ASObject");
-		if (obj is not ASActivity activity) throw new NotImplementedException();
+		if (obj is not ASActivity activity) throw new NotImplementedException("Job data is not an ASActivity");
 
-		var logger = scope.GetRequiredService<ILogger<InboxQueue>>();
-		logger.LogDebug("Processing activity: {activity}", activity.Id);
+		var apSvc = scope.GetRequiredService<APService>();
+		await apSvc.PerformActivity(activity, job.InboxUserId);
 	}
 }
 
-public class InboxJob(JToken body, string? userId) : Job {
-	public JToken  Body   = body;
-	public string? UserId = userId;
+public class InboxJob(JToken body, string? inboxUserId) : Job {
+	public readonly JToken  Body        = body;
+	public readonly string? InboxUserId = inboxUserId;
 }

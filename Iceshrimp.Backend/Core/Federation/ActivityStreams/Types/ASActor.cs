@@ -69,7 +69,7 @@ public class ASActor : ASObject {
 
 	[J("https://www.w3.org/ns/activitystreams#outbox")]
 	[JC(typeof(ASCollectionConverter))]
-	public ASCollection<ASActivity>? Outbox { get; set; }
+	public ASCollection<ASObject>? Outbox { get; set; }
 
 	[J("http://www.w3.org/ns/ldp#inbox")]
 	[JC(typeof(ASLinkConverter))]
@@ -77,11 +77,11 @@ public class ASActor : ASObject {
 
 	[J("https://www.w3.org/ns/activitystreams#followers")]
 	[JC(typeof(ASCollectionConverter))]
-	public ASCollection<ASActor>? Followers { get; set; }
+	public ASCollection<ASObject>? Followers { get; set; }
 
 	[J("https://www.w3.org/ns/activitystreams#following")]
 	[JC(typeof(ASCollectionConverter))]
-	public ASCollection<ASActor>? Following { get; set; }
+	public ASCollection<ASObject>? Following { get; set; }
 
 	[J("https://www.w3.org/ns/activitystreams#sharedInbox")]
 	[JC(typeof(ASLinkConverter))]

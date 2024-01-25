@@ -16,8 +16,7 @@ namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
 [UseNewtonsoftJson]
-public class ActivityPubController(DatabaseContext db, UserRenderer userRenderer, NoteRenderer noteRenderer)
-	: Controller {
+public class ActivityPubController : Controller {
 	[HttpGet("/notes/{id}")]
 	[AuthorizedFetch]
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
@@ -25,7 +24,8 @@ public class ActivityPubController(DatabaseContext db, UserRenderer userRenderer
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASNote))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetNote(string id) {
+	public async Task<IActionResult> GetNote(string id, [FromServices] DatabaseContext db,
+	                                         [FromServices] NoteRenderer noteRenderer) {
 		var note = await db.Notes.FirstOrDefaultAsync(p => p.Id == id);
 		if (note == null) return NotFound();
 		var rendered  = noteRenderer.Render(note);
@@ -39,7 +39,9 @@ public class ActivityPubController(DatabaseContext db, UserRenderer userRenderer
 	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUser(string id) {
+	public async Task<IActionResult> GetUser(string id,
+	                                         [FromServices] DatabaseContext db,
+	                                         [FromServices] UserRenderer userRenderer) {
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
 		var rendered  = await userRenderer.Render(user);

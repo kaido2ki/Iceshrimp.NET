@@ -22,7 +22,7 @@ public interface IJobQueue {
 	public Task Tick(IServiceScopeFactory scopeFactory, CancellationToken token);
 }
 
-public class JobQueue<T>(Func<T, IServiceProvider, CancellationToken, Task> handler, int parallelism)
+public class JobQueue<T>(string name, Func<T, IServiceProvider, CancellationToken, Task> handler, int parallelism)
 	: IJobQueue where T : Job {
 	private readonly List<T>  _jobs  = [];
 	private readonly Queue<T> _queue = new();
@@ -48,6 +48,9 @@ public class JobQueue<T>(Func<T, IServiceProvider, CancellationToken, Task> hand
 		catch (Exception e) {
 			job.Status    = Job.JobStatus.Failed;
 			job.Exception = e;
+
+			var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
+			logger.LogError("Failed to process job in {queue} queue: {error}", name, _queue);
 		}
 
 		if (job.Status is Job.JobStatus.Completed or Job.JobStatus.Failed) {

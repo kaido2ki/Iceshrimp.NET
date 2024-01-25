@@ -11,7 +11,7 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 //TODO: required attribute doesn't work with Newtonsoft.Json it appears
 //TODO: enforce @type values
 
-public class ActivityPubService(HttpClient client, HttpRequestService httpRqSvc) {
+public class APFetchService(HttpClient client, HttpRequestService httpRqSvc) {
 	private static readonly JsonSerializerSettings JsonSerializerSettings =
 		new() { DateParseHandling = DateParseHandling.None };
 

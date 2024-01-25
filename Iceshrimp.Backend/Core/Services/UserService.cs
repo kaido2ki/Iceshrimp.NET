@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class UserService(ILogger<UserService> logger, DatabaseContext db, ActivityPubService apSvc) {
+public class UserService(ILogger<UserService> logger, DatabaseContext db, APFetchService fetchSvc) {
 	private (string Username, string Host) AcctToTuple(string acct) {
 		if (!acct.StartsWith("acct:")) throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
 
@@ -33,7 +33,7 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, Activi
 		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
 		var instanceActor        = await GetInstanceActor();
 		var instanceActorKeypair = await db.UserKeypairs.FirstAsync(p => p.UserId == instanceActor.Id);
-		var actor                = await apSvc.FetchActor(uri, instanceActor, instanceActorKeypair);
+		var actor                = await fetchSvc.FetchActor(uri, instanceActor, instanceActorKeypair);
 		logger.LogDebug("Got actor: {url}", actor.Url);
 
 		actor.Normalize(uri, acct);
@@ -63,9 +63,19 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, Activi
 			Tags   = []  //FIXME
 		};
 
+		if (actor.PublicKey?.Id == null || actor.PublicKey?.PublicKey == null)
+			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Actor has no valid public key");
+
+		var publicKey = new UserPublickey {
+			UserId = user.Id,
+			KeyId  = actor.PublicKey.Id,
+			KeyPem = actor.PublicKey.PublicKey
+		};
+
 		//TODO: add UserProfile as well
 
 		await db.Users.AddAsync(user);
+		await db.UserPublickeys.AddAsync(publicKey);
 		await db.SaveChangesAsync();
 
 		return user;
