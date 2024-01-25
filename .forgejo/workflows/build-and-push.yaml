@@ -9,7 +9,7 @@ jobs:
       image: mcr.microsoft.com/dotnet/sdk:8.0-alpine
     steps:
       - name: Clone repository
-        run: git clone https://iceshrimp.dev/iceshrimp/iceshrimp-rewrite.git --branch=${{ github.ref_name }} --depth=1 /iceshrimp
+        run: git clone https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git --branch=${{ github.ref_name }} --depth=1 /iceshrimp
       - name: Run unit tests
         run: |
           cd /iceshrimp
@@ -46,7 +46,7 @@ jobs:
         uses: https://code.forgejo.org/docker/build-push-action@v5
         with:
           push: true
-          tags: iceshrimp.dev/iceshrimp/iceshrimp-rewrite:dev
+          tags: iceshrimp.dev/iceshrimp/iceshrimp.net:dev
           platforms: linux/amd64,linux/arm64
           provenance: false
           cache-from: type=local,src=/buildkit-cache
