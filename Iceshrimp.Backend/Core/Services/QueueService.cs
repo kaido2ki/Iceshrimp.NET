@@ -13,7 +13,7 @@ public class QueueService(ILogger<QueueService> logger, IServiceScopeFactory ser
 		while (!token.IsCancellationRequested) {
 			foreach (var _ in _queues.Select(queue => queue.Tick(serviceScopeFactory, token))) { }
 
-			await Task.Delay(1000, token);
+			await Task.Delay(100, token);
 		}
 	}
 }
@@ -40,7 +40,8 @@ public class JobQueue<T>(string name, Func<T, IServiceProvider, CancellationToke
 
 	private async Task ProcessJob(IServiceScopeFactory scopeFactory, CancellationToken token) {
 		if (!_queue.TryDequeue(out var job)) return;
-		job.Status = Job.JobStatus.Running;
+		job.Status    = Job.JobStatus.Running;
+		job.StartedAt = DateTime.Now;
 		var scope = scopeFactory.CreateScope();
 		try {
 			await handler(job, scope.ServiceProvider, token);
@@ -66,7 +67,8 @@ public class JobQueue<T>(string name, Func<T, IServiceProvider, CancellationToke
 			job.FinishedAt = DateTime.Now;
 
 			var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
-			logger.LogTrace("Job in queue {queue} completed after {ms} ms", name, job.Duration);
+			logger.LogTrace("Job in queue {queue} completed after {duration} ms, was queued for {queueDuration} ms",
+			                name, job.Duration, job.QueueDuration);
 		}
 
 		scope.Dispose();
@@ -97,13 +99,16 @@ public abstract class Job {
 		Failed
 	}
 
-	public DateTime?  DelayedUntil;
+	public DateTime? DelayedUntil;
+
 	public Exception? Exception;
 	public DateTime?  FinishedAt;
 	public DateTime   QueuedAt = DateTime.Now;
+	public DateTime?  StartedAt;
 
 	public JobStatus Status = JobStatus.Queued;
-	public long      Duration => (long)((FinishedAt ?? DateTime.Now) - QueuedAt).TotalMilliseconds;
+	public long      Duration      => (long)((FinishedAt ?? DateTime.Now) - (StartedAt ?? QueuedAt)).TotalMilliseconds;
+	public long      QueueDuration => (long)((StartedAt ?? DateTime.Now) - QueuedAt).TotalMilliseconds;
 }
 
 //TODO: handle delayed jobs
