@@ -31,13 +31,22 @@ public class ASNote : ASObject {
 	public ASNoteSource? Source { get; set; }
 
 	[J("https://www.w3.org/ns/activitystreams#to")]
-	public List<LDIdObject>? To { get; set; } = [];
+	public List<LDIdObject> To { get; set; } = [];
 
 	[J("https://www.w3.org/ns/activitystreams#cc")]
-	public List<LDIdObject>? Cc { get; set; } = [];
+	public List<LDIdObject> Cc { get; set; } = [];
 
 	[J("https://www.w3.org/ns/activitystreams#attributedTo")]
-	public List<LDIdObject>? AttributedTo { get; set; } = [];
+	public List<LDIdObject> AttributedTo { get; set; } = [];
 
-	public Note.NoteVisibility? Visibility => Note.NoteVisibility.Public;
+	public Note.NoteVisibility GetVisibility(ASActor actor) {
+		if (To.Any(p => p.Id == "https://www.w3.org/ns/activitystreams#Public"))
+			return Note.NoteVisibility.Public;
+		if (Cc.Any(p => p.Id == "https://www.w3.org/ns/activitystreams#Public"))
+			return Note.NoteVisibility.Home;
+		if (To.Any(p => p.Id is not null && p.Id == (actor.Followers?.Id ?? actor.Id + "/followers")))
+			return Note.NoteVisibility.Followers;
+
+		return Note.NoteVisibility.Specified;
+	}
 }

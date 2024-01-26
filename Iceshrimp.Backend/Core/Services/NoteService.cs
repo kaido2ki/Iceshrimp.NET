@@ -49,7 +49,8 @@ public class NoteService(ILogger<NoteService> logger, DatabaseContext db, UserRe
 			CreatedAt = note.PublishedAt?.ToUniversalTime() ??
 			            throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field"),
 			UserHost   = user.Host,
-			Visibility = Note.NoteVisibility.Public //TODO: parse to & cc fields
+			Visibility = note.GetVisibility(actor)
+			//TODO: parse to fields for specified visibility & mentions
 		};
 
 		await db.Notes.AddAsync(dbNote);
