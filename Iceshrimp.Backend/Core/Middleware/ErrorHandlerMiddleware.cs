@@ -69,6 +69,14 @@ public class GracefulException(HttpStatusCode statusCode, string error, string m
 
 	public GracefulException(string message, string? details = null) :
 		this(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError.ToString(), message, details) { }
+
+	public static GracefulException UnprocessableEntity(string message, string? details = null) {
+		return new GracefulException(HttpStatusCode.UnprocessableEntity, message, details);
+	}
+
+	public static GracefulException Forbidden(string message, string? details = null) {
+		return new GracefulException(HttpStatusCode.Forbidden, message, details);
+	}
 }
 
 public enum ExceptionVerbosity {

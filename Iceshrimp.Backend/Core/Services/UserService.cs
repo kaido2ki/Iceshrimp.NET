@@ -1,7 +1,9 @@
+using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
@@ -16,7 +18,7 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, APFetc
 		var split = acct[5..].Split('@');
 		if (split.Length != 2) throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
 
-		return (split[0], split[1]);
+		return (split[0], split[1].ToPunycode());
 	}
 
 	public Task<User?> GetUserFromQuery(string query) {
