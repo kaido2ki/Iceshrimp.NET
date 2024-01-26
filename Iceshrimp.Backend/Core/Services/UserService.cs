@@ -1,6 +1,6 @@
-using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -8,11 +8,16 @@ using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class UserService(ILogger<UserService> logger, DatabaseContext db, APFetchService fetchSvc) {
-	private (string Username, string Host) AcctToTuple(string acct) {
+public class UserService(
+	IOptions<Config.InstanceSection> config,
+	ILogger<UserService> logger,
+	DatabaseContext db,
+	APFetchService fetchSvc) {
+	private (string Username, string? Host) AcctToTuple(string acct) {
 		if (!acct.StartsWith("acct:")) throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
 
 		var split = acct[5..].Split('@');
@@ -23,9 +28,14 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, APFetc
 
 	public Task<User?> GetUserFromQuery(string query) {
 		if (query.StartsWith("http://") || query.StartsWith("https://"))
-			return db.Users.FirstOrDefaultAsync(p => p.Uri == query);
+			return query.StartsWith($"https://{config.Value.WebDomain}/users/")
+				? db.Users.FirstOrDefaultAsync(p => p.Id ==
+				                                    query.Substring($"https://{config.Value.WebDomain}/users/".Length))
+				: db.Users.FirstOrDefaultAsync(p => p.Uri == query);
 
 		var tuple = AcctToTuple(query);
+		if (tuple.Host == config.Value.WebDomain || tuple.Host == config.Value.AccountDomain)
+			tuple.Host = null;
 		return db.Users.FirstOrDefaultAsync(p => p.Username == tuple.Username && p.Host == tuple.Host);
 	}
 
@@ -34,7 +44,7 @@ public class UserService(ILogger<UserService> logger, DatabaseContext db, APFetc
 	public async Task<User> CreateUser(string uri, string acct) {
 		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
 		var instanceActor        = await GetInstanceActor();
-		var instanceActorKeypair = await db.UserKeypairs.FirstAsync(p => p.UserId == instanceActor.Id);
+		var instanceActorKeypair = await db.UserKeypairs.FirstAsync(p => p.User == instanceActor);
 		var actor                = await fetchSvc.FetchActor(uri, instanceActor, instanceActorKeypair);
 		logger.LogDebug("Got actor: {url}", actor.Url);
 

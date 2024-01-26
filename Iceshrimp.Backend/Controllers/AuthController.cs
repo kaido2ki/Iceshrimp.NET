@@ -29,7 +29,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Host == null &&
 		                                                   p.UsernameLower == request.Username.ToLowerInvariant());
 		if (user == null) return Unauthorized();
-		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
+		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
 		if (profile?.Password == null) return Unauthorized();
 		if (!AuthHelpers.ComparePassword(request.Password, profile.Password)) return Unauthorized();
 

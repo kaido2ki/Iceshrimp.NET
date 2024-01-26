@@ -43,7 +43,7 @@ public class NoteService(ILogger<NoteService> logger, DatabaseContext db, UserRe
 		var dbNote = new Note {
 			Id     = IdHelpers.GenerateSlowflakeId(),
 			Uri    = note.Id,
-			Url    = note.Url?.Id,                                      //FIXME: this doesn't seem to work yet
+			Url    = note.Url?.Id, //FIXME: this doesn't seem to work yet
 			Text   = note.MkContent ?? await MfmHelpers.FromHtml(note.Content),
 			UserId = user.Id,
 			CreatedAt = note.PublishedAt?.ToUniversalTime() ??

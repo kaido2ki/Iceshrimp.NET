@@ -17,6 +17,7 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 	 * Avoid repeating WebFinger's with same URI for performance, TODO: optimize away validation checks when the domain matches
 	 */
 
+	//TODO: split domain handling can get stuck in an infinite loop, limit recursion
 	private async Task<(string Acct, string Uri)> WebFinger(string query) {
 		logger.LogDebug("Running WebFinger for query '{query}'", query);
 

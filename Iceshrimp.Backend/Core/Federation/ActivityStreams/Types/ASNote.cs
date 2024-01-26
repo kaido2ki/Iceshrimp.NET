@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Database.Tables;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
@@ -37,4 +38,6 @@ public class ASNote : ASObject {
 
 	[J("https://www.w3.org/ns/activitystreams#attributedTo")]
 	public List<LDIdObject>? AttributedTo { get; set; } = [];
+
+	public Note.NoteVisibility? Visibility => Note.NoteVisibility.Public;
 }

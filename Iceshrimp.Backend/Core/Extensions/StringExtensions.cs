@@ -10,7 +10,7 @@ public static class StringExtensions {
 	public static string ToPunycode(this string target) {
 		return new IdnMapping().GetAscii(target);
 	}
-	
+
 	public static string FromPunycode(this string target) {
 		return new IdnMapping().GetUnicode(target);
 	}

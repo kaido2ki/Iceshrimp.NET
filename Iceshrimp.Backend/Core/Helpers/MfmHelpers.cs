@@ -8,7 +8,7 @@ namespace Iceshrimp.Backend.Core.Helpers;
 public static class MfmHelpers {
 	public static async Task<string> FromHtml(string? html) {
 		if (html == null) return "";
-		
+
 		// Ensure compatibility with AP servers that send both <br> as well as newlines
 		var regex = new Regex(@"<br\s?\/?>\r?\n", RegexOptions.IgnoreCase);
 		html = regex.Replace(html, "\n");

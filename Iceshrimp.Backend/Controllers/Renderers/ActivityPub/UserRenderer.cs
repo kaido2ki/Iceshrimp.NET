@@ -14,8 +14,8 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		if (user.Host != null)
 			throw new GracefulException("Refusing to render remote user");
 
-		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == user.Id);
-		var keypair = await db.UserKeypairs.FirstOrDefaultAsync(p => p.UserId == user.Id);
+		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
+		var keypair = await db.UserKeypairs.FirstOrDefaultAsync(p => p.User == user);
 
 		if (keypair == null) throw new GracefulException("User has no keypair");
 

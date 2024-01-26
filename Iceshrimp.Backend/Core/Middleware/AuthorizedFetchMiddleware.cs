@@ -31,7 +31,7 @@ public class AuthorizedFetchMiddleware(
 			// If we don't, we need to try to fetch it
 			if (key == null) {
 				var user = await userResolver.Resolve(sig.KeyId);
-				key = await db.UserPublickeys.FirstOrDefaultAsync(p => p.UserId == user.Id);
+				key = await db.UserPublickeys.FirstOrDefaultAsync(p => p.User == user);
 			}
 
 			// If we still don't have the key, something went wrong and we need to throw an exception

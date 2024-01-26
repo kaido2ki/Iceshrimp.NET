@@ -24,7 +24,8 @@ public class ASObject {
 				"https://www.w3.org/ns/activitystreams#Service"      => token.ToObject<ASActor>(),
 				"https://www.w3.org/ns/activitystreams#Note"         => token.ToObject<ASNote>(),
 				"https://www.w3.org/ns/activitystreams#Create"       => token.ToObject<ASActivity>(),
-				_                                                    => null
+				"https://www.w3.org/ns/activitystreams#Follow"       => token.ToObject<ASActivity>(),
+				_                                                    => token.ToObject<ASObject>()
 			},
 			JTokenType.Array  => Deserialize(token.First()),
 			JTokenType.String => new ASObject { Id = token.Value<string>() ?? "" },
