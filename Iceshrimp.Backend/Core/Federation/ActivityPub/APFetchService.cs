@@ -13,7 +13,9 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
 public class APFetchService(HttpClient client, HttpRequestService httpRqSvc) {
 	private static readonly JsonSerializerSettings JsonSerializerSettings =
-		new() { DateParseHandling = DateParseHandling.None };
+		new();
+	//FIXME: not doing this breaks ld signatures, but doing this breaks mapping the object to datetime properties
+	//new() { DateParseHandling = DateParseHandling.None };
 
 	public async Task<IEnumerable<ASObject>> FetchActivity(string url, User actor, UserKeypair keypair) {
 		var request  = httpRqSvc.GetSigned(url, ["application/activity+json"], actor, keypair);
@@ -32,8 +34,8 @@ public class APFetchService(HttpClient client, HttpRequestService httpRqSvc) {
 		       throw new GracefulException("Failed to fetch actor");
 	}
 
-	public async Task<ASNote> FetchNote(string uri, User actor, UserKeypair keypair) {
+	public async Task<ASNote?> FetchNote(string uri, User actor, UserKeypair keypair) {
 		var activity = await FetchActivity(uri, actor, keypair);
-		return activity.OfType<ASNote>().FirstOrDefault() ?? throw new GracefulException("Failed to fetch note");
+		return activity.OfType<ASNote>().FirstOrDefault();
 	}
 }

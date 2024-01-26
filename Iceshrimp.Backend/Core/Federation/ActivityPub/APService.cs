@@ -11,9 +11,9 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 public class APService(
 	ILogger<APService> logger,
 	NoteService noteSvc,
-	UserService userSvc,
 	UserResolver userResolver,
-	DatabaseContext db) {
+	DatabaseContext db
+) {
 	public Task PerformActivity(ASActivity activity, string? inboxUserId) {
 		logger.LogDebug("Processing activity: {activity}", activity.Id);
 		if (activity.Actor == null) throw new Exception("Cannot perform activity as actor 'null'");

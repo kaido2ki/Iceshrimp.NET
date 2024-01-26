@@ -15,21 +15,21 @@ public static class ServiceExtensions {
 
 		// Scoped = instantiated per request
 		services.AddScoped<UserResolver>();
-		services.AddScoped<UserService>();
-		services.AddScoped<NoteService>();
 		services.AddScoped<UserRenderer>();
 		services.AddScoped<NoteRenderer>();
-		services.AddScoped<WebFingerService>();
+		services.AddScoped<UserService>();
+		services.AddScoped<NoteService>();
 		services.AddScoped<APService>();
+		services.AddScoped<WebFingerService>();
 		services.AddScoped<AuthorizedFetchMiddleware>();
 
 		// Singleton = instantiated once across application lifetime
 		services.AddSingleton<HttpClient>();
 		services.AddSingleton<HttpRequestService>();
 		services.AddSingleton<APFetchService>();
+		services.AddSingleton<QueueService>();
 		services.AddSingleton<ErrorHandlerMiddleware>();
 		services.AddSingleton<RequestBufferingMiddleware>();
-		services.AddSingleton<QueueService>();
 
 		// Hosted services = long running background tasks
 		// Note: These need to be added as a singleton as well to ensure data consistency

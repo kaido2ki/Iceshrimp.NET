@@ -2,6 +2,7 @@ using J = Newtonsoft.Json.JsonPropertyAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
+//TODO: handle object | link correctly (we don't need to resolve it if it's already the full object)
 public class LDIdObject() {
 	public LDIdObject(string id) : this() {
 		Id = id;

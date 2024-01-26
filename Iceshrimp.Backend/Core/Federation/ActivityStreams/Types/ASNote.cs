@@ -39,6 +39,10 @@ public class ASNote : ASObject {
 	[J("https://www.w3.org/ns/activitystreams#attributedTo")]
 	public List<LDIdObject> AttributedTo { get; set; } = [];
 
+	[J("https://www.w3.org/ns/activitystreams#inReplyTo")]
+	[JC(typeof(LDIdObjectConverter))]
+	public LDIdObject? InReplyTo { get; set; }
+
 	public Note.NoteVisibility GetVisibility(ASActor actor) {
 		if (To.Any(p => p.Id == "https://www.w3.org/ns/activitystreams#Public"))
 			return Note.NoteVisibility.Public;

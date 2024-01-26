@@ -132,7 +132,7 @@ public class UserService(
 	}
 
 
-	private async Task<User> GetInstanceActor() {
+	public async Task<User> GetInstanceActor() {
 		return await GetOrCreateSystemUser("instance.actor");
 	}
 

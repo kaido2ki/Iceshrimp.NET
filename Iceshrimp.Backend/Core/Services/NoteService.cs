@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
@@ -5,16 +6,29 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class NoteService(ILogger<NoteService> logger, DatabaseContext db, UserResolver userResolver) {
-	public async Task CreateNote(ASNote note, ASActor actor) {
+public class NoteService(
+	ILogger<NoteService> logger,
+	DatabaseContext db,
+	UserResolver userResolver,
+	IOptions<Config.InstanceSection> config,
+	UserService userSvc,
+	APFetchService fetchSvc
+) {
+	private readonly List<string> _resolverHistory = [];
+	private          int          _recursionLimit  = 100;
+
+	public async Task<Note?> CreateNote(ASNote note, ASActor actor) {
 		if (await db.Notes.AnyAsync(p => p.Uri == note.Id)) {
 			logger.LogDebug("Note '{id}' already exists, skipping", note.Id);
-			return;
+			return null;
 		}
 
+		if (_resolverHistory is [])
+			_resolverHistory.Add(note.Id);
 		logger.LogDebug("Creating note: {id}", note.Id);
 
 		var user = await userResolver.Resolve(actor.Id);
@@ -37,8 +51,7 @@ public class NoteService(ILogger<NoteService> logger, DatabaseContext db, UserRe
 			throw GracefulException.Forbidden("User is suspended");
 
 		//TODO: validate AP object type
-		//TODO: parse note visibility
-		//TODO: resolve anything related to the note as well (reply thread, attachments, emoji, etc)
+		//TODO: resolve anything related to the note as well (attachments, emoji, etc)
 
 		var dbNote = new Note {
 			Id     = IdHelpers.GenerateSlowflakeId(),
@@ -49,12 +62,49 @@ public class NoteService(ILogger<NoteService> logger, DatabaseContext db, UserRe
 			CreatedAt = note.PublishedAt?.ToUniversalTime() ??
 			            throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field"),
 			UserHost   = user.Host,
-			Visibility = note.GetVisibility(actor)
+			Visibility = note.GetVisibility(actor),
+			Reply      = note.InReplyTo?.Id != null ? await ResolveNote(note.InReplyTo.Id) : null
 			//TODO: parse to fields for specified visibility & mentions
 		};
 
 		await db.Notes.AddAsync(dbNote);
 		await db.SaveChangesAsync();
 		logger.LogDebug("Note {id} created successfully", dbNote.Id);
+		return dbNote;
+	}
+
+	public async Task<Note?> ResolveNote(string uri) {
+		//TODO: is this enough to prevent DoS attacks?
+		if (_recursionLimit-- <= 0)
+			throw GracefulException.UnprocessableEntity("Refusing to resolve threads this long");
+		if (_resolverHistory.Contains(uri))
+			throw GracefulException.UnprocessableEntity("Refusing to resolve circular threads");
+		_resolverHistory.Add(uri);
+
+		var note = uri.StartsWith($"https://{config.Value.WebDomain}/notes/")
+			? await db.Notes.FirstOrDefaultAsync(p => p.Id ==
+			                                          uri.Substring($"https://{config.Value.WebDomain}/notes/".Length))
+			: await db.Notes.FirstOrDefaultAsync(p => p.Uri == uri);
+		if (note != null) return note;
+
+		//TODO: should we fall back to a regular user's keypair if fetching with instance actor fails & a local user is following the actor?
+		var instanceActor        = await userSvc.GetInstanceActor();
+		var instanceActorKeypair = await db.UserKeypairs.FirstAsync(p => p.User == instanceActor);
+		var fetchedNote          = await fetchSvc.FetchNote(uri, instanceActor, instanceActorKeypair);
+		if (fetchedNote?.AttributedTo is not [{ Id: not null } attrTo]) {
+			logger.LogDebug("Invalid Note.AttributedTo, skipping");
+			return null;
+		}
+
+		//TODO: we don't need to fetch the actor every time, we can use userResolver here
+		var actor = await fetchSvc.FetchActor(attrTo.Id, instanceActor, instanceActorKeypair);
+
+		try {
+			return await CreateNote(fetchedNote, actor);
+		}
+		catch (Exception e) {
+			logger.LogDebug("Failed to create resolved note: {error}", e.Message);
+			return null;
+		}
 	}
 }
