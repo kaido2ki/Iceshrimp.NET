@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Configuration;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 
@@ -13,7 +14,7 @@ public class ASActivity : ASObject {
 	public ASObject? Object { get; set; }
 
 	public static class Types {
-		private const string Ns = "https://www.w3.org/ns/activitystreams";
+		private const string Ns = Constants.ActivityStreamsNs;
 
 		public const string Create   = $"{Ns}#Create";
 		public const string Delete   = $"{Ns}#Delete";

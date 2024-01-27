@@ -1,6 +1,6 @@
 namespace Iceshrimp.Backend.Core.Configuration;
 
-public class Constants {
-	public const           string   UserAgent   = "Iceshrimp/2024.1-experimental (https://shrimp-next.fedi.solutions)";
-	public static readonly string[] SystemUsers = { "instance.actor", "relay.actor" };
+public static class Constants {
+	public const           string   ActivityStreamsNs = "https://www.w3.org/ns/activitystreams";
+	public static readonly string[] SystemUsers       = { "instance.actor", "relay.actor" };
 }

@@ -28,14 +28,17 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TimelineResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> Login([FromBody] AuthRequest request) {
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Host == null &&
 		                                                   p.UsernameLower == request.Username.ToLowerInvariant());
-		if (user == null) return Unauthorized();
+		if (user == null)
+			return StatusCode(StatusCodes.Status403Forbidden);
 		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
-		if (profile?.Password == null) return Unauthorized();
-		if (!AuthHelpers.ComparePassword(request.Password, profile.Password)) return Unauthorized();
+		if (profile?.Password == null)
+			return StatusCode(StatusCodes.Status403Forbidden);
+		if (!AuthHelpers.ComparePassword(request.Password, profile.Password))
+			return StatusCode(StatusCodes.Status403Forbidden);
 
 		var res = await db.AddAsync(new Session {
 			Id        = IdHelpers.GenerateSlowflakeId(),
@@ -65,11 +68,12 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TimelineResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> Register([FromBody] AuthRequest request) {
 		//TODO: captcha support
 		//TODO: invite support
 
-		await userSvc.CreateLocalUser(request.Username, request.Password);
+		await userSvc.CreateLocalUser(request.Username, request.Password, request.Invite);
 		return await Login(request);
 	}
 

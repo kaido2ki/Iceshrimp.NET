@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
@@ -55,7 +56,7 @@ public class ASNote : ASObject {
 	}
 
 	public static class Types {
-		private const string Ns = "https://www.w3.org/ns/activitystreams";
+		private const string Ns = Constants.ActivityStreamsNs;
 
 		public const string Note = $"{Ns}#Note";
 	}

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Security.Cryptography;
 using Iceshrimp.Backend.Core.Configuration;
@@ -13,7 +14,9 @@ using Microsoft.Extensions.Options;
 namespace Iceshrimp.Backend.Core.Services;
 
 public class UserService(
-	IOptions<Config.InstanceSection> config,
+	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
+	IOptionsSnapshot<Config.SecuritySection> security,
+	IOptions<Config.InstanceSection> instance,
 	ILogger<UserService> logger,
 	DatabaseContext db,
 	ActivityFetcherService fetchSvc) {
@@ -28,8 +31,8 @@ public class UserService(
 
 	public async Task<User?> GetUserFromQuery(string query) {
 		if (query.StartsWith("http://") || query.StartsWith("https://"))
-			if (query.StartsWith($"https://{config.Value.WebDomain}/users/")) {
-				query = query[$"https://{config.Value.WebDomain}/users/".Length..];
+			if (query.StartsWith($"https://{instance.Value.WebDomain}/users/")) {
+				query = query[$"https://{instance.Value.WebDomain}/users/".Length..];
 				return await db.Users.FirstOrDefaultAsync(p => p.Id == query) ??
 				       throw GracefulException.NotFound("User not found");
 			}
@@ -38,7 +41,7 @@ public class UserService(
 			}
 
 		var tuple = AcctToTuple(query);
-		if (tuple.Host == config.Value.WebDomain || tuple.Host == config.Value.AccountDomain)
+		if (tuple.Host == instance.Value.WebDomain || tuple.Host == instance.Value.AccountDomain)
 			tuple.Host = null;
 		return await db.Users.FirstOrDefaultAsync(p => p.Username == tuple.Username && p.Host == tuple.Host);
 	}
@@ -97,13 +100,21 @@ public class UserService(
 		return user;
 	}
 
-	public async Task<User> CreateLocalUser(string username, string password) {
+	public async Task<User> CreateLocalUser(string username, string password, string? invite) {
+		//TODO: invite system should allow multi-use invites & time limited invites
+		if (security.Value.Registrations == Enums.Registrations.Closed)
+			throw new GracefulException(HttpStatusCode.Forbidden, "Registrations are disabled on this server");
+		if (security.Value.Registrations == Enums.Registrations.Invite && invite == null)
+			throw new GracefulException(HttpStatusCode.Forbidden, "Request is missing the invite code");
+		if (security.Value.Registrations == Enums.Registrations.Invite &&
+		    !await db.RegistrationTickets.AnyAsync(p => p.Code == invite))
+			throw new GracefulException(HttpStatusCode.Forbidden, "The specified invite code is invalid");
 		if (username.Contains('.'))
 			throw new GracefulException(HttpStatusCode.BadRequest, "Username must not contain the dot character");
-
+		if (Constants.SystemUsers.Contains(username.ToLowerInvariant()))
+			throw new GracefulException(HttpStatusCode.BadRequest, "Username must not be a system user");
 		if (await db.Users.AnyAsync(p => p.Host == null && p.UsernameLower == username.ToLowerInvariant()))
 			throw new GracefulException(HttpStatusCode.BadRequest, "User already exists");
-
 		if (await db.UsedUsernames.AnyAsync(p => p.Username.ToLower() == username.ToLowerInvariant()))
 			throw new GracefulException(HttpStatusCode.BadRequest, "Username was already used");
 
@@ -132,6 +143,9 @@ public class UserService(
 			Username  = username.ToLowerInvariant()
 		};
 
+		var ticket = await db.RegistrationTickets.FirstAsync(p => p.Code == invite);
+
+		db.Remove(ticket);
 		await db.AddRangeAsync(user, userKeypair, userProfile, usedUsername);
 		await db.SaveChangesAsync();
 
