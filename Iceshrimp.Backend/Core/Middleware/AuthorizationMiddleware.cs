@@ -16,3 +16,4 @@ public class AuthorizationMiddleware : IMiddleware {
 }
 
 public class AuthorizeAttribute : Attribute;
+//TODO: oauth scopes?

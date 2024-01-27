@@ -10,3 +10,8 @@ public class AuthRequest {
 public class RegistrationRequest : AuthRequest {
 	[J("invite")]   public          string? Invite   { get; set; }
 }
+
+public class ChangePasswordRequest {
+	[J("old_password")] public required string OldPassword { get; set; }
+	[J("new_password")] public required string NewPassword { get; set; }
+}

@@ -21,7 +21,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	[Authenticate]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
 	public IActionResult GetAuthStatus() {
-		var session = Request.HttpContext.GetSession();
+		var session = HttpContext.GetSession();
 
 		if (session == null)
 			return Ok(new AuthResponse {
@@ -43,7 +43,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	[HttpPost]
 	[EnableRateLimiting("strict")]
 	[Consumes(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TimelineResponse))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> Login([FromBody] AuthRequest request) {
@@ -84,7 +84,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	[HttpPut]
 	[EnableRateLimiting("strict")]
 	[Consumes(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TimelineResponse))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
@@ -95,5 +95,27 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 		return await Login(request);
 	}
 
-	//TODO: PATCH = update password
+	[HttpPatch]
+	[Authenticate]
+	[Authorize]
+	[EnableRateLimiting("strict")]
+	[Consumes(MediaTypeNames.Application.Json)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
+	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request) {
+		var user        = HttpContext.GetUser() ?? throw new GracefulException("HttpContext.GetUser() was null");
+		var userProfile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
+		if (userProfile is not { Password: not null }) throw new GracefulException("userProfile?.Password was null");
+		if (!AuthHelpers.ComparePassword(request.OldPassword, userProfile.Password))
+			throw GracefulException.Forbidden("old_password is invalid");
+
+		userProfile.Password = AuthHelpers.HashPassword(request.NewPassword);
+		await db.SaveChangesAsync();
+
+		return await Login(new AuthRequest {
+			Username = user.Username,
+			Password = request.NewPassword
+		});
+	}
 }
