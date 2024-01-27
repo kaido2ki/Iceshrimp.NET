@@ -52,9 +52,10 @@ public sealed class Config {
 	public sealed class RedisSection {
 		public required string  Host     { get; init; } = "localhost";
 		public required int     Port     { get; init; } = 6379;
-		public          int?    Database { get; init; }
+		public          string? Prefix   { get; init; }
 		public          string? Username { get; init; }
 		public          string? Password { get; init; }
+		public          int?    Database { get; init; }
 
 		//TODO: TLS settings
 	}

@@ -3,12 +3,12 @@ using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 namespace Iceshrimp.Backend.Controllers.Schemas;
 
 public class AuthRequest {
-	[J("username")] public required string  Username { get; set; }
-	[J("password")] public required string  Password { get; set; }
+	[J("username")] public required string Username { get; set; }
+	[J("password")] public required string Password { get; set; }
 }
 
 public class RegistrationRequest : AuthRequest {
-	[J("invite")]   public          string? Invite   { get; set; }
+	[J("invite")] public string? Invite { get; set; }
 }
 
 public class ChangePasswordRequest {

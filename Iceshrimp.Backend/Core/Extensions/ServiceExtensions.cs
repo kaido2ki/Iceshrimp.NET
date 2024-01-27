@@ -70,6 +70,7 @@ public static class ServiceExtensions {
 		var config = configuration.GetSection("Redis").Get<Config.RedisSection>();
 		if (config == null) throw new Exception("Failed to initialize redis: Failed to load configuration");
 		services.AddStackExchangeRedisCache(options => {
+			options.InstanceName = config.Prefix;
 			options.ConfigurationOptions = new ConfigurationOptions {
 				User            = config.Username,
 				Password        = config.Password,
