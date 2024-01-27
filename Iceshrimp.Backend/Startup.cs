@@ -32,6 +32,7 @@ builder.Services.AddViteServices(options => {
 //TODO: single line only if there's no \n in the log msg (otherwise stacktraces don't work)
 builder.Services.AddLogging(logging => logging.AddSimpleConsole(options => { options.SingleLine = true; }));
 builder.Services.AddDatabaseContext(builder.Configuration); //TODO: maybe use a dbcontext factory?
+builder.Services.AddSlidingWindowRateLimiter();
 
 builder.Services.AddServices();
 builder.Services.ConfigureServices(builder.Configuration);
@@ -39,9 +40,12 @@ builder.Services.ConfigureServices(builder.Configuration);
 var app    = builder.Build();
 var config = app.Initialize(args);
 
+// This determines the order of middleware execution in the request pipeline
+app.UseRouting();
 app.UseSwagger();
 app.UseSwaggerUI(options => { options.DocumentTitle = "Iceshrimp API documentation"; });
 app.UseStaticFiles();
+app.UseRateLimiter();
 app.UseAuthorization();
 app.UseCustomMiddleware();
 

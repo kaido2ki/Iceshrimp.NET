@@ -12,7 +12,6 @@ namespace Iceshrimp.Backend.Core.Middleware;
 
 public class AuthorizedFetchMiddleware(
 	IOptionsSnapshot<Config.SecuritySection> config,
-	IOptions<Config.InstanceSection> instance,
 	DatabaseContext db,
 	UserResolver userResolver,
 	UserService userSvc,

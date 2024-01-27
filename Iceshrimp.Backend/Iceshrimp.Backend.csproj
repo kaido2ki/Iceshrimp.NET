@@ -37,7 +37,6 @@
     <ItemGroup>
         <AdditionalFiles Include="Pages\Error.cshtml"/>
         <AdditionalFiles Include="Pages\Shared\_Layout.cshtml"/>
-        <AdditionalFiles Include="Pages\Shared\_ValidationScriptsPartial.cshtml"/>
         <AdditionalFiles Include="Pages\_ViewImports.cshtml"/>
         <AdditionalFiles Include="Pages\_ViewStart.cshtml"/>
     </ItemGroup>

@@ -15,7 +15,6 @@ public class ASObject {
 
 	//FIXME: don't recurse creates and co
 	public static ASObject? Deserialize(JToken token) {
-		const string ns = "https://www.w3.org/ns/activitystreams";
 		return token.Type switch {
 			JTokenType.Object => token["@type"]?[0]?.Value<string>() switch {
 				ASActor.Types.Person       => token.ToObject<ASActor>(),

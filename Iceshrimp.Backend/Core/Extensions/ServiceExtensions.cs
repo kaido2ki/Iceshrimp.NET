@@ -1,3 +1,5 @@
+using System.Threading.RateLimiting;
+using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
@@ -7,6 +9,7 @@ using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -58,5 +61,37 @@ public static class ServiceExtensions {
 			        EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
 			        ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
 		        });
+	}
+
+	public static void AddSlidingWindowRateLimiter(this IServiceCollection services) {
+		//TODO: separate limiter for authenticated users, partitioned by user id
+		//TODO: ipv6 /64 subnet buckets
+		//TODO: rate limit status headers - maybe switch to https://github.com/stefanprodan/AspNetCoreRateLimit?
+		services.AddRateLimiter(options => {
+			options.AddSlidingWindowLimiter("sliding", limiterOptions => {
+				limiterOptions.PermitLimit          = 500;
+				limiterOptions.SegmentsPerWindow    = 60;
+				limiterOptions.Window               = TimeSpan.FromSeconds(60);
+				limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+				limiterOptions.QueueLimit           = 0;
+			});
+			options.AddSlidingWindowLimiter("strict", limiterOptions => {
+				limiterOptions.PermitLimit          = 10;
+				limiterOptions.SegmentsPerWindow    = 60;
+				limiterOptions.Window               = TimeSpan.FromSeconds(60);
+				limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+				limiterOptions.QueueLimit           = 0;
+			});
+			options.OnRejected = async (context, token) => {
+				context.HttpContext.Response.StatusCode  = 429;
+				context.HttpContext.Response.ContentType = "application/json";
+				var res = new ErrorResponse {
+					Error      = "Too Many Requests",
+					StatusCode = 429,
+					RequestId  = context.HttpContext.TraceIdentifier
+				};
+				await context.HttpContext.Response.WriteAsJsonAsync(res, token);
+			};
+		});
 	}
 }

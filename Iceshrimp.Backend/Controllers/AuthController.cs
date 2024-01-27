@@ -6,11 +6,13 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
+[EnableRateLimiting("sliding")]
 [Produces("application/json")]
 [Route("/api/iceshrimp/v1/auth")]
 public class AuthController(DatabaseContext db, UserService userSvc) : Controller {
@@ -21,6 +23,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	}
 
 	[HttpPost]
+	[EnableRateLimiting("strict")]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TimelineResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
@@ -56,6 +59,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	}
 
 	[HttpPut]
+	[EnableRateLimiting("strict")]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TimelineResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
