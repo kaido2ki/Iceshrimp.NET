@@ -16,7 +16,7 @@ public class ActivityRenderer(IOptions<Config.InstanceSection> config) {
 
 	public ASActivity RenderAccept(ASObject followeeActor, string requestId) {
 		return new ASActivity {
-			Id   = $"https://{config.Value.WebDomain}/activities/{new Guid().ToString().ToLowerInvariant()}",
+			Id   = $"https://{config.Value.WebDomain}/activities/{Guid.NewGuid().ToString().ToLowerInvariant()}",
 			Type = "https://www.w3.org/ns/activitystreams#Accept",
 			Actor = new ASActor {
 				Id = followeeActor.Id
