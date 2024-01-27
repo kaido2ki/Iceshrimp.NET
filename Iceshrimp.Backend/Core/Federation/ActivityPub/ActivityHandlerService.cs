@@ -44,10 +44,10 @@ public class ActivityHandlerService(
 				//TODO: test if this actually works
 				if (activity.Object is ASActivity { Type: ASActivity.Types.Follow, Object: not null } undoActivity)
 					return Unfollow(undoActivity.Object, activity.Actor);
-				throw new NotImplementedException();
+				throw new NotImplementedException("Unsupported undo operation");
 			}
 			default: {
-				throw new NotImplementedException();
+				throw new NotImplementedException($"Activity type {activity.Type} is unknown");
 			}
 		}
 	}
