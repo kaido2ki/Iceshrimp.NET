@@ -34,7 +34,8 @@ public class ActivityHandlerService(
 				if (activity.Object is { } obj) return Follow(obj, activity.Actor, activity.Id);
 				throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
 			}
-			case ASActivity.Types.Unfollow: {
+			case ASActivity.Types.Unfollow:
+			case ASActivity.Types.Undo: {
 				if (activity.Object is { } obj) return Unfollow(obj, activity.Actor, activity.Id);
 				throw GracefulException.UnprocessableEntity("Unfollow activity object is invalid");
 			}
@@ -50,7 +51,25 @@ public class ActivityHandlerService(
 
 		if (followee.Host != null) throw new Exception("Cannot process follow for remote followee");
 
-		//TODO: handle follow requests
+		if (followee.IsLocked) {
+			var followRequest = new FollowRequest {
+				Id                  = IdHelpers.GenerateSlowflakeId(),
+				CreatedAt           = DateTime.UtcNow,
+				Followee            = followee,
+				Follower            = follower,
+				FolloweeHost        = followee.Host,
+				FollowerHost        = follower.Host,
+				FolloweeInbox       = followee.Inbox,
+				FollowerInbox       = follower.Inbox,
+				FolloweeSharedInbox = followee.SharedInbox,
+				FollowerSharedInbox = follower.SharedInbox,
+				RequestId           = requestId
+			};
+
+			await db.AddAsync(followRequest);
+			await db.SaveChangesAsync();
+			return;
+		}
 
 		var acceptActivity = activityRenderer.RenderAccept(followeeActor, requestId);
 		var keypair        = await db.UserKeypairs.FirstAsync(p => p.User == followee);
@@ -84,7 +103,7 @@ public class ActivityHandlerService(
 		var follower = await userResolver.Resolve(followerActor.Id);
 		var followee = await userResolver.Resolve(followeeActor.Id);
 
+		await db.FollowRequests.Where(p => p.Follower == follower && p.Followee == followee).ExecuteDeleteAsync();
 		await db.Followings.Where(p => p.Follower == follower && p.Followee == followee).ExecuteDeleteAsync();
-		//TODO: also check (or handle at all) follow requests
 	}
 }
