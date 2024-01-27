@@ -44,8 +44,8 @@ public class HttpSignatureTests {
 		request.Headers.Date = DateTimeOffset.Now - TimeSpan.FromHours(13);
 
 		var e = await Assert.ThrowsExceptionAsync<GracefulException>(async () =>
-			                                                           await request.Verify(MockObjects.UserKeypair
-						                                                            .PublicKey));
+			                                                             await request.Verify(MockObjects.UserKeypair
+						                                                              .PublicKey));
 		e.StatusCode.Should().Be(HttpStatusCode.Forbidden);
 		e.Message.Should().Be("Request signature too old");
 		e.Error.Should().Be("Forbidden");
@@ -60,7 +60,8 @@ public class HttpSignatureTests {
 		                                   MockObjects.User, MockObjects.UserKeypair);
 
 		var sig = request.Headers.GetValues("Signature").First();
-		sig = new StringBuilder(sig) { [sig.Length - 10] = (char)(sig[10] + 1 % char.MaxValue) }.ToString();
+		sig = new StringBuilder(sig) { [sig.Length - 10] = (char)(sig[^10] % (122-96) + 97) }
+			.ToString();
 
 		request.Headers.Remove("Signature");
 		request.Headers.Add("Signature", sig);
