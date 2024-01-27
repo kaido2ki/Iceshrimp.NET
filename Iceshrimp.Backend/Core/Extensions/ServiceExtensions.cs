@@ -30,6 +30,7 @@ public static class ServiceExtensions {
 		services.AddScoped<ActivityHandlerService>();
 		services.AddScoped<WebFingerService>();
 		services.AddScoped<AuthorizedFetchMiddleware>();
+		services.AddScoped<AuthenticationMiddleware>();
 
 		// Singleton = instantiated once across application lifetime
 		services.AddSingleton<HttpClient>();

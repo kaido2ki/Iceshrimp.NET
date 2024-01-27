@@ -11,6 +11,7 @@ public static class WebApplicationExtensions {
 		// Caution: make sure these are in the correct order
 		return app.UseMiddleware<ErrorHandlerMiddleware>()
 		          .UseMiddleware<RequestBufferingMiddleware>()
+		          .UseMiddleware<AuthenticationMiddleware>()
 		          .UseMiddleware<AuthorizedFetchMiddleware>();
 	}
 

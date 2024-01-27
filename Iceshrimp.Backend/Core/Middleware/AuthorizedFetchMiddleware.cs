@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.Options;
 namespace Iceshrimp.Backend.Core.Middleware;
 
 public class AuthorizedFetchMiddleware(
+	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	IOptionsSnapshot<Config.SecuritySection> config,
 	DatabaseContext db,
 	UserResolver userResolver,

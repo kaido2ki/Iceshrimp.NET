@@ -16,6 +16,6 @@ public enum AuthStatusEnum {
 
 public class AuthResponse {
 	[J("status")] public required AuthStatusEnum Status { get; set; }
-	[J("token")]  public required string?        Token  { get; set; }
-	[J("user")]   public required UserResponse?  User   { get; set; }
+	[J("user")]   public          UserResponse?  User   { get; set; }
+	[J("token")]  public          string?        Token  { get; set; }
 }
