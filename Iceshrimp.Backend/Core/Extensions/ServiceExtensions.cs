@@ -4,6 +4,9 @@ using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -49,5 +52,11 @@ public static class ServiceExtensions {
 		var config     = configuration.GetSection("Database").Get<Config.DatabaseSection>();
 		var dataSource = DatabaseContext.GetDataSource(config);
 		services.AddDbContext<DatabaseContext>(options => { DatabaseContext.Configure(options, dataSource); });
+		services.AddDataProtection()
+		        .PersistKeysToDbContext<DatabaseContext>()
+		        .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration {
+			        EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+			        ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+		        });
 	}
 }

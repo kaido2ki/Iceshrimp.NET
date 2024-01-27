@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -8,7 +9,8 @@ namespace Iceshrimp.Backend.Core.Database;
 
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
 [SuppressMessage("ReSharper", "IdentifierTypo")]
-public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options) {
+public class DatabaseContext(DbContextOptions<DatabaseContext> options)
+	: DbContext(options), IDataProtectionKeyContext {
 	public virtual DbSet<AbuseUserReport>      AbuseUserReports      { get; init; } = null!;
 	public virtual DbSet<AccessToken>          AccessTokens          { get; init; } = null!;
 	public virtual DbSet<Announcement>         Announcements         { get; init; } = null!;
@@ -76,6 +78,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
 	public virtual DbSet<UserPublickey>        UserPublickeys        { get; init; } = null!;
 	public virtual DbSet<UserSecurityKey>      UserSecurityKeys      { get; init; } = null!;
 	public virtual DbSet<Webhook>              Webhooks              { get; init; } = null!;
+	public virtual DbSet<DataProtectionKey>    DataProtectionKeys    { get; init; } = null!;
 
 	public static NpgsqlDataSource GetDataSource(Config.DatabaseSection? config) {
 		var dataSourceBuilder = new NpgsqlDataSourceBuilder();
