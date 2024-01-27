@@ -1,4 +1,4 @@
-using Iceshrimp.Backend.Controllers.Renderers.Entity;
+using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Microsoft.AspNetCore.Mvc;

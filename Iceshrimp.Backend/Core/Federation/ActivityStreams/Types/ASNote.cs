@@ -53,4 +53,10 @@ public class ASNote : ASObject {
 
 		return Note.NoteVisibility.Specified;
 	}
+
+	public static class Types {
+		private const string Ns = "https://www.w3.org/ns/activitystreams";
+
+		public const string Note = $"{Ns}#Note";
+	}
 }

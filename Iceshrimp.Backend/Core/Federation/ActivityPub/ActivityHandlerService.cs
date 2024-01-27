@@ -1,4 +1,3 @@
-using Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
@@ -27,18 +26,15 @@ public class ActivityHandlerService(
 		//TODO: validate inboxUserId
 
 		switch (activity.Type) {
-			case "https://www.w3.org/ns/activitystreams#Create": {
+			case ASActivity.Types.Create: {
 				if (activity.Object is ASNote note) return noteSvc.ProcessNote(note, activity.Actor);
 				throw new NotImplementedException();
 			}
-			case "https://www.w3.org/ns/activitystreams#Like": {
-				throw new NotImplementedException();
-			}
-			case "https://www.w3.org/ns/activitystreams#Follow": {
+			case ASActivity.Types.Follow: {
 				if (activity.Object is { } obj) return Follow(obj, activity.Actor, activity.Id);
 				throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
 			}
-			case "https://www.w3.org/ns/activitystreams#Unfollow": {
+			case ASActivity.Types.Unfollow: {
 				if (activity.Object is { } obj) return Unfollow(obj, activity.Actor, activity.Id);
 				throw GracefulException.UnprocessableEntity("Unfollow activity object is invalid");
 			}

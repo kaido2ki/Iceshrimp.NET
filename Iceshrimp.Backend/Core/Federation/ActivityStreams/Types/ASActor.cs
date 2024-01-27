@@ -12,11 +12,7 @@ public class ASActor : ASObject {
 	private const int SummaryLength     = 2048;
 
 	private static readonly List<string> ActorTypes = [
-		"https://www.w3.org/ns/activitystreams#Person",
-		"https://www.w3.org/ns/activitystreams#Service",
-		"https://www.w3.org/ns/activitystreams#Group",
-		"https://www.w3.org/ns/activitystreams#Organization",
-		"https://www.w3.org/ns/activitystreams#Application"
+		Types.Person, Types.Service, Types.Group, Types.Organization, Types.Application
 	];
 
 	[J("https://misskey-hub.net/ns#_misskey_summary")]
@@ -135,6 +131,16 @@ public class ASActor : ASObject {
 			{ Length: > 0 } => Summary.Truncate(SummaryLength),
 			_               => null
 		};
+	}
+
+	public static class Types {
+		private const string Ns = "https://www.w3.org/ns/activitystreams";
+
+		public const string Application  = $"{Ns}#Application";
+		public const string Group        = $"{Ns}#Group";
+		public const string Organization = $"{Ns}#Organization";
+		public const string Person       = $"{Ns}#Person";
+		public const string Service      = $"{Ns}#Service";
 	}
 }
 

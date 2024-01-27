@@ -3,7 +3,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Microsoft.Extensions.Options;
 
-namespace Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
+namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
 public class NoteRenderer(IOptions<Config.InstanceSection> config) {
 	public ASNote Render(Note note) {

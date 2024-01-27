@@ -1,8 +1,8 @@
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Attributes;
-using Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Middleware;

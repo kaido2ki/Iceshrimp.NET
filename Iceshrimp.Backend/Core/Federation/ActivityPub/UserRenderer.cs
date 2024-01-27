@@ -7,7 +7,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
+namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
 public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db) {
 	public async Task<ASActor> Render(User user) {

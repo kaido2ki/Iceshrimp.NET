@@ -15,17 +15,23 @@ public class ASObject {
 
 	//FIXME: don't recurse creates and co
 	public static ASObject? Deserialize(JToken token) {
+		const string ns = "https://www.w3.org/ns/activitystreams";
 		return token.Type switch {
 			JTokenType.Object => token["@type"]?[0]?.Value<string>() switch {
-				"https://www.w3.org/ns/activitystreams#Application"  => token.ToObject<ASActor>(),
-				"https://www.w3.org/ns/activitystreams#Group"        => token.ToObject<ASActor>(),
-				"https://www.w3.org/ns/activitystreams#Organization" => token.ToObject<ASActor>(),
-				"https://www.w3.org/ns/activitystreams#Person"       => token.ToObject<ASActor>(),
-				"https://www.w3.org/ns/activitystreams#Service"      => token.ToObject<ASActor>(),
-				"https://www.w3.org/ns/activitystreams#Note"         => token.ToObject<ASNote>(),
-				"https://www.w3.org/ns/activitystreams#Create"       => token.ToObject<ASActivity>(),
-				"https://www.w3.org/ns/activitystreams#Follow"       => token.ToObject<ASActivity>(),
-				_                                                    => token.ToObject<ASObject>()
+				ASActor.Types.Person       => token.ToObject<ASActor>(),
+				ASActor.Types.Service      => token.ToObject<ASActor>(),
+				ASActor.Types.Group        => token.ToObject<ASActor>(),
+				ASActor.Types.Organization => token.ToObject<ASActor>(),
+				ASActor.Types.Application  => token.ToObject<ASActor>(),
+				ASNote.Types.Note          => token.ToObject<ASNote>(),
+				ASActivity.Types.Create    => token.ToObject<ASActivity>(),
+				ASActivity.Types.Delete    => token.ToObject<ASActivity>(),
+				ASActivity.Types.Follow    => token.ToObject<ASActivity>(),
+				ASActivity.Types.Unfollow  => token.ToObject<ASActivity>(),
+				ASActivity.Types.Accept    => token.ToObject<ASActivity>(),
+				ASActivity.Types.Undo      => token.ToObject<ASActivity>(),
+				ASActivity.Types.Like      => token.ToObject<ASActivity>(),
+				_                          => token.ToObject<ASObject>()
 			},
 			JTokenType.Array  => Deserialize(token.First()),
 			JTokenType.String => new ASObject { Id = token.Value<string>() ?? "" },

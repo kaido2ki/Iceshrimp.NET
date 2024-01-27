@@ -1,7 +1,7 @@
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database.Tables;
 
-namespace Iceshrimp.Backend.Controllers.Renderers.Entity;
+namespace Iceshrimp.Backend.Controllers.Renderers;
 
 public class NoteRenderer {
 	public static NoteResponse RenderOne(Note note) {

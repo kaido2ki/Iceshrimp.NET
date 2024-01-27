@@ -2,7 +2,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Microsoft.Extensions.Options;
 
-namespace Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
+namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
 public class ActivityRenderer(IOptions<Config.InstanceSection> config) {
 	public static ASActivity RenderCreate(ASObject obj, ASObject actor) {
