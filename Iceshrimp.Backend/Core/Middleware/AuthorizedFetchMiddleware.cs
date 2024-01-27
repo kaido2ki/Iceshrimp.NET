@@ -24,7 +24,8 @@ public class AuthorizedFetchMiddleware(
 		if (attribute != null && config.Value.AuthorizedFetch) {
 			var request = ctx.Request;
 
-			var instanceActorUri = $"https://{instance.Value.WebDomain}/users/{(await userSvc.GetInstanceActor()).Id}";
+			//TODO: cache this somewhere
+			var instanceActorUri = $"/users/{(await userSvc.GetInstanceActor()).Id}";
 			if (ctx.Request.Path.Value == instanceActorUri) {
 				await next(ctx);
 				return;
