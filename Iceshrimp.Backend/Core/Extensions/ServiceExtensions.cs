@@ -39,6 +39,7 @@ public static class ServiceExtensions {
 		services.AddSingleton<QueueService>();
 		services.AddSingleton<ErrorHandlerMiddleware>();
 		services.AddSingleton<RequestBufferingMiddleware>();
+		services.AddSingleton<AuthorizationMiddleware>();
 
 		// Hosted services = long running background tasks
 		// Note: These need to be added as a singleton as well to ensure data consistency

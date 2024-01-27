@@ -77,7 +77,7 @@ public class GracefulException(HttpStatusCode statusCode, string error, string m
 	public static GracefulException Forbidden(string message, string? details = null) {
 		return new GracefulException(HttpStatusCode.Forbidden, message, details);
 	}
-	
+
 	public static GracefulException Unauthorized(string message, string? details = null) {
 		return new GracefulException(HttpStatusCode.Unauthorized, message, details);
 	}

@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
@@ -19,16 +18,15 @@ namespace Iceshrimp.Backend.Controllers;
 [Route("/api/iceshrimp/v1/auth")]
 public class AuthController(DatabaseContext db, UserService userSvc) : Controller {
 	[HttpGet]
-	[Authentication(false)]
+	[Authenticate]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
 	public IActionResult GetAuthStatus() {
 		var session = Request.HttpContext.GetSession();
 
-		if (session == null) {
+		if (session == null)
 			return Ok(new AuthResponse {
 				Status = AuthStatusEnum.Guest
 			});
-		}
 
 		return Ok(new AuthResponse {
 			Status = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,

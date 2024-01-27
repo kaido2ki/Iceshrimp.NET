@@ -12,6 +12,7 @@ public static class WebApplicationExtensions {
 		return app.UseMiddleware<ErrorHandlerMiddleware>()
 		          .UseMiddleware<RequestBufferingMiddleware>()
 		          .UseMiddleware<AuthenticationMiddleware>()
+		          .UseMiddleware<AuthorizationMiddleware>()
 		          .UseMiddleware<AuthorizedFetchMiddleware>();
 	}
 
