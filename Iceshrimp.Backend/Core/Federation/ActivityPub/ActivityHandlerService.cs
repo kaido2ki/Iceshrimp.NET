@@ -27,17 +27,24 @@ public class ActivityHandlerService(
 
 		switch (activity.Type) {
 			case ASActivity.Types.Create: {
+				//TODO: implement the rest
 				if (activity.Object is ASNote note) return noteSvc.ProcessNote(note, activity.Actor);
-				throw new NotImplementedException();
+				throw GracefulException.UnprocessableEntity("Create activity object is invalid");
 			}
 			case ASActivity.Types.Follow: {
 				if (activity.Object is { } obj) return Follow(obj, activity.Actor, activity.Id);
 				throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
 			}
-			case ASActivity.Types.Unfollow:
-			case ASActivity.Types.Undo: {
-				if (activity.Object is { } obj) return Unfollow(obj, activity.Actor, activity.Id);
+			case ASActivity.Types.Unfollow: {
+				if (activity.Object is { } obj) return Unfollow(obj, activity.Actor);
 				throw GracefulException.UnprocessableEntity("Unfollow activity object is invalid");
+			}
+			case ASActivity.Types.Undo: {
+				//TODO: implement the rest
+				//TODO: test if this actually works
+				if (activity.Object is ASActivity { Type: ASActivity.Types.Follow, Object: not null } undoActivity)
+					return Unfollow(undoActivity.Object, activity.Actor);
+				throw new NotImplementedException();
 			}
 			default: {
 				throw new NotImplementedException();
@@ -99,7 +106,7 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task Unfollow(ASObject followeeActor, ASObject followerActor, string id) {
+	private async Task Unfollow(ASObject followeeActor, ASObject followerActor) {
 		var follower = await userResolver.Resolve(followerActor.Id);
 		var followee = await userResolver.Resolve(followeeActor.Id);
 
