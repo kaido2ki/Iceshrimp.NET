@@ -14,7 +14,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config) {
 			Id           = id,
 			Content      = note.Text, //FIXME: render to html
 			AttributedTo = [new LDIdObject(userId)],
-			Type         = "as:Note",
+			Type         = "https://www.w3.org/ns/activitystreams#Note",
 			MkContent    = note.Text,
 			PublishedAt  = note.CreatedAt,
 			Sensitive    = note.Cw != null,
@@ -22,6 +22,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config) {
 				Content   = note.Text,
 				MediaType = "text/x.misskeymarkdown"
 			},
+			//TODO: implement this properly
 			Cc = [new ASLink("https://www.w3.org/ns/activitystreams#Public")],
 			To = []
 		};

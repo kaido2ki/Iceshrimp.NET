@@ -7,12 +7,14 @@ public class DeliverQueue {
 		return new JobQueue<DeliverJob>("deliver", DeliverQueueProcessor, 4);
 	}
 
-	private static Task DeliverQueueProcessor(DeliverJob job, IServiceProvider scope, CancellationToken token) {
-		//TODO
-		return Task.CompletedTask;
+	private static async Task DeliverQueueProcessor(DeliverJob job, IServiceProvider scope, CancellationToken token) {
+		var logger     = scope.GetRequiredService<ILogger<DeliverQueue>>();
+		var httpClient = scope.GetRequiredService<HttpClient>();
+		logger.LogDebug("Delivering activity to: {uri}", job.Request.RequestUri!.AbsoluteUri);
+		await httpClient.SendAsync(job.Request, token);
 	}
 }
 
-public class DeliverJob : Job {
-	//TODO
+public class DeliverJob(HttpRequestMessage request) : Job {
+	public readonly HttpRequestMessage Request = request;
 }

@@ -10,6 +10,7 @@
       "manuallyApprovesFollowers": "as:manuallyApprovesFollowers",
       "movedToUri": "as:movedTo",
       "sensitive": "as:sensitive",
+      "published": "as:published",
       "Hashtag": "as:Hashtag",
       "quoteUri": "fedibird:quoteUri",
       "quoteUrl": "as:quoteUrl",

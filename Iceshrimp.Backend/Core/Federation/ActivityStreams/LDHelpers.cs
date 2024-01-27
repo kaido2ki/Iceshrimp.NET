@@ -1,3 +1,7 @@
+using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
+using Iceshrimp.Backend.Core.Federation.Cryptography;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using VDS.RDF.JsonLd;
 
@@ -42,6 +46,16 @@ public static class LdHelpers {
 		DocumentLoader = CustomLoader, ExpandContext = ASExtensions
 	};
 
+	private static readonly JsonSerializerSettings JsonSerializerSettings = new() {
+		NullValueHandling    = NullValueHandling.Ignore,
+		DateTimeZoneHandling = DateTimeZoneHandling.Local
+	};
+
+	private static readonly JsonSerializer JsonSerializer = new() {
+		NullValueHandling    = NullValueHandling.Ignore,
+		DateTimeZoneHandling = DateTimeZoneHandling.Local
+	};
+
 	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions) {
 		//TODO: cache in redis
 		ContextCache.TryGetValue(uri.ToString(), out var result);
@@ -52,10 +66,38 @@ public static class LdHelpers {
 		return result;
 	}
 
-	public static JObject? Compact(object obj)        => Compact(JToken.FromObject(obj));
-	public static JArray?  Expand(object obj)         => Expand(JToken.FromObject(obj));
-	public static JObject? Compact(JToken? json)      => JsonLdProcessor.Compact(json, DefaultContext, Options);
-	public static JArray?  Expand(JToken? json)       => JsonLdProcessor.Expand(json, Options);
-	public static string   Canonicalize(JArray json)  => JsonLdProcessor.Canonicalize(json);
-	public static string   Canonicalize(JObject json) => JsonLdProcessor.Canonicalize([json]);
+	public static async Task<string> SignAndCompact(this ASActivity activity, UserKeypair keypair) {
+		var expanded = Expand(activity) ?? throw new Exception("Failed to expand activity");
+		var signed = await LdSignature.Sign(expanded, keypair.PrivateKey,
+		                                    activity.Actor?.PublicKey?.Id ?? $"{activity.Actor!.Id}#main-key") ??
+		             throw new Exception("Failed to sign activity");
+		var compacted = Compact(signed) ?? throw new Exception("Failed to compact signed activity");
+		var payload   = JsonConvert.SerializeObject(compacted, JsonSerializerSettings);
+
+		return payload;
+	}
+
+	public static JObject? Compact(object obj) {
+		return Compact(JToken.FromObject(obj, JsonSerializer));
+	}
+
+	public static JArray? Expand(object obj) {
+		return Expand(JToken.FromObject(obj, JsonSerializer));
+	}
+
+	public static JObject? Compact(JToken? json) {
+		return JsonLdProcessor.Compact(json, DefaultContext, Options);
+	}
+
+	public static JArray? Expand(JToken? json) {
+		return JsonLdProcessor.Expand(json, Options);
+	}
+
+	public static string Canonicalize(JArray json) {
+		return JsonLdProcessor.Canonicalize(json);
+	}
+
+	public static string Canonicalize(JObject json) {
+		return JsonLdProcessor.Canonicalize([json]);
+	}
 }

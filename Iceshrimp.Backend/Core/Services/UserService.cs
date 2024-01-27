@@ -26,17 +26,21 @@ public class UserService(
 		return (split[0], split[1].ToPunycode());
 	}
 
-	public Task<User?> GetUserFromQuery(string query) {
+	public async Task<User?> GetUserFromQuery(string query) {
 		if (query.StartsWith("http://") || query.StartsWith("https://"))
-			return query.StartsWith($"https://{config.Value.WebDomain}/users/")
-				? db.Users.FirstOrDefaultAsync(p => p.Id ==
-				                                    query.Substring($"https://{config.Value.WebDomain}/users/".Length))
-				: db.Users.FirstOrDefaultAsync(p => p.Uri == query);
+			if (query.StartsWith($"https://{config.Value.WebDomain}/users/")) {
+				query = query[$"https://{config.Value.WebDomain}/users/".Length..];
+				return await db.Users.FirstOrDefaultAsync(p => p.Id == query) ??
+				       throw GracefulException.NotFound("User not found");
+			}
+			else {
+				return await db.Users.FirstOrDefaultAsync(p => p.Uri == query);
+			}
 
 		var tuple = AcctToTuple(query);
 		if (tuple.Host == config.Value.WebDomain || tuple.Host == config.Value.AccountDomain)
 			tuple.Host = null;
-		return db.Users.FirstOrDefaultAsync(p => p.Username == tuple.Username && p.Host == tuple.Host);
+		return await db.Users.FirstOrDefaultAsync(p => p.Username == tuple.Username && p.Host == tuple.Host);
 	}
 
 	//TODO: UpdateUser
@@ -94,6 +98,9 @@ public class UserService(
 	}
 
 	public async Task<User> CreateLocalUser(string username, string password) {
+		if (username.Contains('.'))
+			throw new GracefulException(HttpStatusCode.BadRequest, "Username must not contain the dot character");
+
 		if (await db.Users.AnyAsync(p => p.Host == null && p.UsernameLower == username.ToLowerInvariant()))
 			throw new GracefulException(HttpStatusCode.BadRequest, "User already exists");
 

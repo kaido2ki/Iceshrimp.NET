@@ -115,4 +115,4 @@ public abstract class Job {
 //TODO: retries
 //TODO: exponential backoff with fail after certain point
 //TODO: prune dead instances after a while (and only resume sending activities after they come back)
-//TODO: persistence with redis
+//TODO: persistence with redis (note: we should store running jobs somewhere as well)
