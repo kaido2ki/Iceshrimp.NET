@@ -35,8 +35,8 @@ public sealed class Config {
 	}
 
 	public sealed class SecuritySection {
-		public required bool               AuthorizedFetch    { get; init; }
-		public required ExceptionVerbosity ExceptionVerbosity { get; init; }
+		public required bool               AuthorizedFetch    { get; init; } = true;
+		public required ExceptionVerbosity ExceptionVerbosity { get; init; } = ExceptionVerbosity.Basic;
 	}
 
 	public sealed class DatabaseSection {
