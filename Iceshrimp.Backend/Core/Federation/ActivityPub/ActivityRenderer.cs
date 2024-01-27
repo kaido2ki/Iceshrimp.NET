@@ -14,16 +14,25 @@ public class ActivityRenderer(IOptions<Config.InstanceSection> config) {
 		};
 	}
 
-	public ASActivity RenderAccept(ASObject followeeActor, string requestId) {
+	public ASActivity RenderAccept(ASObject actor, ASObject obj) {
 		return new ASActivity {
 			Id   = $"https://{config.Value.WebDomain}/activities/{Guid.NewGuid().ToString().ToLowerInvariant()}",
 			Type = "https://www.w3.org/ns/activitystreams#Accept",
 			Actor = new ASActor {
-				Id = followeeActor.Id
+				Id = actor.Id
 			},
-			Object = new ASObject {
-				Id = requestId
-			}
+			Object = obj
+		};
+	}
+
+	public ASActivity RenderFollow(ASObject followerActor, ASObject followeeActor, string requestId) {
+		return new ASActivity {
+			Id   = requestId,
+			Type = ASActivity.Types.Follow,
+			Actor = new ASActor {
+				Id = followerActor.Id
+			},
+			Object = followeeActor
 		};
 	}
 }

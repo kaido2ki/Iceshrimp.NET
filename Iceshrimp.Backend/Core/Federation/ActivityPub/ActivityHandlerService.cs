@@ -78,9 +78,11 @@ public class ActivityHandlerService(
 			return;
 		}
 
-		var acceptActivity = activityRenderer.RenderAccept(followeeActor, requestId);
-		var keypair        = await db.UserKeypairs.FirstAsync(p => p.User == followee);
-		var payload        = await acceptActivity.SignAndCompact(keypair);
+		var acceptActivity = activityRenderer.RenderAccept(followeeActor,
+		                                                   activityRenderer.RenderFollow(followerActor,
+				                                                    followeeActor, requestId));
+		var keypair = await db.UserKeypairs.FirstAsync(p => p.User == followee);
+		var payload = await acceptActivity.SignAndCompact(keypair);
 		var inboxUri = follower.SharedInbox ??
 		               follower.Inbox ?? throw new Exception("Can't accept follow: user has no inbox");
 		var request = await httpRqSvc.PostSigned(inboxUri, payload, "application/activity+json", followee, keypair);
