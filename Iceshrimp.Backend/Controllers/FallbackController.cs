@@ -9,6 +9,7 @@ namespace Iceshrimp.Backend.Controllers;
 public class FallbackController : Controller {
 	[ProducesResponseType(StatusCodes.Status501NotImplemented, Type = typeof(ErrorResponse))]
 	public IActionResult FallbackAction() {
-		throw new GracefulException(HttpStatusCode.NotImplemented, "This API method has not been implemented");
+		throw new GracefulException(HttpStatusCode.NotImplemented,
+		                            "This API method has not been implemented", Request.Path);
 	}
 }
