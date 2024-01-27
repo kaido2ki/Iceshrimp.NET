@@ -1,4 +1,4 @@
-using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
@@ -8,18 +8,17 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class APService(
-	IOptions<Config.InstanceSection> config,
-	ILogger<APService> logger,
+public class ActivityHandlerService(
+	ILogger<ActivityHandlerService> logger,
 	NoteService noteSvc,
 	UserResolver userResolver,
 	DatabaseContext db,
 	HttpRequestService httpRqSvc,
-	QueueService queueService
+	QueueService queueService,
+	ActivityRenderer activityRenderer
 ) {
 	public Task PerformActivity(ASActivity activity, string? inboxUserId) {
 		logger.LogDebug("Processing activity: {activity}", activity.Id);
@@ -29,7 +28,7 @@ public class APService(
 
 		switch (activity.Type) {
 			case "https://www.w3.org/ns/activitystreams#Create": {
-				if (activity.Object is ASNote note) return noteSvc.CreateNote(note, activity.Actor);
+				if (activity.Object is ASNote note) return noteSvc.ProcessNote(note, activity.Actor);
 				throw new NotImplementedException();
 			}
 			case "https://www.w3.org/ns/activitystreams#Like": {
@@ -49,28 +48,6 @@ public class APService(
 		}
 	}
 
-	public async Task DeliverToFollowers(ASActivity activity, User actor) {
-		logger.LogDebug("Delivering activity {id} to followers", activity.Id);
-		if (activity.Actor == null) throw new Exception("Actor must not be null");
-
-		var inboxUrls = await db.Followings.Where(p => p.Followee == actor)
-		                        .Select(p => p.FollowerSharedInbox ?? p.FollowerInbox)
-		                        .Where(p => p != null)
-		                        .Select(p => p!)
-		                        .Distinct()
-		                        .ToListAsync();
-
-		if (inboxUrls.Count == 0) return;
-
-		var keypair = await db.UserKeypairs.FirstAsync(p => p.User == actor);
-		var payload = await activity.SignAndCompact(keypair);
-
-		foreach (var inboxUrl in inboxUrls) {
-			var request = await httpRqSvc.PostSigned(inboxUrl, payload, "application/activity+json", actor, keypair);
-			queueService.DeliverQueue.Enqueue(new DeliverJob(request));
-		}
-	}
-
 	private async Task Follow(ASObject followeeActor, ASObject followerActor, string requestId) {
 		var follower = await userResolver.Resolve(followerActor.Id);
 		var followee = await userResolver.Resolve(followeeActor.Id);
@@ -79,19 +56,9 @@ public class APService(
 
 		//TODO: handle follow requests
 
-		var acceptActivity = new ASActivity {
-			Id   = $"https://{config.Value.WebDomain}/activities/{new Guid().ToString().ToLowerInvariant()}",
-			Type = "https://www.w3.org/ns/activitystreams#Accept",
-			Actor = new ASActor {
-				Id = followeeActor.Id
-			},
-			Object = new ASObject {
-				Id = requestId
-			}
-		};
-
-		var keypair = await db.UserKeypairs.FirstAsync(p => p.User == followee);
-		var payload = await acceptActivity.SignAndCompact(keypair);
+		var acceptActivity = activityRenderer.RenderAccept(followeeActor, requestId);
+		var keypair        = await db.UserKeypairs.FirstAsync(p => p.User == followee);
+		var payload        = await acceptActivity.SignAndCompact(keypair);
 		var inboxUri = follower.SharedInbox ??
 		               follower.Inbox ?? throw new Exception("Can't accept follow: user has no inbox");
 		var request = await httpRqSvc.PostSigned(inboxUri, payload, "application/activity+json", followee, keypair);

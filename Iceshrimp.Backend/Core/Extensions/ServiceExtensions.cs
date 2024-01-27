@@ -14,19 +14,21 @@ public static class ServiceExtensions {
 		//services.AddTransient<T>();
 
 		// Scoped = instantiated per request
-		services.AddScoped<UserResolver>();
+		services.AddScoped<ActivityRenderer>();
 		services.AddScoped<UserRenderer>();
 		services.AddScoped<NoteRenderer>();
+		services.AddScoped<UserResolver>();
 		services.AddScoped<UserService>();
 		services.AddScoped<NoteService>();
-		services.AddScoped<APService>();
+		services.AddScoped<ActivityDeliverService>();
+		services.AddScoped<ActivityHandlerService>();
 		services.AddScoped<WebFingerService>();
 		services.AddScoped<AuthorizedFetchMiddleware>();
 
 		// Singleton = instantiated once across application lifetime
 		services.AddSingleton<HttpClient>();
 		services.AddSingleton<HttpRequestService>();
-		services.AddSingleton<APFetchService>();
+		services.AddSingleton<ActivityFetcherService>();
 		services.AddSingleton<QueueService>();
 		services.AddSingleton<ErrorHandlerMiddleware>();
 		services.AddSingleton<RequestBufferingMiddleware>();

@@ -18,10 +18,10 @@ public class InboxQueue {
 		if (obj == null) throw new Exception("Failed to deserialize ASObject");
 		if (obj is not ASActivity activity) throw new NotImplementedException("Job data is not an ASActivity");
 
-		var apSvc  = scope.GetRequiredService<APService>();
-		var logger = scope.GetRequiredService<ILogger<InboxQueue>>();
+		var apHandler = scope.GetRequiredService<ActivityHandlerService>();
+		var logger    = scope.GetRequiredService<ILogger<InboxQueue>>();
 		logger.LogTrace("Preparation took {ms} ms", job.Duration);
-		await apSvc.PerformActivity(activity, job.InboxUserId);
+		await apHandler.PerformActivity(activity, job.InboxUserId);
 	}
 }
 

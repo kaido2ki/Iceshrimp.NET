@@ -16,7 +16,7 @@ public class UserService(
 	IOptions<Config.InstanceSection> config,
 	ILogger<UserService> logger,
 	DatabaseContext db,
-	APFetchService fetchSvc) {
+	ActivityFetcherService fetchSvc) {
 	private (string Username, string? Host) AcctToTuple(string acct) {
 		if (!acct.StartsWith("acct:")) throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
 

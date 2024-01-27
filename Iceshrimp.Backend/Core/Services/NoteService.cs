@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Controllers.Renderers.ActivityPub;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -16,12 +17,41 @@ public class NoteService(
 	UserResolver userResolver,
 	IOptions<Config.InstanceSection> config,
 	UserService userSvc,
-	APFetchService fetchSvc
+	ActivityFetcherService fetchSvc,
+	ActivityDeliverService deliverSvc,
+	NoteRenderer noteRenderer,
+	UserRenderer userRenderer
 ) {
 	private readonly List<string> _resolverHistory = [];
 	private          int          _recursionLimit  = 100;
 
-	public async Task<Note?> CreateNote(ASNote note, ASActor actor) {
+	public async Task<Note> CreateNote(User user, Note.NoteVisibility visibility, string? text = null,
+	                                   string? cw = null, Note? reply = null, Note? renote = null) {
+		var actor = await userRenderer.Render(user);
+
+		var note = new Note {
+			Id         = IdHelpers.GenerateSlowflakeId(),
+			Text       = text,
+			Cw         = cw,
+			Reply      = reply,
+			Renote     = renote,
+			UserId     = user.Id,
+			CreatedAt  = DateTime.UtcNow,
+			UserHost   = null,
+			Visibility = visibility
+		};
+		await db.AddAsync(note);
+		await db.SaveChangesAsync();
+
+		var obj      = noteRenderer.Render(note);
+		var activity = ActivityRenderer.RenderCreate(obj, actor);
+
+		await deliverSvc.DeliverToFollowers(activity, user);
+
+		return note;
+	}
+
+	public async Task<Note?> ProcessNote(ASNote note, ASActor actor) {
 		if (await db.Notes.AnyAsync(p => p.Uri == note.Id)) {
 			logger.LogDebug("Note '{id}' already exists, skipping", note.Id);
 			return null;
@@ -100,7 +130,7 @@ public class NoteService(
 		var actor = await fetchSvc.FetchActor(attrTo.Id, instanceActor, instanceActorKeypair);
 
 		try {
-			return await CreateNote(fetchedNote, actor);
+			return await ProcessNote(fetchedNote, actor);
 		}
 		catch (Exception e) {
 			logger.LogDebug("Failed to create resolved note: {error}", e.Message);
