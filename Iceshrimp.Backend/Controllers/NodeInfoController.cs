@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
+[Tags("Federation")]
 [Route("/nodeinfo")]
 public class NodeInfoController(IOptions<Config.InstanceSection> config) : Controller {
 	[HttpGet("2.1")]

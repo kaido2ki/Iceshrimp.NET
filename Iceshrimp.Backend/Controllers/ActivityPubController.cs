@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
+[Tags("ActivityPub")]
 [UseNewtonsoftJson]
 public class ActivityPubController : Controller {
 	[HttpGet("/notes/{id}")]

@@ -83,6 +83,7 @@ public static class ServiceExtensions {
 		//TODO: separate limiter for authenticated users, partitioned by user id
 		//TODO: ipv6 /64 subnet buckets
 		//TODO: rate limit status headers - maybe switch to https://github.com/stefanprodan/AspNetCoreRateLimit?
+		//TODO: alternatively just write our own
 		services.AddRateLimiter(options => {
 			options.AddSlidingWindowLimiter("sliding", limiterOptions => {
 				limiterOptions.PermitLimit          = 500;

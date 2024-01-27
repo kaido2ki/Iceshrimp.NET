@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
+[Tags("User")]
 [Produces("application/json")]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/user/{id}")]

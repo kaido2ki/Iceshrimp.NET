@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
+[Tags("Authentication")]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
 [Route("/api/iceshrimp/v1/auth")]

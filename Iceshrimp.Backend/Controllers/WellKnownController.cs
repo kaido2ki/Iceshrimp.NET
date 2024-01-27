@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
+[Tags("Federation")]
 [Route("/.well-known")]
 public class WellKnownController(IOptions<Config.InstanceSection> config, DatabaseContext db) : Controller {
 	[HttpGet("webfinger")]
