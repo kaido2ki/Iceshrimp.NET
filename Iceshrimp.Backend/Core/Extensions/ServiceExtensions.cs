@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.RateLimiting;
+using StackExchange.Redis;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -61,6 +62,21 @@ public static class ServiceExtensions {
 			        EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
 			        ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
 		        });
+	}
+
+	public static void AddRedis(this IServiceCollection services, IConfiguration configuration) {
+		var config = configuration.GetSection("Redis").Get<Config.RedisSection>();
+		if (config == null) throw new Exception("Failed to initialize redis: Failed to load configuration");
+		services.AddStackExchangeRedisCache(options => {
+			options.ConfigurationOptions = new ConfigurationOptions {
+				User            = config.Username,
+				Password        = config.Password,
+				DefaultDatabase = config.Database,
+				EndPoints = new EndPointCollection {
+					{ config.Host, config.Port }
+				}
+			};
+		});
 	}
 
 	public static void AddSlidingWindowRateLimiter(this IServiceCollection services) {

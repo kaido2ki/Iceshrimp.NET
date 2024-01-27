@@ -2,6 +2,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -39,7 +40,22 @@ public static class WebApplicationExtensions {
 			if (args.Contains("--migrate")) Environment.Exit(0);
 		}
 
-		app.Logger.LogInformation("Initializing, please wait...");
+		app.Logger.LogInformation("Verifying redis connection...");
+		var cache = provider.ServiceProvider.GetService<IDistributedCache>();
+		if (cache == null) {
+			app.Logger.LogCritical("Failed to initialize redis cache");
+			Environment.Exit(1);
+		}
+
+		try {
+			cache.Get("test");
+		}
+		catch {
+			app.Logger.LogCritical("Failed to connect to redis");
+			Environment.Exit(1);
+		}
+
+		app.Logger.LogInformation("Initializing application, please wait...");
 
 		return instanceConfig;
 	}
