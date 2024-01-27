@@ -1,10 +1,13 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using JE = System.Runtime.Serialization.EnumMemberAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Schemas;
 
-[JsonConverter(typeof(JsonStringEnumConverter<AuthStatusEnum>))]
+public class AuthStatusConverter() : JsonStringEnumConverter<AuthStatusEnum>(JsonNamingPolicy.SnakeCaseLower);
+
+[JsonConverter(typeof(AuthStatusConverter))]
 public enum AuthStatusEnum {
 	[JE(Value = "guest")]         Guest,
 	[JE(Value = "authenticated")] Authenticated,
