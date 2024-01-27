@@ -69,7 +69,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> Register([FromBody] AuthRequest request) {
+	public async Task<IActionResult> Register([FromBody] RegistrationRequest request) {
 		//TODO: captcha support
 		//TODO: invite support
 
