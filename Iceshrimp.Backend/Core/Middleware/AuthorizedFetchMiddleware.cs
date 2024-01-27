@@ -3,6 +3,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -11,8 +12,10 @@ namespace Iceshrimp.Backend.Core.Middleware;
 
 public class AuthorizedFetchMiddleware(
 	IOptionsSnapshot<Config.SecuritySection> config,
+	IOptions<Config.InstanceSection> instance,
 	DatabaseContext db,
 	UserResolver userResolver,
+	UserService userSvc,
 	ILogger<AuthorizedFetchMiddleware> logger) : IMiddleware {
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next) {
 		var endpoint  = ctx.Features.Get<IEndpointFeature>()?.Endpoint;
@@ -20,6 +23,13 @@ public class AuthorizedFetchMiddleware(
 
 		if (attribute != null && config.Value.AuthorizedFetch) {
 			var request = ctx.Request;
+
+			var instanceActorUri = $"https://{instance.Value.WebDomain}/users/{(await userSvc.GetInstanceActor()).Id}";
+			if (ctx.Request.Path.Value == instanceActorUri) {
+				await next(ctx);
+				return;
+			}
+
 			if (!request.Headers.TryGetValue("signature", out var sigHeader))
 				throw new GracefulException(HttpStatusCode.Unauthorized, "Request is missing the signature header");
 
