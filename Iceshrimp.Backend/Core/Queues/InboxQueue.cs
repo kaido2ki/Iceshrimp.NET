@@ -13,8 +13,11 @@ public class InboxQueue {
 		return new JobQueue<InboxJob>("inbox", InboxQueueProcessorDelegateAsync, 4, redis, prefix);
 	}
 
-	private static async Task InboxQueueProcessorDelegateAsync(InboxJob job, IServiceProvider scope,
-	                                                           CancellationToken token) {
+	private static async Task InboxQueueProcessorDelegateAsync(
+		InboxJob job,
+		IServiceProvider scope,
+		CancellationToken token
+	) {
 		var expanded = LdHelpers.Expand(JToken.Parse(job.Body));
 		if (expanded == null) throw new Exception("Failed to expand ASObject");
 		var obj = ASObject.Deserialize(expanded);

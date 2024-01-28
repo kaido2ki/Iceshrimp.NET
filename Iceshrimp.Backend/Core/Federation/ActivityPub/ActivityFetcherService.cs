@@ -20,8 +20,16 @@ public class ActivityFetcherService(HttpClient client, HttpRequestService httpRq
 	public async Task<IEnumerable<ASObject>> FetchActivityAsync(string url, User actor, UserKeypair keypair) {
 		var request  = httpRqSvc.GetSigned(url, ["application/activity+json"], actor, keypair);
 		var response = await client.SendAsync(request);
-		var input    = await response.Content.ReadAsStringAsync();
-		var json     = JsonConvert.DeserializeObject<JObject?>(input, JsonSerializerSettings);
+
+		if (!response.IsSuccessStatusCode) return [];
+		if (response.Content.Headers.ContentType?.MediaType is
+		    not "application/activity+json"
+		    and not "application/ld+json"
+		    and not "application/json")
+			return [];
+
+		var input = await response.Content.ReadAsStringAsync();
+		var json  = JsonConvert.DeserializeObject<JObject?>(input, JsonSerializerSettings);
 
 		var res = LdHelpers.Expand(json) ?? throw new GracefulException("Failed to expand JSON-LD object");
 		return res.Select(p => p.ToObject<ASObject>(new JsonSerializer { Converters = { new ASObjectConverter() } }) ??
