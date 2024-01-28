@@ -70,16 +70,18 @@ public static class ServiceExtensions {
 	}
 
 	public static void AddRedis(this IServiceCollection services, IConfiguration configuration) {
-		var config = configuration.GetSection("Redis").Get<Config.RedisSection>();
-		if (config == null) throw new Exception("Failed to initialize redis: Failed to load configuration");
+		var instance = configuration.GetSection("Instance").Get<Config.InstanceSection>();
+		var redis    = configuration.GetSection("Redis").Get<Config.RedisSection>();
+		if (redis == null || instance == null)
+			throw new Exception("Failed to initialize redis: Failed to load configuration");
 		services.AddStackExchangeRedisCache(options => {
-			options.InstanceName = config.Prefix + ":";
+			options.InstanceName = redis.Prefix ?? instance.WebDomain + ":";
 			options.ConfigurationOptions = new ConfigurationOptions {
-				User            = config.Username,
-				Password        = config.Password,
-				DefaultDatabase = config.Database,
+				User            = redis.Username,
+				Password        = redis.Password,
+				DefaultDatabase = redis.Database,
 				EndPoints = new EndPointCollection {
-					{ config.Host, config.Port }
+					{ redis.Host, redis.Port }
 				}
 			};
 		});
