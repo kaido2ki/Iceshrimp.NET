@@ -11,7 +11,6 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 public class ActivityDeliverService(
 	ILogger<ActivityDeliverService> logger,
 	DatabaseContext db,
-	HttpRequestService httpRqSvc,
 	QueueService queueService
 ) {
 	public async Task DeliverToFollowers(ASActivity activity, User actor) {
@@ -30,9 +29,12 @@ public class ActivityDeliverService(
 		var keypair = await db.UserKeypairs.FirstAsync(p => p.User == actor);
 		var payload = await activity.SignAndCompact(keypair);
 
-		foreach (var inboxUrl in inboxUrls) {
-			var request = await httpRqSvc.PostSigned(inboxUrl, payload, "application/activity+json", actor, keypair);
-			queueService.DeliverQueue.Enqueue(new DeliverJob(request));
-		}
+		foreach (var inboxUrl in inboxUrls)
+			await queueService.DeliverQueue.EnqueueAsync(new DeliverJob {
+				InboxUrl    = inboxUrl,
+				Payload     = payload,
+				ContentType = "application/activity+json",
+				UserId      = actor.Id
+			});
 	}
 }

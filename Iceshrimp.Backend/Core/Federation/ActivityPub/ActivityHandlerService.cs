@@ -15,7 +15,6 @@ public class ActivityHandlerService(
 	NoteService noteSvc,
 	UserResolver userResolver,
 	DatabaseContext db,
-	HttpRequestService httpRqSvc,
 	QueueService queueService,
 	ActivityRenderer activityRenderer
 ) {
@@ -85,9 +84,13 @@ public class ActivityHandlerService(
 		var payload = await acceptActivity.SignAndCompact(keypair);
 		var inboxUri = follower.SharedInbox ??
 		               follower.Inbox ?? throw new Exception("Can't accept follow: user has no inbox");
-		var request = await httpRqSvc.PostSigned(inboxUri, payload, "application/activity+json", followee, keypair);
-		var job     = new DeliverJob(request);
-		queueService.DeliverQueue.Enqueue(job);
+		var job = new DeliverJob {
+			InboxUrl    = inboxUri,
+			Payload     = payload,
+			ContentType = "application/activity+json",
+			UserId      = followee.Id
+		};
+		await queueService.DeliverQueue.EnqueueAsync(job);
 
 		if (!await db.Followings.AnyAsync(p => p.Follower == follower && p.Followee == followee)) {
 			var following = new Following {

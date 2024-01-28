@@ -41,14 +41,19 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 		return GenerateRequest(url, HttpMethod.Post, body, contentType);
 	}
 
-	public HttpRequestMessage GetSigned(string url, IEnumerable<string>? accept, User user,
-	                                    UserKeypair keypair) {
-		return Get(url, accept).Sign(["(request-target)", "date", "host", "accept"], keypair.PrivateKey,
-		                             $"https://{options.Value.WebDomain}/users/{user.Id}#main-key");
+	public HttpRequestMessage GetSigned(string url, IEnumerable<string>? accept, string actorId,
+	                                    string privateKey) {
+		return Get(url, accept).Sign(["(request-target)", "date", "host", "accept"], privateKey,
+		                             $"https://{options.Value.WebDomain}/users/{actorId}#main-key");
 	}
 
-	public async Task<HttpRequestMessage> PostSigned(string url, string body, string contentType, User user,
-	                                                 UserKeypair keypair) {
+	public HttpRequestMessage GetSigned(string url, IEnumerable<string>? accept, User actor,
+	                                    UserKeypair keypair) {
+		return GetSigned(url, accept, actor.Id, keypair.PrivateKey);
+	}
+
+	public async Task<HttpRequestMessage> PostSigned(string url, string body, string contentType, string actorId,
+	                                                 string privateKey) {
 		var message = Post(url, body, contentType);
 		ArgumentNullException.ThrowIfNull(message.Content);
 
@@ -58,7 +63,12 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 		message.Headers.Add("Digest", "SHA-256=" + Convert.ToBase64String(digest));
 
 		// Return the signed message
-		return message.Sign(["(request-target)", "date", "host", "digest"], keypair.PrivateKey,
-		                    $"https://{options.Value.WebDomain}/users/{user.Id}#main-key");
+		return message.Sign(["(request-target)", "date", "host", "digest"], privateKey,
+		                    $"https://{options.Value.WebDomain}/users/{actorId}#main-key");
+	}
+
+	public Task<HttpRequestMessage> PostSigned(string url, string body, string contentType, User actor,
+	                                           UserKeypair keypair) {
+		return PostSigned(url, body, contentType, actor.Id, keypair.PrivateKey);
 	}
 }

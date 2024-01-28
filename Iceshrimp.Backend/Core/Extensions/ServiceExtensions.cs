@@ -74,16 +74,21 @@ public static class ServiceExtensions {
 		var redis    = configuration.GetSection("Redis").Get<Config.RedisSection>();
 		if (redis == null || instance == null)
 			throw new Exception("Failed to initialize redis: Failed to load configuration");
+
+		var redisOptions = new ConfigurationOptions {
+			User            = redis.Username,
+			Password        = redis.Password,
+			DefaultDatabase = redis.Database,
+			EndPoints = new EndPointCollection {
+				{ redis.Host, redis.Port }
+			}
+		};
+
+		services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisOptions));
+
 		services.AddStackExchangeRedisCache(options => {
-			options.InstanceName = redis.Prefix ?? instance.WebDomain + ":";
-			options.ConfigurationOptions = new ConfigurationOptions {
-				User            = redis.Username,
-				Password        = redis.Password,
-				DefaultDatabase = redis.Database,
-				EndPoints = new EndPointCollection {
-					{ redis.Host, redis.Port }
-				}
-			};
+			options.InstanceName         = redis.Prefix ?? instance.WebDomain + ":cache:";
+			options.ConfigurationOptions = redisOptions;
 		});
 	}
 
@@ -104,35 +109,6 @@ public static class ServiceExtensions {
 			});
 			options.OperationFilter<AuthorizeCheckOperationFilter>();
 		});
-	}
-
-	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
-	                 Justification = "SwaggerGenOptions.OperationFilter<T> instantiates this class at runtime")]
-	private class AuthorizeCheckOperationFilter : IOperationFilter {
-		public void Apply(OpenApiOperation operation, OperationFilterContext context) {
-			if (context.MethodInfo.DeclaringType is null)
-				return;
-
-			//TODO: separate admin & user authorize attributes
-			var hasAuthorize = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                          .OfType<AuthenticateAttribute>().Any() ||
-			                   context.MethodInfo.GetCustomAttributes(true)
-			                          .OfType<AuthenticateAttribute>().Any();
-
-			if (!hasAuthorize) return;
-			var schema = new OpenApiSecurityScheme {
-				Reference = new OpenApiReference {
-					Type = ReferenceType.SecurityScheme,
-					Id   = "user"
-				}
-			};
-
-			operation.Security = new List<OpenApiSecurityRequirement> {
-				new() {
-					[schema] = Array.Empty<string>()
-				}
-			};
-		}
 	}
 
 
@@ -167,5 +143,34 @@ public static class ServiceExtensions {
 				await context.HttpContext.Response.WriteAsJsonAsync(res, token);
 			};
 		});
+	}
+
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
+	                 Justification = "SwaggerGenOptions.OperationFilter<T> instantiates this class at runtime")]
+	private class AuthorizeCheckOperationFilter : IOperationFilter {
+		public void Apply(OpenApiOperation operation, OperationFilterContext context) {
+			if (context.MethodInfo.DeclaringType is null)
+				return;
+
+			//TODO: separate admin & user authorize attributes
+			var hasAuthorize = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+			                          .OfType<AuthenticateAttribute>().Any() ||
+			                   context.MethodInfo.GetCustomAttributes(true)
+			                          .OfType<AuthenticateAttribute>().Any();
+
+			if (!hasAuthorize) return;
+			var schema = new OpenApiSecurityScheme {
+				Reference = new OpenApiReference {
+					Type = ReferenceType.SecurityScheme,
+					Id   = "user"
+				}
+			};
+
+			operation.Security = new List<OpenApiSecurityRequirement> {
+				new() {
+					[schema] = Array.Empty<string>()
+				}
+			};
+		}
 	}
 }

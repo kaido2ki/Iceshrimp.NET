@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using System.Text;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
@@ -10,7 +11,6 @@ using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
 
 namespace Iceshrimp.Backend.Controllers;
 
@@ -56,8 +56,11 @@ public class ActivityPubController : Controller {
 	[EnableRequestBuffering(1024 * 1024)]
 	[Produces("text/plain")]
 	[Consumes(MediaTypeNames.Application.Json)]
-	public IActionResult Inbox([FromBody] JToken body, string? id, [FromServices] QueueService queues) {
-		queues.InboxQueue.Enqueue(new InboxJob(body, id));
+	public async Task<IActionResult> Inbox(string? id, [FromServices] QueueService queues) {
+		using var reader = new StreamReader(Request.Body, Encoding.UTF8, true, 1024, true);
+		var       body   = await reader.ReadToEndAsync();
+		Request.Body.Position = 0;
+		await queues.InboxQueue.EnqueueAsync(new InboxJob { Body = body, InboxUserId = id });
 		return Accepted();
 	}
 }

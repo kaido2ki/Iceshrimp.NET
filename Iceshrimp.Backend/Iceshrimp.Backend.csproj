@@ -29,6 +29,7 @@
         <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.1"/>
         <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="8.0.0"/>
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0"/>
+        <PackageReference Include="protobuf-net" Version="3.2.30"/>
         <PackageReference Include="StackExchange.Redis" Version="2.7.17"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
         <PackageReference Include="Vite.AspNetCore" Version="1.11.0"/>

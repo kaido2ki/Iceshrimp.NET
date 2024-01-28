@@ -165,7 +165,7 @@ public class UserService(
 	}
 
 	private async Task<User> GetOrCreateSystemUser(string username) {
-		return await cache.Fetch($"systemUser:{username}", TimeSpan.FromHours(24), async () => {
+		return await cache.FetchAsync($"systemUser:{username}", TimeSpan.FromHours(24), async () => {
 			logger.LogTrace("GetOrCreateSystemUser delegate method called for user {username}", username);
 			return await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username &&
 			                                               p.Host == null) ??
