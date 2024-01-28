@@ -26,7 +26,7 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 
 		var req = httpRqSvc.Get(webFingerUrl, ["application/jrd+json", "application/json"]);
 		var res = await client.SendAsync(req);
-
+		if (!res.IsSuccessStatusCode) return null;
 		return await res.Content.ReadFromJsonAsync<WebFingerResponse>();
 	}
 
