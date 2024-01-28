@@ -44,7 +44,6 @@
 
     <ItemGroup>
         <Folder Include="Core\Database\Tables\"/>
-        <Folder Include="wwwroot\"/>
     </ItemGroup>
 
     <ItemGroup>

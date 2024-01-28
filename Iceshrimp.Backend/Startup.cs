@@ -1,5 +1,7 @@
 using Asp.Versioning;
 using Iceshrimp.Backend.Core.Extensions;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerUI;
 using Vite.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,7 +23,9 @@ builder.Services.AddApiVersioning(options => {
 	options.UnsupportedApiVersionStatusCode = 501;
 });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options => {
+	options.SwaggerDoc("v1", new OpenApiInfo { Title = "Iceshrimp.NET", Version = "1.0" });
+});
 builder.Services.AddRazorPages();
 builder.Services.AddViteServices(options => {
 	options.PackageDirectory     = "../Iceshrimp.Frontend";
@@ -44,7 +48,15 @@ var config = app.Initialize(args);
 // This determines the order of middleware execution in the request pipeline
 app.UseRouting();
 app.UseSwagger();
-app.UseSwaggerUI(options => { options.DocumentTitle = "Iceshrimp API documentation"; });
+app.UseSwaggerUI(options => {
+	options.DocumentTitle = "Iceshrimp API documentation";
+	options.SwaggerEndpoint("v1/swagger.json", "Iceshrimp.NET");
+	options.InjectStylesheet("/swagger/styles.css");
+	options.EnablePersistAuthorization();
+	options.EnableTryItOutByDefault();
+	options.DisplayRequestDuration();
+	options.DefaultModelsExpandDepth(-1); // Hide "Schemas" section
+});
 app.UseStaticFiles();
 app.UseRateLimiter();
 app.UseAuthorization();
