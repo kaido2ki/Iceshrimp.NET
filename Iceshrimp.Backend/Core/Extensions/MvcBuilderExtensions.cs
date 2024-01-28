@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Text.Encodings.Web;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -15,6 +16,8 @@ public static class MvcBuilderExtensions {
 			       // We need to re-add these one since .AddNewtonsoftJson() removes them
 			       if (!opts.InputFormatters.OfType<SystemTextJsonInputFormatter>().Any()) {
 				       var systemInputLogger = loggerFactory.CreateLogger<SystemTextJsonInputFormatter>();
+				       // We need to set this, otherwise characters like '+' will be escaped in responses
+				       jsonOpts.Value.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
 				       opts.InputFormatters.Add(new SystemTextJsonInputFormatter(jsonOpts.Value, systemInputLogger));
 			       }
 
