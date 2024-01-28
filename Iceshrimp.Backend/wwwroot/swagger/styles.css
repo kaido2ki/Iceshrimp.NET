@@ -1,3 +1,7 @@
 .swagger-ui .topbar .download-url-wrapper {
     display: none;
 }
+
+.swagger-ui .auth-wrapper {
+    justify-content: flex-start;
+}
