@@ -11,24 +11,25 @@ public static class LdHelpers {
 	private static readonly Dictionary<string, RemoteDocument> ContextCache = new() {
 		{
 			"https://www.w3.org/ns/activitystreams", new RemoteDocument {
-				ContextUrl  = new Uri("https://www.w3.org/ns/activitystreams"),
 				DocumentUrl = new Uri("https://www.w3.org/ns/activitystreams"),
 				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
 				                                                      "Contexts", "as.json")))
 			}
 		}, {
 			"https://w3id.org/security/v1", new RemoteDocument {
-				ContextUrl  = new Uri("https://w3id.org/security/v1"),
 				DocumentUrl = new Uri("https://w3c-ccg.github.io/security-vocab/contexts/security-v1.jsonld"),
 				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
 				                                                      "Contexts", "security.json")))
 			}
 		}, {
 			"http://joinmastodon.org/ns", new RemoteDocument {
-				ContextUrl  = new Uri("http://joinmastodon.org/ns"),
-				DocumentUrl = new Uri("http://joinmastodon.org/ns"),
 				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
 				                                                      "Contexts", "toot.json")))
+			}
+		}, {
+			"litepub-0.1", new RemoteDocument {
+				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
+				                                                      "Contexts", "litepub.json")))
 			}
 		}
 	};
@@ -57,9 +58,14 @@ public static class LdHelpers {
 	};
 
 	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions) {
+		var key = uri.AbsolutePath == "/schemas/litepub-0.1.jsonld" ? "litepub-0.1" : uri.ToString();
+		ContextCache.TryGetValue(key, out var result);
+		if (result != null) {
+			result.ContextUrl = uri;
+			return result;
+		}
+
 		//TODO: cache in redis
-		ContextCache.TryGetValue(uri.ToString(), out var result);
-		if (result != null) return result;
 		result = DefaultDocumentLoader.LoadJson(uri, jsonLdLoaderOptions);
 		ContextCache.Add(uri.ToString(), result);
 
