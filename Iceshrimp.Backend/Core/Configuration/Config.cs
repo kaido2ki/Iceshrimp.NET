@@ -6,8 +6,8 @@ namespace Iceshrimp.Backend.Core.Configuration;
 public sealed class Config {
 	public required InstanceSection Instance { get; init; }
 	public required DatabaseSection Database { get; init; }
-	public required SecuritySection Security { get; init; }
 	public required RedisSection    Redis    { get; init; }
+	public required SecuritySection Security { get; init; } = new();
 
 	public sealed class InstanceSection {
 		public readonly string Version;
@@ -36,9 +36,9 @@ public sealed class Config {
 	}
 
 	public sealed class SecuritySection {
-		public required bool                AuthorizedFetch    { get; init; } = true;
-		public required ExceptionVerbosity  ExceptionVerbosity { get; init; } = ExceptionVerbosity.Basic;
-		public required Enums.Registrations Registrations      { get; init; } = Enums.Registrations.Closed;
+		public bool                AuthorizedFetch    { get; init; } = true;
+		public ExceptionVerbosity  ExceptionVerbosity { get; init; } = ExceptionVerbosity.Basic;
+		public Enums.Registrations Registrations      { get; init; } = Enums.Registrations.Closed;
 	}
 
 	public sealed class DatabaseSection {
