@@ -27,7 +27,7 @@ public class ActivityHandlerService(
 		switch (activity.Type) {
 			case ASActivity.Types.Create: {
 				//TODO: implement the rest
-				if (activity.Object is ASNote note) return noteSvc.ProcessNote(note, activity.Actor);
+				if (activity.Object is ASNote note) return noteSvc.ProcessNoteAsync(note, activity.Actor);
 				throw GracefulException.UnprocessableEntity("Create activity object is invalid");
 			}
 			case ASActivity.Types.Follow: {
@@ -52,8 +52,8 @@ public class ActivityHandlerService(
 	}
 
 	private async Task Follow(ASObject followeeActor, ASObject followerActor, string requestId) {
-		var follower = await userResolver.Resolve(followerActor.Id);
-		var followee = await userResolver.Resolve(followeeActor.Id);
+		var follower = await userResolver.ResolveAsync(followerActor.Id);
+		var followee = await userResolver.ResolveAsync(followeeActor.Id);
 
 		if (followee.Host != null) throw new Exception("Cannot process follow for remote followee");
 
@@ -81,7 +81,7 @@ public class ActivityHandlerService(
 		                                                   activityRenderer.RenderFollow(followerActor,
 				                                                    followeeActor, requestId));
 		var keypair = await db.UserKeypairs.FirstAsync(p => p.User == followee);
-		var payload = await acceptActivity.SignAndCompact(keypair);
+		var payload = await acceptActivity.SignAndCompactAsync(keypair);
 		var inboxUri = follower.SharedInbox ??
 		               follower.Inbox ?? throw new Exception("Can't accept follow: user has no inbox");
 		var job = new DeliverJob {
@@ -112,8 +112,8 @@ public class ActivityHandlerService(
 	}
 
 	private async Task Unfollow(ASObject followeeActor, ASObject followerActor) {
-		var follower = await userResolver.Resolve(followerActor.Id);
-		var followee = await userResolver.Resolve(followeeActor.Id);
+		var follower = await userResolver.ResolveAsync(followerActor.Id);
+		var followee = await userResolver.ResolveAsync(followeeActor.Id);
 
 		await db.FollowRequests.Where(p => p.Follower == follower && p.Followee == followee).ExecuteDeleteAsync();
 		await db.Followings.Where(p => p.Follower == follower && p.Followee == followee).ExecuteDeleteAsync();

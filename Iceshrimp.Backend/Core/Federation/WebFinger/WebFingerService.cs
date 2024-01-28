@@ -20,7 +20,7 @@ namespace Iceshrimp.Backend.Core.Federation.WebFinger;
 //FIXME: also check if the query references the local instance in other ways (e.g. @user@{WebDomain}, @user@{AccountDomain}, https://{WebDomain}/..., etc)
 
 public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
-	public async Task<WebFingerResponse?> Resolve(string query) {
+	public async Task<WebFingerResponse?> ResolveAsync(string query) {
 		(query, var proto, var domain) = ParseQuery(query);
 		var webFingerUrl = GetWebFingerUrl(query, proto, domain);
 

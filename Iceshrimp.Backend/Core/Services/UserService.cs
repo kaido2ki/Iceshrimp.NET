@@ -32,7 +32,7 @@ public class UserService(
 		return (split[0], split[1].ToPunycode());
 	}
 
-	public async Task<User?> GetUserFromQuery(string query) {
+	public async Task<User?> GetUserFromQueryAsync(string query) {
 		if (query.StartsWith("http://") || query.StartsWith("https://"))
 			if (query.StartsWith($"https://{instance.Value.WebDomain}/users/")) {
 				query = query[$"https://{instance.Value.WebDomain}/users/".Length..];
@@ -51,11 +51,11 @@ public class UserService(
 
 	//TODO: UpdateUser
 
-	public async Task<User> CreateUser(string uri, string acct) {
+	public async Task<User> CreateUserAsync(string uri, string acct) {
 		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
-		var instanceActor        = await GetInstanceActor();
+		var instanceActor        = await GetInstanceActorAsync();
 		var instanceActorKeypair = await db.UserKeypairs.FirstAsync(p => p.User == instanceActor);
-		var actor                = await fetchSvc.FetchActor(uri, instanceActor, instanceActorKeypair);
+		var actor                = await fetchSvc.FetchActorAsync(uri, instanceActor, instanceActorKeypair);
 		logger.LogDebug("Got actor: {url}", actor.Url);
 
 		actor.Normalize(uri, acct);
@@ -103,7 +103,7 @@ public class UserService(
 		return user;
 	}
 
-	public async Task<User> CreateLocalUser(string username, string password, string? invite) {
+	public async Task<User> CreateLocalUserAsync(string username, string password, string? invite) {
 		//TODO: invite system should allow multi-use invites & time limited invites
 		if (security.Value.Registrations == Enums.Registrations.Closed)
 			throw new GracefulException(HttpStatusCode.Forbidden, "Registrations are disabled on this server");
@@ -156,24 +156,24 @@ public class UserService(
 	}
 
 
-	public async Task<User> GetInstanceActor() {
-		return await GetOrCreateSystemUser("instance.actor");
+	public async Task<User> GetInstanceActorAsync() {
+		return await GetOrCreateSystemUserAsync("instance.actor");
 	}
 
-	public async Task<User> GetRelayActor() {
-		return await GetOrCreateSystemUser("relay.actor");
+	public async Task<User> GetRelayActorAsync() {
+		return await GetOrCreateSystemUserAsync("relay.actor");
 	}
 
-	private async Task<User> GetOrCreateSystemUser(string username) {
+	private async Task<User> GetOrCreateSystemUserAsync(string username) {
 		return await cache.FetchAsync($"systemUser:{username}", TimeSpan.FromHours(24), async () => {
 			logger.LogTrace("GetOrCreateSystemUser delegate method called for user {username}", username);
 			return await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username &&
 			                                               p.Host == null) ??
-			       await CreateSystemUser(username);
+			       await CreateSystemUserAsync(username);
 		});
 	}
 
-	private async Task<User> CreateSystemUser(string username) {
+	private async Task<User> CreateSystemUserAsync(string username) {
 		if (await db.Users.AnyAsync(p => p.UsernameLower == username.ToLowerInvariant() && p.Host == null))
 			throw new GracefulException($"System user {username} already exists");
 

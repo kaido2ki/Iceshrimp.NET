@@ -18,11 +18,11 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 	 */
 
 	//TODO: split domain handling can get stuck in an infinite loop, limit recursion
-	private async Task<(string Acct, string Uri)> WebFinger(string query) {
+	private async Task<(string Acct, string Uri)> WebFingerAsync(string query) {
 		logger.LogDebug("Running WebFinger for query '{query}'", query);
 
 		var responses = new Dictionary<string, WebFingerResponse>();
-		var fingerRes = await webFingerSvc.Resolve(query);
+		var fingerRes = await webFingerSvc.ResolveAsync(query);
 		if (fingerRes == null) throw new GracefulException($"Failed to WebFinger '{query}'");
 		responses.Add(query, fingerRes);
 
@@ -35,7 +35,7 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 		if (fingerRes == null) {
 			logger.LogDebug("AP uri didn't match query, re-running WebFinger for '{apUri}'", apUri);
 
-			fingerRes = await webFingerSvc.Resolve(apUri);
+			fingerRes = await webFingerSvc.ResolveAsync(apUri);
 
 			if (fingerRes == null) throw new GracefulException($"Failed to WebFinger '{apUri}'");
 			responses.Add(apUri, fingerRes);
@@ -49,7 +49,7 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 		if (fingerRes == null) {
 			logger.LogDebug("Acct uri didn't match query, re-running WebFinger for '{acctUri}'", acctUri);
 
-			fingerRes = await webFingerSvc.Resolve(acctUri);
+			fingerRes = await webFingerSvc.ResolveAsync(acctUri);
 
 			if (fingerRes == null) throw new GracefulException($"Failed to WebFinger '{acctUri}'");
 			responses.Add(acctUri, fingerRes);
@@ -71,22 +71,22 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 		return query;
 	}
 
-	public async Task<User> Resolve(string query) {
+	public async Task<User> ResolveAsync(string query) {
 		query = NormalizeQuery(query);
 
 		// First, let's see if we already know the user
-		var user = await userSvc.GetUserFromQuery(query);
+		var user = await userSvc.GetUserFromQueryAsync(query);
 		if (user != null) return user;
 
 		// We don't, so we need to run WebFinger
-		var (acct, uri) = await WebFinger(query);
+		var (acct, uri) = await WebFingerAsync(query);
 
 		// Check the database again with the new data
-		if (uri != query) user = await userSvc.GetUserFromQuery(uri);
-		if (user == null && acct != query) await userSvc.GetUserFromQuery(acct);
+		if (uri != query) user = await userSvc.GetUserFromQueryAsync(uri);
+		if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
 		if (user != null) return user;
 
 		// Pass the job on to userSvc, which will create the user
-		return await userSvc.CreateUser(uri, acct);
+		return await userSvc.CreateUserAsync(uri, acct);
 	}
 }

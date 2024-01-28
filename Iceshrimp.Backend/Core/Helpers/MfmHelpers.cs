@@ -6,7 +6,7 @@ using AngleSharp.Html.Parser;
 namespace Iceshrimp.Backend.Core.Helpers;
 
 public static class MfmHelpers {
-	public static async Task<string> FromHtml(string? html) {
+	public static async Task<string> FromHtmlAsync(string? html) {
 		if (html == null) return "";
 
 		// Ensure compatibility with AP servers that send both <br> as well as newlines

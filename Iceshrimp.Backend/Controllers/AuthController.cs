@@ -95,7 +95,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	public async Task<IActionResult> Register([FromBody] RegistrationRequest request) {
 		//TODO: captcha support
 
-		await userSvc.CreateLocalUser(request.Username, request.Password, request.Invite);
+		await userSvc.CreateLocalUserAsync(request.Username, request.Password, request.Invite);
 		return await Login(request);
 	}
 

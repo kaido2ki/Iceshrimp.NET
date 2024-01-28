@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
 public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db) {
-	public async Task<ASActor> Render(User user) {
+	public async Task<ASActor> RenderAsync(User user) {
 		if (user.Host != null)
 			throw new GracefulException("Refusing to render remote user");
 

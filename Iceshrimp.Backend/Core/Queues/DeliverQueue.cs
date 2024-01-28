@@ -29,7 +29,7 @@ public class DeliverQueue {
 		});
 
 		var request =
-			await httpRqSvc.PostSigned(job.InboxUrl, job.Payload, job.ContentType, job.UserId, key);
+			await httpRqSvc.PostSignedAsync(job.InboxUrl, job.Payload, job.ContentType, job.UserId, key);
 		await httpClient.SendAsync(request, token);
 	}
 }

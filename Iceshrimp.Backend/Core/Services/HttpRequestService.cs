@@ -52,8 +52,8 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 		return GetSigned(url, accept, actor.Id, keypair.PrivateKey);
 	}
 
-	public async Task<HttpRequestMessage> PostSigned(string url, string body, string contentType, string actorId,
-	                                                 string privateKey) {
+	public async Task<HttpRequestMessage> PostSignedAsync(string url, string body, string contentType, string actorId,
+	                                                      string privateKey) {
 		var message = Post(url, body, contentType);
 		ArgumentNullException.ThrowIfNull(message.Content);
 
@@ -67,8 +67,8 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 		                    $"https://{options.Value.WebDomain}/users/{actorId}#main-key");
 	}
 
-	public Task<HttpRequestMessage> PostSigned(string url, string body, string contentType, User actor,
-	                                           UserKeypair keypair) {
-		return PostSigned(url, body, contentType, actor.Id, keypair.PrivateKey);
+	public Task<HttpRequestMessage> PostSignedAsync(string url, string body, string contentType, User actor,
+	                                                UserKeypair keypair) {
+		return PostSignedAsync(url, body, contentType, actor.Id, keypair.PrivateKey);
 	}
 }

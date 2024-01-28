@@ -27,7 +27,7 @@ public class ActivityDeliverService(
 		if (inboxUrls.Count == 0) return;
 
 		var keypair = await db.UserKeypairs.FirstAsync(p => p.User == actor);
-		var payload = await activity.SignAndCompact(keypair);
+		var payload = await activity.SignAndCompactAsync(keypair);
 
 		foreach (var inboxUrl in inboxUrls)
 			await queueService.DeliverQueue.EnqueueAsync(new DeliverJob {

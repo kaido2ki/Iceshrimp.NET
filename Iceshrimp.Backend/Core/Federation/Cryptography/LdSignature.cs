@@ -13,20 +13,20 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
 public static class LdSignature {
-	public static Task<bool> Verify(JArray activity, string key) {
+	public static Task<bool> VerifyAsync(JArray activity, string key) {
 		if (activity.ToArray() is not [JObject obj])
 			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Invalid activity");
-		return Verify(obj, key);
+		return VerifyAsync(obj, key);
 	}
 
-	public static async Task<bool> Verify(JObject activity, string key) {
+	public static async Task<bool> VerifyAsync(JObject activity, string key) {
 		var options = activity["https://w3id.org/security#signature"];
 		if (options?.ToObject<SignatureOptions[]>() is not { Length: 1 } signatures) return false;
 		var signature = signatures[0];
 		if (signature.Type is not ["_:RsaSignature2017"]) return false;
 		if (signature.Signature is null) return false;
 
-		var signatureData = await GetSignatureData(activity, options);
+		var signatureData = await GetSignatureDataAsync(activity, options);
 		if (signatureData is null) return false;
 
 		var rsa = RSA.Create();
@@ -35,13 +35,13 @@ public static class LdSignature {
 		                      HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 	}
 
-	public static Task<JObject> Sign(JArray activity, string key, string? creator) {
+	public static Task<JObject> SignAsync(JArray activity, string key, string? creator) {
 		if (activity.ToArray() is not [JObject obj])
 			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Invalid activity");
-		return Sign(obj, key, creator);
+		return SignAsync(obj, key, creator);
 	}
 
-	public static async Task<JObject> Sign(JObject activity, string key, string? creator) {
+	public static async Task<JObject> SignAsync(JObject activity, string key, string? creator) {
 		var options = new SignatureOptions {
 			Created = DateTime.Now,
 			Creator = creator,
@@ -50,7 +50,7 @@ public static class LdSignature {
 			Domain  = null
 		};
 
-		var signatureData = await GetSignatureData(activity, options);
+		var signatureData = await GetSignatureDataAsync(activity, options);
 		if (signatureData == null)
 			throw new GracefulException(HttpStatusCode.Forbidden, "Signature data must not be null");
 
@@ -67,11 +67,11 @@ public static class LdSignature {
 		       throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Failed to expand signed activity");
 	}
 
-	private static Task<byte[]?> GetSignatureData(JToken data, SignatureOptions options) {
-		return GetSignatureData(data, LdHelpers.Expand(JObject.FromObject(options))!);
+	private static Task<byte[]?> GetSignatureDataAsync(JToken data, SignatureOptions options) {
+		return GetSignatureDataAsync(data, LdHelpers.Expand(JObject.FromObject(options))!);
 	}
 
-	private static async Task<byte[]?> GetSignatureData(JToken data, JToken options) {
+	private static async Task<byte[]?> GetSignatureDataAsync(JToken data, JToken options) {
 		if (data is not JObject inputData) return null;
 		if (options is not JArray { Count: 1 } inputOptionsArray) return null;
 		if (inputOptionsArray[0] is not JObject inputOptions) return null;
@@ -85,8 +85,8 @@ public static class LdSignature {
 		var canonicalData    = LdHelpers.Canonicalize(inputData);
 		var canonicalOptions = LdHelpers.Canonicalize(inputOptions);
 
-		var dataHash    = await DigestHelpers.Sha256Digest(canonicalData);
-		var optionsHash = await DigestHelpers.Sha256Digest(canonicalOptions);
+		var dataHash    = await DigestHelpers.Sha256DigestAsync(canonicalData);
+		var optionsHash = await DigestHelpers.Sha256DigestAsync(canonicalOptions);
 
 		return Encoding.UTF8.GetBytes(optionsHash + dataHash);
 	}

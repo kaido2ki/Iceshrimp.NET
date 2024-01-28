@@ -26,7 +26,7 @@ public class AuthorizedFetchMiddleware(
 			var request = ctx.Request;
 
 			//TODO: cache this somewhere
-			var instanceActorUri = $"/users/{(await userSvc.GetInstanceActor()).Id}";
+			var instanceActorUri = $"/users/{(await userSvc.GetInstanceActorAsync()).Id}";
 			if (ctx.Request.Path.Value == instanceActorUri) {
 				await next(ctx);
 				return;
@@ -42,7 +42,7 @@ public class AuthorizedFetchMiddleware(
 
 			// If we don't, we need to try to fetch it
 			if (key == null) {
-				var user = await userResolver.Resolve(sig.KeyId);
+				var user = await userResolver.ResolveAsync(sig.KeyId);
 				key = await db.UserPublickeys.FirstOrDefaultAsync(p => p.User == user);
 			}
 
@@ -53,7 +53,7 @@ public class AuthorizedFetchMiddleware(
 				? ["(request-target)", "digest", "host", "date"]
 				: ["(request-target)", "host", "date"];
 
-			var verified = await HttpSignature.Verify(ctx.Request, sig, headers, key.KeyPem);
+			var verified = await HttpSignature.VerifyAsync(ctx.Request, sig, headers, key.KeyPem);
 			logger.LogDebug("HttpSignature.Verify returned {result} for key {keyId}", verified, sig.KeyId);
 			if (!verified)
 				throw new GracefulException(HttpStatusCode.Forbidden, "Request signature validation failed");

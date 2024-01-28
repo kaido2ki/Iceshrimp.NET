@@ -72,10 +72,10 @@ public static class LdHelpers {
 		return result;
 	}
 
-	public static async Task<string> SignAndCompact(this ASActivity activity, UserKeypair keypair) {
+	public static async Task<string> SignAndCompactAsync(this ASActivity activity, UserKeypair keypair) {
 		var expanded = Expand(activity) ?? throw new Exception("Failed to expand activity");
-		var signed = await LdSignature.Sign(expanded, keypair.PrivateKey,
-		                                    activity.Actor?.PublicKey?.Id ?? $"{activity.Actor!.Id}#main-key") ??
+		var signed = await LdSignature.SignAsync(expanded, keypair.PrivateKey,
+		                                         activity.Actor?.PublicKey?.Id ?? $"{activity.Actor!.Id}#main-key") ??
 		             throw new Exception("Failed to sign activity");
 		var compacted = Compact(signed) ?? throw new Exception("Failed to compact signed activity");
 		var payload   = JsonConvert.SerializeObject(compacted, JsonSerializerSettings);

@@ -8,8 +8,8 @@ using Microsoft.Extensions.Primitives;
 namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
 public static class HttpSignature {
-	public static async Task<bool> Verify(HttpRequest request, HttpSignatureHeader signature,
-	                                      IEnumerable<string> requiredHeaders, string key) {
+	public static async Task<bool> VerifyAsync(HttpRequest request, HttpSignatureHeader signature,
+	                                           IEnumerable<string> requiredHeaders, string key) {
 		if (!requiredHeaders.All(signature.Headers.Contains))
 			throw new GracefulException(HttpStatusCode.Forbidden, "Request is missing required headers");
 
@@ -18,11 +18,11 @@ public static class HttpSignature {
 		                                          request.Headers);
 
 		if (request.Body.CanSeek) request.Body.Position = 0;
-		return await VerifySignature(key, signingString, signature, request.Headers,
-		                             request.ContentLength > 0 ? request.Body : null);
+		return await VerifySignatureAsync(key, signingString, signature, request.Headers,
+		                                  request.ContentLength > 0 ? request.Body : null);
 	}
 
-	public static async Task<bool> Verify(this HttpRequestMessage request, string key) {
+	public static async Task<bool> VerifyAsync(this HttpRequestMessage request, string key) {
 		var signatureHeader = request.Headers.GetValues("Signature").First();
 		var signature       = Parse(signatureHeader);
 		var signingString = GenerateSigningString(signature.Headers, request.Method.Method,
@@ -33,11 +33,12 @@ public static class HttpSignature {
 
 		if (request.Content != null) body = await request.Content.ReadAsStreamAsync();
 
-		return await VerifySignature(key, signingString, signature, request.Headers.ToHeaderDictionary(), body);
+		return await VerifySignatureAsync(key, signingString, signature, request.Headers.ToHeaderDictionary(), body);
 	}
 
-	private static async Task<bool> VerifySignature(string key, string signingString, HttpSignatureHeader signature,
-	                                                IHeaderDictionary headers, Stream? body) {
+	private static async Task<bool> VerifySignatureAsync(string key, string signingString,
+	                                                     HttpSignatureHeader signature,
+	                                                     IHeaderDictionary headers, Stream? body) {
 		if (!headers.TryGetValue("date", out var date))
 			throw new GracefulException(HttpStatusCode.Forbidden, "Date header is missing");
 		if (DateTime.Now - DateTime.Parse(date!) > TimeSpan.FromHours(12))

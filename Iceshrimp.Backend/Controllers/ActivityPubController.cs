@@ -45,7 +45,7 @@ public class ActivityPubController : Controller {
 	                                         [FromServices] UserRenderer userRenderer) {
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
-		var rendered  = await userRenderer.Render(user);
+		var rendered  = await userRenderer.RenderAsync(user);
 		var compacted = LdHelpers.Compact(rendered);
 		return Ok(compacted);
 	}

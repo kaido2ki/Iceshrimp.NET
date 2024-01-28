@@ -16,7 +16,7 @@ public class LdSignatureTests {
 	[TestInitialize]
 	public async Task Initialize() {
 		_expanded = LdHelpers.Expand(_actor)!;
-		_signed   = await LdSignature.Sign(_expanded, _keypair.ExportRSAPrivateKeyPem(), _actor.Id + "#main-key");
+		_signed   = await LdSignature.SignAsync(_expanded, _keypair.ExportRSAPrivateKeyPem(), _actor.Id + "#main-key");
 
 		_expanded.Should().NotBeNull();
 		_signed.Should().NotBeNull();
@@ -24,14 +24,14 @@ public class LdSignatureTests {
 
 	[TestMethod]
 	public async Task RoundtripTest() {
-		var verify = await LdSignature.Verify(_signed, _keypair.ExportRSAPublicKeyPem());
+		var verify = await LdSignature.VerifyAsync(_signed, _keypair.ExportRSAPublicKeyPem());
 		verify.Should().BeTrue();
 	}
 
 	[TestMethod]
 	public async Task InvalidKeyTest() {
 		var rsa    = RSA.Create();
-		var verify = await LdSignature.Verify(_signed, rsa.ExportRSAPublicKeyPem());
+		var verify = await LdSignature.VerifyAsync(_signed, rsa.ExportRSAPublicKeyPem());
 		verify.Should().BeFalse();
 	}
 
@@ -44,7 +44,7 @@ public class LdSignatureTests {
 		var expanded = LdHelpers.Expand(data)!;
 		expanded.Should().NotBeNull();
 
-		var verify = await LdSignature.Verify(expanded, _keypair.ExportRSAPublicKeyPem());
+		var verify = await LdSignature.VerifyAsync(expanded, _keypair.ExportRSAPublicKeyPem());
 		verify.Should().BeFalse();
 	}
 
@@ -54,7 +54,7 @@ public class LdSignatureTests {
 		data.Should().NotBeNull();
 
 		data.Remove("https://w3id.org/security#signature");
-		var verify = await LdSignature.Verify(data, _keypair.ExportRSAPublicKeyPem());
+		var verify = await LdSignature.VerifyAsync(data, _keypair.ExportRSAPublicKeyPem());
 		verify.Should().BeFalse();
 	}
 
@@ -70,7 +70,7 @@ public class LdSignatureTests {
 		data["https://w3id.org/security#signature"]![0]!["https://w3id.org/security#signatureValue"]![0]!["@value"] +=
 			"test";
 		var e = await Assert.ThrowsExceptionAsync<FormatException>(async () =>
-			                                                           await LdSignature.Verify(data,
+			                                                           await LdSignature.VerifyAsync(data,
 					                                                            _keypair.ExportRSAPublicKeyPem()));
 
 		e.Message.Should()
@@ -87,7 +87,7 @@ public class LdSignatureTests {
 		creator.Should().NotBeNull();
 
 		data["https://w3id.org/security#signature"]![0]!["http://purl.org/dc/terms/creator"]![0]!["@value"] += "test";
-		var verify = await LdSignature.Verify(data, _keypair.ExportRSAPublicKeyPem());
+		var verify = await LdSignature.VerifyAsync(data, _keypair.ExportRSAPublicKeyPem());
 		verify.Should().BeFalse();
 	}
 }

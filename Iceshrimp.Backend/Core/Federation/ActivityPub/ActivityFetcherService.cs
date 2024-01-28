@@ -17,7 +17,7 @@ public class ActivityFetcherService(HttpClient client, HttpRequestService httpRq
 	//FIXME: not doing this breaks ld signatures, but doing this breaks mapping the object to datetime properties
 	//new() { DateParseHandling = DateParseHandling.None };
 
-	public async Task<IEnumerable<ASObject>> FetchActivity(string url, User actor, UserKeypair keypair) {
+	public async Task<IEnumerable<ASObject>> FetchActivityAsync(string url, User actor, UserKeypair keypair) {
 		var request  = httpRqSvc.GetSigned(url, ["application/activity+json"], actor, keypair);
 		var response = await client.SendAsync(request);
 		var input    = await response.Content.ReadAsStringAsync();
@@ -28,14 +28,14 @@ public class ActivityFetcherService(HttpClient client, HttpRequestService httpRq
 		                       throw new GracefulException("Failed to deserialize activity"));
 	}
 
-	public async Task<ASActor> FetchActor(string uri, User actor, UserKeypair keypair) {
-		var activity = await FetchActivity(uri, actor, keypair);
+	public async Task<ASActor> FetchActorAsync(string uri, User actor, UserKeypair keypair) {
+		var activity = await FetchActivityAsync(uri, actor, keypair);
 		return activity.OfType<ASActor>().FirstOrDefault() ??
 		       throw new GracefulException("Failed to fetch actor");
 	}
 
-	public async Task<ASNote?> FetchNote(string uri, User actor, UserKeypair keypair) {
-		var activity = await FetchActivity(uri, actor, keypair);
+	public async Task<ASNote?> FetchNoteAsync(string uri, User actor, UserKeypair keypair) {
+		var activity = await FetchActivityAsync(uri, actor, keypair);
 		return activity.OfType<ASNote>().FirstOrDefault();
 	}
 }
