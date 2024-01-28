@@ -9,6 +9,7 @@ using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -19,7 +20,9 @@ public class UserService(
 	IOptions<Config.InstanceSection> instance,
 	ILogger<UserService> logger,
 	DatabaseContext db,
-	ActivityFetcherService fetchSvc) {
+	ActivityFetcherService fetchSvc,
+	IDistributedCache cache
+) {
 	private (string Username, string? Host) AcctToTuple(string acct) {
 		if (!acct.StartsWith("acct:")) throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
 
@@ -161,10 +164,13 @@ public class UserService(
 		return await GetOrCreateSystemUser("relay.actor");
 	}
 
-	//TODO: cache in redis
 	private async Task<User> GetOrCreateSystemUser(string username) {
-		return await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username && p.Host == null) ??
-		       await CreateSystemUser(username);
+		return await cache.Fetch($"systemUser:{username}", TimeSpan.FromHours(24), async () => {
+			logger.LogTrace("GetOrCreateSystemUser delegate method called for user {username}", username);
+			return await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username &&
+			                                               p.Host == null) ??
+			       await CreateSystemUser(username);
+		});
 	}
 
 	private async Task<User> CreateSystemUser(string username) {
