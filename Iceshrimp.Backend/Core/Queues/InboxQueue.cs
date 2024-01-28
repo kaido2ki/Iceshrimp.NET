@@ -10,10 +10,11 @@ namespace Iceshrimp.Backend.Core.Queues;
 
 public class InboxQueue {
 	public static JobQueue<InboxJob> Create(IConnectionMultiplexer redis, string prefix) {
-		return new JobQueue<InboxJob>("inbox", InboxQueueProcessor, 4, redis, prefix);
+		return new JobQueue<InboxJob>("inbox", InboxQueueProcessorDelegateAsync, 4, redis, prefix);
 	}
 
-	private static async Task InboxQueueProcessor(InboxJob job, IServiceProvider scope, CancellationToken token) {
+	private static async Task InboxQueueProcessorDelegateAsync(InboxJob job, IServiceProvider scope,
+	                                                           CancellationToken token) {
 		var expanded = LdHelpers.Expand(JToken.Parse(job.Body));
 		if (expanded == null) throw new Exception("Failed to expand ASObject");
 		var obj = ASObject.Deserialize(expanded);
@@ -23,7 +24,7 @@ public class InboxQueue {
 		var apHandler = scope.GetRequiredService<ActivityHandlerService>();
 		var logger    = scope.GetRequiredService<ILogger<InboxQueue>>();
 		logger.LogTrace("Preparation took {ms} ms", job.Duration);
-		await apHandler.PerformActivity(activity, job.InboxUserId);
+		await apHandler.PerformActivityAsync(activity, job.InboxUserId);
 	}
 }
 

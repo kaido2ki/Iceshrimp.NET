@@ -18,7 +18,7 @@ public class ActivityHandlerService(
 	QueueService queueService,
 	ActivityRenderer activityRenderer
 ) {
-	public Task PerformActivity(ASActivity activity, string? inboxUserId) {
+	public Task PerformActivityAsync(ASActivity activity, string? inboxUserId) {
 		logger.LogDebug("Processing activity: {activity}", activity.Id);
 		if (activity.Actor == null) throw new Exception("Cannot perform activity as actor 'null'");
 
@@ -31,18 +31,18 @@ public class ActivityHandlerService(
 				throw GracefulException.UnprocessableEntity("Create activity object is invalid");
 			}
 			case ASActivity.Types.Follow: {
-				if (activity.Object is { } obj) return Follow(obj, activity.Actor, activity.Id);
+				if (activity.Object is { } obj) return FollowAsync(obj, activity.Actor, activity.Id);
 				throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
 			}
 			case ASActivity.Types.Unfollow: {
-				if (activity.Object is { } obj) return Unfollow(obj, activity.Actor);
+				if (activity.Object is { } obj) return UnfollowAsync(obj, activity.Actor);
 				throw GracefulException.UnprocessableEntity("Unfollow activity object is invalid");
 			}
 			case ASActivity.Types.Undo: {
 				//TODO: implement the rest
 				//TODO: test if this actually works
 				if (activity.Object is ASActivity { Type: ASActivity.Types.Follow, Object: not null } undoActivity)
-					return Unfollow(undoActivity.Object, activity.Actor);
+					return UnfollowAsync(undoActivity.Object, activity.Actor);
 				throw new NotImplementedException("Unsupported undo operation");
 			}
 			default: {
@@ -51,7 +51,7 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task Follow(ASObject followeeActor, ASObject followerActor, string requestId) {
+	private async Task FollowAsync(ASObject followeeActor, ASObject followerActor, string requestId) {
 		var follower = await userResolver.ResolveAsync(followerActor.Id);
 		var followee = await userResolver.ResolveAsync(followeeActor.Id);
 
@@ -111,7 +111,7 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task Unfollow(ASObject followeeActor, ASObject followerActor) {
+	private async Task UnfollowAsync(ASObject followeeActor, ASObject followerActor) {
 		var follower = await userResolver.ResolveAsync(followerActor.Id);
 		var followee = await userResolver.ResolveAsync(followeeActor.Id);
 

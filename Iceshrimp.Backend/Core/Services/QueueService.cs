@@ -33,7 +33,7 @@ public class QueueService : BackgroundService {
 		token.Register(RecoverOrPrepareForExit);
 
 		while (!token.IsCancellationRequested) {
-			foreach (var _ in _queues.Select(queue => queue.Tick(_serviceScopeFactory, token))) { }
+			foreach (var _ in _queues.Select(queue => queue.TickAsync(_serviceScopeFactory, token))) { }
 
 			await Task.Delay(100, token);
 		}
@@ -41,7 +41,7 @@ public class QueueService : BackgroundService {
 
 	private async Task RecoverOrPrepareForExitAsync() {
 		// Move running tasks to the front of the queue
-		foreach (var queue in _queues) await queue.RecoverOrPrepareForExit();
+		foreach (var queue in _queues) await queue.RecoverOrPrepareForExitAsync();
 	}
 
 	private void RecoverOrPrepareForExit() {
@@ -50,8 +50,8 @@ public class QueueService : BackgroundService {
 }
 
 public interface IJobQueue {
-	public Task Tick(IServiceScopeFactory scopeFactory, CancellationToken token);
-	public Task RecoverOrPrepareForExit();
+	public Task TickAsync(IServiceScopeFactory scopeFactory, CancellationToken token);
+	public Task RecoverOrPrepareForExitAsync();
 }
 
 public class JobQueue<T>(
@@ -65,23 +65,23 @@ public class JobQueue<T>(
 	// If this is /not/ required, we could call .WithKeyPrefix twice, once in the main method, (adding prefix) and once here, adding name to the then-passed IDatabase
 	private IDatabase Db => redis.GetDatabase().WithKeyPrefix(prefix + name + ":");
 
-	public async Task Tick(IServiceScopeFactory scopeFactory, CancellationToken token) {
+	public async Task TickAsync(IServiceScopeFactory scopeFactory, CancellationToken token) {
 		var actualParallelism = Math.Min(parallelism - await Db.ListLengthAsync("running"),
 		                                 await Db.ListLengthAsync("queued"));
 		if (actualParallelism == 0) return;
 
 		var tasks = new List<Task>();
-		for (var i = 0; i < actualParallelism; i++) tasks.Add(ProcessJob(scopeFactory, token));
+		for (var i = 0; i < actualParallelism; i++) tasks.Add(ProcessJobAsync(scopeFactory, token));
 
 		await Task.WhenAll(tasks);
 	}
 
-	public async Task RecoverOrPrepareForExit() {
+	public async Task RecoverOrPrepareForExitAsync() {
 		while (await Db.ListLengthAsync("running") > 0)
 			await Db.ListMoveAsync("running", "queued", ListSide.Right, ListSide.Left);
 	}
 
-	private async Task ProcessJob(IServiceScopeFactory scopeFactory, CancellationToken token) {
+	private async Task ProcessJobAsync(IServiceScopeFactory scopeFactory, CancellationToken token) {
 		var res = await Db.ListMoveAsync("queued", "running", ListSide.Left, ListSide.Right);
 		if (res.IsNull || res.Box() is not byte[] buffer) return;
 		var job = RedisHelpers.Deserialize<T>(buffer);

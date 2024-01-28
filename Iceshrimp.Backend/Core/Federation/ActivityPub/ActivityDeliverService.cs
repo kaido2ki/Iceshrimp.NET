@@ -13,7 +13,7 @@ public class ActivityDeliverService(
 	DatabaseContext db,
 	QueueService queueService
 ) {
-	public async Task DeliverToFollowers(ASActivity activity, User actor) {
+	public async Task DeliverToFollowersAsync(ASActivity activity, User actor) {
 		logger.LogDebug("Delivering activity {id} to followers", activity.Id);
 		if (activity.Actor == null) throw new Exception("Actor must not be null");
 

@@ -45,7 +45,7 @@ public class NoteService(
 		var obj      = noteRenderer.Render(note);
 		var activity = ActivityRenderer.RenderCreate(obj, actor);
 
-		await deliverSvc.DeliverToFollowers(activity, user);
+		await deliverSvc.DeliverToFollowersAsync(activity, user);
 
 		return note;
 	}

@@ -10,10 +10,11 @@ namespace Iceshrimp.Backend.Core.Queues;
 
 public class DeliverQueue {
 	public static JobQueue<DeliverJob> Create(IConnectionMultiplexer redis, string prefix) {
-		return new JobQueue<DeliverJob>("deliver", DeliverQueueProcessor, 4, redis, prefix);
+		return new JobQueue<DeliverJob>("deliver", DeliverQueueProcessorDelegateAsync, 4, redis, prefix);
 	}
 
-	private static async Task DeliverQueueProcessor(DeliverJob job, IServiceProvider scope, CancellationToken token) {
+	private static async Task DeliverQueueProcessorDelegateAsync(DeliverJob job, IServiceProvider scope,
+	                                                             CancellationToken token) {
 		var logger     = scope.GetRequiredService<ILogger<DeliverQueue>>();
 		var httpClient = scope.GetRequiredService<HttpClient>();
 		var httpRqSvc  = scope.GetRequiredService<HttpRequestService>();
