@@ -16,6 +16,20 @@ public static class WebApplicationExtensions {
 		          .UseMiddleware<AuthorizedFetchMiddleware>();
 	}
 
+	public static IApplicationBuilder UseSwaggerWithOptions(this WebApplication app) {
+		app.UseSwagger();
+		app.UseSwaggerUI(options => {
+			options.DocumentTitle = "Iceshrimp API documentation";
+			options.SwaggerEndpoint("v1/swagger.json", "Iceshrimp.NET");
+			options.InjectStylesheet("/swagger/styles.css");
+			options.EnablePersistAuthorization();
+			options.EnableTryItOutByDefault();
+			options.DisplayRequestDuration();
+			options.DefaultModelsExpandDepth(-1); // Hide "Schemas" section
+		});
+		return app;
+	}
+
 	public static Config.InstanceSection Initialize(this WebApplication app, string[] args) {
 		var instanceConfig = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
 		                     throw new Exception("Failed to read Instance config section");

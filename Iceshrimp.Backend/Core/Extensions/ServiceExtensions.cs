@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.RateLimiting;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
@@ -10,7 +11,9 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -81,6 +84,55 @@ public static class ServiceExtensions {
 			};
 		});
 	}
+
+	public static void AddSwaggerGenWithOptions(this IServiceCollection services) {
+		services.AddSwaggerGen(options => {
+			options.SwaggerDoc("v1", new OpenApiInfo { Title = "Iceshrimp.NET", Version = "1.0" });
+			options.AddSecurityDefinition("user", new OpenApiSecurityScheme {
+				Name   = "Authorization token",
+				In     = ParameterLocation.Header,
+				Type   = SecuritySchemeType.Http,
+				Scheme = "bearer"
+			});
+			options.AddSecurityDefinition("admin", new OpenApiSecurityScheme {
+				Name   = "Authorization token",
+				In     = ParameterLocation.Header,
+				Type   = SecuritySchemeType.Http,
+				Scheme = "bearer"
+			});
+			options.OperationFilter<AuthorizeCheckOperationFilter>();
+		});
+	}
+
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
+	                 Justification = "SwaggerGenOptions.OperationFilter<T> instantiates this class at runtime")]
+	private class AuthorizeCheckOperationFilter : IOperationFilter {
+		public void Apply(OpenApiOperation operation, OperationFilterContext context) {
+			if (context.MethodInfo.DeclaringType is null)
+				return;
+
+			//TODO: separate admin & user authorize attributes
+			var hasAuthorize = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+			                          .OfType<AuthenticateAttribute>().Any() ||
+			                   context.MethodInfo.GetCustomAttributes(true)
+			                          .OfType<AuthenticateAttribute>().Any();
+
+			if (!hasAuthorize) return;
+			var schema = new OpenApiSecurityScheme {
+				Reference = new OpenApiReference {
+					Type = ReferenceType.SecurityScheme,
+					Id   = "user"
+				}
+			};
+
+			operation.Security = new List<OpenApiSecurityRequirement> {
+				new() {
+					[schema] = Array.Empty<string>()
+				}
+			};
+		}
+	}
+
 
 	public static void AddSlidingWindowRateLimiter(this IServiceCollection services) {
 		//TODO: separate limiter for authenticated users, partitioned by user id
