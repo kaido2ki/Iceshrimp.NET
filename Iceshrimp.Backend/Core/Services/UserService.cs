@@ -74,7 +74,7 @@ public class UserService(
 			AlsoKnownAs   = actor.AlsoKnownAs?.Link,
 			IsExplorable  = actor.IsDiscoverable ?? false,
 			Inbox         = actor.Inbox?.Link,
-			SharedInbox   = actor.SharedInbox?.Link,
+			SharedInbox   = actor.SharedInbox?.Link ?? actor.Endpoints?.SharedInbox?.Id,
 			FollowersUri  = actor.Followers?.Id,
 			Uri           = actor.Id,
 			IsCat         = actor.IsCat ?? false,
