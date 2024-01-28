@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
@@ -46,7 +47,9 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> Login([FromBody] AuthRequest request, Session? session = null) {
+	[SuppressMessage("ReSharper.DPA", "DPA0011: High execution time of MVC action",
+	                 Justification = "Argon2 is execution time-heavy by design")]
+	public async Task<IActionResult> Login([FromBody] AuthRequest request) {
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Host == null &&
 		                                                   p.UsernameLower == request.Username.ToLowerInvariant());
 		if (user == null)
@@ -57,6 +60,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 		if (!AuthHelpers.ComparePassword(request.Password, profile.Password))
 			return StatusCode(StatusCodes.Status403Forbidden);
 
+		var session = HttpContext.GetSession();
 		if (session == null) {
 			session = new Session {
 				Id        = IdHelpers.GenerateSlowflakeId(),
@@ -103,6 +107,8 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
+	[SuppressMessage("ReSharper.DPA", "DPA0011: High execution time of MVC action",
+	                 Justification = "Argon2 is execution time-heavy by design")]
 	public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request) {
 		var user        = HttpContext.GetUser() ?? throw new GracefulException("HttpContext.GetUser() was null");
 		var userProfile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
