@@ -15,8 +15,8 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Produces("application/json")]
 [Route("/api/v1")]
 public class MastodonAuthController(DatabaseContext db) : Controller {
-	[AuthenticateOauth]
 	[HttpGet("verify_credentials")]
+	[AuthenticateOauth]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MastodonAuth.VerifyCredentialsResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
@@ -33,6 +33,7 @@ public class MastodonAuthController(DatabaseContext db) : Controller {
 	}
 
 	[HttpPost("apps")]
+	[EnableRateLimiting("strict")]
 	[Consumes("application/json", "application/x-www-form-urlencoded", "multipart/form-data")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MastodonAuth.RegisterAppResponse))]
