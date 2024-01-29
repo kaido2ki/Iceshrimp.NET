@@ -49,12 +49,13 @@ public abstract class MastodonAuth {
 	public class RegisterAppResponse {
 		public required OauthApp App;
 
-		[J("id")]            public string  Id           => App.Id;
-		[J("name")]          public string  Name         => App.Name;
-		[J("website")]       public string? Website      => App.Website;
-		[J("client_id")]     public string  ClientId     => App.ClientId;
-		[J("client_secret")] public string  ClientSecret => App.ClientSecret;
-		[J("redirect_uri")]  public string  RedirectUri  => string.Join("\n", App.RedirectUris);
+		[J("id")]            public string       Id           => App.Id;
+		[J("name")]          public string       Name         => App.Name;
+		[J("website")]       public string?      Website      => App.Website;
+		[J("scopes")]        public List<string> Scopes       => App.Scopes;
+		[J("redirect_uri")]  public string       RedirectUri  => string.Join("\n", App.RedirectUris);
+		[J("client_id")]     public string       ClientId     => App.ClientId;
+		[J("client_secret")] public string       ClientSecret => App.ClientSecret;
 
 		[J("vapid_key")] public required string? VapidKey { get; set; }
 	}

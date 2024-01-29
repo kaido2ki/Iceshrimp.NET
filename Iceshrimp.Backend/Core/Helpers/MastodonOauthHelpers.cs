@@ -1,5 +1,3 @@
-using Iceshrimp.Backend.Core.Middleware;
-
 namespace Iceshrimp.Backend.Core.Helpers;
 
 public static class MastodonOauthHelpers {
