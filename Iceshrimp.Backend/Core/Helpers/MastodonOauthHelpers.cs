@@ -1,0 +1,74 @@
+using Iceshrimp.Backend.Core.Middleware;
+
+namespace Iceshrimp.Backend.Core.Helpers;
+
+public static class MastodonOauthHelpers {
+	private static readonly List<string> ReadScopes = [
+		"read:accounts",
+		"read:blocks",
+		"read:bookmarks",
+		"read:favourites",
+		"read:filters",
+		"read:follows",
+		"read:lists",
+		"read:mutes",
+		"read:notifications",
+		"read:search",
+		"read:statuses"
+	];
+
+	private static readonly List<string> WriteScopes = [
+		"write:accounts",
+		"write:blocks",
+		"write:bookmarks",
+		"write:conversations",
+		"write:favourites",
+		"write:filters",
+		"write:follows",
+		"write:lists",
+		"write:media",
+		"write:mutes",
+		"write:notifications",
+		"write:reports",
+		"write:statuses"
+	];
+
+	private static readonly List<string> FollowScopes = [
+		"read:follows",
+		"read:blocks",
+		"read:mutes",
+		"write:follows",
+		"write:blocks",
+		"write:mutes"
+	];
+
+	public static IEnumerable<string> ExpandScopes(IEnumerable<string> scopes) {
+		var res = new List<string>();
+		foreach (var scope in scopes) {
+			if (scope == "read")
+				res.AddRange(ReadScopes);
+			if (scope == "write")
+				res.AddRange(WriteScopes);
+			if (scope == "follow")
+				res.AddRange(FollowScopes);
+			else {
+				res.Add(scope);
+			}
+		}
+
+		return res.Distinct();
+	}
+
+	private static readonly List<string> ForbiddenSchemes = ["javascript", "file", "data", "mailto", "tel"];
+
+	public static bool ValidateRedirectUri(string uri) {
+		if (uri == "urn:ietf:wg:oauth:2.0:oob") return true;
+		try {
+			var proto = new Uri(uri).Scheme;
+			return !ForbiddenSchemes.Contains(proto);
+		}
+		catch {
+			return false;
+		}
+	}
+}

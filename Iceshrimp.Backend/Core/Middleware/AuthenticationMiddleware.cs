@@ -19,7 +19,7 @@ public class AuthenticationMiddleware(DatabaseContext db) : IMiddleware {
 			}
 
 			var token   = header[7..];
-			var session = await db.Sessions.Include(p => p.User).FirstOrDefaultAsync(p => p.Token == token);
+			var session = await db.Sessions.Include(p => p.User).FirstOrDefaultAsync(p => p.Token == token && p.Active);
 			if (session == null) {
 				await next(ctx);
 				return;
@@ -34,7 +34,7 @@ public class AuthenticationMiddleware(DatabaseContext db) : IMiddleware {
 
 public class AuthenticateAttribute : Attribute;
 
-public static class HttpContextExtensions {
+public static partial class HttpContextExtensions {
 	private const string Key = "session";
 
 	internal static void SetSession(this HttpContext ctx, Session session) {

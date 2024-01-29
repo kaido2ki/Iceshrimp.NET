@@ -85,6 +85,14 @@ public class GracefulException(HttpStatusCode statusCode, string error, string m
 	public static GracefulException NotFound(string message, string? details = null) {
 		return new GracefulException(HttpStatusCode.NotFound, message, details);
 	}
+	
+	public static GracefulException BadRequest(string message, string? details = null) {
+		return new GracefulException(HttpStatusCode.BadRequest, message, details);
+	}
+
+	public static GracefulException RecordNotFound() {
+		return new GracefulException(HttpStatusCode.NotFound, "Record not found");
+	}
 }
 
 public enum ExceptionVerbosity {

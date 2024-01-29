@@ -1,7 +1,5 @@
 using Asp.Versioning;
 using Iceshrimp.Backend.Core.Extensions;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerUI;
 using Vite.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +12,7 @@ builder.Configuration
        .AddIniFile(Environment.GetEnvironmentVariable("ICESHRIMP_CONFIG_OVERRIDES") ?? "configuration.overrides.ini",
                    true, true);
 
-builder.Services.AddControllers()
+builder.Services.AddControllers(options => { options.ModelBinderProviders.AddHybridBindingProvider(); })
        .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json
        .AddMultiFormatter();
 builder.Services.AddApiVersioning(options => {
