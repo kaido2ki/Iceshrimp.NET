@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.RateLimiting;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
@@ -13,7 +12,6 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationM
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -113,7 +111,8 @@ public static class ServiceExtensions {
 				Type   = SecuritySchemeType.Http,
 				Scheme = "bearer"
 			});
-			options.OperationFilter<AuthorizeCheckOperationFilter>();
+
+			options.AddOperationFilters();
 		});
 	}
 
@@ -148,40 +147,5 @@ public static class ServiceExtensions {
 				await context.HttpContext.Response.WriteAsJsonAsync(res, token);
 			};
 		});
-	}
-
-	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
-	                 Justification = "SwaggerGenOptions.OperationFilter<T> instantiates this class at runtime")]
-	private class AuthorizeCheckOperationFilter : IOperationFilter {
-		public void Apply(OpenApiOperation operation, OperationFilterContext context) {
-			if (context.MethodInfo.DeclaringType is null)
-				return;
-
-			//TODO: separate admin & user authorize attributes
-			var hasAuthenticate = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                          .OfType<AuthenticateAttribute>().Any() ||
-			                   context.MethodInfo.GetCustomAttributes(true)
-			                          .OfType<AuthenticateAttribute>().Any();
-			
-			var hasOauthAuthenticate = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                          .OfType<AuthenticateOauthAttribute>().Any() ||
-			                   context.MethodInfo.GetCustomAttributes(true)
-			                          .OfType<AuthenticateOauthAttribute>().Any();
-
-			if (!hasAuthenticate && !hasOauthAuthenticate) return;
-			
-			var schema = new OpenApiSecurityScheme {
-				Reference = new OpenApiReference {
-					Type = ReferenceType.SecurityScheme,
-					Id   = hasAuthenticate ? "user" : "mastodon"
-				}
-			};
-
-			operation.Security = new List<OpenApiSecurityRequirement> {
-				new() {
-					[schema] = Array.Empty<string>()
-				}
-			};
-		}
 	}
 }

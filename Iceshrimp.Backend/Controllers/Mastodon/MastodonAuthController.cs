@@ -34,7 +34,7 @@ public class MastodonAuthController(DatabaseContext db) : Controller {
 
 	[HttpPost("apps")]
 	[EnableRateLimiting("strict")]
-	[Consumes("application/json", "application/x-www-form-urlencoded", "multipart/form-data")]
+	[ConsumesHybrid]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MastodonAuth.RegisterAppResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
@@ -53,7 +53,7 @@ public class MastodonAuthController(DatabaseContext db) : Controller {
 			Name         = request.ClientName,
 			Website      = request.Website,
 			Scopes       = request.Scopes,
-			RedirectUris = request.RedirectUris,
+			RedirectUris = request.RedirectUris
 		};
 
 		await db.AddAsync(app);

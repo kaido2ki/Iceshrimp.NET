@@ -58,6 +58,9 @@ public class FromHybridAttribute : Attribute, IBindingSourceMetadata {
 	public BindingSource BindingSource => HybridBindingSource.Hybrid;
 }
 
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+public class ConsumesHybridAttribute : Attribute;
+
 public sealed class HybridBindingSource() : BindingSource("Hybrid", "Hybrid", true, true) {
 	public static readonly HybridBindingSource Hybrid = new();
 
