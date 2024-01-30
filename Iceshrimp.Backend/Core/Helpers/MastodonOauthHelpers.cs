@@ -40,6 +40,15 @@ public static class MastodonOauthHelpers {
 		"write:mutes"
 	];
 
+	private static readonly List<string> ScopeGroups = [
+		"read",
+		"write",
+		"follow",
+		"push"
+	];
+
+	private static readonly List<string> ForbiddenSchemes = ["javascript", "file", "data", "mailto", "tel"];
+
 	public static IEnumerable<string> ExpandScopes(IEnumerable<string> scopes) {
 		var res = new List<string>();
 		foreach (var scope in scopes) {
@@ -49,15 +58,19 @@ public static class MastodonOauthHelpers {
 				res.AddRange(WriteScopes);
 			if (scope == "follow")
 				res.AddRange(FollowScopes);
-			else {
+			else
 				res.Add(scope);
-			}
 		}
 
 		return res.Distinct();
 	}
 
-	private static readonly List<string> ForbiddenSchemes = ["javascript", "file", "data", "mailto", "tel"];
+	public static bool ValidateScopes(List<string> scopes) {
+		if (scopes.Distinct().Count() < scopes.Count) return false;
+
+		var validScopes = ScopeGroups.Concat(ReadScopes).Concat(WriteScopes).Concat(FollowScopes);
+		return !scopes.Except(validScopes).Any();
+	}
 
 	public static bool ValidateRedirectUri(string uri) {
 		if (uri == "urn:ietf:wg:oauth:2.0:oob") return true;

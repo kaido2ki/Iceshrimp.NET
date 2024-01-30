@@ -45,6 +45,18 @@ public class MastodonAuthController(DatabaseContext db) : Controller {
 		if (request.RedirectUris.Any(p => !MastodonOauthHelpers.ValidateRedirectUri(p)))
 			throw GracefulException.BadRequest("redirect_uris parameter contains invalid protocols");
 
+		if (!MastodonOauthHelpers.ValidateScopes(request.Scopes))
+			throw GracefulException.BadRequest("Invalid scopes parameter");
+
+		if (request.Website != null)
+			try {
+				var uri = new Uri(request.Website);
+				if (!uri.IsAbsoluteUri || uri.Scheme is "http" or "https") throw new Exception();
+			}
+			catch {
+				throw GracefulException.BadRequest("Invalid website URL");
+			}
+
 		var app = new OauthApp {
 			Id           = IdHelpers.GenerateSlowflakeId(),
 			ClientId     = CryptographyHelpers.GenerateRandomString(32),
