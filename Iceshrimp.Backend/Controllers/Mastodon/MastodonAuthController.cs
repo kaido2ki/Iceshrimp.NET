@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -13,9 +14,8 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Tags("Mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
-[Route("/api/v1")]
 public class MastodonAuthController(DatabaseContext db) : Controller {
-	[HttpGet("verify_credentials")]
+	[HttpGet("/api/v1/apps/verify_credentials")]
 	[AuthenticateOauth]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MastodonAuth.VerifyCredentialsResponse))]
@@ -32,7 +32,7 @@ public class MastodonAuthController(DatabaseContext db) : Controller {
 		return Ok(res);
 	}
 
-	[HttpPost("apps")]
+	[HttpPost("/api/v1/apps")]
 	[EnableRateLimiting("strict")]
 	[ConsumesHybrid]
 	[Produces("application/json")]
@@ -78,4 +78,53 @@ public class MastodonAuthController(DatabaseContext db) : Controller {
 
 		return Ok(res);
 	}
+
+
+	[HttpPost("/oauth/token")]
+	[ConsumesHybrid]
+	[Produces("application/json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MastodonAuth.OauthTokenResponse))]
+	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetOauthToken([FromHybrid] MastodonAuth.OauthTokenRequest request) {
+		//TODO: app-level access (grant_type = "client_credentials")
+		if (request.GrantType != "code")
+			throw GracefulException.BadRequest("Invalid grant_type");
+		var token = await db.OauthTokens.FirstOrDefaultAsync(p => p.Code == request.Code &&
+		                                                          p.App.ClientId == request.ClientId &&
+		                                                          p.App.ClientSecret == request.ClientSecret);
+		if (token == null)
+			throw GracefulException
+				.Unauthorized("Client authentication failed due to unknown client, no client authentication included, or unsupported authentication method.");
+
+		if (token.Active)
+			throw GracefulException
+				.BadRequest("The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.");
+
+		if (MastodonOauthHelpers.ExpandScopes(request.Scopes)
+		                        .Except(MastodonOauthHelpers.ExpandScopes(token.Scopes)).Any())
+			throw GracefulException.BadRequest("The requested scope is invalid, unknown, or malformed.");
+
+		token.Scopes = request.Scopes;
+		token.Active = true;
+		await db.SaveChangesAsync();
+
+		var res = new MastodonAuth.OauthTokenResponse {
+			CreatedAt   = token.CreatedAt,
+			Scopes      = token.Scopes,
+			AccessToken = token.Token
+		};
+
+		return Ok(res);
+	}
+
+	/*
+[HttpPost("/oauth/revoke")]
+[ConsumesHybrid]
+[Produces("application/json")]
+//[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MastodonAuth.RegisterAppResponse))]
+[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
+[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
+public async Task<IActionResult> RegisterApp([FromHybrid] ) { }
+
+*/
 }

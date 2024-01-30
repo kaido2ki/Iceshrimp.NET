@@ -24,11 +24,15 @@ public abstract class MastodonAuth {
 		[B(Name = "scopes")]
 		[J("scopes")]
 		[JC(typeof(EnsureArrayConverter))]
-		public List<string> Scopes {
+		public List<string>? Scopes {
 			get => _scopes;
-			set => _scopes = value.Count == 1
-				? value[0].Split(' ').ToList()
-				: value;
+			set => _scopes = value == null
+				? ["read"]
+				: value.Count == 1
+					? value.Contains(" ")
+						? value[0].Split(' ').ToList()
+						: value[0].Split(',').ToList()
+					: value;
 		}
 
 		[B(Name = "client_name")]
@@ -58,5 +62,56 @@ public abstract class MastodonAuth {
 		[J("client_secret")] public string       ClientSecret => App.ClientSecret;
 
 		[J("vapid_key")] public required string? VapidKey { get; set; }
+	}
+
+	public class OauthTokenRequest {
+		public List<string> Scopes = ["read"];
+
+		[B(Name = "scope")]
+		[J("scope")]
+		[JC(typeof(EnsureArrayConverter))]
+		public List<string>? ScopesInternal {
+			get => Scopes;
+			set => Scopes = value == null
+				? ["read"]
+				: value.Count == 1
+					? value.Contains(" ")
+						? value[0].Split(' ').ToList()
+						: value[0].Split(',').ToList()
+					: value;
+		}
+
+		[B(Name = "redirect_uri")]
+		[J("redirect_uri")]
+		[JR]
+		public string RedirectUri { get; set; } = null!;
+
+		[B(Name = "grant_type")]
+		[J("grant_type")]
+		[JR]
+		public string GrantType { get; set; } = null!;
+
+		[B(Name = "client_id")]
+		[J("client_id")]
+		[JR]
+		public string ClientId { get; set; } = null!;
+
+		[B(Name = "client_secret")]
+		[J("client_secret")]
+		[JR]
+		public string ClientSecret { get; set; } = null!;
+
+		[B(Name = "code")] [J("code")] public string? Code { get; set; } = null!;
+	}
+
+	public class OauthTokenResponse {
+		public required DateTime CreatedAt;
+
+		public required                     List<string> Scopes;
+		[J("access_token")] public required string       AccessToken { get; set; }
+
+		[J("token_type")] public string TokenType         => "Bearer";
+		[J("scope")]      public string Scope             => string.Join(' ', Scopes);
+		[J("created_at")] public long   CreatedAtInternal => (long)(CreatedAt - DateTime.UnixEpoch).TotalSeconds;
 	}
 }

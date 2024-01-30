@@ -1,0 +1,45 @@
+@page "/oauth/authorize"
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.AspNetCore.WebUtilities
+@model AuthorizeModel
+
+<h3>Iceshrimp.NET OAuth</h3>
+
+@if (Model.Token == null) {
+    <div>
+        The app <span class="app_name">@Model.App.Name</span> requests the following permissions:
+
+        <ul>
+            @foreach (var scope in Model.Scopes) {
+                <li>@scope</li>
+            }
+        </ul>
+
+        Log in below to confirm this:
+
+        <div class="form-wrapper">
+            <form method="post">
+                <input type="text" placeholder="Username" name="username"/>
+                <input type="password" placeholder="Password" name="password"/>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+}
+else if (Model.Token.RedirectUri == "urn:ietf:wg:oauth:2.0:oob") {
+    <div>
+        Your code is: <pre>@Model.Token.Code</pre>
+    </div>
+}
+else {
+    var uri   = new Uri(Model.Token.RedirectUri);
+    var query = QueryHelpers.ParseQuery(uri.Query);
+    query.Add("code", Model.Token.Code);
+    if (Request.Query.ContainsKey("state"))
+        query.Add("state", Request.Query["state"]);
+    uri = new Uri(QueryHelpers.AddQueryString(Model.Token.RedirectUri, query));
+    Response.Redirect(uri.ToString());
+    <div>
+        Click <a href="@uri.ToString()">here</a> to be redirected back to your application
+    </div>
+}
