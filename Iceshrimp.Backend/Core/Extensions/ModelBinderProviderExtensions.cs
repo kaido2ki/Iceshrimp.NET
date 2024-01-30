@@ -39,7 +39,7 @@ public class HybridModelBinder(
 ) : IModelBinder {
 	public async Task BindModelAsync(ModelBindingContext bindingContext) {
 		if (bodyBinder != null && bindingContext is
-			    { IsTopLevelObject: true, HttpContext.Request.HasFormContentType: false }) {
+			    { IsTopLevelObject: true, HttpContext.Request: { HasFormContentType: false, ContentLength: > 0 } }) {
 			bindingContext.BindingSource = BindingSource.Body;
 			await bodyBinder.BindModelAsync(bindingContext);
 		}
