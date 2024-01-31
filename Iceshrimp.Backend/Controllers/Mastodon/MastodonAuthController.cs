@@ -87,7 +87,7 @@ public class MastodonAuthController(DatabaseContext db) : Controller {
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetOauthToken([FromHybrid] MastodonAuth.OauthTokenRequest request) {
 		//TODO: app-level access (grant_type = "client_credentials")
-		if (request.GrantType != "code")
+		if (request.GrantType != "authorization_code")
 			throw GracefulException.BadRequest("Invalid grant_type");
 		var token = await db.OauthTokens.FirstOrDefaultAsync(p => p.Code == request.Code &&
 		                                                          p.App.ClientId == request.ClientId &&
