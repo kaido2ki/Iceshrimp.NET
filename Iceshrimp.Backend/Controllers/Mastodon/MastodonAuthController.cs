@@ -51,7 +51,7 @@ public class MastodonAuthController(DatabaseContext db) : Controller {
 		if (request.Website != null)
 			try {
 				var uri = new Uri(request.Website);
-				if (!uri.IsAbsoluteUri || uri.Scheme is "http" or "https") throw new Exception();
+				if (!uri.IsAbsoluteUri || uri.Scheme is not "http" and not "https") throw new Exception();
 			}
 			catch {
 				throw GracefulException.BadRequest("Invalid website URL");

@@ -24,15 +24,13 @@ public abstract class MastodonAuth {
 		[B(Name = "scopes")]
 		[J("scopes")]
 		[JC(typeof(EnsureArrayConverter))]
-		public List<string>? Scopes {
+		public List<string> Scopes {
 			get => _scopes;
-			set => _scopes = value == null
-				? ["read"]
-				: value.Count == 1
-					? value.Contains(" ")
-						? value[0].Split(' ').ToList()
-						: value[0].Split(',').ToList()
-					: value;
+			set => _scopes = value.Count == 1
+				? value[0].Contains(' ')
+					? value[0].Split(' ').ToList()
+					: value[0].Split(',').ToList()
+				: value;
 		}
 
 		[B(Name = "client_name")]
@@ -70,15 +68,13 @@ public abstract class MastodonAuth {
 		[B(Name = "scope")]
 		[J("scope")]
 		[JC(typeof(EnsureArrayConverter))]
-		public List<string>? ScopesInternal {
+		public List<string> ScopesInternal {
 			get => Scopes;
-			set => Scopes = value == null
-				? ["read"]
-				: value.Count == 1
-					? value.Contains(" ")
-						? value[0].Split(' ').ToList()
-						: value[0].Split(',').ToList()
-					: value;
+			set => Scopes = value.Count == 1
+				? value[0].Contains(' ')
+					? value[0].Split(' ').ToList()
+					: value[0].Split(',').ToList()
+				: value;
 		}
 
 		[B(Name = "redirect_uri")]
