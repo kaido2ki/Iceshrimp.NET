@@ -18,13 +18,13 @@ public class MastodonAuthController(DatabaseContext db) : Controller {
 	[HttpGet("/api/v1/apps/verify_credentials")]
 	[AuthenticateOauth]
 	[Produces("application/json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MastodonAuth.VerifyCredentialsResponse))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MastodonAuth.VerifyAppCredentialsResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	public IActionResult VerifyCredentials() {
+	public IActionResult VerifyAppCredentials() {
 		var token = HttpContext.GetOauthToken();
 		if (token == null) throw GracefulException.Unauthorized("The access token is invalid");
 
-		var res = new MastodonAuth.VerifyCredentialsResponse {
+		var res = new MastodonAuth.VerifyAppCredentialsResponse {
 			App      = token.App,
 			VapidKey = null //FIXME
 		};
