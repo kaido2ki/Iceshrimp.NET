@@ -27,7 +27,7 @@ public class AuthorizeModel(DatabaseContext db) : PageModel {
 	public OauthToken?  Token  = null;
 
 	public async Task OnGet() {
-		App = await db.OauthApps.FirstOrDefaultAsync(p => p.ClientId == ClientId)
+		App = await db.OauthApps.FirstOrDefaultAsync(p => p.ClientId == ClientId.Replace(' ', '+'))
 		      ?? throw GracefulException.BadRequest("Invalid client_id");
 		if (MastodonOauthHelpers.ExpandScopes(Scopes).Except(MastodonOauthHelpers.ExpandScopes(App.Scopes)).Any())
 			throw GracefulException.BadRequest("Cannot request more scopes than app");
