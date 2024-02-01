@@ -1,27 +1,9 @@
-using System.Text;
-using System.Text.RegularExpressions;
 using AngleSharp.Dom;
-using AngleSharp.Html.Parser;
 
-namespace Iceshrimp.Backend.Core.Helpers;
+namespace Iceshrimp.MfmSharp.Parsing;
 
-public static class MfmHelpers {
-	public static async Task<string> FromHtmlAsync(string? html) {
-		if (html == null) return "";
-
-		// Ensure compatibility with AP servers that send both <br> as well as newlines
-		var regex = new Regex(@"<br\s?\/?>\r?\n", RegexOptions.IgnoreCase);
-		html = regex.Replace(html, "\n");
-
-		var dom = await new HtmlParser().ParseDocumentAsync(html);
-		if (dom.Body == null) return "";
-
-		var sb = new StringBuilder();
-		dom.Body.ChildNodes.Select(ParseNode).ToList().ForEach(s => sb.Append(s));
-		return sb.ToString().Trim();
-	}
-
-	private static string? ParseNode(INode node) {
+internal static class HtmlParser {
+	internal static string? ParseNode(INode node) {
 		if (node.NodeType is NodeType.Text)
 			return node.TextContent;
 		if (node.NodeType is NodeType.Comment or NodeType.Document)

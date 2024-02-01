@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.MfmSharp.Conversion;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -27,21 +28,21 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 				: "Person";
 
 		return new ASActor {
-			Id             = id,
-			Type           = type,
-			Inbox          = new ASLink($"{id}/inbox"),
-			Outbox         = new ASCollection<ASObject>($"{id}/outbox"),
-			Followers      = new ASCollection<ASObject>($"{id}/followers"),
-			Following      = new ASCollection<ASObject>($"{id}/following"),
-			SharedInbox    = new ASLink($"https://{config.Value.WebDomain}/inbox"),
-			Url            = new ASLink($"https://{config.Value.WebDomain}/@{user.Username}"),
-			Username       = user.Username,
-			DisplayName    = user.Name ?? user.Username,
-			Summary        = profile?.Description != null ? "Not implemented" : null, //TODO: convert to html
-			MkSummary      = profile?.Description,
-			IsCat          = user.IsCat,
+			Id = id,
+			Type = type,
+			Inbox = new ASLink($"{id}/inbox"),
+			Outbox = new ASCollection<ASObject>($"{id}/outbox"),
+			Followers = new ASCollection<ASObject>($"{id}/followers"),
+			Following = new ASCollection<ASObject>($"{id}/following"),
+			SharedInbox = new ASLink($"https://{config.Value.WebDomain}/inbox"),
+			Url = new ASLink($"https://{config.Value.WebDomain}/@{user.Username}"),
+			Username = user.Username,
+			DisplayName = user.Name ?? user.Username,
+			Summary = profile?.Description != null ? await MfmConverter.FromHtmlAsync(profile.Description) : null,
+			MkSummary = profile?.Description,
+			IsCat = user.IsCat,
 			IsDiscoverable = user.IsExplorable,
-			IsLocked       = user.IsLocked,
+			IsLocked = user.IsLocked,
 			Endpoints = new ASEndpoints {
 				SharedInbox = new LDIdObject($"https://{config.Value.WebDomain}/inbox")
 			},

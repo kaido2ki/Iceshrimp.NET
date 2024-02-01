@@ -117,6 +117,7 @@ public class MastodonAuthController(DatabaseContext db) : Controller {
 		return Ok(res);
 	}
 
+	//TODO: implement /oauth/revoke
 	/*
 [HttpPost("/oauth/revoke")]
 [ConsumesHybrid]
