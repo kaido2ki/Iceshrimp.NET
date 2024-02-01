@@ -16,14 +16,17 @@ RUN yarn --immutable && yarn build
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS backend
 ARG TARGETARCH
-WORKDIR /backend
+WORKDIR /src
 
 # copy csproj and restore as distinct layers
-COPY Iceshrimp.Backend/*.csproj .
+RUN mkdir Iceshrimp.Backend Iceshrimp.MfmSharp
+COPY Iceshrimp.Backend/*.csproj Iceshrimp.Backend
+COPY Iceshrimp.MfmSharp/*.csproj Iceshrimp.MfmSharp
+WORKDIR /src/Iceshrimp.Backend
 RUN dotnet restore -a $TARGETARCH
 
-# copy backend files
-COPY Iceshrimp.Backend/. .
+# copy files required for backend build
+COPY ./. /src
 
 # it's faster if we copy this later because we can parallelize it with buildkit, but the build fails if this file doesn't exist
 RUN mkdir -p ./wwwroot/.vite/ && touch ./wwwroot/.vite/manifest.json
