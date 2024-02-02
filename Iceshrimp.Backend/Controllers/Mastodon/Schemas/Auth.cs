@@ -7,7 +7,7 @@ using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
-public abstract class MastodonAuth {
+public abstract class Auth {
 	public class VerifyAppCredentialsResponse {
 		public required OauthApp App;
 

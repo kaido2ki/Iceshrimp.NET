@@ -44,7 +44,7 @@ public class OauthAuthenticationMiddleware(DatabaseContext db) : IMiddleware {
 }
 
 public class AuthenticateOauthAttribute(params string[] scopes) : Attribute {
-	public string[] Scopes = scopes;
+	public readonly string[] Scopes = scopes;
 }
 
 public static partial class HttpContextExtensions {
