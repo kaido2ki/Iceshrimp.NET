@@ -33,7 +33,6 @@
         <PackageReference Include="StackExchange.Redis" Version="2.7.17"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
         <PackageReference Include="Vite.AspNetCore" Version="1.11.0"/>
-        <PackageReference Include="YamlDotNet" Version="13.7.1"/>
     </ItemGroup>
 
     <ItemGroup>
