@@ -2,7 +2,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.MfmSharp.Conversion;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 

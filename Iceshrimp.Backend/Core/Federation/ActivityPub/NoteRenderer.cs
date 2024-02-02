@@ -1,7 +1,7 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
-using Iceshrimp.MfmSharp.Conversion;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;

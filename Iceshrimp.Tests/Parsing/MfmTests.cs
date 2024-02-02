@@ -1,5 +1,5 @@
-using Iceshrimp.MfmSharp.Conversion;
-using Iceshrimp.MfmSharp.Parsing;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 
 namespace Iceshrimp.Tests.Parsing;
 

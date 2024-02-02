@@ -47,8 +47,4 @@
         <Content Include="wwwroot\.vite\manifest.json" CopyToPublishDirectory="PreserveNewest"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\Iceshrimp.MfmSharp\Iceshrimp.MfmSharp.csproj"/>
-    </ItemGroup>
-
 </Project>

@@ -4,12 +4,12 @@ using System.Web;
 using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
-using Iceshrimp.MfmSharp.Parsing;
-using Iceshrimp.MfmSharp.Types;
-using static Iceshrimp.MfmSharp.Parsing.HtmlParser;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
+using static Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing.HtmlParser;
 using HtmlParser = AngleSharp.Html.Parser.HtmlParser;
 
-namespace Iceshrimp.MfmSharp.Conversion;
+namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 
 public static class MfmConverter {
 	public static async Task<string> FromHtmlAsync(string? html) {

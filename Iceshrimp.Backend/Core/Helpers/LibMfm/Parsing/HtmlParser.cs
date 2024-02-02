@@ -1,6 +1,6 @@
 using AngleSharp.Dom;
 
-namespace Iceshrimp.MfmSharp.Parsing;
+namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 
 internal static class HtmlParser {
 	internal static string? ParseNode(INode node) {

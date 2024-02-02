@@ -1,4 +1,4 @@
-namespace Iceshrimp.MfmSharp.Types;
+namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
 
 public abstract class MfmNode {
 	public IEnumerable<MfmNode> Children = [];
