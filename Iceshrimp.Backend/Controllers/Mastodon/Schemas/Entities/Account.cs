@@ -1,11 +1,6 @@
-using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Helpers;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
-using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
-using JC = System.Text.Json.Serialization.JsonConverterAttribute;
-using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
 
-namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
+namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 public class Account {
 	[J("id")]              public required string   Id                 { get; set; }
@@ -28,7 +23,7 @@ public class Account {
 	[J("bot")]             public required bool     IsBot              { get; set; }
 	[J("discoverable")]    public required bool     IsDiscoverable     { get; set; }
 
-	[J("source")] public string?             Source => null; //FIXME
-	[J("fields")] public IEnumerable<string> Fields => [];   //FIXME
-	[J("emojis")] public IEnumerable<string> Emoji  => [];   //FIXME
+	[J("source")] public object?  Source => null; //FIXME
+	[J("fields")] public object[] Fields => [];   //FIXME
+	[J("emojis")] public object[] Emoji  => [];   //FIXME
 }

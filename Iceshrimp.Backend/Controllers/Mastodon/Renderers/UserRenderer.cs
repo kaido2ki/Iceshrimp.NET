@@ -1,4 +1,4 @@
-using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -15,7 +15,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		var acct = user.Username;
 		if (user.Host != null)
 			acct += $"@{user.Host}";
-		
+
 		//TODO: respect ffVisibility for follower/following count
 
 		var res = new Account {
@@ -37,7 +37,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			HeaderStaticUrl = user.BannerUrl ?? _transparent, //TODO
 			MovedToAccount = null, //TODO
 			IsBot = user.IsBot,
-			IsDiscoverable = user.IsExplorable,
+			IsDiscoverable = user.IsExplorable
 		};
 
 		return res;

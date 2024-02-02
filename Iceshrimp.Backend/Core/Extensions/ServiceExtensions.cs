@@ -33,9 +33,10 @@ public static class ServiceExtensions {
 		services.AddScoped<AuthorizedFetchMiddleware>();
 		services.AddScoped<AuthenticationMiddleware>();
 		services.AddScoped<OauthAuthenticationMiddleware>();
-		
+
 		//TODO: make this prettier
 		services.AddScoped<Controllers.Mastodon.Renderers.UserRenderer>();
+		services.AddScoped<Controllers.Mastodon.Renderers.NoteRenderer>();
 
 		// Singleton = instantiated once across application lifetime
 		services.AddSingleton<HttpClient>();
