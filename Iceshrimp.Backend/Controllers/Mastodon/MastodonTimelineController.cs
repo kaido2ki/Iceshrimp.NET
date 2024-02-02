@@ -1,8 +1,10 @@
+using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
@@ -26,14 +28,13 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
 	public async Task<IActionResult> GetHomeTimeline() {
 		var user = HttpContext.GetOauthUser() ?? throw new GracefulException("Failed to get user from HttpContext");
-		var notes = await db.Notes
-		                    .WithIncludes()
-		                    .IsFollowedBy(user)
-		                    .OrderByIdDesc()
-		                    .Take(40)
-		                    .ToListAsync();
-		
-		var res = await Task.WhenAll(notes.Select(async p => await noteRenderer.RenderAsync(p)));
+		var notes = db.Notes
+		              .WithIncludes()
+		              .IsFollowedBy(user)
+		              .OrderByIdDesc()
+		              .Take(40);
+
+		var res = await notes.RenderAllForMastodonAsync(noteRenderer);
 		return Ok(res);
 	}
 
@@ -42,14 +43,13 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
 	public async Task<IActionResult> GetPublicTimeline() {
-		var notes = await db.Notes
-		                    .WithIncludes()
-		                    .HasVisibility(Note.NoteVisibility.Public)
-		                    .OrderByIdDesc()
-		                    .Take(40)
-		                    .ToListAsync();
-		
-		var res = await Task.WhenAll(notes.Select(async p => await noteRenderer.RenderAsync(p)));
+		var notes = db.Notes
+		              .WithIncludes()
+		              .HasVisibility(Note.NoteVisibility.Public)
+		              .OrderByIdDesc()
+		              .Take(40);
+
+		var res = await notes.RenderAllForMastodonAsync(noteRenderer);
 		return Ok(res);
 	}
 }
