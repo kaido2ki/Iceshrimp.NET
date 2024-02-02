@@ -13,13 +13,13 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [AuthenticateOauth]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
+[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
+[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 public class MastodonUserController(UserRenderer userRenderer) : Controller {
 	[AuthorizeOauth("read:accounts")]
 	[HttpGet("verify_credentials")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Account))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> VerifyUserCredentials() {
 		var user = HttpContext.GetOauthUser() ?? throw new GracefulException("Failed to get user from HttpContext");
 		var res  = await userRenderer.RenderAsync(user);
