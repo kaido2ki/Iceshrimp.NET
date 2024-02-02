@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "gulp": "rm -rf ../Iceshrimp.Backend/wwwroot/assets ../Iceshrimp.Backend/wwwroot/.vite && mkdir -p ../Iceshrimp.Backend/wwwroot && cp -r ./dist/assets ./dist/.vite ../Iceshrimp.Backend/wwwroot",
+    "gulp": "rm -rf ../Iceshrimp.Backend/wwwroot/frontend ../Iceshrimp.Backend/wwwroot/.vite && mkdir -p ../Iceshrimp.Backend/wwwroot && cp -r ./dist/frontend ./dist/.vite ../Iceshrimp.Backend/wwwroot",
     "preview": "vite preview"
   },
   "devDependencies": {
