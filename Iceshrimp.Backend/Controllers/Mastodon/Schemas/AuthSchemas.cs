@@ -110,4 +110,18 @@ public abstract class AuthSchemas {
 		[J("scope")]      public string Scope             => string.Join(' ', Scopes);
 		[J("created_at")] public long   CreatedAtInternal => (long)(CreatedAt - DateTime.UnixEpoch).TotalSeconds;
 	}
+
+	public class OauthTokenRevocationRequest {
+		[B(Name = "client_id")]
+		[J("client_id")]
+		[JR]
+		public string ClientId { get; set; } = null!;
+
+		[B(Name = "client_secret")]
+		[J("client_secret")]
+		[JR]
+		public string ClientSecret { get; set; } = null!;
+
+		[B(Name = "code")] [J("token")] [JR] public string Token { get; set; } = null!;
+	}
 }

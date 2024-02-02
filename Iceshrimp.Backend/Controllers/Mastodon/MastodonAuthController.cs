@@ -117,15 +117,22 @@ public class MastodonAuthController(DatabaseContext db) : Controller {
 		return Ok(res);
 	}
 
-	//TODO: implement /oauth/revoke
-	/*
-[HttpPost("/oauth/revoke")]
-[ConsumesHybrid]
-[Produces("application/json")]
-//[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MastodonAuth.RegisterAppResponse))]
-[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
-[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-public async Task<IActionResult> RegisterApp([FromHybrid] ) { }
+	[HttpPost("/oauth/revoke")]
+	[ConsumesHybrid]
+	[Produces("application/json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> RevokeOauthToken([FromHybrid] AuthSchemas.OauthTokenRevocationRequest request) {
+		var token = await db.OauthTokens.FirstOrDefaultAsync(p => p.Token == request.Token &&
+		                                                          p.App.ClientId == request.ClientId &&
+		                                                          p.App.ClientSecret == request.ClientSecret);
+		if (token == null)
+			throw GracefulException.Forbidden("You are not authorized to revoke this token");
 
-*/
+		db.Remove(token);
+		await db.SaveChangesAsync();
+
+		return Ok(new object());
+	}
 }
