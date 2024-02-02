@@ -25,6 +25,6 @@ public class ModerationLog {
 	[Column("info", TypeName = "jsonb")] public string Info { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty("ModerationLogs")]
+	[InverseProperty(nameof(Tables.User.ModerationLogs))]
 	public virtual User User { get; set; } = null!;
 }

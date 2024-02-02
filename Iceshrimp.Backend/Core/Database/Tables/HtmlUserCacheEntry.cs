@@ -17,6 +17,6 @@ public class HtmlUserCacheEntry {
 	[Column("fields", TypeName = "jsonb")] public string Fields { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty("HtmlUserCacheEntry")]
+	[InverseProperty(nameof(Tables.User.HtmlUserCacheEntry))]
 	public virtual User User { get; set; } = null!;
 }

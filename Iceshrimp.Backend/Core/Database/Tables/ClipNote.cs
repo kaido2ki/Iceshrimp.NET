@@ -29,10 +29,10 @@ public class ClipNote {
 	public string ClipId { get; set; } = null!;
 
 	[ForeignKey("ClipId")]
-	[InverseProperty("ClipNotes")]
+	[InverseProperty(nameof(Tables.Clip.ClipNotes))]
 	public virtual Clip Clip { get; set; } = null!;
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("ClipNotes")]
+	[InverseProperty(nameof(Tables.Note.ClipNotes))]
 	public virtual Note Note { get; set; } = null!;
 }

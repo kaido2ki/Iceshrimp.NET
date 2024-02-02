@@ -15,6 +15,6 @@ public class HtmlNoteCacheEntry {
 	[Column("content")] public string? Content { get; set; }
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("HtmlNoteCacheEntry")]
+	[InverseProperty(nameof(Tables.Note.HtmlNoteCacheEntry))]
 	public virtual Note Note { get; set; } = null!;
 }

@@ -165,22 +165,22 @@ public class DriveFile {
 	[StringLength(128)]
 	public string? RequestIp { get; set; }
 
-	[InverseProperty("Banner")] public virtual ICollection<Channel> Channels { get; set; } = new List<Channel>();
+	[InverseProperty(nameof(Channel.Banner))] public virtual ICollection<Channel> Channels { get; set; } = new List<Channel>();
 
 	[ForeignKey("FolderId")]
-	[InverseProperty("DriveFiles")]
+	[InverseProperty(nameof(DriveFolder.DriveFiles))]
 	public virtual DriveFolder? Folder { get; set; }
 
-	[InverseProperty("File")]
+	[InverseProperty(nameof(MessagingMessage.File))]
 	public virtual ICollection<MessagingMessage> MessagingMessages { get; set; } = new List<MessagingMessage>();
 
-	[InverseProperty("EyeCatchingImage")] public virtual ICollection<Page> Pages { get; set; } = new List<Page>();
+	[InverseProperty(nameof(Page.EyeCatchingImage))] public virtual ICollection<Page> Pages { get; set; } = new List<Page>();
 
 	[ForeignKey("UserId")]
-	[InverseProperty("DriveFiles")]
+	[InverseProperty(nameof(Tables.User.DriveFiles))]
 	public virtual User? User { get; set; }
 
-	[InverseProperty("Avatar")] public virtual User? UserAvatar { get; set; }
+	[InverseProperty(nameof(Tables.User.Avatar))] public virtual User? UserAvatar { get; set; }
 
-	[InverseProperty("Banner")] public virtual User? UserBanner { get; set; }
+	[InverseProperty(nameof(Tables.User.Banner))] public virtual User? UserBanner { get; set; }
 }

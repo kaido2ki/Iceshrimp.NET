@@ -35,10 +35,10 @@ public class UserListMember {
 	public string UserListId { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty("UserListMembers")]
+	[InverseProperty(nameof(Tables.User.UserListMembers))]
 	public virtual User User { get; set; } = null!;
 
 	[ForeignKey("UserListId")]
-	[InverseProperty("UserListMembers")]
+	[InverseProperty(nameof(Tables.UserList.UserListMembers))]
 	public virtual UserList UserList { get; set; } = null!;
 }

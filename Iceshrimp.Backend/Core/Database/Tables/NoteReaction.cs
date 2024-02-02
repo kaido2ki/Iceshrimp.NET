@@ -30,10 +30,10 @@ public class NoteReaction {
 	public string Reaction { get; set; } = null!;
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("NoteReactions")]
+	[InverseProperty(nameof(Tables.Note.NoteReactions))]
 	public virtual Note Note { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty("NoteReactions")]
+	[InverseProperty(nameof(Tables.User.NoteReactions))]
 	public virtual User User { get; set; } = null!;
 }

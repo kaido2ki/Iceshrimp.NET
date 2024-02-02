@@ -84,13 +84,13 @@ public class FollowRequest {
 	public string? FolloweeSharedInbox { get; set; }
 
 	[ForeignKey("FolloweeId")]
-	[InverseProperty("FollowRequestFollowees")]
+	[InverseProperty(nameof(User.IncomingFollowRequests))]
 	public virtual User Followee { get; set; } = null!;
 
 	[ForeignKey("FollowerId")]
-	[InverseProperty("FollowRequestFollowers")]
+	[InverseProperty(nameof(User.OutgoingFollowRequests))]
 	public virtual User Follower { get; set; } = null!;
 
-	[InverseProperty("FollowRequest")]
+	[InverseProperty(nameof(Notification.FollowRequest))]
 	public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }

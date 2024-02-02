@@ -29,6 +29,6 @@ public class SwSubscription {
 	[Column("sendReadMessage")] public bool SendReadMessage { get; set; }
 
 	[ForeignKey("UserId")]
-	[InverseProperty("SwSubscriptions")]
+	[InverseProperty(nameof(Tables.User.SwSubscriptions))]
 	public virtual User User { get; set; } = null!;
 }

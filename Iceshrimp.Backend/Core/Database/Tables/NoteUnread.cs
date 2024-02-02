@@ -41,10 +41,10 @@ public class NoteUnread {
 	public string? NoteChannelId { get; set; }
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("NoteUnreads")]
+	[InverseProperty(nameof(Tables.Note.NoteUnreads))]
 	public virtual Note Note { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty("NoteUnreads")]
+	[InverseProperty(nameof(Tables.User.NoteUnreads))]
 	public virtual User User { get; set; } = null!;
 }

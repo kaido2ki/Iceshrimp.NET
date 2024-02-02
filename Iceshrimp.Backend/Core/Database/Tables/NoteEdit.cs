@@ -33,6 +33,6 @@ public class NoteEdit {
 	public DateTime UpdatedAt { get; set; }
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("NoteEdits")]
+	[InverseProperty(nameof(Tables.Note.NoteEdits))]
 	public virtual Note Note { get; set; } = null!;
 }

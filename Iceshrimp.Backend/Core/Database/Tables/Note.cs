@@ -173,56 +173,56 @@ public class Note {
 	public DateTime? UpdatedAt { get; set; }
 
 	[ForeignKey("ChannelId")]
-	[InverseProperty("Notes")]
+	[InverseProperty(nameof(Tables.Channel.Notes))]
 	public virtual Channel? Channel { get; set; }
 
-	[InverseProperty("Note")]
+	[InverseProperty(nameof(ChannelNotePin.Note))]
 	public virtual ICollection<ChannelNotePin> ChannelNotePins { get; set; } = new List<ChannelNotePin>();
 
-	[InverseProperty("Note")] public virtual ICollection<ClipNote> ClipNotes { get; set; } = new List<ClipNote>();
+	[InverseProperty(nameof(ClipNote.Note))] public virtual ICollection<ClipNote> ClipNotes { get; set; } = new List<ClipNote>();
 
-	[InverseProperty("Note")] public virtual HtmlNoteCacheEntry? HtmlNoteCacheEntry { get; set; }
+	[InverseProperty(nameof(Tables.HtmlNoteCacheEntry.Note))] public virtual HtmlNoteCacheEntry? HtmlNoteCacheEntry { get; set; }
 
-	[InverseProperty("Renote")] public virtual ICollection<Note> InverseRenote { get; set; } = new List<Note>();
+	[InverseProperty(nameof(Renote))] public virtual ICollection<Note> InverseRenote { get; set; } = new List<Note>();
 
-	[InverseProperty("Reply")] public virtual ICollection<Note> InverseReply { get; set; } = new List<Note>();
+	[InverseProperty(nameof(Reply))] public virtual ICollection<Note> InverseReply { get; set; } = new List<Note>();
 
-	[InverseProperty("Note")] public virtual ICollection<NoteEdit> NoteEdits { get; set; } = new List<NoteEdit>();
+	[InverseProperty(nameof(NoteEdit.Note))] public virtual ICollection<NoteEdit> NoteEdits { get; set; } = new List<NoteEdit>();
 
-	[InverseProperty("Note")]
+	[InverseProperty(nameof(NoteFavorite.Note))]
 	public virtual ICollection<NoteFavorite> NoteFavorites { get; set; } = new List<NoteFavorite>();
 
-	[InverseProperty("Note")]
+	[InverseProperty(nameof(NoteReaction.Note))]
 	public virtual ICollection<NoteReaction> NoteReactions { get; set; } = new List<NoteReaction>();
 
-	[InverseProperty("Note")] public virtual ICollection<NoteUnread> NoteUnreads { get; set; } = new List<NoteUnread>();
+	[InverseProperty(nameof(NoteUnread.Note))] public virtual ICollection<NoteUnread> NoteUnreads { get; set; } = new List<NoteUnread>();
 
-	[InverseProperty("Note")]
+	[InverseProperty(nameof(NoteWatching.Note))]
 	public virtual ICollection<NoteWatching> NoteWatchings { get; set; } = new List<NoteWatching>();
 
-	[InverseProperty("Note")]
+	[InverseProperty(nameof(Notification.Note))]
 	public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
-	[InverseProperty("Note")] public virtual Poll? Poll { get; set; }
+	[InverseProperty(nameof(Tables.Poll.Note))] public virtual Poll? Poll { get; set; }
 
-	[InverseProperty("Note")] public virtual ICollection<PollVote> PollVotes { get; set; } = new List<PollVote>();
+	[InverseProperty(nameof(PollVote.Note))] public virtual ICollection<PollVote> PollVotes { get; set; } = new List<PollVote>();
 
-	[InverseProperty("Note")] public virtual PromoNote? PromoNote { get; set; }
+	[InverseProperty(nameof(Tables.PromoNote.Note))] public virtual PromoNote? PromoNote { get; set; }
 
-	[InverseProperty("Note")] public virtual ICollection<PromoRead> PromoReads { get; set; } = new List<PromoRead>();
+	[InverseProperty(nameof(PromoRead.Note))] public virtual ICollection<PromoRead> PromoReads { get; set; } = new List<PromoRead>();
 
 	[ForeignKey("RenoteId")]
-	[InverseProperty("InverseRenote")]
+	[InverseProperty(nameof(InverseRenote))]
 	public virtual Note? Renote { get; set; }
 
 	[ForeignKey("ReplyId")]
-	[InverseProperty("InverseReply")]
+	[InverseProperty(nameof(InverseReply))]
 	public virtual Note? Reply { get; set; }
 
 	[ForeignKey("UserId")]
-	[InverseProperty("Notes")]
+	[InverseProperty(nameof(Tables.User.Notes))]
 	public virtual User User { get; set; } = null!;
 
-	[InverseProperty("Note")]
+	[InverseProperty(nameof(UserNotePin.Note))]
 	public virtual ICollection<UserNotePin> UserNotePins { get; set; } = new List<UserNotePin>();
 }

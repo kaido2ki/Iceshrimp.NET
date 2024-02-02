@@ -54,18 +54,18 @@ public class MessagingMessage {
 	[Column("uri")] [StringLength(512)] public string? Uri { get; set; }
 
 	[ForeignKey("FileId")]
-	[InverseProperty("MessagingMessages")]
+	[InverseProperty(nameof(DriveFile.MessagingMessages))]
 	public virtual DriveFile? File { get; set; }
 
 	[ForeignKey("GroupId")]
-	[InverseProperty("MessagingMessages")]
+	[InverseProperty(nameof(UserGroup.MessagingMessages))]
 	public virtual UserGroup? Group { get; set; }
 
 	[ForeignKey("RecipientId")]
-	[InverseProperty("MessagingMessageRecipients")]
+	[InverseProperty(nameof(Tables.User.MessagingMessageRecipients))]
 	public virtual User? Recipient { get; set; }
 
 	[ForeignKey("UserId")]
-	[InverseProperty("MessagingMessageUsers")]
+	[InverseProperty(nameof(Tables.User.MessagingMessageUsers))]
 	public virtual User User { get; set; } = null!;
 }

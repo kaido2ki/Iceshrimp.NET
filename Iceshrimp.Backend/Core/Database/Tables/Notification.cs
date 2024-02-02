@@ -79,27 +79,27 @@ public class Notification {
 	public string? AppAccessTokenId { get; set; }
 
 	[ForeignKey("AppAccessTokenId")]
-	[InverseProperty("Notifications")]
+	[InverseProperty(nameof(AccessToken.Notifications))]
 	public virtual AccessToken? AppAccessToken { get; set; }
 
 	[ForeignKey("FollowRequestId")]
-	[InverseProperty("Notifications")]
+	[InverseProperty(nameof(Tables.FollowRequest.Notifications))]
 	public virtual FollowRequest? FollowRequest { get; set; }
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("Notifications")]
+	[InverseProperty(nameof(Tables.Note.Notifications))]
 	public virtual Note? Note { get; set; }
 
 	[ForeignKey("NotifieeId")]
-	[InverseProperty("NotificationNotifiees")]
+	[InverseProperty(nameof(User.NotificationNotifiees))]
 	public virtual User Notifiee { get; set; } = null!;
 
 	[ForeignKey("NotifierId")]
-	[InverseProperty("NotificationNotifiers")]
+	[InverseProperty(nameof(User.NotificationNotifiers))]
 	public virtual User? Notifier { get; set; }
 
 	[ForeignKey("UserGroupInvitationId")]
-	[InverseProperty("Notifications")]
+	[InverseProperty(nameof(Tables.UserGroupInvitation.Notifications))]
 	public virtual UserGroupInvitation? UserGroupInvitation { get; set; }
 
 	[PgName("notification_type_enum")]

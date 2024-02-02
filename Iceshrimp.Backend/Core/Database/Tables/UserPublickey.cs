@@ -19,6 +19,6 @@ public class UserPublickey {
 	public string KeyPem { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty("UserPublickey")]
+	[InverseProperty(nameof(Tables.User.UserPublickey))]
 	public virtual User User { get; set; } = null!;
 }

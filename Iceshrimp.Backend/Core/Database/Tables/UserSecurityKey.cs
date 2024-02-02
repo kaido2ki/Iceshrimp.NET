@@ -37,6 +37,6 @@ public class UserSecurityKey {
 	public string Name { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty("UserSecurityKeys")]
+	[InverseProperty(nameof(Tables.User.UserSecurityKeys))]
 	public virtual User User { get; set; } = null!;
 }

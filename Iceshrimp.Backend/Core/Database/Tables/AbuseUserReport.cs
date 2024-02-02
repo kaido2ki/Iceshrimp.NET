@@ -58,14 +58,14 @@ public class AbuseUserReport {
 	[Column("forwarded")] public bool Forwarded { get; set; }
 
 	[ForeignKey("AssigneeId")]
-	[InverseProperty("AbuseUserReportAssignees")]
+	[InverseProperty(nameof(User.AbuseUserReportAssignees))]
 	public virtual User? Assignee { get; set; }
 
 	[ForeignKey("ReporterId")]
-	[InverseProperty("AbuseUserReportReporters")]
+	[InverseProperty(nameof(User.AbuseUserReportReporters))]
 	public virtual User Reporter { get; set; } = null!;
 
 	[ForeignKey("TargetUserId")]
-	[InverseProperty("AbuseUserReportTargetUsers")]
+	[InverseProperty(nameof(User.AbuseUserReportTargetUsers))]
 	public virtual User TargetUser { get; set; } = null!;
 }

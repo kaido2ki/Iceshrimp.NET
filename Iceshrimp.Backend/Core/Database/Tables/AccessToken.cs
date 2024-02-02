@@ -51,13 +51,13 @@ public class AccessToken {
 	[Column("fetched")] public bool Fetched { get; set; }
 
 	[ForeignKey("AppId")]
-	[InverseProperty("AccessTokens")]
+	[InverseProperty(nameof(Tables.App.AccessTokens))]
 	public virtual App? App { get; set; }
 
-	[InverseProperty("AppAccessToken")]
+	[InverseProperty(nameof(Notification.AppAccessToken))]
 	public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
 	[ForeignKey("UserId")]
-	[InverseProperty("AccessTokens")]
+	[InverseProperty(nameof(Tables.User.AccessTokens))]
 	public virtual User User { get; set; } = null!;
 }

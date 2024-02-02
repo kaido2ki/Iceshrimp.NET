@@ -68,15 +68,15 @@ public class Antenna {
 	public string Instances { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty("Antennas")]
+	[InverseProperty(nameof(Tables.User.Antennas))]
 	public virtual User User { get; set; } = null!;
 
 	[ForeignKey("UserGroupMemberId")]
-	[InverseProperty("Antennas")]
+	[InverseProperty(nameof(Tables.UserGroupMember.Antennas))]
 	public virtual UserGroupMember? UserGroupMember { get; set; }
 
 	[ForeignKey("UserListId")]
-	[InverseProperty("Antennas")]
+	[InverseProperty(nameof(Tables.UserList.Antennas))]
 	public virtual UserList? UserList { get; set; }
 
 	[PgName("antenna_src_enum")]

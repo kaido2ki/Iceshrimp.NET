@@ -39,10 +39,10 @@ public class Muting {
 	[Column("expiresAt")] public DateTime? ExpiresAt { get; set; }
 
 	[ForeignKey("MuteeId")]
-	[InverseProperty("MutingMutees")]
+	[InverseProperty(nameof(User.MutingMutees))]
 	public virtual User Mutee { get; set; } = null!;
 
 	[ForeignKey("MuterId")]
-	[InverseProperty("MutingMuters")]
+	[InverseProperty(nameof(User.MutingMuters))]
 	public virtual User Muter { get; set; } = null!;
 }

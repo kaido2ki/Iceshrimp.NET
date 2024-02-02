@@ -28,6 +28,6 @@ public class Signin {
 	[Column("success")] public bool Success { get; set; }
 
 	[ForeignKey("UserId")]
-	[InverseProperty("Signins")]
+	[InverseProperty(nameof(Tables.User.Signins))]
 	public virtual User User { get; set; } = null!;
 }

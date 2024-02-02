@@ -38,7 +38,7 @@ public class Poll {
 	public string? UserHost { get; set; }
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("Poll")]
+	[InverseProperty(nameof(Tables.Note.Poll))]
 	public virtual Note Note { get; set; } = null!;
 
 	/// <summary>

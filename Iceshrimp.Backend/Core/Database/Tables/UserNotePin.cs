@@ -24,10 +24,10 @@ public class UserNotePin {
 	[Column("noteId")] [StringLength(32)] public string NoteId { get; set; } = null!;
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("UserNotePins")]
+	[InverseProperty(nameof(Tables.Note.UserNotePins))]
 	public virtual Note Note { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty("UserNotePins")]
+	[InverseProperty(nameof(Tables.User.UserNotePins))]
 	public virtual User User { get; set; } = null!;
 }

@@ -155,11 +155,11 @@ public class UserProfile {
 	public string Mentions { get; set; } = null!;
 
 	[ForeignKey("PinnedPageId")]
-	[InverseProperty("UserProfile")]
+	[InverseProperty(nameof(Page.UserProfile))]
 	public virtual Page? PinnedPage { get; set; }
 
 	[ForeignKey("UserId")]
-	[InverseProperty("UserProfile")]
+	[InverseProperty(nameof(Tables.User.UserProfile))]
 	public virtual User User { get; set; } = null!;
 
 	[PgName("user_profile_ffvisibility_enum")]

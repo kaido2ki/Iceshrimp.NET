@@ -41,9 +41,9 @@ public class Clip {
 	[StringLength(2048)]
 	public string? Description { get; set; }
 
-	[InverseProperty("Clip")] public virtual ICollection<ClipNote> ClipNotes { get; set; } = new List<ClipNote>();
+	[InverseProperty(nameof(ClipNote.Clip))] public virtual ICollection<ClipNote> ClipNotes { get; set; } = new List<ClipNote>();
 
 	[ForeignKey("UserId")]
-	[InverseProperty("Clips")]
+	[InverseProperty(nameof(Tables.User.Clips))]
 	public virtual User User { get; set; } = null!;
 }

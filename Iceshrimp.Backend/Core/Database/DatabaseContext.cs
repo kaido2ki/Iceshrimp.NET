@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using EntityFrameworkCore.Projectables.Infrastructure;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
@@ -106,6 +107,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 
 	public static void Configure(DbContextOptionsBuilder optionsBuilder, NpgsqlDataSource dataSource) {
 		optionsBuilder.UseNpgsql(dataSource);
+		optionsBuilder.UseProjectables(options => {
+			options.CompatibilityMode(CompatibilityMode.Limited);
+		});
 	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder) {
@@ -348,9 +352,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.FollowerSharedInbox).HasComment("[Denormalized]");
 			entity.Property(e => e.RequestId).HasComment("id of Follow Activity.");
 
-			entity.HasOne(d => d.Followee).WithMany(p => p.FollowRequestFollowees);
+			entity.HasOne(d => d.Followee).WithMany(p => p.IncomingFollowRequests);
 
-			entity.HasOne(d => d.Follower).WithMany(p => p.FollowRequestFollowers);
+			entity.HasOne(d => d.Follower).WithMany(p => p.OutgoingFollowRequests);
 		});
 
 		modelBuilder.Entity<Following>(entity => {
@@ -364,9 +368,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.FollowerInbox).HasComment("[Denormalized]");
 			entity.Property(e => e.FollowerSharedInbox).HasComment("[Denormalized]");
 
-			entity.HasOne(d => d.Followee).WithMany(p => p.FollowingFollowees);
+			entity.HasOne(d => d.Followee).WithMany(p => p.IncomingFollowRelationships);
 
-			entity.HasOne(d => d.Follower).WithMany(p => p.FollowingFollowers);
+			entity.HasOne(d => d.Follower).WithMany(p => p.OutgoingFollowRelationships);
 		});
 
 		modelBuilder.Entity<GalleryLike>(entity => {

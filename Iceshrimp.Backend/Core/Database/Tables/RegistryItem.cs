@@ -52,6 +52,6 @@ public class RegistryItem {
 	public string? Value { get; set; }
 
 	[ForeignKey("UserId")]
-	[InverseProperty("RegistryItems")]
+	[InverseProperty(nameof(Tables.User.RegistryItems))]
 	public virtual User User { get; set; } = null!;
 }

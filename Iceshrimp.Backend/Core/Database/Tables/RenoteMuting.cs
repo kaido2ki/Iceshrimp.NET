@@ -36,10 +36,10 @@ public class RenoteMuting {
 	public string MuterId { get; set; } = null!;
 
 	[ForeignKey("MuteeId")]
-	[InverseProperty("RenoteMutingMutees")]
+	[InverseProperty(nameof(User.RenoteMutingMutees))]
 	public virtual User Mutee { get; set; } = null!;
 
 	[ForeignKey("MuterId")]
-	[InverseProperty("RenoteMutingMuters")]
+	[InverseProperty(nameof(User.RenoteMutingMuters))]
 	public virtual User Muter { get; set; } = null!;
 }

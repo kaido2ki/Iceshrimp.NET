@@ -57,10 +57,10 @@ public class GalleryPost {
 	[Column("tags", TypeName = "character varying(128)[]")]
 	public List<string> Tags { get; set; } = null!;
 
-	[InverseProperty("Post")]
+	[InverseProperty(nameof(GalleryLike.Post))]
 	public virtual ICollection<GalleryLike> GalleryLikes { get; set; } = new List<GalleryLike>();
 
 	[ForeignKey("UserId")]
-	[InverseProperty("GalleryPosts")]
+	[InverseProperty(nameof(Tables.User.GalleryPosts))]
 	public virtual User User { get; set; } = null!;
 }

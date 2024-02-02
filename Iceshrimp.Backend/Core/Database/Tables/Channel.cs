@@ -65,18 +65,18 @@ public class Channel {
 	public int UsersCount { get; set; }
 
 	[ForeignKey("BannerId")]
-	[InverseProperty("Channels")]
+	[InverseProperty(nameof(DriveFile.Channels))]
 	public virtual DriveFile? Banner { get; set; }
 
-	[InverseProperty("Followee")]
+	[InverseProperty(nameof(ChannelFollowing.Followee))]
 	public virtual ICollection<ChannelFollowing> ChannelFollowings { get; set; } = new List<ChannelFollowing>();
 
-	[InverseProperty("Channel")]
+	[InverseProperty(nameof(ChannelNotePin.Channel))]
 	public virtual ICollection<ChannelNotePin> ChannelNotePins { get; set; } = new List<ChannelNotePin>();
 
-	[InverseProperty("Channel")] public virtual ICollection<Note> Notes { get; set; } = new List<Note>();
+	[InverseProperty(nameof(Note.Channel))] public virtual ICollection<Note> Notes { get; set; } = new List<Note>();
 
 	[ForeignKey("UserId")]
-	[InverseProperty("Channels")]
+	[InverseProperty(nameof(Tables.User.Channels))]
 	public virtual User? User { get; set; }
 }
