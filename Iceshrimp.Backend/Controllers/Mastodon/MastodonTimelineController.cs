@@ -32,7 +32,7 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 		                    .Take(40)
 		                    .ToListAsync();
 
-		return Ok(notes);
+		return Ok(notes.Select(async p => await noteRenderer.RenderAsync(p)));
 	}
 
 	[AuthorizeOauth("read:statuses")]
@@ -46,6 +46,6 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 		                    .Take(40)
 		                    .ToListAsync();
 
-		return Ok(notes);
+		return Ok(notes.Select(async p => await noteRenderer.RenderAsync(p)));
 	}
 }
