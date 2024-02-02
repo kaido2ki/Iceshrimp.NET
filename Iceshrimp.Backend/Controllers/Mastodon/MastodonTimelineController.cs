@@ -27,6 +27,7 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 	public async Task<IActionResult> GetHomeTimeline() {
 		var user = HttpContext.GetOauthUser() ?? throw new GracefulException("Failed to get user from HttpContext");
 		var notes = await db.Notes
+		                    .WithIncludes()
 		                    .IsFollowedBy(user)
 		                    .OrderByIdDesc()
 		                    .Take(40)
@@ -41,6 +42,7 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
 	public async Task<IActionResult> GetPublicTimeline() {
 		var notes = await db.Notes
+		                    .WithIncludes()
 		                    .HasVisibility(Note.NoteVisibility.Public)
 		                    .OrderByIdDesc()
 		                    .Take(40)

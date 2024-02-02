@@ -1,8 +1,17 @@
 using Iceshrimp.Backend.Core.Database.Tables;
+using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Helpers;
 
 public static class QueryHelpers {
+	public static IQueryable<Note> WithIncludes(this IQueryable<Note> query) {
+		return query.Include(p => p.User)
+		            .Include(p => p.Renote)
+		            .ThenInclude(p => p != null ? p.User : null)
+		            .Include(p => p.Reply)
+		            .ThenInclude(p => p != null ? p.User : null);
+	}
+
 	public static IQueryable<Note> HasVisibility(this IQueryable<Note> query, Note.NoteVisibility visibility) {
 		return query.Where(note => note.Visibility == visibility);
 	}
