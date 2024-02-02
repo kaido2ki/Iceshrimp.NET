@@ -17,10 +17,19 @@ public static class MfmParser {
 		new AltUrlNodeParser(),
 		new LinkNodeParser(),
 		new SilentLinkNodeParser(),
-		new InlineCodeNodeParser()
+		new InlineCodeNodeParser(),
+		new EmojiCodeNodeParser(),
+		new MathInlineNodeParser(),
+		new MathBlockNodeParser(),
+		new CodeBlockParser()
 	];
 
+	/// <remarks>
+	///     This intentionally doesn't implement the node type UnicodeEmojiNode, both for performance and because it's not
+	///     needed for backend processing
+	/// </remarks>
 	public static IEnumerable<MfmNode> Parse(string buffer, int position = 0, int nestLimit = 20) {
+		if (nestLimit <= 0) return [];
 		var nodes = new List<MfmNode>();
 		while (position < buffer.Length) {
 			var parser = Parsers.FirstOrDefault(p => p.IsValid(buffer, position));
@@ -396,5 +405,91 @@ internal class SilentLinkNodeParser : INodeParser {
 	}
 }
 
-//TODO: still missing: FnNode, MathInlineNode, EmojiCodeNode, UnicodeEmojiNode, MfmMathBlockNode, MfmCodeBlockNode, MfmSearchNode, MfmQuoteNode
+internal class EmojiCodeNodeParser : INodeParser {
+	private const           string Char = ":";
+	private static readonly Regex  Full = new("^[a-z0-9_+-]+$");
+
+	public bool IsValid(string buffer, int position) {
+		if (!buffer[position..].StartsWith(Char))
+			return false;
+
+		var (start, end, _) = NodeParserAbstractions.HandlePosition(Char, buffer, position);
+		return end != buffer.Length && Full.IsMatch(buffer[start..end]);
+	}
+
+	public (MfmNode node, int chars) Parse(string buffer, int position, int nestLimit) {
+		var (start, end, chars) = NodeParserAbstractions.HandlePosition(Char, buffer, position);
+
+		var node = new MfmEmojiCodeNode {
+			Name = buffer[start..end]
+		};
+
+		return (node, chars);
+	}
+}
+
+internal class MathInlineNodeParser : INodeParser {
+	private const string Pre  = @"\(";
+	private const string Post = @"\)";
+
+	public bool IsValid(string buffer, int position) {
+		return buffer[position..].StartsWith(Pre);
+	}
+
+	public (MfmNode node, int chars) Parse(string buffer, int position, int nestLimit) {
+		var (start, end, chars) = NodeParserAbstractions.HandlePosition(Pre, Post, buffer, position);
+
+		var node = new MfmMathInlineNode {
+			Formula = buffer[start..end]
+		};
+
+		return (node, chars);
+	}
+}
+
+internal class MathBlockNodeParser : INodeParser {
+	private const string Pre  = @"\[";
+	private const string Post = @"\]";
+
+	public bool IsValid(string buffer, int position) {
+		return buffer[position..].StartsWith(Pre);
+	}
+
+	public (MfmNode node, int chars) Parse(string buffer, int position, int nestLimit) {
+		var (start, end, chars) = NodeParserAbstractions.HandlePosition(Pre, Post, buffer, position);
+
+		var node = new MfmMathBlockNode {
+			Formula = buffer[start..end]
+		};
+
+		return (node, chars);
+	}
+}
+
+internal class CodeBlockParser : INodeParser {
+	private const string Char = "```";
+
+	public bool IsValid(string buffer, int position) {
+		if (!buffer[position..].StartsWith(Char)) return false;
+
+		var (start, end, _) = NodeParserAbstractions.HandlePosition(Char, buffer, position);
+		return buffer[start..end].EndsWith('\n');
+	}
+
+	public (MfmNode node, int chars) Parse(string buffer, int position, int nestLimit) {
+		var (start, end, chars) = NodeParserAbstractions.HandlePosition(Char, buffer, position);
+		var split = buffer[start..end].Split('\n');
+		var lang  = split[0].Length > 0 ? split[0] : null;
+		var code  = string.Join('\n', split[1..^1]);
+
+		var node = new MfmCodeBlockNode {
+			Code     = code,
+			Language = lang
+		};
+
+		return (node, chars);
+	}
+}
+
+//TODO: still missing: FnNode, MfmSearchNode, MfmQuoteNode
 //TODO: "*italic **bold** *" doesn't work yet
