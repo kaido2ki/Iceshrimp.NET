@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
-public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db) {
+public class UserRenderer(IOptions<Config.InstanceSection> config) {
 	private readonly string _transparent = $"https://{config.Value.WebDomain}/assets/transparent.png";
 
 	public async Task<Account> RenderAsync(User user, UserProfile? profile) {

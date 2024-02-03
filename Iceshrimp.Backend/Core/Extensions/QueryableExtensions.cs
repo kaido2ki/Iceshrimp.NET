@@ -8,13 +8,17 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class NoteQueryableExtensions {
-	public static IQueryable<Note> WithIncludes(this IQueryable<Note> query) {
+	public static IQueryable<Note> IncludeCommonProperties(this IQueryable<Note> query) {
 		return query.Include(p => p.User)
 		            .ThenInclude(p => p.UserProfile)
 		            .Include(p => p.Renote)
 		            .ThenInclude(p => p != null ? p.User : null)
 		            .Include(p => p.Reply)
 		            .ThenInclude(p => p != null ? p.User : null);
+	}
+
+	public static IQueryable<User> IncludeCommonProperties(this IQueryable<User> query) {
+		return query.Include(p => p.UserProfile);
 	}
 
 	public static IQueryable<Note> Paginate(this IQueryable<Note> query, PaginationQuery p, int defaultLimit,

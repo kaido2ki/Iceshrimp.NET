@@ -26,7 +26,7 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 	public async Task<IActionResult> GetHomeTimeline(PaginationQuery query) {
 		var user = HttpContext.GetOauthUser() ?? throw new GracefulException("Failed to get user from HttpContext");
 		var res = await db.Notes
-		                  .WithIncludes()
+		                  .IncludeCommonProperties()
 		                  .FilterByFollowingAndOwn(user)
 		                  .Paginate(query, 20, 40)
 		                  .RenderAllForMastodonAsync(noteRenderer);
@@ -40,7 +40,7 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
 	public async Task<IActionResult> GetPublicTimeline(PaginationQuery query) {
 		var res = await db.Notes
-		                  .WithIncludes()
+		                  .IncludeCommonProperties()
 		                  .HasVisibility(Note.NoteVisibility.Public)
 		                  .Paginate(query, 20, 40)
 		                  .RenderAllForMastodonAsync(noteRenderer);
