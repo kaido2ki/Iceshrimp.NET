@@ -37,12 +37,15 @@ public class ErrorHandlerMiddleware(IOptions<Config.SecuritySection> options, IL
 					Source     = verbosity == ExceptionVerbosity.Full ? type : null,
 					RequestId  = ctx.TraceIdentifier
 				});
-				if (ce.Details != null)
-					logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message} - {details}",
-					                ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message, ce.Details);
-				else
-					logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message}",
-					                ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message);
+
+				if (!ce.SuppressLog) {
+					if (ce.Details != null)
+						logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message} - {details}",
+						                ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message, ce.Details);
+					else
+						logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message}",
+						                ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message);
+				}
 			}
 			else {
 				ctx.Response.StatusCode = 500;
@@ -66,12 +69,14 @@ public class GracefulException(
 	string error,
 	string message,
 	string? details = null,
-	bool overrideBasic = false)
-	: Exception(message) {
+	bool supressLog = false,
+	bool overrideBasic = false
+) : Exception(message) {
 	public readonly string?        Details       = details;
 	public readonly string         Error         = error;
 	public readonly bool           OverrideBasic = overrideBasic;
 	public readonly HttpStatusCode StatusCode    = statusCode;
+	public readonly bool           SuppressLog   = supressLog;
 
 	public GracefulException(HttpStatusCode statusCode, string message, string? details = null) :
 		this(statusCode, statusCode.ToString(), message, details) { }
@@ -105,7 +110,7 @@ public class GracefulException(
 
 	public static GracefulException MisdirectedRequest() {
 		return new GracefulException(HttpStatusCode.MisdirectedRequest, HttpStatusCode.MisdirectedRequest.ToString(),
-		                             "This server is not configured to respond to this request.", null, true);
+		                             "This server is not configured to respond to this request.", null, true, true);
 	}
 }
 
