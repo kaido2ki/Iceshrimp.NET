@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EntityFrameworkCore.Projectables;
 using Microsoft.EntityFrameworkCore;
@@ -275,7 +274,8 @@ public class User {
 	[InverseProperty(nameof(AnnouncementRead.User))]
 	public virtual ICollection<AnnouncementRead> AnnouncementReads { get; set; } = new List<AnnouncementRead>();
 
-	[InverseProperty(nameof(Antenna.User))] public virtual ICollection<Antenna> Antennas { get; set; } = new List<Antenna>();
+	[InverseProperty(nameof(Antenna.User))]
+	public virtual ICollection<Antenna> Antennas { get; set; } = new List<Antenna>();
 
 	[InverseProperty(nameof(App.User))] public virtual ICollection<App> Apps { get; set; } = new List<App>();
 
@@ -294,20 +294,26 @@ public class User {
 	[InverseProperty(nameof(DriveFile.UserBanner))]
 	public virtual DriveFile? Banner { get; set; }
 
-	[InverseProperty(nameof(Blocking.Blockee))]
-	public virtual ICollection<Blocking> BlockingBlockees { get; set; } = new List<Blocking>();
+	[InverseProperty(nameof(Tables.Blocking.Blockee))]
+	public virtual ICollection<Blocking> IncomingBlocks { get; set; } = new List<Blocking>();
 
-	[InverseProperty(nameof(Blocking.Blocker))]
-	public virtual ICollection<Blocking> BlockingBlockers { get; set; } = new List<Blocking>();
+	[InverseProperty(nameof(Tables.Blocking.Blocker))]
+	public virtual ICollection<Blocking> OutgoingBlocks { get; set; } = new List<Blocking>();
+
+	[Projectable] public virtual IEnumerable<User> BlockedBy => IncomingBlocks.Select(p => p.Blocker);
+
+	[Projectable] public virtual IEnumerable<User> Blocking => OutgoingBlocks.Select(p => p.Blockee);
 
 	[InverseProperty(nameof(ChannelFollowing.Follower))]
 	public virtual ICollection<ChannelFollowing> ChannelFollowings { get; set; } = new List<ChannelFollowing>();
 
-	[InverseProperty(nameof(Channel.User))] public virtual ICollection<Channel> Channels { get; set; } = new List<Channel>();
+	[InverseProperty(nameof(Channel.User))]
+	public virtual ICollection<Channel> Channels { get; set; } = new List<Channel>();
 
 	[InverseProperty(nameof(Clip.User))] public virtual ICollection<Clip> Clips { get; set; } = new List<Clip>();
 
-	[InverseProperty(nameof(DriveFile.User))] public virtual ICollection<DriveFile> DriveFiles { get; set; } = new List<DriveFile>();
+	[InverseProperty(nameof(DriveFile.User))]
+	public virtual ICollection<DriveFile> DriveFiles { get; set; } = new List<DriveFile>();
 
 	[InverseProperty(nameof(DriveFolder.User))]
 	public virtual ICollection<DriveFolder> DriveFolders { get; set; } = new List<DriveFolder>();
@@ -324,17 +330,9 @@ public class User {
 	[InverseProperty(nameof(Tables.Following.Follower))]
 	public virtual ICollection<Following> OutgoingFollowRelationships { get; set; } = new List<Following>();
 
-	[Projectable]
-	public virtual IEnumerable<User> Followers => IncomingFollowRelationships.Select(p => p.Follower);
+	[Projectable] public virtual IEnumerable<User> Followers => IncomingFollowRelationships.Select(p => p.Follower);
 
-	[Projectable]
-	public virtual IEnumerable<User> Following => OutgoingFollowRelationships.Select(p => p.Followee);
-
-	[Projectable]
-	public bool IsFollowedBy(User user) => Followers.Contains(user);
-	
-	[Projectable]
-	public bool IsFollowing(User user) => Following.Contains(user);
+	[Projectable] public virtual IEnumerable<User> Following => OutgoingFollowRelationships.Select(p => p.Followee);
 
 	[InverseProperty(nameof(GalleryLike.User))]
 	public virtual ICollection<GalleryLike> GalleryLikes { get; set; } = new List<GalleryLike>();
@@ -342,7 +340,8 @@ public class User {
 	[InverseProperty(nameof(GalleryPost.User))]
 	public virtual ICollection<GalleryPost> GalleryPosts { get; set; } = new List<GalleryPost>();
 
-	[InverseProperty(nameof(Tables.HtmlUserCacheEntry.User))] public virtual HtmlUserCacheEntry? HtmlUserCacheEntry { get; set; }
+	[InverseProperty(nameof(Tables.HtmlUserCacheEntry.User))]
+	public virtual HtmlUserCacheEntry? HtmlUserCacheEntry { get; set; }
 
 	[InverseProperty(nameof(MessagingMessage.Recipient))]
 	public virtual ICollection<MessagingMessage> MessagingMessageRecipients { get; set; } =
@@ -354,9 +353,15 @@ public class User {
 	[InverseProperty(nameof(ModerationLog.User))]
 	public virtual ICollection<ModerationLog> ModerationLogs { get; set; } = new List<ModerationLog>();
 
-	[InverseProperty(nameof(Muting.Mutee))] public virtual ICollection<Muting> MutingMutees { get; set; } = new List<Muting>();
+	[InverseProperty(nameof(Tables.Muting.Mutee))]
+	public virtual ICollection<Muting> IncomingMutes { get; set; } = new List<Muting>();
 
-	[InverseProperty(nameof(Muting.Muter))] public virtual ICollection<Muting> MutingMuters { get; set; } = new List<Muting>();
+	[InverseProperty(nameof(Tables.Muting.Muter))]
+	public virtual ICollection<Muting> OutgoingMutes { get; set; } = new List<Muting>();
+
+	[Projectable] public virtual IEnumerable<User> MutedBy => IncomingMutes.Select(p => p.Muter);
+
+	[Projectable] public virtual IEnumerable<User> Muting => OutgoingMutes.Select(p => p.Mutee);
 
 	[InverseProperty(nameof(NoteFavorite.User))]
 	public virtual ICollection<NoteFavorite> NoteFavorites { get; set; } = new List<NoteFavorite>();
@@ -367,7 +372,8 @@ public class User {
 	[InverseProperty(nameof(NoteThreadMuting.User))]
 	public virtual ICollection<NoteThreadMuting> NoteThreadMutings { get; set; } = new List<NoteThreadMuting>();
 
-	[InverseProperty(nameof(NoteUnread.User))] public virtual ICollection<NoteUnread> NoteUnreads { get; set; } = new List<NoteUnread>();
+	[InverseProperty(nameof(NoteUnread.User))]
+	public virtual ICollection<NoteUnread> NoteUnreads { get; set; } = new List<NoteUnread>();
 
 	[InverseProperty(nameof(NoteWatching.User))]
 	public virtual ICollection<NoteWatching> NoteWatchings { get; set; } = new List<NoteWatching>();
@@ -380,9 +386,11 @@ public class User {
 	[InverseProperty(nameof(Notification.Notifier))]
 	public virtual ICollection<Notification> NotificationNotifiers { get; set; } = new List<Notification>();
 
-	[InverseProperty(nameof(OauthToken.User))] public virtual ICollection<OauthToken> OauthTokens { get; set; } = new List<OauthToken>();
+	[InverseProperty(nameof(OauthToken.User))]
+	public virtual ICollection<OauthToken> OauthTokens { get; set; } = new List<OauthToken>();
 
-	[InverseProperty(nameof(PageLike.User))] public virtual ICollection<PageLike> PageLikes { get; set; } = new List<PageLike>();
+	[InverseProperty(nameof(PageLike.User))]
+	public virtual ICollection<PageLike> PageLikes { get; set; } = new List<PageLike>();
 
 	[InverseProperty(nameof(Page.User))] public virtual ICollection<Page> Pages { get; set; } = new List<Page>();
 
@@ -390,9 +398,11 @@ public class User {
 	public virtual ICollection<PasswordResetRequest> PasswordResetRequests { get; set; } =
 		new List<PasswordResetRequest>();
 
-	[InverseProperty(nameof(PollVote.User))] public virtual ICollection<PollVote> PollVotes { get; set; } = new List<PollVote>();
+	[InverseProperty(nameof(PollVote.User))]
+	public virtual ICollection<PollVote> PollVotes { get; set; } = new List<PollVote>();
 
-	[InverseProperty(nameof(PromoRead.User))] public virtual ICollection<PromoRead> PromoReads { get; set; } = new List<PromoRead>();
+	[InverseProperty(nameof(PromoRead.User))]
+	public virtual ICollection<PromoRead> PromoReads { get; set; } = new List<PromoRead>();
 
 	[InverseProperty(nameof(RegistryItem.User))]
 	public virtual ICollection<RegistryItem> RegistryItems { get; set; } = new List<RegistryItem>();
@@ -403,9 +413,11 @@ public class User {
 	[InverseProperty(nameof(RenoteMuting.Muter))]
 	public virtual ICollection<RenoteMuting> RenoteMutingMuters { get; set; } = new List<RenoteMuting>();
 
-	[InverseProperty(nameof(Session.User))] public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
+	[InverseProperty(nameof(Session.User))]
+	public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
 
-	[InverseProperty(nameof(Signin.User))] public virtual ICollection<Signin> Signins { get; set; } = new List<Signin>();
+	[InverseProperty(nameof(Signin.User))]
+	public virtual ICollection<Signin> Signins { get; set; } = new List<Signin>();
 
 	[InverseProperty(nameof(SwSubscription.User))]
 	public virtual ICollection<SwSubscription> SwSubscriptions { get; set; } = new List<SwSubscription>();
@@ -417,24 +429,48 @@ public class User {
 	[InverseProperty(nameof(UserGroupMember.User))]
 	public virtual ICollection<UserGroupMember> UserGroupMemberships { get; set; } = new List<UserGroupMember>();
 
-	[InverseProperty(nameof(UserGroup.User))] public virtual ICollection<UserGroup> UserGroups { get; set; } = new List<UserGroup>();
+	[InverseProperty(nameof(UserGroup.User))]
+	public virtual ICollection<UserGroup> UserGroups { get; set; } = new List<UserGroup>();
 
-	[InverseProperty(nameof(Tables.UserKeypair.User))] public virtual UserKeypair? UserKeypair { get; set; }
+	[InverseProperty(nameof(Tables.UserKeypair.User))]
+	public virtual UserKeypair? UserKeypair { get; set; }
 
 	[InverseProperty(nameof(UserListMember.User))]
 	public virtual ICollection<UserListMember> UserListMembers { get; set; } = new List<UserListMember>();
 
-	[InverseProperty(nameof(UserList.User))] public virtual ICollection<UserList> UserLists { get; set; } = new List<UserList>();
+	[InverseProperty(nameof(UserList.User))]
+	public virtual ICollection<UserList> UserLists { get; set; } = new List<UserList>();
 
 	[InverseProperty(nameof(UserNotePin.User))]
 	public virtual ICollection<UserNotePin> UserNotePins { get; set; } = new List<UserNotePin>();
 
-	[InverseProperty(nameof(Tables.UserProfile.User))] public virtual UserProfile? UserProfile { get; set; }
+	[InverseProperty(nameof(Tables.UserProfile.User))]
+	public virtual UserProfile? UserProfile { get; set; }
 
-	[InverseProperty(nameof(Tables.UserPublickey.User))] public virtual UserPublickey? UserPublickey { get; set; }
+	[InverseProperty(nameof(Tables.UserPublickey.User))]
+	public virtual UserPublickey? UserPublickey { get; set; }
 
 	[InverseProperty(nameof(UserSecurityKey.User))]
 	public virtual ICollection<UserSecurityKey> UserSecurityKeys { get; set; } = new List<UserSecurityKey>();
 
-	[InverseProperty(nameof(Webhook.User))] public virtual ICollection<Webhook> Webhooks { get; set; } = new List<Webhook>();
+	[InverseProperty(nameof(Webhook.User))]
+	public virtual ICollection<Webhook> Webhooks { get; set; } = new List<Webhook>();
+
+	[Projectable]
+	public bool IsBlockedBy(User user) => BlockedBy.Contains(user);
+
+	[Projectable]
+	public bool IsBlocking(User user) => Blocking.Contains(user);
+
+	[Projectable]
+	public bool IsFollowedBy(User user) => Followers.Contains(user);
+
+	[Projectable]
+	public bool IsFollowing(User user) => Following.Contains(user);
+
+	[Projectable]
+	public bool IsMutedBy(User user) => MutedBy.Contains(user);
+
+	[Projectable]
+	public bool IsMuting(User user) => Muting.Contains(user);
 }

@@ -107,9 +107,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 
 	public static void Configure(DbContextOptionsBuilder optionsBuilder, NpgsqlDataSource dataSource) {
 		optionsBuilder.UseNpgsql(dataSource);
-		optionsBuilder.UseProjectables(options => {
-			options.CompatibilityMode(CompatibilityMode.Limited);
-		});
+		optionsBuilder.UseProjectables(options => { options.CompatibilityMode(CompatibilityMode.Full); });
 	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder) {
@@ -222,9 +220,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.BlockerId).HasComment("The blocker user ID.");
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Blocking.");
 
-			entity.HasOne(d => d.Blockee).WithMany(p => p.BlockingBlockees);
+			entity.HasOne(d => d.Blockee).WithMany(p => p.IncomingBlocks);
 
-			entity.HasOne(d => d.Blocker).WithMany(p => p.BlockingBlockers);
+			entity.HasOne(d => d.Blocker).WithMany(p => p.OutgoingBlocks);
 		});
 
 		modelBuilder.Entity<Channel>(entity => {
@@ -513,9 +511,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.MuteeId).HasComment("The mutee user ID.");
 			entity.Property(e => e.MuterId).HasComment("The muter user ID.");
 
-			entity.HasOne(d => d.Mutee).WithMany(p => p.MutingMutees);
+			entity.HasOne(d => d.Mutee).WithMany(p => p.IncomingMutes);
 
-			entity.HasOne(d => d.Muter).WithMany(p => p.MutingMuters);
+			entity.HasOne(d => d.Muter).WithMany(p => p.OutgoingMutes);
 		});
 
 		modelBuilder.Entity<Note>(entity => {

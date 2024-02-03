@@ -53,6 +53,35 @@ public static class NoteQueryableExtensions {
 		return query.Where(note => note.User == user || note.User.IsFollowedBy(user));
 	}
 
+	public static IQueryable<Note> EnsureVisibleFor(this IQueryable<Note> query, User? user) {
+		if (user == null)
+			return query.Where(note => note.VisibilityIsPublicOrHome)
+			            .Where(note => !note.LocalOnly);
+
+		return query.Where(note => note.IsVisibleFor(user));
+	}
+
+	public static IQueryable<Note> FilterBlocked(this IQueryable<Note> query, User user) {
+		return query.Where(note => !note.User.IsBlocking(user) && !note.User.IsBlockedBy(user))
+		            .Where(note => note.Renote == null ||
+		                           (!note.Renote.User.IsBlockedBy(user) && !note.Renote.User.IsBlocking(user)))
+		            .Where(note => note.Reply == null ||
+		                           (!note.Reply.User.IsBlockedBy(user) && !note.Reply.User.IsBlocking(user)));
+	}
+
+	public static IQueryable<Note> FilterMuted(this IQueryable<Note> query, User user) {
+		//TODO: handle muted instances
+
+		return query.Where(note => !note.User.IsMuting(user))
+		            .Where(note => note.Renote == null || !note.Renote.User.IsMuting(user))
+		            .Where(note => note.Reply == null || !note.Reply.User.IsMuting(user));
+	}
+
+	public static IQueryable<Note> FilterHiddenListMembers(this IQueryable<Note> query, User user) {
+		return query.Where(note => note.User.UserListMembers.Any(p => p.UserList.User == user &&
+		                                                              p.UserList.HideFromHomeTl));
+	}
+
 	public static async Task<IEnumerable<Status>> RenderAllForMastodonAsync(
 		this IQueryable<Note> notes, NoteRenderer renderer) {
 		var list = await notes.ToListAsync();

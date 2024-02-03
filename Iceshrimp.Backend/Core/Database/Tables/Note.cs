@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
+using EntityFrameworkCore.Projectables;
 using Microsoft.EntityFrameworkCore;
 using NpgsqlTypes;
 
@@ -72,6 +74,11 @@ public class Note {
 	public string UserId { get; set; } = null!;
 
 	[Column("visibility")] public NoteVisibility Visibility { get; set; }
+
+	[Projectable]
+	[SuppressMessage("ReSharper", "MergeIntoLogicalPattern",
+	                 Justification = "Projectable expression cannot contain patterns")]
+	public bool VisibilityIsPublicOrHome => Visibility == NoteVisibility.Public || Visibility == NoteVisibility.Home;
 
 	[Column("localOnly")] public bool LocalOnly { get; set; }
 
@@ -179,15 +186,18 @@ public class Note {
 	[InverseProperty(nameof(ChannelNotePin.Note))]
 	public virtual ICollection<ChannelNotePin> ChannelNotePins { get; set; } = new List<ChannelNotePin>();
 
-	[InverseProperty(nameof(ClipNote.Note))] public virtual ICollection<ClipNote> ClipNotes { get; set; } = new List<ClipNote>();
+	[InverseProperty(nameof(ClipNote.Note))]
+	public virtual ICollection<ClipNote> ClipNotes { get; set; } = new List<ClipNote>();
 
-	[InverseProperty(nameof(Tables.HtmlNoteCacheEntry.Note))] public virtual HtmlNoteCacheEntry? HtmlNoteCacheEntry { get; set; }
+	[InverseProperty(nameof(Tables.HtmlNoteCacheEntry.Note))]
+	public virtual HtmlNoteCacheEntry? HtmlNoteCacheEntry { get; set; }
 
 	[InverseProperty(nameof(Renote))] public virtual ICollection<Note> InverseRenote { get; set; } = new List<Note>();
 
 	[InverseProperty(nameof(Reply))] public virtual ICollection<Note> InverseReply { get; set; } = new List<Note>();
 
-	[InverseProperty(nameof(NoteEdit.Note))] public virtual ICollection<NoteEdit> NoteEdits { get; set; } = new List<NoteEdit>();
+	[InverseProperty(nameof(NoteEdit.Note))]
+	public virtual ICollection<NoteEdit> NoteEdits { get; set; } = new List<NoteEdit>();
 
 	[InverseProperty(nameof(NoteFavorite.Note))]
 	public virtual ICollection<NoteFavorite> NoteFavorites { get; set; } = new List<NoteFavorite>();
@@ -195,7 +205,8 @@ public class Note {
 	[InverseProperty(nameof(NoteReaction.Note))]
 	public virtual ICollection<NoteReaction> NoteReactions { get; set; } = new List<NoteReaction>();
 
-	[InverseProperty(nameof(NoteUnread.Note))] public virtual ICollection<NoteUnread> NoteUnreads { get; set; } = new List<NoteUnread>();
+	[InverseProperty(nameof(NoteUnread.Note))]
+	public virtual ICollection<NoteUnread> NoteUnreads { get; set; } = new List<NoteUnread>();
 
 	[InverseProperty(nameof(NoteWatching.Note))]
 	public virtual ICollection<NoteWatching> NoteWatchings { get; set; } = new List<NoteWatching>();
@@ -203,13 +214,17 @@ public class Note {
 	[InverseProperty(nameof(Notification.Note))]
 	public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
-	[InverseProperty(nameof(Tables.Poll.Note))] public virtual Poll? Poll { get; set; }
+	[InverseProperty(nameof(Tables.Poll.Note))]
+	public virtual Poll? Poll { get; set; }
 
-	[InverseProperty(nameof(PollVote.Note))] public virtual ICollection<PollVote> PollVotes { get; set; } = new List<PollVote>();
+	[InverseProperty(nameof(PollVote.Note))]
+	public virtual ICollection<PollVote> PollVotes { get; set; } = new List<PollVote>();
 
-	[InverseProperty(nameof(Tables.PromoNote.Note))] public virtual PromoNote? PromoNote { get; set; }
+	[InverseProperty(nameof(Tables.PromoNote.Note))]
+	public virtual PromoNote? PromoNote { get; set; }
 
-	[InverseProperty(nameof(PromoRead.Note))] public virtual ICollection<PromoRead> PromoReads { get; set; } = new List<PromoRead>();
+	[InverseProperty(nameof(PromoRead.Note))]
+	public virtual ICollection<PromoRead> PromoReads { get; set; } = new List<PromoRead>();
 
 	[ForeignKey("RenoteId")]
 	[InverseProperty(nameof(InverseRenote))]
@@ -225,4 +240,12 @@ public class Note {
 
 	[InverseProperty(nameof(UserNotePin.Note))]
 	public virtual ICollection<UserNotePin> UserNotePins { get; set; } = new List<UserNotePin>();
+
+	[Projectable]
+	public bool IsVisibleFor(User user) => VisibilityIsPublicOrHome
+	                                       || User == user
+	                                       || VisibleUserIds.Contains(user.Id)
+	                                       || Mentions.Any(p => p == user.Id)
+	                                       || (Visibility == NoteVisibility.Followers &&
+	                                           (User.IsFollowedBy(user) || ReplyUserId == user.Id));
 }
