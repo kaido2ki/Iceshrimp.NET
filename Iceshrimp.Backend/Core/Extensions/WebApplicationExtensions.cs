@@ -10,6 +10,7 @@ public static class WebApplicationExtensions {
 	public static IApplicationBuilder UseCustomMiddleware(this IApplicationBuilder app) {
 		// Caution: make sure these are in the correct order
 		return app.UseMiddleware<ErrorHandlerMiddleware>()
+		          .UseMiddleware<RequestVerificationMiddleware>()
 		          .UseMiddleware<RequestBufferingMiddleware>()
 		          .UseMiddleware<AuthenticationMiddleware>()
 		          .UseMiddleware<AuthorizationMiddleware>()

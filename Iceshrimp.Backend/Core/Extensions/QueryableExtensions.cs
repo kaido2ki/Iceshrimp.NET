@@ -32,7 +32,7 @@ public static class NoteQueryableExtensions {
 	) where T : IEntity {
 		if (pq.Limit is < 1)
 			throw GracefulException.BadRequest("Limit cannot be less than 1");
-		
+
 		if (pq is { SinceId: not null, MinId: not null })
 			throw GracefulException.BadRequest("Can't use sinceId and minId params simultaneously");
 

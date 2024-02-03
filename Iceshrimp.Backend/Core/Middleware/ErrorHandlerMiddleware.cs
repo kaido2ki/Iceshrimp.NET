@@ -25,6 +25,9 @@ public class ErrorHandlerMiddleware(IOptions<Config.SecuritySection> options, IL
 			var verbosity = options.Value.ExceptionVerbosity;
 
 			if (e is GracefulException ce) {
+				if (verbosity > ExceptionVerbosity.Basic && ce.OverrideBasic)
+					verbosity = ExceptionVerbosity.Basic;
+
 				ctx.Response.StatusCode = (int)ce.StatusCode;
 				await ctx.Response.WriteAsJsonAsync(new ErrorResponse {
 					StatusCode = ctx.Response.StatusCode,
@@ -58,11 +61,17 @@ public class ErrorHandlerMiddleware(IOptions<Config.SecuritySection> options, IL
 	}
 }
 
-public class GracefulException(HttpStatusCode statusCode, string error, string message, string? details = null)
+public class GracefulException(
+	HttpStatusCode statusCode,
+	string error,
+	string message,
+	string? details = null,
+	bool overrideBasic = false)
 	: Exception(message) {
-	public readonly string?        Details    = details;
-	public readonly string         Error      = error;
-	public readonly HttpStatusCode StatusCode = statusCode;
+	public readonly string?        Details       = details;
+	public readonly string         Error         = error;
+	public readonly bool           OverrideBasic = overrideBasic;
+	public readonly HttpStatusCode StatusCode    = statusCode;
 
 	public GracefulException(HttpStatusCode statusCode, string message, string? details = null) :
 		this(statusCode, statusCode.ToString(), message, details) { }
@@ -85,13 +94,18 @@ public class GracefulException(HttpStatusCode statusCode, string error, string m
 	public static GracefulException NotFound(string message, string? details = null) {
 		return new GracefulException(HttpStatusCode.NotFound, message, details);
 	}
-	
+
 	public static GracefulException BadRequest(string message, string? details = null) {
 		return new GracefulException(HttpStatusCode.BadRequest, message, details);
 	}
 
 	public static GracefulException RecordNotFound() {
 		return new GracefulException(HttpStatusCode.NotFound, "Record not found");
+	}
+
+	public static GracefulException MisdirectedRequest() {
+		return new GracefulException(HttpStatusCode.MisdirectedRequest, HttpStatusCode.MisdirectedRequest.ToString(),
+		                             "This server is not configured to respond to this request.", null, true);
 	}
 }
 
