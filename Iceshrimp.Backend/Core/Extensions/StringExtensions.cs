@@ -21,22 +21,14 @@ public static class StringExtensions {
 [SuppressMessage("ReSharper", "StringCompareToIsCultureSpecific")]
 public static class ProjectableStringExtensions {
 	[Projectable]
-	public static bool IsLessThan(this string a, string b) {
-		return a.CompareTo(b) < 0;
-	}
+	public static bool IsLessThan(this string a, string b) => a.CompareTo(b) < 0;
 
 	[Projectable]
-	public static bool IsLessOrEqualTo(this string a, string b) {
-		return a.CompareTo(b) <= 0;
-	}
+	public static bool IsLessOrEqualTo(this string a, string b) => a.CompareTo(b) <= 0;
 
 	[Projectable]
-	public static bool IsGreaterThan(this string a, string b) {
-		return a.CompareTo(b) > 0;
-	}
+	public static bool IsGreaterThan(this string a, string b) => a.CompareTo(b) > 0;
 
 	[Projectable]
-	public static bool IsGreaterOrEqualTo(this string a, string b) {
-		return a.CompareTo(b) >= 0;
-	}
+	public static bool IsGreaterOrEqualTo(this string a, string b) => a.CompareTo(b) >= 0;
 }
