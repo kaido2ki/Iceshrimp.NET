@@ -23,13 +23,12 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 	[HttpGet("home")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
-	public async Task<IActionResult> GetHomeTimeline() {
+	public async Task<IActionResult> GetHomeTimeline(PaginationQuery query) {
 		var user = HttpContext.GetOauthUser() ?? throw new GracefulException("Failed to get user from HttpContext");
 		var res = await db.Notes
 		                  .WithIncludes()
 		                  .FilterByFollowingAndOwn(user)
-		                  .OrderByIdDesc()
-		                  .Take(40)
+		                  .Paginate(query, 20, 40)
 		                  .RenderAllForMastodonAsync(noteRenderer);
 
 		return Ok(res);
@@ -39,13 +38,12 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 	[HttpGet("public")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
-	public async Task<IActionResult> GetPublicTimeline() {
+	public async Task<IActionResult> GetPublicTimeline(PaginationQuery query) {
 		var res = await db.Notes
-		                    .WithIncludes()
-		                    .HasVisibility(Note.NoteVisibility.Public)
-		                    .OrderByIdDesc()
-		                    .Take(40)
-		                    .RenderAllForMastodonAsync(noteRenderer);
+		                  .WithIncludes()
+		                  .HasVisibility(Note.NoteVisibility.Public)
+		                  .Paginate(query, 20, 40)
+		                  .RenderAllForMastodonAsync(noteRenderer);
 
 		return Ok(res);
 	}
