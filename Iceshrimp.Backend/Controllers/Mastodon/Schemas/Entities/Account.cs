@@ -1,9 +1,9 @@
+using Iceshrimp.Backend.Core.Database;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class Account {
-	[J("id")]              public required string   Id                 { get; set; }
+public class Account : IEntity {
 	[J("username")]        public required string   Username           { get; set; }
 	[J("acct")]            public required string   Acct               { get; set; }
 	[J("fqn")]             public required string   FullyQualifiedName { get; set; }
@@ -23,7 +23,8 @@ public class Account {
 	[J("bot")]             public required bool     IsBot              { get; set; }
 	[J("discoverable")]    public required bool     IsDiscoverable     { get; set; }
 
-	[J("source")] public object?  Source => null; //FIXME
-	[J("fields")] public object[] Fields => [];   //FIXME
-	[J("emojis")] public object[] Emoji  => [];   //FIXME
+	[J("source")] public          object?  Source => null; //FIXME
+	[J("fields")] public          object[] Fields => [];   //FIXME
+	[J("emojis")] public          object[] Emoji  => [];   //FIXME
+	[J("id")]     public required string   Id     { get; set; }
 }

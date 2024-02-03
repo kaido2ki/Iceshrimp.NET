@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
@@ -14,6 +15,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Tags("Mastodon")]
 [Route("/api/v1/timelines")]
 [AuthenticateOauth]
+[LinkPagination(20, 40)]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
@@ -32,7 +34,7 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 		                  .FilterHiddenListMembers(user)
 		                  .FilterBlocked(user)
 		                  .FilterMuted(user)
-		                  .Paginate(query, 20, 40)
+		                  .Paginate(query, ControllerContext)
 		                  .RenderAllForMastodonAsync(noteRenderer);
 
 		return Ok(res);
@@ -50,7 +52,7 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 		                  .HasVisibility(Note.NoteVisibility.Public)
 		                  .FilterBlocked(user)
 		                  .FilterMuted(user)
-		                  .Paginate(query, 20, 40)
+		                  .Paginate(query, ControllerContext)
 		                  .RenderAllForMastodonAsync(noteRenderer);
 
 		return Ok(res);

@@ -20,12 +20,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("AvatarId", IsUnique = true)]
 [Index("BannerId", IsUnique = true)]
 [Index("Token", IsUnique = true)]
-public class User {
-	[Key]
-	[Column("id")]
-	[StringLength(32)]
-	public string Id { get; set; } = null!;
-
+public class User : IEntity {
 	/// <summary>
 	///     The created date of the User.
 	/// </summary>
@@ -455,6 +450,11 @@ public class User {
 
 	[InverseProperty(nameof(Webhook.User))]
 	public virtual ICollection<Webhook> Webhooks { get; set; } = new List<Webhook>();
+
+	[Key]
+	[Column("id")]
+	[StringLength(32)]
+	public string Id { get; set; } = null!;
 
 	[Projectable]
 	public bool IsBlockedBy(User user) => BlockedBy.Contains(user);

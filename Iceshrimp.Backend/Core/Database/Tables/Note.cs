@@ -25,7 +25,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("Id", "UserHost")]
 [Index("Url")]
 [Index("UserId", "Id")]
-public class Note {
+public class Note : IEntity {
 	[PgName("note_visibility_enum")]
 	public enum NoteVisibility {
 		[PgName("public")]    Public,
@@ -34,11 +34,6 @@ public class Note {
 		[PgName("specified")] Specified,
 		[PgName("hidden")]    Hidden
 	}
-
-	[Key]
-	[Column("id")]
-	[StringLength(32)]
-	public string Id { get; set; } = null!;
 
 	/// <summary>
 	///     The created date of the Note.
@@ -240,6 +235,11 @@ public class Note {
 
 	[InverseProperty(nameof(UserNotePin.Note))]
 	public virtual ICollection<UserNotePin> UserNotePins { get; set; } = new List<UserNotePin>();
+
+	[Key]
+	[Column("id")]
+	[StringLength(32)]
+	public string Id { get; set; } = null!;
 
 	[Projectable]
 	public bool IsVisibleFor(User user) => VisibilityIsPublicOrHome

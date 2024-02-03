@@ -1,8 +1,11 @@
+using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Extensions;
@@ -21,28 +24,48 @@ public static class NoteQueryableExtensions {
 		return query.Include(p => p.UserProfile);
 	}
 
-	public static IQueryable<Note> Paginate(this IQueryable<Note> query, PaginationQuery p, int defaultLimit,
-	                                        int maxLimit) {
-		if (p is { SinceId: not null, MinId: not null })
+	public static IQueryable<T> Paginate<T>(
+		this IQueryable<T> query,
+		PaginationQuery pq,
+		int defaultLimit,
+		int maxLimit
+	) where T : IEntity {
+		if (pq.Limit is < 1)
+			throw GracefulException.BadRequest("Limit cannot be less than 1");
+		
+		if (pq is { SinceId: not null, MinId: not null })
 			throw GracefulException.BadRequest("Can't use sinceId and minId params simultaneously");
 
-		query = p switch {
+		query = pq switch {
 			{ SinceId: not null, MaxId: not null } => query
-			                                          .Where(note => note.Id.IsGreaterThan(p.SinceId) &&
-			                                                         note.Id.IsLessThan(p.MaxId))
-			                                          .OrderByDescending(note => note.Id),
+			                                          .Where(p => p.Id.IsGreaterThan(pq.SinceId) &&
+			                                                      p.Id.IsLessThan(pq.MaxId))
+			                                          .OrderByDescending(p => p.Id),
 			{ MinId: not null, MaxId: not null } => query
-			                                        .Where(note => note.Id.IsGreaterThan(p.MinId) &&
-			                                                       note.Id.IsLessThan(p.MaxId))
-			                                        .OrderBy(note => note.Id),
-			{ SinceId: not null } => query.Where(note => note.Id.IsGreaterThan(p.SinceId))
-			                              .OrderByDescending(note => note.Id),
-			{ MinId: not null } => query.Where(note => note.Id.IsGreaterThan(p.MinId)).OrderBy(note => note.Id),
-			{ MaxId: not null } => query.Where(note => note.Id.IsLessThan(p.MaxId)).OrderByDescending(note => note.Id),
-			_                   => query.OrderByDescending(note => note.Id)
+			                                        .Where(p => p.Id.IsGreaterThan(pq.MinId) &&
+			                                                    p.Id.IsLessThan(pq.MaxId))
+			                                        .OrderBy(p => p.Id),
+			{ SinceId: not null } => query.Where(note => note.Id.IsGreaterThan(pq.SinceId))
+			                              .OrderByDescending(p => p.Id),
+			{ MinId: not null } => query.Where(p => p.Id.IsGreaterThan(pq.MinId)).OrderBy(p => p.Id),
+			{ MaxId: not null } => query.Where(p => p.Id.IsLessThan(pq.MaxId)).OrderByDescending(p => p.Id),
+			_                   => query.OrderByDescending(p => p.Id)
 		};
 
-		return query.Take(Math.Min(p.Limit ?? defaultLimit, maxLimit));
+		return query.Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
+	}
+
+	public static IQueryable<T> Paginate<T>(
+		this IQueryable<T> query,
+		PaginationQuery pq,
+		ControllerContext context
+	) where T : IEntity {
+		var filter = context.ActionDescriptor.FilterDescriptors.Select(p => p.Filter).OfType<LinkPaginationAttribute>()
+		                    .FirstOrDefault();
+		if (filter == null)
+			throw new GracefulException("Route doesn't have a LinkPaginationAttribute");
+
+		return Paginate(query, pq, filter.DefaultLimit, filter.MaxLimit);
 	}
 
 	public static IQueryable<Note> HasVisibility(this IQueryable<Note> query, Note.NoteVisibility visibility) {

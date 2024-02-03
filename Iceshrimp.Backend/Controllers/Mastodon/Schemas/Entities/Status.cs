@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
@@ -6,11 +7,10 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class Status {
+public class Status : IEntity {
 	[J("text")] [JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public required string? Text;
 
-	[J("id")]                     public required string  Id             { get; set; }
 	[J("uri")]                    public required string  Uri            { get; set; }
 	[J("url")]                    public required string  Url            { get; set; }
 	[J("account")]                public required Account Account        { get; set; }
@@ -51,6 +51,8 @@ public class Status {
 	[J("application")]       public object?  Application => null; //FIXME
 
 	[J("language")] public string? Language => null; //FIXME
+
+	[J("id")] public required string Id { get; set; }
 
 	public static string EncodeVisibility(Note.NoteVisibility visibility) {
 		return visibility switch {
