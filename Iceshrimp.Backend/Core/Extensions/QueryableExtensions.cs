@@ -10,6 +10,7 @@ namespace Iceshrimp.Backend.Core.Extensions;
 public static class NoteQueryableExtensions {
 	public static IQueryable<Note> WithIncludes(this IQueryable<Note> query) {
 		return query.Include(p => p.User)
+		            .ThenInclude(p => p.UserProfile)
 		            .Include(p => p.Renote)
 		            .ThenInclude(p => p != null ? p.User : null)
 		            .Include(p => p.Reply)
@@ -34,7 +35,7 @@ public static class NoteQueryableExtensions {
 			                              .OrderByDescending(note => note.Id),
 			{ MinId: not null } => query.Where(note => note.Id.IsGreaterThan(p.MinId)).OrderBy(note => note.Id),
 			{ MaxId: not null } => query.Where(note => note.Id.IsLessThan(p.MaxId)).OrderByDescending(note => note.Id),
-			_                   => query
+			_                   => query.OrderByDescending(note => note.Id)
 		};
 
 		return query.Take(Math.Min(p.Limit ?? defaultLimit, maxLimit));
@@ -48,13 +49,9 @@ public static class NoteQueryableExtensions {
 		return query.Where(note => note.User == user || note.User.IsFollowedBy(user));
 	}
 
-	public static IQueryable<Note> OrderByIdDesc(this IQueryable<Note> query) {
-		return query.OrderByDescending(note => note.Id);
-	}
-
 	public static async Task<IEnumerable<Status>> RenderAllForMastodonAsync(
 		this IQueryable<Note> notes, NoteRenderer renderer) {
 		var list = await notes.ToListAsync();
-		return await list.Select(renderer.RenderAsync).AwaitAllAsync();
+		return await renderer.RenderManyAsync(list);
 	}
 }

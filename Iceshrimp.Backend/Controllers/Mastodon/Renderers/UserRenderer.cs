@@ -44,7 +44,6 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 	}
 
 	public async Task<Account> RenderAsync(User user) {
-		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
-		return await RenderAsync(user, profile);
+		return await RenderAsync(user, user.UserProfile);
 	}
 }

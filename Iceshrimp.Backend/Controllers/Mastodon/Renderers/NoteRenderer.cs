@@ -1,7 +1,10 @@
+using System.Collections;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
@@ -41,5 +44,9 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, UserRenderer 
 		};
 
 		return res;
+	}
+
+	public async Task<IEnumerable<Status>> RenderManyAsync(IEnumerable<Note> notes) {
+		return await notes.Select(RenderAsync).AwaitAllAsync();
 	}
 }

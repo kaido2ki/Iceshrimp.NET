@@ -18,8 +18,12 @@ public class AuthenticationMiddleware(DatabaseContext db) : IMiddleware {
 				return;
 			}
 
-			var token   = header[7..];
-			var session = await db.Sessions.Include(p => p.User).FirstOrDefaultAsync(p => p.Token == token && p.Active);
+			var token = header[7..];
+			var session = await db.Sessions
+			                      .Include(p => p.User)
+			                      .ThenInclude(p => p.UserProfile)
+			                      .FirstOrDefaultAsync(p => p.Token == token && p.Active);
+
 			if (session == null) {
 				await next(ctx);
 				return;

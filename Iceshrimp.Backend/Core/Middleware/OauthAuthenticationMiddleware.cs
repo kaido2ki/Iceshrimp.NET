@@ -22,6 +22,7 @@ public class OauthAuthenticationMiddleware(DatabaseContext db) : IMiddleware {
 			header = header[7..];
 			var token = await db.OauthTokens
 			                    .Include(p => p.User)
+			                    .ThenInclude(p => p.UserProfile)
 			                    .Include(p => p.App)
 			                    .FirstOrDefaultAsync(p => p.Token == header && p.Active);
 
