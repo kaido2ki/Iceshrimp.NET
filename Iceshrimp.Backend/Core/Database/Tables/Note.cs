@@ -245,14 +245,15 @@ public class Note : IEntity {
 	public string Id { get; set; } = null!;
 
 	[Projectable]
-	public bool IsVisibleFor(User? user) => VisibilityIsPublicOrHome || (user != null && IsVisibleForUser(user));
+	public bool IsVisibleFor(User? user) => VisibilityIsPublicOrHome || (user != null && CheckComplexVisibility(user));
 
 	[Projectable]
-	public bool IsVisibleForUser(User user) => User == user
-	                                           || VisibleUserIds.Contains(user.Id)
-	                                           || Mentions.Contains(user.Id)
-	                                           || (Visibility == NoteVisibility.Followers &&
-	                                               (User.IsFollowedBy(user) || ReplyUserId == user.Id));
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Projectable chain must to be public")]
+	public bool CheckComplexVisibility(User user) => User == user
+	                                                 || VisibleUserIds.Contains(user.Id)
+	                                                 || Mentions.Contains(user.Id)
+	                                                 || (Visibility == NoteVisibility.Followers &&
+	                                                     (User.IsFollowedBy(user) || ReplyUserId == user.Id));
 
 	public Note WithPrecomputedVisibilities(bool reply, bool renote) {
 		if (Reply != null)
