@@ -14,25 +14,23 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240107190342_RenameGinIndicies")]
-    partial class RenameGinIndicies
+    [Migration("20240204220725_MergePostgresEnums")]
+    partial class MergePostgresEnums
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "8.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "antenna_src_enum", new[] { "home", "all", "users", "list", "group", "instances" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "note_visibility_enum", new[] { "public", "home", "followers", "specified", "hidden" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "note_visibility_enum", new[] { "public", "home", "followers", "specified" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "notification_type_enum", new[] { "follow", "mention", "reply", "renote", "quote", "reaction", "pollVote", "pollEnded", "receiveFollowRequest", "followRequestAccepted", "groupInvited", "app" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "page_visibility_enum", new[] { "public", "followers", "specified" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "poll_notevisibility_enum", new[] { "public", "home", "followers", "specified", "hidden" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "relay_status_enum", new[] { "requesting", "accepted", "rejected" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_profile_ffvisibility_enum", new[] { "public", "followers", "private" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_profile_mutingnotificationtypes_enum", new[] { "follow", "mention", "reply", "renote", "quote", "reaction", "pollVote", "pollEnded", "receiveFollowRequest", "followRequestAccepted", "groupInvited", "app" });
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pg_trgm");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
@@ -352,7 +350,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Property<string>("UserGroupMemberId")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
-                        .HasColumnName("UserGroupMemberId");
+                        .HasColumnName("userGroupMemberId");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -2085,7 +2083,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("objectStorageRegion");
 
-                    b.Property<bool>("ObjectStorageS3forcePathStyle")
+                    b.Property<bool>("ObjectStorageS3ForcePathStyle")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true)
@@ -3292,8 +3290,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("multiple");
 
-                    b.Property<LegacyModels.PollNoteVisibility>("NoteVisibility")
-                        .HasColumnType("poll_notevisibility_enum")
+                    b.Property<Note.NoteVisibility>("NoteVisibility")
+                        .HasColumnType("note_visibility_enum")
                         .HasColumnName("noteVisibility")
                         .HasComment("[Denormalized]");
 
@@ -3984,7 +3982,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex("Host");
 
+                    b.HasIndex("IsAdmin");
+
                     b.HasIndex("IsExplorable");
+
+                    b.HasIndex("IsModerator");
 
                     b.HasIndex("LastActiveDate");
 
@@ -4081,41 +4083,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .IsUnique();
 
                     b.ToTable("user_group_invitation");
-                });
-
-            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.UserGroupInvite", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("createdAt");
-
-                    b.Property<string>("UserGroupId")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("userGroupId");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("userId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserGroupId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "UserGroupId")
-                        .IsUnique();
-
-                    b.ToTable("user_group_invite");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.UserGroupMember", b =>
@@ -4480,12 +4447,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("mutedWords")
                         .HasDefaultValueSql("'[]'::jsonb");
 
-                    b.Property<List<LegacyModels.MutingNotificationType>>("MutingNotificationTypes")
+                    b.Property<List<Notification.NotificationType>>("MutingNotificationTypes")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("user_profile_mutingnotificationtypes_enum[]")
+                        .HasColumnType("notification_type_enum[]")
                         .HasColumnName("mutingNotificationTypes")
-                        .HasDefaultValueSql("'{}'::public.user_profile_mutingnotificationtypes_enum[]");
+                        .HasDefaultValueSql("'{}'::public.notification_type_enum[]");
 
                     b.Property<bool>("NoCrawle")
                         .ValueGeneratedOnAdd()
@@ -4720,6 +4687,25 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.ToTable("webhook");
                 });
 
+            modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FriendlyName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Xml")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataProtectionKeys");
+                });
+
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.AbuseUserReport", b =>
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Assignee")
@@ -4850,13 +4836,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Blocking", b =>
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Blockee")
-                        .WithMany("BlockingBlockees")
+                        .WithMany("IncomingBlocks")
                         .HasForeignKey("BlockeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Blocker")
-                        .WithMany("BlockingBlockers")
+                        .WithMany("OutgoingBlocks")
                         .HasForeignKey("BlockerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -4988,13 +4974,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.FollowRequest", b =>
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Followee")
-                        .WithMany("FollowRequestFollowees")
+                        .WithMany("IncomingFollowRequests")
                         .HasForeignKey("FolloweeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Follower")
-                        .WithMany("FollowRequestFollowers")
+                        .WithMany("OutgoingFollowRequests")
                         .HasForeignKey("FollowerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -5007,13 +4993,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Following", b =>
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Followee")
-                        .WithMany("FollowingFollowees")
+                        .WithMany("IncomingFollowRelationships")
                         .HasForeignKey("FolloweeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Follower")
-                        .WithMany("FollowingFollowers")
+                        .WithMany("OutgoingFollowRelationships")
                         .HasForeignKey("FollowerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -5121,13 +5107,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Muting", b =>
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Mutee")
-                        .WithMany("MutingMutees")
+                        .WithMany("IncomingMutes")
                         .HasForeignKey("MuteeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Muter")
-                        .WithMany("MutingMuters")
+                        .WithMany("OutgoingMutes")
                         .HasForeignKey("MuterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -5550,25 +5536,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Navigation("UserGroup");
                 });
 
-            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.UserGroupInvite", b =>
-                {
-                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.UserGroup", "UserGroup")
-                        .WithMany("UserGroupInvites")
-                        .HasForeignKey("UserGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "User")
-                        .WithMany("UserGroupInvites")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-
-                    b.Navigation("UserGroup");
-                });
-
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.UserGroupMember", b =>
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.UserGroup", "UserGroup")
@@ -5578,7 +5545,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .IsRequired();
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "User")
-                        .WithMany("UserGroupMembers")
+                        .WithMany("UserGroupMemberships")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -5827,10 +5794,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.Navigation("AuthSessions");
 
-                    b.Navigation("BlockingBlockees");
-
-                    b.Navigation("BlockingBlockers");
-
                     b.Navigation("ChannelFollowings");
 
                     b.Navigation("Channels");
@@ -5841,29 +5804,25 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.Navigation("DriveFolders");
 
-                    b.Navigation("FollowRequestFollowees");
-
-                    b.Navigation("FollowRequestFollowers");
-
-                    b.Navigation("FollowingFollowees");
-
-                    b.Navigation("FollowingFollowers");
-
                     b.Navigation("GalleryLikes");
 
                     b.Navigation("GalleryPosts");
 
                     b.Navigation("HtmlUserCacheEntry");
 
+                    b.Navigation("IncomingBlocks");
+
+                    b.Navigation("IncomingFollowRelationships");
+
+                    b.Navigation("IncomingFollowRequests");
+
+                    b.Navigation("IncomingMutes");
+
                     b.Navigation("MessagingMessageRecipients");
 
                     b.Navigation("MessagingMessageUsers");
 
                     b.Navigation("ModerationLogs");
-
-                    b.Navigation("MutingMutees");
-
-                    b.Navigation("MutingMuters");
 
                     b.Navigation("NoteFavorites");
 
@@ -5882,6 +5841,14 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Navigation("NotificationNotifiers");
 
                     b.Navigation("OauthTokens");
+
+                    b.Navigation("OutgoingBlocks");
+
+                    b.Navigation("OutgoingFollowRelationships");
+
+                    b.Navigation("OutgoingFollowRequests");
+
+                    b.Navigation("OutgoingMutes");
 
                     b.Navigation("PageLikes");
 
@@ -5907,9 +5874,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.Navigation("UserGroupInvitations");
 
-                    b.Navigation("UserGroupInvites");
-
-                    b.Navigation("UserGroupMembers");
+                    b.Navigation("UserGroupMemberships");
 
                     b.Navigation("UserGroups");
 
@@ -5935,8 +5900,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Navigation("MessagingMessages");
 
                     b.Navigation("UserGroupInvitations");
-
-                    b.Navigation("UserGroupInvites");
 
                     b.Navigation("UserGroupMembers");
                 });

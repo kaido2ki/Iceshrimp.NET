@@ -23,13 +23,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "antenna_src_enum", new[] { "home", "all", "users", "list", "group", "instances" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "note_visibility_enum", new[] { "public", "home", "followers", "specified", "hidden" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "note_visibility_enum", new[] { "public", "home", "followers", "specified" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "notification_type_enum", new[] { "follow", "mention", "reply", "renote", "quote", "reaction", "pollVote", "pollEnded", "receiveFollowRequest", "followRequestAccepted", "groupInvited", "app" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "page_visibility_enum", new[] { "public", "followers", "specified" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "poll_notevisibility_enum", new[] { "public", "home", "followers", "specified", "hidden" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "relay_status_enum", new[] { "requesting", "accepted", "rejected" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_profile_ffvisibility_enum", new[] { "public", "followers", "private" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_profile_mutingnotificationtypes_enum", new[] { "follow", "mention", "reply", "renote", "quote", "reaction", "pollVote", "pollEnded", "receiveFollowRequest", "followRequestAccepted", "groupInvited", "app" });
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pg_trgm");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
@@ -3289,8 +3287,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("multiple");
 
-                    b.Property<Poll.PollNoteVisibility>("NoteVisibility")
-                        .HasColumnType("poll_notevisibility_enum")
+                    b.Property<Note.NoteVisibility>("NoteVisibility")
+                        .HasColumnType("note_visibility_enum")
                         .HasColumnName("noteVisibility")
                         .HasComment("[Denormalized]");
 
@@ -4446,12 +4444,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("mutedWords")
                         .HasDefaultValueSql("'[]'::jsonb");
 
-                    b.Property<List<UserProfile.MutingNotificationType>>("MutingNotificationTypes")
+                    b.Property<List<Notification.NotificationType>>("MutingNotificationTypes")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("user_profile_mutingnotificationtypes_enum[]")
+                        .HasColumnType("notification_type_enum[]")
                         .HasColumnName("mutingNotificationTypes")
-                        .HasDefaultValueSql("'{}'::public.user_profile_mutingnotificationtypes_enum[]");
+                        .HasDefaultValueSql("'{}'::public.notification_type_enum[]");
 
                     b.Property<bool>("NoCrawle")
                         .ValueGeneratedOnAdd()
@@ -4835,13 +4833,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Blocking", b =>
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Blockee")
-                        .WithMany("BlockingBlockees")
+                        .WithMany("IncomingBlocks")
                         .HasForeignKey("BlockeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Blocker")
-                        .WithMany("BlockingBlockers")
+                        .WithMany("OutgoingBlocks")
                         .HasForeignKey("BlockerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -4973,13 +4971,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.FollowRequest", b =>
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Followee")
-                        .WithMany("FollowRequestFollowees")
+                        .WithMany("IncomingFollowRequests")
                         .HasForeignKey("FolloweeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Follower")
-                        .WithMany("FollowRequestFollowers")
+                        .WithMany("OutgoingFollowRequests")
                         .HasForeignKey("FollowerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -4992,13 +4990,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Following", b =>
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Followee")
-                        .WithMany("FollowingFollowees")
+                        .WithMany("IncomingFollowRelationships")
                         .HasForeignKey("FolloweeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Follower")
-                        .WithMany("FollowingFollowers")
+                        .WithMany("OutgoingFollowRelationships")
                         .HasForeignKey("FollowerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -5106,13 +5104,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Muting", b =>
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Mutee")
-                        .WithMany("MutingMutees")
+                        .WithMany("IncomingMutes")
                         .HasForeignKey("MuteeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Muter")
-                        .WithMany("MutingMuters")
+                        .WithMany("OutgoingMutes")
                         .HasForeignKey("MuterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -5793,10 +5791,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.Navigation("AuthSessions");
 
-                    b.Navigation("BlockingBlockees");
-
-                    b.Navigation("BlockingBlockers");
-
                     b.Navigation("ChannelFollowings");
 
                     b.Navigation("Channels");
@@ -5807,29 +5801,25 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.Navigation("DriveFolders");
 
-                    b.Navigation("FollowRequestFollowees");
-
-                    b.Navigation("FollowRequestFollowers");
-
-                    b.Navigation("FollowingFollowees");
-
-                    b.Navigation("FollowingFollowers");
-
                     b.Navigation("GalleryLikes");
 
                     b.Navigation("GalleryPosts");
 
                     b.Navigation("HtmlUserCacheEntry");
 
+                    b.Navigation("IncomingBlocks");
+
+                    b.Navigation("IncomingFollowRelationships");
+
+                    b.Navigation("IncomingFollowRequests");
+
+                    b.Navigation("IncomingMutes");
+
                     b.Navigation("MessagingMessageRecipients");
 
                     b.Navigation("MessagingMessageUsers");
 
                     b.Navigation("ModerationLogs");
-
-                    b.Navigation("MutingMutees");
-
-                    b.Navigation("MutingMuters");
 
                     b.Navigation("NoteFavorites");
 
@@ -5848,6 +5838,14 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Navigation("NotificationNotifiers");
 
                     b.Navigation("OauthTokens");
+
+                    b.Navigation("OutgoingBlocks");
+
+                    b.Navigation("OutgoingFollowRelationships");
+
+                    b.Navigation("OutgoingFollowRequests");
+
+                    b.Navigation("OutgoingMutes");
 
                     b.Navigation("PageLikes");
 

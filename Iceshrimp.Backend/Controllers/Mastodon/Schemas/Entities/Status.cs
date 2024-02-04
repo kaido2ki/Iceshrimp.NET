@@ -60,7 +60,6 @@ public class Status : IEntity {
 			Note.NoteVisibility.Home      => "unlisted",
 			Note.NoteVisibility.Followers => "private",
 			Note.NoteVisibility.Specified => "direct",
-			Note.NoteVisibility.Hidden    => throw new GracefulException("Cannot encode hidden visibility"), //FIXME
 			_                             => throw new GracefulException($"Unknown visibility: {visibility}")
 		};
 	}

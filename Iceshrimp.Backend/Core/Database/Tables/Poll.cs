@@ -45,14 +45,5 @@ public class Poll {
 	///     [Denormalized]
 	/// </summary>
 	[Column("noteVisibility")]
-	public PollNoteVisibility NoteVisibility { get; set; }
-	
-	[PgName("poll_notevisibility_enum")]
-	public enum PollNoteVisibility {
-		[PgName("public")]    Public,
-		[PgName("home")]      Home,
-		[PgName("followers")] Followers,
-		[PgName("specified")] Specified,
-		[PgName("hidden")]    Hidden
-	}
+	public Note.NoteVisibility NoteVisibility { get; set; }
 }

@@ -1433,7 +1433,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     votes = table.Column<List<int>>(type: "integer[]", nullable: false),
                     userId = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false, comment: "[Denormalized]"),
                     userHost = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true, comment: "[Denormalized]"),
-                    noteVisibility = table.Column<Poll.PollNoteVisibility>(type: "poll_notevisibility_enum", nullable: false, comment: "[Denormalized]")
+                    noteVisibility = table.Column<LegacyModels.PollNoteVisibility>(type: "poll_notevisibility_enum", nullable: false, comment: "[Denormalized]")
                 },
                 constraints: table =>
                 {
@@ -1581,7 +1581,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     fields = table.Column<string>(type: "jsonb", nullable: false, defaultValueSql: "'[]'::jsonb"),
                     url = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: true, comment: "Remote URL of the user."),
                     ffVisibility = table.Column<UserProfile.UserProfileFFVisibility>(type: "user_profile_ffvisibility_enum", nullable: false, defaultValue: UserProfile.UserProfileFFVisibility.Public),
-                    mutingNotificationTypes = table.Column<List<UserProfile.MutingNotificationType>>(type: "user_profile_mutingnotificationtypes_enum[]", nullable: false, defaultValueSql: "'{}'::public.user_profile_mutingnotificationtypes_enum[]"),
+                    mutingNotificationTypes = table.Column<List<LegacyModels.MutingNotificationType>>(type: "user_profile_mutingnotificationtypes_enum[]", nullable: false, defaultValueSql: "'{}'::public.user_profile_mutingnotificationtypes_enum[]"),
                     email = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true, comment: "The email address of the User."),
                     emailVerifyCode = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
                     emailVerified = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),

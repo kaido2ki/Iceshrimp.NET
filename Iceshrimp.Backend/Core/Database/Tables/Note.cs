@@ -31,8 +31,7 @@ public class Note : IEntity {
 		[PgName("public")]    Public,
 		[PgName("home")]      Home,
 		[PgName("followers")] Followers,
-		[PgName("specified")] Specified,
-		[PgName("hidden")]    Hidden
+		[PgName("specified")] Specified
 	}
 
 	/// <summary>

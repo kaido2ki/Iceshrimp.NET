@@ -97,10 +97,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		dataSourceBuilder.MapEnum<Note.NoteVisibility>();
 		dataSourceBuilder.MapEnum<Notification.NotificationType>();
 		dataSourceBuilder.MapEnum<Page.PageVisibility>();
-		dataSourceBuilder.MapEnum<Poll.PollNoteVisibility>(); // FIXME: WHY IS THIS ITS OWN ENUM
 		dataSourceBuilder.MapEnum<Relay.RelayStatus>();
 		dataSourceBuilder.MapEnum<UserProfile.UserProfileFFVisibility>();
-		dataSourceBuilder.MapEnum<UserProfile.MutingNotificationType>(); // FIXME: WHY IS THIS ITS OWN ENUM
 
 		return dataSourceBuilder.Build();
 	}
@@ -116,10 +114,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			.HasPostgresEnum<Note.NoteVisibility>()
 			.HasPostgresEnum<Notification.NotificationType>()
 			.HasPostgresEnum<Page.PageVisibility>()
-			.HasPostgresEnum<Poll.PollNoteVisibility>() //TODO: merge with regular notevisibility enum
 			.HasPostgresEnum<Relay.RelayStatus>()
 			.HasPostgresEnum<UserProfile.UserProfileFFVisibility>()
-			.HasPostgresEnum<UserProfile.MutingNotificationType>() //TODO: merge with regular notification types enum
 			.HasPostgresExtension("pg_trgm");
 
 		modelBuilder.Entity<AbuseUserReport>(entity => {
@@ -954,7 +950,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.UsePasswordLessLogin).HasDefaultValue(false);
 			entity.Property(e => e.UserHost).HasComment("[Denormalized]");
 			entity.Property(e => e.MutingNotificationTypes)
-			      .HasDefaultValueSql("'{}'::public.user_profile_mutingnotificationtypes_enum[]");
+			      .HasDefaultValueSql("'{}'::public.notification_type_enum[]");
 			entity.Property(e => e.FFVisibility)
 			      .HasDefaultValue(UserProfile.UserProfileFFVisibility.Public);
 
