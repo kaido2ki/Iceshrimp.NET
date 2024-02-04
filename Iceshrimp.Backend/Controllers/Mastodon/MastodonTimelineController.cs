@@ -35,6 +35,7 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 		                  .FilterBlocked(user)
 		                  .FilterMuted(user)
 		                  .Paginate(query, ControllerContext)
+		                  .PrecomputeVisibilities(user)
 		                  .RenderAllForMastodonAsync(noteRenderer);
 
 		return Ok(res);
@@ -53,6 +54,7 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 		                  .FilterBlocked(user)
 		                  .FilterMuted(user)
 		                  .Paginate(query, ControllerContext)
+		                  .PrecomputeVisibilities(user)
 		                  .RenderAllForMastodonAsync(noteRenderer);
 
 		return Ok(res);

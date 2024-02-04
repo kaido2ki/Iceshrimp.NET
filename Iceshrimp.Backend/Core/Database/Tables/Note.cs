@@ -236,16 +236,30 @@ public class Note : IEntity {
 	[InverseProperty(nameof(UserNotePin.Note))]
 	public virtual ICollection<UserNotePin> UserNotePins { get; set; } = new List<UserNotePin>();
 
+	[NotMapped] public bool? PrecomputedIsReplyVisible  { get; private set; } = false;
+	[NotMapped] public bool? PrecomputedIsRenoteVisible { get; private set; } = false;
+
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
 
 	[Projectable]
-	public bool IsVisibleFor(User user) => VisibilityIsPublicOrHome
-	                                       || User == user
-	                                       || VisibleUserIds.Contains(user.Id)
-	                                       || Mentions.Any(p => p == user.Id)
-	                                       || (Visibility == NoteVisibility.Followers &&
-	                                           (User.IsFollowedBy(user) || ReplyUserId == user.Id));
+	public bool IsVisibleFor(User? user) => VisibilityIsPublicOrHome || (user != null && IsVisibleForUser(user));
+
+	[Projectable]
+	public bool IsVisibleForUser(User user) => User == user
+	                                           || VisibleUserIds.Contains(user.Id)
+	                                           || Mentions.Contains(user.Id)
+	                                           || (Visibility == NoteVisibility.Followers &&
+	                                               (User.IsFollowedBy(user) || ReplyUserId == user.Id));
+
+	public Note WithPrecomputedVisibilities(bool reply, bool renote) {
+		if (Reply != null)
+			PrecomputedIsReplyVisible = reply;
+		if (Renote != null)
+			PrecomputedIsRenoteVisible = renote;
+
+		return this;
+	}
 }

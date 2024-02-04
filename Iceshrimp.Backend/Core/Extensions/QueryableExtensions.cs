@@ -84,6 +84,12 @@ public static class NoteQueryableExtensions {
 		return query.Where(note => note.IsVisibleFor(user));
 	}
 
+	public static IQueryable<Note> PrecomputeVisibilities(this IQueryable<Note> query, User? user) {
+		return query.Select(p => p.WithPrecomputedVisibilities(p.Reply != null && p.Reply.IsVisibleFor(user),
+		                                                       p.Renote != null &&
+		                                                       p.Renote.IsVisibleFor(user)));
+	}
+
 	public static IQueryable<Note> FilterBlocked(this IQueryable<Note> query, User user) {
 		return query.Where(note => !note.User.IsBlocking(user) && !note.User.IsBlockedBy(user))
 		            .Where(note => note.Renote == null ||
@@ -105,9 +111,21 @@ public static class NoteQueryableExtensions {
 		                                                              p.UserList.HideFromHomeTl));
 	}
 
+	public static IEnumerable<Note> EnforceRenoteReplyVisibility(this IList<Note> list) {
+		foreach (var note in list) {
+			if (!note.PrecomputedIsReplyVisible ?? false)
+				note.Reply = null;
+			if (!note.PrecomputedIsRenoteVisible ?? false)
+				note.Renote = null;
+		}
+
+		return list;
+	}
+
 	public static async Task<IEnumerable<Status>> RenderAllForMastodonAsync(
 		this IQueryable<Note> notes, NoteRenderer renderer) {
-		var list = await notes.ToListAsync();
+		var list = (await notes.ToListAsync())
+			.EnforceRenoteReplyVisibility();
 		return await renderer.RenderManyAsync(list);
 	}
 }
