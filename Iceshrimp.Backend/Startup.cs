@@ -29,8 +29,7 @@ builder.Services.AddViteServices(options => {
 	options.Server.AutoRun       = false; //TODO: Fix script generation on macOS
 	options.Server.UseFullDevUrl = true;
 });
-//TODO: single line only if there's no \n in the log msg (otherwise stacktraces don't work)
-builder.Services.AddLogging(logging => logging.AddSimpleConsole(options => { options.SingleLine = false; }));
+builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
 builder.Services.AddDatabaseContext(builder.Configuration); //TODO: maybe use a dbcontext factory?
 builder.Services.AddRedis(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
