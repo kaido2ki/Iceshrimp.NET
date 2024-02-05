@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
@@ -10,15 +11,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
-[ApiController]
-[Tags("Mastodon")]
+[MastodonApiController]
 [Route("/api/v1/statuses")]
-[AuthenticateOauth]
+[Authenticate]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
 public class MastodonStatusController(DatabaseContext db, NoteRenderer noteRenderer) : Controller {
 	[HttpGet("{id}")]
-	[AuthenticateOauth("read:statuses")]
+	[Authenticate("read:statuses")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Account))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]

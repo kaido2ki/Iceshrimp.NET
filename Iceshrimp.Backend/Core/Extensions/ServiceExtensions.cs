@@ -32,7 +32,6 @@ public static class ServiceExtensions {
 		services.AddScoped<WebFingerService>();
 		services.AddScoped<AuthorizedFetchMiddleware>();
 		services.AddScoped<AuthenticationMiddleware>();
-		services.AddScoped<OauthAuthenticationMiddleware>();
 
 		//TODO: make this prettier
 		services.AddScoped<Controllers.Mastodon.Renderers.UserRenderer>();
@@ -46,7 +45,6 @@ public static class ServiceExtensions {
 		services.AddSingleton<ErrorHandlerMiddleware>();
 		services.AddSingleton<RequestBufferingMiddleware>();
 		services.AddSingleton<AuthorizationMiddleware>();
-		services.AddSingleton<OauthAuthorizationMiddleware>();
 		services.AddSingleton<RequestVerificationMiddleware>();
 
 		// Hosted services = long running background tasks

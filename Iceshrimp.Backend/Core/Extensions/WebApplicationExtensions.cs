@@ -14,8 +14,6 @@ public static class WebApplicationExtensions {
 		          .UseMiddleware<RequestBufferingMiddleware>()
 		          .UseMiddleware<AuthenticationMiddleware>()
 		          .UseMiddleware<AuthorizationMiddleware>()
-		          .UseMiddleware<OauthAuthenticationMiddleware>()
-		          .UseMiddleware<OauthAuthorizationMiddleware>()
 		          .UseMiddleware<AuthorizedFetchMiddleware>();
 	}
 

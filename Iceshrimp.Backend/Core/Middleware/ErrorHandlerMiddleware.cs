@@ -1,5 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Microsoft.Extensions.Options;
@@ -24,25 +26,35 @@ public class ErrorHandlerMiddleware(IOptions<Config.SecuritySection> options, IL
 			var logger    = loggerFactory.CreateLogger(type);
 			var verbosity = options.Value.ExceptionVerbosity;
 
+			var isMastodon = ctx.GetEndpoint()?.Metadata.GetMetadata<MastodonApiControllerAttribute>() != null;
+
 			if (e is GracefulException ce) {
 				if (ce.StatusCode == HttpStatusCode.Accepted) {
 					ctx.Response.StatusCode = (int)ce.StatusCode;
 					await ctx.Response.CompleteAsync();
 					return;
 				}
-				
+
 				if (verbosity > ExceptionVerbosity.Basic && ce.OverrideBasic)
 					verbosity = ExceptionVerbosity.Basic;
 
-				ctx.Response.StatusCode = (int)ce.StatusCode;
-				await ctx.Response.WriteAsJsonAsync(new ErrorResponse {
-					StatusCode = ctx.Response.StatusCode,
-					Error      = verbosity >= ExceptionVerbosity.Basic ? ce.Error : ce.StatusCode.ToString(),
-					Message    = verbosity >= ExceptionVerbosity.Basic ? ce.Message : null,
-					Details    = verbosity == ExceptionVerbosity.Full ? ce.Details : null,
-					Source     = verbosity == ExceptionVerbosity.Full ? type : null,
-					RequestId  = ctx.TraceIdentifier
-				});
+				ctx.Response.StatusCode        = (int)ce.StatusCode;
+				ctx.Response.Headers.RequestId = ctx.TraceIdentifier;
+
+				if (isMastodon)
+					await ctx.Response.WriteAsJsonAsync(new MastodonErrorResponse {
+						Error       = verbosity >= ExceptionVerbosity.Basic ? ce.Message : ce.StatusCode.ToString(),
+						Description = verbosity >= ExceptionVerbosity.Basic ? ce.Details : null
+					});
+				else
+					await ctx.Response.WriteAsJsonAsync(new ErrorResponse {
+						StatusCode = ctx.Response.StatusCode,
+						Error      = verbosity >= ExceptionVerbosity.Basic ? ce.Error : ce.StatusCode.ToString(),
+						Message    = verbosity >= ExceptionVerbosity.Basic ? ce.Message : null,
+						Details    = verbosity == ExceptionVerbosity.Full ? ce.Details : null,
+						Source     = verbosity == ExceptionVerbosity.Full ? type : null,
+						RequestId  = ctx.TraceIdentifier
+					});
 
 				if (!ce.SuppressLog) {
 					if (ce.Details != null)
@@ -120,7 +132,8 @@ public class GracefulException(
 	}
 
 	/// <summary>
-	/// This is intended for cases where no error occured, but the request needs to be aborted early (e.g. WebFinger returning 410 Gone)
+	///     This is intended for cases where no error occured, but the request needs to be aborted early (e.g. WebFinger
+	///     returning 410 Gone)
 	/// </summary>
 	public static GracefulException Accepted(string message) {
 		return new GracefulException(HttpStatusCode.Accepted, message);

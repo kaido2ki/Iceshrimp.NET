@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -10,13 +11,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
-[ApiController]
-[Tags("Mastodon")]
+[MastodonApiController]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
 public class MastodonAuthController(DatabaseContext db) : Controller {
 	[HttpGet("/api/v1/apps/verify_credentials")]
-	[AuthenticateOauth]
+	[Authenticate]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.VerifyAppCredentialsResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]

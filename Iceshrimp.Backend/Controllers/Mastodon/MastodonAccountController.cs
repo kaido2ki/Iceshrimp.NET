@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
@@ -10,21 +11,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
-[ApiController]
-[Tags("Mastodon")]
+[MastodonApiController]
 [Route("/api/v1/accounts")]
-[AuthenticateOauth]
+[Authenticate]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
 public class MastodonAccountController(DatabaseContext db, UserRenderer userRenderer) : Controller {
-	[AuthorizeOauth("read:accounts")]
+	[Authorize("read:accounts")]
 	[HttpGet("verify_credentials")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Account))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> VerifyUserCredentials() {
-		var user = HttpContext.GetOauthUser() ?? throw new GracefulException("Failed to get user from HttpContext");
+		var user = HttpContext.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
 		var res  = await userRenderer.RenderAsync(user);
 		return Ok(res);
 	}
