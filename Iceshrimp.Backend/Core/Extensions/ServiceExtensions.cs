@@ -98,6 +98,7 @@ public static class ServiceExtensions {
 	}
 
 	public static void AddSwaggerGenWithOptions(this IServiceCollection services) {
+		services.AddEndpointsApiExplorer();
 		services.AddSwaggerGen(options => {
 			options.SwaggerDoc("v1", new OpenApiInfo { Title = "Iceshrimp.NET", Version = "1.0" });
 			options.AddSecurityDefinition("user", new OpenApiSecurityScheme {

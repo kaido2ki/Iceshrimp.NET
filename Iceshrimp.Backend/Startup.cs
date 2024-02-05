@@ -13,14 +13,13 @@ builder.Configuration
                    true, true);
 
 builder.Services.AddControllers(options => { options.ModelBinderProviders.AddHybridBindingProvider(); })
-       .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json
+       .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json (or we switch to LinkedData.NET)
        .AddMultiFormatter();
 builder.Services.AddApiVersioning(options => {
 	options.DefaultApiVersion               = new ApiVersion(1);
 	options.ReportApiVersions               = true;
 	options.UnsupportedApiVersionStatusCode = 501;
 });
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGenWithOptions();
 builder.Services.AddRazorPages();
 builder.Services.AddViteServices(options => {
@@ -30,7 +29,7 @@ builder.Services.AddViteServices(options => {
 	options.Server.UseFullDevUrl = true;
 });
 builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
-builder.Services.AddDatabaseContext(builder.Configuration); //TODO: maybe use a dbcontext factory?
+builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddRedis(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
 
