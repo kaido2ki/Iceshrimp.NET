@@ -22,9 +22,15 @@ public class Account : IEntity {
 	[J("moved")]           public required Account? MovedToAccount     { get; set; }
 	[J("bot")]             public required bool     IsBot              { get; set; }
 	[J("discoverable")]    public required bool     IsDiscoverable     { get; set; }
+	[J("fields")]          public required Field[]  Fields             { get; set; }
 
 	[J("source")] public          object?  Source => null; //FIXME
-	[J("fields")] public          object[] Fields => [];   //FIXME
 	[J("emojis")] public          object[] Emoji  => [];   //FIXME
 	[J("id")]     public required string   Id     { get; set; }
+}
+
+public class Field {
+	[J("name")]        public required string  Name       { get; set; }
+	[J("value")]       public required string  Value      { get; set; }
+	[J("verified_at")] public          string? VerifiedAt { get; set; }
 }

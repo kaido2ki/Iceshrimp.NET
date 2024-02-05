@@ -81,7 +81,7 @@ public class Note : IEntity {
 	[Column("repliesCount")] public short RepliesCount { get; set; }
 
 	[Column("reactions", TypeName = "jsonb")]
-	public string Reactions { get; set; } = null!;
+	public Dictionary<string, long> Reactions { get; set; } = null!;
 
 	/// <summary>
 	///     The URI of a note. it will be null when the note is local.

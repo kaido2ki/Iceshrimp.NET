@@ -40,7 +40,7 @@ public class Antenna {
 	public string? UserListId { get; set; }
 
 	[Column("keywords", TypeName = "jsonb")]
-	public string Keywords { get; set; } = null!;
+	public List<List<string>> Keywords { get; set; } = [];
 
 	[Column("withFile")] public bool WithFile { get; set; }
 
@@ -62,10 +62,11 @@ public class Antenna {
 	public List<string> Users { get; set; } = null!;
 
 	[Column("excludeKeywords", TypeName = "jsonb")]
-	public string ExcludeKeywords { get; set; } = null!;
+	public List<List<string>> ExcludeKeywords { get; set; } = [];
 
+	//TODO: refactor this column (this should have been a varchar[]) 
 	[Column("instances", TypeName = "jsonb")]
-	public string Instances { get; set; } = null!;
+	public List<string> Instances { get; set; } = [];
 
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.Antennas))]

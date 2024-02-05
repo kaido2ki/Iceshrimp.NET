@@ -55,9 +55,11 @@ public class Page {
 	[StringLength(32)]
 	public string? EyeCatchingImageId { get; set; }
 
+	//TODO: refactor this column (it's currently a Dictionary<string, any>, which is terrible) 
 	[Column("content", TypeName = "jsonb")]
 	public string Content { get; set; } = null!;
 
+	//TODO: refactor this column (it's currently a Dictionary<string, any>, which is terrible) 
 	[Column("variables", TypeName = "jsonb")]
 	public string Variables { get; set; } = null!;
 

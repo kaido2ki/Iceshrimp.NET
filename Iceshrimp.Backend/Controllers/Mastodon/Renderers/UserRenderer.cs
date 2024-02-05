@@ -37,7 +37,8 @@ public class UserRenderer(IOptions<Config.InstanceSection> config) {
 			HeaderStaticUrl = user.BannerUrl ?? _transparent, //TODO
 			MovedToAccount = null, //TODO
 			IsBot = user.IsBot,
-			IsDiscoverable = user.IsExplorable
+			IsDiscoverable = user.IsExplorable,
+			Fields = [] //TODO
 		};
 
 		return res;

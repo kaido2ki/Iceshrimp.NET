@@ -269,7 +269,7 @@ public class Meta {
 	public List<string> SilencedHosts { get; set; } = null!;
 
 	[Column("experimentalFeatures", TypeName = "jsonb")]
-	public string ExperimentalFeatures { get; set; } = null!;
+	public Dictionary<string, bool> ExperimentalFeatures { get; set; } = null!;
 
 	[Column("enableServerMachineStats")] public bool EnableServerMachineStats { get; set; }
 

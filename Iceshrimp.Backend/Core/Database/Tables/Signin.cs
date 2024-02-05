@@ -23,7 +23,7 @@ public class Signin {
 	[Column("ip")] [StringLength(128)] public string Ip { get; set; } = null!;
 
 	[Column("headers", TypeName = "jsonb")]
-	public string Headers { get; set; } = null!;
+	public Dictionary<string, string> Headers { get; set; } = null!;
 
 	[Column("success")] public bool Success { get; set; }
 

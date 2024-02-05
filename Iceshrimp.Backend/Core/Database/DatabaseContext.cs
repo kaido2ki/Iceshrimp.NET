@@ -100,6 +100,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		dataSourceBuilder.MapEnum<Relay.RelayStatus>();
 		dataSourceBuilder.MapEnum<UserProfile.UserProfileFFVisibility>();
 
+		dataSourceBuilder.EnableDynamicJson();
+
 		return dataSourceBuilder.Build();
 	}
 

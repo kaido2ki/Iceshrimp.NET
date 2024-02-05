@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -14,7 +15,7 @@ public class HtmlUserCacheEntry {
 
 	[Column("bio")] public string? Bio { get; set; }
 
-	[Column("fields", TypeName = "jsonb")] public string Fields { get; set; } = null!;
+	[Column("fields", TypeName = "jsonb")] public Field[] Fields { get; set; } = null!;
 
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.HtmlUserCacheEntry))]

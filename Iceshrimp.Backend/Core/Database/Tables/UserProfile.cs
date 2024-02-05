@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using NpgsqlTypes;
+using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -36,7 +37,7 @@ public class UserProfile {
 	[StringLength(2048)]
 	public string? Description { get; set; }
 
-	[Column("fields", TypeName = "jsonb")] public string Fields { get; set; } = null!;
+	[Column("fields", TypeName = "jsonb")] public Field[] Fields { get; set; } = null!;
 
 	/// <summary>
 	///     Remote URL of the user.
@@ -44,9 +45,8 @@ public class UserProfile {
 	[Column("url")]
 	[StringLength(512)]
 	public string? Url { get; set; }
-	
-	[Column("ffVisibility")]
-	public UserProfileFFVisibility FFVisibility { get; set; }
+
+	[Column("ffVisibility")] public UserProfileFFVisibility FFVisibility { get; set; }
 
 	[Column("mutingNotificationTypes")]
 	public List<Notification.NotificationType> MutingNotificationTypes { get; set; } = [];
@@ -84,6 +84,7 @@ public class UserProfile {
 	/// <summary>
 	///     The client-specific data of the User.
 	/// </summary>
+	//TODO: refactor this column (it's currently a Dictionary<string, any>, which is terrible) 
 	[Column("clientData", TypeName = "jsonb")]
 	public string ClientData { get; set; } = null!;
 
@@ -111,9 +112,11 @@ public class UserProfile {
 	/// <summary>
 	///     The room data of the User.
 	/// </summary>
+	//TODO: refactor this column (it's currently a Dictionary<string, any>, which is terrible) 
 	[Column("room", TypeName = "jsonb")]
 	public string Room { get; set; } = null!;
 
+	//TODO: refactor this column (it's currently a Dictionary<string, any>, which is terrible) 
 	[Column("integrations", TypeName = "jsonb")]
 	public string Integrations { get; set; } = null!;
 
@@ -122,7 +125,7 @@ public class UserProfile {
 	[Column("enableWordMute")] public bool EnableWordMute { get; set; }
 
 	[Column("mutedWords", TypeName = "jsonb")]
-	public string MutedWords { get; set; } = null!;
+	public List<List<string>> MutedWords { get; set; } = null!;
 
 	/// <summary>
 	///     Whether reject index by crawler.
@@ -132,16 +135,18 @@ public class UserProfile {
 
 	[Column("receiveAnnouncementEmail")] public bool ReceiveAnnouncementEmail { get; set; }
 
+	//TODO: refactor this column (this should have been NotificationTypeEnum[])
 	[Column("emailNotificationTypes", TypeName = "jsonb")]
-	public string EmailNotificationTypes { get; set; } = null!;
+	public List<string> EmailNotificationTypes { get; set; } = null!;
 
 	[Column("lang")] [StringLength(32)] public string? Lang { get; set; }
 
 	/// <summary>
 	///     List of instances muted by the user.
 	/// </summary>
+	//TODO: refactor this column (this should have been a varchar[]) 
 	[Column("mutedInstances", TypeName = "jsonb")]
-	public string MutedInstances { get; set; } = null!;
+	public List<string> MutedInstances { get; set; } = null!;
 
 	[Column("publicReactions")] public bool PublicReactions { get; set; }
 
@@ -152,7 +157,7 @@ public class UserProfile {
 	[Column("preventAiLearning")] public bool PreventAiLearning { get; set; }
 
 	[Column("mentions", TypeName = "jsonb")]
-	public string Mentions { get; set; } = null!;
+	public List<MentionedRemoteUsers> Mentions { get; set; } = null!;
 
 	[ForeignKey("PinnedPageId")]
 	[InverseProperty(nameof(Page.UserProfile))]
@@ -167,5 +172,18 @@ public class UserProfile {
 		[PgName("public")]    Public,
 		[PgName("followers")] Followers,
 		[PgName("private")]   Private,
+	}
+
+	public class Field {
+		[J("name")]     public required string Name       { get; set; }
+		[J("value")]    public required string Value      { get; set; }
+		[J("verified")] public          bool?  IsVerified { get; set; }
+	}
+
+	public class MentionedRemoteUsers {
+		[J("uri")]      public required string  Uri      { get; set; }
+		[J("url")]      public          string? Url      { get; set; }
+		[J("username")] public required string  Username { get; set; }
+		[J("host")]     public required string  Host     { get; set; }
 	}
 }

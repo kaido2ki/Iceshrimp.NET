@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -82,7 +83,7 @@ public class DriveFile {
 	///     The any properties of the DriveFile. For example, it includes image width/height.
 	/// </summary>
 	[Column("properties", TypeName = "jsonb")]
-	public string Properties { get; set; } = null!;
+	public FileProperties Properties { get; set; } = null!;
 
 	[Column("storedInternal")] public bool StoredInternal { get; set; }
 
@@ -159,13 +160,14 @@ public class DriveFile {
 	public string? WebpublicType { get; set; }
 
 	[Column("requestHeaders", TypeName = "jsonb")]
-	public string? RequestHeaders { get; set; }
+	public Dictionary<string, string>? RequestHeaders { get; set; }
 
 	[Column("requestIp")]
 	[StringLength(128)]
 	public string? RequestIp { get; set; }
 
-	[InverseProperty(nameof(Channel.Banner))] public virtual ICollection<Channel> Channels { get; set; } = new List<Channel>();
+	[InverseProperty(nameof(Channel.Banner))]
+	public virtual ICollection<Channel> Channels { get; set; } = new List<Channel>();
 
 	[ForeignKey("FolderId")]
 	[InverseProperty(nameof(DriveFolder.DriveFiles))]
@@ -174,13 +176,23 @@ public class DriveFile {
 	[InverseProperty(nameof(MessagingMessage.File))]
 	public virtual ICollection<MessagingMessage> MessagingMessages { get; set; } = new List<MessagingMessage>();
 
-	[InverseProperty(nameof(Page.EyeCatchingImage))] public virtual ICollection<Page> Pages { get; set; } = new List<Page>();
+	[InverseProperty(nameof(Page.EyeCatchingImage))]
+	public virtual ICollection<Page> Pages { get; set; } = new List<Page>();
 
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.DriveFiles))]
 	public virtual User? User { get; set; }
 
-	[InverseProperty(nameof(Tables.User.Avatar))] public virtual User? UserAvatar { get; set; }
+	[InverseProperty(nameof(Tables.User.Avatar))]
+	public virtual User? UserAvatar { get; set; }
 
-	[InverseProperty(nameof(Tables.User.Banner))] public virtual User? UserBanner { get; set; }
+	[InverseProperty(nameof(Tables.User.Banner))]
+	public virtual User? UserBanner { get; set; }
+
+	public class FileProperties {
+		[J("width")]       public int?    Width        { get; set; }
+		[J("height")]      public int?    Height       { get; set; }
+		[J("orientation")] public int?    Orientation  { get; set; }
+		[J("avgColor")]    public string? AverageColor { get; set; }
+	}
 }

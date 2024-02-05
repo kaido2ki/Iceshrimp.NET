@@ -48,6 +48,7 @@ public class RegistryItem {
 	/// <summary>
 	///     The value of the RegistryItem.
 	/// </summary>
+	//TODO: refactor this column (it's currently a Nullable<any>, which is terrible) 
 	[Column("value", TypeName = "jsonb")]
 	public string? Value { get; set; }
 

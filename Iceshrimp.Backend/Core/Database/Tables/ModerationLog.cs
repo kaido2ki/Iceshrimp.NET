@@ -22,6 +22,7 @@ public class ModerationLog {
 
 	[Column("type")] [StringLength(128)] public string Type { get; set; } = null!;
 
+	//TODO: refactor this column (it's currently a Dictionary<string, any>, which is terrible) 
 	[Column("info", TypeName = "jsonb")] public string Info { get; set; } = null!;
 
 	[ForeignKey("UserId")]
