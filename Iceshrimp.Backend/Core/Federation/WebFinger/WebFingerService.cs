@@ -27,6 +27,8 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 		var req = httpRqSvc.Get(webFingerUrl, ["application/jrd+json", "application/json"]);
 		var res = await client.SendAsync(req);
 
+		if (res.StatusCode == HttpStatusCode.Gone)
+			throw GracefulException.Accepted("The remote user no longer exists.");
 		if (!res.IsSuccessStatusCode)
 			return null;
 		if (res.Content.Headers.ContentType?.MediaType is not "application/jrd+json" and not "application/json")

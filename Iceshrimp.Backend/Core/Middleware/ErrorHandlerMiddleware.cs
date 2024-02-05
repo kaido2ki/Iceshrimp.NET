@@ -25,6 +25,12 @@ public class ErrorHandlerMiddleware(IOptions<Config.SecuritySection> options, IL
 			var verbosity = options.Value.ExceptionVerbosity;
 
 			if (e is GracefulException ce) {
+				if (ce.StatusCode == HttpStatusCode.Accepted) {
+					ctx.Response.StatusCode = (int)ce.StatusCode;
+					await ctx.Response.CompleteAsync();
+					return;
+				}
+				
 				if (verbosity > ExceptionVerbosity.Basic && ce.OverrideBasic)
 					verbosity = ExceptionVerbosity.Basic;
 
@@ -111,6 +117,13 @@ public class GracefulException(
 	public static GracefulException MisdirectedRequest() {
 		return new GracefulException(HttpStatusCode.MisdirectedRequest, HttpStatusCode.MisdirectedRequest.ToString(),
 		                             "This server is not configured to respond to this request.", null, true, true);
+	}
+
+	/// <summary>
+	/// This is intended for cases where no error occured, but the request needs to be aborted early (e.g. WebFinger returning 410 Gone)
+	/// </summary>
+	public static GracefulException Accepted(string message) {
+		return new GracefulException(HttpStatusCode.Accepted, message);
 	}
 }
 
