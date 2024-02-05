@@ -319,6 +319,11 @@ public class User : IEntity {
 	[InverseProperty(nameof(FollowRequest.Follower))]
 	public virtual ICollection<FollowRequest> OutgoingFollowRequests { get; set; } = new List<FollowRequest>();
 
+	[Projectable]
+	public virtual IEnumerable<User> ReceivedFollowRequests => IncomingFollowRequests.Select(p => p.Follower);
+
+	[Projectable] public virtual IEnumerable<User> SentFollowRequests => OutgoingFollowRequests.Select(p => p.Followee);
+
 	[InverseProperty(nameof(Tables.Following.Followee))]
 	public virtual ICollection<Following> IncomingFollowRelationships { get; set; } = new List<Following>();
 
@@ -451,6 +456,18 @@ public class User : IEntity {
 	[InverseProperty(nameof(Webhook.User))]
 	public virtual ICollection<Webhook> Webhooks { get; set; } = new List<Webhook>();
 
+	[NotMapped] public bool? PrecomputedIsBlocking  { get; set; }
+	[NotMapped] public bool? PrecomputedIsBlockedBy { get; set; }
+
+	[NotMapped] public bool? PrecomputedIsMuting  { get; set; }
+	[NotMapped] public bool? PrecomputedIsMutedBy { get; set; }
+
+	[NotMapped] public bool? PrecomputedIsFollowing  { get; set; }
+	[NotMapped] public bool? PrecomputedIsFollowedBy { get; set; }
+
+	[NotMapped] public bool? PrecomputedIsRequested   { get; set; }
+	[NotMapped] public bool? PrecomputedIsRequestedBy { get; set; }
+
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
@@ -469,8 +486,37 @@ public class User : IEntity {
 	public bool IsFollowing(User user) => Following.Contains(user);
 
 	[Projectable]
+	public bool IsRequestedBy(User user) => ReceivedFollowRequests.Contains(user);
+
+	[Projectable]
+	public bool IsRequested(User user) => SentFollowRequests.Contains(user);
+
+	[Projectable]
 	public bool IsMutedBy(User user) => MutedBy.Contains(user);
 
 	[Projectable]
 	public bool IsMuting(User user) => Muting.Contains(user);
+
+	public User WithPrecomputedBlockStatus(bool blocking, bool blockedBy) {
+		PrecomputedIsBlocking  = blocking;
+		PrecomputedIsBlockedBy = blockedBy;
+
+		return this;
+	}
+
+	public User WithPrecomputedMuteStatus(bool muting, bool mutedBy) {
+		PrecomputedIsMuting  = muting;
+		PrecomputedIsMutedBy = mutedBy;
+
+		return this;
+	}
+
+	public User WithPrecomputedFollowStatus(bool following, bool followedBy, bool requested, bool requestedBy) {
+		PrecomputedIsFollowing   = following;
+		PrecomputedIsFollowedBy  = followedBy;
+		PrecomputedIsRequested   = requested;
+		PrecomputedIsRequestedBy = requestedBy;
+
+		return this;
+	}
 }

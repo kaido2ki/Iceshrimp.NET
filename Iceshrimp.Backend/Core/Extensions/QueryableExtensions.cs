@@ -90,6 +90,13 @@ public static class NoteQueryableExtensions {
 		                                                       p.Renote.IsVisibleFor(user)));
 	}
 
+	public static IQueryable<User> PrecomputeRelationshipData(this IQueryable<User> query, User user) {
+		return query.Select(p => p.WithPrecomputedBlockStatus(p.IsBlocking(user), p.IsBlockedBy(user))
+		                          .WithPrecomputedMuteStatus(p.IsMuting(user), p.IsMutedBy(user))
+		                          .WithPrecomputedFollowStatus(p.IsFollowing(user), p.IsFollowedBy(user),
+		                                                       p.IsRequested(user), p.IsRequestedBy(user)));
+	}
+
 	public static IQueryable<Note> FilterBlocked(this IQueryable<Note> query, User user) {
 		return query.Where(note => !note.User.IsBlocking(user) && !note.User.IsBlockedBy(user))
 		            .Where(note => note.Renote == null ||

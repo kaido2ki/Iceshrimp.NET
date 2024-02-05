@@ -78,7 +78,7 @@ public class ActivityHandlerService(
 		}
 
 		var acceptActivity = activityRenderer.RenderAccept(followeeActor,
-		                                                   activityRenderer.RenderFollow(followerActor,
+		                                                   ActivityRenderer.RenderFollow(followerActor,
 				                                                    followeeActor, requestId));
 		var keypair = await db.UserKeypairs.FirstAsync(p => p.User == followee);
 		var payload = await acceptActivity.SignAndCompactAsync(keypair);

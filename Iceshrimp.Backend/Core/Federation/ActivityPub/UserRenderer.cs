@@ -12,8 +12,11 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
 public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db) {
 	public async Task<ASActor> RenderAsync(User user) {
-		if (user.Host != null)
-			throw new GracefulException("Refusing to render remote user");
+		if (user.Host != null) {
+			return new ASActor {
+				Id = user.Uri ?? throw new GracefulException("Remote user must have an URI")
+			};
+		}
 
 		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
 		var keypair = await db.UserKeypairs.FirstOrDefaultAsync(p => p.User == user);

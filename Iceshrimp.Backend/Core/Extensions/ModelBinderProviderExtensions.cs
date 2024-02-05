@@ -1,3 +1,4 @@
+using System.Collections;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
@@ -11,12 +12,19 @@ public static class ModelBinderProviderExtensions {
 			    ComplexObjectModelBinderProvider complexProvider)
 			throw new Exception("Failed to set up hybrid model binding provider");
 
+		if (providers.Single(provider => provider.GetType() == typeof(CollectionModelBinderProvider)) is not
+		    CollectionModelBinderProvider collectionProvider)
+			throw new Exception("Failed to set up query collection model binding provider");
+
 		var hybridProvider = new HybridModelBinderProvider(bodyProvider, complexProvider);
+		var queryProvider  = new QueryCollectionModelBinderProvider(collectionProvider);
 
 		providers.Insert(0, hybridProvider);
+		providers.Insert(1, queryProvider);
 	}
 }
 
+//TODO: this doesn't work with QueryCollectionModelBinderProvider yet
 public class HybridModelBinderProvider(
 	IModelBinderProvider bodyProvider,
 	IModelBinderProvider complexProvider) : IModelBinderProvider {
@@ -33,10 +41,17 @@ public class HybridModelBinderProvider(
 	}
 }
 
-public class HybridModelBinder(
-	IModelBinder? bodyBinder,
-	IModelBinder? complexBinder
-) : IModelBinder {
+public class QueryCollectionModelBinderProvider(IModelBinderProvider provider) : IModelBinderProvider {
+	public IModelBinder? GetBinder(ModelBinderProviderContext context) {
+		if (context.BindingInfo.BindingSource == null) return null;
+		if (!context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Query)) return null;
+
+		var binder = provider.GetBinder(context);
+		return new QueryCollectionModelBinder(binder);
+	}
+}
+
+public class HybridModelBinder(IModelBinder? bodyBinder, IModelBinder? complexBinder) : IModelBinder {
 	public async Task BindModelAsync(ModelBindingContext bindingContext) {
 		if (bodyBinder != null && bindingContext is
 			    { IsTopLevelObject: true, HttpContext.Request: { HasFormContentType: false, ContentLength: > 0 } }) {
@@ -50,6 +65,27 @@ public class HybridModelBinder(
 		}
 
 		if (bindingContext.Result.IsModelSet) bindingContext.Model = bindingContext.Result.Model;
+	}
+}
+
+public class QueryCollectionModelBinder(IModelBinder? binder) : IModelBinder {
+	public async Task BindModelAsync(ModelBindingContext bindingContext) {
+		if (binder != null && !bindingContext.Result.IsModelSet) {
+			await binder.BindModelAsync(bindingContext);
+
+			if (!bindingContext.Result.IsModelSet || (bindingContext.Result.Model as IList) is not { Count: > 0 }) {
+				bindingContext.ModelName = bindingContext.ModelName.EndsWith("[]")
+					? bindingContext.ModelName[..^2]
+					: bindingContext.ModelName + "[]";
+
+				await binder.BindModelAsync(bindingContext);
+			}
+		}
+
+		if (bindingContext.Result.IsModelSet) {
+			bindingContext.Model         = bindingContext.Result.Model;
+			bindingContext.BindingSource = BindingSource.ModelBinding;
+		}
 	}
 }
 

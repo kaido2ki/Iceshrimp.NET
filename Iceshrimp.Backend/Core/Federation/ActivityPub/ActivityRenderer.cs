@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Microsoft.Extensions.Options;
 
@@ -25,14 +26,17 @@ public class ActivityRenderer(IOptions<Config.InstanceSection> config) {
 		};
 	}
 
-	public ASActivity RenderFollow(ASObject followerActor, ASObject followeeActor, string requestId) {
-		return new ASActivity {
-			Id   = requestId,
-			Type = ASActivity.Types.Follow,
+	public static ASFollow RenderFollow(ASObject followerActor, ASObject followeeActor, string requestId) {
+		return new ASFollow {
+			Id = requestId,
 			Actor = new ASActor {
 				Id = followerActor.Id
 			},
 			Object = followeeActor
 		};
+	}
+
+	public string RenderFollowId(User follower, User followee) {
+		return $"https://{config.Value.WebDomain}/follows/{follower.Id}/{followee.Id}";
 	}
 }

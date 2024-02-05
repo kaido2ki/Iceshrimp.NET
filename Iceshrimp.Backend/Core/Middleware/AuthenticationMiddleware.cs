@@ -27,7 +27,7 @@ public class AuthenticationMiddleware(DatabaseContext db) : IMiddleware {
 				                         .Include(p => p.User)
 				                         .ThenInclude(p => p.UserProfile)
 				                         .Include(p => p.App)
-				                         .FirstOrDefaultAsync(p => p.Token == header && p.Active);
+				                         .FirstOrDefaultAsync(p => p.Token == token && p.Active);
 
 				if (oauthToken == null) {
 					await next(ctx);
