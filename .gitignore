@@ -99,4 +99,6 @@ Iceshrimp.Frontend/.pnp.*
 
 *.DotSettings.user
 
+.vs/
+
 TestResults/
