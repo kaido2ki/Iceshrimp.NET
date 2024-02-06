@@ -1,6 +1,8 @@
 using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +35,7 @@ public class UserController(DatabaseContext db) : Controller {
 		var notes = db.Notes
 		              .Include(p => p.User)
 		              .Where(p => p.UserId == id)
+		              .HasVisibility(Note.NoteVisibility.Public)
 		              .OrderByDescending(p => p.Id)
 		              .Take(limit)
 		              .ToList();
