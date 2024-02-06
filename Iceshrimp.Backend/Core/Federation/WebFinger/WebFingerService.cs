@@ -22,7 +22,7 @@ namespace Iceshrimp.Backend.Core.Federation.WebFinger;
 public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 	public async Task<WebFingerResponse?> ResolveAsync(string query) {
 		(query, var proto, var domain) = ParseQuery(query);
-		var webFingerUrl = GetWebFingerUrl(query, proto, domain);
+		var webFingerUrl = await GetWebFingerUrlAsync(query, proto, domain);
 
 		var req = httpRqSvc.Get(webFingerUrl, ["application/jrd+json", "application/json"]);
 		var res = await client.SendAsync(req);
@@ -37,7 +37,7 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 		return await res.Content.ReadFromJsonAsync<WebFingerResponse>();
 	}
 
-	private (string query, string proto, string domain) ParseQuery(string query) {
+	private static (string query, string proto, string domain) ParseQuery(string query) {
 		string domain;
 		string proto;
 		query = query.StartsWith("acct:") ? $"@{query[5..]}" : query;
@@ -63,18 +63,21 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 		return (query, proto, domain);
 	}
 
-	private string GetWebFingerUrl(string query, string proto, string domain) {
-		var template = GetWebFingerTemplateFromHostMeta($"{proto}://{domain}/.well-known/host-meta") ??
+	private async Task<string> GetWebFingerUrlAsync(string query, string proto, string domain) {
+		var template = await GetWebFingerTemplateFromHostMetaAsync($"{proto}://{domain}/.well-known/host-meta") ??
 		               $"{proto}://{domain}/.well-known/webfinger?resource={{uri}}";
 		var finalQuery = query.StartsWith('@') ? $"acct:{query[1..]}" : query;
 		var encoded    = UrlEncoder.Default.Encode(finalQuery);
 		return template.Replace("{uri}", encoded);
 	}
 
-	private string? GetWebFingerTemplateFromHostMeta(string hostMetaUrl) {
-		var res = client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/xrd+xml"]));
+	private async Task<string?> GetWebFingerTemplateFromHostMetaAsync(string hostMetaUrl) {
+		using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/xrd+xml"]), HttpCompletionOption.ResponseHeadersRead);
+		using var stream = await res.Content.ReadAsStreamAsync();
+
 		var xml = new XmlDocument();
-		xml.Load(res.Result.Content.ReadAsStreamAsync().Result);
+		xml.Load(stream);
+
 		var section = xml["XRD"]?.GetElementsByTagName("Link");
 		if (section == null) return null;
 
