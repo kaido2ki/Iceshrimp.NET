@@ -27,6 +27,14 @@ public class ASActivity : ASObject {
 	}
 }
 
+public class ASCreate : ASActivity {
+	public ASCreate() => Type = Types.Create;
+}
+
+public class ASDelete : ASActivity {
+	public ASDelete() => Type = Types.Delete;
+}
+
 public class ASFollow : ASActivity {
 	public ASFollow() => Type = Types.Follow;
 }

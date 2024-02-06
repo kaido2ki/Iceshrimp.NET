@@ -43,11 +43,14 @@ public class ActivityHandlerService(
 			}
 			case ASActivity.Types.Accept: {
 				if (activity.Object is { } obj) return AcceptAsync(obj, activity.Actor);
-				throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
+				throw GracefulException.UnprocessableEntity("Accept activity object is invalid");
+			}
+			case ASActivity.Types.Reject: {
+				if (activity.Object is { } obj) return RejectAsync(obj, activity.Actor);
+				throw GracefulException.UnprocessableEntity("Reject activity object is invalid");
 			}
 			case ASActivity.Types.Undo: {
 				//TODO: implement the rest
-				//TODO: test if this actually works
 				if (activity.Object is ASActivity { Type: ASActivity.Types.Follow, Object: not null } undoActivity)
 					return UnfollowAsync(undoActivity.Object, activity.Actor);
 				throw new NotImplementedException("Unsupported undo operation");
@@ -119,6 +122,7 @@ public class ActivityHandlerService(
 	}
 
 	private async Task UnfollowAsync(ASObject followeeActor, ASObject followerActor) {
+		//TODO: send reject? or do we not want to copy that part of the old ap core
 		var follower = await userResolver.ResolveAsync(followerActor.Id);
 		var followee = await userResolver.ResolveAsync(followeeActor.Id);
 
@@ -129,7 +133,7 @@ public class ActivityHandlerService(
 	private async Task AcceptAsync(ASObject obj, ASObject actor) {
 		var prefix = $"https://{config.Value.WebDomain}/follows/";
 		if (!obj.Id.StartsWith(prefix))
-			throw GracefulException.UnprocessableEntity($"Object id '{obj.Id}' not a valid follow request");
+			throw GracefulException.UnprocessableEntity($"Object id '{obj.Id}' not a valid follow request id");
 
 		var resolvedActor = await userResolver.ResolveAsync(actor.Id);
 		var ids           = obj.Id[prefix.Length..].TrimEnd('/').Split("/");
@@ -160,5 +164,20 @@ public class ActivityHandlerService(
 		db.Remove(request);
 		await db.AddAsync(following);
 		await db.SaveChangesAsync();
+	}
+
+	private async Task RejectAsync(ASObject obj, ASObject actor) {
+		if (obj is not ASFollow { Actor: not null } follow)
+			throw GracefulException.UnprocessableEntity("Refusing to reject object with invalid follow object");
+
+		var resolvedActor    = await userResolver.ResolveAsync(actor.Id);
+		var resolvedFollower = await userResolver.ResolveAsync(follow.Actor.Id);
+		if (resolvedFollower is not { Host: null })
+			throw GracefulException.UnprocessableEntity("Refusing to reject remote follow");
+
+		await db.FollowRequests.Where(p => p.Followee == resolvedActor && p.Follower == resolvedFollower)
+		        .ExecuteDeleteAsync();
+		await db.Followings.Where(p => p.Followee == resolvedActor && p.Follower == resolvedFollower)
+		        .ExecuteDeleteAsync();
 	}
 }
