@@ -25,9 +25,9 @@ public class ASObject {
 				ASNote.Types.Note          => token.ToObject<ASNote>(),
 				ASActivity.Types.Create    => token.ToObject<ASActivity>(),
 				ASActivity.Types.Delete    => token.ToObject<ASActivity>(),
-				ASActivity.Types.Follow    => token.ToObject<ASActivity>(),
-				ASActivity.Types.Unfollow  => token.ToObject<ASActivity>(),
-				ASActivity.Types.Accept    => token.ToObject<ASActivity>(),
+				ASActivity.Types.Follow    => token.ToObject<ASFollow>(),
+				ASActivity.Types.Unfollow  => token.ToObject<ASUnfollow>(),
+				ASActivity.Types.Accept    => token.ToObject<ASAccept>(),
 				ASActivity.Types.Undo      => token.ToObject<ASActivity>(),
 				ASActivity.Types.Like      => token.ToObject<ASActivity>(),
 				_                          => token.ToObject<ASObject>()

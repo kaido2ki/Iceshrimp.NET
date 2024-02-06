@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
@@ -7,6 +8,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
@@ -16,7 +18,8 @@ public class ActivityHandlerService(
 	UserResolver userResolver,
 	DatabaseContext db,
 	QueueService queueService,
-	ActivityRenderer activityRenderer
+	ActivityRenderer activityRenderer,
+	IOptions<Config.InstanceSection> config
 ) {
 	public Task PerformActivityAsync(ASActivity activity, string? inboxUserId) {
 		logger.LogDebug("Processing activity: {activity}", activity.Id);
@@ -37,6 +40,10 @@ public class ActivityHandlerService(
 			case ASActivity.Types.Unfollow: {
 				if (activity.Object is { } obj) return UnfollowAsync(obj, activity.Actor);
 				throw GracefulException.UnprocessableEntity("Unfollow activity object is invalid");
+			}
+			case ASActivity.Types.Accept: {
+				if (activity.Object is { } obj) return AcceptAsync(obj, activity.Actor);
+				throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
 			}
 			case ASActivity.Types.Undo: {
 				//TODO: implement the rest
@@ -117,5 +124,41 @@ public class ActivityHandlerService(
 
 		await db.FollowRequests.Where(p => p.Follower == follower && p.Followee == followee).ExecuteDeleteAsync();
 		await db.Followings.Where(p => p.Follower == follower && p.Followee == followee).ExecuteDeleteAsync();
+	}
+
+	private async Task AcceptAsync(ASObject obj, ASObject actor) {
+		var prefix = $"https://{config.Value.WebDomain}/follows/";
+		if (!obj.Id.StartsWith(prefix))
+			throw GracefulException.UnprocessableEntity($"Object id '{obj.Id}' not a valid follow request");
+
+		var resolvedActor = await userResolver.ResolveAsync(actor.Id);
+		var ids           = obj.Id[prefix.Length..].TrimEnd('/').Split("/");
+		if (ids.Length != 2 || ids[1] != resolvedActor.Id)
+			throw GracefulException
+				.UnprocessableEntity($"Actor id '{resolvedActor.Id}' doesn't match followee id '{ids[1]}'");
+
+		var request = await db.FollowRequests
+		                      .Include(p => p.Follower)
+		                      .FirstOrDefaultAsync(p => p.Followee == resolvedActor && p.FollowerId == ids[0]);
+
+		if (request == null)
+			throw GracefulException
+				.UnprocessableEntity($"No follow request matching follower '{ids[0]}' and followee '{resolvedActor.Id}' found");
+
+		var following = new Following {
+			Id                  = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt           = DateTime.UtcNow,
+			Follower            = request.Follower,
+			Followee            = resolvedActor,
+			FollowerHost        = request.FollowerHost,
+			FolloweeHost        = request.FolloweeHost,
+			FollowerInbox       = request.FollowerInbox,
+			FolloweeInbox       = request.FolloweeInbox,
+			FollowerSharedInbox = request.FollowerSharedInbox,
+			FolloweeSharedInbox = request.FolloweeSharedInbox
+		};
+		db.Remove(request);
+		await db.AddAsync(following);
+		await db.SaveChangesAsync();
 	}
 }
