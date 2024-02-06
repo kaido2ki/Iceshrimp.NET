@@ -47,4 +47,8 @@
         <Content Include="wwwroot\.vite\manifest.json" CopyToPublishDirectory="PreserveNewest"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="migrate.sql" />
+    </ItemGroup>
+
 </Project>

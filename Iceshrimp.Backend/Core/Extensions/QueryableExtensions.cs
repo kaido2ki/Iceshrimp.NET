@@ -75,6 +75,14 @@ public static class NoteQueryableExtensions {
 	public static IQueryable<Note> FilterByFollowingAndOwn(this IQueryable<Note> query, User user) {
 		return query.Where(note => note.User == user || note.User.IsFollowedBy(user));
 	}
+	
+	public static IQueryable<Note> FilterByUser(this IQueryable<Note> query, User user) {
+		return query.Where(note => note.User == user);
+	}
+	
+	public static IQueryable<Note> FilterByUser(this IQueryable<Note> query, string userId) {
+		return query.Where(note => note.UserId == userId);
+	}
 
 	public static IQueryable<Note> EnsureVisibleFor(this IQueryable<Note> query, User? user) {
 		if (user == null)

@@ -1,16 +1,16 @@
+using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
-using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using MastodonUserRenderer = Iceshrimp.Backend.Controllers.Mastodon.Renderers.UserRenderer;
+using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -21,10 +21,10 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Produces("application/json")]
 public class MastodonAccountController(
 	DatabaseContext db,
-	MastodonUserRenderer userRenderer,
-	ActivityRenderer activityRenderer,
-	UserRenderer apUserRenderer,
-	ActivityDeliverService deliverSvc
+	UserRenderer userRenderer,
+	NoteRenderer noteRenderer,
+	ActivityPub.ActivityRenderer activityRenderer,
+	ActivityPub.ActivityDeliverService deliverSvc
 ) : Controller {
 	[HttpGet("verify_credentials")]
 	[Authorize("read:accounts")]
@@ -134,42 +134,6 @@ public class MastodonAccountController(
 		return Ok(res);
 	}
 
-	[HttpGet("relationships")]
-	[Authorize("read:follows")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Relationship[]))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetRelationships([FromQuery(Name = "id")] List<string> ids) {
-		var user = HttpContext.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
-
-		if (ids.Contains(user.Id))
-			throw GracefulException.BadRequest("You cannot request relationship status with yourself");
-
-		var users = await db.Users.IncludeCommonProperties()
-		                    .Where(p => ids.Contains(p.Id))
-		                    .PrecomputeRelationshipData(user)
-		                    .ToListAsync();
-
-		var res = users.Select(u => new Relationship {
-			Id                  = u.Id,
-			Following           = u.PrecomputedIsFollowedBy ?? false,
-			FollowedBy          = u.PrecomputedIsFollowing ?? false,
-			Blocking            = u.PrecomputedIsBlockedBy ?? false,
-			BlockedBy           = u.PrecomputedIsBlocking ?? false,
-			Requested           = u.PrecomputedIsRequestedBy ?? false,
-			RequestedBy         = u.PrecomputedIsRequested ?? false,
-			Muting              = u.PrecomputedIsMutedBy ?? false,
-			Endorsed            = false, //FIXME
-			Note                = "",    //FIXME
-			Notifying           = false, //FIXME
-			DomainBlocking      = false, //FIXME
-			MutingNotifications = false, //FIXME
-			ShowingReblogs      = true   //FIXME
-		});
-
-		return Ok(res);
-	}
-
 	[HttpPost("{id}/unfollow")]
 	[Authorize("write:follows")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Relationship))]
@@ -219,6 +183,64 @@ public class MastodonAccountController(
 			MutingNotifications = false, //FIXME
 			ShowingReblogs      = true   //FIXME
 		};
+
+		return Ok(res);
+	}
+	
+	[HttpGet("relationships")]
+	[Authorize("read:follows")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Relationship[]))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetRelationships([FromQuery(Name = "id")] List<string> ids) {
+		var user = HttpContext.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
+
+		if (ids.Contains(user.Id))
+			throw GracefulException.BadRequest("You cannot request relationship status with yourself");
+
+		var users = await db.Users.IncludeCommonProperties()
+		                    .Where(p => ids.Contains(p.Id))
+		                    .PrecomputeRelationshipData(user)
+		                    .ToListAsync();
+
+		var res = users.Select(u => new Relationship {
+			Id                  = u.Id,
+			Following           = u.PrecomputedIsFollowedBy ?? false,
+			FollowedBy          = u.PrecomputedIsFollowing ?? false,
+			Blocking            = u.PrecomputedIsBlockedBy ?? false,
+			BlockedBy           = u.PrecomputedIsBlocking ?? false,
+			Requested           = u.PrecomputedIsRequestedBy ?? false,
+			RequestedBy         = u.PrecomputedIsRequested ?? false,
+			Muting              = u.PrecomputedIsMutedBy ?? false,
+			Endorsed            = false, //FIXME
+			Note                = "",    //FIXME
+			Notifying           = false, //FIXME
+			DomainBlocking      = false, //FIXME
+			MutingNotifications = false, //FIXME
+			ShowingReblogs      = true   //FIXME
+		});
+
+		return Ok(res);
+	}
+
+
+	[HttpGet("{id}/statuses")]
+	[Authorize("read:statuses")]
+	[LinkPagination(20, 40)]
+	[Produces("application/json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetHomeTimeline(string id, PaginationQuery query) {
+		//TODO: there's a lot more query params to implement here
+		var user = HttpContext.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
+		var res = await db.Notes
+		                  .IncludeCommonProperties()
+		                  .FilterByUser(id)
+		                  .EnsureVisibleFor(user)
+		                  .Paginate(query, ControllerContext)
+		                  .PrecomputeVisibilities(user)
+		                  .RenderAllForMastodonAsync(noteRenderer);
 
 		return Ok(res);
 	}
