@@ -9,7 +9,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
 public class NoteRenderer(IOptions<Config.InstanceSection> config, UserRenderer userRenderer) {
 	public async Task<Status> RenderAsync(Note note, int recurse = 2) {
-		var uri     = note.Uri ?? $"https://{config.Value.WebDomain}/notes/@{note.Id}";
+		var uri     = note.Uri ?? $"https://{config.Value.WebDomain}/notes/{note.Id}";
 		var renote  = note.Renote != null && recurse > 0 ? await RenderAsync(note.Renote, --recurse) : null;
 		var text    = note.Text; //TODO: append quote uri
 		var content = text != null ? await MfmConverter.ToHtmlAsync(text) : null;

@@ -114,8 +114,8 @@ public static class NoteQueryableExtensions {
 	}
 
 	public static IQueryable<Note> FilterHiddenListMembers(this IQueryable<Note> query, User user) {
-		return query.Where(note => note.User.UserListMembers.Any(p => p.UserList.User == user &&
-		                                                              p.UserList.HideFromHomeTl));
+		return query.Where(note => !note.User.UserListMembers.Any(p => p.UserList.User == user &&
+		                                                               p.UserList.HideFromHomeTl));
 	}
 
 	public static IEnumerable<Note> EnforceRenoteReplyVisibility(this IList<Note> list) {
