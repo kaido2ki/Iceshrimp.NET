@@ -42,6 +42,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	}
 
 	[HttpPost]
+	[HideRequestDuration]
 	[EnableRateLimiting("strict")]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]

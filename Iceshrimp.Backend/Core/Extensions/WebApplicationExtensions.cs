@@ -9,7 +9,8 @@ namespace Iceshrimp.Backend.Core.Extensions;
 public static class WebApplicationExtensions {
 	public static IApplicationBuilder UseCustomMiddleware(this IApplicationBuilder app) {
 		// Caution: make sure these are in the correct order
-		return app.UseMiddleware<ErrorHandlerMiddleware>()
+		return app.UseMiddleware<RequestDurationMiddleware>()
+		          .UseMiddleware<ErrorHandlerMiddleware>()
 		          .UseMiddleware<RequestVerificationMiddleware>()
 		          .UseMiddleware<RequestBufferingMiddleware>()
 		          .UseMiddleware<AuthenticationMiddleware>()

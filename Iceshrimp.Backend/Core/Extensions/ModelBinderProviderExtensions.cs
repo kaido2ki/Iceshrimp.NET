@@ -45,6 +45,7 @@ public class QueryCollectionModelBinderProvider(IModelBinderProvider provider) :
 	public IModelBinder? GetBinder(ModelBinderProviderContext context) {
 		if (context.BindingInfo.BindingSource == null) return null;
 		if (!context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Query)) return null;
+		if (!context.Metadata.IsCollectionType) return null;
 
 		var binder = provider.GetBinder(context);
 		return new QueryCollectionModelBinder(binder);

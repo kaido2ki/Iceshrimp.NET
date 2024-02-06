@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Net;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
@@ -66,7 +67,8 @@ public class ErrorHandlerMiddleware(IOptions<Config.SecuritySection> options, IL
 				}
 			}
 			else {
-				ctx.Response.StatusCode = 500;
+				ctx.Response.StatusCode        = 500;
+				ctx.Response.Headers.RequestId = ctx.TraceIdentifier;
 				await ctx.Response.WriteAsJsonAsync(new ErrorResponse {
 					StatusCode = 500,
 					Error      = "Internal Server Error",
