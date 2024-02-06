@@ -12,8 +12,8 @@ using HtmlParser = AngleSharp.Html.Parser.HtmlParser;
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 
 public static class MfmConverter {
-	public static async Task<string> FromHtmlAsync(string? html) {
-		if (html == null) return "";
+	public static async Task<string?> FromHtmlAsync(string? html) {
+		if (html == null) return null;
 
 		// Ensure compatibility with AP servers that send both <br> as well as newlines
 		var regex = new Regex(@"<br\s?\/?>\r?\n", RegexOptions.IgnoreCase);

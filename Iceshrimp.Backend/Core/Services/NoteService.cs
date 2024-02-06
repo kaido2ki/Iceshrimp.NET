@@ -27,6 +27,9 @@ public class NoteService(
 
 	public async Task<Note> CreateNoteAsync(User user, Note.NoteVisibility visibility, string? text = null,
 	                                        string? cw = null, Note? reply = null, Note? renote = null) {
+		if (text is { Length: > 100000 })
+			throw GracefulException.UnprocessableEntity("Content cannot be longer than 100.000 characters");
+		
 		var actor = await userRenderer.RenderAsync(user);
 
 		var note = new Note {
@@ -96,6 +99,9 @@ public class NoteService(
 			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null
 			//TODO: parse to fields for specified visibility & mentions
 		};
+
+		if (dbNote.Text is { Length: > 100000 })
+			throw GracefulException.UnprocessableEntity("Content cannot be longer than 100.000 characters");
 
 		await db.Notes.AddAsync(dbNote);
 		await db.SaveChangesAsync();
