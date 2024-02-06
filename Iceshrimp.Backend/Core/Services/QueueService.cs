@@ -165,14 +165,13 @@ public abstract class Job {
 		Failed
 	}
 
-	[ProtoMember(4)] public DateTime? DelayedUntil;
-
-	[ProtoMember(10)] public string?   ExceptionMessage;
-	[ProtoMember(11)] public string?   ExceptionSource;
-	[ProtoMember(3)]  public DateTime? FinishedAt;
-
 	[ProtoMember(1)] public DateTime  QueuedAt = DateTime.Now;
 	[ProtoMember(2)] public DateTime? StartedAt;
+	[ProtoMember(3)] public DateTime? FinishedAt;
+	[ProtoMember(4)] public DateTime? DelayedUntil;
+
+	[ProtoMember(10)] public string? ExceptionMessage;
+	[ProtoMember(11)] public string? ExceptionSource;
 
 	public JobStatus Status = JobStatus.Queued;
 	public long      Duration      => (long)((FinishedAt ?? DateTime.Now) - (StartedAt ?? QueuedAt)).TotalMilliseconds;
