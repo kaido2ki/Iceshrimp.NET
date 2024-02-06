@@ -36,6 +36,6 @@ public class InboxQueue {
 
 [ProtoContract]
 public class InboxJob : Job {
-	[ProtoMember(1)] public required string  Body        { get; set; }
-	[ProtoMember(2)] public required string? InboxUserId { get; set; }
+	[ProtoMember(1)] public required string  Body;
+	[ProtoMember(2)] public required string? InboxUserId;
 }

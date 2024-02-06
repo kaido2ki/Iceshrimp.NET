@@ -155,7 +155,7 @@ public class JobQueue<T>(
 
 [ProtoContract]
 [ProtoInclude(100, typeof(InboxJob))]
-[ProtoInclude(101, typeof(InboxQueue))]
+[ProtoInclude(101, typeof(DeliverJob))]
 public abstract class Job {
 	public enum JobStatus {
 		Queued,

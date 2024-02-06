@@ -37,9 +37,9 @@ public class DeliverQueue {
 
 [ProtoContract]
 public class DeliverJob : Job {
-	[ProtoMember(1)] public required string InboxUrl    { get; set; }
-	[ProtoMember(2)] public required string Payload     { get; set; }
-	[ProtoMember(3)] public required string ContentType { get; set; }
+	[ProtoMember(1)] public required string InboxUrl;
+	[ProtoMember(2)] public required string Payload;
+	[ProtoMember(3)] public required string ContentType;
 
-	[ProtoMember(10)] public required string UserId { get; set; }
+	[ProtoMember(10)] public required string UserId;
 }
