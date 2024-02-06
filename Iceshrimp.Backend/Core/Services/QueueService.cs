@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Microsoft.Extensions.Options;
 using ProtoBuf;
@@ -98,7 +99,13 @@ public class JobQueue<T>(
 			job.ExceptionSource  = e.TargetSite?.DeclaringType?.FullName ?? "Unknown";
 
 			var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
-			logger.LogError("Failed to process job in {queue} queue: {error}", name, e.Message);
+			if (e is GracefulException { Details: not null } ce) {
+				logger.LogError("Failed to process job in {queue} queue: {error} - {details}",
+				                name, ce.Message, ce.Details);
+			}
+			else {
+				logger.LogError("Failed to process job in {queue} queue: {error}", name, e.Message);
+			}
 		}
 
 		if (job.Status is Job.JobStatus.Failed) {
