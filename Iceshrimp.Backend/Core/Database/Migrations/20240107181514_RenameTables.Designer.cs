@@ -3335,7 +3335,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("multiple");
 
-                    b.Property<Poll.PollNoteVisibility>("NoteVisibility")
+                    b.Property<LegacyModels.PollNoteVisibility>("NoteVisibility")
                         .HasColumnType("poll_notevisibility_enum")
                         .HasColumnName("noteVisibility")
                         .HasComment("[Denormalized]");
@@ -4548,7 +4548,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("mutedWords")
                         .HasDefaultValueSql("'[]'::jsonb");
 
-                    b.Property<List<UserProfile.MutingNotificationType>>("MutingNotificationTypes")
+                    b.Property<List<LegacyModels.MutingNotificationType>>("MutingNotificationTypes")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("user_profile_mutingnotificationtypes_enum[]")

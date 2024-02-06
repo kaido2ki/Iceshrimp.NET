@@ -26,10 +26,10 @@ public class ChannelNotePin {
 	[Column("noteId")] [StringLength(32)] public string NoteId { get; set; } = null!;
 
 	[ForeignKey("ChannelId")]
-	[InverseProperty("ChannelNotePins")]
+	[InverseProperty(nameof(Tables.Channel.ChannelNotePins))]
 	public virtual Channel Channel { get; set; } = null!;
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("ChannelNotePins")]
+	[InverseProperty(nameof(Tables.Note.ChannelNotePins))]
 	public virtual Note Note { get; set; } = null!;
 }

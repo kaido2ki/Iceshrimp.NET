@@ -55,9 +55,11 @@ public class Page {
 	[StringLength(32)]
 	public string? EyeCatchingImageId { get; set; }
 
+	//TODO: refactor this column (it's currently a Dictionary<string, any>, which is terrible) 
 	[Column("content", TypeName = "jsonb")]
 	public string Content { get; set; } = null!;
 
+	//TODO: refactor this column (it's currently a Dictionary<string, any>, which is terrible) 
 	[Column("variables", TypeName = "jsonb")]
 	public string Variables { get; set; } = null!;
 
@@ -75,16 +77,16 @@ public class Page {
 	[Column("isPublic")] public bool IsPublic { get; set; }
 
 	[ForeignKey("EyeCatchingImageId")]
-	[InverseProperty("Pages")]
+	[InverseProperty(nameof(DriveFile.Pages))]
 	public virtual DriveFile? EyeCatchingImage { get; set; }
 
-	[InverseProperty("Page")] public virtual ICollection<PageLike> PageLikes { get; set; } = new List<PageLike>();
+	[InverseProperty(nameof(PageLike.Page))] public virtual ICollection<PageLike> PageLikes { get; set; } = new List<PageLike>();
 
 	[ForeignKey("UserId")]
-	[InverseProperty("Pages")]
+	[InverseProperty(nameof(Tables.User.Pages))]
 	public virtual User User { get; set; } = null!;
 
-	[InverseProperty("PinnedPage")] public virtual UserProfile? UserProfile { get; set; }
+	[InverseProperty(nameof(Tables.UserProfile.PinnedPage))] public virtual UserProfile? UserProfile { get; set; }
 
 	[PgName("page_visibility_enum")]
 	public enum PageVisibility {

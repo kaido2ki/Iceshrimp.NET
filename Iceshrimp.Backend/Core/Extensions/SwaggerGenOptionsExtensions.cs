@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi.Models;
@@ -11,6 +12,23 @@ public static class SwaggerGenOptionsExtensions {
 	public static void AddOperationFilters(this SwaggerGenOptions options) {
 		options.OperationFilter<AuthorizeCheckOperationFilter>();
 		options.OperationFilter<HybridRequestOperationFilter>();
+		options.OperationFilter<MastodonApiControllerOperationFilter>();
+	}
+
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
+	                 Justification = "SwaggerGenOptions.OperationFilter<T> instantiates this class at runtime")]
+	private class MastodonApiControllerOperationFilter : IOperationFilter {
+		public void Apply(OpenApiOperation operation, OperationFilterContext context) {
+			if (context.MethodInfo.DeclaringType is null)
+				return;
+
+			var isMastodonController = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+			                                  .OfType<MastodonApiControllerAttribute>().Any();
+
+			if (!isMastodonController) return;
+
+			operation.Tags = [new OpenApiTag { Name = "Mastodon" }];
+		}
 	}
 
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
@@ -26,17 +44,15 @@ public static class SwaggerGenOptionsExtensions {
 			                      context.MethodInfo.GetCustomAttributes(true)
 			                             .OfType<AuthenticateAttribute>().Any();
 
-			var hasOauthAuthenticate = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                                  .OfType<AuthenticateOauthAttribute>().Any() ||
-			                           context.MethodInfo.GetCustomAttributes(true)
-			                                  .OfType<AuthenticateOauthAttribute>().Any();
+			var isMastodonController = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+			                                  .OfType<MastodonApiControllerAttribute>().Any();
 
-			if (!hasAuthenticate && !hasOauthAuthenticate) return;
+			if (!hasAuthenticate) return;
 
 			var schema = new OpenApiSecurityScheme {
 				Reference = new OpenApiReference {
 					Type = ReferenceType.SecurityScheme,
-					Id   = hasAuthenticate ? "user" : "mastodon"
+					Id   = isMastodonController ? "mastodon" : "user"
 				}
 			};
 

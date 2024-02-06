@@ -26,4 +26,18 @@ public class ASActivity : ASObject {
 	}
 }
 
+public class ASFollow : ASActivity {
+	public ASFollow() => Type = Types.Follow;
+}
+
+public class ASUnfollow : ASActivity {
+	public ASUnfollow() => Type = Types.Unfollow;
+}
+
+public class ASAccept : ASActivity {
+	public ASAccept() => Type = Types.Accept;
+}
+
+//TODO: add the rest
+
 public sealed class ASActivityConverter : ASSerializer.ListSingleObjectConverter<ASActivity>;

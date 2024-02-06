@@ -30,17 +30,17 @@ public class UserGroup {
 
 	[Column("isPrivate")] public bool IsPrivate { get; set; }
 
-	[InverseProperty("Group")]
+	[InverseProperty(nameof(MessagingMessage.Group))]
 	public virtual ICollection<MessagingMessage> MessagingMessages { get; set; } = new List<MessagingMessage>();
 
 	[ForeignKey("UserId")]
-	[InverseProperty("UserGroups")]
+	[InverseProperty(nameof(Tables.User.UserGroups))]
 	public virtual User User { get; set; } = null!;
 
-	[InverseProperty("UserGroup")]
+	[InverseProperty(nameof(UserGroupInvitation.UserGroup))]
 	public virtual ICollection<UserGroupInvitation> UserGroupInvitations { get; set; } =
 		new List<UserGroupInvitation>();
 
-	[InverseProperty("UserGroup")]
+	[InverseProperty(nameof(UserGroupMember.UserGroup))]
 	public virtual ICollection<UserGroupMember> UserGroupMembers { get; set; } = new List<UserGroupMember>();
 }

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using EntityFrameworkCore.Projectables.Infrastructure;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
@@ -96,16 +97,17 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		dataSourceBuilder.MapEnum<Note.NoteVisibility>();
 		dataSourceBuilder.MapEnum<Notification.NotificationType>();
 		dataSourceBuilder.MapEnum<Page.PageVisibility>();
-		dataSourceBuilder.MapEnum<Poll.PollNoteVisibility>(); // FIXME: WHY IS THIS ITS OWN ENUM
 		dataSourceBuilder.MapEnum<Relay.RelayStatus>();
 		dataSourceBuilder.MapEnum<UserProfile.UserProfileFFVisibility>();
-		dataSourceBuilder.MapEnum<UserProfile.MutingNotificationType>(); // FIXME: WHY IS THIS ITS OWN ENUM
+
+		dataSourceBuilder.EnableDynamicJson();
 
 		return dataSourceBuilder.Build();
 	}
 
 	public static void Configure(DbContextOptionsBuilder optionsBuilder, NpgsqlDataSource dataSource) {
 		optionsBuilder.UseNpgsql(dataSource);
+		optionsBuilder.UseProjectables(options => { options.CompatibilityMode(CompatibilityMode.Full); });
 	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder) {
@@ -114,10 +116,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			.HasPostgresEnum<Note.NoteVisibility>()
 			.HasPostgresEnum<Notification.NotificationType>()
 			.HasPostgresEnum<Page.PageVisibility>()
-			.HasPostgresEnum<Poll.PollNoteVisibility>() //TODO: merge with regular notevisibility enum
 			.HasPostgresEnum<Relay.RelayStatus>()
 			.HasPostgresEnum<UserProfile.UserProfileFFVisibility>()
-			.HasPostgresEnum<UserProfile.MutingNotificationType>() //TODO: merge with regular notification types enum
 			.HasPostgresExtension("pg_trgm");
 
 		modelBuilder.Entity<AbuseUserReport>(entity => {
@@ -218,9 +218,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.BlockerId).HasComment("The blocker user ID.");
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Blocking.");
 
-			entity.HasOne(d => d.Blockee).WithMany(p => p.BlockingBlockees);
+			entity.HasOne(d => d.Blockee).WithMany(p => p.IncomingBlocks);
 
-			entity.HasOne(d => d.Blocker).WithMany(p => p.BlockingBlockers);
+			entity.HasOne(d => d.Blocker).WithMany(p => p.OutgoingBlocks);
 		});
 
 		modelBuilder.Entity<Channel>(entity => {
@@ -348,9 +348,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.FollowerSharedInbox).HasComment("[Denormalized]");
 			entity.Property(e => e.RequestId).HasComment("id of Follow Activity.");
 
-			entity.HasOne(d => d.Followee).WithMany(p => p.FollowRequestFollowees);
+			entity.HasOne(d => d.Followee).WithMany(p => p.IncomingFollowRequests);
 
-			entity.HasOne(d => d.Follower).WithMany(p => p.FollowRequestFollowers);
+			entity.HasOne(d => d.Follower).WithMany(p => p.OutgoingFollowRequests);
 		});
 
 		modelBuilder.Entity<Following>(entity => {
@@ -364,9 +364,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.FollowerInbox).HasComment("[Denormalized]");
 			entity.Property(e => e.FollowerSharedInbox).HasComment("[Denormalized]");
 
-			entity.HasOne(d => d.Followee).WithMany(p => p.FollowingFollowees);
+			entity.HasOne(d => d.Followee).WithMany(p => p.IncomingFollowRelationships);
 
-			entity.HasOne(d => d.Follower).WithMany(p => p.FollowingFollowers);
+			entity.HasOne(d => d.Follower).WithMany(p => p.OutgoingFollowRelationships);
 		});
 
 		modelBuilder.Entity<GalleryLike>(entity => {
@@ -509,9 +509,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.MuteeId).HasComment("The mutee user ID.");
 			entity.Property(e => e.MuterId).HasComment("The muter user ID.");
 
-			entity.HasOne(d => d.Mutee).WithMany(p => p.MutingMutees);
+			entity.HasOne(d => d.Mutee).WithMany(p => p.IncomingMutes);
 
-			entity.HasOne(d => d.Muter).WithMany(p => p.MutingMuters);
+			entity.HasOne(d => d.Muter).WithMany(p => p.OutgoingMutes);
 		});
 
 		modelBuilder.Entity<Note>(entity => {
@@ -952,7 +952,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.UsePasswordLessLogin).HasDefaultValue(false);
 			entity.Property(e => e.UserHost).HasComment("[Denormalized]");
 			entity.Property(e => e.MutingNotificationTypes)
-			      .HasDefaultValueSql("'{}'::public.user_profile_mutingnotificationtypes_enum[]");
+			      .HasDefaultValueSql("'{}'::public.notification_type_enum[]");
 			entity.Property(e => e.FFVisibility)
 			      .HasDefaultValue(UserProfile.UserProfileFFVisibility.Public);
 

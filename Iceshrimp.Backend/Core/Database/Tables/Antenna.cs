@@ -40,7 +40,7 @@ public class Antenna {
 	public string? UserListId { get; set; }
 
 	[Column("keywords", TypeName = "jsonb")]
-	public string Keywords { get; set; } = null!;
+	public List<List<string>> Keywords { get; set; } = [];
 
 	[Column("withFile")] public bool WithFile { get; set; }
 
@@ -62,21 +62,22 @@ public class Antenna {
 	public List<string> Users { get; set; } = null!;
 
 	[Column("excludeKeywords", TypeName = "jsonb")]
-	public string ExcludeKeywords { get; set; } = null!;
+	public List<List<string>> ExcludeKeywords { get; set; } = [];
 
+	//TODO: refactor this column (this should have been a varchar[]) 
 	[Column("instances", TypeName = "jsonb")]
-	public string Instances { get; set; } = null!;
+	public List<string> Instances { get; set; } = [];
 
 	[ForeignKey("UserId")]
-	[InverseProperty("Antennas")]
+	[InverseProperty(nameof(Tables.User.Antennas))]
 	public virtual User User { get; set; } = null!;
 
 	[ForeignKey("UserGroupMemberId")]
-	[InverseProperty("Antennas")]
+	[InverseProperty(nameof(Tables.UserGroupMember.Antennas))]
 	public virtual UserGroupMember? UserGroupMember { get; set; }
 
 	[ForeignKey("UserListId")]
-	[InverseProperty("Antennas")]
+	[InverseProperty(nameof(Tables.UserList.Antennas))]
 	public virtual UserList? UserList { get; set; }
 
 	[PgName("antenna_src_enum")]

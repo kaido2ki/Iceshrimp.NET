@@ -32,7 +32,10 @@ public static class ServiceExtensions {
 		services.AddScoped<WebFingerService>();
 		services.AddScoped<AuthorizedFetchMiddleware>();
 		services.AddScoped<AuthenticationMiddleware>();
-		services.AddScoped<OauthAuthenticationMiddleware>();
+
+		//TODO: make this prettier
+		services.AddScoped<Controllers.Mastodon.Renderers.UserRenderer>();
+		services.AddScoped<Controllers.Mastodon.Renderers.NoteRenderer>();
 
 		// Singleton = instantiated once across application lifetime
 		services.AddSingleton<HttpClient>();
@@ -42,7 +45,8 @@ public static class ServiceExtensions {
 		services.AddSingleton<ErrorHandlerMiddleware>();
 		services.AddSingleton<RequestBufferingMiddleware>();
 		services.AddSingleton<AuthorizationMiddleware>();
-		services.AddSingleton<OauthAuthorizationMiddleware>();
+		services.AddSingleton<RequestVerificationMiddleware>();
+		services.AddSingleton<RequestDurationMiddleware>();
 
 		// Hosted services = long running background tasks
 		// Note: These need to be added as a singleton as well to ensure data consistency
@@ -93,6 +97,7 @@ public static class ServiceExtensions {
 	}
 
 	public static void AddSwaggerGenWithOptions(this IServiceCollection services) {
+		services.AddEndpointsApiExplorer();
 		services.AddSwaggerGen(options => {
 			options.SwaggerDoc("v1", new OpenApiInfo { Title = "Iceshrimp.NET", Version = "1.0" });
 			options.AddSecurityDefinition("user", new OpenApiSecurityScheme {

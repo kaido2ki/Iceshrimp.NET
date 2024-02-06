@@ -31,6 +31,7 @@ public sealed class Config {
 		public string UserAgent => $"Iceshrimp.NET/{Version} (https://{WebDomain})";
 
 		public required int    ListenPort    { get; init; } = 3000;
+		public required string ListenHost    { get; init; } = "localhost";
 		public required string WebDomain     { get; init; }
 		public required string AccountDomain { get; init; }
 	}

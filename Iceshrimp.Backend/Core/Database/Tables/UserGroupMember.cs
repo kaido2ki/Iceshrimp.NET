@@ -34,14 +34,14 @@ public class UserGroupMember {
 	[StringLength(32)]
 	public string UserGroupId { get; set; } = null!;
 
-	[InverseProperty("UserGroupMember")]
+	[InverseProperty(nameof(Antenna.UserGroupMember))]
 	public virtual ICollection<Antenna> Antennas { get; set; } = new List<Antenna>();
 
 	[ForeignKey("UserId")]
-	[InverseProperty("UserGroupMemberships")]
+	[InverseProperty(nameof(Tables.User.UserGroupMemberships))]
 	public virtual User User { get; set; } = null!;
 
 	[ForeignKey("UserGroupId")]
-	[InverseProperty("UserGroupMembers")]
+	[InverseProperty(nameof(Tables.UserGroup.UserGroupMembers))]
 	public virtual UserGroup UserGroup { get; set; } = null!;
 }

@@ -9,12 +9,12 @@ namespace Iceshrimp.Backend.Core.Extensions;
 public static class WebApplicationExtensions {
 	public static IApplicationBuilder UseCustomMiddleware(this IApplicationBuilder app) {
 		// Caution: make sure these are in the correct order
-		return app.UseMiddleware<ErrorHandlerMiddleware>()
+		return app.UseMiddleware<RequestDurationMiddleware>()
+		          .UseMiddleware<ErrorHandlerMiddleware>()
+		          .UseMiddleware<RequestVerificationMiddleware>()
 		          .UseMiddleware<RequestBufferingMiddleware>()
 		          .UseMiddleware<AuthenticationMiddleware>()
 		          .UseMiddleware<AuthorizationMiddleware>()
-		          .UseMiddleware<OauthAuthenticationMiddleware>()
-		          .UseMiddleware<OauthAuthorizationMiddleware>()
 		          .UseMiddleware<AuthorizedFetchMiddleware>();
 	}
 
@@ -38,6 +38,12 @@ public static class WebApplicationExtensions {
 
 		app.Logger.LogInformation("Iceshrimp.NET v{version} ({domain})", instanceConfig.Version,
 		                          instanceConfig.AccountDomain);
+
+		if (app.Environment.IsDevelopment()) {
+			app.Logger.LogWarning("The hosting environment is set to Development.");
+			app.Logger.LogWarning("This application will not validate the Host header for incoming requests.");
+			app.Logger.LogWarning("If this is not a local development instance, please set the environment to Production.");
+		}
 
 		var provider = app.Services.CreateScope();
 		var context  = provider.ServiceProvider.GetService<DatabaseContext>();

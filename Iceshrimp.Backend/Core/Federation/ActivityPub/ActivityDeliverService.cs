@@ -2,6 +2,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
+using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
@@ -36,5 +37,24 @@ public class ActivityDeliverService(
 				ContentType = "application/activity+json",
 				UserId      = actor.Id
 			});
+	}
+
+	public async Task DeliverToAsync(ASActivity activity, User actor, User recipient) {
+		var inboxUrl = recipient.Inbox ?? recipient.SharedInbox;
+		if (recipient.Host == null || inboxUrl == null)
+			throw new GracefulException("Refusing to deliver to local user");
+
+		logger.LogDebug("Delivering activity {id} to {recipient}", activity.Id, inboxUrl);
+		if (activity.Actor == null) throw new Exception("Actor must not be null");
+
+		var keypair = await db.UserKeypairs.FirstAsync(p => p.User == actor);
+		var payload = await activity.SignAndCompactAsync(keypair);
+
+		await queueService.DeliverQueue.EnqueueAsync(new DeliverJob {
+			InboxUrl    = inboxUrl,
+			Payload     = payload,
+			ContentType = "application/activity+json",
+			UserId      = actor.Id
+		});
 	}
 }

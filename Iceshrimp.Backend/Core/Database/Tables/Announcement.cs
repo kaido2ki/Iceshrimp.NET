@@ -36,6 +36,6 @@ public class Announcement {
 
 	[Column("isGoodNews")] public bool IsGoodNews { get; set; }
 
-	[InverseProperty("Announcement")]
+	[InverseProperty(nameof(AnnouncementRead.Announcement))]
 	public virtual ICollection<AnnouncementRead> AnnouncementReads { get; set; } = new List<AnnouncementRead>();
 }

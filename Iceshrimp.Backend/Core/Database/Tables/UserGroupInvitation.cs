@@ -34,14 +34,14 @@ public class UserGroupInvitation {
 	[StringLength(32)]
 	public string UserGroupId { get; set; } = null!;
 
-	[InverseProperty("UserGroupInvitation")]
+	[InverseProperty(nameof(Notification.UserGroupInvitation))]
 	public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
 	[ForeignKey("UserId")]
-	[InverseProperty("UserGroupInvitations")]
+	[InverseProperty(nameof(Tables.User.UserGroupInvitations))]
 	public virtual User User { get; set; } = null!;
 
 	[ForeignKey("UserGroupId")]
-	[InverseProperty("UserGroupInvitations")]
+	[InverseProperty(nameof(Tables.UserGroup.UserGroupInvitations))]
 	public virtual UserGroup UserGroup { get; set; } = null!;
 }

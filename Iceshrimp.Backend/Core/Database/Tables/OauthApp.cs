@@ -58,5 +58,5 @@ public class OauthApp {
 	[Column("redirectUris", TypeName = "character varying(512)[]")]
 	public List<string> RedirectUris { get; set; } = null!;
 
-	[InverseProperty("App")] public virtual ICollection<OauthToken> OauthTokens { get; set; } = new List<OauthToken>();
+	[InverseProperty(nameof(OauthToken.App))] public virtual ICollection<OauthToken> OauthTokens { get; set; } = new List<OauthToken>();
 }

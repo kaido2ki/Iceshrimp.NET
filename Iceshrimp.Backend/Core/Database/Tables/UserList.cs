@@ -38,12 +38,12 @@ public class UserList {
 	[Column("hideFromHomeTl")]
 	public bool HideFromHomeTl { get; set; }
 
-	[InverseProperty("UserList")] public virtual ICollection<Antenna> Antennas { get; set; } = new List<Antenna>();
+	[InverseProperty(nameof(Antenna.UserList))] public virtual ICollection<Antenna> Antennas { get; set; } = new List<Antenna>();
 
 	[ForeignKey("UserId")]
-	[InverseProperty("UserLists")]
+	[InverseProperty(nameof(Tables.User.UserLists))]
 	public virtual User User { get; set; } = null!;
 
-	[InverseProperty("UserList")]
+	[InverseProperty(nameof(UserListMember.UserList))]
 	public virtual ICollection<UserListMember> UserListMembers { get; set; } = new List<UserListMember>();
 }

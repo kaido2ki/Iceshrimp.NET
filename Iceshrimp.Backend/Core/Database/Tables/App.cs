@@ -61,13 +61,13 @@ public class App {
 	[StringLength(512)]
 	public string? CallbackUrl { get; set; }
 
-	[InverseProperty("App")]
+	[InverseProperty(nameof(AccessToken.App))]
 	public virtual ICollection<AccessToken> AccessTokens { get; set; } = new List<AccessToken>();
 
-	[InverseProperty("App")]
+	[InverseProperty(nameof(AuthSession.App))]
 	public virtual ICollection<AuthSession> AuthSessions { get; set; } = new List<AuthSession>();
 
 	[ForeignKey("UserId")]
-	[InverseProperty("Apps")]
+	[InverseProperty(nameof(Tables.User.Apps))]
 	public virtual User? User { get; set; }
 }

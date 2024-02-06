@@ -13,14 +13,13 @@ builder.Configuration
                    true, true);
 
 builder.Services.AddControllers(options => { options.ModelBinderProviders.AddHybridBindingProvider(); })
-       .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json
+       .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json (or we switch to LinkedData.NET)
        .AddMultiFormatter();
 builder.Services.AddApiVersioning(options => {
 	options.DefaultApiVersion               = new ApiVersion(1);
 	options.ReportApiVersions               = true;
 	options.UnsupportedApiVersionStatusCode = 501;
 });
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGenWithOptions();
 builder.Services.AddRazorPages();
 builder.Services.AddViteServices(options => {
@@ -29,9 +28,8 @@ builder.Services.AddViteServices(options => {
 	options.Server.AutoRun       = false; //TODO: Fix script generation on macOS
 	options.Server.UseFullDevUrl = true;
 });
-//TODO: single line only if there's no \n in the log msg (otherwise stacktraces don't work)
-builder.Services.AddLogging(logging => logging.AddSimpleConsole(options => { options.SingleLine = true; }));
-builder.Services.AddDatabaseContext(builder.Configuration); //TODO: maybe use a dbcontext factory?
+builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
+builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddRedis(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
 
@@ -57,6 +55,6 @@ app.MapFallbackToPage("/Shared/FrontendSPA");
 if (app.Environment.IsDevelopment()) app.UseViteDevMiddleware();
 
 app.Urls.Clear();
-app.Urls.Add($"http://{config.WebDomain}:{config.ListenPort}");
+app.Urls.Add($"http://{config.ListenHost}:{config.ListenPort}");
 
 app.Run();

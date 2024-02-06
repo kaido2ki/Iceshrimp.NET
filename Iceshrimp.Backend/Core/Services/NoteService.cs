@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -42,7 +43,7 @@ public class NoteService(
 		await db.AddAsync(note);
 		await db.SaveChangesAsync();
 
-		var obj      = noteRenderer.Render(note);
+		var obj      = await noteRenderer.RenderAsync(note);
 		var activity = ActivityRenderer.RenderCreate(obj, actor);
 
 		await deliverSvc.DeliverToFollowersAsync(activity, user);
@@ -86,7 +87,7 @@ public class NoteService(
 			Id     = IdHelpers.GenerateSlowflakeId(),
 			Uri    = note.Id,
 			Url    = note.Url?.Id, //FIXME: this doesn't seem to work yet
-			Text   = note.MkContent ?? await MfmHelpers.FromHtmlAsync(note.Content),
+			Text   = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content),
 			UserId = user.Id,
 			CreatedAt = note.PublishedAt?.ToUniversalTime() ??
 			            throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field"),

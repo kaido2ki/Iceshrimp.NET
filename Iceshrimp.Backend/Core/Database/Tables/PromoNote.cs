@@ -22,6 +22,6 @@ public class PromoNote {
 	public string UserId { get; set; } = null!;
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("PromoNote")]
+	[InverseProperty(nameof(Tables.Note.PromoNote))]
 	public virtual Note Note { get; set; } = null!;
 }

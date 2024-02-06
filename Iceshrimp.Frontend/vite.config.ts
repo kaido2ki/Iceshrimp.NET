@@ -12,6 +12,7 @@ export default defineConfig({
 		}),
 	],
 	build: {
+		assetsDir: "frontend",
 		emptyOutDir: true,
 		manifest: true,
 		rollupOptions: {

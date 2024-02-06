@@ -5,7 +5,6 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Iceshrimp.Backend.Core.Services;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -19,8 +18,7 @@ public class AuthorizedFetchMiddleware(
 	UserService userSvc,
 	ILogger<AuthorizedFetchMiddleware> logger) : IMiddleware {
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next) {
-		var endpoint  = ctx.Features.Get<IEndpointFeature>()?.Endpoint;
-		var attribute = endpoint?.Metadata.GetMetadata<AuthorizedFetchAttribute>();
+		var attribute = ctx.GetEndpoint()?.Metadata.GetMetadata<AuthorizedFetchAttribute>();
 
 		if (attribute != null && config.Value.AuthorizedFetch) {
 			var request = ctx.Request;

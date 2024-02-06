@@ -24,10 +24,10 @@ public class PromoRead {
 	[Column("noteId")] [StringLength(32)] public string NoteId { get; set; } = null!;
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("PromoReads")]
+	[InverseProperty(nameof(Tables.Note.PromoReads))]
 	public virtual Note Note { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty("PromoReads")]
+	[InverseProperty(nameof(Tables.User.PromoReads))]
 	public virtual User User { get; set; } = null!;
 }

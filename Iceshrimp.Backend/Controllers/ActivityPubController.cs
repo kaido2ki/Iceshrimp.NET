@@ -29,7 +29,7 @@ public class ActivityPubController : Controller {
 	                                         [FromServices] NoteRenderer noteRenderer) {
 		var note = await db.Notes.FirstOrDefaultAsync(p => p.Id == id);
 		if (note == null) return NotFound();
-		var rendered  = noteRenderer.Render(note);
+		var rendered  = noteRenderer.RenderAsync(note);
 		var compacted = LdHelpers.Compact(rendered);
 		return Ok(compacted);
 	}

@@ -24,10 +24,10 @@ public class NoteFavorite {
 	[Column("noteId")] [StringLength(32)] public string NoteId { get; set; } = null!;
 
 	[ForeignKey("NoteId")]
-	[InverseProperty("NoteFavorites")]
+	[InverseProperty(nameof(Tables.Note.NoteFavorites))]
 	public virtual Note Note { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty("NoteFavorites")]
+	[InverseProperty(nameof(Tables.User.NoteFavorites))]
 	public virtual User User { get; set; } = null!;
 }

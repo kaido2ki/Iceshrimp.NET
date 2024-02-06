@@ -51,16 +51,15 @@ public static class MastodonOauthHelpers {
 
 	public static IEnumerable<string> ExpandScopes(IEnumerable<string> scopes) {
 		var res = new List<string>();
-		foreach (var scope in scopes) {
+		foreach (var scope in scopes)
 			if (scope == "read")
 				res.AddRange(ReadScopes);
-			if (scope == "write")
+			else if (scope == "write")
 				res.AddRange(WriteScopes);
-			if (scope == "follow")
+			else if (scope == "follow")
 				res.AddRange(FollowScopes);
 			else
 				res.Add(scope);
-		}
 
 		return res.Distinct();
 	}

@@ -25,10 +25,10 @@ public class AuthSession {
 	[Column("appId")] [StringLength(32)] public string AppId { get; set; } = null!;
 
 	[ForeignKey("AppId")]
-	[InverseProperty("AuthSessions")]
+	[InverseProperty(nameof(Tables.App.AuthSessions))]
 	public virtual App App { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty("AuthSessions")]
+	[InverseProperty(nameof(Tables.User.AuthSessions))]
 	public virtual User? User { get; set; }
 }

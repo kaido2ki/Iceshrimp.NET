@@ -7,7 +7,7 @@ using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
-public abstract class MastodonAuth {
+public abstract class AuthSchemas {
 	public class VerifyAppCredentialsResponse {
 		public required OauthApp App;
 
@@ -109,5 +109,19 @@ public abstract class MastodonAuth {
 		[J("token_type")] public string TokenType         => "Bearer";
 		[J("scope")]      public string Scope             => string.Join(' ', Scopes);
 		[J("created_at")] public long   CreatedAtInternal => (long)(CreatedAt - DateTime.UnixEpoch).TotalSeconds;
+	}
+
+	public class OauthTokenRevocationRequest {
+		[B(Name = "client_id")]
+		[J("client_id")]
+		[JR]
+		public string ClientId { get; set; } = null!;
+
+		[B(Name = "client_secret")]
+		[J("client_secret")]
+		[JR]
+		public string ClientSecret { get; set; } = null!;
+
+		[B(Name = "code")] [J("token")] [JR] public string Token { get; set; } = null!;
 	}
 }

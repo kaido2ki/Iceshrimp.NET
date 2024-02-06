@@ -40,6 +40,6 @@ public class AttestationChallenge {
 	public bool RegistrationChallenge { get; set; }
 
 	[ForeignKey("UserId")]
-	[InverseProperty("AttestationChallenges")]
+	[InverseProperty(nameof(Tables.User.AttestationChallenges))]
 	public virtual User User { get; set; } = null!;
 }
