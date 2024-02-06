@@ -98,3 +98,5 @@ Iceshrimp.Frontend/.yarn
 Iceshrimp.Frontend/.pnp.*
 
 *.DotSettings.user
+
+.vs/
