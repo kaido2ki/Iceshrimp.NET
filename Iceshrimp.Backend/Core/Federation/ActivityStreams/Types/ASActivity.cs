@@ -21,6 +21,7 @@ public class ASActivity : ASObject {
 		public const string Follow   = $"{Ns}#Follow";
 		public const string Unfollow = $"{Ns}#Unfollow";
 		public const string Accept   = $"{Ns}#Accept";
+		public const string Reject   = $"{Ns}#Reject";
 		public const string Undo     = $"{Ns}#Undo";
 		public const string Like     = $"{Ns}#Like";
 	}
@@ -36,6 +37,14 @@ public class ASUnfollow : ASActivity {
 
 public class ASAccept : ASActivity {
 	public ASAccept() => Type = Types.Accept;
+}
+
+public class ASReject : ASActivity {
+	public ASReject() => Type = Types.Reject;
+}
+
+public class ASUndo : ASActivity {
+	public ASUndo() => Type = Types.Undo;
 }
 
 //TODO: add the rest

@@ -11,6 +11,23 @@ using Microsoft.Extensions.Options;
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
 public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db) {
+	/// <summary>
+	/// This function is meant for compacting an actor into the @id form as specified in ActivityStreams
+	/// </summary>
+	/// <param name="user">Any local or remote user</param>
+	/// <returns>ASActor with only the Id field populated</returns>
+	public ASActor RenderLite(User user) {
+		if (user.Host != null) {
+			return new ASActor {
+				Id = user.Uri ?? throw new GracefulException("Remote user must have an URI")
+			};
+		}
+
+		return new ASActor {
+			Id = $"https://{config.Value.WebDomain}/users/{user.Id}"
+		};
+	}
+	
 	public async Task<ASActor> RenderAsync(User user) {
 		if (user.Host != null) {
 			return new ASActor {

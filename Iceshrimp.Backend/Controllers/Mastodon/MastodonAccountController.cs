@@ -69,10 +69,7 @@ public class MastodonAccountController(
 
 		if (!(followee.PrecomputedIsFollowedBy ?? false) && !(followee.PrecomputedIsRequestedBy ?? false)) {
 			if (followee.Host != null) {
-				var followerActor = await apUserRenderer.RenderAsync(user);
-				var followeeActor = await apUserRenderer.RenderAsync(followee);
-				var followId      = activityRenderer.RenderFollowId(user, followee);
-				var activity      = ActivityRenderer.RenderFollow(followerActor, followeeActor, followId);
+				var activity = activityRenderer.RenderFollow(user, followee);
 				await deliverSvc.DeliverToAsync(activity, user, followee);
 			}
 
@@ -131,7 +128,7 @@ public class MastodonAccountController(
 			Notifying           = false, //FIXME
 			DomainBlocking      = false, //FIXME
 			MutingNotifications = false, //FIXME
-			ShowingReblogs      = true,  //FIXME
+			ShowingReblogs      = true   //FIXME
 		};
 
 		return Ok(res);
@@ -167,7 +164,7 @@ public class MastodonAccountController(
 			Notifying           = false, //FIXME
 			DomainBlocking      = false, //FIXME
 			MutingNotifications = false, //FIXME
-			ShowingReblogs      = true,  //FIXME
+			ShowingReblogs      = true   //FIXME
 		});
 
 		return Ok(res);
@@ -189,8 +186,14 @@ public class MastodonAccountController(
 		                       .FirstOrDefaultAsync()
 		               ?? throw GracefulException.RecordNotFound();
 
-		// TODO: send federation events for remote users
-		if (!(followee.PrecomputedIsFollowedBy ?? false)) {
+		if ((followee.PrecomputedIsFollowedBy ?? false) || (followee.PrecomputedIsRequestedBy ?? false)) {
+			if (followee.Host != null) {
+				var activity = activityRenderer.RenderUnfollow(user, followee);
+				await deliverSvc.DeliverToAsync(activity, user, followee);
+			}
+		}
+
+		if (followee.PrecomputedIsFollowedBy ?? false) {
 			await db.Followings.Where(p => p.Follower == user && p.Followee == followee).ExecuteDeleteAsync();
 			followee.PrecomputedIsFollowedBy = false;
 		}
@@ -214,7 +217,7 @@ public class MastodonAccountController(
 			Notifying           = false, //FIXME
 			DomainBlocking      = false, //FIXME
 			MutingNotifications = false, //FIXME
-			ShowingReblogs      = true,  //FIXME
+			ShowingReblogs      = true   //FIXME
 		};
 
 		return Ok(res);

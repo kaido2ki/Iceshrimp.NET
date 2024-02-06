@@ -143,6 +143,18 @@ public class ASActor : ASObject {
 		public const string Person       = $"{Ns}#Person";
 		public const string Service      = $"{Ns}#Service";
 	}
+
+	public static ASActor FromObject(ASObject obj) {
+		return new ASActor {
+			Id = obj.Id
+		};
+	}
+
+	public ASActor Compact() {
+		return new ASActor {
+			Id = Id
+		};
+	}
 }
 
 public class ASActorConverter : ASSerializer.ListSingleObjectConverter<ASActor>;
