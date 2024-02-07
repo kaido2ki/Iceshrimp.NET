@@ -21,7 +21,7 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 	[HttpGet("{id}")]
 	[Authenticate("read:statuses")]
 	[Produces("application/json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Account))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Status))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetNote(string id) {
 		var user = HttpContext.GetUser();
@@ -39,7 +39,7 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 	[HttpPost]
 	[Authenticate("write:statuses")]
 	[Produces("application/json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Account))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Status))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> PostNote([FromHybrid] StatusSchemas.PostStatusRequest request) {
 		var user = HttpContext.GetUserOrFail();
