@@ -70,6 +70,7 @@ public class Note : IEntity {
 
 	[Column("visibility")] public NoteVisibility Visibility { get; set; }
 
+	[NotMapped]
 	[Projectable]
 	[SuppressMessage("ReSharper", "MergeIntoLogicalPattern",
 	                 Justification = "Projectable expression cannot contain patterns")]

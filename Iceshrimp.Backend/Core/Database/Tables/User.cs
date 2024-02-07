@@ -296,9 +296,9 @@ public class User : IEntity {
 	[InverseProperty(nameof(Tables.Blocking.Blocker))]
 	public virtual ICollection<Blocking> OutgoingBlocks { get; set; } = new List<Blocking>();
 
-	[Projectable] public virtual IEnumerable<User> BlockedBy => IncomingBlocks.Select(p => p.Blocker);
+	[NotMapped] [Projectable] public virtual IEnumerable<User> BlockedBy => IncomingBlocks.Select(p => p.Blocker);
 
-	[Projectable] public virtual IEnumerable<User> Blocking => OutgoingBlocks.Select(p => p.Blockee);
+	[NotMapped] [Projectable] public virtual IEnumerable<User> Blocking => OutgoingBlocks.Select(p => p.Blockee);
 
 	[InverseProperty(nameof(ChannelFollowing.Follower))]
 	public virtual ICollection<ChannelFollowing> ChannelFollowings { get; set; } = new List<ChannelFollowing>();
@@ -320,10 +320,13 @@ public class User : IEntity {
 	[InverseProperty(nameof(FollowRequest.Follower))]
 	public virtual ICollection<FollowRequest> OutgoingFollowRequests { get; set; } = new List<FollowRequest>();
 
+	[NotMapped]
 	[Projectable]
 	public virtual IEnumerable<User> ReceivedFollowRequests => IncomingFollowRequests.Select(p => p.Follower);
 
-	[Projectable] public virtual IEnumerable<User> SentFollowRequests => OutgoingFollowRequests.Select(p => p.Followee);
+	[NotMapped]
+	[Projectable]
+	public virtual IEnumerable<User> SentFollowRequests => OutgoingFollowRequests.Select(p => p.Followee);
 
 	[InverseProperty(nameof(Tables.Following.Followee))]
 	public virtual ICollection<Following> IncomingFollowRelationships { get; set; } = new List<Following>();
@@ -331,9 +334,13 @@ public class User : IEntity {
 	[InverseProperty(nameof(Tables.Following.Follower))]
 	public virtual ICollection<Following> OutgoingFollowRelationships { get; set; } = new List<Following>();
 
-	[Projectable] public virtual IEnumerable<User> Followers => IncomingFollowRelationships.Select(p => p.Follower);
+	[NotMapped]
+	[Projectable]
+	public virtual IEnumerable<User> Followers => IncomingFollowRelationships.Select(p => p.Follower);
 
-	[Projectable] public virtual IEnumerable<User> Following => OutgoingFollowRelationships.Select(p => p.Followee);
+	[NotMapped]
+	[Projectable]
+	public virtual IEnumerable<User> Following => OutgoingFollowRelationships.Select(p => p.Followee);
 
 	[InverseProperty(nameof(GalleryLike.User))]
 	public virtual ICollection<GalleryLike> GalleryLikes { get; set; } = new List<GalleryLike>();
@@ -360,9 +367,9 @@ public class User : IEntity {
 	[InverseProperty(nameof(Tables.Muting.Muter))]
 	public virtual ICollection<Muting> OutgoingMutes { get; set; } = new List<Muting>();
 
-	[Projectable] public virtual IEnumerable<User> MutedBy => IncomingMutes.Select(p => p.Muter);
+	[NotMapped] [Projectable] public virtual IEnumerable<User> MutedBy => IncomingMutes.Select(p => p.Muter);
 
-	[Projectable] public virtual IEnumerable<User> Muting => OutgoingMutes.Select(p => p.Mutee);
+	[NotMapped] [Projectable] public virtual IEnumerable<User> Muting => OutgoingMutes.Select(p => p.Mutee);
 
 	[InverseProperty(nameof(NoteFavorite.User))]
 	public virtual ICollection<NoteFavorite> NoteFavorites { get; set; } = new List<NoteFavorite>();
@@ -445,7 +452,7 @@ public class User : IEntity {
 	[InverseProperty(nameof(UserNotePin.User))]
 	public virtual ICollection<UserNotePin> UserNotePins { get; set; } = new List<UserNotePin>();
 
-	[Projectable] public virtual IEnumerable<Note> PinnedNotes => UserNotePins.Select(p => p.Note);
+	[NotMapped] [Projectable] public virtual IEnumerable<Note> PinnedNotes => UserNotePins.Select(p => p.Note);
 
 	[InverseProperty(nameof(Tables.UserProfile.User))]
 	public virtual UserProfile? UserProfile { get; set; }
