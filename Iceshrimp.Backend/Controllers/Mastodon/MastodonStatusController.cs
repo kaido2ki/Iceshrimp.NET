@@ -52,7 +52,8 @@ public class MastodonStatusController(DatabaseContext db, NoteRenderer noteRende
 
 		var visibility = Status.DecodeVisibility(request.Visibility);
 		var reply = request.ReplyId != null
-			? await db.Notes.Where(p => p.Id == request.ReplyId).EnsureVisibleFor(user).FirstOrDefaultAsync()
+			? await db.Notes.Where(p => p.Id == request.ReplyId).EnsureVisibleFor(user).FirstOrDefaultAsync() ??
+			  throw GracefulException.BadRequest("Reply target is nonexistent or inaccessible")
 			: null;
 
 		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply);
