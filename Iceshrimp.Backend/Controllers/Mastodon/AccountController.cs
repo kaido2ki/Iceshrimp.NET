@@ -1,3 +1,4 @@
+using EntityFrameworkCore.Projectables;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
@@ -186,7 +187,7 @@ public class AccountController(
 
 		return Ok(res);
 	}
-	
+
 	[HttpGet("relationships")]
 	[Authorize("read:follows")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Relationship[]))]
@@ -231,12 +232,15 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetHomeTimeline(string id, PaginationQuery query) {
-		//TODO: there's a lot more query params to implement here
-		var user = HttpContext.GetUserOrFail();
+	public async Task<IActionResult> GetUserStatuses(string id, AccountSchemas.AccountStatusesRequest request,
+	                                                 PaginationQuery query) {
+		var user    = HttpContext.GetUserOrFail();
+		var account = await db.Users.FirstOrDefaultAsync(p => p.Id == id) ?? throw GracefulException.RecordNotFound();
+
 		var res = await db.Notes
 		                  .IncludeCommonProperties()
-		                  .FilterByUser(id)
+		                  .FilterByUser(account)
+		                  .FilterByAccountStatusesRequest(request, account)
 		                  .EnsureVisibleFor(user)
 		                  .Paginate(query, ControllerContext)
 		                  .PrecomputeVisibilities(user)

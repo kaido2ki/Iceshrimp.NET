@@ -75,11 +75,11 @@ public static class NoteQueryableExtensions {
 	public static IQueryable<Note> FilterByFollowingAndOwn(this IQueryable<Note> query, User user) {
 		return query.Where(note => note.User == user || note.User.IsFollowedBy(user));
 	}
-	
+
 	public static IQueryable<Note> FilterByUser(this IQueryable<Note> query, User user) {
 		return query.Where(note => note.User == user);
 	}
-	
+
 	public static IQueryable<Note> FilterByUser(this IQueryable<Note> query, string userId) {
 		return query.Where(note => note.UserId == userId);
 	}
@@ -125,7 +125,7 @@ public static class NoteQueryableExtensions {
 		return query.Where(note => !note.User.UserListMembers.Any(p => p.UserList.User == user &&
 		                                                               p.UserList.HideFromHomeTl));
 	}
-	
+
 	public static Note EnforceRenoteReplyVisibility(this Note note) {
 		if (!note.PrecomputedIsReplyVisible ?? false)
 			note.Reply = null;
@@ -145,10 +145,27 @@ public static class NoteQueryableExtensions {
 			.EnforceRenoteReplyVisibility();
 		return (await renderer.RenderManyAsync(list)).ToList();
 	}
-	
+
 	public static async Task<List<Account>> RenderAllForMastodonAsync(
 		this IQueryable<User> users, UserRenderer renderer) {
 		var list = await users.ToListAsync();
 		return (await renderer.RenderManyAsync(list)).ToList();
+	}
+
+	public static IQueryable<Note> FilterByAccountStatusesRequest(this IQueryable<Note> query,
+	                                                              AccountSchemas.AccountStatusesRequest request,
+	                                                              User account) {
+		if (request.ExcludeReplies)
+			query = query.Where(p => p.Reply == null);
+		if (request.ExcludeRenotes)
+			query = query.Where(p => p.Renote == null);
+		if (request.Tagged != null)
+			query = query.Where(p => p.Tags.Contains(request.Tagged.ToLowerInvariant()));
+		if (request.OnlyMedia)
+			query = query.Where(p => p.FileIds.Count != 0);
+		if (request.Pinned)
+			query = query.Where(note => account.HasPinned(note));
+
+		return query;
 	}
 }

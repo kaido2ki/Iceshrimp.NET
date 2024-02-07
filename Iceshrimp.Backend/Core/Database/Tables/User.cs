@@ -445,6 +445,8 @@ public class User : IEntity {
 	[InverseProperty(nameof(UserNotePin.User))]
 	public virtual ICollection<UserNotePin> UserNotePins { get; set; } = new List<UserNotePin>();
 
+	[Projectable] public virtual IEnumerable<Note> PinnedNotes => UserNotePins.Select(p => p.Note);
+
 	[InverseProperty(nameof(Tables.UserProfile.User))]
 	public virtual UserProfile? UserProfile { get; set; }
 
@@ -477,7 +479,7 @@ public class User : IEntity {
 	[Projectable]
 	public bool DisplayNameContainsCaseInsensitive(string str) =>
 		DisplayName != null && EF.Functions.ILike(DisplayName, "%" + EfHelpers.EscapeLikeQuery(str) + "%", @"\");
-	
+
 	[Projectable]
 	public bool UsernameContainsCaseInsensitive(string str) =>
 		DisplayName != null && EF.Functions.ILike(DisplayName, "%" + EfHelpers.EscapeLikeQuery(str) + "%", @"\");
@@ -505,6 +507,9 @@ public class User : IEntity {
 
 	[Projectable]
 	public bool IsMuting(User user) => Muting.Contains(user);
+
+	[Projectable]
+	public bool HasPinned(Note note) => PinnedNotes.Contains(note);
 
 	public User WithPrecomputedBlockStatus(bool blocking, bool blockedBy) {
 		PrecomputedIsBlocking  = blocking;
