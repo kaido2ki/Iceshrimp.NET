@@ -64,7 +64,7 @@ public class UserService(
 			Id            = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
 			LastFetchedAt = DateTime.UtcNow,
-			Name          = actor.DisplayName,
+			DisplayName          = actor.DisplayName,
 			IsLocked      = actor.IsLocked ?? false,
 			IsBot         = actor.IsBot,
 			Username      = actor.Username!,

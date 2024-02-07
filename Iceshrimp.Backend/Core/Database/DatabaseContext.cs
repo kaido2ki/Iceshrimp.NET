@@ -824,7 +824,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .HasDefaultValue(false)
 			      .HasComment("Whether the User is suspended.");
 			entity.Property(e => e.MovedToUri).HasComment("The URI of the new account of the User");
-			entity.Property(e => e.Name).HasComment("The name of the User.");
+			entity.Property(e => e.DisplayName).HasComment("The name of the User.");
 			entity.Property(e => e.NotesCount)
 			      .HasDefaultValue(0)
 			      .HasComment("The count of notes.");

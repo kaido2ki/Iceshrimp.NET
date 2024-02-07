@@ -139,10 +139,16 @@ public static class NoteQueryableExtensions {
 		return list.Select(EnforceRenoteReplyVisibility);
 	}
 
-	public static async Task<IEnumerable<Status>> RenderAllForMastodonAsync(
+	public static async Task<List<Status>> RenderAllForMastodonAsync(
 		this IQueryable<Note> notes, NoteRenderer renderer) {
 		var list = (await notes.ToListAsync())
 			.EnforceRenoteReplyVisibility();
-		return await renderer.RenderManyAsync(list);
+		return (await renderer.RenderManyAsync(list)).ToList();
+	}
+	
+	public static async Task<List<Account>> RenderAllForMastodonAsync(
+		this IQueryable<User> users, UserRenderer renderer) {
+		var list = await users.ToListAsync();
+		return (await renderer.RenderManyAsync(list)).ToList();
 	}
 }

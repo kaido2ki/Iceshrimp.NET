@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EntityFrameworkCore.Projectables;
+using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
@@ -54,7 +55,7 @@ public class User : IEntity {
 	/// </summary>
 	[Column("name")]
 	[StringLength(128)]
-	public string? Name { get; set; }
+	public string? DisplayName { get; set; }
 
 	/// <summary>
 	///     The count of followers.
@@ -472,6 +473,14 @@ public class User : IEntity {
 	[Column("id")]
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
+
+	[Projectable]
+	public bool DisplayNameContainsCaseInsensitive(string str) =>
+		DisplayName != null && EF.Functions.ILike(DisplayName, "%" + EfHelpers.EscapeLikeQuery(str) + "%", @"\");
+	
+	[Projectable]
+	public bool UsernameContainsCaseInsensitive(string str) =>
+		DisplayName != null && EF.Functions.ILike(DisplayName, "%" + EfHelpers.EscapeLikeQuery(str) + "%", @"\");
 
 	[Projectable]
 	public bool IsBlockedBy(User user) => BlockedBy.Contains(user);

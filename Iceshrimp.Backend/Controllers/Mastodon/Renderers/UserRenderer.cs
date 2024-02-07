@@ -2,6 +2,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -20,7 +21,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config) {
 
 		var res = new Account {
 			Id = user.Id,
-			DisplayName = user.Name ?? user.Username,
+			DisplayName = user.DisplayName ?? user.Username,
 			AvatarUrl = user.AvatarUrl ?? _transparent,
 			Username = user.Username,
 			Acct = acct,
@@ -46,5 +47,9 @@ public class UserRenderer(IOptions<Config.InstanceSection> config) {
 
 	public async Task<Account> RenderAsync(User user) {
 		return await RenderAsync(user, user.UserProfile);
+	}
+
+	public async Task<IEnumerable<Account>> RenderManyAsync(IEnumerable<User> users) {
+		return await users.Select(RenderAsync).AwaitAllAsync();
 	}
 }

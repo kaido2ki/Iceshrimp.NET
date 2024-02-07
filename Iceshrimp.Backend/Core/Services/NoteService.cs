@@ -138,6 +138,11 @@ public class NoteService(
 			return null;
 		}
 
+		if (fetchedNote.Id != uri) {
+			var res = await db.Notes.FirstOrDefaultAsync(p => p.Uri == fetchedNote.Id);
+			if (res != null) return res;
+		}
+
 		//TODO: we don't need to fetch the actor every time, we can use userResolver here
 		var actor = await fetchSvc.FetchActorAsync(attrTo.Id, instanceActor, instanceActorKeypair);
 

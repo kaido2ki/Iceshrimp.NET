@@ -57,7 +57,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			SharedInbox = new ASLink($"https://{config.Value.WebDomain}/inbox"),
 			Url = new ASLink($"https://{config.Value.WebDomain}/@{user.Username}"),
 			Username = user.Username,
-			DisplayName = user.Name ?? user.Username,
+			DisplayName = user.DisplayName ?? user.Username,
 			Summary = profile?.Description != null ? await MfmConverter.FromHtmlAsync(profile.Description) : null,
 			MkSummary = profile?.Description,
 			IsCat = user.IsCat,

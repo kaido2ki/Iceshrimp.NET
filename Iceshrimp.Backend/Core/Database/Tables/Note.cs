@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using EntityFrameworkCore.Projectables;
+using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 using NpgsqlTypes;
 
@@ -242,6 +243,10 @@ public class Note : IEntity {
 	[Column("id")]
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
+
+	[Projectable]
+	public bool TextContainsCaseInsensitive(string str) =>
+		Text != null && EF.Functions.ILike(Text, "%" + EfHelpers.EscapeLikeQuery(str) + "%", @"\");
 
 	[Projectable]
 	public bool IsVisibleFor(User? user) => VisibilityIsPublicOrHome || (user != null && CheckComplexVisibility(user));
