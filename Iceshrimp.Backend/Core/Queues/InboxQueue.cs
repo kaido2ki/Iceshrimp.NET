@@ -1,4 +1,3 @@
-using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Middleware;
@@ -27,8 +26,9 @@ public class InboxQueue {
 			throw new GracefulException("Job data is not an ASActivity", $"Type: {obj.Type}");
 		}
 
-		var apHandler = scope.GetRequiredService<ActivityHandlerService>();
+		var apHandler = scope.GetRequiredService<ActivityPub.ActivityHandlerService>();
 		var logger    = scope.GetRequiredService<ILogger<InboxQueue>>();
+
 		logger.LogTrace("Preparation took {ms} ms", job.Duration);
 		await apHandler.PerformActivityAsync(activity, job.InboxUserId);
 	}

@@ -20,6 +20,12 @@ public class DeliverQueue {
 		var httpRqSvc  = scope.GetRequiredService<HttpRequestService>();
 		var cache      = scope.GetRequiredService<IDistributedCache>();
 		var db         = scope.GetRequiredService<DatabaseContext>();
+		var fedCtrl    = scope.GetRequiredService<ActivityPub.FederationControlService>();
+
+		if (await fedCtrl.ShouldBlockAsync(job.InboxUrl)) {
+			logger.LogDebug("Refusing to deliver activity to blocked instance ({uri})", job.InboxUrl);
+			return;
+		}
 
 		logger.LogDebug("Delivering activity to: {uri}", job.InboxUrl);
 

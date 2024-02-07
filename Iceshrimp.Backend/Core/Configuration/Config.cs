@@ -37,9 +37,12 @@ public sealed class Config {
 	}
 
 	public sealed class SecuritySection {
-		public bool                AuthorizedFetch    { get; init; } = true;
-		public ExceptionVerbosity  ExceptionVerbosity { get; init; } = ExceptionVerbosity.Basic;
-		public Enums.Registrations Registrations      { get; init; } = Enums.Registrations.Closed;
+		public bool                 AuthorizedFetch      { get; init; } = true;
+		public ExceptionVerbosity   ExceptionVerbosity   { get; init; } = ExceptionVerbosity.Basic;
+		public Enums.Registrations  Registrations        { get; init; } = Enums.Registrations.Closed;
+		public Enums.FederationMode FederationMode       { get; init; } = Enums.FederationMode.BlockList;
+		public Enums.ItemVisibility ExposeFederationList { get; init; } = Enums.ItemVisibility.Registered;
+		public Enums.ItemVisibility ExposeBlockReasons   { get; init; } = Enums.ItemVisibility.Registered;
 	}
 
 	public sealed class DatabaseSection {

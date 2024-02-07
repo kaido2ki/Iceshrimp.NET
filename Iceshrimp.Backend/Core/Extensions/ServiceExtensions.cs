@@ -1,8 +1,8 @@
 using System.Threading.RateLimiting;
+using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
-using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
@@ -21,26 +21,27 @@ public static class ServiceExtensions {
 		//services.AddTransient<T>();
 
 		// Scoped = instantiated per request
-		services.AddScoped<ActivityRenderer>();
-		services.AddScoped<UserRenderer>();
-		services.AddScoped<NoteRenderer>();
-		services.AddScoped<UserResolver>();
+		services.AddScoped<ActivityPub.ActivityRenderer>();
+		services.AddScoped<ActivityPub.UserRenderer>();
+		services.AddScoped<ActivityPub.NoteRenderer>();
+		services.AddScoped<ActivityPub.UserResolver>();
 		services.AddScoped<UserService>();
 		services.AddScoped<NoteService>();
-		services.AddScoped<ActivityDeliverService>();
-		services.AddScoped<ActivityHandlerService>();
+		services.AddScoped<ActivityPub.ActivityDeliverService>();
+		services.AddScoped<ActivityPub.ActivityHandlerService>();
 		services.AddScoped<WebFingerService>();
+		services.AddScoped<ActivityPub.FederationControlService>();
 		services.AddScoped<AuthorizedFetchMiddleware>();
 		services.AddScoped<AuthenticationMiddleware>();
 
 		//TODO: make this prettier
-		services.AddScoped<Controllers.Mastodon.Renderers.UserRenderer>();
-		services.AddScoped<Controllers.Mastodon.Renderers.NoteRenderer>();
+		services.AddScoped<UserRenderer>();
+		services.AddScoped<NoteRenderer>();
 
 		// Singleton = instantiated once across application lifetime
 		services.AddSingleton<HttpClient>();
 		services.AddSingleton<HttpRequestService>();
-		services.AddSingleton<ActivityFetcherService>();
+		services.AddSingleton<ActivityPub.ActivityFetcherService>();
 		services.AddSingleton<QueueService>();
 		services.AddSingleton<ErrorHandlerMiddleware>();
 		services.AddSingleton<RequestBufferingMiddleware>();

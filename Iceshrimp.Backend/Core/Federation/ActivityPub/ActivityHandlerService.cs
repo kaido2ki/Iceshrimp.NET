@@ -19,41 +19,56 @@ public class ActivityHandlerService(
 	DatabaseContext db,
 	QueueService queueService,
 	ActivityRenderer activityRenderer,
-	IOptions<Config.InstanceSection> config
+	IOptions<Config.InstanceSection> config,
+	FederationControlService federationCtrl
 ) {
-	public Task PerformActivityAsync(ASActivity activity, string? inboxUserId) {
+	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId) {
 		logger.LogDebug("Processing activity: {activity}", activity.Id);
-		if (activity.Actor == null) throw new Exception("Cannot perform activity as actor 'null'");
+		if (activity.Actor == null)
+			throw GracefulException.UnprocessableEntity("Cannot perform activity as actor 'null'");
+		if (await federationCtrl.ShouldBlockAsync(activity.Actor.Id))
+			throw GracefulException.UnprocessableEntity("Instance is blocked");
 
 		//TODO: validate inboxUserId
 
 		switch (activity.Type) {
 			case ASActivity.Types.Create: {
 				//TODO: implement the rest
-				if (activity.Object is ASNote note) return noteSvc.ProcessNoteAsync(note, activity.Actor);
-				throw GracefulException.UnprocessableEntity("Create activity object is invalid");
+				if (activity.Object is not ASNote note)
+					throw GracefulException.UnprocessableEntity("Create activity object is invalid");
+				await noteSvc.ProcessNoteAsync(note, activity.Actor);
+				return;
 			}
 			case ASActivity.Types.Follow: {
-				if (activity.Object is { } obj) return FollowAsync(obj, activity.Actor, activity.Id);
-				throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
+				if (activity.Object is not { } obj)
+					throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
+				await FollowAsync(obj, activity.Actor, activity.Id);
+				return;
 			}
 			case ASActivity.Types.Unfollow: {
-				if (activity.Object is { } obj) return UnfollowAsync(obj, activity.Actor);
-				throw GracefulException.UnprocessableEntity("Unfollow activity object is invalid");
+				if (activity.Object is not { } obj)
+					throw GracefulException.UnprocessableEntity("Unfollow activity object is invalid");
+				await UnfollowAsync(obj, activity.Actor);
+				return;
 			}
 			case ASActivity.Types.Accept: {
-				if (activity.Object is { } obj) return AcceptAsync(obj, activity.Actor);
-				throw GracefulException.UnprocessableEntity("Accept activity object is invalid");
+				if (activity.Object is not { } obj)
+					throw GracefulException.UnprocessableEntity("Accept activity object is invalid");
+				await AcceptAsync(obj, activity.Actor);
+				return;
 			}
 			case ASActivity.Types.Reject: {
-				if (activity.Object is { } obj) return RejectAsync(obj, activity.Actor);
-				throw GracefulException.UnprocessableEntity("Reject activity object is invalid");
+				if (activity.Object is not { } obj)
+					throw GracefulException.UnprocessableEntity("Reject activity object is invalid");
+				await RejectAsync(obj, activity.Actor);
+				return;
 			}
 			case ASActivity.Types.Undo: {
 				//TODO: implement the rest
-				if (activity.Object is ASActivity { Type: ASActivity.Types.Follow, Object: not null } undoActivity)
-					return UnfollowAsync(undoActivity.Object, activity.Actor);
-				throw new NotImplementedException("Unsupported undo operation");
+				if (activity.Object is not ASActivity { Type: ASActivity.Types.Follow, Object: not null } undoActivity)
+					throw new NotImplementedException("Unsupported undo operation");
+				await UnfollowAsync(undoActivity.Object, activity.Actor);
+				return;
 			}
 			default: {
 				throw new NotImplementedException($"Activity type {activity.Type} is unknown");
