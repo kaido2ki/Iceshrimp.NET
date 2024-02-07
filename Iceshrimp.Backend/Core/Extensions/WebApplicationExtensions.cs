@@ -28,6 +28,7 @@ public static class WebApplicationExtensions {
 			options.EnableTryItOutByDefault();
 			options.DisplayRequestDuration();
 			options.DefaultModelsExpandDepth(-1); // Hide "Schemas" section
+			options.ConfigObject.AdditionalItems.Add("tagsSorter", "alpha"); // Sort tags alphabetically
 		});
 		return app;
 	}
