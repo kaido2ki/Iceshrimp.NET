@@ -20,7 +20,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Produces("application/json")]
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRenderer) : Controller {
+public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer) : Controller {
 	[Authorize("read:statuses")]
 	[HttpGet("home")]
 	[Produces("application/json")]

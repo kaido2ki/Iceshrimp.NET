@@ -19,7 +19,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Authenticate]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
-public class MastodonAccountController(
+public class AccountController(
 	DatabaseContext db,
 	UserRenderer userRenderer,
 	NoteRenderer noteRenderer,

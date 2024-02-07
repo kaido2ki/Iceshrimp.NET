@@ -17,7 +17,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Authenticate]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
-public class MastodonStatusController(DatabaseContext db, NoteRenderer noteRenderer, NoteService noteSvc) : Controller {
+public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, NoteService noteSvc) : Controller {
 	[HttpGet("{id}")]
 	[Authenticate("read:statuses")]
 	[Produces("application/json")]

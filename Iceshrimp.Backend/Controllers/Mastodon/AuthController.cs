@@ -14,7 +14,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [MastodonApiController]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
-public class MastodonAuthController(DatabaseContext db) : Controller {
+public class AuthController(DatabaseContext db) : Controller {
 	[HttpGet("/api/v1/apps/verify_credentials")]
 	[Authenticate]
 	[Produces("application/json")]
