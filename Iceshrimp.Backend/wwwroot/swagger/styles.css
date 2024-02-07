@@ -12,6 +12,12 @@
 
 .swagger-ui .scheme-container {
     background-color: #fafafa !important;
+    padding: 0;
+    margin-bottom: 10px !important;
+}
+
+.swagger-ui .scheme-container .auth-wrapper {
+    display: none;
 }
 
 img[alt="Swagger UI"] {
