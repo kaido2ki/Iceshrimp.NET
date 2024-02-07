@@ -37,7 +37,7 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 	}
 
 	[HttpPost]
-	[Authenticate("write:statuses")]
+	[Authorize("write:statuses")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Status))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
