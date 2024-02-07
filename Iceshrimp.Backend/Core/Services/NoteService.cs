@@ -28,7 +28,7 @@ public class NoteService(
 	public async Task<Note> CreateNoteAsync(User user, Note.NoteVisibility visibility, string? text = null,
 	                                        string? cw = null, Note? reply = null, Note? renote = null) {
 		if (text is { Length: > 100000 })
-			throw GracefulException.UnprocessableEntity("Content cannot be longer than 100.000 characters");
+			throw GracefulException.BadRequest("Text cannot be longer than 100.000 characters");
 		
 		var actor = await userRenderer.RenderAsync(user);
 

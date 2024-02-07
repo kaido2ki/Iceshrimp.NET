@@ -26,7 +26,7 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
 	public async Task<IActionResult> GetHomeTimeline(PaginationQuery query) {
-		var user = HttpContext.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
+		var user = HttpContext.GetUserOrFail();
 		var res = await db.Notes
 		                  .IncludeCommonProperties()
 		                  .FilterByFollowingAndOwn(user)
@@ -46,7 +46,7 @@ public class MastodonTimelineController(DatabaseContext db, NoteRenderer noteRen
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
 	public async Task<IActionResult> GetPublicTimeline(PaginationQuery query) {
-		var user = HttpContext.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
+		var user = HttpContext.GetUserOrFail();
 
 		var res = await db.Notes
 		                  .IncludeCommonProperties()

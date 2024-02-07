@@ -125,16 +125,18 @@ public static class NoteQueryableExtensions {
 		return query.Where(note => !note.User.UserListMembers.Any(p => p.UserList.User == user &&
 		                                                               p.UserList.HideFromHomeTl));
 	}
+	
+	public static Note EnforceRenoteReplyVisibility(this Note note) {
+		if (!note.PrecomputedIsReplyVisible ?? false)
+			note.Reply = null;
+		if (!note.PrecomputedIsRenoteVisible ?? false)
+			note.Renote = null;
 
-	public static IEnumerable<Note> EnforceRenoteReplyVisibility(this IList<Note> list) {
-		foreach (var note in list) {
-			if (!note.PrecomputedIsReplyVisible ?? false)
-				note.Reply = null;
-			if (!note.PrecomputedIsRenoteVisible ?? false)
-				note.Renote = null;
-		}
+		return note;
+	}
 
-		return list;
+	public static IEnumerable<Note> EnforceRenoteReplyVisibility(this IEnumerable<Note> list) {
+		return list.Select(EnforceRenoteReplyVisibility);
 	}
 
 	public static async Task<IEnumerable<Status>> RenderAllForMastodonAsync(

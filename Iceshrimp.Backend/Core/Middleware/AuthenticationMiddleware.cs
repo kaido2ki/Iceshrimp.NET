@@ -95,4 +95,8 @@ public static class HttpContextExtensions {
 			? (token as OauthToken)?.User
 			: null;
 	}
+
+	public static User GetUserOrFail(this HttpContext ctx) {
+		return ctx.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
+	}
 }

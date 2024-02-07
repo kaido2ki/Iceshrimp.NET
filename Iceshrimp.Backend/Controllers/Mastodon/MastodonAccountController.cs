@@ -32,7 +32,7 @@ public class MastodonAccountController(
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> VerifyUserCredentials() {
-		var user = HttpContext.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
+		var user = HttpContext.GetUserOrFail();
 		var res  = await userRenderer.RenderAsync(user);
 		return Ok(res);
 	}
@@ -54,7 +54,7 @@ public class MastodonAccountController(
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	//TODO: [FromHybrid] request (bool reblogs, bool notify, bool languages)
 	public async Task<IActionResult> FollowUser(string id) {
-		var user = HttpContext.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
+		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
 			throw GracefulException.BadRequest("You cannot follow yourself");
 
@@ -140,7 +140,7 @@ public class MastodonAccountController(
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> UnfollowUser(string id) {
-		var user = HttpContext.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
+		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
 			throw GracefulException.BadRequest("You cannot unfollow yourself");
 
@@ -193,7 +193,7 @@ public class MastodonAccountController(
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetRelationships([FromQuery(Name = "id")] List<string> ids) {
-		var user = HttpContext.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
+		var user = HttpContext.GetUserOrFail();
 
 		if (ids.Contains(user.Id))
 			throw GracefulException.BadRequest("You cannot request relationship status with yourself");
@@ -233,7 +233,7 @@ public class MastodonAccountController(
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetHomeTimeline(string id, PaginationQuery query) {
 		//TODO: there's a lot more query params to implement here
-		var user = HttpContext.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
+		var user = HttpContext.GetUserOrFail();
 		var res = await db.Notes
 		                  .IncludeCommonProperties()
 		                  .FilterByUser(id)
