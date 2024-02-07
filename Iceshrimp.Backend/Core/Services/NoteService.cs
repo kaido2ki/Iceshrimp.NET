@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -11,11 +12,13 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
+[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor",
+                 Justification = "We need IOptionsSnapshot for config hot reload")]
 public class NoteService(
 	ILogger<NoteService> logger,
 	DatabaseContext db,
 	UserResolver userResolver,
-	IOptions<Config.InstanceSection> config,
+	IOptionsSnapshot<Config.InstanceSection> config,
 	UserService userSvc,
 	ActivityFetcherService fetchSvc,
 	ActivityDeliverService deliverSvc,
@@ -27,9 +30,12 @@ public class NoteService(
 
 	public async Task<Note> CreateNoteAsync(User user, Note.NoteVisibility visibility, string? text = null,
 	                                        string? cw = null, Note? reply = null, Note? renote = null) {
+		if (text?.Length > config.Value.CharacterLimit)
+			throw GracefulException.BadRequest($"Text cannot be longer than {config.Value.CharacterLimit} characters");
+
 		if (text is { Length: > 100000 })
 			throw GracefulException.BadRequest("Text cannot be longer than 100.000 characters");
-		
+
 		var actor = await userRenderer.RenderAsync(user);
 
 		var note = new Note {
