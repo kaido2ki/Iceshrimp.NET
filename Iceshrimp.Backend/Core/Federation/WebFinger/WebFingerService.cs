@@ -72,21 +72,27 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 	}
 
 	private async Task<string?> GetWebFingerTemplateFromHostMetaAsync(string hostMetaUrl) {
-		using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/xrd+xml"]), HttpCompletionOption.ResponseHeadersRead);
-		using var stream = await res.Content.ReadAsStreamAsync();
+		try {
+			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/xrd+xml"]),
+			                                       HttpCompletionOption.ResponseHeadersRead);
+			using var stream = await res.Content.ReadAsStreamAsync();
 
-		var xml = new XmlDocument();
-		xml.Load(stream);
+			var xml = new XmlDocument();
+			xml.Load(stream);
 
-		var section = xml["XRD"]?.GetElementsByTagName("Link");
-		if (section == null) return null;
+			var section = xml["XRD"]?.GetElementsByTagName("Link");
+			if (section == null) return null;
 
-		//TODO: implement https://stackoverflow.com/a/37322614/18402176 instead
+			//TODO: implement https://stackoverflow.com/a/37322614/18402176 instead
 
-		for (var i = 0; i < section.Count; i++)
-			if (section[i]?.Attributes?["rel"]?.InnerText == "lrdd")
-				return section[i]?.Attributes?["template"]?.InnerText;
+			for (var i = 0; i < section.Count; i++)
+				if (section[i]?.Attributes?["rel"]?.InnerText == "lrdd")
+					return section[i]?.Attributes?["template"]?.InnerText;
 
-		return null;
+			return null;
+		}
+		catch {
+			return null;
+		}
 	}
 }
