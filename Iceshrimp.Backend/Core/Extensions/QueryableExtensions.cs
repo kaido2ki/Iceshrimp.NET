@@ -80,8 +80,8 @@ public static class NoteQueryableExtensions {
 		return query.Where(note => note.User == user);
 	}
 
-	public static IQueryable<Note> FilterByUser(this IQueryable<Note> query, string userId) {
-		return query.Where(note => note.UserId == userId);
+	public static IQueryable<Note> FilterByUser(this IQueryable<Note> query, string? userId) {
+		return userId != null ? query.Where(note => note.UserId == userId) : query;
 	}
 
 	public static IQueryable<Note> EnsureVisibleFor(this IQueryable<Note> query, User? user) {
