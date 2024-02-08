@@ -27,7 +27,7 @@ public static class WebApplicationExtensions {
 			options.EnablePersistAuthorization();
 			options.EnableTryItOutByDefault();
 			options.DisplayRequestDuration();
-			options.DefaultModelsExpandDepth(-1); // Hide "Schemas" section
+			options.DefaultModelsExpandDepth(-1);                            // Hide "Schemas" section
 			options.ConfigObject.AdditionalItems.Add("tagsSorter", "alpha"); // Sort tags alphabetically
 		});
 		return app;
@@ -63,6 +63,10 @@ public static class WebApplicationExtensions {
 			app.Logger.LogInformation("Running migrations...");
 			context.Database.Migrate();
 			if (args.Contains("--migrate")) Environment.Exit(0);
+		}
+		else if (context.Database.GetPendingMigrations().Any()) {
+			app.Logger.LogCritical("Database has pending migrations, please restart with --migrate or --migrate-and-start");
+			Environment.Exit(1);
 		}
 
 		app.Logger.LogInformation("Verifying redis connection...");
