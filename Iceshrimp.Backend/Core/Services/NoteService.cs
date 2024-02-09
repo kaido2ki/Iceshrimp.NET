@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
@@ -60,10 +61,12 @@ public class NoteService(
 		return note;
 	}
 
-	public async Task<Note?> ProcessNoteAsync(ASNote note, ASActor actor) {
-		if (await db.Notes.AnyAsync(p => p.Uri == note.Id)) {
+	public async Task<Note> ProcessNoteAsync(ASNote note, ASActor actor) {
+		var dbHit = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
+
+		if (dbHit != null) {
 			logger.LogDebug("Note '{id}' already exists, skipping", note.Id);
-			return null;
+			return dbHit;
 		}
 
 		if (_resolverHistory is [])
