@@ -11,10 +11,9 @@ public class ActivityRenderer(IOptions<Config.InstanceSection> config, UserRende
 	private string GenerateActivityId() =>
 		$"https://{config.Value.WebDomain}/activities/{Guid.NewGuid().ToString().ToLowerInvariant()}";
 
-	public static ASActivity RenderCreate(ASObject obj, ASObject actor) {
-		return new ASActivity {
+	public static ASCreate RenderCreate(ASObject obj, ASObject actor) {
+		return new ASCreate {
 			Id     = $"{obj.Id}#Create",
-			Type   = ASActivity.Types.Create,
 			Actor  = new ASActor { Id = actor.Id },
 			Object = obj
 		};
