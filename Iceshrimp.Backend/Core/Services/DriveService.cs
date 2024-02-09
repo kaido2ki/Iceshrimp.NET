@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -14,13 +15,54 @@ public class DriveService(
 	ObjectStorageService storageSvc,
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	IOptionsSnapshot<Config.StorageSection> storageConfig,
-	IOptions<Config.InstanceSection> instanceConfig
+	IOptions<Config.InstanceSection> instanceConfig,
+	HttpClient httpClient,
+	QueueService queueSvc
 ) {
-	public async Task<DriveFile> StoreFile(Stream data, User user, FileCreationRequest request) {
+	public async Task<DriveFile?> StoreFile(string? uri, User user, bool sensitive) {
+		if (uri == null) return null;
+
+		try {
+			// Do we already have the file?
+			var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Uri == uri);
+			if (file != null) {
+				// If the user matches, return the existing file
+				if (file.UserId == user.Id)
+					return file;
+
+				// Otherwise, clone the file
+				var req = new DriveFileCreationRequest {
+					Uri         = uri,
+					IsSensitive = sensitive,
+					Filename    = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
+					MimeType    = null! // Not needed in .Clone
+				};
+
+				return file.Clone(user, req);
+			}
+
+			var res = await httpClient.GetAsync(uri);
+
+			var request = new DriveFileCreationRequest {
+				Uri         = uri,
+				Filename    = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
+				IsSensitive = sensitive,
+				MimeType    = res.Content.Headers.ContentType?.MediaType ?? "application/octet-stream"
+			};
+
+			return await StoreFile(await res.Content.ReadAsStreamAsync(), user, request);
+		}
+		catch {
+			//TODO: log error
+			return null;
+		}
+	}
+
+	public async Task<DriveFile> StoreFile(Stream data, User user, DriveFileCreationRequest request) {
 		var buf    = new BufferedStream(data);
 		var digest = await DigestHelpers.Sha256DigestAsync(buf);
 		var file   = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest);
-		if (file is { IsLink: true }) {
+		if (file is { IsLink: false }) {
 			if (file.UserId == user.Id)
 				return file;
 
@@ -60,20 +102,13 @@ public class DriveService(
 		}
 
 		file = new DriveFile {
-			User     = user,
-			UserHost = user.Host,
-			//Blurhash           = TODO,
-			Sha256     = digest,
-			Size       = (int)buf.Length,
-			//Properties         = TODO,
-			IsLink     = !shouldStore && user.Host != null,
-			AccessKey  = filename,
-			//ThumbnailUrl       = TODO,
-			//ThumbnailAccessKey = TODO,
-			IsSensitive = request.IsSensitive,
-			//WebpublicType      = TODO,
-			//WebpublicUrl       = TODO,
-			//WebpublicAccessKey = TODO,
+			User           = user,
+			UserHost       = user.Host,
+			Sha256         = digest,
+			Size           = (int)buf.Length,
+			IsLink         = !shouldStore && user.Host != null,
+			AccessKey      = filename,
+			IsSensitive    = request.IsSensitive,
 			StoredInternal = storedInternal,
 			Src            = request.Source,
 			Uri            = request.Uri,
@@ -83,12 +118,34 @@ public class DriveService(
 			Type           = request.MimeType,
 			RequestHeaders = request.RequestHeaders,
 			RequestIp      = request.RequestIp
+			//Blurhash           = TODO,
+			//Properties         = TODO,
+			//ThumbnailUrl       = TODO,
+			//ThumbnailAccessKey = TODO,
+			//WebpublicType      = TODO,
+			//WebpublicUrl       = TODO,
+			//WebpublicAccessKey = TODO,
 		};
 
 		await db.AddAsync(file);
 		await db.SaveChangesAsync();
 
 		return file;
+	}
+
+	public async Task RemoveFile(DriveFile file) {
+		await RemoveFile(file.Id);
+	}
+	
+	public async Task RemoveFile(string fileId) {
+		var job = new DriveFileDeleteJob { DriveFileId = fileId };
+		await queueSvc.BackgroundTaskQueue.EnqueueAsync(job);
+	}
+
+	public string GetPublicUrl(DriveFile file, bool thumbnail) {
+		return thumbnail
+			? file.ThumbnailUrl ?? file.WebpublicUrl ?? file.Url
+			: file.WebpublicUrl ?? file.Url;
 	}
 
 	private static (string filename, string guid) GenerateFilenameKeepingExtension(string filename) {
@@ -100,7 +157,7 @@ public class DriveService(
 	//TODO: for delete, only delete from object/local storage if no files reference the file anymore
 }
 
-public class FileCreationRequest {
+public class DriveFileCreationRequest {
 	public          string?                     Comment;
 	public required string                      Filename = Guid.NewGuid().ToString().ToLowerInvariant();
 	public required bool                        IsSensitive;
@@ -113,7 +170,7 @@ public class FileCreationRequest {
 
 //TODO: set uri as well (which may be different)
 file static class DriveFileExtensions {
-	public static DriveFile Clone(this DriveFile file, User user, FileCreationRequest request) {
+	public static DriveFile Clone(this DriveFile file, User user, DriveFileCreationRequest request) {
 		if (file.IsLink)
 			throw new Exception("Refusing to clone remote file");
 

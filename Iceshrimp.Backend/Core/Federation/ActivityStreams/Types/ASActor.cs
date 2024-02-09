@@ -104,6 +104,14 @@ public class ASActor : ASObject {
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? FeaturedTags { get; set; }
 
+	[J("https://www.w3.org/ns/activitystreams#icon")]
+	[JC(typeof(ASImageConverter))]
+	public ASImage? Avatar { get; set; }
+
+	[J("https://www.w3.org/ns/activitystreams#image")]
+	[JC(typeof(ASImageConverter))]
+	public ASImage? Banner { get; set; }
+
 	[J("https://w3id.org/security#publicKey")]
 	[JC(typeof(ASPublicKeyConverter))]
 	public ASPublicKey? PublicKey { get; set; }

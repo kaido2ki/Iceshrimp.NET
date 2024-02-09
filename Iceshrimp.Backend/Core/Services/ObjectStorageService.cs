@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Text;
 using Amazon;
 using Amazon.S3;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class ObjectStorageService(IOptions<Config.StorageSection> config) {
+public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpClient httpClient) {
 	private readonly string _accessUrl = config.Value.ObjectStorage?.AccessUrl ??
 	                                     throw new Exception("Invalid object storage access url");
 
@@ -34,8 +35,6 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config) {
 		var          content  = CryptographyHelpers.GenerateRandomString(16);
 
 		await UploadFileAsync(filename, Encoding.UTF8.GetBytes(content));
-
-		var httpClient = new HttpClient();
 
 		string result;
 		try {
@@ -77,6 +76,10 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config) {
 		catch {
 			return null;
 		}
+	}
+
+	public async Task RemoveFilesAsync(params string[] filenames) {
+		await _bucket.DeleteAsync(filenames.Select(GetFilenameWithPrefix).ToImmutableList());
 	}
 
 	private string GetFilenameWithPrefix(string filename) {

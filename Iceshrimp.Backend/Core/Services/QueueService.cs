@@ -10,10 +10,11 @@ using StackExchange.Redis.KeyspaceIsolation;
 namespace Iceshrimp.Backend.Core.Services;
 
 public class QueueService : BackgroundService {
-	private readonly List<IJobQueue>      _queues = [];
-	private readonly IServiceScopeFactory _serviceScopeFactory;
-	public readonly  JobQueue<DeliverJob> DeliverQueue;
-	public readonly  JobQueue<InboxJob>   InboxQueue;
+	private readonly List<IJobQueue>             _queues = [];
+	private readonly IServiceScopeFactory        _serviceScopeFactory;
+	public readonly  JobQueue<DeliverJob>        DeliverQueue;
+	public readonly  JobQueue<InboxJob>          InboxQueue;
+	public readonly  JobQueue<BackgroundTaskJob> BackgroundTaskQueue;
 
 	public QueueService(
 		IServiceScopeFactory serviceScopeFactory,
@@ -23,12 +24,13 @@ public class QueueService : BackgroundService {
 	) {
 		_serviceScopeFactory = serviceScopeFactory;
 		var prefix = (redisConfig.Value.Prefix ?? instanceConfig.Value.WebDomain) + ":queue:";
-		DeliverQueue = Queues.DeliverQueue.Create(redis, prefix);
-		InboxQueue   = Queues.InboxQueue.Create(redis, prefix);
+		DeliverQueue        = Queues.DeliverQueue.Create(redis, prefix);
+		InboxQueue          = Queues.InboxQueue.Create(redis, prefix);
+		BackgroundTaskQueue = Queues.BackgroundTaskQueue.Create(redis, prefix);
 	}
 
 	protected override async Task ExecuteAsync(CancellationToken token) {
-		_queues.AddRange([InboxQueue, DeliverQueue]);
+		_queues.AddRange([InboxQueue, DeliverQueue, BackgroundTaskQueue]);
 
 		await RecoverOrPrepareForExitAsync();
 		token.Register(RecoverOrPrepareForExit);

@@ -39,7 +39,7 @@ public class User : IEntity {
 	[NotMapped]
 	[Projectable]
 	public bool NeedsUpdate =>
-		Host != null && LastFetchedAt == null || LastFetchedAt < DateTime.Now - TimeSpan.FromHours(24);
+		Host != null && (LastFetchedAt == null || LastFetchedAt < DateTime.Now - TimeSpan.FromHours(24));
 
 	/// <summary>
 	///     The username of the User.
