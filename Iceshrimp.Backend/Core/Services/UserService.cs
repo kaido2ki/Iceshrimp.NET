@@ -7,6 +7,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
@@ -57,6 +58,9 @@ public class UserService(
 
 		actor.Normalize(uri, acct);
 
+		if (actor.PublicKey?.Id == null || actor.PublicKey?.PublicKey == null)
+			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Actor has no valid public key");
+
 		var user = new User {
 			Id            = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
@@ -82,8 +86,15 @@ public class UserService(
 			Tags   = []  //FIXME
 		};
 
-		if (actor.PublicKey?.Id == null || actor.PublicKey?.PublicKey == null)
-			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Actor has no valid public key");
+		var profile = new UserProfile {
+			User        = user,
+			Description = actor.MkSummary ?? await MfmConverter.FromHtmlAsync(actor.Summary),
+			//Birthday = TODO,
+			//Location = TODO,
+			//Fields = TODO,
+			UserHost = user.Host,
+			Url      = actor.Url?.Link
+		};
 
 		var publicKey = new UserPublickey {
 			UserId = user.Id,
@@ -91,10 +102,7 @@ public class UserService(
 			KeyPem = actor.PublicKey.PublicKey
 		};
 
-		//TODO: add UserProfile as well
-
-		await db.Users.AddAsync(user);
-		await db.UserPublickeys.AddAsync(publicKey);
+		await db.AddRangeAsync(user, profile, publicKey);
 		await db.SaveChangesAsync();
 
 		return user;
