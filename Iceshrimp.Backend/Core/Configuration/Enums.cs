@@ -6,6 +6,11 @@ public static class Enums {
 		AllowList = 1
 	}
 
+	public enum FileStorage {
+		Local         = 0,
+		ObjectStorage = 1
+	}
+
 	public enum ItemVisibility {
 		Hide       = 0,
 		Registered = 1,

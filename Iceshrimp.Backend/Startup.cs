@@ -37,7 +37,7 @@ builder.Services.AddServices();
 builder.Services.ConfigureServices(builder.Configuration);
 
 var app    = builder.Build();
-var config = app.Initialize(args);
+var config = await app.Initialize(args);
 
 // This determines the order of middleware execution in the request pipeline
 app.UseRouting();

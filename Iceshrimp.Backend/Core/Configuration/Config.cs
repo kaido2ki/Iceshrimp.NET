@@ -4,10 +4,11 @@ using Iceshrimp.Backend.Core.Middleware;
 namespace Iceshrimp.Backend.Core.Configuration;
 
 public sealed class Config {
-	public required InstanceSection Instance { get; init; }
-	public required DatabaseSection Database { get; init; }
-	public required RedisSection    Redis    { get; init; }
+	public required InstanceSection Instance { get; init; } = new();
+	public required DatabaseSection Database { get; init; } = new();
+	public required RedisSection    Redis    { get; init; } = new();
 	public required SecuritySection Security { get; init; } = new();
+	public required StorageSection  Storage  { get; init; } = new();
 
 	public sealed class InstanceSection {
 		public readonly string Version;
@@ -30,11 +31,11 @@ public sealed class Config {
 
 		public string UserAgent => $"Iceshrimp.NET/{Version} (https://{WebDomain})";
 
-		public required int    ListenPort     { get; init; } = 3000;
-		public required string ListenHost     { get; init; } = "localhost";
-		public required string WebDomain      { get; init; }
-		public required string AccountDomain  { get; init; }
-		public required int    CharacterLimit { get; init; } = 8192;
+		public int    ListenPort     { get; init; } = 3000;
+		public string ListenHost     { get; init; } = "localhost";
+		public string WebDomain      { get; init; } = null!;
+		public string AccountDomain  { get; init; } = null!;
+		public int    CharacterLimit { get; init; } = 8192;
 	}
 
 	public sealed class SecuritySection {
@@ -47,21 +48,41 @@ public sealed class Config {
 	}
 
 	public sealed class DatabaseSection {
-		public required string  Host     { get; init; } = "localhost";
-		public required int     Port     { get; init; } = 5432;
-		public required string  Database { get; init; }
-		public required string  Username { get; init; }
-		public          string? Password { get; init; }
+		public string  Host     { get; init; } = "localhost";
+		public int     Port     { get; init; } = 5432;
+		public string  Database { get; init; } = null!;
+		public string  Username { get; init; } = null!;
+		public string? Password { get; init; }
 	}
 
 	public sealed class RedisSection {
-		public required string  Host     { get; init; } = "localhost";
-		public required int     Port     { get; init; } = 6379;
-		public          string? Prefix   { get; init; }
-		public          string? Username { get; init; }
-		public          string? Password { get; init; }
-		public          int?    Database { get; init; }
+		public string  Host     { get; init; } = "localhost";
+		public int     Port     { get; init; } = 6379;
+		public string? Prefix   { get; init; }
+		public string? Username { get; init; }
+		public string? Password { get; init; }
+		public int?    Database { get; init; }
 
 		//TODO: TLS settings
+	}
+
+	public sealed class StorageSection {
+		public Enums.FileStorage     Mode          { get; init; } = Enums.FileStorage.Local;
+		public LocalStorageSection?  Local         { get; init; }
+		public ObjectStorageSection? ObjectStorage { get; init; }
+	}
+
+	public sealed class LocalStorageSection {
+		public string? Path { get; init; }
+	}
+
+	public sealed class ObjectStorageSection {
+		public string? Endpoint  { get; init; }
+		public string? Region    { get; init; }
+		public string? AccessKey { get; init; }
+		public string? SecretKey { get; init; }
+		public string? Bucket    { get; init; }
+		public string? Prefix    { get; init; }
+		public string? AccessUrl { get; init; }
 	}
 }

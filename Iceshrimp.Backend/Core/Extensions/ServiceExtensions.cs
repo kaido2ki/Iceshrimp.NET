@@ -46,6 +46,7 @@ public static class ServiceExtensions {
 			.AddSingleton<HttpClient>()
 			.AddSingleton<HttpRequestService>()
 			.AddSingleton<QueueService>()
+			.AddSingleton<ObjectStorageService>()
 			.AddSingleton<ErrorHandlerMiddleware>()
 			.AddSingleton<RequestBufferingMiddleware>()
 			.AddSingleton<AuthorizationMiddleware>()
@@ -63,6 +64,10 @@ public static class ServiceExtensions {
 		services.Configure<Config.InstanceSection>(configuration.GetSection("Instance"));
 		services.Configure<Config.SecuritySection>(configuration.GetSection("Security"));
 		services.Configure<Config.DatabaseSection>(configuration.GetSection("Database"));
+		services.Configure<Config.RedisSection>(configuration.GetSection("Redis"));
+		services.Configure<Config.StorageSection>(configuration.GetSection("Storage"));
+		services.Configure<Config.LocalStorageSection>(configuration.GetSection("Storage:Local"));
+		services.Configure<Config.ObjectStorageSection>(configuration.GetSection("Storage:ObjectStorage"));
 	}
 
 	public static void AddDatabaseContext(this IServiceCollection services, IConfiguration configuration) {
