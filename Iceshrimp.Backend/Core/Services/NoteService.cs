@@ -20,7 +20,6 @@ public class NoteService(
 	DatabaseContext db,
 	UserResolver userResolver,
 	IOptionsSnapshot<Config.InstanceSection> config,
-	UserService userSvc,
 	ActivityFetcherService fetchSvc,
 	ActivityDeliverService deliverSvc,
 	NoteRenderer noteRenderer,

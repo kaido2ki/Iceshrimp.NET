@@ -20,8 +20,7 @@ public class UserService(
 	IOptions<Config.InstanceSection> instance,
 	ILogger<UserService> logger,
 	DatabaseContext db,
-	ActivityFetcherService fetchSvc,
-	IDistributedCache cache
+	ActivityFetcherService fetchSvc
 ) {
 	private (string Username, string? Host) AcctToTuple(string acct) {
 		if (!acct.StartsWith("acct:")) throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
