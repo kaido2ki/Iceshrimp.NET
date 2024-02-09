@@ -230,6 +230,9 @@ public class Note : IEntity {
 	[InverseProperty(nameof(InverseReply))]
 	public virtual Note? Reply { get; set; }
 
+	[NotMapped] [Projectable] public bool IsPureRenote => RenoteId != null && !IsQuote;
+	[NotMapped] [Projectable] public bool IsQuote => RenoteId != null && (Text != null || HasPoll || FileIds.Count > 0);
+
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.Notes))]
 	public virtual User User { get; set; } = null!;
