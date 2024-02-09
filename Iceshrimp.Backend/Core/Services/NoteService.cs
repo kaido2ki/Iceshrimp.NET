@@ -112,6 +112,7 @@ public class NoteService(
 		if (dbNote.Text is { Length: > 100000 })
 			throw GracefulException.UnprocessableEntity("Content cannot be longer than 100.000 characters");
 
+		user.NotesCount++;
 		await db.Notes.AddAsync(dbNote);
 		await db.SaveChangesAsync();
 		logger.LogDebug("Note {id} created successfully", dbNote.Id);
