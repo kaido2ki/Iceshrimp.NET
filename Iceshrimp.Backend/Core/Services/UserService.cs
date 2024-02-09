@@ -39,17 +39,19 @@ public class UserService(
 		if (query.StartsWith("http://") || query.StartsWith("https://"))
 			if (query.StartsWith($"https://{instance.Value.WebDomain}/users/")) {
 				query = query[$"https://{instance.Value.WebDomain}/users/".Length..];
-				return await db.Users.FirstOrDefaultAsync(p => p.Id == query) ??
+				return await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == query) ??
 				       throw GracefulException.NotFound("User not found");
 			}
 			else {
-				return await db.Users.FirstOrDefaultAsync(p => p.Uri == query);
+				return await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == query);
 			}
 
 		var tuple = AcctToTuple(query);
 		if (tuple.Host == instance.Value.WebDomain || tuple.Host == instance.Value.AccountDomain)
 			tuple.Host = null;
-		return await db.Users.FirstOrDefaultAsync(p => p.Username == tuple.Username && p.Host == tuple.Host);
+		return await db.Users
+		               .IncludeCommonProperties()
+		               .FirstOrDefaultAsync(p => p.Username == tuple.Username && p.Host == tuple.Host);
 	}
 
 	public async Task<User> CreateUserAsync(string uri, string acct) {
