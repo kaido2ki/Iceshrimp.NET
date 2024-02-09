@@ -49,6 +49,8 @@ public class NoteService(
 			UserHost   = null,
 			Visibility = visibility
 		};
+		
+		user.NotesCount++;
 		await db.AddAsync(note);
 		await db.SaveChangesAsync();
 
