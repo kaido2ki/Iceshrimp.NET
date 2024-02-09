@@ -35,9 +35,11 @@ public static class ServiceExtensions {
 			.AddScoped<NoteService>()
 			.AddScoped<WebFingerService>()
 			.AddScoped<SystemUserService>()
+			.AddScoped<DriveService>()
 			.AddScoped<DatabaseMaintenanceService>()
 			.AddScoped<AuthorizedFetchMiddleware>()
 			.AddScoped<AuthenticationMiddleware>()
+			.AddScoped<ErrorHandlerMiddleware>()
 			.AddScoped<UserRenderer>()
 			.AddScoped<NoteRenderer>();
 
@@ -47,7 +49,6 @@ public static class ServiceExtensions {
 			.AddSingleton<HttpRequestService>()
 			.AddSingleton<QueueService>()
 			.AddSingleton<ObjectStorageService>()
-			.AddSingleton<ErrorHandlerMiddleware>()
 			.AddSingleton<RequestBufferingMiddleware>()
 			.AddSingleton<AuthorizationMiddleware>()
 			.AddSingleton<RequestVerificationMiddleware>()

@@ -21,7 +21,7 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config) {
 
 		var region    = s3Config.Region ?? throw new Exception("Invalid object storage region");
 		var endpoint  = s3Config.Endpoint ?? throw new Exception("Invalid object storage endpoint");
-		var accessKey = s3Config.AccessKey ?? throw new Exception("Invalid object storage access key");
+		var accessKey = s3Config.KeyId ?? throw new Exception("Invalid object storage access key");
 		var secretKey = s3Config.SecretKey ?? throw new Exception("Invalid object storage secret key");
 		var bucket    = s3Config.Bucket ?? throw new Exception("Invalid object storage bucket");
 
@@ -51,6 +51,10 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config) {
 	}
 
 	public async Task UploadFileAsync(string filename, byte[] data) {
+		await _bucket.PutAsync(new Blob(GetFilenameWithPrefix(filename), data));
+	}
+
+	public async Task UploadFileAsync(string filename, Stream data) {
 		await _bucket.PutAsync(new Blob(GetFilenameWithPrefix(filename), data));
 	}
 

@@ -8,8 +8,11 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
-//TODO: If we make this a scoped service instead of a singleton, we can use IOptionsSnapshot
-public class ErrorHandlerMiddleware(IOptions<Config.SecuritySection> options, ILoggerFactory loggerFactory)
+public class ErrorHandlerMiddleware(
+	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
+	IOptionsSnapshot<Config.SecuritySection> options,
+	ILoggerFactory loggerFactory
+)
 	: IMiddleware {
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next) {
 		try {

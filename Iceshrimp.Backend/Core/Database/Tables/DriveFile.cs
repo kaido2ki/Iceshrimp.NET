@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
@@ -7,7 +8,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("drive_file")]
 [Index("IsLink")]
-[Index("Md5")]
+[Index("Sha256")]
 [Index("UserId", "FolderId", "Id")]
 [Index("UserId")]
 [Index("UserHost")]
@@ -19,17 +20,12 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("AccessKey", IsUnique = true)]
 [Index("Uri")]
 [Index("ThumbnailAccessKey", IsUnique = true)]
-public class DriveFile {
-	[Key]
-	[Column("id")]
-	[StringLength(32)]
-	public string Id { get; set; } = null!;
-
+public class DriveFile : IEntity {
 	/// <summary>
 	///     The created date of the DriveFile.
 	/// </summary>
 	[Column("createdAt")]
-	public DateTime CreatedAt { get; set; }
+	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
 	/// <summary>
 	///     The owner ID.
@@ -46,11 +42,11 @@ public class DriveFile {
 	public string? UserHost { get; set; }
 
 	/// <summary>
-	///     The MD5 hash of the DriveFile.
+	///     The SHA256 hash of the DriveFile.
 	/// </summary>
-	[Column("md5")]
-	[StringLength(32)]
-	public string Md5 { get; set; } = null!;
+	[Column("sha256")]
+	[StringLength(64)]
+	public string? Sha256 { get; set; }
 
 	/// <summary>
 	///     The file name of the DriveFile.
@@ -188,6 +184,11 @@ public class DriveFile {
 
 	[InverseProperty(nameof(Tables.User.Banner))]
 	public virtual User? UserBanner { get; set; }
+
+	[Key]
+	[Column("id")]
+	[StringLength(32)]
+	public string Id { get; set; } = IdHelpers.GenerateSlowflakeId();
 
 	public class FileProperties {
 		[J("width")]       public int?    Width        { get; set; }

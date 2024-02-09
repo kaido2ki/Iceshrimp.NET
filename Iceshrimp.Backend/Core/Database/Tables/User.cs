@@ -26,7 +26,7 @@ public class User : IEntity {
 	///     The created date of the User.
 	/// </summary>
 	[Column("createdAt")]
-	public DateTime CreatedAt { get; set; }
+	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
 	/// <summary>
 	///     The updated date of the User.
@@ -481,7 +481,7 @@ public class User : IEntity {
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
-	public string Id { get; set; } = null!;
+	public string Id { get; set; } = IdHelpers.GenerateSlowflakeId();
 
 	[Projectable]
 	public bool DisplayNameContainsCaseInsensitive(string str) =>

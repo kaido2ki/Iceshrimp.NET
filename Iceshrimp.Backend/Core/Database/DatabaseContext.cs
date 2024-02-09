@@ -294,7 +294,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.IsSensitive)
 			      .HasDefaultValue(false)
 			      .HasComment("Whether the DriveFile is NSFW.");
-			entity.Property(e => e.Md5).HasComment("The MD5 hash of the DriveFile.");
+			entity.Property(e => e.Sha256).HasComment("The SHA256 hash of the DriveFile.");
 			entity.Property(e => e.Name).HasComment("The file name of the DriveFile.");
 			entity.Property(e => e.Properties)
 			      .HasDefaultValueSql("'{}'::jsonb")

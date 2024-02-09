@@ -67,7 +67,32 @@ public sealed class Config {
 	}
 
 	public sealed class StorageSection {
-		public Enums.FileStorage     Mode          { get; init; } = Enums.FileStorage.Local;
+		private readonly TimeSpan?         _mediaRetention;
+		public           Enums.FileStorage Mode { get; init; } = Enums.FileStorage.Local;
+
+		public string? MediaRetention {
+			get => _mediaRetention?.ToString();
+			init {
+				if (value == null || string.IsNullOrWhiteSpace(value) || value.Trim() == "0") {
+					_mediaRetention = null;
+					return;
+				}
+
+				if (value.Length < 2 || !int.TryParse(value[..^1].Trim(), out var num))
+					throw new Exception("Invalid media retention time");
+
+				var suffix = value[^1];
+
+				_mediaRetention = suffix switch {
+					'd' => TimeSpan.FromDays(num),
+					'w' => TimeSpan.FromDays(num * 7),
+					'm' => TimeSpan.FromDays(num * 30),
+					'y' => TimeSpan.FromDays(num * 365),
+					_   => throw new Exception("Unsupported suffix, use one of: [d]ays, [w]eeks, [m]onths, [y]ears")
+				};
+			}
+		}
+
 		public LocalStorageSection?  Local         { get; init; }
 		public ObjectStorageSection? ObjectStorage { get; init; }
 	}
@@ -79,7 +104,7 @@ public sealed class Config {
 	public sealed class ObjectStorageSection {
 		public string? Endpoint  { get; init; }
 		public string? Region    { get; init; }
-		public string? AccessKey { get; init; }
+		public string? KeyId     { get; init; }
 		public string? SecretKey { get; init; }
 		public string? Bucket    { get; init; }
 		public string? Prefix    { get; init; }
