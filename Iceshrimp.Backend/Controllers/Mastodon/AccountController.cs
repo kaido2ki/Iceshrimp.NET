@@ -106,6 +106,12 @@ public class AccountController(
 				await db.AddAsync(following);
 			}
 
+			// If user is local, we need to increment following/follower counts here, otherwise we'll do it when receiving the Accept activity
+			if (followee.Host == null) {
+				followee.FollowersCount++;
+				user.FollowingCount++;
+			}
+
 			await db.SaveChangesAsync();
 
 			if (followee.IsLocked)
@@ -158,7 +164,12 @@ public class AccountController(
 		}
 
 		if (followee.PrecomputedIsFollowedBy ?? false) {
-			await db.Followings.Where(p => p.Follower == user && p.Followee == followee).ExecuteDeleteAsync();
+			var followings = await db.Followings.Where(p => p.Follower == user && p.Followee == followee).ToListAsync();
+			user.FollowingCount     -= followings.Count;
+			followee.FollowersCount -= followings.Count;
+			db.RemoveRange(followings);
+			await db.SaveChangesAsync();
+			
 			followee.PrecomputedIsFollowedBy = false;
 		}
 

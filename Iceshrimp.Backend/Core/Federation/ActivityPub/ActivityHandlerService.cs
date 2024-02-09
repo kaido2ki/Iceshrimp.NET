@@ -155,6 +155,9 @@ public class ActivityHandlerService(
 				FollowerSharedInbox = follower.SharedInbox
 			};
 
+			follower.FollowingCount++;
+			followee.FollowersCount++;
+
 			await db.AddAsync(following);
 			await db.SaveChangesAsync();
 		}
@@ -166,7 +169,15 @@ public class ActivityHandlerService(
 		var followee = await userResolver.ResolveAsync(followeeActor.Id);
 
 		await db.FollowRequests.Where(p => p.Follower == follower && p.Followee == followee).ExecuteDeleteAsync();
-		await db.Followings.Where(p => p.Follower == follower && p.Followee == followee).ExecuteDeleteAsync();
+
+		// We don't want to use ExecuteDelete for this one to ensure consistency with following counters
+		var followings = await db.Followings.Where(p => p.Follower == follower && p.Followee == followee).ToListAsync();
+		if (followings.Count > 0) {
+			followee.FollowersCount -= followings.Count;
+			follower.FollowingCount -= followings.Count;
+			db.RemoveRange(followings);
+			await db.SaveChangesAsync();
+		}
 	}
 
 	private async Task AcceptAsync(ASObject obj, ASObject actor) {
@@ -200,6 +211,10 @@ public class ActivityHandlerService(
 			FollowerSharedInbox = request.FollowerSharedInbox,
 			FolloweeSharedInbox = request.FolloweeSharedInbox
 		};
+
+		resolvedActor.FollowersCount++;
+		request.Follower.FollowingCount++;
+
 		db.Remove(request);
 		await db.AddAsync(following);
 		await db.SaveChangesAsync();
