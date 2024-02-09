@@ -1,8 +1,5 @@
-using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Helpers;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
-using JC = System.Text.Json.Serialization.JsonConverterAttribute;
 using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;

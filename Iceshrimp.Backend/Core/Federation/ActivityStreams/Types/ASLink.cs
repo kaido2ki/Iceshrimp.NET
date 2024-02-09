@@ -1,5 +1,4 @@
 using J = Newtonsoft.Json.JsonPropertyAttribute;
-using JR = Newtonsoft.Json.JsonRequiredAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 

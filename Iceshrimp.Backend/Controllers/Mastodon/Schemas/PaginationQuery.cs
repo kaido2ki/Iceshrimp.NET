@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
