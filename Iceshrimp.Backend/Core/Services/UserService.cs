@@ -143,9 +143,13 @@ public class UserService(
 			Username  = username.ToLowerInvariant()
 		};
 
-		var ticket = await db.RegistrationTickets.FirstAsync(p => p.Code == invite);
+		if (security.Value.Registrations == Enums.Registrations.Invite) {
+			var ticket = await db.RegistrationTickets.FirstOrDefaultAsync(p => p.Code == invite);
+			if (ticket == null)
+				throw GracefulException.Forbidden("The specified invite code is invalid");
+			db.Remove(ticket);
+		}
 
-		db.Remove(ticket);
 		await db.AddRangeAsync(user, userKeypair, userProfile, usedUsername);
 		await db.SaveChangesAsync();
 
