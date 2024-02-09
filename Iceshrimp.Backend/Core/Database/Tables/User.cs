@@ -36,6 +36,10 @@ public class User : IEntity {
 
 	[Column("lastFetchedAt")] public DateTime? LastFetchedAt { get; set; }
 
+	[NotMapped]
+	[Projectable]
+	public bool NeedsUpdate => Host != null && LastFetchedAt < DateTime.Now - TimeSpan.FromHours(24);
+
 	/// <summary>
 	///     The username of the User.
 	/// </summary>
@@ -143,6 +147,8 @@ public class User : IEntity {
 	[Column("host")]
 	[StringLength(512)]
 	public string? Host { get; set; }
+
+	[NotMapped] [Projectable] public string Acct => "acct:" + Username + (Host != null ? "@" + Host : "");
 
 	/// <summary>
 	///     The inbox URL of the User. It will be null if the origin of the user is local.

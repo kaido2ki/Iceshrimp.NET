@@ -76,7 +76,8 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 
 		// First, let's see if we already know the user
 		var user = await userSvc.GetUserFromQueryAsync(query);
-		if (user != null) return user;
+		if (user != null)
+			return await GetUpdatedUser(user);
 
 		// We don't, so we need to run WebFinger
 		var (acct, uri) = await WebFingerAsync(query);
@@ -84,9 +85,26 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 		// Check the database again with the new data
 		if (uri != query) user = await userSvc.GetUserFromQueryAsync(uri);
 		if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
-		if (user != null) return user;
+		if (user != null)
+			return await GetUpdatedUser(user);
 
 		// Pass the job on to userSvc, which will create the user
 		return await userSvc.CreateUserAsync(uri, acct);
+	}
+
+	private async Task<User> GetUpdatedUser(User user) {
+		if (!user.NeedsUpdate) return user;
+
+		try {
+			return await userSvc.UpdateUserAsync(user).WaitAsync(TimeSpan.FromMilliseconds(1500));
+		}
+		catch (Exception e) {
+			if (e is TimeoutException)
+				logger.LogDebug("UpdateUserAsync timed out for user {user}", user.Uri);
+			else
+				logger.LogError("UpdateUserAsync for user {user} failed with {error}", user.Uri, e.Message);
+		}
+
+		return user;
 	}
 }

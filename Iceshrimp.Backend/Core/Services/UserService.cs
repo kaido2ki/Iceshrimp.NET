@@ -10,6 +10,7 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 
@@ -48,8 +49,6 @@ public class UserService(
 			tuple.Host = null;
 		return await db.Users.FirstOrDefaultAsync(p => p.Username == tuple.Username && p.Host == tuple.Host);
 	}
-
-	//TODO: UpdateUser
 
 	public async Task<User> CreateUserAsync(string uri, string acct) {
 		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
@@ -105,6 +104,52 @@ public class UserService(
 		await db.AddRangeAsync(user, profile, publicKey);
 		await db.SaveChangesAsync();
 
+		return user;
+	}
+
+	public async Task<User> UpdateUserAsync(User user) {
+		if (!user.NeedsUpdate) return user;
+
+		// Prevent multiple update jobs from running concurrently
+		await db.Users.Where(u => u == user)
+		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.LastFetchedAt, DateTime.UtcNow));
+
+		var uri = user.Uri ?? throw new Exception("Encountered remote user without a Uri");
+		logger.LogDebug("Updating user with uri {uri}", uri);
+
+		var actor = await fetchSvc.FetchActorAsync(user.Uri);
+		actor.Normalize(uri, user.Acct);
+
+		user.UserProfile ??= await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
+		user.UserProfile ??= new UserProfile { User = user };
+
+		user.Inbox        = actor.Inbox?.Link;
+		user.SharedInbox  = actor.SharedInbox?.Link ?? actor.Endpoints?.SharedInbox?.Id;
+		user.DisplayName  = actor.DisplayName;
+		user.IsLocked     = actor.IsLocked ?? false;
+		user.IsBot        = actor.IsBot;
+		user.MovedToUri   = actor.MovedTo?.Link;
+		user.AlsoKnownAs  = actor.AlsoKnownAs?.Link;
+		user.IsExplorable = actor.IsDiscoverable ?? false;
+		user.FollowersUri = actor.Followers?.Id;
+		user.IsCat        = actor.IsCat ?? false;
+		user.Featured     = actor.Featured?.Link;
+		user.Emojis       = []; //FIXME
+		user.Tags         = []; //FIXME
+		//TODO: FollowersCount
+		//TODO: FollowingCount
+
+		//TODO: update acct host via webfinger here
+
+		user.UserProfile.Description = actor.MkSummary ?? await MfmConverter.FromHtmlAsync(actor.Summary);
+		//user.UserProfile.Birthday = TODO;
+		//user.UserProfile.Location = TODO;
+		//user.UserProfile.Fields = TODO;
+		user.UserProfile.UserHost = user.Host;
+		user.UserProfile.Url      = actor.Url?.Link;
+
+		db.Update(user);
+		await db.SaveChangesAsync();
 		return user;
 	}
 
