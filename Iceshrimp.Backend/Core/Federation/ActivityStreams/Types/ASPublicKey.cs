@@ -7,7 +7,7 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 public class ASPublicKey : ASObject {
 	[J("https://w3id.org/security#owner")]
 	[JC(typeof(LDIdObjectConverter))]
-	public LDIdObject? Owner { get; set; }
+	public ASIdObject? Owner { get; set; }
 	
 	[J("https://w3id.org/security#publicKeyPem")]
 	[JC(typeof(VC))]

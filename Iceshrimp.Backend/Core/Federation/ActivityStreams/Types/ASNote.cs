@@ -32,17 +32,17 @@ public class ASNote : ASObject {
 	public ASNoteSource? Source { get; set; }
 
 	[J("https://www.w3.org/ns/activitystreams#to")]
-	public List<LDIdObject> To { get; set; } = [];
+	public List<ASIdObject> To { get; set; } = [];
 
 	[J("https://www.w3.org/ns/activitystreams#cc")]
-	public List<LDIdObject> Cc { get; set; } = [];
+	public List<ASIdObject> Cc { get; set; } = [];
 
 	[J("https://www.w3.org/ns/activitystreams#attributedTo")]
-	public List<LDIdObject> AttributedTo { get; set; } = [];
+	public List<ASIdObject> AttributedTo { get; set; } = [];
 
 	[J("https://www.w3.org/ns/activitystreams#inReplyTo")]
 	[JC(typeof(LDIdObjectConverter))]
-	public LDIdObject? InReplyTo { get; set; }
+	public ASIdObject? InReplyTo { get; set; }
 
 	public Note.NoteVisibility GetVisibility(ASActor actor) {
 		if (To.Any(p => p.Id == "https://www.w3.org/ns/activitystreams#Public"))

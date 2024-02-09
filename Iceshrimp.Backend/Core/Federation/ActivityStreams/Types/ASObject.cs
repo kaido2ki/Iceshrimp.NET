@@ -6,9 +6,9 @@ using JR = Newtonsoft.Json.JsonRequiredAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASObject {
-	[J("@id")] [JR] public required string Id { get; set; }
-
+public class ASObject : ASIdObject {
+	[J("@id")] [JR] public new required string Id { get; set; }
+	
 	[J("@type")]
 	[JC(typeof(LDTypeConverter))]
 	public string? Type { get; set; }

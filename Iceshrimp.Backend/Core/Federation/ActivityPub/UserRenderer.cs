@@ -64,11 +64,11 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			IsDiscoverable = user.IsExplorable,
 			IsLocked = user.IsLocked,
 			Endpoints = new ASEndpoints {
-				SharedInbox = new LDIdObject($"https://{config.Value.WebDomain}/inbox")
+				SharedInbox = new ASIdObject($"https://{config.Value.WebDomain}/inbox")
 			},
 			PublicKey = new ASPublicKey {
 				Id        = $"{id}#main-key",
-				Owner     = new LDIdObject(id),
+				Owner     = new ASIdObject(id),
 				PublicKey = keypair.PublicKey,
 				Type      = "Key"
 			}

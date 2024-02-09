@@ -6,7 +6,7 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASCollection<T>() : LDIdObject where T : ASObject {
+public class ASCollection<T>() : ASIdObject where T : ASObject {
 	public ASCollection(string id) : this() {
 		Id = id;
 	}

@@ -11,17 +11,17 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config) {
 		var id     = $"https://{config.Value.WebDomain}/notes/{note.Id}";
 		var userId = $"https://{config.Value.WebDomain}/users/{note.User.Id}";
 		var replyId = note.ReplyId != null
-			? new LDIdObject($"https://{config.Value.WebDomain}/notes/{note.ReplyId}")
+			? new ASIdObject($"https://{config.Value.WebDomain}/notes/{note.ReplyId}")
 			: null;
 
-		List<LDIdObject> to = note.Visibility switch {
+		List<ASIdObject> to = note.Visibility switch {
 			Note.NoteVisibility.Public    => [new ASLink($"{Constants.ActivityStreamsNs}#Public")],
 			Note.NoteVisibility.Followers => [new ASLink($"{userId}/followers")],
 			Note.NoteVisibility.Specified => [], // FIXME
 			_                             => []
 		};
 
-		List<LDIdObject> cc = note.Visibility switch {
+		List<ASIdObject> cc = note.Visibility switch {
 			Note.NoteVisibility.Home => [new ASLink($"{Constants.ActivityStreamsNs}#Public")],
 			_                        => []
 		};
@@ -29,7 +29,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config) {
 		return new ASNote {
 			Id           = id,
 			Content      = note.Text != null ? await MfmConverter.ToHtmlAsync(note.Text) : null,
-			AttributedTo = [new LDIdObject(userId)],
+			AttributedTo = [new ASIdObject(userId)],
 			Type         = $"{Constants.ActivityStreamsNs}#Note",
 			MkContent    = note.Text,
 			PublishedAt  = note.CreatedAt,
