@@ -21,33 +21,35 @@ public static class ServiceExtensions {
 		//services.AddTransient<T>();
 
 		// Scoped = instantiated per request
-		services.AddScoped<ActivityPub.ActivityRenderer>();
-		services.AddScoped<ActivityPub.UserRenderer>();
-		services.AddScoped<ActivityPub.NoteRenderer>();
-		services.AddScoped<ActivityPub.UserResolver>();
-		services.AddScoped<UserService>();
-		services.AddScoped<NoteService>();
-		services.AddScoped<ActivityPub.ActivityDeliverService>();
-		services.AddScoped<ActivityPub.ActivityHandlerService>();
-		services.AddScoped<WebFingerService>();
-		services.AddScoped<ActivityPub.FederationControlService>();
-		services.AddScoped<AuthorizedFetchMiddleware>();
-		services.AddScoped<AuthenticationMiddleware>();
-
-		//TODO: make this prettier
-		services.AddScoped<UserRenderer>();
-		services.AddScoped<NoteRenderer>();
+		services
+			.AddScoped<ActivityPub.ActivityRenderer>()
+			.AddScoped<ActivityPub.UserRenderer>()
+			.AddScoped<ActivityPub.NoteRenderer>()
+			.AddScoped<ActivityPub.UserResolver>()
+			.AddScoped<ActivityPub.ObjectResolver>()
+			.AddScoped<ActivityPub.ActivityDeliverService>()
+			.AddScoped<ActivityPub.FederationControlService>()
+			.AddScoped<ActivityPub.ActivityHandlerService>()
+			.AddScoped<ActivityPub.ActivityFetcherService>()
+			.AddScoped<UserService>()
+			.AddScoped<SystemUserService>()
+			.AddScoped<NoteService>()
+			.AddScoped<WebFingerService>()
+			.AddScoped<AuthorizedFetchMiddleware>()
+			.AddScoped<AuthenticationMiddleware>()
+			.AddScoped<UserRenderer>()
+			.AddScoped<NoteRenderer>();
 
 		// Singleton = instantiated once across application lifetime
-		services.AddSingleton<HttpClient>();
-		services.AddSingleton<HttpRequestService>();
-		services.AddSingleton<ActivityPub.ActivityFetcherService>();
-		services.AddSingleton<QueueService>();
-		services.AddSingleton<ErrorHandlerMiddleware>();
-		services.AddSingleton<RequestBufferingMiddleware>();
-		services.AddSingleton<AuthorizationMiddleware>();
-		services.AddSingleton<RequestVerificationMiddleware>();
-		services.AddSingleton<RequestDurationMiddleware>();
+		services
+			.AddSingleton<HttpClient>()
+			.AddSingleton<HttpRequestService>()
+			.AddSingleton<QueueService>()
+			.AddSingleton<ErrorHandlerMiddleware>()
+			.AddSingleton<RequestBufferingMiddleware>()
+			.AddSingleton<AuthorizationMiddleware>()
+			.AddSingleton<RequestVerificationMiddleware>()
+			.AddSingleton<RequestDurationMiddleware>();
 
 		// Hosted services = long running background tasks
 		// Note: These need to be added as a singleton as well to ensure data consistency

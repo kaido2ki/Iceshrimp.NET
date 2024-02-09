@@ -13,7 +13,7 @@ public class ASActivity : ASObject {
 	[JC(typeof(ASObjectConverter))]
 	public ASObject? Object { get; set; }
 
-	public static class Types {
+	public new static class Types {
 		private const string Ns = Constants.ActivityStreamsNs;
 
 		public const string Create   = $"{Ns}#Create";

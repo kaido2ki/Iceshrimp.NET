@@ -60,7 +60,7 @@ public class NoteService(
 		return note;
 	}
 
-	public async Task DeleteNoteAsync(ASNote note, ASActor actor) {
+	public async Task DeleteNoteAsync(ASTombstone note, ASActor actor) {
 		// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataQuery (it doesn't know about IncludeCommonProperties())
 		var dbNote = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
 		if (dbNote == null) {
@@ -157,9 +157,7 @@ public class NoteService(
 		if (note != null) return note;
 
 		//TODO: should we fall back to a regular user's keypair if fetching with instance actor fails & a local user is following the actor?
-		var instanceActor        = await userSvc.GetInstanceActorAsync();
-		var instanceActorKeypair = await db.UserKeypairs.FirstAsync(p => p.User == instanceActor);
-		var fetchedNote          = await fetchSvc.FetchNoteAsync(uri, instanceActor, instanceActorKeypair);
+		var fetchedNote          = await fetchSvc.FetchNoteAsync(uri);
 		if (fetchedNote?.AttributedTo is not [{ Id: not null } attrTo]) {
 			logger.LogDebug("Invalid Note.AttributedTo, skipping");
 			return null;
@@ -171,7 +169,7 @@ public class NoteService(
 		}
 
 		//TODO: we don't need to fetch the actor every time, we can use userResolver here
-		var actor = await fetchSvc.FetchActorAsync(attrTo.Id, instanceActor, instanceActorKeypair);
+		var actor = await fetchSvc.FetchActorAsync(attrTo.Id);
 
 		try {
 			return await ProcessNoteAsync(fetchedNote, actor);

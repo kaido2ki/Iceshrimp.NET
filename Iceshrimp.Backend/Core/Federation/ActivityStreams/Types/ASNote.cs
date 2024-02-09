@@ -55,7 +55,7 @@ public class ASNote : ASObject {
 		return Note.NoteVisibility.Specified;
 	}
 
-	public static class Types {
+	public new static class Types {
 		private const string Ns = Constants.ActivityStreamsNs;
 
 		public const string Note = $"{Ns}#Note";

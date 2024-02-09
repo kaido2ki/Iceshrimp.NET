@@ -20,7 +20,8 @@ public class ActivityHandlerService(
 	QueueService queueService,
 	ActivityRenderer activityRenderer,
 	IOptions<Config.InstanceSection> config,
-	FederationControlService federationCtrl
+	FederationControlService federationCtrl,
+	ObjectResolver resolver
 ) {
 	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId) {
 		logger.LogDebug("Processing activity: {activity}", activity.Id);
@@ -28,6 +29,11 @@ public class ActivityHandlerService(
 			throw GracefulException.UnprocessableEntity("Cannot perform activity as actor 'null'");
 		if (await federationCtrl.ShouldBlockAsync(activity.Actor.Id))
 			throw GracefulException.UnprocessableEntity("Instance is blocked");
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("Activity object is null");
+		if (activity.Object.IsUnresolved)
+			activity.Object = await resolver.ResolveObject(activity.Object) ??
+			                  throw GracefulException.UnprocessableEntity("Failed to resolve activity object");
 
 		//TODO: validate inboxUserId
 
@@ -40,11 +46,22 @@ public class ActivityHandlerService(
 				return;
 			}
 			case ASDelete: {
-				//TODO: handle user deletes
-				if (activity.Object is not ASNote note)
+				if (activity.Object is not ASTombstone tombstone)
 					throw GracefulException.UnprocessableEntity("Delete activity object is invalid");
-				await noteSvc.DeleteNoteAsync(note, activity.Actor);
-				return;
+				if (await db.Notes.AnyAsync(p => p.Uri == tombstone.Id)) {
+					await noteSvc.DeleteNoteAsync(tombstone, activity.Actor);
+					return;
+				}
+
+				if (await db.Users.AnyAsync(p => p.Uri == tombstone.Id)) {
+					if (tombstone.Id != activity.Actor.Id)
+						throw GracefulException.UnprocessableEntity("Refusing to delete user: actor doesn't match");
+
+					//TODO: handle user deletes
+					throw new NotImplementedException("User deletes aren't supported yet");
+				}
+
+				throw GracefulException.UnprocessableEntity("Delete activity object is unknown or invalid");
 			}
 			case ASFollow: {
 				if (activity.Object is not { } obj)
@@ -73,7 +90,7 @@ public class ActivityHandlerService(
 			case ASUndo: {
 				//TODO: what other types of undo objects are there?
 				if (activity.Object is not ASActivity { Type: ASActivity.Types.Follow, Object: not null } undoActivity)
-					throw new NotImplementedException("Unsupported undo operation");
+					throw new NotImplementedException("Undo activity object is invalid");
 				await UnfollowAsync(undoActivity.Object, activity.Actor);
 				return;
 			}

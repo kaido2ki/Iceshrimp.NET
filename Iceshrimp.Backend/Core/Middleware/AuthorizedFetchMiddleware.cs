@@ -14,7 +14,7 @@ public class AuthorizedFetchMiddleware(
 	IOptionsSnapshot<Config.SecuritySection> config,
 	DatabaseContext db,
 	ActivityPub.UserResolver userResolver,
-	UserService userSvc,
+	SystemUserService systemUserSvc,
 	ActivityPub.FederationControlService fedCtrlSvc,
 	ILogger<AuthorizedFetchMiddleware> logger) : IMiddleware {
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next) {
@@ -24,7 +24,7 @@ public class AuthorizedFetchMiddleware(
 			var request = ctx.Request;
 
 			//TODO: cache this somewhere
-			var instanceActorUri = $"/users/{(await userSvc.GetInstanceActorAsync()).Id}";
+			var instanceActorUri = $"/users/{(await systemUserSvc.GetInstanceActorAsync()).Id}";
 			if (ctx.Request.Path.Value == instanceActorUri) {
 				await next(ctx);
 				return;

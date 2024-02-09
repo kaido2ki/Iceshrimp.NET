@@ -52,9 +52,7 @@ public class UserService(
 
 	public async Task<User> CreateUserAsync(string uri, string acct) {
 		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
-		var instanceActor        = await GetInstanceActorAsync();
-		var instanceActorKeypair = await db.UserKeypairs.FirstAsync(p => p.User == instanceActor);
-		var actor                = await fetchSvc.FetchActorAsync(uri, instanceActor, instanceActorKeypair);
+		var actor = await fetchSvc.FetchActorAsync(uri);
 		logger.LogDebug("Got actor: {url}", actor.Url);
 
 		actor.Normalize(uri, acct);
@@ -63,7 +61,7 @@ public class UserService(
 			Id            = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
 			LastFetchedAt = DateTime.UtcNow,
-			DisplayName          = actor.DisplayName,
+			DisplayName   = actor.DisplayName,
 			IsLocked      = actor.IsLocked ?? false,
 			IsBot         = actor.IsBot,
 			Username      = actor.Username!,
@@ -148,64 +146,6 @@ public class UserService(
 		var ticket = await db.RegistrationTickets.FirstAsync(p => p.Code == invite);
 
 		db.Remove(ticket);
-		await db.AddRangeAsync(user, userKeypair, userProfile, usedUsername);
-		await db.SaveChangesAsync();
-
-		return user;
-	}
-
-
-	public async Task<User> GetInstanceActorAsync() {
-		return await GetOrCreateSystemUserAsync("instance.actor");
-	}
-
-	public async Task<User> GetRelayActorAsync() {
-		return await GetOrCreateSystemUserAsync("relay.actor");
-	}
-
-	private async Task<User> GetOrCreateSystemUserAsync(string username) {
-		return await cache.FetchAsync($"systemUser:{username}", TimeSpan.FromHours(24), async () => {
-			logger.LogTrace("GetOrCreateSystemUser delegate method called for user {username}", username);
-			return await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username &&
-			                                               p.Host == null) ??
-			       await CreateSystemUserAsync(username);
-		});
-	}
-
-	private async Task<User> CreateSystemUserAsync(string username) {
-		if (await db.Users.AnyAsync(p => p.UsernameLower == username.ToLowerInvariant() && p.Host == null))
-			throw new GracefulException($"System user {username} already exists");
-
-		var keypair = RSA.Create(4096);
-		var user = new User {
-			Id            = IdHelpers.GenerateSlowflakeId(),
-			CreatedAt     = DateTime.UtcNow,
-			Username      = username,
-			UsernameLower = username.ToLowerInvariant(),
-			Host          = null,
-			IsAdmin       = false,
-			IsLocked      = true,
-			IsExplorable  = false,
-			IsBot         = true
-		};
-
-		var userKeypair = new UserKeypair {
-			UserId     = user.Id,
-			PrivateKey = keypair.ExportPkcs8PrivateKeyPem(),
-			PublicKey  = keypair.ExportSubjectPublicKeyInfoPem()
-		};
-
-		var userProfile = new UserProfile {
-			UserId             = user.Id,
-			AutoAcceptFollowed = false,
-			Password           = null
-		};
-
-		var usedUsername = new UsedUsername {
-			CreatedAt = DateTime.UtcNow,
-			Username  = username.ToLowerInvariant()
-		};
-
 		await db.AddRangeAsync(user, userKeypair, userProfile, usedUsername);
 		await db.SaveChangesAsync();
 

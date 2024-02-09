@@ -8,14 +8,15 @@ using Newtonsoft.Json.Linq;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-//TODO: required attribute doesn't work with Newtonsoft.Json it appears
-//TODO: enforce @type values
-
-public class ActivityFetcherService(HttpClient client, HttpRequestService httpRqSvc) {
-	private static readonly JsonSerializerSettings JsonSerializerSettings =
-		new();
+public class ActivityFetcherService(HttpClient client, HttpRequestService httpRqSvc, SystemUserService systemUserSvc) {
+	private static readonly JsonSerializerSettings JsonSerializerSettings = new();
 	//FIXME: not doing this breaks ld signatures, but doing this breaks mapping the object to datetime properties
 	//new() { DateParseHandling = DateParseHandling.None };
+
+	public async Task<IEnumerable<ASObject>> FetchActivityAsync(string url) {
+		var (actor, keypair) = await systemUserSvc.GetInstanceActorWithKeypairAsync();
+		return await FetchActivityAsync(url, actor, keypair);
+	}
 
 	public async Task<IEnumerable<ASObject>> FetchActivityAsync(string url, User actor, UserKeypair keypair) {
 		var request  = httpRqSvc.GetSigned(url, ["application/activity+json"], actor, keypair);
@@ -42,7 +43,20 @@ public class ActivityFetcherService(HttpClient client, HttpRequestService httpRq
 		       throw new GracefulException("Failed to fetch actor");
 	}
 
+	public async Task<ASActor> FetchActorAsync(string uri) {
+		var (actor, keypair) = await systemUserSvc.GetInstanceActorWithKeypairAsync();
+		var activity = await FetchActivityAsync(uri, actor, keypair);
+		return activity.OfType<ASActor>().FirstOrDefault() ??
+		       throw new GracefulException("Failed to fetch actor");
+	}
+
 	public async Task<ASNote?> FetchNoteAsync(string uri, User actor, UserKeypair keypair) {
+		var activity = await FetchActivityAsync(uri, actor, keypair);
+		return activity.OfType<ASNote>().FirstOrDefault();
+	}
+
+	public async Task<ASNote?> FetchNoteAsync(string uri) {
+		var (actor, keypair) = await systemUserSvc.GetInstanceActorWithKeypairAsync();
 		var activity = await FetchActivityAsync(uri, actor, keypair);
 		return activity.OfType<ASNote>().FirstOrDefault();
 	}
