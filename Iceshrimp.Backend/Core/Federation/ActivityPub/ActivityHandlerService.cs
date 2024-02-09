@@ -33,10 +33,17 @@ public class ActivityHandlerService(
 
 		switch (activity) {
 			case ASCreate: {
-				//TODO: implement the rest
+				//TODO: should we handle other types of creates?
 				if (activity.Object is not ASNote note)
 					throw GracefulException.UnprocessableEntity("Create activity object is invalid");
 				await noteSvc.ProcessNoteAsync(note, activity.Actor);
+				return;
+			}
+			case ASDelete: {
+				//TODO: handle user deletes
+				if (activity.Object is not ASNote note)
+					throw GracefulException.UnprocessableEntity("Delete activity object is invalid");
+				await noteSvc.DeleteNoteAsync(note, activity.Actor);
 				return;
 			}
 			case ASFollow: {
@@ -64,7 +71,7 @@ public class ActivityHandlerService(
 				return;
 			}
 			case ASUndo: {
-				//TODO: implement the rest
+				//TODO: what other types of undo objects are there?
 				if (activity.Object is not ASActivity { Type: ASActivity.Types.Follow, Object: not null } undoActivity)
 					throw new NotImplementedException("Unsupported undo operation");
 				await UnfollowAsync(undoActivity.Object, activity.Actor);
