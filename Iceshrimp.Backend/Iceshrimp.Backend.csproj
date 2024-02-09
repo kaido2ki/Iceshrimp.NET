@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
         <VersionPrefix>2024.1</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
 
