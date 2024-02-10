@@ -75,7 +75,7 @@ public class UserService(
 			UsernameLower = actor.Username!.ToLowerInvariant(),
 			Host          = AcctToTuple(acct).Host,
 			MovedToUri    = actor.MovedTo?.Link,
-			AlsoKnownAs   = actor.AlsoKnownAs?.Link,
+			AlsoKnownAs   = actor.AlsoKnownAs?.Where(p => p.Link != null).Select(p => p.Link!).ToList(),
 			IsExplorable  = actor.IsDiscoverable ?? false,
 			Inbox         = actor.Inbox?.Link,
 			SharedInbox   = actor.SharedInbox?.Link ?? actor.Endpoints?.SharedInbox?.Id,
@@ -137,7 +137,7 @@ public class UserService(
 		user.IsLocked      = actor.IsLocked ?? false;
 		user.IsBot         = actor.IsBot;
 		user.MovedToUri    = actor.MovedTo?.Link;
-		user.AlsoKnownAs   = actor.AlsoKnownAs?.Link;
+		user.AlsoKnownAs   = actor.AlsoKnownAs?.Where(p => p.Link != null).Select(p => p.Link!).ToList();
 		user.IsExplorable  = actor.IsDiscoverable ?? false;
 		user.FollowersUri  = actor.Followers?.Id;
 		user.IsCat         = actor.IsCat ?? false;

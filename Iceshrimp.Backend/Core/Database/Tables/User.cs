@@ -226,7 +226,7 @@ public class User : IEntity {
 	///     URIs the user is known as too
 	/// </summary>
 	[Column("alsoKnownAs")]
-	public string? AlsoKnownAs { get; set; }
+	public List<string>? AlsoKnownAs { get; set; }
 
 	/// <summary>
 	///     Whether to speak as a cat if isCat.

@@ -93,8 +93,7 @@ public class ASActor : ASObject {
 	public ASLink? MovedTo { get; set; }
 
 	[J("https://www.w3.org/ns/activitystreams#alsoKnownAs")]
-	[JC(typeof(ASLinkConverter))]
-	public ASLink? AlsoKnownAs { get; set; }
+	public List<ASLink>? AlsoKnownAs { get; set; } = [];
 
 	[J("http://joinmastodon.org/ns#featured")]
 	[JC(typeof(ASLinkConverter))]
