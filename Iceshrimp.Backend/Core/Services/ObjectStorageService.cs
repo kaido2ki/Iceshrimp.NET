@@ -10,8 +10,7 @@ using Microsoft.Extensions.Options;
 namespace Iceshrimp.Backend.Core.Services;
 
 public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpClient httpClient) {
-	private readonly string _accessUrl = config.Value.ObjectStorage?.AccessUrl ??
-	                                     throw new Exception("Invalid object storage access url");
+	private readonly string? _accessUrl = config.Value.ObjectStorage?.AccessUrl;
 
 	private readonly S3Bucket _bucket = GetBucket(config);
 
@@ -25,6 +24,9 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 		var accessKey = s3Config.KeyId ?? throw new Exception("Invalid object storage access key");
 		var secretKey = s3Config.SecretKey ?? throw new Exception("Invalid object storage secret key");
 		var bucket    = s3Config.Bucket ?? throw new Exception("Invalid object storage bucket");
+		
+		if (config.Value.ObjectStorage?.AccessUrl == null)
+			throw new Exception("Invalid object storage access url");
 
 		var client = new S3Client(new AwsRegion(region), endpoint, new AwsCredential(accessKey, secretKey));
 		return new S3Bucket(bucket, client);
@@ -64,7 +66,7 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 	}
 
 	public Uri GetFilePublicUrl(string filename) {
-		var baseUri = new Uri(_accessUrl);
+		var baseUri = new Uri(_accessUrl ?? throw new Exception("Invalid object storage access url"));
 		return new Uri(baseUri, GetFilenameWithPrefix(filename));
 	}
 
