@@ -131,9 +131,9 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom") {
 
 	private static void CreateDefaultLogMessage<TState>(TextWriter textWriter, in LogEntry<TState> logEntry,
 	                                                    string message) {
-		var singleLine = !message.Contains('\n');
 		var eventId    = logEntry.EventId.Id;
 		var exception  = logEntry.Exception;
+		var singleLine = !message.Contains('\n') && exception == null;
 
 		textWriter.Write(LoglevelPadding);
 		textWriter.Write(logEntry.Category);
