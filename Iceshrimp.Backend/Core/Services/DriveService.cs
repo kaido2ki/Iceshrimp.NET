@@ -47,7 +47,7 @@ public class DriveService(
 				Uri         = uri,
 				Filename    = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
 				IsSensitive = sensitive,
-				MimeType    = res.Content.Headers.ContentType?.MediaType ?? "application/octet-stream"
+				MimeType    = CleanMimeType(res.Content.Headers.ContentType?.MediaType)
 			};
 
 			return await StoreFile(await res.Content.ReadAsStreamAsync(), user, request);
@@ -136,7 +136,7 @@ public class DriveService(
 	public async Task RemoveFile(DriveFile file) {
 		await RemoveFile(file.Id);
 	}
-	
+
 	public async Task RemoveFile(string fileId) {
 		var job = new DriveFileDeleteJob { DriveFileId = fileId };
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(job);
@@ -154,7 +154,11 @@ public class DriveService(
 		return (guid + ext, guid);
 	}
 
-	//TODO: for delete, only delete from object/local storage if no files reference the file anymore
+	private static string CleanMimeType(string? mimeType) {
+		return mimeType == null || !Constants.BrowserSafeMimeTypes.Contains(mimeType)
+			? "application/octet-stream"
+			: mimeType;
+	}
 }
 
 public class DriveFileCreationRequest {
