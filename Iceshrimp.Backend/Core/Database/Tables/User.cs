@@ -495,8 +495,7 @@ public class User : IEntity {
 		DisplayName != null && EF.Functions.ILike(DisplayName, "%" + EfHelpers.EscapeLikeQuery(str) + "%", @"\");
 
 	[Projectable]
-	public bool UsernameContainsCaseInsensitive(string str) =>
-		DisplayName != null && EF.Functions.ILike(DisplayName, "%" + EfHelpers.EscapeLikeQuery(str) + "%", @"\");
+	public bool UsernameContainsCaseInsensitive(string str) => UsernameLower.Contains(str);
 
 	[Projectable]
 	public bool IsBlockedBy(User user) => BlockedBy.Contains(user);
