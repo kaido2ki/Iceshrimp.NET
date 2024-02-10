@@ -15,8 +15,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240210151527_UserAlsoKnownAsToArray")]
-    partial class UserAlsoKnownAsToArray
+    [Migration("20240210233409_FixNoteMentionsColumnType")]
+    partial class FixNoteMentionsColumnType
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -2420,12 +2420,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("localOnly");
 
-                    b.Property<string>("MentionedRemoteUsers")
+                    b.Property<List<Note.MentionedUser>>("MentionedRemoteUsers")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
+                        .HasColumnType("jsonb")
                         .HasColumnName("mentionedRemoteUsers")
-                        .HasDefaultValueSql("'[]'::text");
+                        .HasDefaultValueSql("'[]'::jsonb");
 
                     b.Property<List<string>>("Mentions")
                         .IsRequired()

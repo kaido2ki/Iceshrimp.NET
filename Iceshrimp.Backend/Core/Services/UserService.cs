@@ -24,9 +24,10 @@ public class UserService(
 	ILogger<UserService> logger,
 	DatabaseContext db,
 	ActivityFetcherService fetchSvc,
-	DriveService driveSvc
+	DriveService driveSvc,
+	MfmConverter mfmConverter
 ) {
-	private (string Username, string? Host) AcctToTuple(string acct) {
+	private static (string Username, string? Host) AcctToTuple(string acct) {
 		if (!acct.StartsWith("acct:")) throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
 
 		var split = acct[5..].Split('@');
@@ -43,7 +44,9 @@ public class UserService(
 				       throw GracefulException.NotFound("User not found");
 			}
 			else {
-				return await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == query);
+				return await db.Users
+				               .IncludeCommonProperties()
+				               .FirstOrDefaultAsync(p => p.Uri != null && p.Uri.ToLower() == query.ToLowerInvariant());
 			}
 
 		var tuple = AcctToTuple(query);
@@ -51,7 +54,8 @@ public class UserService(
 			tuple.Host = null;
 		return await db.Users
 		               .IncludeCommonProperties()
-		               .FirstOrDefaultAsync(p => p.Username == tuple.Username && p.Host == tuple.Host);
+		               .FirstOrDefaultAsync(p => p.UsernameLower == tuple.Username.ToLowerInvariant() &&
+		                                         p.Host == tuple.Host);
 	}
 
 	public async Task<User> CreateUserAsync(string uri, string acct) {
@@ -93,7 +97,7 @@ public class UserService(
 
 		var profile = new UserProfile {
 			User        = user,
-			Description = actor.MkSummary ?? await MfmConverter.FromHtmlAsync(actor.Summary),
+			Description = actor.MkSummary ?? await mfmConverter.FromHtmlAsync(actor.Summary),
 			//Birthday = TODO,
 			//Location = TODO,
 			//Fields = TODO,
@@ -151,7 +155,7 @@ public class UserService(
 
 		var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
 
-		user.UserProfile.Description = actor.MkSummary ?? await MfmConverter.FromHtmlAsync(actor.Summary);
+		user.UserProfile.Description = actor.MkSummary ?? await mfmConverter.FromHtmlAsync(actor.Summary);
 		//user.UserProfile.Birthday = TODO;
 		//user.UserProfile.Location = TODO;
 		//user.UserProfile.Fields = TODO;

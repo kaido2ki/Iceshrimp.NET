@@ -40,9 +40,10 @@ public class Status : IEntity {
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public required bool? IsPinned { get; set; }
 
+	[J("mentions")] public required List<Mention> Mentions { get; set; }
+
 	[J("emojis")]            public object[] Emojis      => [];   //FIXME
 	[J("media_attachments")] public object[] Media       => [];   //FIXME
-	[J("mentions")]          public object[] Mentions    => [];   //FIXME
 	[J("tags")]              public object[] Tags        => [];   //FIXME
 	[J("reactions")]         public object[] Reactions   => [];   //FIXME
 	[J("filtered")]          public object[] Filtered    => [];   //FIXME

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db) {
+public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db, MfmConverter mfmConverter) {
 	/// <summary>
 	/// This function is meant for compacting an actor into the @id form as specified in ActivityStreams
 	/// </summary>
@@ -58,17 +58,17 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			Url = new ASLink($"https://{config.Value.WebDomain}/@{user.Username}"),
 			Username = user.Username,
 			DisplayName = user.DisplayName ?? user.Username,
-			Summary = profile?.Description != null ? await MfmConverter.FromHtmlAsync(profile.Description) : null,
+			Summary = profile?.Description != null ? await mfmConverter.FromHtmlAsync(profile.Description) : null,
 			MkSummary = profile?.Description,
 			IsCat = user.IsCat,
 			IsDiscoverable = user.IsExplorable,
 			IsLocked = user.IsLocked,
 			Endpoints = new ASEndpoints {
-				SharedInbox = new ASIdObject($"https://{config.Value.WebDomain}/inbox")
+				SharedInbox = new ASObjectBase($"https://{config.Value.WebDomain}/inbox")
 			},
 			PublicKey = new ASPublicKey {
 				Id        = $"{id}#main-key",
-				Owner     = new ASIdObject(id),
+				Owner     = new ASObjectBase(id),
 				PublicKey = keypair.PublicKey,
 				Type      = "Key"
 			}

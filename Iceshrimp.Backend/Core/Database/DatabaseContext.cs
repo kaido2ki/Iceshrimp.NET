@@ -531,7 +531,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.FileIds).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.HasPoll).HasDefaultValue(false);
 			entity.Property(e => e.LocalOnly).HasDefaultValue(false);
-			entity.Property(e => e.MentionedRemoteUsers).HasDefaultValueSql("'[]'::text");
+			entity.Property(e => e.MentionedRemoteUsers).HasDefaultValueSql("'[]'::jsonb");
 			entity.Property(e => e.Mentions).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.Reactions).HasDefaultValueSql("'{}'::jsonb");
 			entity.Property(e => e.RenoteCount).HasDefaultValue((short)0);

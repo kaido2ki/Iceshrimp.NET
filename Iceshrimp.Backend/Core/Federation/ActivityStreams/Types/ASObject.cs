@@ -7,11 +7,11 @@ using JR = Newtonsoft.Json.JsonRequiredAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASObject : ASIdObject {
+public class ASObject : ASObjectBase {
 	[J("@id")] [JR] public new required string Id { get; set; }
 
 	[J("@type")]
-	[JC(typeof(LDTypeConverter))]
+	[JC(typeof(StringListSingleConverter))]
 	public string? Type { get; set; }
 
 	public bool IsUnresolved => GetType() == typeof(ASObject) && Type == null;
@@ -55,7 +55,7 @@ public class ASObject : ASIdObject {
 
 public class ASTombstone : ASObject;
 
-public sealed class LDTypeConverter : ASSerializer.ListSingleObjectConverter<string>;
+public sealed class StringListSingleConverter : ASSerializer.ListSingleObjectConverter<string>;
 
 internal sealed class ASObjectConverter : JsonConverter {
 	public override bool CanWrite => false;

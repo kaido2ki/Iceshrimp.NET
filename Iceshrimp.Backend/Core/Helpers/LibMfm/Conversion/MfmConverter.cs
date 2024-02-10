@@ -4,15 +4,18 @@ using System.Web;
 using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
+using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
-using static Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing.HtmlParser;
+using Microsoft.Extensions.Options;
+using MfmHtmlParser = Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing.HtmlParser;
 using HtmlParser = AngleSharp.Html.Parser.HtmlParser;
 
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 
-public static class MfmConverter {
-	public static async Task<string?> FromHtmlAsync(string? html) {
+public class MfmConverter(IOptions<Config.InstanceSection> config) {
+	public async Task<string?> FromHtmlAsync(string? html, List<Note.MentionedUser>? mentions = null) {
 		if (html == null) return null;
 
 		// Ensure compatibility with AP servers that send both <br> as well as newlines
@@ -22,46 +25,50 @@ public static class MfmConverter {
 		var dom = await new HtmlParser().ParseDocumentAsync(html);
 		if (dom.Body == null) return "";
 
-		var sb = new StringBuilder();
-		dom.Body.ChildNodes.Select(ParseNode).ToList().ForEach(s => sb.Append(s));
+		var sb     = new StringBuilder();
+		var parser = new MfmHtmlParser(mentions ?? []);
+		dom.Body.ChildNodes.Select(parser.ParseNode).ToList().ForEach(s => sb.Append(s));
 		return sb.ToString().Trim();
 	}
 
-	public static async Task<string> ToHtmlAsync(string mfm) {
-		var nodes = MfmParser.Parse(mfm);
-
+	public async Task<string> ToHtmlAsync(IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions) {
 		var context  = BrowsingContext.New();
 		var document = await context.OpenNewAsync();
 		var element  = document.CreateElement("p");
 
-		foreach (var node in nodes) element.AppendNodes(document.FromMfmNode(node));
+		foreach (var node in nodes) element.AppendNodes(FromMfmNode(document, node, mentions));
 
 		await using var sw = new StringWriter();
 		await element.ToHtmlAsync(sw);
 		return sw.ToString();
 	}
 
-	private static INode FromMfmNode(this IDocument document, MfmNode node) {
+	public async Task<string> ToHtmlAsync(string mfm, List<Note.MentionedUser> mentions) {
+		var nodes = MfmParser.Parse(mfm);
+		return await ToHtmlAsync(nodes, mentions);
+	}
+
+	private INode FromMfmNode(IDocument document, MfmNode node, List<Note.MentionedUser> mentions) {
 		switch (node) {
 			case MfmBoldNode: {
 				var el = document.CreateElement("b");
-				el.AppendChildren(document, node);
+				AppendChildren(el, document, node, mentions);
 				return el;
 			}
 			case MfmSmallNode: {
 				var el = document.CreateElement("small");
-				el.AppendChildren(document, node);
+				AppendChildren(el, document, node, mentions);
 				return el;
 			}
 			case MfmStrikeNode: {
 				var el = document.CreateElement("del");
-				el.AppendChildren(document, node);
+				AppendChildren(el, document, node, mentions);
 				return el;
 			}
 			case MfmItalicNode:
 			case MfmFnNode: {
 				var el = document.CreateElement("i");
-				el.AppendChildren(document, node);
+				AppendChildren(el, document, node, mentions);
 				return el;
 			}
 			case MfmCodeBlockNode codeBlockNode: {
@@ -73,7 +80,7 @@ public static class MfmConverter {
 			}
 			case MfmCenterNode: {
 				var el = document.CreateElement("div");
-				el.AppendChildren(document, node);
+				AppendChildren(el, document, node, mentions);
 				return el;
 			}
 			case MfmEmojiCodeNode emojiCodeNode: {
@@ -84,8 +91,7 @@ public static class MfmConverter {
 			}
 			case MfmHashtagNode hashtagNode: {
 				var el = document.CreateElement("a");
-				//TODO: get url from config
-				el.SetAttribute("href", $"https://example.org/tags/{hashtagNode.Hashtag}");
+				el.SetAttribute("href", $"https://{config.Value.WebDomain}/tags/{hashtagNode.Hashtag}");
 				el.TextContent = $"#{hashtagNode.Hashtag}";
 				el.SetAttribute("rel", "tag");
 				return el;
@@ -108,18 +114,45 @@ public static class MfmConverter {
 			case MfmLinkNode linkNode: {
 				var el = document.CreateElement("a");
 				el.SetAttribute("href", linkNode.Url);
-				el.AppendChildren(document, node);
+				AppendChildren(el, document, node, mentions);
 				return el;
 			}
 			case MfmMentionNode mentionNode: {
 				var el = document.CreateElement("span");
-				el.TextContent = mentionNode.Acct;
-				//TODO: Resolve mentions and only fall back to the above
+
+				if (mentionNode.Host == config.Value.AccountDomain || mentionNode.Host == config.Value.WebDomain)
+					mentionNode.Host = null;
+
+				var mention = mentionNode.Host == null
+					? new Note.MentionedUser {
+						Host     = config.Value.AccountDomain,
+						Uri      = $"https://{config.Value.WebDomain}/@{mentionNode.Username}",
+						Username = mentionNode.Username
+					}
+					: mentions.FirstOrDefault(p => string.Equals(p.Username, mentionNode.Username,
+					                                             StringComparison.InvariantCultureIgnoreCase) &&
+					                               string.Equals(p.Host, mentionNode.Host,
+					                                             StringComparison.InvariantCultureIgnoreCase));
+				if (mention == null) {
+					el.TextContent = mentionNode.Acct;
+				}
+				else {
+					el.ClassList.Add("h-card");
+					el.SetAttribute("translate", "no");
+					var a = document.CreateElement("a");
+					a.ClassList.Add("u-url", "mention");
+					a.SetAttribute("href", mention.Url ?? mention.Uri);
+					var span = document.CreateElement("span");
+					span.TextContent = $"@{mention.Username}";
+					a.AppendChild(span);
+					el.AppendChild(a);
+				}
+
 				return el;
 			}
 			case MfmQuoteNode: {
 				var el = document.CreateElement("blockquote");
-				el.AppendChildren(document, node);
+				AppendChildren(el, document, node, mentions);
 				return el;
 			}
 			case MfmTextNode textNode: {
@@ -155,7 +188,7 @@ public static class MfmConverter {
 			}
 			case MfmPlainNode: {
 				var el = document.CreateElement("span");
-				el.AppendChildren(document, node);
+				AppendChildren(el, document, node, mentions);
 				return el;
 			}
 			default: {
@@ -164,7 +197,9 @@ public static class MfmConverter {
 		}
 	}
 
-	private static void AppendChildren(this INode element, IDocument document, MfmNode parent) {
-		foreach (var node in parent.Children) element.AppendNodes(document.FromMfmNode(node));
+	private void AppendChildren(INode element, IDocument document, MfmNode parent,
+	                            List<Note.MentionedUser> mentions
+	) {
+		foreach (var node in parent.Children) element.AppendNodes(FromMfmNode(document, node, mentions));
 	}
 }

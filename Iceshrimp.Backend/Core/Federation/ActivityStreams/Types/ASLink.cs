@@ -1,12 +1,18 @@
 using J = Newtonsoft.Json.JsonPropertyAttribute;
+using JC = Newtonsoft.Json.JsonConverterAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASLink(string url) : ASIdObject(url) {
+public class ASLink(string url) : ASObjectBase(url) {
 	[J("https://www.w3.org/ns/activitystreams#href")]
-	public string? Href { get; set; }
+	[JC(typeof(ASObjectBaseConverter))]
+	public ASObjectBase? Href { get; set; }
 
-	public          string? Link       => Id ?? Href;
+	[J("https://www.w3.org/ns/activitystreams#name")]
+	[JC(typeof(ValueObjectConverter))]
+	public string? Name { get; set; }
+
+	public          string? Link       => Id ?? Href?.Id;
 	public override string? ToString() => Link;
 }
 

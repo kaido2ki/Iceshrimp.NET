@@ -157,7 +157,7 @@ public class UserProfile {
 	[Column("preventAiLearning")] public bool PreventAiLearning { get; set; }
 
 	[Column("mentions", TypeName = "jsonb")]
-	public List<MentionedRemoteUsers> Mentions { get; set; } = null!;
+	public List<Note.MentionedUser> Mentions { get; set; } = null!;
 
 	[ForeignKey("PinnedPageId")]
 	[InverseProperty(nameof(Page.UserProfile))]
@@ -178,12 +178,5 @@ public class UserProfile {
 		[J("name")]     public required string Name       { get; set; }
 		[J("value")]    public required string Value      { get; set; }
 		[J("verified")] public          bool?  IsVerified { get; set; }
-	}
-
-	public class MentionedRemoteUsers {
-		[J("uri")]      public required string  Uri      { get; set; }
-		[J("url")]      public          string? Url      { get; set; }
-		[J("username")] public required string  Username { get; set; }
-		[J("host")]     public required string  Host     { get; set; }
 	}
 }

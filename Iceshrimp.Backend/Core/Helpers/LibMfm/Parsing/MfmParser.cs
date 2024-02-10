@@ -1,10 +1,11 @@
+using System.Collections.Immutable;
 using System.Text.RegularExpressions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
 
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 
 public static class MfmParser {
-	private static readonly List<INodeParser> Parsers = [
+	private static readonly ImmutableList<INodeParser> Parsers = [
 		new PlainNodeParser(),
 		new ItalicNodeParser(),
 		new BoldNodeParser(),

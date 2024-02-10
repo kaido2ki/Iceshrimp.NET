@@ -2417,12 +2417,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("localOnly");
 
-                    b.Property<string>("MentionedRemoteUsers")
+                    b.Property<List<Note.MentionedUser>>("MentionedRemoteUsers")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("text")
+                        .HasColumnType("jsonb")
                         .HasColumnName("mentionedRemoteUsers")
-                        .HasDefaultValueSql("'[]'::text");
+                        .HasDefaultValueSql("'[]'::jsonb");
 
                     b.Property<List<string>>("Mentions")
                         .IsRequired()
@@ -4451,7 +4451,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("location")
                         .HasComment("The location of the User.");
 
-                    b.Property<List<UserProfile.MentionedRemoteUsers>>("Mentions")
+                    b.Property<List<Note.MentionedUser>>("Mentions")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("jsonb")

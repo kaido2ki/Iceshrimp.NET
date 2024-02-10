@@ -71,6 +71,10 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 		return query;
 	}
 
+	public async Task<User> ResolveAsync(string username, string? host) {
+		return host != null ? await ResolveAsync($"acct:{username}@{host}") : await ResolveAsync($"acct:{username}");
+	}
+
 	public async Task<User> ResolveAsync(string query) {
 		query = NormalizeQuery(query);
 

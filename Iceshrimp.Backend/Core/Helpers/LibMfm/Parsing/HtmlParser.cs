@@ -1,9 +1,11 @@
 using AngleSharp.Dom;
+using AngleSharp.Html.Dom;
+using Iceshrimp.Backend.Core.Database.Tables;
 
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 
-internal static class HtmlParser {
-	internal static string? ParseNode(INode node) {
+internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions) {
+	internal string? ParseNode(INode node) {
 		if (node.NodeType is NodeType.Text)
 			return node.TextContent;
 		if (node.NodeType is NodeType.Comment or NodeType.Document)
@@ -14,8 +16,20 @@ internal static class HtmlParser {
 				return "\n";
 			}
 			case "A": {
-				//TODO: implement parsing of links & mentions (automatically correct split domain mentions for the latter)
-				return null;
+				if (node is HtmlElement el) {
+					var href = el.GetAttribute("href");
+					if (href == null) return $"<plain>{el.TextContent}</plain>";
+
+					if (el.ClassList.Contains("u-url") && el.ClassList.Contains("mention")) {
+						var mention = mentions.FirstOrDefault(p => p.Uri == href || p.Url == href);
+						if (mention != null) {
+							return $"@{mention.Username}@{mention.Host}";
+						}
+					}
+
+					return $"[{el.TextContent}]({href})";
+				}
+				return node.TextContent;
 			}
 			case "H1": {
 				return $"【{ParseChildren(node)}】\n";
@@ -74,7 +88,7 @@ internal static class HtmlParser {
 		}
 	}
 
-	private static string ParseChildren(INode node) {
+	private string ParseChildren(INode node) {
 		return string.Join(null, node.ChildNodes.Select(ParseNode));
 	}
 }

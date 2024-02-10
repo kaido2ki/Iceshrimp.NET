@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.DataProtection;
@@ -27,6 +28,7 @@ public static class ServiceExtensions {
 			.AddScoped<ActivityPub.NoteRenderer>()
 			.AddScoped<ActivityPub.UserResolver>()
 			.AddScoped<ActivityPub.ObjectResolver>()
+			.AddScoped<ActivityPub.MentionsResolver>()
 			.AddScoped<ActivityPub.ActivityDeliverService>()
 			.AddScoped<ActivityPub.FederationControlService>()
 			.AddScoped<ActivityPub.ActivityHandlerService>()
@@ -46,6 +48,7 @@ public static class ServiceExtensions {
 		// Singleton = instantiated once across application lifetime
 		services
 			.AddSingleton<HttpClient>()
+			.AddSingleton<MfmConverter>()
 			.AddSingleton<HttpRequestService>()
 			.AddSingleton<QueueService>()
 			.AddSingleton<ObjectStorageService>()

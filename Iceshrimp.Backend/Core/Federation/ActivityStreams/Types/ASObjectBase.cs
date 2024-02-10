@@ -2,8 +2,8 @@ using J = Newtonsoft.Json.JsonPropertyAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASIdObject() {
-	public ASIdObject(string? id) : this() {
+public class ASObjectBase() {
+	public ASObjectBase(string? id) : this() {
 		Id = id;
 	}
 
@@ -14,4 +14,4 @@ public class ASIdObject() {
 	}
 }
 
-public sealed class LDIdObjectConverter : ASSerializer.ListSingleObjectConverter<ASIdObject>;
+public sealed class ASObjectBaseConverter : ASSerializer.ListSingleObjectConverter<ASObjectBase>;

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
-public class UserRenderer(IOptions<Config.InstanceSection> config) {
+public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter mfmConverter) {
 	private readonly string _transparent = $"https://{config.Value.WebDomain}/assets/transparent.png";
 
 	public async Task<Account> RenderAsync(User user, UserProfile? profile) {
@@ -29,7 +29,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config) {
 			FollowersCount = user.FollowersCount,
 			FollowingCount = user.FollowingCount,
 			StatusesCount = user.NotesCount,
-			Note = await MfmConverter.ToHtmlAsync(profile?.Description ?? ""),
+			Note = await mfmConverter.ToHtmlAsync(profile?.Description ?? "", []),
 			Url = profile?.Url ?? user.Uri ?? $"https://{user.Host ?? config.Value.WebDomain}/@{user.Username}",
 			AvatarStaticUrl = user.AvatarUrl ?? _transparent, //TODO
 			HeaderUrl = user.BannerUrl ?? _transparent,

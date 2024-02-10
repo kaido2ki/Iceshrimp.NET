@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Iceshrimp.Tests.Parsing;
 
@@ -24,8 +25,11 @@ public class MfmTests {
 		return;
 
 		async Task<double> Benchmark() {
+			var provider  = MockObjects.ServiceProvider;
+			var converter = provider.GetRequiredService<MfmConverter>();
+
 			var pre = DateTime.Now;
-			await MfmConverter.ToHtmlAsync(Mfm);
+			await converter.ToHtmlAsync(Mfm, []);
 			var post = DateTime.Now;
 			var ms   = (post - pre).TotalMilliseconds;
 			Console.WriteLine($"Took {ms} ms");

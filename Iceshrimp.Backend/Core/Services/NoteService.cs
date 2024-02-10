@@ -13,6 +13,12 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
+using MentionQuad =
+	(List<string> mentionedUserIds,
+	List<Note.MentionedUser> mentions,
+	List<Note.MentionedUser> remoteMentions,
+	Dictionary<(string usernameLower, string webDomain), string> splitDomainMapping);
+
 [SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor",
                  Justification = "We need IOptionsSnapshot for config hot reload")]
 public class NoteService(
@@ -23,7 +29,9 @@ public class NoteService(
 	ActivityFetcherService fetchSvc,
 	ActivityDeliverService deliverSvc,
 	NoteRenderer noteRenderer,
-	UserRenderer userRenderer
+	UserRenderer userRenderer,
+	MentionsResolver mentionsResolver,
+	MfmConverter mfmConverter
 ) {
 	private readonly List<string> _resolverHistory = [];
 	private          int          _recursionLimit  = 100;
@@ -49,7 +57,7 @@ public class NoteService(
 			UserHost   = null,
 			Visibility = visibility
 		};
-		
+
 		user.NotesCount++;
 		await db.AddAsync(note);
 		await db.SaveChangesAsync();
@@ -71,13 +79,13 @@ public class NoteService(
 		}
 
 		var user = await userResolver.ResolveAsync(actor.Id);
-		
+
 		// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataUsage (same reason as above)
 		if (dbNote.User != user) {
 			logger.LogDebug("Note '{id}' isn't owned by actor requesting its deletion, skipping", note.Id);
 			return;
 		}
-		
+
 		logger.LogDebug("Deleting note '{id}' owned by {userId}", note.Id, user.Id);
 
 		user.NotesCount--;
@@ -117,14 +125,15 @@ public class NoteService(
 		if (user.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
 
-		//TODO: validate AP object type
 		//TODO: resolve anything related to the note as well (attachments, emoji, etc)
+
+		var (mentionedUserIds, mentions, remoteMentions, splitDomainMapping) = await ResolveNoteMentionsAsync(note);
 
 		var dbNote = new Note {
 			Id     = IdHelpers.GenerateSlowflakeId(),
 			Uri    = note.Id,
 			Url    = note.Url?.Id, //FIXME: this doesn't seem to work yet
-			Text   = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content),
+			Text   = note.MkContent ?? await mfmConverter.FromHtmlAsync(note.Content, mentions),
 			UserId = user.Id,
 			CreatedAt = note.PublishedAt?.ToUniversalTime() ??
 			            throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field"),
@@ -137,11 +146,64 @@ public class NoteService(
 		if (dbNote.Text is { Length: > 100000 })
 			throw GracefulException.UnprocessableEntity("Content cannot be longer than 100.000 characters");
 
+		if (dbNote.Text is not null) {
+			dbNote.Mentions             = mentionedUserIds;
+			dbNote.MentionedRemoteUsers = remoteMentions;
+			if (dbNote.Visibility == Note.NoteVisibility.Specified) {
+				var visibleUserIds = note.GetRecipients(actor).Concat(mentionedUserIds).ToList();
+				if (dbNote.ReplyUserId != null)
+					visibleUserIds.Add(dbNote.ReplyUserId);
+
+				dbNote.VisibleUserIds = visibleUserIds.Distinct().ToList();
+			}
+
+			dbNote.Text =
+				await mentionsResolver.ResolveMentions(dbNote.Text, dbNote.UserHost, remoteMentions,
+				                                       splitDomainMapping);
+		}
+
 		user.NotesCount++;
 		await db.Notes.AddAsync(dbNote);
 		await db.SaveChangesAsync();
 		logger.LogDebug("Note {id} created successfully", dbNote.Id);
 		return dbNote;
+	}
+
+	private async Task<MentionQuad> ResolveNoteMentionsAsync(ASNote note) {
+		var mentionTags = note.Tags?.OfType<ASMention>().Where(p => p.Href != null) ?? [];
+		var users = await mentionTags
+		                  .Select(async p => await userResolver.ResolveAsync(p.Href!.Id!))
+		                  .AwaitAllNoConcurrencyAsync();
+
+		var userIds = users.Select(p => p.Id).ToList();
+
+		var remoteUsers = users.Where(p => p is { Host: not null, Uri: not null })
+		                       .ToList();
+
+		var localUsers = users.Where(p => p.Host is null)
+		                      .ToList();
+
+		var splitDomainMapping = remoteUsers.Where(p => new Uri(p.Uri!).Host != p.Host)
+		                                    .DistinctBy(p => p.Host)
+		                                    .ToDictionary(p => (p.UsernameLower, new Uri(p.Uri!).Host), p => p.Host!);
+
+		var localMentions = localUsers.Select(p => new Note.MentionedUser {
+			Host     = config.Value.AccountDomain,
+			Username = p.Username,
+			Uri      = $"https://{config.Value.WebDomain}/users/{p.Id}",
+			Url      = $"https://{config.Value.WebDomain}/@{p.Username}"
+		});
+
+		var remoteMentions = remoteUsers.Select(p => new Note.MentionedUser {
+			Host     = p.Host!,
+			Uri      = p.Uri!,
+			Username = p.Username,
+			Url      = p.UserProfile?.Url
+		}).ToList();
+
+		var mentions = remoteMentions.Concat(localMentions).ToList();
+
+		return (userIds, mentions, remoteMentions, splitDomainMapping);
 	}
 
 	public async Task<Note?> ResolveNoteAsync(string uri) {
@@ -159,7 +221,7 @@ public class NoteService(
 		if (note != null) return note;
 
 		//TODO: should we fall back to a regular user's keypair if fetching with instance actor fails & a local user is following the actor?
-		var fetchedNote          = await fetchSvc.FetchNoteAsync(uri);
+		var fetchedNote = await fetchSvc.FetchNoteAsync(uri);
 		if (fetchedNote?.AttributedTo is not [{ Id: not null } attrTo]) {
 			logger.LogDebug("Invalid Note.AttributedTo, skipping");
 			return null;

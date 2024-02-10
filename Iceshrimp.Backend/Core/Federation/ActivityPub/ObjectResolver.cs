@@ -10,29 +10,29 @@ public class ObjectResolver(
 	DatabaseContext db,
 	FederationControlService federationCtrl
 ) {
-	public async Task<ASObject?> ResolveObject(ASIdObject idObj) {
-		if (idObj is ASObject obj) return obj;
-		if (idObj.Id == null) {
+	public async Task<ASObject?> ResolveObject(ASObjectBase baseObj) {
+		if (baseObj is ASObject obj) return obj;
+		if (baseObj.Id == null) {
 			logger.LogDebug("Refusing to resolve object with null id property");
 			return null;
 		}
 
-		if (await federationCtrl.ShouldBlockAsync(idObj.Id)) {
+		if (await federationCtrl.ShouldBlockAsync(baseObj.Id)) {
 			logger.LogDebug("Instance is blocked");
 			return null;
 		}
 
-		if (await db.Notes.AnyAsync(p => p.Uri == idObj.Id))
-			return new ASNote { Id = idObj.Id };
-		if (await db.Users.AnyAsync(p => p.Uri == idObj.Id))
-			return new ASActor { Id = idObj.Id };
+		if (await db.Notes.AnyAsync(p => p.Uri == baseObj.Id))
+			return new ASNote { Id = baseObj.Id };
+		if (await db.Users.AnyAsync(p => p.Uri == baseObj.Id))
+			return new ASActor { Id = baseObj.Id };
 
 		try {
-			var result = await fetchSvc.FetchActivityAsync(idObj.Id);
+			var result = await fetchSvc.FetchActivityAsync(baseObj.Id);
 			return result.FirstOrDefault();
 		}
 		catch (Exception e) {
-			logger.LogDebug("Failed to resolve object {id}: {error}", idObj.Id, e);
+			logger.LogDebug("Failed to resolve object {id}: {error}", baseObj.Id, e);
 			return null;
 		}
 	}

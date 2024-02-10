@@ -4454,7 +4454,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("location")
                         .HasComment("The location of the User.");
 
-                    b.Property<List<UserProfile.MentionedRemoteUsers>>("Mentions")
+                    b.Property<List<Note.MentionedUser>>("Mentions")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("jsonb")

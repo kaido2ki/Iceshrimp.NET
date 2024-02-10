@@ -32,17 +32,21 @@ public class ASNote : ASObject {
 	public ASNoteSource? Source { get; set; }
 
 	[J("https://www.w3.org/ns/activitystreams#to")]
-	public List<ASIdObject> To { get; set; } = [];
+	public List<ASObjectBase> To { get; set; } = [];
 
 	[J("https://www.w3.org/ns/activitystreams#cc")]
-	public List<ASIdObject> Cc { get; set; } = [];
+	public List<ASObjectBase> Cc { get; set; } = [];
 
 	[J("https://www.w3.org/ns/activitystreams#attributedTo")]
-	public List<ASIdObject> AttributedTo { get; set; } = [];
+	public List<ASObjectBase> AttributedTo { get; set; } = [];
 
 	[J("https://www.w3.org/ns/activitystreams#inReplyTo")]
-	[JC(typeof(LDIdObjectConverter))]
-	public ASIdObject? InReplyTo { get; set; }
+	[JC(typeof(ASObjectBaseConverter))]
+	public ASObjectBase? InReplyTo { get; set; }
+
+	[J("https://www.w3.org/ns/activitystreams#tag")]
+	[JC(typeof(ASTagConverter))]
+	public List<ASTag>? Tags { get; set; }
 
 	public Note.NoteVisibility GetVisibility(ASActor actor) {
 		if (To.Any(p => p.Id == "https://www.w3.org/ns/activitystreams#Public"))
@@ -53,6 +57,17 @@ public class ASNote : ASObject {
 			return Note.NoteVisibility.Followers;
 
 		return Note.NoteVisibility.Specified;
+	}
+
+	public List<string> GetRecipients(ASActor actor) {
+		return To.Concat(Cc)
+		         .Select(p => p.Id)
+		         .Distinct()
+		         .Where(p => p != $"{Constants.ActivityStreamsNs}#Public" &&
+		                     p != (actor.Followers?.Id ?? actor.Id + "/followers"))
+		         .Where(p => p != null)
+		         .Select(p => p!)
+		         .ToList();
 	}
 
 	public new static class Types {

@@ -5,6 +5,7 @@ using EntityFrameworkCore.Projectables;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 using NpgsqlTypes;
+using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -106,7 +107,8 @@ public class Note : IEntity {
 	[Column("mentions", TypeName = "character varying(32)[]")]
 	public List<string> Mentions { get; set; } = [];
 
-	[Column("mentionedRemoteUsers")] public string MentionedRemoteUsers { get; set; } = null!;
+	[Column("mentionedRemoteUsers", TypeName = "jsonb")] 
+	public List<Note.MentionedUser> MentionedRemoteUsers { get; set; } = [];
 
 	[Column("emojis", TypeName = "character varying(128)[]")]
 	public List<string> Emojis { get; set; } = [];
@@ -270,5 +272,12 @@ public class Note : IEntity {
 			PrecomputedIsRenoteVisible = renote;
 
 		return this;
+	}
+	
+	public class MentionedUser {
+		[J("uri")]      public required string  Uri      { get; set; }
+		[J("url")]      public          string? Url      { get; set; }
+		[J("username")] public required string  Username { get; set; }
+		[J("host")]     public required string  Host     { get; set; }
 	}
 }
