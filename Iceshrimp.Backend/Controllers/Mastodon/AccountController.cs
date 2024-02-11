@@ -11,11 +11,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
+using Microsoft.AspNetCore.Cors;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
 [MastodonApiController]
 [Route("/api/v1/accounts")]
+[EnableCors("mastodon")]
 [Authenticate]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]

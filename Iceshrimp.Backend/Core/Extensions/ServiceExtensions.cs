@@ -168,4 +168,18 @@ public static class ServiceExtensions {
 			};
 		});
 	}
+
+	public static void AddCorsPolicies(this IServiceCollection services) {
+		services.AddCors(options => {
+			options.AddPolicy("drive", policy => {
+				policy.WithOrigins("*")
+				      .WithMethods("GET", "HEAD");
+			});
+			options.AddPolicy("mastodon", policy => {
+				policy.WithOrigins("*")
+				      .WithHeaders("Authorization")
+				      .WithExposedHeaders("Link,Connection,Sec-Websocket-Accept,Upgrade");
+			});
+		});
+	}
 }

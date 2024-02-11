@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 
 [MastodonApiController]
 [EnableRateLimiting("sliding")]
+[EnableCors("mastodon")]
 [Produces("application/json")]
 public class AuthController(DatabaseContext db) : Controller {
 	[HttpGet("/api/v1/apps/verify_credentials")]

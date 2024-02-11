@@ -32,6 +32,7 @@ builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
 builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddRedis(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
+builder.Services.AddCorsPolicies();
 
 builder.Services.AddServices();
 builder.Services.ConfigureServices(builder.Configuration);
@@ -44,6 +45,7 @@ app.UseRouting();
 app.UseSwaggerWithOptions();
 app.UseStaticFiles();
 app.UseRateLimiter();
+app.UseCors();
 app.UseAuthorization();
 app.UseCustomMiddleware();
 

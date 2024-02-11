@@ -9,6 +9,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 
 [MastodonApiController]
 [Authenticate]
+[EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
 public class SearchController(

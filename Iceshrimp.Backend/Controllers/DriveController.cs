@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Services;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -16,6 +17,7 @@ public class DriveController(
 	IOptionsSnapshot<Config.StorageSection> options,
 	ILogger<DriveController> logger
 ) : Controller {
+	[EnableCors("drive")]
 	[HttpGet("/files/{accessKey}")]
 	public async Task<IActionResult> GetFile(string accessKey) {
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.AccessKey == accessKey ||
