@@ -171,6 +171,12 @@ public static class ServiceExtensions {
 
 	public static void AddCorsPolicies(this IServiceCollection services) {
 		services.AddCors(options => {
+			options.AddPolicy("well-known", policy => {
+				policy.WithOrigins("*")
+				      .WithMethods("GET")
+				      .WithHeaders("Accept")
+				      .WithExposedHeaders("Vary");
+			});
 			options.AddPolicy("drive", policy => {
 				policy.WithOrigins("*")
 				      .WithMethods("GET", "HEAD");

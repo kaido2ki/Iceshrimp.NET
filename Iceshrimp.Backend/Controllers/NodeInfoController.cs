@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -8,6 +9,7 @@ namespace Iceshrimp.Backend.Controllers;
 [ApiController]
 [Tags("Federation")]
 [Route("/nodeinfo")]
+[EnableCors("well-known")]
 public class NodeInfoController(IOptions<Config.InstanceSection> config) : Controller {
 	[HttpGet("2.1")]
 	[HttpGet("2.0")]

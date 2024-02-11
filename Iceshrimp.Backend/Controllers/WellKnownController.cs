@@ -3,6 +3,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -12,6 +13,7 @@ namespace Iceshrimp.Backend.Controllers;
 [ApiController]
 [Tags("Federation")]
 [Route("/.well-known")]
+[EnableCors("well-known")]
 public class WellKnownController(IOptions<Config.InstanceSection> config, DatabaseContext db) : Controller {
 	[HttpGet("webfinger")]
 	[Produces("application/json")]
