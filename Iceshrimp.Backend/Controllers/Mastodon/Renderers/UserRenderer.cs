@@ -20,7 +20,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		var res = new Account {
 			Id = user.Id,
 			DisplayName = user.DisplayName ?? user.Username,
-			AvatarUrl = user.AvatarUrl ?? _transparent,
+			AvatarUrl = user.AvatarUrl ?? $"https://{config.Value.WebDomain}/identicon/{user.Id}",
 			Username = user.Username,
 			Acct = acct,
 			FullyQualifiedName = $"{user.Username}@{user.Host ?? config.Value.AccountDomain}",
@@ -31,7 +31,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			StatusesCount = user.NotesCount,
 			Note = await mfmConverter.ToHtmlAsync(profile?.Description ?? "", []),
 			Url = profile?.Url ?? user.Uri ?? $"https://{user.Host ?? config.Value.WebDomain}/@{user.Username}",
-			AvatarStaticUrl = user.AvatarUrl ?? _transparent, //TODO
+			AvatarStaticUrl = user.AvatarUrl ?? $"https://{config.Value.WebDomain}/identicon/{user.Id}", //TODO
 			HeaderUrl = user.BannerUrl ?? _transparent,
 			HeaderStaticUrl = user.BannerUrl ?? _transparent, //TODO
 			MovedToAccount = null, //TODO
