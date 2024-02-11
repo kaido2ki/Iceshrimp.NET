@@ -15,9 +15,13 @@ public class NoteRenderer(
 	MfmConverter mfmConverter,
 	DatabaseContext db
 ) {
-	public async Task<Status> RenderAsync(Note note, List<Mention>? mentions = null, int recurse = 2) {
-		var uri     = note.Uri ?? $"https://{config.Value.WebDomain}/notes/{note.Id}";
-		var renote  = note.Renote != null && recurse > 0 ? await RenderAsync(note.Renote, mentions, --recurse) : null;
+	public async Task<Status> RenderAsync(Note note, List<Account>? accounts = null, List<Mention>? mentions = null,
+	                                      int recurse = 2
+	) {
+		var uri = note.Uri ?? $"https://{config.Value.WebDomain}/notes/{note.Id}";
+		var renote = note.Renote != null && recurse > 0
+			? await RenderAsync(note.Renote, accounts, mentions, --recurse)
+			: null;
 		var text    = note.Text; //TODO: append quote uri
 		var content = text != null ? await mfmConverter.ToHtmlAsync(text, note.MentionedRemoteUsers) : null;
 
@@ -37,11 +41,13 @@ public class NoteRenderer(
 			mentions = [..mentions.Where(p => note.Mentions.Contains(p.Id))];
 		}
 
+		var account = accounts?.FirstOrDefault(p => p.Id == note.UserId) ?? await userRenderer.RenderAsync(note.User);
+
 		var res = new Status {
 			Id             = note.Id,
 			Uri            = uri,
 			Url            = note.Url ?? uri,
-			Account        = await userRenderer.RenderAsync(note.User), //TODO: batch this
+			Account        = account,
 			ReplyId        = note.ReplyId,
 			ReplyUserId    = note.ReplyUserId,
 			Renote         = renote, //TODO: check if it's a pure renote
@@ -68,7 +74,7 @@ public class NoteRenderer(
 		return res;
 	}
 
-	private async Task<List<Mention>> GetMentions(IReadOnlyCollection<Note> notes) {
+	private async Task<List<Mention>> GetMentions(IEnumerable<Note> notes) {
 		var ids = notes.SelectMany(n => n.Mentions).Distinct();
 		return await db.Users.Where(p => ids.Contains(p.Id))
 		               .Select(u => new Mention {
@@ -82,9 +88,14 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
+	private async Task<List<Account>> GetAccounts(IEnumerable<User> users) {
+		return (await userRenderer.RenderManyAsync(users.DistinctBy(p => p.Id))).ToList();
+	}
+
 	public async Task<IEnumerable<Status>> RenderManyAsync(IEnumerable<Note> notes) {
 		var noteList = notes.ToList();
+		var accounts = await GetAccounts(noteList.Select(p => p.User));
 		var mentions = await GetMentions(noteList);
-		return await noteList.Select(async p => await RenderAsync(p, mentions)).AwaitAllAsync();
+		return await noteList.Select(async p => await RenderAsync(p, accounts, mentions)).AwaitAllAsync();
 	}
 }
