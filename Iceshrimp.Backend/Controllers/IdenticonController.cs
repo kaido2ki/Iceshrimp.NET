@@ -2,8 +2,10 @@ using System.IO.Hashing;
 using System.Text;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Skia;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace Iceshrimp.Backend.Controllers;
 
@@ -11,24 +13,19 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableCors("drive")]
 [Route("/identicon/{id}")]
 public class IdenticonController : Controller {
-	public IActionResult GetIdenticon(string id) {
-		using var bitmap = new SkiaBitmapExportContext(Size, Size, 1.0f);
+	public async Task GetIdenticon(string id) {
+		using var image = new Image<Rgb24>(Size, Size);
 
-		var canvas = bitmap.Canvas;
 		var random = new Random((int)XxHash32.HashToUInt32(Encoding.UTF8.GetBytes(id)));
 		var color  = Colors[random.Next(0, Colors.Count - 1)];
 
-		var gradient = new LinearGradientPaint(new Point(0, 0), new Point(1, 1)) {
-			StartColor = color.start,
-			EndColor   = color.end
-		};
+		var gradient = new LinearGradientBrush(new Point(0, 0), new Point(Size, Size), GradientRepetitionMode.None,
+		                                       new ColorStop(0, color.start), new ColorStop(1, color.end));
 
-		var rect = new RectF(0, 0, Size, Size);
-		canvas.SetFillPaint(gradient, rect);
-		canvas.FillRectangle(rect);
 
-		var paint = new SolidPaint(Microsoft.Maui.Graphics.Colors.White);
-		canvas.SetFillPaint(paint, rect);
+		image.Mutate(p => p.Fill(gradient));
+
+		var paint = new SolidBrush(Color.White);
 
 		var side   = new bool[SideN, CellCount];
 		var center = new bool[CellCount];
@@ -60,16 +57,13 @@ public class IdenticonController : Controller {
 				var actualX = Margin + CellSize * i;
 				var actualY = Margin + CellSize * j;
 
-				canvas.FillRectangle(new Rect(actualX, actualY, CellSize, CellSize));
+				image.Mutate(p => p.Fill(paint, new Rectangle(actualX, actualY, CellSize, CellSize)));
 			}
 		}
 
-		var stream = new MemoryStream();
-		bitmap.WriteToStream(stream);
-		stream.Seek(0, SeekOrigin.Begin);
-
 		Response.Headers.CacheControl = "max-age=31536000, immutable";
-		return File(stream, "image/png");
+		Response.Headers.ContentType  = "image/png";
+		await image.SaveAsPngAsync(Response.Body);
 	}
 
 	#region Color definitions & Constants
@@ -82,41 +76,41 @@ public class IdenticonController : Controller {
 	private const int SideN          = CellCount / 2;
 
 	private static readonly List<(Color start, Color end)> Colors = [
-		(new Color(235, 111, 146), new Color(180, 99, 122)),
-		(new Color(246, 193, 119), new Color(234, 157, 52)),
-		(new Color(235, 188, 186), new Color(215, 130, 126)),
-		(new Color(156, 207, 216), new Color(86, 148, 159)),
-		(new Color(196, 167, 231), new Color(144, 122, 169)),
-		(new Color(235, 111, 146), new Color(246, 193, 119)),
-		(new Color(235, 111, 146), new Color(235, 188, 186)),
-		(new Color(235, 111, 146), new Color(49, 116, 143)),
-		(new Color(235, 111, 146), new Color(156, 207, 216)),
-		(new Color(235, 111, 146), new Color(196, 167, 231)),
-		(new Color(246, 193, 119), new Color(235, 111, 146)),
-		(new Color(246, 193, 119), new Color(235, 188, 186)),
-		(new Color(246, 193, 119), new Color(49, 116, 143)),
-		(new Color(246, 193, 119), new Color(156, 207, 216)),
-		(new Color(246, 193, 119), new Color(196, 167, 231)),
-		(new Color(235, 188, 186), new Color(235, 111, 146)),
-		(new Color(235, 188, 186), new Color(246, 193, 119)),
-		(new Color(235, 188, 186), new Color(49, 116, 143)),
-		(new Color(235, 188, 186), new Color(156, 207, 216)),
-		(new Color(235, 188, 186), new Color(196, 167, 231)),
-		(new Color(49, 116, 143), new Color(235, 111, 146)),
-		(new Color(49, 116, 143), new Color(246, 193, 119)),
-		(new Color(49, 116, 143), new Color(235, 188, 186)),
-		(new Color(49, 116, 143), new Color(156, 207, 216)),
-		(new Color(49, 116, 143), new Color(196, 167, 231)),
-		(new Color(156, 207, 216), new Color(235, 111, 146)),
-		(new Color(156, 207, 216), new Color(246, 193, 119)),
-		(new Color(156, 207, 216), new Color(235, 188, 186)),
-		(new Color(156, 207, 216), new Color(49, 116, 143)),
-		(new Color(156, 207, 216), new Color(196, 167, 231)),
-		(new Color(196, 167, 231), new Color(235, 111, 146)),
-		(new Color(196, 167, 231), new Color(246, 193, 119)),
-		(new Color(196, 167, 231), new Color(235, 188, 186)),
-		(new Color(196, 167, 231), new Color(49, 116, 143)),
-		(new Color(196, 167, 231), new Color(156, 207, 216))
+		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(180, 99, 122))),
+		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(234, 157, 52))),
+		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(215, 130, 126))),
+		(new Color(new Rgb24(156, 207, 216)), new Color(new Rgb24(86, 148, 159))),
+		(new Color(new Rgb24(196, 167, 231)), new Color(new Rgb24(144, 122, 169))),
+		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(246, 193, 119))),
+		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(235, 188, 186))),
+		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(49, 116, 143))),
+		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(156, 207, 216))),
+		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(196, 167, 231))),
+		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(235, 111, 146))),
+		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(235, 188, 186))),
+		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(49, 116, 143))),
+		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(156, 207, 216))),
+		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(196, 167, 231))),
+		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(235, 111, 146))),
+		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(246, 193, 119))),
+		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(49, 116, 143))),
+		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(156, 207, 216))),
+		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(196, 167, 231))),
+		(new Color(new Rgb24(49, 116, 143)), new Color(new Rgb24(235, 111, 146))),
+		(new Color(new Rgb24(49, 116, 143)), new Color(new Rgb24(246, 193, 119))),
+		(new Color(new Rgb24(49, 116, 143)), new Color(new Rgb24(235, 188, 186))),
+		(new Color(new Rgb24(49, 116, 143)), new Color(new Rgb24(156, 207, 216))),
+		(new Color(new Rgb24(49, 116, 143)), new Color(new Rgb24(196, 167, 231))),
+		(new Color(new Rgb24(156, 207, 216)), new Color(new Rgb24(235, 111, 146))),
+		(new Color(new Rgb24(156, 207, 216)), new Color(new Rgb24(246, 193, 119))),
+		(new Color(new Rgb24(156, 207, 216)), new Color(new Rgb24(235, 188, 186))),
+		(new Color(new Rgb24(156, 207, 216)), new Color(new Rgb24(49, 116, 143))),
+		(new Color(new Rgb24(156, 207, 216)), new Color(new Rgb24(196, 167, 231))),
+		(new Color(new Rgb24(196, 167, 231)), new Color(new Rgb24(235, 111, 146))),
+		(new Color(new Rgb24(196, 167, 231)), new Color(new Rgb24(246, 193, 119))),
+		(new Color(new Rgb24(196, 167, 231)), new Color(new Rgb24(235, 188, 186))),
+		(new Color(new Rgb24(196, 167, 231)), new Color(new Rgb24(49, 116, 143))),
+		(new Color(new Rgb24(196, 167, 231)), new Color(new Rgb24(156, 207, 216)))
 	];
 
 	#endregion
