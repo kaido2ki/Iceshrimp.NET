@@ -79,8 +79,8 @@ public class NoteService(
 		var recipients = await db.Users
 		                         .Where(p => mentionedUserIds.Contains(p.Id))
 		                         .Select(p => new User {
-			                         Host        = p.Host,
-			                         Inbox       = p.Inbox
+			                         Host  = p.Host,
+			                         Inbox = p.Inbox
 		                         })
 		                         .ToListAsync();
 
@@ -198,10 +198,17 @@ public class NoteService(
 	private async Task<MentionQuad> ResolveNoteMentionsAsync(ASNote note) {
 		var mentionTags = note.Tags?.OfType<ASMention>().Where(p => p.Href != null) ?? [];
 		var users = await mentionTags
-		                  .Select(async p => await userResolver.ResolveAsync(p.Href!.Id!))
+		                  .Select(async p => {
+			                  try {
+				                  return await userResolver.ResolveAsync(p.Href!.Id!);
+			                  }
+			                  catch {
+				                  return null;
+			                  }
+		                  })
 		                  .AwaitAllNoConcurrencyAsync();
 
-		return ResolveNoteMentions(users);
+		return ResolveNoteMentions(users.Where(p => p != null).Select(p => p!).ToList());
 	}
 
 	private async Task<MentionQuad> ResolveNoteMentionsAsync(string? text) {
@@ -209,11 +216,19 @@ public class NoteService(
 			? await MfmParser.Parse(text)
 			                 .SelectMany(p => p.Children.Append(p))
 			                 .OfType<MfmMentionNode>()
-			                 .Select(async p => await userResolver.ResolveAsync(p.Acct))
+			                 .DistinctBy(p => p.Acct)
+			                 .Select(async p => {
+				                 try {
+					                 return await userResolver.ResolveAsync(p.Acct);
+				                 }
+				                 catch {
+					                 return null;
+				                 }
+			                 })
 			                 .AwaitAllNoConcurrencyAsync()
 			: [];
 
-		return ResolveNoteMentions(users);
+		return ResolveNoteMentions(users.Where(p => p != null).Select(p => p!).ToList());
 	}
 
 	private MentionQuad ResolveNoteMentions(IReadOnlyCollection<User> users) {
