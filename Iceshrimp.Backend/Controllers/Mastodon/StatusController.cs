@@ -78,7 +78,7 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 	[Authorize("write:statuses")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Status))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> PostNote([FromHybrid] StatusSchemas.PostStatusRequest request) {
 		var user = HttpContext.GetUserOrFail();
 
