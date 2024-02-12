@@ -53,12 +53,14 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 			throw GracefulException.RecordNotFound();
 
 		var ancestors = await db.NoteAncestors(id, maxAncestors)
+		                        .Take(maxAncestors)
 		                        .IncludeCommonProperties()
 		                        .EnsureVisibleFor(user)
 		                        .PrecomputeVisibilities(user)
 		                        .RenderAllForMastodonAsync(noteRenderer);
 
 		var descendants = await db.NoteDescendants(id, maxDepth, maxDescendants)
+		                          .Take(maxDescendants)
 		                          .IncludeCommonProperties()
 		                          .EnsureVisibleFor(user)
 		                          .PrecomputeVisibilities(user)
