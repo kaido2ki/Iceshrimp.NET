@@ -47,6 +47,10 @@ public class ASNote : ASObject {
 	[J("https://www.w3.org/ns/activitystreams#tag")]
 	[JC(typeof(ASTagConverter))]
 	public List<ASTag>? Tags { get; set; }
+	
+	[J("https://www.w3.org/ns/activitystreams#attachment")]
+	[JC(typeof(ASAttachmentConverter))]
+	public List<ASAttachment>? Attachments { get; set; }
 
 	public Note.NoteVisibility GetVisibility(ASActor actor) {
 		if (To.Any(p => p.Id == "https://www.w3.org/ns/activitystreams#Public"))

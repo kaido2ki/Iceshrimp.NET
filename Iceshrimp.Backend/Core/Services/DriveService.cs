@@ -17,18 +17,24 @@ public class DriveService(
 	IOptionsSnapshot<Config.StorageSection> storageConfig,
 	IOptions<Config.InstanceSection> instanceConfig,
 	HttpClient httpClient,
-	QueueService queueSvc
+	QueueService queueSvc,
+	ILogger<DriveService> logger
 ) {
 	public async Task<DriveFile?> StoreFile(string? uri, User user, bool sensitive) {
 		if (uri == null) return null;
+
+		logger.LogDebug("Storing file {uri} for user {userId}", uri, user.Id);
 
 		try {
 			// Do we already have the file?
 			var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Uri == uri);
 			if (file != null) {
 				// If the user matches, return the existing file
-				if (file.UserId == user.Id)
+				if (file.UserId == user.Id) {
+					logger.LogDebug("File {uri} is already registered for user, returning existing file {id}",
+					                uri, file.Id);
 					return file;
+				}
 
 				// Otherwise, clone the file
 				var req = new DriveFileCreationRequest {
@@ -38,7 +44,14 @@ public class DriveService(
 					MimeType    = null! // Not needed in .Clone
 				};
 
-				return file.Clone(user, req);
+				var clonedFile = file.Clone(user, req);
+
+				logger.LogDebug("File {uri} is already registered for different user, returning clone of existing file {id}, stored as {cloneId}",
+				                uri, file.Id, clonedFile.Id);
+
+				await db.AddAsync(clonedFile);
+				await db.SaveChangesAsync();
+				return clonedFile;
 			}
 
 			var res = await httpClient.GetAsync(uri);
@@ -52,8 +65,8 @@ public class DriveService(
 
 			return await StoreFile(await res.Content.ReadAsStreamAsync(), user, request);
 		}
-		catch {
-			//TODO: log error
+		catch (Exception e) {
+			logger.LogError("Failed to insert file {uri}: {error}", uri, e.Message);
 			return null;
 		}
 	}
@@ -61,12 +74,20 @@ public class DriveService(
 	public async Task<DriveFile> StoreFile(Stream data, User user, DriveFileCreationRequest request) {
 		var buf    = new BufferedStream(data);
 		var digest = await DigestHelpers.Sha256DigestAsync(buf);
-		var file   = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest);
+		logger.LogDebug("Storing file {digest} for user {userId}", digest, user.Id);
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest);
 		if (file is { IsLink: false }) {
-			if (file.UserId == user.Id)
+			if (file.UserId == user.Id) {
+				logger.LogDebug("File {digest} is already registered for user, returning existing file {id}",
+				                digest, file.Id);
 				return file;
+			}
 
 			var clonedFile = file.Clone(user, request);
+
+			logger.LogDebug("File {digest} is already registered for different user, returning clone of existing file {id}, stored as {cloneId}",
+			                digest, file.Id, clonedFile.Id);
+
 			await db.AddAsync(clonedFile);
 			await db.SaveChangesAsync();
 			return clonedFile;

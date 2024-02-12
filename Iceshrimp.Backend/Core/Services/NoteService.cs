@@ -33,7 +33,8 @@ public class NoteService(
 	NoteRenderer noteRenderer,
 	UserRenderer userRenderer,
 	MentionsResolver mentionsResolver,
-	MfmConverter mfmConverter
+	MfmConverter mfmConverter,
+	DriveService driveSvc
 ) {
 	private readonly List<string> _resolverHistory = [];
 	private          int          _recursionLimit  = 100;
@@ -187,6 +188,13 @@ public class NoteService(
 			dbNote.Text = mentionsResolver.ResolveMentions(dbNote.Text, dbNote.UserHost, mentions, splitDomainMapping);
 		}
 
+		var sensitive = (note.Sensitive ?? false) || dbNote.Cw != null;
+		var files     = await ProcessAttachmentsAsync(note.Attachments, user, sensitive);
+		if (files.Count != 0) {
+			dbNote.FileIds           = files.Select(p => p.Id).ToList();
+			dbNote.AttachedFileTypes = files.Select(p => p.Type).ToList();
+		}
+
 		user.NotesCount++;
 		await db.Notes.AddAsync(dbNote);
 		await db.SaveChangesAsync();
@@ -260,6 +268,18 @@ public class NoteService(
 		var mentions = remoteMentions.Concat(localMentions).ToList();
 
 		return (userIds, mentions, remoteMentions, splitDomainMapping);
+	}
+
+	private async Task<List<DriveFile>> ProcessAttachmentsAsync(
+		List<ASAttachment>? attachments, User user, bool sensitive
+	) {
+		if (attachments is not { Count: > 0 }) return [];
+		var result = await attachments
+		                   .OfType<ASDocument>()
+		                   .Select(p => driveSvc.StoreFile(p.Url?.Id, user, p.Sensitive ?? sensitive))
+		                   .AwaitAllNoConcurrencyAsync();
+
+		return result.Where(p => p != null).Cast<DriveFile>().ToList();
 	}
 
 	public async Task<Note?> ResolveNoteAsync(string uri) {
