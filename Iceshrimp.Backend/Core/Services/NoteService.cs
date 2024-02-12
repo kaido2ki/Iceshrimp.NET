@@ -77,7 +77,7 @@ public class NoteService(
 		var activity = ActivityRenderer.RenderCreate(obj, actor);
 
 		var recipients = await db.Users
-		                         .Where(p => note.VisibleUserIds.Contains(p.Id))
+		                         .Where(p => mentionedUserIds.Contains(p.Id))
 		                         .Select(p => new User {
 			                         Host        = p.Host,
 			                         Inbox       = p.Inbox,
