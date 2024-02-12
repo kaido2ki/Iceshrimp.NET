@@ -112,10 +112,21 @@ public class UserService(
 			KeyPem = actor.PublicKey.PublicKey
 		};
 
-		await db.AddRangeAsync(user, profile, publicKey);
-		await db.SaveChangesAsync();
+		try {
+			await db.AddRangeAsync(user, profile, publicKey);
+			await db.SaveChangesAsync();
+			return user;
+		}
+		catch (DbUpdateException) {
+			// another thread got there first, so we need to return the existing user
+			var res = await db.Users
+			                  .IncludeCommonProperties()
+			                  .FirstOrDefaultAsync(p => p.UsernameLower == user.UsernameLower && p.Host == user.Host);
 
-		return user;
+			// something else must have went wrong, rethrow exception
+			if (res == null) throw;
+			return res;
+		}
 	}
 
 	public async Task<User> UpdateUserAsync(User user) {
