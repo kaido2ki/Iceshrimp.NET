@@ -27,11 +27,12 @@ public class UserService(
 	DriveService driveSvc,
 	MfmConverter mfmConverter
 ) {
-	private static (string Username, string? Host) AcctToTuple(string acct) {
+	private (string Username, string? Host) AcctToTuple(string acct) {
 		if (!acct.StartsWith("acct:")) throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
 
 		var split = acct[5..].Split('@');
-		if (split.Length != 2) throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
+		if (split.Length != 2)
+			return (split[0], instance.Value.AccountDomain.ToPunycode());
 
 		return (split[0], split[1].ToPunycode());
 	}

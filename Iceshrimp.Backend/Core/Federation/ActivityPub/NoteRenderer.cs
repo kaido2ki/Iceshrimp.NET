@@ -1,23 +1,37 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter mfmConverter) {
-	public async Task<ASNote> RenderAsync(Note note) {
+public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter mfmConverter, DatabaseContext db) {
+	public async Task<ASNote> RenderAsync(Note note, List<Note.MentionedUser>? mentions = null) {
 		var id     = $"https://{config.Value.WebDomain}/notes/{note.Id}";
 		var userId = $"https://{config.Value.WebDomain}/users/{note.User.Id}";
 		var replyId = note.ReplyId != null
 			? new ASObjectBase($"https://{config.Value.WebDomain}/notes/{note.ReplyId}")
 			: null;
 
-		List<ASObjectBase> to = note.Visibility switch {
+		mentions ??= await db.Users
+		                     .Where(p => note.Mentions.Contains(p.Id))
+		                     .IncludeCommonProperties()
+		                     .Select(p => new Note.MentionedUser {
+			                     Host     = p.Host ?? config.Value.AccountDomain,
+			                     Username = p.Username,
+			                     Url      = p.UserProfile != null ? p.UserProfile.Url : null,
+			                     Uri      = p.Uri ?? $"https://{config.Value.WebDomain}/users/{p.Id}"
+		                     })
+		                     .ToListAsync();
+
+		var to = note.Visibility switch {
 			Note.NoteVisibility.Public    => [new ASLink($"{Constants.ActivityStreamsNs}#Public")],
 			Note.NoteVisibility.Followers => [new ASLink($"{userId}/followers")],
-			Note.NoteVisibility.Specified => [], // FIXME
+			Note.NoteVisibility.Specified => mentions.Select(p => new ASObjectBase(p.Uri)).ToList(),
 			_                             => []
 		};
 
@@ -25,6 +39,15 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			Note.NoteVisibility.Home => [new ASLink($"{Constants.ActivityStreamsNs}#Public")],
 			_                        => []
 		};
+
+		var tags = mentions
+		           .Select(mention => new ASMention {
+			           Type = $"{Constants.ActivityStreamsNs}#Mention",
+			           Name = $"@{mention.Username}@{mention.Host}",
+			           Href = new ASObjectBase(mention.Uri)
+		           })
+		           .Cast<ASTag>()
+		           .ToList();
 
 		return new ASNote {
 			Id           = id,
@@ -41,8 +64,9 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 					MediaType = "text/x.misskeymarkdown"
 				}
 				: null,
-			Cc = cc,
-			To = to
+			Cc   = cc,
+			To   = to,
+			Tags = tags
 		};
 	}
 }

@@ -3,6 +3,7 @@ using System.Text;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
@@ -27,9 +28,9 @@ public class ActivityPubController : Controller {
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> GetNote(string id, [FromServices] DatabaseContext db,
 	                                         [FromServices] NoteRenderer noteRenderer) {
-		var note = await db.Notes.FirstOrDefaultAsync(p => p.Id == id);
+		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
 		if (note == null) return NotFound();
-		var rendered  = noteRenderer.RenderAsync(note);
+		var rendered  = await noteRenderer.RenderAsync(note);
 		var compacted = LdHelpers.Compact(rendered);
 		return Ok(compacted);
 	}
@@ -43,7 +44,7 @@ public class ActivityPubController : Controller {
 	public async Task<IActionResult> GetUser(string id,
 	                                         [FromServices] DatabaseContext db,
 	                                         [FromServices] UserRenderer userRenderer) {
-		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
 		var rendered  = await userRenderer.RenderAsync(user);
 		var compacted = LdHelpers.Compact(rendered);

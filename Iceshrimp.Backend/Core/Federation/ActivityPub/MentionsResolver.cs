@@ -77,7 +77,8 @@ public class MentionsResolver(
 			node.Username = await cache.FetchAsync($"localUserNameCapitalization:{node.Username.ToLowerInvariant()}",
 			                                       TimeSpan.FromHours(24), FetchLocalUserCapitalization);
 
-			node.Acct = $"@{node.Username}";
+			node.Host = config.Value.AccountDomain;
+			node.Acct = $"@{node.Username}@{config.Value.AccountDomain}";
 		}
 	}
 }

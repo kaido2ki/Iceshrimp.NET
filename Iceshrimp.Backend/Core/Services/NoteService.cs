@@ -7,6 +7,8 @@ using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -44,6 +46,11 @@ public class NoteService(
 		if (text is { Length: > 100000 })
 			throw GracefulException.BadRequest("Text cannot be longer than 100.000 characters");
 
+		var (mentionedUserIds, mentions, remoteMentions, splitDomainMapping) = await ResolveNoteMentionsAsync(text);
+
+		if (text != null)
+			text = await mentionsResolver.ResolveMentions(text, null, mentions, splitDomainMapping);
+
 		var actor = await userRenderer.RenderAsync(user);
 
 		var note = new Note {
@@ -55,14 +62,18 @@ public class NoteService(
 			UserId     = user.Id,
 			CreatedAt  = DateTime.UtcNow,
 			UserHost   = null,
-			Visibility = visibility
+			Visibility = visibility,
+
+			Mentions             = mentionedUserIds,
+			VisibleUserIds       = visibility == Note.NoteVisibility.Specified ? mentionedUserIds : [],
+			MentionedRemoteUsers = remoteMentions,
 		};
 
 		user.NotesCount++;
 		await db.AddAsync(note);
 		await db.SaveChangesAsync();
 
-		var obj      = await noteRenderer.RenderAsync(note);
+		var obj      = await noteRenderer.RenderAsync(note, mentions);
 		var activity = ActivityRenderer.RenderCreate(obj, actor);
 
 		await deliverSvc.DeliverToFollowersAsync(activity, user);
@@ -140,7 +151,6 @@ public class NoteService(
 			UserHost   = user.Host,
 			Visibility = note.GetVisibility(actor),
 			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null
-			//TODO: parse to fields for specified visibility & mentions
 		};
 
 		if (dbNote.Text is { Length: > 100000 })
@@ -150,16 +160,19 @@ public class NoteService(
 			dbNote.Mentions             = mentionedUserIds;
 			dbNote.MentionedRemoteUsers = remoteMentions;
 			if (dbNote.Visibility == Note.NoteVisibility.Specified) {
-				var visibleUserIds = note.GetRecipients(actor).Concat(mentionedUserIds).ToList();
+				var visibleUserIds = (await note.GetRecipients(actor)
+				                                .Select(async p => await userResolver.ResolveAsync(p))
+				                                .AwaitAllNoConcurrencyAsync())
+				                     .Select(p => p.Id)
+				                     .Concat(mentionedUserIds).ToList();
 				if (dbNote.ReplyUserId != null)
 					visibleUserIds.Add(dbNote.ReplyUserId);
 
 				dbNote.VisibleUserIds = visibleUserIds.Distinct().ToList();
 			}
 
-			dbNote.Text =
-				await mentionsResolver.ResolveMentions(dbNote.Text, dbNote.UserHost, remoteMentions,
-				                                       splitDomainMapping);
+			dbNote.Text = await mentionsResolver.ResolveMentions(dbNote.Text, dbNote.UserHost, remoteMentions,
+			                                                     splitDomainMapping);
 		}
 
 		user.NotesCount++;
@@ -175,7 +188,23 @@ public class NoteService(
 		                  .Select(async p => await userResolver.ResolveAsync(p.Href!.Id!))
 		                  .AwaitAllNoConcurrencyAsync();
 
-		var userIds = users.Select(p => p.Id).ToList();
+		return ResolveNoteMentions(users);
+	}
+
+	private async Task<MentionQuad> ResolveNoteMentionsAsync(string? text) {
+		var users = text != null
+			? await MfmParser.Parse(text)
+			                 .SelectMany(p => p.Children.Append(p))
+			                 .OfType<MfmMentionNode>()
+			                 .Select(async p => await userResolver.ResolveAsync(p.Acct))
+			                 .AwaitAllNoConcurrencyAsync()
+			: [];
+
+		return ResolveNoteMentions(users);
+	}
+
+	private MentionQuad ResolveNoteMentions(IReadOnlyCollection<User> users) {
+		var userIds = users.Select(p => p.Id).Distinct().ToList();
 
 		var remoteUsers = users.Where(p => p is { Host: not null, Uri: not null })
 		                       .ToList();
