@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using EntityFramework.Exceptions.PostgreSQL;
 using EntityFrameworkCore.Projectables.Infrastructure;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -110,6 +111,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public static void Configure(DbContextOptionsBuilder optionsBuilder, NpgsqlDataSource dataSource) {
 		optionsBuilder.UseNpgsql(dataSource);
 		optionsBuilder.UseProjectables(options => { options.CompatibilityMode(CompatibilityMode.Full); });
+		optionsBuilder.UseExceptionProcessor();
 	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder) {

@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Security.Cryptography;
+using EntityFramework.Exceptions.Common;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -69,7 +70,17 @@ public class UserService(
 		if (actor.PublicKey?.Id == null || actor.PublicKey?.PublicKey == null)
 			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Actor has no valid public key");
 
-		var user = new User {
+		var user = await db.Users
+		                   .IncludeCommonProperties()
+		                   .FirstOrDefaultAsync(p => p.Uri != null && p.Uri == actor.Id);
+
+		if (user != null) {
+			// Another thread got there first
+			logger.LogDebug("Actor {uri} is already known, returning existing user {id}", user.Uri, user.Id);
+			return user;
+		}
+
+		user = new User {
 			Id            = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
 			LastFetchedAt = DateTime.UtcNow,
@@ -117,14 +128,22 @@ public class UserService(
 			await db.SaveChangesAsync();
 			return user;
 		}
-		catch (DbUpdateException) {
+		catch (UniqueConstraintException) {
+			logger.LogDebug("Encountered UniqueConstraintException while creating user {uri}, attempting to refetch...",
+			                user.Uri);
 			// another thread got there first, so we need to return the existing user
 			var res = await db.Users
 			                  .IncludeCommonProperties()
-			                  .FirstOrDefaultAsync(p => p.UsernameLower == user.UsernameLower && p.Host == user.Host);
+			                  .FirstOrDefaultAsync(p => p.Uri != null && p.Uri == user.Uri);
 
 			// something else must have went wrong, rethrow exception
-			if (res == null) throw;
+			if (res == null) {
+				logger.LogError("Fetching user {uri} failed, rethrowing exception", user.Uri);
+				throw;
+			}
+
+			logger.LogDebug("Successfully fetched user {uri}", user.Uri);
+
 			return res;
 		}
 	}
