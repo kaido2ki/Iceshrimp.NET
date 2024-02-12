@@ -171,7 +171,7 @@ public class AccountController(
 			followee.FollowersCount -= followings.Count;
 			db.RemoveRange(followings);
 			await db.SaveChangesAsync();
-			
+
 			followee.PrecomputedIsFollowedBy = false;
 		}
 
@@ -207,9 +207,6 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetRelationships([FromQuery(Name = "id")] List<string> ids) {
 		var user = HttpContext.GetUserOrFail();
-
-		if (ids.Contains(user.Id))
-			throw GracefulException.BadRequest("You cannot request relationship status with yourself");
 
 		var users = await db.Users.IncludeCommonProperties()
 		                    .Where(p => ids.Contains(p.Id))
