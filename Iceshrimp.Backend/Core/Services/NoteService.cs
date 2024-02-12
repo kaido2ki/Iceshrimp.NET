@@ -76,7 +76,13 @@ public class NoteService(
 		var obj      = await noteRenderer.RenderAsync(note, mentions);
 		var activity = ActivityRenderer.RenderCreate(obj, actor);
 
-		await deliverSvc.DeliverToFollowersAsync(activity, user);
+		if (note.Visibility == Note.NoteVisibility.Specified) {
+			var recipients = await db.Users.Where(p => note.VisibleUserIds.Contains(p.Id)).ToListAsync();
+			await deliverSvc.DeliverToAsync(activity, user, recipients);
+		}
+		else {
+			await deliverSvc.DeliverToFollowersAsync(activity, user);
+		}
 
 		return note;
 	}

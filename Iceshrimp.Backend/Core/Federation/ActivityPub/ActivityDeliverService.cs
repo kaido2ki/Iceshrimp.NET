@@ -39,6 +39,11 @@ public class ActivityDeliverService(
 			});
 	}
 
+	public async Task DeliverToAsync(ASActivity activity, User actor, IEnumerable<User> recipients) {
+		foreach (var recipient in recipients.Where(p => p.Host != null))
+			await DeliverToAsync(activity, actor, recipient);
+	}
+
 	public async Task DeliverToAsync(ASActivity activity, User actor, User recipient) {
 		var inboxUrl = recipient.Inbox ?? recipient.SharedInbox;
 		if (recipient.Host == null || inboxUrl == null)
