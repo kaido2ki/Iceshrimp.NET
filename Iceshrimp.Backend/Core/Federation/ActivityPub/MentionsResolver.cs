@@ -34,8 +34,14 @@ public class MentionsResolver(
 		var nodesList = nodes.ToList();
 
 		// We need to call .ToList() on this so we can modify the collection in the loop
-		foreach (var mention in nodesList.SelectMany(p => p.Children.Append(p)).OfType<MfmMentionNode>().ToList())
-			nodesList[nodesList.IndexOf(mention)] = ResolveMention(mention, host, mentionCache, splitDomainMapping);
+		foreach (var node in nodesList.ToList()) {
+			if (node is not MfmMentionNode mention) {
+				node.Children = ResolveMentions(node.Children, host, mentionCache, splitDomainMapping);
+				continue;
+			}
+
+			nodesList[nodesList.IndexOf(node)] = ResolveMention(mention, host, mentionCache, splitDomainMapping);
+		}
 
 		return nodesList;
 	}
