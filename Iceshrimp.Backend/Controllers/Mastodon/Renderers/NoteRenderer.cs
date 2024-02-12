@@ -16,11 +16,11 @@ public class NoteRenderer(
 	DatabaseContext db
 ) {
 	public async Task<Status> RenderAsync(Note note, List<Account>? accounts = null, List<Mention>? mentions = null,
-	                                      int recurse = 2
+	                                      List<Attachment>? attachments = null, int recurse = 2
 	) {
 		var uri = note.Uri ?? $"https://{config.Value.WebDomain}/notes/{note.Id}";
 		var renote = note.Renote != null && recurse > 0
-			? await RenderAsync(note.Renote, accounts, mentions, --recurse)
+			? await RenderAsync(note.Renote, accounts, mentions, attachments, --recurse)
 			: null;
 		var text = note.Text; //TODO: append quote uri
 
@@ -31,6 +31,24 @@ public class NoteRenderer(
 		}
 		else {
 			mentions = [..mentions.Where(p => note.Mentions.Contains(p.Id))];
+		}
+
+		if (attachments == null) {
+			attachments = await db.DriveFiles.Where(p => note.FileIds.Contains(p.Id))
+			                      .Select(f => new Attachment {
+				                      Id          = f.Id,
+				                      Url         = f.Url,
+				                      Blurhash    = f.Blurhash,
+				                      PreviewUrl  = f.ThumbnailUrl,
+				                      Description = f.Comment,
+				                      Metadata    = null,
+				                      RemoteUrl   = f.Uri,
+				                      Type        = Attachment.GetType(f.Type)
+			                      })
+			                      .ToListAsync();
+		}
+		else {
+			attachments = [..attachments.Where(p => note.FileIds.Contains(p.Id))];
 		}
 
 		var mentionedUsers = mentions.Select(p => new Note.MentionedUser {
@@ -71,7 +89,8 @@ public class NoteRenderer(
 			Content        = content,
 			Text           = text,
 			Mentions       = mentions,
-			IsPinned       = false //FIXME
+			IsPinned       = false,
+			Attachments    = attachments
 		};
 
 		return res;
@@ -84,14 +103,31 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
+	private async Task<List<Attachment>> GetAttachments(IEnumerable<Note> notes) {
+		var ids = notes.SelectMany(n => n.FileIds).Distinct();
+		return await db.DriveFiles.Where(p => ids.Contains(p.Id))
+		               .Select(f => new Attachment {
+			               Id          = f.Id,
+			               Url         = f.Url,
+			               Blurhash    = f.Blurhash,
+			               PreviewUrl  = f.ThumbnailUrl,
+			               Description = f.Comment,
+			               Metadata    = null,
+			               RemoteUrl   = f.Uri,
+			               Type        = Attachment.GetType(f.Type)
+		               })
+		               .ToListAsync();
+	}
+
 	private async Task<List<Account>> GetAccounts(IEnumerable<User> users) {
 		return (await userRenderer.RenderManyAsync(users.DistinctBy(p => p.Id))).ToList();
 	}
 
 	public async Task<IEnumerable<Status>> RenderManyAsync(IEnumerable<Note> notes) {
-		var noteList = notes.ToList();
-		var accounts = await GetAccounts(noteList.Select(p => p.User));
-		var mentions = await GetMentions(noteList);
-		return await noteList.Select(async p => await RenderAsync(p, accounts, mentions)).AwaitAllAsync();
+		var noteList    = notes.ToList();
+		var accounts    = await GetAccounts(noteList.Select(p => p.User));
+		var mentions    = await GetMentions(noteList);
+		var attachments = await GetAttachments(noteList);
+		return await noteList.Select(async p => await RenderAsync(p, accounts, mentions, attachments)).AwaitAllAsync();
 	}
 }

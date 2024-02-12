@@ -40,16 +40,16 @@ public class Status : IEntity {
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public required bool? IsPinned { get; set; }
 
-	[J("mentions")] public required List<Mention> Mentions { get; set; }
+	[J("mentions")]          public required List<Mention>    Mentions    { get; set; }
+	[J("media_attachments")] public required List<Attachment> Attachments { get; set; }
 
-	[J("emojis")]            public object[] Emojis      => [];   //FIXME
-	[J("media_attachments")] public object[] Media       => [];   //FIXME
-	[J("tags")]              public object[] Tags        => [];   //FIXME
-	[J("reactions")]         public object[] Reactions   => [];   //FIXME
-	[J("filtered")]          public object[] Filtered    => [];   //FIXME
-	[J("card")]              public object?  Card        => null; //FIXME
-	[J("poll")]              public object?  Poll        => null; //FIXME
-	[J("application")]       public object?  Application => null; //FIXME
+	[J("emojis")]      public object[] Emojis      => [];   //FIXME
+	[J("tags")]        public object[] Tags        => [];   //FIXME
+	[J("reactions")]   public object[] Reactions   => [];   //FIXME
+	[J("filtered")]    public object[] Filtered    => [];   //FIXME
+	[J("card")]        public object?  Card        => null; //FIXME
+	[J("poll")]        public object?  Poll        => null; //FIXME
+	[J("application")] public object?  Application => null; //FIXME
 
 	[J("language")] public string? Language => null; //FIXME
 
