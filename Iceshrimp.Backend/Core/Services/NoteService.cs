@@ -76,12 +76,20 @@ public class NoteService(
 		var obj      = await noteRenderer.RenderAsync(note, mentions);
 		var activity = ActivityRenderer.RenderCreate(obj, actor);
 
+		var recipients = await db.Users
+		                         .Where(p => note.VisibleUserIds.Contains(p.Id))
+		                         .Select(p => new User {
+			                         Host        = p.Host,
+			                         Inbox       = p.Inbox,
+			                         SharedInbox = p.SharedInbox
+		                         })
+		                         .ToListAsync();
+
 		if (note.Visibility == Note.NoteVisibility.Specified) {
-			var recipients = await db.Users.Where(p => note.VisibleUserIds.Contains(p.Id)).ToListAsync();
 			await deliverSvc.DeliverToAsync(activity, user, recipients);
 		}
 		else {
-			await deliverSvc.DeliverToFollowersAsync(activity, user);
+			await deliverSvc.DeliverToFollowersAsync(activity, user, recipients);
 		}
 
 		return note;

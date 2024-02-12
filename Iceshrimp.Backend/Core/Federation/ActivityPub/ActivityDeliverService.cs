@@ -14,7 +14,7 @@ public class ActivityDeliverService(
 	DatabaseContext db,
 	QueueService queueService
 ) {
-	public async Task DeliverToFollowersAsync(ASActivity activity, User actor) {
+	public async Task DeliverToFollowersAsync(ASActivity activity, User actor, IEnumerable<User> recipients) {
 		logger.LogDebug("Delivering activity {id} to followers", activity.Id);
 		if (activity.Actor == null) throw new Exception("Actor must not be null");
 
@@ -24,6 +24,11 @@ public class ActivityDeliverService(
 		                        .Select(p => p!)
 		                        .Distinct()
 		                        .ToListAsync();
+
+		inboxUrls = inboxUrls
+		            .Concat(recipients.Select(p => p.SharedInbox ?? p.Inbox).Where(p => p != null).Select(p => p!))
+		            .Distinct()
+		            .ToList();
 
 		if (inboxUrls.Count == 0) return;
 
