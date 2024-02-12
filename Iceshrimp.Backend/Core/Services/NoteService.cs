@@ -80,8 +80,7 @@ public class NoteService(
 		                         .Where(p => mentionedUserIds.Contains(p.Id))
 		                         .Select(p => new User {
 			                         Host        = p.Host,
-			                         Inbox       = p.Inbox,
-			                         SharedInbox = p.SharedInbox
+			                         Inbox       = p.Inbox
 		                         })
 		                         .ToListAsync();
 
