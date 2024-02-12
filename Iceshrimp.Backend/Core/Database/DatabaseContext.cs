@@ -122,6 +122,15 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			.HasPostgresEnum<UserProfile.UserProfileFFVisibility>()
 			.HasPostgresExtension("pg_trgm");
 
+		modelBuilder
+			.HasDbFunction(typeof(DatabaseContext).GetMethod(nameof(NoteAncestors),
+			                                                 [typeof(string), typeof(int)])!)
+			.HasName("note_ancestors");
+		modelBuilder
+			.HasDbFunction(typeof(DatabaseContext).GetMethod(nameof(NoteDescendants),
+			                                                 [typeof(string), typeof(int), typeof(int)])!)
+			.HasName("note_descendants");
+
 		modelBuilder.Entity<AbuseUserReport>(entity => {
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the AbuseUserReport.");
 			entity.Property(e => e.Forwarded).HasDefaultValue(false);
@@ -987,4 +996,16 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.HasOne(d => d.User).WithMany(p => p.Webhooks);
 		});
 	}
+
+	public IQueryable<Note> NoteAncestors(string noteId, int depth)
+		=> FromExpression(() => NoteAncestors(noteId, depth));
+
+	public IQueryable<Note> NoteAncestors(Note note, int depth)
+		=> FromExpression(() => NoteAncestors(note.Id, depth));
+
+	public IQueryable<Note> NoteDescendants(string noteId, int depth, int breadth)
+		=> FromExpression(() => NoteDescendants(noteId, depth, breadth));
+
+	public IQueryable<Note> NoteDescendants(Note note, int depth, int breadth)
+		=> FromExpression(() => NoteDescendants(note.Id, depth, breadth));
 }

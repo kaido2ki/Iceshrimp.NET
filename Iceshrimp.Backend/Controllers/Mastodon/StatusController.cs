@@ -38,6 +38,40 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 		return Ok(res);
 	}
 
+	[HttpGet("{id}/context")]
+	[Authenticate("read:statuses")]
+	[Produces("application/json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Status))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetStatusContext(string id) {
+		var user           = HttpContext.GetUser();
+		var maxAncestors   = user != null ? 4096 : 40;
+		var maxDescendants = user != null ? 4096 : 60;
+		var maxDepth       = user != null ? 4096 : 20;
+
+		if (!db.Notes.Any(p => p.Id == id))
+			throw GracefulException.RecordNotFound();
+
+		var ancestors = await db.NoteAncestors(id, maxAncestors)
+		                        .IncludeCommonProperties()
+		                        .EnsureVisibleFor(user)
+		                        .PrecomputeVisibilities(user)
+		                        .RenderAllForMastodonAsync(noteRenderer);
+
+		var descendants = await db.NoteDescendants(id, maxDepth, maxDescendants)
+		                          .IncludeCommonProperties()
+		                          .EnsureVisibleFor(user)
+		                          .PrecomputeVisibilities(user)
+		                          .RenderAllForMastodonAsync(noteRenderer);
+
+		var res = new StatusContext {
+			Ancestors   = ancestors,
+			Descendants = descendants
+		};
+
+		return Ok(res);
+	}
+
 	[HttpPost]
 	[Authorize("write:statuses")]
 	[Produces("application/json")]

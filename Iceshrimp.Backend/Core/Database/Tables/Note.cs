@@ -107,7 +107,7 @@ public class Note : IEntity {
 	[Column("mentions", TypeName = "character varying(32)[]")]
 	public List<string> Mentions { get; set; } = [];
 
-	[Column("mentionedRemoteUsers", TypeName = "jsonb")] 
+	[Column("mentionedRemoteUsers", TypeName = "jsonb")]
 	public List<Note.MentionedUser> MentionedRemoteUsers { get; set; } = [];
 
 	[Column("emojis", TypeName = "character varying(128)[]")]
@@ -273,7 +273,7 @@ public class Note : IEntity {
 
 		return this;
 	}
-	
+
 	public class MentionedUser {
 		[J("uri")]      public required string  Uri      { get; set; }
 		[J("url")]      public          string? Url      { get; set; }
