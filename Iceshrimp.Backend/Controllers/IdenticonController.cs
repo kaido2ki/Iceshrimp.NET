@@ -13,6 +13,7 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableCors("drive")]
 [Route("/identicon/{id}")]
 public class IdenticonController : Controller {
+	[HttpGet]
 	public async Task GetIdenticon(string id) {
 		using var image = new Image<Rgb24>(Size, Size);
 
