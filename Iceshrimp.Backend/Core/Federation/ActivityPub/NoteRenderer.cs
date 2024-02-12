@@ -13,8 +13,8 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 	public async Task<ASNote> RenderAsync(Note note, List<Note.MentionedUser>? mentions = null) {
 		var id     = $"https://{config.Value.WebDomain}/notes/{note.Id}";
 		var userId = $"https://{config.Value.WebDomain}/users/{note.User.Id}";
-		var replyId = note.ReplyId != null
-			? new ASObjectBase($"https://{config.Value.WebDomain}/notes/{note.ReplyId}")
+		var replyId = note.Reply != null
+			? new ASObjectBase(note.Reply.Uri ?? $"https://{config.Value.WebDomain}/notes/{note.ReplyId}")
 			: null;
 
 		mentions ??= await db.Users

@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
@@ -65,6 +66,8 @@ public class AuthorizedFetchMiddleware(
 
 			//TODO: re-fetch key once if signature validation fails, to properly support key rotation
 			//TODO: Check for LD signature as well
+			
+			ctx.SetActor(key.User);
 		}
 
 		await next(ctx);
@@ -73,4 +76,17 @@ public class AuthorizedFetchMiddleware(
 
 public class AuthorizedFetchAttribute(bool forceBody = false) : Attribute {
 	public bool ForceBody { get; } = forceBody;
+}
+
+public static partial class HttpContextExtensions {
+	private const string ActorKey = "auth-fetch-user";
+	
+	internal static void SetActor(this HttpContext ctx, User actor) {
+		ctx.Items.Add(ActorKey, actor);
+	}
+
+	public static User? GetActor(this HttpContext ctx) {
+		ctx.Items.TryGetValue(ActorKey, out var actor);
+		return actor as User;
+	}
 }

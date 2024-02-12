@@ -65,7 +65,7 @@ public class AuthenticateAttribute(params string[] scopes) : Attribute {
 	public readonly string[] Scopes = scopes;
 }
 
-public static class HttpContextExtensions {
+public static partial class HttpContextExtensions {
 	private const string Key         = "session";
 	private const string MastodonKey = "masto-session";
 

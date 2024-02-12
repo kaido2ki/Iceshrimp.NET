@@ -28,7 +28,11 @@ public class ActivityPubController : Controller {
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> GetNote(string id, [FromServices] DatabaseContext db,
 	                                         [FromServices] NoteRenderer noteRenderer) {
-		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
+		var actor = HttpContext.GetActor();
+		var note = await db.Notes
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(actor)
+		                   .FirstOrDefaultAsync(p => p.Id == id);
 		if (note == null) return NotFound();
 		var rendered  = await noteRenderer.RenderAsync(note);
 		var compacted = LdHelpers.Compact(rendered);
