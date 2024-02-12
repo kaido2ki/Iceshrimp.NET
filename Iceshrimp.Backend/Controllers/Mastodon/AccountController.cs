@@ -257,4 +257,62 @@ public class AccountController(
 
 		return Ok(res);
 	}
+
+	[HttpGet("{id}/followers")]
+	[Authenticate("read:accounts")]
+	[LinkPagination(40, 80)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Account>))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetUserFollowers(string id, PaginationQuery query) {
+		var user = HttpContext.GetUser();
+		var account = await db.Users
+		                      .Include(p => p.UserProfile)
+		                      .FirstOrDefaultAsync(p => p.Id == id) ?? throw GracefulException.RecordNotFound();
+
+		if (user == null || user.Id != account.Id) {
+			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Private)
+				return Ok((List<Account>) []);
+			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Followers)
+				if (user == null || !await db.Users.AnyAsync(p => p == account && p.Followers.Contains(user)))
+					return Ok((List<Account>) []);
+		}
+
+		var res = await db.Users
+		                  .Where(p => p == account)
+		                  .SelectMany(p => p.Followers)
+		                  .IncludeCommonProperties()
+		                  .Paginate(query, ControllerContext)
+		                  .RenderAllForMastodonAsync(userRenderer);
+
+		return Ok(res);
+	}
+
+	[HttpGet("{id}/following")]
+	[Authenticate("read:accounts")]
+	[LinkPagination(40, 80)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Account>))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetUserFollowing(string id, PaginationQuery query) {
+		var user = HttpContext.GetUser();
+		var account = await db.Users
+		                      .Include(p => p.UserProfile)
+		                      .FirstOrDefaultAsync(p => p.Id == id) ?? throw GracefulException.RecordNotFound();
+
+		if (user == null || user.Id != account.Id) {
+			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Private)
+				return Ok((List<Account>) []);
+			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Followers)
+				if (user == null || !await db.Users.AnyAsync(p => p == account && p.Followers.Contains(user)))
+					return Ok((List<Account>) []);
+		}
+
+		var res = await db.Users
+		                  .Where(p => p == account)
+		                  .SelectMany(p => p.Following)
+		                  .IncludeCommonProperties()
+		                  .Paginate(query, ControllerContext)
+		                  .RenderAllForMastodonAsync(userRenderer);
+
+		return Ok(res);
+	}
 }

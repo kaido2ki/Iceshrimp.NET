@@ -18,8 +18,10 @@ public static class NoteQueryableExtensions {
 		            .ThenInclude(p => p.UserProfile)
 		            .Include(p => p.Renote)
 		            .ThenInclude(p => p != null ? p.User : null)
+		            .ThenInclude(p => p != null ? p.UserProfile : null)
 		            .Include(p => p.Reply)
-		            .ThenInclude(p => p != null ? p.User : null);
+		            .ThenInclude(p => p != null ? p.User : null)
+		            .ThenInclude(p => p != null ? p.UserProfile : null);
 	}
 
 	public static IQueryable<User> IncludeCommonProperties(this IQueryable<User> query) {

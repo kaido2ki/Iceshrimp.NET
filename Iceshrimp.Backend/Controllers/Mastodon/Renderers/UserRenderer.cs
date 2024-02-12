@@ -15,8 +15,6 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		if (user.Host != null)
 			acct += $"@{user.Host}";
 
-		//TODO: respect ffVisibility for follower/following count
-
 		var res = new Account {
 			Id = user.Id,
 			DisplayName = user.DisplayName ?? user.Username,
