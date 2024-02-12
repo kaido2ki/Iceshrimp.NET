@@ -11,8 +11,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
 	        migrationBuilder.Sql("""
-	                             DROP FUNCTION public.note_ancestors;
-	                             CREATE OR REPLACE FUNCTION public.note_ancestors (start_id character varying, max_depth integer)
+	                             DROP FUNCTION IF EXISTS public.note_ancestors;
+	                             CREATE FUNCTION public.note_ancestors (start_id character varying, max_depth integer)
 	                             	RETURNS SETOF "note"
 	                             	LANGUAGE sql
 	                             	AS $function$
@@ -45,7 +45,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 	                             """);
 	        
 	        migrationBuilder.Sql("""
-	                             DROP FUNCTION public.note_descendants;
+	                             DROP FUNCTION IF EXISTS public.note_descendants;
 	                             CREATE FUNCTION public.note_descendants (start_id character varying, max_depth integer, max_breadth integer)
 	                             	RETURNS SETOF "note"
 	                             	LANGUAGE sql
@@ -100,7 +100,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
 	        migrationBuilder.Sql("""
-	                             DROP FUNCTION public.note_ancestors;
+	                             DROP FUNCTION IF EXISTS public.note_ancestors;
 	                             CREATE FUNCTION public.note_ancestors (start_id character varying, max_depth integer)
 	                             	RETURNS TABLE (
 	                             		id character varying)
@@ -138,7 +138,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 	                             """);
 	        
 	        migrationBuilder.Sql("""
-	                             DROP FUNCTION public.note_descendants;
+	                             DROP FUNCTION IF EXISTS public.note_descendants;
 	                             CREATE FUNCTION public.note_descendants (start_id character varying, max_depth integer, max_breadth integer)
 	                             	RETURNS TABLE (
 	                             		id character varying)
