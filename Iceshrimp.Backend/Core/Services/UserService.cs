@@ -130,7 +130,7 @@ public class UserService(
 		logger.LogDebug("Updating user with uri {uri}", uri);
 
 		var actor = await fetchSvc.FetchActorAsync(user.Uri);
-		actor.Normalize(uri, user.Acct);
+		actor.Normalize(uri, user.AcctWithPrefix);
 
 		user.UserProfile ??= await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
 		user.UserProfile ??= new UserProfile { User = user };

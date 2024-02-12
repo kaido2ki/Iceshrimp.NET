@@ -149,7 +149,8 @@ public class User : IEntity {
 	[StringLength(512)]
 	public string? Host { get; set; }
 
-	[NotMapped] [Projectable] public string Acct => "acct:" + Username + (Host != null ? "@" + Host : "");
+	[NotMapped] [Projectable] public string Acct           => Username + (Host != null ? "@" + Host : "");
+	[NotMapped] [Projectable] public string AcctWithPrefix => "acct:" + Acct;
 
 	/// <summary>
 	///     The inbox URL of the User. It will be null if the origin of the user is local.

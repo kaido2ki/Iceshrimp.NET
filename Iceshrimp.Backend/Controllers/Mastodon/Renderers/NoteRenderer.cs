@@ -80,7 +80,7 @@ public class NoteRenderer(
 		               .Select(u => new Mention {
 			               Id       = u.Id,
 			               Username = u.Username,
-			               Acct     = u.Acct,
+			               Acct     = u.AcctWithPrefix,
 			               Url = u.UserProfile != null
 				               ? u.UserProfile.Url ?? u.Uri ?? $"https://{config.Value.WebDomain}/@{u.Username}"
 				               : u.Uri ?? $"https://{config.Value.WebDomain}/@{u.Username}"
