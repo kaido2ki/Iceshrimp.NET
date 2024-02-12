@@ -22,13 +22,14 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions) {
 
 					if (el.ClassList.Contains("u-url") && el.ClassList.Contains("mention")) {
 						var mention = mentions.FirstOrDefault(p => p.Uri == href || p.Url == href);
-						if (mention != null) {
-							return $"@{mention.Username}@{mention.Host}";
-						}
+						return mention != null
+							? $"@{mention.Username}@{mention.Host}"
+							: $"<plain>{el.TextContent}</plain>";
 					}
 
 					return $"[{el.TextContent}]({href})";
 				}
+
 				return node.TextContent;
 			}
 			case "H1": {
