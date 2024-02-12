@@ -51,22 +51,24 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 
 		return new ASNote {
 			Id           = id,
-			Content      = note.Text != null ? await mfmConverter.ToHtmlAsync(note.Text, []) : null,
 			AttributedTo = [new ASObjectBase(userId)],
 			Type         = $"{Constants.ActivityStreamsNs}#Note",
 			MkContent    = note.Text,
 			PublishedAt  = note.CreatedAt,
 			Sensitive    = note.Cw != null,
 			InReplyTo    = replyId,
+			Cc           = cc,
+			To           = to,
+			Tags         = tags,
+			Content = note.Text != null
+				? await mfmConverter.ToHtmlAsync(note.Text, mentions, note.UserHost)
+				: null,
 			Source = note.Text != null
 				? new ASNoteSource {
 					Content   = note.Text,
 					MediaType = "text/x.misskeymarkdown"
 				}
-				: null,
-			Cc   = cc,
-			To   = to,
-			Tags = tags
+				: null
 		};
 	}
 }

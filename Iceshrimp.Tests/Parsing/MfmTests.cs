@@ -29,7 +29,7 @@ public class MfmTests {
 			var converter = provider.GetRequiredService<MfmConverter>();
 
 			var pre = DateTime.Now;
-			await converter.ToHtmlAsync(Mfm, []);
+			await converter.ToHtmlAsync(Mfm, [], null);
 			var post = DateTime.Now;
 			var ms   = (post - pre).TotalMilliseconds;
 			Console.WriteLine($"Took {ms} ms");

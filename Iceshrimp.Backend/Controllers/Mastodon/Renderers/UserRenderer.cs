@@ -27,7 +27,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			FollowersCount = user.FollowersCount,
 			FollowingCount = user.FollowingCount,
 			StatusesCount = user.NotesCount,
-			Note = await mfmConverter.ToHtmlAsync(profile?.Description ?? "", []),
+			Note = await mfmConverter.ToHtmlAsync(profile?.Description ?? "", [], user.Host),
 			Url = profile?.Url ?? user.Uri ?? $"https://{user.Host ?? config.Value.WebDomain}/@{user.Username}",
 			AvatarStaticUrl = user.AvatarUrl ?? $"https://{config.Value.WebDomain}/identicon/{user.Id}", //TODO
 			HeaderUrl = user.BannerUrl ?? _transparent,

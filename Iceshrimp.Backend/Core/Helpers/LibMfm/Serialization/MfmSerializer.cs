@@ -80,7 +80,10 @@ public static class MfmSerializer {
 					break;
 				}
 				case MfmPlainNode: {
-					result.Append(node.Children.OfType<MfmTextNode>().Select(p => p.Text));
+					result.Append("<plain>");
+					foreach (var s in node.Children.OfType<MfmTextNode>().Select(p => p.Text))
+						result.Append(s);
+					result.Append("</plain>");
 					break;
 				}
 				case MfmSmallNode: {

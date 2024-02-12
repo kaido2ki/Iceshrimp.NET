@@ -6,6 +6,7 @@ using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
 using Microsoft.Extensions.Options;
@@ -31,44 +32,44 @@ public class MfmConverter(IOptions<Config.InstanceSection> config) {
 		return sb.ToString().Trim();
 	}
 
-	public async Task<string> ToHtmlAsync(IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions) {
+	public async Task<string> ToHtmlAsync(IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions, string? host) {
 		var context  = BrowsingContext.New();
 		var document = await context.OpenNewAsync();
 		var element  = document.CreateElement("p");
 
-		foreach (var node in nodes) element.AppendNodes(FromMfmNode(document, node, mentions));
+		foreach (var node in nodes) element.AppendNodes(FromMfmNode(document, node, mentions, host));
 
 		await using var sw = new StringWriter();
 		await element.ToHtmlAsync(sw);
 		return sw.ToString();
 	}
 
-	public async Task<string> ToHtmlAsync(string mfm, List<Note.MentionedUser> mentions) {
+	public async Task<string> ToHtmlAsync(string mfm, List<Note.MentionedUser> mentions, string? host) {
 		var nodes = MfmParser.Parse(mfm);
-		return await ToHtmlAsync(nodes, mentions);
+		return await ToHtmlAsync(nodes, mentions, host);
 	}
 
-	private INode FromMfmNode(IDocument document, MfmNode node, List<Note.MentionedUser> mentions) {
+	private INode FromMfmNode(IDocument document, MfmNode node, List<Note.MentionedUser> mentions, string? host) {
 		switch (node) {
 			case MfmBoldNode: {
 				var el = document.CreateElement("b");
-				AppendChildren(el, document, node, mentions);
+				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
 			case MfmSmallNode: {
 				var el = document.CreateElement("small");
-				AppendChildren(el, document, node, mentions);
+				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
 			case MfmStrikeNode: {
 				var el = document.CreateElement("del");
-				AppendChildren(el, document, node, mentions);
+				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
 			case MfmItalicNode:
 			case MfmFnNode: {
 				var el = document.CreateElement("i");
-				AppendChildren(el, document, node, mentions);
+				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
 			case MfmCodeBlockNode codeBlockNode: {
@@ -80,7 +81,7 @@ public class MfmConverter(IOptions<Config.InstanceSection> config) {
 			}
 			case MfmCenterNode: {
 				var el = document.CreateElement("div");
-				AppendChildren(el, document, node, mentions);
+				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
 			case MfmEmojiCodeNode emojiCodeNode: {
@@ -114,25 +115,20 @@ public class MfmConverter(IOptions<Config.InstanceSection> config) {
 			case MfmLinkNode linkNode: {
 				var el = document.CreateElement("a");
 				el.SetAttribute("href", linkNode.Url);
-				AppendChildren(el, document, node, mentions);
+				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
 			case MfmMentionNode mentionNode: {
 				var el = document.CreateElement("span");
 
-				if (mentionNode.Host == config.Value.AccountDomain || mentionNode.Host == config.Value.WebDomain)
-					mentionNode.Host = null;
+				// Fall back to object host, as localpart-only mentions are relative to the instance the note originated from
+				mentionNode.Host ??= host ?? config.Value.AccountDomain;
 
-				var mention = mentionNode.Host == null
-					? new Note.MentionedUser {
-						Host     = config.Value.AccountDomain,
-						Uri      = $"https://{config.Value.WebDomain}/@{mentionNode.Username}",
-						Username = mentionNode.Username
-					}
-					: mentions.FirstOrDefault(p => string.Equals(p.Username, mentionNode.Username,
-					                                             StringComparison.InvariantCultureIgnoreCase) &&
-					                               string.Equals(p.Host, mentionNode.Host,
-					                                             StringComparison.InvariantCultureIgnoreCase));
+				if (mentionNode.Host == config.Value.WebDomain)
+					mentionNode.Host = config.Value.AccountDomain;
+
+				var mention = mentions.FirstOrDefault(p => p.Username.EqualsIgnoreCase(mentionNode.Username) &&
+				                                           p.Host.EqualsIgnoreCase(mentionNode.Host));
 				if (mention == null) {
 					el.TextContent = mentionNode.Acct;
 				}
@@ -152,7 +148,7 @@ public class MfmConverter(IOptions<Config.InstanceSection> config) {
 			}
 			case MfmQuoteNode: {
 				var el = document.CreateElement("blockquote");
-				AppendChildren(el, document, node, mentions);
+				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
 			case MfmTextNode textNode: {
@@ -188,7 +184,7 @@ public class MfmConverter(IOptions<Config.InstanceSection> config) {
 			}
 			case MfmPlainNode: {
 				var el = document.CreateElement("span");
-				AppendChildren(el, document, node, mentions);
+				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
 			default: {
@@ -198,8 +194,8 @@ public class MfmConverter(IOptions<Config.InstanceSection> config) {
 	}
 
 	private void AppendChildren(INode element, IDocument document, MfmNode parent,
-	                            List<Note.MentionedUser> mentions
+	                            List<Note.MentionedUser> mentions, string? host
 	) {
-		foreach (var node in parent.Children) element.AppendNodes(FromMfmNode(document, node, mentions));
+		foreach (var node in parent.Children) element.AppendNodes(FromMfmNode(document, node, mentions, host));
 	}
 }

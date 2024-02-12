@@ -49,7 +49,7 @@ public class NoteService(
 		var (mentionedUserIds, mentions, remoteMentions, splitDomainMapping) = await ResolveNoteMentionsAsync(text);
 
 		if (text != null)
-			text = await mentionsResolver.ResolveMentions(text, null, mentions, splitDomainMapping);
+			text = mentionsResolver.ResolveMentions(text, null, mentions, splitDomainMapping);
 
 		var actor = await userRenderer.RenderAsync(user);
 
@@ -184,8 +184,7 @@ public class NoteService(
 				dbNote.VisibleUserIds = visibleUserIds.Distinct().ToList();
 			}
 
-			dbNote.Text = await mentionsResolver.ResolveMentions(dbNote.Text, dbNote.UserHost, remoteMentions,
-			                                                     splitDomainMapping);
+			dbNote.Text = mentionsResolver.ResolveMentions(dbNote.Text, dbNote.UserHost, mentions, splitDomainMapping);
 		}
 
 		user.NotesCount++;

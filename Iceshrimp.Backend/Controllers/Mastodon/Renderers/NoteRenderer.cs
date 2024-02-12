@@ -22,24 +22,27 @@ public class NoteRenderer(
 		var renote = note.Renote != null && recurse > 0
 			? await RenderAsync(note.Renote, accounts, mentions, --recurse)
 			: null;
-		var text    = note.Text; //TODO: append quote uri
-		var content = text != null ? await mfmConverter.ToHtmlAsync(text, note.MentionedRemoteUsers) : null;
+		var text = note.Text; //TODO: append quote uri
 
 		if (mentions == null) {
 			mentions = await db.Users.Where(p => note.Mentions.Contains(p.Id))
-			                   .Select(u => new Mention {
-				                   Id       = u.Id,
-				                   Username = u.Username,
-				                   Acct     = u.Acct,
-				                   Url = (u.UserProfile != null
-						                   ? u.UserProfile.Url ?? u.Uri
-						                   : u.Uri) ?? $"https://{config.Value.WebDomain}/@{u.Username}"
-			                   })
+			                   .Select(u => new Mention(u, config.Value.WebDomain))
 			                   .ToListAsync();
 		}
 		else {
 			mentions = [..mentions.Where(p => note.Mentions.Contains(p.Id))];
 		}
+
+		var mentionedUsers = mentions.Select(p => new Note.MentionedUser {
+			Host     = p.Host ?? config.Value.AccountDomain,
+			Uri      = p.Uri,
+			Username = p.Username,
+			Url      = p.Url
+		}).ToList();
+
+		var content = text != null
+			? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost)
+			: null;
 
 		var account = accounts?.FirstOrDefault(p => p.Id == note.UserId) ?? await userRenderer.RenderAsync(note.User);
 
@@ -77,14 +80,7 @@ public class NoteRenderer(
 	private async Task<List<Mention>> GetMentions(IEnumerable<Note> notes) {
 		var ids = notes.SelectMany(n => n.Mentions).Distinct();
 		return await db.Users.Where(p => ids.Contains(p.Id))
-		               .Select(u => new Mention {
-			               Id       = u.Id,
-			               Username = u.Username,
-			               Acct     = u.Acct,
-			               Url = u.UserProfile != null
-				               ? u.UserProfile.Url ?? u.Uri ?? $"https://{config.Value.WebDomain}/@{u.Username}"
-				               : u.Uri ?? $"https://{config.Value.WebDomain}/@{u.Username}"
-		               })
+		               .Select(u => new Mention(u, config.Value.WebDomain))
 		               .ToListAsync();
 	}
 
