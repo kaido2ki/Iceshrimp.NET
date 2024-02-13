@@ -34,6 +34,10 @@ DROP TABLE __chart_day__users;
 DROP TABLE migrations;
 DROP TABLE user_ip;
 
+CREATE TABLE "session" ("id" character varying(32) NOT NULL, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL, "userId" character varying(32) NOT NULL, "token" character varying(64) NOT NULL, "active" boolean NOT NULL, CONSTRAINT "PK_f55da76ac1c3ac420f444d2ff11" PRIMARY KEY ("id")); COMMENT ON COLUMN "session"."createdAt" IS 'The created date of the OAuth token'; COMMENT ON COLUMN "session"."token" IS 'The authorization token'; COMMENT ON COLUMN "session"."active" IS 'Whether or not the token has been activated (i.e. 2fa has been confirmed)';
+CREATE INDEX "IDX_232f8e85d7633bd6ddfad42169" ON "session" ("token");
+ALTER TABLE "session" ADD CONSTRAINT "FK_3d2f174ef04fb312fdebd0ddc53" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
 CREATE INDEX "IX_abuse_user_report_assigneeId" ON abuse_user_report USING btree ("assigneeId");
 CREATE INDEX "IX_access_token_appId" ON access_token USING btree ("appId");
 CREATE INDEX "IX_antenna_userGroupJoiningId" ON antenna USING btree ("userGroupJoiningId");
