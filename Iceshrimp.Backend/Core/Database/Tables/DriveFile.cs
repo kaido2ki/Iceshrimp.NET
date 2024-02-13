@@ -15,11 +15,11 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("Type")]
 [Index("IsSensitive")]
 [Index("FolderId")]
-[Index("WebpublicAccessKey", IsUnique = true)]
+[Index("WebpublicAccessKey")]
 [Index("CreatedAt")]
-[Index("AccessKey", IsUnique = true)]
+[Index("AccessKey")]
 [Index("Uri")]
-[Index("ThumbnailAccessKey", IsUnique = true)]
+[Index("ThumbnailAccessKey")]
 public class DriveFile : IEntity {
 	/// <summary>
 	///     The created date of the DriveFile.
