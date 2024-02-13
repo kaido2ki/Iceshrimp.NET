@@ -15,8 +15,9 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-using MentionQuad =
+using MentionQuintuple =
 	(List<string> mentionedUserIds,
+	List<string> mentionedLocalUserIds,
 	List<Note.MentionedUser> mentions,
 	List<Note.MentionedUser> remoteMentions,
 	Dictionary<(string usernameLower, string webDomain), string> splitDomainMapping);
@@ -34,7 +35,8 @@ public class NoteService(
 	UserRenderer userRenderer,
 	MentionsResolver mentionsResolver,
 	MfmConverter mfmConverter,
-	DriveService driveSvc
+	DriveService driveSvc,
+	NotificationService notificationSvc
 ) {
 	private readonly List<string> _resolverHistory = [];
 	private          int          _recursionLimit  = 100;
@@ -49,7 +51,8 @@ public class NoteService(
 		if (text is { Length: > 100000 })
 			throw GracefulException.BadRequest("Text cannot be longer than 100.000 characters");
 
-		var (mentionedUserIds, mentions, remoteMentions, splitDomainMapping) = await ResolveNoteMentionsAsync(text);
+		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
+			await ResolveNoteMentionsAsync(text);
 
 		if (text != null)
 			text = mentionsResolver.ResolveMentions(text, null, mentions, splitDomainMapping);
@@ -80,6 +83,7 @@ public class NoteService(
 		user.NotesCount++;
 		await db.AddAsync(note);
 		await db.SaveChangesAsync();
+		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
 
 		var obj      = await noteRenderer.RenderAsync(note, mentions);
 		var activity = ActivityRenderer.RenderCreate(obj, actor);
@@ -159,7 +163,8 @@ public class NoteService(
 
 		//TODO: resolve anything related to the note as well (attachments, emoji, etc)
 
-		var (mentionedUserIds, mentions, remoteMentions, splitDomainMapping) = await ResolveNoteMentionsAsync(note);
+		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
+			await ResolveNoteMentionsAsync(note);
 
 		var dbNote = new Note {
 			Id     = IdHelpers.GenerateSlowflakeId(),
@@ -205,11 +210,13 @@ public class NoteService(
 		user.NotesCount++;
 		await db.Notes.AddAsync(dbNote);
 		await db.SaveChangesAsync();
+		await notificationSvc.GenerateMentionNotifications(dbNote, mentionedLocalUserIds);
+		await notificationSvc.GenerateReplyNotifications(dbNote, mentionedLocalUserIds);
 		logger.LogDebug("Note {id} created successfully", dbNote.Id);
 		return dbNote;
 	}
 
-	private async Task<MentionQuad> ResolveNoteMentionsAsync(ASNote note) {
+	private async Task<MentionQuintuple> ResolveNoteMentionsAsync(ASNote note) {
 		var mentionTags = note.Tags?.OfType<ASMention>().Where(p => p.Href != null) ?? [];
 		var users = await mentionTags
 		                  .Select(async p => {
@@ -225,7 +232,7 @@ public class NoteService(
 		return ResolveNoteMentions(users.Where(p => p != null).Select(p => p!).ToList());
 	}
 
-	private async Task<MentionQuad> ResolveNoteMentionsAsync(string? text) {
+	private async Task<MentionQuintuple> ResolveNoteMentionsAsync(string? text) {
 		var users = text != null
 			? await MfmParser.Parse(text)
 			                 .SelectMany(p => p.Children.Append(p))
@@ -245,8 +252,9 @@ public class NoteService(
 		return ResolveNoteMentions(users.Where(p => p != null).Select(p => p!).ToList());
 	}
 
-	private MentionQuad ResolveNoteMentions(IReadOnlyCollection<User> users) {
-		var userIds = users.Select(p => p.Id).Distinct().ToList();
+	private MentionQuintuple ResolveNoteMentions(IReadOnlyCollection<User> users) {
+		var userIds      = users.Select(p => p.Id).Distinct().ToList();
+		var localUserIds = users.Where(p => p.Host == null).Select(p => p.Id).Distinct().ToList();
 
 		var remoteUsers = users.Where(p => p is { Host: not null, Uri: not null })
 		                       .ToList();
@@ -274,7 +282,7 @@ public class NoteService(
 
 		var mentions = remoteMentions.Concat(localMentions).ToList();
 
-		return (userIds, mentions, remoteMentions, splitDomainMapping);
+		return (userIds, localUserIds, mentions, remoteMentions, splitDomainMapping);
 	}
 
 	private async Task<List<DriveFile>> ProcessAttachmentsAsync(
@@ -283,7 +291,8 @@ public class NoteService(
 		if (attachments is not { Count: > 0 }) return [];
 		var result = await attachments
 		                   .OfType<ASDocument>()
-		                   .Select(p => driveSvc.StoreFile(p.Url?.Id, user, p.Sensitive ?? sensitive, p.Description, p.MediaType))
+		                   .Select(p => driveSvc.StoreFile(p.Url?.Id, user, p.Sensitive ?? sensitive, p.Description,
+		                                                   p.MediaType))
 		                   .AwaitAllNoConcurrencyAsync();
 
 		return result.Where(p => p != null).Cast<DriveFile>().ToList();

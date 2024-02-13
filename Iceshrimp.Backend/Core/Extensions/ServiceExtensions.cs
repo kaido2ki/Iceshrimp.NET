@@ -38,6 +38,7 @@ public static class ServiceExtensions {
 			.AddScoped<WebFingerService>()
 			.AddScoped<SystemUserService>()
 			.AddScoped<DriveService>()
+			.AddScoped<NotificationService>()
 			.AddScoped<DatabaseMaintenanceService>()
 			.AddScoped<AuthorizedFetchMiddleware>()
 			.AddScoped<AuthenticationMiddleware>()
