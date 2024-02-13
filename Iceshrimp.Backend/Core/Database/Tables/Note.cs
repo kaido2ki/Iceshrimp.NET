@@ -108,7 +108,7 @@ public class Note : IEntity {
 	public List<string> Mentions { get; set; } = [];
 
 	[Column("mentionedRemoteUsers", TypeName = "jsonb")]
-	public List<Note.MentionedUser> MentionedRemoteUsers { get; set; } = [];
+	public List<MentionedUser> MentionedRemoteUsers { get; set; } = [];
 
 	[Column("emojis", TypeName = "character varying(128)[]")]
 	public List<string> Emojis { get; set; } = [];

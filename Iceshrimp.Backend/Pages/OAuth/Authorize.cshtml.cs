@@ -25,7 +25,7 @@ public class AuthorizeModel(DatabaseContext db) : PageModel {
 
 	public List<string> Scopes = [];
 	public OauthApp     App    = null!;
-	public OauthToken?  Token  = null;
+	public OauthToken?  Token;
 
 	public async Task OnGet() {
 		if (ResponseType == null || ClientId == null || RedirectUri == null)
