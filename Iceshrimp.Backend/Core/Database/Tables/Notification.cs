@@ -12,7 +12,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("NotifieeId")]
 [Index("CreatedAt")]
 [Index("AppAccessTokenId")]
-public class Notification {
+public class Notification : IEntity {
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

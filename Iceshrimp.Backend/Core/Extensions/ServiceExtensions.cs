@@ -44,7 +44,8 @@ public static class ServiceExtensions {
 			.AddScoped<AuthenticationMiddleware>()
 			.AddScoped<ErrorHandlerMiddleware>()
 			.AddScoped<UserRenderer>()
-			.AddScoped<NoteRenderer>();
+			.AddScoped<NoteRenderer>()
+			.AddScoped<NotificationRenderer>();
 
 		// Singleton = instantiated once across application lifetime
 		services

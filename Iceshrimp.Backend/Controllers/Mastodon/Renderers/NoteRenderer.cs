@@ -119,13 +119,13 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	private async Task<List<Account>> GetAccounts(IEnumerable<User> users) {
+	internal async Task<List<Account>> GetAccounts(IEnumerable<User> users) {
 		return (await userRenderer.RenderManyAsync(users.DistinctBy(p => p.Id))).ToList();
 	}
 
-	public async Task<IEnumerable<Status>> RenderManyAsync(IEnumerable<Note> notes) {
-		var noteList    = notes.ToList();
-		var accounts    = await GetAccounts(noteList.Select(p => p.User));
+	public async Task<IEnumerable<Status>> RenderManyAsync(IEnumerable<Note> notes, List<Account>? accounts = null) {
+		var noteList = notes.ToList();
+		accounts ??= await GetAccounts(noteList.Select(p => p.User));
 		var mentions    = await GetMentions(noteList);
 		var attachments = await GetAttachments(noteList);
 		return await noteList.Select(async p => await RenderAsync(p, accounts, mentions, attachments)).AwaitAllAsync();

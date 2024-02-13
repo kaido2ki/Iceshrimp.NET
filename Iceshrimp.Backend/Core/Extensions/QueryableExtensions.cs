@@ -7,24 +7,37 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MastoNotification = Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities.Notification;
+using Notification = Iceshrimp.Backend.Core.Database.Tables.Notification;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
-public static class NoteQueryableExtensions {
+public static class QueryableExtensions {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+// Justification: in the context of nullable EF navigation properties, null values are ignored and therefore irrelevant.
+// Source: https://learn.microsoft.com/en-us/ef/core/miscellaneous/nullable-reference-types#navigating-and-including-nullable-relationships
+
 	public static IQueryable<Note> IncludeCommonProperties(this IQueryable<Note> query) {
-		return query.Include(p => p.User)
-		            .ThenInclude(p => p.UserProfile)
-		            .Include(p => p.Renote)
-		            .ThenInclude(p => p != null ? p.User : null)
-		            .ThenInclude(p => p != null ? p.UserProfile : null)
-		            .Include(p => p.Reply)
-		            .ThenInclude(p => p != null ? p.User : null)
-		            .ThenInclude(p => p != null ? p.UserProfile : null);
+		return query.Include(p => p.User.UserProfile)
+		            .Include(p => p.Renote.User.UserProfile)
+		            .Include(p => p.Reply.User.UserProfile);
 	}
 
 	public static IQueryable<User> IncludeCommonProperties(this IQueryable<User> query) {
 		return query.Include(p => p.UserProfile);
 	}
+
+	public static IQueryable<Notification> IncludeCommonProperties(this IQueryable<Notification> query) {
+		return query.Include(p => p.Notifiee.UserProfile)
+		            .Include(p => p.Notifier.UserProfile)
+		            .Include(p => p.Note.User.UserProfile)
+		            .Include(p => p.Note.Renote.User.UserProfile)
+		            .Include(p => p.Note.Reply.User.UserProfile)
+		            .Include(p => p.FollowRequest.Follower.UserProfile)
+		            .Include(p => p.FollowRequest.Followee.UserProfile);
+	}
+
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
 	public static IQueryable<T> Paginate<T>(
 		this IQueryable<T> query,
@@ -151,6 +164,12 @@ public static class NoteQueryableExtensions {
 	public static async Task<List<Account>> RenderAllForMastodonAsync(
 		this IQueryable<User> users, UserRenderer renderer) {
 		var list = await users.ToListAsync();
+		return (await renderer.RenderManyAsync(list)).ToList();
+	}
+
+	public static async Task<List<MastoNotification>> RenderAllForMastodonAsync(
+		this IQueryable<Notification> notifications, NotificationRenderer renderer) {
+		var list = await notifications.ToListAsync();
 		return (await renderer.RenderManyAsync(list)).ToList();
 	}
 
