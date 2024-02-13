@@ -105,8 +105,6 @@ public class UserService(
 			Tags   = []  //FIXME
 		};
 
-		await ResolveAvatarAndBanner(user, actor);
-
 		var profile = new UserProfile {
 			User        = user,
 			Description = actor.MkSummary ?? await mfmConverter.FromHtmlAsync(actor.Summary),
@@ -125,6 +123,7 @@ public class UserService(
 
 		try {
 			await db.AddRangeAsync(user, profile, publicKey);
+			await ResolveAvatarAndBanner(user, actor); // We need to do this after calling db.Add(Range) to ensure data consistency
 			await db.SaveChangesAsync();
 			return user;
 		}
