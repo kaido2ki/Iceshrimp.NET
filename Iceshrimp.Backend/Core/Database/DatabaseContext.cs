@@ -3,8 +3,10 @@ using EntityFramework.Exceptions.PostgreSQL;
 using EntityFrameworkCore.Projectables.Infrastructure;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Npgsql;
 
 namespace Iceshrimp.Backend.Core.Database;
@@ -1010,4 +1012,21 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 
 	public IQueryable<Note> NoteDescendants(Note note, int depth, int breadth)
 		=> FromExpression(() => NoteDescendants(note.Id, depth, breadth));
+}
+
+[SuppressMessage("ReSharper", "UnusedType.Global",
+                 Justification = "Constructed using reflection by the dotnet-ef CLI tool")]
+public class DesignTimeDatabaseContextFactory : IDesignTimeDbContextFactory<DatabaseContext> {
+	DatabaseContext IDesignTimeDbContextFactory<DatabaseContext>.CreateDbContext(string[] args) {
+		var configuration = new ConfigurationBuilder()
+		                    .SetBasePath(Directory.GetCurrentDirectory())
+		                    .AddCustomConfiguration()
+		                    .Build();
+
+		var config     = configuration.GetSection("Database").Get<Config.DatabaseSection>();
+		var dataSource = DatabaseContext.GetDataSource(config);
+		var builder    = new DbContextOptionsBuilder<DatabaseContext>();
+		DatabaseContext.Configure(builder, dataSource);
+		return new DatabaseContext(builder.Options);
+	}
 }

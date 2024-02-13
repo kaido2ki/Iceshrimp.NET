@@ -9,6 +9,9 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder) {
+	        Console.WriteLine("Fixing up note visibility enums, please hang tight!");
+	        Console.WriteLine("This may take a long time (15-30 minutes), especially if your database is unusually large or you're running low end hardware.");
+	        
 	        // We want to set all hidden notes to be specified notes that can only be seen by the author before we remove the enum
 	        migrationBuilder.Sql("""
 	                             UPDATE "note" SET "visibleUserIds" = '{}', "mentions" = '{}', "visibility" = 'specified' WHERE "visibility" = 'hidden';
@@ -27,6 +30,9 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+	        Console.WriteLine("Reverting changes to note visibility enums, please hang tight!");
+	        Console.WriteLine("This may take a long time (15-30 minutes), especially if your database is unusually large or you're running low end hardware.");
+	        
 	        migrationBuilder.Sql("""
 	                             ALTER TYPE "public"."note_visibility_enum" RENAME TO "note_visibility_enum_old";
 	                             ALTER TYPE "public"."poll_notevisibility_enum" RENAME TO "poll_notevisibility_enum_old";

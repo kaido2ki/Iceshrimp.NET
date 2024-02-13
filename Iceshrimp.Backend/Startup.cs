@@ -5,12 +5,7 @@ using Vite.AspNetCore.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.Sources.Clear();
-builder.Configuration
-       .AddIniFile(Environment.GetEnvironmentVariable("ICESHRIMP_CONFIG") ?? "configuration.ini",
-                   false, true);
-builder.Configuration
-       .AddIniFile(Environment.GetEnvironmentVariable("ICESHRIMP_CONFIG_OVERRIDES") ?? "configuration.overrides.ini",
-                   true, true);
+builder.Configuration.AddCustomConfiguration();
 
 builder.Services.AddControllers(options => { options.ModelBinderProviders.AddHybridBindingProvider(); })
        .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json (or we switch to LinkedData.NET)

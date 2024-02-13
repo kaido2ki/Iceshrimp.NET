@@ -65,7 +65,9 @@ public static class WebApplicationExtensions {
 
 		if (args.Contains("--migrate") || args.Contains("--migrate-and-start")) {
 			app.Logger.LogInformation("Running migrations...");
+			context.Database.SetCommandTimeout(0);
 			await context.Database.MigrateAsync();
+			context.Database.SetCommandTimeout(30);
 			if (args.Contains("--migrate")) Environment.Exit(0);
 		}
 		else if ((await context.Database.GetPendingMigrationsAsync()).Any()) {
