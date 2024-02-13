@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Blurhash.ImageSharp;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -7,6 +8,8 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Iceshrimp.Backend.Core.Services;
 
@@ -94,6 +97,21 @@ public class DriveService(
 		}
 
 		buf.Seek(0, SeekOrigin.Begin);
+
+		string? blurhash = null;
+
+		if (request.MimeType.StartsWith("image/")) {
+			try {
+				var image = await Image.LoadAsync<Rgba32>(buf);
+				blurhash = Blurhasher.Encode(image, 7, 7);
+			}
+			catch {
+				logger.LogError("Failed to generate blurhash for image with mime type {type}", request.MimeType);
+			}
+			
+			buf.Seek(0, SeekOrigin.Begin);
+		}
+
 		var (filename, guid) = GenerateFilenameKeepingExtension(request.Filename);
 		var shouldStore    = storageConfig.Value.MediaRetention != null || user.Host == null;
 		var storedInternal = storageConfig.Value.Mode == Enums.FileStorage.Local;
@@ -138,8 +156,8 @@ public class DriveService(
 			Comment        = request.Comment,
 			Type           = request.MimeType,
 			RequestHeaders = request.RequestHeaders,
-			RequestIp      = request.RequestIp
-			//Blurhash           = TODO,
+			RequestIp      = request.RequestIp,
+			Blurhash       = blurhash,
 			//Properties         = TODO,
 			//ThumbnailUrl       = TODO,
 			//ThumbnailAccessKey = TODO,
