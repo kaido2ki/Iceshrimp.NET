@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
@@ -100,11 +101,17 @@ public static class QueryableExtensions {
 	}
 
 	public static IQueryable<Note> EnsureVisibleFor(this IQueryable<Note> query, User? user) {
-		if (user == null)
-			return query.Where(note => note.VisibilityIsPublicOrHome)
-			            .Where(note => !note.LocalOnly);
+		return user == null
+			? query.Where(note => note.VisibilityIsPublicOrHome && !note.LocalOnly)
+			: query.Where(note => note.IsVisibleFor(user));
+	}
 
-		return query.Where(note => note.IsVisibleFor(user));
+	public static IQueryable<TSource> EnsureNoteVisibilityFor<TSource>(
+		this IQueryable<TSource> query, Expression<Func<TSource, Note?>> predicate, User? user
+	) {
+		return query.Where(user == null
+			                   ? predicate.Compose(p => p == null || (p.VisibilityIsPublicOrHome && !p.LocalOnly))
+			                   : predicate.Compose(p => p == null || p.IsVisibleFor(user)));
 	}
 
 	public static IQueryable<Note> PrecomputeVisibilities(this IQueryable<Note> query, User? user) {
@@ -126,6 +133,29 @@ public static class QueryableExtensions {
 		                           (!note.Renote.User.IsBlockedBy(user) && !note.Renote.User.IsBlocking(user)))
 		            .Where(note => note.Reply == null ||
 		                           (!note.Reply.User.IsBlockedBy(user) && !note.Reply.User.IsBlocking(user)));
+	}
+
+	public static IQueryable<TSource> FilterBlocked<TSource>(
+		this IQueryable<TSource> query, Expression<Func<TSource, User?>> predicate, User? user
+	) {
+		return user == null ? query : query.Where(predicate.Compose(p => p == null || !p.IsBlocking(user)));
+	}
+
+	public static IQueryable<TSource> FilterBlocked<TSource>(
+		this IQueryable<TSource> query, Expression<Func<TSource, Note?>> predicate, User? user
+	) {
+		if (user == null)
+			return query;
+
+		return query.Where(predicate.Compose(note => note == null ||
+		                                             (!note.User.IsBlocking(user) &&
+		                                              !note.User.IsBlockedBy(user) &&
+		                                              (note.Renote == null ||
+		                                               (!note.Renote.User.IsBlockedBy(user) &&
+		                                                !note.Renote.User.IsBlocking(user))) &&
+		                                              (note.Reply == null ||
+		                                               (!note.Reply.User.IsBlockedBy(user) &&
+		                                                !note.Reply.User.IsBlocking(user))))));
 	}
 
 	public static IQueryable<Note> FilterMuted(this IQueryable<Note> query, User user) {
