@@ -32,7 +32,7 @@ public class ActivityPubController : Controller {
 		var note = await db.Notes
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(actor)
-		                   .FirstOrDefaultAsync(p => p.Id == id);
+		                   .FirstOrDefaultAsync(p => p.Id == id && p.UserHost == null);
 		if (note == null) return NotFound();
 		var rendered  = await noteRenderer.RenderAsync(note);
 		var compacted = LdHelpers.Compact(rendered);

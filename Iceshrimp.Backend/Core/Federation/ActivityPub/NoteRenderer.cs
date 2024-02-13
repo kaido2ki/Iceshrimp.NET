@@ -49,6 +49,19 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		           .Cast<ASTag>()
 		           .ToList();
 
+		var attachments = note.FileIds.Count > 0
+			? await db.DriveFiles
+			          .Where(p => note.FileIds.Contains(p.Id) && p.UserHost == null)
+			          .Select(p => new ASDocument {
+				          Type      = $"{Constants.ActivityStreamsNs}#Document",
+				          Sensitive = p.IsSensitive,
+				          Url       = new ASObjectBase(p.Url),
+				          MediaType = p.Type
+			          })
+			          .Cast<ASAttachment>()
+			          .ToListAsync()
+			: null;
+
 		return new ASNote {
 			Id           = id,
 			AttributedTo = [new ASObjectBase(userId)],
@@ -60,6 +73,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			Cc           = cc,
 			To           = to,
 			Tags         = tags,
+			Attachments  = attachments,
 			Content = note.Text != null
 				? await mfmConverter.ToHtmlAsync(note.Text, mentions, note.UserHost)
 				: null,
