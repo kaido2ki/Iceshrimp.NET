@@ -2947,7 +2947,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(128)")
                         .HasColumnName("reaction");
 
-                    b.Property<Notification.NotificationType>("Type")
+                    b.Property<Core.Database.Tables.Notification.NotificationType>("Type")
                         .HasColumnType("notification_type_enum")
                         .HasColumnName("type")
                         .HasComment("The type of the Notification.");
@@ -4480,7 +4480,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("mutedWords")
                         .HasDefaultValueSql("'[]'::jsonb");
 
-                    b.Property<List<Notification.NotificationType>>("MutingNotificationTypes")
+                    b.Property<List<Core.Database.Tables.Notification.NotificationType>>("MutingNotificationTypes")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("notification_type_enum[]")

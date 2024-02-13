@@ -1786,7 +1786,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     notifieeId = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false, comment: "The ID of recipient user of the Notification."),
                     notifierId = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true, comment: "The ID of sender user of the Notification."),
                     isRead = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false, comment: "Whether the notification was read."),
-                    type = table.Column<Notification.NotificationType>(type: "notification_type_enum", nullable: false, comment: "The type of the Notification."),
+                    type = table.Column<Core.Database.Tables.Notification.NotificationType>(type: "notification_type_enum", nullable: false, comment: "The type of the Notification."),
                     noteId = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
                     reaction = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
                     choice = table.Column<int>(type: "integer", nullable: true),
