@@ -39,8 +39,10 @@ public class NoteService(
 	private readonly List<string> _resolverHistory = [];
 	private          int          _recursionLimit  = 100;
 
-	public async Task<Note> CreateNoteAsync(User user, Note.NoteVisibility visibility, string? text = null,
-	                                        string? cw = null, Note? reply = null, Note? renote = null) {
+	public async Task<Note> CreateNoteAsync(
+		User user, Note.NoteVisibility visibility, string? text = null, string? cw = null, Note? reply = null,
+		Note? renote = null, IReadOnlyCollection<DriveFile>? attachments = null
+	) {
 		if (text?.Length > config.Value.CharacterLimit)
 			throw GracefulException.BadRequest($"Text cannot be longer than {config.Value.CharacterLimit} characters");
 
@@ -51,6 +53,9 @@ public class NoteService(
 
 		if (text != null)
 			text = mentionsResolver.ResolveMentions(text, null, mentions, splitDomainMapping);
+
+		if (attachments != null && attachments.Any(p => p.UserId != user.Id))
+			throw GracefulException.BadRequest("Refusing to create note with files belonging to someone else");
 
 		var actor = await userRenderer.RenderAsync(user);
 
@@ -65,6 +70,8 @@ public class NoteService(
 			UserHost   = null,
 			Visibility = visibility,
 
+			FileIds              = attachments?.Select(p => p.Id).ToList() ?? [],
+			AttachedFileTypes    = attachments?.Select(p => p.Type).ToList() ?? [],
 			Mentions             = mentionedUserIds,
 			VisibleUserIds       = visibility == Note.NoteVisibility.Specified ? mentionedUserIds : [],
 			MentionedRemoteUsers = remoteMentions,

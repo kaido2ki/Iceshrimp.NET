@@ -92,8 +92,13 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 			  throw GracefulException.BadRequest("Reply target is nonexistent or inaccessible")
 			: null;
 
-		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply);
-		var res  = await noteRenderer.RenderAsync(note);
+		var attachments = request.MediaIds != null
+			? await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id)).ToListAsync()
+			: null;
+
+		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply,
+		                                         attachments: attachments);
+		var res = await noteRenderer.RenderAsync(note);
 
 		return Ok(res);
 	}

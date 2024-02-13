@@ -100,15 +100,19 @@ public class DriveService(
 
 		string? blurhash = null;
 
-		if (request.MimeType.StartsWith("image/")) {
+		if (request.MimeType.StartsWith("image/") || request.MimeType == "image") {
 			try {
 				var image = await Image.LoadAsync<Rgba32>(buf);
 				blurhash = Blurhasher.Encode(image, 7, 7);
+
+				// Correct mime type
+				if (request.MimeType == "image" && image.Metadata.DecodedImageFormat?.DefaultMimeType != null)
+					request.MimeType = image.Metadata.DecodedImageFormat.DefaultMimeType;
 			}
 			catch {
 				logger.LogError("Failed to generate blurhash for image with mime type {type}", request.MimeType);
 			}
-			
+
 			buf.Seek(0, SeekOrigin.Begin);
 		}
 
@@ -154,7 +158,7 @@ public class DriveService(
 			Url            = url,
 			Name           = request.Filename,
 			Comment        = request.Comment,
-			Type           = request.MimeType,
+			Type           = CleanMimeType(request.MimeType),
 			RequestHeaders = request.RequestHeaders,
 			RequestIp      = request.RequestIp,
 			Blurhash       = blurhash,
