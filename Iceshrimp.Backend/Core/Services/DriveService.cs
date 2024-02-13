@@ -23,7 +23,9 @@ public class DriveService(
 	QueueService queueSvc,
 	ILogger<DriveService> logger
 ) {
-	public async Task<DriveFile?> StoreFile(string? uri, User user, bool sensitive) {
+	public async Task<DriveFile?> StoreFile(
+		string? uri, User user, bool sensitive, string? description = null, string? mimeType = null
+	) {
 		if (uri == null) return null;
 
 		logger.LogDebug("Storing file {uri} for user {userId}", uri, user.Id);
@@ -63,7 +65,8 @@ public class DriveService(
 				Uri         = uri,
 				Filename    = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
 				IsSensitive = sensitive,
-				MimeType    = CleanMimeType(res.Content.Headers.ContentType?.MediaType)
+				Comment     = description,
+				MimeType    = CleanMimeType(mimeType ?? res.Content.Headers.ContentType?.MediaType)
 			};
 
 			return await StoreFile(await res.Content.ReadAsStreamAsync(), user, request);

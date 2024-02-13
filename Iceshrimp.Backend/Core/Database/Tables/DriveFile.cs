@@ -72,7 +72,6 @@ public class DriveFile : IEntity {
 	///     The comment of the DriveFile.
 	/// </summary>
 	[Column("comment")]
-	[StringLength(8192)]
 	public string? Comment { get; set; }
 
 	/// <summary>

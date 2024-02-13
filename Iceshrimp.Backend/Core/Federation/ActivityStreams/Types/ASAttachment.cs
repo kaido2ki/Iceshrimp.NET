@@ -24,6 +24,10 @@ public class ASDocument : ASAttachment {
 	[J("https://www.w3.org/ns/activitystreams#sensitive")]
 	[JC(typeof(ValueObjectConverter))]
 	public bool? Sensitive { get; set; }
+	
+	[J("https://www.w3.org/ns/activitystreams#name")]
+	[JC(typeof(ValueObjectConverter))]
+	public string? Description { get; set; }
 }
 
 public sealed class ASAttachmentConverter : JsonConverter {

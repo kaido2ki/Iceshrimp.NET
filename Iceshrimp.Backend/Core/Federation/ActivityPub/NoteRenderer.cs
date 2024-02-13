@@ -56,7 +56,8 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 				          Type      = $"{Constants.ActivityStreamsNs}#Document",
 				          Sensitive = p.IsSensitive,
 				          Url       = new ASObjectBase(p.Url),
-				          MediaType = p.Type
+				          MediaType = p.Type,
+				          Description = p.Comment
 			          })
 			          .Cast<ASAttachment>()
 			          .ToListAsync()
