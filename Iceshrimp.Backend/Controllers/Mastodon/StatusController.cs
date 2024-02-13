@@ -83,8 +83,11 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 		//TODO: handle scheduled statuses
 		//TODO: handle Idempotency-Key
 
-		if (request.Text == null)
-			throw GracefulException.BadRequest("Posts without text haven't been implemented yet");
+		if (request.Text == null && request.MediaIds is not { Count: > 0 } && request.Poll == null)
+			throw GracefulException.BadRequest("Posts must have text, media or poll");
+
+		if (request.Poll != null)
+			throw GracefulException.BadRequest("Polls haven't been implemented yet");
 
 		var visibility = Status.DecodeVisibility(request.Visibility);
 		var reply = request.ReplyId != null
