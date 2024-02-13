@@ -44,8 +44,8 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config) : Contr
 			},
 			Metadata = new NodeInfoResponse.NodeInfoMetadata {
 				//FIXME Implement members
-				NodeName        = "todo",
-				NodeDescription = "todo",
+				NodeName        = "Iceshrimp.NET",
+				NodeDescription = "An Iceshrimp.NET instance",
 				Maintainer = new NodeInfoResponse.Maintainer {
 					Name  = "todo",
 					Email = "todo"
