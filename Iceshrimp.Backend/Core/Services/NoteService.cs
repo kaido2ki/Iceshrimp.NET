@@ -175,7 +175,7 @@ public class NoteService(
 			dbNote.MentionedRemoteUsers = remoteMentions;
 			if (dbNote.Visibility == Note.NoteVisibility.Specified) {
 				var visibleUserIds = (await note.GetRecipients(actor)
-				                                .Select(async p => await userResolver.ResolveAsync(p))
+				                                .Select(userResolver.ResolveAsync)
 				                                .AwaitAllNoConcurrencyAsync())
 				                     .Select(p => p.Id)
 				                     .Concat(mentionedUserIds).ToList();
