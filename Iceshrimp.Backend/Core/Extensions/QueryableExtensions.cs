@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
@@ -8,6 +9,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using MastoNotification = Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities.Notification;
 using Notification = Iceshrimp.Backend.Core.Database.Tables.Notification;
 
@@ -88,8 +90,35 @@ public static class QueryableExtensions {
 		return query.Where(note => note.Visibility == visibility);
 	}
 
-	public static IQueryable<Note> FilterByFollowingAndOwn(this IQueryable<Note> query, User user) {
+	public static IQueryable<Note> FilterByFollowingAndOwn(
+		this IQueryable<Note> query, User user, DatabaseContext db, int heuristic
+	) {
+		const int cutoff = 250;
+
+		if (heuristic < cutoff)
+			return query.Where(note => db.Users
+			                             .First(p => p == user).Following
+			                             .Select(p => p.Id)
+			                             .Concat(new[] { user.Id })
+			                             .Contains(note.UserId));
+
 		return query.Where(note => note.User == user || note.User.IsFollowedBy(user));
+	}
+
+	//TODO: move this into another class where it makes more sense
+	public static async Task<int> GetHeuristic(User user, DatabaseContext db, IDistributedCache cache) {
+		return await cache.FetchAsyncValue($"following-query-heuristic:{user.Id}",
+		                                   TimeSpan.FromHours(24), FetchHeuristic);
+
+		[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall")]
+		async Task<int> FetchHeuristic() {
+			var lastDate = await db.Notes.AnyAsync()
+				? await db.Notes.OrderByDescending(p => p.Id).Select(p => p.CreatedAt).FirstOrDefaultAsync()
+				: DateTime.Now;
+
+			return await db.Notes.CountAsync(p => p.CreatedAt > lastDate - TimeSpan.FromDays(7) &&
+			                                      (p.User.IsFollowedBy(user) || p.User == user));
+		}
 	}
 
 	public static IQueryable<Note> FilterByUser(this IQueryable<Note> query, User user) {

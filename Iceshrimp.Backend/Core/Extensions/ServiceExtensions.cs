@@ -106,7 +106,7 @@ public static class ServiceExtensions {
 		services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisOptions));
 
 		services.AddStackExchangeRedisCache(options => {
-			options.InstanceName         = redis.Prefix ?? instance.WebDomain + ":cache:";
+			options.InstanceName         = (redis.Prefix ?? instance.WebDomain) + ":cache:";
 			options.ConfigurationOptions = redisOptions;
 		});
 	}

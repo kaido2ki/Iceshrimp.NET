@@ -10,24 +10,50 @@ public static class DistributedCacheExtensions {
 	//TODO: renew option on GetAsync and FetchAsync
 	//TODO: check that this actually works for complex types (sigh)
 
-	public static async Task<T?> GetAsync<T>(this IDistributedCache cache, string key) {
+	public static async Task<T?> GetAsync<T>(this IDistributedCache cache, string key) where T : class {
 		var buffer = await cache.GetAsync(key);
-		if (buffer == null || buffer.Length == 0) return default;
+		if (buffer == null || buffer.Length == 0) return null;
 
 		var stream = new MemoryStream(buffer);
 		try {
-			var data = await JsonSerializer.DeserializeAsync<T>(stream);
-			return data != null ? (T)data : default;
+			var data = await JsonSerializer.DeserializeAsync<T?>(stream);
+			return data;
 		}
 		catch {
-			return default;
+			return null;
 		}
 	}
 
-	public static async Task<T> FetchAsync<T>(this IDistributedCache cache, string key, TimeSpan ttl,
-	                                          Func<Task<T>> fetcher) {
+	public static async Task<T?> GetAsyncValue<T>(this IDistributedCache cache, string key) where T : struct {
+		var buffer = await cache.GetAsync(key);
+		if (buffer == null || buffer.Length == 0) return null;
+
+		var stream = new MemoryStream(buffer);
+		try {
+			var data = await JsonSerializer.DeserializeAsync<T?>(stream);
+			return data;
+		}
+		catch {
+			return null;
+		}
+	}
+
+	public static async Task<T> FetchAsync<T>(
+		this IDistributedCache cache, string key, TimeSpan ttl, Func<Task<T>> fetcher
+	) where T : class {
 		var hit = await cache.GetAsync<T>(key);
 		if (hit != null) return hit;
+
+		var fetched = await fetcher();
+		await cache.SetAsync(key, fetched, ttl);
+		return fetched;
+	}
+	
+	public static async Task<T> FetchAsyncValue<T>(
+		this IDistributedCache cache, string key, TimeSpan ttl, Func<Task<T>> fetcher
+	) where T : struct {
+		var hit = await cache.GetAsyncValue<T>(key);
+		if (hit.HasValue) return hit.Value;
 
 		var fetched = await fetcher();
 		await cache.SetAsync(key, fetched, ttl);

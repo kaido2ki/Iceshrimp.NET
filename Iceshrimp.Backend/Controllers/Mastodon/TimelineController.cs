@@ -10,6 +10,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -22,16 +23,18 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Produces("application/json")]
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer) : Controller {
+public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, IDistributedCache cache) : Controller {
 	[Authorize("read:statuses")]
 	[HttpGet("home")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
 	public async Task<IActionResult> GetHomeTimeline(PaginationQuery query) {
-		var user = HttpContext.GetUserOrFail();
+		var user      = HttpContext.GetUserOrFail();
+		var heuristic = await QueryableExtensions.GetHeuristic(user, db, cache);
+
 		var res = await db.Notes
 		                  .IncludeCommonProperties()
-		                  .FilterByFollowingAndOwn(user)
+		                  .FilterByFollowingAndOwn(user, db, heuristic)
 		                  .EnsureVisibleFor(user)
 		                  .FilterHiddenListMembers(user)
 		                  .FilterBlocked(user)
