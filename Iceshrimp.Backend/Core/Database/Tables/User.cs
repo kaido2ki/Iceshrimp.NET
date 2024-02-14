@@ -379,8 +379,8 @@ public class User : IEntity {
 
 	[NotMapped] [Projectable] public virtual IEnumerable<User> Muting => OutgoingMutes.Select(p => p.Mutee);
 
-	[InverseProperty(nameof(NoteFavorite.User))]
-	public virtual ICollection<NoteFavorite> NoteFavorites { get; set; } = new List<NoteFavorite>();
+	[InverseProperty(nameof(NoteBookmark.User))]
+	public virtual ICollection<NoteBookmark> NoteBookmarks { get; set; } = new List<NoteBookmark>();
 	
 	[InverseProperty(nameof(NoteReaction.User))]
 	public virtual ICollection<NoteLike> NoteLikes { get; set; } = new List<NoteLike>();

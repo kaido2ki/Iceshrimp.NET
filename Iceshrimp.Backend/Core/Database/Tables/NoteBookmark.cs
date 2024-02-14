@@ -7,7 +7,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("note_favorite")]
 [Index("UserId", "NoteId", IsUnique = true)]
 [Index("UserId")]
-public class NoteFavorite {
+public class NoteBookmark {
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
@@ -24,10 +24,10 @@ public class NoteFavorite {
 	[Column("noteId")] [StringLength(32)] public string NoteId { get; set; } = null!;
 
 	[ForeignKey("NoteId")]
-	[InverseProperty(nameof(Tables.Note.NoteFavorites))]
+	[InverseProperty(nameof(Tables.Note.NoteBookmarks))]
 	public virtual Note Note { get; set; } = null!;
 
 	[ForeignKey("UserId")]
-	[InverseProperty(nameof(Tables.User.NoteFavorites))]
+	[InverseProperty(nameof(Tables.User.NoteBookmarks))]
 	public virtual User User { get; set; } = null!;
 }

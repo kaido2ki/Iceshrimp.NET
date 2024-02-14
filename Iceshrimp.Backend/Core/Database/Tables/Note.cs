@@ -197,8 +197,8 @@ public class Note : IEntity {
 	[InverseProperty(nameof(NoteEdit.Note))]
 	public virtual ICollection<NoteEdit> NoteEdits { get; set; } = new List<NoteEdit>();
 
-	[InverseProperty(nameof(NoteFavorite.Note))]
-	public virtual ICollection<NoteFavorite> NoteFavorites { get; set; } = new List<NoteFavorite>();
+	[InverseProperty(nameof(NoteBookmark.Note))]
+	public virtual ICollection<NoteBookmark> NoteBookmarks { get; set; } = new List<NoteBookmark>();
 
 	[InverseProperty(nameof(NoteReaction.Note))]
 	public virtual ICollection<NoteReaction> NoteReactions { get; set; } = new List<NoteReaction>();

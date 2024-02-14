@@ -45,8 +45,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<ModerationLog>        ModerationLogs        { get; init; } = null!;
 	public virtual DbSet<Muting>               Mutings               { get; init; } = null!;
 	public virtual DbSet<Note>                 Notes                 { get; init; } = null!;
+	public virtual DbSet<NoteBookmark>         NoteBookmarks         { get; init; } = null!;
 	public virtual DbSet<NoteEdit>             NoteEdits             { get; init; } = null!;
-	public virtual DbSet<NoteFavorite>         NoteFavorites         { get; init; } = null!;
 	public virtual DbSet<NoteLike>             NoteLikes             { get; init; } = null!;
 	public virtual DbSet<NoteReaction>         NoteReactions         { get; init; } = null!;
 	public virtual DbSet<NoteThreadMuting>     NoteThreadMutings     { get; init; } = null!;
@@ -586,12 +586,12 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.HasOne(d => d.Note).WithMany(p => p.NoteEdits);
 		});
 
-		modelBuilder.Entity<NoteFavorite>(entity => {
-			entity.Property(e => e.CreatedAt).HasComment("The created date of the NoteFavorite.");
+		modelBuilder.Entity<NoteBookmark>(entity => {
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the NoteBookmark.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.NoteFavorites);
+			entity.HasOne(d => d.Note).WithMany(p => p.NoteBookmarks);
 
-			entity.HasOne(d => d.User).WithMany(p => p.NoteFavorites);
+			entity.HasOne(d => d.User).WithMany(p => p.NoteBookmarks);
 		});
 		
 		modelBuilder.Entity<NoteLike>(entity => {
