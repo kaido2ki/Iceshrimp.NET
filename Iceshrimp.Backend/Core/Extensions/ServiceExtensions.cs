@@ -54,6 +54,7 @@ public static class ServiceExtensions {
 			.AddSingleton<HttpRequestService>()
 			.AddSingleton<QueueService>()
 			.AddSingleton<ObjectStorageService>()
+			.AddSingleton<EventService>()
 			.AddSingleton<RequestBufferingMiddleware>()
 			.AddSingleton<AuthorizationMiddleware>()
 			.AddSingleton<RequestVerificationMiddleware>()

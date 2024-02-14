@@ -36,7 +36,8 @@ public class NoteService(
 	MentionsResolver mentionsResolver,
 	MfmConverter mfmConverter,
 	DriveService driveSvc,
-	NotificationService notificationSvc
+	NotificationService notificationSvc,
+	EventService eventSvc
 ) {
 	private readonly List<string> _resolverHistory = [];
 	private          int          _recursionLimit  = 100;
@@ -84,6 +85,7 @@ public class NoteService(
 		if (reply != null) reply.RepliesCount++;
 		await db.AddAsync(note);
 		await db.SaveChangesAsync();
+		eventSvc.RaiseNotePublished(this, note);
 		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
 
 		var obj      = await noteRenderer.RenderAsync(note, mentions);
@@ -127,7 +129,7 @@ public class NoteService(
 
 		user.NotesCount--;
 		db.Remove(dbNote);
-
+		eventSvc.RaiseNoteDeleted(this, dbNote);
 		await db.SaveChangesAsync();
 	}
 
@@ -212,6 +214,7 @@ public class NoteService(
 		if (dbNote.Reply != null) dbNote.Reply.RepliesCount++;
 		await db.Notes.AddAsync(dbNote);
 		await db.SaveChangesAsync();
+		eventSvc.RaiseNotePublished(this, dbNote);
 		await notificationSvc.GenerateMentionNotifications(dbNote, mentionedLocalUserIds);
 		await notificationSvc.GenerateReplyNotifications(dbNote, mentionedLocalUserIds);
 		logger.LogDebug("Note {id} created successfully", dbNote.Id);

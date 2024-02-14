@@ -1,9 +1,6 @@
-using System.Text.Json.Serialization;
 using Iceshrimp.Backend.Core.Database;
-using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
-using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 using static Iceshrimp.Backend.Core.Database.Tables.Notification;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
