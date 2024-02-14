@@ -81,6 +81,7 @@ public class NoteService(
 		};
 
 		user.NotesCount++;
+		if (reply != null) reply.RepliesCount++;
 		await db.AddAsync(note);
 		await db.SaveChangesAsync();
 		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
@@ -208,6 +209,7 @@ public class NoteService(
 		}
 
 		user.NotesCount++;
+		if (dbNote.Reply != null) dbNote.Reply.RepliesCount++;
 		await db.Notes.AddAsync(dbNote);
 		await db.SaveChangesAsync();
 		await notificationSvc.GenerateMentionNotifications(dbNote, mentionedLocalUserIds);
