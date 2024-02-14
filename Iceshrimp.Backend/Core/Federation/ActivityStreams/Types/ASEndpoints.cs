@@ -1,10 +1,11 @@
+using Iceshrimp.Backend.Core.Configuration;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASEndpoints {
-	[J("https://www.w3.org/ns/activitystreams#sharedInbox")]
+	[J($"{Constants.ActivityStreamsNs}#sharedInbox")]
 	[JC(typeof(ASObjectBaseConverter))]
 	public ASObjectBase? SharedInbox { get; set; }
 }

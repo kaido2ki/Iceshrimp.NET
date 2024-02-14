@@ -11,51 +11,51 @@ public class ASNote : ASObject {
 	[JC(typeof(VC))]
 	public string? MkContent { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#content")]
+	[J($"{Constants.ActivityStreamsNs}#content")]
 	[JC(typeof(VC))]
 	public string? Content { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#url")]
+	[J($"{Constants.ActivityStreamsNs}#url")]
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? Url { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#sensitive")]
+	[J($"{Constants.ActivityStreamsNs}#sensitive")]
 	[JC(typeof(VC))]
 	public bool? Sensitive { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#published")]
+	[J($"{Constants.ActivityStreamsNs}#published")]
 	[JC(typeof(VC))]
 	public DateTime? PublishedAt { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#source")]
+	[J($"{Constants.ActivityStreamsNs}#source")]
 	[JC(typeof(ASNoteSourceConverter))]
 	public ASNoteSource? Source { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#to")]
+	[J($"{Constants.ActivityStreamsNs}#to")]
 	public List<ASObjectBase> To { get; set; } = [];
 
-	[J("https://www.w3.org/ns/activitystreams#cc")]
+	[J($"{Constants.ActivityStreamsNs}#cc")]
 	public List<ASObjectBase> Cc { get; set; } = [];
 
-	[J("https://www.w3.org/ns/activitystreams#attributedTo")]
+	[J($"{Constants.ActivityStreamsNs}#attributedTo")]
 	public List<ASObjectBase> AttributedTo { get; set; } = [];
 
-	[J("https://www.w3.org/ns/activitystreams#inReplyTo")]
+	[J($"{Constants.ActivityStreamsNs}#inReplyTo")]
 	[JC(typeof(ASObjectBaseConverter))]
 	public ASObjectBase? InReplyTo { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#tag")]
+	[J($"{Constants.ActivityStreamsNs}#tag")]
 	[JC(typeof(ASTagConverter))]
 	public List<ASTag>? Tags { get; set; }
 	
-	[J("https://www.w3.org/ns/activitystreams#attachment")]
+	[J($"{Constants.ActivityStreamsNs}#attachment")]
 	[JC(typeof(ASAttachmentConverter))]
 	public List<ASAttachment>? Attachments { get; set; }
 
 	public Note.NoteVisibility GetVisibility(ASActor actor) {
-		if (To.Any(p => p.Id == "https://www.w3.org/ns/activitystreams#Public"))
+		if (To.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public"))
 			return Note.NoteVisibility.Public;
-		if (Cc.Any(p => p.Id == "https://www.w3.org/ns/activitystreams#Public"))
+		if (Cc.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public"))
 			return Note.NoteVisibility.Home;
 		if (To.Any(p => p.Id is not null && p.Id == (actor.Followers?.Id ?? actor.Id + "/followers")))
 			return Note.NoteVisibility.Followers;

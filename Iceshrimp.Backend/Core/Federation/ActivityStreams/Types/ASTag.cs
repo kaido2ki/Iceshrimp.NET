@@ -13,11 +13,11 @@ public class ASTag : ASObjectBase {
 }
 
 public class ASTagLink : ASTag {
-	[J("https://www.w3.org/ns/activitystreams#href")]
+	[J($"{Constants.ActivityStreamsNs}#href")]
 	[JC(typeof(ASObjectBaseConverter))]
 	public ASObjectBase? Href { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#name")]
+	[J($"{Constants.ActivityStreamsNs}#name")]
 	[JC(typeof(ValueObjectConverter))]
 	public string? Name { get; set; }
 }

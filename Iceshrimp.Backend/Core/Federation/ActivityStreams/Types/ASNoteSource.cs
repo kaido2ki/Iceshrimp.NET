@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Configuration;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
@@ -5,11 +6,11 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASNoteSource {
-	[J("https://www.w3.org/ns/activitystreams#content")]
+	[J($"{Constants.ActivityStreamsNs}#content")]
 	[JC(typeof(VC))]
 	public string? Content { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#mediaType")]
+	[J($"{Constants.ActivityStreamsNs}#mediaType")]
 	[JC(typeof(VC))]
 	public string? MediaType { get; set; }
 }

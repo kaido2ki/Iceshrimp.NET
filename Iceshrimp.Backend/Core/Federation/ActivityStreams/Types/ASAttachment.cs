@@ -13,19 +13,19 @@ public class ASAttachment : ASObjectBase {
 }
 
 public class ASDocument : ASAttachment {
-	[J("https://www.w3.org/ns/activitystreams#url")]
+	[J($"{Constants.ActivityStreamsNs}#url")]
 	[JC(typeof(ASObjectBaseConverter))]
 	public ASObjectBase? Url { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#mediaType")]
+	[J($"{Constants.ActivityStreamsNs}#mediaType")]
 	[JC(typeof(ValueObjectConverter))]
 	public string? MediaType { get; set; }
 	
-	[J("https://www.w3.org/ns/activitystreams#sensitive")]
+	[J($"{Constants.ActivityStreamsNs}#sensitive")]
 	[JC(typeof(ValueObjectConverter))]
 	public bool? Sensitive { get; set; }
 	
-	[J("https://www.w3.org/ns/activitystreams#name")]
+	[J($"{Constants.ActivityStreamsNs}#name")]
 	[JC(typeof(ValueObjectConverter))]
 	public string? Description { get; set; }
 }

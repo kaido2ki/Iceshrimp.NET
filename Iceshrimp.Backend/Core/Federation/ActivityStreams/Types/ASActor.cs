@@ -20,15 +20,15 @@ public class ASActor : ASObject {
 	[JC(typeof(VC))]
 	public string? MkSummary { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#summary")]
+	[J($"{Constants.ActivityStreamsNs}#summary")]
 	[JC(typeof(VC))]
 	public string? Summary { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#name")]
+	[J($"{Constants.ActivityStreamsNs}#name")]
 	[JC(typeof(VC))]
 	public string? DisplayName { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#preferredUsername")]
+	[J($"{Constants.ActivityStreamsNs}#preferredUsername")]
 	[JC(typeof(VC))]
 	public string? Username { get; set; }
 
@@ -44,7 +44,7 @@ public class ASActor : ASObject {
 	[JC(typeof(VC))]
 	public bool? IsMemorial { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#manuallyApprovesFollowers")]
+	[J($"{Constants.ActivityStreamsNs}#manuallyApprovesFollowers")]
 	[JC(typeof(VC))]
 	public bool? IsLocked { get; set; }
 
@@ -60,11 +60,11 @@ public class ASActor : ASObject {
 	[JC(typeof(VC))]
 	public string? Birthday { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#endpoints")]
+	[J($"{Constants.ActivityStreamsNs}#endpoints")]
 	[JC(typeof(ASEndpointsConverter))]
 	public ASEndpoints? Endpoints { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#outbox")]
+	[J($"{Constants.ActivityStreamsNs}#outbox")]
 	[JC(typeof(ASCollectionConverter))]
 	public ASCollection<ASObject>? Outbox { get; set; }
 
@@ -72,27 +72,27 @@ public class ASActor : ASObject {
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? Inbox { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#followers")]
+	[J($"{Constants.ActivityStreamsNs}#followers")]
 	[JC(typeof(ASCollectionConverter))]
 	public ASCollection<ASObject>? Followers { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#following")]
+	[J($"{Constants.ActivityStreamsNs}#following")]
 	[JC(typeof(ASCollectionConverter))]
 	public ASCollection<ASObject>? Following { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#sharedInbox")]
+	[J($"{Constants.ActivityStreamsNs}#sharedInbox")]
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? SharedInbox { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#url")]
+	[J($"{Constants.ActivityStreamsNs}#url")]
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? Url { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#movedTo")]
+	[J($"{Constants.ActivityStreamsNs}#movedTo")]
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? MovedTo { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#alsoKnownAs")]
+	[J($"{Constants.ActivityStreamsNs}#alsoKnownAs")]
 	public List<ASLink>? AlsoKnownAs { get; set; }
 
 	[J("http://joinmastodon.org/ns#featured")]
@@ -103,19 +103,19 @@ public class ASActor : ASObject {
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? FeaturedTags { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#icon")]
+	[J($"{Constants.ActivityStreamsNs}#icon")]
 	[JC(typeof(ASImageConverter))]
 	public ASImage? Avatar { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#image")]
+	[J($"{Constants.ActivityStreamsNs}#image")]
 	[JC(typeof(ASImageConverter))]
 	public ASImage? Banner { get; set; }
 
-	[J("https://w3id.org/security#publicKey")]
+	[J($"{Constants.W3IdSecurityNs}#publicKey")]
 	[JC(typeof(ASPublicKeyConverter))]
 	public ASPublicKey? PublicKey { get; set; }
 
-	public bool IsBot => Type == "https://www.w3.org/ns/activitystreams#Service";
+	public bool IsBot => Type == $"{Constants.ActivityStreamsNs}#Service";
 
 	public void Normalize(string uri, string acct) {
 		if (Type == null || !ActorTypes.Contains(Type)) throw new Exception("Actor is of invalid type");

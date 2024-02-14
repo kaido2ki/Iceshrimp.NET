@@ -1,6 +1,7 @@
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
@@ -20,7 +21,7 @@ public static class LdSignature {
 	}
 
 	public static async Task<bool> VerifyAsync(JObject activity, string key) {
-		var options = activity["https://w3id.org/security#signature"];
+		var options = activity[$"{Constants.W3IdSecurityNs}#signature"];
 		if (options?.ToObject<SignatureOptions[]>() is not { Length: 1 } signatures) return false;
 		var signature = signatures[0];
 		if (signature.Type is not ["_:RsaSignature2017"]) return false;
@@ -61,7 +62,7 @@ public static class LdSignature {
 
 		options.Signature = signature;
 
-		activity.Add("https://w3id.org/security#signature", JToken.FromObject(options));
+		activity.Add($"{Constants.W3IdSecurityNs}#signature", JToken.FromObject(options));
 
 		return LdHelpers.Expand(activity)?[0] as JObject ??
 		       throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Failed to expand signed activity");
@@ -78,9 +79,9 @@ public static class LdSignature {
 
 		inputOptions.Remove("@id");
 		inputOptions.Remove("@type");
-		inputOptions.Remove("https://w3id.org/security#signatureValue");
+		inputOptions.Remove($"{Constants.W3IdSecurityNs}#signatureValue");
 
-		inputData.Remove("https://w3id.org/security#signature");
+		inputData.Remove($"{Constants.W3IdSecurityNs}#signature");
 
 		var canonicalData    = LdHelpers.Canonicalize(inputData);
 		var canonicalOptions = LdHelpers.Canonicalize(inputOptions);
@@ -94,7 +95,7 @@ public static class LdSignature {
 	private class SignatureOptions {
 		[J("@type")] public required List<string> Type { get; set; }
 
-		[J("https://w3id.org/security#signatureValue")]
+		[J($"{Constants.W3IdSecurityNs}#signatureValue")]
 		[JC(typeof(VC))]
 		public string? Signature { get; set; }
 
@@ -102,15 +103,15 @@ public static class LdSignature {
 		[JC(typeof(VC))]
 		public string? Creator { get; set; }
 
-		[J("https://w3id.org/security#nonce", NullValueHandling = NullValueHandling.Ignore)]
+		[J($"{Constants.W3IdSecurityNs}#nonce", NullValueHandling = NullValueHandling.Ignore)]
 		[JC(typeof(VC))]
 		public string? Nonce { get; set; }
 
-		[J("https://w3id.org/security#domain", NullValueHandling = NullValueHandling.Ignore)]
+		[J($"{Constants.W3IdSecurityNs}#domain", NullValueHandling = NullValueHandling.Ignore)]
 		[JC(typeof(VC))]
 		public string? Domain { get; set; }
 
-		[J("https://w3id.org/security#created", NullValueHandling = NullValueHandling.Ignore)]
+		[J($"{Constants.W3IdSecurityNs}#created", NullValueHandling = NullValueHandling.Ignore)]
 		[JC(typeof(VC))]
 		//FIXME: is this valid? it should output datetime in ISO format
 		public DateTime? Created { get; set; }

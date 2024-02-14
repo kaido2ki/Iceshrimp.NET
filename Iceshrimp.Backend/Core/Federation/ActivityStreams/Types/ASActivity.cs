@@ -5,11 +5,11 @@ using JC = Newtonsoft.Json.JsonConverterAttribute;
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASActivity : ASObject {
-	[J("https://www.w3.org/ns/activitystreams#actor")]
+	[J($"{Constants.ActivityStreamsNs}#actor")]
 	[JC(typeof(ASActorConverter))]
 	public ASActor? Actor { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#object")]
+	[J($"{Constants.ActivityStreamsNs}#object")]
 	[JC(typeof(ASObjectConverter))]
 	public ASObject? Object { get; set; }
 

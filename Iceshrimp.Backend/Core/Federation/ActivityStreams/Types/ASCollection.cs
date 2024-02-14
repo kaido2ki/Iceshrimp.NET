@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
@@ -11,11 +12,11 @@ public class ASCollection<T>() : ASObjectBase where T : ASObject {
 		Id = id;
 	}
 
-	[J("https://www.w3.org/ns/activitystreams#items")]
+	[J($"{Constants.ActivityStreamsNs}#items")]
 	[JC(typeof(ASCollectionItemsConverter))]
 	public List<T>? Items { get; set; }
 
-	[J("https://www.w3.org/ns/activitystreams#totalItems")]
+	[J($"{Constants.ActivityStreamsNs}#totalItems")]
 	[JC(typeof(VC))]
 	public long? TotalItems { get; set; }
 }

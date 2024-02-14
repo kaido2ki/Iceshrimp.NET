@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Configuration;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
@@ -5,11 +6,11 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASPublicKey : ASObject {
-	[J("https://w3id.org/security#owner")]
+	[J($"{Constants.W3IdSecurityNs}#owner")]
 	[JC(typeof(ASObjectBaseConverter))]
 	public ASObjectBase? Owner { get; set; }
 	
-	[J("https://w3id.org/security#publicKeyPem")]
+	[J($"{Constants.W3IdSecurityNs}#publicKeyPem")]
 	[JC(typeof(VC))]
 	public string? PublicKey { get; set; }
 }

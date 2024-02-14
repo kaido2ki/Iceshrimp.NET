@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
@@ -53,7 +54,7 @@ public class LdSignatureTests {
 		var data = (_signed.DeepClone() as JObject)!;
 		data.Should().NotBeNull();
 
-		data.Remove("https://w3id.org/security#signature");
+		data.Remove($"{Constants.W3IdSecurityNs}#signature");
 		var verify = await LdSignature.VerifyAsync(data, _keypair.ExportRSAPublicKeyPem());
 		verify.Should().BeFalse();
 	}
@@ -64,10 +65,10 @@ public class LdSignatureTests {
 		data.Should().NotBeNull();
 
 		var signature =
-			data["https://w3id.org/security#signature"]?[0]?["https://w3id.org/security#signatureValue"]?[0]?["@value"];
+			data[$"{Constants.W3IdSecurityNs}#signature"]?[0]?[$"{Constants.W3IdSecurityNs}#signatureValue"]?[0]?["@value"];
 		signature.Should().NotBeNull();
 
-		data["https://w3id.org/security#signature"]![0]!["https://w3id.org/security#signatureValue"]![0]!["@value"] +=
+		data[$"{Constants.W3IdSecurityNs}#signature"]![0]![$"{Constants.W3IdSecurityNs}#signatureValue"]![0]!["@value"] +=
 			"test";
 		var e = await Assert.ThrowsExceptionAsync<FormatException>(async () =>
 			                                                           await LdSignature.VerifyAsync(data,
@@ -83,10 +84,10 @@ public class LdSignatureTests {
 		data.Should().NotBeNull();
 
 		var creator =
-			data["https://w3id.org/security#signature"]?[0]?["http://purl.org/dc/terms/creator"]?[0]?["@value"];
+			data[$"{Constants.W3IdSecurityNs}#signature"]?[0]?["http://purl.org/dc/terms/creator"]?[0]?["@value"];
 		creator.Should().NotBeNull();
 
-		data["https://w3id.org/security#signature"]![0]!["http://purl.org/dc/terms/creator"]![0]!["@value"] += "test";
+		data[$"{Constants.W3IdSecurityNs}#signature"]![0]!["http://purl.org/dc/terms/creator"]![0]!["@value"] += "test";
 		var verify = await LdSignature.VerifyAsync(data, _keypair.ExportRSAPublicKeyPem());
 		verify.Should().BeFalse();
 	}
