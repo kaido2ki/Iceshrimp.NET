@@ -41,12 +41,17 @@ public class AuthorizedFetchMiddleware(
 
 			// If we don't, we need to try to fetch it
 			if (key == null) {
-				var user = await userResolver.ResolveAsync(sig.KeyId);
-				key = await db.UserPublickeys.Include(p => p.User).FirstOrDefaultAsync(p => p.User == user);
+				try {
+					var user = await userResolver.ResolveAsync(sig.KeyId);
+					key = await db.UserPublickeys.Include(p => p.User).FirstOrDefaultAsync(p => p.User == user);
+				}
+				catch (Exception e) {
+					throw new GracefulException($"Failed to fetch key of signature user ({sig.KeyId}) - {e.Message}");
+				}
 			}
 
 			// If we still don't have the key, something went wrong and we need to throw an exception
-			if (key == null) throw new GracefulException("Failed to fetch key of signature user");
+			if (key == null) throw new GracefulException($"Failed to fetch key of signature user ({sig.KeyId})");
 
 			if (key.User.Host == null)
 				throw new GracefulException("Remote user must have a host");
