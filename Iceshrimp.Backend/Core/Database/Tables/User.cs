@@ -381,6 +381,9 @@ public class User : IEntity {
 
 	[InverseProperty(nameof(NoteFavorite.User))]
 	public virtual ICollection<NoteFavorite> NoteFavorites { get; set; } = new List<NoteFavorite>();
+	
+	[InverseProperty(nameof(NoteReaction.User))]
+	public virtual ICollection<NoteLike> NoteLikes { get; set; } = new List<NoteLike>();
 
 	[InverseProperty(nameof(NoteReaction.User))]
 	public virtual ICollection<NoteReaction> NoteReactions { get; set; } = new List<NoteReaction>();

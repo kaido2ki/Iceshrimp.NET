@@ -202,6 +202,9 @@ public class Note : IEntity {
 
 	[InverseProperty(nameof(NoteReaction.Note))]
 	public virtual ICollection<NoteReaction> NoteReactions { get; set; } = new List<NoteReaction>();
+	
+	[InverseProperty(nameof(NoteLike.Note))]
+	public virtual ICollection<NoteLike> NoteLikes { get; set; } = new List<NoteLike>();
 
 	[InverseProperty(nameof(NoteUnread.Note))]
 	public virtual ICollection<NoteUnread> NoteUnreads { get; set; } = new List<NoteUnread>();

@@ -47,6 +47,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<Note>                 Notes                 { get; init; } = null!;
 	public virtual DbSet<NoteEdit>             NoteEdits             { get; init; } = null!;
 	public virtual DbSet<NoteFavorite>         NoteFavorites         { get; init; } = null!;
+	public virtual DbSet<NoteLike>             NoteLikes             { get; init; } = null!;
 	public virtual DbSet<NoteReaction>         NoteReactions         { get; init; } = null!;
 	public virtual DbSet<NoteThreadMuting>     NoteThreadMutings     { get; init; } = null!;
 	public virtual DbSet<NoteUnread>           NoteUnreads           { get; init; } = null!;
@@ -591,6 +592,11 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.HasOne(d => d.Note).WithMany(p => p.NoteFavorites);
 
 			entity.HasOne(d => d.User).WithMany(p => p.NoteFavorites);
+		});
+		
+		modelBuilder.Entity<NoteLike>(entity => {
+			entity.HasOne(d => d.Note).WithMany(p => p.NoteLikes);
+			entity.HasOne(d => d.User).WithMany(p => p.NoteLikes);
 		});
 
 		modelBuilder.Entity<NoteReaction>(entity => {
