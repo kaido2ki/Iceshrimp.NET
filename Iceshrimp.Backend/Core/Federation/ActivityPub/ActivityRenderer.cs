@@ -7,7 +7,11 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class ActivityRenderer(IOptions<Config.InstanceSection> config, UserRenderer userRenderer) {
+public class ActivityRenderer(
+	IOptions<Config.InstanceSection> config,
+	UserRenderer userRenderer,
+	NoteRenderer noteRenderer
+) {
 	private string GenerateActivityId() =>
 		$"https://{config.Value.WebDomain}/activities/{Guid.NewGuid().ToString().ToLowerInvariant()}";
 
@@ -26,6 +30,19 @@ public class ActivityRenderer(IOptions<Config.InstanceSection> config, UserRende
 				Id = actor.Id
 			},
 			Object = obj
+		};
+	}
+
+	public ASLike RenderLike(Note note, User user) {
+		if (note.UserHost == null)
+			throw GracefulException.BadRequest("Refusing to render like activity: note user must be remote");
+		if (user.Host != null)
+			throw GracefulException.BadRequest("Refusing to render like activity: actor must be local");
+
+		return new ASLike {
+			Id     = GenerateActivityId(),
+			Actor  = userRenderer.RenderLite(user),
+			Object = noteRenderer.RenderLite(note)
 		};
 	}
 

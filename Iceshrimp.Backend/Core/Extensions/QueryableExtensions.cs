@@ -214,10 +214,11 @@ public static class QueryableExtensions {
 	}
 
 	public static async Task<List<Status>> RenderAllForMastodonAsync(
-		this IQueryable<Note> notes, NoteRenderer renderer) {
+		this IQueryable<Note> notes, NoteRenderer renderer, User? user
+	) {
 		var list = (await notes.ToListAsync())
 			.EnforceRenoteReplyVisibility();
-		return (await renderer.RenderManyAsync(list)).ToList();
+		return (await renderer.RenderManyAsync(list, user)).ToList();
 	}
 
 	public static async Task<List<Account>> RenderAllForMastodonAsync(
@@ -227,9 +228,9 @@ public static class QueryableExtensions {
 	}
 
 	public static async Task<List<MastoNotification>> RenderAllForMastodonAsync(
-		this IQueryable<Notification> notifications, NotificationRenderer renderer) {
+		this IQueryable<Notification> notifications, NotificationRenderer renderer, User? user) {
 		var list = await notifications.ToListAsync();
-		return (await renderer.RenderManyAsync(list)).ToList();
+		return (await renderer.RenderManyAsync(list, user)).ToList();
 	}
 
 	public static IQueryable<Note> FilterByAccountStatusesRequest(this IQueryable<Note> query,

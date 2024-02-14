@@ -37,7 +37,8 @@ public class NoteService(
 	MfmConverter mfmConverter,
 	DriveService driveSvc,
 	NotificationService notificationSvc,
-	EventService eventSvc
+	EventService eventSvc,
+	ActivityRenderer activityRenderer
 ) {
 	private readonly List<string> _resolverHistory = [];
 	private          int          _recursionLimit  = 100;
@@ -359,6 +360,11 @@ public class NoteService(
 
 			await db.NoteLikes.AddAsync(like);
 			await db.SaveChangesAsync();
+			if (user.Host == null && note.UserHost != null) {
+				var activity = activityRenderer.RenderLike(note, user);
+				await deliverSvc.DeliverToFollowersAsync(activity, user, [note.User]);
+			}
+
 			eventSvc.RaiseNoteLiked(this, note, user);
 			await notificationSvc.GenerateLikeNotification(note, user);
 		}
@@ -367,6 +373,12 @@ public class NoteService(
 	public async Task UnlikeNoteAsync(Note note, User user) {
 		var count = await db.NoteLikes.Where(p => p.Note == note && p.User == user).ExecuteDeleteAsync();
 		if (count == 0) return;
+		if (user.Host == null && note.UserHost != null) {
+			var activity = activityRenderer.RenderUndo(userRenderer.RenderLite(user),
+			                                           activityRenderer.RenderLike(note, user));
+			await deliverSvc.DeliverToFollowersAsync(activity, user, [note.User]);
+		}
+
 		eventSvc.RaiseNoteUnliked(this, note, user);
 		await db.Notifications
 		        .Where(p => p.Type == Notification.NotificationType.Like && p.Notifiee == note.User &&

@@ -253,7 +253,7 @@ public class AccountController(
 		                  .EnsureVisibleFor(user)
 		                  .Paginate(query, ControllerContext)
 		                  .PrecomputeVisibilities(user)
-		                  .RenderAllForMastodonAsync(noteRenderer);
+		                  .RenderAllForMastodonAsync(noteRenderer, user);
 
 		return Ok(res);
 	}

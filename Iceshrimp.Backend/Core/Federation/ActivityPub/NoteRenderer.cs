@@ -10,6 +10,17 @@ using Microsoft.Extensions.Options;
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
 public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter mfmConverter, DatabaseContext db) {
+	/// <summary>
+	/// This function is meant for compacting a note into the @id form as specified in ActivityStreams
+	/// </summary>
+	/// <param name="note">Any note</param>
+	/// <returns>ASNote with only the Id field populated</returns>
+	public ASNote RenderLite(Note note) {
+		return new ASNote {
+			Id = note.Uri ?? $"https://{config.Value.WebDomain}/notes/{note.Id}"
+		};
+	}
+    
 	public async Task<ASNote> RenderAsync(Note note, List<Note.MentionedUser>? mentions = null) {
 		var id     = $"https://{config.Value.WebDomain}/notes/{note.Id}";
 		var userId = $"https://{config.Value.WebDomain}/users/{note.User.Id}";

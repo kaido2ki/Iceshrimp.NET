@@ -44,7 +44,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                  .FilterBlocked(p => p.Notifier, user)
 		                  .FilterBlocked(p => p.Note, user)
 		                  .Paginate(query, ControllerContext)
-		                  .RenderAllForMastodonAsync(notificationRenderer);
+		                  .RenderAllForMastodonAsync(notificationRenderer, user);
 		
 		//TODO: handle mutes
 		//TODO: handle reply/renote visibility

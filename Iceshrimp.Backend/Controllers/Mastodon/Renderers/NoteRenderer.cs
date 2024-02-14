@@ -15,17 +15,19 @@ public class NoteRenderer(
 	MfmConverter mfmConverter,
 	DatabaseContext db
 ) {
-	public async Task<Status> RenderAsync(Note note, List<Account>? accounts = null, List<Mention>? mentions = null,
-	                                      List<Attachment>? attachments = null,
-	                                      Dictionary<string, int>? likeCounts = null, int recurse = 2
+	public async Task<Status> RenderAsync(
+		Note note, User? user, List<Account>? accounts = null, List<Mention>? mentions = null,
+		List<Attachment>? attachments = null, Dictionary<string, int>? likeCounts = null,
+		List<string>? likedNotes = null, int recurse = 2
 	) {
 		var uri = note.Uri ?? $"https://{config.Value.WebDomain}/notes/{note.Id}";
 		var renote = note.Renote != null && recurse > 0
-			? await RenderAsync(note.Renote, accounts, mentions, attachments, likeCounts, --recurse)
+			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes, --recurse)
 			: null;
 		var text = note.Text; //TODO: append quote uri
 
 		var likeCount = likeCounts?.GetValueOrDefault(note.Id, 0) ?? await db.NoteLikes.CountAsync(p => p.Note == note);
+		var liked = likedNotes?.Contains(note.Id) ?? await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 
 		if (mentions == null) {
 			mentions = await db.Users.Where(p => note.Mentions.Contains(p.Id))
@@ -82,8 +84,8 @@ public class NoteRenderer(
 			RepliesCount   = note.RepliesCount,
 			RenoteCount    = note.RenoteCount,
 			FavoriteCount  = likeCount,
+			IsFavorited    = liked,
 			IsRenoted      = false, //FIXME
-			IsFavorited    = false, //FIXME
 			IsBookmarked   = false, //FIXME
 			IsMuted        = null,  //FIXME
 			IsSensitive    = note.Cw != null,
@@ -131,12 +133,23 @@ public class NoteRenderer(
 		               .ToDictionaryAsync(p => p.First(), p => p.Count());
 	}
 
-	public async Task<IEnumerable<Status>> RenderManyAsync(IEnumerable<Note> notes, List<Account>? accounts = null) {
+	private async Task<List<string>> GetLikedNotes(IEnumerable<Note> notes, User? user) {
+		if (user == null) return [];
+		return await db.NoteLikes.Where(p => p.User == user && notes.Contains(p.Note))
+		               .Select(p => p.NoteId)
+		               .ToListAsync();
+	}
+
+	public async Task<IEnumerable<Status>> RenderManyAsync(
+		IEnumerable<Note> notes, User? user, List<Account>? accounts = null
+	) {
 		var noteList = notes.ToList();
 		accounts ??= await GetAccounts(noteList.Select(p => p.User));
 		var mentions    = await GetMentions(noteList);
 		var attachments = await GetAttachments(noteList);
 		var likeCounts  = await GetLikeCounts(noteList);
-		return await noteList.Select(p => RenderAsync(p, accounts, mentions, attachments, likeCounts)).AwaitAllAsync();
+		var likedNotes  = await GetLikedNotes(noteList, user);
+		return await noteList.Select(p => RenderAsync(p, user, accounts, mentions, attachments, likeCounts, likedNotes))
+		                     .AwaitAllAsync();
 	}
 }

@@ -25,10 +25,11 @@ public class ActivityDeliverService(
 		                        .Distinct()
 		                        .ToListAsync();
 
-		inboxUrls = inboxUrls
-		            .Concat(recipients.Select(p => p.SharedInbox ?? p.Inbox).Where(p => p != null).Select(p => p!))
-		            .Distinct()
-		            .ToList();
+		// We want to deliver activities to the explicitly specified recipients first
+		inboxUrls = recipients.Select(p => p.SharedInbox ?? p.Inbox).Where(p => p != null).Select(p => p!)
+		                      .Concat(inboxUrls)
+		                      .Distinct()
+		                      .ToList();
 
 		if (inboxUrls.Count == 0) return;
 

@@ -132,7 +132,7 @@ public class SearchController(
 				}
 			}
 
-			return note != null ? [await noteRenderer.RenderAsync(note)] : [];
+			return note != null ? [await noteRenderer.RenderAsync(note, user)] : [];
 		}
 
 		return await db.Notes
@@ -147,6 +147,6 @@ public class SearchController(
 		               .Paginate(pagination, ControllerContext)
 		               .Skip(pagination.Offset ?? 0)
 		               .PrecomputeVisibilities(user)
-		               .RenderAllForMastodonAsync(noteRenderer);
+		               .RenderAllForMastodonAsync(noteRenderer, user);
 	}
 }

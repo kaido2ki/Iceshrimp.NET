@@ -41,7 +41,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, I
 		                  .FilterMuted(user)
 		                  .Paginate(query, ControllerContext)
 		                  .PrecomputeVisibilities(user)
-		                  .RenderAllForMastodonAsync(noteRenderer);
+		                  .RenderAllForMastodonAsync(noteRenderer, user);
 
 		return Ok(res);
 	}
@@ -60,7 +60,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, I
 		                  .FilterMuted(user)
 		                  .Paginate(query, ControllerContext)
 		                  .PrecomputeVisibilities(user)
-		                  .RenderAllForMastodonAsync(noteRenderer);
+		                  .RenderAllForMastodonAsync(noteRenderer, user);
 
 		return Ok(res);
 	}

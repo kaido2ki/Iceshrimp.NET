@@ -34,7 +34,7 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 		                   .PrecomputeVisibilities(user)
 		                   .FirstOrDefaultAsync()
 		           ?? throw GracefulException.RecordNotFound();
-		var res = await noteRenderer.RenderAsync(note.EnforceRenoteReplyVisibility());
+		var res = await noteRenderer.RenderAsync(note.EnforceRenoteReplyVisibility(), user);
 		return Ok(res);
 	}
 
@@ -56,13 +56,13 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 		                        .IncludeCommonProperties()
 		                        .EnsureVisibleFor(user)
 		                        .PrecomputeVisibilities(user)
-		                        .RenderAllForMastodonAsync(noteRenderer);
+		                        .RenderAllForMastodonAsync(noteRenderer, user);
 
 		var descendants = await db.NoteDescendants(id, maxDepth, maxDescendants)
 		                          .IncludeCommonProperties()
 		                          .EnsureVisibleFor(user)
 		                          .PrecomputeVisibilities(user)
-		                          .RenderAllForMastodonAsync(noteRenderer);
+		                          .RenderAllForMastodonAsync(noteRenderer, user);
 
 		var res = new StatusContext {
 			Ancestors   = ancestors,
@@ -70,6 +70,44 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 		};
 
 		return Ok(res);
+	}
+
+	[HttpPost("{id}/favourite")]
+	[Authorize("write:favourites")]
+	[Produces("application/json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Status))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> LikeNote(string id) {
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync()
+		           ?? throw GracefulException.RecordNotFound();
+
+		await noteSvc.LikeNoteAsync(note, user);
+		return await GetNote(id);
+	}
+
+	[HttpPost("{id}/unfavourite")]
+	[Authorize("write:favourites")]
+	[Produces("application/json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Status))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> UnlikeNote(string id) {
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync()
+		           ?? throw GracefulException.RecordNotFound();
+
+		await noteSvc.UnlikeNoteAsync(note, user);
+		return await GetNote(id);
 	}
 
 	[HttpPost]
@@ -101,7 +139,7 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 
 		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply,
 		                                         attachments: attachments);
-		var res = await noteRenderer.RenderAsync(note);
+		var res = await noteRenderer.RenderAsync(note, user);
 
 		return Ok(res);
 	}

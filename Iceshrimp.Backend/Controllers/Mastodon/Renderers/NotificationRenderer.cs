@@ -9,18 +9,18 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
 public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRenderer) {
 	public async Task<Notification> RenderAsync(
-		DbNotification notification, List<Account>? accounts = null, IEnumerable<Status>? statuses = null
+		DbNotification notification, User? user, List<Account>? accounts = null, IEnumerable<Status>? statuses = null
 	) {
 		var dbNotifier = notification.Notifier ?? throw new GracefulException("Notification has no notifier");
 
 		var note = notification.Note != null
 			? statuses?.FirstOrDefault(p => p.Id == notification.Note.Id) ??
-			  await noteRenderer.RenderAsync(notification.Note, accounts)
+			  await noteRenderer.RenderAsync(notification.Note, user, accounts)
 			: null;
 
 		var notifier = accounts?.FirstOrDefault(p => p.Id == dbNotifier.Id) ??
 		               await userRenderer.RenderAsync(dbNotifier);
-		
+
 		//TODO: specially handle quotes
 
 		var res = new Notification {
@@ -34,7 +34,9 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 		return res;
 	}
 
-	public async Task<IEnumerable<Notification>> RenderManyAsync(IEnumerable<DbNotification> notifications) {
+	public async Task<IEnumerable<Notification>> RenderManyAsync(
+		IEnumerable<DbNotification> notifications, User? user
+	) {
 		var notificationList = notifications.ToList();
 
 		var accounts = await noteRenderer.GetAccounts(notificationList.Where(p => p.Notifier != null)
@@ -46,10 +48,10 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 		var notes = await noteRenderer.RenderManyAsync(notificationList.Where(p => p.Note != null)
 		                                                               .Select(p => p.Note)
 		                                                               .Cast<Note>()
-		                                                               .DistinctBy(p => p.Id), accounts);
+		                                                               .DistinctBy(p => p.Id), user, accounts);
 
 		return await notificationList
-		             .Select(p => RenderAsync(p, accounts, notes))
+		             .Select(p => RenderAsync(p, user, accounts, notes))
 		             .AwaitAllAsync();
 	}
 }
