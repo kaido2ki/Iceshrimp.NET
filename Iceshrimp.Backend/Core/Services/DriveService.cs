@@ -239,7 +239,7 @@ public class DriveService(
 			RequestHeaders     = request.RequestHeaders,
 			RequestIp          = request.RequestIp,
 			Blurhash           = blurhash,
-			Properties         = properties,
+			Properties         = properties!,
 			ThumbnailUrl       = thumbnailUrl,
 			ThumbnailAccessKey = thumbnailFilename,
 			WebpublicType      = webpublicUrl != null ? "image/webp" : null,
