@@ -23,15 +23,14 @@ public static class MfmSerializer {
 				}
 				case MfmSearchNode mfmSearchNode: {
 					throw new NotImplementedException();
-					break;
 				}
-				case MfmBoldNode mfmBoldNode: {
+				case MfmBoldNode: {
 					result.Append("**");
 					result.Append(Serialize(node.Children));
 					result.Append("**");
 					break;
 				}
-				case MfmCenterNode mfmCenterNode: {
+				case MfmCenterNode: {
 					result.Append("<center>");
 					result.Append(Serialize(node.Children));
 					result.Append("</center>");
@@ -43,7 +42,6 @@ public static class MfmSerializer {
 				}
 				case MfmFnNode mfmFnNode: {
 					throw new NotImplementedException();
-					break;
 				}
 				case MfmHashtagNode mfmHashtagNode: {
 					result.Append($"#{mfmHashtagNode.Hashtag}");
@@ -53,10 +51,10 @@ public static class MfmSerializer {
 					result.Append($"`{mfmInlineCodeNode.Code}`");
 					break;
 				}
-				case MfmItalicNode mfmItalicNode: {
-					result.Append("~~");
+				case MfmItalicNode: {
+					result.Append('*');
 					result.Append(Serialize(node.Children));
-					result.Append("~~");
+					result.Append('*');
 					break;
 				}
 				case MfmLinkNode mfmLinkNode: {
@@ -115,7 +113,6 @@ public static class MfmSerializer {
 				}
 				case MfmQuoteNode mfmQuoteNode: {
 					throw new NotImplementedException();
-					break;
 				}
 				default: {
 					throw new Exception("Unknown node type");
