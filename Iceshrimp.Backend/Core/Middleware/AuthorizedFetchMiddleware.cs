@@ -46,6 +46,7 @@ public class AuthorizedFetchMiddleware(
 					key = await db.UserPublickeys.Include(p => p.User).FirstOrDefaultAsync(p => p.User == user);
 				}
 				catch (Exception e) {
+					if (e is GracefulException) throw;
 					throw new GracefulException($"Failed to fetch key of signature user ({sig.KeyId}) - {e.Message}");
 				}
 			}
