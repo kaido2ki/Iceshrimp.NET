@@ -74,8 +74,8 @@ public class NoteRenderer(
 			Renote         = renote, //TODO: check if it's a pure renote
 			Quote          = renote, //TODO: see above
 			ContentType    = "text/x.misskeymarkdown",
-			CreatedAt      = note.CreatedAt.ToString("O")[..^5],
-			EditedAt       = note.UpdatedAt?.ToString("O")[..^5],
+			CreatedAt      = note.CreatedAt.ToStringMastodon(),
+			EditedAt       = note.UpdatedAt?.ToStringMastodon(),
 			RepliesCount   = note.RepliesCount,
 			RenoteCount    = note.RenoteCount,
 			FavoriteCount  = 0,     //FIXME

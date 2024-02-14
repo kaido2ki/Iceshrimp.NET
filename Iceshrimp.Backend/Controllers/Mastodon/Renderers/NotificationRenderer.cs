@@ -26,7 +26,7 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 			Type      = Notification.EncodeType(notification.Type),
 			Note      = note,
 			Notifier  = notifier,
-			CreatedAt = notification.CreatedAt.ToString("O")[..^5]
+			CreatedAt = notification.CreatedAt.ToStringMastodon()
 		};
 
 		return res;
