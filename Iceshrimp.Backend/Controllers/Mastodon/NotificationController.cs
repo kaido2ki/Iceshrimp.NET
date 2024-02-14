@@ -31,12 +31,13 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		var res = await db.Notifications
 		                  .IncludeCommonProperties()
 		                  .Where(p => p.Notifiee == user)
+		                  .Where(p => p.Note != null)
 		                  .Where(p => p.Type == NotificationType.Follow
 		                              || p.Type == NotificationType.Mention
 		                              || p.Type == NotificationType.Reply
 		                              || p.Type == NotificationType.Renote
 		                              || p.Type == NotificationType.Quote
-		                              || p.Type == NotificationType.Reaction
+		                              || p.Type == NotificationType.Like
 		                              || p.Type == NotificationType.PollEnded
 		                              || p.Type == NotificationType.FollowRequestReceived)
 		                  .EnsureNoteVisibilityFor(p => p.Note, user)

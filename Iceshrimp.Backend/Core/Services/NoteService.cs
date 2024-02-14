@@ -303,7 +303,7 @@ public class NoteService(
 		return result.Where(p => p != null).Cast<DriveFile>().ToList();
 	}
 
-	public async Task<Note?> ResolveNoteAsync(string uri) {
+	public async Task<Note?> ResolveNoteAsync(string uri, ASNote? fetchedNote = null) {
 		//TODO: is this enough to prevent DoS attacks?
 		if (_recursionLimit-- <= 0)
 			throw GracefulException.UnprocessableEntity("Refusing to resolve threads this long");
@@ -312,13 +312,16 @@ public class NoteService(
 		_resolverHistory.Add(uri);
 
 		var note = uri.StartsWith($"https://{config.Value.WebDomain}/notes/")
-			? await db.Notes.FirstOrDefaultAsync(p => p.Id ==
-			                                          uri.Substring($"https://{config.Value.WebDomain}/notes/".Length))
-			: await db.Notes.FirstOrDefaultAsync(p => p.Uri == uri);
+			? await db.Notes.IncludeCommonProperties()
+			          .FirstOrDefaultAsync(p => p.Id ==
+			                                    uri.Substring($"https://{config.Value.WebDomain}/notes/".Length))
+			: await db.Notes.IncludeCommonProperties()
+			          .FirstOrDefaultAsync(p => p.Uri == uri);
+
 		if (note != null) return note;
 
 		//TODO: should we fall back to a regular user's keypair if fetching with instance actor fails & a local user is following the actor?
-		var fetchedNote = await fetchSvc.FetchNoteAsync(uri);
+		fetchedNote ??= await fetchSvc.FetchNoteAsync(uri);
 		if (fetchedNote?.AttributedTo is not [{ Id: not null } attrTo]) {
 			logger.LogDebug("Invalid Note.AttributedTo, skipping");
 			return null;
@@ -339,5 +342,49 @@ public class NoteService(
 			logger.LogDebug("Failed to create resolved note: {error}", e.Message);
 			return null;
 		}
+	}
+
+	public async Task<Note?> ResolveNoteAsync(ASNote note) {
+		return await ResolveNoteAsync(note.Id, note);
+	}
+
+	public async Task LikeNoteAsync(Note note, User user) {
+		if (!await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user)) {
+			var like = new NoteLike {
+				Id        = IdHelpers.GenerateSlowflakeId(),
+				CreatedAt = DateTime.UtcNow,
+				User      = user,
+				Note      = note
+			};
+
+			await db.NoteLikes.AddAsync(like);
+			await db.SaveChangesAsync();
+			eventSvc.RaiseNoteLiked(this, note, user);
+			await notificationSvc.GenerateLikeNotification(note, user);
+		}
+	}
+
+	public async Task UnlikeNoteAsync(Note note, User user) {
+		var count = await db.NoteLikes.Where(p => p.Note == note && p.User == user).ExecuteDeleteAsync();
+		if (count == 0) return;
+		eventSvc.RaiseNoteUnliked(this, note, user);
+		await db.Notifications
+		        .Where(p => p.Type == Notification.NotificationType.Like && p.Notifiee == note.User &&
+		                    p.Notifier == user)
+		        .ExecuteDeleteAsync();
+	}
+
+	public async Task LikeNoteAsync(ASNote note, ASActor actor) {
+		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot register like for unknown note");
+		var user   = await userResolver.ResolveAsync(actor.Id);
+
+		await LikeNoteAsync(dbNote, user);
+	}
+
+	public async Task UnlikeNoteAsync(ASNote note, ASActor actor) {
+		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot unregister like for unknown note");
+		var user   = await userResolver.ResolveAsync(actor.Id);
+
+		await UnlikeNoteAsync(dbNote, user);
 	}
 }

@@ -57,8 +57,4 @@
         <None Remove="migrate.sql"/>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Core\Events\" />
-    </ItemGroup>
-
 </Project>

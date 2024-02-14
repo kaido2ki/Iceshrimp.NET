@@ -21,7 +21,7 @@ public class Notification : IEntity {
 			NotificationType.Reply                 => "mention",
 			NotificationType.Renote                => "renote",
 			NotificationType.Quote                 => "reblog",
-			NotificationType.Reaction              => "favourite",
+			NotificationType.Like                  => "favourite",
 			NotificationType.PollEnded             => "poll",
 			NotificationType.FollowRequestReceived => "follow_request",
 

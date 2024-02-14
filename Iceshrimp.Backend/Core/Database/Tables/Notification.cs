@@ -43,7 +43,7 @@ public class Notification : IEntity {
 	/// </summary>
 	[Column("isRead")]
 	public bool IsRead { get; set; }
-	
+
 	[Column("type")] public NotificationType Type { get; set; }
 
 	[Column("noteId")] [StringLength(32)] public string? NoteId { get; set; }
@@ -109,6 +109,7 @@ public class Notification : IEntity {
 		[PgName("reply")]                 Reply,
 		[PgName("renote")]                Renote,
 		[PgName("quote")]                 Quote,
+		[PgName("like")]                  Like,
 		[PgName("reaction")]              Reaction,
 		[PgName("pollVote")]              PollVote,
 		[PgName("pollEnded")]             PollEnded,

@@ -55,6 +55,10 @@ public class ASUndo : ASActivity {
 	public ASUndo() => Type = Types.Undo;
 }
 
+public class ASLike : ASActivity {
+	public ASLike() => Type = Types.Like;
+}
+
 //TODO: add the rest
 
 public sealed class ASActivityConverter : ASSerializer.ListSingleObjectConverter<ASActivity>;

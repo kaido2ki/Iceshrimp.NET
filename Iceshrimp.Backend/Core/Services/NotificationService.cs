@@ -7,7 +7,8 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class NotificationService(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
-	DatabaseContext db
+	DatabaseContext db,
+	EventService eventSvc
 ) {
 	public async Task GenerateMentionNotifications(Note note, IReadOnlyCollection<string> mentionedLocalUserIds) {
 		if (mentionedLocalUserIds.Count == 0) return;
@@ -21,10 +22,12 @@ public class NotificationService(
 			                    NotifierId = note.UserId,
 			                    NotifieeId = p,
 			                    Type       = Notification.NotificationType.Mention
-		                    });
+		                    })
+		                    .ToList();
 
 		await db.AddRangeAsync(notifications);
 		await db.SaveChangesAsync();
+		eventSvc.RaiseNotifications(this, notifications);
 	}
 
 	public async Task GenerateReplyNotifications(Note note, IReadOnlyCollection<string> mentionedLocalUserIds) {
@@ -43,9 +46,29 @@ public class NotificationService(
 			                    NotifierId = note.UserId,
 			                    NotifieeId = p,
 			                    Type       = Notification.NotificationType.Reply
-		                    });
+		                    })
+		                    .ToList();
 
 		await db.AddRangeAsync(notifications);
 		await db.SaveChangesAsync();
+		eventSvc.RaiseNotifications(this, notifications);
+	}
+
+	public async Task GenerateLikeNotification(Note note, User user) {
+		if (note.UserHost != null) return;
+		if (note.User == user) return;
+
+		var notification = new Notification {
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			Note      = note,
+			Notifiee  = note.User,
+			Notifier  = user,
+			Type      = Notification.NotificationType.Like
+		};
+
+		await db.AddAsync(notification);
+		await db.SaveChangesAsync();
+		eventSvc.RaiseNotification(this, notification);
 	}
 }

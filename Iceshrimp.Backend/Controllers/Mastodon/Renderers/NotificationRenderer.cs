@@ -20,6 +20,8 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 
 		var notifier = accounts?.FirstOrDefault(p => p.Id == dbNotifier.Id) ??
 		               await userRenderer.RenderAsync(dbNotifier);
+		
+		//TODO: specially handle quotes
 
 		var res = new Notification {
 			Id        = notification.Id,

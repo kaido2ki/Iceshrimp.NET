@@ -8,7 +8,12 @@ using JR = Newtonsoft.Json.JsonRequiredAttribute;
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASObject : ASObjectBase {
-	[J("@id")] [JR] public new required string Id { get; set; }
+	[J("@id")]
+	[JR]
+	public new required string Id {
+		get => base.Id ?? throw new NullReferenceException("base.Id should never be null on a required property");
+		set => base.Id = value;
+	}
 
 	[J("@type")]
 	[JC(typeof(StringListSingleConverter))]
@@ -34,7 +39,7 @@ public class ASObject : ASObjectBase {
 				ASActivity.Types.Accept    => token.ToObject<ASAccept>(),
 				ASActivity.Types.Reject    => token.ToObject<ASReject>(),
 				ASActivity.Types.Undo      => token.ToObject<ASUndo>(),
-				ASActivity.Types.Like      => token.ToObject<ASActivity>(),
+				ASActivity.Types.Like      => token.ToObject<ASLike>(),
 				_                          => token.ToObject<ASObject>()
 			},
 			JTokenType.Array => Deserialize(token.First()),

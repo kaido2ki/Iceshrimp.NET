@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -12,6 +13,8 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
+[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter",
+                 Justification = "We want to enforce AS types, so we can't use the base type here")]
 public class ActivityHandlerService(
 	ILogger<ActivityHandlerService> logger,
 	NoteService noteSvc,
@@ -31,9 +34,10 @@ public class ActivityHandlerService(
 			throw GracefulException.UnprocessableEntity("Instance is blocked");
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Activity object is null");
-		if (activity.Object.IsUnresolved)
-			activity.Object = await resolver.ResolveObject(activity.Object) ??
-			                  throw GracefulException.UnprocessableEntity("Failed to resolve activity object");
+
+		// Resolve object & children
+		activity.Object = await resolver.ResolveObject(activity.Object) ??
+		                  throw GracefulException.UnprocessableEntity("Failed to resolve activity object");
 
 		//TODO: validate inboxUserId
 
@@ -64,34 +68,45 @@ public class ActivityHandlerService(
 				throw GracefulException.UnprocessableEntity("Delete activity object is unknown or invalid");
 			}
 			case ASFollow: {
-				if (activity.Object is not { } obj)
+				if (activity.Object is not ASActor obj)
 					throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
 				await FollowAsync(obj, activity.Actor, activity.Id);
 				return;
 			}
 			case ASUnfollow: {
-				if (activity.Object is not { } obj)
+				if (activity.Object is not ASActor obj)
 					throw GracefulException.UnprocessableEntity("Unfollow activity object is invalid");
 				await UnfollowAsync(obj, activity.Actor);
 				return;
 			}
 			case ASAccept: {
-				if (activity.Object is not { } obj)
+				if (activity.Object is not ASFollow obj)
 					throw GracefulException.UnprocessableEntity("Accept activity object is invalid");
 				await AcceptAsync(obj, activity.Actor);
 				return;
 			}
 			case ASReject: {
-				if (activity.Object is not { } obj)
+				if (activity.Object is not ASFollow obj)
 					throw GracefulException.UnprocessableEntity("Reject activity object is invalid");
 				await RejectAsync(obj, activity.Actor);
 				return;
 			}
 			case ASUndo: {
-				//TODO: what other types of undo objects are there?
-				if (activity.Object is not ASActivity { Type: ASActivity.Types.Follow, Object: not null } undoActivity)
-					throw new NotImplementedException("Undo activity object is invalid");
-				await UnfollowAsync(undoActivity.Object, activity.Actor);
+				switch (activity.Object) {
+					case ASFollow { Object: ASActor followee }:
+						await UnfollowAsync(followee, activity.Actor);
+						return;
+					case ASLike { Object: ASNote likedNote }:
+						await noteSvc.UnlikeNoteAsync(likedNote, activity.Actor);
+						return;
+					default:
+						throw new NotImplementedException("Undo activity object is invalid");
+				}
+			}
+			case ASLike: {
+				if (activity.Object is not ASNote note)
+					throw GracefulException.UnprocessableEntity("Like activity object is invalid");
+				await noteSvc.LikeNoteAsync(note, activity.Actor);
 				return;
 			}
 			default: {
@@ -100,7 +115,7 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task FollowAsync(ASObject followeeActor, ASObject followerActor, string requestId) {
+	private async Task FollowAsync(ASActor followeeActor, ASActor followerActor, string requestId) {
 		var follower = await userResolver.ResolveAsync(followerActor.Id);
 		var followee = await userResolver.ResolveAsync(followeeActor.Id);
 
@@ -163,7 +178,7 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task UnfollowAsync(ASObject followeeActor, ASObject followerActor) {
+	private async Task UnfollowAsync(ASActor followeeActor, ASActor followerActor) {
 		//TODO: send reject? or do we not want to copy that part of the old ap core
 		var follower = await userResolver.ResolveAsync(followerActor.Id);
 		var followee = await userResolver.ResolveAsync(followeeActor.Id);
@@ -180,7 +195,7 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task AcceptAsync(ASObject obj, ASObject actor) {
+	private async Task AcceptAsync(ASFollow obj, ASActor actor) {
 		var prefix = $"https://{config.Value.WebDomain}/follows/";
 		if (!obj.Id.StartsWith(prefix))
 			throw GracefulException.UnprocessableEntity($"Object id '{obj.Id}' not a valid follow request id");
@@ -220,8 +235,8 @@ public class ActivityHandlerService(
 		await db.SaveChangesAsync();
 	}
 
-	private async Task RejectAsync(ASObject obj, ASObject actor) {
-		if (obj is not ASFollow { Actor: not null } follow)
+	private async Task RejectAsync(ASFollow follow, ASActor actor) {
+		if (follow is not { Actor: not null })
 			throw GracefulException.UnprocessableEntity("Refusing to reject object with invalid follow object");
 
 		var resolvedActor    = await userResolver.ResolveAsync(actor.Id);
