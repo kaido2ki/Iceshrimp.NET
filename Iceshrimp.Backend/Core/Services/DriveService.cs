@@ -9,7 +9,9 @@ using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace Iceshrimp.Backend.Core.Services;
 
@@ -101,7 +103,17 @@ public class DriveService(
 
 		buf.Seek(0, SeekOrigin.Begin);
 
-		string? blurhash = null;
+		var shouldStore    = storageConfig.Value.MediaRetention != null || user.Host == null;
+		var storedInternal = storageConfig.Value.Mode == Enums.FileStorage.Local;
+
+		if (request.Uri == null && user.Host != null)
+			throw GracefulException.UnprocessableEntity("Refusing to store file without uri for remote user");
+
+		string? blurhash  = null;
+		Stream? thumbnail = null;
+		Stream? webpublic = null;
+
+		DriveFile.FileProperties? properties = null;
 
 		if (request.MimeType.StartsWith("image/") || request.MimeType == "image") {
 			try {
@@ -111,22 +123,62 @@ public class DriveService(
 				// Correct mime type
 				if (request.MimeType == "image" && image.Metadata.DecodedImageFormat?.DefaultMimeType != null)
 					request.MimeType = image.Metadata.DecodedImageFormat.DefaultMimeType;
+
+				properties = new DriveFile.FileProperties {
+					Width  = image.Size.Width,
+					Height = image.Size.Height
+				};
+
+				if (shouldStore) {
+					// Generate thumbnail
+					var thumbnailImage = image.Clone();
+					if (image.Size.Width > 1000)
+						thumbnailImage.Mutate(p => p.Resize(new Size(1000, 0)));
+
+					thumbnail = new MemoryStream();
+					await thumbnailImage.SaveAsWebpAsync(thumbnail);
+					thumbnail.Seek(0, SeekOrigin.Begin);
+
+					// Generate webpublic for local users
+					if (user.Host == null) {
+						var webpublicImage = image.Clone();
+						webpublicImage.Metadata.ExifProfile = null;
+						webpublicImage.Metadata.XmpProfile  = null;
+						if (image.Size.Width > 2048)
+							webpublicImage.Mutate(p => p.Resize(new Size(2048, 0)));
+
+						var encoder = request.MimeType == "image/png"
+							? new WebpEncoder {
+								Quality             = 100,
+								NearLossless        = true,
+								NearLosslessQuality = 60
+							}
+							: new WebpEncoder { Quality = 75 };
+
+						webpublic = new MemoryStream();
+						await webpublicImage.SaveAsWebpAsync(webpublic, encoder);
+						webpublic.Seek(0, SeekOrigin.Begin);
+					}
+				}
 			}
 			catch {
-				logger.LogError("Failed to generate blurhash for image with mime type {type}", request.MimeType);
+				logger.LogError("Failed to generate blurhash & thumbnail for image with mime type {type}",
+				                request.MimeType);
+
+				// We want to make sure no images are federated out without stripping metadata & converting to webp
+				if (user.Host == null) throw;
 			}
 
 			buf.Seek(0, SeekOrigin.Begin);
 		}
 
-		var (filename, guid) = GenerateFilenameKeepingExtension(request.Filename);
-		var shouldStore    = storageConfig.Value.MediaRetention != null || user.Host == null;
-		var storedInternal = storageConfig.Value.Mode == Enums.FileStorage.Local;
+		string  url;
+		string? thumbnailUrl = null;
+		string? webpublicUrl = null;
 
-		string url;
-
-		if (request.Uri == null && user.Host != null)
-			throw GracefulException.UnprocessableEntity("Refusing to store file without uri for remote user");
+		var filename          = GenerateFilenameKeepingExtension(request.Filename);
+		var thumbnailFilename = thumbnail != null ? GenerateWebpFilename("thumbnail-") : null;
+		var webpublicFilename = webpublic != null ? GenerateWebpFilename("webpublic-") : null;
 
 		if (shouldStore) {
 			if (storedInternal) {
@@ -137,10 +189,32 @@ public class DriveService(
 				await using var writer = File.OpenWrite(path);
 				await buf.CopyToAsync(writer);
 				url = $"https://{instanceConfig.Value.WebDomain}/files/{filename}";
+
+				if (thumbnailFilename != null && thumbnail is { Length: > 0 }) {
+					var             thumbPath   = Path.Combine(pathBase, thumbnailFilename);
+					await using var thumbWriter = File.OpenWrite(thumbPath);
+					await thumbnail.CopyToAsync(thumbWriter);
+				}
+
+				if (webpublicFilename != null && webpublic is { Length: > 0 }) {
+					var             webpPath   = Path.Combine(pathBase, webpublicFilename);
+					await using var webpWriter = File.OpenWrite(webpPath);
+					await webpublic.CopyToAsync(webpWriter);
+				}
 			}
 			else {
 				await storageSvc.UploadFileAsync(filename, data);
 				url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
+
+				if (thumbnailFilename != null && thumbnail is { Length: > 0 }) {
+					await storageSvc.UploadFileAsync(thumbnailFilename, thumbnail);
+					thumbnailUrl = storageSvc.GetFilePublicUrl(thumbnailFilename).AbsoluteUri;
+				}
+
+				if (webpublicFilename != null && webpublic is { Length: > 0 }) {
+					await storageSvc.UploadFileAsync(webpublicFilename, webpublic);
+					webpublicUrl = storageSvc.GetFilePublicUrl(webpublicFilename).AbsoluteUri;
+				}
 			}
 		}
 		else {
@@ -148,29 +222,29 @@ public class DriveService(
 		}
 
 		file = new DriveFile {
-			User           = user,
-			UserHost       = user.Host,
-			Sha256         = digest,
-			Size           = (int)buf.Length,
-			IsLink         = !shouldStore && user.Host != null,
-			AccessKey      = filename,
-			IsSensitive    = request.IsSensitive,
-			StoredInternal = storedInternal,
-			Src            = request.Source,
-			Uri            = request.Uri,
-			Url            = url,
-			Name           = request.Filename,
-			Comment        = request.Comment,
-			Type           = CleanMimeType(request.MimeType),
-			RequestHeaders = request.RequestHeaders,
-			RequestIp      = request.RequestIp,
-			Blurhash       = blurhash,
-			//Properties         = TODO,
-			//ThumbnailUrl       = TODO,
-			//ThumbnailAccessKey = TODO,
-			//WebpublicType      = TODO,
-			//WebpublicUrl       = TODO,
-			//WebpublicAccessKey = TODO,
+			User               = user,
+			UserHost           = user.Host,
+			Sha256             = digest,
+			Size               = (int)buf.Length,
+			IsLink             = !shouldStore && user.Host != null,
+			AccessKey          = filename,
+			IsSensitive        = request.IsSensitive,
+			StoredInternal     = storedInternal,
+			Src                = request.Source,
+			Uri                = request.Uri,
+			Url                = url,
+			Name               = request.Filename,
+			Comment            = request.Comment,
+			Type               = CleanMimeType(request.MimeType),
+			RequestHeaders     = request.RequestHeaders,
+			RequestIp          = request.RequestIp,
+			Blurhash           = blurhash,
+			Properties         = properties,
+			ThumbnailUrl       = thumbnailUrl,
+			ThumbnailAccessKey = thumbnailFilename,
+			WebpublicType      = webpublicUrl != null ? "image/webp" : null,
+			WebpublicUrl       = webpublicUrl,
+			WebpublicAccessKey = webpublicFilename,
 		};
 
 		await db.AddAsync(file);
@@ -194,10 +268,15 @@ public class DriveService(
 			: file.WebpublicUrl ?? file.Url;
 	}
 
-	private static (string filename, string guid) GenerateFilenameKeepingExtension(string filename) {
+	private static string GenerateFilenameKeepingExtension(string filename) {
 		var guid = Guid.NewGuid().ToString().ToLowerInvariant();
 		var ext  = Path.GetExtension(filename);
-		return (guid + ext, guid);
+		return guid + ext;
+	}
+
+	private static string GenerateWebpFilename(string prefix = "") {
+		var guid = Guid.NewGuid().ToString().ToLowerInvariant();
+		return $"{prefix}{guid}.webp";
 	}
 
 	private static string CleanMimeType(string? mimeType) {

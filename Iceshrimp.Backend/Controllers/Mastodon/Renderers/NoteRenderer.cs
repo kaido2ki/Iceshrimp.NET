@@ -37,7 +37,7 @@ public class NoteRenderer(
 			attachments = await db.DriveFiles.Where(p => note.FileIds.Contains(p.Id))
 			                      .Select(f => new Attachment {
 				                      Id          = f.Id,
-				                      Url         = f.Url,
+				                      Url         = f.WebpublicUrl ?? f.Url,
 				                      Blurhash    = f.Blurhash,
 				                      PreviewUrl  = f.ThumbnailUrl,
 				                      Description = f.Comment,

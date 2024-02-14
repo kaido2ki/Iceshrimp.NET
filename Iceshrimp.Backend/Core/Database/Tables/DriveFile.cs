@@ -190,9 +190,15 @@ public class DriveFile : IEntity {
 	public string Id { get; set; } = IdHelpers.GenerateSlowflakeId();
 
 	public class FileProperties {
-		[J("width")]       public int?    Width        { get; set; }
-		[J("height")]      public int?    Height       { get; set; }
-		[J("orientation")] public int?    Orientation  { get; set; }
-		[J("avgColor")]    public string? AverageColor { get; set; }
+		[J("width")]  public int? Width  { get; set; }
+		[J("height")] public int? Height { get; set; }
+
+		[Obsolete("Deprecated property")]
+		[J("orientation")]
+		public int? Orientation { get; set; }
+
+		[Obsolete("Deprecated property")]
+		[J("avgColor")]
+		public string? AverageColor { get; set; }
 	}
 }

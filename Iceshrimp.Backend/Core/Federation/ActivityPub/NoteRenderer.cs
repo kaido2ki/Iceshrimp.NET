@@ -53,10 +53,10 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			? await db.DriveFiles
 			          .Where(p => note.FileIds.Contains(p.Id) && p.UserHost == null)
 			          .Select(p => new ASDocument {
-				          Type      = $"{Constants.ActivityStreamsNs}#Document",
-				          Sensitive = p.IsSensitive,
-				          Url       = new ASObjectBase(p.Url),
-				          MediaType = p.Type,
+				          Type        = $"{Constants.ActivityStreamsNs}#Document",
+				          Sensitive   = p.IsSensitive,
+				          Url         = new ASObjectBase(p.WebpublicUrl ?? p.Url),
+				          MediaType   = p.Type,
 				          Description = p.Comment
 			          })
 			          .Cast<ASAttachment>()
