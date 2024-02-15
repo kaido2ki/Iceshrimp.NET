@@ -101,7 +101,7 @@ public class NoteService(
 		                         .ToListAsync();
 
 		if (note.Visibility == Note.NoteVisibility.Specified) {
-			await deliverSvc.DeliverToAsync(activity, user, recipients);
+			await deliverSvc.DeliverToAsync(activity, user, recipients.ToArray());
 		}
 		else {
 			await deliverSvc.DeliverToFollowersAsync(activity, user, recipients);

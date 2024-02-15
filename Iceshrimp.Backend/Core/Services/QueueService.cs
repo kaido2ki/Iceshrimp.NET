@@ -12,6 +12,7 @@ namespace Iceshrimp.Backend.Core.Services;
 public class QueueService : BackgroundService {
 	private readonly List<IJobQueue>             _queues = [];
 	private readonly IServiceScopeFactory        _serviceScopeFactory;
+	public readonly  JobQueue<PreDeliverJob>     PreDeliverQueue;
 	public readonly  JobQueue<DeliverJob>        DeliverQueue;
 	public readonly  JobQueue<InboxJob>          InboxQueue;
 	public readonly  JobQueue<BackgroundTaskJob> BackgroundTaskQueue;
@@ -27,10 +28,11 @@ public class QueueService : BackgroundService {
 		DeliverQueue        = Queues.DeliverQueue.Create(redis, prefix);
 		InboxQueue          = Queues.InboxQueue.Create(redis, prefix);
 		BackgroundTaskQueue = Queues.BackgroundTaskQueue.Create(redis, prefix);
+		PreDeliverQueue     = Queues.PreDeliverQueue.Create(redis, prefix);
 	}
 
 	protected override async Task ExecuteAsync(CancellationToken token) {
-		_queues.AddRange([InboxQueue, DeliverQueue, BackgroundTaskQueue]);
+		_queues.AddRange([InboxQueue, PreDeliverQueue, DeliverQueue, BackgroundTaskQueue]);
 
 		await RecoverOrPrepareForExitAsync();
 		token.Register(RecoverOrPrepareForExit);
@@ -158,6 +160,7 @@ public class JobQueue<T>(
 [ProtoContract]
 [ProtoInclude(100, typeof(InboxJob))]
 [ProtoInclude(101, typeof(DeliverJob))]
+[ProtoInclude(102, typeof(PreDeliverJob))]
 public abstract class Job {
 	public enum JobStatus {
 		Queued,

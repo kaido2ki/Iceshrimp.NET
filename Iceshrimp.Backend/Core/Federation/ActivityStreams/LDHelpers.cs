@@ -47,7 +47,7 @@ public static class LdHelpers {
 		DocumentLoader = CustomLoader, ExpandContext = ASExtensions
 	};
 
-	private static readonly JsonSerializerSettings JsonSerializerSettings = new() {
+	public static readonly JsonSerializerSettings JsonSerializerSettings = new() {
 		NullValueHandling    = NullValueHandling.Ignore,
 		DateTimeZoneHandling = DateTimeZoneHandling.Local
 	};

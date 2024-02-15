@@ -7,6 +7,8 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASNote : ASObject {
+	public ASNote() => Type = Types.Note;
+	
 	[J("https://misskey-hub.net/ns#_misskey_content")]
 	[JC(typeof(VC))]
 	public string? MkContent { get; set; }

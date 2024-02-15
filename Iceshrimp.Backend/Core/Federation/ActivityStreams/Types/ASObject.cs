@@ -19,36 +19,45 @@ public class ASObject : ASObjectBase {
 	[JC(typeof(StringListSingleConverter))]
 	public string? Type { get; set; }
 
-	public bool IsUnresolved => GetType() == typeof(ASObject) && Type == null;
+	[JsonIgnore] public bool IsUnresolved => GetType() == typeof(ASObject) && Type == null;
 
 	//FIXME: don't recurse creates and co
 	public static ASObject? Deserialize(JToken token) {
-		return token.Type switch {
-			JTokenType.Object => token["@type"]?[0]?.Value<string>() switch {
-				ASActor.Types.Person       => token.ToObject<ASActor>(),
-				ASActor.Types.Service      => token.ToObject<ASActor>(),
-				ASActor.Types.Group        => token.ToObject<ASActor>(),
-				ASActor.Types.Organization => token.ToObject<ASActor>(),
-				ASActor.Types.Application  => token.ToObject<ASActor>(),
-				ASNote.Types.Note          => token.ToObject<ASNote>(),
-				Types.Tombstone            => token.ToObject<ASTombstone>(),
-				ASActivity.Types.Create    => token.ToObject<ASCreate>(),
-				ASActivity.Types.Delete    => token.ToObject<ASDelete>(),
-				ASActivity.Types.Follow    => token.ToObject<ASFollow>(),
-				ASActivity.Types.Unfollow  => token.ToObject<ASUnfollow>(),
-				ASActivity.Types.Accept    => token.ToObject<ASAccept>(),
-				ASActivity.Types.Reject    => token.ToObject<ASReject>(),
-				ASActivity.Types.Undo      => token.ToObject<ASUndo>(),
-				ASActivity.Types.Like      => token.ToObject<ASLike>(),
-				_                          => token.ToObject<ASObject>()
-			},
-			JTokenType.Array => Deserialize(token.First()),
-			JTokenType.String => new ASObject {
-				Id = token.Value<string>() ??
-				     throw new Exception("Encountered JTokenType.String with Value<string> null")
-			},
-			_ => throw new Exception($"Encountered JTokenType {token.Type}, which is not valid at this point")
-		};
+		while (true) {
+			switch (token.Type) {
+				case JTokenType.Object:
+					var typeToken = token["@type"];
+					var type      = typeToken is JValue ? typeToken.Value<string>() : typeToken?[0]?.Value<string>();
+					return type switch {
+						ASActor.Types.Person       => token.ToObject<ASActor>(),
+						ASActor.Types.Service      => token.ToObject<ASActor>(),
+						ASActor.Types.Group        => token.ToObject<ASActor>(),
+						ASActor.Types.Organization => token.ToObject<ASActor>(),
+						ASActor.Types.Application  => token.ToObject<ASActor>(),
+						ASNote.Types.Note          => token.ToObject<ASNote>(),
+						Types.Tombstone            => token.ToObject<ASTombstone>(),
+						ASActivity.Types.Create    => token.ToObject<ASCreate>(),
+						ASActivity.Types.Delete    => token.ToObject<ASDelete>(),
+						ASActivity.Types.Follow    => token.ToObject<ASFollow>(),
+						ASActivity.Types.Unfollow  => token.ToObject<ASUnfollow>(),
+						ASActivity.Types.Accept    => token.ToObject<ASAccept>(),
+						ASActivity.Types.Reject    => token.ToObject<ASReject>(),
+						ASActivity.Types.Undo      => token.ToObject<ASUndo>(),
+						ASActivity.Types.Like      => token.ToObject<ASLike>(),
+						_                          => token.ToObject<ASObject>()
+					};
+				case JTokenType.Array:
+					token = token.First();
+					continue;
+				case JTokenType.String:
+					return new ASObject {
+						Id = token.Value<string>() ??
+						     throw new Exception("Encountered JTokenType.String with Value<string> null")
+					};
+				default:
+					throw new Exception($"Encountered JTokenType {token.Type}, which is not valid at this point");
+			}
+		}
 	}
 
 	public static class Types {
