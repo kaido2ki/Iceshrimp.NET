@@ -29,12 +29,22 @@ public class ActivityFetcherService(HttpClient client, HttpRequestService httpRq
 		    and not "application/json")
 			return [];
 
+		var finalUri = response.RequestMessage?.RequestUri ??
+		               throw new Exception("RequestMessage must not be null at this stage");
+
 		var input = await response.Content.ReadAsStringAsync();
 		var json  = JsonConvert.DeserializeObject<JObject?>(input, JsonSerializerSettings);
 
 		var res = LdHelpers.Expand(json) ?? throw new GracefulException("Failed to expand JSON-LD object");
-		return res.Select(p => p.ToObject<ASObject>(new JsonSerializer { Converters = { new ASObjectConverter() } }) ??
-		                       throw new GracefulException("Failed to deserialize activity"));
+		var activities =
+			res.Select(p => p.ToObject<ASObject>(new JsonSerializer { Converters = { new ASObjectConverter() } }) ??
+			                throw new GracefulException("Failed to deserialize activity"))
+			   .ToList();
+
+		if (activities.Any(p => new Uri(p.Id).Host != finalUri.Host))
+			throw new GracefulException("Activity identifier doesn't match final host");
+
+		return activities;
 	}
 
 	public async Task<ASActor> FetchActorAsync(string uri, User actor, UserKeypair keypair) {
