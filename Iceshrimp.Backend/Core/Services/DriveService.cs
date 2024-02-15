@@ -258,7 +258,7 @@ public class DriveService(
 	}
 
 	public async Task RemoveFile(string fileId) {
-		var job = new DriveFileDeleteJob { DriveFileId = fileId };
+		var job = new DriveFileDeleteJob { DriveFileId = fileId, Expire = false };
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(job);
 	}
 

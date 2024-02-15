@@ -20,7 +20,10 @@ public abstract class BackgroundTaskQueue {
 		CancellationToken token
 	) {
 		if (job is DriveFileDeleteJob driveFileDeleteJob) {
-			await ProcessDriveFileDelete(driveFileDeleteJob, scope, token);
+			if (driveFileDeleteJob.Expire)
+				await ProcessDriveFileExpire(driveFileDeleteJob, scope, token);
+			else
+				await ProcessDriveFileDelete(driveFileDeleteJob, scope, token);
 		}
 	}
 
@@ -60,6 +63,53 @@ public abstract class BackgroundTaskQueue {
 			}
 		}
 	}
+
+	private static async Task ProcessDriveFileExpire(
+		DriveFileDeleteJob job,
+		IServiceProvider scope,
+		CancellationToken token
+	) {
+		var db     = scope.GetRequiredService<DatabaseContext>();
+		var logger = scope.GetRequiredService<ILogger<BackgroundTaskQueue>>();
+		logger.LogDebug("Expiring file {id}...", job.DriveFileId);
+
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == job.DriveFileId, cancellationToken: token);
+		if (file is not { UserHost: not null, Uri: not null }) return;
+
+		file.IsLink             = true;
+		file.Url                = file.Uri;
+		file.ThumbnailUrl       = null;
+		file.WebpublicUrl       = null;
+		file.ThumbnailAccessKey = null;
+		file.WebpublicAccessKey = null;
+		file.StoredInternal     = false;
+
+		await db.Users.Where(p => p.AvatarId == file.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.AvatarUrl, file.Uri), cancellationToken: token);
+		await db.Users.Where(p => p.BannerId == file.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.BannerUrl, file.Uri), cancellationToken: token);
+		await db.SaveChangesAsync(token);
+
+		if (file.AccessKey == null) return;
+
+		string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.WebpublicAccessKey];
+		if (!await db.DriveFiles.AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey,
+		                                  cancellationToken: token)) {
+			if (file.StoredInternal) {
+				var pathBase = scope.GetRequiredService<IOptions<Config.StorageSection>>().Value.Local?.Path
+				               ?? throw new Exception("Cannot delete locally stored file: pathBase is null");
+
+				paths.Where(p => p != null)
+				     .Select(p => Path.Combine(pathBase, p!))
+				     .Where(File.Exists).ToList()
+				     .ForEach(File.Delete);
+			}
+			else {
+				var storageSvc = scope.GetRequiredService<ObjectStorageService>();
+				await storageSvc.RemoveFilesAsync(paths.Where(p => p != null).Select(p => p!).ToArray());
+			}
+		}
+	}
 }
 
 [ProtoContract]
@@ -69,4 +119,5 @@ public class BackgroundTaskJob : Job;
 [ProtoContract]
 public class DriveFileDeleteJob : BackgroundTaskJob {
 	[ProtoMember(1)] public required string DriveFileId;
+	[ProtoMember(2)] public required bool   Expire;
 }

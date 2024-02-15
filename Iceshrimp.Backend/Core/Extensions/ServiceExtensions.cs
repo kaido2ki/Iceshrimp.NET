@@ -52,6 +52,7 @@ public static class ServiceExtensions {
 			.AddSingleton<HttpClient>()
 			.AddSingleton<MfmConverter>()
 			.AddSingleton<HttpRequestService>()
+			.AddSingleton<CronService>()
 			.AddSingleton<QueueService>()
 			.AddSingleton<ObjectStorageService>()
 			.AddSingleton<EventService>()
@@ -62,6 +63,7 @@ public static class ServiceExtensions {
 
 		// Hosted services = long running background tasks
 		// Note: These need to be added as a singleton as well to ensure data consistency
+		services.AddHostedService<CronService>(provider => provider.GetRequiredService<CronService>());
 		services.AddHostedService<QueueService>(provider => provider.GetRequiredService<QueueService>());
 	}
 

@@ -68,14 +68,19 @@ public sealed class Config {
 	}
 
 	public sealed class StorageSection {
-		private readonly TimeSpan?         _mediaRetention;
+		public readonly TimeSpan?         MediaRetentionTimeSpan;
 		public           Enums.FileStorage Mode { get; init; } = Enums.FileStorage.Local;
 
 		public string? MediaRetention {
-			get => _mediaRetention?.ToString();
+			get => MediaRetentionTimeSpan?.ToString();
 			init {
 				if (value == null || string.IsNullOrWhiteSpace(value) || value.Trim() == "0") {
-					_mediaRetention = null;
+					MediaRetentionTimeSpan = null;
+					return;
+				}
+
+				if (value.Trim() == "-1") {
+					MediaRetentionTimeSpan = TimeSpan.MaxValue;
 					return;
 				}
 
@@ -84,7 +89,7 @@ public sealed class Config {
 
 				var suffix = value[^1];
 
-				_mediaRetention = suffix switch {
+				MediaRetentionTimeSpan = suffix switch {
 					'd' => TimeSpan.FromDays(num),
 					'w' => TimeSpan.FromDays(num * 7),
 					'm' => TimeSpan.FromDays(num * 30),
@@ -93,6 +98,9 @@ public sealed class Config {
 				};
 			}
 		}
+
+		public bool CleanAvatars = false;
+		public bool CleanBanners = false;
 
 		public LocalStorageSection?  Local         { get; init; }
 		public ObjectStorageSection? ObjectStorage { get; init; }

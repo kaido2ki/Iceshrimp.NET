@@ -1,0 +1,44 @@
+using System.Diagnostics.CodeAnalysis;
+using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Queues;
+using Iceshrimp.Backend.Core.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+
+namespace Iceshrimp.Backend.Core.CronTasks;
+
+[SuppressMessage("ReSharper", "UnusedType.Global", Justification = "Instantiated at runtime by CronService")]
+public class MediaCleanupTask : ICronTask {
+	public async Task Invoke(IServiceProvider provider) {
+		var config = provider.GetRequiredService<IOptionsSnapshot<Config.StorageSection>>().Value;
+		if (config.MediaRetentionTimeSpan == TimeSpan.MaxValue) return;
+
+		var logger = provider.GetRequiredService<ILogger<MediaCleanupTask>>();
+		logger.LogInformation("Starting media cleanup task...");
+
+		var db           = provider.GetRequiredService<DatabaseContext>();
+		var queueService = provider.GetRequiredService<QueueService>();
+
+		var cutoff = DateTime.UtcNow - (config.MediaRetentionTimeSpan ?? TimeSpan.Zero);
+
+		var query = db.DriveFiles.Where(p => !p.IsLink && p.UserHost != null && p.CreatedAt < cutoff);
+
+		if (!config.CleanAvatars) query = query.Where(p => !db.Users.Any(u => u.AvatarId == p.Id));
+		if (!config.CleanBanners) query = query.Where(p => !db.Users.Any(u => u.BannerId == p.Id));
+
+		var fileIds = query.Select(p => p.Id);
+
+		logger.LogInformation("Expiring {count} files...", await fileIds.CountAsync());
+		foreach (var fileId in fileIds) {
+			await queueService.BackgroundTaskQueue.EnqueueAsync(new DriveFileDeleteJob {
+				DriveFileId = fileId,
+				Expire      = true
+			});
+		}
+	}
+
+	// Midnight
+	public TimeSpan     Trigger => TimeSpan.Zero;
+	public CronTaskType Type    => CronTaskType.Daily;
+}

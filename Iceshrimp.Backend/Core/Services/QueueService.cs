@@ -161,6 +161,7 @@ public class JobQueue<T>(
 [ProtoInclude(100, typeof(InboxJob))]
 [ProtoInclude(101, typeof(DeliverJob))]
 [ProtoInclude(102, typeof(PreDeliverJob))]
+[ProtoInclude(103, typeof(BackgroundTaskJob))]
 public abstract class Job {
 	public enum JobStatus {
 		Queued,
