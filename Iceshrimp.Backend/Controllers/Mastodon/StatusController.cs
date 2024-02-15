@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -19,7 +20,12 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
-public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, NoteService noteSvc) : Controller {
+public class StatusController(
+	DatabaseContext db,
+	NoteRenderer noteRenderer,
+	NoteService noteSvc,
+	IDistributedCache cache
+) : Controller {
 	[HttpGet("{id}")]
 	[Authenticate("read:statuses")]
 	[Produces("application/json")]
@@ -119,7 +125,25 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 		var user = HttpContext.GetUserOrFail();
 
 		//TODO: handle scheduled statuses
-		//TODO: handle Idempotency-Key
+		Request.Headers.TryGetValue("Idempotency-Key", out var idempotencyKeyHeader);
+		var idempotencyKey = idempotencyKeyHeader.FirstOrDefault();
+		if (idempotencyKey != null) {
+			var hit = await cache.FetchAsync($"idempotency:{idempotencyKey}", TimeSpan.FromHours(24),
+			                                 () => $"_:{HttpContext.TraceIdentifier}");
+			
+			if (hit != $"_:{HttpContext.TraceIdentifier}") {
+				for (var i = 0; i <= 10; i++) {
+					if (!hit.StartsWith('_')) break;
+					await Task.Delay(100);
+					hit = await cache.GetAsync<string>($"idempotency:{idempotencyKey}")
+					      ?? throw new Exception("Idempotency key status disappeared in for loop");
+					if (i >= 10)
+						throw GracefulException.RequestTimeout("Failed to resolve idempotency key note within 1000 ms");
+				}
+
+				return await GetNote(hit);
+			}
+		}
 
 		if (request.Text == null && request.MediaIds is not { Count: > 0 } && request.Poll == null)
 			throw GracefulException.BadRequest("Posts must have text, media or poll");
@@ -139,6 +163,10 @@ public class StatusController(DatabaseContext db, NoteRenderer noteRenderer, Not
 
 		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply,
 		                                         attachments: attachments);
+		
+		if (idempotencyKey != null)
+			await cache.SetAsync($"idempotency:{idempotencyKey}", note.Id, TimeSpan.FromHours(24));
+
 		var res = await noteRenderer.RenderAsync(note, user);
 
 		return Ok(res);

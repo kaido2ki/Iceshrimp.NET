@@ -48,7 +48,13 @@ public static class DistributedCacheExtensions {
 		await cache.SetAsync(key, fetched, ttl);
 		return fetched;
 	}
-	
+
+	public static async Task<T> FetchAsync<T>(
+		this IDistributedCache cache, string key, TimeSpan ttl, Func<T> fetcher
+	) where T : class {
+		return await FetchAsync(cache, key, ttl, () => Task.FromResult(fetcher()));
+	}
+
 	public static async Task<T> FetchAsyncValue<T>(
 		this IDistributedCache cache, string key, TimeSpan ttl, Func<Task<T>> fetcher
 	) where T : struct {
@@ -58,6 +64,12 @@ public static class DistributedCacheExtensions {
 		var fetched = await fetcher();
 		await cache.SetAsync(key, fetched, ttl);
 		return fetched;
+	}
+	
+	public static async Task<T> FetchAsyncValue<T>(
+		this IDistributedCache cache, string key, TimeSpan ttl, Func<T> fetcher
+	) where T : struct {
+		return await FetchAsyncValue(cache, key, ttl, () => Task.FromResult(fetcher()));
 	}
 
 	public static async Task SetAsync<T>(this IDistributedCache cache, string key, T data, TimeSpan ttl) {

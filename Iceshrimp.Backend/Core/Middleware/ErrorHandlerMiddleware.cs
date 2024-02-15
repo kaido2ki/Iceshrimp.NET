@@ -125,6 +125,10 @@ public class GracefulException(
 	public static GracefulException BadRequest(string message, string? details = null) {
 		return new GracefulException(HttpStatusCode.BadRequest, message, details);
 	}
+	
+	public static GracefulException RequestTimeout(string message, string? details = null) {
+		return new GracefulException(HttpStatusCode.RequestTimeout, message, details);
+	}
 
 	public static GracefulException RecordNotFound() {
 		return new GracefulException(HttpStatusCode.NotFound, "Record not found");
