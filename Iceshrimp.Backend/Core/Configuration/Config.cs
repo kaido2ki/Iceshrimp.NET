@@ -31,11 +31,12 @@ public sealed class Config {
 
 		public string UserAgent => $"Iceshrimp.NET/{Version} (https://{WebDomain})";
 
-		public int    ListenPort     { get; init; } = 3000;
-		public string ListenHost     { get; init; } = "localhost";
-		public string WebDomain      { get; init; } = null!;
-		public string AccountDomain  { get; init; } = null!;
-		public int    CharacterLimit { get; init; } = 8192;
+		public int     ListenPort     { get; init; } = 3000;
+		public string  ListenHost     { get; init; } = "localhost";
+		public string? ListenSocket   { get; init; } = null;
+		public string  WebDomain      { get; init; } = null!;
+		public string  AccountDomain  { get; init; } = null!;
+		public int     CharacterLimit { get; init; } = 8192;
 	}
 
 	public sealed class SecuritySection {

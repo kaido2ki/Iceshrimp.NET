@@ -31,6 +31,7 @@ builder.Services.AddCorsPolicies();
 
 builder.Services.AddServices();
 builder.Services.ConfigureServices(builder.Configuration);
+builder.WebHost.ConfigureKestrel(builder.Configuration);
 
 var app    = builder.Build();
 var config = await app.Initialize(args);
@@ -52,6 +53,7 @@ app.MapFallbackToPage("/Shared/FrontendSPA");
 if (app.Environment.IsDevelopment()) app.UseViteDevMiddleware();
 
 app.Urls.Clear();
-app.Urls.Add($"http://{config.ListenHost}:{config.ListenPort}");
+if (config.ListenSocket == null) 
+	app.Urls.Add($"http://{config.ListenHost}:{config.ListenPort}");
 
 app.Run();
