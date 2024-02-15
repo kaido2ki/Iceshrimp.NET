@@ -170,14 +170,16 @@ public class NoteService(
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			await ResolveNoteMentionsAsync(note);
 
+		var createdAt = note.PublishedAt?.ToUniversalTime() ??
+		                throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field");
+
 		var dbNote = new Note {
-			Id     = IdHelpers.GenerateSlowflakeId(),
-			Uri    = note.Id,
-			Url    = note.Url?.Id, //FIXME: this doesn't seem to work yet
-			Text   = note.MkContent ?? await mfmConverter.FromHtmlAsync(note.Content, mentions),
-			UserId = user.Id,
-			CreatedAt = note.PublishedAt?.ToUniversalTime() ??
-			            throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field"),
+			Id         = IdHelpers.GenerateSlowflakeId(createdAt),
+			Uri        = note.Id,
+			Url        = note.Url?.Id, //FIXME: this doesn't seem to work yet
+			Text       = note.MkContent ?? await mfmConverter.FromHtmlAsync(note.Content, mentions),
+			UserId     = user.Id,
+			CreatedAt  = createdAt,
 			UserHost   = user.Host,
 			Visibility = note.GetVisibility(actor),
 			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null
