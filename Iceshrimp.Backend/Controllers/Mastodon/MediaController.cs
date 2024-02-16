@@ -15,7 +15,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
-[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Attachment))]
+[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AttachmentEntity))]
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 public class MediaController(DriveService driveSvc) : Controller {
@@ -31,9 +31,9 @@ public class MediaController(DriveService driveSvc) : Controller {
 			MimeType    = request.File.ContentType,
 		};
 		var file = await driveSvc.StoreFile(request.File.OpenReadStream(), user, rq);
-		var res = new Attachment {
+		var res = new AttachmentEntity {
 			Id          = file.Id,
-			Type        = Attachment.GetType(file.Type),
+			Type        = AttachmentEntity.GetType(file.Type),
 			Url         = file.Url,
 			Blurhash    = file.Blurhash,
 			Description = file.Comment,

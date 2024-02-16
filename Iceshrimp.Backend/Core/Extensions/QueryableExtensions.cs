@@ -10,8 +10,6 @@ using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using MastoNotification = Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities.Notification;
-using Notification = Iceshrimp.Backend.Core.Database.Tables.Notification;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -218,7 +216,7 @@ public static class QueryableExtensions {
 		return list.Select(EnforceRenoteReplyVisibility);
 	}
 
-	public static async Task<List<Status>> RenderAllForMastodonAsync(
+	public static async Task<List<StatusEntity>> RenderAllForMastodonAsync(
 		this IQueryable<Note> notes, NoteRenderer renderer, User? user
 	) {
 		var list = (await notes.ToListAsync())
@@ -226,13 +224,13 @@ public static class QueryableExtensions {
 		return (await renderer.RenderManyAsync(list, user)).ToList();
 	}
 
-	public static async Task<List<Account>> RenderAllForMastodonAsync(
+	public static async Task<List<AccountEntity>> RenderAllForMastodonAsync(
 		this IQueryable<User> users, UserRenderer renderer) {
 		var list = await users.ToListAsync();
 		return (await renderer.RenderManyAsync(list)).ToList();
 	}
 
-	public static async Task<List<MastoNotification>> RenderAllForMastodonAsync(
+	public static async Task<List<NotificationEntity>> RenderAllForMastodonAsync(
 		this IQueryable<Notification> notifications, NotificationRenderer renderer, User? user) {
 		var list = await notifications.ToListAsync();
 		return (await renderer.RenderManyAsync(list, user)).ToList();

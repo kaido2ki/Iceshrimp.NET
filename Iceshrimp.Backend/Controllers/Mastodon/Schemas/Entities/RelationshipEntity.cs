@@ -5,7 +5,7 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class Relationship : IEntity {
+public class RelationshipEntity : IEntity {
 	[J("following")]            public required bool   Following           { get; set; }
 	[J("followed_by")]          public required bool   FollowedBy          { get; set; }
 	[J("blocking")]             public required bool   Blocking            { get; set; }

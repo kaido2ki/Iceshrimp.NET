@@ -5,12 +5,12 @@ using static Iceshrimp.Backend.Core.Database.Tables.Notification;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class Notification : IEntity {
+public class NotificationEntity : IEntity {
 	[J("id")]         public required string  Id        { get; set; }
 	[J("created_at")] public required string  CreatedAt { get; set; }
 	[J("type")]       public required string  Type      { get; set; }
-	[J("account")]    public required Account Notifier  { get; set; }
-	[J("status")]     public required Status? Note      { get; set; }
+	[J("account")]    public required AccountEntity Notifier  { get; set; }
+	[J("status")]     public required StatusEntity? Note      { get; set; }
 
 	//TODO: [J("reaction")]     public required Reaction? Reaction      { get; set; }
 

@@ -29,7 +29,7 @@ public class StatusController(
 	[HttpGet("{id}")]
 	[Authenticate("read:statuses")]
 	[Produces("application/json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Status))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetNote(string id) {
 		var user = HttpContext.GetUser();
@@ -47,7 +47,7 @@ public class StatusController(
 	[HttpGet("{id}/context")]
 	[Authenticate("read:statuses")]
 	[Produces("application/json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Status))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetStatusContext(string id) {
 		var user           = HttpContext.GetUser();
@@ -81,7 +81,7 @@ public class StatusController(
 	[HttpPost("{id}/favourite")]
 	[Authorize("write:favourites")]
 	[Produces("application/json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Status))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
@@ -100,7 +100,7 @@ public class StatusController(
 	[HttpPost("{id}/unfavourite")]
 	[Authorize("write:favourites")]
 	[Produces("application/json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Status))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
@@ -119,7 +119,7 @@ public class StatusController(
 	[HttpPost]
 	[Authorize("write:statuses")]
 	[Produces("application/json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Status))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> PostNote([FromHybrid] StatusSchemas.PostStatusRequest request) {
 		var user = HttpContext.GetUserOrFail();
@@ -151,7 +151,7 @@ public class StatusController(
 		if (request.Poll != null)
 			throw GracefulException.BadRequest("Polls haven't been implemented yet");
 
-		var visibility = Status.DecodeVisibility(request.Visibility);
+		var visibility = StatusEntity.DecodeVisibility(request.Visibility);
 		var reply = request.ReplyId != null
 			? await db.Notes.Where(p => p.Id == request.ReplyId).EnsureVisibleFor(user).FirstOrDefaultAsync() ??
 			  throw GracefulException.BadRequest("Reply target is nonexistent or inaccessible")

@@ -5,7 +5,7 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class Mention() {
+public class MentionEntity() {
 	[J("id")]       public required string Id       { get; set; }
 	[J("username")] public required string Username { get; set; }
 	[J("acct")]     public required string Acct     { get; set; }
@@ -16,7 +16,7 @@ public class Mention() {
 	[JI] public required string? Host;
 
 	[SetsRequiredMembers]
-	public Mention(User u, string webDomain) : this() {
+	public MentionEntity(User u, string webDomain) : this() {
 		Id       = u.Id;
 		Username = u.Username;
 		Host     = u.Host;

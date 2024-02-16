@@ -10,12 +10,12 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter mfmConverter) {
 	private readonly string _transparent = $"https://{config.Value.WebDomain}/assets/transparent.png";
 
-	public async Task<Account> RenderAsync(User user, UserProfile? profile) {
+	public async Task<AccountEntity> RenderAsync(User user, UserProfile? profile) {
 		var acct = user.Username;
 		if (user.Host != null)
 			acct += $"@{user.Host}";
 
-		var res = new Account {
+		var res = new AccountEntity {
 			Id = user.Id,
 			DisplayName = user.DisplayName ?? user.Username,
 			AvatarUrl = user.AvatarUrl ?? user.GetIdenticonUrl(config.Value),
@@ -41,11 +41,11 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		return res;
 	}
 
-	public async Task<Account> RenderAsync(User user) {
+	public async Task<AccountEntity> RenderAsync(User user) {
 		return await RenderAsync(user, user.UserProfile);
 	}
 
-	public async Task<IEnumerable<Account>> RenderManyAsync(IEnumerable<User> users) {
+	public async Task<IEnumerable<AccountEntity>> RenderManyAsync(IEnumerable<User> users) {
 		return await users.Select(RenderAsync).AwaitAllAsync();
 	}
 }

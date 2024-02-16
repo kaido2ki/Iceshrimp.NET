@@ -17,8 +17,8 @@ public abstract class SearchSchemas {
 	}
 
 	public class SearchResponse {
-		[J("accounts")] public required List<Account> Accounts { get; set; }
-		[J("statuses")] public required List<Status>  Statuses { get; set; }
+		[J("accounts")] public required List<AccountEntity> Accounts { get; set; }
+		[J("statuses")] public required List<StatusEntity>  Statuses { get; set; }
 		[J("hashtags")] public          List<object>  Hashtags => []; //TODO: implement this
 	}
 }

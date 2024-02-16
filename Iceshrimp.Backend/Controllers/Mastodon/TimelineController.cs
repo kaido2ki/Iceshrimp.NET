@@ -27,7 +27,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, I
 	[Authorize("read:statuses")]
 	[HttpGet("home")]
 	[Produces("application/json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
 	public async Task<IActionResult> GetHomeTimeline(PaginationQuery query) {
 		var user      = HttpContext.GetUserOrFail();
 		var heuristic = await QueryableExtensions.GetHeuristic(user, db, cache);
@@ -49,7 +49,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, I
 	[Authorize("read:statuses")]
 	[HttpGet("public")]
 	[Produces("application/json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
 	public async Task<IActionResult> GetPublicTimeline(PaginationQuery query) {
 		var user = HttpContext.GetUserOrFail();
 

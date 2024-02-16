@@ -49,7 +49,7 @@ public class SearchController(
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
 	                 Justification = "Inspection doesn't know about the Projectable attribute")]
-	private async Task<List<Account>> SearchUsersAsync(SearchSchemas.SearchRequest search, PaginationQuery pagination) {
+	private async Task<List<AccountEntity>> SearchUsersAsync(SearchSchemas.SearchRequest search, PaginationQuery pagination) {
 		var user = HttpContext.GetUserOrFail();
 
 		if (search.Resolve) {
@@ -105,7 +105,7 @@ public class SearchController(
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
 	                 Justification = "Inspection doesn't know about the Projectable attribute")]
-	private async Task<List<Status>> SearchNotesAsync(SearchSchemas.SearchRequest search, PaginationQuery pagination) {
+	private async Task<List<StatusEntity>> SearchNotesAsync(SearchSchemas.SearchRequest search, PaginationQuery pagination) {
 		var user = HttpContext.GetUserOrFail();
 
 		if (search.Resolve && (search.Query!.StartsWith("https://") || search.Query.StartsWith("http://"))) {

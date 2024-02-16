@@ -13,7 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
-using Notification = Iceshrimp.Backend.Core.Database.Tables.Notification;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -33,7 +32,7 @@ public class AccountController(
 ) : Controller {
 	[HttpGet("verify_credentials")]
 	[Authorize("read:accounts")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Account))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> VerifyUserCredentials() {
@@ -43,7 +42,7 @@ public class AccountController(
 	}
 
 	[HttpGet("{id}")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Account))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetUser(string id) {
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id)
@@ -54,7 +53,7 @@ public class AccountController(
 
 	[HttpPost("{id}/follow")]
 	[Authorize("write:follows")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Relationship))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	//TODO: [FromHybrid] request (bool reblogs, bool notify, bool languages)
@@ -129,7 +128,7 @@ public class AccountController(
 				followee.PrecomputedIsFollowedBy = true;
 		}
 
-		var res = new Relationship {
+		var res = new RelationshipEntity {
 			Id                  = followee.Id,
 			Following           = followee.PrecomputedIsFollowedBy ?? false,
 			FollowedBy          = followee.PrecomputedIsFollowing ?? false,
@@ -151,7 +150,7 @@ public class AccountController(
 
 	[HttpPost("{id}/unfollow")]
 	[Authorize("write:follows")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Relationship))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> UnfollowUser(string id) {
@@ -195,7 +194,7 @@ public class AccountController(
 		                     p.Notifiee == followee && p.Notifier == user))
 		        .ExecuteDeleteAsync();
 
-		var res = new Relationship {
+		var res = new RelationshipEntity {
 			Id                  = followee.Id,
 			Following           = followee.PrecomputedIsFollowedBy ?? false,
 			FollowedBy          = followee.PrecomputedIsFollowing ?? false,
@@ -217,7 +216,7 @@ public class AccountController(
 
 	[HttpGet("relationships")]
 	[Authorize("read:follows")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Relationship[]))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity[]))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetRelationships([FromQuery(Name = "id")] List<string> ids) {
@@ -228,7 +227,7 @@ public class AccountController(
 		                    .PrecomputeRelationshipData(user)
 		                    .ToListAsync();
 
-		var res = users.Select(u => new Relationship {
+		var res = users.Select(u => new RelationshipEntity {
 			Id                  = u.Id,
 			Following           = u.PrecomputedIsFollowedBy ?? false,
 			FollowedBy          = u.PrecomputedIsFollowing ?? false,
@@ -253,7 +252,7 @@ public class AccountController(
 	[Authorize("read:statuses")]
 	[LinkPagination(20, 40)]
 	[Produces("application/json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Status>))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetUserStatuses(string id, AccountSchemas.AccountStatusesRequest request,
@@ -276,7 +275,7 @@ public class AccountController(
 	[HttpGet("{id}/followers")]
 	[Authenticate("read:accounts")]
 	[LinkPagination(40, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Account>))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetUserFollowers(string id, PaginationQuery query) {
 		var user = HttpContext.GetUser();
@@ -286,10 +285,10 @@ public class AccountController(
 
 		if (user == null || user.Id != account.Id) {
 			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Private)
-				return Ok((List<Account>) []);
+				return Ok((List<AccountEntity>) []);
 			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Followers)
 				if (user == null || !await db.Users.AnyAsync(p => p == account && p.Followers.Contains(user)))
-					return Ok((List<Account>) []);
+					return Ok((List<AccountEntity>) []);
 		}
 
 		var res = await db.Users
@@ -305,7 +304,7 @@ public class AccountController(
 	[HttpGet("{id}/following")]
 	[Authenticate("read:accounts")]
 	[LinkPagination(40, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Account>))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetUserFollowing(string id, PaginationQuery query) {
 		var user = HttpContext.GetUser();
@@ -315,10 +314,10 @@ public class AccountController(
 
 		if (user == null || user.Id != account.Id) {
 			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Private)
-				return Ok((List<Account>) []);
+				return Ok((List<AccountEntity>) []);
 			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Followers)
 				if (user == null || !await db.Users.AnyAsync(p => p == account && p.Followers.Contains(user)))
-					return Ok((List<Account>) []);
+					return Ok((List<AccountEntity>) []);
 		}
 
 		var res = await db.Users
@@ -334,7 +333,7 @@ public class AccountController(
 	[HttpGet("/api/v1/follow_requests")]
 	[Authorize("read:follows")]
 	[LinkPagination(40, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Account>))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetFollowRequests(PaginationQuery query) {
@@ -351,7 +350,7 @@ public class AccountController(
 
 	[HttpPost("/api/v1/follow_requests/{id}/authorize")]
 	[Authorize("write:follows")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Relationship))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
@@ -402,7 +401,7 @@ public class AccountController(
 		var relationship = await db.Users.Where(p => id == p.Id)
 		                           .IncludeCommonProperties()
 		                           .PrecomputeRelationshipData(user)
-		                           .Select(u => new Relationship {
+		                           .Select(u => new RelationshipEntity {
 			                           Id                  = u.Id,
 			                           Following           = u.PrecomputedIsFollowedBy ?? false,
 			                           FollowedBy          = u.PrecomputedIsFollowing ?? false,
@@ -428,7 +427,7 @@ public class AccountController(
 
 	[HttpPost("/api/v1/follow_requests/{id}/reject")]
 	[Authorize("write:follows")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Relationship))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
@@ -462,7 +461,7 @@ public class AccountController(
 		var relationship = await db.Users.Where(p => id == p.Id)
 		                           .IncludeCommonProperties()
 		                           .PrecomputeRelationshipData(user)
-		                           .Select(u => new Relationship {
+		                           .Select(u => new RelationshipEntity {
 			                           Id                  = u.Id,
 			                           Following           = u.PrecomputedIsFollowedBy ?? false,
 			                           FollowedBy          = u.PrecomputedIsFollowing ?? false,

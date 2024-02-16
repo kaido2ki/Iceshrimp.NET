@@ -2,7 +2,7 @@ using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class Attachment {
+public class AttachmentEntity {
 	[J("id")]          public required string              Id          { get; set; }
 	[J("url")]         public required string              Url         { get; set; }
 	[J("remote_url")]  public          string?             RemoteUrl   { get; set; }

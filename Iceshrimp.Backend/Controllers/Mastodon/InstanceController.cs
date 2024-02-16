@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -23,7 +24,7 @@ public class InstanceController(DatabaseContext db) : Controller {
 		var instanceCount = await db.Instances.LongCountAsync();
 		//TODO: admin contact
 
-		var res = new InstanceInfo(config.Value) {
+		var res = new InstanceInfoResponse(config.Value) {
 			Stats = new InstanceStats(userCount, noteCount, instanceCount)
 		};
 

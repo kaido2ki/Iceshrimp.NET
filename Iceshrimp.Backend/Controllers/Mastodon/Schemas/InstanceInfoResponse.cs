@@ -1,9 +1,9 @@
 using Iceshrimp.Backend.Core.Configuration;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
-namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
-public class InstanceInfo(Config config) {
+public class InstanceInfoResponse(Config config) {
 	[J("version")] public string Version => $"4.2.1 (compatible; Iceshrimp.NET/{config.Instance.Version}";
 
 	[J("max_toot_chars")]    public int    MaxNoteChars     => config.Instance.CharacterLimit;

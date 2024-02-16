@@ -2,14 +2,12 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
-using Notification = Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities.Notification;
-using DbNotification = Iceshrimp.Backend.Core.Database.Tables.Notification;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
 public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRenderer) {
-	public async Task<Notification> RenderAsync(
-		DbNotification notification, User? user, List<Account>? accounts = null, IEnumerable<Status>? statuses = null
+	public async Task<NotificationEntity> RenderAsync(
+		Notification notification, User? user, List<AccountEntity>? accounts = null, IEnumerable<StatusEntity>? statuses = null
 	) {
 		var dbNotifier = notification.Notifier ?? throw new GracefulException("Notification has no notifier");
 
@@ -23,9 +21,9 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 
 		//TODO: specially handle quotes
 
-		var res = new Notification {
+		var res = new NotificationEntity {
 			Id        = notification.Id,
-			Type      = Notification.EncodeType(notification.Type),
+			Type      = NotificationEntity.EncodeType(notification.Type),
 			Note      = note,
 			Notifier  = notifier,
 			CreatedAt = notification.CreatedAt.ToStringMastodon()
@@ -34,8 +32,8 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 		return res;
 	}
 
-	public async Task<IEnumerable<Notification>> RenderManyAsync(
-		IEnumerable<DbNotification> notifications, User? user
+	public async Task<IEnumerable<NotificationEntity>> RenderManyAsync(
+		IEnumerable<Notification> notifications, User? user
 	) {
 		var notificationList = notifications.ToList();
 
