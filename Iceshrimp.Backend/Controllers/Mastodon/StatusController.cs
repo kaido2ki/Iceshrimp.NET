@@ -130,7 +130,7 @@ public class StatusController(
 		if (idempotencyKey != null) {
 			var hit = await cache.FetchAsync($"idempotency:{idempotencyKey}", TimeSpan.FromHours(24),
 			                                 () => $"_:{HttpContext.TraceIdentifier}");
-			
+
 			if (hit != $"_:{HttpContext.TraceIdentifier}") {
 				for (var i = 0; i <= 10; i++) {
 					if (!hit.StartsWith('_')) break;
@@ -153,8 +153,11 @@ public class StatusController(
 
 		var visibility = StatusEntity.DecodeVisibility(request.Visibility);
 		var reply = request.ReplyId != null
-			? await db.Notes.Where(p => p.Id == request.ReplyId).EnsureVisibleFor(user).FirstOrDefaultAsync() ??
-			  throw GracefulException.BadRequest("Reply target is nonexistent or inaccessible")
+			? await db.Notes.Where(p => p.Id == request.ReplyId)
+			          .IncludeCommonProperties()
+			          .EnsureVisibleFor(user)
+			          .FirstOrDefaultAsync()
+			  ?? throw GracefulException.BadRequest("Reply target is nonexistent or inaccessible")
 			: null;
 
 		var attachments = request.MediaIds != null
@@ -163,7 +166,7 @@ public class StatusController(
 
 		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply,
 		                                         attachments: attachments);
-		
+
 		if (idempotencyKey != null)
 			await cache.SetAsync($"idempotency:{idempotencyKey}", note.Id, TimeSpan.FromHours(24));
 

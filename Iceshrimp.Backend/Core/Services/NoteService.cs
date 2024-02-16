@@ -65,15 +65,19 @@ public class NoteService(
 		var actor = await userRenderer.RenderAsync(user);
 
 		var note = new Note {
-			Id         = IdHelpers.GenerateSlowflakeId(),
-			Text       = text,
-			Cw         = cw,
-			Reply      = reply,
-			Renote     = renote,
-			UserId     = user.Id,
-			CreatedAt  = DateTime.UtcNow,
-			UserHost   = null,
-			Visibility = visibility,
+			Id             = IdHelpers.GenerateSlowflakeId(),
+			Text           = text,
+			Cw             = cw,
+			Reply          = reply,
+			ReplyUserId    = reply?.UserId,
+			ReplyUserHost  = reply?.UserHost,
+			Renote         = renote,
+			RenoteUserId   = renote?.UserId,
+			RenoteUserHost = renote?.UserHost,
+			UserId         = user.Id,
+			CreatedAt      = DateTime.UtcNow,
+			UserHost       = null,
+			Visibility     = visibility,
 
 			FileIds              = attachments?.Select(p => p.Id).ToList() ?? [],
 			AttachedFileTypes    = attachments?.Select(p => p.Type).ToList() ?? [],
@@ -182,8 +186,13 @@ public class NoteService(
 			CreatedAt  = createdAt,
 			UserHost   = user.Host,
 			Visibility = note.GetVisibility(actor),
-			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null
+			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null,
 		};
+
+		if (dbNote.Reply != null) {
+			dbNote.ReplyUserId = dbNote.Reply.UserId;
+			dbNote.ReplyUserHost = dbNote.Reply.UserHost;
+		}
 
 		if (dbNote.Text is { Length: > 100000 })
 			throw GracefulException.UnprocessableEntity("Content cannot be longer than 100.000 characters");
