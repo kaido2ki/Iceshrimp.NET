@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
@@ -70,7 +71,7 @@ public class PreDeliverQueue {
 			});
 	}
 
-	private class InboxQueryResult {
+	private class InboxQueryResult : IEquatable<InboxQueryResult> {
 		public required string? InboxUrl;
 		public required string? Host;
 
@@ -78,6 +79,27 @@ public class PreDeliverQueue {
 			if (ReferenceEquals(null, other)) return false;
 			if (ReferenceEquals(this, other)) return true;
 			return InboxUrl == other.InboxUrl && Host == other.Host;
+		}
+
+		public override bool Equals(object? obj) {
+			if (ReferenceEquals(null, obj)) return false;
+			if (ReferenceEquals(this, obj)) return true;
+			if (obj.GetType() != GetType()) return false;
+			return Equals((InboxQueryResult)obj);
+		}
+
+		[SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode", Justification =
+			                 "We are using this as a Tuple that works with LINQ on our IQueryable iterator. This is therefore intended behavior.")]
+		public override int GetHashCode() {
+			return HashCode.Combine(InboxUrl, Host);
+		}
+
+		public static bool operator ==(InboxQueryResult? left, InboxQueryResult? right) {
+			return Equals(left, right);
+		}
+
+		public static bool operator !=(InboxQueryResult? left, InboxQueryResult? right) {
+			return !Equals(left, right);
 		}
 	}
 }
