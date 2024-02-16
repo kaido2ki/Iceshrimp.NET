@@ -23,12 +23,18 @@ public class ActivityRenderer(
 		};
 	}
 
-	public ASAccept RenderAccept(ASObject actor, ASObject obj) {
+	public ASAccept RenderAccept(User followee, User follower, string requestId) {
 		return new ASAccept {
 			Id = GenerateActivityId(),
-			Actor = new ASActor {
-				Id = actor.Id
-			},
+			Actor = userRenderer.RenderLite(followee),
+			Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
+		};
+	}
+
+	public ASAccept RenderAccept(ASActor actor, ASObject obj) {
+		return new ASAccept {
+			Id = GenerateActivityId(),
+			Actor = actor.Compact(),
 			Object = obj
 		};
 	}
@@ -96,6 +102,14 @@ public class ActivityRenderer(
 			Id     = GenerateActivityId(),
 			Actor  = actor.Compact(),
 			Object = obj
+		};
+	}
+	
+	public ASReject RenderReject(User followee, User follower, string requestId) {
+		return new ASReject {
+			Id     = GenerateActivityId(),
+			Actor  = userRenderer.RenderLite(followee),
+			Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
 		};
 	}
 

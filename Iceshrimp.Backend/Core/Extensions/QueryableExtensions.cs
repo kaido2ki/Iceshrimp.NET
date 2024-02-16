@@ -29,6 +29,11 @@ public static class QueryableExtensions {
 	public static IQueryable<User> IncludeCommonProperties(this IQueryable<User> query) {
 		return query.Include(p => p.UserProfile);
 	}
+	
+	public static IQueryable<FollowRequest> IncludeCommonProperties(this IQueryable<FollowRequest> query) {
+		return query.Include(p => p.Follower.UserProfile)
+		            .Include(p => p.Followee.UserProfile);
+	}
 
 	public static IQueryable<Notification> IncludeCommonProperties(this IQueryable<Notification> query) {
 		return query.Include(p => p.Notifiee.UserProfile)

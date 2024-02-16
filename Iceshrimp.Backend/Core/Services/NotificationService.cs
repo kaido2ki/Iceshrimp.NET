@@ -71,4 +71,55 @@ public class NotificationService(
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotification(this, notification);
 	}
+	
+	public async Task GenerateFollowNotification(User follower, User followee) {
+		if (followee.Host != null) return;
+
+		var notification = new Notification {
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			Notifiee  = followee,
+			Notifier  = follower,
+			Type      = Notification.NotificationType.Follow
+		};
+
+		await db.AddAsync(notification);
+		await db.SaveChangesAsync();
+		eventSvc.RaiseNotification(this, notification);
+	}
+	
+	public async Task GenerateFollowRequestReceivedNotification(FollowRequest followRequest) {
+		if (followRequest.FolloweeHost != null) return;
+
+		var notification = new Notification {
+			Id            = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt     = DateTime.UtcNow,
+			FollowRequest = followRequest,
+			Notifier      = followRequest.Follower,
+			Notifiee      = followRequest.Followee,
+			Type          = Notification.NotificationType.FollowRequestReceived
+		};
+
+		await db.AddAsync(notification);
+		await db.SaveChangesAsync();
+		eventSvc.RaiseNotification(this, notification);
+	}
+	
+	public async Task GenerateFollowRequestAcceptedNotification(FollowRequest followRequest) {
+		if (followRequest.FollowerHost != null) return;
+		if (!followRequest.Followee.IsLocked) return;
+
+		var notification = new Notification {
+			Id            = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt     = DateTime.UtcNow,
+			FollowRequest = followRequest,
+			Notifier      = followRequest.Followee,
+			Notifiee      = followRequest.Follower,
+			Type          = Notification.NotificationType.FollowRequestAccepted
+		};
+
+		await db.AddAsync(notification);
+		await db.SaveChangesAsync();
+		eventSvc.RaiseNotification(this, notification);
+	}
 }

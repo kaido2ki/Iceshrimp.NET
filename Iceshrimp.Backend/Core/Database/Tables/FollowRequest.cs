@@ -8,7 +8,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("FolloweeId")]
 [Index("FollowerId")]
 [Index("FollowerId", "FolloweeId", IsUnique = true)]
-public class FollowRequest {
+public class FollowRequest : IEntity {
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

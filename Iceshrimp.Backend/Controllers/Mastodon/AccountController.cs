@@ -11,7 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
+using Notification = Iceshrimp.Backend.Core.Database.Tables.Notification;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -25,6 +27,7 @@ public class AccountController(
 	DatabaseContext db,
 	UserRenderer userRenderer,
 	NoteRenderer noteRenderer,
+	NotificationService notificationSvc,
 	ActivityPub.ActivityRenderer activityRenderer,
 	ActivityPub.ActivityDeliverService deliverSvc
 ) : Controller {
@@ -108,13 +111,17 @@ public class AccountController(
 				await db.AddAsync(following);
 			}
 
-			// If user is local, we need to increment following/follower counts here, otherwise we'll do it when receiving the Accept activity
-			if (followee.Host == null) {
+			// If user is local & not locked, we need to increment following/follower counts here,
+			// otherwise we'll do it when receiving the Accept activity / the local followee accepts the request
+			if (followee.Host == null && !followee.IsLocked) {
 				followee.FollowersCount++;
 				user.FollowingCount++;
 			}
 
 			await db.SaveChangesAsync();
+
+			if (followee.Host == null && !followee.IsLocked)
+				await notificationSvc.GenerateFollowNotification(user, followee);
 
 			if (followee.IsLocked)
 				followee.PrecomputedIsRequestedBy = true;
@@ -179,6 +186,14 @@ public class AccountController(
 			await db.FollowRequests.Where(p => p.Follower == user && p.Followee == followee).ExecuteDeleteAsync();
 			followee.PrecomputedIsRequestedBy = false;
 		}
+
+		// Clean up notifications
+		await db.Notifications
+		        .Where(p => (p.Type == Notification.NotificationType.FollowRequestAccepted &&
+		                     p.Notifiee == user && p.Notifier == followee) ||
+		                    (p.Type == Notification.NotificationType.Follow &&
+		                     p.Notifiee == followee && p.Notifier == user))
+		        .ExecuteDeleteAsync();
 
 		var res = new Relationship {
 			Id                  = followee.Id,
@@ -314,5 +329,160 @@ public class AccountController(
 		                  .RenderAllForMastodonAsync(userRenderer);
 
 		return Ok(res);
+	}
+
+	[HttpGet("/api/v1/follow_requests")]
+	[Authorize("read:follows")]
+	[LinkPagination(40, 80)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Account>))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetFollowRequests(PaginationQuery query) {
+		var user = HttpContext.GetUserOrFail();
+		var res = await db.FollowRequests
+		                  .Where(p => p.Followee == user)
+		                  .IncludeCommonProperties()
+		                  .Select(p => p.Follower)
+		                  .Paginate(query, ControllerContext)
+		                  .RenderAllForMastodonAsync(userRenderer);
+
+		return Ok(res);
+	}
+
+	[HttpPost("/api/v1/follow_requests/{id}/authorize")]
+	[Authorize("write:follows")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Relationship))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> AcceptFollowRequest(string id) {
+		var user = HttpContext.GetUserOrFail();
+		var request = await db.FollowRequests.Where(p => p.Followee == user && p.FollowerId == id)
+		                      .Include(p => p.Followee.UserProfile)
+		                      .Include(p => p.Follower.UserProfile)
+		                      .FirstOrDefaultAsync();
+
+		if (request != null) {
+			if (request.FollowerHost != null) {
+				var requestId = request.RequestId ?? throw new Exception("Cannot accept request without request id");
+				var activity  = activityRenderer.RenderAccept(request.Followee, request.Follower, requestId);
+				await deliverSvc.DeliverToAsync(activity, user, request.Follower);
+			}
+
+			var following = new Following {
+				Id                  = IdHelpers.GenerateSlowflakeId(),
+				CreatedAt           = DateTime.UtcNow,
+				Follower            = request.Follower,
+				Followee            = request.Followee,
+				FollowerHost        = request.FollowerHost,
+				FolloweeHost        = request.FolloweeHost,
+				FollowerInbox       = request.FollowerInbox,
+				FolloweeInbox       = request.FolloweeInbox,
+				FollowerSharedInbox = request.FollowerSharedInbox,
+				FolloweeSharedInbox = request.FolloweeSharedInbox
+			};
+
+			request.Followee.FollowersCount++;
+			request.Follower.FollowingCount++;
+
+			db.Remove(request);
+			await db.AddAsync(following);
+			await db.SaveChangesAsync();
+
+			await notificationSvc.GenerateFollowNotification(request.Follower, request.Followee);
+			await notificationSvc.GenerateFollowRequestAcceptedNotification(request);
+
+			// Clean up notifications
+			await db.Notifications
+			        .Where(p => p.Type == Notification.NotificationType.FollowRequestReceived &&
+			                    p.Notifiee == user && p.NotifierId == id)
+			        .ExecuteDeleteAsync();
+		}
+
+		var relationship = await db.Users.Where(p => id == p.Id)
+		                           .IncludeCommonProperties()
+		                           .PrecomputeRelationshipData(user)
+		                           .Select(u => new Relationship {
+			                           Id                  = u.Id,
+			                           Following           = u.PrecomputedIsFollowedBy ?? false,
+			                           FollowedBy          = u.PrecomputedIsFollowing ?? false,
+			                           Blocking            = u.PrecomputedIsBlockedBy ?? false,
+			                           BlockedBy           = u.PrecomputedIsBlocking ?? false,
+			                           Requested           = u.PrecomputedIsRequestedBy ?? false,
+			                           RequestedBy         = u.PrecomputedIsRequested ?? false,
+			                           Muting              = u.PrecomputedIsMutedBy ?? false,
+			                           Endorsed            = false, //FIXME
+			                           Note                = "",    //FIXME
+			                           Notifying           = false, //FIXME
+			                           DomainBlocking      = false, //FIXME
+			                           MutingNotifications = false, //FIXME
+			                           ShowingReblogs      = true   //FIXME
+		                           })
+		                           .FirstOrDefaultAsync();
+
+		if (relationship == null)
+			throw GracefulException.RecordNotFound();
+
+		return Ok(relationship);
+	}
+
+	[HttpPost("/api/v1/follow_requests/{id}/reject")]
+	[Authorize("write:follows")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Relationship))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> RejectFollowRequest(string id) {
+		var user = HttpContext.GetUserOrFail();
+		var request = await db.FollowRequests.Where(p => p.Followee == user && p.FollowerId == id)
+		                      .Include(p => p.Followee.UserProfile)
+		                      .Include(p => p.Follower.UserProfile)
+		                      .FirstOrDefaultAsync();
+
+		if (request != null) {
+			if (request.FollowerHost != null) {
+				var requestId = request.RequestId ?? throw new Exception("Cannot reject request without request id");
+				var activity  = activityRenderer.RenderReject(request.Followee, request.Follower, requestId);
+				await deliverSvc.DeliverToAsync(activity, user, request.Follower);
+			}
+
+			db.Remove(request);
+			await db.SaveChangesAsync();
+
+			// Clean up notifications
+			await db.Notifications
+			        .Where(p => (p.Type == Notification.NotificationType.FollowRequestReceived ||
+			                     p.Type == Notification.NotificationType.Follow) &&
+			                    p.Notifiee == user && p.NotifierId == id ||
+			                    (p.Type == Notification.NotificationType.FollowRequestAccepted &&
+			                     p.NotifieeId == id && p.Notifier == user))
+			        .ExecuteDeleteAsync();
+		}
+
+		var relationship = await db.Users.Where(p => id == p.Id)
+		                           .IncludeCommonProperties()
+		                           .PrecomputeRelationshipData(user)
+		                           .Select(u => new Relationship {
+			                           Id                  = u.Id,
+			                           Following           = u.PrecomputedIsFollowedBy ?? false,
+			                           FollowedBy          = u.PrecomputedIsFollowing ?? false,
+			                           Blocking            = u.PrecomputedIsBlockedBy ?? false,
+			                           BlockedBy           = u.PrecomputedIsBlocking ?? false,
+			                           Requested           = u.PrecomputedIsRequestedBy ?? false,
+			                           RequestedBy         = u.PrecomputedIsRequested ?? false,
+			                           Muting              = u.PrecomputedIsMutedBy ?? false,
+			                           Endorsed            = false, //FIXME
+			                           Note                = "",    //FIXME
+			                           Notifying           = false, //FIXME
+			                           DomainBlocking      = false, //FIXME
+			                           MutingNotifications = false, //FIXME
+			                           ShowingReblogs      = true   //FIXME
+		                           })
+		                           .FirstOrDefaultAsync();
+
+		if (relationship == null)
+			throw GracefulException.RecordNotFound();
+
+		return Ok(relationship);
 	}
 }

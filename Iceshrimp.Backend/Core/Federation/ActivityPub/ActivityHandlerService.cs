@@ -24,7 +24,9 @@ public class ActivityHandlerService(
 	ActivityRenderer activityRenderer,
 	IOptions<Config.InstanceSection> config,
 	FederationControlService federationCtrl,
-	ObjectResolver resolver
+	ObjectResolver resolver,
+	NotificationService notificationSvc,
+	ActivityDeliverService deliverSvc
 ) {
 	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId) {
 		logger.LogDebug("Processing activity: {activity}", activity.Id);
@@ -115,11 +117,20 @@ public class ActivityHandlerService(
 		}
 	}
 
+	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
+	                 Justification = "Projectable functions can very much be translated to SQL")]
 	private async Task FollowAsync(ASActor followeeActor, ASActor followerActor, string requestId) {
 		var follower = await userResolver.ResolveAsync(followerActor.Id);
 		var followee = await userResolver.ResolveAsync(followeeActor.Id);
 
 		if (followee.Host != null) throw new Exception("Cannot process follow for remote followee");
+
+		// Check blocks first
+		if (await db.Users.AnyAsync(p => p == followee && p.IsBlocking(follower))) {
+			var activity = activityRenderer.RenderReject(followee, follower, requestId);
+			await deliverSvc.DeliverToAsync(activity, followee, follower);
+			return;
+		}
 
 		if (followee.IsLocked) {
 			var followRequest = new FollowRequest {
@@ -138,6 +149,7 @@ public class ActivityHandlerService(
 
 			await db.AddAsync(followRequest);
 			await db.SaveChangesAsync();
+			await notificationSvc.GenerateFollowRequestReceivedNotification(followRequest);
 			return;
 		}
 
@@ -176,6 +188,7 @@ public class ActivityHandlerService(
 
 			await db.AddAsync(following);
 			await db.SaveChangesAsync();
+			await notificationSvc.GenerateFollowNotification(follower, followee);
 		}
 	}
 
@@ -193,6 +206,13 @@ public class ActivityHandlerService(
 			follower.FollowingCount -= followings.Count;
 			db.RemoveRange(followings);
 			await db.SaveChangesAsync();
+
+			if (followee.Host != null) return;
+			await db.Notifications
+			        .Where(p => p.Type == Notification.NotificationType.Follow &&
+			                    p.Notifiee == followee &&
+			                    p.Notifier == follower)
+			        .ExecuteDeleteAsync();
 		}
 	}
 
@@ -208,7 +228,8 @@ public class ActivityHandlerService(
 				.UnprocessableEntity($"Actor id '{resolvedActor.Id}' doesn't match followee id '{ids[1]}'");
 
 		var request = await db.FollowRequests
-		                      .Include(p => p.Follower)
+		                      .Include(p => p.Follower.UserProfile)
+		                      .Include(p => p.Followee.UserProfile)
 		                      .FirstOrDefaultAsync(p => p.Followee == resolvedActor && p.FollowerId == ids[0]);
 
 		if (request == null)
@@ -234,6 +255,7 @@ public class ActivityHandlerService(
 		db.Remove(request);
 		await db.AddAsync(following);
 		await db.SaveChangesAsync();
+		await notificationSvc.GenerateFollowRequestAcceptedNotification(request);
 	}
 
 	private async Task RejectAsync(ASFollow follow, ASActor actor) {
@@ -247,7 +269,18 @@ public class ActivityHandlerService(
 
 		await db.FollowRequests.Where(p => p.Followee == resolvedActor && p.Follower == resolvedFollower)
 		        .ExecuteDeleteAsync();
-		await db.Followings.Where(p => p.Followee == resolvedActor && p.Follower == resolvedFollower)
+		var count = await db.Followings.Where(p => p.Followee == resolvedActor && p.Follower == resolvedFollower)
+		                    .ExecuteDeleteAsync();
+		if (count > 0) {
+			resolvedActor.FollowersCount    -= count;
+			resolvedFollower.FollowingCount -= count;
+			await db.SaveChangesAsync();
+		}
+
+		await db.Notifications
+		        .Where(p => p.Type == Notification.NotificationType.FollowRequestAccepted)
+		        .Where(p => p.Notifiee == resolvedFollower &&
+		                    p.Notifier == resolvedActor)
 		        .ExecuteDeleteAsync();
 	}
 }
