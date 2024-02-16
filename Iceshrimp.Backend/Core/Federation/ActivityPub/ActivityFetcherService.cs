@@ -23,10 +23,8 @@ public class ActivityFetcherService(HttpClient client, HttpRequestService httpRq
 		var response = await client.SendAsync(request);
 
 		if (!response.IsSuccessStatusCode) return [];
-		if (response.Content.Headers.ContentType?.MediaType is
-		    not "application/activity+json"
-		    and not "application/ld+json"
-		    and not "application/json")
+		if (response.Content.Headers.ContentType?.MediaType
+		    is not "application/activity+json" and not "application/ld+json")
 			return [];
 
 		var finalUri = response.RequestMessage?.RequestUri ??
