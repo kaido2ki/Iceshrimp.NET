@@ -213,6 +213,8 @@ public class UserService(
 			throw new GracefulException(HttpStatusCode.BadRequest, "User already exists");
 		if (await db.UsedUsernames.AnyAsync(p => p.Username.ToLower() == username.ToLowerInvariant()))
 			throw new GracefulException(HttpStatusCode.BadRequest, "Username was already used");
+		if (password.Length < 8)
+			throw GracefulException.BadRequest("Password must be at least 8 characters long");
 
 		var keypair = RSA.Create(4096);
 		var user = new User {
