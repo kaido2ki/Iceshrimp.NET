@@ -45,8 +45,8 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 					ActiveMonth    = 0,
 					ActiveHalfYear = 0
 				},
-				LocalComments = localPosts,
-				LocalPosts    = 0
+				LocalComments = 0,
+				LocalPosts    = localPosts
 			},
 			Metadata = new NodeInfoResponse.NodeInfoMetadata {
 				//FIXME Implement members
