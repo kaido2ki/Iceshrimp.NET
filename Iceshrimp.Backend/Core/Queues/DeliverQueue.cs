@@ -22,7 +22,7 @@ public class DeliverQueue {
 		var db         = scope.GetRequiredService<DatabaseContext>();
 		var fedCtrl    = scope.GetRequiredService<ActivityPub.FederationControlService>();
 
-		if (await fedCtrl.ShouldBlockAsync(job.InboxUrl)) {
+		if (await fedCtrl.ShouldBlockAsync(job.InboxUrl, job.RecipientHost)) {
 			logger.LogDebug("Refusing to deliver activity to blocked instance ({uri})", job.InboxUrl);
 			return;
 		}
@@ -48,4 +48,5 @@ public class DeliverJob : Job {
 	[ProtoMember(3)] public required string ContentType;
 
 	[ProtoMember(10)] public required string UserId;
+	[ProtoMember(11)] public required string RecipientHost;
 }

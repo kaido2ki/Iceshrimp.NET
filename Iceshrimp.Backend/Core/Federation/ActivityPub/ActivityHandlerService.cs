@@ -149,10 +149,11 @@ public class ActivityHandlerService(
 		var inboxUri = follower.SharedInbox ??
 		               follower.Inbox ?? throw new Exception("Can't accept follow: user has no inbox");
 		var job = new DeliverJob {
-			InboxUrl    = inboxUri,
-			Payload     = payload,
-			ContentType = "application/activity+json",
-			UserId      = followee.Id
+			InboxUrl      = inboxUri,
+			RecipientHost = follower.Host ?? throw new Exception("Can't accept follow: follower host is null"),
+			Payload       = payload,
+			ContentType   = "application/activity+json",
+			UserId        = followee.Id
 		};
 		await queueService.DeliverQueue.EnqueueAsync(job);
 
