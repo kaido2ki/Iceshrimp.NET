@@ -49,12 +49,12 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 				new WebFingerLink {
 					Rel  = "self",
 					Type = "application/activity+json",
-					Href = $"https://{config.Value.WebDomain}/users/{user.Id}"
+					Href = user.GetPublicUri(config.Value)
 				},
 				new WebFingerLink {
 					Rel  = "http://webfinger.net/rel/profile-page",
 					Type = "text/html",
-					Href = $"https://{config.Value.WebDomain}/@{user.Username}"
+					Href = user.GetPublicUri(config.Value)
 				},
 				new WebFingerLink {
 					Rel      = "http://ostatus.org/schema/1.0/subscribe",

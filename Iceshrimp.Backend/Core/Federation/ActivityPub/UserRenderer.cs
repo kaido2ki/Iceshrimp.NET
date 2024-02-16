@@ -24,7 +24,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		}
 
 		return new ASActor {
-			Id = $"https://{config.Value.WebDomain}/users/{user.Id}"
+			Id = user.GetPublicUri(config.Value)
 		};
 	}
 	
@@ -40,7 +40,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 
 		if (keypair == null) throw new GracefulException("User has no keypair");
 
-		var id = $"https://{config.Value.WebDomain}/users/{user.Id}";
+		var id = user.GetPublicUri(config.Value);
 		var type = Constants.SystemUsers.Contains(user.UsernameLower)
 			? "Application"
 			: user.IsBot
@@ -55,7 +55,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			Followers = new ASCollection<ASObject>($"{id}/followers"),
 			Following = new ASCollection<ASObject>($"{id}/following"),
 			SharedInbox = new ASLink($"https://{config.Value.WebDomain}/inbox"),
-			Url = new ASLink($"https://{config.Value.WebDomain}/@{user.Username}"),
+			Url = new ASLink(user.GetPublicUrl(config.Value)),
 			Username = user.Username,
 			DisplayName = user.DisplayName ?? user.Username,
 			Summary = profile?.Description != null ? await mfmConverter.FromHtmlAsync(profile.Description) : null,

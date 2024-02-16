@@ -21,9 +21,9 @@ public class Mention() {
 		Username = u.Username;
 		Host     = u.Host;
 		Acct     = u.Acct;
-		Uri      = u.Uri ?? $"https://{webDomain}/users/{u.Id}";
+		Uri      = u.Uri ?? u.GetPublicUri(webDomain);
 		Url = u.UserProfile != null
-			? u.UserProfile.Url ?? u.Uri ?? $"https://{webDomain}/@{u.Username}"
-			: u.Uri ?? $"https://{webDomain}/@{u.Username}";
+			? u.UserProfile.Url ?? u.Uri ?? u.GetPublicUrl(webDomain)
+			: u.Uri ?? u.GetPublicUri(webDomain);
 	}
 }

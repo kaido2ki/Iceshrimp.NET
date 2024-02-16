@@ -17,15 +17,15 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 	/// <returns>ASNote with only the Id field populated</returns>
 	public ASNote RenderLite(Note note) {
 		return new ASNote {
-			Id = note.Uri ?? $"https://{config.Value.WebDomain}/notes/{note.Id}"
+			Id = note.Uri ?? note.GetPublicUri(config.Value)
 		};
 	}
     
 	public async Task<ASNote> RenderAsync(Note note, List<Note.MentionedUser>? mentions = null) {
-		var id     = $"https://{config.Value.WebDomain}/notes/{note.Id}";
-		var userId = $"https://{config.Value.WebDomain}/users/{note.User.Id}";
+		var id     = note.GetPublicUri(config.Value);
+		var userId = note.User.GetPublicUri(config.Value);
 		var replyId = note.Reply != null
-			? new ASObjectBase(note.Reply.Uri ?? $"https://{config.Value.WebDomain}/notes/{note.ReplyId}")
+			? new ASObjectBase(note.Reply.Uri ?? note.Reply.GetPublicUri(config.Value))
 			: null;
 
 		mentions ??= await db.Users
@@ -35,7 +35,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			                     Host     = p.Host ?? config.Value.AccountDomain,
 			                     Username = p.Username,
 			                     Url      = p.UserProfile != null ? p.UserProfile.Url : null,
-			                     Uri      = p.Uri ?? $"https://{config.Value.WebDomain}/users/{p.Id}"
+			                     Uri      = p.Uri ?? p.GetPublicUri(config.Value)
 		                     })
 		                     .ToListAsync();
 

@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using EntityFrameworkCore.Projectables;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 using NpgsqlTypes;
@@ -276,6 +277,10 @@ public class Note : IEntity {
 
 		return this;
 	}
+	
+	public string GetPublicUri(Config.InstanceSection config) => UserHost == null
+		? $"https://{config.WebDomain}/notes/{Id}"
+		: throw new Exception("Cannot access PublicUri for remote note");
 
 	public class MentionedUser {
 		[J("uri")]      public required string  Uri      { get; set; }

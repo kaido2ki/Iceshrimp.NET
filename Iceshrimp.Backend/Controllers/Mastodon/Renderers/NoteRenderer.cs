@@ -20,7 +20,7 @@ public class NoteRenderer(
 		List<Attachment>? attachments = null, Dictionary<string, int>? likeCounts = null,
 		List<string>? likedNotes = null, int recurse = 2
 	) {
-		var uri = note.Uri ?? $"https://{config.Value.WebDomain}/notes/{note.Id}";
+		var uri = note.Uri ?? note.GetPublicUri(config.Value);
 		var renote = note.Renote != null && recurse > 0
 			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes, --recurse)
 			: null;

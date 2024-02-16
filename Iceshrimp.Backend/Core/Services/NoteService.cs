@@ -277,7 +277,7 @@ public class NoteService(
 		var localMentions = localUsers.Select(p => new Note.MentionedUser {
 			Host     = config.Value.AccountDomain,
 			Username = p.Username,
-			Uri      = $"https://{config.Value.WebDomain}/users/{p.Id}",
+			Uri      = p.GetPublicUri(config.Value),
 			Url      = $"https://{config.Value.WebDomain}/@{p.Username}"
 		});
 

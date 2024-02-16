@@ -18,7 +18,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		var res = new Account {
 			Id = user.Id,
 			DisplayName = user.DisplayName ?? user.Username,
-			AvatarUrl = user.AvatarUrl ?? $"https://{config.Value.WebDomain}/identicon/{user.Id}",
+			AvatarUrl = user.AvatarUrl ?? user.GetIdenticonUrl(config.Value),
 			Username = user.Username,
 			Acct = acct,
 			FullyQualifiedName = $"{user.Username}@{user.Host ?? config.Value.AccountDomain}",
@@ -28,8 +28,8 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			FollowingCount = user.FollowingCount,
 			StatusesCount = user.NotesCount,
 			Note = await mfmConverter.ToHtmlAsync(profile?.Description ?? "", [], user.Host),
-			Url = profile?.Url ?? user.Uri ?? $"https://{user.Host ?? config.Value.WebDomain}/@{user.Username}",
-			AvatarStaticUrl = user.AvatarUrl ?? $"https://{config.Value.WebDomain}/identicon/{user.Id}", //TODO
+			Url = profile?.Url ?? user.Uri ?? user.GetPublicUrl(config.Value),
+			AvatarStaticUrl = user.AvatarUrl ?? user.GetIdenticonUrl(config.Value), //TODO
 			HeaderUrl = user.BannerUrl ?? _transparent,
 			HeaderStaticUrl = user.BannerUrl ?? _transparent, //TODO
 			MovedToAccount = null, //TODO

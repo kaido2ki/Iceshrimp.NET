@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EntityFrameworkCore.Projectables;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 
@@ -381,7 +382,7 @@ public class User : IEntity {
 
 	[InverseProperty(nameof(NoteBookmark.User))]
 	public virtual ICollection<NoteBookmark> NoteBookmarks { get; set; } = new List<NoteBookmark>();
-	
+
 	[InverseProperty(nameof(NoteReaction.User))]
 	public virtual ICollection<NoteLike> NoteLikes { get; set; } = new List<NoteLike>();
 
@@ -550,4 +551,18 @@ public class User : IEntity {
 
 		return this;
 	}
+
+	public string GetPublicUrl(Config.InstanceSection config) => GetPublicUrl(config.WebDomain);
+	public string GetPublicUri(Config.InstanceSection config) => GetPublicUri(config.WebDomain);
+	public string GetIdenticonUrl(Config.InstanceSection config) => GetIdenticonUrl(config.WebDomain);
+
+	public string GetPublicUri(string webDomain) => Host == null
+		? $"https://{webDomain}/users/{Id}"
+		: throw new Exception("Cannot access PublicUri for remote user");
+	
+	public string GetPublicUrl(string webDomain) => Host == null
+		? $"https://{webDomain}/@{Username}"
+		: throw new Exception("Cannot access PublicUrl for remote user");
+
+	public string GetIdenticonUrl(string webDomain) => $"https://{webDomain}/identicon/{Id}";
 }
