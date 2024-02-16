@@ -133,6 +133,9 @@ public static class WebApplicationExtensions {
 		var logger = app.Services.CreateScope().ServiceProvider.GetRequiredService<ILoggerFactory>()
 		                .CreateLogger("Microsoft.Hosting.Lifetime");
 
+		if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS())
+			throw new Exception("Can't set unix socket permissions on a non-UNIX system");
+
 		var perms    = "660";
 		var exitCode = chmod(config.ListenSocket, Convert.ToInt32(perms, 8));
 
