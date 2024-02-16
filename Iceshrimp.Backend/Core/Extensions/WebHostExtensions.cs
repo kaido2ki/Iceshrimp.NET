@@ -10,7 +10,7 @@ public static class WebHostExtensions {
 		if (config.ListenSocket == null) return;
 
 		if (File.Exists(config.ListenSocket))
-			throw new Exception($"Failed to configure unix socket {config.ListenSocket}: File exists");
+			File.Delete(config.ListenSocket);
 		if (!Path.Exists(Path.GetDirectoryName(config.ListenSocket)))
 			throw new Exception($"Failed to configure unix socket {config.ListenSocket}: Directory does not exist");
 

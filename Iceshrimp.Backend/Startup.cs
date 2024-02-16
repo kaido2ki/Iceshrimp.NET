@@ -56,4 +56,6 @@ app.Urls.Clear();
 if (config.ListenSocket == null) 
 	app.Urls.Add($"http://{config.ListenHost}:{config.ListenPort}");
 
-app.Run();
+await app.StartAsync();
+app.SetKestrelUnixSocketPermissions();
+await app.WaitForShutdownAsync();

@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
@@ -123,5 +124,27 @@ public static class WebApplicationExtensions {
 		app.Logger.LogInformation("Initializing application, please wait...");
 
 		return instanceConfig;
+	}
+
+	public static void SetKestrelUnixSocketPermissions(this WebApplication app) {
+		var config = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
+		             throw new Exception("Failed to read instance config");
+		if (config.ListenSocket == null) return;
+		var logger = app.Services.CreateScope().ServiceProvider.GetRequiredService<ILoggerFactory>()
+		                .CreateLogger("Microsoft.Hosting.Lifetime");
+
+		var perms    = "660";
+		var exitCode = chmod(config.ListenSocket, Convert.ToInt32(perms, 8));
+
+		if (exitCode < 0)
+			logger.LogError("Failed to set Kestrel unix socket permissions to {SocketPerms}, return code: {ExitCode}",
+			                perms, exitCode);
+		else
+			logger.LogInformation("Kestrel unix socket permissions were set to {SocketPerms}", perms);
+
+		return;
+
+		[DllImport("libc")]
+		static extern int chmod(string pathname, int mode);
 	}
 }
