@@ -104,7 +104,8 @@ public class NoteRenderer(
 
 	private async Task<List<Mention>> GetMentions(IEnumerable<Note> notes) {
 		var ids = notes.SelectMany(n => n.Mentions).Distinct();
-		return await db.Users.Where(p => ids.Contains(p.Id))
+		return await db.Users.IncludeCommonProperties()
+		               .Where(p => ids.Contains(p.Id))
 		               .Select(u => new Mention(u, config.Value.WebDomain))
 		               .ToListAsync();
 	}
