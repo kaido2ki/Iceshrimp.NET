@@ -30,7 +30,8 @@ public class NoteRenderer(
 		var liked = likedNotes?.Contains(note.Id) ?? await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 
 		if (mentions == null) {
-			mentions = await db.Users.Where(p => note.Mentions.Contains(p.Id))
+			mentions = await db.Users.IncludeCommonProperties()
+			                   .Where(p => note.Mentions.Contains(p.Id))
 			                   .Select(u => new Mention(u, config.Value.WebDomain))
 			                   .ToListAsync();
 		}
