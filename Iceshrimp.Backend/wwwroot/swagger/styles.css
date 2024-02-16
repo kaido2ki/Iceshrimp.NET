@@ -16,7 +16,7 @@
     margin-bottom: 10px !important;
 }
 
-.swagger-ui .scheme-container .auth-wrapper .btn.authorize {
+.swagger-ui > div > .scheme-container > section > .auth-wrapper > .btn.authorize {
     display: none;
 }
 
