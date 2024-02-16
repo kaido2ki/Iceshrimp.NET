@@ -1,7 +1,9 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers;
@@ -10,13 +12,17 @@ namespace Iceshrimp.Backend.Controllers;
 [Tags("Federation")]
 [Route("/nodeinfo")]
 [EnableCors("well-known")]
-public class NodeInfoController(IOptions<Config.InstanceSection> config) : Controller {
+public class NodeInfoController(IOptions<Config.InstanceSection> config, DatabaseContext db) : Controller {
 	[HttpGet("2.1")]
 	[HttpGet("2.0")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WebFingerResponse))]
-	public IActionResult GetNodeInfo() {
+	public async Task<IActionResult> GetNodeInfo() {
 		var instance = config.Value;
+		var totalUsers =
+			await db.Users.LongCountAsync(p => p.Host == null && !Constants.SystemUsers.Contains(p.UsernameLower));
+		var localPosts = await db.Notes.LongCountAsync(p => p.UserHost == null);
+
 		var result = new NodeInfoResponse {
 			Version = instance.Version,
 			Software = new NodeInfoResponse.NodeInfoSoftware {
@@ -35,11 +41,11 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config) : Contr
 			Usage = new NodeInfoResponse.NodeInfoUsage {
 				//FIXME Implement members
 				Users = new NodeInfoResponse.NodeInfoUsers {
-					Total          = 0,
+					Total          = totalUsers,
 					ActiveMonth    = 0,
 					ActiveHalfYear = 0
 				},
-				LocalComments = 0,
+				LocalComments = localPosts,
 				LocalPosts    = 0
 			},
 			Metadata = new NodeInfoResponse.NodeInfoMetadata {
