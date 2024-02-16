@@ -6,7 +6,7 @@ using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Iceshrimp.Backend.Core.CronTasks;
+namespace Iceshrimp.Backend.Core.Tasks;
 
 [SuppressMessage("ReSharper", "UnusedType.Global", Justification = "Instantiated at runtime by CronService")]
 public class MediaCleanupTask : ICronTask {
