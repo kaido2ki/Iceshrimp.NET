@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
-[Table("registration_ticket")]
+[Table("registration_invite")]
 [Index("Code", IsUnique = true)]
-public class RegistrationTicket {
+public class RegistrationInvite {
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

@@ -62,7 +62,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<PollVote>             PollVotes             { get; init; } = null!;
 	public virtual DbSet<PromoNote>            PromoNotes            { get; init; } = null!;
 	public virtual DbSet<PromoRead>            PromoReads            { get; init; } = null!;
-	public virtual DbSet<RegistrationTicket>   RegistrationTickets   { get; init; } = null!;
+	public virtual DbSet<RegistrationInvite>   RegistrationInvites   { get; init; } = null!;
 	public virtual DbSet<RegistryItem>         RegistryItems         { get; init; } = null!;
 	public virtual DbSet<Relay>                Relays                { get; init; } = null!;
 	public virtual DbSet<RenoteMuting>         RenoteMutings         { get; init; } = null!;
@@ -739,7 +739,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.HasOne(d => d.User).WithMany(p => p.PromoReads);
 		});
 
-		modelBuilder.Entity<RegistrationTicket>(_ => { });
+		modelBuilder.Entity<RegistrationInvite>(_ => { });
 
 		modelBuilder.Entity<RegistryItem>(entity => {
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the RegistryItem.");

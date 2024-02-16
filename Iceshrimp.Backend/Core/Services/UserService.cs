@@ -203,7 +203,7 @@ public class UserService(
 		if (security.Value.Registrations == Enums.Registrations.Invite && invite == null)
 			throw new GracefulException(HttpStatusCode.Forbidden, "Request is missing the invite code");
 		if (security.Value.Registrations == Enums.Registrations.Invite &&
-		    !await db.RegistrationTickets.AnyAsync(p => p.Code == invite))
+		    !await db.RegistrationInvites.AnyAsync(p => p.Code == invite))
 			throw new GracefulException(HttpStatusCode.Forbidden, "The specified invite code is invalid");
 		if (username.Contains('.'))
 			throw new GracefulException(HttpStatusCode.BadRequest, "Username must not contain the dot character");
@@ -242,7 +242,7 @@ public class UserService(
 		};
 
 		if (security.Value.Registrations == Enums.Registrations.Invite) {
-			var ticket = await db.RegistrationTickets.FirstOrDefaultAsync(p => p.Code == invite);
+			var ticket = await db.RegistrationInvites.FirstOrDefaultAsync(p => p.Code == invite);
 			if (ticket == null)
 				throw GracefulException.Forbidden("The specified invite code is invalid");
 			db.Remove(ticket);

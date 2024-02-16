@@ -20,7 +20,7 @@ public class AdminController(DatabaseContext db) : Controller {
 	[HttpPost("invites/generate")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InviteResponse))]
 	public async Task<IActionResult> GenerateInvite() {
-		var invite = new RegistrationTicket {
+		var invite = new RegistrationInvite {
 			Id        = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Code      = CryptographyHelpers.GenerateRandomString(32)
