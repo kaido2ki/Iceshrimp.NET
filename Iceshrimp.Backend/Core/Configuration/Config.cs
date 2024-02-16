@@ -33,7 +33,7 @@ public sealed class Config {
 
 		public int     ListenPort     { get; init; } = 3000;
 		public string  ListenHost     { get; init; } = "localhost";
-		public string? ListenSocket   { get; init; } = null;
+		public string? ListenSocket   { get; init; }
 		public string  WebDomain      { get; init; } = null!;
 		public string  AccountDomain  { get; init; } = null!;
 		public int     CharacterLimit { get; init; } = 8192;
@@ -59,6 +59,7 @@ public sealed class Config {
 	public sealed class RedisSection {
 		public string  Host     { get; init; } = "localhost";
 		public int     Port     { get; init; } = 6379;
+		public string? UnixDomainSocket   { get; init; }
 		public string? Prefix   { get; init; }
 		public string? Username { get; init; }
 		public string? Password { get; init; }

@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using System.Threading.RateLimiting;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
@@ -96,15 +97,19 @@ public static class ServiceExtensions {
 		var redis    = configuration.GetSection("Redis").Get<Config.RedisSection>();
 		if (redis == null || instance == null)
 			throw new Exception("Failed to initialize redis: Failed to load configuration");
+		
 
 		var redisOptions = new ConfigurationOptions {
 			User            = redis.Username,
 			Password        = redis.Password,
 			DefaultDatabase = redis.Database,
-			EndPoints = new EndPointCollection {
-				{ redis.Host, redis.Port }
-			}
+			EndPoints = new EndPointCollection()
 		};
+
+		if (redis.UnixDomainSocket != null)
+			redisOptions.EndPoints.Add(new UnixDomainSocketEndPoint(redis.UnixDomainSocket));
+		else
+			redisOptions.EndPoints.Add(redis.Host, redis.Port);
 
 		services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisOptions));
 
