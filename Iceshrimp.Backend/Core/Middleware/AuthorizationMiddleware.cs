@@ -18,9 +18,19 @@ public class AuthorizationMiddleware : IMiddleware {
 				if (attribute.Scopes.Length > 0 &&
 				    attribute.Scopes.Except(MastodonOauthHelpers.ExpandScopes(token.Scopes)).Any())
 					throw GracefulException.Forbidden("This action is outside the authorized scopes");
+				if (attribute.AdminRole && !token.User.IsAdmin)
+					throw GracefulException.Forbidden("This action is outside the authorized scopes");
+				if (attribute.ModeratorRole && token.User is { IsAdmin: false, IsModerator: false })
+					throw GracefulException.Forbidden("This action is outside the authorized scopes");
 			}
-			else if (ctx.GetSession() is not { Active: true }) {
-				throw GracefulException.Forbidden("This method requires an authenticated user");
+			else {
+				var session = ctx.GetSession();
+				if (session is not { Active: true })
+					throw GracefulException.Forbidden("This method requires an authenticated user");
+				if (attribute.AdminRole && !session.User.IsAdmin)
+					throw GracefulException.Forbidden("This action is outside the authorized scopes");
+				if (attribute.ModeratorRole && session.User is { IsAdmin: false, IsModerator: false })
+					throw GracefulException.Forbidden("This action is outside the authorized scopes");
 			}
 		}
 
@@ -29,5 +39,7 @@ public class AuthorizationMiddleware : IMiddleware {
 }
 
 public class AuthorizeAttribute(params string[] scopes) : Attribute {
-	public readonly string[] Scopes = scopes;
+	public readonly string[] Scopes        = scopes.Where(p => !p.StartsWith("role:")).ToArray();
+	public readonly bool     AdminRole     = scopes.Contains("role:admin");
+	public readonly bool     ModeratorRole = scopes.Contains("role:moderator");
 }

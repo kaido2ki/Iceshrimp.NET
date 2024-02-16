@@ -34,6 +34,12 @@ public class AuthenticationMiddleware(DatabaseContext db) : IMiddleware {
 					return;
 				}
 
+				if (attribute.AdminRole && !oauthToken.User.IsAdmin || attribute.ModeratorRole &&
+				    oauthToken.User is { IsAdmin: false, IsModerator: false }) {
+					await next(ctx);
+					return;
+				}
+
 				if (attribute.Scopes.Length > 0 &&
 				    attribute.Scopes.Except(MastodonOauthHelpers.ExpandScopes(oauthToken.Scopes)).Any()) {
 					await next(ctx);
@@ -53,6 +59,12 @@ public class AuthenticationMiddleware(DatabaseContext db) : IMiddleware {
 					return;
 				}
 
+				if (attribute.AdminRole && !session.User.IsAdmin || attribute.ModeratorRole &&
+				    session.User is { IsAdmin: false, IsModerator: false }) {
+					await next(ctx);
+					return;
+				}
+
 				ctx.SetSession(session);
 			}
 		}
@@ -62,7 +74,9 @@ public class AuthenticationMiddleware(DatabaseContext db) : IMiddleware {
 }
 
 public class AuthenticateAttribute(params string[] scopes) : Attribute {
-	public readonly string[] Scopes = scopes;
+	public readonly string[] Scopes        = scopes.Where(p => !p.StartsWith("role:")).ToArray();
+	public readonly bool     AdminRole     = scopes.Contains("role:admin");
+	public readonly bool     ModeratorRole = scopes.Contains("role:moderator");
 }
 
 public static partial class HttpContextExtensions {
