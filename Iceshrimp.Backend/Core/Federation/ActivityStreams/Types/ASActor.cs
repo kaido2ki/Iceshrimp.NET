@@ -128,7 +128,9 @@ public class ASActor : ASObject {
 		    !Regex.IsMatch(Username, @"^\w([\w-.]*\w)?$"))
 			throw new Exception("Actor username is invalid");
 
-		//TODO: validate publicKey id host
+		var publicKeyId = PublicKey?.Id ?? throw new Exception("Invalid actor: missing PublicKey?.Id");
+		if (new Uri(publicKeyId).Host != new Uri(uri).Host)
+			throw new Exception("Invalid actor: public key id / actor id host mismatch");
 
 		DisplayName = DisplayName switch {
 			{ Length: > 0 } => DisplayName.Truncate(DisplayNameLength),
