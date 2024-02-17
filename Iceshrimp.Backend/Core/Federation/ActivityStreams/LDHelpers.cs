@@ -35,6 +35,13 @@ public static class LdHelpers
 			}
 		},
 		{
+			"http://schema.org/", new RemoteDocument
+			{
+				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
+				                                                      "Contexts", "schema.json")))
+			}
+		},
+		{
 			"litepub-0.1", new RemoteDocument
 			{
 				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",

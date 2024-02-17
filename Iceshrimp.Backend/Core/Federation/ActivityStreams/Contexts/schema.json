@@ -1,0 +1,11 @@
+{
+  "@context": {
+    "schema": "http://schema.org/",
+    "PropertyValue": {
+      "@id": "schema:PropertyValue"
+    },
+    "value": {
+      "@id": "schema:value"
+    }
+  }
+}
