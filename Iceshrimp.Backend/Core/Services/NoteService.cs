@@ -50,9 +50,13 @@ public class NoteService(
 	{
 		if (text?.Length > config.Value.CharacterLimit)
 			throw GracefulException.BadRequest($"Text cannot be longer than {config.Value.CharacterLimit} characters");
-
+		if (cw?.Length > config.Value.CharacterLimit)
+			throw GracefulException
+				.BadRequest($"Content warning cannot be longer than {config.Value.CharacterLimit} characters");
 		if (text is { Length: > 100000 })
 			throw GracefulException.BadRequest("Text cannot be longer than 100.000 characters");
+		if (cw is { Length: > 100000 })
+			throw GracefulException.BadRequest("Content warning cannot be longer than 100.000 characters");
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			await ResolveNoteMentionsAsync(text);
@@ -62,8 +66,6 @@ public class NoteService(
 
 		if (attachments != null && attachments.Any(p => p.UserId != user.Id))
 			throw GracefulException.BadRequest("Refusing to create note with files belonging to someone else");
-
-		var actor = await userRenderer.RenderAsync(user);
 
 		var note = new Note
 		{
@@ -94,6 +96,7 @@ public class NoteService(
 		eventSvc.RaiseNotePublished(this, note);
 		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
 
+		var actor    = userRenderer.RenderLite(user);
 		var obj      = await noteRenderer.RenderAsync(note, mentions);
 		var activity = ActivityPub.ActivityRenderer.RenderCreate(obj, actor);
 
@@ -103,13 +106,93 @@ public class NoteService(
 		                         .ToListAsync();
 
 		if (note.Visibility == Note.NoteVisibility.Specified)
-		{
 			await deliverSvc.DeliverToAsync(activity, user, recipients.ToArray());
-		}
 		else
-		{
 			await deliverSvc.DeliverToFollowersAsync(activity, user, recipients);
+
+		return note;
+	}
+
+	public async Task<Note> UpdateNoteAsync(
+		Note note, string? text = null, string? cw = null, IReadOnlyCollection<DriveFile>? attachments = null
+	)
+	{
+		var noteEdit = new NoteEdit
+		{
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			UpdatedAt = DateTime.UtcNow,
+			Note      = note,
+			Text      = note.Text,
+			Cw        = note.Cw,
+			FileIds   = note.FileIds
+		};
+
+		if (text?.Length > config.Value.CharacterLimit)
+			throw GracefulException.BadRequest($"Text cannot be longer than {config.Value.CharacterLimit} characters");
+		if (cw?.Length > config.Value.CharacterLimit)
+			throw GracefulException
+				.BadRequest($"Content warning cannot be longer than {config.Value.CharacterLimit} characters");
+		if (text is { Length: > 100000 })
+			throw GracefulException.BadRequest("Text cannot be longer than 100.000 characters");
+		if (cw is { Length: > 100000 })
+			throw GracefulException.BadRequest("Content warning cannot be longer than 100.000 characters");
+		if (attachments != null && attachments.Any(p => p.UserId != note.User.Id))
+			throw GracefulException.BadRequest("Refusing to create note with files belonging to someone else");
+
+		var previousMentionedLocalUserIds = await db.Users.Where(p => note.Mentions.Contains(p.Id) && p.Host == null)
+		                                            .Select(p => p.Id)
+		                                            .ToListAsync();
+
+		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
+			await ResolveNoteMentionsAsync(text);
+		if (text != null)
+			text = mentionsResolver.ResolveMentions(text, null, mentions, splitDomainMapping);
+
+		mentionedLocalUserIds = mentionedLocalUserIds.Except(previousMentionedLocalUserIds).ToList();
+		note.Text             = text;
+
+
+		if (text is not null)
+		{
+			note.Mentions             = mentionedUserIds;
+			note.MentionedRemoteUsers = remoteMentions;
+			if (note.Visibility == Note.NoteVisibility.Specified)
+			{
+				if (note.ReplyUserId != null)
+					mentionedUserIds.Add(note.ReplyUserId);
+
+				// We want to make sure not to revoke visibility
+				note.VisibleUserIds = mentionedUserIds.Concat(note.VisibleUserIds).Distinct().ToList();
+			}
+
+			note.Text = mentionsResolver.ResolveMentions(text, note.UserHost, mentions, splitDomainMapping);
 		}
+
+		//TODO: handle updated alt text et al
+		note.FileIds           = attachments?.Select(p => p.Id).ToList() ?? [];
+		note.AttachedFileTypes = attachments?.Select(p => p.Type).ToList() ?? [];
+
+		note.UpdatedAt = DateTime.UtcNow;
+
+		db.Update(note);
+		await db.AddAsync(noteEdit);
+		await db.SaveChangesAsync();
+		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
+		await notificationSvc.GenerateReplyNotifications(note, mentionedLocalUserIds);
+		eventSvc.RaiseNoteUpdated(this, note);
+
+		var actor    = userRenderer.RenderLite(note.User);
+		var obj      = await noteRenderer.RenderAsync(note, mentions);
+		var activity = activityRenderer.RenderUpdate(obj, actor);
+
+		var recipients = await db.Users.Where(p => mentionedUserIds.Contains(p.Id))
+		                         .Select(p => new User { Host = p.Host, Inbox = p.Inbox })
+		                         .ToListAsync();
+
+		if (note.Visibility == Note.NoteVisibility.Specified)
+			await deliverSvc.DeliverToAsync(activity, note.User, recipients.ToArray());
+		else
+			await deliverSvc.DeliverToFollowersAsync(activity, note.User, recipients);
 
 		return note;
 	}
@@ -188,6 +271,7 @@ public class NoteService(
 			Uri        = note.Id,
 			Url        = note.Url?.Id, //FIXME: this doesn't seem to work yet
 			Text       = note.MkContent ?? await mfmConverter.FromHtmlAsync(note.Content, mentions),
+			Cw         = await mfmConverter.FromHtmlAsync(note.Summary), //TODO: mentions parsing?
 			UserId     = user.Id,
 			CreatedAt  = createdAt,
 			UserHost   = user.Host,
@@ -203,6 +287,8 @@ public class NoteService(
 
 		if (dbNote.Text is { Length: > 100000 })
 			throw GracefulException.UnprocessableEntity("Content cannot be longer than 100.000 characters");
+		if (dbNote.Cw is { Length: > 100000 })
+			throw GracefulException.UnprocessableEntity("Summary cannot be longer than 100.000 characters");
 
 		if (dbNote.Text is not null)
 		{
@@ -276,6 +362,10 @@ public class NoteService(
 
 		mentionedLocalUserIds = mentionedLocalUserIds.Except(previousMentionedLocalUserIds).ToList();
 		dbNote.Text           = note.MkContent ?? await mfmConverter.FromHtmlAsync(note.Content, mentions);
+		dbNote.Cw             = await mfmConverter.FromHtmlAsync(note.Summary); //TODO: mentions parsing?
+
+		if (dbNote.Cw is { Length: > 100000 })
+			throw GracefulException.UnprocessableEntity("Summary cannot be longer than 100.000 characters");
 
 		if (dbNote.Text is { Length: > 100000 })
 			throw GracefulException.UnprocessableEntity("Content cannot be longer than 100.000 characters");

@@ -59,4 +59,27 @@ public abstract class StatusSchemas
 			public bool HideTotals { get; set; } = false;
 		}
 	}
+
+	public class EditStatusRequest
+	{
+		[B(Name = "status")] [J("status")] public string? Text { get; set; }
+
+		[B(Name = "sensitive")]
+		[J("sensitive")]
+		public bool Sensitive { get; set; } = false;
+
+		[B(Name = "spoiler_text")]
+		[J("spoiler_text")]
+		public string? Cw { get; set; }
+
+		[B(Name = "language")] [J("language")] public string? Language { get; set; }
+
+		[B(Name = "media_ids")]
+		[J("media_ids")]
+		public List<string>? MediaIds { get; set; }
+
+		//TODO: media_attributes
+
+		[B(Name = "poll")] [J("poll")] public PostStatusRequest.PollData? Poll { get; set; }
+	}
 }

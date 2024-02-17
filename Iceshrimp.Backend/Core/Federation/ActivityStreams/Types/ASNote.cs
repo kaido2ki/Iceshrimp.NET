@@ -25,6 +25,10 @@ public class ASNote : ASObject
 	[J($"{Constants.ActivityStreamsNs}#sensitive")]
 	[JC(typeof(VC))]
 	public bool? Sensitive { get; set; }
+	
+	[J($"{Constants.ActivityStreamsNs}#summary")]
+	[JC(typeof(VC))]
+	public string? Summary { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#published")]
 	[JC(typeof(VC))]

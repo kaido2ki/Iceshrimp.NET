@@ -180,4 +180,31 @@ public class StatusController(
 
 		return Ok(res);
 	}
+
+	[HttpPut("{id}")]
+	[Authorize("write:statuses")]
+	[Produces("application/json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
+	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> EditNote(string id, [FromHybrid] StatusSchemas.EditStatusRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
+		           throw GracefulException.RecordNotFound();
+
+		if (request.Text == null && request.MediaIds is not { Count: > 0 } && request.Poll == null)
+			throw GracefulException.BadRequest("Posts must have text, media or poll");
+
+		if (request.Poll != null)
+			throw GracefulException.BadRequest("Polls haven't been implemented yet");
+
+		var attachments = request.MediaIds != null
+			? await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id)).ToListAsync()
+			: [];
+
+		note = await noteSvc.UpdateNoteAsync(note, request.Text, request.Cw, attachments);
+		var res = await noteRenderer.RenderAsync(note, user);
+
+		return Ok(res);
+	}
 }

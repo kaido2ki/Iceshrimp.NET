@@ -129,8 +129,11 @@ public class UserService(
 		try
 		{
 			await db.AddRangeAsync(user, profile, publicKey);
-			await ResolveAvatarAndBanner(user, actor); // We need to do this after calling db.Add(Range) to ensure data consistency
+			
+			// We need to do this after calling db.Add(Range) to ensure data consistency
+			var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
 			await db.SaveChangesAsync();
+			await processPendingDeletes();
 			return user;
 		}
 		catch (UniqueConstraintException)

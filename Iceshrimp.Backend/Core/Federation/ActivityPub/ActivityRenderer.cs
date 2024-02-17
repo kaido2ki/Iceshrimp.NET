@@ -16,25 +16,27 @@ public class ActivityRenderer(
 	private string GenerateActivityId() =>
 		$"https://{config.Value.WebDomain}/activities/{Guid.NewGuid().ToString().ToLowerInvariant()}";
 
-	public static ASCreate RenderCreate(ASObject obj, ASObject actor)
+	public static ASCreate RenderCreate(ASObject obj, ASObject actor) => new()
 	{
-		return new ASCreate { Id = $"{obj.Id}#Create", Actor = new ASActor { Id = actor.Id }, Object = obj };
-	}
+		Id = $"{obj.Id}#Create", Actor = ASActor.FromObject(actor), Object = obj
+	};
 
-	public ASAccept RenderAccept(User followee, User follower, string requestId)
+	public ASUpdate RenderUpdate(ASObject obj, ASObject actor) => new()
 	{
-		return new ASAccept
-		{
-			Id     = GenerateActivityId(),
-			Actor  = userRenderer.RenderLite(followee),
-			Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
-		};
-	}
+		Id = GenerateActivityId(), Actor = ASActor.FromObject(actor), Object = obj
+	};
 
-	public ASAccept RenderAccept(ASActor actor, ASObject obj)
+	public ASAccept RenderAccept(User followee, User follower, string requestId) => new()
 	{
-		return new ASAccept { Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj };
-	}
+		Id     = GenerateActivityId(),
+		Actor  = userRenderer.RenderLite(followee),
+		Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
+	};
+
+	public ASAccept RenderAccept(ASActor actor, ASObject obj) => new()
+	{
+		Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj
+	};
 
 	public ASLike RenderLike(Note note, User user)
 	{
@@ -82,37 +84,29 @@ public class ActivityRenderer(
 		}
 	}
 
-	public static ASFollow RenderFollow(ASObject followerActor, ASObject followeeActor, string requestId)
+	public static ASFollow RenderFollow(ASObject followerActor, ASObject followeeActor, string requestId) => new()
 	{
-		return new ASFollow
-		{
-			Id = requestId, Actor = ASActor.FromObject(followerActor), Object = ASActor.FromObject(followeeActor)
-		};
-	}
+		Id = requestId, Actor = ASActor.FromObject(followerActor), Object = ASActor.FromObject(followeeActor)
+	};
 
-	public ASUndo RenderUndo(ASActor actor, ASObject obj)
+	public ASUndo RenderUndo(ASActor actor, ASObject obj) => new()
 	{
-		return new ASUndo { Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj };
-	}
+		Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj
+	};
 
-	public ASReject RenderReject(ASActor actor, ASObject obj)
+	public ASReject RenderReject(ASActor actor, ASObject obj) => new()
 	{
-		return new ASReject { Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj };
-	}
+		Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj
+	};
 
-	public ASReject RenderReject(User followee, User follower, string requestId)
+	public ASReject RenderReject(User followee, User follower, string requestId) => new()
 	{
-		return new ASReject
-		{
-			Id     = GenerateActivityId(),
-			Actor  = userRenderer.RenderLite(followee),
-			Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
-		};
-	}
+		Id     = GenerateActivityId(),
+		Actor  = userRenderer.RenderLite(followee),
+		Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
+	};
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "This only makes sense for users")]
-	private string RenderFollowId(User follower, User followee)
-	{
-		return $"https://{config.Value.WebDomain}/follows/{follower.Id}/{followee.Id}";
-	}
+	private string RenderFollowId(User follower, User followee) =>
+		$"https://{config.Value.WebDomain}/follows/{follower.Id}/{followee.Id}";
 }
