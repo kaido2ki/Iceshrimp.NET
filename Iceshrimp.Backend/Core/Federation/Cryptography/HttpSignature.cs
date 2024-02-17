@@ -113,7 +113,7 @@ public static class HttpSignature
 			{
 				"(request-target)" => $"{requestMethod.ToLowerInvariant()} {requestPath}",
 				"host"             => $"{host ?? requestHeaders[header]}",
-				_                  => requestHeaders[header]
+				_                  => string.Join(", ", requestHeaders[header].AsEnumerable())
 			});
 		}
 
