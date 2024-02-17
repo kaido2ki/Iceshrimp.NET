@@ -74,7 +74,7 @@ public class ActivityFetcherService(
 			{ MediaType: "application/ld+json" } when headersContentType.Parameters.Any(p =>
 					p.Value != null &&
 					p.Name.ToLowerInvariant() == "profile" &&
-					p.Value.Split(" ").Contains("https://www.w3.org/ns/activitystreams"))
+					p.Value.Split(" ").Contains("\"https://www.w3.org/ns/activitystreams\""))
 				=> true,
 			_ => false
 		};
