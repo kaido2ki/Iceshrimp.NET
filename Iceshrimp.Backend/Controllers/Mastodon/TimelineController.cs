@@ -23,12 +23,14 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Produces("application/json")]
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, IDistributedCache cache) : Controller {
+public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, IDistributedCache cache) : Controller
+{
 	[Authorize("read:statuses")]
 	[HttpGet("home")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
-	public async Task<IActionResult> GetHomeTimeline(PaginationQuery query) {
+	public async Task<IActionResult> GetHomeTimeline(PaginationQuery query)
+	{
 		var user      = HttpContext.GetUserOrFail();
 		var heuristic = await QueryableExtensions.GetHeuristic(user, db, cache);
 
@@ -50,7 +52,8 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, I
 	[HttpGet("public")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
-	public async Task<IActionResult> GetPublicTimeline(PaginationQuery query) {
+	public async Task<IActionResult> GetPublicTimeline(PaginationQuery query)
+	{
 		var user = HttpContext.GetUserOrFail();
 
 		var res = await db.Notes

@@ -9,7 +9,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("UserId", "NoteId", "Choice", IsUnique = true)]
 [Index("UserId")]
 [Index("NoteId")]
-public class PollVote {
+public class PollVote
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

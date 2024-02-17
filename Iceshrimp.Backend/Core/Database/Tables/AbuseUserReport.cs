@@ -11,7 +11,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("TargetUserId")]
 [Index("CreatedAt")]
 [Index("ReporterHost")]
-public class AbuseUserReport {
+public class AbuseUserReport
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

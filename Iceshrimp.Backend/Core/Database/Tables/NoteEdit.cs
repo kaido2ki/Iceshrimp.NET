@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("note_edit")]
 [Index("NoteId")]
-public class NoteEdit {
+public class NoteEdit
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

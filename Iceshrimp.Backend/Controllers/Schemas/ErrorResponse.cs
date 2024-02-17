@@ -4,7 +4,8 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Schemas;
 
-public class ErrorResponse {
+public class ErrorResponse
+{
 	[J("statusCode")] public required int    StatusCode { get; set; }
 	[J("error")]      public required string Error      { get; set; }
 

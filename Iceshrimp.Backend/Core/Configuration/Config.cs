@@ -3,28 +3,35 @@ using Iceshrimp.Backend.Core.Middleware;
 
 namespace Iceshrimp.Backend.Core.Configuration;
 
-public sealed class Config {
+public sealed class Config
+{
 	public required InstanceSection Instance { get; init; } = new();
 	public required DatabaseSection Database { get; init; } = new();
 	public required RedisSection    Redis    { get; init; } = new();
 	public required SecuritySection Security { get; init; } = new();
 	public required StorageSection  Storage  { get; init; } = new();
 
-	public sealed class InstanceSection {
+	public sealed class InstanceSection
+	{
 		public readonly string Version;
 
-		public InstanceSection() {
+		public InstanceSection()
+		{
 			// Get version information from assembly
 			var version = Assembly.GetEntryAssembly()!
-			                      .GetCustomAttributes().OfType<AssemblyInformationalVersionAttribute>()
-			                      .First().InformationalVersion;
+			                      .GetCustomAttributes()
+			                      .OfType<AssemblyInformationalVersionAttribute>()
+			                      .First()
+			                      .InformationalVersion;
 
 			// If we have a git revision, limit it to 10 characters
-			if (version.Split('+') is { Length: 2 } split) {
+			if (version.Split('+') is { Length: 2 } split)
+			{
 				split[1] = split[1][..Math.Min(split[1].Length, 10)];
 				Version  = string.Join('+', split);
 			}
-			else {
+			else
+			{
 				Version = version;
 			}
 		}
@@ -39,7 +46,8 @@ public sealed class Config {
 		public int     CharacterLimit { get; init; } = 8192;
 	}
 
-	public sealed class SecuritySection {
+	public sealed class SecuritySection
+	{
 		public bool                 AuthorizedFetch      { get; init; } = true;
 		public ExceptionVerbosity   ExceptionVerbosity   { get; init; } = ExceptionVerbosity.Basic;
 		public Enums.Registrations  Registrations        { get; init; } = Enums.Registrations.Closed;
@@ -48,7 +56,8 @@ public sealed class Config {
 		public Enums.ItemVisibility ExposeBlockReasons   { get; init; } = Enums.ItemVisibility.Registered;
 	}
 
-	public sealed class DatabaseSection {
+	public sealed class DatabaseSection
+	{
 		public string  Host     { get; init; } = "localhost";
 		public int     Port     { get; init; } = 5432;
 		public string  Database { get; init; } = null!;
@@ -56,31 +65,40 @@ public sealed class Config {
 		public string? Password { get; init; }
 	}
 
-	public sealed class RedisSection {
-		public string  Host     { get; init; } = "localhost";
-		public int     Port     { get; init; } = 6379;
-		public string? UnixDomainSocket   { get; init; }
-		public string? Prefix   { get; init; }
-		public string? Username { get; init; }
-		public string? Password { get; init; }
-		public int?    Database { get; init; }
+	public sealed class RedisSection
+	{
+		public string  Host             { get; init; } = "localhost";
+		public int     Port             { get; init; } = 6379;
+		public string? UnixDomainSocket { get; init; }
+		public string? Prefix           { get; init; }
+		public string? Username         { get; init; }
+		public string? Password         { get; init; }
+		public int?    Database         { get; init; }
 
 		//TODO: TLS settings
 	}
 
-	public sealed class StorageSection {
-		public readonly TimeSpan?         MediaRetentionTimeSpan;
-		public           Enums.FileStorage Mode { get; init; } = Enums.FileStorage.Local;
+	public sealed class StorageSection
+	{
+		public readonly TimeSpan? MediaRetentionTimeSpan;
 
-		public string? MediaRetention {
+		public bool              CleanAvatars = false;
+		public bool              CleanBanners = false;
+		public Enums.FileStorage Mode { get; init; } = Enums.FileStorage.Local;
+
+		public string? MediaRetention
+		{
 			get => MediaRetentionTimeSpan?.ToString();
-			init {
-				if (value == null || string.IsNullOrWhiteSpace(value) || value.Trim() == "0") {
+			init
+			{
+				if (value == null || string.IsNullOrWhiteSpace(value) || value.Trim() == "0")
+				{
 					MediaRetentionTimeSpan = null;
 					return;
 				}
 
-				if (value.Trim() == "-1") {
+				if (value.Trim() == "-1")
+				{
 					MediaRetentionTimeSpan = TimeSpan.MaxValue;
 					return;
 				}
@@ -90,7 +108,8 @@ public sealed class Config {
 
 				var suffix = value[^1];
 
-				MediaRetentionTimeSpan = suffix switch {
+				MediaRetentionTimeSpan = suffix switch
+				{
 					'd' => TimeSpan.FromDays(num),
 					'w' => TimeSpan.FromDays(num * 7),
 					'm' => TimeSpan.FromDays(num * 30),
@@ -100,18 +119,17 @@ public sealed class Config {
 			}
 		}
 
-		public bool CleanAvatars = false;
-		public bool CleanBanners = false;
-
 		public LocalStorageSection?  Local         { get; init; }
 		public ObjectStorageSection? ObjectStorage { get; init; }
 	}
 
-	public sealed class LocalStorageSection {
+	public sealed class LocalStorageSection
+	{
 		public string? Path { get; init; }
 	}
 
-	public sealed class ObjectStorageSection {
+	public sealed class ObjectStorageSection
+	{
 		public string? Endpoint  { get; init; }
 		public string? Region    { get; init; }
 		public string? KeyId     { get; init; }

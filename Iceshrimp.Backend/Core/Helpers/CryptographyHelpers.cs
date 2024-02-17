@@ -2,7 +2,8 @@ using System.Security.Cryptography;
 
 namespace Iceshrimp.Backend.Core.Helpers;
 
-public static class CryptographyHelpers {
+public static class CryptographyHelpers
+{
 	public static string GenerateRandomString(int length) =>
 		Convert.ToBase64String(RandomNumberGenerator.GetBytes(length));
 

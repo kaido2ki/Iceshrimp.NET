@@ -12,7 +12,16 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("UpdatedAt")]
 [Index("Name")]
 [Index("CreatedAt")]
-public class Page {
+public class Page
+{
+	[PgName("page_visibility_enum")]
+	public enum PageVisibility
+	{
+		[PgName("public")]    Public,
+		[PgName("followers")] Followers,
+		[PgName("specified")] Specified
+	}
+
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
@@ -33,7 +42,7 @@ public class Page {
 	[Column("title")] [StringLength(256)] public string Title { get; set; } = null!;
 
 	[Column("name")] [StringLength(256)] public string Name { get; set; } = null!;
-	
+
 	[Column("visibility")] public PageVisibility Visibility { get; set; }
 
 	[Column("summary")]
@@ -80,18 +89,13 @@ public class Page {
 	[InverseProperty(nameof(DriveFile.Pages))]
 	public virtual DriveFile? EyeCatchingImage { get; set; }
 
-	[InverseProperty(nameof(PageLike.Page))] public virtual ICollection<PageLike> PageLikes { get; set; } = new List<PageLike>();
+	[InverseProperty(nameof(PageLike.Page))]
+	public virtual ICollection<PageLike> PageLikes { get; set; } = new List<PageLike>();
 
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.Pages))]
 	public virtual User User { get; set; } = null!;
 
-	[InverseProperty(nameof(Tables.UserProfile.PinnedPage))] public virtual UserProfile? UserProfile { get; set; }
-
-	[PgName("page_visibility_enum")]
-	public enum PageVisibility {
-		[PgName("public")]    Public,
-		[PgName("followers")] Followers,
-		[PgName("specified")] Specified,
-	}
+	[InverseProperty(nameof(Tables.UserProfile.PinnedPage))]
+	public virtual UserProfile? UserProfile { get; set; }
 }

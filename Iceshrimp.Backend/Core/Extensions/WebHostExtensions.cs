@@ -2,8 +2,10 @@ using Iceshrimp.Backend.Core.Configuration;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
-public static class WebHostExtensions {
-	public static void ConfigureKestrel(this IWebHostBuilder builder, IConfiguration configuration) {
+public static class WebHostExtensions
+{
+	public static void ConfigureKestrel(this IWebHostBuilder builder, IConfiguration configuration)
+	{
 		var config = configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
 		             throw new Exception("Failed to read Instance config section");
 

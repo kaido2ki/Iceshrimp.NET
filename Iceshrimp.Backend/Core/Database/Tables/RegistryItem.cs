@@ -8,7 +8,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("Domain")]
 [Index("Scope")]
 [Index("UserId")]
-public class RegistryItem {
+public class RegistryItem
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

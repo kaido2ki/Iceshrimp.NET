@@ -16,21 +16,26 @@ public class DriveController(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	IOptionsSnapshot<Config.StorageSection> options,
 	ILogger<DriveController> logger
-) : Controller {
+) : Controller
+{
 	[EnableCors("drive")]
 	[HttpGet("/files/{accessKey}")]
-	public async Task<IActionResult> GetFile(string accessKey) {
+	public async Task<IActionResult> GetFile(string accessKey)
+	{
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.AccessKey == accessKey ||
 		                                                        p.WebpublicAccessKey == accessKey ||
 		                                                        p.ThumbnailAccessKey == accessKey);
-		if (file == null) {
+		if (file == null)
+		{
 			Response.Headers.CacheControl = "max-age=86400";
 			return NotFound();
 		}
 
-		if (file.StoredInternal) {
+		if (file.StoredInternal)
+		{
 			var pathBase = options.Value.Local?.Path;
-			if (string.IsNullOrWhiteSpace(pathBase)) {
+			if (string.IsNullOrWhiteSpace(pathBase))
+			{
 				logger.LogError("Failed to get file {accessKey} from local storage: path does not exist", accessKey);
 				return NotFound();
 			}
@@ -41,14 +46,17 @@ public class DriveController(
 			Response.Headers.CacheControl = "max-age=31536000, immutable";
 			return File(stream, file.Type, true);
 		}
-		else {
-			if (file.IsLink) {
+		else
+		{
+			if (file.IsLink)
+			{
 				//TODO: handle remove media proxying
 				return NoContent();
 			}
 
 			var stream = await objectStorage.GetFileAsync(accessKey);
-			if (stream == null) {
+			if (stream == null)
+			{
 				logger.LogError("Failed to get file {accessKey} from object storage", accessKey);
 				return NotFound();
 			}

@@ -7,7 +7,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("user_group")]
 [Index("CreatedAt")]
 [Index("UserId")]
-public class UserGroup {
+public class UserGroup
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

@@ -12,9 +12,11 @@ namespace Iceshrimp.Backend.Controllers;
 [ApiController]
 [EnableCors("drive")]
 [Route("/identicon/{id}")]
-public class IdenticonController : Controller {
+public class IdenticonController : Controller
+{
 	[HttpGet]
-	public async Task GetIdenticon(string id) {
+	public async Task GetIdenticon(string id)
+	{
 		using var image = new Image<Rgb24>(Size, Size);
 
 		var random = new Random((int)XxHash32.HashToUInt32(Encoding.UTF8.GetBytes(id)));
@@ -31,18 +33,23 @@ public class IdenticonController : Controller {
 		var side   = new bool[SideN, CellCount];
 		var center = new bool[CellCount];
 
-		for (var i = 0; i < SideN; i++) {
-			for (var j = 0; j < CellCount; j++) {
+		for (var i = 0; i < SideN; i++)
+		{
+			for (var j = 0; j < CellCount; j++)
+			{
 				side[i, j] = random.Next(3) == 0;
 			}
 		}
 
-		for (var i = 0; i < CellCount; i++) {
+		for (var i = 0; i < CellCount; i++)
+		{
 			center[i] = random.Next(3) == 0;
 		}
 
-		for (var i = 0; i < CellCount; i++) {
-			for (var j = 0; j < CellCount; j++) {
+		for (var i = 0; i < CellCount; i++)
+		{
+			for (var j = 0; j < CellCount; j++)
+			{
 				var isXCenter = i == (CellCount - 1) / 2;
 				if (isXCenter && !center[j])
 					continue;
@@ -76,7 +83,8 @@ public class IdenticonController : Controller {
 	private const int CellSize       = CellCanvasSize / CellCount;
 	private const int SideN          = CellCount / 2;
 
-	private static readonly List<(Color start, Color end)> Colors = [
+	private static readonly List<(Color start, Color end)> Colors =
+	[
 		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(180, 99, 122))),
 		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(234, 157, 52))),
 		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(215, 130, 126))),

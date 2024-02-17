@@ -4,7 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("html_note_cache_entry")]
-public class HtmlNoteCacheEntry {
+public class HtmlNoteCacheEntry
+{
 	[Key]
 	[Column("noteId")]
 	[StringLength(32)]

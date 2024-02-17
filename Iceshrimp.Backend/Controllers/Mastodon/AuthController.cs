@@ -16,19 +16,21 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableRateLimiting("sliding")]
 [EnableCors("mastodon")]
 [Produces("application/json")]
-public class AuthController(DatabaseContext db) : Controller {
+public class AuthController(DatabaseContext db) : Controller
+{
 	[HttpGet("/api/v1/apps/verify_credentials")]
 	[Authenticate]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.VerifyAppCredentialsResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	public IActionResult VerifyAppCredentials() {
+	public IActionResult VerifyAppCredentials()
+	{
 		var token = HttpContext.GetOauthToken();
 		if (token == null) throw GracefulException.Unauthorized("The access token is invalid");
 
-		var res = new AuthSchemas.VerifyAppCredentialsResponse {
-			App      = token.App,
-			VapidKey = null //FIXME
+		var res = new AuthSchemas.VerifyAppCredentialsResponse
+		{
+			App = token.App, VapidKey = null //FIXME
 		};
 
 		return Ok(res);
@@ -40,7 +42,8 @@ public class AuthController(DatabaseContext db) : Controller {
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.RegisterAppResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> RegisterApp([FromHybrid] AuthSchemas.RegisterAppRequest request) {
+	public async Task<IActionResult> RegisterApp([FromHybrid] AuthSchemas.RegisterAppRequest request)
+	{
 		if (request.RedirectUris.Count == 0)
 			throw GracefulException.BadRequest("Invalid redirect_uris parameter");
 
@@ -51,15 +54,18 @@ public class AuthController(DatabaseContext db) : Controller {
 			throw GracefulException.BadRequest("Invalid scopes parameter");
 
 		if (request.Website != null)
-			try {
+			try
+			{
 				var uri = new Uri(request.Website);
 				if (!uri.IsAbsoluteUri || uri.Scheme is not "http" and not "https") throw new Exception();
 			}
-			catch {
+			catch
+			{
 				throw GracefulException.BadRequest("Invalid website URL");
 			}
 
-		var app = new OauthApp {
+		var app = new OauthApp
+		{
 			Id           = IdHelpers.GenerateSlowflakeId(),
 			ClientId     = CryptographyHelpers.GenerateRandomString(32),
 			ClientSecret = CryptographyHelpers.GenerateRandomString(32),
@@ -73,9 +79,9 @@ public class AuthController(DatabaseContext db) : Controller {
 		await db.AddAsync(app);
 		await db.SaveChangesAsync();
 
-		var res = new AuthSchemas.RegisterAppResponse {
-			App      = app,
-			VapidKey = null //FIXME
+		var res = new AuthSchemas.RegisterAppResponse
+		{
+			App = app, VapidKey = null //FIXME
 		};
 
 		return Ok(res);
@@ -87,7 +93,8 @@ public class AuthController(DatabaseContext db) : Controller {
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.OauthTokenResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetOauthToken([FromHybrid] AuthSchemas.OauthTokenRequest request) {
+	public async Task<IActionResult> GetOauthToken([FromHybrid] AuthSchemas.OauthTokenRequest request)
+	{
 		//TODO: app-level access (grant_type = "client_credentials")
 		if (request.GrantType != "authorization_code")
 			throw GracefulException.BadRequest("Invalid grant_type");
@@ -103,17 +110,17 @@ public class AuthController(DatabaseContext db) : Controller {
 				.BadRequest("The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.");
 
 		if (MastodonOauthHelpers.ExpandScopes(request.Scopes)
-		                        .Except(MastodonOauthHelpers.ExpandScopes(token.Scopes)).Any())
+		                        .Except(MastodonOauthHelpers.ExpandScopes(token.Scopes))
+		                        .Any())
 			throw GracefulException.BadRequest("The requested scope is invalid, unknown, or malformed.");
 
 		token.Scopes = request.Scopes;
 		token.Active = true;
 		await db.SaveChangesAsync();
 
-		var res = new AuthSchemas.OauthTokenResponse {
-			CreatedAt   = token.CreatedAt,
-			Scopes      = token.Scopes,
-			AccessToken = token.Token
+		var res = new AuthSchemas.OauthTokenResponse
+		{
+			CreatedAt = token.CreatedAt, Scopes = token.Scopes, AccessToken = token.Token
 		};
 
 		return Ok(res);
@@ -125,7 +132,8 @@ public class AuthController(DatabaseContext db) : Controller {
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> RevokeOauthToken([FromHybrid] AuthSchemas.OauthTokenRevocationRequest request) {
+	public async Task<IActionResult> RevokeOauthToken([FromHybrid] AuthSchemas.OauthTokenRevocationRequest request)
+	{
 		var token = await db.OauthTokens.FirstOrDefaultAsync(p => p.Token == request.Token &&
 		                                                          p.App.ClientId == request.ClientId &&
 		                                                          p.App.ClientSecret == request.ClientSecret);

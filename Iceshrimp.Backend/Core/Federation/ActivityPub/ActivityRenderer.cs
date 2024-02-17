@@ -11,48 +11,46 @@ public class ActivityRenderer(
 	IOptions<Config.InstanceSection> config,
 	UserRenderer userRenderer,
 	NoteRenderer noteRenderer
-) {
+)
+{
 	private string GenerateActivityId() =>
 		$"https://{config.Value.WebDomain}/activities/{Guid.NewGuid().ToString().ToLowerInvariant()}";
 
-	public static ASCreate RenderCreate(ASObject obj, ASObject actor) {
-		return new ASCreate {
-			Id     = $"{obj.Id}#Create",
-			Actor  = new ASActor { Id = actor.Id },
-			Object = obj
-		};
+	public static ASCreate RenderCreate(ASObject obj, ASObject actor)
+	{
+		return new ASCreate { Id = $"{obj.Id}#Create", Actor = new ASActor { Id = actor.Id }, Object = obj };
 	}
 
-	public ASAccept RenderAccept(User followee, User follower, string requestId) {
-		return new ASAccept {
-			Id = GenerateActivityId(),
-			Actor = userRenderer.RenderLite(followee),
+	public ASAccept RenderAccept(User followee, User follower, string requestId)
+	{
+		return new ASAccept
+		{
+			Id     = GenerateActivityId(),
+			Actor  = userRenderer.RenderLite(followee),
 			Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
 		};
 	}
 
-	public ASAccept RenderAccept(ASActor actor, ASObject obj) {
-		return new ASAccept {
-			Id = GenerateActivityId(),
-			Actor = actor.Compact(),
-			Object = obj
-		};
+	public ASAccept RenderAccept(ASActor actor, ASObject obj)
+	{
+		return new ASAccept { Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj };
 	}
 
-	public ASLike RenderLike(Note note, User user) {
+	public ASLike RenderLike(Note note, User user)
+	{
 		if (note.UserHost == null)
 			throw GracefulException.BadRequest("Refusing to render like activity: note user must be remote");
 		if (user.Host != null)
 			throw GracefulException.BadRequest("Refusing to render like activity: actor must be local");
 
-		return new ASLike {
-			Id     = GenerateActivityId(),
-			Actor  = userRenderer.RenderLite(user),
-			Object = noteRenderer.RenderLite(note)
+		return new ASLike
+		{
+			Id = GenerateActivityId(), Actor = userRenderer.RenderLite(user), Object = noteRenderer.RenderLite(note)
 		};
 	}
 
-	public ASFollow RenderFollow(User follower, User followee) {
+	public ASFollow RenderFollow(User follower, User followee)
+	{
 		if (follower.Host == null && followee.Host == null)
 			throw GracefulException.BadRequest("Refusing to render follow activity between two remote users");
 		if (follower.Host != null && followee.Host != null)
@@ -63,50 +61,49 @@ public class ActivityRenderer(
 		                    RenderFollowId(follower, followee));
 	}
 
-	public ASActivity RenderUnfollow(User follower, User followee) {
+	public ASActivity RenderUnfollow(User follower, User followee)
+	{
 		if (follower.Host == null && followee.Host == null)
 			throw GracefulException.BadRequest("Refusing to render unfollow activity between two remote users");
 		if (follower.Host != null && followee.Host != null)
 			throw GracefulException.BadRequest("Refusing to render unfollow activity between two local users");
 
-		if (follower.Host == null) {
+		if (follower.Host == null)
+		{
 			var actor = userRenderer.RenderLite(follower);
 			var obj   = userRenderer.RenderLite(followee);
 			return RenderUndo(actor, RenderFollow(actor, obj, RenderFollowId(follower, followee)));
 		}
-		else {
+		else
+		{
 			var actor = userRenderer.RenderLite(followee);
 			var obj   = userRenderer.RenderLite(follower);
 			return RenderReject(actor, RenderFollow(actor, obj, RenderFollowId(follower, followee)));
 		}
 	}
 
-	public static ASFollow RenderFollow(ASObject followerActor, ASObject followeeActor, string requestId) {
-		return new ASFollow {
-			Id     = requestId,
-			Actor  = ASActor.FromObject(followerActor),
-			Object = ASActor.FromObject(followeeActor)
+	public static ASFollow RenderFollow(ASObject followerActor, ASObject followeeActor, string requestId)
+	{
+		return new ASFollow
+		{
+			Id = requestId, Actor = ASActor.FromObject(followerActor), Object = ASActor.FromObject(followeeActor)
 		};
 	}
 
-	public ASUndo RenderUndo(ASActor actor, ASObject obj) {
-		return new ASUndo {
-			Id     = GenerateActivityId(),
-			Actor  = actor.Compact(),
-			Object = obj
-		};
+	public ASUndo RenderUndo(ASActor actor, ASObject obj)
+	{
+		return new ASUndo { Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj };
 	}
 
-	public ASReject RenderReject(ASActor actor, ASObject obj) {
-		return new ASReject {
-			Id     = GenerateActivityId(),
-			Actor  = actor.Compact(),
-			Object = obj
-		};
+	public ASReject RenderReject(ASActor actor, ASObject obj)
+	{
+		return new ASReject { Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj };
 	}
-	
-	public ASReject RenderReject(User followee, User follower, string requestId) {
-		return new ASReject {
+
+	public ASReject RenderReject(User followee, User follower, string requestId)
+	{
+		return new ASReject
+		{
 			Id     = GenerateActivityId(),
 			Actor  = userRenderer.RenderLite(followee),
 			Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
@@ -114,7 +111,8 @@ public class ActivityRenderer(
 	}
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "This only makes sense for users")]
-	private string RenderFollowId(User follower, User followee) {
+	private string RenderFollowId(User follower, User followee)
+	{
 		return $"https://{config.Value.WebDomain}/follows/{follower.Id}/{followee.Id}";
 	}
 }

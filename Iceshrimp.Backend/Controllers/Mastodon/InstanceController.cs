@@ -14,16 +14,19 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
-public class InstanceController(DatabaseContext db) : Controller {
+public class InstanceController(DatabaseContext db) : Controller
+{
 	[HttpGet("/api/v1/instance")]
 	[Produces("application/json")]
-	public async Task<IActionResult> GetInstanceInfo([FromServices] IOptionsSnapshot<Config> config) {
+	public async Task<IActionResult> GetInstanceInfo([FromServices] IOptionsSnapshot<Config> config)
+	{
 		var userCount     = await db.Users.LongCountAsync(p => p.Host == null);
 		var noteCount     = await db.Notes.LongCountAsync(p => p.UserHost == null);
 		var instanceCount = await db.Instances.LongCountAsync();
 		//TODO: admin contact
 
-		var res = new InstanceInfoResponse(config.Value) {
+		var res = new InstanceInfoResponse(config.Value)
+		{
 			Stats = new InstanceStats(userCount, noteCount, instanceCount)
 		};
 

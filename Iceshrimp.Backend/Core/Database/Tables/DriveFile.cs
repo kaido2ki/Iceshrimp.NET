@@ -20,7 +20,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("AccessKey")]
 [Index("Uri")]
 [Index("ThumbnailAccessKey")]
-public class DriveFile : IEntity {
+public class DriveFile : IEntity
+{
 	/// <summary>
 	///     The created date of the DriveFile.
 	/// </summary>
@@ -189,7 +190,8 @@ public class DriveFile : IEntity {
 	[StringLength(32)]
 	public string Id { get; set; } = IdHelpers.GenerateSlowflakeId();
 
-	public class FileProperties {
+	public class FileProperties
+	{
 		[J("width")]  public int? Width  { get; set; }
 		[J("height")] public int? Height { get; set; }
 

@@ -9,7 +9,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("UserId")]
 [Index("NoteId")]
 [Index("UserId", "NoteId", IsUnique = true)]
-public class NoteReaction {
+public class NoteReaction
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

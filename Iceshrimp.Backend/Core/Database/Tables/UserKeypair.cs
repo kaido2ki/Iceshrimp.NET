@@ -4,7 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_keypair")]
-public class UserKeypair {
+public class UserKeypair
+{
 	[Key]
 	[Column("userId")]
 	[StringLength(32)]

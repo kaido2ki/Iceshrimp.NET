@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("promo_note")]
 [Index("UserId")]
-public class PromoNote {
+public class PromoNote
+{
 	[Key]
 	[Column("noteId")]
 	[StringLength(32)]

@@ -7,7 +7,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("gallery_like")]
 [Index("UserId")]
 [Index("UserId", "PostId", IsUnique = true)]
-public class GalleryLike {
+public class GalleryLike
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

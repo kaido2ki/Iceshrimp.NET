@@ -5,7 +5,8 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASImage {
+public class ASImage
+{
 	[J($"{Constants.ActivityStreamsNs}#url")]
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? Url { get; set; }

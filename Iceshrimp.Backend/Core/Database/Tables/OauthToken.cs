@@ -7,7 +7,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("oauth_token")]
 [Index("Token")]
 [Index("Code")]
-public class OauthToken {
+public class OauthToken
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

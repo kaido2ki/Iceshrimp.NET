@@ -7,7 +7,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("page_like")]
 [Index("UserId")]
 [Index("UserId", "PageId", IsUnique = true)]
-public class PageLike {
+public class PageLike
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

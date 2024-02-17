@@ -8,7 +8,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("CreatedAt")]
 [Index("UserId")]
 [Index("Secret")]
-public class App {
+public class App
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

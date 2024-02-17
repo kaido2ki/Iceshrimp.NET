@@ -4,7 +4,8 @@ using JC = Newtonsoft.Json.JsonConverterAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASLink(string url) : ASObjectBase(url) {
+public class ASLink(string url) : ASObjectBase(url)
+{
 	[J($"{Constants.ActivityStreamsNs}#href")]
 	[JC(typeof(ASObjectBaseConverter))]
 	public ASObjectBase? Href { get; set; }

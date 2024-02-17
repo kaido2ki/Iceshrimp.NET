@@ -5,10 +5,13 @@ using Iceshrimp.Backend.Core.Middleware;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
-public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRenderer) {
+public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRenderer)
+{
 	public async Task<NotificationEntity> RenderAsync(
-		Notification notification, User? user, List<AccountEntity>? accounts = null, IEnumerable<StatusEntity>? statuses = null
-	) {
+		Notification notification, User? user, List<AccountEntity>? accounts = null,
+		IEnumerable<StatusEntity>? statuses = null
+	)
+	{
 		var dbNotifier = notification.Notifier ?? throw new GracefulException("Notification has no notifier");
 
 		var note = notification.Note != null
@@ -21,7 +24,8 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 
 		//TODO: specially handle quotes
 
-		var res = new NotificationEntity {
+		var res = new NotificationEntity
+		{
 			Id        = notification.Id,
 			Type      = NotificationEntity.EncodeType(notification.Type),
 			Note      = note,
@@ -34,7 +38,8 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 
 	public async Task<IEnumerable<NotificationEntity>> RenderManyAsync(
 		IEnumerable<Notification> notifications, User? user
-	) {
+	)
+	{
 		var notificationList = notifications.ToList();
 
 		var accounts = await noteRenderer.GetAccounts(notificationList.Where(p => p.Notifier != null)

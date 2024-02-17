@@ -5,12 +5,14 @@
 
 <h3>Iceshrimp.NET OAuth</h3>
 
-@if (Model.Token == null) {
+@if (Model.Token == null)
+{
     <div>
         The app <span class="app_name">@Model.App.Name</span> requests the following permissions:
 
         <ul>
-            @foreach (var scope in Model.Scopes) {
+            @foreach (var scope in Model.Scopes)
+            {
                 <li>@scope</li>
             }
         </ul>
@@ -26,12 +28,14 @@
         </div>
     </div>
 }
-else if (Model.Token.RedirectUri == "urn:ietf:wg:oauth:2.0:oob") {
+else if (Model.Token.RedirectUri == "urn:ietf:wg:oauth:2.0:oob")
+{
     <div>
         Your code is: <pre>@Model.Token.Code</pre>
     </div>
 }
-else {
+else
+{
     var uri   = new Uri(Model.Token.RedirectUri);
     var query = QueryHelpers.ParseQuery(uri.Query);
     query.Add("code", Model.Token.Code);

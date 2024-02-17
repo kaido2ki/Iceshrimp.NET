@@ -4,7 +4,8 @@ using JC = Newtonsoft.Json.JsonConverterAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASActivity : ASObject {
+public class ASActivity : ASObject
+{
 	[J($"{Constants.ActivityStreamsNs}#actor")]
 	[JC(typeof(ASActorConverter))]
 	public ASActor? Actor { get; set; }
@@ -13,7 +14,8 @@ public class ASActivity : ASObject {
 	[JC(typeof(ASObjectConverter))]
 	public ASObject? Object { get; set; }
 
-	public new static class Types {
+	public new static class Types
+	{
 		private const string Ns = Constants.ActivityStreamsNs;
 
 		public const string Create   = $"{Ns}#Create";
@@ -28,39 +30,48 @@ public class ASActivity : ASObject {
 	}
 }
 
-public class ASCreate : ASActivity {
+public class ASCreate : ASActivity
+{
 	public ASCreate() => Type = Types.Create;
 }
 
-public class ASDelete : ASActivity {
+public class ASDelete : ASActivity
+{
 	public ASDelete() => Type = Types.Delete;
 }
 
-public class ASFollow : ASActivity {
+public class ASFollow : ASActivity
+{
 	public ASFollow() => Type = Types.Follow;
 }
 
-public class ASUnfollow : ASActivity {
+public class ASUnfollow : ASActivity
+{
 	public ASUnfollow() => Type = Types.Unfollow;
 }
 
-public class ASAccept : ASActivity {
+public class ASAccept : ASActivity
+{
 	public ASAccept() => Type = Types.Accept;
 }
 
-public class ASReject : ASActivity {
+public class ASReject : ASActivity
+{
 	public ASReject() => Type = Types.Reject;
 }
 
-public class ASUndo : ASActivity {
+public class ASUndo : ASActivity
+{
 	public ASUndo() => Type = Types.Undo;
 }
 
-public class ASLike : ASActivity {
+public class ASLike : ASActivity
+{
 	public ASLike() => Type = Types.Like;
 }
 
-public class ASUpdate : ASActivity {
+public class ASUpdate : ASActivity
+{
 	public ASUpdate() => Type = Types.Update;
 }
 

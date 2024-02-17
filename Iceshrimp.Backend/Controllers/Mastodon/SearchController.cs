@@ -27,18 +27,21 @@ public class SearchController(
 	UserRenderer userRenderer,
 	NoteService noteSvc,
 	ActivityPub.UserResolver userResolver
-) : Controller {
+) : Controller
+{
 	[HttpGet("/api/v2/search")]
 	[Authorize("read:search")]
 	[LinkPagination(20, 40)]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchSchemas.SearchResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> Search(SearchSchemas.SearchRequest search, PaginationQuery pagination) {
+	public async Task<IActionResult> Search(SearchSchemas.SearchRequest search, PaginationQuery pagination)
+	{
 		if (search.Query == null)
 			throw GracefulException.BadRequest("Query is missing or invalid");
 
-		var result = new SearchSchemas.SearchResponse {
+		var result = new SearchSchemas.SearchResponse
+		{
 			Accounts = search.Type is null or "accounts" ? await SearchUsersAsync(search, pagination) : [],
 			Statuses = search.Type is null or "statuses" ? await SearchNotesAsync(search, pagination) : []
 			//TODO: implement hashtags
@@ -49,44 +52,56 @@ public class SearchController(
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
 	                 Justification = "Inspection doesn't know about the Projectable attribute")]
-	private async Task<List<AccountEntity>> SearchUsersAsync(SearchSchemas.SearchRequest search, PaginationQuery pagination) {
+	private async Task<List<AccountEntity>> SearchUsersAsync(
+		SearchSchemas.SearchRequest search,
+		PaginationQuery pagination
+	)
+	{
 		var user = HttpContext.GetUserOrFail();
 
-		if (search.Resolve) {
-			if (search.Query!.StartsWith("https://") || search.Query.StartsWith("http://")) {
-				try {
+		if (search.Resolve)
+		{
+			if (search.Query!.StartsWith("https://") || search.Query.StartsWith("http://"))
+			{
+				try
+				{
 					var result = await userResolver.ResolveAsync(search.Query);
 					return [await userRenderer.RenderAsync(result)];
 				}
-				catch {
+				catch
+				{
 					return [];
 				}
 			}
-			else {
-				var regex = new Regex
-					("^(?:@?(?<user>[a-zA-Z0-9_]+)@(?<host>[a-zA-Z0-9-.]+\\.[a-zA-Z0-9-]+))|(?:@(?<localuser>[a-zA-Z0-9_]+))$");
-				var match = regex.Match(search.Query);
-				if (match.Success) {
-					if (match.Groups["localuser"].Success) {
-						var username = match.Groups["localuser"].Value.ToLowerInvariant();
-						var result = await db.Users
-						                     .IncludeCommonProperties()
-						                     .Where(p => p.UsernameLower == username)
-						                     .FirstOrDefaultAsync();
 
-						return result != null ? [await userRenderer.RenderAsync(result)] : [];
+			var regex = new Regex
+				("^(?:@?(?<user>[a-zA-Z0-9_]+)@(?<host>[a-zA-Z0-9-.]+\\.[a-zA-Z0-9-]+))|(?:@(?<localuser>[a-zA-Z0-9_]+))$");
+			var match = regex.Match(search.Query);
+			if (match.Success)
+			{
+				if (match.Groups["localuser"].Success)
+				{
+					var username = match.Groups["localuser"].Value.ToLowerInvariant();
+					var result = await db.Users
+					                     .IncludeCommonProperties()
+					                     .Where(p => p.UsernameLower == username)
+					                     .FirstOrDefaultAsync();
+
+					return result != null ? [await userRenderer.RenderAsync(result)] : [];
+				}
+				else
+				{
+					var username = match.Groups["user"].Value;
+					var host     = match.Groups["host"].Value;
+
+					try
+					{
+						var result = await userResolver.ResolveAsync($"@{username}@{host}");
+						return [await userRenderer.RenderAsync(result)];
 					}
-					else {
-						var username = match.Groups["user"].Value;
-						var host     = match.Groups["host"].Value;
-
-						try {
-							var result = await userResolver.ResolveAsync($"@{username}@{host}");
-							return [await userRenderer.RenderAsync(result)];
-						}
-						catch {
-							return [];
-						}
+					catch
+					{
+						return [];
 					}
 				}
 			}
@@ -105,10 +120,15 @@ public class SearchController(
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
 	                 Justification = "Inspection doesn't know about the Projectable attribute")]
-	private async Task<List<StatusEntity>> SearchNotesAsync(SearchSchemas.SearchRequest search, PaginationQuery pagination) {
+	private async Task<List<StatusEntity>> SearchNotesAsync(
+		SearchSchemas.SearchRequest search,
+		PaginationQuery pagination
+	)
+	{
 		var user = HttpContext.GetUserOrFail();
 
-		if (search.Resolve && (search.Query!.StartsWith("https://") || search.Query.StartsWith("http://"))) {
+		if (search.Resolve && (search.Query!.StartsWith("https://") || search.Query.StartsWith("http://")))
+		{
 			var note = await db.Notes
 			                   .IncludeCommonProperties()
 			                   .Where(p => p.Uri == search.Query || p.Url == search.Query)
@@ -118,11 +138,13 @@ public class SearchController(
 
 			// Second check in case note is known but visibility prevents us from returning it
 			//TODO: figure out whether there is a more efficient way to get this information (in one query)
-			if (note == null && !await db.Notes.AnyAsync(p => p.Uri == search.Query || p.Url == search.Query)) {
+			if (note == null && !await db.Notes.AnyAsync(p => p.Uri == search.Query || p.Url == search.Query))
+			{
 				var tmpNote = await noteSvc.ResolveNoteAsync(search.Query);
 
 				// We need to re-fetch the note to capture the includes
-				if (tmpNote != null) {
+				if (tmpNote != null)
+				{
 					note = await db.Notes
 					               .IncludeCommonProperties()
 					               .Where(p => p.Id == tmpNote.Id)

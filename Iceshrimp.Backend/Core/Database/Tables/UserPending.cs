@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_pending")]
 [Index("Code", IsUnique = true)]
-public class UserPending {
+public class UserPending
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

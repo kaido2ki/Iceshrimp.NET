@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("oauth_app")]
 [Index("ClientId", IsUnique = true)]
-public class OauthApp {
+public class OauthApp
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
@@ -58,5 +59,6 @@ public class OauthApp {
 	[Column("redirectUris", TypeName = "character varying(512)[]")]
 	public List<string> RedirectUris { get; set; } = null!;
 
-	[InverseProperty(nameof(OauthToken.App))] public virtual ICollection<OauthToken> OauthTokens { get; set; } = new List<OauthToken>();
+	[InverseProperty(nameof(OauthToken.App))]
+	public virtual ICollection<OauthToken> OauthTokens { get; set; } = new List<OauthToken>();
 }

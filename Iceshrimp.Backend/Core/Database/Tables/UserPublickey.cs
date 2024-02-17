@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_publickey")]
 [Index("KeyId", IsUnique = true)]
-public class UserPublickey {
+public class UserPublickey
+{
 	[Key]
 	[Column("userId")]
 	[StringLength(32)]

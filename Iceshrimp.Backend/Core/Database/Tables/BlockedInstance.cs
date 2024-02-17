@@ -4,7 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("blocked_instance")]
-public class BlockedInstance {
+public class BlockedInstance
+{
 	[Key]
 	[Column("host")]
 	[StringLength(256)]

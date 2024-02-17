@@ -14,11 +14,13 @@ namespace Iceshrimp.Backend.Controllers;
 [Produces("application/json")]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/user/{id}")]
-public class UserController(DatabaseContext db) : Controller {
+public class UserController(DatabaseContext db) : Controller
+{
 	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUser(string id) {
+	public async Task<IActionResult> GetUser(string id)
+	{
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
 		return Ok(user);
@@ -27,7 +29,8 @@ public class UserController(DatabaseContext db) : Controller {
 	[HttpGet("notes")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TimelineResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUserNotes(string id) {
+	public async Task<IActionResult> GetUserNotes(string id)
+	{
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
 

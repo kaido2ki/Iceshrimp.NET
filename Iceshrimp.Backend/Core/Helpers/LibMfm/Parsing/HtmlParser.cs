@@ -4,23 +4,30 @@ using Iceshrimp.Backend.Core.Database.Tables;
 
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 
-internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions) {
-	internal string? ParseNode(INode node) {
+internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions)
+{
+	internal string? ParseNode(INode node)
+	{
 		if (node.NodeType is NodeType.Text)
 			return node.TextContent;
 		if (node.NodeType is NodeType.Comment or NodeType.Document)
 			return null;
 
-		switch (node.NodeName) {
-			case "BR": {
+		switch (node.NodeName)
+		{
+			case "BR":
+			{
 				return "\n";
 			}
-			case "A": {
-				if (node is HtmlElement el) {
+			case "A":
+			{
+				if (node is HtmlElement el)
+				{
 					var href = el.GetAttribute("href");
 					if (href == null) return $"<plain>{el.TextContent}</plain>";
 
-					if (el.ClassList.Contains("u-url") && el.ClassList.Contains("mention")) {
+					if (el.ClassList.Contains("u-url") && el.ClassList.Contains("mention"))
+					{
 						var mention = mentions.FirstOrDefault(p => p.Uri == href || p.Url == href);
 						return mention != null
 							? $"@{mention.Username}@{mention.Host}"
@@ -32,33 +39,41 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions) {
 
 				return node.TextContent;
 			}
-			case "H1": {
+			case "H1":
+			{
 				return $"【{ParseChildren(node)}】\n";
 			}
 			case "B":
-			case "STRONG": {
+			case "STRONG":
+			{
 				return $"**{ParseChildren(node)}**";
 			}
-			case "SMALL": {
+			case "SMALL":
+			{
 				return $"<small>{ParseChildren(node)}</small>";
 			}
 			case "S":
-			case "DEL": {
+			case "DEL":
+			{
 				return $"~~{ParseChildren(node)}~~";
 			}
 			case "I":
-			case "EM": {
+			case "EM":
+			{
 				return $"<i>{ParseChildren(node)}</i>";
 			}
-			case "PRE": {
+			case "PRE":
+			{
 				return node.ChildNodes is [{ NodeName: "CODE" }]
 					? $"\n```\n{string.Join(null, node.ChildNodes[0].TextContent)}\n```\n"
 					: ParseChildren(node);
 			}
-			case "CODE": {
+			case "CODE":
+			{
 				return $"`{ParseChildren(node)}`";
 			}
-			case "BLOCKQUOTE": {
+			case "BLOCKQUOTE":
+			{
 				return node.TextContent.Length > 0
 					? $"\n> {string.Join("\n> ", node.TextContent.Split("\n"))}"
 					: null;
@@ -69,7 +84,8 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions) {
 			case "H3":
 			case "H4":
 			case "H5":
-			case "H6": {
+			case "H6":
+			{
 				return $"\n\n{ParseChildren(node)}";
 			}
 
@@ -79,17 +95,20 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions) {
 			case "ARTICLE":
 			case "LI":
 			case "DT":
-			case "DD": {
+			case "DD":
+			{
 				return $"\n{ParseChildren(node)}";
 			}
 
-			default: {
+			default:
+			{
 				return ParseChildren(node);
 			}
 		}
 	}
 
-	private string ParseChildren(INode node) {
+	private string ParseChildren(INode node)
+	{
 		return string.Join(null, node.ChildNodes.Select(ParseNode));
 	}
 }

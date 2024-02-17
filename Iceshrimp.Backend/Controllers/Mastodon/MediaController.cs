@@ -18,27 +18,31 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AttachmentEntity))]
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-public class MediaController(DriveService driveSvc) : Controller {
+public class MediaController(DriveService driveSvc) : Controller
+{
 	[HttpPost("/api/v1/media")]
 	[HttpPost("/api/v2/media")]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> UploadAttachment(MediaSchemas.UploadMediaRequest request) {
+	public async Task<IActionResult> UploadAttachment(MediaSchemas.UploadMediaRequest request)
+	{
 		var user = HttpContext.GetUserOrFail();
-		var rq = new DriveFileCreationRequest {
+		var rq = new DriveFileCreationRequest
+		{
 			Filename    = request.File.FileName,
 			IsSensitive = false,
 			Comment     = request.Description,
-			MimeType    = request.File.ContentType,
+			MimeType    = request.File.ContentType
 		};
 		var file = await driveSvc.StoreFile(request.File.OpenReadStream(), user, rq);
-		var res = new AttachmentEntity {
+		var res = new AttachmentEntity
+		{
 			Id          = file.Id,
 			Type        = AttachmentEntity.GetType(file.Type),
 			Url         = file.Url,
 			Blurhash    = file.Blurhash,
 			Description = file.Comment,
 			PreviewUrl  = file.ThumbnailUrl,
-			RemoteUrl   = file.Uri,
+			RemoteUrl   = file.Uri
 			//Metadata = TODO
 		};
 

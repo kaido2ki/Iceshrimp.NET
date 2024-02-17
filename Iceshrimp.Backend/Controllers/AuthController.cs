@@ -17,22 +17,24 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableRateLimiting("sliding")]
 [Produces("application/json")]
 [Route("/api/iceshrimp/v1/auth")]
-public class AuthController(DatabaseContext db, UserService userSvc) : Controller {
+public class AuthController(DatabaseContext db, UserService userSvc) : Controller
+{
 	[HttpGet]
 	[Authenticate]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
-	public IActionResult GetAuthStatus() {
+	public IActionResult GetAuthStatus()
+	{
 		var session = HttpContext.GetSession();
 
 		if (session == null)
-			return Ok(new AuthResponse {
-				Status = AuthStatusEnum.Guest
-			});
+			return Ok(new AuthResponse { Status = AuthStatusEnum.Guest });
 
-		return Ok(new AuthResponse {
+		return Ok(new AuthResponse
+		{
 			Status = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
 			Token  = session.Token,
-			User = new UserResponse {
+			User = new UserResponse
+			{
 				Username  = session.User.Username,
 				Id        = session.User.Id,
 				AvatarUrl = session.User.AvatarUrl,
@@ -50,7 +52,8 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
 	[SuppressMessage("ReSharper.DPA", "DPA0011: High execution time of MVC action",
 	                 Justification = "Argon2 is execution time-heavy by design")]
-	public async Task<IActionResult> Login([FromBody] AuthRequest request) {
+	public async Task<IActionResult> Login([FromBody] AuthRequest request)
+	{
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Host == null &&
 		                                                   p.UsernameLower == request.Username.ToLowerInvariant());
 		if (user == null)
@@ -62,8 +65,10 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 			return StatusCode(StatusCodes.Status403Forbidden);
 
 		var session = HttpContext.GetSession();
-		if (session == null) {
-			session = new Session {
+		if (session == null)
+		{
+			session = new Session
+			{
 				Id        = IdHelpers.GenerateSlowflakeId(),
 				UserId    = user.Id,
 				Active    = !profile.TwoFactorEnabled,
@@ -74,10 +79,12 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 			await db.SaveChangesAsync();
 		}
 
-		return Ok(new AuthResponse {
+		return Ok(new AuthResponse
+		{
 			Status = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
 			Token  = session.Token,
-			User = new UserResponse {
+			User = new UserResponse
+			{
 				Username  = session.User.Username,
 				Id        = session.User.Id,
 				AvatarUrl = session.User.AvatarUrl,
@@ -93,7 +100,8 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> Register([FromBody] RegistrationRequest request) {
+	public async Task<IActionResult> Register([FromBody] RegistrationRequest request)
+	{
 		//TODO: captcha support
 
 		await userSvc.CreateLocalUserAsync(request.Username, request.Password, request.Invite);
@@ -110,7 +118,8 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
 	[SuppressMessage("ReSharper.DPA", "DPA0011: High execution time of MVC action",
 	                 Justification = "Argon2 is execution time-heavy by design")]
-	public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request) {
+	public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+	{
 		var user        = HttpContext.GetUser() ?? throw new GracefulException("HttpContext.GetUser() was null");
 		var userProfile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
 		if (userProfile is not { Password: not null }) throw new GracefulException("userProfile?.Password was null");
@@ -120,9 +129,6 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 		userProfile.Password = AuthHelpers.HashPassword(request.NewPassword);
 		await db.SaveChangesAsync();
 
-		return await Login(new AuthRequest {
-			Username = user.Username,
-			Password = request.NewPassword
-		});
+		return await Login(new AuthRequest { Username = user.Username, Password = request.NewPassword });
 	}
 }

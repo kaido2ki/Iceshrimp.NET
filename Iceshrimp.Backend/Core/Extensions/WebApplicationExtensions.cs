@@ -8,8 +8,10 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
-public static class WebApplicationExtensions {
-	public static IApplicationBuilder UseCustomMiddleware(this IApplicationBuilder app) {
+public static class WebApplicationExtensions
+{
+	public static IApplicationBuilder UseCustomMiddleware(this IApplicationBuilder app)
+	{
 		// Caution: make sure these are in the correct order
 		return app.UseMiddleware<RequestDurationMiddleware>()
 		          .UseMiddleware<ErrorHandlerMiddleware>()
@@ -20,9 +22,11 @@ public static class WebApplicationExtensions {
 		          .UseMiddleware<AuthorizedFetchMiddleware>();
 	}
 
-	public static IApplicationBuilder UseSwaggerWithOptions(this WebApplication app) {
+	public static IApplicationBuilder UseSwaggerWithOptions(this WebApplication app)
+	{
 		app.UseSwagger();
-		app.UseSwaggerUI(options => {
+		app.UseSwaggerUI(options =>
+		{
 			options.DocumentTitle = "Iceshrimp API documentation";
 			options.SwaggerEndpoint("v1/swagger.json", "Iceshrimp.NET");
 			options.InjectStylesheet("/swagger/styles.css");
@@ -35,7 +39,8 @@ public static class WebApplicationExtensions {
 		return app;
 	}
 
-	public static async Task<Config.InstanceSection> Initialize(this WebApplication app, string[] args) {
+	public static async Task<Config.InstanceSection> Initialize(this WebApplication app, string[] args)
+	{
 		var instanceConfig = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
 		                     throw new Exception("Failed to read Instance config section");
 
@@ -45,7 +50,8 @@ public static class WebApplicationExtensions {
 		app.Logger.LogInformation("Iceshrimp.NET v{version} ({domain})", instanceConfig.Version,
 		                          instanceConfig.AccountDomain);
 
-		if (app.Environment.IsDevelopment()) {
+		if (app.Environment.IsDevelopment())
+		{
 			app.Logger.LogWarning("The hosting environment is set to Development.");
 			app.Logger.LogWarning("This application will not validate the Host header for incoming requests.");
 			app.Logger.LogWarning("If this is not a local development instance, please set the environment to Production.");
@@ -53,69 +59,84 @@ public static class WebApplicationExtensions {
 
 		var provider = app.Services.CreateScope().ServiceProvider;
 		var context  = provider.GetService<DatabaseContext>();
-		if (context == null) {
+		if (context == null)
+		{
 			app.Logger.LogCritical("Failed to initialize database context");
 			Environment.Exit(1);
 		}
 
 		app.Logger.LogInformation("Verifying database connection...");
-		if (!await context.Database.CanConnectAsync()) {
+		if (!await context.Database.CanConnectAsync())
+		{
 			app.Logger.LogCritical("Failed to connect to database");
 			Environment.Exit(1);
 		}
 
-		if (args.Contains("--migrate") || args.Contains("--migrate-and-start")) {
+		if (args.Contains("--migrate") || args.Contains("--migrate-and-start"))
+		{
 			app.Logger.LogInformation("Running migrations...");
 			context.Database.SetCommandTimeout(0);
 			await context.Database.MigrateAsync();
 			context.Database.SetCommandTimeout(30);
 			if (args.Contains("--migrate")) Environment.Exit(0);
 		}
-		else if ((await context.Database.GetPendingMigrationsAsync()).Any()) {
+		else if ((await context.Database.GetPendingMigrationsAsync()).Any())
+		{
 			app.Logger.LogCritical("Database has pending migrations, please restart with --migrate or --migrate-and-start");
 			Environment.Exit(1);
 		}
 
 		app.Logger.LogInformation("Verifying redis connection...");
 		var cache = provider.GetService<IDistributedCache>();
-		if (cache == null) {
+		if (cache == null)
+		{
 			app.Logger.LogCritical("Failed to initialize redis cache");
 			Environment.Exit(1);
 		}
 
-		try {
+		try
+		{
 			await cache.GetAsync("test");
 		}
-		catch {
+		catch
+		{
 			app.Logger.LogCritical("Failed to connect to redis");
 			Environment.Exit(1);
 		}
 
-		if (storageConfig.Mode == Enums.FileStorage.Local) {
+		if (storageConfig.Mode == Enums.FileStorage.Local)
+		{
 			if (string.IsNullOrWhiteSpace(storageConfig.Local?.Path) ||
-			    !Directory.Exists(storageConfig.Local.Path)) {
+			    !Directory.Exists(storageConfig.Local.Path))
+			{
 				app.Logger.LogCritical("Local storage path does not exist");
 				Environment.Exit(1);
 			}
-			else {
-				try {
+			else
+			{
+				try
+				{
 					var path = Path.Combine(storageConfig.Local.Path, Path.GetRandomFileName());
 
 					await using var fs = File.Create(path, 1, FileOptions.DeleteOnClose);
 				}
-				catch {
+				catch
+				{
 					app.Logger.LogCritical("Local storage path is not accessible or not writable");
 					Environment.Exit(1);
 				}
 			}
 		}
-		else if (storageConfig.Mode == Enums.FileStorage.ObjectStorage) {
+		else if (storageConfig.Mode == Enums.FileStorage.ObjectStorage)
+		{
 			app.Logger.LogInformation("Verifying object storage configuration...");
 			var svc = provider.GetRequiredService<ObjectStorageService>();
-			try {
+			try
+			{
 				await svc.VerifyCredentialsAsync();
 			}
-			catch (Exception e) {
+			catch (Exception e)
+			{
 				app.Logger.LogCritical("Failed to initialize object storage: {message}", e.Message);
 				Environment.Exit(1);
 			}
@@ -126,11 +147,13 @@ public static class WebApplicationExtensions {
 		return instanceConfig;
 	}
 
-	public static void SetKestrelUnixSocketPermissions(this WebApplication app) {
+	public static void SetKestrelUnixSocketPermissions(this WebApplication app)
+	{
 		var config = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
 		             throw new Exception("Failed to read instance config");
 		if (config.ListenSocket == null) return;
-		var logger = app.Services.CreateScope().ServiceProvider.GetRequiredService<ILoggerFactory>()
+		var logger = app.Services.CreateScope()
+		                .ServiceProvider.GetRequiredService<ILoggerFactory>()
 		                .CreateLogger("Microsoft.Hosting.Lifetime");
 
 		if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS() && !OperatingSystem.IsFreeBSD())

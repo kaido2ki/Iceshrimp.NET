@@ -8,7 +8,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("AnnouncementId")]
 [Index("UserId")]
 [Index("UserId", "AnnouncementId", IsUnique = true)]
-public class AnnouncementRead {
+public class AnnouncementRead
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

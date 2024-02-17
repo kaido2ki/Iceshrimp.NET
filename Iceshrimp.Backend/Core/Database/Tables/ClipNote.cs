@@ -8,7 +8,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("NoteId", "ClipId", IsUnique = true)]
 [Index("NoteId")]
 [Index("ClipId")]
-public class ClipNote {
+public class ClipNote
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

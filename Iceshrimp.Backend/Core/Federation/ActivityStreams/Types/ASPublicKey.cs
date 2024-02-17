@@ -5,11 +5,12 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASPublicKey : ASObject {
+public class ASPublicKey : ASObject
+{
 	[J($"{Constants.W3IdSecurityNs}#owner")]
 	[JC(typeof(ASObjectBaseConverter))]
 	public ASObjectBase? Owner { get; set; }
-	
+
 	[J($"{Constants.W3IdSecurityNs}#publicKeyPem")]
 	[JC(typeof(VC))]
 	public string? PublicKey { get; set; }

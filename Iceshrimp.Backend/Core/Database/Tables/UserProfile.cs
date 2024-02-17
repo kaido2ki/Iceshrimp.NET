@@ -10,7 +10,16 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("EnableWordMute")]
 [Index("UserHost")]
 [Index("PinnedPageId", IsUnique = true)]
-public class UserProfile {
+public class UserProfile
+{
+	[PgName("user_profile_ffvisibility_enum")]
+	public enum UserProfileFFVisibility
+	{
+		[PgName("public")]    Public,
+		[PgName("followers")] Followers,
+		[PgName("private")]   Private
+	}
+
 	[Key]
 	[Column("userId")]
 	[StringLength(32)]
@@ -167,14 +176,8 @@ public class UserProfile {
 	[InverseProperty(nameof(Tables.User.UserProfile))]
 	public virtual User User { get; set; } = null!;
 
-	[PgName("user_profile_ffvisibility_enum")]
-	public enum UserProfileFFVisibility {
-		[PgName("public")]    Public,
-		[PgName("followers")] Followers,
-		[PgName("private")]   Private,
-	}
-
-	public class Field {
+	public class Field
+	{
 		[J("name")]     public required string Name       { get; set; }
 		[J("value")]    public required string Value      { get; set; }
 		[J("verified")] public          bool?  IsVerified { get; set; }

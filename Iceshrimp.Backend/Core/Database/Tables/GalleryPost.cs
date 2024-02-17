@@ -12,7 +12,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("UserId")]
 [Index("IsSensitive")]
 [Index("UpdatedAt")]
-public class GalleryPost {
+public class GalleryPost
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

@@ -8,7 +8,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("Active")]
 [Index("On")]
 [Index("UserId")]
-public class Webhook {
+public class Webhook
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

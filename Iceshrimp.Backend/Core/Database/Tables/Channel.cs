@@ -10,7 +10,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("LastNotedAt")]
 [Index("CreatedAt")]
 [Index("UserId")]
-public class Channel {
+public class Channel
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
@@ -74,7 +75,8 @@ public class Channel {
 	[InverseProperty(nameof(ChannelNotePin.Channel))]
 	public virtual ICollection<ChannelNotePin> ChannelNotePins { get; set; } = new List<ChannelNotePin>();
 
-	[InverseProperty(nameof(Note.Channel))] public virtual ICollection<Note> Notes { get; set; } = new List<Note>();
+	[InverseProperty(nameof(Note.Channel))]
+	public virtual ICollection<Note> Notes { get; set; } = new List<Note>();
 
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.Channels))]

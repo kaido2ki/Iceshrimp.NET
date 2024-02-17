@@ -8,7 +8,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("attestation_challenge")]
 [Index("Challenge")]
 [Index("UserId")]
-public class AttestationChallenge {
+public class AttestationChallenge
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

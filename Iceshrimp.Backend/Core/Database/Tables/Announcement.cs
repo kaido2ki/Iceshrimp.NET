@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("announcement")]
 [Index("CreatedAt")]
-public class Announcement {
+public class Announcement
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

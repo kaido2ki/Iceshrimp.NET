@@ -16,11 +16,14 @@ namespace Iceshrimp.Backend.Controllers;
 [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
 [SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor",
                  Justification = "We only have a DatabaseContext in our DI pool, not the base type")]
-public class AdminController(DatabaseContext db) : Controller {
+public class AdminController(DatabaseContext db) : Controller
+{
 	[HttpPost("invites/generate")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InviteResponse))]
-	public async Task<IActionResult> GenerateInvite() {
-		var invite = new RegistrationInvite {
+	public async Task<IActionResult> GenerateInvite()
+	{
+		var invite = new RegistrationInvite
+		{
 			Id        = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Code      = CryptographyHelpers.GenerateRandomString(32)
@@ -29,9 +32,7 @@ public class AdminController(DatabaseContext db) : Controller {
 		await db.AddAsync(invite);
 		await db.SaveChangesAsync();
 
-		var res = new InviteResponse {
-			Code = invite.Code
-		};
+		var res = new InviteResponse { Code = invite.Code };
 
 		return Ok(res);
 	}

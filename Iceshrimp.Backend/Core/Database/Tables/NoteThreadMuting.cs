@@ -8,7 +8,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("UserId")]
 [Index("UserId", "ThreadId", IsUnique = true)]
 [Index("ThreadId")]
-public class NoteThreadMuting {
+public class NoteThreadMuting
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("registration_invite")]
 [Index("Code", IsUnique = true)]
-public class RegistrationInvite {
+public class RegistrationInvite
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

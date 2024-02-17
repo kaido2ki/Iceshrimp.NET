@@ -24,27 +24,33 @@ public class DriveService(
 	HttpClient httpClient,
 	QueueService queueSvc,
 	ILogger<DriveService> logger
-) {
+)
+{
 	public async Task<DriveFile?> StoreFile(
 		string? uri, User user, bool sensitive, string? description = null, string? mimeType = null
-	) {
+	)
+	{
 		if (uri == null) return null;
 
 		logger.LogDebug("Storing file {uri} for user {userId}", uri, user.Id);
 
-		try {
+		try
+		{
 			// Do we already have the file?
 			var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Uri == uri);
-			if (file != null) {
+			if (file != null)
+			{
 				// If the user matches, return the existing file
-				if (file.UserId == user.Id) {
+				if (file.UserId == user.Id)
+				{
 					logger.LogDebug("File {uri} is already registered for user, returning existing file {id}",
 					                uri, file.Id);
 					return file;
 				}
 
 				// Otherwise, clone the file
-				var req = new DriveFileCreationRequest {
+				var req = new DriveFileCreationRequest
+				{
 					Uri         = uri,
 					IsSensitive = sensitive,
 					Filename    = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
@@ -63,7 +69,8 @@ public class DriveService(
 
 			var res = await httpClient.GetAsync(uri);
 
-			var request = new DriveFileCreationRequest {
+			var request = new DriveFileCreationRequest
+			{
 				Uri         = uri,
 				Filename    = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
 				IsSensitive = sensitive,
@@ -73,19 +80,23 @@ public class DriveService(
 
 			return await StoreFile(await res.Content.ReadAsStreamAsync(), user, request);
 		}
-		catch (Exception e) {
+		catch (Exception e)
+		{
 			logger.LogError("Failed to insert file {uri}: {error}", uri, e.Message);
 			return null;
 		}
 	}
 
-	public async Task<DriveFile> StoreFile(Stream data, User user, DriveFileCreationRequest request) {
+	public async Task<DriveFile> StoreFile(Stream data, User user, DriveFileCreationRequest request)
+	{
 		var buf    = new BufferedStream(data);
 		var digest = await DigestHelpers.Sha256DigestAsync(buf);
 		logger.LogDebug("Storing file {digest} for user {userId}", digest, user.Id);
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest);
-		if (file is { IsLink: false }) {
-			if (file.UserId == user.Id) {
+		if (file is { IsLink: false })
+		{
+			if (file.UserId == user.Id)
+			{
 				logger.LogDebug("File {digest} is already registered for user, returning existing file {id}",
 				                digest, file.Id);
 				return file;
@@ -115,8 +126,10 @@ public class DriveService(
 
 		DriveFile.FileProperties? properties = null;
 
-		if (request.MimeType.StartsWith("image/") || request.MimeType == "image") {
-			try {
+		if (request.MimeType.StartsWith("image/") || request.MimeType == "image")
+		{
+			try
+			{
 				var image = await Image.LoadAsync<Rgba32>(buf);
 				blurhash = Blurhasher.Encode(image, 7, 7);
 
@@ -124,12 +137,10 @@ public class DriveService(
 				if (request.MimeType == "image" && image.Metadata.DecodedImageFormat?.DefaultMimeType != null)
 					request.MimeType = image.Metadata.DecodedImageFormat.DefaultMimeType;
 
-				properties = new DriveFile.FileProperties {
-					Width  = image.Size.Width,
-					Height = image.Size.Height
-				};
+				properties = new DriveFile.FileProperties { Width = image.Size.Width, Height = image.Size.Height };
 
-				if (shouldStore) {
+				if (shouldStore)
+				{
 					// Generate thumbnail
 					var thumbnailImage = image.Clone();
 					if (image.Size.Width > 1000)
@@ -140,7 +151,8 @@ public class DriveService(
 					thumbnail.Seek(0, SeekOrigin.Begin);
 
 					// Generate webpublic for local users
-					if (user.Host == null) {
+					if (user.Host == null)
+					{
 						var webpublicImage = image.Clone();
 						webpublicImage.Metadata.ExifProfile = null;
 						webpublicImage.Metadata.XmpProfile  = null;
@@ -148,11 +160,7 @@ public class DriveService(
 							webpublicImage.Mutate(p => p.Resize(new Size(2048, 0)));
 
 						var encoder = request.MimeType == "image/png"
-							? new WebpEncoder {
-								Quality             = 100,
-								NearLossless        = true,
-								NearLosslessQuality = 60
-							}
+							? new WebpEncoder { Quality = 100, NearLossless = true, NearLosslessQuality = 60 }
 							: new WebpEncoder { Quality = 75 };
 
 						webpublic = new MemoryStream();
@@ -161,7 +169,8 @@ public class DriveService(
 					}
 				}
 			}
-			catch {
+			catch
+			{
 				logger.LogError("Failed to generate blurhash & thumbnail for image with mime type {type}",
 				                request.MimeType);
 
@@ -180,8 +189,10 @@ public class DriveService(
 		var thumbnailFilename = thumbnail != null ? GenerateWebpFilename("thumbnail-") : null;
 		var webpublicFilename = webpublic != null ? GenerateWebpFilename("webpublic-") : null;
 
-		if (shouldStore) {
-			if (storedInternal) {
+		if (shouldStore)
+		{
+			if (storedInternal)
+			{
 				var pathBase = storageConfig.Value.Local?.Path ??
 				               throw new Exception("Local storage path cannot be null");
 				var path = Path.Combine(pathBase, filename);
@@ -190,38 +201,45 @@ public class DriveService(
 				await buf.CopyToAsync(writer);
 				url = $"https://{instanceConfig.Value.WebDomain}/files/{filename}";
 
-				if (thumbnailFilename != null && thumbnail is { Length: > 0 }) {
+				if (thumbnailFilename != null && thumbnail is { Length: > 0 })
+				{
 					var             thumbPath   = Path.Combine(pathBase, thumbnailFilename);
 					await using var thumbWriter = File.OpenWrite(thumbPath);
 					await thumbnail.CopyToAsync(thumbWriter);
 				}
 
-				if (webpublicFilename != null && webpublic is { Length: > 0 }) {
+				if (webpublicFilename != null && webpublic is { Length: > 0 })
+				{
 					var             webpPath   = Path.Combine(pathBase, webpublicFilename);
 					await using var webpWriter = File.OpenWrite(webpPath);
 					await webpublic.CopyToAsync(webpWriter);
 				}
 			}
-			else {
+			else
+			{
 				await storageSvc.UploadFileAsync(filename, data);
 				url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
 
-				if (thumbnailFilename != null && thumbnail is { Length: > 0 }) {
+				if (thumbnailFilename != null && thumbnail is { Length: > 0 })
+				{
 					await storageSvc.UploadFileAsync(thumbnailFilename, thumbnail);
 					thumbnailUrl = storageSvc.GetFilePublicUrl(thumbnailFilename).AbsoluteUri;
 				}
 
-				if (webpublicFilename != null && webpublic is { Length: > 0 }) {
+				if (webpublicFilename != null && webpublic is { Length: > 0 })
+				{
 					await storageSvc.UploadFileAsync(webpublicFilename, webpublic);
 					webpublicUrl = storageSvc.GetFilePublicUrl(webpublicFilename).AbsoluteUri;
 				}
 			}
 		}
-		else {
+		else
+		{
 			url = request.Uri ?? throw new Exception("Uri must not be null at this stage");
 		}
 
-		file = new DriveFile {
+		file = new DriveFile
+		{
 			User               = user,
 			UserHost           = user.Host,
 			Sha256             = digest,
@@ -244,7 +262,7 @@ public class DriveService(
 			ThumbnailAccessKey = thumbnailFilename,
 			WebpublicType      = webpublicUrl != null ? "image/webp" : null,
 			WebpublicUrl       = webpublicUrl,
-			WebpublicAccessKey = webpublicFilename,
+			WebpublicAccessKey = webpublicFilename
 		};
 
 		await db.AddAsync(file);
@@ -253,40 +271,47 @@ public class DriveService(
 		return file;
 	}
 
-	public async Task RemoveFile(DriveFile file) {
+	public async Task RemoveFile(DriveFile file)
+	{
 		await RemoveFile(file.Id);
 	}
 
-	public async Task RemoveFile(string fileId) {
+	public async Task RemoveFile(string fileId)
+	{
 		var job = new DriveFileDeleteJob { DriveFileId = fileId, Expire = false };
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(job);
 	}
 
-	public string GetPublicUrl(DriveFile file, bool thumbnail) {
+	public string GetPublicUrl(DriveFile file, bool thumbnail)
+	{
 		return thumbnail
 			? file.ThumbnailUrl ?? file.WebpublicUrl ?? file.Url
 			: file.WebpublicUrl ?? file.Url;
 	}
 
-	private static string GenerateFilenameKeepingExtension(string filename) {
+	private static string GenerateFilenameKeepingExtension(string filename)
+	{
 		var guid = Guid.NewGuid().ToString().ToLowerInvariant();
 		var ext  = Path.GetExtension(filename);
 		return guid + ext;
 	}
 
-	private static string GenerateWebpFilename(string prefix = "") {
+	private static string GenerateWebpFilename(string prefix = "")
+	{
 		var guid = Guid.NewGuid().ToString().ToLowerInvariant();
 		return $"{prefix}{guid}.webp";
 	}
 
-	private static string CleanMimeType(string? mimeType) {
+	private static string CleanMimeType(string? mimeType)
+	{
 		return mimeType == null || !Constants.BrowserSafeMimeTypes.Contains(mimeType)
 			? "application/octet-stream"
 			: mimeType;
 	}
 }
 
-public class DriveFileCreationRequest {
+public class DriveFileCreationRequest
+{
 	public          string?                     Comment;
 	public required string                      Filename = Guid.NewGuid().ToString().ToLowerInvariant();
 	public required bool                        IsSensitive;
@@ -298,12 +323,15 @@ public class DriveFileCreationRequest {
 }
 
 //TODO: set uri as well (which may be different)
-file static class DriveFileExtensions {
-	public static DriveFile Clone(this DriveFile file, User user, DriveFileCreationRequest request) {
+file static class DriveFileExtensions
+{
+	public static DriveFile Clone(this DriveFile file, User user, DriveFileCreationRequest request)
+	{
 		if (file.IsLink)
 			throw new Exception("Refusing to clone remote file");
 
-		return new DriveFile {
+		return new DriveFile
+		{
 			User               = user,
 			Blurhash           = file.Blurhash,
 			Type               = file.Type,

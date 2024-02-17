@@ -7,7 +7,8 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 namespace Iceshrimp.Backend.Core.Federation.WebFinger;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public sealed class WebFingerLink {
+public sealed class WebFingerLink
+{
 	[J("rel")] [JR] public string Rel { get; set; } = null!;
 
 	[J("type")]
@@ -25,7 +26,8 @@ public sealed class WebFingerLink {
 
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public sealed class WebFingerResponse {
+public sealed class WebFingerResponse
+{
 	[J("links")] [JR]   public List<WebFingerLink> Links   { get; set; } = null!;
 	[J("subject")] [JR] public string              Subject { get; set; } = null!;
 
@@ -34,11 +36,13 @@ public sealed class WebFingerResponse {
 	public List<string>? Aliases { get; set; }
 }
 
-public sealed class NodeInfoIndexResponse {
+public sealed class NodeInfoIndexResponse
+{
 	[J("links")] [JR] public List<WebFingerLink> Links { get; set; } = null!;
 }
 
-public class NodeInfoResponse {
+public class NodeInfoResponse
+{
 	[J("version")]           public required string           Version           { get; set; }
 	[J("software")]          public required NodeInfoSoftware Software          { get; set; }
 	[J("protocols")]         public required List<string>     Protocols         { get; set; }
@@ -47,7 +51,8 @@ public class NodeInfoResponse {
 	[J("metadata")]          public required NodeInfoMetadata Metadata          { get; set; }
 	[J("openRegistrations")] public required bool             OpenRegistrations { get; set; }
 
-	public class NodeInfoMetadata {
+	public class NodeInfoMetadata
+	{
 		[J("nodeName")]                   public required string       NodeName                   { get; set; }
 		[J("nodeDescription")]            public required string       NodeDescription            { get; set; }
 		[J("maintainer")]                 public required Maintainer   Maintainer                 { get; set; }
@@ -72,36 +77,41 @@ public class NodeInfoResponse {
 		[J("enableEmail")]                public required bool         EnableEmail                { get; set; }
 	}
 
-	public class Maintainer {
+	public class Maintainer
+	{
 		[J("name")]  public required string Name  { get; set; }
 		[J("email")] public required string Email { get; set; }
 	}
 
-	public class NodeInfoServices {
+	public class NodeInfoServices
+	{
 		[J("inbound")]  public required List<object> Inbound  { get; set; }
 		[J("outbound")] public required List<string> Outbound { get; set; }
 	}
 
-	public class NodeInfoSoftware {
+	public class NodeInfoSoftware
+	{
 		[J("name")]     public required string Name     { get; set; }
 		[J("version")]  public required string Version  { get; set; }
 		[J("homepage")] public required Uri    Homepage { get; set; }
 
 		/// <remarks>
-		/// This is only part of nodeinfo 2.1
+		///     This is only part of nodeinfo 2.1
 		/// </remarks>
 		[J("repository")]
 		[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 		public Uri? Repository { get; set; }
 	}
 
-	public class NodeInfoUsage {
+	public class NodeInfoUsage
+	{
 		[J("users")]         public required NodeInfoUsers Users         { get; set; }
 		[J("localPosts")]    public required long          LocalPosts    { get; set; }
 		[J("localComments")] public required long          LocalComments { get; set; }
 	}
 
-	public class NodeInfoUsers {
+	public class NodeInfoUsers
+	{
 		[J("total")]          public required long Total          { get; set; }
 		[J("activeHalfyear")] public required long ActiveHalfYear { get; set; }
 		[J("activeMonth")]    public required long ActiveMonth    { get; set; }

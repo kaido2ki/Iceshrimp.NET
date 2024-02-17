@@ -6,13 +6,15 @@ using JC = Newtonsoft.Json.JsonConverterAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASTag : ASObjectBase {
+public class ASTag : ASObjectBase
+{
 	[J("@type")]
 	[JC(typeof(StringListSingleConverter))]
 	public string? Type { get; set; }
 }
 
-public class ASTagLink : ASTag {
+public class ASTagLink : ASTag
+{
 	[J($"{Constants.ActivityStreamsNs}#href")]
 	[JC(typeof(ASObjectBaseConverter))]
 	public ASObjectBase? Href { get; set; }
@@ -26,28 +28,37 @@ public class ASMention : ASTagLink;
 
 public class ASHashtag : ASTagLink;
 
-public class ASEmoji : ASTag {
+public class ASEmoji : ASTag
+{
 	//TODO
 }
 
-public sealed class ASTagConverter : JsonConverter {
+public sealed class ASTagConverter : JsonConverter
+{
 	public override bool CanWrite => false;
 
-	public override bool CanConvert(Type objectType) {
+	public override bool CanConvert(Type objectType)
+	{
 		return true;
 	}
 
-	public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue,
-	                                 JsonSerializer serializer) {
-		if (reader.TokenType == JsonToken.StartObject) {
+	public override object? ReadJson(
+		JsonReader reader, Type objectType, object? existingValue,
+		JsonSerializer serializer
+	)
+	{
+		if (reader.TokenType == JsonToken.StartObject)
+		{
 			var obj = JObject.Load(reader);
 			return HandleObject(obj);
 		}
 
-		if (reader.TokenType == JsonToken.StartArray) {
+		if (reader.TokenType == JsonToken.StartArray)
+		{
 			var array  = JArray.Load(reader);
 			var result = new List<ASTag>();
-			foreach (var token in array) {
+			foreach (var token in array)
+			{
 				if (token is not JObject obj) return null;
 				var item = HandleObject(obj);
 				if (item == null) return null;
@@ -60,7 +71,8 @@ public sealed class ASTagConverter : JsonConverter {
 		return null;
 	}
 
-	private ASTag? HandleObject(JToken obj) {
+	private ASTag? HandleObject(JToken obj)
+	{
 		var link = obj.ToObject<ASTagLink?>();
 		if (link is not { Href: not null }) return obj.ToObject<ASEmoji?>();
 
@@ -69,7 +81,8 @@ public sealed class ASTagConverter : JsonConverter {
 			: obj.ToObject<ASHashtag?>();
 	}
 
-	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) {
+	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+	{
 		throw new NotImplementedException();
 	}
 }

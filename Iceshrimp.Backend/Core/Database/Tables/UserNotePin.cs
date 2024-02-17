@@ -7,7 +7,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("user_note_pin")]
 [Index("UserId", "NoteId", IsUnique = true)]
 [Index("UserId")]
-public class UserNotePin {
+public class UserNotePin
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

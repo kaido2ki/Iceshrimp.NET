@@ -7,7 +7,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("user_security_key")]
 [Index("PublicKey")]
 [Index("UserId")]
-public class UserSecurityKey {
+public class UserSecurityKey
+{
 	/// <summary>
 	///     Variable-length id given to navigator.credentials.get()
 	/// </summary>

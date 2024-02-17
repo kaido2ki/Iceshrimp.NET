@@ -3,7 +3,6 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
-using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
@@ -27,26 +26,28 @@ using MentionQuintuple =
 public class NoteService(
 	ILogger<NoteService> logger,
 	DatabaseContext db,
-	UserResolver userResolver,
+	ActivityPub.UserResolver userResolver,
 	IOptionsSnapshot<Config.InstanceSection> config,
-	ActivityFetcherService fetchSvc,
-	ActivityDeliverService deliverSvc,
-	NoteRenderer noteRenderer,
-	UserRenderer userRenderer,
-	MentionsResolver mentionsResolver,
+	ActivityPub.ActivityFetcherService fetchSvc,
+	ActivityPub.ActivityDeliverService deliverSvc,
+	ActivityPub.NoteRenderer noteRenderer,
+	ActivityPub.UserRenderer userRenderer,
+	ActivityPub.MentionsResolver mentionsResolver,
 	MfmConverter mfmConverter,
 	DriveService driveSvc,
 	NotificationService notificationSvc,
 	EventService eventSvc,
-	ActivityRenderer activityRenderer
-) {
+	ActivityPub.ActivityRenderer activityRenderer
+)
+{
 	private readonly List<string> _resolverHistory = [];
 	private          int          _recursionLimit  = 100;
 
 	public async Task<Note> CreateNoteAsync(
 		User user, Note.NoteVisibility visibility, string? text = null, string? cw = null, Note? reply = null,
 		Note? renote = null, IReadOnlyCollection<DriveFile>? attachments = null
-	) {
+	)
+	{
 		if (text?.Length > config.Value.CharacterLimit)
 			throw GracefulException.BadRequest($"Text cannot be longer than {config.Value.CharacterLimit} characters");
 
@@ -64,26 +65,26 @@ public class NoteService(
 
 		var actor = await userRenderer.RenderAsync(user);
 
-		var note = new Note {
-			Id             = IdHelpers.GenerateSlowflakeId(),
-			Text           = text,
-			Cw             = cw,
-			Reply          = reply,
-			ReplyUserId    = reply?.UserId,
-			ReplyUserHost  = reply?.UserHost,
-			Renote         = renote,
-			RenoteUserId   = renote?.UserId,
-			RenoteUserHost = renote?.UserHost,
-			UserId         = user.Id,
-			CreatedAt      = DateTime.UtcNow,
-			UserHost       = null,
-			Visibility     = visibility,
-
+		var note = new Note
+		{
+			Id                   = IdHelpers.GenerateSlowflakeId(),
+			Text                 = text,
+			Cw                   = cw,
+			Reply                = reply,
+			ReplyUserId          = reply?.UserId,
+			ReplyUserHost        = reply?.UserHost,
+			Renote               = renote,
+			RenoteUserId         = renote?.UserId,
+			RenoteUserHost       = renote?.UserHost,
+			UserId               = user.Id,
+			CreatedAt            = DateTime.UtcNow,
+			UserHost             = null,
+			Visibility           = visibility,
 			FileIds              = attachments?.Select(p => p.Id).ToList() ?? [],
 			AttachedFileTypes    = attachments?.Select(p => p.Type).ToList() ?? [],
 			Mentions             = mentionedUserIds,
 			VisibleUserIds       = visibility == Note.NoteVisibility.Specified ? mentionedUserIds : [],
-			MentionedRemoteUsers = remoteMentions,
+			MentionedRemoteUsers = remoteMentions
 		};
 
 		user.NotesCount++;
@@ -94,30 +95,31 @@ public class NoteService(
 		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
 
 		var obj      = await noteRenderer.RenderAsync(note, mentions);
-		var activity = ActivityRenderer.RenderCreate(obj, actor);
+		var activity = ActivityPub.ActivityRenderer.RenderCreate(obj, actor);
 
 		var recipients = await db.Users
 		                         .Where(p => mentionedUserIds.Contains(p.Id))
-		                         .Select(p => new User {
-			                         Host  = p.Host,
-			                         Inbox = p.Inbox
-		                         })
+		                         .Select(p => new User { Host = p.Host, Inbox = p.Inbox })
 		                         .ToListAsync();
 
-		if (note.Visibility == Note.NoteVisibility.Specified) {
+		if (note.Visibility == Note.NoteVisibility.Specified)
+		{
 			await deliverSvc.DeliverToAsync(activity, user, recipients.ToArray());
 		}
-		else {
+		else
+		{
 			await deliverSvc.DeliverToFollowersAsync(activity, user, recipients);
 		}
 
 		return note;
 	}
 
-	public async Task DeleteNoteAsync(ASTombstone note, ASActor actor) {
+	public async Task DeleteNoteAsync(ASTombstone note, ASActor actor)
+	{
 		// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataQuery (it doesn't know about IncludeCommonProperties())
 		var dbNote = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
-		if (dbNote == null) {
+		if (dbNote == null)
+		{
 			logger.LogDebug("Note '{id}' isn't known, skipping", note.Id);
 			return;
 		}
@@ -125,7 +127,8 @@ public class NoteService(
 		var user = await userResolver.ResolveAsync(actor.Id);
 
 		// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataUsage (same reason as above)
-		if (dbNote.User != user) {
+		if (dbNote.User != user)
+		{
 			logger.LogDebug("Note '{id}' isn't owned by actor requesting its deletion, skipping", note.Id);
 			return;
 		}
@@ -138,10 +141,12 @@ public class NoteService(
 		await db.SaveChangesAsync();
 	}
 
-	public async Task<Note> ProcessNoteAsync(ASNote note, ASActor actor) {
+	public async Task<Note> ProcessNoteAsync(ASNote note, ASActor actor)
+	{
 		var dbHit = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
 
-		if (dbHit != null) {
+		if (dbHit != null)
+		{
 			logger.LogDebug("Note '{id}' already exists, skipping", note.Id);
 			return dbHit;
 		}
@@ -177,7 +182,8 @@ public class NoteService(
 		var createdAt = note.PublishedAt?.ToUniversalTime() ??
 		                throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field");
 
-		var dbNote = new Note {
+		var dbNote = new Note
+		{
 			Id         = IdHelpers.GenerateSlowflakeId(createdAt),
 			Uri        = note.Id,
 			Url        = note.Url?.Id, //FIXME: this doesn't seem to work yet
@@ -186,10 +192,11 @@ public class NoteService(
 			CreatedAt  = createdAt,
 			UserHost   = user.Host,
 			Visibility = note.GetVisibility(actor),
-			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null,
+			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null
 		};
 
-		if (dbNote.Reply != null) {
+		if (dbNote.Reply != null)
+		{
 			dbNote.ReplyUserId   = dbNote.Reply.UserId;
 			dbNote.ReplyUserHost = dbNote.Reply.UserHost;
 		}
@@ -197,15 +204,18 @@ public class NoteService(
 		if (dbNote.Text is { Length: > 100000 })
 			throw GracefulException.UnprocessableEntity("Content cannot be longer than 100.000 characters");
 
-		if (dbNote.Text is not null) {
+		if (dbNote.Text is not null)
+		{
 			dbNote.Mentions             = mentionedUserIds;
 			dbNote.MentionedRemoteUsers = remoteMentions;
-			if (dbNote.Visibility == Note.NoteVisibility.Specified) {
+			if (dbNote.Visibility == Note.NoteVisibility.Specified)
+			{
 				var visibleUserIds = (await note.GetRecipients(actor)
 				                                .Select(userResolver.ResolveAsync)
 				                                .AwaitAllNoConcurrencyAsync())
 				                     .Select(p => p.Id)
-				                     .Concat(mentionedUserIds).ToList();
+				                     .Concat(mentionedUserIds)
+				                     .ToList();
 				if (dbNote.ReplyUserId != null)
 					visibleUserIds.Add(dbNote.ReplyUserId);
 
@@ -217,7 +227,8 @@ public class NoteService(
 
 		var sensitive = (note.Sensitive ?? false) || dbNote.Cw != null;
 		var files     = await ProcessAttachmentsAsync(note.Attachments, user, sensitive);
-		if (files.Count != 0) {
+		if (files.Count != 0)
+		{
 			dbNote.FileIds           = files.Select(p => p.Id).ToList();
 			dbNote.AttachedFileTypes = files.Select(p => p.Type).ToList();
 		}
@@ -236,7 +247,8 @@ public class NoteService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage",
 	                 Justification = "Inspection doesn't understand IncludeCommonProperties()")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "See above")]
-	public async Task<Note> ProcessNoteUpdateAsync(ASNote note, ASActor actor, User? resolvedActor = null) {
+	public async Task<Note> ProcessNoteUpdateAsync(ASNote note, ASActor actor, User? resolvedActor = null)
+	{
 		var dbNote = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
 		if (dbNote == null) return await ProcessNoteAsync(note, actor);
 
@@ -246,7 +258,8 @@ public class NoteService(
 		if (dbNote.User.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
 
-		var noteEdit = new NoteEdit {
+		var noteEdit = new NoteEdit
+		{
 			Id        = IdHelpers.GenerateSlowflakeId(),
 			UpdatedAt = DateTime.UtcNow,
 			Note      = dbNote,
@@ -267,15 +280,18 @@ public class NoteService(
 		if (dbNote.Text is { Length: > 100000 })
 			throw GracefulException.UnprocessableEntity("Content cannot be longer than 100.000 characters");
 
-		if (dbNote.Text is not null) {
+		if (dbNote.Text is not null)
+		{
 			dbNote.Mentions             = mentionedUserIds;
 			dbNote.MentionedRemoteUsers = remoteMentions;
-			if (dbNote.Visibility == Note.NoteVisibility.Specified) {
+			if (dbNote.Visibility == Note.NoteVisibility.Specified)
+			{
 				var visibleUserIds = (await note.GetRecipients(actor)
 				                                .Select(userResolver.ResolveAsync)
 				                                .AwaitAllNoConcurrencyAsync())
 				                     .Select(p => p.Id)
-				                     .Concat(mentionedUserIds).ToList();
+				                     .Concat(mentionedUserIds)
+				                     .ToList();
 				if (dbNote.ReplyUserId != null)
 					visibleUserIds.Add(dbNote.ReplyUserId);
 
@@ -303,14 +319,18 @@ public class NoteService(
 		return dbNote;
 	}
 
-	private async Task<MentionQuintuple> ResolveNoteMentionsAsync(ASNote note) {
+	private async Task<MentionQuintuple> ResolveNoteMentionsAsync(ASNote note)
+	{
 		var mentionTags = note.Tags?.OfType<ASMention>().Where(p => p.Href != null) ?? [];
 		var users = await mentionTags
-		                  .Select(async p => {
-			                  try {
+		                  .Select(async p =>
+		                  {
+			                  try
+			                  {
 				                  return await userResolver.ResolveAsync(p.Href!.Id!);
 			                  }
-			                  catch {
+			                  catch
+			                  {
 				                  return null;
 			                  }
 		                  })
@@ -319,17 +339,21 @@ public class NoteService(
 		return ResolveNoteMentions(users.Where(p => p != null).Select(p => p!).ToList());
 	}
 
-	private async Task<MentionQuintuple> ResolveNoteMentionsAsync(string? text) {
+	private async Task<MentionQuintuple> ResolveNoteMentionsAsync(string? text)
+	{
 		var users = text != null
 			? await MfmParser.Parse(text)
 			                 .SelectMany(p => p.Children.Append(p))
 			                 .OfType<MfmMentionNode>()
 			                 .DistinctBy(p => p.Acct)
-			                 .Select(async p => {
-				                 try {
+			                 .Select(async p =>
+			                 {
+				                 try
+				                 {
 					                 return await userResolver.ResolveAsync(p.Acct);
 				                 }
-				                 catch {
+				                 catch
+				                 {
 					                 return null;
 				                 }
 			                 })
@@ -339,7 +363,8 @@ public class NoteService(
 		return ResolveNoteMentions(users.Where(p => p != null).Select(p => p!).ToList());
 	}
 
-	private MentionQuintuple ResolveNoteMentions(IReadOnlyCollection<User> users) {
+	private MentionQuintuple ResolveNoteMentions(IReadOnlyCollection<User> users)
+	{
 		var userIds      = users.Select(p => p.Id).Distinct().ToList();
 		var localUserIds = users.Where(p => p.Host == null).Select(p => p.Id).Distinct().ToList();
 
@@ -353,19 +378,22 @@ public class NoteService(
 		                                    .DistinctBy(p => p.Host)
 		                                    .ToDictionary(p => (p.UsernameLower, new Uri(p.Uri!).Host), p => p.Host!);
 
-		var localMentions = localUsers.Select(p => new Note.MentionedUser {
+		var localMentions = localUsers.Select(p => new Note.MentionedUser
+		{
 			Host     = config.Value.AccountDomain,
 			Username = p.Username,
 			Uri      = p.GetPublicUri(config.Value),
 			Url      = $"https://{config.Value.WebDomain}/@{p.Username}"
 		});
 
-		var remoteMentions = remoteUsers.Select(p => new Note.MentionedUser {
-			Host     = p.Host!,
-			Uri      = p.Uri!,
-			Username = p.Username,
-			Url      = p.UserProfile?.Url
-		}).ToList();
+		var remoteMentions = remoteUsers.Select(p => new Note.MentionedUser
+		                                {
+			                                Host     = p.Host!,
+			                                Uri      = p.Uri!,
+			                                Username = p.Username,
+			                                Url      = p.UserProfile?.Url
+		                                })
+		                                .ToList();
 
 		var mentions = remoteMentions.Concat(localMentions).ToList();
 
@@ -374,7 +402,8 @@ public class NoteService(
 
 	private async Task<List<DriveFile>> ProcessAttachmentsAsync(
 		List<ASAttachment>? attachments, User user, bool sensitive
-	) {
+	)
+	{
 		if (attachments is not { Count: > 0 }) return [];
 		var result = await attachments
 		                   .OfType<ASDocument>()
@@ -385,7 +414,8 @@ public class NoteService(
 		return result.Where(p => p != null).Cast<DriveFile>().ToList();
 	}
 
-	public async Task<Note?> ResolveNoteAsync(string uri, ASNote? fetchedNote = null) {
+	public async Task<Note?> ResolveNoteAsync(string uri, ASNote? fetchedNote = null)
+	{
 		//TODO: is this enough to prevent DoS attacks?
 		if (_recursionLimit-- <= 0)
 			throw GracefulException.UnprocessableEntity("Refusing to resolve threads this long");
@@ -404,12 +434,14 @@ public class NoteService(
 
 		//TODO: should we fall back to a regular user's keypair if fetching with instance actor fails & a local user is following the actor?
 		fetchedNote ??= await fetchSvc.FetchNoteAsync(uri);
-		if (fetchedNote?.AttributedTo is not [{ Id: not null } attrTo]) {
+		if (fetchedNote?.AttributedTo is not [{ Id: not null } attrTo])
+		{
 			logger.LogDebug("Invalid Note.AttributedTo, skipping");
 			return null;
 		}
 
-		if (fetchedNote.Id != uri) {
+		if (fetchedNote.Id != uri)
+		{
 			var res = await db.Notes.FirstOrDefaultAsync(p => p.Uri == fetchedNote.Id);
 			if (res != null) return res;
 		}
@@ -417,31 +449,35 @@ public class NoteService(
 		//TODO: we don't need to fetch the actor every time, we can use userResolver here
 		var actor = await fetchSvc.FetchActorAsync(attrTo.Id);
 
-		try {
+		try
+		{
 			return await ProcessNoteAsync(fetchedNote, actor);
 		}
-		catch (Exception e) {
+		catch (Exception e)
+		{
 			logger.LogDebug("Failed to create resolved note: {error}", e.Message);
 			return null;
 		}
 	}
 
-	public async Task<Note?> ResolveNoteAsync(ASNote note) {
+	public async Task<Note?> ResolveNoteAsync(ASNote note)
+	{
 		return await ResolveNoteAsync(note.Id, note);
 	}
 
-	public async Task LikeNoteAsync(Note note, User user) {
-		if (!await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user)) {
-			var like = new NoteLike {
-				Id        = IdHelpers.GenerateSlowflakeId(),
-				CreatedAt = DateTime.UtcNow,
-				User      = user,
-				Note      = note
+	public async Task LikeNoteAsync(Note note, User user)
+	{
+		if (!await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user))
+		{
+			var like = new NoteLike
+			{
+				Id = IdHelpers.GenerateSlowflakeId(), CreatedAt = DateTime.UtcNow, User = user, Note = note
 			};
 
 			await db.NoteLikes.AddAsync(like);
 			await db.SaveChangesAsync();
-			if (user.Host == null && note.UserHost != null) {
+			if (user.Host == null && note.UserHost != null)
+			{
 				var activity = activityRenderer.RenderLike(note, user);
 				await deliverSvc.DeliverToFollowersAsync(activity, user, [note.User]);
 			}
@@ -451,10 +487,12 @@ public class NoteService(
 		}
 	}
 
-	public async Task UnlikeNoteAsync(Note note, User user) {
+	public async Task UnlikeNoteAsync(Note note, User user)
+	{
 		var count = await db.NoteLikes.Where(p => p.Note == note && p.User == user).ExecuteDeleteAsync();
 		if (count == 0) return;
-		if (user.Host == null && note.UserHost != null) {
+		if (user.Host == null && note.UserHost != null)
+		{
 			var activity = activityRenderer.RenderUndo(userRenderer.RenderLite(user),
 			                                           activityRenderer.RenderLike(note, user));
 			await deliverSvc.DeliverToFollowersAsync(activity, user, [note.User]);
@@ -462,19 +500,22 @@ public class NoteService(
 
 		eventSvc.RaiseNoteUnliked(this, note, user);
 		await db.Notifications
-		        .Where(p => p.Type == Notification.NotificationType.Like && p.Notifiee == note.User &&
+		        .Where(p => p.Type == Notification.NotificationType.Like &&
+		                    p.Notifiee == note.User &&
 		                    p.Notifier == user)
 		        .ExecuteDeleteAsync();
 	}
 
-	public async Task LikeNoteAsync(ASNote note, ASActor actor) {
+	public async Task LikeNoteAsync(ASNote note, ASActor actor)
+	{
 		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot register like for unknown note");
 		var user   = await userResolver.ResolveAsync(actor.Id);
 
 		await LikeNoteAsync(dbNote, user);
 	}
 
-	public async Task UnlikeNoteAsync(ASNote note, ASActor actor) {
+	public async Task UnlikeNoteAsync(ASNote note, ASActor actor)
+	{
 		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot unregister like for unknown note");
 		var user   = await userResolver.ResolveAsync(actor.Id);
 

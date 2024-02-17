@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_list")]
 [Index("UserId")]
-public class UserList {
+public class UserList
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
@@ -38,7 +39,8 @@ public class UserList {
 	[Column("hideFromHomeTl")]
 	public bool HideFromHomeTl { get; set; }
 
-	[InverseProperty(nameof(Antenna.UserList))] public virtual ICollection<Antenna> Antennas { get; set; } = new List<Antenna>();
+	[InverseProperty(nameof(Antenna.UserList))]
+	public virtual ICollection<Antenna> Antennas { get; set; } = new List<Antenna>();
 
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.UserLists))]

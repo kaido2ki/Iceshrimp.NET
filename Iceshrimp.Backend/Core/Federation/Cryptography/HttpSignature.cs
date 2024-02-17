@@ -7,9 +7,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
-public static class HttpSignature {
-	public static async Task<bool> VerifyAsync(HttpRequest request, HttpSignatureHeader signature,
-	                                           IEnumerable<string> requiredHeaders, string key) {
+public static class HttpSignature
+{
+	public static async Task<bool> VerifyAsync(
+		HttpRequest request, HttpSignatureHeader signature,
+		IEnumerable<string> requiredHeaders, string key
+	)
+	{
 		if (!requiredHeaders.All(signature.Headers.Contains))
 			throw new GracefulException(HttpStatusCode.Forbidden, "Request is missing required headers");
 
@@ -22,7 +26,8 @@ public static class HttpSignature {
 		                                  request.ContentLength > 0 ? request.Body : null);
 	}
 
-	public static async Task<bool> VerifyAsync(this HttpRequestMessage request, string key) {
+	public static async Task<bool> VerifyAsync(this HttpRequestMessage request, string key)
+	{
 		var signatureHeader = request.Headers.GetValues("Signature").First();
 		var signature       = Parse(signatureHeader);
 		var signingString = GenerateSigningString(signature.Headers, request.Method.Method,
@@ -36,15 +41,19 @@ public static class HttpSignature {
 		return await VerifySignatureAsync(key, signingString, signature, request.Headers.ToHeaderDictionary(), body);
 	}
 
-	private static async Task<bool> VerifySignatureAsync(string key, string signingString,
-	                                                     HttpSignatureHeader signature,
-	                                                     IHeaderDictionary headers, Stream? body) {
+	private static async Task<bool> VerifySignatureAsync(
+		string key, string signingString,
+		HttpSignatureHeader signature,
+		IHeaderDictionary headers, Stream? body
+	)
+	{
 		if (!headers.TryGetValue("date", out var date))
 			throw new GracefulException(HttpStatusCode.Forbidden, "Date header is missing");
 		if (DateTime.Now - DateTime.Parse(date!) > TimeSpan.FromHours(12))
 			throw new GracefulException(HttpStatusCode.Forbidden, "Request signature too old");
 
-		if (body is { Length: > 0 }) {
+		if (body is { Length: > 0 })
+		{
 			if (body.Position != 0)
 				body.Position = 0;
 			var digest = await SHA256.HashDataAsync(body);
@@ -61,8 +70,11 @@ public static class HttpSignature {
 		                      HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 	}
 
-	public static HttpRequestMessage Sign(this HttpRequestMessage request, IEnumerable<string> requiredHeaders,
-	                                      string key, string keyId) {
+	public static HttpRequestMessage Sign(
+		this HttpRequestMessage request, IEnumerable<string> requiredHeaders,
+		string key, string keyId
+	)
+	{
 		ArgumentNullException.ThrowIfNull(request.RequestUri);
 
 		request.Headers.Date = DateTime.Now;
@@ -86,14 +98,19 @@ public static class HttpSignature {
 		return request;
 	}
 
-	private static string GenerateSigningString(IEnumerable<string> headers, string requestMethod, string requestPath,
-	                                            IHeaderDictionary requestHeaders, string? host = null) {
+	private static string GenerateSigningString(
+		IEnumerable<string> headers, string requestMethod, string requestPath,
+		IHeaderDictionary requestHeaders, string? host = null
+	)
+	{
 		var sb = new StringBuilder();
 
 		//TODO: handle additional params, see https://github.com/Chocobozzz/node-http-signature/blob/master/lib/parser.js#L294-L310
-		foreach (var header in headers) {
+		foreach (var header in headers)
+		{
 			sb.Append($"{header}: ");
-			sb.AppendLine(header switch {
+			sb.AppendLine(header switch
+			{
 				"(request-target)" => $"{requestMethod.ToLowerInvariant()} {requestPath}",
 				"host"             => $"{host ?? requestHeaders[header]}",
 				_                  => requestHeaders[header]
@@ -103,12 +120,14 @@ public static class HttpSignature {
 		return sb.ToString()[..^1]; // remove trailing newline
 	}
 
-	private static HeaderDictionary ToHeaderDictionary(this HttpRequestHeaders headers) {
+	private static HeaderDictionary ToHeaderDictionary(this HttpRequestHeaders headers)
+	{
 		return new HeaderDictionary(headers.ToDictionary(p => p.Key.ToLowerInvariant(),
 		                                                 p => new StringValues(p.Value.ToArray())));
 	}
 
-	public static HttpSignatureHeader Parse(string header) {
+	public static HttpSignatureHeader Parse(string header)
+	{
 		var sig = header.Split(",")
 		                .Select(s => s.Split('='))
 		                .ToDictionary(p => p[0], p => (p[1] + new string('=', p.Length - 2)).Trim('"'));
@@ -135,7 +154,8 @@ public static class HttpSignature {
 		return new HttpSignatureHeader(keyId, algo, signature, headers);
 	}
 
-	public class HttpSignatureHeader(string keyId, string algo, byte[] signature, IEnumerable<string> headers) {
+	public class HttpSignatureHeader(string keyId, string algo, byte[] signature, IEnumerable<string> headers)
+	{
 		public readonly string              Algo      = algo;
 		public readonly IEnumerable<string> Headers   = headers;
 		public readonly string              KeyId     = keyId;

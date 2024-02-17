@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
-public static class ModelBinderProviderExtensions {
-	public static void AddHybridBindingProvider(this IList<IModelBinderProvider> providers) {
+public static class ModelBinderProviderExtensions
+{
+	public static void AddHybridBindingProvider(this IList<IModelBinderProvider> providers)
+	{
 		if (providers.Single(provider => provider.GetType() == typeof(BodyModelBinderProvider)) is not
 			    BodyModelBinderProvider bodyProvider ||
 		    providers.Single(provider => provider.GetType() == typeof(ComplexObjectModelBinderProvider)) is not
@@ -27,8 +29,11 @@ public static class ModelBinderProviderExtensions {
 //TODO: this doesn't work with QueryCollectionModelBinderProvider yet
 public class HybridModelBinderProvider(
 	IModelBinderProvider bodyProvider,
-	IModelBinderProvider complexProvider) : IModelBinderProvider {
-	public IModelBinder? GetBinder(ModelBinderProviderContext context) {
+	IModelBinderProvider complexProvider
+) : IModelBinderProvider
+{
+	public IModelBinder? GetBinder(ModelBinderProviderContext context)
+	{
 		if (context.BindingInfo.BindingSource == null) return null;
 		if (!context.BindingInfo.BindingSource.CanAcceptDataFrom(HybridBindingSource.Hybrid)) return null;
 
@@ -41,8 +46,10 @@ public class HybridModelBinderProvider(
 	}
 }
 
-public class QueryCollectionModelBinderProvider(IModelBinderProvider provider) : IModelBinderProvider {
-	public IModelBinder? GetBinder(ModelBinderProviderContext context) {
+public class QueryCollectionModelBinderProvider(IModelBinderProvider provider) : IModelBinderProvider
+{
+	public IModelBinder? GetBinder(ModelBinderProviderContext context)
+	{
 		if (context.BindingInfo.BindingSource == null) return null;
 		if (!context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Query)) return null;
 		if (!context.Metadata.IsCollectionType) return null;
@@ -52,15 +59,22 @@ public class QueryCollectionModelBinderProvider(IModelBinderProvider provider) :
 	}
 }
 
-public class HybridModelBinder(IModelBinder? bodyBinder, IModelBinder? complexBinder) : IModelBinder {
-	public async Task BindModelAsync(ModelBindingContext bindingContext) {
-		if (bodyBinder != null && bindingContext is
-			    { IsTopLevelObject: true, HttpContext.Request: { HasFormContentType: false, ContentLength: > 0 } }) {
+public class HybridModelBinder(IModelBinder? bodyBinder, IModelBinder? complexBinder) : IModelBinder
+{
+	public async Task BindModelAsync(ModelBindingContext bindingContext)
+	{
+		if (bodyBinder != null &&
+		    bindingContext is
+		    {
+			    IsTopLevelObject: true, HttpContext.Request: { HasFormContentType: false, ContentLength: > 0 }
+		    })
+		{
 			bindingContext.BindingSource = BindingSource.Body;
 			await bodyBinder.BindModelAsync(bindingContext);
 		}
 
-		if (complexBinder != null && !bindingContext.Result.IsModelSet) {
+		if (complexBinder != null && !bindingContext.Result.IsModelSet)
+		{
 			bindingContext.BindingSource = BindingSource.ModelBinding;
 			await complexBinder.BindModelAsync(bindingContext);
 		}
@@ -69,12 +83,16 @@ public class HybridModelBinder(IModelBinder? bodyBinder, IModelBinder? complexBi
 	}
 }
 
-public class QueryCollectionModelBinder(IModelBinder? binder) : IModelBinder {
-	public async Task BindModelAsync(ModelBindingContext bindingContext) {
-		if (binder != null && !bindingContext.Result.IsModelSet) {
+public class QueryCollectionModelBinder(IModelBinder? binder) : IModelBinder
+{
+	public async Task BindModelAsync(ModelBindingContext bindingContext)
+	{
+		if (binder != null && !bindingContext.Result.IsModelSet)
+		{
 			await binder.BindModelAsync(bindingContext);
 
-			if (!bindingContext.Result.IsModelSet || (bindingContext.Result.Model as IList) is not { Count: > 0 }) {
+			if (!bindingContext.Result.IsModelSet || (bindingContext.Result.Model as IList) is not { Count: > 0 })
+			{
 				bindingContext.ModelName = bindingContext.ModelName.EndsWith("[]")
 					? bindingContext.ModelName[..^2]
 					: bindingContext.ModelName + "[]";
@@ -83,7 +101,8 @@ public class QueryCollectionModelBinder(IModelBinder? binder) : IModelBinder {
 			}
 		}
 
-		if (bindingContext.Result.IsModelSet) {
+		if (bindingContext.Result.IsModelSet)
+		{
 			bindingContext.Model         = bindingContext.Result.Model;
 			bindingContext.BindingSource = BindingSource.ModelBinding;
 		}
@@ -91,17 +110,20 @@ public class QueryCollectionModelBinder(IModelBinder? binder) : IModelBinder {
 }
 
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
-public class FromHybridAttribute : Attribute, IBindingSourceMetadata {
+public class FromHybridAttribute : Attribute, IBindingSourceMetadata
+{
 	public BindingSource BindingSource => HybridBindingSource.Hybrid;
 }
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class ConsumesHybridAttribute : Attribute;
 
-public sealed class HybridBindingSource() : BindingSource("Hybrid", "Hybrid", true, true) {
+public sealed class HybridBindingSource() : BindingSource("Hybrid", "Hybrid", true, true)
+{
 	public static readonly HybridBindingSource Hybrid = new();
 
-	public override bool CanAcceptDataFrom(BindingSource bindingSource) {
+	public override bool CanAcceptDataFrom(BindingSource bindingSource)
+	{
 		return bindingSource == this;
 	}
 }

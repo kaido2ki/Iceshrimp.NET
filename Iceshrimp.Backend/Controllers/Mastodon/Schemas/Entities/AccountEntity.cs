@@ -3,7 +3,8 @@ using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class AccountEntity : IEntity {
+public class AccountEntity : IEntity
+{
 	[J("username")]        public required string         Username           { get; set; }
 	[J("acct")]            public required string         Acct               { get; set; }
 	[J("fqn")]             public required string         FullyQualifiedName { get; set; }
@@ -29,7 +30,8 @@ public class AccountEntity : IEntity {
 	[J("id")]     public required string   Id     { get; set; }
 }
 
-public class Field {
+public class Field
+{
 	[J("name")]        public required string  Name       { get; set; }
 	[J("value")]       public required string  Value      { get; set; }
 	[J("verified_at")] public          string? VerifiedAt { get; set; }

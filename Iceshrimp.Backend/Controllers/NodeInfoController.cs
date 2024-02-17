@@ -12,20 +12,24 @@ namespace Iceshrimp.Backend.Controllers;
 [Tags("Federation")]
 [Route("/nodeinfo")]
 [EnableCors("well-known")]
-public class NodeInfoController(IOptions<Config.InstanceSection> config, DatabaseContext db) : Controller {
+public class NodeInfoController(IOptions<Config.InstanceSection> config, DatabaseContext db) : Controller
+{
 	[HttpGet("2.1")]
 	[HttpGet("2.0")]
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WebFingerResponse))]
-	public async Task<IActionResult> GetNodeInfo() {
+	public async Task<IActionResult> GetNodeInfo()
+	{
 		var instance = config.Value;
 		var totalUsers =
 			await db.Users.LongCountAsync(p => p.Host == null && !Constants.SystemUsers.Contains(p.UsernameLower));
 		var localPosts = await db.Notes.LongCountAsync(p => p.UserHost == null);
 
-		var result = new NodeInfoResponse {
+		var result = new NodeInfoResponse
+		{
 			Version = instance.Version,
-			Software = new NodeInfoResponse.NodeInfoSoftware {
+			Software = new NodeInfoResponse.NodeInfoSoftware
+			{
 				Version  = instance.Version,
 				Name     = "Iceshrimp.NET",
 				Homepage = new Uri("https://iceshrimp.dev/iceshrimp/Iceshrimp.NET"),
@@ -34,28 +38,20 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 					: null
 			},
 			Protocols = ["activitypub"],
-			Services = new NodeInfoResponse.NodeInfoServices {
-				Inbound  = [],
-				Outbound = ["atom1.0", "rss2.0"]
-			},
-			Usage = new NodeInfoResponse.NodeInfoUsage {
+			Services  = new NodeInfoResponse.NodeInfoServices { Inbound = [], Outbound = ["atom1.0", "rss2.0"] },
+			Usage = new NodeInfoResponse.NodeInfoUsage
+			{
 				//FIXME Implement members
-				Users = new NodeInfoResponse.NodeInfoUsers {
-					Total          = totalUsers,
-					ActiveMonth    = 0,
-					ActiveHalfYear = 0
-				},
+				Users = new NodeInfoResponse.NodeInfoUsers { Total = totalUsers, ActiveMonth = 0, ActiveHalfYear = 0 },
 				LocalComments = 0,
-				LocalPosts    = localPosts
+				LocalPosts = localPosts
 			},
-			Metadata = new NodeInfoResponse.NodeInfoMetadata {
+			Metadata = new NodeInfoResponse.NodeInfoMetadata
+			{
 				//FIXME Implement members
-				NodeName        = "Iceshrimp.NET",
-				NodeDescription = "An Iceshrimp.NET instance",
-				Maintainer = new NodeInfoResponse.Maintainer {
-					Name  = "todo",
-					Email = "todo"
-				},
+				NodeName                   = "Iceshrimp.NET",
+				NodeDescription            = "An Iceshrimp.NET instance",
+				Maintainer                 = new NodeInfoResponse.Maintainer { Name = "todo", Email = "todo" },
 				Languages                  = [],
 				TosUrl                     = "todo",
 				RepositoryUrl              = new Uri("https://iceshrimp.dev/iceshrimp/Iceshrimp.NET"),

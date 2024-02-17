@@ -11,7 +11,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("CreatedAt")]
 [Index("FollowerId")]
 [Index("FolloweeHost")]
-public class Following {
+public class Following
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

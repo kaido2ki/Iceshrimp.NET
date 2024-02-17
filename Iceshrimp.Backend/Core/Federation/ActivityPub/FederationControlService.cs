@@ -13,9 +13,11 @@ public class FederationControlService(
 	IOptionsSnapshot<Config.SecuritySection> options,
 	IOptions<Config.InstanceSection> instance,
 	DatabaseContext db
-) {
+)
+{
 	//TODO: we need some level of caching here
-	public async Task<bool> ShouldBlockAsync(params string?[] hosts) {
+	public async Task<bool> ShouldBlockAsync(params string?[] hosts)
+	{
 		if (hosts.All(p => p == instance.Value.WebDomain || p == instance.Value.AccountDomain)) return false;
 
 		var finalHosts = hosts.Where(p => p != null)
@@ -26,7 +28,8 @@ public class FederationControlService(
 		                      .ToArray();
 
 		// We want to check for fully qualified domains *and* subdomains of them
-		if (options.Value.FederationMode == Enums.FederationMode.AllowList) {
+		if (options.Value.FederationMode == Enums.FederationMode.AllowList)
+		{
 			return !await db.AllowedInstances.AnyAsync(p => finalHosts.Any(host => host == p.Host ||
 				                                                               host.EndsWith("." + p.Host)));
 		}

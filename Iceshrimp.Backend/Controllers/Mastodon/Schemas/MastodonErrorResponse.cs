@@ -4,7 +4,8 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
-public class MastodonErrorResponse {
+public class MastodonErrorResponse
+{
 	[J("error")] public required string Error { get; set; }
 
 	[J("error_description")]

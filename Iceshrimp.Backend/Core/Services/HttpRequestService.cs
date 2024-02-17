@@ -7,21 +7,26 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class HttpRequestService(IOptions<Config.InstanceSection> options) {
-	private HttpRequestMessage GenerateRequest(string url, HttpMethod method,
-	                                           string? body = null,
-	                                           string? contentType = null,
-	                                           IEnumerable<string>? accept = null) {
-		var message = new HttpRequestMessage {
-			RequestUri = new Uri(url),
-			Method     = method
+public class HttpRequestService(IOptions<Config.InstanceSection> options)
+{
+	private HttpRequestMessage GenerateRequest(
+		string url, HttpMethod method,
+		string? body = null,
+		string? contentType = null,
+		IEnumerable<string>? accept = null
+	)
+	{
+		var message = new HttpRequestMessage
+		{
+			RequestUri = new Uri(url), Method = method
 			//Headers    = { UserAgent = { ProductInfoHeaderValue.Parse(options.Value.UserAgent) } }
 		};
 
 		//TODO: fix the user-agent so the commented out bit above works
 		message.Headers.TryAddWithoutValidation("User-Agent", options.Value.UserAgent);
 
-		if (body != null) {
+		if (body != null)
+		{
 			ArgumentNullException.ThrowIfNull(contentType);
 			message.Content = new StringContent(body, MediaTypeHeaderValue.Parse(contentType));
 		}
@@ -33,27 +38,39 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 		return message;
 	}
 
-	public HttpRequestMessage Get(string url, IEnumerable<string>? accept) {
+	public HttpRequestMessage Get(string url, IEnumerable<string>? accept)
+	{
 		return GenerateRequest(url, HttpMethod.Get, accept: accept);
 	}
 
-	public HttpRequestMessage Post(string url, string body, string contentType) {
+	public HttpRequestMessage Post(string url, string body, string contentType)
+	{
 		return GenerateRequest(url, HttpMethod.Post, body, contentType);
 	}
 
-	public HttpRequestMessage GetSigned(string url, IEnumerable<string>? accept, string actorId,
-	                                    string privateKey) {
-		return Get(url, accept).Sign(["(request-target)", "date", "host", "accept"], privateKey,
-		                             $"https://{options.Value.WebDomain}/users/{actorId}#main-key");
+	public HttpRequestMessage GetSigned(
+		string url, IEnumerable<string>? accept, string actorId,
+		string privateKey
+	)
+	{
+		return Get(url, accept)
+			.Sign(["(request-target)", "date", "host", "accept"], privateKey,
+			      $"https://{options.Value.WebDomain}/users/{actorId}#main-key");
 	}
 
-	public HttpRequestMessage GetSigned(string url, IEnumerable<string>? accept, User actor,
-	                                    UserKeypair keypair) {
+	public HttpRequestMessage GetSigned(
+		string url, IEnumerable<string>? accept, User actor,
+		UserKeypair keypair
+	)
+	{
 		return GetSigned(url, accept, actor.Id, keypair.PrivateKey);
 	}
 
-	public async Task<HttpRequestMessage> PostSignedAsync(string url, string body, string contentType, string actorId,
-	                                                      string privateKey) {
+	public async Task<HttpRequestMessage> PostSignedAsync(
+		string url, string body, string contentType, string actorId,
+		string privateKey
+	)
+	{
 		var message = Post(url, body, contentType);
 		ArgumentNullException.ThrowIfNull(message.Content);
 
@@ -67,8 +84,11 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) {
 		                    $"https://{options.Value.WebDomain}/users/{actorId}#main-key");
 	}
 
-	public Task<HttpRequestMessage> PostSignedAsync(string url, string body, string contentType, User actor,
-	                                                UserKeypair keypair) {
+	public Task<HttpRequestMessage> PostSignedAsync(
+		string url, string body, string contentType, User actor,
+		UserKeypair keypair
+	)
+	{
 		return PostSignedAsync(url, body, contentType, actor.Id, keypair.PrivateKey);
 	}
 }

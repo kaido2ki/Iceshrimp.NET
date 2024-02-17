@@ -6,9 +6,10 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASNote : ASObject {
+public class ASNote : ASObject
+{
 	public ASNote() => Type = Types.Note;
-	
+
 	[J("https://misskey-hub.net/ns#_misskey_content")]
 	[JC(typeof(VC))]
 	public string? MkContent { get; set; }
@@ -49,12 +50,13 @@ public class ASNote : ASObject {
 	[J($"{Constants.ActivityStreamsNs}#tag")]
 	[JC(typeof(ASTagConverter))]
 	public List<ASTag>? Tags { get; set; }
-	
+
 	[J($"{Constants.ActivityStreamsNs}#attachment")]
 	[JC(typeof(ASAttachmentConverter))]
 	public List<ASAttachment>? Attachments { get; set; }
 
-	public Note.NoteVisibility GetVisibility(ASActor actor) {
+	public Note.NoteVisibility GetVisibility(ASActor actor)
+	{
 		if (To.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public"))
 			return Note.NoteVisibility.Public;
 		if (Cc.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public"))
@@ -65,7 +67,8 @@ public class ASNote : ASObject {
 		return Note.NoteVisibility.Specified;
 	}
 
-	public List<string> GetRecipients(ASActor actor) {
+	public List<string> GetRecipients(ASActor actor)
+	{
 		return To.Concat(Cc)
 		         .Select(p => p.Id)
 		         .Distinct()
@@ -76,7 +79,8 @@ public class ASNote : ASObject {
 		         .ToList();
 	}
 
-	public new static class Types {
+	public new static class Types
+	{
 		private const string Ns = Constants.ActivityStreamsNs;
 
 		public const string Note = $"{Ns}#Note";

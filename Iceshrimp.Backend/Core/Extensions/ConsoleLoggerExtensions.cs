@@ -3,11 +3,12 @@ using Microsoft.Extensions.Logging.Console;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
-public static class ConsoleLoggerExtensions {
+public static class ConsoleLoggerExtensions
+{
 	public static ILoggingBuilder AddCustomConsoleFormatter(this ILoggingBuilder builder) =>
 		builder.AddConsole(options => options.FormatterName = "custom")
 		       .AddConsoleFormatter<CustomFormatter, ConsoleFormatterOptions>();
-};
+}
 
 /*
  * This is a slightly modified version of Microsoft's SimpleConsoleFormatter.
@@ -17,9 +18,16 @@ public static class ConsoleLoggerExtensions {
 
 #region Logger implementation
 
-file static class TextWriterExtensions {
-	public static void WriteColoredMessage(this TextWriter textWriter, string message, ConsoleColor? background,
-	                                       ConsoleColor? foreground) {
+file static class TextWriterExtensions
+{
+	private const string DefaultForegroundColor = "\x1B[39m\x1B[22m"; // reset to default foreground color
+	private const string DefaultBackgroundColor = "\x1B[49m";         // reset to the background color
+
+	public static void WriteColoredMessage(
+		this TextWriter textWriter, string message, ConsoleColor? background,
+		ConsoleColor? foreground
+	)
+	{
 		if (background.HasValue)
 			textWriter.Write(GetBackgroundColorEscapeCode(background.Value));
 		if (foreground.HasValue)
@@ -33,11 +41,10 @@ file static class TextWriterExtensions {
 			textWriter.Write(DefaultBackgroundColor);
 	}
 
-	private const string DefaultForegroundColor = "\x1B[39m\x1B[22m"; // reset to default foreground color
-	private const string DefaultBackgroundColor = "\x1B[49m";         // reset to the background color
-
-	private static string GetForegroundColorEscapeCode(ConsoleColor color) {
-		return color switch {
+	private static string GetForegroundColorEscapeCode(ConsoleColor color)
+	{
+		return color switch
+		{
 			ConsoleColor.Black       => "\x1B[30m",
 			ConsoleColor.DarkRed     => "\x1B[31m",
 			ConsoleColor.DarkGreen   => "\x1B[32m",
@@ -57,8 +64,10 @@ file static class TextWriterExtensions {
 		};
 	}
 
-	private static string GetBackgroundColorEscapeCode(ConsoleColor color) {
-		return color switch {
+	private static string GetBackgroundColorEscapeCode(ConsoleColor color)
+	{
+		return color switch
+		{
 			ConsoleColor.Black       => "\x1B[40m",
 			ConsoleColor.DarkRed     => "\x1B[41m",
 			ConsoleColor.DarkGreen   => "\x1B[42m",
@@ -72,22 +81,28 @@ file static class TextWriterExtensions {
 	}
 }
 
-file static class ConsoleUtils {
+file static class ConsoleUtils
+{
 	private static volatile int _sEmitAnsiColorCodes = -1;
 
-	public static bool EmitAnsiColorCodes {
-		get {
+	public static bool EmitAnsiColorCodes
+	{
+		get
+		{
 			var emitAnsiColorCodes = _sEmitAnsiColorCodes;
-			if (emitAnsiColorCodes != -1) {
+			if (emitAnsiColorCodes != -1)
+			{
 				return Convert.ToBoolean(emitAnsiColorCodes);
 			}
 
 			var enabled = !Console.IsOutputRedirected;
 
-			if (enabled) {
+			if (enabled)
+			{
 				enabled = Environment.GetEnvironmentVariable("NO_COLOR") is null;
 			}
-			else {
+			else
+			{
 				var envVar =
 					Environment.GetEnvironmentVariable("DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION");
 				enabled = envVar is not null &&
@@ -100,7 +115,8 @@ file static class ConsoleUtils {
 	}
 }
 
-file sealed class CustomFormatter() : ConsoleFormatter("custom") {
+file sealed class CustomFormatter() : ConsoleFormatter("custom")
+{
 	private const string LoglevelPadding = ": ";
 
 	private static readonly string MessagePadding =
@@ -112,10 +128,12 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom") {
 		in LogEntry<TState> logEntry,
 		IExternalScopeProvider? scopeProvider,
 		TextWriter textWriter
-	) {
+	)
+	{
 		var message = logEntry.Formatter(logEntry.State, logEntry.Exception);
 		// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-		if (logEntry.Exception == null && message == null) {
+		if (logEntry.Exception == null && message == null)
+		{
 			return;
 		}
 
@@ -129,8 +147,11 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom") {
 	}
 
 
-	private static void CreateDefaultLogMessage<TState>(TextWriter textWriter, in LogEntry<TState> logEntry,
-	                                                    string message) {
+	private static void CreateDefaultLogMessage<TState>(
+		TextWriter textWriter, in LogEntry<TState> logEntry,
+		string message
+	)
+	{
 		var eventId    = logEntry.EventId.Id;
 		var exception  = logEntry.Exception;
 		var singleLine = !message.Contains('\n') && exception == null;
@@ -146,28 +167,34 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom") {
 			textWriter.Write(eventId.ToString());
 
 		textWriter.Write(']');
-		if (!singleLine) {
+		if (!singleLine)
+		{
 			textWriter.Write(Environment.NewLine);
 		}
 
 		WriteMessage(textWriter, message, singleLine);
 
-		if (exception != null) {
+		if (exception != null)
+		{
 			WriteMessage(textWriter, exception.ToString(), singleLine);
 		}
 
-		if (singleLine) {
+		if (singleLine)
+		{
 			textWriter.Write(Environment.NewLine);
 		}
 	}
 
-	private static void WriteMessage(TextWriter textWriter, string message, bool singleLine) {
+	private static void WriteMessage(TextWriter textWriter, string message, bool singleLine)
+	{
 		if (string.IsNullOrEmpty(message)) return;
-		if (singleLine) {
+		if (singleLine)
+		{
 			textWriter.Write(' ');
 			WriteReplacing(textWriter, Environment.NewLine, " ", message);
 		}
-		else {
+		else
+		{
 			textWriter.Write(MessagePadding);
 			WriteReplacing(textWriter, Environment.NewLine, NewLineWithMessagePadding, message);
 			textWriter.Write(Environment.NewLine);
@@ -175,14 +202,17 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom") {
 
 		return;
 
-		static void WriteReplacing(TextWriter writer, string oldValue, string newValue, string message) {
+		static void WriteReplacing(TextWriter writer, string oldValue, string newValue, string message)
+		{
 			var newMessage = message.Replace(oldValue, newValue);
 			writer.Write(newMessage);
 		}
 	}
 
-	private static string GetLogLevelString(LogLevel logLevel) {
-		return logLevel switch {
+	private static string GetLogLevelString(LogLevel logLevel)
+	{
+		return logLevel switch
+		{
 			LogLevel.Trace       => "trce",
 			LogLevel.Debug       => "dbug",
 			LogLevel.Information => "info",
@@ -194,12 +224,15 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom") {
 		};
 	}
 
-	private static ConsoleColors GetLogLevelConsoleColors(LogLevel logLevel) {
-		if (!ConsoleUtils.EmitAnsiColorCodes) {
+	private static ConsoleColors GetLogLevelConsoleColors(LogLevel logLevel)
+	{
+		if (!ConsoleUtils.EmitAnsiColorCodes)
+		{
 			return new ConsoleColors(null, null);
 		}
 
-		return logLevel switch {
+		return logLevel switch
+		{
 			LogLevel.Trace       => new ConsoleColors(ConsoleColor.Gray, ConsoleColor.Black),
 			LogLevel.Debug       => new ConsoleColors(ConsoleColor.Gray, ConsoleColor.Black),
 			LogLevel.Information => new ConsoleColors(ConsoleColor.DarkGreen, ConsoleColor.Black),
@@ -210,7 +243,8 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom") {
 		};
 	}
 
-	private readonly struct ConsoleColors(ConsoleColor? foreground, ConsoleColor? background) {
+	private readonly struct ConsoleColors(ConsoleColor? foreground, ConsoleColor? background)
+	{
 		public ConsoleColor? Foreground { get; } = foreground;
 		public ConsoleColor? Background { get; } = background;
 	}

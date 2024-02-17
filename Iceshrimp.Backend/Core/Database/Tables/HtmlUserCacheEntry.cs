@@ -5,7 +5,8 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("html_user_cache_entry")]
-public class HtmlUserCacheEntry {
+public class HtmlUserCacheEntry
+{
 	[Key]
 	[Column("userId")]
 	[StringLength(32)]

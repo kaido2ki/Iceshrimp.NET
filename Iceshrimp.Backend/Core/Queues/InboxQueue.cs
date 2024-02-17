@@ -8,8 +8,10 @@ using StackExchange.Redis;
 
 namespace Iceshrimp.Backend.Core.Queues;
 
-public class InboxQueue {
-	public static JobQueue<InboxJob> Create(IConnectionMultiplexer redis, string prefix) {
+public class InboxQueue
+{
+	public static JobQueue<InboxJob> Create(IConnectionMultiplexer redis, string prefix)
+	{
 		return new JobQueue<InboxJob>("inbox", InboxQueueProcessorDelegateAsync, 4, redis, prefix);
 	}
 
@@ -17,12 +19,14 @@ public class InboxQueue {
 		InboxJob job,
 		IServiceProvider scope,
 		CancellationToken token
-	) {
+	)
+	{
 		var expanded = LdHelpers.Expand(JToken.Parse(job.Body));
 		if (expanded == null) throw new Exception("Failed to expand ASObject");
 		var obj = ASObject.Deserialize(expanded);
 		if (obj == null) throw new Exception("Failed to deserialize ASObject");
-		if (obj is not ASActivity activity) {
+		if (obj is not ASActivity activity)
+		{
 			throw new GracefulException("Job data is not an ASActivity", $"Type: {obj.Type}");
 		}
 
@@ -35,7 +39,8 @@ public class InboxQueue {
 }
 
 [ProtoContract]
-public class InboxJob : Job {
+public class InboxJob : Job
+{
 	[ProtoMember(1)] public required string  Body;
 	[ProtoMember(2)] public required string? InboxUserId;
 	[ProtoMember(3)] public required string? AuthFetchUserId;

@@ -8,7 +8,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("ParentId")]
 [Index("CreatedAt")]
 [Index("UserId")]
-public class DriveFolder {
+public class DriveFolder
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
@@ -41,7 +42,8 @@ public class DriveFolder {
 	[StringLength(32)]
 	public string? ParentId { get; set; }
 
-	[InverseProperty(nameof(DriveFile.Folder))] public virtual ICollection<DriveFile> DriveFiles { get; set; } = new List<DriveFile>();
+	[InverseProperty(nameof(DriveFile.Folder))]
+	public virtual ICollection<DriveFile> DriveFiles { get; set; } = new List<DriveFile>();
 
 	[InverseProperty(nameof(Parent))]
 	public virtual ICollection<DriveFolder> InverseParent { get; set; } = new List<DriveFolder>();

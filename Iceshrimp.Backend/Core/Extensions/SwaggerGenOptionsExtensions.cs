@@ -8,8 +8,10 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
-public static class SwaggerGenOptionsExtensions {
-	public static void AddOperationFilters(this SwaggerGenOptions options) {
+public static class SwaggerGenOptionsExtensions
+{
+	public static void AddOperationFilters(this SwaggerGenOptions options)
+	{
 		options.OperationFilter<AuthorizeCheckOperationFilter>();
 		options.OperationFilter<HybridRequestOperationFilter>();
 		options.OperationFilter<MastodonApiControllerOperationFilter>();
@@ -17,13 +19,16 @@ public static class SwaggerGenOptionsExtensions {
 
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
 	                 Justification = "SwaggerGenOptions.OperationFilter<T> instantiates this class at runtime")]
-	private class MastodonApiControllerOperationFilter : IOperationFilter {
-		public void Apply(OpenApiOperation operation, OperationFilterContext context) {
+	private class MastodonApiControllerOperationFilter : IOperationFilter
+	{
+		public void Apply(OpenApiOperation operation, OperationFilterContext context)
+		{
 			if (context.MethodInfo.DeclaringType is null)
 				return;
 
 			var isMastodonController = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                                  .OfType<MastodonApiControllerAttribute>().Any();
+			                                  .OfType<MastodonApiControllerAttribute>()
+			                                  .Any();
 
 			if (!isMastodonController) return;
 
@@ -33,48 +38,54 @@ public static class SwaggerGenOptionsExtensions {
 
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
 	                 Justification = "SwaggerGenOptions.OperationFilter<T> instantiates this class at runtime")]
-	private class AuthorizeCheckOperationFilter : IOperationFilter {
-		public void Apply(OpenApiOperation operation, OperationFilterContext context) {
+	private class AuthorizeCheckOperationFilter : IOperationFilter
+	{
+		public void Apply(OpenApiOperation operation, OperationFilterContext context)
+		{
 			if (context.MethodInfo.DeclaringType is null)
 				return;
 
 			//TODO: separate admin & user authorize attributes
 			var hasAuthenticate = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                             .OfType<AuthenticateAttribute>().Any() ||
+			                             .OfType<AuthenticateAttribute>()
+			                             .Any() ||
 			                      context.MethodInfo.GetCustomAttributes(true)
-			                             .OfType<AuthenticateAttribute>().Any();
+			                             .OfType<AuthenticateAttribute>()
+			                             .Any();
 
 			var isMastodonController = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                                  .OfType<MastodonApiControllerAttribute>().Any();
+			                                  .OfType<MastodonApiControllerAttribute>()
+			                                  .Any();
 
 			if (!hasAuthenticate) return;
 
-			var schema = new OpenApiSecurityScheme {
-				Reference = new OpenApiReference {
-					Type = ReferenceType.SecurityScheme,
-					Id   = isMastodonController ? "mastodon" : "user"
+			var schema = new OpenApiSecurityScheme
+			{
+				Reference = new OpenApiReference
+				{
+					Type = ReferenceType.SecurityScheme, Id = isMastodonController ? "mastodon" : "user"
 				}
 			};
 
-			operation.Security = new List<OpenApiSecurityRequirement> {
-				new() {
-					[schema] = Array.Empty<string>()
-				}
-			};
+			operation.Security = new List<OpenApiSecurityRequirement> { new() { [schema] = Array.Empty<string>() } };
 		}
 	}
 
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
 	                 Justification = "SwaggerGenOptions.OperationFilter<T> instantiates this class at runtime")]
-	private class HybridRequestOperationFilter : IOperationFilter {
-		public void Apply(OpenApiOperation operation, OperationFilterContext context) {
+	private class HybridRequestOperationFilter : IOperationFilter
+	{
+		public void Apply(OpenApiOperation operation, OperationFilterContext context)
+		{
 			if (context.MethodInfo.DeclaringType is null)
 				return;
 
 			var consumesHybrid = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                            .OfType<ConsumesHybridAttribute>().Any() ||
+			                            .OfType<ConsumesHybridAttribute>()
+			                            .Any() ||
 			                     context.MethodInfo.GetCustomAttributes(true)
-			                            .OfType<ConsumesHybridAttribute>().Any();
+			                            .OfType<ConsumesHybridAttribute>()
+			                            .Any();
 
 			if (!consumesHybrid) return;
 
@@ -87,11 +98,12 @@ public static class SwaggerGenOptionsExtensions {
 			ApiDescription apiDescription,
 			SchemaRepository schemaRepository,
 			ISchemaGenerator schemaGenerator
-		) {
+		)
+		{
 			OpenApiRequestBody? requestBody = null;
 
 			var hybridParameter = apiDescription.ParameterDescriptions.FirstOrDefault(paramDesc =>
-						 paramDesc.Source == HybridBindingSource.Hybrid);
+				paramDesc.Source == HybridBindingSource.Hybrid);
 
 			if (hybridParameter != null)
 				requestBody =
@@ -104,9 +116,12 @@ public static class SwaggerGenOptionsExtensions {
 			SchemaRepository schemaRepository,
 			ISchemaGenerator schemaGenerator,
 			ApiParameterDescription bodyParameter
-		) {
+		)
+		{
 			List<string> contentTypes =
-				["application/json", "application/x-www-form-urlencoded", "multipart/form-data"];
+			[
+				"application/json", "application/x-www-form-urlencoded", "multipart/form-data"
+			];
 
 			var isRequired = bodyParameter.IsRequiredParameter();
 
@@ -116,7 +131,8 @@ public static class SwaggerGenOptionsExtensions {
 			                            bodyParameter.PropertyInfo(),
 			                            bodyParameter.ParameterInfo());
 
-			return new OpenApiRequestBody {
+			return new OpenApiRequestBody
+			{
 				Content = contentTypes
 					.ToDictionary(contentType => contentType, _ => new OpenApiMediaType { Schema = schema }),
 				Required = isRequired
@@ -130,11 +146,14 @@ public static class SwaggerGenOptionsExtensions {
 			MemberInfo? propertyInfo = null,
 			ParameterInfo? parameterInfo = null,
 			ApiParameterRouteInfo? routeInfo = null
-		) {
-			try {
+		)
+		{
+			try
+			{
 				return schemaGenerator.GenerateSchema(type, schemaRepository, propertyInfo, parameterInfo, routeInfo);
 			}
-			catch (Exception ex) {
+			catch (Exception ex)
+			{
 				throw new
 					SwaggerGeneratorException($"Failed to generate schema for type - {type}. See inner exception",
 					                          ex);

@@ -7,7 +7,19 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("antenna")]
 [Index("UserId")]
-public class Antenna {
+public class Antenna
+{
+	[PgName("antenna_src_enum")]
+	public enum AntennaSource
+	{
+		[PgName("home")]      Home,
+		[PgName("all")]       All,
+		[PgName("users")]     Users,
+		[PgName("list")]      List,
+		[PgName("group")]     Group,
+		[PgName("instances")] Instances
+	}
+
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
@@ -32,7 +44,7 @@ public class Antenna {
 	[Column("name")]
 	[StringLength(128)]
 	public string Name { get; set; } = null!;
-	
+
 	[Column("src")] public AntennaSource Source { get; set; }
 
 	[Column("userListId")]
@@ -79,14 +91,4 @@ public class Antenna {
 	[ForeignKey("UserListId")]
 	[InverseProperty(nameof(Tables.UserList.Antennas))]
 	public virtual UserList? UserList { get; set; }
-
-	[PgName("antenna_src_enum")]
-	public enum AntennaSource {
-		[PgName("home")]      Home,
-		[PgName("all")]       All,
-		[PgName("users")]     Users,
-		[PgName("list")]      List,
-		[PgName("group")]     Group,
-		[PgName("instances")] Instances
-	}
 }

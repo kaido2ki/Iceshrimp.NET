@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("signin")]
 [Index("UserId")]
-public class Signin {
+public class Signin
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

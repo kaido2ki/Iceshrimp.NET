@@ -7,10 +7,12 @@ using JR = Newtonsoft.Json.JsonRequiredAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASObject : ASObjectBase {
+public class ASObject : ASObjectBase
+{
 	[J("@id")]
 	[JR]
-	public new required string Id {
+	public new required string Id
+	{
 		get => base.Id ?? throw new NullReferenceException("base.Id should never be null on a required property");
 		set => base.Id = value;
 	}
@@ -22,13 +24,17 @@ public class ASObject : ASObjectBase {
 	[JsonIgnore] public bool IsUnresolved => GetType() == typeof(ASObject) && Type == null;
 
 	//FIXME: don't recurse creates and co
-	public static ASObject? Deserialize(JToken token) {
-		while (true) {
-			switch (token.Type) {
+	public static ASObject? Deserialize(JToken token)
+	{
+		while (true)
+		{
+			switch (token.Type)
+			{
 				case JTokenType.Object:
 					var typeToken = token["@type"];
 					var type      = typeToken is JValue ? typeToken.Value<string>() : typeToken?[0]?.Value<string>();
-					return type switch {
+					return type switch
+					{
 						ASActor.Types.Person       => token.ToObject<ASActor>(),
 						ASActor.Types.Service      => token.ToObject<ASActor>(),
 						ASActor.Types.Group        => token.ToObject<ASActor>(),
@@ -51,7 +57,8 @@ public class ASObject : ASObjectBase {
 					token = token.First();
 					continue;
 				case JTokenType.String:
-					return new ASObject {
+					return new ASObject
+					{
 						Id = token.Value<string>() ??
 						     throw new Exception("Encountered JTokenType.String with Value<string> null")
 					};
@@ -61,7 +68,8 @@ public class ASObject : ASObjectBase {
 		}
 	}
 
-	public static class Types {
+	public static class Types
+	{
 		private const string Ns = Constants.ActivityStreamsNs;
 
 		public const string Tombstone = $"{Ns}#Tombstone";
@@ -72,21 +80,28 @@ public class ASTombstone : ASObject;
 
 public sealed class StringListSingleConverter : ASSerializer.ListSingleObjectConverter<string>;
 
-internal sealed class ASObjectConverter : JsonConverter {
+internal sealed class ASObjectConverter : JsonConverter
+{
 	public override bool CanWrite => false;
 
-	public override bool CanConvert(Type objectType) {
+	public override bool CanConvert(Type objectType)
+	{
 		return true;
 	}
 
-	public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue,
-	                                 JsonSerializer serializer) {
-		if (reader.TokenType == JsonToken.StartArray) {
+	public override object? ReadJson(
+		JsonReader reader, Type objectType, object? existingValue,
+		JsonSerializer serializer
+	)
+	{
+		if (reader.TokenType == JsonToken.StartArray)
+		{
 			var obj = JArray.Load(reader);
 			return ASObject.Deserialize(obj[0]);
 		}
 
-		if (reader.TokenType == JsonToken.StartObject) {
+		if (reader.TokenType == JsonToken.StartObject)
+		{
 			var obj = JObject.Load(reader);
 			return ASObject.Deserialize(obj);
 		}
@@ -94,7 +109,8 @@ internal sealed class ASObjectConverter : JsonConverter {
 		throw new Exception("this shouldn't happen");
 	}
 
-	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) {
+	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+	{
 		throw new NotImplementedException();
 	}
 }

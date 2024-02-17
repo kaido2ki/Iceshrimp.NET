@@ -9,20 +9,22 @@ using StackExchange.Redis.KeyspaceIsolation;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class QueueService : BackgroundService {
+public class QueueService : BackgroundService
+{
 	private readonly List<IJobQueue>             _queues = [];
 	private readonly IServiceScopeFactory        _serviceScopeFactory;
-	public readonly  JobQueue<PreDeliverJob>     PreDeliverQueue;
+	public readonly  JobQueue<BackgroundTaskJob> BackgroundTaskQueue;
 	public readonly  JobQueue<DeliverJob>        DeliverQueue;
 	public readonly  JobQueue<InboxJob>          InboxQueue;
-	public readonly  JobQueue<BackgroundTaskJob> BackgroundTaskQueue;
+	public readonly  JobQueue<PreDeliverJob>     PreDeliverQueue;
 
 	public QueueService(
 		IServiceScopeFactory serviceScopeFactory,
 		IConnectionMultiplexer redis,
 		IOptions<Config.InstanceSection> instanceConfig,
 		IOptions<Config.RedisSection> redisConfig
-	) {
+	)
+	{
 		_serviceScopeFactory = serviceScopeFactory;
 		var prefix = (redisConfig.Value.Prefix ?? instanceConfig.Value.WebDomain) + ":queue:";
 		DeliverQueue        = Queues.DeliverQueue.Create(redis, prefix);
@@ -31,30 +33,35 @@ public class QueueService : BackgroundService {
 		PreDeliverQueue     = Queues.PreDeliverQueue.Create(redis, prefix);
 	}
 
-	protected override async Task ExecuteAsync(CancellationToken token) {
+	protected override async Task ExecuteAsync(CancellationToken token)
+	{
 		_queues.AddRange([InboxQueue, PreDeliverQueue, DeliverQueue, BackgroundTaskQueue]);
 
 		await RecoverOrPrepareForExitAsync();
 		token.Register(RecoverOrPrepareForExit);
 
-		while (!token.IsCancellationRequested) {
+		while (!token.IsCancellationRequested)
+		{
 			foreach (var _ in _queues.Select(queue => queue.TickAsync(_serviceScopeFactory, token))) { }
 
 			await Task.Delay(100, token);
 		}
 	}
 
-	private async Task RecoverOrPrepareForExitAsync() {
+	private async Task RecoverOrPrepareForExitAsync()
+	{
 		// Move running tasks to the front of the queue
 		foreach (var queue in _queues) await queue.RecoverOrPrepareForExitAsync();
 	}
 
-	private void RecoverOrPrepareForExit() {
+	private void RecoverOrPrepareForExit()
+	{
 		RecoverOrPrepareForExitAsync().Wait();
 	}
 }
 
-public interface IJobQueue {
+public interface IJobQueue
+{
 	public Task TickAsync(IServiceScopeFactory scopeFactory, CancellationToken token);
 	public Task RecoverOrPrepareForExitAsync();
 }
@@ -65,12 +72,14 @@ public class JobQueue<T>(
 	int parallelism,
 	IConnectionMultiplexer redis,
 	string prefix
-) : IJobQueue where T : Job {
+) : IJobQueue where T : Job
+{
 	//TODO: "Why is that best practice" - does this need to be called on every access? does not doing this cause a memory leak or something?
 	// If this is /not/ required, we could call .WithKeyPrefix twice, once in the main method, (adding prefix) and once here, adding name to the then-passed IDatabase
 	private IDatabase Db => redis.GetDatabase().WithKeyPrefix(prefix + name + ":");
 
-	public async Task TickAsync(IServiceScopeFactory scopeFactory, CancellationToken token) {
+	public async Task TickAsync(IServiceScopeFactory scopeFactory, CancellationToken token)
+	{
 		var actualParallelism = Math.Min(parallelism - await Db.ListLengthAsync("running"),
 		                                 await Db.ListLengthAsync("queued"));
 		if (actualParallelism == 0) return;
@@ -81,12 +90,14 @@ public class JobQueue<T>(
 		await Task.WhenAll(tasks);
 	}
 
-	public async Task RecoverOrPrepareForExitAsync() {
+	public async Task RecoverOrPrepareForExitAsync()
+	{
 		while (await Db.ListLengthAsync("running") > 0)
 			await Db.ListMoveAsync("running", "queued", ListSide.Right, ListSide.Left);
 	}
 
-	private async Task ProcessJobAsync(IServiceScopeFactory scopeFactory, CancellationToken token) {
+	private async Task ProcessJobAsync(IServiceScopeFactory scopeFactory, CancellationToken token)
+	{
 		var res = await Db.ListMoveAsync("queued", "running", ListSide.Left, ListSide.Right);
 		if (res.IsNull || res.Box() is not byte[] buffer) return;
 		var job = RedisHelpers.Deserialize<T>(buffer);
@@ -94,38 +105,46 @@ public class JobQueue<T>(
 		job.Status    = Job.JobStatus.Running;
 		job.StartedAt = DateTime.Now;
 		var scope = scopeFactory.CreateScope();
-		try {
+		try
+		{
 			await handler(job, scope.ServiceProvider, token);
 		}
-		catch (Exception e) {
+		catch (Exception e)
+		{
 			job.Status           = Job.JobStatus.Failed;
 			job.ExceptionMessage = e.Message;
 			job.ExceptionSource  = e.TargetSite?.DeclaringType?.FullName ?? "Unknown";
 
 			var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
-			if (e is GracefulException { Details: not null } ce) {
+			if (e is GracefulException { Details: not null } ce)
+			{
 				logger.LogError("Failed to process job in {queue} queue: {error} - {details}",
 				                name, ce.Message, ce.Details);
 			}
-			else {
+			else
+			{
 				logger.LogError("Failed to process job in {queue} queue: {error}", name, e.Message);
 			}
 		}
 
-		if (job.Status is Job.JobStatus.Failed) {
+		if (job.Status is Job.JobStatus.Failed)
+		{
 			job.FinishedAt = DateTime.Now;
 			await Db.ListRemoveAsync("running", res, 1);
 			await Db.ListRightPushAsync("failed", RedisValue.Unbox(RedisHelpers.Serialize(job)));
 		}
-		else if (job.Status is Job.JobStatus.Delayed) {
-			if (job.DelayedUntil == null) {
+		else if (job.Status is Job.JobStatus.Delayed)
+		{
+			if (job.DelayedUntil == null)
+			{
 				job.Status           = Job.JobStatus.Failed;
 				job.ExceptionMessage = "Job marked as delayed but no until time set";
 				job.ExceptionSource  = typeof(QueueService).FullName;
 				job.FinishedAt       = DateTime.Now;
 			}
 		}
-		else {
+		else
+		{
 			job.Status     = Job.JobStatus.Completed;
 			job.FinishedAt = DateTime.Now;
 
@@ -134,17 +153,20 @@ public class JobQueue<T>(
 			                name, job.Duration, job.QueueDuration);
 		}
 
-		var targetQueue = job.Status switch {
+		var targetQueue = job.Status switch
+		{
 			Job.JobStatus.Completed => "completed",
 			Job.JobStatus.Failed    => "failed",
 			Job.JobStatus.Delayed   => "delayed",
 			_                       => throw new Exception("ProcessJob: unknown job state on finish")
 		};
 		await Db.ListRemoveAsync("running", res, 1);
-		if (targetQueue == "delayed") {
+		if (targetQueue == "delayed")
+		{
 			await Db.ListRightPushAsync(targetQueue, RedisValue.Unbox(RedisHelpers.Serialize(job)));
 		}
-		else {
+		else
+		{
 			await Db.ListLeftPushAsync(targetQueue, RedisValue.Unbox(RedisHelpers.Serialize(job)));
 			await Db.ListTrimAsync(targetQueue, 0, 9);
 		}
@@ -152,7 +174,8 @@ public class JobQueue<T>(
 		scope.Dispose();
 	}
 
-	public async Task EnqueueAsync(T job) {
+	public async Task EnqueueAsync(T job)
+	{
 		await Db.ListRightPushAsync("queued", RedisValue.Unbox(RedisHelpers.Serialize(job)));
 	}
 }
@@ -162,8 +185,10 @@ public class JobQueue<T>(
 [ProtoInclude(101, typeof(DeliverJob))]
 [ProtoInclude(102, typeof(PreDeliverJob))]
 [ProtoInclude(103, typeof(BackgroundTaskJob))]
-public abstract class Job {
-	public enum JobStatus {
+public abstract class Job
+{
+	public enum JobStatus
+	{
 		Queued,
 		Delayed,
 		Running,

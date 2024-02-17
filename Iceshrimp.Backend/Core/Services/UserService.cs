@@ -6,7 +6,6 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
-using Iceshrimp.Backend.Core.Federation.ActivityPub;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
@@ -22,11 +21,13 @@ public class UserService(
 	IOptions<Config.InstanceSection> instance,
 	ILogger<UserService> logger,
 	DatabaseContext db,
-	ActivityFetcherService fetchSvc,
+	ActivityPub.ActivityFetcherService fetchSvc,
 	DriveService driveSvc,
 	MfmConverter mfmConverter
-) {
-	private (string Username, string? Host) AcctToTuple(string acct) {
+)
+{
+	private (string Username, string? Host) AcctToTuple(string acct)
+	{
 		if (!acct.StartsWith("acct:")) throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
 
 		var split = acct[5..].Split('@');
@@ -36,14 +37,17 @@ public class UserService(
 		return (split[0], split[1].ToPunycode());
 	}
 
-	public async Task<User?> GetUserFromQueryAsync(string query) {
+	public async Task<User?> GetUserFromQueryAsync(string query)
+	{
 		if (query.StartsWith("http://") || query.StartsWith("https://"))
-			if (query.StartsWith($"https://{instance.Value.WebDomain}/users/")) {
+			if (query.StartsWith($"https://{instance.Value.WebDomain}/users/"))
+			{
 				query = query[$"https://{instance.Value.WebDomain}/users/".Length..];
 				return await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == query) ??
 				       throw GracefulException.NotFound("User not found");
 			}
-			else {
+			else
+			{
 				return await db.Users
 				               .IncludeCommonProperties()
 				               .FirstOrDefaultAsync(p => p.Uri != null && p.Uri.ToLower() == query.ToLowerInvariant());
@@ -58,7 +62,8 @@ public class UserService(
 		                                         p.Host == tuple.Host);
 	}
 
-	public async Task<User> CreateUserAsync(string uri, string acct) {
+	public async Task<User> CreateUserAsync(string uri, string acct)
+	{
 		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
 		var actor = await fetchSvc.FetchActorAsync(uri);
 		logger.LogDebug("Got actor: {url}", actor.Url);
@@ -72,13 +77,15 @@ public class UserService(
 		                   .IncludeCommonProperties()
 		                   .FirstOrDefaultAsync(p => p.Uri != null && p.Uri == actor.Id);
 
-		if (user != null) {
+		if (user != null)
+		{
 			// Another thread got there first
 			logger.LogDebug("Actor {uri} is already known, returning existing user {id}", user.Uri, user.Id);
 			return user;
 		}
 
-		user = new User {
+		user = new User
+		{
 			Id            = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
 			LastFetchedAt = DateTime.UtcNow,
@@ -103,7 +110,8 @@ public class UserService(
 			Tags   = []  //FIXME
 		};
 
-		var profile = new UserProfile {
+		var profile = new UserProfile
+		{
 			User        = user,
 			Description = actor.MkSummary ?? await mfmConverter.FromHtmlAsync(actor.Summary),
 			//Birthday = TODO,
@@ -113,19 +121,20 @@ public class UserService(
 			Url      = actor.Url?.Link
 		};
 
-		var publicKey = new UserPublickey {
-			UserId = user.Id,
-			KeyId  = actor.PublicKey.Id,
-			KeyPem = actor.PublicKey.PublicKey
+		var publicKey = new UserPublickey
+		{
+			UserId = user.Id, KeyId = actor.PublicKey.Id, KeyPem = actor.PublicKey.PublicKey
 		};
 
-		try {
+		try
+		{
 			await db.AddRangeAsync(user, profile, publicKey);
 			await ResolveAvatarAndBanner(user, actor); // We need to do this after calling db.Add(Range) to ensure data consistency
 			await db.SaveChangesAsync();
 			return user;
 		}
-		catch (UniqueConstraintException) {
+		catch (UniqueConstraintException)
+		{
 			logger.LogDebug("Encountered UniqueConstraintException while creating user {uri}, attempting to refetch...",
 			                user.Uri);
 			// another thread got there first, so we need to return the existing user
@@ -134,7 +143,8 @@ public class UserService(
 			                  .FirstOrDefaultAsync(p => p.Uri != null && p.Uri == user.Uri);
 
 			// something else must have went wrong, rethrow exception
-			if (res == null) {
+			if (res == null)
+			{
 				logger.LogError("Fetching user {uri} failed, rethrowing exception", user.Uri);
 				throw;
 			}
@@ -145,7 +155,8 @@ public class UserService(
 		}
 	}
 
-	public async Task<User> UpdateUserAsync(User user, ASActor? actor = null) {
+	public async Task<User> UpdateUserAsync(User user, ASActor? actor = null)
+	{
 		if (!user.NeedsUpdate && actor == null) return user;
 		if (actor is { IsUnresolved: true } or { Username: null })
 			actor = null; // This will trigger a fetch a couple lines down
@@ -198,7 +209,8 @@ public class UserService(
 		return user;
 	}
 
-	public async Task<User> CreateLocalUserAsync(string username, string password, string? invite) {
+	public async Task<User> CreateLocalUserAsync(string username, string password, string? invite)
+	{
 		//TODO: invite system should allow multi-use invites & time limited invites
 		if (security.Value.Registrations == Enums.Registrations.Closed)
 			throw new GracefulException(HttpStatusCode.Forbidden, "Registrations are disabled on this server");
@@ -219,7 +231,8 @@ public class UserService(
 			throw GracefulException.BadRequest("Password must be at least 8 characters long");
 
 		var keypair = RSA.Create(4096);
-		var user = new User {
+		var user = new User
+		{
 			Id            = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
 			Username      = username,
@@ -227,23 +240,19 @@ public class UserService(
 			Host          = null
 		};
 
-		var userKeypair = new UserKeypair {
+		var userKeypair = new UserKeypair
+		{
 			UserId     = user.Id,
 			PrivateKey = keypair.ExportPkcs8PrivateKeyPem(),
 			PublicKey  = keypair.ExportSubjectPublicKeyInfoPem()
 		};
 
-		var userProfile = new UserProfile {
-			UserId   = user.Id,
-			Password = AuthHelpers.HashPassword(password)
-		};
+		var userProfile = new UserProfile { UserId = user.Id, Password = AuthHelpers.HashPassword(password) };
 
-		var usedUsername = new UsedUsername {
-			CreatedAt = DateTime.UtcNow,
-			Username  = username.ToLowerInvariant()
-		};
+		var usedUsername = new UsedUsername { CreatedAt = DateTime.UtcNow, Username = username.ToLowerInvariant() };
 
-		if (security.Value.Registrations == Enums.Registrations.Invite) {
+		if (security.Value.Registrations == Enums.Registrations.Invite)
+		{
 			var ticket = await db.RegistrationInvites.FirstOrDefaultAsync(p => p.Code == invite);
 			if (ticket == null)
 				throw GracefulException.Forbidden("The specified invite code is invalid");
@@ -256,7 +265,8 @@ public class UserService(
 		return user;
 	}
 
-	private async Task<Func<Task>> ResolveAvatarAndBanner(User user, ASActor actor) {
+	private async Task<Func<Task>> ResolveAvatarAndBanner(User user, ASActor actor)
+	{
 		var avatar = await driveSvc.StoreFile(actor.Avatar?.Url?.Link, user, actor.Avatar?.Sensitive ?? false);
 		var banner = await driveSvc.StoreFile(actor.Banner?.Url?.Link, user, actor.Banner?.Sensitive ?? false);
 
@@ -272,7 +282,8 @@ public class UserService(
 		user.AvatarUrl = avatar?.Url;
 		user.BannerUrl = banner?.Url;
 
-		return async () => {
+		return async () =>
+		{
 			if (prevAvatarId != null && avatar?.Id != prevAvatarId)
 				await driveSvc.RemoveFile(prevAvatarId);
 

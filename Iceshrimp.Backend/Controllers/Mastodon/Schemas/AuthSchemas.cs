@@ -7,8 +7,10 @@ using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
-public abstract class AuthSchemas {
-	public class VerifyAppCredentialsResponse {
+public abstract class AuthSchemas
+{
+	public class VerifyAppCredentialsResponse
+	{
 		public required OauthApp App;
 
 		[J("name")]    public string  Name    => App.Name;
@@ -17,14 +19,16 @@ public abstract class AuthSchemas {
 		[J("vapid_key")] public required string? VapidKey { get; set; }
 	}
 
-	public class RegisterAppRequest {
+	public class RegisterAppRequest
+	{
 		private List<string> _scopes      = ["read"];
 		public  List<string> RedirectUris = [];
 
 		[B(Name = "scopes")]
 		[J("scopes")]
 		[JC(typeof(EnsureArrayConverter))]
-		public List<string> Scopes {
+		public List<string> Scopes
+		{
 			get => _scopes;
 			set => _scopes = value.Count == 1
 				? value[0].Contains(' ')
@@ -42,13 +46,15 @@ public abstract class AuthSchemas {
 
 		[B(Name = "redirect_uris")]
 		[J("redirect_uris")]
-		public string RedirectUrisInternal {
+		public string RedirectUrisInternal
+		{
 			set => RedirectUris = value.Split('\n').ToList();
 			get => string.Join('\n', RedirectUris);
 		}
 	}
 
-	public class RegisterAppResponse {
+	public class RegisterAppResponse
+	{
 		public required OauthApp App;
 
 		[J("id")]            public string       Id           => App.Id;
@@ -62,13 +68,15 @@ public abstract class AuthSchemas {
 		[J("vapid_key")] public required string? VapidKey { get; set; }
 	}
 
-	public class OauthTokenRequest {
+	public class OauthTokenRequest
+	{
 		public List<string> Scopes = ["read"];
 
 		[B(Name = "scope")]
 		[J("scope")]
 		[JC(typeof(EnsureArrayConverter))]
-		public List<string> ScopesInternal {
+		public List<string> ScopesInternal
+		{
 			get => Scopes;
 			set => Scopes = value.Count == 1
 				? value[0].Contains(' ')
@@ -100,7 +108,8 @@ public abstract class AuthSchemas {
 		[B(Name = "code")] [J("code")] public string? Code { get; set; } = null!;
 	}
 
-	public class OauthTokenResponse {
+	public class OauthTokenResponse
+	{
 		public required DateTime CreatedAt;
 
 		public required                     List<string> Scopes;
@@ -111,7 +120,8 @@ public abstract class AuthSchemas {
 		[J("created_at")] public long   CreatedAtInternal => (long)(CreatedAt - DateTime.UnixEpoch).TotalSeconds;
 	}
 
-	public class OauthTokenRevocationRequest {
+	public class OauthTokenRevocationRequest
+	{
 		[B(Name = "client_id")]
 		[J("client_id")]
 		[JR]

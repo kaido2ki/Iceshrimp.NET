@@ -17,16 +17,21 @@ public class AuthorizedFetchMiddleware(
 	ActivityPub.UserResolver userResolver,
 	SystemUserService systemUserSvc,
 	ActivityPub.FederationControlService fedCtrlSvc,
-	ILogger<AuthorizedFetchMiddleware> logger) : IMiddleware {
-	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next) {
+	ILogger<AuthorizedFetchMiddleware> logger
+) : IMiddleware
+{
+	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
+	{
 		var attribute = ctx.GetEndpoint()?.Metadata.GetMetadata<AuthorizedFetchAttribute>();
 
-		if (attribute != null && config.Value.AuthorizedFetch) {
+		if (attribute != null && config.Value.AuthorizedFetch)
+		{
 			var request = ctx.Request;
 
 			//TODO: cache this somewhere
 			var instanceActorUri = $"/users/{(await systemUserSvc.GetInstanceActorAsync()).Id}";
-			if (ctx.Request.Path.Value == instanceActorUri) {
+			if (ctx.Request.Path.Value == instanceActorUri)
+			{
 				await next(ctx);
 				return;
 			}
@@ -40,12 +45,15 @@ public class AuthorizedFetchMiddleware(
 			var key = await db.UserPublickeys.Include(p => p.User).FirstOrDefaultAsync(p => p.KeyId == sig.KeyId);
 
 			// If we don't, we need to try to fetch it
-			if (key == null) {
-				try {
+			if (key == null)
+			{
+				try
+				{
 					var user = await userResolver.ResolveAsync(sig.KeyId);
 					key = await db.UserPublickeys.Include(p => p.User).FirstOrDefaultAsync(p => p.User == user);
 				}
-				catch (Exception e) {
+				catch (Exception e)
+				{
 					if (e is GracefulException) throw;
 					throw new GracefulException($"Failed to fetch key of signature user ({sig.KeyId}) - {e.Message}");
 				}
@@ -72,7 +80,7 @@ public class AuthorizedFetchMiddleware(
 
 			//TODO: re-fetch key once if signature validation fails, to properly support key rotation
 			//TODO: Check for LD signature as well
-			
+
 			ctx.SetActor(key.User);
 		}
 
@@ -80,18 +88,22 @@ public class AuthorizedFetchMiddleware(
 	}
 }
 
-public class AuthorizedFetchAttribute(bool forceBody = false) : Attribute {
+public class AuthorizedFetchAttribute(bool forceBody = false) : Attribute
+{
 	public bool ForceBody { get; } = forceBody;
 }
 
-public static partial class HttpContextExtensions {
+public static partial class HttpContextExtensions
+{
 	private const string ActorKey = "auth-fetch-user";
-	
-	internal static void SetActor(this HttpContext ctx, User actor) {
+
+	internal static void SetActor(this HttpContext ctx, User actor)
+	{
 		ctx.Items.Add(ActorKey, actor);
 	}
 
-	public static User? GetActor(this HttpContext ctx) {
+	public static User? GetActor(this HttpContext ctx)
+	{
 		ctx.Items.TryGetValue(ActorKey, out var actor);
 		return actor as User;
 	}

@@ -13,12 +13,16 @@ public class ErrorHandlerMiddleware(
 	IOptionsSnapshot<Config.SecuritySection> options,
 	ILoggerFactory loggerFactory
 )
-	: IMiddleware {
-	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next) {
-		try {
+	: IMiddleware
+{
+	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
+	{
+		try
+		{
 			await next(ctx);
 		}
-		catch (Exception e) {
+		catch (Exception e)
+		{
 			ctx.Response.ContentType = "application/json";
 
 			// Get the name of the class & function where the exception originated, falling back to this one
@@ -31,8 +35,10 @@ public class ErrorHandlerMiddleware(
 
 			var isMastodon = ctx.GetEndpoint()?.Metadata.GetMetadata<MastodonApiControllerAttribute>() != null;
 
-			if (e is GracefulException ce) {
-				if (ce.StatusCode == HttpStatusCode.Accepted) {
+			if (e is GracefulException ce)
+			{
+				if (ce.StatusCode == HttpStatusCode.Accepted)
+				{
 					ctx.Response.StatusCode = (int)ce.StatusCode;
 					await ctx.Response.CompleteAsync();
 					return;
@@ -45,21 +51,39 @@ public class ErrorHandlerMiddleware(
 				ctx.Response.Headers.RequestId = ctx.TraceIdentifier;
 
 				if (isMastodon)
-					await ctx.Response.WriteAsJsonAsync(new MastodonErrorResponse {
-						Error       = verbosity >= ExceptionVerbosity.Basic ? ce.Message : ce.StatusCode.ToString(),
-						Description = verbosity >= ExceptionVerbosity.Basic ? ce.Details : null
+					await ctx.Response.WriteAsJsonAsync(new MastodonErrorResponse
+					{
+						Error = verbosity >= ExceptionVerbosity.Basic
+							? ce.Message
+							: ce.StatusCode.ToString(),
+						Description = verbosity >= ExceptionVerbosity.Basic
+							? ce.Details
+							: null
 					});
 				else
-					await ctx.Response.WriteAsJsonAsync(new ErrorResponse {
+					await ctx.Response.WriteAsJsonAsync(new ErrorResponse
+					{
 						StatusCode = ctx.Response.StatusCode,
-						Error      = verbosity >= ExceptionVerbosity.Basic ? ce.Error : ce.StatusCode.ToString(),
-						Message    = verbosity >= ExceptionVerbosity.Basic ? ce.Message : null,
-						Details    = verbosity == ExceptionVerbosity.Full ? ce.Details : null,
-						Source     = verbosity == ExceptionVerbosity.Full ? type : null,
-						RequestId  = ctx.TraceIdentifier
+						Error =
+							verbosity >= ExceptionVerbosity.Basic
+								? ce.Error
+								: ce.StatusCode.ToString(),
+						Message =
+							verbosity >= ExceptionVerbosity.Basic
+								? ce.Message
+								: null,
+						Details =
+							verbosity == ExceptionVerbosity.Full
+								? ce.Details
+								: null,
+						Source = verbosity == ExceptionVerbosity.Full
+							? type
+							: null,
+						RequestId = ctx.TraceIdentifier
 					});
 
-				if (!ce.SuppressLog) {
+				if (!ce.SuppressLog)
+				{
 					if (ce.Details != null)
 						logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message} - {details}",
 						                ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message, ce.Details);
@@ -68,15 +92,20 @@ public class ErrorHandlerMiddleware(
 						                ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message);
 				}
 			}
-			else {
+			else
+			{
 				ctx.Response.StatusCode        = 500;
 				ctx.Response.Headers.RequestId = ctx.TraceIdentifier;
-				await ctx.Response.WriteAsJsonAsync(new ErrorResponse {
+				await ctx.Response.WriteAsJsonAsync(new ErrorResponse
+				{
 					StatusCode = 500,
 					Error      = "Internal Server Error",
-					Message    = verbosity >= ExceptionVerbosity.Basic ? e.Message : null,
-					Source     = verbosity == ExceptionVerbosity.Full ? type : null,
-					RequestId  = ctx.TraceIdentifier
+					Message =
+						verbosity >= ExceptionVerbosity.Basic
+							? e.Message
+							: null,
+					Source    = verbosity == ExceptionVerbosity.Full ? type : null,
+					RequestId = ctx.TraceIdentifier
 				});
 				//TODO: use the overload that takes an exception instead of printing it ourselves
 				logger.LogError("Request {id} encountered an unexpected error: {exception}", ctx.TraceIdentifier,
@@ -93,7 +122,8 @@ public class GracefulException(
 	string? details = null,
 	bool supressLog = false,
 	bool overrideBasic = false
-) : Exception(message) {
+) : Exception(message)
+{
 	public readonly string?        Details       = details;
 	public readonly string         Error         = error;
 	public readonly bool           OverrideBasic = overrideBasic;
@@ -106,35 +136,43 @@ public class GracefulException(
 	public GracefulException(string message, string? details = null) :
 		this(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError.ToString(), message, details) { }
 
-	public static GracefulException UnprocessableEntity(string message, string? details = null) {
+	public static GracefulException UnprocessableEntity(string message, string? details = null)
+	{
 		return new GracefulException(HttpStatusCode.UnprocessableEntity, message, details);
 	}
 
-	public static GracefulException Forbidden(string message, string? details = null) {
+	public static GracefulException Forbidden(string message, string? details = null)
+	{
 		return new GracefulException(HttpStatusCode.Forbidden, message, details);
 	}
 
-	public static GracefulException Unauthorized(string message, string? details = null) {
+	public static GracefulException Unauthorized(string message, string? details = null)
+	{
 		return new GracefulException(HttpStatusCode.Unauthorized, message, details);
 	}
 
-	public static GracefulException NotFound(string message, string? details = null) {
+	public static GracefulException NotFound(string message, string? details = null)
+	{
 		return new GracefulException(HttpStatusCode.NotFound, message, details);
 	}
 
-	public static GracefulException BadRequest(string message, string? details = null) {
+	public static GracefulException BadRequest(string message, string? details = null)
+	{
 		return new GracefulException(HttpStatusCode.BadRequest, message, details);
 	}
-	
-	public static GracefulException RequestTimeout(string message, string? details = null) {
+
+	public static GracefulException RequestTimeout(string message, string? details = null)
+	{
 		return new GracefulException(HttpStatusCode.RequestTimeout, message, details);
 	}
 
-	public static GracefulException RecordNotFound() {
+	public static GracefulException RecordNotFound()
+	{
 		return new GracefulException(HttpStatusCode.NotFound, "Record not found");
 	}
 
-	public static GracefulException MisdirectedRequest() {
+	public static GracefulException MisdirectedRequest()
+	{
 		return new GracefulException(HttpStatusCode.MisdirectedRequest, HttpStatusCode.MisdirectedRequest.ToString(),
 		                             "This server is not configured to respond to this request.", null, true, true);
 	}
@@ -143,12 +181,14 @@ public class GracefulException(
 	///     This is intended for cases where no error occured, but the request needs to be aborted early (e.g. WebFinger
 	///     returning 410 Gone)
 	/// </summary>
-	public static GracefulException Accepted(string message) {
+	public static GracefulException Accepted(string message)
+	{
 		return new GracefulException(HttpStatusCode.Accepted, message);
 	}
 }
 
-public enum ExceptionVerbosity {
+public enum ExceptionVerbosity
+{
 	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	None = 0,
 	Basic = 1,

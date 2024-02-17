@@ -1,11 +1,13 @@
 namespace Iceshrimp.Backend.Core.Configuration;
 
-public static class Constants {
+public static class Constants
+{
 	public const           string   ActivityStreamsNs = "https://www.w3.org/ns/activitystreams";
 	public const           string   W3IdSecurityNs    = "https://w3id.org/security";
 	public static readonly string[] SystemUsers       = ["instance.actor", "relay.actor"];
 
-	public static readonly string[] BrowserSafeMimeTypes = [
+	public static readonly string[] BrowserSafeMimeTypes =
+	[
 		"image/png",
 		"image/gif",
 		"image/jpeg",

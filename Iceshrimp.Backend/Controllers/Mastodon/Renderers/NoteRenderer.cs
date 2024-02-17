@@ -14,12 +14,14 @@ public class NoteRenderer(
 	UserRenderer userRenderer,
 	MfmConverter mfmConverter,
 	DatabaseContext db
-) {
+)
+{
 	public async Task<StatusEntity> RenderAsync(
 		Note note, User? user, List<AccountEntity>? accounts = null, List<MentionEntity>? mentions = null,
 		List<AttachmentEntity>? attachments = null, Dictionary<string, int>? likeCounts = null,
 		List<string>? likedNotes = null, int recurse = 2
-	) {
+	)
+	{
 		var uri = note.Uri ?? note.GetPublicUri(config.Value);
 		var renote = note.Renote != null && recurse > 0
 			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes, --recurse)
@@ -29,19 +31,23 @@ public class NoteRenderer(
 		var likeCount = likeCounts?.GetValueOrDefault(note.Id, 0) ?? await db.NoteLikes.CountAsync(p => p.Note == note);
 		var liked = likedNotes?.Contains(note.Id) ?? await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 
-		if (mentions == null) {
+		if (mentions == null)
+		{
 			mentions = await db.Users.IncludeCommonProperties()
 			                   .Where(p => note.Mentions.Contains(p.Id))
 			                   .Select(u => new MentionEntity(u, config.Value.WebDomain))
 			                   .ToListAsync();
 		}
-		else {
+		else
+		{
 			mentions = [..mentions.Where(p => note.Mentions.Contains(p.Id))];
 		}
 
-		if (attachments == null) {
+		if (attachments == null)
+		{
 			attachments = await db.DriveFiles.Where(p => note.FileIds.Contains(p.Id))
-			                      .Select(f => new AttachmentEntity {
+			                      .Select(f => new AttachmentEntity
+			                      {
 				                      Id          = f.Id,
 				                      Url         = f.WebpublicUrl ?? f.Url,
 				                      Blurhash    = f.Blurhash,
@@ -53,16 +59,19 @@ public class NoteRenderer(
 			                      })
 			                      .ToListAsync();
 		}
-		else {
+		else
+		{
 			attachments = [..attachments.Where(p => note.FileIds.Contains(p.Id))];
 		}
 
-		var mentionedUsers = mentions.Select(p => new Note.MentionedUser {
-			Host     = p.Host ?? config.Value.AccountDomain,
-			Uri      = p.Uri,
-			Username = p.Username,
-			Url      = p.Url
-		}).ToList();
+		var mentionedUsers = mentions.Select(p => new Note.MentionedUser
+		                             {
+			                             Host     = p.Host ?? config.Value.AccountDomain,
+			                             Uri      = p.Uri,
+			                             Username = p.Username,
+			                             Url      = p.Url
+		                             })
+		                             .ToList();
 
 		var content = text != null
 			? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost)
@@ -70,7 +79,8 @@ public class NoteRenderer(
 
 		var account = accounts?.FirstOrDefault(p => p.Id == note.UserId) ?? await userRenderer.RenderAsync(note.User);
 
-		var res = new StatusEntity {
+		var res = new StatusEntity
+		{
 			Id             = note.Id,
 			Uri            = uri,
 			Url            = note.Url ?? uri,
@@ -102,7 +112,8 @@ public class NoteRenderer(
 		return res;
 	}
 
-	private async Task<List<MentionEntity>> GetMentions(IEnumerable<Note> notes) {
+	private async Task<List<MentionEntity>> GetMentions(IEnumerable<Note> notes)
+	{
 		var ids = notes.SelectMany(n => n.Mentions).Distinct();
 		return await db.Users.IncludeCommonProperties()
 		               .Where(p => ids.Contains(p.Id))
@@ -110,10 +121,12 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	private async Task<List<AttachmentEntity>> GetAttachments(IEnumerable<Note> notes) {
+	private async Task<List<AttachmentEntity>> GetAttachments(IEnumerable<Note> notes)
+	{
 		var ids = notes.SelectMany(n => n.FileIds).Distinct();
 		return await db.DriveFiles.Where(p => ids.Contains(p.Id))
-		               .Select(f => new AttachmentEntity {
+		               .Select(f => new AttachmentEntity
+		               {
 			               Id          = f.Id,
 			               Url         = f.Url,
 			               Blurhash    = f.Blurhash,
@@ -126,16 +139,21 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	internal async Task<List<AccountEntity>> GetAccounts(IEnumerable<User> users) {
+	internal async Task<List<AccountEntity>> GetAccounts(IEnumerable<User> users)
+	{
 		return (await userRenderer.RenderManyAsync(users.DistinctBy(p => p.Id))).ToList();
 	}
 
-	private async Task<Dictionary<string, int>> GetLikeCounts(IEnumerable<Note> notes) {
-		return await db.NoteLikes.Where(p => notes.Contains(p.Note)).Select(p => p.NoteId).GroupBy(p => p)
+	private async Task<Dictionary<string, int>> GetLikeCounts(IEnumerable<Note> notes)
+	{
+		return await db.NoteLikes.Where(p => notes.Contains(p.Note))
+		               .Select(p => p.NoteId)
+		               .GroupBy(p => p)
 		               .ToDictionaryAsync(p => p.First(), p => p.Count());
 	}
 
-	private async Task<List<string>> GetLikedNotes(IEnumerable<Note> notes, User? user) {
+	private async Task<List<string>> GetLikedNotes(IEnumerable<Note> notes, User? user)
+	{
 		if (user == null) return [];
 		return await db.NoteLikes.Where(p => p.User == user && notes.Contains(p.Note))
 		               .Select(p => p.NoteId)
@@ -144,7 +162,8 @@ public class NoteRenderer(
 
 	public async Task<IEnumerable<StatusEntity>> RenderManyAsync(
 		IEnumerable<Note> notes, User? user, List<AccountEntity>? accounts = null
-	) {
+	)
+	{
 		var noteList = notes.ToList();
 		accounts ??= await GetAccounts(noteList.Select(p => p.User));
 		var mentions    = await GetMentions(noteList);

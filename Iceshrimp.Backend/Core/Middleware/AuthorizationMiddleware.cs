@@ -3,15 +3,19 @@ using Iceshrimp.Backend.Core.Helpers;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
-public class AuthorizationMiddleware : IMiddleware {
-	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next) {
+public class AuthorizationMiddleware : IMiddleware
+{
+	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
+	{
 		var endpoint  = ctx.GetEndpoint();
 		var attribute = endpoint?.Metadata.GetMetadata<AuthorizeAttribute>();
 
-		if (attribute != null) {
+		if (attribute != null)
+		{
 			var isMastodon = endpoint?.Metadata.GetMetadata<MastodonApiControllerAttribute>() != null;
 
-			if (isMastodon) {
+			if (isMastodon)
+			{
 				var token = ctx.GetOauthToken();
 				if (token is not { Active: true })
 					throw GracefulException.Unauthorized("This method requires an authenticated user");
@@ -23,7 +27,8 @@ public class AuthorizationMiddleware : IMiddleware {
 				if (attribute.ModeratorRole && token.User is { IsAdmin: false, IsModerator: false })
 					throw GracefulException.Forbidden("This action is outside the authorized scopes");
 			}
-			else {
+			else
+			{
 				var session = ctx.GetSession();
 				if (session is not { Active: true })
 					throw GracefulException.Forbidden("This method requires an authenticated user");
@@ -38,8 +43,9 @@ public class AuthorizationMiddleware : IMiddleware {
 	}
 }
 
-public class AuthorizeAttribute(params string[] scopes) : Attribute {
-	public readonly string[] Scopes        = scopes.Where(p => !p.StartsWith("role:")).ToArray();
+public class AuthorizeAttribute(params string[] scopes) : Attribute
+{
 	public readonly bool     AdminRole     = scopes.Contains("role:admin");
 	public readonly bool     ModeratorRole = scopes.Contains("role:moderator");
+	public readonly string[] Scopes        = scopes.Where(p => !p.StartsWith("role:")).ToArray();
 }

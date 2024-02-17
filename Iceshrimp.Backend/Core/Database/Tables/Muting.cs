@@ -10,7 +10,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("ExpiresAt")]
 [Index("MuteeId")]
 [Index("CreatedAt")]
-public class Muting {
+public class Muting
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

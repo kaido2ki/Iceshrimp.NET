@@ -7,7 +7,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("poll")]
 [Index("UserId")]
 [Index("UserHost")]
-public class Poll {
+public class Poll
+{
 	[Key]
 	[Column("noteId")]
 	[StringLength(32)]

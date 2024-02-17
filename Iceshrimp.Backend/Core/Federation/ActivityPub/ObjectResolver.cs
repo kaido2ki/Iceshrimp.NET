@@ -12,15 +12,20 @@ public class ObjectResolver(
 	DatabaseContext db,
 	FederationControlService federationCtrl,
 	IOptions<Config.InstanceSection> config
-) {
-	public async Task<ASObject?> ResolveObject(ASObjectBase baseObj, int recurse = 5) {
-		if (baseObj is ASActivity { Object.IsUnresolved: true } activity && recurse > 0) {
+)
+{
+	public async Task<ASObject?> ResolveObject(ASObjectBase baseObj, int recurse = 5)
+	{
+		if (baseObj is ASActivity { Object.IsUnresolved: true } activity && recurse > 0)
+		{
 			activity.Object = await ResolveObject(activity.Object, --recurse);
 			return await ResolveObject(activity, recurse);
 		}
+
 		if (baseObj is ASObject { IsUnresolved: false } obj)
 			return obj;
-		if (baseObj.Id == null) {
+		if (baseObj.Id == null)
+		{
 			logger.LogDebug("Refusing to resolve object with null id property");
 			return null;
 		}
@@ -30,7 +35,8 @@ public class ObjectResolver(
 		if (baseObj.Id.StartsWith($"https://{config.Value.WebDomain}/users/"))
 			return new ASActor { Id = baseObj.Id };
 
-		if (await federationCtrl.ShouldBlockAsync(baseObj.Id)) {
+		if (await federationCtrl.ShouldBlockAsync(baseObj.Id))
+		{
 			logger.LogDebug("Instance is blocked");
 			return null;
 		}
@@ -40,11 +46,13 @@ public class ObjectResolver(
 		if (await db.Users.AnyAsync(p => p.Uri == baseObj.Id))
 			return new ASActor { Id = baseObj.Id };
 
-		try {
+		try
+		{
 			var result = await fetchSvc.FetchActivityAsync(baseObj.Id);
 			return result.FirstOrDefault();
 		}
-		catch (Exception e) {
+		catch (Exception e)
+		{
 			logger.LogDebug("Failed to resolve object {id}: {error}", baseObj.Id, e);
 			return null;
 		}

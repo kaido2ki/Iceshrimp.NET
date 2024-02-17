@@ -2,9 +2,11 @@ using NpgsqlTypes;
 
 namespace Iceshrimp.Backend.Core.Database.Migrations;
 
-public class LegacyModels {
+public class LegacyModels
+{
 	[PgName("user_profile_mutingnotificationtypes_enum")]
-	public enum MutingNotificationType {
+	public enum MutingNotificationType
+	{
 		[PgName("follow")]                Follow,
 		[PgName("mention")]               Mention,
 		[PgName("reply")]                 Reply,
@@ -16,11 +18,12 @@ public class LegacyModels {
 		[PgName("receiveFollowRequest")]  FollowRequestReceived,
 		[PgName("followRequestAccepted")] FollowRequestAccepted,
 		[PgName("groupInvited")]          GroupInvited,
-		[PgName("app")]                   App,
+		[PgName("app")]                   App
 	}
 
 	[PgName("poll_notevisibility_enum")]
-	public enum PollNoteVisibility {
+	public enum PollNoteVisibility
+	{
 		[PgName("public")]    Public,
 		[PgName("home")]      Home,
 		[PgName("followers")] Followers,

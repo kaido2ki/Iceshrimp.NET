@@ -10,7 +10,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("NoteUserId")]
 [Index("UserId", "NoteId", IsUnique = true)]
 [Index("UserId")]
-public class NoteWatching {
+public class NoteWatching
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

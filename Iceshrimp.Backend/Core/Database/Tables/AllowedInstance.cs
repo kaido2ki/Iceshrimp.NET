@@ -4,7 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("allowed_instance")]
-public class AllowedInstance {
+public class AllowedInstance
+{
 	[Key]
 	[Column("host")]
 	[StringLength(256)]

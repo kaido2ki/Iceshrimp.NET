@@ -3,10 +3,12 @@ using Visus.Cuid;
 
 namespace Iceshrimp.Backend.Core.Helpers;
 
-public static class IdHelpers {
+public static class IdHelpers
+{
 	private const long Time2000 = 946684800000;
 
-	public static string GenerateSlowflakeId(DateTime? createdAt = null) {
+	public static string GenerateSlowflakeId(DateTime? createdAt = null)
+	{
 		if (createdAt?.Kind is not null and not DateTimeKind.Utc)
 			createdAt = createdAt.Value.ToUniversalTime();
 

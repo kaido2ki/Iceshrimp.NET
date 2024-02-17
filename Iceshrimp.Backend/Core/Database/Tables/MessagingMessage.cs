@@ -9,7 +9,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("UserId")]
 [Index("RecipientId")]
 [Index("CreatedAt")]
-public class MessagingMessage {
+public class MessagingMessage
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

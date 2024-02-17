@@ -12,11 +12,25 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("NotifieeId")]
 [Index("CreatedAt")]
 [Index("AppAccessTokenId")]
-public class Notification : IEntity {
-	[Key]
-	[Column("id")]
-	[StringLength(32)]
-	public string Id { get; set; } = null!;
+public class Notification : IEntity
+{
+	[PgName("notification_type_enum")]
+	public enum NotificationType
+	{
+		[PgName("follow")]                Follow,
+		[PgName("mention")]               Mention,
+		[PgName("reply")]                 Reply,
+		[PgName("renote")]                Renote,
+		[PgName("quote")]                 Quote,
+		[PgName("like")]                  Like,
+		[PgName("reaction")]              Reaction,
+		[PgName("pollVote")]              PollVote,
+		[PgName("pollEnded")]             PollEnded,
+		[PgName("receiveFollowRequest")]  FollowRequestReceived,
+		[PgName("followRequestAccepted")] FollowRequestAccepted,
+		[PgName("groupInvited")]          GroupInvited,
+		[PgName("app")]                   App
+	}
 
 	/// <summary>
 	///     The created date of the Notification.
@@ -102,20 +116,8 @@ public class Notification : IEntity {
 	[InverseProperty(nameof(Tables.UserGroupInvitation.Notifications))]
 	public virtual UserGroupInvitation? UserGroupInvitation { get; set; }
 
-	[PgName("notification_type_enum")]
-	public enum NotificationType {
-		[PgName("follow")]                Follow,
-		[PgName("mention")]               Mention,
-		[PgName("reply")]                 Reply,
-		[PgName("renote")]                Renote,
-		[PgName("quote")]                 Quote,
-		[PgName("like")]                  Like,
-		[PgName("reaction")]              Reaction,
-		[PgName("pollVote")]              PollVote,
-		[PgName("pollEnded")]             PollEnded,
-		[PgName("receiveFollowRequest")]  FollowRequestReceived,
-		[PgName("followRequestAccepted")] FollowRequestAccepted,
-		[PgName("groupInvited")]          GroupInvited,
-		[PgName("app")]                   App,
-	}
+	[Key]
+	[Column("id")]
+	[StringLength(32)]
+	public string Id { get; set; } = null!;
 }

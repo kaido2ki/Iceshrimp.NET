@@ -10,14 +10,16 @@ builder.Configuration.AddCustomConfiguration();
 builder.Services.AddControllers(options => { options.ModelBinderProviders.AddHybridBindingProvider(); })
        .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json (or we switch to LinkedData.NET)
        .AddMultiFormatter();
-builder.Services.AddApiVersioning(options => {
+builder.Services.AddApiVersioning(options =>
+{
 	options.DefaultApiVersion               = new ApiVersion(1);
 	options.ReportApiVersions               = true;
 	options.UnsupportedApiVersionStatusCode = 501;
 });
 builder.Services.AddSwaggerGenWithOptions();
 builder.Services.AddRazorPages();
-builder.Services.AddViteServices(options => {
+builder.Services.AddViteServices(options =>
+{
 	options.PackageDirectory     = "../Iceshrimp.Frontend";
 	options.PackageManager       = "yarn";
 	options.Server.AutoRun       = false; //TODO: Fix script generation on macOS
@@ -53,7 +55,7 @@ app.MapFallbackToPage("/Shared/FrontendSPA");
 if (app.Environment.IsDevelopment()) app.UseViteDevMiddleware();
 
 app.Urls.Clear();
-if (config.ListenSocket == null) 
+if (config.ListenSocket == null)
 	app.Urls.Add($"http://{config.ListenHost}:{config.ListenPort}");
 
 await app.StartAsync();

@@ -7,7 +7,8 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class StatusEntity : IEntity {
+public class StatusEntity : IEntity
+{
 	[J("text")] [JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public required string? Text;
 
@@ -55,8 +56,10 @@ public class StatusEntity : IEntity {
 
 	[J("id")] public required string Id { get; set; }
 
-	public static string EncodeVisibility(Note.NoteVisibility visibility) {
-		return visibility switch {
+	public static string EncodeVisibility(Note.NoteVisibility visibility)
+	{
+		return visibility switch
+		{
 			Note.NoteVisibility.Public    => "public",
 			Note.NoteVisibility.Home      => "unlisted",
 			Note.NoteVisibility.Followers => "private",
@@ -65,8 +68,10 @@ public class StatusEntity : IEntity {
 		};
 	}
 
-	public static Note.NoteVisibility DecodeVisibility(string visibility) {
-		return visibility switch {
+	public static Note.NoteVisibility DecodeVisibility(string visibility)
+	{
+		return visibility switch
+		{
 			"public"   => Note.NoteVisibility.Public,
 			"unlisted" => Note.NoteVisibility.Home,
 			"private"  => Note.NoteVisibility.Followers,
@@ -76,7 +81,8 @@ public class StatusEntity : IEntity {
 	}
 }
 
-public class StatusContext {
+public class StatusContext
+{
 	[J("ancestors")]   public required List<StatusEntity> Ancestors   { get; set; }
 	[J("descendants")] public required List<StatusEntity> Descendants { get; set; }
 }

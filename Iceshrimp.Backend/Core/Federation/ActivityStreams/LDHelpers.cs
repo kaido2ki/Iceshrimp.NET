@@ -7,27 +7,36 @@ using VDS.RDF.JsonLd;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams;
 
-public static class LdHelpers {
-	private static readonly Dictionary<string, RemoteDocument> ContextCache = new() {
+public static class LdHelpers
+{
+	private static readonly Dictionary<string, RemoteDocument> ContextCache = new()
+	{
 		{
-			"https://www.w3.org/ns/activitystreams", new RemoteDocument {
+			"https://www.w3.org/ns/activitystreams", new RemoteDocument
+			{
 				DocumentUrl = new Uri("https://www.w3.org/ns/activitystreams"),
 				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
 				                                                      "Contexts", "as.json")))
 			}
-		}, {
-			"https://w3id.org/security/v1", new RemoteDocument {
+		},
+		{
+			"https://w3id.org/security/v1", new RemoteDocument
+			{
 				DocumentUrl = new Uri("https://w3c-ccg.github.io/security-vocab/contexts/security-v1.jsonld"),
 				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
 				                                                      "Contexts", "security.json")))
 			}
-		}, {
-			"http://joinmastodon.org/ns", new RemoteDocument {
+		},
+		{
+			"http://joinmastodon.org/ns", new RemoteDocument
+			{
 				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
 				                                                      "Contexts", "toot.json")))
 			}
-		}, {
-			"litepub-0.1", new RemoteDocument {
+		},
+		{
+			"litepub-0.1", new RemoteDocument
+			{
 				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
 				                                                      "Contexts", "litepub.json")))
 			}
@@ -43,24 +52,27 @@ public static class LdHelpers {
 		JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams", "Contexts",
 		                                           "as-extensions.json")));
 
-	private static readonly JsonLdProcessorOptions Options = new() {
+	private static readonly JsonLdProcessorOptions Options = new()
+	{
 		DocumentLoader = CustomLoader, ExpandContext = ASExtensions
 	};
 
-	public static readonly JsonSerializerSettings JsonSerializerSettings = new() {
-		NullValueHandling    = NullValueHandling.Ignore,
-		DateTimeZoneHandling = DateTimeZoneHandling.Local
+	public static readonly JsonSerializerSettings JsonSerializerSettings = new()
+	{
+		NullValueHandling = NullValueHandling.Ignore, DateTimeZoneHandling = DateTimeZoneHandling.Local
 	};
 
-	private static readonly JsonSerializer JsonSerializer = new() {
-		NullValueHandling    = NullValueHandling.Ignore,
-		DateTimeZoneHandling = DateTimeZoneHandling.Local
+	private static readonly JsonSerializer JsonSerializer = new()
+	{
+		NullValueHandling = NullValueHandling.Ignore, DateTimeZoneHandling = DateTimeZoneHandling.Local
 	};
 
-	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions) {
+	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions)
+	{
 		var key = uri.AbsolutePath == "/schemas/litepub-0.1.jsonld" ? "litepub-0.1" : uri.ToString();
 		ContextCache.TryGetValue(key, out var result);
-		if (result != null) {
+		if (result != null)
+		{
 			result.ContextUrl = uri;
 			return result;
 		}
@@ -72,7 +84,8 @@ public static class LdHelpers {
 		return result;
 	}
 
-	public static async Task<string> SignAndCompactAsync(this ASActivity activity, UserKeypair keypair) {
+	public static async Task<string> SignAndCompactAsync(this ASActivity activity, UserKeypair keypair)
+	{
 		var expanded = Expand(activity) ?? throw new Exception("Failed to expand activity");
 		var signed = await LdSignature.SignAsync(expanded, keypair.PrivateKey,
 		                                         activity.Actor?.PublicKey?.Id ?? $"{activity.Actor!.Id}#main-key") ??
@@ -83,27 +96,33 @@ public static class LdHelpers {
 		return payload;
 	}
 
-	public static JObject? Compact(object obj) {
+	public static JObject? Compact(object obj)
+	{
 		return Compact(JToken.FromObject(obj, JsonSerializer));
 	}
 
-	public static JArray? Expand(object obj) {
+	public static JArray? Expand(object obj)
+	{
 		return Expand(JToken.FromObject(obj, JsonSerializer));
 	}
 
-	public static JObject? Compact(JToken? json) {
+	public static JObject? Compact(JToken? json)
+	{
 		return JsonLdProcessor.Compact(json, DefaultContext, Options);
 	}
 
-	public static JArray? Expand(JToken? json) {
+	public static JArray? Expand(JToken? json)
+	{
 		return JsonLdProcessor.Expand(json, Options);
 	}
 
-	public static string Canonicalize(JArray json) {
+	public static string Canonicalize(JArray json)
+	{
 		return JsonLdProcessor.Canonicalize(json);
 	}
 
-	public static string Canonicalize(JObject json) {
+	public static string Canonicalize(JObject json)
+	{
 		return JsonLdProcessor.Canonicalize([json]);
 	}
 }

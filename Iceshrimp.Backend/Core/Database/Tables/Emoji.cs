@@ -8,7 +8,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("Name", "Host", IsUnique = true)]
 [Index("Host")]
 [Index("Name")]
-public class Emoji {
+public class Emoji
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

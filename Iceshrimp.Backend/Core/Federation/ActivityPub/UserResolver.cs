@@ -5,7 +5,8 @@ using Iceshrimp.Backend.Core.Services;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, WebFingerService webFingerSvc) {
+public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, WebFingerService webFingerSvc)
+{
 	/*
 	 * The full web finger algorithm:
 	 *
@@ -18,7 +19,8 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 	 */
 
 	//TODO: split domain handling can get stuck in an infinite loop, limit recursion
-	private async Task<(string Acct, string Uri)> WebFingerAsync(string query) {
+	private async Task<(string Acct, string Uri)> WebFingerAsync(string query)
+	{
 		logger.LogDebug("Running WebFinger for query '{query}'", query);
 
 		var responses = new Dictionary<string, WebFingerResponse>();
@@ -32,7 +34,8 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 			throw new GracefulException($"WebFinger response for '{query}' didn't contain a candidate link");
 
 		fingerRes = responses.GetValueOrDefault(apUri);
-		if (fingerRes == null) {
+		if (fingerRes == null)
+		{
 			logger.LogDebug("AP uri didn't match query, re-running WebFinger for '{apUri}'", apUri);
 
 			fingerRes = await webFingerSvc.ResolveAsync(apUri);
@@ -46,7 +49,8 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 			throw new GracefulException($"WebFinger response for '{apUri}' didn't contain any acct uris");
 
 		fingerRes = responses.GetValueOrDefault(acctUri);
-		if (fingerRes == null) {
+		if (fingerRes == null)
+		{
 			logger.LogDebug("Acct uri didn't match query, re-running WebFinger for '{acctUri}'", acctUri);
 
 			fingerRes = await webFingerSvc.ResolveAsync(acctUri);
@@ -57,12 +61,14 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 
 		var finalAcct = fingerRes.Subject;
 		var finalUri = fingerRes.Links.FirstOrDefault(p => p.Rel == "self" && p.Type == "application/activity+json")
-		                        ?.Href ?? throw new GracefulException("Final AP URI was null");
+		                        ?.Href ??
+		               throw new GracefulException("Final AP URI was null");
 
 		return (finalAcct, finalUri);
 	}
 
-	private static string NormalizeQuery(string query) {
+	private static string NormalizeQuery(string query)
+	{
 		if ((query.StartsWith("https://") || query.StartsWith("http://")) && query.Contains('#'))
 			query = query.Split("#")[0];
 		if (query.StartsWith('@'))
@@ -71,11 +77,13 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 		return query;
 	}
 
-	public async Task<User> ResolveAsync(string username, string? host) {
+	public async Task<User> ResolveAsync(string username, string? host)
+	{
 		return host != null ? await ResolveAsync($"acct:{username}@{host}") : await ResolveAsync($"acct:{username}");
 	}
 
-	public async Task<User> ResolveAsync(string query) {
+	public async Task<User> ResolveAsync(string query)
+	{
 		query = NormalizeQuery(query);
 
 		// First, let's see if we already know the user
@@ -96,13 +104,16 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 		return await userSvc.CreateUserAsync(uri, acct);
 	}
 
-	private async Task<User> GetUpdatedUser(User user) {
+	private async Task<User> GetUpdatedUser(User user)
+	{
 		if (!user.NeedsUpdate) return user;
 
-		try {
+		try
+		{
 			return await userSvc.UpdateUserAsync(user).WaitAsync(TimeSpan.FromMilliseconds(1500));
 		}
-		catch (Exception e) {
+		catch (Exception e)
+		{
 			if (e is TimeoutException)
 				logger.LogDebug("UpdateUserAsync timed out for user {user}", user.Uri);
 			else

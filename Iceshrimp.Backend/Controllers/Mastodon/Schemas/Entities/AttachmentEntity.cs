@@ -2,7 +2,9 @@ using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class AttachmentEntity {
+public class AttachmentEntity
+{
+	public required                    AttachmentType      Type;
 	[J("id")]          public required string              Id          { get; set; }
 	[J("url")]         public required string              Url         { get; set; }
 	[J("remote_url")]  public          string?             RemoteUrl   { get; set; }
@@ -12,10 +14,9 @@ public class AttachmentEntity {
 	[J("description")] public          string?             Description { get; set; }
 	[J("blurhash")]    public          string?             Blurhash    { get; set; }
 
-	public required AttachmentType Type;
-
 	[J("type")]
-	public string TypeString => Type switch {
+	public string TypeString => Type switch
+	{
 		AttachmentType.Unknown => "unknown",
 		AttachmentType.Image   => "image",
 		AttachmentType.Gif     => "gifv",
@@ -24,7 +25,8 @@ public class AttachmentEntity {
 		_                      => throw new ArgumentOutOfRangeException()
 	};
 
-	public static AttachmentType GetType(string mime) {
+	public static AttachmentType GetType(string mime)
+	{
 		if (mime == "image/gif") return AttachmentType.Gif;
 		if (mime.StartsWith("image/")) return AttachmentType.Image;
 		if (mime.StartsWith("video/")) return AttachmentType.Video;
@@ -34,7 +36,8 @@ public class AttachmentEntity {
 	}
 }
 
-public enum AttachmentType {
+public enum AttachmentType
+{
 	Unknown,
 	Image,
 	Gif,
@@ -42,6 +45,7 @@ public enum AttachmentType {
 	Audio
 }
 
-public class AttachmentMetadata {
+public class AttachmentMetadata
+{
 	//TODO
 }

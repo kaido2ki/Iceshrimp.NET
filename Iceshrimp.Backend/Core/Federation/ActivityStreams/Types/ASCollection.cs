@@ -7,8 +7,10 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASCollection<T>() : ASObjectBase where T : ASObject {
-	public ASCollection(string id) : this() {
+public class ASCollection<T>() : ASObjectBase where T : ASObject
+{
+	public ASCollection(string id) : this()
+	{
 		Id = id;
 	}
 
@@ -23,15 +25,20 @@ public class ASCollection<T>() : ASObjectBase where T : ASObject {
 
 public sealed class ASCollectionConverter : ASSerializer.ListSingleObjectConverter<ASCollection<ASObject>>;
 
-internal sealed class ASCollectionItemsConverter : JsonConverter {
+internal sealed class ASCollectionItemsConverter : JsonConverter
+{
 	public override bool CanWrite => false;
 
-	public override bool CanConvert(Type objectType) {
+	public override bool CanConvert(Type objectType)
+	{
 		return true;
 	}
 
-	public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue,
-	                                 JsonSerializer serializer) {
+	public override object? ReadJson(
+		JsonReader reader, Type objectType, object? existingValue,
+		JsonSerializer serializer
+	)
+	{
 		if (reader.TokenType != JsonToken.StartArray) throw new Exception("this shouldn't happen");
 
 		var obj = JArray.Load(reader);
@@ -40,7 +47,8 @@ internal sealed class ASCollectionItemsConverter : JsonConverter {
 			: obj.SelectToken("..@list")?.Children().Select(ASObject.Deserialize).OfType<ASObject>().ToList();
 	}
 
-	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) {
+	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+	{
 		throw new NotImplementedException();
 	}
 }

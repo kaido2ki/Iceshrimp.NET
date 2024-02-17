@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("moderation_log")]
 [Index("UserId")]
-public class ModerationLog {
+public class ModerationLog
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

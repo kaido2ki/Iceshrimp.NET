@@ -9,7 +9,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("BlockeeId")]
 [Index("BlockerId", "BlockeeId", IsUnique = true)]
 [Index("CreatedAt")]
-public class Blocking {
+public class Blocking
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

@@ -8,7 +8,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("UserGroupId")]
 [Index("UserId")]
 [Index("UserId", "UserGroupId", IsUnique = true)]
-public class UserGroupInvitation {
+public class UserGroupInvitation
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

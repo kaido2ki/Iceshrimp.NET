@@ -4,8 +4,10 @@ using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
-public abstract class StatusSchemas {
-	public class PostStatusRequest {
+public abstract class StatusSchemas
+{
+	public class PostStatusRequest
+	{
 		[B(Name = "status")] [J("status")] public string? Text { get; set; }
 
 		[B(Name = "in_reply_to_id")]
@@ -38,7 +40,8 @@ public abstract class StatusSchemas {
 		[B(Name = "poll")] [J("poll")] public PollData? Poll { get; set; }
 
 
-		public class PollData {
+		public class PollData
+		{
 			[B(Name = "options")]
 			[J("options")]
 			[JR]

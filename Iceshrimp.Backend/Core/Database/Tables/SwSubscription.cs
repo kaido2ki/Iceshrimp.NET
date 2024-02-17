@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("sw_subscription")]
 [Index("UserId")]
-public class SwSubscription {
+public class SwSubscription
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

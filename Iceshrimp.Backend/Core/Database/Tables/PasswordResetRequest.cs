@@ -7,7 +7,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("password_reset_request")]
 [Index("Token", IsUnique = true)]
 [Index("UserId")]
-public class PasswordResetRequest {
+public class PasswordResetRequest
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

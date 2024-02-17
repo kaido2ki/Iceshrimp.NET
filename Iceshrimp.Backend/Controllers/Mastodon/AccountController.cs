@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
+using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
@@ -7,12 +8,11 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
-using Iceshrimp.Backend.Core.Services;
-using Microsoft.AspNetCore.Cors;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -29,13 +29,15 @@ public class AccountController(
 	NotificationService notificationSvc,
 	ActivityPub.ActivityRenderer activityRenderer,
 	ActivityPub.ActivityDeliverService deliverSvc
-) : Controller {
+) : Controller
+{
 	[HttpGet("verify_credentials")]
 	[Authorize("read:accounts")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> VerifyUserCredentials() {
+	public async Task<IActionResult> VerifyUserCredentials()
+	{
 		var user = HttpContext.GetUserOrFail();
 		var res  = await userRenderer.RenderAsync(user);
 		return Ok(res);
@@ -44,9 +46,10 @@ public class AccountController(
 	[HttpGet("{id}")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetUser(string id) {
-		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id)
-		           ?? throw GracefulException.RecordNotFound();
+	public async Task<IActionResult> GetUser(string id)
+	{
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
+		           throw GracefulException.RecordNotFound();
 		var res = await userRenderer.RenderAsync(user);
 		return Ok(res);
 	}
@@ -57,7 +60,8 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	//TODO: [FromHybrid] request (bool reblogs, bool notify, bool languages)
-	public async Task<IActionResult> FollowUser(string id) {
+	public async Task<IActionResult> FollowUser(string id)
+	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
 			throw GracefulException.BadRequest("You cannot follow yourself");
@@ -65,20 +69,24 @@ public class AccountController(
 		var followee = await db.Users.IncludeCommonProperties()
 		                       .Where(p => p.Id == id)
 		                       .PrecomputeRelationshipData(user)
-		                       .FirstOrDefaultAsync()
-		               ?? throw GracefulException.RecordNotFound();
+		                       .FirstOrDefaultAsync() ??
+		               throw GracefulException.RecordNotFound();
 
 		if ((followee.PrecomputedIsBlockedBy ?? true) || (followee.PrecomputedIsBlocking ?? true))
 			throw GracefulException.Forbidden("This action is not allowed");
 
-		if (!(followee.PrecomputedIsFollowedBy ?? false) && !(followee.PrecomputedIsRequestedBy ?? false)) {
-			if (followee.Host != null) {
+		if (!(followee.PrecomputedIsFollowedBy ?? false) && !(followee.PrecomputedIsRequestedBy ?? false))
+		{
+			if (followee.Host != null)
+			{
 				var activity = activityRenderer.RenderFollow(user, followee);
 				await deliverSvc.DeliverToAsync(activity, user, followee);
 			}
 
-			if (followee.IsLocked || followee.Host != null) {
-				var request = new FollowRequest {
+			if (followee.IsLocked || followee.Host != null)
+			{
+				var request = new FollowRequest
+				{
 					Id                  = IdHelpers.GenerateSlowflakeId(),
 					CreatedAt           = DateTime.UtcNow,
 					Followee            = followee,
@@ -93,8 +101,10 @@ public class AccountController(
 
 				await db.AddAsync(request);
 			}
-			else {
-				var following = new Following {
+			else
+			{
+				var following = new Following
+				{
 					Id                  = IdHelpers.GenerateSlowflakeId(),
 					CreatedAt           = DateTime.UtcNow,
 					Followee            = followee,
@@ -112,7 +122,8 @@ public class AccountController(
 
 			// If user is local & not locked, we need to increment following/follower counts here,
 			// otherwise we'll do it when receiving the Accept activity / the local followee accepts the request
-			if (followee.Host == null && !followee.IsLocked) {
+			if (followee.Host == null && !followee.IsLocked)
+			{
 				followee.FollowersCount++;
 				user.FollowingCount++;
 			}
@@ -128,7 +139,8 @@ public class AccountController(
 				followee.PrecomputedIsFollowedBy = true;
 		}
 
-		var res = new RelationshipEntity {
+		var res = new RelationshipEntity
+		{
 			Id                  = followee.Id,
 			Following           = followee.PrecomputedIsFollowedBy ?? false,
 			FollowedBy          = followee.PrecomputedIsFollowing ?? false,
@@ -153,7 +165,8 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> UnfollowUser(string id) {
+	public async Task<IActionResult> UnfollowUser(string id)
+	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
 			throw GracefulException.BadRequest("You cannot unfollow yourself");
@@ -161,17 +174,20 @@ public class AccountController(
 		var followee = await db.Users.IncludeCommonProperties()
 		                       .Where(p => p.Id == id)
 		                       .PrecomputeRelationshipData(user)
-		                       .FirstOrDefaultAsync()
-		               ?? throw GracefulException.RecordNotFound();
+		                       .FirstOrDefaultAsync() ??
+		               throw GracefulException.RecordNotFound();
 
-		if ((followee.PrecomputedIsFollowedBy ?? false) || (followee.PrecomputedIsRequestedBy ?? false)) {
-			if (followee.Host != null) {
+		if ((followee.PrecomputedIsFollowedBy ?? false) || (followee.PrecomputedIsRequestedBy ?? false))
+		{
+			if (followee.Host != null)
+			{
 				var activity = activityRenderer.RenderUnfollow(user, followee);
 				await deliverSvc.DeliverToAsync(activity, user, followee);
 			}
 		}
 
-		if (followee.PrecomputedIsFollowedBy ?? false) {
+		if (followee.PrecomputedIsFollowedBy ?? false)
+		{
 			var followings = await db.Followings.Where(p => p.Follower == user && p.Followee == followee).ToListAsync();
 			user.FollowingCount     -= followings.Count;
 			followee.FollowersCount -= followings.Count;
@@ -181,7 +197,8 @@ public class AccountController(
 			followee.PrecomputedIsFollowedBy = false;
 		}
 
-		if (followee.PrecomputedIsRequestedBy ?? false) {
+		if (followee.PrecomputedIsRequestedBy ?? false)
+		{
 			await db.FollowRequests.Where(p => p.Follower == user && p.Followee == followee).ExecuteDeleteAsync();
 			followee.PrecomputedIsRequestedBy = false;
 		}
@@ -189,12 +206,15 @@ public class AccountController(
 		// Clean up notifications
 		await db.Notifications
 		        .Where(p => (p.Type == Notification.NotificationType.FollowRequestAccepted &&
-		                     p.Notifiee == user && p.Notifier == followee) ||
+		                     p.Notifiee == user &&
+		                     p.Notifier == followee) ||
 		                    (p.Type == Notification.NotificationType.Follow &&
-		                     p.Notifiee == followee && p.Notifier == user))
+		                     p.Notifiee == followee &&
+		                     p.Notifier == user))
 		        .ExecuteDeleteAsync();
 
-		var res = new RelationshipEntity {
+		var res = new RelationshipEntity
+		{
 			Id                  = followee.Id,
 			Following           = followee.PrecomputedIsFollowedBy ?? false,
 			FollowedBy          = followee.PrecomputedIsFollowing ?? false,
@@ -219,7 +239,8 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity[]))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetRelationships([FromQuery(Name = "id")] List<string> ids) {
+	public async Task<IActionResult> GetRelationships([FromQuery(Name = "id")] List<string> ids)
+	{
 		var user = HttpContext.GetUserOrFail();
 
 		var users = await db.Users.IncludeCommonProperties()
@@ -227,7 +248,8 @@ public class AccountController(
 		                    .PrecomputeRelationshipData(user)
 		                    .ToListAsync();
 
-		var res = users.Select(u => new RelationshipEntity {
+		var res = users.Select(u => new RelationshipEntity
+		{
 			Id                  = u.Id,
 			Following           = u.PrecomputedIsFollowedBy ?? false,
 			FollowedBy          = u.PrecomputedIsFollowing ?? false,
@@ -255,8 +277,11 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetUserStatuses(string id, AccountSchemas.AccountStatusesRequest request,
-	                                                 PaginationQuery query) {
+	public async Task<IActionResult> GetUserStatuses(
+		string id, AccountSchemas.AccountStatusesRequest request,
+		PaginationQuery query
+	)
+	{
 		var user    = HttpContext.GetUserOrFail();
 		var account = await db.Users.FirstOrDefaultAsync(p => p.Id == id) ?? throw GracefulException.RecordNotFound();
 
@@ -277,13 +302,16 @@ public class AccountController(
 	[LinkPagination(40, 80)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetUserFollowers(string id, PaginationQuery query) {
+	public async Task<IActionResult> GetUserFollowers(string id, PaginationQuery query)
+	{
 		var user = HttpContext.GetUser();
 		var account = await db.Users
 		                      .Include(p => p.UserProfile)
-		                      .FirstOrDefaultAsync(p => p.Id == id) ?? throw GracefulException.RecordNotFound();
+		                      .FirstOrDefaultAsync(p => p.Id == id) ??
+		              throw GracefulException.RecordNotFound();
 
-		if (user == null || user.Id != account.Id) {
+		if (user == null || user.Id != account.Id)
+		{
 			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Private)
 				return Ok((List<AccountEntity>) []);
 			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Followers)
@@ -306,13 +334,16 @@ public class AccountController(
 	[LinkPagination(40, 80)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetUserFollowing(string id, PaginationQuery query) {
+	public async Task<IActionResult> GetUserFollowing(string id, PaginationQuery query)
+	{
 		var user = HttpContext.GetUser();
 		var account = await db.Users
 		                      .Include(p => p.UserProfile)
-		                      .FirstOrDefaultAsync(p => p.Id == id) ?? throw GracefulException.RecordNotFound();
+		                      .FirstOrDefaultAsync(p => p.Id == id) ??
+		              throw GracefulException.RecordNotFound();
 
-		if (user == null || user.Id != account.Id) {
+		if (user == null || user.Id != account.Id)
+		{
 			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Private)
 				return Ok((List<AccountEntity>) []);
 			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Followers)
@@ -336,7 +367,8 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetFollowRequests(PaginationQuery query) {
+	public async Task<IActionResult> GetFollowRequests(PaginationQuery query)
+	{
 		var user = HttpContext.GetUserOrFail();
 		var res = await db.FollowRequests
 		                  .Where(p => p.Followee == user)
@@ -354,21 +386,25 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> AcceptFollowRequest(string id) {
+	public async Task<IActionResult> AcceptFollowRequest(string id)
+	{
 		var user = HttpContext.GetUserOrFail();
 		var request = await db.FollowRequests.Where(p => p.Followee == user && p.FollowerId == id)
 		                      .Include(p => p.Followee.UserProfile)
 		                      .Include(p => p.Follower.UserProfile)
 		                      .FirstOrDefaultAsync();
 
-		if (request != null) {
-			if (request.FollowerHost != null) {
+		if (request != null)
+		{
+			if (request.FollowerHost != null)
+			{
 				var requestId = request.RequestId ?? throw new Exception("Cannot accept request without request id");
 				var activity  = activityRenderer.RenderAccept(request.Followee, request.Follower, requestId);
 				await deliverSvc.DeliverToAsync(activity, user, request.Follower);
 			}
 
-			var following = new Following {
+			var following = new Following
+			{
 				Id                  = IdHelpers.GenerateSlowflakeId(),
 				CreatedAt           = DateTime.UtcNow,
 				Follower            = request.Follower,
@@ -394,14 +430,16 @@ public class AccountController(
 			// Clean up notifications
 			await db.Notifications
 			        .Where(p => p.Type == Notification.NotificationType.FollowRequestReceived &&
-			                    p.Notifiee == user && p.NotifierId == id)
+			                    p.Notifiee == user &&
+			                    p.NotifierId == id)
 			        .ExecuteDeleteAsync();
 		}
 
 		var relationship = await db.Users.Where(p => id == p.Id)
 		                           .IncludeCommonProperties()
 		                           .PrecomputeRelationshipData(user)
-		                           .Select(u => new RelationshipEntity {
+		                           .Select(u => new RelationshipEntity
+		                           {
 			                           Id                  = u.Id,
 			                           Following           = u.PrecomputedIsFollowedBy ?? false,
 			                           FollowedBy          = u.PrecomputedIsFollowing ?? false,
@@ -431,15 +469,18 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> RejectFollowRequest(string id) {
+	public async Task<IActionResult> RejectFollowRequest(string id)
+	{
 		var user = HttpContext.GetUserOrFail();
 		var request = await db.FollowRequests.Where(p => p.Followee == user && p.FollowerId == id)
 		                      .Include(p => p.Followee.UserProfile)
 		                      .Include(p => p.Follower.UserProfile)
 		                      .FirstOrDefaultAsync();
 
-		if (request != null) {
-			if (request.FollowerHost != null) {
+		if (request != null)
+		{
+			if (request.FollowerHost != null)
+			{
 				var requestId = request.RequestId ?? throw new Exception("Cannot reject request without request id");
 				var activity  = activityRenderer.RenderReject(request.Followee, request.Follower, requestId);
 				await deliverSvc.DeliverToAsync(activity, user, request.Follower);
@@ -450,18 +491,21 @@ public class AccountController(
 
 			// Clean up notifications
 			await db.Notifications
-			        .Where(p => (p.Type == Notification.NotificationType.FollowRequestReceived ||
-			                     p.Type == Notification.NotificationType.Follow) &&
-			                    p.Notifiee == user && p.NotifierId == id ||
+			        .Where(p => ((p.Type == Notification.NotificationType.FollowRequestReceived ||
+			                      p.Type == Notification.NotificationType.Follow) &&
+			                     p.Notifiee == user &&
+			                     p.NotifierId == id) ||
 			                    (p.Type == Notification.NotificationType.FollowRequestAccepted &&
-			                     p.NotifieeId == id && p.Notifier == user))
+			                     p.NotifieeId == id &&
+			                     p.Notifier == user))
 			        .ExecuteDeleteAsync();
 		}
 
 		var relationship = await db.Users.Where(p => id == p.Id)
 		                           .IncludeCommonProperties()
 		                           .PrecomputeRelationshipData(user)
-		                           .Select(u => new RelationshipEntity {
+		                           .Select(u => new RelationshipEntity
+		                           {
 			                           Id                  = u.Id,
 			                           Following           = u.PrecomputedIsFollowedBy ?? false,
 			                           FollowedBy          = u.PrecomputedIsFollowing ?? false,

@@ -8,14 +8,14 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("UserId")]
 [Index("NoteId")]
 [Index("UserId", "NoteId", IsUnique = true)]
-public class NoteLike {
+public class NoteLike
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
 
-	[Column("createdAt")]
-	public DateTime CreatedAt { get; set; }
+	[Column("createdAt")] public DateTime CreatedAt { get; set; }
 
 	[Column("userId")] [StringLength(32)] public string UserId { get; set; } = null!;
 

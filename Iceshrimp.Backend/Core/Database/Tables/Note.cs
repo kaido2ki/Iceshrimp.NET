@@ -28,9 +28,11 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("Id", "UserHost")]
 [Index("Url")]
 [Index("UserId", "Id")]
-public class Note : IEntity {
+public class Note : IEntity
+{
 	[PgName("note_visibility_enum")]
-	public enum NoteVisibility {
+	public enum NoteVisibility
+	{
 		[PgName("public")]    Public,
 		[PgName("home")]      Home,
 		[PgName("followers")] Followers,
@@ -203,7 +205,7 @@ public class Note : IEntity {
 
 	[InverseProperty(nameof(NoteReaction.Note))]
 	public virtual ICollection<NoteReaction> NoteReactions { get; set; } = new List<NoteReaction>();
-	
+
 	[InverseProperty(nameof(NoteLike.Note))]
 	public virtual ICollection<NoteLike> NoteLikes { get; set; } = new List<NoteLike>();
 
@@ -263,13 +265,14 @@ public class Note : IEntity {
 
 	[Projectable]
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Projectable chain must to be public")]
-	public bool CheckComplexVisibility(User user) => User == user
-	                                                 || VisibleUserIds.Contains(user.Id)
-	                                                 || Mentions.Contains(user.Id)
-	                                                 || (Visibility == NoteVisibility.Followers &&
-	                                                     (User.IsFollowedBy(user) || ReplyUserId == user.Id));
+	public bool CheckComplexVisibility(User user) => User == user ||
+	                                                 VisibleUserIds.Contains(user.Id) ||
+	                                                 Mentions.Contains(user.Id) ||
+	                                                 (Visibility == NoteVisibility.Followers &&
+	                                                  (User.IsFollowedBy(user) || ReplyUserId == user.Id));
 
-	public Note WithPrecomputedVisibilities(bool reply, bool renote) {
+	public Note WithPrecomputedVisibilities(bool reply, bool renote)
+	{
 		if (Reply != null)
 			PrecomputedIsReplyVisible = reply;
 		if (Renote != null)
@@ -277,12 +280,13 @@ public class Note : IEntity {
 
 		return this;
 	}
-	
+
 	public string GetPublicUri(Config.InstanceSection config) => UserHost == null
 		? $"https://{config.WebDomain}/notes/{Id}"
 		: throw new Exception("Cannot access PublicUri for remote note");
 
-	public class MentionedUser {
+	public class MentionedUser
+	{
 		[J("uri")]      public required string  Uri      { get; set; }
 		[J("url")]      public          string? Url      { get; set; }
 		[J("username")] public required string  Username { get; set; }

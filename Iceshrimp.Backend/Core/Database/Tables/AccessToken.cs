@@ -9,7 +9,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("Token")]
 [Index("UserId")]
 [Index("Session")]
-public class AccessToken {
+public class AccessToken
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

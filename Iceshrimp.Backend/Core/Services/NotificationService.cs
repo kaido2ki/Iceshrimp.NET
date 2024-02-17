@@ -9,13 +9,16 @@ public class NotificationService(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	DatabaseContext db,
 	EventService eventSvc
-) {
-	public async Task GenerateMentionNotifications(Note note, IReadOnlyCollection<string> mentionedLocalUserIds) {
+)
+{
+	public async Task GenerateMentionNotifications(Note note, IReadOnlyCollection<string> mentionedLocalUserIds)
+	{
 		if (mentionedLocalUserIds.Count == 0) return;
 
 		var notifications = mentionedLocalUserIds
 		                    .Where(p => p != note.UserId)
-		                    .Select(p => new Notification {
+		                    .Select(p => new Notification
+		                    {
 			                    Id         = IdHelpers.GenerateSlowflakeId(),
 			                    CreatedAt  = DateTime.UtcNow,
 			                    Note       = note,
@@ -30,7 +33,8 @@ public class NotificationService(
 		eventSvc.RaiseNotifications(this, notifications);
 	}
 
-	public async Task GenerateReplyNotifications(Note note, IReadOnlyCollection<string> mentionedLocalUserIds) {
+	public async Task GenerateReplyNotifications(Note note, IReadOnlyCollection<string> mentionedLocalUserIds)
+	{
 		if (note.Visibility != Note.NoteVisibility.Specified) return;
 		if (note.VisibleUserIds.Count == 0) return;
 
@@ -39,7 +43,8 @@ public class NotificationService(
 
 		var notifications = users
 		                    .Where(p => p != note.UserId)
-		                    .Select(p => new Notification {
+		                    .Select(p => new Notification
+		                    {
 			                    Id         = IdHelpers.GenerateSlowflakeId(),
 			                    CreatedAt  = DateTime.UtcNow,
 			                    Note       = note,
@@ -54,11 +59,13 @@ public class NotificationService(
 		eventSvc.RaiseNotifications(this, notifications);
 	}
 
-	public async Task GenerateLikeNotification(Note note, User user) {
+	public async Task GenerateLikeNotification(Note note, User user)
+	{
 		if (note.UserHost != null) return;
 		if (note.User == user) return;
 
-		var notification = new Notification {
+		var notification = new Notification
+		{
 			Id        = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Note      = note,
@@ -71,11 +78,13 @@ public class NotificationService(
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotification(this, notification);
 	}
-	
-	public async Task GenerateFollowNotification(User follower, User followee) {
+
+	public async Task GenerateFollowNotification(User follower, User followee)
+	{
 		if (followee.Host != null) return;
 
-		var notification = new Notification {
+		var notification = new Notification
+		{
 			Id        = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Notifiee  = followee,
@@ -87,11 +96,13 @@ public class NotificationService(
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotification(this, notification);
 	}
-	
-	public async Task GenerateFollowRequestReceivedNotification(FollowRequest followRequest) {
+
+	public async Task GenerateFollowRequestReceivedNotification(FollowRequest followRequest)
+	{
 		if (followRequest.FolloweeHost != null) return;
 
-		var notification = new Notification {
+		var notification = new Notification
+		{
 			Id            = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
 			FollowRequest = followRequest,
@@ -104,12 +115,14 @@ public class NotificationService(
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotification(this, notification);
 	}
-	
-	public async Task GenerateFollowRequestAcceptedNotification(FollowRequest followRequest) {
+
+	public async Task GenerateFollowRequestAcceptedNotification(FollowRequest followRequest)
+	{
 		if (followRequest.FollowerHost != null) return;
 		if (!followRequest.Followee.IsLocked) return;
 
-		var notification = new Notification {
+		var notification = new Notification
+		{
 			Id            = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
 			FollowRequest = followRequest,

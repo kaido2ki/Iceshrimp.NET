@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("clip")]
 [Index("UserId")]
-public class Clip {
+public class Clip
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
@@ -41,7 +42,8 @@ public class Clip {
 	[StringLength(2048)]
 	public string? Description { get; set; }
 
-	[InverseProperty(nameof(ClipNote.Clip))] public virtual ICollection<ClipNote> ClipNotes { get; set; } = new List<ClipNote>();
+	[InverseProperty(nameof(ClipNote.Clip))]
+	public virtual ICollection<ClipNote> ClipNotes { get; set; } = new List<ClipNote>();
 
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.Clips))]

@@ -8,12 +8,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("FolloweeId")]
 [Index("FollowerId")]
 [Index("FollowerId", "FolloweeId", IsUnique = true)]
-public class FollowRequest : IEntity {
-	[Key]
-	[Column("id")]
-	[StringLength(32)]
-	public string Id { get; set; } = null!;
-
+public class FollowRequest : IEntity
+{
 	/// <summary>
 	///     The created date of the FollowRequest.
 	/// </summary>
@@ -93,4 +89,9 @@ public class FollowRequest : IEntity {
 
 	[InverseProperty(nameof(Notification.FollowRequest))]
 	public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
+	[Key]
+	[Column("id")]
+	[StringLength(32)]
+	public string Id { get; set; } = null!;
 }

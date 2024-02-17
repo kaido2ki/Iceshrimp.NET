@@ -6,7 +6,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("auth_session")]
 [Index("Token")]
-public class AuthSession {
+public class AuthSession
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

@@ -9,8 +9,10 @@ using Microsoft.Extensions.Options;
 namespace Iceshrimp.Backend.Core.Tasks;
 
 [SuppressMessage("ReSharper", "UnusedType.Global", Justification = "Instantiated at runtime by CronService")]
-public class MediaCleanupTask : ICronTask {
-	public async Task Invoke(IServiceProvider provider) {
+public class MediaCleanupTask : ICronTask
+{
+	public async Task Invoke(IServiceProvider provider)
+	{
 		var config = provider.GetRequiredService<IOptionsSnapshot<Config.StorageSection>>().Value;
 		if (config.MediaRetentionTimeSpan == TimeSpan.MaxValue) return;
 
@@ -30,10 +32,11 @@ public class MediaCleanupTask : ICronTask {
 		var fileIds = query.Select(p => p.Id);
 
 		logger.LogInformation("Expiring {count} files...", await fileIds.CountAsync());
-		foreach (var fileId in fileIds) {
-			await queueService.BackgroundTaskQueue.EnqueueAsync(new DriveFileDeleteJob {
-				DriveFileId = fileId,
-				Expire      = true
+		foreach (var fileId in fileIds)
+		{
+			await queueService.BackgroundTaskQueue.EnqueueAsync(new DriveFileDeleteJob
+			{
+				DriveFileId = fileId, Expire = true
 			});
 		}
 	}

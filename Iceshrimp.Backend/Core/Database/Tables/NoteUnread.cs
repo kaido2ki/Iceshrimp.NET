@@ -12,7 +12,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("IsSpecified")]
 [Index("UserId", "NoteId", IsUnique = true)]
 [Index("NoteId")]
-public class NoteUnread {
+public class NoteUnread
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

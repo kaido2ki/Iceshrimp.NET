@@ -3,7 +3,8 @@ using Iceshrimp.Backend.Core.Events;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class EventService {
+public class EventService
+{
 	public event EventHandler<Note>?            NotePublished;
 	public event EventHandler<Note>?            NoteUpdated;
 	public event EventHandler<string>?          NoteDeleted;
@@ -18,7 +19,8 @@ public class EventService {
 	public void RaiseNotification(object? sender, Notification notification) =>
 		Notification?.Invoke(sender, notification);
 
-	public void RaiseNotifications(object? sender, IEnumerable<Notification> notifications) {
+	public void RaiseNotifications(object? sender, IEnumerable<Notification> notifications)
+	{
 		foreach (var notification in notifications) Notification?.Invoke(sender, notification);
 	}
 

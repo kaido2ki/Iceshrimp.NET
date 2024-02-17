@@ -3,23 +3,31 @@ using Newtonsoft.Json.Linq;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams;
 
-public static class ASSerializer {
-	public class ListSingleObjectConverter<T> : JsonConverter {
+public static class ASSerializer
+{
+	public class ListSingleObjectConverter<T> : JsonConverter
+	{
 		public override bool CanWrite => false;
 
-		public override bool CanConvert(Type objectType) {
+		public override bool CanConvert(Type objectType)
+		{
 			return true;
 		}
 
-		public override object? ReadJson(JsonReader     reader, Type objectType, object? existingValue,
-		                                 JsonSerializer serializer) {
-			if (reader.TokenType == JsonToken.StartArray) {
+		public override object? ReadJson(
+			JsonReader reader, Type objectType, object? existingValue,
+			JsonSerializer serializer
+		)
+		{
+			if (reader.TokenType == JsonToken.StartArray)
+			{
 				var obj  = JArray.Load(reader);
 				var list = obj.ToObject<List<T?>>();
 				return list == null || list.Count == 0 ? null : list[0];
 			}
 
-			if (reader.TokenType == JsonToken.StartObject) {
+			if (reader.TokenType == JsonToken.StartObject)
+			{
 				var obj = JObject.Load(reader);
 				return obj.ToObject<T?>();
 			}
@@ -27,7 +35,8 @@ public static class ASSerializer {
 			return null;
 		}
 
-		public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer) {
+		public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+		{
 			throw new NotImplementedException();
 		}
 	}

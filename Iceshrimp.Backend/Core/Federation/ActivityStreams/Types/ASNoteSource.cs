@@ -5,7 +5,8 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASNoteSource {
+public class ASNoteSource
+{
 	[J($"{Constants.ActivityStreamsNs}#content")]
 	[JC(typeof(VC))]
 	public string? Content { get; set; }

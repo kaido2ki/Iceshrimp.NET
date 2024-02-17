@@ -3,61 +3,76 @@ using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
 
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 
-public static class MfmSerializer {
-	public static string Serialize(IEnumerable<MfmNode> nodes) {
+public static class MfmSerializer
+{
+	public static string Serialize(IEnumerable<MfmNode> nodes)
+	{
 		var result = new StringBuilder();
 
-		foreach (var node in nodes) {
-			switch (node) {
-				case MfmCodeBlockNode mfmCodeBlockNode: {
+		foreach (var node in nodes)
+		{
+			switch (node)
+			{
+				case MfmCodeBlockNode mfmCodeBlockNode:
+				{
 					result.Append($"```{mfmCodeBlockNode.Language ?? ""}\n");
 					result.Append(mfmCodeBlockNode.Code);
 					result.Append("```");
 					break;
 				}
-				case MfmMathBlockNode mfmMathBlockNode: {
+				case MfmMathBlockNode mfmMathBlockNode:
+				{
 					result.Append(@"\[");
 					result.Append(mfmMathBlockNode.Formula);
 					result.Append(@"\]");
 					break;
 				}
-				case MfmSearchNode mfmSearchNode: {
+				case MfmSearchNode mfmSearchNode:
+				{
 					throw new NotImplementedException();
 				}
-				case MfmBoldNode: {
+				case MfmBoldNode:
+				{
 					result.Append("**");
 					result.Append(Serialize(node.Children));
 					result.Append("**");
 					break;
 				}
-				case MfmCenterNode: {
+				case MfmCenterNode:
+				{
 					result.Append("<center>");
 					result.Append(Serialize(node.Children));
 					result.Append("</center>");
 					break;
 				}
-				case MfmEmojiCodeNode mfmEmojiCodeNode: {
+				case MfmEmojiCodeNode mfmEmojiCodeNode:
+				{
 					result.Append($":{mfmEmojiCodeNode.Name}:");
 					break;
 				}
-				case MfmFnNode mfmFnNode: {
+				case MfmFnNode mfmFnNode:
+				{
 					throw new NotImplementedException();
 				}
-				case MfmHashtagNode mfmHashtagNode: {
+				case MfmHashtagNode mfmHashtagNode:
+				{
 					result.Append($"#{mfmHashtagNode.Hashtag}");
 					break;
 				}
-				case MfmInlineCodeNode mfmInlineCodeNode: {
+				case MfmInlineCodeNode mfmInlineCodeNode:
+				{
 					result.Append($"`{mfmInlineCodeNode.Code}`");
 					break;
 				}
-				case MfmItalicNode: {
+				case MfmItalicNode:
+				{
 					result.Append('*');
 					result.Append(Serialize(node.Children));
 					result.Append('*');
 					break;
 				}
-				case MfmLinkNode mfmLinkNode: {
+				case MfmLinkNode mfmLinkNode:
+				{
 					if (mfmLinkNode.Silent) result.Append('?');
 					result.Append('[');
 					result.Append(Serialize(node.Children));
@@ -65,56 +80,66 @@ public static class MfmSerializer {
 					result.Append($"({mfmLinkNode.Url})");
 					break;
 				}
-				case MfmMathInlineNode mfmMathInlineNode: {
+				case MfmMathInlineNode mfmMathInlineNode:
+				{
 					result.Append(@"\(");
 					result.Append(mfmMathInlineNode.Formula);
 					result.Append(@"\)");
 					break;
 				}
-				case MfmMentionNode mfmMentionNode: {
+				case MfmMentionNode mfmMentionNode:
+				{
 					result.Append($"@{mfmMentionNode.Username}");
 					if (mfmMentionNode.Host != null)
 						result.Append($"@{mfmMentionNode.Host}");
 					break;
 				}
-				case MfmPlainNode: {
+				case MfmPlainNode:
+				{
 					result.Append("<plain>");
 					foreach (var s in node.Children.OfType<MfmTextNode>().Select(p => p.Text))
 						result.Append(s);
 					result.Append("</plain>");
 					break;
 				}
-				case MfmSmallNode: {
+				case MfmSmallNode:
+				{
 					result.Append("<small>");
 					result.Append(Serialize(node.Children));
 					result.Append("</small>");
 					break;
 				}
-				case MfmStrikeNode: {
+				case MfmStrikeNode:
+				{
 					result.Append("~~");
 					result.Append(Serialize(node.Children));
 					result.Append("~~");
 					break;
 				}
-				case MfmTextNode mfmTextNode: {
+				case MfmTextNode mfmTextNode:
+				{
 					result.Append(mfmTextNode.Text);
 					break;
 				}
-				case MfmUnicodeEmojiNode mfmUnicodeEmojiNode: {
+				case MfmUnicodeEmojiNode mfmUnicodeEmojiNode:
+				{
 					result.Append(mfmUnicodeEmojiNode.Emoji);
 					break;
 				}
-				case MfmUrlNode mfmUrlNode: {
+				case MfmUrlNode mfmUrlNode:
+				{
 					if (mfmUrlNode.Brackets)
 						result.Append($"<{mfmUrlNode.Url}>");
 					else
 						result.Append(mfmUrlNode.Url);
 					break;
 				}
-				case MfmQuoteNode mfmQuoteNode: {
+				case MfmQuoteNode mfmQuoteNode:
+				{
 					throw new NotImplementedException();
 				}
-				default: {
+				default:
+				{
 					throw new Exception("Unknown node type");
 				}
 			}

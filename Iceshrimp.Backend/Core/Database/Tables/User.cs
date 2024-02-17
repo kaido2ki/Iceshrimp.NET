@@ -22,7 +22,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("AvatarId", IsUnique = true)]
 [Index("BannerId", IsUnique = true)]
 [Index("Token", IsUnique = true)]
-public class User : IEntity {
+public class User : IEntity
+{
 	/// <summary>
 	///     The created date of the User.
 	/// </summary>
@@ -529,21 +530,24 @@ public class User : IEntity {
 	[Projectable]
 	public bool HasPinned(Note note) => PinnedNotes.Contains(note);
 
-	public User WithPrecomputedBlockStatus(bool blocking, bool blockedBy) {
+	public User WithPrecomputedBlockStatus(bool blocking, bool blockedBy)
+	{
 		PrecomputedIsBlocking  = blocking;
 		PrecomputedIsBlockedBy = blockedBy;
 
 		return this;
 	}
 
-	public User WithPrecomputedMuteStatus(bool muting, bool mutedBy) {
+	public User WithPrecomputedMuteStatus(bool muting, bool mutedBy)
+	{
 		PrecomputedIsMuting  = muting;
 		PrecomputedIsMutedBy = mutedBy;
 
 		return this;
 	}
 
-	public User WithPrecomputedFollowStatus(bool following, bool followedBy, bool requested, bool requestedBy) {
+	public User WithPrecomputedFollowStatus(bool following, bool followedBy, bool requested, bool requestedBy)
+	{
 		PrecomputedIsFollowing   = following;
 		PrecomputedIsFollowedBy  = followedBy;
 		PrecomputedIsRequested   = requested;
@@ -552,14 +556,14 @@ public class User : IEntity {
 		return this;
 	}
 
-	public string GetPublicUrl(Config.InstanceSection config) => GetPublicUrl(config.WebDomain);
-	public string GetPublicUri(Config.InstanceSection config) => GetPublicUri(config.WebDomain);
+	public string GetPublicUrl(Config.InstanceSection config)    => GetPublicUrl(config.WebDomain);
+	public string GetPublicUri(Config.InstanceSection config)    => GetPublicUri(config.WebDomain);
 	public string GetIdenticonUrl(Config.InstanceSection config) => GetIdenticonUrl(config.WebDomain);
 
 	public string GetPublicUri(string webDomain) => Host == null
 		? $"https://{webDomain}/users/{Id}"
 		: throw new Exception("Cannot access PublicUri for remote user");
-	
+
 	public string GetPublicUrl(string webDomain) => Host == null
 		? $"https://{webDomain}/@{Username}"
 		: throw new Exception("Cannot access PublicUrl for remote user");

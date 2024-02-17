@@ -4,11 +4,14 @@ using Microsoft.AspNetCore.Mvc.ActionConstraints;
 namespace Iceshrimp.Backend.Controllers.Attributes;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class MediaTypeRouteFilterAttribute(params string[] mediaTypes) : Attribute, IActionConstraint {
-	public bool Accept(ActionConstraintContext context) {
+public class MediaTypeRouteFilterAttribute(params string[] mediaTypes) : Attribute, IActionConstraint
+{
+	public bool Accept(ActionConstraintContext context)
+	{
 		if (!context.RouteContext.HttpContext.Request.Headers.ContainsKey("Accept")) return false;
 
-		var accept = context.RouteContext.HttpContext.Request.Headers.Accept.ToString().Split(',')
+		var accept = context.RouteContext.HttpContext.Request.Headers.Accept.ToString()
+		                    .Split(',')
 		                    .Select(MediaTypeWithQualityHeaderValue.Parse)
 		                    .Select(p => p.MediaType);
 

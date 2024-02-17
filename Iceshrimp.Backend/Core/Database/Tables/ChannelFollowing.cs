@@ -9,7 +9,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("CreatedAt")]
 [Index("FollowerId", "FolloweeId", IsUnique = true)]
 [Index("FollowerId")]
-public class ChannelFollowing {
+public class ChannelFollowing
+{
 	[Key]
 	[Column("id")]
 	[StringLength(32)]

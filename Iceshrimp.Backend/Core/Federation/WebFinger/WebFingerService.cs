@@ -19,8 +19,10 @@ namespace Iceshrimp.Backend.Core.Federation.WebFinger;
 //FIXME: handle cursed person/group acct collisions like https://lemmy.ml/.well-known/webfinger?resource=acct:linux@lemmy.ml
 //FIXME: also check if the query references the local instance in other ways (e.g. @user@{WebDomain}, @user@{AccountDomain}, https://{WebDomain}/..., etc)
 
-public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
-	public async Task<WebFingerResponse?> ResolveAsync(string query) {
+public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc)
+{
+	public async Task<WebFingerResponse?> ResolveAsync(string query)
+	{
 		(query, var proto, var domain) = ParseQuery(query);
 		var webFingerUrl = await GetWebFingerUrlAsync(query, proto, domain);
 
@@ -33,37 +35,43 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 			return null;
 		if (res.Content.Headers.ContentType?.MediaType is not "application/jrd+json" and not "application/json")
 			return null;
-		
+
 		return await res.Content.ReadFromJsonAsync<WebFingerResponse>();
 	}
 
-	private static (string query, string proto, string domain) ParseQuery(string query) {
+	private static (string query, string proto, string domain) ParseQuery(string query)
+	{
 		string domain;
 		string proto;
 		query = query.StartsWith("acct:") ? $"@{query[5..]}" : query;
-		if (query.StartsWith("http://") || query.StartsWith("https://")) {
+		if (query.StartsWith("http://") || query.StartsWith("https://"))
+		{
 			var uri = new Uri(query);
 			domain = uri.Host;
 			proto  = query.StartsWith("http://") ? "http" : "https";
 		}
-		else if (query.StartsWith('@')) {
+		else if (query.StartsWith('@'))
+		{
 			proto = "https";
 
 			var split = query.Split('@');
-			domain = split.Length switch {
+			domain = split.Length switch
+			{
 				< 2 or > 3 => throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query"),
 				2 => throw new GracefulException(HttpStatusCode.BadRequest, "Can't run WebFinger for local user"),
 				_ => split[2]
 			};
 		}
-		else {
+		else
+		{
 			throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
 		}
 
 		return (query, proto, domain);
 	}
 
-	private async Task<string> GetWebFingerUrlAsync(string query, string proto, string domain) {
+	private async Task<string> GetWebFingerUrlAsync(string query, string proto, string domain)
+	{
 		var template = await GetWebFingerTemplateFromHostMetaAsync($"{proto}://{domain}/.well-known/host-meta") ??
 		               $"{proto}://{domain}/.well-known/webfinger?resource={{uri}}";
 		var finalQuery = query.StartsWith('@') ? $"acct:{query[1..]}" : query;
@@ -71,8 +79,10 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 		return template.Replace("{uri}", encoded);
 	}
 
-	private async Task<string?> GetWebFingerTemplateFromHostMetaAsync(string hostMetaUrl) {
-		try {
+	private async Task<string?> GetWebFingerTemplateFromHostMetaAsync(string hostMetaUrl)
+	{
+		try
+		{
 			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/xrd+xml"]),
 			                                       HttpCompletionOption.ResponseHeadersRead);
 			using var stream = await res.Content.ReadAsStreamAsync();
@@ -91,7 +101,8 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc) {
 
 			return null;
 		}
-		catch {
+		catch
+		{
 			return null;
 		}
 	}

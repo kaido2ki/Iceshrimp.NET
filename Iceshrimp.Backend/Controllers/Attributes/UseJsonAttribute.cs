@@ -6,16 +6,20 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Attributes;
 
-public abstract class UseJsonAttribute : Attribute, IAsyncActionFilter {
-	public Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next) {
+public abstract class UseJsonAttribute : Attribute, IAsyncActionFilter
+{
+	public Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+	{
 		return next();
 	}
 }
 
 public class UseNewtonsoftJsonAttribute : UseJsonAttribute;
 
-internal class JsonInputMultiFormatter : TextInputFormatter {
-	public JsonInputMultiFormatter() {
+internal class JsonInputMultiFormatter : TextInputFormatter
+{
+	public JsonInputMultiFormatter()
+	{
 		SupportedEncodings.Add(UTF8EncodingWithoutBOM);
 		SupportedEncodings.Add(UTF16EncodingLittleEndian);
 		SupportedMediaTypes.Add("text/json");
@@ -24,7 +28,9 @@ internal class JsonInputMultiFormatter : TextInputFormatter {
 	}
 
 	public override async Task<InputFormatterResult> ReadRequestBodyAsync(
-		InputFormatterContext context, Encoding encoding) {
+		InputFormatterContext context, Encoding encoding
+	)
+	{
 		var mvcOpt = context.HttpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
 		var formatters = mvcOpt.InputFormatters;
 		TextInputFormatter? formatter;
@@ -45,8 +51,10 @@ internal class JsonInputMultiFormatter : TextInputFormatter {
 	}
 }
 
-internal class JsonOutputMultiFormatter : TextOutputFormatter {
-	public JsonOutputMultiFormatter() {
+internal class JsonOutputMultiFormatter : TextOutputFormatter
+{
+	public JsonOutputMultiFormatter()
+	{
 		SupportedEncodings.Add(Encoding.UTF8);
 		SupportedEncodings.Add(Encoding.Unicode);
 		SupportedMediaTypes.Add("text/json");
@@ -54,7 +62,8 @@ internal class JsonOutputMultiFormatter : TextOutputFormatter {
 		SupportedMediaTypes.Add("application/*+json");
 	}
 
-	public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding) {
+	public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
+	{
 		var mvcOpt = context.HttpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
 		var formatters = mvcOpt.OutputFormatters;
 		TextOutputFormatter? formatter;
