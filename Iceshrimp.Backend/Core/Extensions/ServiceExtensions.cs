@@ -52,7 +52,7 @@ public static class ServiceExtensions
 
 		// Singleton = instantiated once across application lifetime
 		services
-			.AddSingleton<HttpClient>()
+			.AddSingleton<HttpClient, HttpClientWithUserAgent>()
 			.AddSingleton<MfmConverter>()
 			.AddSingleton<HttpRequestService>()
 			.AddSingleton<CronService>()

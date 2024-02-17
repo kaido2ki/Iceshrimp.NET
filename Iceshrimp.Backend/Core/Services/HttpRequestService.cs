@@ -19,11 +19,7 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options)
 		var message = new HttpRequestMessage
 		{
 			RequestUri = new Uri(url), Method = method
-			//Headers    = { UserAgent = { ProductInfoHeaderValue.Parse(options.Value.UserAgent) } }
 		};
-
-		//TODO: fix the user-agent so the commented out bit above works
-		message.Headers.TryAddWithoutValidation("User-Agent", options.Value.UserAgent);
 
 		if (body != null)
 		{
