@@ -57,10 +57,11 @@ public class ActivityFetcherService(HttpClient client, HttpRequestService httpRq
 		headersContentType switch
 		{
 			{ MediaType: "application/activity+json" } => true,
-			{ MediaType: "application/ld+json" } when headersContentType.Parameters.Any(p => p is
-			{
-				Name: "profile", Value: "https://www.w3.org/ns/activitystreams"
-			}) => true,
+			{ MediaType: "application/ld+json" } when headersContentType.Parameters.Any(p =>
+					p.Value != null &&
+					p.Name.ToLowerInvariant() == "profile" &&
+					p.Value.Split(" ").Contains("https://www.w3.org/ns/activitystreams"))
+				=> true,
 			_ => false
 		};
 
