@@ -20,6 +20,7 @@ public class AuthorizedFetchMiddleware(
 	IOptionsSnapshot<Config.SecuritySection> config,
 	DatabaseContext db,
 	ActivityPub.UserResolver userResolver,
+	UserService userSvc,
 	SystemUserService systemUserSvc,
 	ActivityPub.FederationControlService fedCtrlSvc,
 	ILogger<AuthorizedFetchMiddleware> logger
@@ -38,51 +39,72 @@ public class AuthorizedFetchMiddleware(
 
 			//TODO: cache this somewhere
 			var instanceActorUri = $"/users/{(await systemUserSvc.GetInstanceActorAsync()).Id}";
-			if (ctx.Request.Path.Value == instanceActorUri)
+			if (request.Path.Value == instanceActorUri)
 			{
 				await next(ctx);
 				return;
 			}
 
-			if (!request.Headers.TryGetValue("signature", out var sigHeader))
-				throw new GracefulException(HttpStatusCode.Unauthorized, "Request is missing the signature header");
+			UserPublickey? key      = null;
+			var            verified = false;
 
-			var sig = HttpSignature.Parse(sigHeader.ToString());
-
-			// First, we check if we already have the key
-			var key = await db.UserPublickeys.Include(p => p.User).FirstOrDefaultAsync(p => p.KeyId == sig.KeyId);
-
-			// If we don't, we need to try to fetch it
-			if (key == null)
+			try
 			{
-				try
+				if (!request.Headers.TryGetValue("signature", out var sigHeader))
+					throw new GracefulException(HttpStatusCode.Unauthorized, "Request is missing the signature header");
+
+				var sig = HttpSignature.Parse(sigHeader.ToString());
+
+				// First, we check if we already have the key
+				key = await db.UserPublickeys.Include(p => p.User).FirstOrDefaultAsync(p => p.KeyId == sig.KeyId);
+
+				// If we don't, we need to try to fetch it
+				if (key == null)
 				{
-					var user = await userResolver.ResolveAsync(sig.KeyId);
-					key = await db.UserPublickeys.Include(p => p.User).FirstOrDefaultAsync(p => p.User == user);
+					try
+					{
+						var user = await userResolver.ResolveAsync(sig.KeyId);
+						key = await db.UserPublickeys.Include(p => p.User).FirstOrDefaultAsync(p => p.User == user);
+					}
+					catch (Exception e)
+					{
+						if (e is GracefulException) throw;
+						throw new
+							GracefulException($"Failed to fetch key of signature user ({sig.KeyId}) - {e.Message}");
+					}
 				}
-				catch (Exception e)
+
+				// If we still don't have the key, something went wrong and we need to throw an exception
+				if (key == null) throw new GracefulException($"Failed to fetch key of signature user ({sig.KeyId})");
+
+				if (key.User.Host == null)
+					throw new GracefulException("Remote user must have a host");
+
+				// We want to check both the user host & the keyId host (as account & web domain might be different)
+				if (await fedCtrlSvc.ShouldBlockAsync(key.User.Host, key.KeyId))
+					throw GracefulException.Forbidden("Instance is blocked");
+
+				List<string> headers = request.ContentLength > 0 || attribute.ForceBody
+					? ["(request-target)", "digest", "host", "date"]
+					: ["(request-target)", "host", "date"];
+
+				verified = await HttpSignature.VerifyAsync(request, sig, headers, key.KeyPem);
+				logger.LogDebug("HttpSignature.Verify returned {result} for key {keyId}", verified, sig.KeyId);
+
+				if (!verified)
 				{
-					if (e is GracefulException) throw;
-					throw new GracefulException($"Failed to fetch key of signature user ({sig.KeyId}) - {e.Message}");
+					logger.LogDebug("Refetching user key...");
+					key      = await userSvc.UpdateUserPublicKeyAsync(key);
+					verified = await HttpSignature.VerifyAsync(request, sig, headers, key.KeyPem);
+					logger.LogDebug("HttpSignature.Verify returned {result} for key {keyId}", verified, sig.KeyId);
 				}
 			}
+			catch (Exception e)
+			{
+				logger.LogDebug("Error validating HTTP signature: {error}", e.ToString());
+			}
 
-			// If we still don't have the key, something went wrong and we need to throw an exception
-			if (key == null) throw new GracefulException($"Failed to fetch key of signature user ({sig.KeyId})");
-
-			if (key.User.Host == null)
-				throw new GracefulException("Remote user must have a host");
-
-			// We want to check both the user host & the keyId host (as account & web domain might be different)
-			if (await fedCtrlSvc.ShouldBlockAsync(key.User.Host, key.KeyId))
-				throw GracefulException.Forbidden("Instance is blocked");
-
-			List<string> headers = request.ContentLength > 0 || attribute.ForceBody
-				? ["(request-target)", "digest", "host", "date"]
-				: ["(request-target)", "host", "date"];
-
-			var verified = await HttpSignature.VerifyAsync(ctx.Request, sig, headers, key.KeyPem);
-			logger.LogDebug("HttpSignature.Verify returned {result} for key {keyId}", verified, sig.KeyId);
+			logger.LogDebug("Trying LD signature next...");
 
 			if (!verified && request is { ContentType: not null, ContentLength: > 0 })
 			{
@@ -92,8 +114,8 @@ public class AuthorizedFetchMiddleware(
 					if (!ActivityPub.ActivityFetcherService.IsValidActivityContentType(contentType))
 						throw new Exception("Request body is not an activity");
 
-					var body = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
-					ctx.Request.Body.Seek(0, SeekOrigin.Begin);
+					var body = await new StreamReader(request.Body).ReadToEndAsync();
+					request.Body.Seek(0, SeekOrigin.Begin);
 					var deserialized = JsonConvert.DeserializeObject<JObject?>(body);
 					var expanded     = LdHelpers.Expand(deserialized);
 					if (expanded == null)
@@ -129,17 +151,23 @@ public class AuthorizedFetchMiddleware(
 					verified = await LdSignature.VerifyAsync(expanded, rawExpanded, key.KeyPem, key.KeyId);
 					logger.LogDebug("LdSignature.VerifyAsync returned {result} for actor {id}",
 					                verified, activity.Actor.Id);
+					if (!verified)
+					{
+						logger.LogDebug("Refetching user key...");
+						key      = await userSvc.UpdateUserPublicKeyAsync(key);
+						verified = await LdSignature.VerifyAsync(expanded, rawExpanded, key.KeyPem, key.KeyId);
+						logger.LogDebug("LdSignature.VerifyAsync returned {result} for actor {id}",
+						                verified, activity.Actor.Id);
+					}
 				}
 				catch (Exception e)
 				{
-					logger.LogError("Error validating JSON-LD signature: {e}", e.ToString());
+					logger.LogError("Error validating JSON-LD signature: {error}", e.ToString());
 				}
 			}
 
 			if (!verified || key == null)
 				throw new GracefulException(HttpStatusCode.Forbidden, "Request signature validation failed");
-
-			//TODO: re-fetch key once if signature validation fails, to properly support key rotation (for both http and ld sigs)
 
 			ctx.SetActor(key.User);
 		}

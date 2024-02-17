@@ -301,4 +301,20 @@ public class UserService(
 				await driveSvc.RemoveFile(prevBannerId);
 		};
 	}
+
+	public async Task<UserPublickey> UpdateUserPublicKeyAsync(UserPublickey key)
+	{
+		var uri   = key.User.Uri ?? throw new Exception("Can't update public key of user without Uri");
+		var actor = await fetchSvc.FetchActorAsync(uri);
+
+		if (actor.PublicKey?.PublicKey == null)
+			throw new Exception("Failed to update user public key: Invalid or missing public key");
+
+		key.KeyId  = actor.PublicKey.Id;
+		key.KeyPem = actor.PublicKey.PublicKey;
+
+		db.Update(key);
+		await db.SaveChangesAsync();
+		return key;
+	}
 }
