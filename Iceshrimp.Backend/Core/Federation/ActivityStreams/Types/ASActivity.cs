@@ -17,6 +17,7 @@ public class ASActivity : ASObject {
 		private const string Ns = Constants.ActivityStreamsNs;
 
 		public const string Create   = $"{Ns}#Create";
+		public const string Update   = $"{Ns}#Update";
 		public const string Delete   = $"{Ns}#Delete";
 		public const string Follow   = $"{Ns}#Follow";
 		public const string Unfollow = $"{Ns}#Unfollow";
@@ -57,6 +58,10 @@ public class ASUndo : ASActivity {
 
 public class ASLike : ASActivity {
 	public ASLike() => Type = Types.Like;
+}
+
+public class ASUpdate : ASActivity {
+	public ASUpdate() => Type = Types.Update;
 }
 
 //TODO: add the rest

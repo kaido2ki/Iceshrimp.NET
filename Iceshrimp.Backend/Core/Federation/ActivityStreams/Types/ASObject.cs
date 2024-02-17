@@ -37,6 +37,7 @@ public class ASObject : ASObjectBase {
 						ASNote.Types.Note          => token.ToObject<ASNote>(),
 						Types.Tombstone            => token.ToObject<ASTombstone>(),
 						ASActivity.Types.Create    => token.ToObject<ASCreate>(),
+						ASActivity.Types.Update    => token.ToObject<ASUpdate>(),
 						ASActivity.Types.Delete    => token.ToObject<ASDelete>(),
 						ASActivity.Types.Follow    => token.ToObject<ASFollow>(),
 						ASActivity.Types.Unfollow  => token.ToObject<ASUnfollow>(),

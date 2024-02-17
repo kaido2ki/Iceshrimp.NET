@@ -122,6 +122,20 @@ public class ActivityHandlerService(
 				await noteSvc.LikeNoteAsync(note, activity.Actor);
 				return;
 			}
+			case ASUpdate: {
+				switch (activity.Object) {
+					case ASActor actor:
+						if (actor.Id != activity.Actor.Id)
+							throw GracefulException.UnprocessableEntity("Refusing to update actor with mismatching id");
+						await userSvc.UpdateUserAsync(resolvedActor, actor);
+						return;
+					case ASNote note:
+						throw new NotImplementedException("Note updates haven't been implemented yet");
+						//return;
+					default:
+						throw GracefulException.UnprocessableEntity("Update activity object is invalid");
+				}
+			}
 			default: {
 				throw new NotImplementedException($"Activity type {activity.Type} is unknown");
 			}

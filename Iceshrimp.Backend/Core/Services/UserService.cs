@@ -145,8 +145,10 @@ public class UserService(
 		}
 	}
 
-	public async Task<User> UpdateUserAsync(User user) {
-		if (!user.NeedsUpdate) return user;
+	public async Task<User> UpdateUserAsync(User user, ASActor? actor = null) {
+		if (!user.NeedsUpdate && actor == null) return user;
+		if (actor is { IsUnresolved: true } or { Username: null })
+			actor = null; // This will trigger a fetch a couple lines down
 
 		// Prevent multiple update jobs from running concurrently
 		db.Update(user);
@@ -156,7 +158,7 @@ public class UserService(
 		var uri = user.Uri ?? throw new Exception("Encountered remote user without a Uri");
 		logger.LogDebug("Updating user with uri {uri}", uri);
 
-		var actor = await fetchSvc.FetchActorAsync(user.Uri);
+		actor ??= await fetchSvc.FetchActorAsync(user.Uri);
 		actor.Normalize(uri, user.AcctWithPrefix);
 
 		user.UserProfile ??= await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
