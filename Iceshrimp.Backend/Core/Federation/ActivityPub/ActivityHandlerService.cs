@@ -113,7 +113,7 @@ public class ActivityHandlerService(
 						await noteSvc.UnlikeNoteAsync(likedNote, activity.Actor);
 						return;
 					default:
-						throw new NotImplementedException("Undo activity object is invalid");
+						throw GracefulException.UnprocessableEntity("Undo activity object is invalid");
 				}
 			}
 			case ASLike: {
@@ -130,8 +130,8 @@ public class ActivityHandlerService(
 						await userSvc.UpdateUserAsync(resolvedActor, actor);
 						return;
 					case ASNote note:
-						throw new NotImplementedException("Note updates haven't been implemented yet");
-						//return;
+						await noteSvc.ProcessNoteUpdateAsync(note, activity.Actor, resolvedActor);
+						return;
 					default:
 						throw GracefulException.UnprocessableEntity("Update activity object is invalid");
 				}

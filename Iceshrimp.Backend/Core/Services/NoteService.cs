@@ -190,7 +190,7 @@ public class NoteService(
 		};
 
 		if (dbNote.Reply != null) {
-			dbNote.ReplyUserId = dbNote.Reply.UserId;
+			dbNote.ReplyUserId   = dbNote.Reply.UserId;
 			dbNote.ReplyUserHost = dbNote.Reply.UserHost;
 		}
 
@@ -230,6 +230,76 @@ public class NoteService(
 		await notificationSvc.GenerateMentionNotifications(dbNote, mentionedLocalUserIds);
 		await notificationSvc.GenerateReplyNotifications(dbNote, mentionedLocalUserIds);
 		logger.LogDebug("Note {id} created successfully", dbNote.Id);
+		return dbNote;
+	}
+
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage",
+	                 Justification = "Inspection doesn't understand IncludeCommonProperties()")]
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "See above")]
+	public async Task<Note> ProcessNoteUpdateAsync(ASNote note, ASActor actor, User? resolvedActor = null) {
+		var dbNote = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
+		if (dbNote == null) return await ProcessNoteAsync(note, actor);
+
+		resolvedActor ??= await userResolver.ResolveAsync(actor.Id);
+		if (dbNote.User != resolvedActor)
+			throw GracefulException.UnprocessableEntity("Refusing to update note of user other than actor");
+		if (dbNote.User.IsSuspended)
+			throw GracefulException.Forbidden("User is suspended");
+
+		var noteEdit = new NoteEdit {
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			UpdatedAt = DateTime.UtcNow,
+			Note      = dbNote,
+			Text      = dbNote.Text,
+			Cw        = dbNote.Cw,
+			FileIds   = dbNote.FileIds
+		};
+
+		var previousMentionedLocalUserIds = await db.Users.Where(p => dbNote.Mentions.Contains(p.Id) && p.Host == null)
+		                                            .Select(p => p.Id)
+		                                            .ToListAsync();
+		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
+			await ResolveNoteMentionsAsync(note);
+
+		mentionedLocalUserIds = mentionedLocalUserIds.Except(previousMentionedLocalUserIds).ToList();
+		dbNote.Text           = note.MkContent ?? await mfmConverter.FromHtmlAsync(note.Content, mentions);
+
+		if (dbNote.Text is { Length: > 100000 })
+			throw GracefulException.UnprocessableEntity("Content cannot be longer than 100.000 characters");
+
+		if (dbNote.Text is not null) {
+			dbNote.Mentions             = mentionedUserIds;
+			dbNote.MentionedRemoteUsers = remoteMentions;
+			if (dbNote.Visibility == Note.NoteVisibility.Specified) {
+				var visibleUserIds = (await note.GetRecipients(actor)
+				                                .Select(userResolver.ResolveAsync)
+				                                .AwaitAllNoConcurrencyAsync())
+				                     .Select(p => p.Id)
+				                     .Concat(mentionedUserIds).ToList();
+				if (dbNote.ReplyUserId != null)
+					visibleUserIds.Add(dbNote.ReplyUserId);
+
+				// We want to make sure not to revoke visibility
+				dbNote.VisibleUserIds = visibleUserIds.Concat(dbNote.VisibleUserIds).Distinct().ToList();
+			}
+
+			dbNote.Text = mentionsResolver.ResolveMentions(dbNote.Text, dbNote.UserHost, mentions, splitDomainMapping);
+		}
+
+		//TODO: handle updated alt text et al
+		var sensitive = (note.Sensitive ?? false) || dbNote.Cw != null;
+		var files     = await ProcessAttachmentsAsync(note.Attachments, resolvedActor, sensitive);
+		dbNote.FileIds           = files.Select(p => p.Id).ToList();
+		dbNote.AttachedFileTypes = files.Select(p => p.Type).ToList();
+
+		dbNote.UpdatedAt = DateTime.UtcNow;
+
+		db.Update(dbNote);
+		await db.AddAsync(noteEdit);
+		await db.SaveChangesAsync();
+		await notificationSvc.GenerateMentionNotifications(dbNote, mentionedLocalUserIds);
+		await notificationSvc.GenerateReplyNotifications(dbNote, mentionedLocalUserIds);
+		eventSvc.RaiseNoteUpdated(this, dbNote);
 		return dbNote;
 	}
 
