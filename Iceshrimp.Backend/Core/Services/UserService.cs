@@ -129,7 +129,7 @@ public class UserService(
 		try
 		{
 			await db.AddRangeAsync(user, profile, publicKey);
-			
+
 			// We need to do this after calling db.Add(Range) to ensure data consistency
 			var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
 			await db.SaveChangesAsync();
@@ -158,9 +158,16 @@ public class UserService(
 		}
 	}
 
-	public async Task<User> UpdateUserAsync(User user, ASActor? actor = null)
+	public async Task<User> UpdateUserAsync(string id)
 	{
-		if (!user.NeedsUpdate && actor == null) return user;
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
+		           throw new Exception("Cannot update nonexistent user");
+		return await UpdateUserAsync(user, force: true);
+	}
+
+	public async Task<User> UpdateUserAsync(User user, ASActor? actor = null, bool force = false)
+	{
+		if (!user.NeedsUpdate && actor == null && !force) return user;
 		if (actor is { IsUnresolved: true } or { Username: null })
 			actor = null; // This will trigger a fetch a couple lines down
 

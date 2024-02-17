@@ -26,7 +26,7 @@ public class DriveFile : IEntity
 	///     The created date of the DriveFile.
 	/// </summary>
 	[Column("createdAt")]
-	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+	public DateTime CreatedAt { get; set; }
 
 	/// <summary>
 	///     The owner ID.
@@ -188,7 +188,7 @@ public class DriveFile : IEntity
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
-	public string Id { get; set; } = IdHelpers.GenerateSlowflakeId();
+	public string Id { get; set; } = null!;
 
 	public class FileProperties
 	{

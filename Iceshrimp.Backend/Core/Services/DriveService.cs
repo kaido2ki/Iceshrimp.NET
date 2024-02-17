@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
@@ -240,6 +241,8 @@ public class DriveService(
 
 		file = new DriveFile
 		{
+			Id                 = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt          = DateTime.UtcNow,
 			User               = user,
 			UserHost           = user.Host,
 			Sha256             = digest,
@@ -332,6 +335,8 @@ file static class DriveFileExtensions
 
 		return new DriveFile
 		{
+			Id                 = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt          = DateTime.UtcNow,
 			User               = user,
 			Blurhash           = file.Blurhash,
 			Type               = file.Type,

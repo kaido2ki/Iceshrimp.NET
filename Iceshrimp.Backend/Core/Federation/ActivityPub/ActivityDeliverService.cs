@@ -16,11 +16,9 @@ public class ActivityDeliverService(ILogger<ActivityDeliverService> logger, Queu
 
 		await queueService.PreDeliverQueue.EnqueueAsync(new PreDeliverJob
 		{
-			ActorId      = actor.Id,
-			RecipientIds = recipients.Select(p => p.Id).ToList(),
-			SerializedActivity =
-				JsonConvert.SerializeObject(activity,
-				                            LdHelpers.JsonSerializerSettings),
+			ActorId            = actor.Id,
+			RecipientIds       = recipients.Select(p => p.Id).ToList(),
+			SerializedActivity = JsonConvert.SerializeObject(activity, LdHelpers.JsonSerializerSettings),
 			DeliverToFollowers = true
 		});
 	}
@@ -32,11 +30,9 @@ public class ActivityDeliverService(ILogger<ActivityDeliverService> logger, Queu
 
 		await queueService.PreDeliverQueue.EnqueueAsync(new PreDeliverJob
 		{
-			ActorId      = actor.Id,
-			RecipientIds = recipients.Select(p => p.Id).ToList(),
-			SerializedActivity =
-				JsonConvert.SerializeObject(activity,
-				                            LdHelpers.JsonSerializerSettings),
+			ActorId            = actor.Id,
+			RecipientIds       = recipients.Select(p => p.Id).ToList(),
+			SerializedActivity = JsonConvert.SerializeObject(activity, LdHelpers.JsonSerializerSettings),
 			DeliverToFollowers = false
 		});
 	}

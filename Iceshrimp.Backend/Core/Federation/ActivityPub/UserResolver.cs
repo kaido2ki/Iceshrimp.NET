@@ -112,13 +112,18 @@ public class UserResolver(
 	private async Task<User> GetUpdatedUser(User user)
 	{
 		if (!user.NeedsUpdate) return user;
+		user.LastFetchedAt = DateTime.UtcNow; // Prevent multiple background tasks from being started
 
 		try
 		{
 			var task = followupTaskSvc.ExecuteTask("UpdateUserAsync", async provider =>
 			{
+				// Get a fresh UserService instance in a new scope
 				var bgUserSvc = provider.GetRequiredService<UserService>();
-				await bgUserSvc.UpdateUserAsync(user);
+				
+				// Use the id overload so it doesn't attempt to insert in the main thread's DbContext
+				var fetchedUser = await bgUserSvc.UpdateUserAsync(user.Id);
+				user = fetchedUser;
 			});
 
 			// Return early, but continue execution in background
