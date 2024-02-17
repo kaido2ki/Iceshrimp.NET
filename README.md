@@ -4,6 +4,9 @@ This repository contains our efforts to rewrite both the backend and the fronten
 
 Want to join development efforts? Have a look at the [knowledgebase](https://kb.iceshrimp.dev) and join the [matrix room](https://matrix.to/#/%23iceshrimp-dev:161.rocks)!
 
+Want to donate to the project?
+  - Our backend lead dev (zotan) is in need of a better laptop, as their current one does not have enough memory. You can contribute [here](https://bunq.me/zotanlaptopcrowdfund). Any leftover money will be given to queers in need.
+
 ---
 
 > **Warning**
