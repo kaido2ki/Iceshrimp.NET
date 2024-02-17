@@ -96,7 +96,7 @@ public static class QueryableExtensions
 		{
 			var lastDate = await db.Notes.AnyAsync()
 				? await db.Notes.OrderByDescending(p => p.Id).Select(p => p.CreatedAt).FirstOrDefaultAsync()
-				: DateTime.Now;
+				: DateTime.UtcNow;
 
 			return await db.Notes.CountAsync(p => p.CreatedAt > lastDate - TimeSpan.FromDays(7) &&
 			                                      (p.User.IsFollowedBy(user) || p.User == user));
