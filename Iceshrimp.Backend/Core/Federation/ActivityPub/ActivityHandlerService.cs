@@ -85,7 +85,8 @@ public class ActivityHandlerService(
 					throw new NotImplementedException("User deletes aren't supported yet");
 				}
 
-				throw GracefulException.UnprocessableEntity("Delete activity object is unknown or invalid");
+				logger.LogDebug("Delete activity object {id} is unknown, skipping", tombstone.Id);
+				return;
 			}
 			case ASFollow:
 			{
