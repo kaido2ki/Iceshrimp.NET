@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
@@ -53,6 +54,31 @@ public class NotificationService(
 			                    Type       = Notification.NotificationType.Reply
 		                    })
 		                    .ToList();
+
+		await db.AddRangeAsync(notifications);
+		await db.SaveChangesAsync();
+		eventSvc.RaiseNotifications(this, notifications);
+	}
+
+	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
+	                 Justification = "Projectable functions are very much translatable")]
+	public async Task GenerateEditNotifications(Note note)
+	{
+		var notifications = await db.Users
+		                            .Where(p => p.Host == null && p != note.User && p.HasInteractedWith(note))
+		                            .Select(p => new Notification
+		                            {
+			                            Id         = IdHelpers.GenerateSlowflakeId(DateTime.UtcNow),
+			                            CreatedAt  = DateTime.UtcNow,
+			                            Note       = note,
+			                            NotifierId = note.UserId,
+			                            Notifiee   = p,
+			                            Type       = Notification.NotificationType.Edit
+		                            })
+		                            .ToListAsync();
+
+		if (notifications.Count == 0)
+			return;
 
 		await db.AddRangeAsync(notifications);
 		await db.SaveChangesAsync();

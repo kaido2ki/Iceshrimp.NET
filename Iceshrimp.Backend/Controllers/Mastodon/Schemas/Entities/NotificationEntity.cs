@@ -27,6 +27,7 @@ public class NotificationEntity : IEntity
 			NotificationType.Like                  => "favourite",
 			NotificationType.PollEnded             => "poll",
 			NotificationType.FollowRequestReceived => "follow_request",
+			NotificationType.Edit                  => "update",
 
 			_ => throw new GracefulException($"Unsupported notification type: {type}")
 		};

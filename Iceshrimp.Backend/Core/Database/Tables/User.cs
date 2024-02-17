@@ -384,11 +384,19 @@ public class User : IEntity
 	[InverseProperty(nameof(NoteBookmark.User))]
 	public virtual ICollection<NoteBookmark> NoteBookmarks { get; set; } = new List<NoteBookmark>();
 
+	[NotMapped] [Projectable] public virtual IEnumerable<Note> BookmarkedNotes => NoteBookmarks.Select(p => p.Note);
+
 	[InverseProperty(nameof(NoteReaction.User))]
 	public virtual ICollection<NoteLike> NoteLikes { get; set; } = new List<NoteLike>();
 
+	[NotMapped] [Projectable] public virtual IEnumerable<Note> LikedNotes => NoteLikes.Select(p => p.Note);
+
 	[InverseProperty(nameof(NoteReaction.User))]
 	public virtual ICollection<NoteReaction> NoteReactions { get; set; } = new List<NoteReaction>();
+
+	[NotMapped]
+	[Projectable]
+	public virtual IEnumerable<Note> ReactedNotes => NoteReactions.Select(p => p.Note).Distinct();
 
 	[InverseProperty(nameof(NoteThreadMuting.User))]
 	public virtual ICollection<NoteThreadMuting> NoteThreadMutings { get; set; } = new List<NoteThreadMuting>();
@@ -529,6 +537,29 @@ public class User : IEntity
 
 	[Projectable]
 	public bool HasPinned(Note note) => PinnedNotes.Contains(note);
+
+	[Projectable]
+	public bool HasBookmarked(Note note) => BookmarkedNotes.Contains(note);
+
+	[Projectable]
+	public bool HasLiked(Note note) => LikedNotes.Contains(note);
+
+	[Projectable]
+	public bool HasReacted(Note note) => ReactedNotes.Contains(note);
+
+	[Projectable]
+	public bool HasRenoted(Note note) => Notes.Any(p => p.Renote == note);
+
+	[Projectable]
+	public bool HasReplied(Note note) => Notes.Any(p => p.Reply == note);
+
+	[Projectable]
+	public bool HasInteractedWith(Note note) =>
+		HasLiked(note) ||
+		HasReacted(note) ||
+		HasBookmarked(note) ||
+		HasReplied(note) ||
+		HasRenoted(note);
 
 	public User WithPrecomputedBlockStatus(bool blocking, bool blockedBy)
 	{

@@ -99,7 +99,7 @@ public class ASUpdate : ASActivity
 	[J($"{Constants.ActivityStreamsNs}#cc")]
 	public List<ASObjectBase>? Cc { get; set; }
 
-	[J($"{Constants.ActivityStreamsNs}#object")]
+	[JI]
 	public new ASObject? Object
 	{
 		get => base.Object;

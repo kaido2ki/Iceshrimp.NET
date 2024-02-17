@@ -29,7 +29,8 @@ public class Notification : IEntity
 		[PgName("receiveFollowRequest")]  FollowRequestReceived,
 		[PgName("followRequestAccepted")] FollowRequestAccepted,
 		[PgName("groupInvited")]          GroupInvited,
-		[PgName("app")]                   App
+		[PgName("app")]                   App,
+		[PgName("edit")]                  Edit
 	}
 
 	/// <summary>

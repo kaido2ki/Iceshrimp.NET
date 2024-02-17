@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -14,9 +15,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20240217040655_AddEditNotificationType")]
+    partial class AddEditNotificationType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2640,7 +2643,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.HasIndex("UserId", "NoteId")
                         .IsUnique();
 
-                    b.ToTable("note_bookmark");
+                    b.ToTable("note_favorite");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.NoteEdit", b =>

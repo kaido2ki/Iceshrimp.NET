@@ -40,7 +40,8 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                              p.Type == NotificationType.Quote ||
 		                              p.Type == NotificationType.Like ||
 		                              p.Type == NotificationType.PollEnded ||
-		                              p.Type == NotificationType.FollowRequestReceived)
+		                              p.Type == NotificationType.FollowRequestReceived || 
+		                              p.Type == NotificationType.Edit)
 		                  .EnsureNoteVisibilityFor(p => p.Note, user)
 		                  .FilterBlocked(p => p.Notifier, user)
 		                  .FilterBlocked(p => p.Note, user)

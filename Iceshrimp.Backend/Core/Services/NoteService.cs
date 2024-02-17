@@ -179,6 +179,7 @@ public class NoteService(
 		await db.SaveChangesAsync();
 		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateReplyNotifications(note, mentionedLocalUserIds);
+		await notificationSvc.GenerateEditNotifications(note);
 		eventSvc.RaiseNoteUpdated(this, note);
 
 		var actor    = userRenderer.RenderLite(note.User);
@@ -405,6 +406,7 @@ public class NoteService(
 		await db.SaveChangesAsync();
 		await notificationSvc.GenerateMentionNotifications(dbNote, mentionedLocalUserIds);
 		await notificationSvc.GenerateReplyNotifications(dbNote, mentionedLocalUserIds);
+		await notificationSvc.GenerateEditNotifications(dbNote);
 		eventSvc.RaiseNoteUpdated(this, dbNote);
 		return dbNote;
 	}
