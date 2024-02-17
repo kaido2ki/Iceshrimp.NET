@@ -1,6 +1,7 @@
 using Iceshrimp.Backend.Core.Configuration;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
+using JI = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
@@ -33,6 +34,24 @@ public class ASActivity : ASObject
 public class ASCreate : ASActivity
 {
 	public ASCreate() => Type = Types.Create;
+
+	[J($"{Constants.ActivityStreamsNs}#to")]
+	public List<ASObjectBase>? To { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#cc")]
+	public List<ASObjectBase>? Cc { get; set; }
+
+	[JI]
+	public new ASNote? Object
+	{
+		get => base.Object as ASNote;
+		set
+		{
+			base.Object = value;
+			To          = value?.To;
+			Cc          = value?.Cc;
+		}
+	}
 }
 
 public class ASDelete : ASActivity
@@ -73,6 +92,25 @@ public class ASLike : ASActivity
 public class ASUpdate : ASActivity
 {
 	public ASUpdate() => Type = Types.Update;
+
+	[J($"{Constants.ActivityStreamsNs}#to")]
+	public List<ASObjectBase>? To { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#cc")]
+	public List<ASObjectBase>? Cc { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#object")]
+	public new ASObject? Object
+	{
+		get => base.Object;
+		set
+		{
+			base.Object = value;
+			if (value is not ASNote note) return;
+			To = note.To;
+			Cc = note.Cc;
+		}
+	}
 }
 
 //TODO: add the rest

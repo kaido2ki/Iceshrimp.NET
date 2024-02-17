@@ -16,14 +16,22 @@ public class ActivityRenderer(
 	private string GenerateActivityId() =>
 		$"https://{config.Value.WebDomain}/activities/{Guid.NewGuid().ToString().ToLowerInvariant()}";
 
-	public static ASCreate RenderCreate(ASObject obj, ASObject actor) => new()
+	public static ASCreate RenderCreate(ASNote obj, ASObject actor) => new()
 	{
-		Id = $"{obj.Id}#Create", Actor = ASActor.FromObject(actor), Object = obj
+		Id     = $"{obj.Id}#Create",
+		Actor  = ASActor.FromObject(actor),
+		Object = obj,
+		To     = obj.To,
+		Cc     = obj.Cc
 	};
 
-	public ASUpdate RenderUpdate(ASObject obj, ASObject actor) => new()
+	public ASUpdate RenderUpdate(ASNote obj, ASObject actor) => new()
 	{
-		Id = GenerateActivityId(), Actor = ASActor.FromObject(actor), Object = obj
+		Id     = GenerateActivityId(),
+		Actor  = ASActor.FromObject(actor),
+		Object = obj,
+		To     = obj.To,
+		Cc     = obj.Cc
 	};
 
 	public ASAccept RenderAccept(User followee, User follower, string requestId) => new()
