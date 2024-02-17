@@ -22,7 +22,7 @@ public static class ServiceExtensions
 	public static void AddServices(this IServiceCollection services)
 	{
 		// Transient = instantiated per request and class
-		//services.AddTransient<T>();
+		services.AddTransient<FollowupTaskService>();
 
 		// Scoped = instantiated per request
 		services

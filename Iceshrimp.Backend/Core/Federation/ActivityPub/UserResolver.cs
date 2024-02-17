@@ -5,7 +5,12 @@ using Iceshrimp.Backend.Core.Services;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, WebFingerService webFingerSvc)
+public class UserResolver(
+	ILogger<UserResolver> logger,
+	UserService userSvc,
+	WebFingerService webFingerSvc,
+	FollowupTaskService followupTaskSvc
+)
 {
 	/*
 	 * The full web finger algorithm:
@@ -110,7 +115,14 @@ public class UserResolver(ILogger<UserResolver> logger, UserService userSvc, Web
 
 		try
 		{
-			return await userSvc.UpdateUserAsync(user).WaitAsync(TimeSpan.FromMilliseconds(1500));
+			var task = followupTaskSvc.ExecuteTask("UpdateUserAsync", async provider =>
+			{
+				var bgUserSvc = provider.GetRequiredService<UserService>();
+				await bgUserSvc.UpdateUserAsync(user);
+			});
+
+			// Return early, but continue execution in background
+			await task.WaitAsync(TimeSpan.FromMilliseconds(1500));
 		}
 		catch (Exception e)
 		{
