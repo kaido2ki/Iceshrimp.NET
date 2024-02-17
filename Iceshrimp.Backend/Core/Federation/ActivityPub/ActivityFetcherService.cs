@@ -9,7 +9,12 @@ using Newtonsoft.Json.Linq;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class ActivityFetcherService(HttpClient client, HttpRequestService httpRqSvc, SystemUserService systemUserSvc)
+public class ActivityFetcherService(
+	HttpClient client,
+	HttpRequestService httpRqSvc,
+	SystemUserService systemUserSvc,
+	ILogger<ActivityFetcherService> logger
+)
 {
 	private static readonly IReadOnlyCollection<string> AcceptableActivityTypes =
 	[
@@ -31,9 +36,18 @@ public class ActivityFetcherService(HttpClient client, HttpRequestService httpRq
 		var request  = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair);
 		var response = await client.SendAsync(request);
 
-		if (!response.IsSuccessStatusCode) return [];
-		if (!IsValidActivityContentType(response.Content.Headers.ContentType))
+		if (!response.IsSuccessStatusCode)
+		{
+			logger.LogDebug("Failed to fetch activity: response status was {code}", response.StatusCode);
 			return [];
+		}
+
+		if (!IsValidActivityContentType(response.Content.Headers.ContentType))
+		{
+			logger.LogDebug("Failed to fetch activity: content type {type} is invalid",
+			                response.Content.Headers.ContentType);
+			return [];
+		}
 
 		var finalUri = response.RequestMessage?.RequestUri ??
 		               throw new Exception("RequestMessage must not be null at this stage");

@@ -526,7 +526,12 @@ public class NoteService(
 
 		//TODO: should we fall back to a regular user's keypair if fetching with instance actor fails & a local user is following the actor?
 		fetchedNote ??= await fetchSvc.FetchNoteAsync(uri);
-		if (fetchedNote?.AttributedTo is not [{ Id: not null } attrTo])
+		if (fetchedNote == null)
+		{
+			logger.LogDebug("Failed to fetch note, skipping");
+			return null;
+		}
+		if (fetchedNote.AttributedTo is not [{ Id: not null } attrTo])
 		{
 			logger.LogDebug("Invalid Note.AttributedTo, skipping");
 			return null;
