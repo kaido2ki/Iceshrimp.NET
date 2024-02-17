@@ -65,7 +65,11 @@ public class ActivityPubController : Controller {
 		using var reader = new StreamReader(Request.Body, Encoding.UTF8, true, 1024, true);
 		var       body   = await reader.ReadToEndAsync();
 		Request.Body.Position = 0;
-		await queues.InboxQueue.EnqueueAsync(new InboxJob { Body = body, InboxUserId = id });
+		await queues.InboxQueue.EnqueueAsync(new InboxJob {
+			Body            = body,
+			InboxUserId     = id,
+			AuthFetchUserId = HttpContext.GetActor()?.Id
+		});
 		return Accepted();
 	}
 }

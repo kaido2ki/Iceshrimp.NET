@@ -18,17 +18,19 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 public class ActivityHandlerService(
 	ILogger<ActivityHandlerService> logger,
 	NoteService noteSvc,
+	UserService userSvc,
 	UserResolver userResolver,
 	DatabaseContext db,
 	QueueService queueService,
 	ActivityRenderer activityRenderer,
 	IOptions<Config.InstanceSection> config,
+	IOptions<Config.SecuritySection> security,
 	FederationControlService federationCtrl,
 	ObjectResolver resolver,
 	NotificationService notificationSvc,
 	ActivityDeliverService deliverSvc
 ) {
-	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId) {
+	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId, string? authFetchUserId) {
 		logger.LogDebug("Processing activity: {activity}", activity.Id);
 		if (activity.Actor == null)
 			throw GracefulException.UnprocessableEntity("Cannot perform activity as actor 'null'");
@@ -36,6 +38,15 @@ public class ActivityHandlerService(
 			throw GracefulException.UnprocessableEntity("Instance is blocked");
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Activity object is null");
+
+		var resolvedActor = await userResolver.ResolveAsync(activity.Actor.Id);
+
+		if (security.Value.AuthorizedFetch && authFetchUserId == null)
+			throw GracefulException
+				.UnprocessableEntity("Refusing to process activity without authFetchUserId in authorized fetch mode");
+		if (resolvedActor.Id != authFetchUserId && authFetchUserId != null)
+			throw GracefulException
+				.UnprocessableEntity($"Authorized fetch user id {authFetchUserId} doesn't match resolved actor id {resolvedActor.Id}");
 
 		// Resolve object & children
 		activity.Object = await resolver.ResolveObject(activity.Object) ??
