@@ -22,13 +22,13 @@ public class InboxQueue
 	)
 	{
 		var expanded = LdHelpers.Expand(JToken.Parse(job.Body));
-		if (expanded == null) throw new Exception("Failed to expand ASObject");
+		if (expanded == null)
+			throw new Exception("Failed to expand ASObject");
 		var obj = ASObject.Deserialize(expanded);
-		if (obj == null) throw new Exception("Failed to deserialize ASObject");
+		if (obj == null)
+			throw new Exception("Failed to deserialize ASObject");
 		if (obj is not ASActivity activity)
-		{
 			throw new GracefulException("Job data is not an ASActivity", $"Type: {obj.Type}");
-		}
 
 		var apHandler = scope.GetRequiredService<ActivityPub.ActivityHandlerService>();
 		var logger    = scope.GetRequiredService<ILogger<InboxQueue>>();

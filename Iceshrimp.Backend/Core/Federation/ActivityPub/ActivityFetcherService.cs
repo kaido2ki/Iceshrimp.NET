@@ -21,10 +21,6 @@ public class ActivityFetcherService(
 		"application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\""
 	];
 
-	private static readonly JsonSerializerSettings JsonSerializerSettings = new();
-	//FIXME: not doing this breaks ld signatures, but doing this breaks mapping the object to datetime properties
-	//new() { DateParseHandling = DateParseHandling.None };
-
 	public async Task<IEnumerable<ASObject>> FetchActivityAsync(string url)
 	{
 		var (actor, keypair) = await systemUserSvc.GetInstanceActorWithKeypairAsync();
@@ -53,7 +49,7 @@ public class ActivityFetcherService(
 		               throw new Exception("RequestMessage must not be null at this stage");
 
 		var input = await response.Content.ReadAsStringAsync();
-		var json  = JsonConvert.DeserializeObject<JObject?>(input, JsonSerializerSettings);
+		var json  = JsonConvert.DeserializeObject<JObject?>(input);
 
 		var res = LdHelpers.Expand(json) ?? throw new GracefulException("Failed to expand JSON-LD object");
 		var activities =
@@ -67,7 +63,7 @@ public class ActivityFetcherService(
 		return activities;
 	}
 
-	private static bool IsValidActivityContentType(MediaTypeHeaderValue? headersContentType) =>
+	public static bool IsValidActivityContentType(MediaTypeHeaderValue? headersContentType) =>
 		headersContentType switch
 		{
 			{ MediaType: "application/activity+json" } => true,

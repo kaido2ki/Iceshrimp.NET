@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
+using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Newtonsoft.Json;
@@ -15,22 +16,28 @@ namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
 public static class LdSignature
 {
-	public static Task<bool> VerifyAsync(JArray activity, string key)
+	public static Task<bool> VerifyAsync(JArray activity, JArray rawActivity, string key, string? keyId = null)
 	{
 		if (activity.ToArray() is not [JObject obj])
 			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Invalid activity");
-		return VerifyAsync(obj, key);
+		if (rawActivity.ToArray() is not [JObject rawObj])
+			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Invalid activity");
+		return VerifyAsync(obj, rawObj, key, keyId);
 	}
 
-	public static async Task<bool> VerifyAsync(JObject activity, string key)
+	public static async Task<bool> VerifyAsync(JObject activity, JObject rawActivity, string key, string? keyId = null)
 	{
-		var options = activity[$"{Constants.W3IdSecurityNs}#signature"];
+		var options    = activity[$"{Constants.W3IdSecurityNs}#signature"];
+		var rawOptions = rawActivity[$"{Constants.W3IdSecurityNs}#signature"];
+		if (rawOptions is null) return false;
 		if (options?.ToObject<SignatureOptions[]>() is not { Length: 1 } signatures) return false;
 		var signature = signatures[0];
 		if (signature.Type is not ["_:RsaSignature2017"]) return false;
 		if (signature.Signature is null) return false;
+		if (keyId != null && signature.Creator?.Id != keyId)
+			throw new Exception("Creator doesn't match actor keyId");
 
-		var signatureData = await GetSignatureDataAsync(activity, options);
+		var signatureData = await GetSignatureDataAsync(rawActivity, rawOptions);
 		if (signatureData is null) return false;
 
 		var rsa = RSA.Create();
@@ -51,7 +58,7 @@ public static class LdSignature
 		var options = new SignatureOptions
 		{
 			Created = DateTime.Now,
-			Creator = creator,
+			Creator = new ASObjectBase(creator),
 			Nonce   = CryptographyHelpers.GenerateRandomHexString(16),
 			Type    = ["_:RsaSignature2017"],
 			Domain  = null
@@ -100,7 +107,7 @@ public static class LdSignature
 		return Encoding.UTF8.GetBytes(optionsHash + dataHash);
 	}
 
-	private class SignatureOptions
+	public class SignatureOptions
 	{
 		[J("@type")] public required List<string> Type { get; set; }
 
@@ -108,9 +115,9 @@ public static class LdSignature
 		[JC(typeof(VC))]
 		public string? Signature { get; set; }
 
-		[J("http://purl.org/dc/terms/creator", NullValueHandling = NullValueHandling.Ignore)]
-		[JC(typeof(VC))]
-		public string? Creator { get; set; }
+		[J($"{Constants.PurlDcNs}/creator", NullValueHandling = NullValueHandling.Ignore)]
+		[JC(typeof(ASObjectBaseConverter))]
+		public ASObjectBase? Creator { get; set; }
 
 		[J($"{Constants.W3IdSecurityNs}#nonce", NullValueHandling = NullValueHandling.Ignore)]
 		[JC(typeof(VC))]
@@ -120,7 +127,7 @@ public static class LdSignature
 		[JC(typeof(VC))]
 		public string? Domain { get; set; }
 
-		[J($"{Constants.W3IdSecurityNs}#created", NullValueHandling = NullValueHandling.Ignore)]
+		[J($"{Constants.PurlDcNs}/created", NullValueHandling = NullValueHandling.Ignore)]
 		[JC(typeof(VC))]
 		//FIXME: is this valid? it should output datetime in ISO format
 		public DateTime? Created { get; set; }

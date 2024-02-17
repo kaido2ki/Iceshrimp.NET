@@ -1,12 +1,17 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Net.Http.Headers;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Federation.ActivityStreams;
+using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
@@ -20,6 +25,9 @@ public class AuthorizedFetchMiddleware(
 	ILogger<AuthorizedFetchMiddleware> logger
 ) : IMiddleware
 {
+	private static readonly JsonSerializerSettings JsonSerializerSettings =
+		new() { DateParseHandling = DateParseHandling.None };
+
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
 	{
 		var attribute = ctx.GetEndpoint()?.Metadata.GetMetadata<AuthorizedFetchAttribute>();
@@ -75,11 +83,63 @@ public class AuthorizedFetchMiddleware(
 
 			var verified = await HttpSignature.VerifyAsync(ctx.Request, sig, headers, key.KeyPem);
 			logger.LogDebug("HttpSignature.Verify returned {result} for key {keyId}", verified, sig.KeyId);
-			if (!verified)
+
+			if (!verified && request is { ContentType: not null, ContentLength: > 0 })
+			{
+				try
+				{
+					var contentType = new MediaTypeHeaderValue(request.ContentType);
+					if (!ActivityPub.ActivityFetcherService.IsValidActivityContentType(contentType))
+						throw new Exception("Request body is not an activity");
+
+					var body = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
+					ctx.Request.Body.Seek(0, SeekOrigin.Begin);
+					var deserialized = JsonConvert.DeserializeObject<JObject?>(body);
+					var expanded     = LdHelpers.Expand(deserialized);
+					if (expanded == null)
+						throw new Exception("Failed to expand ASObject");
+					var obj = ASObject.Deserialize(expanded);
+					if (obj == null)
+						throw new Exception("Failed to deserialize ASObject");
+					if (obj is not ASActivity activity)
+						throw new Exception($"Job data is not an ASActivity - Type: {obj.Type}");
+					if (activity.Actor == null)
+						throw new Exception("Activity has no actor");
+					key = null;
+					key = await db.UserPublickeys
+					              .Include(p => p.User)
+					              .FirstOrDefaultAsync(p => p.User.Uri == activity.Actor.Id);
+
+					if (key == null)
+					{
+						var user = await userResolver.ResolveAsync(activity.Actor.Id);
+						key = await db.UserPublickeys
+						              .Include(p => p.User)
+						              .FirstOrDefaultAsync(p => p.User == user);
+
+						if (key == null)
+							throw new Exception($"Failed to fetch public key for user {activity.Actor.Id}");
+					}
+
+					// We need to re-run deserialize & expand with date time handling disabled for JSON-LD canonicalization to work correctly
+					var rawDeserialized = JsonConvert.DeserializeObject<JObject?>(body, JsonSerializerSettings);
+					var rawExpanded     = LdHelpers.Expand(rawDeserialized);
+					if (rawExpanded == null)
+						throw new Exception("Failed to expand activity for LD signature processing");
+					verified = await LdSignature.VerifyAsync(expanded, rawExpanded, key.KeyPem, key.KeyId);
+					logger.LogDebug("LdSignature.VerifyAsync returned {result} for actor {id}",
+					                verified, activity.Actor.Id);
+				}
+				catch (Exception e)
+				{
+					logger.LogError("Error validating JSON-LD signature: {e}", e.ToString());
+				}
+			}
+
+			if (!verified || key == null)
 				throw new GracefulException(HttpStatusCode.Forbidden, "Request signature validation failed");
 
-			//TODO: re-fetch key once if signature validation fails, to properly support key rotation
-			//TODO: Check for LD signature as well
+			//TODO: re-fetch key once if signature validation fails, to properly support key rotation (for both http and ld sigs)
 
 			ctx.SetActor(key.User);
 		}
