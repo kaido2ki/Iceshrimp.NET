@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
@@ -46,6 +47,45 @@ public static class QueryableExtensions
 		};
 
 		return query.Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
+	}
+
+	public static IQueryable<T> Paginate<T>(
+		this IQueryable<T> query,
+		PaginationQuery pq,
+		int defaultLimit,
+		int maxLimit
+	) where T : IEntity
+	{
+		if (pq.Limit is < 1)
+			throw GracefulException.BadRequest("Limit cannot be less than 1");
+
+		query = pq switch
+		{
+			{ MinId: not null, MaxId: not null } => query
+			                                        .Where(p => p.Id.IsGreaterThan(pq.MinId) &&
+			                                                    p.Id.IsLessThan(pq.MaxId))
+			                                        .OrderBy(p => p.Id),
+			{ MinId: not null } => query.Where(p => p.Id.IsGreaterThan(pq.MinId)).OrderBy(p => p.Id),
+			{ MaxId: not null } => query.Where(p => p.Id.IsLessThan(pq.MaxId)).OrderByDescending(p => p.Id),
+			_                   => query.OrderByDescending(p => p.Id)
+		};
+
+		return query.Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
+	}
+
+	public static IQueryable<T> Paginate<T>(
+		this IQueryable<T> query,
+		MastodonPaginationQuery pq,
+		ControllerContext context
+	) where T : IEntity
+	{
+		var filter = context.ActionDescriptor.FilterDescriptors.Select(p => p.Filter)
+		                    .OfType<LinkPaginationAttribute>()
+		                    .FirstOrDefault();
+		if (filter == null)
+			throw new GracefulException("Route doesn't have a LinkPaginationAttribute");
+
+		return Paginate(query, pq, filter.DefaultLimit, filter.MaxLimit);
 	}
 
 	public static IQueryable<T> Paginate<T>(

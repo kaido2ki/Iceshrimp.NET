@@ -1,8 +1,9 @@
+using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
-using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
-[Tags("User")]
 [Produces("application/json")]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/user/{id}")]
@@ -21,28 +21,32 @@ public class UserController(DatabaseContext db) : Controller
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> GetUser(string id)
 	{
-		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
-		if (user == null) return NotFound();
-		return Ok(user);
+		var user = await db.Users.IncludeCommonProperties()
+		                   .FirstOrDefaultAsync(p => p.Id == id) ??
+		           throw GracefulException.NotFound("User not found");
+
+		return Ok(UserRenderer.RenderOne(user));
 	}
 
 	[HttpGet("notes")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TimelineResponse))]
+	[Authenticate]
+	[LinkPagination(20, 80)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NoteResponse>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUserNotes(string id)
+	public async Task<IActionResult> GetUserNotes(string id, PaginationQuery pq)
 	{
-		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id);
-		if (user == null) return NotFound();
+		var localUser = HttpContext.GetUser();
+		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id) ??
+		           throw GracefulException.NotFound("User not found");
 
-		var limit = 10;
-		var notes = db.Notes
-		              .Include(p => p.User)
-		              .Where(p => p.UserId == id)
-		              .HasVisibility(Note.NoteVisibility.Public)
-		              .OrderByDescending(p => p.Id)
-		              .Take(limit)
-		              .ToList();
+		var notes = await db.Notes
+		                    .IncludeCommonProperties()
+		                    .Where(p => p.User == user)
+		                    .EnsureVisibleFor(localUser)
+		                    .PrecomputeVisibilities(localUser)
+		                    .Paginate(pq, ControllerContext)
+		                    .ToListAsync();
 
-		return Ok(TimelineRenderer.Render(notes, limit));
+		return Ok(NoteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility()));
 	}
 }
