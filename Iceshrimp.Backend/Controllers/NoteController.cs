@@ -1,8 +1,10 @@
 using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +15,7 @@ namespace Iceshrimp.Backend.Controllers;
 [Produces("application/json")]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/note")]
-public class NoteController(DatabaseContext db) : Controller
+public class NoteController(DatabaseContext db, NoteService noteSvc) : Controller
 {
 	[HttpGet("{id}")]
 	[Authenticate]
@@ -30,5 +32,27 @@ public class NoteController(DatabaseContext db) : Controller
 		           throw GracefulException.NotFound("User not found");
 
 		return Ok(NoteRenderer.RenderOne(note.EnforceRenoteReplyVisibility()));
+	}
+
+	[HttpPost]
+	[Authenticate, Authorize]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteResponse))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> CreateNote([FromBody] NoteCreateRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var reply = request.ReplyId != null
+			? await db.Notes.Where(p => p.Id == request.ReplyId)
+			          .IncludeCommonProperties()
+			          .EnsureVisibleFor(user)
+			          .FirstOrDefaultAsync() ??
+			  throw GracefulException.BadRequest("Reply target is nonexistent or inaccessible")
+			: null;
+
+		var note = await noteSvc.CreateNoteAsync(user, Note.NoteVisibility.Public, request.Text, request.Cw, reply);
+
+		return Ok(NoteRenderer.RenderOne(note));
 	}
 }
