@@ -136,55 +136,37 @@ public class GracefulException(
 	public GracefulException(string message, string? details = null) :
 		this(HttpStatusCode.InternalServerError, HttpStatusCode.InternalServerError.ToString(), message, details) { }
 
-	public static GracefulException UnprocessableEntity(string message, string? details = null)
-	{
-		return new GracefulException(HttpStatusCode.UnprocessableEntity, message, details);
-	}
+	public static GracefulException UnprocessableEntity(string message, string? details = null) =>
+		new(HttpStatusCode.UnprocessableEntity, message, details);
 
-	public static GracefulException Forbidden(string message, string? details = null)
-	{
-		return new GracefulException(HttpStatusCode.Forbidden, message, details);
-	}
+	public static GracefulException Forbidden(string message, string? details = null) =>
+		new(HttpStatusCode.Forbidden, message, details);
 
-	public static GracefulException Unauthorized(string message, string? details = null)
-	{
-		return new GracefulException(HttpStatusCode.Unauthorized, message, details);
-	}
+	public static GracefulException Unauthorized(string message, string? details = null) =>
+		new(HttpStatusCode.Unauthorized, message, details);
 
-	public static GracefulException NotFound(string message, string? details = null)
-	{
-		return new GracefulException(HttpStatusCode.NotFound, message, details);
-	}
+	public static GracefulException NotFound(string message, string? details = null) =>
+		new(HttpStatusCode.NotFound, message, details);
 
-	public static GracefulException BadRequest(string message, string? details = null)
-	{
-		return new GracefulException(HttpStatusCode.BadRequest, message, details);
-	}
+	public static GracefulException BadRequest(string message, string? details = null) =>
+		new(HttpStatusCode.BadRequest, message, details);
 
-	public static GracefulException RequestTimeout(string message, string? details = null)
-	{
-		return new GracefulException(HttpStatusCode.RequestTimeout, message, details);
-	}
+	public static GracefulException RequestTimeout(string message, string? details = null) =>
+		new(HttpStatusCode.RequestTimeout, message, details);
 
-	public static GracefulException RecordNotFound()
-	{
-		return new GracefulException(HttpStatusCode.NotFound, "Record not found");
-	}
+	public static GracefulException RecordNotFound() => new(HttpStatusCode.NotFound, "Record not found");
 
-	public static GracefulException MisdirectedRequest()
-	{
-		return new GracefulException(HttpStatusCode.MisdirectedRequest, HttpStatusCode.MisdirectedRequest.ToString(),
-		                             "This server is not configured to respond to this request.", null, true, true);
-	}
+	public static GracefulException MisdirectedRequest() =>
+		new(HttpStatusCode.MisdirectedRequest, HttpStatusCode.MisdirectedRequest.ToString(),
+		    "This server is not configured to respond to this request.", null, true, true);
 
 	/// <summary>
 	///     This is intended for cases where no error occured, but the request needs to be aborted early (e.g. WebFinger
 	///     returning 410 Gone)
 	/// </summary>
-	public static GracefulException Accepted(string message)
-	{
-		return new GracefulException(HttpStatusCode.Accepted, message);
-	}
+	public static GracefulException Accepted(string message) =>
+		new(HttpStatusCode.Accepted, HttpStatusCode.Accepted.ToString(),
+		    message, supressLog: true);
 }
 
 public enum ExceptionVerbosity
