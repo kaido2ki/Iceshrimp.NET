@@ -68,6 +68,18 @@ public class ActivityHandlerService(
 			}
 			case ASDelete:
 			{
+				if (activity.Object is ASActor actor)
+				{
+					if (!await db.Users.AnyAsync(p => p.Uri == actor.Id))
+						return;
+
+					if (activity.Actor.Id != actor.Id)
+						throw GracefulException.UnprocessableEntity("Refusing to delete user: actor doesn't match");
+
+					//TODO: handle user deletes
+					throw new NotImplementedException("User deletes aren't supported yet");
+				}
+
 				if (activity.Object is not ASTombstone tombstone)
 					throw GracefulException.UnprocessableEntity("Delete activity object is invalid");
 				if (await db.Notes.AnyAsync(p => p.Uri == tombstone.Id))
