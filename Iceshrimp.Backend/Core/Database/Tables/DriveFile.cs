@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
