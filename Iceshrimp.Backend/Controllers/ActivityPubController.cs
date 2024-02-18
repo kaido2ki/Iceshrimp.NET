@@ -54,6 +54,35 @@ public class ActivityPubController : Controller
 	{
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
+		if (user.Host == null) return user.Uri != null ? RedirectPermanent(user.Uri) : NotFound();
+		var rendered  = await userRenderer.RenderAsync(user);
+		var compacted = LdHelpers.Compact(rendered);
+		return Ok(compacted);
+	}
+
+	[HttpGet("/@{acct}")]
+	[AuthorizedFetch]
+	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
+	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> GetUserByUsername(
+		string acct, [FromServices] DatabaseContext db, [FromServices] ActivityPub.UserRenderer userRenderer
+	)
+	{
+		var split = acct.Split('@');
+		if (acct.Split('@').Length > 2) return NotFound();
+		if (split.Length == 2)
+		{
+			var remoteUser = await db.Users.IncludeCommonProperties()
+			                         .FirstOrDefaultAsync(p => p.UsernameLower == split[0].ToLowerInvariant() &&
+			                                                   p.Host == split[1].ToLowerInvariant().ToPunycode());
+			return remoteUser?.Uri != null ? RedirectPermanent(remoteUser.Uri) : NotFound();
+		}
+
+		var user = await db.Users.IncludeCommonProperties()
+		                   .FirstOrDefaultAsync(p => p.UsernameLower == acct.ToLowerInvariant() && p.Host == null);
+		if (user == null) return NotFound();
 		var rendered  = await userRenderer.RenderAsync(user);
 		var compacted = LdHelpers.Compact(rendered);
 		return Ok(compacted);
