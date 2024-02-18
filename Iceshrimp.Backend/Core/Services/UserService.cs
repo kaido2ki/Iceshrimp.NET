@@ -317,4 +317,26 @@ public class UserService(
 		await db.SaveChangesAsync();
 		return key;
 	}
+
+	public async Task DeleteUserAsync(ASActor actor)
+	{
+		var user = await db.Users
+		                   .Include(user => user.Avatar)
+		                   .Include(user => user.Banner)
+		                   .FirstOrDefaultAsync(p => p.Uri == actor.Id && p.Host != null);
+
+		if (user == null)
+		{
+			logger.LogDebug("User {uri} is unknown, skipping delete task", actor.Id);
+			return;
+		}
+
+		db.Remove(user);
+		await db.SaveChangesAsync();
+
+		if (user.Avatar != null)
+			await driveSvc.RemoveFile(user.Avatar);
+		if (user.Banner != null)
+			await driveSvc.RemoveFile(user.Banner);
+	}
 }

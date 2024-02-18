@@ -78,8 +78,8 @@ public class ActivityHandlerService(
 					if (activity.Actor.Id != actor.Id)
 						throw GracefulException.UnprocessableEntity("Refusing to delete user: actor doesn't match");
 
-					//TODO: handle user deletes
-					throw new NotImplementedException("User deletes aren't supported yet");
+					await userSvc.DeleteUserAsync(actor);
+					return;
 				}
 
 				if (activity.Object is not ASTombstone tombstone)
@@ -95,8 +95,7 @@ public class ActivityHandlerService(
 					if (tombstone.Id != activity.Actor.Id)
 						throw GracefulException.UnprocessableEntity("Refusing to delete user: actor doesn't match");
 
-					//TODO: handle user deletes
-					throw new NotImplementedException("User deletes aren't supported yet");
+					await userSvc.DeleteUserAsync(activity.Actor);
 				}
 
 				logger.LogDebug("Delete activity object {id} is unknown, skipping", tombstone.Id);
