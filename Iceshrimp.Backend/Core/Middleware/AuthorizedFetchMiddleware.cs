@@ -47,7 +47,7 @@ public class AuthorizedFetchMiddleware(
 
 			UserPublickey? key      = null;
 			var            verified = false;
-			
+
 			logger.LogTrace("Processing authorized fetch request for {path}", request.Path);
 
 			try
@@ -107,10 +107,9 @@ public class AuthorizedFetchMiddleware(
 				logger.LogDebug("Error validating HTTP signature: {error}", e.Message);
 			}
 
-			logger.LogDebug("Trying LD signature next...");
-
 			if (!verified && request is { ContentType: not null, ContentLength: > 0 })
 			{
+				logger.LogDebug("Trying LD signature next...");
 				try
 				{
 					var contentType = new MediaTypeHeaderValue(request.ContentType);
