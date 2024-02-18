@@ -17,7 +17,7 @@ public static class QueryableExtensions
 {
 	public static IQueryable<T> Paginate<T>(
 		this IQueryable<T> query,
-		PaginationQuery pq,
+		MastodonPaginationQuery pq,
 		int defaultLimit,
 		int maxLimit
 	) where T : IEntity

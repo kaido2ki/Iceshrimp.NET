@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
-public class PaginationQuery
+public class MastodonPaginationQuery
 {
 	[FromQuery(Name = "max_id")]   public string? MaxId   { get; set; }
 	[FromQuery(Name = "since_id")] public string? SinceId { get; set; }

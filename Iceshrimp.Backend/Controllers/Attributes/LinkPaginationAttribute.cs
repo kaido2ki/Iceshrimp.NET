@@ -26,7 +26,7 @@ public class LinkPaginationAttribute(int defaultLimit, int maxLimit) : ActionFil
 	{
 		if (actionArguments.Count == 0) return;
 
-		var query = actionArguments.Values.OfType<PaginationQuery>().FirstOrDefault();
+		var query = actionArguments.Values.OfType<MastodonPaginationQuery>().FirstOrDefault();
 		if (query == null) return;
 
 		if (context.Result is not OkObjectResult result) return;

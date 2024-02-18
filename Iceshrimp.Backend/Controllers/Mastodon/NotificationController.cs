@@ -27,7 +27,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<NotificationEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetNotifications(PaginationQuery query)
+	public async Task<IActionResult> GetNotifications(MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var res = await db.Notifications

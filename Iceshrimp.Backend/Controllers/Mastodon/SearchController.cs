@@ -35,7 +35,7 @@ public class SearchController(
 	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchSchemas.SearchResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> Search(SearchSchemas.SearchRequest search, PaginationQuery pagination)
+	public async Task<IActionResult> Search(SearchSchemas.SearchRequest search, MastodonPaginationQuery pagination)
 	{
 		if (search.Query == null)
 			throw GracefulException.BadRequest("Query is missing or invalid");
@@ -54,7 +54,7 @@ public class SearchController(
 	                 Justification = "Inspection doesn't know about the Projectable attribute")]
 	private async Task<List<AccountEntity>> SearchUsersAsync(
 		SearchSchemas.SearchRequest search,
-		PaginationQuery pagination
+		MastodonPaginationQuery pagination
 	)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -122,7 +122,7 @@ public class SearchController(
 	                 Justification = "Inspection doesn't know about the Projectable attribute")]
 	private async Task<List<StatusEntity>> SearchNotesAsync(
 		SearchSchemas.SearchRequest search,
-		PaginationQuery pagination
+		MastodonPaginationQuery pagination
 	)
 	{
 		var user = HttpContext.GetUserOrFail();

@@ -279,7 +279,7 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetUserStatuses(
 		string id, AccountSchemas.AccountStatusesRequest request,
-		PaginationQuery query
+		MastodonPaginationQuery query
 	)
 	{
 		var user    = HttpContext.GetUserOrFail();
@@ -302,7 +302,7 @@ public class AccountController(
 	[LinkPagination(40, 80)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetUserFollowers(string id, PaginationQuery query)
+	public async Task<IActionResult> GetUserFollowers(string id, MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUser();
 		var account = await db.Users
@@ -334,7 +334,7 @@ public class AccountController(
 	[LinkPagination(40, 80)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetUserFollowing(string id, PaginationQuery query)
+	public async Task<IActionResult> GetUserFollowing(string id, MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUser();
 		var account = await db.Users
@@ -367,7 +367,7 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetFollowRequests(PaginationQuery query)
+	public async Task<IActionResult> GetFollowRequests(MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var res = await db.FollowRequests
