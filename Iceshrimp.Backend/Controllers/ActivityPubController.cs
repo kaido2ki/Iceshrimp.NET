@@ -1,4 +1,3 @@
-using System.Net.Mime;
 using System.Text;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Schemas;
@@ -17,12 +16,12 @@ namespace Iceshrimp.Backend.Controllers;
 [ApiController]
 [Tags("ActivityPub")]
 [UseNewtonsoftJson]
+[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 public class ActivityPubController : Controller
 {
 	[HttpGet("/notes/{id}")]
 	[AuthorizedFetch]
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
-	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASNote))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
@@ -45,7 +44,6 @@ public class ActivityPubController : Controller
 	[HttpGet("/users/{id}")]
 	[AuthorizedFetch]
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
-	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> GetUser(
@@ -63,7 +61,6 @@ public class ActivityPubController : Controller
 	[HttpGet("/@{acct}")]
 	[AuthorizedFetch]
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
-	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> GetUserByUsername(
@@ -93,7 +90,7 @@ public class ActivityPubController : Controller
 	[AuthorizedFetch(true)]
 	[EnableRequestBuffering(1024 * 1024)]
 	[Produces("text/plain")]
-	[Consumes(MediaTypeNames.Application.Json)]
+	[Consumes("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 	public async Task<IActionResult> Inbox(string? id, [FromServices] QueueService queues)
 	{
 		using var reader = new StreamReader(Request.Body, Encoding.UTF8, true, 1024, true);

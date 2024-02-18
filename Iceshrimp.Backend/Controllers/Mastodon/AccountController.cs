@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
@@ -21,7 +22,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableCors("mastodon")]
 [Authenticate]
 [EnableRateLimiting("sliding")]
-[Produces("application/json")]
+[Produces(MediaTypeNames.Application.Json)]
 public class AccountController(
 	DatabaseContext db,
 	UserRenderer userRenderer,
@@ -273,7 +274,6 @@ public class AccountController(
 	[HttpGet("{id}/statuses")]
 	[Authorize("read:statuses")]
 	[LinkPagination(20, 40)]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]

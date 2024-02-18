@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
@@ -18,13 +19,12 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Authenticate]
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
-[Produces("application/json")]
+[Produces(MediaTypeNames.Application.Json)]
 public class NotificationController(DatabaseContext db, NotificationRenderer notificationRenderer) : Controller
 {
 	[HttpGet]
 	[Authorize("read:notifications")]
 	[LinkPagination(40, 80)]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<NotificationEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetNotifications(MastodonPaginationQuery query)

@@ -1,11 +1,12 @@
 using System.Net;
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Iceshrimp.Backend.Controllers;
 
-[Produces("application/json")]
+[Produces(MediaTypeNames.Application.Json)]
 public class FallbackController : Controller
 {
 	[ProducesResponseType(StatusCodes.Status501NotImplemented, Type = typeof(ErrorResponse))]

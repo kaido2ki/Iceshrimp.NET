@@ -1,4 +1,5 @@
 using System.IO.Hashing;
+using System.Net.Mime;
 using System.Text;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,8 @@ namespace Iceshrimp.Backend.Controllers;
 [ApiController]
 [EnableCors("drive")]
 [Route("/identicon/{id}")]
+[Produces(MediaTypeNames.Image.Png)]
+[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
 public class IdenticonController : Controller
 {
 	[HttpGet]

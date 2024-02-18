@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
@@ -12,13 +13,14 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
-[Produces("application/json")]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/note")]
+[Produces(MediaTypeNames.Application.Json)]
 public class NoteController(DatabaseContext db, NoteService noteSvc) : Controller
 {
 	[HttpGet("{id}")]
 	[Authenticate]
+	[Produces(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> GetNote(string id)
@@ -36,10 +38,11 @@ public class NoteController(DatabaseContext db, NoteService noteSvc) : Controlle
 
 	[HttpPost]
 	[Authenticate, Authorize]
+	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> CreateNote([FromBody] NoteCreateRequest request)
+	public async Task<IActionResult> CreateNote(NoteCreateRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 

@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
@@ -20,14 +21,13 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [LinkPagination(20, 40)]
 [EnableRateLimiting("sliding")]
 [EnableCors("mastodon")]
-[Produces("application/json")]
+[Produces(MediaTypeNames.Application.Json)]
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, IDistributedCache cache) : Controller
 {
 	[Authorize("read:statuses")]
 	[HttpGet("home")]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
 	public async Task<IActionResult> GetHomeTimeline(MastodonPaginationQuery query)
 	{
@@ -50,7 +50,6 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, I
 
 	[Authorize("read:statuses")]
 	[HttpGet("public")]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
 	public async Task<IActionResult> GetPublicTimeline(MastodonPaginationQuery query)
 	{

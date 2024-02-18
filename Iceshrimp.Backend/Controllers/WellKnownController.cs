@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -17,7 +18,7 @@ namespace Iceshrimp.Backend.Controllers;
 public class WellKnownController(IOptions<Config.InstanceSection> config, DatabaseContext db) : Controller
 {
 	[HttpGet("webfinger")]
-	[Produces("application/json")]
+	[Produces(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WebFingerResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> WebFinger([FromQuery] string resource)
@@ -76,7 +77,7 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 	}
 
 	[HttpGet("nodeinfo")]
-	[Produces("application/json")]
+	[Produces(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NodeInfoIndexResponse))]
 	public IActionResult NodeInfo()
 	{
@@ -102,11 +103,12 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 
 	[HttpGet("host-meta")]
 	[Produces("application/xrd+xml")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
 	public IActionResult HostMeta()
 	{
 		//TODO: use a proper xml serializer for this
 		return
-			Content($$"""<?xml version="1.0" encoding="UTF-8"?><XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0"><Link rel="lrdd" type="application/xrd+xml" template="https://{{config.Value.WebDomain}}/.well-known/webfinger?resource={uri}"/></XRD>""");
+			Content($$"""<?xml version="1.0" encoding="UTF-8"?><XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0"><Link rel="lrdd" type="application/xrd+xml" template="https://{{config.Value.WebDomain}}/.well-known/webfinger?resource={uri}"/></XRD>""",
+			        "application/xrd+xml");
 	}
 }

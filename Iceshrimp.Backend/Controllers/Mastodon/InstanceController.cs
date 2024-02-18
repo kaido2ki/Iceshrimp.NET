@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
@@ -13,11 +14,10 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [MastodonApiController]
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
-[Produces("application/json")]
+[Produces(MediaTypeNames.Application.Json)]
 public class InstanceController(DatabaseContext db) : Controller
 {
 	[HttpGet("/api/v1/instance")]
-	[Produces("application/json")]
 	public async Task<IActionResult> GetInstanceInfo([FromServices] IOptionsSnapshot<Config> config)
 	{
 		var userCount     = await db.Users.LongCountAsync(p => p.Host == null);

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -16,6 +17,7 @@ namespace Iceshrimp.Backend.Controllers;
 [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
 [SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor",
                  Justification = "We only have a DatabaseContext in our DI pool, not the base type")]
+[Produces(MediaTypeNames.Application.Json)]
 public class AdminController(DatabaseContext db) : Controller
 {
 	[HttpPost("invites/generate")]

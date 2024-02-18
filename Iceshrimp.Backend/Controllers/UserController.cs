@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
@@ -11,9 +12,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
-[Produces("application/json")]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/user/{id}")]
+[Produces(MediaTypeNames.Application.Json)]
 public class UserController(DatabaseContext db) : Controller
 {
 	[HttpGet]

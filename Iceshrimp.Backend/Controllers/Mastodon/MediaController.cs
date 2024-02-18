@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
@@ -14,7 +15,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Authorize("write:media")]
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
-[Produces("application/json")]
+[Produces(MediaTypeNames.Application.Json)]
 [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AttachmentEntity))]
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]

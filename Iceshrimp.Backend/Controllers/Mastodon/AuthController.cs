@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Core.Database;
@@ -15,12 +16,11 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [MastodonApiController]
 [EnableRateLimiting("sliding")]
 [EnableCors("mastodon")]
-[Produces("application/json")]
+[Produces(MediaTypeNames.Application.Json)]
 public class AuthController(DatabaseContext db) : Controller
 {
 	[HttpGet("/api/v1/apps/verify_credentials")]
 	[Authenticate]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.VerifyAppCredentialsResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	public IActionResult VerifyAppCredentials()
@@ -39,7 +39,6 @@ public class AuthController(DatabaseContext db) : Controller
 	[HttpPost("/api/v1/apps")]
 	[EnableRateLimiting("strict")]
 	[ConsumesHybrid]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.RegisterAppResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> RegisterApp([FromHybrid] AuthSchemas.RegisterAppRequest request)
@@ -90,7 +89,6 @@ public class AuthController(DatabaseContext db) : Controller
 
 	[HttpPost("/oauth/token")]
 	[ConsumesHybrid]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.OauthTokenResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetOauthToken([FromHybrid] AuthSchemas.OauthTokenRequest request)
@@ -128,7 +126,6 @@ public class AuthController(DatabaseContext db) : Controller
 
 	[HttpPost("/oauth/revoke")]
 	[ConsumesHybrid]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]

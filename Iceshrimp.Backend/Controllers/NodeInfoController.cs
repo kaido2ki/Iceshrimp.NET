@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
@@ -12,11 +13,11 @@ namespace Iceshrimp.Backend.Controllers;
 [Tags("Federation")]
 [Route("/nodeinfo")]
 [EnableCors("well-known")]
+[Produces(MediaTypeNames.Application.Json)]
 public class NodeInfoController(IOptions<Config.InstanceSection> config, DatabaseContext db) : Controller
 {
 	[HttpGet("2.1")]
 	[HttpGet("2.0")]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WebFingerResponse))]
 	public async Task<IActionResult> GetNodeInfo()
 	{

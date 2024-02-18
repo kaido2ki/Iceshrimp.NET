@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Mime;
 using System.Text.RegularExpressions;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
@@ -20,7 +21,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Authenticate]
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
-[Produces("application/json")]
+[Produces(MediaTypeNames.Application.Json)]
 public class SearchController(
 	DatabaseContext db,
 	NoteRenderer noteRenderer,
@@ -32,7 +33,6 @@ public class SearchController(
 	[HttpGet("/api/v2/search")]
 	[Authorize("read:search")]
 	[LinkPagination(20, 40)]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchSchemas.SearchResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> Search(SearchSchemas.SearchRequest search, MastodonPaginationQuery pagination)

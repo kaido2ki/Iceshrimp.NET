@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
@@ -19,7 +20,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Authenticate]
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
-[Produces("application/json")]
+[Produces(MediaTypeNames.Application.Json)]
 public class StatusController(
 	DatabaseContext db,
 	NoteRenderer noteRenderer,
@@ -29,7 +30,6 @@ public class StatusController(
 {
 	[HttpGet("{id}")]
 	[Authenticate("read:statuses")]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetNote(string id)
@@ -48,7 +48,6 @@ public class StatusController(
 
 	[HttpGet("{id}/context")]
 	[Authenticate("read:statuses")]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetStatusContext(string id)
@@ -80,7 +79,6 @@ public class StatusController(
 
 	[HttpPost("{id}/favourite")]
 	[Authorize("write:favourites")]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
@@ -100,7 +98,6 @@ public class StatusController(
 
 	[HttpPost("{id}/unfavourite")]
 	[Authorize("write:favourites")]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
@@ -120,7 +117,6 @@ public class StatusController(
 
 	[HttpPost]
 	[Authorize("write:statuses")]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> PostNote([FromHybrid] StatusSchemas.PostStatusRequest request)
@@ -183,7 +179,6 @@ public class StatusController(
 
 	[HttpPut("{id}")]
 	[Authorize("write:statuses")]
-	[Produces("application/json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> EditNote(string id, [FromHybrid] StatusSchemas.EditStatusRequest request)
