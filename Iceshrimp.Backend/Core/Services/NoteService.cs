@@ -198,6 +198,30 @@ public class NoteService(
 		return note;
 	}
 
+	public async Task DeleteNoteAsync(Note note)
+	{
+		note.User.NotesCount--;
+		db.Update(note.User);
+		db.Remove(note);
+		eventSvc.RaiseNoteDeleted(this, note);
+		await db.SaveChangesAsync();
+
+		if (note.UserHost != null)
+			return;
+
+		var recipients = await db.Users.Where(p => note.Mentions.Concat(note.VisibleUserIds).Distinct().Contains(p.Id))
+		                         .Select(p => new User { Host = p.Host, Inbox = p.Inbox })
+		                         .ToListAsync();
+
+		var actor    = userRenderer.RenderLite(note.User);
+		var activity = activityRenderer.RenderDelete(actor, new ASTombstone { Id = note.GetPublicUri(config.Value) });
+
+		if (note.Visibility == Note.NoteVisibility.Specified)
+			await deliverSvc.DeliverToAsync(activity, note.User, recipients.ToArray());
+		else
+			await deliverSvc.DeliverToFollowersAsync(activity, note.User, recipients);
+	}
+
 	public async Task DeleteNoteAsync(ASTombstone note, ASActor actor)
 	{
 		// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataQuery (it doesn't know about IncludeCommonProperties())

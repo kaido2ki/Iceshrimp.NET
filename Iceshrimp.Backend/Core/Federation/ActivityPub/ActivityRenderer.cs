@@ -34,6 +34,11 @@ public class ActivityRenderer(
 		Cc     = obj.Cc
 	};
 
+	public ASDelete RenderDelete(ASActor actor, ASObject obj) => new()
+	{
+		Id = $"{obj.Id}#Delete", Actor = actor.Compact(), Object = obj
+	};
+
 	public ASAccept RenderAccept(User followee, User follower, string requestId) => new()
 	{
 		Id     = GenerateActivityId(),

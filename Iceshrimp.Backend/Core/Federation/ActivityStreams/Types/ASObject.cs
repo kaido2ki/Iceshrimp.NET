@@ -77,7 +77,10 @@ public class ASObject : ASObjectBase
 	}
 }
 
-public class ASTombstone : ASObject;
+public class ASTombstone : ASObject
+{
+	public ASTombstone() => Type = Types.Tombstone;
+}
 
 public sealed class StringListSingleConverter : ASSerializer.ListSingleObjectConverter<string>;
 

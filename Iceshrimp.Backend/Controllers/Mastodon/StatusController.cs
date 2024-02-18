@@ -181,6 +181,7 @@ public class StatusController(
 	[Authorize("write:statuses")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> EditNote(string id, [FromHybrid] StatusSchemas.EditStatusRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -199,6 +200,25 @@ public class StatusController(
 
 		note = await noteSvc.UpdateNoteAsync(note, request.Text, request.Cw, attachments);
 		var res = await noteRenderer.RenderAsync(note, user);
+
+		return Ok(res);
+	}
+
+	[HttpDelete("{id}")]
+	[Authorize("write:statuses")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
+	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> DeleteNote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
+		           throw GracefulException.RecordNotFound();
+		if (user.Id != note.UserId)
+			throw GracefulException.RecordNotFound();
+
+		var res = await noteRenderer.RenderAsync(note, user);
+		await noteSvc.DeleteNoteAsync(note);
 
 		return Ok(res);
 	}
