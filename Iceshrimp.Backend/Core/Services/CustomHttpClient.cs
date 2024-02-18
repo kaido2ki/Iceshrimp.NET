@@ -3,10 +3,11 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class HttpClientWithUserAgent : HttpClient
+public class CustomHttpClient : HttpClient
 {
-	public HttpClientWithUserAgent(IOptions<Config.InstanceSection> options)
+	public CustomHttpClient(IOptions<Config.InstanceSection> options)
 	{
 		DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", options.Value.UserAgent);
+		Timeout = TimeSpan.FromSeconds(30);
 	}
 }

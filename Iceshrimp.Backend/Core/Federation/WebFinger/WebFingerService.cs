@@ -26,8 +26,11 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc)
 		(query, var proto, var domain) = ParseQuery(query);
 		var webFingerUrl = await GetWebFingerUrlAsync(query, proto, domain);
 
+		using var cts = new CancellationTokenSource();
+		cts.CancelAfter(TimeSpan.FromSeconds(10));
+
 		var req = httpRqSvc.Get(webFingerUrl, ["application/jrd+json", "application/json"]);
-		var res = await client.SendAsync(req);
+		var res = await client.SendAsync(req, cts.Token);
 
 		if (res.StatusCode == HttpStatusCode.Gone)
 			throw GracefulException.Accepted("The remote user no longer exists.");
@@ -36,7 +39,7 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc)
 		if (res.Content.Headers.ContentType?.MediaType is not "application/jrd+json" and not "application/json")
 			return null;
 
-		return await res.Content.ReadFromJsonAsync<WebFingerResponse>();
+		return await res.Content.ReadFromJsonAsync<WebFingerResponse>(cancellationToken: cts.Token);
 	}
 
 	private static (string query, string proto, string domain) ParseQuery(string query)
