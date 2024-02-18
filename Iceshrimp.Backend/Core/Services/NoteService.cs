@@ -272,7 +272,7 @@ public class NoteService(
 			Uri        = note.Id,
 			Url        = note.Url?.Id, //FIXME: this doesn't seem to work yet
 			Text       = note.MkContent ?? await mfmConverter.FromHtmlAsync(note.Content, mentions),
-			Cw         = await mfmConverter.FromHtmlAsync(note.Summary), //TODO: mentions parsing?
+			Cw         = note.Summary,
 			UserId     = user.Id,
 			CreatedAt  = createdAt,
 			UserHost   = user.Host,
@@ -363,7 +363,7 @@ public class NoteService(
 
 		mentionedLocalUserIds = mentionedLocalUserIds.Except(previousMentionedLocalUserIds).ToList();
 		dbNote.Text           = note.MkContent ?? await mfmConverter.FromHtmlAsync(note.Content, mentions);
-		dbNote.Cw             = await mfmConverter.FromHtmlAsync(note.Summary); //TODO: mentions parsing?
+		dbNote.Cw             = note.Summary;
 
 		if (dbNote.Cw is { Length: > 100000 })
 			throw GracefulException.UnprocessableEntity("Summary cannot be longer than 100.000 characters");
@@ -531,6 +531,7 @@ public class NoteService(
 			logger.LogDebug("Failed to fetch note, skipping");
 			return null;
 		}
+
 		if (fetchedNote.AttributedTo is not [{ Id: not null } attrTo])
 		{
 			logger.LogDebug("Invalid Note.AttributedTo, skipping");

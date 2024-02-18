@@ -96,9 +96,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			Content = note.Text != null
 				? await mfmConverter.ToHtmlAsync(note.Text, mentions, note.UserHost)
 				: null,
-			Summary = note.Cw != null
-				? await mfmConverter.ToHtmlAsync(note.Cw, mentions, note.UserHost)
-				: null,
+			Summary = note.Cw,
 			Source = note.Text != null
 				? new ASNoteSource { Content = note.Text, MediaType = "text/x.misskeymarkdown" }
 				: null
