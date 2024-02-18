@@ -30,7 +30,8 @@ public class Notification : IEntity
 		[PgName("followRequestAccepted")] FollowRequestAccepted,
 		[PgName("groupInvited")]          GroupInvited,
 		[PgName("app")]                   App,
-		[PgName("edit")]                  Edit
+		[PgName("edit")]                  Edit,
+		[PgName("bite")]                  Bite
 	}
 
 	/// <summary>
@@ -62,6 +63,7 @@ public class Notification : IEntity
 	[Column("type")] public NotificationType Type { get; set; }
 
 	[Column("noteId")] [StringLength(32)] public string? NoteId { get; set; }
+	[Column("biteId")] [StringLength(32)] public string? BiteId { get; set; }
 
 	[Column("reaction")]
 	[StringLength(128)]
@@ -104,6 +106,9 @@ public class Notification : IEntity
 	[ForeignKey("NoteId")]
 	[InverseProperty(nameof(Tables.Note.Notifications))]
 	public virtual Note? Note { get; set; }
+	
+	[ForeignKey("BiteId")]
+	public virtual Bite? Bite { get; set; }
 
 	[ForeignKey("NotifieeId")]
 	[InverseProperty(nameof(User.NotificationNotifiees))]

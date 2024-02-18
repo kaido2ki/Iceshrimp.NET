@@ -2,6 +2,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using JI = Newtonsoft.Json.JsonIgnoreAttribute;
+using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
@@ -19,6 +20,7 @@ public class ASActivity : ASObject
 	{
 		private const string Ns = Constants.ActivityStreamsNs;
 
+		// Supported AS 2.0 activities
 		public const string Create   = $"{Ns}#Create";
 		public const string Update   = $"{Ns}#Update";
 		public const string Delete   = $"{Ns}#Delete";
@@ -28,6 +30,9 @@ public class ASActivity : ASObject
 		public const string Reject   = $"{Ns}#Reject";
 		public const string Undo     = $"{Ns}#Undo";
 		public const string Like     = $"{Ns}#Like";
+
+		// Extensions
+		public const string Bite = "https://ns.mia.jetzt/as#Bite";
 	}
 }
 
@@ -113,6 +118,20 @@ public class ASUpdate : ASActivity
 	}
 }
 
-//TODO: add the rest
+// ASActivity extension as defined on https://ns.mia.jetzt/as/#Bite
+public class ASBite : ASActivity
+{
+	public ASBite() => Type = Types.Bite;
 
-public sealed class ASActivityConverter : ASSerializer.ListSingleObjectConverter<ASActivity>;
+	[J($"{Constants.ActivityStreamsNs}#target")]
+	[JC(typeof(ASObjectBaseConverter))]
+	public required ASObjectBase Target { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#to")]
+	[JC(typeof(ASObjectBaseConverter))]
+	public ASObjectBase? To { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#published")]
+	[JC(typeof(VC))]
+	public DateTime? PublishedAt { get; set; }
+}

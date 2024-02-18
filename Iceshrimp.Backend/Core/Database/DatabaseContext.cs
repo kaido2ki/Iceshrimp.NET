@@ -24,6 +24,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<App>                  Apps                  { get; init; } = null!;
 	public virtual DbSet<AttestationChallenge> AttestationChallenges { get; init; } = null!;
 	public virtual DbSet<AuthSession>          AuthSessions          { get; init; } = null!;
+	public virtual DbSet<Bite>                 Bites                 { get; init; } = null!;
 	public virtual DbSet<Blocking>             Blockings             { get; init; } = null!;
 	public virtual DbSet<Channel>              Channels              { get; init; } = null!;
 	public virtual DbSet<ChannelFollowing>     ChannelFollowings     { get; init; } = null!;
@@ -245,6 +246,14 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.HasOne(d => d.User)
 			      .WithMany(p => p.AuthSessions)
 			      .OnDelete(DeleteBehavior.Cascade);
+		});
+
+		modelBuilder.Entity<Bite>(entity =>
+		{
+			entity.HasOne(d => d.User).WithMany().OnDelete(DeleteBehavior.Cascade);
+			entity.HasOne(d => d.TargetUser).WithMany().OnDelete(DeleteBehavior.Cascade);
+			entity.HasOne(d => d.TargetNote).WithMany().OnDelete(DeleteBehavior.Cascade);
+			entity.HasOne(d => d.TargetBite).WithMany().OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Blocking>(entity =>

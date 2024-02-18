@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -14,9 +15,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20240218040148_AddBites")]
+    partial class AddBites
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -4968,18 +4971,15 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Bite", "TargetBite")
                         .WithMany()
-                        .HasForeignKey("TargetBiteId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("TargetBiteId");
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Note", "TargetNote")
                         .WithMany()
-                        .HasForeignKey("TargetNoteId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("TargetNoteId");
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "TargetUser")
                         .WithMany()
-                        .HasForeignKey("TargetUserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("TargetUserId");
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "User")
                         .WithMany()

@@ -161,4 +161,22 @@ public class NotificationService(
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotification(this, notification);
 	}
+
+	public async Task GenerateBiteNotification(Bite bite)
+	{
+		var notification = new Notification
+		{
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			Notifiee = (bite.TargetUser ?? bite.TargetNote?.User ?? bite.TargetBite?.User) ??
+			           throw new InvalidOperationException("Null checks say one of these must not be null"),
+			Notifier = bite.User,
+			Bite     = bite,
+			Type     = Notification.NotificationType.Bite
+		};
+
+		await db.AddAsync(notification);
+		await db.SaveChangesAsync();
+		eventSvc.RaiseNotification(this, notification);
+	}
 }

@@ -28,7 +28,8 @@ public class ActivityHandlerService(
 	FederationControlService federationCtrl,
 	ObjectResolver resolver,
 	NotificationService notificationSvc,
-	ActivityDeliverService deliverSvc
+	ActivityDeliverService deliverSvc,
+	ObjectResolver objectResolver
 )
 {
 	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId, string? authFetchUserId)
@@ -38,7 +39,7 @@ public class ActivityHandlerService(
 			throw GracefulException.UnprocessableEntity("Cannot perform activity as actor 'null'");
 		if (await federationCtrl.ShouldBlockAsync(activity.Actor.Id))
 			throw GracefulException.UnprocessableEntity("Instance is blocked");
-		if (activity.Object == null)
+		if (activity.Object == null && activity is not ASBite)
 			throw GracefulException.UnprocessableEntity("Activity object is null");
 
 		var resolvedActor = await userResolver.ResolveAsync(activity.Actor.Id);
@@ -51,8 +52,9 @@ public class ActivityHandlerService(
 				.UnprocessableEntity($"Authorized fetch user id {authFetchUserId} doesn't match resolved actor id {resolvedActor.Id}");
 
 		// Resolve object & children
-		activity.Object = await resolver.ResolveObject(activity.Object) ??
-		                  throw GracefulException.UnprocessableEntity("Failed to resolve activity object");
+		if (activity.Object != null)
+			activity.Object = await resolver.ResolveObject(activity.Object) ??
+			                  throw GracefulException.UnprocessableEntity("Failed to resolve activity object");
 
 		//TODO: validate inboxUserId
 
@@ -165,10 +167,69 @@ public class ActivityHandlerService(
 						throw GracefulException.UnprocessableEntity("Update activity object is invalid");
 				}
 			}
-			default:
+			case ASBite bite:
 			{
-				throw new NotImplementedException($"Activity type {activity.Type} is unknown");
+				var target = await objectResolver.ResolveObject(bite.Target);
+				var dbBite = target switch
+				{
+					ASActor targetActor => new Bite
+					{
+						Id         = IdHelpers.GenerateSlowflakeId(bite.PublishedAt),
+						CreatedAt  = bite.PublishedAt ?? DateTime.UtcNow,
+						Uri        = bite.Id,
+						User       = resolvedActor,
+						UserHost   = resolvedActor.Host,
+						TargetUser = await userResolver.ResolveAsync(targetActor.Id)
+					},
+					ASNote targetNote => new Bite
+					{
+						Id         = IdHelpers.GenerateSlowflakeId(bite.PublishedAt),
+						CreatedAt  = bite.PublishedAt ?? DateTime.UtcNow,
+						Uri        = bite.Id,
+						User       = resolvedActor,
+						UserHost   = resolvedActor.Host,
+						TargetNote = await noteSvc.ResolveNoteAsync(targetNote.Id)
+					},
+					ASBite targetBite => new Bite
+					{
+						Id        = IdHelpers.GenerateSlowflakeId(bite.PublishedAt),
+						CreatedAt = bite.PublishedAt ?? DateTime.UtcNow,
+						Uri       = bite.Id,
+						User      = resolvedActor,
+						UserHost  = resolvedActor.Host,
+						TargetBite =
+							await db.Bites.FirstAsync(p => p.UserHost == null &&
+							                               p.Id == Bite.GetIdFromPublicUri(targetBite.Id, config.Value))
+					},
+					null => throw
+						GracefulException.UnprocessableEntity($"Failed to resolve bite target {bite.Target.Id}"),
+					_ when bite.To?.Id != null => new Bite
+					{
+						Id         = IdHelpers.GenerateSlowflakeId(bite.PublishedAt),
+						CreatedAt  = bite.PublishedAt ?? DateTime.UtcNow,
+						Uri        = bite.Id,
+						User       = resolvedActor,
+						UserHost   = resolvedActor.Host,
+						TargetUser = await userResolver.ResolveAsync(bite.To.Id)
+					},
+					_ => throw GracefulException
+						.UnprocessableEntity($"Invalid bite target {target.Id} with type {target.Type}")
+
+					//TODO: more fallback
+				};
+
+				if (dbBite.TargetUser?.Host != null ||
+				    dbBite.TargetNote?.User.Host != null ||
+				    dbBite.TargetBite?.User.Host != null)
+					throw GracefulException.Accepted("Ignoring bite for remote user");
+
+				await db.AddAsync(dbBite);
+				await db.SaveChangesAsync();
+				await notificationSvc.GenerateBiteNotification(dbBite);
+				return;
 			}
+			default:
+				throw new NotImplementedException($"Activity type {activity.Type} is unknown");
 		}
 	}
 

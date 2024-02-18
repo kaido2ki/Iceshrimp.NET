@@ -30,7 +30,8 @@
       "_misskey_summary": "misskey:_misskey_summary",
       "isCat": "misskey:isCat",
       "fedibird": "http://fedibird.com/ns#",
-      "vcard": "http://www.w3.org/2006/vcard/ns#"
+      "vcard": "http://www.w3.org/2006/vcard/ns#",
+      "Bite": "https://ns.mia.jetzt/as#Bite"
     }
   ]
 }
