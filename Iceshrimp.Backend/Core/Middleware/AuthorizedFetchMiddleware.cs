@@ -47,6 +47,8 @@ public class AuthorizedFetchMiddleware(
 
 			UserPublickey? key      = null;
 			var            verified = false;
+			
+			logger.LogTrace("Processing authorized fetch request for {path}", request.Path);
 
 			try
 			{
@@ -101,7 +103,8 @@ public class AuthorizedFetchMiddleware(
 			}
 			catch (Exception e)
 			{
-				logger.LogDebug("Error validating HTTP signature: {error}", e.ToString());
+				if (e is GracefulException { SuppressLog: true }) throw;
+				logger.LogDebug("Error validating HTTP signature: {error}", e.Message);
 			}
 
 			logger.LogDebug("Trying LD signature next...");
@@ -162,7 +165,8 @@ public class AuthorizedFetchMiddleware(
 				}
 				catch (Exception e)
 				{
-					logger.LogError("Error validating JSON-LD signature: {error}", e.ToString());
+					if (e is GracefulException { SuppressLog: true }) throw;
+					logger.LogError("Error validating JSON-LD signature: {error}", e.Message);
 				}
 			}
 
