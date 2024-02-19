@@ -21,9 +21,19 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WebFingerResponse))]
 	public async Task<IActionResult> GetNodeInfo()
 	{
-		var instance = config.Value;
+		var cutoffMonth    = DateTime.UtcNow - TimeSpan.FromDays(30);
+		var cutoffHalfYear = DateTime.UtcNow - TimeSpan.FromDays(180);
+		var instance       = config.Value;
 		var totalUsers =
 			await db.Users.LongCountAsync(p => p.Host == null && !Constants.SystemUsers.Contains(p.UsernameLower));
+		var activeMonth =
+			await db.Users.LongCountAsync(p => p.Host == null &&
+			                                   !Constants.SystemUsers.Contains(p.UsernameLower) &&
+			                                   p.LastActiveDate > cutoffHalfYear);
+		var activeHalfYear =
+			await db.Users.LongCountAsync(p => p.Host == null &&
+			                                   !Constants.SystemUsers.Contains(p.UsernameLower) &&
+			                                   p.LastActiveDate > cutoffHalfYear);
 		var localPosts = await db.Notes.LongCountAsync(p => p.UserHost == null);
 
 		var result = new NodeInfoResponse
@@ -43,9 +53,12 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 			Usage = new NodeInfoResponse.NodeInfoUsage
 			{
 				//FIXME Implement members
-				Users = new NodeInfoResponse.NodeInfoUsers { Total = totalUsers, ActiveMonth = 0, ActiveHalfYear = 0 },
+				Users = new NodeInfoResponse.NodeInfoUsers
+				{
+					Total = totalUsers, ActiveMonth = activeMonth, ActiveHalfYear = activeHalfYear
+				},
 				LocalComments = 0,
-				LocalPosts = localPosts
+				LocalPosts    = localPosts
 			},
 			Metadata = new NodeInfoResponse.NodeInfoMetadata
 			{

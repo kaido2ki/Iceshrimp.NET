@@ -3,7 +3,7 @@ using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
-public class InstanceInfoResponse(Config config)
+public class InstanceInfoV1Response(Config config)
 {
 	[J("stats")]   public required InstanceStats Stats;
 	[J("version")] public          string Version => $"4.2.1 (compatible; Iceshrimp.NET/{config.Instance.Version}";
@@ -18,8 +18,8 @@ public class InstanceInfoResponse(Config config)
 	[J("invites_enabled")]   public bool RegsInvite => config.Security.Registrations == Enums.Registrations.Invite;
 	[J("approval_required")] public bool RegsClosed => config.Security.Registrations == Enums.Registrations.Closed;
 
-	[J("urls")]          public InstanceUrls          Urls          => new(config.Instance);
-	[J("configuration")] public InstanceConfiguration Configuration => new(config.Instance);
+	[J("urls")]          public InstanceUrls            Urls          => new(config.Instance);
+	[J("configuration")] public InstanceConfigurationV1 Configuration => new(config.Instance);
 
 	//TODO: add the rest
 }
@@ -36,7 +36,7 @@ public class InstanceStats(long userCount, long noteCount, long instanceCount)
 	[J("domain_count")] public long InstanceCount => instanceCount;
 }
 
-public class InstanceConfiguration(Config.InstanceSection config)
+public class InstanceConfigurationV1(Config.InstanceSection config)
 {
 	[J("accounts")]          public InstanceAccountsConfiguration Accounts  => new();
 	[J("statuses")]          public InstanceStatusesConfiguration Statuses  => new(config.CharacterLimit);
