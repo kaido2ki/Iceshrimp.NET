@@ -11,7 +11,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 {
 	private readonly string _transparent = $"https://{config.Value.WebDomain}/assets/transparent.png";
 
-	public async Task<AccountEntity> RenderAsync(User user, UserProfile? profile)
+	public async Task<AccountEntity> RenderAsync(User user, UserProfile? profile, bool source = false)
 	{
 		var acct = user.Username;
 		if (user.Host != null)
@@ -40,6 +40,19 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			IsDiscoverable     = user.IsExplorable,
 			Fields             = [] //TODO
 		};
+
+		if (source)
+		{
+			//TODO: populate these
+			res.Source = new AccountSource
+			{
+				Fields    = [],
+				Language  = "",
+				Note      = profile?.Description ?? "",
+				Privacy   = StatusEntity.EncodeVisibility(Note.NoteVisibility.Public),
+				Sensitive = false
+			};
+		}
 
 		return res;
 	}

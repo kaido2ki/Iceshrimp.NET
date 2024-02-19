@@ -24,10 +24,10 @@ public class AccountEntity : IEntity
 	[J("bot")]             public required bool           IsBot              { get; set; }
 	[J("discoverable")]    public required bool           IsDiscoverable     { get; set; }
 	[J("fields")]          public required Field[]        Fields             { get; set; }
+	[J("source")]          public          AccountSource? Source             { get; set; }
 
-	[J("source")] public          object?  Source => null; //FIXME
-	[J("emojis")] public          object[] Emoji  => [];   //FIXME
-	[J("id")]     public required string   Id     { get; set; }
+	[J("emojis")] public          object[] Emoji => []; //FIXME
+	[J("id")]     public required string   Id    { get; set; }
 }
 
 public class Field
@@ -35,4 +35,13 @@ public class Field
 	[J("name")]        public required string  Name       { get; set; }
 	[J("value")]       public required string  Value      { get; set; }
 	[J("verified_at")] public          string? VerifiedAt { get; set; }
+}
+
+public class AccountSource
+{
+	[J("note")]      public required string  Note;
+	[J("privacy")]   public required string  Privacy;
+	[J("language")]  public required string  Language;
+	[J("sensitive")] public required bool    Sensitive;
+	[J("fields")]    public required Field[] Fields { get; set; }
 }
