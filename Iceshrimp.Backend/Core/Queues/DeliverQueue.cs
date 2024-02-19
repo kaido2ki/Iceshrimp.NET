@@ -12,7 +12,7 @@ public class DeliverQueue
 {
 	public static JobQueue<DeliverJob> Create(IConnectionMultiplexer redis, string prefix)
 	{
-		return new JobQueue<DeliverJob>("deliver", DeliverQueueProcessorDelegateAsync, 4, redis, prefix);
+		return new JobQueue<DeliverJob>("deliver", DeliverQueueProcessorDelegateAsync, 20, redis, prefix);
 	}
 
 	private static async Task DeliverQueueProcessorDelegateAsync(
@@ -44,7 +44,36 @@ public class DeliverQueue
 
 		var request =
 			await httpRqSvc.PostSignedAsync(job.InboxUrl, job.Payload, job.ContentType, job.UserId, key);
-		await httpClient.SendAsync(request, token);
+
+		try
+		{
+			var response = await httpClient.SendAsync(request, token).WaitAsync(TimeSpan.FromSeconds(10), token);
+			response.EnsureSuccessStatusCode();
+		}
+		catch (Exception e)
+		{
+			//TODO: prune dead instances after a while (and only resume sending activities after they come back)
+
+			if (job.RetryCount++ < 10)
+			{
+				var jitter     = TimeSpan.FromSeconds(new Random().Next(0, 60));
+				var baseDelay  = TimeSpan.FromMinutes(1);
+				var maxBackoff = TimeSpan.FromHours(8);
+				var backoff    = (Math.Pow(2, job.RetryCount) - 1) * baseDelay;
+				if (backoff > maxBackoff)
+					backoff = maxBackoff;
+				backoff += jitter;
+
+				job.ExceptionMessage = e.Message;
+				job.ExceptionSource  = e.Source;
+				job.DelayedUntil     = DateTime.Now + backoff;
+				job.Status           = Job.JobStatus.Delayed;
+			}
+			else
+			{
+				throw;
+			}
+		}
 	}
 }
 
