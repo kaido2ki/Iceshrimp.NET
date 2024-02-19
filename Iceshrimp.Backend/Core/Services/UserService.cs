@@ -23,7 +23,8 @@ public class UserService(
 	DatabaseContext db,
 	ActivityPub.ActivityFetcherService fetchSvc,
 	DriveService driveSvc,
-	MfmConverter mfmConverter
+	MfmConverter mfmConverter,
+	FollowupTaskService followupTaskSvc
 )
 {
 	private (string Username, string? Host) AcctToTuple(string acct)
@@ -338,5 +339,17 @@ public class UserService(
 			await driveSvc.RemoveFile(user.Avatar);
 		if (user.Banner != null)
 			await driveSvc.RemoveFile(user.Banner);
+	}
+
+	public void UpdateUserLastActive(User user)
+	{
+		if (user.LastActiveDate != null && user.LastActiveDate > DateTime.UtcNow - TimeSpan.FromHours(1)) return;
+
+		_ = followupTaskSvc.ExecuteTask("UpdateUserLastActive", async provider =>
+		{
+			var bgDb = provider.GetRequiredService<DatabaseContext>();
+			await bgDb.Users.Where(p => p.Id == user.Id)
+			          .ExecuteUpdateAsync(p => p.SetProperty(u => u.LastActiveDate, DateTime.UtcNow));
+		});
 	}
 }

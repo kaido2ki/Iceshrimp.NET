@@ -2,11 +2,12 @@ using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
-public class AuthenticationMiddleware(DatabaseContext db) : IMiddleware
+public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc) : IMiddleware
 {
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
 	{
@@ -55,6 +56,7 @@ public class AuthenticationMiddleware(DatabaseContext db) : IMiddleware
 					return;
 				}
 
+				userSvc.UpdateUserLastActive(oauthToken.User);
 				ctx.SetOauthToken(oauthToken);
 			}
 			else
@@ -78,6 +80,7 @@ public class AuthenticationMiddleware(DatabaseContext db) : IMiddleware
 					return;
 				}
 
+				userSvc.UpdateUserLastActive(session.User);
 				ctx.SetSession(session);
 			}
 		}
