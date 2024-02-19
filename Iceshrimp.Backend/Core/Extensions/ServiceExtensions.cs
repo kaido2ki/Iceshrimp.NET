@@ -218,8 +218,8 @@ public static class ServiceExtensions
 			options.AddPolicy("mastodon", policy =>
 			{
 				policy.WithOrigins("*")
-				      .WithHeaders("Authorization")
-				      .WithExposedHeaders("Link,Connection,Sec-Websocket-Accept,Upgrade");
+				      .WithHeaders("Authorization", "Content-Type")
+				      .WithExposedHeaders("Link", "Connection", "Sec-Websocket-Accept", "Upgrade");
 			});
 		});
 	}
