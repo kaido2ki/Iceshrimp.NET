@@ -52,7 +52,7 @@ public class ActivityPubController : Controller
 	{
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
-		if (user.Host == null) return user.Uri != null ? RedirectPermanent(user.Uri) : NotFound();
+		if (user.Host != null) return user.Uri != null ? RedirectPermanent(user.Uri) : NotFound();
 		var rendered  = await userRenderer.RenderAsync(user);
 		var compacted = LdHelpers.Compact(rendered);
 		return Ok(compacted);
