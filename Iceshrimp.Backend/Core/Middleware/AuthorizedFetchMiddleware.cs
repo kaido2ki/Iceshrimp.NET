@@ -57,6 +57,10 @@ public class AuthorizedFetchMiddleware(
 
 				var sig = HttpSignature.Parse(sigHeader.ToString());
 
+				if (await fedCtrlSvc.ShouldBlockAsync(sig.KeyId))
+					throw new GracefulException(HttpStatusCode.Forbidden, "Forbidden", "Instance is blocked",
+					                            supressLog: true);
+
 				// First, we check if we already have the key
 				key = await db.UserPublickeys.Include(p => p.User).FirstOrDefaultAsync(p => p.KeyId == sig.KeyId);
 
@@ -84,7 +88,8 @@ public class AuthorizedFetchMiddleware(
 
 				// We want to check both the user host & the keyId host (as account & web domain might be different)
 				if (await fedCtrlSvc.ShouldBlockAsync(key.User.Host, key.KeyId))
-					throw GracefulException.Forbidden("Instance is blocked");
+					throw new GracefulException(HttpStatusCode.Forbidden, "Forbidden", "Instance is blocked",
+					                            supressLog: true);
 
 				List<string> headers = request.ContentLength > 0 || attribute.ForceBody
 					? ["(request-target)", "digest", "host", "date"]
@@ -129,6 +134,9 @@ public class AuthorizedFetchMiddleware(
 						throw new Exception($"Job data is not an ASActivity - Type: {obj.Type}");
 					if (activity.Actor == null)
 						throw new Exception("Activity has no actor");
+					if (await fedCtrlSvc.ShouldBlockAsync(new Uri(activity.Actor.Id).Host))
+						throw new GracefulException(HttpStatusCode.Forbidden, "Forbidden", "Instance is blocked",
+						                            supressLog: true);
 					key = null;
 					key = await db.UserPublickeys
 					              .Include(p => p.User)
@@ -144,6 +152,10 @@ public class AuthorizedFetchMiddleware(
 						if (key == null)
 							throw new Exception($"Failed to fetch public key for user {activity.Actor.Id}");
 					}
+
+					if (await fedCtrlSvc.ShouldBlockAsync(key.User.Host, new Uri(key.KeyId).Host))
+						throw new GracefulException(HttpStatusCode.Forbidden, "Forbidden", "Instance is blocked",
+						                            supressLog: true);
 
 					// We need to re-run deserialize & expand with date time handling disabled for JSON-LD canonicalization to work correctly
 					var rawDeserialized = JsonConvert.DeserializeObject<JObject?>(body, JsonSerializerSettings);
