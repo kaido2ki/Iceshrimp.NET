@@ -37,7 +37,8 @@ public class NoteController(DatabaseContext db, NoteService noteSvc) : Controlle
 	}
 
 	[HttpPost]
-	[Authenticate, Authorize]
+	[Authenticate]
+	[Authorize]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]

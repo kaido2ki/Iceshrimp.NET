@@ -16,10 +16,7 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options)
 		IEnumerable<string>? accept = null
 	)
 	{
-		var message = new HttpRequestMessage
-		{
-			RequestUri = new Uri(url), Method = method
-		};
+		var message = new HttpRequestMessage { RequestUri = new Uri(url), Method = method };
 
 		if (body != null)
 		{

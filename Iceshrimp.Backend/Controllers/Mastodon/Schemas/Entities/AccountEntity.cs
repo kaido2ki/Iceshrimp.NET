@@ -39,9 +39,9 @@ public class Field
 
 public class AccountSource
 {
+	[J("language")]  public required string  Language;
 	[J("note")]      public required string  Note;
 	[J("privacy")]   public required string  Privacy;
-	[J("language")]  public required string  Language;
 	[J("sensitive")] public required bool    Sensitive;
 	[J("fields")]    public required Field[] Fields { get; set; }
 }

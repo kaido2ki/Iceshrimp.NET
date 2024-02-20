@@ -106,9 +106,8 @@ public class Notification : IEntity
 	[ForeignKey("NoteId")]
 	[InverseProperty(nameof(Tables.Note.Notifications))]
 	public virtual Note? Note { get; set; }
-	
-	[ForeignKey("BiteId")]
-	public virtual Bite? Bite { get; set; }
+
+	[ForeignKey("BiteId")] public virtual Bite? Bite { get; set; }
 
 	[ForeignKey("NotifieeId")]
 	[InverseProperty(nameof(User.NotificationNotifiees))]

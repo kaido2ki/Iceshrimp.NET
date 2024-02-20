@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using EntityFrameworkCore.Projectables;
 using Iceshrimp.Backend.Core.Configuration;
 using Microsoft.EntityFrameworkCore;
 

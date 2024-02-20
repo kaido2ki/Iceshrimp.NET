@@ -6,7 +6,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 public class InstanceInfoV2Response(Config config)
 {
 	[J("version")]     public string Version       => $"4.2.1 (compatible; Iceshrimp.NET/{config.Instance.Version}";
-	[J("source_url")]  public string SourceUrl     => $"https://iceshrimp.dev/iceshrimp/iceshrimp.net";
+	[J("source_url")]  public string SourceUrl     => "https://iceshrimp.dev/iceshrimp/iceshrimp.net";
 	[J("domain")]      public string AccountDomain => config.Instance.AccountDomain;
 	[J("title")]       public string InstanceName  => config.Instance.AccountDomain;
 	[J("description")] public string Description   => $"{config.Instance.AccountDomain} on Iceshrimp.NET";

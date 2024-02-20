@@ -120,7 +120,7 @@ public class UserResolver(
 			{
 				// Get a fresh UserService instance in a new scope
 				var bgUserSvc = provider.GetRequiredService<UserService>();
-				
+
 				// Use the id overload so it doesn't attempt to insert in the main thread's DbContext
 				var fetchedUser = await bgUserSvc.UpdateUserAsync(user.Id);
 				user = fetchedUser;

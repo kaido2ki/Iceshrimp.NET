@@ -77,47 +77,10 @@ public class JobQueue<T>(
 	string prefix
 ) : IJobQueue where T : Job
 {
+	private readonly RedisChannel _delayedChannel = new(prefix + "channel:delayed", RedisChannel.PatternMode.Literal);
+	private readonly RedisChannel _queuedChannel  = new(prefix + "channel:queued", RedisChannel.PatternMode.Literal);
 	private readonly IDatabase    _redisDb        = redis.GetDatabase().WithKeyPrefix(prefix + name + ":");
 	private readonly ISubscriber  _subscriber     = redis.GetSubscriber();
-	private readonly RedisChannel _queuedChannel  = new(prefix + "channel:queued", RedisChannel.PatternMode.Literal);
-	private readonly RedisChannel _delayedChannel = new(prefix + "channel:delayed", RedisChannel.PatternMode.Literal);
-
-	private async Task DelayedJobHandlerAsync(IServiceScopeFactory scopeFactory, CancellationToken token)
-	{
-		var channel = await _subscriber.SubscribeAsync(_queuedChannel);
-		var logger  = scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<QueueService>>();
-		while (!token.IsCancellationRequested)
-		{
-			try
-			{
-				var timestamp = (long)DateTime.Now.Subtract(DateTime.UnixEpoch).TotalSeconds;
-				var res       = await _redisDb.SortedSetRangeByScoreAsync("delayed", 0, timestamp, take: 10);
-
-				if (res.Length == 0)
-				{
-					await channel.ReadAsync(token);
-					continue;
-				}
-
-				foreach (var item in res)
-				{
-					var transaction = _redisDb.CreateTransaction();
-					_ = transaction.ListRightPushAsync("queued", item);
-					_ = transaction.SortedSetRemoveAsync("delayed", item);
-					await transaction.ExecuteAsync();
-					await _subscriber.PublishAsync(_queuedChannel, "");
-				}
-			}
-			catch (Exception e)
-			{
-				if (!token.IsCancellationRequested)
-				{
-					logger.LogError("DelayedJobHandlerAsync in queue {queue} failed with: {error}", name, e.Message);
-					await Task.Delay(1000, token);
-				}
-			}
-		}
-	}
 
 	public async Task ExecuteAsync(IServiceScopeFactory scopeFactory, CancellationToken token)
 	{
@@ -156,6 +119,43 @@ public class JobQueue<T>(
 	{
 		while (await _redisDb.ListLengthAsync("running") > 0)
 			await _redisDb.ListMoveAsync("running", "queued", ListSide.Right, ListSide.Left);
+	}
+
+	private async Task DelayedJobHandlerAsync(IServiceScopeFactory scopeFactory, CancellationToken token)
+	{
+		var channel = await _subscriber.SubscribeAsync(_queuedChannel);
+		var logger  = scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<QueueService>>();
+		while (!token.IsCancellationRequested)
+		{
+			try
+			{
+				var timestamp = (long)DateTime.Now.Subtract(DateTime.UnixEpoch).TotalSeconds;
+				var res       = await _redisDb.SortedSetRangeByScoreAsync("delayed", 0, timestamp, take: 10);
+
+				if (res.Length == 0)
+				{
+					await channel.ReadAsync(token);
+					continue;
+				}
+
+				foreach (var item in res)
+				{
+					var transaction = _redisDb.CreateTransaction();
+					_ = transaction.ListRightPushAsync("queued", item);
+					_ = transaction.SortedSetRemoveAsync("delayed", item);
+					await transaction.ExecuteAsync();
+					await _subscriber.PublishAsync(_queuedChannel, "");
+				}
+			}
+			catch (Exception e)
+			{
+				if (!token.IsCancellationRequested)
+				{
+					logger.LogError("DelayedJobHandlerAsync in queue {queue} failed with: {error}", name, e.Message);
+					await Task.Delay(1000, token);
+				}
+			}
+		}
 	}
 
 	private async Task ProcessJobAsync(IServiceScopeFactory scopeFactory, CancellationToken token)

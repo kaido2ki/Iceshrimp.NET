@@ -39,7 +39,7 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc)
 		if (res.Content.Headers.ContentType?.MediaType is not "application/jrd+json" and not "application/json")
 			return null;
 
-		return await res.Content.ReadFromJsonAsync<WebFingerResponse>(cancellationToken: cts.Token);
+		return await res.Content.ReadFromJsonAsync<WebFingerResponse>(cts.Token);
 	}
 
 	private static (string query, string proto, string domain) ParseQuery(string query)
