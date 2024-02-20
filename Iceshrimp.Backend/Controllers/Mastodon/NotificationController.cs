@@ -10,6 +10,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using static Iceshrimp.Backend.Core.Database.Tables.Notification;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
@@ -53,6 +54,27 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 
 		//TODO: handle mutes
 		//TODO: handle reply/renote visibility
+
+		return Ok(res);
+	}
+
+	[HttpGet("{id}")]
+	[Authorize("read:notifications")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<NotificationEntity>))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetNotification(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var notification = await db.Notifications
+		                           .IncludeCommonProperties()
+		                           .Where(p => p.Notifiee == user && p.Id == id)
+		                           .EnsureNoteVisibilityFor(p => p.Note, user)
+		                           .FirstOrDefaultAsync() ??
+		                   throw GracefulException.RecordNotFound();
+
+		//TODO: handle reply/renote visibility
+
+		var res = await notificationRenderer.RenderAsync(notification, user);
 
 		return Ok(res);
 	}

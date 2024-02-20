@@ -8,7 +8,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRenderer)
 {
 	public async Task<NotificationEntity> RenderAsync(
-		Notification notification, User? user, List<AccountEntity>? accounts = null,
+		Notification notification, User user, List<AccountEntity>? accounts = null,
 		IEnumerable<StatusEntity>? statuses = null
 	)
 	{
@@ -37,7 +37,7 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 	}
 
 	public async Task<IEnumerable<NotificationEntity>> RenderManyAsync(
-		IEnumerable<Notification> notifications, User? user
+		IEnumerable<Notification> notifications, User user
 	)
 	{
 		var notificationList = notifications.ToList();

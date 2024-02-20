@@ -266,7 +266,7 @@ public static class QueryableExtensions
 	}
 
 	public static async Task<List<NotificationEntity>> RenderAllForMastodonAsync(
-		this IQueryable<Notification> notifications, NotificationRenderer renderer, User? user
+		this IQueryable<Notification> notifications, NotificationRenderer renderer, User user
 	)
 	{
 		var list = await notifications.ToListAsync();
