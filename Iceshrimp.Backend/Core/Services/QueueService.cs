@@ -110,8 +110,11 @@ public class JobQueue<T>(
 			}
 			catch (Exception e)
 			{
-				logger.LogError("DelayedJobHandlerAsync in queue {queue} failed with: {error}", name, e.Message);
-				await Task.Delay(1000, token);
+				if (!token.IsCancellationRequested)
+				{
+					logger.LogError("DelayedJobHandlerAsync in queue {queue} failed with: {error}", name, e.Message);
+					await Task.Delay(1000, token);
+				}
 			}
 		}
 	}
@@ -140,8 +143,11 @@ public class JobQueue<T>(
 			}
 			catch (Exception e)
 			{
-				logger.LogError("ExecuteAsync in queue {queue} failed with: {error}", name, e.Message);
-				await Task.Delay(1000, token);
+				if (!token.IsCancellationRequested)
+				{
+					logger.LogError("ExecuteAsync in queue {queue} failed with: {error}", name, e.Message);
+					await Task.Delay(1000, token);
+				}
 			}
 		}
 	}
