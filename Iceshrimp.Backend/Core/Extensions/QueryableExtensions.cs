@@ -312,6 +312,20 @@ public static class QueryableExtensions
 		return query;
 	}
 
+	public static IQueryable<Note> FilterByPublicTimelineRequest(
+		this IQueryable<Note> query, TimelineSchemas.PublicTimelineRequest request
+	)
+	{
+		if (request.OnlyLocal)
+			query = query.Where(p => p.UserHost == null);
+		if (request.OnlyRemote)
+			query = query.Where(p => p.UserHost != null);
+		if (request.OnlyMedia)
+			query = query.Where(p => p.FileIds.Count != 0);
+
+		return query;
+	}
+
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 // Justification: in the context of nullable EF navigation properties, null values are ignored and therefore irrelevant.
 // Source: https://learn.microsoft.com/en-us/ef/core/miscellaneous/nullable-reference-types#navigating-and-including-nullable-relationships

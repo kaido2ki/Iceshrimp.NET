@@ -51,13 +51,16 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, I
 	[Authorize("read:statuses")]
 	[HttpGet("public")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
-	public async Task<IActionResult> GetPublicTimeline(MastodonPaginationQuery query)
+	public async Task<IActionResult> GetPublicTimeline(
+		MastodonPaginationQuery query, TimelineSchemas.PublicTimelineRequest request
+	)
 	{
 		var user = HttpContext.GetUserOrFail();
 
 		var res = await db.Notes
 		                  .IncludeCommonProperties()
 		                  .HasVisibility(Note.NoteVisibility.Public)
+		                  .FilterByPublicTimelineRequest(request)
 		                  .FilterBlocked(user)
 		                  .FilterMuted(user)
 		                  .Paginate(query, ControllerContext)
