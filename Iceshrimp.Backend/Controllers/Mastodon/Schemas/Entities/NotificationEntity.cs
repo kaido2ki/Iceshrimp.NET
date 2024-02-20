@@ -32,4 +32,20 @@ public class NotificationEntity : IEntity
 			_ => throw new GracefulException($"Unsupported notification type: {type}")
 		};
 	}
+
+	public static IEnumerable<NotificationType> DecodeType(string type)
+	{
+		return type switch
+		{
+			"follow"         => [NotificationType.Follow],
+			"mention"        => [NotificationType.Mention, NotificationType.Reply],
+			"renote"         => [NotificationType.Renote],
+			"reblog"         => [NotificationType.Quote],
+			"favourite"      => [NotificationType.Like],
+			"poll"           => [NotificationType.PollEnded],
+			"follow_request" => [NotificationType.FollowRequestReceived],
+			"update"         => [NotificationType.Edit],
+			_                => []
+		};
+	}
 }

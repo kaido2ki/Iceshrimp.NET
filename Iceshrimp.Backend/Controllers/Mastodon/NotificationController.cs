@@ -27,7 +27,9 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 	[LinkPagination(40, 80)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<NotificationEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetNotifications(MastodonPaginationQuery query)
+	public async Task<IActionResult> GetNotifications(
+		MastodonPaginationQuery query, NotificationSchemas.GetNotificationsRequest request
+	)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var res = await db.Notifications
@@ -40,8 +42,9 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                              p.Type == NotificationType.Quote ||
 		                              p.Type == NotificationType.Like ||
 		                              p.Type == NotificationType.PollEnded ||
-		                              p.Type == NotificationType.FollowRequestReceived || 
+		                              p.Type == NotificationType.FollowRequestReceived ||
 		                              p.Type == NotificationType.Edit)
+		                  .FilterByGetNotificationsRequest(request)
 		                  .EnsureNoteVisibilityFor(p => p.Note, user)
 		                  .FilterBlocked(p => p.Notifier, user)
 		                  .FilterBlocked(p => p.Note, user)

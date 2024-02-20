@@ -292,6 +292,26 @@ public static class QueryableExtensions
 
 		return query;
 	}
+
+	public static IQueryable<Notification> FilterByGetNotificationsRequest(
+		this IQueryable<Notification> query,
+		NotificationSchemas.GetNotificationsRequest request
+	)
+	{
+		if (request.AccountId != null)
+			query = query.Where(p => p.NotifierId == request.AccountId);
+		if (request.Types != null)
+			query = query.Where(p => request.Types.SelectMany(NotificationEntity.DecodeType)
+			                                .Distinct()
+			                                .Contains(p.Type));
+		if (request.ExcludeTypes != null)
+			query = query.Where(p => !request.ExcludeTypes.SelectMany(NotificationEntity.DecodeType)
+			                                 .Distinct()
+			                                 .Contains(p.Type));
+
+		return query;
+	}
+
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 // Justification: in the context of nullable EF navigation properties, null values are ignored and therefore irrelevant.
 // Source: https://learn.microsoft.com/en-us/ef/core/miscellaneous/nullable-reference-types#navigating-and-including-nullable-relationships
