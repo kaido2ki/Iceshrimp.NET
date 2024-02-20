@@ -29,7 +29,7 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 		var activeMonth =
 			await db.Users.LongCountAsync(p => p.Host == null &&
 			                                   !Constants.SystemUsers.Contains(p.UsernameLower) &&
-			                                   p.LastActiveDate > cutoffHalfYear);
+			                                   p.LastActiveDate > cutoffMonth);
 		var activeHalfYear =
 			await db.Users.LongCountAsync(p => p.Host == null &&
 			                                   !Constants.SystemUsers.Contains(p.UsernameLower) &&
