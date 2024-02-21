@@ -50,6 +50,23 @@ public class SearchController(
 		return Ok(result);
 	}
 
+	[HttpGet("/api/v1/accounts/search")]
+	[Authorize("read:accounts")]
+	[LinkPagination(20, 40)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<AccountEntity>))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> SearchAccounts(
+		SearchSchemas.SearchRequest search, MastodonPaginationQuery pagination
+	)
+	{
+		if (search.Query == null)
+			throw GracefulException.BadRequest("Query is missing or invalid");
+
+		var result = await SearchUsersAsync(search, pagination);
+
+		return Ok(result);
+	}
+
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
 	                 Justification = "Inspection doesn't know about the Projectable attribute")]
 	private async Task<List<AccountEntity>> SearchUsersAsync(
