@@ -89,7 +89,7 @@ public class NoteService(
 			MentionedRemoteUsers = remoteMentions
 		};
 
-		user.NotesCount++;
+		if (!note.IsPureRenote) user.NotesCount++;
 		if (reply != null) reply.RepliesCount++;
 		if (renote != null && !note.IsQuote)
 			if (!db.Notes.Any(p => p.UserId == user.Id && p.RenoteId == renote.Id && p.IsPureRenote))
@@ -251,6 +251,23 @@ public class NoteService(
 		db.Remove(dbNote);
 		eventSvc.RaiseNoteDeleted(this, dbNote);
 		await db.SaveChangesAsync();
+	}
+
+	public async Task UndoAnnounceAsync(ASNote note, User actor)
+	{
+		var renote = await ResolveNoteAsync(note);
+		if (renote == null) return;
+		var notes = await db.Notes.IncludeCommonProperties()
+		                    .Where(p => p.Renote == renote && p.User == actor && p.IsPureRenote)
+		                    .ToListAsync();
+
+		if (notes.Count == 0) return;
+		renote.RenoteCount--;
+		db.RemoveRange(notes);
+		await db.SaveChangesAsync();
+
+		foreach (var hit in notes)
+			eventSvc.RaiseNoteDeleted(this, hit);
 	}
 
 	public async Task<Note> ProcessNoteAsync(ASNote note, User actor)

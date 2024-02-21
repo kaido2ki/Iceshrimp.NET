@@ -139,6 +139,9 @@ public class ActivityHandlerService(
 					case ASLike { Object: ASNote likedNote }:
 						await noteSvc.UnlikeNoteAsync(likedNote, resolvedActor);
 						return;
+					case ASAnnounce { Object: ASNote likedNote }:
+						await noteSvc.UndoAnnounceAsync(likedNote, resolvedActor);
+						return;
 					default:
 						throw GracefulException.UnprocessableEntity("Undo activity object is invalid");
 				}
