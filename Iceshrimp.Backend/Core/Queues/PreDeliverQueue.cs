@@ -75,7 +75,7 @@ public class PreDeliverQueue
 		}
 		else
 		{
-			payload = await activity.CompactAsync();
+			payload = activity.Compact();
 		}
 
 		foreach (var inboxQueryResult in inboxQueryResults)
