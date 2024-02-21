@@ -7,14 +7,14 @@ public class EventService
 {
 	public event EventHandler<Note>?            NotePublished;
 	public event EventHandler<Note>?            NoteUpdated;
-	public event EventHandler<string>?          NoteDeleted;
+	public event EventHandler<Note>?            NoteDeleted;
 	public event EventHandler<NoteInteraction>? NoteLiked;
 	public event EventHandler<NoteInteraction>? NoteUnliked;
 	public event EventHandler<Notification>?    Notification;
 
 	public void RaiseNotePublished(object? sender, Note note) => NotePublished?.Invoke(sender, note);
 	public void RaiseNoteUpdated(object? sender, Note note)   => NoteUpdated?.Invoke(sender, note);
-	public void RaiseNoteDeleted(object? sender, Note note)   => NoteDeleted?.Invoke(sender, note.Id);
+	public void RaiseNoteDeleted(object? sender, Note note)   => NoteDeleted?.Invoke(sender, note);
 
 	public void RaiseNotification(object? sender, Notification notification) =>
 		Notification?.Invoke(sender, notification);

@@ -45,6 +45,7 @@ app.UseStaticFiles();
 app.UseRateLimiter();
 app.UseCors();
 app.UseAuthorization();
+app.UseWebSockets();
 app.UseCustomMiddleware();
 
 app.MapControllers();
