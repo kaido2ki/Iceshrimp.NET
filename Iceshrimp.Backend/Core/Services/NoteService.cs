@@ -228,7 +228,7 @@ public class NoteService(
 			await deliverSvc.DeliverToFollowersAsync(activity, note.User, recipients);
 	}
 
-	public async Task DeleteNoteAsync(ASTombstone note, ASActor actor)
+	public async Task DeleteNoteAsync(ASTombstone note, User actor)
 	{
 		// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataQuery (it doesn't know about IncludeCommonProperties())
 		var dbNote = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
@@ -238,24 +238,22 @@ public class NoteService(
 			return;
 		}
 
-		var user = await userResolver.ResolveAsync(actor.Id);
-
 		// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataUsage (same reason as above)
-		if (dbNote.User != user)
+		if (dbNote.User != actor)
 		{
 			logger.LogDebug("Note '{id}' isn't owned by actor requesting its deletion, skipping", note.Id);
 			return;
 		}
 
-		logger.LogDebug("Deleting note '{id}' owned by {userId}", note.Id, user.Id);
+		logger.LogDebug("Deleting note '{id}' owned by {userId}", note.Id, actor.Id);
 
-		user.NotesCount--;
+		actor.NotesCount--;
 		db.Remove(dbNote);
 		eventSvc.RaiseNoteDeleted(this, dbNote);
 		await db.SaveChangesAsync();
 	}
 
-	public async Task<Note> ProcessNoteAsync(ASNote note, ASActor actor)
+	public async Task<Note> ProcessNoteAsync(ASNote note, User actor)
 	{
 		var dbHit = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
 
@@ -269,15 +267,12 @@ public class NoteService(
 			_resolverHistory.Add(note.Id);
 		logger.LogDebug("Creating note: {id}", note.Id);
 
-		var user = await userResolver.ResolveAsync(actor.Id);
-		logger.LogDebug("Resolved user to {userId}", user.Id);
-
 		// Validate note
-		if (note.AttributedTo is not { Count: 1 } || note.AttributedTo[0].Id != user.Uri)
+		if (note.AttributedTo is not { Count: 1 } || note.AttributedTo[0].Id != actor.Uri)
 			throw GracefulException.UnprocessableEntity("User.Uri doesn't match Note.AttributedTo");
-		if (user.Uri == null)
+		if (actor.Uri == null)
 			throw GracefulException.UnprocessableEntity("User.Uri is null");
-		if (new Uri(note.Id).IdnHost != new Uri(user.Uri).IdnHost)
+		if (new Uri(note.Id).IdnHost != new Uri(actor.Uri).IdnHost)
 			throw GracefulException.UnprocessableEntity("User.Uri host doesn't match Note.Id host");
 		if (!note.Id.StartsWith("https://"))
 			throw GracefulException.UnprocessableEntity("Note.Id schema is invalid");
@@ -285,7 +280,7 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Note.Url schema is invalid");
 		if (note.PublishedAt is null or { Year: < 2007 } || note.PublishedAt > DateTime.Now + TimeSpan.FromDays(3))
 			throw GracefulException.UnprocessableEntity("Note.PublishedAt is nonsensical");
-		if (user.IsSuspended)
+		if (actor.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
 
 		//TODO: resolve anything related to the note as well (attachments, emoji, etc)
@@ -303,9 +298,9 @@ public class NoteService(
 			Url        = note.Url?.Id, //FIXME: this doesn't seem to work yet
 			Text       = note.MkContent ?? await mfmConverter.FromHtmlAsync(note.Content, mentions),
 			Cw         = note.Summary,
-			UserId     = user.Id,
+			UserId     = actor.Id,
 			CreatedAt  = createdAt,
-			UserHost   = user.Host,
+			UserHost   = actor.Host,
 			Visibility = note.GetVisibility(actor),
 			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null
 		};
@@ -343,14 +338,14 @@ public class NoteService(
 		}
 
 		var sensitive = (note.Sensitive ?? false) || dbNote.Cw != null;
-		var files     = await ProcessAttachmentsAsync(note.Attachments, user, sensitive);
+		var files     = await ProcessAttachmentsAsync(note.Attachments, actor, sensitive);
 		if (files.Count != 0)
 		{
 			dbNote.FileIds           = files.Select(p => p.Id).ToList();
 			dbNote.AttachedFileTypes = files.Select(p => p.Type).ToList();
 		}
 
-		user.NotesCount++;
+		actor.NotesCount++;
 		if (dbNote.Reply != null) dbNote.Reply.RepliesCount++;
 		await db.Notes.AddAsync(dbNote);
 		await db.SaveChangesAsync();
@@ -364,13 +359,12 @@ public class NoteService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage",
 	                 Justification = "Inspection doesn't understand IncludeCommonProperties()")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "See above")]
-	public async Task<Note> ProcessNoteUpdateAsync(ASNote note, ASActor actor, User? resolvedActor = null)
+	public async Task<Note> ProcessNoteUpdateAsync(ASNote note, User actor)
 	{
 		var dbNote = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
 		if (dbNote == null) return await ProcessNoteAsync(note, actor);
 
-		resolvedActor ??= await userResolver.ResolveAsync(actor.Id);
-		if (dbNote.User != resolvedActor)
+		if (dbNote.User != actor)
 			throw GracefulException.UnprocessableEntity("Refusing to update note of user other than actor");
 		if (dbNote.User.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
@@ -425,7 +419,7 @@ public class NoteService(
 
 		//TODO: handle updated alt text et al
 		var sensitive = (note.Sensitive ?? false) || dbNote.Cw != null;
-		var files     = await ProcessAttachmentsAsync(note.Attachments, resolvedActor, sensitive);
+		var files     = await ProcessAttachmentsAsync(note.Attachments, actor, sensitive);
 		dbNote.FileIds           = files.Select(p => p.Id).ToList();
 		dbNote.AttachedFileTypes = files.Select(p => p.Type).ToList();
 
@@ -574,8 +568,7 @@ public class NoteService(
 			if (res != null) return res;
 		}
 
-		//TODO: we don't need to fetch the actor every time, we can use userResolver here
-		var actor = await fetchSvc.FetchActorAsync(attrTo.Id);
+		var actor = await userResolver.ResolveAsync(attrTo.Id);
 
 		try
 		{
@@ -615,38 +608,34 @@ public class NoteService(
 		}
 	}
 
-	public async Task UnlikeNoteAsync(Note note, User user)
+	public async Task UnlikeNoteAsync(Note note, User actor)
 	{
-		var count = await db.NoteLikes.Where(p => p.Note == note && p.User == user).ExecuteDeleteAsync();
+		var count = await db.NoteLikes.Where(p => p.Note == note && p.User == actor).ExecuteDeleteAsync();
 		if (count == 0) return;
-		if (user.Host == null && note.UserHost != null)
+		if (actor.Host == null && note.UserHost != null)
 		{
-			var activity = activityRenderer.RenderUndo(userRenderer.RenderLite(user),
-			                                           activityRenderer.RenderLike(note, user));
-			await deliverSvc.DeliverToFollowersAsync(activity, user, [note.User]);
+			var activity = activityRenderer.RenderUndo(userRenderer.RenderLite(actor),
+			                                           activityRenderer.RenderLike(note, actor));
+			await deliverSvc.DeliverToFollowersAsync(activity, actor, [note.User]);
 		}
 
-		eventSvc.RaiseNoteUnliked(this, note, user);
+		eventSvc.RaiseNoteUnliked(this, note, actor);
 		await db.Notifications
 		        .Where(p => p.Type == Notification.NotificationType.Like &&
 		                    p.Notifiee == note.User &&
-		                    p.Notifier == user)
+		                    p.Notifier == actor)
 		        .ExecuteDeleteAsync();
 	}
 
-	public async Task LikeNoteAsync(ASNote note, ASActor actor)
+	public async Task LikeNoteAsync(ASNote note, User actor)
 	{
 		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot register like for unknown note");
-		var user   = await userResolver.ResolveAsync(actor.Id);
-
-		await LikeNoteAsync(dbNote, user);
+		await LikeNoteAsync(dbNote, actor);
 	}
 
-	public async Task UnlikeNoteAsync(ASNote note, ASActor actor)
+	public async Task UnlikeNoteAsync(ASNote note, User actor)
 	{
 		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot unregister like for unknown note");
-		var user   = await userResolver.ResolveAsync(actor.Id);
-
-		await UnlikeNoteAsync(dbNote, user);
+		await UnlikeNoteAsync(dbNote, actor);
 	}
 }

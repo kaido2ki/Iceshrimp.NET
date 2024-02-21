@@ -61,25 +61,28 @@ public class ASNote : ASObject
 
 	public bool VerifiedFetch = false;
 
-	public Note.NoteVisibility GetVisibility(ASActor actor)
+	public Note.NoteVisibility GetVisibility(User actor)
 	{
+		if (actor.Host == null) throw new Exception("Can't get recipients for local actor");
+
 		if (To.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public"))
 			return Note.NoteVisibility.Public;
 		if (Cc.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public"))
 			return Note.NoteVisibility.Home;
-		if (To.Any(p => p.Id is not null && p.Id == (actor.Followers?.Id ?? actor.Id + "/followers")))
+		if (To.Any(p => p.Id is not null && p.Id == (actor.FollowersUri ?? actor.Uri + "/followers")))
 			return Note.NoteVisibility.Followers;
 
 		return Note.NoteVisibility.Specified;
 	}
 
-	public List<string> GetRecipients(ASActor actor)
+	public List<string> GetRecipients(User actor)
 	{
+		if (actor.Host == null) throw new Exception("Can't get recipients for local actor");
 		return To.Concat(Cc)
 		         .Select(p => p.Id)
 		         .Distinct()
 		         .Where(p => p != $"{Constants.ActivityStreamsNs}#Public" &&
-		                     p != (actor.Followers?.Id ?? actor.Id + "/followers"))
+		                     p != (actor.FollowersUri ?? actor.Uri + "/followers"))
 		         .Where(p => p != null)
 		         .Select(p => p!)
 		         .ToList();

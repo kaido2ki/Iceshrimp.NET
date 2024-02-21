@@ -65,7 +65,7 @@ public class ActivityHandlerService(
 				//TODO: should we handle other types of creates?
 				if (activity.Object is not ASNote note)
 					throw GracefulException.UnprocessableEntity("Create activity object is invalid");
-				await noteSvc.ProcessNoteAsync(note, activity.Actor);
+				await noteSvc.ProcessNoteAsync(note, resolvedActor);
 				return;
 			}
 			case ASDelete:
@@ -86,7 +86,7 @@ public class ActivityHandlerService(
 					throw GracefulException.UnprocessableEntity("Delete activity object is invalid");
 				if (await db.Notes.AnyAsync(p => p.Uri == tombstone.Id))
 				{
-					await noteSvc.DeleteNoteAsync(tombstone, activity.Actor);
+					await noteSvc.DeleteNoteAsync(tombstone, resolvedActor);
 					return;
 				}
 
@@ -105,28 +105,28 @@ public class ActivityHandlerService(
 			{
 				if (activity.Object is not ASActor obj)
 					throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
-				await FollowAsync(obj, activity.Actor, activity.Id);
+				await FollowAsync(obj, activity.Actor, resolvedActor, activity.Id);
 				return;
 			}
 			case ASUnfollow:
 			{
 				if (activity.Object is not ASActor obj)
 					throw GracefulException.UnprocessableEntity("Unfollow activity object is invalid");
-				await UnfollowAsync(obj, activity.Actor);
+				await UnfollowAsync(obj, resolvedActor);
 				return;
 			}
 			case ASAccept:
 			{
 				if (activity.Object is not ASFollow obj)
 					throw GracefulException.UnprocessableEntity("Accept activity object is invalid");
-				await AcceptAsync(obj, activity.Actor);
+				await AcceptAsync(obj, resolvedActor);
 				return;
 			}
 			case ASReject:
 			{
 				if (activity.Object is not ASFollow obj)
 					throw GracefulException.UnprocessableEntity("Reject activity object is invalid");
-				await RejectAsync(obj, activity.Actor);
+				await RejectAsync(obj, resolvedActor);
 				return;
 			}
 			case ASUndo:
@@ -134,10 +134,10 @@ public class ActivityHandlerService(
 				switch (activity.Object)
 				{
 					case ASFollow { Object: ASActor followee }:
-						await UnfollowAsync(followee, activity.Actor);
+						await UnfollowAsync(followee, resolvedActor);
 						return;
 					case ASLike { Object: ASNote likedNote }:
-						await noteSvc.UnlikeNoteAsync(likedNote, activity.Actor);
+						await noteSvc.UnlikeNoteAsync(likedNote, resolvedActor);
 						return;
 					default:
 						throw GracefulException.UnprocessableEntity("Undo activity object is invalid");
@@ -147,7 +147,7 @@ public class ActivityHandlerService(
 			{
 				if (activity.Object is not ASNote note)
 					throw GracefulException.UnprocessableEntity("Like activity object is invalid");
-				await noteSvc.LikeNoteAsync(note, activity.Actor);
+				await noteSvc.LikeNoteAsync(note, resolvedActor);
 				return;
 			}
 			case ASUpdate:
@@ -160,7 +160,7 @@ public class ActivityHandlerService(
 						await userSvc.UpdateUserAsync(resolvedActor, actor);
 						return;
 					case ASNote note:
-						await noteSvc.ProcessNoteUpdateAsync(note, activity.Actor, resolvedActor);
+						await noteSvc.ProcessNoteUpdateAsync(note, resolvedActor);
 						return;
 					default:
 						throw GracefulException.UnprocessableEntity("Update activity object is invalid");
@@ -233,7 +233,8 @@ public class ActivityHandlerService(
 					throw GracefulException.UnprocessableEntity("Invalid or unsupported announce object");
 
 				var dbNote = await noteSvc.ResolveNoteAsync(note.Id, note.VerifiedFetch ? note : null);
-				var renote = await noteSvc.CreateNoteAsync(resolvedActor, announce.GetVisibility(activity.Actor), renote: dbNote);
+				var renote = await noteSvc.CreateNoteAsync(resolvedActor, announce.GetVisibility(activity.Actor),
+				                                           renote: dbNote);
 				await notificationSvc.GenerateRenoteNotification(renote);
 				return;
 			}
@@ -244,9 +245,8 @@ public class ActivityHandlerService(
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
 	                 Justification = "Projectable functions can very much be translated to SQL")]
-	private async Task FollowAsync(ASActor followeeActor, ASActor followerActor, string requestId)
+	private async Task FollowAsync(ASActor followeeActor, ASActor followerActor, User follower, string requestId)
 	{
-		var follower = await userResolver.ResolveAsync(followerActor.Id);
 		var followee = await userResolver.ResolveAsync(followeeActor.Id);
 
 		if (followee.Host != null) throw new Exception("Cannot process follow for remote followee");
@@ -324,10 +324,9 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task UnfollowAsync(ASActor followeeActor, ASActor followerActor)
+	private async Task UnfollowAsync(ASActor followeeActor, User follower)
 	{
 		//TODO: send reject? or do we not want to copy that part of the old ap core
-		var follower = await userResolver.ResolveAsync(followerActor.Id);
 		var followee = await userResolver.ResolveAsync(followeeActor.Id);
 
 		await db.FollowRequests.Where(p => p.Follower == follower && p.Followee == followee).ExecuteDeleteAsync();
@@ -350,33 +349,32 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task AcceptAsync(ASFollow obj, ASActor actor)
+	private async Task AcceptAsync(ASFollow obj, User actor)
 	{
 		var prefix = $"https://{config.Value.WebDomain}/follows/";
 		if (!obj.Id.StartsWith(prefix))
 			throw GracefulException.UnprocessableEntity($"Object id '{obj.Id}' not a valid follow request id");
 
-		var resolvedActor = await userResolver.ResolveAsync(actor.Id);
-		var ids           = obj.Id[prefix.Length..].TrimEnd('/').Split("/");
-		if (ids.Length != 2 || ids[1] != resolvedActor.Id)
+		var ids = obj.Id[prefix.Length..].TrimEnd('/').Split("/");
+		if (ids.Length != 2 || ids[1] != actor.Id)
 			throw GracefulException
-				.UnprocessableEntity($"Actor id '{resolvedActor.Id}' doesn't match followee id '{ids[1]}'");
+				.UnprocessableEntity($"Actor id '{actor.Id}' doesn't match followee id '{ids[1]}'");
 
 		var request = await db.FollowRequests
 		                      .Include(p => p.Follower.UserProfile)
 		                      .Include(p => p.Followee.UserProfile)
-		                      .FirstOrDefaultAsync(p => p.Followee == resolvedActor && p.FollowerId == ids[0]);
+		                      .FirstOrDefaultAsync(p => p.Followee == actor && p.FollowerId == ids[0]);
 
 		if (request == null)
 			throw GracefulException
-				.UnprocessableEntity($"No follow request matching follower '{ids[0]}' and followee '{resolvedActor.Id}' found");
+				.UnprocessableEntity($"No follow request matching follower '{ids[0]}' and followee '{actor.Id}' found");
 
 		var following = new Following
 		{
 			Id                  = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt           = DateTime.UtcNow,
 			Follower            = request.Follower,
-			Followee            = resolvedActor,
+			Followee            = actor,
 			FollowerHost        = request.FollowerHost,
 			FolloweeHost        = request.FolloweeHost,
 			FollowerInbox       = request.FollowerInbox,
@@ -385,7 +383,7 @@ public class ActivityHandlerService(
 			FolloweeSharedInbox = request.FolloweeSharedInbox
 		};
 
-		resolvedActor.FollowersCount++;
+		actor.FollowersCount++;
 		request.Follower.FollowingCount++;
 
 		db.Remove(request);
@@ -394,23 +392,22 @@ public class ActivityHandlerService(
 		await notificationSvc.GenerateFollowRequestAcceptedNotification(request);
 	}
 
-	private async Task RejectAsync(ASFollow follow, ASActor actor)
+	private async Task RejectAsync(ASFollow follow, User actor)
 	{
 		if (follow is not { Actor: not null })
 			throw GracefulException.UnprocessableEntity("Refusing to reject object with invalid follow object");
 
-		var resolvedActor    = await userResolver.ResolveAsync(actor.Id);
 		var resolvedFollower = await userResolver.ResolveAsync(follow.Actor.Id);
 		if (resolvedFollower is not { Host: null })
 			throw GracefulException.UnprocessableEntity("Refusing to reject remote follow");
 
-		await db.FollowRequests.Where(p => p.Followee == resolvedActor && p.Follower == resolvedFollower)
+		await db.FollowRequests.Where(p => p.Followee == actor && p.Follower == resolvedFollower)
 		        .ExecuteDeleteAsync();
-		var count = await db.Followings.Where(p => p.Followee == resolvedActor && p.Follower == resolvedFollower)
+		var count = await db.Followings.Where(p => p.Followee == actor && p.Follower == resolvedFollower)
 		                    .ExecuteDeleteAsync();
 		if (count > 0)
 		{
-			resolvedActor.FollowersCount    -= count;
+			actor.FollowersCount            -= count;
 			resolvedFollower.FollowingCount -= count;
 			await db.SaveChangesAsync();
 		}
@@ -418,7 +415,7 @@ public class ActivityHandlerService(
 		await db.Notifications
 		        .Where(p => p.Type == Notification.NotificationType.FollowRequestAccepted)
 		        .Where(p => p.Notifiee == resolvedFollower &&
-		                    p.Notifier == resolvedActor)
+		                    p.Notifier == actor)
 		        .ExecuteDeleteAsync();
 	}
 }
