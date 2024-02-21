@@ -19,14 +19,14 @@ namespace Iceshrimp.Backend.Core.Federation.WebFinger;
 //FIXME: handle cursed person/group acct collisions like https://lemmy.ml/.well-known/webfinger?resource=acct:linux@lemmy.ml
 //FIXME: also check if the query references the local instance in other ways (e.g. @user@{WebDomain}, @user@{AccountDomain}, https://{WebDomain}/..., etc)
 
-public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc)
+public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc, IHostApplicationLifetime appLifetime)
 {
 	public async Task<WebFingerResponse?> ResolveAsync(string query)
 	{
 		(query, var proto, var domain) = ParseQuery(query);
 		var webFingerUrl = await GetWebFingerUrlAsync(query, proto, domain);
 
-		using var cts = new CancellationTokenSource();
+		using var cts = CancellationTokenSource.CreateLinkedTokenSource(appLifetime.ApplicationStopping);
 		cts.CancelAfter(TimeSpan.FromSeconds(10));
 
 		var req = httpRqSvc.Get(webFingerUrl, ["application/jrd+json", "application/json"]);

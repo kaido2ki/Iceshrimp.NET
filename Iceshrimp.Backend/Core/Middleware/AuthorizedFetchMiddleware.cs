@@ -23,7 +23,8 @@ public class AuthorizedFetchMiddleware(
 	UserService userSvc,
 	SystemUserService systemUserSvc,
 	ActivityPub.FederationControlService fedCtrlSvc,
-	ILogger<AuthorizedFetchMiddleware> logger
+	ILogger<AuthorizedFetchMiddleware> logger,
+	IHostApplicationLifetime appLifetime
 ) : IMiddleware
 {
 	private static readonly JsonSerializerSettings JsonSerializerSettings =
@@ -36,6 +37,7 @@ public class AuthorizedFetchMiddleware(
 		if (attribute != null && config.Value.AuthorizedFetch)
 		{
 			var request = ctx.Request;
+			var ct      = appLifetime.ApplicationStopping;
 
 			//TODO: cache this somewhere
 			var instanceActorUri = $"/users/{(await systemUserSvc.GetInstanceActorAsync()).Id}";
@@ -62,15 +64,17 @@ public class AuthorizedFetchMiddleware(
 					                            supressLog: true);
 
 				// First, we check if we already have the key
-				key = await db.UserPublickeys.Include(p => p.User).FirstOrDefaultAsync(p => p.KeyId == sig.KeyId);
+				key = await db.UserPublickeys.Include(p => p.User)
+				              .FirstOrDefaultAsync(p => p.KeyId == sig.KeyId, cancellationToken: ct);
 
 				// If we don't, we need to try to fetch it
 				if (key == null)
 				{
 					try
 					{
-						var user = await userResolver.ResolveAsync(sig.KeyId);
-						key = await db.UserPublickeys.Include(p => p.User).FirstOrDefaultAsync(p => p.User == user);
+						var user = await userResolver.ResolveAsync(sig.KeyId).WaitAsync(ct);
+						key = await db.UserPublickeys.Include(p => p.User)
+						              .FirstOrDefaultAsync(p => p.User == user, cancellationToken: ct);
 					}
 					catch (Exception e)
 					{
@@ -121,7 +125,7 @@ public class AuthorizedFetchMiddleware(
 					if (!ActivityPub.ActivityFetcherService.IsValidActivityContentType(contentType))
 						throw new Exception("Request body is not an activity");
 
-					var body = await new StreamReader(request.Body).ReadToEndAsync();
+					var body = await new StreamReader(request.Body).ReadToEndAsync(ct);
 					request.Body.Seek(0, SeekOrigin.Begin);
 					var deserialized = JsonConvert.DeserializeObject<JObject?>(body);
 					var expanded     = LdHelpers.Expand(deserialized);
@@ -140,14 +144,14 @@ public class AuthorizedFetchMiddleware(
 					key = null;
 					key = await db.UserPublickeys
 					              .Include(p => p.User)
-					              .FirstOrDefaultAsync(p => p.User.Uri == activity.Actor.Id);
+					              .FirstOrDefaultAsync(p => p.User.Uri == activity.Actor.Id, cancellationToken: ct);
 
 					if (key == null)
 					{
-						var user = await userResolver.ResolveAsync(activity.Actor.Id);
+						var user = await userResolver.ResolveAsync(activity.Actor.Id).WaitAsync(ct);
 						key = await db.UserPublickeys
 						              .Include(p => p.User)
-						              .FirstOrDefaultAsync(p => p.User == user);
+						              .FirstOrDefaultAsync(p => p.User == user, cancellationToken: ct);
 
 						if (key == null)
 							throw new Exception($"Failed to fetch public key for user {activity.Actor.Id}");

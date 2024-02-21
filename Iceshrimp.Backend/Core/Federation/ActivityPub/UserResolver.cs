@@ -65,7 +65,7 @@ public class UserResolver(
 		}
 
 		var finalAcct = fingerRes.Subject;
-		var finalUri = fingerRes.Links.FirstOrDefault(p => p.Rel == "self" && p.Type == "application/activity+json")
+		var finalUri = fingerRes.Links.FirstOrDefault(p => p is { Rel: "self", Type: "application/activity+json" })
 		                        ?.Href ??
 		               throw new GracefulException("Final AP URI was null");
 
