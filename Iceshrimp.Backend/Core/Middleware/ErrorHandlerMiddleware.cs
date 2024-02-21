@@ -23,8 +23,6 @@ public class ErrorHandlerMiddleware(
 		}
 		catch (Exception e)
 		{
-			ctx.Response.ContentType = "application/json";
-
 			// Get the name of the class & function where the exception originated, falling back to this one
 			var type = e.TargetSite?.DeclaringType?.FullName ?? typeof(ErrorHandlerMiddleware).FullName!;
 			if (type.Contains('>'))
@@ -32,6 +30,33 @@ public class ErrorHandlerMiddleware(
 
 			var logger    = loggerFactory.CreateLogger(type);
 			var verbosity = options.Value.ExceptionVerbosity;
+
+			if (ctx.Response.HasStarted)
+			{
+				if (e is GracefulException { SuppressLog: false } earlyCe)
+				{
+					if (earlyCe.Details != null)
+					{
+						logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message} - {details}",
+						                ctx.TraceIdentifier, (int)earlyCe.StatusCode, earlyCe.Error, earlyCe.Message,
+						                earlyCe.Details);
+					}
+					else
+					{
+						logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message}",
+						                ctx.TraceIdentifier, (int)earlyCe.StatusCode, earlyCe.Error, earlyCe.Message);
+					}
+				}
+				else if (e is not GracefulException)
+				{
+					logger.LogError("Request {id} encountered an unexpected error: {exception}", ctx.TraceIdentifier,
+					                e.ToString());
+				}
+
+				return;
+			}
+
+			ctx.Response.ContentType = "application/json";
 
 			var isMastodon = ctx.GetEndpoint()?.Metadata.GetMetadata<MastodonApiControllerAttribute>() != null;
 
