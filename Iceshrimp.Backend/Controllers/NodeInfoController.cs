@@ -14,7 +14,7 @@ namespace Iceshrimp.Backend.Controllers;
 [Route("/nodeinfo")]
 [EnableCors("well-known")]
 [Produces(MediaTypeNames.Application.Json)]
-public class NodeInfoController(IOptions<Config.InstanceSection> config, DatabaseContext db) : Controller
+public class NodeInfoController(IOptions<Config.InstanceSection> config, DatabaseContext db) : ControllerBase
 {
 	[HttpGet("2.1")]
 	[HttpGet("2.0")]

@@ -16,7 +16,7 @@ public class DriveController(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	IOptionsSnapshot<Config.StorageSection> options,
 	ILogger<DriveController> logger
-) : Controller
+) : ControllerBase
 {
 	[EnableCors("drive")]
 	[HttpGet("/files/{accessKey}")]

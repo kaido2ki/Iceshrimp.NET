@@ -16,7 +16,7 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/note")]
 [Produces(MediaTypeNames.Application.Json)]
-public class NoteController(DatabaseContext db, NoteService noteSvc) : Controller
+public class NoteController(DatabaseContext db, NoteService noteSvc) : ControllerBase
 {
 	[HttpGet("{id}")]
 	[Authenticate]

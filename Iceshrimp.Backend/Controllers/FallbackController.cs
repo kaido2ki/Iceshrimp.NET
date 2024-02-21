@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Iceshrimp.Backend.Controllers;
 
 [Produces(MediaTypeNames.Application.Json)]
-public class FallbackController : Controller
+public class FallbackController : ControllerBase
 {
 	[ProducesResponseType(StatusCodes.Status501NotImplemented, Type = typeof(ErrorResponse))]
 	public IActionResult FallbackAction()

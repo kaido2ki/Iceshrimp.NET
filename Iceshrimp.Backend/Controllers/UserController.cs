@@ -15,7 +15,7 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/user/{id}")]
 [Produces(MediaTypeNames.Application.Json)]
-public class UserController(DatabaseContext db) : Controller
+public class UserController(DatabaseContext db) : ControllerBase
 {
 	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponse))]

@@ -15,7 +15,7 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/timeline")]
 [Produces(MediaTypeNames.Application.Json)]
-public class TimelineController(DatabaseContext db, IDistributedCache cache) : Controller
+public class TimelineController(DatabaseContext db, IDistributedCache cache) : ControllerBase
 {
 	[HttpGet("home")]
 	[Authenticate]

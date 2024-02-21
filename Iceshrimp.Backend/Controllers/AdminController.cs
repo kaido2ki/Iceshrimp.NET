@@ -18,7 +18,7 @@ namespace Iceshrimp.Backend.Controllers;
 [SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor",
                  Justification = "We only have a DatabaseContext in our DI pool, not the base type")]
 [Produces(MediaTypeNames.Application.Json)]
-public class AdminController(DatabaseContext db) : Controller
+public class AdminController(DatabaseContext db) : ControllerBase
 {
 	[HttpPost("invites/generate")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InviteResponse))]

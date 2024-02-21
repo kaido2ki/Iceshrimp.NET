@@ -21,7 +21,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
-public class NotificationController(DatabaseContext db, NotificationRenderer notificationRenderer) : Controller
+public class NotificationController(DatabaseContext db, NotificationRenderer notificationRenderer) : ControllerBase
 {
 	[HttpGet]
 	[Authorize("read:notifications")]

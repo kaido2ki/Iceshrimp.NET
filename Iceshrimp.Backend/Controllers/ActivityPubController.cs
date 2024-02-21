@@ -17,7 +17,7 @@ namespace Iceshrimp.Backend.Controllers;
 [Tags("ActivityPub")]
 [UseNewtonsoftJson]
 [Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-public class ActivityPubController : Controller
+public class ActivityPubController : ControllerBase
 {
 	[HttpGet("/notes/{id}")]
 	[AuthorizedFetch]

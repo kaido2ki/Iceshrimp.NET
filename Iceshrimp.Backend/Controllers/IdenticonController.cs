@@ -15,7 +15,7 @@ namespace Iceshrimp.Backend.Controllers;
 [Route("/identicon/{id}")]
 [Produces(MediaTypeNames.Image.Png)]
 [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-public class IdenticonController : Controller
+public class IdenticonController : ControllerBase
 {
 	[HttpGet]
 	public async Task GetIdenticon(string id)

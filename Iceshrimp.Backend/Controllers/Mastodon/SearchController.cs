@@ -28,7 +28,7 @@ public class SearchController(
 	UserRenderer userRenderer,
 	NoteService noteSvc,
 	ActivityPub.UserResolver userResolver
-) : Controller
+) : ControllerBase
 {
 	[HttpGet("/api/v2/search")]
 	[Authorize("read:search")]

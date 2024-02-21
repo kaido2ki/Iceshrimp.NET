@@ -15,7 +15,7 @@ namespace Iceshrimp.Backend.Controllers;
 [Tags("Federation")]
 [Route("/.well-known")]
 [EnableCors("well-known")]
-public class WellKnownController(IOptions<Config.InstanceSection> config, DatabaseContext db) : Controller
+public class WellKnownController(IOptions<Config.InstanceSection> config, DatabaseContext db) : ControllerBase
 {
 	[HttpGet("webfinger")]
 	[Produces(MediaTypeNames.Application.Json)]

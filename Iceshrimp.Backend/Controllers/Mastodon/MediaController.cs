@@ -19,7 +19,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AttachmentEntity))]
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 [ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-public class MediaController(DriveService driveSvc) : Controller
+public class MediaController(DriveService driveSvc) : ControllerBase
 {
 	[HttpPost("/api/v1/media")]
 	[HttpPost("/api/v2/media")]

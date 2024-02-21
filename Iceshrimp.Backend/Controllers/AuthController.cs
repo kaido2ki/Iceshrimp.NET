@@ -17,7 +17,7 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
 [Route("/api/iceshrimp/v1/auth")]
-public class AuthController(DatabaseContext db, UserService userSvc) : Controller
+public class AuthController(DatabaseContext db, UserService userSvc) : ControllerBase
 {
 	[HttpGet]
 	[Authenticate]

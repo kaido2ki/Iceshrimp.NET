@@ -30,7 +30,7 @@ public class AccountController(
 	NotificationService notificationSvc,
 	ActivityPub.ActivityRenderer activityRenderer,
 	ActivityPub.ActivityDeliverService deliverSvc
-) : Controller
+) : ControllerBase
 {
 	[HttpGet("verify_credentials")]
 	[Authorize("read:accounts")]

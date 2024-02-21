@@ -15,7 +15,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
-public class InstanceController(DatabaseContext db) : Controller
+public class InstanceController(DatabaseContext db) : ControllerBase
 {
 	[HttpGet("/api/v1/instance")]
 	public async Task<IActionResult> GetInstanceInfoV1([FromServices] IOptionsSnapshot<Config> config)

@@ -26,7 +26,7 @@ public class StatusController(
 	NoteRenderer noteRenderer,
 	NoteService noteSvc,
 	IDistributedCache cache
-) : Controller
+) : ControllerBase
 {
 	[HttpGet("{id}")]
 	[Authenticate("read:statuses")]
