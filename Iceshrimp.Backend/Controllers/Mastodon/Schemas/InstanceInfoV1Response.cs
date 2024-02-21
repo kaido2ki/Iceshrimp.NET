@@ -6,7 +6,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 public class InstanceInfoV1Response(Config config)
 {
 	[J("stats")]   public required InstanceStats Stats;
-	[J("version")] public          string Version => $"4.2.1 (compatible; Iceshrimp.NET/{config.Instance.Version}";
+	[J("version")] public          string Version => $"4.2.1 (compatible; Iceshrimp.NET/{config.Instance.Version})";
 
 	[J("max_toot_chars")]    public int    MaxNoteChars     => config.Instance.CharacterLimit;
 	[J("uri")]               public string AccountDomain    => config.Instance.AccountDomain;
