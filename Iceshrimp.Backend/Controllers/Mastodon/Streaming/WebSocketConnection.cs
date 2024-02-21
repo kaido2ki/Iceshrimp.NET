@@ -60,6 +60,11 @@ public sealed class WebSocketConnection(
 			return;
 		}
 
+		await HandleSocketMessageAsync(message);
+	}
+
+	public async Task HandleSocketMessageAsync(StreamingRequestMessage message)
+	{
 		switch (message.Type)
 		{
 			case "subscribe":

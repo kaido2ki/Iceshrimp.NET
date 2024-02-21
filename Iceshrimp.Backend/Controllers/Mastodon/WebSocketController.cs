@@ -21,7 +21,7 @@ public class WebSocketController(
 {
 	[Route("/api/v1/streaming")]
 	[ApiExplorerSettings(IgnoreApi = true)]
-	public async Task GetStreamingSocket()
+	public async Task GetStreamingSocket([FromQuery] string? stream, [FromQuery] string? list, [FromQuery] string? tag)
 	{
 		if (!HttpContext.WebSockets.IsWebSocketRequest)
 			throw GracefulException.BadRequest("Not a WebSocket request");
@@ -34,7 +34,8 @@ public class WebSocketController(
 		try
 		{
 			var token = await Authenticate(accessToken);
-			await WebSocketHandler.HandleConnectionAsync(webSocket, token, eventSvc, scopeFactory, ct);
+			await WebSocketHandler.HandleConnectionAsync(webSocket, token, eventSvc, scopeFactory,
+			                                             stream, list, tag, ct);
 		}
 		catch (Exception e)
 		{

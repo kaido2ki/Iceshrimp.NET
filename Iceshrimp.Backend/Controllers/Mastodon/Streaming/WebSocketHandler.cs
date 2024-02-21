@@ -9,7 +9,7 @@ public static class WebSocketHandler
 {
 	public static async Task HandleConnectionAsync(
 		WebSocket socket, OauthToken token, EventService eventSvc, IServiceScopeFactory scopeFactory,
-		CancellationToken ct
+		string? stream, string? list, string? tag, CancellationToken ct
 	)
 	{
 		using var connection = new WebSocketConnection(socket, token, eventSvc, scopeFactory, ct);
@@ -18,6 +18,17 @@ public static class WebSocketHandler
 		WebSocketReceiveResult? res = null;
 
 		connection.InitializeStreamingWorker();
+
+		if (stream != null)
+		{
+			await connection.HandleSocketMessageAsync(new StreamingRequestMessage
+			{
+				Type   = "subscribe",
+				Stream = stream,
+				List   = list,
+				Tag    = tag
+			});
+		}
 
 		while ((!res?.CloseStatus.HasValue ?? true) &&
 		       !ct.IsCancellationRequested &&
