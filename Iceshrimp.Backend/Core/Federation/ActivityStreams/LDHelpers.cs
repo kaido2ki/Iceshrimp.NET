@@ -103,6 +103,14 @@ public static class LdHelpers
 
 		return payload;
 	}
+	
+	public static async Task<string> CompactAsync(this ASActivity activity)
+	{
+		var compacted = Compact(activity) ?? throw new Exception("Failed to compact signed activity");
+		var payload   = JsonConvert.SerializeObject(compacted, JsonSerializerSettings);
+
+		return payload;
+	}
 
 	public static JObject? Compact(object obj)
 	{

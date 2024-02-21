@@ -1,9 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using ProtoBuf;
 using StackExchange.Redis;
@@ -24,6 +26,7 @@ public class PreDeliverQueue
 		var logger   = scope.GetRequiredService<ILogger<DeliverQueue>>();
 		var db       = scope.GetRequiredService<DatabaseContext>();
 		var queueSvc = scope.GetRequiredService<QueueService>();
+		var config   = scope.GetRequiredService<IOptionsSnapshot<Config.SecuritySection>>();
 
 		var parsed       = JToken.Parse(job.SerializedActivity);
 		var expanded     = LdHelpers.Expand(parsed) ?? throw new Exception("Failed to expand activity");
@@ -64,8 +67,16 @@ public class PreDeliverQueue
 
 		if (inboxQueryResults.Count == 0) return;
 
-		var keypair = await db.UserKeypairs.FirstAsync(p => p.UserId == job.ActorId, token);
-		var payload = await activity.SignAndCompactAsync(keypair);
+		string payload;
+		if (config.Value.AttachLdSignatures)
+		{
+			var keypair = await db.UserKeypairs.FirstAsync(p => p.UserId == job.ActorId, token);
+			payload = await activity.SignAndCompactAsync(keypair);
+		}
+		else
+		{
+			payload = await activity.CompactAsync();
+		}
 
 		foreach (var inboxQueryResult in inboxQueryResults)
 			await queueSvc.DeliverQueue.EnqueueAsync(new DeliverJob

@@ -116,7 +116,9 @@ public class AuthorizedFetchMiddleware(
 				logger.LogDebug("Error validating HTTP signature: {error}", e.Message);
 			}
 
-			if (!verified && request is { ContentType: not null, ContentLength: > 0 })
+			if (!verified &&
+			    request is { ContentType: not null, ContentLength: > 0 } &&
+			    config.Value.AcceptLdSignatures)
 			{
 				logger.LogDebug("Trying LD signature next...");
 				try

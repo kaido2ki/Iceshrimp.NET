@@ -49,6 +49,8 @@ public sealed class Config
 	public sealed class SecuritySection
 	{
 		public bool                 AuthorizedFetch      { get; init; } = true;
+		public bool                 AttachLdSignatures   { get; init; } = false;
+		public bool                 AcceptLdSignatures   { get; init; } = false;
 		public ExceptionVerbosity   ExceptionVerbosity   { get; init; } = ExceptionVerbosity.Basic;
 		public Enums.Registrations  Registrations        { get; init; } = Enums.Registrations.Closed;
 		public Enums.FederationMode FederationMode       { get; init; } = Enums.FederationMode.BlockList;
