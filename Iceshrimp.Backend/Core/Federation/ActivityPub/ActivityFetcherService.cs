@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
@@ -34,6 +35,8 @@ public class ActivityFetcherService(
 
 		if (!response.IsSuccessStatusCode)
 		{
+			if (response.StatusCode == HttpStatusCode.Gone)
+				throw AuthFetchException.NotFound("The remote user no longer exists.");
 			logger.LogDebug("Failed to fetch activity: response status was {code}", response.StatusCode);
 			return [];
 		}

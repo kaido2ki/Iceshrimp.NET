@@ -61,7 +61,7 @@ public class AuthorizedFetchMiddleware(
 
 				if (await fedCtrlSvc.ShouldBlockAsync(sig.KeyId))
 					throw new GracefulException(HttpStatusCode.Forbidden, "Forbidden", "Instance is blocked",
-					                            supressLog: true);
+					                            suppressLog: true);
 
 				// First, we check if we already have the key
 				key = await db.UserPublickeys.Include(p => p.User)
@@ -93,7 +93,7 @@ public class AuthorizedFetchMiddleware(
 				// We want to check both the user host & the keyId host (as account & web domain might be different)
 				if (await fedCtrlSvc.ShouldBlockAsync(key.User.Host, key.KeyId))
 					throw new GracefulException(HttpStatusCode.Forbidden, "Forbidden", "Instance is blocked",
-					                            supressLog: true);
+					                            suppressLog: true);
 
 				List<string> headers = request.ContentLength > 0 || attribute.ForceBody
 					? ["(request-target)", "digest", "host", "date"]
@@ -112,6 +112,7 @@ public class AuthorizedFetchMiddleware(
 			}
 			catch (Exception e)
 			{
+				if (e is AuthFetchException afe) throw GracefulException.Accepted(afe.Message);
 				if (e is GracefulException { SuppressLog: true }) throw;
 				logger.LogDebug("Error validating HTTP signature: {error}", e.Message);
 			}
@@ -142,7 +143,7 @@ public class AuthorizedFetchMiddleware(
 						throw new Exception("Activity has no actor");
 					if (await fedCtrlSvc.ShouldBlockAsync(new Uri(activity.Actor.Id).Host))
 						throw new GracefulException(HttpStatusCode.Forbidden, "Forbidden", "Instance is blocked",
-						                            supressLog: true);
+						                            suppressLog: true);
 					key = null;
 					key = await db.UserPublickeys
 					              .Include(p => p.User)
@@ -161,7 +162,7 @@ public class AuthorizedFetchMiddleware(
 
 					if (await fedCtrlSvc.ShouldBlockAsync(key.User.Host, new Uri(key.KeyId).Host))
 						throw new GracefulException(HttpStatusCode.Forbidden, "Forbidden", "Instance is blocked",
-						                            supressLog: true);
+						                            suppressLog: true);
 
 					// We need to re-run deserialize & expand with date time handling disabled for JSON-LD canonicalization to work correctly
 					var rawDeserialized = JsonConvert.DeserializeObject<JObject?>(body, JsonSerializerSettings);
@@ -182,6 +183,7 @@ public class AuthorizedFetchMiddleware(
 				}
 				catch (Exception e)
 				{
+					if (e is AuthFetchException afe) throw GracefulException.Accepted(afe.Message);
 					if (e is GracefulException { SuppressLog: true }) throw;
 					logger.LogError("Error validating JSON-LD signature: {error}", e.Message);
 				}

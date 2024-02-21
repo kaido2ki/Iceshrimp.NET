@@ -145,7 +145,7 @@ public class GracefulException(
 	string error,
 	string message,
 	string? details = null,
-	bool supressLog = false,
+	bool suppressLog = false,
 	bool overrideBasic = false
 ) : Exception(message)
 {
@@ -153,7 +153,7 @@ public class GracefulException(
 	public readonly string         Error         = error;
 	public readonly bool           OverrideBasic = overrideBasic;
 	public readonly HttpStatusCode StatusCode    = statusCode;
-	public readonly bool           SuppressLog   = supressLog;
+	public readonly bool           SuppressLog   = suppressLog;
 
 	public GracefulException(HttpStatusCode statusCode, string message, string? details = null) :
 		this(statusCode, statusCode.ToString(), message, details) { }
@@ -190,8 +190,14 @@ public class GracefulException(
 	///     returning 410 Gone)
 	/// </summary>
 	public static GracefulException Accepted(string message) =>
-		new(HttpStatusCode.Accepted, HttpStatusCode.Accepted.ToString(),
-		    message, supressLog: true);
+		new(HttpStatusCode.Accepted, HttpStatusCode.Accepted.ToString(), message, suppressLog: true);
+}
+
+public class AuthFetchException(HttpStatusCode statusCode, string message, string? details = null)
+	: GracefulException(statusCode, message, details)
+{
+	public static AuthFetchException NotFound(string message) =>
+		new(HttpStatusCode.NotFound, HttpStatusCode.NotFound.ToString(), message);
 }
 
 public enum ExceptionVerbosity
