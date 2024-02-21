@@ -45,7 +45,7 @@ app.UseStaticFiles();
 app.UseRateLimiter();
 app.UseCors();
 app.UseAuthorization();
-app.UseWebSockets();
+app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
 app.UseCustomMiddleware();
 
 app.MapControllers();
