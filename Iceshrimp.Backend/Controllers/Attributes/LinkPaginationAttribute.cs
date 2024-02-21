@@ -26,7 +26,7 @@ public class LinkPaginationAttribute(int defaultLimit, int maxLimit) : ActionFil
 	{
 		if (actionArguments.Count == 0) return;
 
-		var query = actionArguments.Values.OfType<MastodonPaginationQuery>().FirstOrDefault();
+		var query = actionArguments.Values.OfType<IPaginationQuery>().FirstOrDefault();
 		if (query == null) return;
 
 		if (context.Result is not OkObjectResult result) return;
@@ -56,4 +56,10 @@ public class LinkPaginationAttribute(int defaultLimit, int maxLimit) : ActionFil
 	{
 		return UriHelper.BuildAbsolute("https", request.Host, request.PathBase, request.Path, query);
 	}
+}
+
+public interface IPaginationQuery
+{
+	public string? MinId { get; }
+	public int?    Limit { get; }
 }

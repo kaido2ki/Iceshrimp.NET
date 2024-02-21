@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Caching.Distributed;
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
+[LinkPagination(20, 80)]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/timeline")]
 [Produces(MediaTypeNames.Application.Json)]
