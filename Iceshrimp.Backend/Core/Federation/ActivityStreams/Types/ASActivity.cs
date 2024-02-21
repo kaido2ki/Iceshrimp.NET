@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database.Tables;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using JI = Newtonsoft.Json.JsonIgnoreAttribute;
@@ -24,6 +25,7 @@ public class ASActivity : ASObject
 		public const string Create   = $"{Ns}#Create";
 		public const string Update   = $"{Ns}#Update";
 		public const string Delete   = $"{Ns}#Delete";
+		public const string Announce = $"{Ns}#Announce";
 		public const string Follow   = $"{Ns}#Follow";
 		public const string Unfollow = $"{Ns}#Unfollow";
 		public const string Accept   = $"{Ns}#Accept";
@@ -56,6 +58,29 @@ public class ASCreate : ASActivity
 			To          = value?.To;
 			Cc          = value?.Cc;
 		}
+	}
+}
+
+public class ASAnnounce : ASActivity
+{
+	public ASAnnounce() => Type = Types.Announce;
+
+	[J($"{Constants.ActivityStreamsNs}#to")]
+	public List<ASObjectBase>? To { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#cc")]
+	public List<ASObjectBase>? Cc { get; set; }
+	
+	public Note.NoteVisibility GetVisibility(ASActor actor)
+	{
+		if (To?.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public") ?? false)
+			return Note.NoteVisibility.Public;
+		if (Cc?.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public") ?? false)
+			return Note.NoteVisibility.Home;
+		if (To?.Any(p => p.Id is not null && p.Id == (actor.Followers?.Id ?? actor.Id + "/followers")) ?? false)
+			return Note.NoteVisibility.Followers;
+
+		return Note.NoteVisibility.Specified;
 	}
 }
 

@@ -59,6 +59,8 @@ public class ASNote : ASObject
 	[JC(typeof(ASAttachmentConverter))]
 	public List<ASAttachment>? Attachments { get; set; }
 
+	public bool VerifiedFetch = false;
+
 	public Note.NoteVisibility GetVisibility(ASActor actor)
 	{
 		if (To.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public"))

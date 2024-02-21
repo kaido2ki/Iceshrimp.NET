@@ -14,9 +14,16 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 	{
 		var dbNotifier = notification.Notifier ?? throw new GracefulException("Notification has no notifier");
 
+		var targetNote = notification.Type == Notification.NotificationType.Renote
+			? notification.Note?.Renote
+			: notification.Note;
+
+		if (notification.Note != null && targetNote == null)
+			throw new Exception("targetNote must not be null at this stage");
+
 		var note = notification.Note != null
-			? statuses?.FirstOrDefault(p => p.Id == notification.Note.Id) ??
-			  await noteRenderer.RenderAsync(notification.Note, user, accounts)
+			? statuses?.FirstOrDefault(p => p.Id == targetNote!.Id) ??
+			  await noteRenderer.RenderAsync(targetNote!, user, accounts)
 			: null;
 
 		var notifier = accounts?.FirstOrDefault(p => p.Id == dbNotifier.Id) ??
@@ -45,11 +52,17 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 		var accounts = await noteRenderer.GetAccounts(notificationList.Where(p => p.Notifier != null)
 		                                                              .Select(p => p.Notifier)
 		                                                              .Concat(notificationList.Select(p => p.Notifiee))
+		                                                              .Concat(notificationList
+		                                                                      .Select(p => p.Note?.Renote?.User)
+		                                                                      .Where(p => p != null))
 		                                                              .Cast<User>()
 		                                                              .DistinctBy(p => p.Id));
 
 		var notes = await noteRenderer.RenderManyAsync(notificationList.Where(p => p.Note != null)
 		                                                               .Select(p => p.Note)
+		                                                               .Concat(notificationList
+		                                                                       .Select(p => p.Note?.Renote)
+		                                                                       .Where(p => p != null))
 		                                                               .Cast<Note>()
 		                                                               .DistinctBy(p => p.Id), user, accounts);
 

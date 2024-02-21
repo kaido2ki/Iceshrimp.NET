@@ -31,7 +31,7 @@ public class ObjectResolver(
 		}
 
 		if (baseObj.Id.StartsWith($"https://{config.Value.WebDomain}/notes/"))
-			return new ASNote { Id = baseObj.Id };
+			return new ASNote { Id = baseObj.Id, VerifiedFetch = true };
 		if (baseObj.Id.StartsWith($"https://{config.Value.WebDomain}/users/"))
 			return new ASActor { Id = baseObj.Id };
 
@@ -42,14 +42,17 @@ public class ObjectResolver(
 		}
 
 		if (await db.Notes.AnyAsync(p => p.Uri == baseObj.Id))
-			return new ASNote { Id = baseObj.Id };
+			return new ASNote { Id = baseObj.Id, VerifiedFetch = true };
 		if (await db.Users.AnyAsync(p => p.Uri == baseObj.Id))
 			return new ASActor { Id = baseObj.Id };
 
 		try
 		{
-			var result = await fetchSvc.FetchActivityAsync(baseObj.Id);
-			return result.FirstOrDefault();
+			var result      = await fetchSvc.FetchActivityAsync(baseObj.Id);
+			var resolvedObj = result.FirstOrDefault();
+			if (resolvedObj is not ASNote note) return resolvedObj;
+			note.VerifiedFetch = true;
+			return note;
 		}
 		catch (Exception e)
 		{

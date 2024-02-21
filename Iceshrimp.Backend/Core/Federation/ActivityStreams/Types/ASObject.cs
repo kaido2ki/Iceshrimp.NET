@@ -52,6 +52,7 @@ public class ASObject : ASObjectBase
 						ASActivity.Types.Undo      => token.ToObject<ASUndo>(),
 						ASActivity.Types.Like      => token.ToObject<ASLike>(),
 						ASActivity.Types.Bite      => token.ToObject<ASBite>(),
+						ASActivity.Types.Announce  => token.ToObject<ASAnnounce>(),
 						_                          => token.ToObject<ASObject>()
 					};
 				case JTokenType.Array:

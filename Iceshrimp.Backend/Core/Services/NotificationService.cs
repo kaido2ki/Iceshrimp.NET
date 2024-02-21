@@ -179,4 +179,27 @@ public class NotificationService(
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotification(this, notification);
 	}
+
+	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
+	public async Task GenerateRenoteNotification(Note note)
+	{
+		if (note.Renote is not { UserHost: null }) return;
+		if (!note.VisibilityIsPublicOrHome &&
+		    await db.Notes.AnyAsync(p => p.Id == note.Id && p.IsVisibleFor(note.Renote.User)))
+			return;
+
+		var notification = new Notification
+		{
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			Note      = note,
+			Notifiee  = note.Renote.User,
+			Notifier  = note.User,
+			Type      = Notification.NotificationType.Renote
+		};
+
+		await db.AddAsync(notification);
+		await db.SaveChangesAsync();
+		eventSvc.RaiseNotification(this, notification);
+	}
 }

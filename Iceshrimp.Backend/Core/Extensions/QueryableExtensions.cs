@@ -253,7 +253,8 @@ public static class QueryableExtensions
 	)
 	{
 		var list = (await notes.ToListAsync())
-			.EnforceRenoteReplyVisibility();
+			.EnforceRenoteReplyVisibility()
+			.ToList();
 		return (await renderer.RenderManyAsync(list, user)).ToList();
 	}
 

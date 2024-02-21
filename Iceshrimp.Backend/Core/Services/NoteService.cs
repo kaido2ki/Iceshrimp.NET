@@ -91,10 +91,16 @@ public class NoteService(
 
 		user.NotesCount++;
 		if (reply != null) reply.RepliesCount++;
+		if (renote != null && !note.IsQuote)
+			if (!db.Notes.Any(p => p.UserId == user.Id && p.RenoteId == renote.Id && p.IsPureRenote))
+				renote.RenoteCount++;
+
 		await db.AddAsync(note);
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotePublished(this, note);
 		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
+
+		if (user.Host != null) return note;
 
 		var actor    = userRenderer.RenderLite(user);
 		var obj      = await noteRenderer.RenderAsync(note, mentions);

@@ -227,6 +227,16 @@ public class ActivityHandlerService(
 				await notificationSvc.GenerateBiteNotification(dbBite);
 				return;
 			}
+			case ASAnnounce announce:
+			{
+				if (announce.Object is not ASNote note)
+					throw GracefulException.UnprocessableEntity("Invalid or unsupported announce object");
+
+				var dbNote = await noteSvc.ResolveNoteAsync(note.Id, note.VerifiedFetch ? note : null);
+				var renote = await noteSvc.CreateNoteAsync(resolvedActor, announce.GetVisibility(activity.Actor), renote: dbNote);
+				await notificationSvc.GenerateRenoteNotification(renote);
+				return;
+			}
 			default:
 				throw new NotImplementedException($"Activity type {activity.Type} is unknown");
 		}

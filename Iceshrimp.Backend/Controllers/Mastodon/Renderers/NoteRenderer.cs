@@ -164,7 +164,12 @@ public class NoteRenderer(
 		IEnumerable<Note> notes, User? user, List<AccountEntity>? accounts = null
 	)
 	{
-		var noteList = notes.ToList();
+		var noteList = notes.SelectMany<Note, Note?>(p => [p, p.Renote])
+		                    .Where(p => p != null)
+		                    .Cast<Note>()
+		                    .DistinctBy(p => p.Id)
+		                    .ToList();
+
 		accounts ??= await GetAccounts(noteList.Select(p => p.User));
 		var mentions    = await GetMentions(noteList);
 		var attachments = await GetAttachments(noteList);
