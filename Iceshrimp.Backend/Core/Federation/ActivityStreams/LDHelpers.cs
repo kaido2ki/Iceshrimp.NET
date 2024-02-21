@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using VDS.RDF.JsonLd;
+using VDS.RDF.JsonLd.Syntax;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams;
 
@@ -61,7 +62,7 @@ public static class LdHelpers
 
 	private static readonly JsonLdProcessorOptions Options = new()
 	{
-		DocumentLoader = CustomLoader, ExpandContext = ASExtensions
+		DocumentLoader = CustomLoader, ExpandContext = ASExtensions, ProcessingMode = JsonLdProcessingMode.JsonLd10
 	};
 
 	public static readonly JsonSerializerSettings JsonSerializerSettings = new()
