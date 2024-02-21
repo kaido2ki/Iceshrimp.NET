@@ -185,7 +185,7 @@ public class NotificationService(
 	{
 		if (note.Renote is not { UserHost: null }) return;
 		if (!note.VisibilityIsPublicOrHome &&
-		    await db.Notes.AnyAsync(p => p.Id == note.Id && p.IsVisibleFor(note.Renote.User)))
+		    !await db.Notes.AnyAsync(p => p.Id == note.Id && p.IsVisibleFor(note.Renote.User)))
 			return;
 
 		var notification = new Notification
@@ -195,7 +195,7 @@ public class NotificationService(
 			Note      = note,
 			Notifiee  = note.Renote.User,
 			Notifier  = note.User,
-			Type      = Notification.NotificationType.Renote
+			Type      = note.IsQuote ? Notification.NotificationType.Quote : Notification.NotificationType.Renote
 		};
 
 		await db.AddAsync(notification);

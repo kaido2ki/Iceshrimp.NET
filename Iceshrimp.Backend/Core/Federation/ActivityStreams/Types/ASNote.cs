@@ -14,6 +14,18 @@ public class ASNote : ASObject
 	[JC(typeof(VC))]
 	public string? MkContent { get; set; }
 
+	[J("https://misskey-hub.net/ns#_misskey_quote")]
+	[JC(typeof(VC))]
+	public string? MkQuote { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#quoteUrl")]
+	[JC(typeof(VC))]
+	public string? QuoteUrl { get; set; }
+
+	[J("http://fedibird.com/ns#quoteUri")]
+	[JC(typeof(VC))]
+	public string? QuoteUri { get; set; }
+
 	[J($"{Constants.ActivityStreamsNs}#content")]
 	[JC(typeof(VC))]
 	public string? Content { get; set; }

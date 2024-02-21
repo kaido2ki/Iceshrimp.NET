@@ -99,6 +99,8 @@ public class NoteService(
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotePublished(this, note);
 		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
+		await notificationSvc.GenerateReplyNotifications(note, mentionedLocalUserIds);
+		await notificationSvc.GenerateRenoteNotification(note);
 
 		if (user.Host != null) return note;
 
@@ -300,13 +302,15 @@ public class NoteService(
 		if (actor.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
 
-		//TODO: resolve anything related to the note as well (attachments, emoji, etc)
+		//TODO: resolve emoji
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			await ResolveNoteMentionsAsync(note);
 
 		var createdAt = note.PublishedAt?.ToUniversalTime() ??
 		                throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field");
+
+		var quoteUrl = note.MkQuote ?? note.QuoteUri ?? note.QuoteUrl;
 
 		var dbNote = new Note
 		{
@@ -319,13 +323,20 @@ public class NoteService(
 			CreatedAt  = createdAt,
 			UserHost   = actor.Host,
 			Visibility = note.GetVisibility(actor),
-			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null
+			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null,
+			Renote     = quoteUrl != null ? await ResolveNoteAsync(quoteUrl) : null
 		};
 
 		if (dbNote.Reply != null)
 		{
 			dbNote.ReplyUserId   = dbNote.Reply.UserId;
 			dbNote.ReplyUserHost = dbNote.Reply.UserHost;
+		}
+		
+		if (dbNote.Renote != null)
+		{
+			dbNote.RenoteUserId   = dbNote.Renote.UserId;
+			dbNote.RenoteUserHost = dbNote.Renote.UserHost;
 		}
 
 		if (dbNote.Text is { Length: > 100000 })
@@ -369,6 +380,7 @@ public class NoteService(
 		eventSvc.RaiseNotePublished(this, dbNote);
 		await notificationSvc.GenerateMentionNotifications(dbNote, mentionedLocalUserIds);
 		await notificationSvc.GenerateReplyNotifications(dbNote, mentionedLocalUserIds);
+		await notificationSvc.GenerateRenoteNotification(dbNote);
 		logger.LogDebug("Note {id} created successfully", dbNote.Id);
 		return dbNote;
 	}

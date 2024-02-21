@@ -23,10 +23,15 @@ public class NoteRenderer(
 	)
 	{
 		var uri = note.Uri ?? note.GetPublicUri(config.Value);
-		var renote = note.Renote != null && recurse > 0
+		var renote = note is { Renote: not null, IsQuote: false } && recurse > 0
+			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes, 0)
+			: null;
+		var quote = note is { Renote: not null, IsQuote: true } && recurse > 0
 			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes, --recurse)
 			: null;
-		var text = note.Text; //TODO: append quote uri
+		var text = note.Text;
+		if (quote != null && text != null && !text.EndsWith(quote.Url) && !text.EndsWith(quote.Uri))
+			text += $"\n\nRE: {quote.Url}"; //TODO: render as inline quote
 
 		var likeCount = likeCounts?.GetValueOrDefault(note.Id, 0) ?? await db.NoteLikes.CountAsync(p => p.Note == note);
 		var liked = likedNotes?.Contains(note.Id) ?? await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
@@ -87,8 +92,8 @@ public class NoteRenderer(
 			Account        = account,
 			ReplyId        = note.ReplyId,
 			ReplyUserId    = note.ReplyUserId,
-			Renote         = renote, //TODO: check if it's a pure renote
-			Quote          = renote, //TODO: see above
+			Renote         = renote,
+			Quote          = quote,
 			ContentType    = "text/x.misskeymarkdown",
 			CreatedAt      = note.CreatedAt.ToStringMastodon(),
 			EditedAt       = note.UpdatedAt?.ToStringMastodon(),

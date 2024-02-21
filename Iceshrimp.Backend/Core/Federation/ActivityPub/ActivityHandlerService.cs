@@ -236,9 +236,7 @@ public class ActivityHandlerService(
 					throw GracefulException.UnprocessableEntity("Invalid or unsupported announce object");
 
 				var dbNote = await noteSvc.ResolveNoteAsync(note.Id, note.VerifiedFetch ? note : null);
-				var renote = await noteSvc.CreateNoteAsync(resolvedActor, announce.GetVisibility(activity.Actor),
-				                                           renote: dbNote);
-				await notificationSvc.GenerateRenoteNotification(renote);
+				await noteSvc.CreateNoteAsync(resolvedActor, announce.GetVisibility(activity.Actor), renote: dbNote);
 				return;
 			}
 			default:
