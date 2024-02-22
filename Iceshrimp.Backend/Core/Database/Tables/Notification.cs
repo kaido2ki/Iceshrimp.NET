@@ -125,4 +125,10 @@ public class Notification : IEntity
 	[Column("id")]
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
+
+	public Notification WithPrecomputedNoteVisibilities(bool reply, bool renote)
+	{
+		Note = Note?.WithPrecomputedVisibilities(reply, renote);
+		return this;
+	}
 }

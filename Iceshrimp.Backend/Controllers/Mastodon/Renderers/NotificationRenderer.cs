@@ -18,18 +18,13 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 			? notification.Note?.Renote
 			: notification.Note;
 
-		if (notification.Note != null && targetNote == null)
-			throw new Exception("targetNote must not be null at this stage");
-
-		var note = notification.Note != null
-			? statuses?.FirstOrDefault(p => p.Id == targetNote!.Id) ??
-			  await noteRenderer.RenderAsync(targetNote!, user, accounts)
+		var note = targetNote != null
+			? statuses?.FirstOrDefault(p => p.Id == targetNote.Id) ??
+			  await noteRenderer.RenderAsync(targetNote, user, accounts)
 			: null;
 
 		var notifier = accounts?.FirstOrDefault(p => p.Id == dbNotifier.Id) ??
 		               await userRenderer.RenderAsync(dbNotifier);
-
-		//TODO: specially handle quotes
 
 		var res = new NotificationEntity
 		{

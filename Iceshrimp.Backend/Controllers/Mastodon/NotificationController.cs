@@ -50,6 +50,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                  .FilterBlocked(p => p.Notifier, user)
 		                  .FilterBlocked(p => p.Note, user)
 		                  .Paginate(query, ControllerContext)
+		                  .PrecomputeNoteVisibilities(user)
 		                  .RenderAllForMastodonAsync(notificationRenderer, user);
 
 		//TODO: handle mutes
@@ -69,12 +70,13 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                           .IncludeCommonProperties()
 		                           .Where(p => p.Notifiee == user && p.Id == id)
 		                           .EnsureNoteVisibilityFor(p => p.Note, user)
+		                           .PrecomputeNoteVisibilities(user)
 		                           .FirstOrDefaultAsync() ??
 		                   throw GracefulException.RecordNotFound();
 
 		//TODO: handle reply/renote visibility
 
-		var res = await notificationRenderer.RenderAsync(notification, user);
+		var res = await notificationRenderer.RenderAsync(notification.EnforceRenoteReplyVisibility(p => p.Note), user);
 
 		return Ok(res);
 	}

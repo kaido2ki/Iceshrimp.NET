@@ -176,6 +176,16 @@ public static class QueryableExtensions
 		                                                       p.Renote.IsVisibleFor(user)));
 	}
 
+	public static IQueryable<Notification> PrecomputeNoteVisibilities(this IQueryable<Notification> query, User user)
+	{
+		return query.Select(p => p.WithPrecomputedNoteVisibilities(p.Note != null &&
+		                                                           p.Note.Reply != null &&
+		                                                           p.Note.Reply.IsVisibleFor(user),
+		                                                           p.Note != null &&
+		                                                           p.Note.Renote != null &&
+		                                                           p.Note.Renote.IsVisibleFor(user)));
+	}
+
 	public static IQueryable<User> PrecomputeRelationshipData(this IQueryable<User> query, User user)
 	{
 		return query.Select(p => p.WithPrecomputedBlockStatus(p.IsBlocking(user), p.IsBlockedBy(user))
@@ -248,13 +258,32 @@ public static class QueryableExtensions
 		return list.Select(EnforceRenoteReplyVisibility);
 	}
 
+	public static T EnforceRenoteReplyVisibility<T>(this T source, Expression<Func<T, Note?>> predicate)
+	{
+		var note = predicate.Compile().Invoke(source);
+		if (note == null) return source;
+		if (!note.PrecomputedIsReplyVisible ?? false)
+			note.Reply = null;
+		if (!note.PrecomputedIsRenoteVisible ?? false)
+			note.Renote = null;
+
+		return source;
+	}
+
+	public static IEnumerable<T> EnforceRenoteReplyVisibility<T>(
+		this IEnumerable<T> list, Expression<Func<T, Note?>> predicate
+	)
+	{
+		return list.Select(p => EnforceRenoteReplyVisibility(p, predicate));
+	}
+
 	public static async Task<List<StatusEntity>> RenderAllForMastodonAsync(
 		this IQueryable<Note> notes, NoteRenderer renderer, User? user
 	)
 	{
 		var list = (await notes.ToListAsync())
-			.EnforceRenoteReplyVisibility()
-			.ToList();
+		           .EnforceRenoteReplyVisibility()
+		           .ToList();
 		return (await renderer.RenderManyAsync(list, user)).ToList();
 	}
 
@@ -270,7 +299,9 @@ public static class QueryableExtensions
 		this IQueryable<Notification> notifications, NotificationRenderer renderer, User user
 	)
 	{
-		var list = await notifications.ToListAsync();
+		var list = (await notifications.ToListAsync())
+		           .EnforceRenoteReplyVisibility(p => p.Note)
+		           .ToList();
 		return (await renderer.RenderManyAsync(list, user)).ToList();
 	}
 
