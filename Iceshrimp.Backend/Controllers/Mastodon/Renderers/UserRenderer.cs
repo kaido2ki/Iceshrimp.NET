@@ -26,7 +26,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			Acct               = acct,
 			FullyQualifiedName = $"{user.Username}@{user.Host ?? config.Value.AccountDomain}",
 			IsLocked           = user.IsLocked,
-			CreatedAt          = user.CreatedAt.ToStringMastodon(),
+			CreatedAt          = user.CreatedAt.ToStringIso8601Like(),
 			FollowersCount     = user.FollowersCount,
 			FollowingCount     = user.FollowingCount,
 			StatusesCount      = user.NotesCount,

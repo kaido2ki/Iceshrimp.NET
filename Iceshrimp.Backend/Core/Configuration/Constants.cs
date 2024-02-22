@@ -5,6 +5,7 @@ public static class Constants
 	public const           string   ActivityStreamsNs = "https://www.w3.org/ns/activitystreams";
 	public const           string   W3IdSecurityNs    = "https://w3id.org/security";
 	public const           string   PurlDcNs          = "http://purl.org/dc/terms";
+	public const           string   XsdNs             = "http://www.w3.org/2001/XMLSchema";
 	public static readonly string[] SystemUsers       = ["instance.actor", "relay.actor"];
 
 	public static readonly string[] BrowserSafeMimeTypes =

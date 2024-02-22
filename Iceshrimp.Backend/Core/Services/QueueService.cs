@@ -219,7 +219,7 @@ public class JobQueue<T>(
 			else
 			{
 				logger.LogTrace("Job in queue {queue} completed after {duration} ms, has been queued since {time}",
-				                name, job.Duration, job.QueuedAt.ToStringMastodon());
+				                name, job.Duration, job.QueuedAt.ToStringIso8601Like());
 			}
 		}
 
@@ -236,8 +236,8 @@ public class JobQueue<T>(
 			job.DelayedUntil ??= DateTime.Now;
 			var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
 			logger.LogTrace("Job in queue {queue} was delayed to {time} after {duration} ms, has been queued since {time}",
-			                name, job.DelayedUntil.Value.ToStringMastodon(), job.Duration,
-			                job.QueuedAt.ToStringMastodon());
+			                name, job.DelayedUntil.Value.ToStringIso8601Like(), job.Duration,
+			                job.QueuedAt.ToStringIso8601Like());
 
 			var timestamp = (long)job.DelayedUntil.Value.Subtract(DateTime.UnixEpoch).TotalSeconds;
 			await _redisDb.SortedSetAddAsync(targetQueue, RedisValue.Unbox(RedisHelpers.Serialize(job)), timestamp);

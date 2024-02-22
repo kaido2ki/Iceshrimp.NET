@@ -37,7 +37,7 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 			Type      = NotificationEntity.EncodeType(notification.Type),
 			Note      = note,
 			Notifier  = notifier,
-			CreatedAt = notification.CreatedAt.ToStringMastodon()
+			CreatedAt = notification.CreatedAt.ToStringIso8601Like()
 		};
 
 		return res;

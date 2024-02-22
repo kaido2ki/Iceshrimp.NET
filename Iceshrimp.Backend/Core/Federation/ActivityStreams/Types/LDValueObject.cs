@@ -1,3 +1,5 @@
+using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
@@ -12,7 +14,7 @@ public class LDValueObject<T>
 
 public class ValueObjectConverter : JsonConverter
 {
-	public override bool CanWrite => false;
+	public override bool CanWrite => true;
 
 	public override bool CanConvert(Type objectType)
 	{
@@ -43,6 +45,28 @@ public class ValueObjectConverter : JsonConverter
 
 	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
 	{
-		throw new NotImplementedException();
+		writer.WriteStartObject();
+
+		switch (value)
+		{
+			case DateTime dt:
+				writer.WritePropertyName("@type");
+				writer.WriteValue($"{Constants.XsdNs}#dateTime");
+				writer.WritePropertyName("@value");
+				writer.WriteValue(dt.ToStringIso8601Like());
+				break;
+			case uint ui:
+				writer.WritePropertyName("@type");
+				writer.WriteValue($"{Constants.XsdNs}#nonNegativeInteger");
+				writer.WritePropertyName("@value");
+				writer.WriteValue(ui);
+				break;
+			default:
+				writer.WritePropertyName("@value");
+				writer.WriteValue(value);
+				break;
+		}
+
+		writer.WriteEndObject();
 	}
 }

@@ -20,7 +20,7 @@ public class ASCollection<T>() : ASObjectBase where T : ASObject
 
 	[J($"{Constants.ActivityStreamsNs}#totalItems")]
 	[JC(typeof(VC))]
-	public long? TotalItems { get; set; }
+	public uint? TotalItems { get; set; }
 }
 
 public sealed class ASCollectionConverter : ASSerializer.ListSingleObjectConverter<ASCollection<ASObject>>;
