@@ -69,7 +69,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			},
 			PublicKey = new ASPublicKey
 			{
-				Id = $"{id}#main-key", Owner = new ASObjectBase(id), PublicKey = keypair.PublicKey, Type = "Key"
+				Id = $"{id}#main-key", Owner = new ASObjectBase(id), PublicKey = keypair.PublicKey
 			}
 		};
 	}
