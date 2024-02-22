@@ -29,6 +29,7 @@
         <PackageReference Include="libsodium" Version="1.0.18.4"/>
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.1"/>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
             <PrivateAssets>all</PrivateAssets>

@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title>Iceshrimp</title>
+    <title>@(ViewData["title"] ?? "Iceshrimp.NET")</title>
     @* ReSharper disable once Html.PathError *@
     <link rel="stylesheet" href="~/Iceshrimp.Backend.styles.css"/>
     <link rel="stylesheet" href="~/css/default.css"/>
+    @await RenderSectionAsync("head", false)
 </head>
 <body>
 @RenderBody()

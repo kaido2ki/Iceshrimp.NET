@@ -62,6 +62,7 @@ public sealed class Config
 		public Enums.FederationMode FederationMode       { get; init; } = Enums.FederationMode.BlockList;
 		public Enums.ItemVisibility ExposeFederationList { get; init; } = Enums.ItemVisibility.Registered;
 		public Enums.ItemVisibility ExposeBlockReasons   { get; init; } = Enums.ItemVisibility.Registered;
+		public bool                 EnablePublicPreview  { get; init; } = true;
 	}
 
 	public sealed class DatabaseSection

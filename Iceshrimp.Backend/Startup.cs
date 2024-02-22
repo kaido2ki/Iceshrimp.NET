@@ -13,7 +13,6 @@ builder.Services.AddControllers()
        .AddValueProviderFactories();
 
 builder.Services.AddSwaggerGenWithOptions();
-builder.Services.AddRazorPages();
 builder.Services.AddViteServices(options =>
 {
 	options.PackageDirectory     = "../Iceshrimp.Frontend";
@@ -26,9 +25,15 @@ builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
 builder.Services.AddCorsPolicies();
 
+if (builder.Environment.IsDevelopment())
+	builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
+else
+	builder.Services.AddRazorPages();
+
 builder.Services.AddServices();
 builder.Services.ConfigureServices(builder.Configuration);
 builder.WebHost.ConfigureKestrel(builder.Configuration);
+builder.WebHost.UseStaticWebAssets();
 
 var app    = builder.Build();
 var config = await app.Initialize(args);
