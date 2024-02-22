@@ -1,4 +1,6 @@
 using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
+using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
@@ -6,13 +8,22 @@ public abstract class ListSchemas
 {
 	public class ListCreationRequest
 	{
-		[B(Name = "title")]          public required string Title         { get; set; }
-		[B(Name = "replies_policy")] public          string RepliesPolicy { get; set; } = "list";
-		[B(Name = "exclusive")]      public          bool   Exclusive     { get; set; } = false;
+		[J("title")] [JR] [B(Name = "title")] public required string Title { get; set; }
+
+		[J("replies_policy")]
+		[B(Name = "replies_policy")]
+		public string RepliesPolicy { get; set; } = "list";
+
+		[J("exclusive")]
+		[B(Name = "exclusive")]
+		public bool Exclusive { get; set; } = false;
 	}
 
 	public class ListUpdateMembersRequest
 	{
-		[B(Name = "account_ids")] public required List<string> AccountIds { get; set; }
+		[J("account_ids")]
+		[JR]
+		[B(Name = "account_ids")]
+		public required List<string> AccountIds { get; set; }
 	}
 }
