@@ -15,7 +15,7 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/user/{id}")]
 [Produces(MediaTypeNames.Application.Json)]
-public class UserController(DatabaseContext db) : ControllerBase
+public class UserController(DatabaseContext db, UserRenderer userRenderer, NoteRenderer noteRenderer) : ControllerBase
 {
 	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserResponse))]
@@ -26,7 +26,7 @@ public class UserController(DatabaseContext db) : ControllerBase
 		                   .FirstOrDefaultAsync(p => p.Id == id) ??
 		           throw GracefulException.NotFound("User not found");
 
-		return Ok(UserRenderer.RenderOne(user));
+		return Ok(userRenderer.RenderOne(user));
 	}
 
 	[HttpGet("notes")]
@@ -48,6 +48,6 @@ public class UserController(DatabaseContext db) : ControllerBase
 		                    .Paginate(pq, ControllerContext)
 		                    .ToListAsync();
 
-		return Ok(NoteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility()));
+		return Ok(noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility()));
 	}
 }

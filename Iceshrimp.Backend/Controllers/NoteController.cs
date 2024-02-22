@@ -16,7 +16,7 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/note")]
 [Produces(MediaTypeNames.Application.Json)]
-public class NoteController(DatabaseContext db, NoteService noteSvc) : ControllerBase
+public class NoteController(DatabaseContext db, NoteService noteSvc, NoteRenderer noteRenderer) : ControllerBase
 {
 	[HttpGet("{id}")]
 	[Authenticate]
@@ -33,7 +33,7 @@ public class NoteController(DatabaseContext db, NoteService noteSvc) : Controlle
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("User not found");
 
-		return Ok(NoteRenderer.RenderOne(note.EnforceRenoteReplyVisibility()));
+		return Ok(noteRenderer.RenderOne(note.EnforceRenoteReplyVisibility()));
 	}
 
 	[HttpPost]
@@ -57,6 +57,6 @@ public class NoteController(DatabaseContext db, NoteService noteSvc) : Controlle
 
 		var note = await noteSvc.CreateNoteAsync(user, Note.NoteVisibility.Public, request.Text, request.Cw, reply);
 
-		return Ok(NoteRenderer.RenderOne(note));
+		return Ok(noteRenderer.RenderOne(note));
 	}
 }

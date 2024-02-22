@@ -49,6 +49,8 @@ public static class ServiceExtensions
 			.AddScoped<ErrorHandlerMiddleware>()
 			.AddScoped<UserRenderer>()
 			.AddScoped<NoteRenderer>()
+			.AddScoped<Controllers.Renderers.NoteRenderer>()
+			.AddScoped<Controllers.Renderers.UserRenderer>()
 			.AddScoped<NotificationRenderer>()
 			.AddScoped<ActivityPubController>();
 

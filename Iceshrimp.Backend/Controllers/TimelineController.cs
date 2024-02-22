@@ -17,7 +17,7 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/timeline")]
 [Produces(MediaTypeNames.Application.Json)]
-public class TimelineController(DatabaseContext db, IDistributedCache cache) : ControllerBase
+public class TimelineController(DatabaseContext db, IDistributedCache cache, NoteRenderer noteRenderer) : ControllerBase
 {
 	[HttpGet("home")]
 	[Authenticate]
@@ -40,6 +40,6 @@ public class TimelineController(DatabaseContext db, IDistributedCache cache) : C
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
 
-		return Ok(NoteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility()));
+		return Ok(noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility()));
 	}
 }

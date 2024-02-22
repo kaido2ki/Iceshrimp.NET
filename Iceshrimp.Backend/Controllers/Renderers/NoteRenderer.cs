@@ -3,14 +3,14 @@ using Iceshrimp.Backend.Core.Database.Tables;
 
 namespace Iceshrimp.Backend.Controllers.Renderers;
 
-public class NoteRenderer
+public class NoteRenderer(UserRenderer userRenderer)
 {
-	public static NoteResponse RenderOne(Note note)
+	public NoteResponse RenderOne(Note note)
 	{
-		return new NoteResponse { Id = note.Id, Text = note.Text, User = UserRenderer.RenderOne(note.User) };
+		return new NoteResponse { Id = note.Id, Text = note.Text, User = userRenderer.RenderOne(note.User) };
 	}
 
-	public static IEnumerable<NoteResponse> RenderMany(IEnumerable<Note> notes)
+	public IEnumerable<NoteResponse> RenderMany(IEnumerable<Note> notes)
 	{
 		return notes.Select(RenderOne);
 	}
