@@ -129,13 +129,17 @@ public class StatusController(
 	public async Task<IActionResult> Renote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var note = await db.Notes.Where(p => p.Id == id)
-		                   .IncludeCommonProperties()
-		                   .EnsureVisibleFor(user)
-		                   .FirstOrDefaultAsync() ??
-		           throw GracefulException.RecordNotFound();
+		if (!await db.Notes.AnyAsync(p => p.RenoteId == id && p.User == user && p.IsPureRenote))
+		{
+			var note = await db.Notes.Where(p => p.Id == id)
+			                   .IncludeCommonProperties()
+			                   .EnsureVisibleFor(user)
+			                   .FirstOrDefaultAsync() ??
+			           throw GracefulException.RecordNotFound();
 
-		await noteSvc.CreateNoteAsync(user, Note.NoteVisibility.Followers, renote: note);
+			await noteSvc.CreateNoteAsync(user, Note.NoteVisibility.Followers, renote: note);
+		}
+
 		return await GetNote(id);
 	}
 
