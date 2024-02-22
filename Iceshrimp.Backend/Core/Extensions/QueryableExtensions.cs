@@ -245,9 +245,9 @@ public static class QueryableExtensions
 
 	public static Note EnforceRenoteReplyVisibility(this Note note)
 	{
-		if (!note.PrecomputedIsReplyVisible ?? false)
+		if (!(note.PrecomputedIsReplyVisible ?? false))
 			note.Reply = null;
-		if (!note.PrecomputedIsRenoteVisible ?? false)
+		if (!(note.PrecomputedIsRenoteVisible ?? false))
 			note.Renote = null;
 
 		return note;
@@ -262,9 +262,9 @@ public static class QueryableExtensions
 	{
 		var note = predicate.Compile().Invoke(source);
 		if (note == null) return source;
-		if (!note.PrecomputedIsReplyVisible ?? false)
+		if (!(note.PrecomputedIsReplyVisible ?? false))
 			note.Reply = null;
-		if (!note.PrecomputedIsRenoteVisible ?? false)
+		if (!(note.PrecomputedIsRenoteVisible ?? false))
 			note.Renote = null;
 
 		return source;
