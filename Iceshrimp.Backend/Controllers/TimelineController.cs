@@ -22,7 +22,7 @@ public class TimelineController(DatabaseContext db, IDistributedCache cache) : C
 	[HttpGet("home")]
 	[Authenticate]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteResponse))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NoteResponse>))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
