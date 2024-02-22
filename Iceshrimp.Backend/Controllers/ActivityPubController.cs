@@ -17,7 +17,12 @@ namespace Iceshrimp.Backend.Controllers;
 [Tags("ActivityPub")]
 [UseNewtonsoftJson]
 [Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-public class ActivityPubController : ControllerBase
+public class ActivityPubController(
+	DatabaseContext db,
+	QueueService queues,
+	ActivityPub.NoteRenderer noteRenderer,
+	ActivityPub.UserRenderer userRenderer
+) : ControllerBase
 {
 	[HttpGet("/notes/{id}")]
 	[AuthorizedFetch]
@@ -25,10 +30,7 @@ public class ActivityPubController : ControllerBase
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASNote))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetNote(
-		string id, [FromServices] DatabaseContext db,
-		[FromServices] ActivityPub.NoteRenderer noteRenderer
-	)
+	public async Task<IActionResult> GetNote(string id)
 	{
 		var actor = HttpContext.GetActor();
 		var note = await db.Notes
@@ -46,9 +48,7 @@ public class ActivityPubController : ControllerBase
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUser(
-		string id, [FromServices] DatabaseContext db, [FromServices] ActivityPub.UserRenderer userRenderer
-	)
+	public async Task<IActionResult> GetUser(string id)
 	{
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
@@ -63,9 +63,7 @@ public class ActivityPubController : ControllerBase
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUserByUsername(
-		string acct, [FromServices] DatabaseContext db, [FromServices] ActivityPub.UserRenderer userRenderer
-	)
+	public async Task<IActionResult> GetUserByUsername(string acct)
 	{
 		var split = acct.Split('@');
 		if (acct.Split('@').Length > 2) return NotFound();
@@ -91,7 +89,7 @@ public class ActivityPubController : ControllerBase
 	[EnableRequestBuffering(1024 * 1024)]
 	[Produces("text/plain")]
 	[Consumes("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-	public async Task<IActionResult> Inbox(string? id, [FromServices] QueueService queues)
+	public async Task<IActionResult> Inbox(string? id)
 	{
 		using var reader = new StreamReader(Request.Body, Encoding.UTF8, true, 1024, true);
 		var       body   = await reader.ReadToEndAsync();

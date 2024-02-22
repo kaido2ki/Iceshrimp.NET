@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using System.Threading.RateLimiting;
+using Iceshrimp.Backend.Controllers;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
@@ -48,7 +49,8 @@ public static class ServiceExtensions
 			.AddScoped<ErrorHandlerMiddleware>()
 			.AddScoped<UserRenderer>()
 			.AddScoped<NoteRenderer>()
-			.AddScoped<NotificationRenderer>();
+			.AddScoped<NotificationRenderer>()
+			.AddScoped<ActivityPubController>();
 
 		// Singleton = instantiated once across application lifetime
 		services
