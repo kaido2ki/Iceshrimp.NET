@@ -3,6 +3,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -25,7 +27,8 @@ public class StatusController(
 	DatabaseContext db,
 	NoteRenderer noteRenderer,
 	NoteService noteSvc,
-	IDistributedCache cache
+	IDistributedCache cache,
+	IOptions<Config.InstanceSection> config
 ) : ControllerBase
 {
 	[HttpGet("{id}")]
@@ -67,6 +70,7 @@ public class StatusController(
 		                        .RenderAllForMastodonAsync(noteRenderer, user);
 
 		var descendants = await db.NoteDescendants(id, maxDepth, maxDescendants)
+		                          .Where(p => !p.IsQuote || p.RenoteId != id)
 		                          .IncludeCommonProperties()
 		                          .EnsureVisibleFor(user)
 		                          .PrecomputeVisibilities(user)
@@ -166,8 +170,19 @@ public class StatusController(
 			? await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id)).ToListAsync()
 			: null;
 
-		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply,
-		                                         attachments: attachments);
+		var lastToken = request.Text?.Split(' ').LastOrDefault();
+		var quoteUri  = lastToken?.StartsWith("https://") ?? false ? lastToken : null;
+		var quote = lastToken?.StartsWith($"https://{config.Value.WebDomain}/notes/") ?? false
+			? await db.Notes.IncludeCommonProperties()
+			          .FirstOrDefaultAsync(p => p.Id ==
+			                                    lastToken.Substring($"https://{config.Value.WebDomain}/notes/".Length))
+			: await db.Notes.IncludeCommonProperties()
+			          .FirstOrDefaultAsync(p => p.Uri == quoteUri || p.Url == quoteUri);
+
+		if (quote != null && quoteUri != null && request.Text != null)
+			request.Text = request.Text[..(request.Text.Length - quoteUri.Length - 1)];
+
+		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply, quote, attachments);
 
 		if (idempotencyKey != null)
 			await cache.SetAsync($"idempotency:{idempotencyKey}", note.Id, TimeSpan.FromHours(24));

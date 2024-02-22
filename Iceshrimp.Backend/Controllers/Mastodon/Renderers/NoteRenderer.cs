@@ -30,8 +30,12 @@ public class NoteRenderer(
 			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes, --recurse)
 			: null;
 		var text = note.Text;
-		if (quote != null && text != null && !text.EndsWith(quote.Url) && !text.EndsWith(quote.Uri))
-			text += $"\n\nRE: {quote.Url}"; //TODO: render as inline quote
+		if (note is { Renote: not null, IsQuote: true } && text != null)
+		{
+			var quoteUri = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value);
+			if (quoteUri != null)
+				text += $"\n\nRE: {quoteUri}"; //TODO: render as inline quote
+		}
 
 		var likeCount = likeCounts?.GetValueOrDefault(note.Id, 0) ?? await db.NoteLikes.CountAsync(p => p.Note == note);
 		var liked = likedNotes?.Contains(note.Id) ?? await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);

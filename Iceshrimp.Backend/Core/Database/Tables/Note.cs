@@ -238,8 +238,11 @@ public class Note : IEntity
 	[InverseProperty(nameof(InverseReply))]
 	public virtual Note? Reply { get; set; }
 
-	[NotMapped] [Projectable] public bool IsPureRenote => RenoteId != null && !IsQuote;
-	[NotMapped] [Projectable] public bool IsQuote => RenoteId != null && (Text != null || HasPoll || FileIds.Count > 0);
+	[NotMapped] [Projectable] public bool IsPureRenote => (RenoteId != null || Renote != null) && !IsQuote;
+
+	[NotMapped]
+	[Projectable]
+	public bool IsQuote => (RenoteId != null || Renote != null) && (Text != null || HasPoll || FileIds.Count > 0);
 
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.Notes))]
@@ -284,6 +287,10 @@ public class Note : IEntity
 	public string GetPublicUri(Config.InstanceSection config) => UserHost == null
 		? $"https://{config.WebDomain}/notes/{Id}"
 		: throw new Exception("Cannot access PublicUri for remote note");
+
+	public string? GetPublicUriOrNull(Config.InstanceSection config) => UserHost == null
+		? $"https://{config.WebDomain}/notes/{Id}"
+		: null;
 
 	public class MentionedUser
 	{

@@ -184,6 +184,7 @@ public class NotificationService(
 	public async Task GenerateRenoteNotification(Note note)
 	{
 		if (note.Renote is not { UserHost: null }) return;
+		if (note.RenoteUserId == note.UserId) return;
 		if (!note.VisibilityIsPublicOrHome &&
 		    !await db.Notes.AnyAsync(p => p.Id == note.Id && p.IsVisibleFor(note.Renote.User)))
 			return;

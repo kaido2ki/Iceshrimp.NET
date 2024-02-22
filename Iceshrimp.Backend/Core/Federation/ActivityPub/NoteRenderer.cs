@@ -80,6 +80,9 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			          .ToListAsync()
 			: null;
 
+		var quoteUri = note.IsQuote ? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value) : null;
+		var text     = quoteUri != null ? note.Text + $"\n\nRE: {quoteUri}" : note.Text;
+
 		return new ASNote
 		{
 			Id           = id,
@@ -93,13 +96,15 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			To           = to,
 			Tags         = tags,
 			Attachments  = attachments,
-			Content = note.Text != null
-				? await mfmConverter.ToHtmlAsync(note.Text, mentions, note.UserHost)
-				: null,
-			Summary = note.Cw,
-			Source = note.Text != null
-				? new ASNoteSource { Content = note.Text, MediaType = "text/x.misskeymarkdown" }
-				: null
+			Content      = text != null ? await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost) : null,
+			Summary      = note.Cw,
+			Source =
+				text != null
+					? new ASNoteSource { Content = text, MediaType = "text/x.misskeymarkdown" }
+					: null,
+			MkQuote  = quoteUri,
+			QuoteUri = quoteUri,
+			QuoteUrl = quoteUri
 		};
 	}
 }
