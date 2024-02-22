@@ -28,6 +28,7 @@ public class AccountController(
 	UserRenderer userRenderer,
 	NoteRenderer noteRenderer,
 	NotificationService notificationSvc,
+	ActivityPub.UserResolver userResolver,
 	ActivityPub.ActivityRenderer activityRenderer,
 	ActivityPub.ActivityDeliverService deliverSvc
 ) : ControllerBase
@@ -527,5 +528,15 @@ public class AccountController(
 			throw GracefulException.RecordNotFound();
 
 		return Ok(relationship);
+	}
+
+	[HttpGet("lookup")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> LookupUser([FromQuery] string acct)
+	{
+		var user = await userResolver.LookupAsync(acct) ?? throw GracefulException.RecordNotFound();
+		var res  = await userRenderer.RenderAsync(user);
+		return Ok(res);
 	}
 }

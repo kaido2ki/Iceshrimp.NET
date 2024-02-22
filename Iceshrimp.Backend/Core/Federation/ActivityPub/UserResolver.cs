@@ -74,10 +74,15 @@ public class UserResolver(
 
 	private static string NormalizeQuery(string query)
 	{
-		if ((query.StartsWith("https://") || query.StartsWith("http://")) && query.Contains('#'))
-			query = query.Split("#")[0];
-		if (query.StartsWith('@'))
+		if (query.StartsWith("https://") || query.StartsWith("http://"))
+			if (query.Contains('#'))
+				query = query.Split("#")[0];
+			else
+				return query;
+		else if (query.StartsWith('@'))
 			query = $"acct:{query[1..]}";
+		else
+			query = $"acct:{query}";
 
 		return query;
 	}
@@ -85,6 +90,15 @@ public class UserResolver(
 	public async Task<User> ResolveAsync(string username, string? host)
 	{
 		return host != null ? await ResolveAsync($"acct:{username}@{host}") : await ResolveAsync($"acct:{username}");
+	}
+
+	public async Task<User?> LookupAsync(string query)
+	{
+		query = NormalizeQuery(query);
+		var user = await userSvc.GetUserFromQueryAsync(query);
+		if (user != null)
+			return await GetUpdatedUser(user);
+		return user;
 	}
 
 	public async Task<User> ResolveAsync(string query)
