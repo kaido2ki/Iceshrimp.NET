@@ -19,15 +19,17 @@ public class NoteRenderer(
 	public async Task<StatusEntity> RenderAsync(
 		Note note, User? user, List<AccountEntity>? accounts = null, List<MentionEntity>? mentions = null,
 		List<AttachmentEntity>? attachments = null, Dictionary<string, int>? likeCounts = null,
-		List<string>? likedNotes = null, int recurse = 2
+		List<string>? likedNotes = null, List<string>? renotes = null, int recurse = 2
 	)
 	{
 		var uri = note.Uri ?? note.GetPublicUri(config.Value);
 		var renote = note is { Renote: not null, IsQuote: false } && recurse > 0
-			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes, 0)
+			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes,
+			                    renotes, 0)
 			: null;
 		var quote = note is { Renote: not null, IsQuote: true } && recurse > 0
-			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes, --recurse)
+			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes,
+			                    renotes, --recurse)
 			: null;
 		var text = note.Text;
 		if (note is { Renote: not null, IsQuote: true } && text != null)
@@ -39,6 +41,8 @@ public class NoteRenderer(
 
 		var likeCount = likeCounts?.GetValueOrDefault(note.Id, 0) ?? await db.NoteLikes.CountAsync(p => p.Note == note);
 		var liked = likedNotes?.Contains(note.Id) ?? await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
+		var renoted = renotes?.Contains(note.Id) ??
+		              await db.Notes.AnyAsync(p => p.Renote == note && p.User == user && p.IsPureRenote);
 
 		if (mentions == null)
 		{
@@ -105,7 +109,7 @@ public class NoteRenderer(
 			RenoteCount    = note.RenoteCount,
 			FavoriteCount  = likeCount,
 			IsFavorited    = liked,
-			IsRenoted      = false, //FIXME
+			IsRenoted      = renoted,
 			IsBookmarked   = false, //FIXME
 			IsMuted        = null,  //FIXME
 			IsSensitive    = note.Cw != null,
@@ -169,6 +173,17 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
+	private async Task<List<string>> GetRenotes(IEnumerable<Note> notes, User? user)
+	{
+		if (user == null) return [];
+		return await db.Notes.Where(p => p.User == user && p.IsPureRenote && notes.Contains(p.Renote))
+		               .Select(p => p.RenoteId)
+		               .Where(p => p != null)
+		               .Distinct()
+		               .Cast<string>()
+		               .ToListAsync();
+	}
+
 	public async Task<IEnumerable<StatusEntity>> RenderManyAsync(
 		IEnumerable<Note> notes, User? user, List<AccountEntity>? accounts = null
 	)
@@ -184,7 +199,9 @@ public class NoteRenderer(
 		var attachments = await GetAttachments(noteList);
 		var likeCounts  = await GetLikeCounts(noteList);
 		var likedNotes  = await GetLikedNotes(noteList, user);
-		return await noteList.Select(p => RenderAsync(p, user, accounts, mentions, attachments, likeCounts, likedNotes))
+		var renotes     = await GetRenotes(noteList, user);
+		return await noteList.Select(p => RenderAsync(p, user, accounts, mentions, attachments, likeCounts, likedNotes,
+		                                              renotes))
 		                     .AwaitAllAsync();
 	}
 }
