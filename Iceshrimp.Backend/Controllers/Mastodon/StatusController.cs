@@ -126,7 +126,7 @@ public class StatusController(
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> Renote(string id)
+	public async Task<IActionResult> Renote(string id, [FromHybrid] string? visibility)
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (!await db.Notes.AnyAsync(p => p.RenoteId == id && p.User == user && p.IsPureRenote))
@@ -137,7 +137,14 @@ public class StatusController(
 			                   .FirstOrDefaultAsync() ??
 			           throw GracefulException.RecordNotFound();
 
-			await noteSvc.CreateNoteAsync(user, Note.NoteVisibility.Followers, renote: note);
+			var renoteVisibility = visibility != null
+				? StatusEntity.DecodeVisibility(visibility)
+				: Note.NoteVisibility.Followers;
+
+			if (renoteVisibility == Note.NoteVisibility.Specified)
+				throw GracefulException.BadRequest("Renote visibility must be one of: public, unlisted, private");
+
+			await noteSvc.CreateNoteAsync(user, renoteVisibility, renote: note);
 		}
 
 		return await GetNote(id);
