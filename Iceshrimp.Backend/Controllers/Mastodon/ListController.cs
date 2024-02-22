@@ -142,12 +142,18 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer) : Con
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
-		var res = await db.UserListMembers
-		                  .Where(p => p.UserList == list)
-		                  .Paginate(pq, ControllerContext)
-		                  .Include(p => p.User.UserProfile)
-		                  .Select(p => p.User)
-		                  .RenderAllForMastodonAsync(userRenderer);
+		var res = pq.Limit == 0
+			? await db.UserListMembers
+			          .Where(p => p.UserList == list)
+			          .Include(p => p.User.UserProfile)
+			          .Select(p => p.User)
+			          .RenderAllForMastodonAsync(userRenderer)
+			: await db.UserListMembers
+			          .Where(p => p.UserList == list)
+			          .Paginate(pq, ControllerContext)
+			          .Include(p => p.User.UserProfile)
+			          .Select(p => p.User)
+			          .RenderAllForMastodonAsync(userRenderer);
 
 		return Ok(res);
 	}
