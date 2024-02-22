@@ -219,12 +219,15 @@ public class StatusController(
 
 		var lastToken = request.Text?.Split(' ').LastOrDefault();
 		var quoteUri  = lastToken?.StartsWith("https://") ?? false ? lastToken : null;
-		var quote = lastToken?.StartsWith($"https://{config.Value.WebDomain}/notes/") ?? false
-			? await db.Notes.IncludeCommonProperties()
-			          .FirstOrDefaultAsync(p => p.Id ==
-			                                    lastToken.Substring($"https://{config.Value.WebDomain}/notes/".Length))
-			: await db.Notes.IncludeCommonProperties()
-			          .FirstOrDefaultAsync(p => p.Uri == quoteUri || p.Url == quoteUri);
+		var quote = quoteUri != null
+			? lastToken?.StartsWith($"https://{config.Value.WebDomain}/notes/") ?? false
+				? await db.Notes.IncludeCommonProperties()
+				          .FirstOrDefaultAsync(p => p.Id ==
+				                                    lastToken.Substring($"https://{config.Value.WebDomain}/notes/"
+					                                                        .Length))
+				: await db.Notes.IncludeCommonProperties()
+				          .FirstOrDefaultAsync(p => p.Uri == quoteUri || p.Url == quoteUri)
+			: null;
 
 		if (quote != null && quoteUri != null && request.Text != null)
 			request.Text = request.Text[..(request.Text.Length - quoteUri.Length - 1)];
