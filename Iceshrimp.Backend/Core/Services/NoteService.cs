@@ -57,6 +57,8 @@ public class NoteService(
 			throw GracefulException.BadRequest("Text cannot be longer than 100.000 characters");
 		if (cw is { Length: > 100000 })
 			throw GracefulException.BadRequest("Content warning cannot be longer than 100.000 characters");
+		if (renote?.IsPureRenote ?? false)
+			throw GracefulException.BadRequest("Cannot renote or quote a pure renote");
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			await ResolveNoteMentionsAsync(text);
@@ -343,6 +345,9 @@ public class NoteService(
 			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null,
 			Renote     = quoteUrl != null ? await ResolveNoteAsync(quoteUrl) : null
 		};
+		
+		if (dbNote.Renote?.IsPureRenote ?? false)
+			throw GracefulException.UnprocessableEntity("Cannot renote or quote a pure renote");
 
 		if (dbNote.Reply != null)
 		{
