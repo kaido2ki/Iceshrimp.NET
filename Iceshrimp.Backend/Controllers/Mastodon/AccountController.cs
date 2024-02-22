@@ -214,6 +214,9 @@ public class AccountController(
 		                     p.Notifiee == followee &&
 		                     p.Notifier == user))
 		        .ExecuteDeleteAsync();
+		
+		// Clean up user list memberships
+		await db.UserListMembers.Where(p => p.UserList.User == user && p.User == followee).ExecuteDeleteAsync();
 
 		var res = new RelationshipEntity
 		{

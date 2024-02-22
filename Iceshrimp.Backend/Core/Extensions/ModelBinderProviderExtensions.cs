@@ -18,11 +18,11 @@ public static class ModelBinderProviderExtensions
 		    CollectionModelBinderProvider collectionProvider)
 			throw new Exception("Failed to set up query collection model binding provider");
 
-		var hybridProvider = new HybridModelBinderProvider(bodyProvider, complexProvider);
-		var queryProvider  = new QueryCollectionModelBinderProvider(collectionProvider);
+		var hybridProvider           = new HybridModelBinderProvider(bodyProvider, complexProvider);
+		var customCollectionProvider = new CustomCollectionModelBinderProvider(collectionProvider);
 
 		providers.Insert(0, hybridProvider);
-		providers.Insert(1, queryProvider);
+		providers.Insert(1, customCollectionProvider);
 	}
 }
 
@@ -46,16 +46,18 @@ public class HybridModelBinderProvider(
 	}
 }
 
-public class QueryCollectionModelBinderProvider(IModelBinderProvider provider) : IModelBinderProvider
+public class CustomCollectionModelBinderProvider(IModelBinderProvider provider) : IModelBinderProvider
 {
 	public IModelBinder? GetBinder(ModelBinderProviderContext context)
 	{
 		if (context.BindingInfo.BindingSource == null) return null;
-		if (!context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Query)) return null;
+		if (!context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Query) &&
+		    !context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Form) &&
+		    !context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.ModelBinding)) return null;
 		if (!context.Metadata.IsCollectionType) return null;
 
 		var binder = provider.GetBinder(context);
-		return new QueryCollectionModelBinder(binder);
+		return new CustomCollectionModelBinder(binder);
 	}
 }
 
@@ -83,7 +85,7 @@ public class HybridModelBinder(IModelBinder? bodyBinder, IModelBinder? complexBi
 	}
 }
 
-public class QueryCollectionModelBinder(IModelBinder? binder) : IModelBinder
+public class CustomCollectionModelBinder(IModelBinder? binder) : IModelBinder
 {
 	public async Task BindModelAsync(ModelBindingContext bindingContext)
 	{
@@ -110,8 +112,9 @@ public class QueryCollectionModelBinder(IModelBinder? binder) : IModelBinder
 }
 
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
-public class FromHybridAttribute : Attribute, IBindingSourceMetadata
+public class FromHybridAttribute(string? name = null) : Attribute, IBindingSourceMetadata, IModelNameProvider
 {
+	public string?       Name          => name;
 	public BindingSource BindingSource => HybridBindingSource.Hybrid;
 }
 

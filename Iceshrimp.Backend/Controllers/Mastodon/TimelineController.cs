@@ -11,6 +11,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
@@ -61,6 +62,28 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, I
 		                  .IncludeCommonProperties()
 		                  .HasVisibility(Note.NoteVisibility.Public)
 		                  .FilterByPublicTimelineRequest(request)
+		                  .FilterBlocked(user)
+		                  .FilterMuted(user)
+		                  .Paginate(query, ControllerContext)
+		                  .PrecomputeVisibilities(user)
+		                  .RenderAllForMastodonAsync(noteRenderer, user);
+
+		return Ok(res);
+	}
+
+	[Authorize("read:lists")]
+	[HttpGet("list/{id}")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
+	public async Task<IActionResult> GetListTimeline(string id, MastodonPaginationQuery query)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (!await db.UserLists.AnyAsync(p => p.Id == id && p.User == user))
+			throw GracefulException.RecordNotFound();
+
+		var res = await db.Notes
+		                  .IncludeCommonProperties()
+		                  .Where(p => db.UserListMembers.Any(l => l.UserListId == id && l.UserId == p.UserId))
+		                  .EnsureVisibleFor(user)
 		                  .FilterBlocked(user)
 		                  .FilterMuted(user)
 		                  .Paginate(query, ControllerContext)

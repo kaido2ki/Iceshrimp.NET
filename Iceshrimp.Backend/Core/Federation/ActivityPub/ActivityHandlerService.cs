@@ -418,5 +418,9 @@ public class ActivityHandlerService(
 		        .Where(p => p.Notifiee == resolvedFollower &&
 		                    p.Notifier == actor)
 		        .ExecuteDeleteAsync();
+
+		await db.UserListMembers
+		        .Where(p => p.UserList.User == resolvedFollower && p.User == actor)
+		        .ExecuteDeleteAsync();
 	}
 }

@@ -8,7 +8,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("UserListId")]
 [Index("UserId", "UserListId", IsUnique = true)]
 [Index("UserId")]
-public class UserListMember
+public class UserListMember : IEntity
 {
 	[Key]
 	[Column("id")]
