@@ -104,12 +104,20 @@ public class NoteService(
 
 		if (user.Host != null) return note;
 
-		var actor    = userRenderer.RenderLite(user);
-		var obj      = await noteRenderer.RenderAsync(note, mentions);
-		var activity = ActivityPub.ActivityRenderer.RenderCreate(obj, actor);
+		var actor = userRenderer.RenderLite(user);
+		ASActivity activity = note is { IsPureRenote: true, Renote: not null }
+			? ActivityPub.ActivityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
+			                                              note.GetPublicUri(config.Value), actor, note.Visibility,
+			                                              user.GetPublicUri(config.Value) + "/followers")
+			: ActivityPub.ActivityRenderer.RenderCreate(await noteRenderer.RenderAsync(note, mentions), actor);
+
+		List<string> additionalUserIds =
+			note is { IsPureRenote: true, Renote: not null, Visibility: < Note.NoteVisibility.Followers }
+				? [note.Renote.User.Id]
+				: [];
 
 		var recipients = await db.Users
-		                         .Where(p => mentionedUserIds.Contains(p.Id))
+		                         .Where(p => mentionedUserIds.Concat(additionalUserIds).Contains(p.Id))
 		                         .Select(p => new User { Host = p.Host, Inbox = p.Inbox })
 		                         .ToListAsync();
 
@@ -221,8 +229,16 @@ public class NoteService(
 		                         .Select(p => new User { Host = p.Host, Inbox = p.Inbox })
 		                         .ToListAsync();
 
-		var actor    = userRenderer.RenderLite(note.User);
-		var activity = activityRenderer.RenderDelete(actor, new ASTombstone { Id = note.GetPublicUri(config.Value) });
+		var actor = userRenderer.RenderLite(note.User);
+		ASActivity activity = note.IsPureRenote
+			? activityRenderer.RenderUndo(actor,
+			                              ActivityPub.ActivityRenderer
+			                                         .RenderAnnounce(noteRenderer.RenderLite(note.Renote ?? throw new Exception("Refusing to undo renote without renote")),
+			                                                         note.GetPublicUri(config.Value), actor,
+			                                                         note.Visibility,
+			                                                         note.User.GetPublicUri(config.Value) +
+			                                                         "/followers"))
+			: activityRenderer.RenderDelete(actor, new ASTombstone { Id = note.GetPublicUri(config.Value) });
 
 		if (note.Visibility == Note.NoteVisibility.Specified)
 			await deliverSvc.DeliverToAsync(activity, note.User, recipients.ToArray());
@@ -250,6 +266,7 @@ public class NoteService(
 		logger.LogDebug("Deleting note '{id}' owned by {userId}", note.Id, actor.Id);
 
 		actor.NotesCount--;
+		if (dbNote.IsPureRenote) dbNote.RenoteCount--;
 		db.Remove(dbNote);
 		eventSvc.RaiseNoteDeleted(this, dbNote);
 		await db.SaveChangesAsync();
@@ -332,7 +349,7 @@ public class NoteService(
 			dbNote.ReplyUserId   = dbNote.Reply.UserId;
 			dbNote.ReplyUserHost = dbNote.Reply.UserHost;
 		}
-		
+
 		if (dbNote.Renote != null)
 		{
 			dbNote.RenoteUserId   = dbNote.Renote.UserId;

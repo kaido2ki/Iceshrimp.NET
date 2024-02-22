@@ -122,4 +122,36 @@ public class ActivityRenderer(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "This only makes sense for users")]
 	private string RenderFollowId(User follower, User followee) =>
 		$"https://{config.Value.WebDomain}/follows/{follower.Id}/{followee.Id}";
+
+	public static ASAnnounce RenderAnnounce(
+		ASNote note, ASActor actor, List<ASObjectBase> to, List<ASObjectBase> cc, string uri
+	) => new()
+	{
+		Id     = uri,
+		Actor  = actor.Compact(),
+		Object = note,
+		To     = to,
+		Cc     = cc
+	};
+
+	public static ASAnnounce RenderAnnounce(
+		ASNote note, string renoteUri, ASActor actor, Note.NoteVisibility visibility, string followersUri
+	)
+	{
+		List<ASObjectBase> to = visibility switch
+		{
+			Note.NoteVisibility.Public    => [new ASLink($"{Constants.ActivityStreamsNs}#Public")],
+			Note.NoteVisibility.Followers => [new ASLink(followersUri)],
+			Note.NoteVisibility.Specified => throw new Exception("Announce cannot be specified"),
+			_                             => []
+		};
+
+		List<ASObjectBase> cc = visibility switch
+		{
+			Note.NoteVisibility.Home => [new ASLink($"{Constants.ActivityStreamsNs}#Public")],
+			_                        => []
+		};
+
+		return RenderAnnounce(note, actor, to, cc, renoteUri);
+	}
 }

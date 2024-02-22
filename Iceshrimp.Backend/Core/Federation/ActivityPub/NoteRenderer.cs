@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -28,6 +29,9 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		var replyId = note.Reply != null
 			? new ASObjectBase(note.Reply.Uri ?? note.Reply.GetPublicUri(config.Value))
 			: null;
+
+		if (note.IsPureRenote)
+			throw GracefulException.BadRequest("Refusing to render pure renote as ASNote");
 
 		mentions ??= await db.Users
 		                     .Where(p => note.Mentions.Contains(p.Id))

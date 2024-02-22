@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
@@ -116,6 +117,52 @@ public class StatusController(
 		           throw GracefulException.RecordNotFound();
 
 		await noteSvc.UnlikeNoteAsync(note, user);
+		return await GetNote(id);
+	}
+
+	[HttpPost("{id}/reblog")]
+	[Authorize("write:favourites")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> Renote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		await noteSvc.CreateNoteAsync(user, Note.NoteVisibility.Followers, renote: note);
+		return await GetNote(id);
+	}
+
+	[HttpPost("{id}/unreblog")]
+	[Authorize("write:favourites")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> UndoRenote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (!await db.Notes.Where(p => p.Id == id).EnsureVisibleFor(user).AnyAsync())
+			throw GracefulException.RecordNotFound();
+
+		var renotes = await db.Notes.Where(p => p.RenoteId == id && p.IsPureRenote && p.User == user)
+		                      .IncludeCommonProperties()
+		                      .ToListAsync();
+
+		if (renotes.Count > 0)
+		{
+			renotes[0].Renote!.RenoteCount--;
+			await db.SaveChangesAsync();
+		}
+
+		foreach (var renote in renotes) await noteSvc.DeleteNoteAsync(renote);
+
 		return await GetNote(id);
 	}
 
