@@ -26,7 +26,6 @@ public static class ModelBinderProviderExtensions
 	}
 }
 
-//TODO: this doesn't work with QueryCollectionModelBinderProvider yet
 public class HybridModelBinderProvider(
 	IModelBinderProvider bodyProvider,
 	IModelBinderProvider complexProvider
@@ -50,10 +49,6 @@ public class CustomCollectionModelBinderProvider(IModelBinderProvider provider) 
 {
 	public IModelBinder? GetBinder(ModelBinderProviderContext context)
 	{
-		if (context.BindingInfo.BindingSource == null) return null;
-		if (!context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Query) &&
-		    !context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.Form) &&
-		    !context.BindingInfo.BindingSource.CanAcceptDataFrom(BindingSource.ModelBinding)) return null;
 		if (!context.Metadata.IsCollectionType) return null;
 
 		var binder = provider.GetBinder(context);
@@ -95,11 +90,22 @@ public class CustomCollectionModelBinder(IModelBinder? binder) : IModelBinder
 
 			if (!bindingContext.Result.IsModelSet || (bindingContext.Result.Model as IList) is not { Count: > 0 })
 			{
+				var pre = bindingContext.ModelName;
 				bindingContext.ModelName = bindingContext.ModelName.EndsWith("[]")
 					? bindingContext.ModelName[..^2]
 					: bindingContext.ModelName + "[]";
 
 				await binder.BindModelAsync(bindingContext);
+
+				if (bindingContext.Result.IsModelSet &&
+				    bindingContext.ModelState.TryGetValue(bindingContext.ModelName, out var state))
+				{
+					bindingContext.ModelState.SetModelValue(pre, state.RawValue, state.AttemptedValue);
+					bindingContext.ModelState.Remove(bindingContext.ModelName);
+				}
+
+				bindingContext.ModelName       = pre;
+				bindingContext.BinderModelName = pre;
 			}
 		}
 
