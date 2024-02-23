@@ -69,6 +69,9 @@ public class NoteService(
 		if (attachments != null && attachments.Any(p => p.UserId != user.Id))
 			throw GracefulException.BadRequest("Refusing to create note with files belonging to someone else");
 
+		if (cw != null && string.IsNullOrWhiteSpace(cw))
+			cw = null;
+
 		var note = new Note
 		{
 			Id                   = IdHelpers.GenerateSlowflakeId(),
