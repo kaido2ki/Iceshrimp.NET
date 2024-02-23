@@ -129,7 +129,6 @@ public static class LdSignature
 
 		[J($"{Constants.PurlDcNs}/created", NullValueHandling = NullValueHandling.Ignore)]
 		[JC(typeof(VC))]
-		//FIXME: is this valid? it should output datetime in ISO format
 		public DateTime? Created { get; set; }
 	}
 }

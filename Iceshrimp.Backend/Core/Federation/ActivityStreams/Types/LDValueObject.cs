@@ -30,14 +30,22 @@ public class ValueObjectConverter : JsonConverter
 		{
 			var obj  = JArray.Load(reader);
 			var list = obj.ToObject<List<LDValueObject<object?>>>();
-			return list == null || list.Count == 0 ? null : list[0].Value;
+			if (list == null || list.Count == 0)
+				return null;
+			if (list[0].Value is not string s || (objectType != typeof(DateTime?) && objectType != typeof(DateTime)))
+				return list[0].Value;
+			var succeeded = DateTime.TryParse(s, out var result);
+			return succeeded ? result : null;
 		}
 
 		if (reader.TokenType == JsonToken.StartObject)
 		{
 			var obj      = JObject.Load(reader);
 			var finalObj = obj.ToObject<LDValueObject<object?>>();
-			return finalObj?.Value;
+			if (finalObj?.Value is not string s || (objectType != typeof(DateTime?) && objectType != typeof(DateTime)))
+				return finalObj?.Value;
+			var succeeded = DateTime.TryParse(s, out var result);
+			return succeeded ? result : null;
 		}
 
 		return null;
