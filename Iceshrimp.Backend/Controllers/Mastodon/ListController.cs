@@ -90,7 +90,7 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer) : Con
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ListEntity))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> UpdateList(string id, [FromHybrid] ListSchemas.ListCreationRequest request)
+	public async Task<IActionResult> UpdateList(string id, [FromHybrid] ListSchemas.ListUpdateRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var list = await db.UserLists
@@ -98,12 +98,11 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer) : Con
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
-		if (string.IsNullOrWhiteSpace(request.Title))
+		if (request.Title != null && string.IsNullOrWhiteSpace(request.Title))
 			throw GracefulException.UnprocessableEntity("Validation failed: Title can't be blank");
 
-
-		list.Name           = request.Title;
-		list.HideFromHomeTl = request.Exclusive;
+		list.Name           = request.Title ?? list.Name;
+		list.HideFromHomeTl = request.Exclusive ?? list.HideFromHomeTl;
 
 		db.Update(list);
 		await db.SaveChangesAsync();

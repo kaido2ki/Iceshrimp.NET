@@ -19,6 +19,19 @@ public abstract class ListSchemas
 		public bool Exclusive { get; set; } = false;
 	}
 
+	public class ListUpdateRequest
+	{
+		[J("title")] [B(Name = "title")] public string? Title { get; set; }
+
+		[J("replies_policy")]
+		[B(Name = "replies_policy")]
+		public string? RepliesPolicy { get; set; }
+
+		[J("exclusive")]
+		[B(Name = "exclusive")]
+		public bool? Exclusive { get; set; }
+	}
+
 	public class ListUpdateMembersRequest
 	{
 		[J("account_ids")]
