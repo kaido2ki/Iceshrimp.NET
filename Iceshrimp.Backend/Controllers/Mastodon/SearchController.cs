@@ -157,7 +157,7 @@ public class SearchController(
 			//TODO: figure out whether there is a more efficient way to get this information (in one query)
 			if (note == null && !await db.Notes.AnyAsync(p => p.Uri == search.Query || p.Url == search.Query))
 			{
-				var tmpNote = await noteSvc.ResolveNoteAsync(search.Query);
+				var tmpNote = await noteSvc.ResolveNoteAsync(search.Query, user: user);
 
 				// We need to re-fetch the note to capture the includes
 				if (tmpNote != null)

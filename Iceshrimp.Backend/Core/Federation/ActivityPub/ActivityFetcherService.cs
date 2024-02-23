@@ -1,10 +1,12 @@
 using System.Net;
 using System.Net.Http.Headers;
+using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -14,6 +16,7 @@ public class ActivityFetcherService(
 	HttpClient client,
 	HttpRequestService httpRqSvc,
 	SystemUserService systemUserSvc,
+	DatabaseContext db,
 	ILogger<ActivityFetcherService> logger
 )
 {
@@ -95,6 +98,14 @@ public class ActivityFetcherService(
 
 	public async Task<ASNote?> FetchNoteAsync(string uri, User actor, UserKeypair keypair)
 	{
+		var activity = await FetchActivityAsync(uri, actor, keypair);
+		return activity.OfType<ASNote>().FirstOrDefault();
+	}
+
+	public async Task<ASNote?> FetchNoteAsync(string uri, User actor)
+	{
+		var keypair = await db.UserKeypairs.FirstOrDefaultAsync(p => p.User == actor) ??
+		              throw new Exception("User has no keypair");
 		var activity = await FetchActivityAsync(uri, actor, keypair);
 		return activity.OfType<ASNote>().FirstOrDefault();
 	}

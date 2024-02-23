@@ -345,7 +345,7 @@ public class NoteService(
 			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null,
 			Renote     = quoteUrl != null ? await ResolveNoteAsync(quoteUrl) : null
 		};
-		
+
 		if (dbNote.Renote?.IsPureRenote ?? false)
 			throw GracefulException.UnprocessableEntity("Cannot renote or quote a pure renote");
 
@@ -581,7 +581,7 @@ public class NoteService(
 		return result.Where(p => p != null).Cast<DriveFile>().ToList();
 	}
 
-	public async Task<Note?> ResolveNoteAsync(string uri, ASNote? fetchedNote = null)
+	public async Task<Note?> ResolveNoteAsync(string uri, ASNote? fetchedNote = null, User? user = null)
 	{
 		//TODO: is this enough to prevent DoS attacks?
 		if (_recursionLimit-- <= 0)
@@ -600,7 +600,8 @@ public class NoteService(
 		if (note != null) return note;
 
 		//TODO: should we fall back to a regular user's keypair if fetching with instance actor fails & a local user is following the actor?
-		fetchedNote ??= await fetchSvc.FetchNoteAsync(uri);
+		fetchedNote ??= user != null ? await fetchSvc.FetchNoteAsync(uri, user) : await fetchSvc.FetchNoteAsync(uri);
+
 		if (fetchedNote == null)
 		{
 			logger.LogDebug("Failed to fetch note, skipping");
