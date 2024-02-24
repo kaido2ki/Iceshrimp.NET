@@ -7,7 +7,6 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
-using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
@@ -27,10 +26,8 @@ public class AccountController(
 	DatabaseContext db,
 	UserRenderer userRenderer,
 	NoteRenderer noteRenderer,
-	NotificationService notificationSvc,
-	ActivityPub.UserResolver userResolver,
-	ActivityPub.ActivityRenderer activityRenderer,
-	ActivityPub.ActivityDeliverService deliverSvc
+	UserService userSvc,
+	ActivityPub.UserResolver userResolver
 ) : ControllerBase
 {
 	[HttpGet("verify_credentials")]
@@ -79,61 +76,7 @@ public class AccountController(
 
 		if (!(followee.PrecomputedIsFollowedBy ?? false) && !(followee.PrecomputedIsRequestedBy ?? false))
 		{
-			if (followee.Host != null)
-			{
-				var activity = activityRenderer.RenderFollow(user, followee);
-				await deliverSvc.DeliverToAsync(activity, user, followee);
-			}
-
-			if (followee.IsLocked || followee.Host != null)
-			{
-				var request = new FollowRequest
-				{
-					Id                  = IdHelpers.GenerateSlowflakeId(),
-					CreatedAt           = DateTime.UtcNow,
-					Followee            = followee,
-					Follower            = user,
-					FolloweeHost        = followee.Host,
-					FollowerHost        = user.Host,
-					FolloweeInbox       = followee.Inbox,
-					FollowerInbox       = user.Inbox,
-					FolloweeSharedInbox = followee.SharedInbox,
-					FollowerSharedInbox = user.SharedInbox
-				};
-
-				await db.AddAsync(request);
-			}
-			else
-			{
-				var following = new Following
-				{
-					Id                  = IdHelpers.GenerateSlowflakeId(),
-					CreatedAt           = DateTime.UtcNow,
-					Followee            = followee,
-					Follower            = user,
-					FolloweeHost        = followee.Host,
-					FollowerHost        = user.Host,
-					FolloweeInbox       = followee.Inbox,
-					FollowerInbox       = user.Inbox,
-					FolloweeSharedInbox = followee.SharedInbox,
-					FollowerSharedInbox = user.SharedInbox
-				};
-
-				await db.AddAsync(following);
-			}
-
-			// If user is local & not locked, we need to increment following/follower counts here,
-			// otherwise we'll do it when receiving the Accept activity / the local followee accepts the request
-			if (followee.Host == null && !followee.IsLocked)
-			{
-				followee.FollowersCount++;
-				user.FollowingCount++;
-			}
-
-			await db.SaveChangesAsync();
-
-			if (followee.Host == null && !followee.IsLocked)
-				await notificationSvc.GenerateFollowNotification(user, followee);
+			await userSvc.FollowUserAsync(user, followee);
 
 			if (followee.IsLocked)
 				followee.PrecomputedIsRequestedBy = true;
@@ -173,50 +116,14 @@ public class AccountController(
 		if (user.Id == id)
 			throw GracefulException.BadRequest("You cannot unfollow yourself");
 
-		var followee = await db.Users.IncludeCommonProperties()
+		var followee = await db.Users
 		                       .Where(p => p.Id == id)
+		                       .IncludeCommonProperties()
 		                       .PrecomputeRelationshipData(user)
 		                       .FirstOrDefaultAsync() ??
 		               throw GracefulException.RecordNotFound();
 
-		if ((followee.PrecomputedIsFollowedBy ?? false) || (followee.PrecomputedIsRequestedBy ?? false))
-		{
-			if (followee.Host != null)
-			{
-				var activity = activityRenderer.RenderUnfollow(user, followee);
-				await deliverSvc.DeliverToAsync(activity, user, followee);
-			}
-		}
-
-		if (followee.PrecomputedIsFollowedBy ?? false)
-		{
-			var followings = await db.Followings.Where(p => p.Follower == user && p.Followee == followee).ToListAsync();
-			user.FollowingCount     -= followings.Count;
-			followee.FollowersCount -= followings.Count;
-			db.RemoveRange(followings);
-			await db.SaveChangesAsync();
-
-			followee.PrecomputedIsFollowedBy = false;
-		}
-
-		if (followee.PrecomputedIsRequestedBy ?? false)
-		{
-			await db.FollowRequests.Where(p => p.Follower == user && p.Followee == followee).ExecuteDeleteAsync();
-			followee.PrecomputedIsRequestedBy = false;
-		}
-
-		// Clean up notifications
-		await db.Notifications
-		        .Where(p => (p.Type == Notification.NotificationType.FollowRequestAccepted &&
-		                     p.Notifiee == user &&
-		                     p.Notifier == followee) ||
-		                    (p.Type == Notification.NotificationType.Follow &&
-		                     p.Notifiee == followee &&
-		                     p.Notifier == user))
-		        .ExecuteDeleteAsync();
-		
-		// Clean up user list memberships
-		await db.UserListMembers.Where(p => p.UserList.User == user && p.User == followee).ExecuteDeleteAsync();
+		await userSvc.UnfollowUserAsync(user, followee);
 
 		var res = new RelationshipEntity
 		{
@@ -248,8 +155,9 @@ public class AccountController(
 	{
 		var user = HttpContext.GetUserOrFail();
 
-		var users = await db.Users.IncludeCommonProperties()
+		var users = await db.Users
 		                    .Where(p => ids.Contains(p.Id))
+		                    .IncludeCommonProperties()
 		                    .PrecomputeRelationshipData(user)
 		                    .ToListAsync();
 
@@ -274,7 +182,6 @@ public class AccountController(
 		return Ok(res);
 	}
 
-
 	[HttpGet("{id}/statuses")]
 	[Authorize("read:statuses")]
 	[LinkPagination(20, 40)]
@@ -282,8 +189,7 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetUserStatuses(
-		string id, AccountSchemas.AccountStatusesRequest request,
-		MastodonPaginationQuery query
+		string id, AccountSchemas.AccountStatusesRequest request, MastodonPaginationQuery query
 	)
 	{
 		var user    = HttpContext.GetUserOrFail();
@@ -399,45 +305,7 @@ public class AccountController(
 		                      .FirstOrDefaultAsync();
 
 		if (request != null)
-		{
-			if (request.FollowerHost != null)
-			{
-				var requestId = request.RequestId ?? throw new Exception("Cannot accept request without request id");
-				var activity  = activityRenderer.RenderAccept(request.Followee, request.Follower, requestId);
-				await deliverSvc.DeliverToAsync(activity, user, request.Follower);
-			}
-
-			var following = new Following
-			{
-				Id                  = IdHelpers.GenerateSlowflakeId(),
-				CreatedAt           = DateTime.UtcNow,
-				Follower            = request.Follower,
-				Followee            = request.Followee,
-				FollowerHost        = request.FollowerHost,
-				FolloweeHost        = request.FolloweeHost,
-				FollowerInbox       = request.FollowerInbox,
-				FolloweeInbox       = request.FolloweeInbox,
-				FollowerSharedInbox = request.FollowerSharedInbox,
-				FolloweeSharedInbox = request.FolloweeSharedInbox
-			};
-
-			request.Followee.FollowersCount++;
-			request.Follower.FollowingCount++;
-
-			db.Remove(request);
-			await db.AddAsync(following);
-			await db.SaveChangesAsync();
-
-			await notificationSvc.GenerateFollowNotification(request.Follower, request.Followee);
-			await notificationSvc.GenerateFollowRequestAcceptedNotification(request);
-
-			// Clean up notifications
-			await db.Notifications
-			        .Where(p => p.Type == Notification.NotificationType.FollowRequestReceived &&
-			                    p.Notifiee == user &&
-			                    p.NotifierId == id)
-			        .ExecuteDeleteAsync();
-		}
+			await userSvc.AcceptFollowRequestAsync(request);
 
 		var relationship = await db.Users.Where(p => id == p.Id)
 		                           .IncludeCommonProperties()
@@ -482,28 +350,7 @@ public class AccountController(
 		                      .FirstOrDefaultAsync();
 
 		if (request != null)
-		{
-			if (request.FollowerHost != null)
-			{
-				var requestId = request.RequestId ?? throw new Exception("Cannot reject request without request id");
-				var activity  = activityRenderer.RenderReject(request.Followee, request.Follower, requestId);
-				await deliverSvc.DeliverToAsync(activity, user, request.Follower);
-			}
-
-			db.Remove(request);
-			await db.SaveChangesAsync();
-
-			// Clean up notifications
-			await db.Notifications
-			        .Where(p => ((p.Type == Notification.NotificationType.FollowRequestReceived ||
-			                      p.Type == Notification.NotificationType.Follow) &&
-			                     p.Notifiee == user &&
-			                     p.NotifierId == id) ||
-			                    (p.Type == Notification.NotificationType.FollowRequestAccepted &&
-			                     p.NotifieeId == id &&
-			                     p.Notifier == user))
-			        .ExecuteDeleteAsync();
-		}
+			await userSvc.RejectFollowRequestAsync(request);
 
 		var relationship = await db.Users.Where(p => id == p.Id)
 		                           .IncludeCommonProperties()
