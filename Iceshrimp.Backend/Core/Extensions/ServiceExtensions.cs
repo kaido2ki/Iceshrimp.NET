@@ -15,6 +15,8 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationM
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
+using NoteRenderer = Iceshrimp.Backend.Controllers.Renderers.NoteRenderer;
+using UserRenderer = Iceshrimp.Backend.Controllers.Renderers.UserRenderer;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -47,10 +49,10 @@ public static class ServiceExtensions
 			.AddScoped<AuthorizedFetchMiddleware>()
 			.AddScoped<AuthenticationMiddleware>()
 			.AddScoped<ErrorHandlerMiddleware>()
-			.AddScoped<UserRenderer>()
+			.AddScoped<Controllers.Mastodon.Renderers.UserRenderer>()
+			.AddScoped<Controllers.Mastodon.Renderers.NoteRenderer>()
 			.AddScoped<NoteRenderer>()
-			.AddScoped<Controllers.Renderers.NoteRenderer>()
-			.AddScoped<Controllers.Renderers.UserRenderer>()
+			.AddScoped<UserRenderer>()
 			.AddScoped<NotificationRenderer>()
 			.AddScoped<ActivityPubController>();
 

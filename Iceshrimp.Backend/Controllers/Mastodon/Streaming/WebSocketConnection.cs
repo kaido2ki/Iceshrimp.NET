@@ -16,11 +16,17 @@ public sealed class WebSocketConnection(
 	CancellationToken ct
 ) : IDisposable
 {
-	public readonly  OauthToken           Token        = token;
+	private readonly SemaphoreSlim        _lock        = new(1);
 	public readonly  List<IChannel>       Channels     = [];
 	public readonly  EventService         EventService = eventSvc;
 	public readonly  IServiceScopeFactory ScopeFactory = scopeFactory;
-	private readonly SemaphoreSlim        _lock        = new(1);
+	public readonly  OauthToken           Token        = token;
+
+	public void Dispose()
+	{
+		foreach (var channel in Channels)
+			channel.Dispose();
+	}
 
 	public void InitializeStreamingWorker()
 	{
@@ -34,12 +40,6 @@ public sealed class WebSocketConnection(
 		Channels.Add(new PublicChannel(this, "public:local:media", true, false, true));
 		Channels.Add(new PublicChannel(this, "public:remote", false, true, false));
 		Channels.Add(new PublicChannel(this, "public:remote:media", false, true, true));
-	}
-
-	public void Dispose()
-	{
-		foreach (var channel in Channels)
-			channel.Dispose();
 	}
 
 	public async Task HandleSocketMessageAsync(string payload)

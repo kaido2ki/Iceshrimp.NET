@@ -120,8 +120,8 @@ public class CustomCollectionModelBinder(IModelBinder? binder) : IModelBinder
 [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property)]
 public class FromHybridAttribute(string? name = null) : Attribute, IBindingSourceMetadata, IModelNameProvider
 {
-	public string?       Name          => name;
 	public BindingSource BindingSource => HybridBindingSource.Hybrid;
+	public string?       Name          => name;
 }
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]

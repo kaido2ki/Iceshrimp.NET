@@ -4,11 +4,13 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 namespace Iceshrimp.Tests.Serialization;
 
 [TestClass]
-public class JsonLdTests {
+public class JsonLdTests
+{
 	private readonly ASActor _actor = MockObjects.ASActor;
 
 	[TestMethod]
-	public void RoundtripTest() {
+	public void RoundtripTest()
+	{
 		var expanded = LdHelpers.Expand(_actor)!;
 		expanded.Should().NotBeNull();
 

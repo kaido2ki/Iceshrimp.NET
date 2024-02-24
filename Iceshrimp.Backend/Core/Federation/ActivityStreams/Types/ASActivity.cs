@@ -70,7 +70,7 @@ public class ASAnnounce : ASActivity
 
 	[J($"{Constants.ActivityStreamsNs}#cc")]
 	public List<ASObjectBase>? Cc { get; set; }
-	
+
 	public Note.NoteVisibility GetVisibility(ASActor actor)
 	{
 		if (To?.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public") ?? false)

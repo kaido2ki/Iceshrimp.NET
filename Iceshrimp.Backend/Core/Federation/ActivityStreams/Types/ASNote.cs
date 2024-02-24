@@ -8,6 +8,7 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASNote : ASObject
 {
+	public bool VerifiedFetch = false;
 	public ASNote() => Type = Types.Note;
 
 	[J("https://misskey-hub.net/ns#_misskey_content")]
@@ -70,8 +71,6 @@ public class ASNote : ASObject
 	[J($"{Constants.ActivityStreamsNs}#attachment")]
 	[JC(typeof(ASAttachmentConverter))]
 	public List<ASAttachment>? Attachments { get; set; }
-
-	public bool VerifiedFetch = false;
 
 	public Note.NoteVisibility GetVisibility(User actor)
 	{

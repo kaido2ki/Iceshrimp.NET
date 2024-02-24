@@ -5,18 +5,21 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Iceshrimp.Tests.Parsing;
 
 [TestClass]
-public class MfmTests {
+public class MfmTests
+{
 	private const string Mfm =
 		"<plain>*blabla*</plain> *test* #example @example @example@invalid @example@example.com @invalid:matrix.org https://hello.com http://test.de <https://大石泉すき.example.com> javascript://sdfgsdf [test](https://asdfg) ?[test](https://asdfg) `asd`";
 
 	[TestMethod]
-	public void TestParse() {
+	public void TestParse()
+	{
 		//TODO: actually validate the output (this currently only checks that no exception is thrown)
 		MfmParser.Parse(Mfm);
 	}
 
 	[TestMethod]
-	public async Task TestToHtml() {
+	public async Task TestToHtml()
+	{
 		double duration                      = 100;
 		for (var i = 0; i < 4; i++) duration = await Benchmark();
 
@@ -24,7 +27,8 @@ public class MfmTests {
 
 		return;
 
-		async Task<double> Benchmark() {
+		async Task<double> Benchmark()
+		{
 			var provider  = MockObjects.ServiceProvider;
 			var converter = provider.GetRequiredService<MfmConverter>();
 

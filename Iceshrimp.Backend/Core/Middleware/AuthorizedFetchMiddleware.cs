@@ -65,7 +65,7 @@ public class AuthorizedFetchMiddleware(
 
 				// First, we check if we already have the key
 				key = await db.UserPublickeys.Include(p => p.User)
-				              .FirstOrDefaultAsync(p => p.KeyId == sig.KeyId, cancellationToken: ct);
+				              .FirstOrDefaultAsync(p => p.KeyId == sig.KeyId, ct);
 
 				// If we don't, we need to try to fetch it
 				if (key == null)
@@ -74,7 +74,7 @@ public class AuthorizedFetchMiddleware(
 					{
 						var user = await userResolver.ResolveAsync(sig.KeyId).WaitAsync(ct);
 						key = await db.UserPublickeys.Include(p => p.User)
-						              .FirstOrDefaultAsync(p => p.User == user, cancellationToken: ct);
+						              .FirstOrDefaultAsync(p => p.User == user, ct);
 					}
 					catch (Exception e)
 					{
@@ -147,14 +147,14 @@ public class AuthorizedFetchMiddleware(
 					key = null;
 					key = await db.UserPublickeys
 					              .Include(p => p.User)
-					              .FirstOrDefaultAsync(p => p.User.Uri == activity.Actor.Id, cancellationToken: ct);
+					              .FirstOrDefaultAsync(p => p.User.Uri == activity.Actor.Id, ct);
 
 					if (key == null)
 					{
 						var user = await userResolver.ResolveAsync(activity.Actor.Id).WaitAsync(ct);
 						key = await db.UserPublickeys
 						              .Include(p => p.User)
-						              .FirstOrDefaultAsync(p => p.User == user, cancellationToken: ct);
+						              .FirstOrDefaultAsync(p => p.User == user, ct);
 
 						if (key == null)
 							throw new Exception($"Failed to fetch public key for user {activity.Actor.Id}");

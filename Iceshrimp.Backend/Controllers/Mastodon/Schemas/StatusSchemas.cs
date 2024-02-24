@@ -39,7 +39,6 @@ public abstract class StatusSchemas
 
 		[B(Name = "poll")] [J("poll")] public PollData? Poll { get; set; }
 
-
 		public class PollData
 		{
 			[B(Name = "options")]

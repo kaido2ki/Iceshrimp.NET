@@ -11,18 +11,21 @@ using Newtonsoft.Json.Linq;
 namespace Iceshrimp.Tests.Cryptography;
 
 [TestClass]
-public class HttpSignatureTests {
+public class HttpSignatureTests
+{
 	private readonly ASActor _actor    = MockObjects.ASActor;
 	private          JArray  _expanded = null!;
 
 	[TestInitialize]
-	public void Initialize() {
+	public void Initialize()
+	{
 		_expanded = LdHelpers.Expand(_actor)!;
 		_expanded.Should().NotBeNull();
 	}
 
 	[TestMethod]
-	public async Task SignedGetTest() {
+	public async Task SignedGetTest()
+	{
 		var provider = MockObjects.ServiceProvider;
 
 		var httpRqSvc = provider.GetService<HttpRequestService>();
@@ -34,7 +37,8 @@ public class HttpSignatureTests {
 	}
 
 	[TestMethod]
-	public async Task InvalidSignatureDateTest() {
+	public async Task InvalidSignatureDateTest()
+	{
 		var provider = MockObjects.ServiceProvider;
 
 		var httpRqSvc = provider.GetService<HttpRequestService>();
@@ -45,15 +49,16 @@ public class HttpSignatureTests {
 
 		var e = await Assert.ThrowsExceptionAsync<GracefulException>(async () =>
 			                                                             await request.VerifyAsync(MockObjects
-				                                                             .UserKeypair
-				                                                             .PublicKey));
+						                                                              .UserKeypair
+						                                                              .PublicKey));
 		e.StatusCode.Should().Be(HttpStatusCode.Forbidden);
 		e.Message.Should().Be("Request signature too old");
 		e.Error.Should().Be("Forbidden");
 	}
 
 	[TestMethod]
-	public async Task InvalidSignatureTest() {
+	public async Task InvalidSignatureTest()
+	{
 		var provider = MockObjects.ServiceProvider;
 
 		var httpRqSvc = provider.GetService<HttpRequestService>();
@@ -72,7 +77,8 @@ public class HttpSignatureTests {
 	}
 
 	[TestMethod]
-	public async Task ModifiedUriTest() {
+	public async Task ModifiedUriTest()
+	{
 		var provider = MockObjects.ServiceProvider;
 
 		var httpRqSvc = provider.GetService<HttpRequestService>();
@@ -86,7 +92,8 @@ public class HttpSignatureTests {
 	}
 
 	[TestMethod]
-	public async Task SignedPostTest() {
+	public async Task SignedPostTest()
+	{
 		var provider = MockObjects.ServiceProvider;
 
 		var httpRqSvc = provider.GetService<HttpRequestService>();
@@ -98,7 +105,8 @@ public class HttpSignatureTests {
 	}
 
 	[TestMethod]
-	public async Task ModifiedBodyTest() {
+	public async Task ModifiedBodyTest()
+	{
 		var provider = MockObjects.ServiceProvider;
 
 		var httpRqSvc = provider.GetService<HttpRequestService>();

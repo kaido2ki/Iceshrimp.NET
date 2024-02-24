@@ -27,6 +27,21 @@ public class PublicChannel(
 		return Task.CompletedTask;
 	}
 
+	public Task Unsubscribe(StreamingRequestMessage _)
+	{
+		if (!IsSubscribed) return Task.CompletedTask;
+		IsSubscribed = false;
+		Dispose();
+		return Task.CompletedTask;
+	}
+
+	public void Dispose()
+	{
+		connection.EventService.NotePublished -= OnNotePublished;
+		connection.EventService.NoteUpdated   -= OnNoteUpdated;
+		connection.EventService.NoteDeleted   -= OnNoteDeleted;
+	}
+
 	private bool IsApplicable(Note note)
 	{
 		if (note.Visibility != Note.NoteVisibility.Public) return false;
@@ -68,20 +83,5 @@ public class PublicChannel(
 		if (!IsApplicable(note)) return;
 		var message = new StreamingUpdateMessage { Stream = [Name], Event = "delete", Payload = note.Id };
 		await connection.SendMessageAsync(JsonSerializer.Serialize(message));
-	}
-
-	public Task Unsubscribe(StreamingRequestMessage _)
-	{
-		if (!IsSubscribed) return Task.CompletedTask;
-		IsSubscribed = false;
-		Dispose();
-		return Task.CompletedTask;
-	}
-
-	public void Dispose()
-	{
-		connection.EventService.NotePublished -= OnNotePublished;
-		connection.EventService.NoteUpdated   -= OnNoteUpdated;
-		connection.EventService.NoteDeleted   -= OnNoteDeleted;
 	}
 }

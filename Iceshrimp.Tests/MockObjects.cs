@@ -8,8 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Iceshrimp.Tests;
 
-public static class MockObjects {
-	public static readonly ASActor ASActor = new() {
+public static class MockObjects
+{
+	public static readonly ASActor ASActor = new()
+	{
 		Id             = $"https://example.org/users/{IdHelpers.GenerateSlowflakeId()}",
 		Type           = ASActor.Types.Person,
 		Url            = new ASLink("https://example.org/@test"),
@@ -20,13 +22,12 @@ public static class MockObjects {
 		IsLocked       = true
 	};
 
-	public static readonly User User = new() {
-		Id = IdHelpers.GenerateSlowflakeId()
-	};
+	public static readonly User User = new() { Id = IdHelpers.GenerateSlowflakeId() };
 
 	public static readonly RSA Keypair = RSA.Create(4096);
 
-	public static readonly UserKeypair UserKeypair = new() {
+	public static readonly UserKeypair UserKeypair = new()
+	{
 		UserId     = User.Id,
 		PrivateKey = Keypair.ExportPkcs8PrivateKeyPem(),
 		PublicKey  = Keypair.ExportSubjectPublicKeyInfoPem()
@@ -35,7 +36,8 @@ public static class MockObjects {
 	private static readonly ServiceProvider  DefaultServiceProvider = GetServiceProvider();
 	public static           IServiceProvider ServiceProvider => DefaultServiceProvider.CreateScope().ServiceProvider;
 
-	private static ServiceProvider GetServiceProvider() {
+	private static ServiceProvider GetServiceProvider()
+	{
 		var config = new ConfigurationManager();
 		config.AddIniFile("configuration.ini", false);
 

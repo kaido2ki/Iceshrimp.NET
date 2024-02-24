@@ -10,11 +10,6 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("UserId")]
 public class UserListMember : IEntity
 {
-	[Key]
-	[Column("id")]
-	[StringLength(32)]
-	public string Id { get; set; } = null!;
-
 	/// <summary>
 	///     The created date of the UserListMember.
 	/// </summary>
@@ -42,4 +37,9 @@ public class UserListMember : IEntity
 	[ForeignKey("UserListId")]
 	[InverseProperty(nameof(Tables.UserList.UserListMembers))]
 	public virtual UserList UserList { get; set; } = null!;
+
+	[Key]
+	[Column("id")]
+	[StringLength(32)]
+	public string Id { get; set; } = null!;
 }

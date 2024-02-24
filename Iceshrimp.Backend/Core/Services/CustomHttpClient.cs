@@ -65,12 +65,12 @@ public class CustomHttpClient : HttpClient
 
 			token.ThrowIfCancellationRequested();
 
-			var socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true, };
+			var socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
 
 			try
 			{
 				await socket.ConnectAsync(address, port, token).ConfigureAwait(false);
-				return new NetworkStream(socket, ownsSocket: true);
+				return new NetworkStream(socket, true);
 			}
 			catch
 			{

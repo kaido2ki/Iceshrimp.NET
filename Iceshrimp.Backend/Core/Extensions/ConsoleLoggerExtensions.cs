@@ -146,7 +146,6 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom")
 		CreateDefaultLogMessage(textWriter, logEntry, message);
 	}
 
-
 	private static void CreateDefaultLogMessage<TState>(
 		TextWriter textWriter, in LogEntry<TState> logEntry,
 		string message

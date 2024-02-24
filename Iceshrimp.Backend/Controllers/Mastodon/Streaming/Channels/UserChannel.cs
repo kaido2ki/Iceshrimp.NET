@@ -8,11 +8,10 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
 
 public class UserChannel(WebSocketConnection connection, bool notificationsOnly) : IChannel
 {
-	public string       Name         => notificationsOnly ? "user:notification" : "user";
-	public List<string> Scopes       => ["read:statuses", "read:notifications"];
-	public bool         IsSubscribed { get; private set; }
-
 	private List<string> _followedUsers = [];
+	public  string       Name         => notificationsOnly ? "user:notification" : "user";
+	public  List<string> Scopes       => ["read:statuses", "read:notifications"];
+	public  bool         IsSubscribed { get; private set; }
 
 	public async Task Subscribe(StreamingRequestMessage _)
 	{
@@ -35,6 +34,26 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		}
 
 		connection.EventService.Notification += OnNotification;
+	}
+
+	public Task Unsubscribe(StreamingRequestMessage _)
+	{
+		if (!IsSubscribed) return Task.CompletedTask;
+		IsSubscribed = false;
+		Dispose();
+		return Task.CompletedTask;
+	}
+
+	public void Dispose()
+	{
+		if (!notificationsOnly)
+		{
+			connection.EventService.NotePublished -= OnNotePublished;
+			connection.EventService.NoteUpdated   -= OnNoteUpdated;
+			connection.EventService.NoteDeleted   -= OnNoteDeleted;
+		}
+
+		connection.EventService.Notification -= OnNotification;
 	}
 
 	private bool IsApplicable(Note note) => _followedUsers.Prepend(connection.Token.User.Id).Contains(note.UserId);
@@ -84,25 +103,5 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			Stream = [Name], Event = "notification", Payload = JsonSerializer.Serialize(rendered)
 		};
 		await connection.SendMessageAsync(JsonSerializer.Serialize(message));
-	}
-
-	public Task Unsubscribe(StreamingRequestMessage _)
-	{
-		if (!IsSubscribed) return Task.CompletedTask;
-		IsSubscribed = false;
-		Dispose();
-		return Task.CompletedTask;
-	}
-
-	public void Dispose()
-	{
-		if (!notificationsOnly)
-		{
-			connection.EventService.NotePublished -= OnNotePublished;
-			connection.EventService.NoteUpdated   -= OnNoteUpdated;
-			connection.EventService.NoteDeleted   -= OnNoteDeleted;
-		}
-
-		connection.EventService.Notification -= OnNotification;
 	}
 }

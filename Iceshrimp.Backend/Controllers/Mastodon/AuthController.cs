@@ -86,7 +86,6 @@ public class AuthController(DatabaseContext db) : ControllerBase
 		return Ok(res);
 	}
 
-
 	[HttpPost("/oauth/token")]
 	[ConsumesHybrid]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.OauthTokenResponse))]
