@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Iceshrimp.Backend.Core.Extensions;
@@ -11,6 +12,9 @@ public static class DistributedCacheExtensions
 	//TODO: renew option on GetAsync and FetchAsync
 	//TODO: check that this actually works for complex types (sigh)
 
+	private static readonly JsonSerializerOptions Options =
+		new(JsonSerializerOptions.Default) { ReferenceHandler = ReferenceHandler.Preserve };
+
 	public static async Task<T?> GetAsync<T>(this IDistributedCache cache, string key) where T : class
 	{
 		var buffer = await cache.GetAsync(key);
@@ -19,7 +23,7 @@ public static class DistributedCacheExtensions
 		var stream = new MemoryStream(buffer);
 		try
 		{
-			var data = await JsonSerializer.DeserializeAsync<T?>(stream);
+			var data = await JsonSerializer.DeserializeAsync<T?>(stream, Options);
 			return data;
 		}
 		catch
@@ -36,7 +40,7 @@ public static class DistributedCacheExtensions
 		var stream = new MemoryStream(buffer);
 		try
 		{
-			var data = await JsonSerializer.DeserializeAsync<T?>(stream);
+			var data = await JsonSerializer.DeserializeAsync<T?>(stream, Options);
 			return data;
 		}
 		catch
@@ -86,7 +90,7 @@ public static class DistributedCacheExtensions
 	public static async Task SetAsync<T>(this IDistributedCache cache, string key, T data, TimeSpan ttl)
 	{
 		using var stream = new MemoryStream();
-		await JsonSerializer.SerializeAsync(stream, data);
+		await JsonSerializer.SerializeAsync(stream, data, Options);
 		stream.Position = 0;
 		var options = new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = ttl };
 		await cache.SetAsync(key, stream.ToArray(), options);
