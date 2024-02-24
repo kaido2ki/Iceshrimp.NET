@@ -101,6 +101,11 @@ public class UserService(
 		                .Where(p => p != null)
 		                .Cast<string>()
 		                .ToList();
+		var fields = actor.Attachments?
+		                  .OfType<ASField>()
+		                  .Where(p => p is { Name: not null, Value: not null })
+		                  .Select(p => new UserProfile.Field { Name = p.Name!, Value = p.Value! })
+		                  .ToArray();
 
 		user = new User
 		{
@@ -134,7 +139,7 @@ public class UserService(
 			Description = actor.MkSummary ?? await mfmConverter.FromHtmlAsync(actor.Summary),
 			//Birthday = TODO,
 			//Location = TODO,
-			//Fields = TODO,
+			Fields   = fields ?? [],
 			UserHost = user.Host,
 			Url      = actor.Url?.Link
 		};
@@ -226,6 +231,12 @@ public class UserService(
 		                .Cast<string>()
 		                .ToList();
 
+		var fields = actor.Attachments?
+		                  .OfType<ASField>()
+		                  .Where(p => p is { Name: not null, Value: not null })
+		                  .Select(p => new UserProfile.Field { Name = p.Name!, Value = p.Value! })
+		                  .ToArray();
+
 		user.Emojis = emoji.Select(p => p.Id).ToList();
 		user.Tags   = tags ?? [];
 		//TODO: FollowersCount
@@ -238,7 +249,7 @@ public class UserService(
 		user.UserProfile.Description = actor.MkSummary ?? await mfmConverter.FromHtmlAsync(actor.Summary);
 		//user.UserProfile.Birthday = TODO;
 		//user.UserProfile.Location = TODO;
-		//user.UserProfile.Fields = TODO;
+		user.UserProfile.Fields   = fields ?? [];
 		user.UserProfile.UserHost = user.Host;
 		user.UserProfile.Url      = actor.Url?.Link;
 

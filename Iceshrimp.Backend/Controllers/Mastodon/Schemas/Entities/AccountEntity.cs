@@ -23,7 +23,7 @@ public class AccountEntity : IEntity
 	[J("moved")]           public required AccountEntity?    MovedToAccount     { get; set; }
 	[J("bot")]             public required bool              IsBot              { get; set; }
 	[J("discoverable")]    public required bool              IsDiscoverable     { get; set; }
-	[J("fields")]          public required Field[]           Fields             { get; set; }
+	[J("fields")]          public required List<Field>       Fields             { get; set; }
 	[J("source")]          public          AccountSource?    Source             { get; set; }
 	[J("emojis")]          public required List<EmojiEntity> Emoji              { get; set; }
 	[J("id")]              public required string            Id                 { get; set; }

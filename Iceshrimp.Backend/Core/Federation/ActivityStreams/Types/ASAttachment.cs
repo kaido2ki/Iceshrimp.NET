@@ -15,6 +15,8 @@ public class ASAttachment : ASObjectBase
 
 public class ASDocument : ASAttachment
 {
+	public ASDocument() => Type = $"{Constants.ActivityStreamsNs}#Document";
+
 	[J($"{Constants.ActivityStreamsNs}#url")]
 	[JC(typeof(ASObjectBaseConverter))]
 	public ASObjectBase? Url { get; set; }
@@ -30,6 +32,17 @@ public class ASDocument : ASAttachment
 	[J($"{Constants.ActivityStreamsNs}#name")]
 	[JC(typeof(ValueObjectConverter))]
 	public string? Description { get; set; }
+}
+
+public class ASField : ASAttachment
+{
+	public ASField() => Type = $"{Constants.SchemaNs}#PropertyValue";
+
+	[J($"{Constants.ActivityStreamsNs}#name")] [JC(typeof(ValueObjectConverter))]
+	public string? Name;
+
+	[J($"{Constants.SchemaNs}#value")] [JC(typeof(ValueObjectConverter))]
+	public string? Value;
 }
 
 public sealed class ASAttachmentConverter : JsonConverter
@@ -74,9 +87,12 @@ public sealed class ASAttachmentConverter : JsonConverter
 	{
 		var attachment = obj.ToObject<ASAttachment?>();
 
-		return attachment?.Type == $"{Constants.ActivityStreamsNs}#Document"
-			? obj.ToObject<ASDocument?>()
-			: attachment;
+		return attachment?.Type switch
+		{
+			$"{Constants.ActivityStreamsNs}#Document" => obj.ToObject<ASDocument?>(),
+			$"{Constants.SchemaNs}#PropertyValue"     => obj.ToObject<ASField?>(),
+			_                                         => attachment
+		};
 	}
 
 	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)

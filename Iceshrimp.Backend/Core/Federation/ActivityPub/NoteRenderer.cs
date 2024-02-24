@@ -73,7 +73,6 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			          .Where(p => note.FileIds.Contains(p.Id) && p.UserHost == null)
 			          .Select(p => new ASDocument
 			          {
-				          Type        = $"{Constants.ActivityStreamsNs}#Document",
 				          Sensitive   = p.IsSensitive,
 				          Url         = new ASObjectBase(p.WebpublicUrl ?? p.Url),
 				          MediaType   = p.Type,

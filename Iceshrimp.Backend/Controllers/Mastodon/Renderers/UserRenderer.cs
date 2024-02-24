@@ -22,6 +22,16 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			acct += $"@{user.Host}";
 
 		var profileEmoji = emoji?.Where(p => user.Emojis.Contains(p.Id)).ToList() ?? await GetEmoji([user]);
+		var fields = profile?.Fields
+		                    .Select(p => new Field
+		                    {
+			                    Name  = p.Name,
+			                    Value = p.Value,
+			                    VerifiedAt = p.IsVerified.HasValue && p.IsVerified.Value
+				                    ? DateTime.Now.ToStringIso8601Like()
+				                    : null
+		                    })
+		                    .ToList();
 
 		var res = new AccountEntity
 		{
@@ -44,7 +54,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			MovedToAccount     = null,                           //TODO
 			IsBot              = user.IsBot,
 			IsDiscoverable     = user.IsExplorable,
-			Fields             = [], //TODO
+			Fields             = fields ?? [],
 			Emoji              = profileEmoji
 		};
 

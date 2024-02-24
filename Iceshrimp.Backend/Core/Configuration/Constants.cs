@@ -6,7 +6,8 @@ public static class Constants
 	public const           string   W3IdSecurityNs    = "https://w3id.org/security";
 	public const           string   PurlDcNs          = "http://purl.org/dc/terms";
 	public const           string   XsdNs             = "http://www.w3.org/2001/XMLSchema";
-	public const           string   MastodonNs           = "http://joinmastodon.org/ns";
+	public const           string   SchemaNs          = "http://schema.org";
+	public const           string   MastodonNs        = "http://joinmastodon.org/ns";
 	public static readonly string[] SystemUsers       = ["instance.actor", "relay.actor"];
 
 	public static readonly string[] BrowserSafeMimeTypes =
