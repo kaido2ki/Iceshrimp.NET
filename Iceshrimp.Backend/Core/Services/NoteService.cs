@@ -602,7 +602,6 @@ public class NoteService(
 
 		if (note != null) return note;
 
-		//TODO: should we fall back to a regular user's keypair if fetching with instance actor fails & a local user is following the actor?
 		fetchedNote ??= user != null ? await fetchSvc.FetchNoteAsync(uri, user) : await fetchSvc.FetchNoteAsync(uri);
 
 		if (fetchedNote == null)
