@@ -20,7 +20,7 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 
 		var note = targetNote != null
 			? statuses?.FirstOrDefault(p => p.Id == targetNote.Id) ??
-			  await noteRenderer.RenderAsync(targetNote, user, accounts)
+			  await noteRenderer.RenderAsync(targetNote, user, new NoteRenderer.NoteRendererDto { Accounts = accounts })
 			: null;
 
 		var notifier = accounts?.FirstOrDefault(p => p.Id == dbNotifier.Id) ??

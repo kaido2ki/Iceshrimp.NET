@@ -16,20 +16,14 @@ public class NoteRenderer(
 	DatabaseContext db
 )
 {
-	public async Task<StatusEntity> RenderAsync(
-		Note note, User? user, List<AccountEntity>? accounts = null, List<MentionEntity>? mentions = null,
-		List<AttachmentEntity>? attachments = null, Dictionary<string, int>? likeCounts = null,
-		List<string>? likedNotes = null, List<string>? renotes = null, List<EmojiEntity>? emoji = null, int recurse = 2
-	)
+	public async Task<StatusEntity> RenderAsync(Note note, User? user, NoteRendererDto? data = null, int recurse = 2)
 	{
 		var uri = note.Uri ?? note.GetPublicUri(config.Value);
 		var renote = note is { Renote: not null, IsQuote: false } && recurse > 0
-			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes,
-			                    renotes, emoji, 0)
+			? await RenderAsync(note.Renote, user, data, 0)
 			: null;
 		var quote = note is { Renote: not null, IsQuote: true } && recurse > 0
-			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes,
-			                    renotes, emoji, --recurse)
+			? await RenderAsync(note.Renote, user, data, --recurse)
 			: null;
 		var text = note.Text;
 		if (note is { Renote: not null, IsQuote: true } && text != null)
@@ -39,45 +33,38 @@ public class NoteRenderer(
 				text += $"\n\nRE: {quoteUri}"; //TODO: render as inline quote
 		}
 
-		var likeCount = likeCounts?.GetValueOrDefault(note.Id, 0) ?? await db.NoteLikes.CountAsync(p => p.Note == note);
-		var liked = likedNotes?.Contains(note.Id) ?? await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
-		var renoted = renotes?.Contains(note.Id) ??
+		var likeCount = data?.LikeCounts?.GetValueOrDefault(note.Id, 0) ??
+		                await db.NoteLikes.CountAsync(p => p.Note == note);
+		var liked = data?.LikedNotes?.Contains(note.Id) ??
+		            await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
+		var renoted = data?.Renotes?.Contains(note.Id) ??
 		              await db.Notes.AnyAsync(p => p.Renote == note && p.User == user && p.IsPureRenote);
 
-		var noteEmoji = emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmoji([note]);
+		var noteEmoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmoji([note]);
 
-		if (mentions == null)
-		{
-			mentions = await db.Users.IncludeCommonProperties()
-			                   .Where(p => note.Mentions.Contains(p.Id))
-			                   .Select(u => new MentionEntity(u, config.Value.WebDomain))
-			                   .ToListAsync();
-		}
-		else
-		{
-			mentions = [..mentions.Where(p => note.Mentions.Contains(p.Id))];
-		}
+		var mentions = data?.Mentions == null
+			? await db.Users.IncludeCommonProperties()
+			          .Where(p => note.Mentions.Contains(p.Id))
+			          .Select(u => new MentionEntity(u, config.Value.WebDomain))
+			          .ToListAsync()
+			: [..data.Mentions.Where(p => note.Mentions.Contains(p.Id))];
 
-		if (attachments == null)
-		{
-			attachments = await db.DriveFiles.Where(p => note.FileIds.Contains(p.Id))
-			                      .Select(f => new AttachmentEntity
-			                      {
-				                      Id          = f.Id,
-				                      Url         = f.WebpublicUrl ?? f.Url,
-				                      Blurhash    = f.Blurhash,
-				                      PreviewUrl  = f.ThumbnailUrl,
-				                      Description = f.Comment,
-				                      Metadata    = null,
-				                      RemoteUrl   = f.Uri,
-				                      Type        = AttachmentEntity.GetType(f.Type)
-			                      })
-			                      .ToListAsync();
-		}
-		else
-		{
-			attachments = [..attachments.Where(p => note.FileIds.Contains(p.Id))];
-		}
+		var attachments = data?.Attachments == null
+			? await db.DriveFiles.Where(p => note.FileIds.Contains(p.Id))
+			          .Select(f => new AttachmentEntity
+			          {
+				          Id          = f.Id,
+				          Url         = f.WebpublicUrl ?? f.Url,
+				          Blurhash    = f.Blurhash,
+				          PreviewUrl  = f.ThumbnailUrl,
+				          Description = f.Comment,
+				          Metadata    = null,
+				          RemoteUrl   = f.Uri,
+				          Type        = AttachmentEntity.GetType(f.Type)
+			          })
+			          .ToListAsync()
+			: [..data.Attachments.Where(p => note.FileIds.Contains(p.Id))];
+
 
 		var mentionedUsers = mentions.Select(p => new Note.MentionedUser
 		                             {
@@ -92,7 +79,8 @@ public class NoteRenderer(
 			? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost)
 			: null;
 
-		var account = accounts?.FirstOrDefault(p => p.Id == note.UserId) ?? await userRenderer.RenderAsync(note.User);
+		var account = data?.Accounts?.FirstOrDefault(p => p.Id == note.UserId) ??
+		              await userRenderer.RenderAsync(note.User);
 
 		var res = new StatusEntity
 		{
@@ -215,15 +203,28 @@ public class NoteRenderer(
 		                    .DistinctBy(p => p.Id)
 		                    .ToList();
 
-		accounts ??= await GetAccounts(noteList.Select(p => p.User));
-		var mentions    = await GetMentions(noteList);
-		var attachments = await GetAttachments(noteList);
-		var likeCounts  = await GetLikeCounts(noteList);
-		var likedNotes  = await GetLikedNotes(noteList, user);
-		var renotes     = await GetRenotes(noteList, user);
-		var emoji       = await GetEmoji(noteList);
-		return await noteList.Select(p => RenderAsync(p, user, accounts, mentions, attachments, likeCounts, likedNotes,
-		                                              renotes, emoji))
-		                     .AwaitAllAsync();
+		var data = new NoteRendererDto
+		{
+			Accounts    = accounts ?? await GetAccounts(noteList.Select(p => p.User)),
+			Mentions    = await GetMentions(noteList),
+			Attachments = await GetAttachments(noteList),
+			LikeCounts  = await GetLikeCounts(noteList),
+			LikedNotes  = await GetLikedNotes(noteList, user),
+			Renotes     = await GetRenotes(noteList, user),
+			Emoji       = await GetEmoji(noteList)
+		};
+
+		return await noteList.Select(p => RenderAsync(p, user, data)).AwaitAllAsync();
+	}
+
+	public class NoteRendererDto
+	{
+		public List<AccountEntity>?     Accounts;
+		public List<MentionEntity>?     Mentions;
+		public List<AttachmentEntity>?  Attachments;
+		public Dictionary<string, int>? LikeCounts;
+		public List<string>?            LikedNotes;
+		public List<string>?            Renotes;
+		public List<EmojiEntity>?       Emoji;
 	}
 }
