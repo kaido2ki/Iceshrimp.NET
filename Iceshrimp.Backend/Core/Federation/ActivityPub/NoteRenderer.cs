@@ -62,7 +62,6 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		var tags = mentions
 		           .Select(mention => new ASMention
 		           {
-			           Type = $"{Constants.ActivityStreamsNs}#Mention",
 			           Name = $"@{mention.Username}@{mention.Host}",
 			           Href = new ASObjectBase(mention.Uri)
 		           })

@@ -19,17 +19,17 @@ public class NoteRenderer(
 	public async Task<StatusEntity> RenderAsync(
 		Note note, User? user, List<AccountEntity>? accounts = null, List<MentionEntity>? mentions = null,
 		List<AttachmentEntity>? attachments = null, Dictionary<string, int>? likeCounts = null,
-		List<string>? likedNotes = null, List<string>? renotes = null, int recurse = 2
+		List<string>? likedNotes = null, List<string>? renotes = null, List<EmojiEntity>? emoji = null, int recurse = 2
 	)
 	{
 		var uri = note.Uri ?? note.GetPublicUri(config.Value);
 		var renote = note is { Renote: not null, IsQuote: false } && recurse > 0
 			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes,
-			                    renotes, 0)
+			                    renotes, emoji, 0)
 			: null;
 		var quote = note is { Renote: not null, IsQuote: true } && recurse > 0
 			? await RenderAsync(note.Renote, user, accounts, mentions, attachments, likeCounts, likedNotes,
-			                    renotes, --recurse)
+			                    renotes, emoji, --recurse)
 			: null;
 		var text = note.Text;
 		if (note is { Renote: not null, IsQuote: true } && text != null)
@@ -43,6 +43,8 @@ public class NoteRenderer(
 		var liked = likedNotes?.Contains(note.Id) ?? await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 		var renoted = renotes?.Contains(note.Id) ??
 		              await db.Notes.AnyAsync(p => p.Renote == note && p.User == user && p.IsPureRenote);
+
+		var noteEmoji = emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmoji([note]);
 
 		if (mentions == null)
 		{
@@ -119,7 +121,8 @@ public class NoteRenderer(
 			Text           = text,
 			Mentions       = mentions,
 			IsPinned       = false,
-			Attachments    = attachments
+			Attachments    = attachments,
+			Emojis         = noteEmoji
 		};
 
 		return res;
@@ -184,6 +187,24 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
+	private async Task<List<EmojiEntity>> GetEmoji(IEnumerable<Note> notes)
+	{
+		var ids = notes.SelectMany(p => p.Emojis).ToList();
+		if (ids.Count == 0) return [];
+
+		return await db.Emojis
+		               .Where(p => ids.Contains(p.Id))
+		               .Select(p => new EmojiEntity
+		               {
+			               Id              = p.Id,
+			               Shortcode       = p.Name,
+			               Url             = p.PublicUrl,
+			               StaticUrl       = p.PublicUrl, //TODO
+			               VisibleInPicker = true
+		               })
+		               .ToListAsync();
+	}
+
 	public async Task<IEnumerable<StatusEntity>> RenderManyAsync(
 		IEnumerable<Note> notes, User? user, List<AccountEntity>? accounts = null
 	)
@@ -200,8 +221,9 @@ public class NoteRenderer(
 		var likeCounts  = await GetLikeCounts(noteList);
 		var likedNotes  = await GetLikedNotes(noteList, user);
 		var renotes     = await GetRenotes(noteList, user);
+		var emoji       = await GetEmoji(noteList);
 		return await noteList.Select(p => RenderAsync(p, user, accounts, mentions, attachments, likeCounts, likedNotes,
-		                                              renotes))
+		                                              renotes, emoji))
 		                     .AwaitAllAsync();
 	}
 }

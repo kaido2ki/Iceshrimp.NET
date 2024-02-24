@@ -30,7 +30,7 @@ public class Emoji
 	[Column("type")] [StringLength(64)] public string? Type { get; set; }
 
 	[Column("aliases", TypeName = "character varying(128)[]")]
-	public List<string> Aliases { get; set; } = null!;
+	public List<string> Aliases { get; set; } = [];
 
 	[Column("category")]
 	[StringLength(128)]

@@ -43,8 +43,8 @@ public class StatusEntity : IEntity
 
 	[J("mentions")]          public required List<MentionEntity>    Mentions    { get; set; }
 	[J("media_attachments")] public required List<AttachmentEntity> Attachments { get; set; }
+	[J("emojis")]            public required List<EmojiEntity>      Emojis      { get; set; }
 
-	[J("emojis")]      public object[] Emojis      => [];   //FIXME
 	[J("tags")]        public object[] Tags        => [];   //FIXME
 	[J("reactions")]   public object[] Reactions   => [];   //FIXME
 	[J("filtered")]    public object[] Filtered    => [];   //FIXME

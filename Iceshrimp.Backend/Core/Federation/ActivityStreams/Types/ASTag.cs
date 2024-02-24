@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
+using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
@@ -20,17 +21,35 @@ public class ASTagLink : ASTag
 	public ASObjectBase? Href { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#name")]
-	[JC(typeof(ValueObjectConverter))]
+	[JC(typeof(VC))]
 	public string? Name { get; set; }
 }
 
-public class ASMention : ASTagLink;
+public class ASMention : ASTagLink
+{
+	public ASMention() => Type = $"{Constants.ActivityStreamsNs}#Mention";
+}
 
-public class ASHashtag : ASTagLink;
+public class ASHashtag : ASTagLink
+{
+	public ASHashtag() => Type = $"{Constants.ActivityStreamsNs}#Hashtag";
+}
 
 public class ASEmoji : ASTag
 {
-	//TODO
+	public ASEmoji() => Type = $"{Constants.MastodonNs}#Emoji";
+
+	[J($"{Constants.ActivityStreamsNs}#updated")]
+	[JC(typeof(VC))]
+	public DateTime? Updated { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#icon")]
+	[JC(typeof(ASImageConverter))]
+	public ASImage? Image { get; set; }
+	
+	[J($"{Constants.ActivityStreamsNs}#name")]
+	[JC(typeof(VC))]
+	public string? Name { get; set; }
 }
 
 public sealed class ASTagConverter : JsonConverter
@@ -73,12 +92,15 @@ public sealed class ASTagConverter : JsonConverter
 
 	private ASTag? HandleObject(JToken obj)
 	{
-		var link = obj.ToObject<ASTagLink?>();
-		if (link is not { Href: not null }) return obj.ToObject<ASEmoji?>();
+		var tag = obj.ToObject<ASTag?>();
 
-		return link.Type == $"{Constants.ActivityStreamsNs}#Mention"
-			? obj.ToObject<ASMention?>()
-			: obj.ToObject<ASHashtag?>();
+		return tag?.Type switch
+		{
+			$"{Constants.ActivityStreamsNs}#Mention" => obj.ToObject<ASMention?>(),
+			$"{Constants.ActivityStreamsNs}#Hashtag" => obj.ToObject<ASHashtag?>(),
+			$"{Constants.MastodonNs}#Emoji"          => obj.ToObject<ASEmoji?>(),
+			_                                        => null
+		};
 	}
 
 	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
