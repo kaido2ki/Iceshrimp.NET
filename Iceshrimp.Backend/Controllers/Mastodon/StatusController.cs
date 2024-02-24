@@ -183,7 +183,8 @@ public class StatusController(
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> PostNote([FromHybrid] StatusSchemas.PostStatusRequest request)
 	{
-		var user = HttpContext.GetUserOrFail();
+		var token = HttpContext.GetOauthToken() ?? throw new Exception("Token must not be null at this stage");
+		var user  = token.User;
 
 		//TODO: handle scheduled statuses
 		Request.Headers.TryGetValue("Idempotency-Key", out var idempotencyKeyHeader);
@@ -229,7 +230,7 @@ public class StatusController(
 			: null;
 
 		var lastToken = request.Text?.Split(' ').LastOrDefault();
-		var quoteUri  = lastToken?.StartsWith("https://") ?? false ? lastToken : null;
+		var quoteUri  = token.AutoDetectQuotes && (lastToken?.StartsWith("https://") ?? false) ? lastToken : null;
 		var quote = quoteUri != null
 			? lastToken?.StartsWith($"https://{config.Value.WebDomain}/notes/") ?? false
 				? await db.Notes.IncludeCommonProperties()
