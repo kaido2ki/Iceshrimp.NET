@@ -751,9 +751,14 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.RedirectUri).HasComment("The redirect URI of the OAuth token");
 			entity.Property(e => e.Scopes).HasComment("The scopes requested by the OAuth token");
 			entity.Property(e => e.Token).HasComment("The OAuth token");
+			entity.Property(e => e.SupportsHtmlFormatting)
+			      .HasComment("Whether the client supports HTML inline formatting (bold, italic, strikethrough, ...)")
+			      .HasDefaultValue(true);
+			entity.Property(e => e.AutoDetectQuotes)
+			      .HasComment("Whether the backend should automatically detect quote posts coming from this client")
+			      .HasDefaultValue(true);
 
 			entity.HasOne(d => d.App).WithMany(p => p.OauthTokens);
-
 			entity.HasOne(d => d.User).WithMany(p => p.OauthTokens);
 		});
 

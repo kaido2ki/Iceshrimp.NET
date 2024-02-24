@@ -64,4 +64,7 @@ public class OauthToken
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.OauthTokens))]
 	public virtual User User { get; set; } = null!;
+
+	[Column("supportsHtmlFormatting")] public bool SupportsHtmlFormatting { get; set; }
+	[Column("autoDetectQuotes")] public bool AutoDetectQuotes { get; set; }
 }
