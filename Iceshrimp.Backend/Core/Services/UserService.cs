@@ -66,17 +66,10 @@ public class UserService(
 	public async Task<User> CreateUserAsync(string uri, string acct)
 	{
 		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
-		var actor = await fetchSvc.FetchActorAsync(uri);
-		logger.LogDebug("Got actor: {url}", actor.Url);
-
-		actor.Normalize(uri, acct);
-
-		if (actor.PublicKey?.Id == null || actor.PublicKey?.PublicKey == null)
-			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Actor has no valid public key");
 
 		var user = await db.Users
 		                   .IncludeCommonProperties()
-		                   .FirstOrDefaultAsync(p => p.Uri != null && p.Uri == actor.Id);
+		                   .FirstOrDefaultAsync(p => p.Uri != null && p.Uri == uri);
 
 		if (user != null)
 		{
@@ -84,6 +77,17 @@ public class UserService(
 			logger.LogDebug("Actor {uri} is already known, returning existing user {id}", user.Uri, user.Id);
 			return user;
 		}
+
+		var actor = await fetchSvc.FetchActorAsync(uri);
+		logger.LogDebug("Got actor: {url}", actor.Url);
+
+		actor.Normalize(uri, acct);
+
+		if (actor.Id != uri)
+			throw GracefulException.UnprocessableEntity("Uri doesn't match id of fetched actor");
+
+		if (actor.PublicKey?.Id == null || actor.PublicKey?.PublicKey == null)
+			throw GracefulException.UnprocessableEntity("Actor has no valid public key");
 
 		user = new User
 		{

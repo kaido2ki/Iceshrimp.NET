@@ -1,3 +1,4 @@
+using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Middleware;
@@ -12,6 +13,12 @@ public class UserResolver(
 	FollowupTaskService followupTaskSvc
 )
 {
+	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
+	{
+		o.PoolSize        = 100;
+		o.PoolInitialFill = 5;
+	});
+
 	/*
 	 * The full web finger algorithm:
 	 *
@@ -119,8 +126,11 @@ public class UserResolver(
 		if (user != null)
 			return await GetUpdatedUser(user);
 
-		// Pass the job on to userSvc, which will create the user
-		return await userSvc.CreateUserAsync(uri, acct);
+		using (await KeyedLocker.LockAsync(uri))
+		{
+			// Pass the job on to userSvc, which will create the user
+			return await userSvc.CreateUserAsync(uri, acct);
+		}
 	}
 
 	private async Task<User> GetUpdatedUser(User user)

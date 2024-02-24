@@ -15,46 +15,47 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Amazon.S3" Version="0.31.2"/>
-        <PackageReference Include="AngleSharp" Version="1.1.0"/>
-        <PackageReference Include="Asp.Versioning.Http" Version="8.0.0"/>
-        <PackageReference Include="Blurhash.ImageSharp" Version="3.0.0"/>
-        <PackageReference Include="cuid.net" Version="5.0.2"/>
-        <PackageReference Include="dotNetRdf.Core" Version="3.2.1-dev"/>
-        <PackageReference Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="8.0.0"/>
-        <PackageReference Include="EntityFrameworkCore.Projectables" Version="3.0.4"/>
-        <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0"/>
+        <PackageReference Include="Amazon.S3" Version="0.31.2" />
+        <PackageReference Include="AngleSharp" Version="1.1.0" />
+        <PackageReference Include="Asp.Versioning.Http" Version="8.0.0" />
+        <PackageReference Include="AsyncKeyedLock" Version="6.3.4" />
+        <PackageReference Include="Blurhash.ImageSharp" Version="3.0.0" />
+        <PackageReference Include="cuid.net" Version="5.0.2" />
+        <PackageReference Include="dotNetRdf.Core" Version="3.2.1-dev" />
+        <PackageReference Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="8.0.0" />
+        <PackageReference Include="EntityFrameworkCore.Projectables" Version="3.0.4" />
+        <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.1"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="8.0.0"/>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0"/>
-        <PackageReference Include="protobuf-net" Version="3.2.30"/>
-        <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.1"/>
-        <PackageReference Include="StackExchange.Redis" Version="2.7.17"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
-        <PackageReference Include="System.IO.Hashing" Version="8.0.0"/>
-        <PackageReference Include="Vite.AspNetCore" Version="1.11.0"/>
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="8.0.0" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
+        <PackageReference Include="protobuf-net" Version="3.2.30" />
+        <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.1" />
+        <PackageReference Include="StackExchange.Redis" Version="2.7.17" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
+        <PackageReference Include="Vite.AspNetCore" Version="1.11.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="Pages\Error.cshtml"/>
-        <AdditionalFiles Include="Pages\Shared\_Layout.cshtml"/>
-        <AdditionalFiles Include="Pages\_ViewImports.cshtml"/>
-        <AdditionalFiles Include="Pages\_ViewStart.cshtml"/>
+        <AdditionalFiles Include="Pages\Error.cshtml" />
+        <AdditionalFiles Include="Pages\Shared\_Layout.cshtml" />
+        <AdditionalFiles Include="Pages\_ViewImports.cshtml" />
+        <AdditionalFiles Include="Pages\_ViewStart.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="wwwroot\.vite\manifest.json" CopyToPublishDirectory="PreserveNewest"/>
+        <Content Include="wwwroot\.vite\manifest.json" CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="migrate.sql"/>
+        <None Remove="migrate.sql" />
     </ItemGroup>
 
 </Project>
