@@ -33,8 +33,6 @@ public class AccountController(
 	[HttpGet("verify_credentials")]
 	[Authorize("read:accounts")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> VerifyUserCredentials()
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -56,8 +54,6 @@ public class AccountController(
 	[HttpPost("{id}/follow")]
 	[Authorize("write:follows")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	//TODO: [FromHybrid] request (bool reblogs, bool notify, bool languages)
 	public async Task<IActionResult> FollowUser(string id)
 	{
@@ -108,8 +104,6 @@ public class AccountController(
 	[HttpPost("{id}/unfollow")]
 	[Authorize("write:follows")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> UnfollowUser(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -149,8 +143,6 @@ public class AccountController(
 	[HttpGet("relationships")]
 	[Authorize("read:follows")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity[]))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetRelationships([FromQuery(Name = "id")] List<string> ids)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -186,8 +178,6 @@ public class AccountController(
 	[Authorize("read:statuses")]
 	[LinkPagination(20, 40)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetUserStatuses(
 		string id, AccountSchemas.AccountStatusesRequest request, MastodonPaginationQuery query
 	)
@@ -275,8 +265,6 @@ public class AccountController(
 	[Authorize("read:follows")]
 	[LinkPagination(40, 80)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetFollowRequests(MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -293,8 +281,6 @@ public class AccountController(
 	[HttpPost("/api/v1/follow_requests/{id}/authorize")]
 	[Authorize("write:follows")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> AcceptFollowRequest(string id)
 	{
@@ -338,8 +324,6 @@ public class AccountController(
 	[HttpPost("/api/v1/follow_requests/{id}/reject")]
 	[Authorize("write:follows")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> RejectFollowRequest(string id)
 	{

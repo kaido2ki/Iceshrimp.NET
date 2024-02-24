@@ -115,7 +115,6 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
 	[SuppressMessage("ReSharper.DPA", "DPA0011: High execution time of MVC action",
 	                 Justification = "Argon2 is execution time-heavy by design")]
 	public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
@@ -124,7 +123,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 		var userProfile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
 		if (userProfile is not { Password: not null }) throw new GracefulException("userProfile?.Password was null");
 		if (!AuthHelpers.ComparePassword(request.OldPassword, userProfile.Password))
-			throw GracefulException.Forbidden("old_password is invalid");
+			throw GracefulException.BadRequest("old_password is invalid");
 
 		userProfile.Password = AuthHelpers.HashPassword(request.NewPassword);
 		await db.SaveChangesAsync();

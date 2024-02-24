@@ -17,8 +17,6 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
 [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AttachmentEntity))]
-[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 public class MediaController(DriveService driveSvc) : ControllerBase
 {
 	[HttpPost("/api/v1/media")]

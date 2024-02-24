@@ -3,6 +3,7 @@ using System.Reflection;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -45,19 +46,25 @@ public static class SwaggerGenOptionsExtensions
 			if (context.MethodInfo.DeclaringType is null)
 				return;
 
-			//TODO: separate admin & user authorize attributes
-			var hasAuthenticate = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                             .OfType<AuthenticateAttribute>()
-			                             .Any() ||
-			                      context.MethodInfo.GetCustomAttributes(true)
-			                             .OfType<AuthenticateAttribute>()
-			                             .Any();
+			var authenticateAttribute = context.MethodInfo.GetCustomAttributes(true)
+			                                   .OfType<AuthenticateAttribute>()
+			                                   .FirstOrDefault() ??
+			                            context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+			                                   .OfType<AuthenticateAttribute>()
+			                                   .FirstOrDefault();
+
+			if (authenticateAttribute == null) return;
 
 			var isMastodonController = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
 			                                  .OfType<MastodonApiControllerAttribute>()
 			                                  .Any();
 
-			if (!hasAuthenticate) return;
+			var authorizeAttribute = context.MethodInfo.GetCustomAttributes(true)
+			                                .OfType<AuthorizeAttribute>()
+			                                .FirstOrDefault() ??
+			                         context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+			                                .OfType<AuthorizeAttribute>()
+			                                .FirstOrDefault();
 
 			var schema = new OpenApiSecurityScheme
 			{
@@ -68,6 +75,72 @@ public static class SwaggerGenOptionsExtensions
 			};
 
 			operation.Security = new List<OpenApiSecurityRequirement> { new() { [schema] = Array.Empty<string>() } };
+
+			if (authorizeAttribute == null) return;
+
+			const string web401 =
+				"""
+				{
+				  "statusCode": 401,
+				  "error": "Unauthorized",
+				  "message": "This method requires an authenticated user"
+				}
+				""";
+
+			const string web403 =
+				"""
+				{
+				  "statusCode": 403,
+				  "error": "Forbidden",
+				  "message": "This action is outside the authorized scopes"
+				}
+				""";
+
+			const string masto401 =
+				"""
+				{
+				  "error": "This method requires an authenticated user"
+				}
+				""";
+
+			const string masto403 =
+				"""
+				{
+				  "message": "This action is outside the authorized scopes"
+				}
+				""";
+
+			var example401 = new OpenApiString(isMastodonController ? masto401 : web401);
+
+			var res401 = new OpenApiResponse
+			{
+				Description = "Unauthorized",
+				Content = new Dictionary<string, OpenApiMediaType>
+				{
+					{ "application/json", new OpenApiMediaType { Example = example401 } }
+				}
+			};
+
+			operation.Responses.Remove("401");
+			operation.Responses.Add("401", res401);
+
+			if (authorizeAttribute is { AdminRole: false, ModeratorRole: false, Scopes.Length: 0 } &&
+			    authenticateAttribute is { AdminRole: false, ModeratorRole: false, Scopes.Length: 0 })
+				return;
+
+			operation.Responses.Remove("403");
+
+			var example403 = new OpenApiString(isMastodonController ? masto403 : web403);
+
+			var res403 = new OpenApiResponse
+			{
+				Description = "Forbidden",
+				Content = new Dictionary<string, OpenApiMediaType>
+				{
+					{ "application/json", new OpenApiMediaType { Example = example403 } }
+				}
+			};
+			operation.Responses.Add("403", res403);
 		}
 	}
 

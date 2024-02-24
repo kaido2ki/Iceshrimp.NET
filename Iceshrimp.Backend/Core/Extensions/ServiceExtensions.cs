@@ -147,14 +147,6 @@ public static class ServiceExtensions
 				                              Type   = SecuritySchemeType.Http,
 				                              Scheme = "bearer"
 			                              });
-			options.AddSecurityDefinition("admin",
-			                              new OpenApiSecurityScheme
-			                              {
-				                              Name   = "Authorization token",
-				                              In     = ParameterLocation.Header,
-				                              Type   = SecuritySchemeType.Http,
-				                              Scheme = "bearer"
-			                              });
 			options.AddSecurityDefinition("mastodon",
 			                              new OpenApiSecurityScheme
 			                              {

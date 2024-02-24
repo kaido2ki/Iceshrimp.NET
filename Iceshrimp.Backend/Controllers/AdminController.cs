@@ -15,8 +15,6 @@ namespace Iceshrimp.Backend.Controllers;
 [Authorize("role:admin")]
 [ApiController]
 [Route("/api/v1/iceshrimp/admin")]
-[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
-[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
 [SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor",
                  Justification = "We only have a DatabaseContext in our DI pool, not the base type")]
 public class AdminController(DatabaseContext db, ActivityPubController apController) : ControllerBase

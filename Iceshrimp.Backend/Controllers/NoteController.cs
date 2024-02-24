@@ -41,8 +41,6 @@ public class NoteController(DatabaseContext db, NoteService noteSvc, NoteRendere
 	[Authorize]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteResponse))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> CreateNote(NoteCreateRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();

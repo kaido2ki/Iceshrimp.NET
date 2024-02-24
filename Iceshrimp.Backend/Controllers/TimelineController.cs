@@ -23,8 +23,6 @@ public class TimelineController(DatabaseContext db, IDistributedCache cache, Not
 	[Authenticate]
 	[Authorize]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NoteResponse>))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> GetHomeTimeline(PaginationQuery pq)
 	{

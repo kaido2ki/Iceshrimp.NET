@@ -31,7 +31,7 @@ public class AuthorizationMiddleware : IMiddleware
 			{
 				var session = ctx.GetSession();
 				if (session is not { Active: true })
-					throw GracefulException.Forbidden("This method requires an authenticated user");
+					throw GracefulException.Unauthorized("This method requires an authenticated user");
 				if (attribute.AdminRole && !session.User.IsAdmin)
 					throw GracefulException.Forbidden("This action is outside the authorized scopes");
 				if (attribute.ModeratorRole && session.User is { IsAdmin: false, IsModerator: false })

@@ -23,8 +23,6 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableRateLimiting("sliding")]
 [EnableCors("mastodon")]
 [Produces(MediaTypeNames.Application.Json)]
-[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, IDistributedCache cache) : ControllerBase
 {
 	[Authorize("read:statuses")]

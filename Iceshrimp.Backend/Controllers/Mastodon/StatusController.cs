@@ -85,8 +85,6 @@ public class StatusController(
 	[HttpPost("{id}/favourite")]
 	[Authorize("write:favourites")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> LikeNote(string id)
 	{
@@ -104,8 +102,6 @@ public class StatusController(
 	[HttpPost("{id}/unfavourite")]
 	[Authorize("write:favourites")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> UnlikeNote(string id)
 	{
@@ -123,8 +119,6 @@ public class StatusController(
 	[HttpPost("{id}/reblog")]
 	[Authorize("write:favourites")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> Renote(string id, [FromHybrid] string? visibility)
 	{
@@ -153,8 +147,6 @@ public class StatusController(
 	[HttpPost("{id}/unreblog")]
 	[Authorize("write:favourites")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> UndoRenote(string id)
 	{
