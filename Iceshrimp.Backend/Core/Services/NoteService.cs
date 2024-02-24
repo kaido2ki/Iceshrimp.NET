@@ -294,7 +294,7 @@ public class NoteService(
 			eventSvc.RaiseNoteDeleted(this, hit);
 	}
 
-	public async Task<Note> ProcessNoteAsync(ASNote note, User actor)
+	public async Task<Note> ProcessNoteAsync(ASNote note, User actor, User? user = null)
 	{
 		var dbHit = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
 
@@ -345,8 +345,8 @@ public class NoteService(
 			CreatedAt  = createdAt,
 			UserHost   = actor.Host,
 			Visibility = note.GetVisibility(actor),
-			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id) : null,
-			Renote     = quoteUrl != null ? await ResolveNoteAsync(quoteUrl) : null
+			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id, user: user) : null,
+			Renote     = quoteUrl != null ? await ResolveNoteAsync(quoteUrl, user: user) : null
 		};
 
 		if (dbNote.Renote?.IsPureRenote ?? false)
@@ -626,7 +626,7 @@ public class NoteService(
 
 		try
 		{
-			return await ProcessNoteAsync(fetchedNote, actor);
+			return await ProcessNoteAsync(fetchedNote, actor, user);
 		}
 		catch (Exception e)
 		{
