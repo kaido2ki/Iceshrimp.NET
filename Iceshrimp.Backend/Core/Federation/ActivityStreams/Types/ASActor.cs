@@ -117,6 +117,10 @@ public class ASActor : ASObject
 	[JC(typeof(ASPublicKeyConverter))]
 	public ASPublicKey? PublicKey { get; set; }
 
+	[J($"{Constants.ActivityStreamsNs}#tag")]
+	[JC(typeof(ASTagConverter))]
+	public List<ASTag>? Tags { get; set; }
+
 	public bool IsBot => Type == $"{Constants.ActivityStreamsNs}#Service";
 
 	public void Normalize(string uri, string acct)

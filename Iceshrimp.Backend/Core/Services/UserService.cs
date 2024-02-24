@@ -27,7 +27,8 @@ public class UserService(
 	DriveService driveSvc,
 	MfmConverter mfmConverter,
 	FollowupTaskService followupTaskSvc,
-	NotificationService notificationSvc
+	NotificationService notificationSvc,
+	EmojiService emojiSvc
 )
 {
 	private (string Username, string? Host) AcctToTuple(string acct)
@@ -92,6 +93,15 @@ public class UserService(
 		if (actor.PublicKey?.Id == null || actor.PublicKey?.PublicKey == null)
 			throw GracefulException.UnprocessableEntity("Actor has no valid public key");
 
+		var host = AcctToTuple(acct).Host ?? throw new Exception("Host must not be null at this stage");
+
+		var emoji = await emojiSvc.ProcessEmojiAsync(actor.Tags?.OfType<ASEmoji>().ToList(), host);
+		var tags = actor.Tags?.OfType<ASHashtag>()
+		                .Select(p => p.Name?.ToLowerInvariant())
+		                .Where(p => p != null)
+		                .Cast<string>()
+		                .ToList();
+
 		user = new User
 		{
 			Id            = IdHelpers.GenerateSlowflakeId(),
@@ -114,8 +124,8 @@ public class UserService(
 			Featured      = actor.Featured?.Link,
 			//TODO: FollowersCount
 			//TODO: FollowingCount
-			Emojis = [], //FIXME
-			Tags   = []  //FIXME
+			Emojis = emoji.Select(p => p.Id).ToList(),
+			Tags   = tags ?? []
 		};
 
 		var profile = new UserProfile
@@ -205,8 +215,19 @@ public class UserService(
 		user.FollowersUri  = actor.Followers?.Id;
 		user.IsCat         = actor.IsCat ?? false;
 		user.Featured      = actor.Featured?.Link;
-		user.Emojis        = []; //FIXME
-		user.Tags          = []; //FIXME
+
+		var emoji = await emojiSvc.ProcessEmojiAsync(actor.Tags?.OfType<ASEmoji>().ToList(),
+		                                             user.Host ??
+		                                             throw new Exception("User host must not be null at this stage"));
+
+		var tags = actor.Tags?.OfType<ASHashtag>()
+		                .Select(p => p.Name?.ToLowerInvariant())
+		                .Where(p => p != null)
+		                .Cast<string>()
+		                .ToList();
+
+		user.Emojis = emoji.Select(p => p.Id).ToList();
+		user.Tags   = tags ?? [];
 		//TODO: FollowersCount
 		//TODO: FollowingCount
 

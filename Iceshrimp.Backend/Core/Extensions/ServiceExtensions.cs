@@ -41,6 +41,7 @@ public static class ServiceExtensions
 			.AddScoped<ActivityPub.ActivityFetcherService>()
 			.AddScoped<UserService>()
 			.AddScoped<NoteService>()
+			.AddScoped<EmojiService>()
 			.AddScoped<WebFingerService>()
 			.AddScoped<SystemUserService>()
 			.AddScoped<DriveService>()

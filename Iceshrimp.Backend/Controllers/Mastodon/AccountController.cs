@@ -36,7 +36,7 @@ public class AccountController(
 	public async Task<IActionResult> VerifyUserCredentials()
 	{
 		var user = HttpContext.GetUserOrFail();
-		var res  = await userRenderer.RenderAsync(user, user.UserProfile, true);
+		var res  = await userRenderer.RenderAsync(user, user.UserProfile, source: true);
 		return Ok(res);
 	}
 
