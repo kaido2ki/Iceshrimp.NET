@@ -348,7 +348,33 @@ public class UserService(
 			await driveSvc.RemoveFile(user.Banner);
 	}
 
-	public void UpdateUserLastActive(User user)
+	public void UpdateOauthTokenMetadata(OauthToken token)
+	{
+		UpdateUserLastActive(token.User);
+
+		if (token.LastActiveDate != null && token.LastActiveDate > DateTime.UtcNow - TimeSpan.FromHours(1)) return;
+
+		_ = followupTaskSvc.ExecuteTask("UpdateOauthTokenMetadata", async provider =>
+		{
+			var bgDb = provider.GetRequiredService<DatabaseContext>();
+			await bgDb.OauthTokens.Where(p => p.Id == token.Id)
+			          .ExecuteUpdateAsync(p => p.SetProperty(u => u.LastActiveDate, DateTime.UtcNow));
+		});
+	}
+
+	public void UpdateSessionMetadata(Session session)
+	{
+		UpdateUserLastActive(session.User);
+
+		_ = followupTaskSvc.ExecuteTask("UpdateSessionMetadata", async provider =>
+		{
+			var bgDb = provider.GetRequiredService<DatabaseContext>();
+			await bgDb.Sessions.Where(p => p.Id == session.Id)
+			          .ExecuteUpdateAsync(p => p.SetProperty(u => u.LastActiveDate, DateTime.UtcNow));
+		});
+	}
+
+	private void UpdateUserLastActive(User user)
 	{
 		if (user.LastActiveDate != null && user.LastActiveDate > DateTime.UtcNow - TimeSpan.FromHours(1)) return;
 

@@ -66,5 +66,7 @@ public class OauthToken
 	public virtual User User { get; set; } = null!;
 
 	[Column("supportsHtmlFormatting")] public bool SupportsHtmlFormatting { get; set; }
-	[Column("autoDetectQuotes")] public bool AutoDetectQuotes { get; set; }
+	[Column("autoDetectQuotes")]       public bool AutoDetectQuotes       { get; set; }
+
+	[Column("lastActiveDate")] public DateTime? LastActiveDate { get; set; }
 }

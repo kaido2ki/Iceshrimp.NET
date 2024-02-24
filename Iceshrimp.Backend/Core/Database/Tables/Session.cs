@@ -37,4 +37,6 @@ public class Session
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.Sessions))]
 	public virtual User User { get; set; } = null!;
+
+	[Column("lastActiveDate")] public DateTime? LastActiveDate { get; set; }
 }

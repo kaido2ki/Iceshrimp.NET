@@ -56,7 +56,7 @@ public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc) :
 					return;
 				}
 
-				userSvc.UpdateUserLastActive(oauthToken.User);
+				userSvc.UpdateOauthTokenMetadata(oauthToken);
 				ctx.SetOauthToken(oauthToken);
 			}
 			else
@@ -80,7 +80,7 @@ public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc) :
 					return;
 				}
 
-				userSvc.UpdateUserLastActive(session.User);
+				userSvc.UpdateSessionMetadata(session);
 				ctx.SetSession(session);
 			}
 		}
