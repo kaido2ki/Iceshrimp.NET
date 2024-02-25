@@ -25,7 +25,6 @@ public static class ServiceExtensions
 	public static void AddServices(this IServiceCollection services)
 	{
 		// Transient = instantiated per request and class
-		services.AddTransient<FollowupTaskService>();
 
 		// Scoped = instantiated per request
 		services
@@ -56,7 +55,8 @@ public static class ServiceExtensions
 			.AddScoped<NoteRenderer>()
 			.AddScoped<UserRenderer>()
 			.AddScoped<NotificationRenderer>()
-			.AddScoped<ActivityPubController>();
+			.AddScoped<ActivityPubController>()
+			.AddScoped<FollowupTaskService>();
 
 		// Singleton = instantiated once across application lifetime
 		services

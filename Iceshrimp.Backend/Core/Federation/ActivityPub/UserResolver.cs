@@ -133,14 +133,16 @@ public class UserResolver(
 		}
 	}
 
-	public async Task<User?> ResolveAsyncLimited(string query, Func<bool> limitReached)
+	public async Task<User?> ResolveAsyncLimited(string username, string? host, Func<bool> limitReached)
 	{
-		query = NormalizeQuery(query);
+		var query = $"acct:{username}@{host}";
 
 		// First, let's see if we already know the user
 		var user = await userSvc.GetUserFromQueryAsync(query);
 		if (user != null)
 			return await GetUpdatedUser(user);
+
+		if (host == null) return null;
 
 		// We don't, so we need to run WebFinger
 		var (acct, uri) = await WebFingerAsync(query);

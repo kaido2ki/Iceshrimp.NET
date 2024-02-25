@@ -8,11 +8,11 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, IOptions<Config.InstanceSection> config)
+public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, IOptions<Config.InstanceSection> config, ILogger<UserProfileMentionsResolver> logger)
 {
 	private int _recursionLimit = 10;
 
-	public async Task<List<Note.MentionedUser>> ResolveMentions(UserProfile.Field[]? fields, string? bio)
+	public async Task<List<Note.MentionedUser>> ResolveMentions(UserProfile.Field[]? fields, string? bio, string? host)
 	{
 		if (fields is not { Length: > 0 } && bio == null) return [];
 		var input = (fields ?? [])
@@ -29,8 +29,12 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 		                              {
 			                              try
 			                              {
-				                              return await userResolver.ResolveAsyncLimited(p.Acct,
-					                              () => --_recursionLimit >= 0);
+				                              return await userResolver.ResolveAsyncLimited(p.Username, p.Host ?? host,
+						                               () =>
+						                               {
+							                               logger.LogDebug("Recursion limiter is at: {limit}", _recursionLimit);
+							                               return _recursionLimit-- <= 0;
+						                               });
 			                              }
 			                              catch
 			                              {
@@ -41,6 +45,7 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 
 		return users.Where(p => p != null)
 		            .Cast<User>()
+		            .DistinctBy(p => p.Id)
 		            .Select(p => new Note.MentionedUser
 		            {
 			            Host     = p.Host,

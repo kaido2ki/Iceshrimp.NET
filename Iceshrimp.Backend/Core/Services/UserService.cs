@@ -165,7 +165,7 @@ public class UserService(
 			var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
 			await db.SaveChangesAsync();
 			await processPendingDeletes();
-			UpdateProfileMentionsInBackground(user);
+			await UpdateProfileMentionsInBackground(user);
 			return user;
 		}
 		catch (UniqueConstraintException)
@@ -270,7 +270,7 @@ public class UserService(
 		db.Update(user);
 		await db.SaveChangesAsync();
 		await processPendingDeletes();
-		UpdateProfileMentionsInBackground(user);
+		await UpdateProfileMentionsInBackground(user);
 		return user;
 	}
 
@@ -605,18 +605,23 @@ public class UserService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "Projectables")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
-	private void UpdateProfileMentionsInBackground(User user)
+	private async Task UpdateProfileMentionsInBackground(User user)
 	{
-		_ = followupTaskSvc.ExecuteTask("UpdateProfileMentionsInBackground", async provider =>
+		var task = followupTaskSvc.ExecuteTask("UpdateProfileMentionsInBackground", async provider =>
 		{
 			var bgDbContext = provider.GetRequiredService<DatabaseContext>();
-			var bgMentionsResolver = provider.GetRequiredService<UserProfileMentionsResolver>();
+			var bgMentionsResolver = (followupTaskSvc.ServiceProvider ?? provider)
+				.GetRequiredService<UserProfileMentionsResolver>();
 			var bgUser = await bgDbContext.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == user.Id);
 			if (bgUser?.UserProfile == null) return;
 			bgUser.UserProfile.Mentions =
-				await bgMentionsResolver.ResolveMentions(bgUser.UserProfile.Fields, bgUser.UserProfile.Description);
+				await bgMentionsResolver.ResolveMentions(bgUser.UserProfile.Fields, bgUser.UserProfile.Description,
+				                                         bgUser.Host);
 			bgDbContext.Update(bgUser.UserProfile);
 			await bgDbContext.SaveChangesAsync();
 		});
+
+		if (followupTaskSvc.IsBackgroundWorker)
+			await task;
 	}
 }
