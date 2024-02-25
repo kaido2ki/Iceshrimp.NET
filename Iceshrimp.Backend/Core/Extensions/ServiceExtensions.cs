@@ -47,6 +47,7 @@ public static class ServiceExtensions
 			.AddScoped<DriveService>()
 			.AddScoped<NotificationService>()
 			.AddScoped<DatabaseMaintenanceService>()
+			.AddScoped<UserProfileMentionsResolver>()
 			.AddScoped<AuthorizedFetchMiddleware>()
 			.AddScoped<AuthenticationMiddleware>()
 			.AddScoped<ErrorHandlerMiddleware>()

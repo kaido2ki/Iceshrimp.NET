@@ -107,6 +107,8 @@ public class UserService(
 		                  .Select(p => new UserProfile.Field { Name = p.Name!, Value = p.Value! })
 		                  .ToArray();
 
+		var bio = actor.MkSummary ?? await mfmConverter.FromHtmlAsync(actor.Summary);
+
 		user = new User
 		{
 			Id            = IdHelpers.GenerateSlowflakeId(),
@@ -136,7 +138,7 @@ public class UserService(
 		var profile = new UserProfile
 		{
 			User        = user,
-			Description = actor.MkSummary ?? await mfmConverter.FromHtmlAsync(actor.Summary),
+			Description = bio,
 			//Birthday = TODO,
 			//Location = TODO,
 			Fields   = fields ?? [],
@@ -157,6 +159,7 @@ public class UserService(
 			var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
 			await db.SaveChangesAsync();
 			await processPendingDeletes();
+			UpdateProfileMentionsInBackground(user);
 			return user;
 		}
 		catch (UniqueConstraintException)
@@ -256,6 +259,7 @@ public class UserService(
 		db.Update(user);
 		await db.SaveChangesAsync();
 		await processPendingDeletes();
+		UpdateProfileMentionsInBackground(user);
 		return user;
 	}
 
@@ -585,5 +589,23 @@ public class UserService(
 
 		// Clean up user list memberships
 		await db.UserListMembers.Where(p => p.UserList.User == user && p.User == followee).ExecuteDeleteAsync();
+	}
+
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "Projectables")]
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
+	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
+	private void UpdateProfileMentionsInBackground(User user)
+	{
+		_ = followupTaskSvc.ExecuteTask("UpdateProfileMentionsInBackground", async provider =>
+		{
+			var bgDbContext = provider.GetRequiredService<DatabaseContext>();
+			var bgMentionsResolver = provider.GetRequiredService<UserProfileMentionsResolver>();
+			var bgUser = await bgDbContext.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == user.Id);
+			if (bgUser?.UserProfile == null) return;
+			bgUser.UserProfile.Mentions =
+				await bgMentionsResolver.ResolveMentions(bgUser.UserProfile.Fields, bgUser.UserProfile.Description);
+			bgDbContext.Update(bgUser.UserProfile);
+			await bgDbContext.SaveChangesAsync();
+		});
 	}
 }

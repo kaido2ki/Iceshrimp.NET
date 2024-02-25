@@ -133,6 +133,33 @@ public class UserResolver(
 		}
 	}
 
+	public async Task<User?> ResolveAsyncLimited(string query, Func<bool> limitReached)
+	{
+		query = NormalizeQuery(query);
+
+		// First, let's see if we already know the user
+		var user = await userSvc.GetUserFromQueryAsync(query);
+		if (user != null)
+			return await GetUpdatedUser(user);
+
+		// We don't, so we need to run WebFinger
+		var (acct, uri) = await WebFingerAsync(query);
+
+		// Check the database again with the new data
+		if (uri != query) user = await userSvc.GetUserFromQueryAsync(uri);
+		if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
+		if (user != null)
+			return await GetUpdatedUser(user);
+
+		if (limitReached()) return null;
+
+		using (await KeyedLocker.LockAsync(uri))
+		{
+			// Pass the job on to userSvc, which will create the user
+			return await userSvc.CreateUserAsync(uri, acct);
+		}
+	}
+
 	private async Task<User> GetUpdatedUser(User user)
 	{
 		if (!user.NeedsUpdate) return user;

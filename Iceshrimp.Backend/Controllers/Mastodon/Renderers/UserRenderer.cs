@@ -22,16 +22,19 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			acct += $"@{user.Host}";
 
 		var profileEmoji = emoji?.Where(p => user.Emojis.Contains(p.Id)).ToList() ?? await GetEmoji([user]);
-		var fields = profile?.Fields
-		                    .Select(p => new Field
-		                    {
-			                    Name  = p.Name,
-			                    Value = p.Value,
-			                    VerifiedAt = p.IsVerified.HasValue && p.IsVerified.Value
-				                    ? DateTime.Now.ToStringIso8601Like()
-				                    : null
-		                    })
-		                    .ToList();
+		var mentions     = profile?.Mentions ?? [];
+		var fields = profile != null
+			? await profile.Fields
+			               .Select(async p => new Field
+			               {
+				               Name  = p.Name,
+				               Value = await mfmConverter.ToHtmlAsync(p.Value, mentions, user.Host),
+				               VerifiedAt = p.IsVerified.HasValue && p.IsVerified.Value
+					               ? DateTime.Now.ToStringIso8601Like()
+					               : null
+			               })
+			               .AwaitAllAsync()
+			: null;
 
 		var res = new AccountEntity
 		{
@@ -46,7 +49,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			FollowersCount     = user.FollowersCount,
 			FollowingCount     = user.FollowingCount,
 			StatusesCount      = user.NotesCount,
-			Note               = await mfmConverter.ToHtmlAsync(profile?.Description ?? "", [], user.Host),
+			Note               = await mfmConverter.ToHtmlAsync(profile?.Description ?? "", mentions, user.Host),
 			Url                = profile?.Url ?? user.Uri ?? user.GetPublicUrl(config.Value),
 			AvatarStaticUrl    = user.AvatarUrl ?? user.GetIdenticonUrl(config.Value), //TODO
 			HeaderUrl          = user.BannerUrl ?? _transparent,
@@ -54,7 +57,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			MovedToAccount     = null,                           //TODO
 			IsBot              = user.IsBot,
 			IsDiscoverable     = user.IsExplorable,
-			Fields             = fields ?? [],
+			Fields             = fields?.ToList() ?? [],
 			Emoji              = profileEmoji
 		};
 

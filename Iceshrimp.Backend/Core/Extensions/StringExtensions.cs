@@ -6,10 +6,10 @@ namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class StringExtensions
 {
-	public static bool EqualsInvariant(this string s1, string s2) =>
+	public static bool EqualsInvariant(this string? s1, string? s2) =>
 		string.Equals(s1, s2, StringComparison.InvariantCulture);
 
-	public static bool EqualsIgnoreCase(this string s1, string s2) =>
+	public static bool EqualsIgnoreCase(this string? s1, string s2) =>
 		string.Equals(s1, s2, StringComparison.InvariantCultureIgnoreCase);
 
 	public static string Truncate(this string target, int maxLength)

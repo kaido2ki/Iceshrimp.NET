@@ -297,6 +297,6 @@ public class Note : IEntity
 		[J("uri")]      public required string  Uri      { get; set; }
 		[J("url")]      public          string? Url      { get; set; }
 		[J("username")] public required string  Username { get; set; }
-		[J("host")]     public required string  Host     { get; set; }
+		[J("host")]     public required string? Host     { get; set; }
 	}
 }
