@@ -101,11 +101,17 @@ public class UserService(
 		                .Where(p => p != null)
 		                .Cast<string>()
 		                .ToList();
-		var fields = actor.Attachments?
-		                  .OfType<ASField>()
-		                  .Where(p => p is { Name: not null, Value: not null })
-		                  .Select(p => new UserProfile.Field { Name = p.Name!, Value = p.Value! })
-		                  .ToArray();
+
+		var fields = actor.Attachments != null
+			? await actor.Attachments
+			             .OfType<ASField>()
+			             .Where(p => p is { Name: not null, Value: not null })
+			             .Select(async p => new UserProfile.Field
+			             {
+				             Name = p.Name!, Value = await mfmConverter.FromHtmlAsync(p.Value) ?? ""
+			             })
+			             .AwaitAllAsync()
+			: null;
 
 		var bio = actor.MkSummary ?? await mfmConverter.FromHtmlAsync(actor.Summary);
 
@@ -141,7 +147,7 @@ public class UserService(
 			Description = bio,
 			//Birthday = TODO,
 			//Location = TODO,
-			Fields   = fields ?? [],
+			Fields   = fields?.ToArray() ?? [],
 			UserHost = user.Host,
 			Url      = actor.Url?.Link
 		};
@@ -234,11 +240,16 @@ public class UserService(
 		                .Cast<string>()
 		                .ToList();
 
-		var fields = actor.Attachments?
-		                  .OfType<ASField>()
-		                  .Where(p => p is { Name: not null, Value: not null })
-		                  .Select(p => new UserProfile.Field { Name = p.Name!, Value = p.Value! })
-		                  .ToArray();
+		var fields = actor.Attachments != null
+			? await actor.Attachments
+			             .OfType<ASField>()
+			             .Where(p => p is { Name: not null, Value: not null })
+			             .Select(async p => new UserProfile.Field
+			             {
+				             Name = p.Name!, Value = await mfmConverter.FromHtmlAsync(p.Value) ?? ""
+			             })
+			             .AwaitAllAsync()
+			: null;
 
 		user.Emojis = emoji.Select(p => p.Id).ToList();
 		user.Tags   = tags ?? [];
@@ -252,7 +263,7 @@ public class UserService(
 		user.UserProfile.Description = actor.MkSummary ?? await mfmConverter.FromHtmlAsync(actor.Summary);
 		//user.UserProfile.Birthday = TODO;
 		//user.UserProfile.Location = TODO;
-		user.UserProfile.Fields   = fields ?? [];
+		user.UserProfile.Fields   = fields?.ToArray() ?? [];
 		user.UserProfile.UserHost = user.Host;
 		user.UserProfile.Url      = actor.Url?.Link;
 
