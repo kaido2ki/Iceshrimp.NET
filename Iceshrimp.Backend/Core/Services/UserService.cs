@@ -54,7 +54,8 @@ public class UserService(
 			{
 				return await db.Users
 				               .IncludeCommonProperties()
-				               .FirstOrDefaultAsync(p => p.Uri != null && p.Uri.ToLower() == query.ToLowerInvariant());
+				               .FirstOrDefaultAsync(p => (p.Uri != null && p.Uri == query) ||
+				                                         (p.UserProfile != null && p.UserProfile.Url == query));
 			}
 
 		var tuple = AcctToTuple(query);
