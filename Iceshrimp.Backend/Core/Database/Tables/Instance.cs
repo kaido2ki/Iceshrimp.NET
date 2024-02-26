@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EntityFrameworkCore.Projectables;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
@@ -96,4 +97,8 @@ public class Instance
 	[Column("faviconUrl")]
 	[StringLength(4096)]
 	public string? FaviconUrl { get; set; }
+
+	[NotMapped]
+	[Projectable]
+	public bool NeedsUpdate => InfoUpdatedAt == null || InfoUpdatedAt < DateTime.Now - TimeSpan.FromHours(24);
 }

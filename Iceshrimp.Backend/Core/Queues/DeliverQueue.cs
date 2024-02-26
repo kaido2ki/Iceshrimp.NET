@@ -26,6 +26,7 @@ public class DeliverQueue
 		var cache      = scope.GetRequiredService<IDistributedCache>();
 		var db         = scope.GetRequiredService<DatabaseContext>();
 		var fedCtrl    = scope.GetRequiredService<ActivityPub.FederationControlService>();
+		var followup   = scope.GetRequiredService<FollowupTaskService>();
 
 		if (await fedCtrl.ShouldBlockAsync(job.InboxUrl, job.RecipientHost))
 		{
@@ -48,6 +49,14 @@ public class DeliverQueue
 		try
 		{
 			var response = await httpClient.SendAsync(request, token).WaitAsync(TimeSpan.FromSeconds(10), token);
+
+			_ = followup.ExecuteTask("UpdateInstanceMetadata", async provider =>
+			{
+				var instanceSvc = provider.GetRequiredService<InstanceService>();
+				var webDomain   = new Uri(job.InboxUrl).Host;
+				await instanceSvc.UpdateInstanceStatusAsync(job.RecipientHost, webDomain, (int)response.StatusCode);
+			});
+
 			response.EnsureSuccessStatusCode();
 		}
 		catch (Exception e)

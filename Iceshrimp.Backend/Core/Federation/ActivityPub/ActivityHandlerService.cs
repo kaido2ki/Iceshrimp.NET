@@ -29,7 +29,8 @@ public class ActivityHandlerService(
 	ObjectResolver resolver,
 	NotificationService notificationSvc,
 	ActivityDeliverService deliverSvc,
-	ObjectResolver objectResolver
+	ObjectResolver objectResolver,
+	FollowupTaskService followupTaskSvc
 )
 {
 	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId, string? authFetchUserId)
@@ -43,13 +44,16 @@ public class ActivityHandlerService(
 			throw GracefulException.UnprocessableEntity("Activity object is null");
 
 		var resolvedActor = await userResolver.ResolveAsync(activity.Actor.Id);
-
 		if (security.Value.AuthorizedFetch && authFetchUserId == null)
 			throw GracefulException
 				.UnprocessableEntity("Refusing to process activity without authFetchUserId in authorized fetch mode");
 		if (resolvedActor.Id != authFetchUserId && authFetchUserId != null)
 			throw GracefulException
 				.UnprocessableEntity($"Authorized fetch user id {authFetchUserId} doesn't match resolved actor id {resolvedActor.Id}");
+		if (resolvedActor.Host == null || resolvedActor.Uri == null)
+			throw new Exception("resolvedActor.Host and resolvedActor.Uri must not be null at this stage");
+
+		UpdateInstanceMetadataInBackground(resolvedActor.Host, new Uri(resolvedActor.Uri).Host);
 
 		// Resolve object & children
 		if (activity.Object != null)
@@ -242,6 +246,15 @@ public class ActivityHandlerService(
 			default:
 				throw new NotImplementedException($"Activity type {activity.Type} is unknown");
 		}
+	}
+
+	private void UpdateInstanceMetadataInBackground(string host, string webDomain)
+	{
+		_ = followupTaskSvc.ExecuteTask("UpdateInstanceMetadata", async provider =>
+		{
+			var instanceSvc = provider.GetRequiredService<InstanceService>();
+			await instanceSvc.UpdateInstanceStatusAsync(host, webDomain);
+		});
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",

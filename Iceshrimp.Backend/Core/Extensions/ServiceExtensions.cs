@@ -56,7 +56,8 @@ public static class ServiceExtensions
 			.AddScoped<UserRenderer>()
 			.AddScoped<NotificationRenderer>()
 			.AddScoped<ActivityPubController>()
-			.AddScoped<FollowupTaskService>();
+			.AddScoped<FollowupTaskService>()
+			.AddScoped<InstanceService>();
 
 		// Singleton = instantiated once across application lifetime
 		services
