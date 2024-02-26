@@ -47,7 +47,7 @@ public class AccountController(
 	{
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
 		           throw GracefulException.RecordNotFound();
-		var res = await userRenderer.RenderAsync(user);
+		var res = await userRenderer.RenderAsync(await userResolver.GetUpdatedUser(user));
 		return Ok(res);
 	}
 

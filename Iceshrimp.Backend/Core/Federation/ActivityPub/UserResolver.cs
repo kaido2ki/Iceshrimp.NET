@@ -192,7 +192,7 @@ public class UserResolver(
 		}
 	}
 
-	private async Task<User> GetUpdatedUser(User user)
+	public async Task<User> GetUpdatedUser(User user)
 	{
 		if (!user.NeedsUpdate) return user;
 		user.LastFetchedAt = DateTime.UtcNow; // Prevent multiple background tasks from being started
