@@ -28,7 +28,8 @@ public class UserService(
 	DriveService driveSvc,
 	FollowupTaskService followupTaskSvc,
 	NotificationService notificationSvc,
-	EmojiService emojiSvc
+	EmojiService emojiSvc,
+	ActivityPub.MentionsResolver mentionsResolver
 )
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -642,7 +643,7 @@ public class UserService(
 
 				if (actor != null)
 				{
-					var mentions = await bgMentionsResolver.ResolveMentions(actor, bgUser.Host);
+					var (mentions, splitDomainMapping) = await bgMentionsResolver.ResolveMentions(actor, bgUser.Host);
 					var fields = actor.Attachments != null
 						? await actor.Attachments
 						             .OfType<ASField>()
@@ -655,11 +656,13 @@ public class UserService(
 						             .AwaitAllAsync()
 						: null;
 
-					bgUser.UserProfile.Mentions = mentions;
-					bgUser.UserProfile.Fields   = fields?.ToArray() ?? [];
-					bgUser.UserProfile.Description = actor.MkSummary ??
-					                                 await MfmConverter.FromHtmlAsync(actor.Summary,
-						                                 bgUser.UserProfile.Mentions);
+					var description = actor.MkSummary != null
+						? mentionsResolver.ResolveMentions(actor.MkSummary, bgUser.Host, mentions, splitDomainMapping)
+						: await MfmConverter.FromHtmlAsync(actor.Summary, mentions);
+
+					bgUser.UserProfile.Mentions    = mentions;
+					bgUser.UserProfile.Fields      = fields?.ToArray() ?? [];
+					bgUser.UserProfile.Description = description;
 				}
 				else
 				{

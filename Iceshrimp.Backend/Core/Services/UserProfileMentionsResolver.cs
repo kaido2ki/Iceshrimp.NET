@@ -10,9 +10,12 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
+using MentionTuple = (List<Note.MentionedUser> mentions,
+	Dictionary<(string usernameLower, string webDomain), string> splitDomainMapping);
+
 public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, IOptions<Config.InstanceSection> config)
 {
-	public async Task<List<Note.MentionedUser>> ResolveMentions(ASActor actor, string? host)
+	public async Task<MentionTuple> ResolveMentions(ASActor actor, string? host)
 	{
 		var fields = actor.Attachments?.OfType<ASField>()
 		                  .Where(p => p is { Name: not null, Value: not null })
@@ -44,17 +47,25 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 		                     .Select(async p => await userResolver.ResolveAsyncOrNull(p))
 		                     .AwaitAllNoConcurrencyAsync());
 
-		return users.Where(p => p != null)
-		            .Cast<User>()
-		            .DistinctBy(p => p.Id)
-		            .Select(p => new Note.MentionedUser
-		            {
-			            Host     = p.Host,
-			            Uri      = p.Uri ?? p.GetPublicUri(config.Value),
-			            Url      = p.UserProfile?.Url,
-			            Username = p.Username
-		            })
-		            .ToList();
+		var mentions = users.Where(p => p != null)
+		                    .Cast<User>()
+		                    .DistinctBy(p => p.Id)
+		                    .Select(p => new Note.MentionedUser
+		                    {
+			                    Host     = p.Host,
+			                    Uri      = p.Uri ?? p.GetPublicUri(config.Value),
+			                    Url      = p.UserProfile?.Url,
+			                    Username = p.Username
+		                    })
+		                    .ToList();
+
+		var splitDomainMapping = users.Where(p => p is { Host: not null, Uri: not null })
+		                              .Cast<User>()
+		                              .Where(p => new Uri(p.Uri!).Host != p.Host)
+		                              .DistinctBy(p => p.Host)
+		                              .ToDictionary(p => (p.UsernameLower, new Uri(p.Uri!).Host), p => p.Host!);
+
+		return (mentions, splitDomainMapping);
 	}
 
 	public async Task<List<Note.MentionedUser>> ResolveMentions(UserProfile.Field[]? fields, string? bio, string? host)
