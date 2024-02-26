@@ -280,7 +280,7 @@ internal class HashtagNodeParser : INodeParser
 internal class MentionNodeParser : INodeParser
 {
 	private const           string Pre        = "@";
-	private static readonly Regex  Post       = new(@"\s|$");
+	private static readonly Regex  Post       = new(@"[\s\),:]|$");
 	private static readonly Regex  Full       = new(@"^[a-zA-Z0-9._\-]+(?:@[a-zA-Z0-9._\-]+\.[a-zA-Z0-9._\-]+)?$");
 	private static readonly Regex  Lookbehind = new(@"\s");
 
