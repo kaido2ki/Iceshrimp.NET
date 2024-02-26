@@ -37,4 +37,12 @@ public class FederationControlService(
 		return await db.BlockedInstances.AnyAsync(p => finalHosts.Any(host => host == p.Host ||
 		                                                                      host.EndsWith("." + p.Host)));
 	}
+
+	public async Task<bool> ShouldSkipAsync(string host)
+	{
+		return await db.Instances.AnyAsync(p => p.Host == host.ToLowerInvariant() &&
+		                                        ((p.IsNotResponding &&
+		                                          p.LastCommunicatedAt < DateTime.UtcNow - TimeSpan.FromDays(7)) ||
+		                                         p.IsSuspended));
+	}
 }

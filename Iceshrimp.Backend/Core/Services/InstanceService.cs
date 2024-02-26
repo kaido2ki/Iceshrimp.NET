@@ -78,21 +78,32 @@ public class InstanceService(DatabaseContext db, HttpClient httpClient)
 		}
 	}
 
-	public async Task UpdateInstanceStatusAsync(string host, string webDomain, int? statusCode = null)
+	public async Task UpdateInstanceStatusAsync(string host, string webDomain)
 	{
 		var instance = await GetUpdatedInstanceMetadataAsync(host, webDomain);
 
-		if (statusCode != null)
+		instance.LastCommunicatedAt      = DateTime.UtcNow;
+		instance.LatestRequestReceivedAt = DateTime.UtcNow;
+
+		await db.SaveChangesAsync();
+	}
+
+	public async Task UpdateInstanceStatusAsync(string host, string webDomain, int statusCode, bool notResponding)
+	{
+		var instance = await GetUpdatedInstanceMetadataAsync(host, webDomain);
+
+		instance.LatestStatus        = statusCode;
+		instance.LatestRequestSentAt = DateTime.UtcNow;
+
+		if (notResponding)
 		{
-			instance.LatestStatus        = statusCode;
-			instance.LatestRequestSentAt = DateTime.UtcNow;
+			instance.IsNotResponding = true;
 		}
 		else
 		{
-			instance.LatestRequestReceivedAt = DateTime.UtcNow;
+			instance.IsNotResponding    = false;
+			instance.LastCommunicatedAt = DateTime.UtcNow;
 		}
-
-		instance.LastCommunicatedAt = DateTime.UtcNow;
 
 		await db.SaveChangesAsync();
 	}

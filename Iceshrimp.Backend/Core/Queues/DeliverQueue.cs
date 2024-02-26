@@ -34,6 +34,12 @@ public class DeliverQueue
 			return;
 		}
 
+		if (await fedCtrl.ShouldSkipAsync(job.RecipientHost))
+		{
+			logger.LogDebug("fedCtrl.ShouldSkipAsync returned true, skipping");
+			return;
+		}
+
 		logger.LogDebug("Delivering activity to: {uri}", job.InboxUrl);
 
 		var key = await cache.FetchAsync($"userPrivateKey:{job.UserId}", TimeSpan.FromMinutes(60), async () =>
@@ -53,8 +59,8 @@ public class DeliverQueue
 			_ = followup.ExecuteTask("UpdateInstanceMetadata", async provider =>
 			{
 				var instanceSvc = provider.GetRequiredService<InstanceService>();
-				var webDomain   = new Uri(job.InboxUrl).Host;
-				await instanceSvc.UpdateInstanceStatusAsync(job.RecipientHost, webDomain, (int)response.StatusCode);
+				await instanceSvc.UpdateInstanceStatusAsync(job.RecipientHost, new Uri(job.InboxUrl).Host,
+				                                            (int)response.StatusCode, response.IsSuccessStatusCode);
 			});
 
 			response.EnsureSuccessStatusCode();
