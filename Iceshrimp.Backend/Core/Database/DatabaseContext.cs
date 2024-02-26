@@ -1080,6 +1080,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .HasDefaultValueSql("'{}'::public.notification_type_enum[]");
 			entity.Property(e => e.FFVisibility)
 			      .HasDefaultValue(UserProfile.UserProfileFFVisibility.Public);
+			entity.Property(e => e.MentionsResolved).HasDefaultValue(false);
 
 			entity.HasOne(d => d.PinnedPage)
 			      .WithOne(p => p.UserProfile)

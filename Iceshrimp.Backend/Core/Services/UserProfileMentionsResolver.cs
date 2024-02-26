@@ -10,16 +10,9 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class UserProfileMentionsResolver(
-	ActivityPub.UserResolver userResolver,
-	IOptions<Config.InstanceSection> config
-)
+public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, IOptions<Config.InstanceSection> config)
 {
-	private int _recursionLimit = 10;
-
-	public async Task<List<Note.MentionedUser>> ResolveMentions(
-		ASActor actor, string? host
-	)
+	public async Task<List<Note.MentionedUser>> ResolveMentions(ASActor actor, string? host)
 	{
 		var fields = actor.Attachments?.OfType<ASField>()
 		                  .Where(p => p is { Name: not null, Value: not null })
@@ -43,33 +36,12 @@ public class UserProfileMentionsResolver(
 
 		var users = await mentionNodes
 		                  .DistinctBy(p => p.Acct)
-		                  .Select(async p =>
-		                  {
-			                  try
-			                  {
-				                  return await userResolver.ResolveAsyncLimited(p.Username, p.Host ?? host,
-					                                                                () => _recursionLimit-- <= 0);
-			                  }
-			                  catch
-			                  {
-				                  return null;
-			                  }
-		                  })
+		                  .Select(async p => await userResolver.ResolveAsyncOrNull(p.Username, p.Host ?? host))
 		                  .AwaitAllNoConcurrencyAsync();
 
 		users.AddRange(await userUris
 		                     .Distinct()
-		                     .Select(async p =>
-		                     {
-			                     try
-			                     {
-				                     return await userResolver.ResolveAsyncLimited(p, () => _recursionLimit-- <= 0);
-			                     }
-			                     catch
-			                     {
-				                     return null;
-			                     }
-		                     })
+		                     .Select(async p => await userResolver.ResolveAsyncOrNull(p))
 		                     .AwaitAllNoConcurrencyAsync());
 
 		return users.Where(p => p != null)
@@ -85,9 +57,7 @@ public class UserProfileMentionsResolver(
 		            .ToList();
 	}
 
-	public async Task<List<Note.MentionedUser>> ResolveMentions(
-		UserProfile.Field[]? fields, string? bio, string? host
-	)
+	public async Task<List<Note.MentionedUser>> ResolveMentions(UserProfile.Field[]? fields, string? bio, string? host)
 	{
 		if (fields is not { Length: > 0 } && bio == null) return [];
 		var input = (fields ?? [])
@@ -101,18 +71,7 @@ public class UserProfileMentionsResolver(
 		var mentionNodes = EnumerateMentions(nodes);
 		var users = await mentionNodes
 		                  .DistinctBy(p => p.Acct)
-		                  .Select(async p =>
-		                  {
-			                  try
-			                  {
-				                  return await userResolver.ResolveAsyncLimited(p.Username, p.Host ?? host,
-					                                                                () => _recursionLimit-- <= 0);
-			                  }
-			                  catch
-			                  {
-				                  return null;
-			                  }
-		                  })
+		                  .Select(async p => await userResolver.ResolveAsyncOrNull(p.Username, p.Host ?? host))
 		                  .AwaitAllNoConcurrencyAsync();
 
 		return users.Where(p => p != null)

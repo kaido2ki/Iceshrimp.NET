@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Security.Cryptography;
+using AsyncKeyedLock;
 using EntityFramework.Exceptions.Common;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -30,6 +31,12 @@ public class UserService(
 	EmojiService emojiSvc
 )
 {
+	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
+	{
+		o.PoolSize        = 100;
+		o.PoolInitialFill = 5;
+	});
+
 	private (string Username, string? Host) AcctToTuple(string acct)
 	{
 		if (!acct.StartsWith("acct:")) throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
@@ -48,6 +55,16 @@ public class UserService(
 			{
 				query = query[$"https://{instance.Value.WebDomain}/users/".Length..];
 				return await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == query) ??
+				       throw GracefulException.NotFound("User not found");
+			}
+			else if (query.StartsWith($"https://{instance.Value.WebDomain}/@"))
+			{
+				query = query[$"https://{instance.Value.WebDomain}/@".Length..];
+				if (query.Split('@').Length != 1)
+					return await GetUserFromQueryAsync($"acct:{query}");
+
+				return await db.Users.IncludeCommonProperties()
+				               .FirstOrDefaultAsync(p => p.Username == query.ToLower()) ??
 				       throw GracefulException.NotFound("User not found");
 			}
 			else
@@ -165,7 +182,7 @@ public class UserService(
 			var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
 			await db.SaveChangesAsync();
 			await processPendingDeletes();
-			await UpdateProfileMentionsInBackground(user, actor);
+			await UpdateProfileMentions(user, actor);
 			return user;
 		}
 		catch (UniqueConstraintException)
@@ -267,10 +284,12 @@ public class UserService(
 		user.UserProfile.UserHost = user.Host;
 		user.UserProfile.Url      = actor.Url?.Link;
 
+		user.UserProfile.MentionsResolved = false;
+
 		db.Update(user);
 		await db.SaveChangesAsync();
 		await processPendingDeletes();
-		await UpdateProfileMentionsInBackground(user, actor);
+		await UpdateProfileMentions(user, actor);
 		return user;
 	}
 
@@ -605,49 +624,55 @@ public class UserService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "Projectables")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
-	private async Task UpdateProfileMentionsInBackground(User user, ASActor? actor)
+	private async Task UpdateProfileMentions(User user, ASActor? actor)
 	{
+		if (followupTaskSvc.IsBackgroundWorker) return;
+		if (KeyedLocker.IsInUse($"profileMentions:{user.Id}")) return;
+
 		var task = followupTaskSvc.ExecuteTask("UpdateProfileMentionsInBackground", async provider =>
 		{
-			var bgDbContext = provider.GetRequiredService<DatabaseContext>();
-			var bgMentionsResolver = (followupTaskSvc.ServiceProvider ?? provider)
-				.GetRequiredService<UserProfileMentionsResolver>();
-			var bgUser = await bgDbContext.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == user.Id);
-			if (bgUser?.UserProfile == null) return;
-
-			if (actor != null)
+			using (await KeyedLocker.LockAsync($"profileMentions:{user.Id}"))
 			{
-				var mentions = await bgMentionsResolver.ResolveMentions(actor, bgUser.Host);
-				var fields = actor.Attachments != null
-					? await actor.Attachments
-					             .OfType<ASField>()
-					             .Where(p => p is { Name: not null, Value: not null })
-					             .Select(async p => new UserProfile.Field
-					             {
-						             Name  = p.Name!,
-						             Value = await MfmConverter.FromHtmlAsync(p.Value, mentions) ?? ""
-					             })
-					             .AwaitAllAsync()
-					: null;
+				var bgDbContext = provider.GetRequiredService<DatabaseContext>();
+				var bgMentionsResolver = provider.GetRequiredService<UserProfileMentionsResolver>();
+				var userId = user.Id;
+				var bgUser = await bgDbContext.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == userId);
+				if (bgUser?.UserProfile == null) return;
 
-				bgUser.UserProfile.Mentions = mentions;
-				bgUser.UserProfile.Fields   = fields?.ToArray() ?? [];
-				bgUser.UserProfile.Description = actor.MkSummary ??
-				                                 await MfmConverter.FromHtmlAsync(actor.Summary,
-					                                 bgUser.UserProfile.Mentions);
-			}
-			else
-			{
-				bgUser.UserProfile.Mentions = await bgMentionsResolver.ResolveMentions(bgUser.UserProfile.Fields,
-					bgUser.UserProfile.Description,
-					bgUser.Host);
-			}
+				if (actor != null)
+				{
+					var mentions = await bgMentionsResolver.ResolveMentions(actor, bgUser.Host);
+					var fields = actor.Attachments != null
+						? await actor.Attachments
+						             .OfType<ASField>()
+						             .Where(p => p is { Name: not null, Value: not null })
+						             .Select(async p => new UserProfile.Field
+						             {
+							             Name  = p.Name!,
+							             Value = await MfmConverter.FromHtmlAsync(p.Value, mentions) ?? ""
+						             })
+						             .AwaitAllAsync()
+						: null;
 
-			bgDbContext.Update(bgUser.UserProfile);
-			await bgDbContext.SaveChangesAsync();
+					bgUser.UserProfile.Mentions = mentions;
+					bgUser.UserProfile.Fields   = fields?.ToArray() ?? [];
+					bgUser.UserProfile.Description = actor.MkSummary ??
+					                                 await MfmConverter.FromHtmlAsync(actor.Summary,
+						                                 bgUser.UserProfile.Mentions);
+				}
+				else
+				{
+					bgUser.UserProfile.Mentions = await bgMentionsResolver.ResolveMentions(bgUser.UserProfile.Fields,
+						bgUser.UserProfile.Description, bgUser.Host);
+				}
+
+				bgUser.UserProfile.MentionsResolved = true;
+				bgDbContext.Update(bgUser.UserProfile);
+				await bgDbContext.SaveChangesAsync();
+				user = bgUser;
+			}
 		});
 
-		if (followupTaskSvc.IsBackgroundWorker)
-			await task;
+		await task.SafeWaitAsync(TimeSpan.FromMilliseconds(500));
 	}
 }

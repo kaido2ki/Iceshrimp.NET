@@ -136,59 +136,69 @@ public class UserResolver(
 		}
 	}
 
-	public async Task<User?> ResolveAsyncLimited(string username, string? host, Func<bool> limitReached)
+	public async Task<User?> ResolveAsyncOrNull(string username, string? host)
 	{
-		var query = $"acct:{username}@{host}";
-
-		// First, let's see if we already know the user
-		var user = await userSvc.GetUserFromQueryAsync(query);
-		if (user != null)
-			return await GetUpdatedUser(user);
-
-		if (host == null) return null;
-
-		// We don't, so we need to run WebFinger
-		var (acct, uri) = await WebFingerAsync(query);
-
-		// Check the database again with the new data
-		if (uri != query) user = await userSvc.GetUserFromQueryAsync(uri);
-		if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
-		if (user != null)
-			return await GetUpdatedUser(user);
-
-		if (limitReached()) return null;
-
-		using (await KeyedLocker.LockAsync(uri))
+		try
 		{
-			// Pass the job on to userSvc, which will create the user
-			return await userSvc.CreateUserAsync(uri, acct);
+			var query = $"acct:{username}@{host}";
+
+			// First, let's see if we already know the user
+			var user = await userSvc.GetUserFromQueryAsync(query);
+			if (user != null)
+				return await GetUpdatedUser(user);
+
+			if (host == null) return null;
+
+			// We don't, so we need to run WebFinger
+			var (acct, uri) = await WebFingerAsync(query);
+
+			// Check the database again with the new data
+			if (uri != query) user = await userSvc.GetUserFromQueryAsync(uri);
+			if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
+			if (user != null)
+				return await GetUpdatedUser(user);
+
+			using (await KeyedLocker.LockAsync(uri))
+			{
+				// Pass the job on to userSvc, which will create the user
+				return await userSvc.CreateUserAsync(uri, acct);
+			}
+		}
+		catch
+		{
+			return null;
 		}
 	}
 
-	public async Task<User?> ResolveAsyncLimited(string uri, Func<bool> limitReached)
+	public async Task<User?> ResolveAsyncOrNull(string uri)
 	{
-		// First, let's see if we already know the user
-		var user = await userSvc.GetUserFromQueryAsync(uri);
-		if (user != null)
-			return await GetUpdatedUser(user);
-
-		if (uri.StartsWith($"https://{config.Value.WebDomain}/")) return null;
-
-		// We don't, so we need to run WebFinger
-		var (acct, resolvedUri) = await WebFingerAsync(uri);
-
-		// Check the database again with the new data
-		if (resolvedUri != uri) user = await userSvc.GetUserFromQueryAsync(resolvedUri);
-		if (user == null && acct != uri) await userSvc.GetUserFromQueryAsync(acct);
-		if (user != null)
-			return await GetUpdatedUser(user);
-
-		if (limitReached()) return null;
-
-		using (await KeyedLocker.LockAsync(resolvedUri))
+		try
 		{
-			// Pass the job on to userSvc, which will create the user
-			return await userSvc.CreateUserAsync(resolvedUri, acct);
+			// First, let's see if we already know the user
+			var user = await userSvc.GetUserFromQueryAsync(uri);
+			if (user != null)
+				return await GetUpdatedUser(user);
+
+			if (uri.StartsWith($"https://{config.Value.WebDomain}/")) return null;
+
+			// We don't, so we need to run WebFinger
+			var (acct, resolvedUri) = await WebFingerAsync(uri);
+
+			// Check the database again with the new data
+			if (resolvedUri != uri) user = await userSvc.GetUserFromQueryAsync(resolvedUri);
+			if (user == null && acct != uri) await userSvc.GetUserFromQueryAsync(acct);
+			if (user != null)
+				return await GetUpdatedUser(user);
+
+			using (await KeyedLocker.LockAsync(resolvedUri))
+			{
+				// Pass the job on to userSvc, which will create the user
+				return await userSvc.CreateUserAsync(resolvedUri, acct);
+			}
+		}
+		catch
+		{
+			return null;
 		}
 	}
 

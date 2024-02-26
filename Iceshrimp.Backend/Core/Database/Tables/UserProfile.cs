@@ -176,6 +176,9 @@ public class UserProfile
 	[InverseProperty(nameof(Tables.User.UserProfile))]
 	public virtual User User { get; set; } = null!;
 
+	[Column("mentionsResolved")]
+	public bool MentionsResolved;
+
 	public class Field
 	{
 		[J("name")]     public required string Name       { get; set; }
