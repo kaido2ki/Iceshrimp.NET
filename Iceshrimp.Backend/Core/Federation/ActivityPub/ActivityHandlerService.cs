@@ -50,6 +50,9 @@ public class ActivityHandlerService(
 		if (resolvedActor.Id != authFetchUserId && authFetchUserId != null)
 			throw GracefulException
 				.UnprocessableEntity($"Authorized fetch user id {authFetchUserId} doesn't match resolved actor id {resolvedActor.Id}");
+		if (new Uri(activity.Actor.Id).Host != new Uri(activity.Id).Host)
+			throw GracefulException
+				.UnprocessableEntity($"Activity identifier ({activity.Actor.Id}) host doesn't match actor identifier ({activity.Id}) host");
 		if (resolvedActor.Host == null || resolvedActor.Uri == null)
 			throw new Exception("resolvedActor.Host and resolvedActor.Uri must not be null at this stage");
 
