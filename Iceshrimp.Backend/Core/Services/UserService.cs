@@ -136,7 +136,7 @@ public class UserService(
 		{
 			Id            = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
-			LastFetchedAt = DateTime.UtcNow,
+			LastFetchedAt = followupTaskSvc.IsBackgroundWorker ? null : DateTime.UtcNow,
 			DisplayName   = actor.DisplayName,
 			IsLocked      = actor.IsLocked ?? false,
 			IsBot         = actor.IsBot,
