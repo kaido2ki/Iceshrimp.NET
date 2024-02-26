@@ -21,7 +21,7 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 		                  .Where(p => p is { Name: not null, Value: not null })
 		                  .ToList() ?? [];
 
-		if (fields is not { Count: > 0 } && (actor.MkSummary ?? actor.Summary) == null) return [];
+		if (fields is not { Count: > 0 } && (actor.MkSummary ?? actor.Summary) == null) return ([], []);
 		var parsedFields = await fields.SelectMany<ASField, string?>(p => [p.Name, p.Value])
 		                               .Select(async p => await MfmConverter.ExtractMentionsFromHtmlAsync(p))
 		                               .AwaitAllAsync();
