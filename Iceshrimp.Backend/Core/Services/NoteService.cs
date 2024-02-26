@@ -33,7 +33,6 @@ public class NoteService(
 	ActivityPub.NoteRenderer noteRenderer,
 	ActivityPub.UserRenderer userRenderer,
 	ActivityPub.MentionsResolver mentionsResolver,
-	MfmConverter mfmConverter,
 	DriveService driveSvc,
 	NotificationService notificationSvc,
 	EventService eventSvc,
@@ -342,7 +341,7 @@ public class NoteService(
 			Id         = IdHelpers.GenerateSlowflakeId(createdAt),
 			Uri        = note.Id,
 			Url        = note.Url?.Id, //FIXME: this doesn't seem to work yet
-			Text       = note.MkContent ?? await mfmConverter.FromHtmlAsync(note.Content, mentions),
+			Text       = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content, mentions),
 			Cw         = note.Summary,
 			UserId     = actor.Id,
 			CreatedAt  = createdAt,
@@ -446,7 +445,7 @@ public class NoteService(
 			await ResolveNoteMentionsAsync(note);
 
 		mentionedLocalUserIds = mentionedLocalUserIds.Except(previousMentionedLocalUserIds).ToList();
-		dbNote.Text           = note.MkContent ?? await mfmConverter.FromHtmlAsync(note.Content, mentions);
+		dbNote.Text           = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content, mentions);
 		dbNote.Cw             = note.Summary;
 
 		if (dbNote.Cw is { Length: > 100000 })

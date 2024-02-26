@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db, MfmConverter mfmConverter)
+public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db)
 {
 	/// <summary>
 	///     This function is meant for compacting an actor into the @id form as specified in ActivityStreams
@@ -58,7 +58,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			Url = new ASLink(user.GetPublicUrl(config.Value)),
 			Username = user.Username,
 			DisplayName = user.DisplayName ?? user.Username,
-			Summary = profile?.Description != null ? await mfmConverter.FromHtmlAsync(profile.Description) : null,
+			Summary = profile?.Description != null ? await MfmConverter.FromHtmlAsync(profile.Description) : null,
 			MkSummary = profile?.Description,
 			IsCat = user.IsCat,
 			IsDiscoverable = user.IsExplorable,

@@ -25,7 +25,6 @@ public class UserService(
 	ActivityPub.ActivityRenderer activityRenderer,
 	ActivityPub.ActivityDeliverService deliverSvc,
 	DriveService driveSvc,
-	MfmConverter mfmConverter,
 	FollowupTaskService followupTaskSvc,
 	NotificationService notificationSvc,
 	EmojiService emojiSvc
@@ -108,12 +107,12 @@ public class UserService(
 			             .Where(p => p is { Name: not null, Value: not null })
 			             .Select(async p => new UserProfile.Field
 			             {
-				             Name = p.Name!, Value = await mfmConverter.FromHtmlAsync(p.Value) ?? ""
+				             Name = p.Name!, Value = await MfmConverter.FromHtmlAsync(p.Value) ?? ""
 			             })
 			             .AwaitAllAsync()
 			: null;
 
-		var bio = actor.MkSummary ?? await mfmConverter.FromHtmlAsync(actor.Summary);
+		var bio = actor.MkSummary ?? await MfmConverter.FromHtmlAsync(actor.Summary);
 
 		user = new User
 		{
@@ -165,7 +164,7 @@ public class UserService(
 			var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
 			await db.SaveChangesAsync();
 			await processPendingDeletes();
-			await UpdateProfileMentionsInBackground(user);
+			await UpdateProfileMentionsInBackground(user, actor);
 			return user;
 		}
 		catch (UniqueConstraintException)
@@ -246,7 +245,7 @@ public class UserService(
 			             .Where(p => p is { Name: not null, Value: not null })
 			             .Select(async p => new UserProfile.Field
 			             {
-				             Name = p.Name!, Value = await mfmConverter.FromHtmlAsync(p.Value) ?? ""
+				             Name = p.Name!, Value = await MfmConverter.FromHtmlAsync(p.Value) ?? ""
 			             })
 			             .AwaitAllAsync()
 			: null;
@@ -260,7 +259,7 @@ public class UserService(
 
 		var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
 
-		user.UserProfile.Description = actor.MkSummary ?? await mfmConverter.FromHtmlAsync(actor.Summary);
+		user.UserProfile.Description = actor.MkSummary ?? await MfmConverter.FromHtmlAsync(actor.Summary);
 		//user.UserProfile.Birthday = TODO;
 		//user.UserProfile.Location = TODO;
 		user.UserProfile.Fields   = fields?.ToArray() ?? [];
@@ -270,7 +269,7 @@ public class UserService(
 		db.Update(user);
 		await db.SaveChangesAsync();
 		await processPendingDeletes();
-		await UpdateProfileMentionsInBackground(user);
+		await UpdateProfileMentionsInBackground(user, actor);
 		return user;
 	}
 
@@ -605,7 +604,7 @@ public class UserService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "Projectables")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
-	private async Task UpdateProfileMentionsInBackground(User user)
+	private async Task UpdateProfileMentionsInBackground(User user, ASActor? actor)
 	{
 		var task = followupTaskSvc.ExecuteTask("UpdateProfileMentionsInBackground", async provider =>
 		{
@@ -614,9 +613,35 @@ public class UserService(
 				.GetRequiredService<UserProfileMentionsResolver>();
 			var bgUser = await bgDbContext.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == user.Id);
 			if (bgUser?.UserProfile == null) return;
-			bgUser.UserProfile.Mentions =
-				await bgMentionsResolver.ResolveMentions(bgUser.UserProfile.Fields, bgUser.UserProfile.Description,
-				                                         bgUser.Host);
+
+			if (actor != null)
+			{
+				var mentions = await bgMentionsResolver.ResolveMentions(actor, bgUser.Host);
+				var fields = actor.Attachments != null
+					? await actor.Attachments
+					             .OfType<ASField>()
+					             .Where(p => p is { Name: not null, Value: not null })
+					             .Select(async p => new UserProfile.Field
+					             {
+						             Name  = p.Name!,
+						             Value = await MfmConverter.FromHtmlAsync(p.Value, mentions) ?? ""
+					             })
+					             .AwaitAllAsync()
+					: null;
+
+				bgUser.UserProfile.Mentions = mentions;
+				bgUser.UserProfile.Fields   = fields?.ToArray() ?? [];
+				bgUser.UserProfile.Description = actor.MkSummary ??
+				                                 await MfmConverter.FromHtmlAsync(actor.Summary,
+					                                 bgUser.UserProfile.Mentions);
+			}
+			else
+			{
+				bgUser.UserProfile.Mentions = await bgMentionsResolver.ResolveMentions(bgUser.UserProfile.Fields,
+					bgUser.UserProfile.Description,
+					bgUser.Host);
+			}
+
 			bgDbContext.Update(bgUser.UserProfile);
 			await bgDbContext.SaveChangesAsync();
 		});

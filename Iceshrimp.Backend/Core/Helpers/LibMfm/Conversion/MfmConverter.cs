@@ -17,7 +17,7 @@ namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 
 public class MfmConverter(IOptions<Config.InstanceSection> config)
 {
-	public async Task<string?> FromHtmlAsync(string? html, List<Note.MentionedUser>? mentions = null)
+	public static async Task<string?> FromHtmlAsync(string? html, List<Note.MentionedUser>? mentions = null)
 	{
 		if (html == null) return null;
 
@@ -32,6 +32,24 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 		var parser = new MfmHtmlParser(mentions ?? []);
 		dom.Body.ChildNodes.Select(parser.ParseNode).ToList().ForEach(s => sb.Append(s));
 		return sb.ToString().Trim();
+	}
+
+	public static async Task<List<string>> ExtractMentionsFromHtmlAsync(string? html)
+	{
+		if (html == null) return [];
+
+		// Ensure compatibility with AP servers that send both <br> as well as newlines
+		var regex = new Regex(@"<br\s?\/?>\r?\n", RegexOptions.IgnoreCase);
+		html = regex.Replace(html, "\n");
+
+		var dom = await new HtmlParser().ParseDocumentAsync(html);
+		if (dom.Body == null) return [];
+
+		var parser = new HtmlMentionsExtractor();
+		foreach (var node in dom.Body.ChildNodes)
+			parser.ParseChildren(node);
+
+		return parser.Mentions;
 	}
 
 	public async Task<string> ToHtmlAsync(IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions, string? host)

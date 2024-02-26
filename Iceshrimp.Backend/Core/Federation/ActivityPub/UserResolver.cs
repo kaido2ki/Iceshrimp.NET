@@ -1,8 +1,10 @@
 using AsyncKeyedLock;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
@@ -10,7 +12,8 @@ public class UserResolver(
 	ILogger<UserResolver> logger,
 	UserService userSvc,
 	WebFingerService webFingerSvc,
-	FollowupTaskService followupTaskSvc
+	FollowupTaskService followupTaskSvc,
+	IOptions<Config.InstanceSection> config
 )
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -159,6 +162,33 @@ public class UserResolver(
 		{
 			// Pass the job on to userSvc, which will create the user
 			return await userSvc.CreateUserAsync(uri, acct);
+		}
+	}
+
+	public async Task<User?> ResolveAsyncLimited(string uri, Func<bool> limitReached)
+	{
+		// First, let's see if we already know the user
+		var user = await userSvc.GetUserFromQueryAsync(uri);
+		if (user != null)
+			return await GetUpdatedUser(user);
+
+		if (uri.StartsWith($"https://{config.Value.WebDomain}/")) return null;
+
+		// We don't, so we need to run WebFinger
+		var (acct, resolvedUri) = await WebFingerAsync(uri);
+
+		// Check the database again with the new data
+		if (resolvedUri != uri) user = await userSvc.GetUserFromQueryAsync(resolvedUri);
+		if (user == null && acct != uri) await userSvc.GetUserFromQueryAsync(acct);
+		if (user != null)
+			return await GetUpdatedUser(user);
+
+		if (limitReached()) return null;
+
+		using (await KeyedLocker.LockAsync(resolvedUri))
+		{
+			// Pass the job on to userSvc, which will create the user
+			return await userSvc.CreateUserAsync(resolvedUri, acct);
 		}
 	}
 
