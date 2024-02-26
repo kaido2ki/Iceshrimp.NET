@@ -289,7 +289,7 @@ public class UserService(
 		db.Update(user);
 		await db.SaveChangesAsync();
 		await processPendingDeletes();
-		await UpdateProfileMentions(user, actor);
+		await UpdateProfileMentions(user, actor, force: true);
 		return user;
 	}
 
@@ -624,9 +624,9 @@ public class UserService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "Projectables")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
-	private async Task UpdateProfileMentions(User user, ASActor? actor)
+	private async Task UpdateProfileMentions(User user, ASActor? actor, bool force = false)
 	{
-		if (followupTaskSvc.IsBackgroundWorker) return;
+		if (followupTaskSvc.IsBackgroundWorker && !force) return;
 		if (KeyedLocker.IsInUse($"profileMentions:{user.Id}")) return;
 
 		var task = followupTaskSvc.ExecuteTask("UpdateProfileMentionsInBackground", async provider =>
