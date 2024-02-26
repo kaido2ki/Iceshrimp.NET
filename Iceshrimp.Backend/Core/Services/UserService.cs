@@ -222,7 +222,8 @@ public class UserService(
 
 		// Prevent multiple update jobs from running concurrently
 		db.Update(user);
-		await db.Users.Where(u => u.Id == user.Id)
+		var userId = user.Id;
+		await db.Users.Where(u => u.Id == userId)
 		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.LastFetchedAt, DateTime.UtcNow));
 
 		var uri = user.Uri ?? throw new Exception("Encountered remote user without a Uri");
