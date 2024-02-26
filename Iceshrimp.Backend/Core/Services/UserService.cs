@@ -182,7 +182,7 @@ public class UserService(
 			var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
 			await db.SaveChangesAsync();
 			await processPendingDeletes();
-			await UpdateProfileMentions(user, actor);
+			user = await UpdateProfileMentions(user, actor);
 			return user;
 		}
 		catch (UniqueConstraintException)
@@ -289,7 +289,7 @@ public class UserService(
 		db.Update(user);
 		await db.SaveChangesAsync();
 		await processPendingDeletes();
-		await UpdateProfileMentions(user, actor, force: true);
+		user = await UpdateProfileMentions(user, actor, force: true);
 		return user;
 	}
 
@@ -624,10 +624,10 @@ public class UserService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "Projectables")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
-	private async Task UpdateProfileMentions(User user, ASActor? actor, bool force = false)
+	private async Task<User> UpdateProfileMentions(User user, ASActor? actor, bool force = false)
 	{
-		if (followupTaskSvc.IsBackgroundWorker && !force) return;
-		if (KeyedLocker.IsInUse($"profileMentions:{user.Id}")) return;
+		if (followupTaskSvc.IsBackgroundWorker && !force) return user;
+		if (KeyedLocker.IsInUse($"profileMentions:{user.Id}")) return user;
 
 		var task = followupTaskSvc.ExecuteTask("UpdateProfileMentionsInBackground", async provider =>
 		{
@@ -674,5 +674,6 @@ public class UserService(
 		});
 
 		await task.SafeWaitAsync(TimeSpan.FromMilliseconds(500));
+		return user;
 	}
 }
