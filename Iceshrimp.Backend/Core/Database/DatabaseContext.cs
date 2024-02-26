@@ -140,6 +140,10 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			.HasDbFunction(typeof(DatabaseContext).GetMethod(nameof(NoteDescendants),
 			                                                 [typeof(string), typeof(int), typeof(int)])!)
 			.HasName("note_descendants");
+		modelBuilder
+			.HasDbFunction(typeof(DatabaseContext).GetMethod(nameof(Conversations),
+			                                                 [typeof(string)])!)
+			.HasName("conversations");
 
 		modelBuilder.Entity<AbuseUserReport>(entity =>
 		{
@@ -1126,6 +1130,12 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 
 	public IQueryable<Note> NoteDescendants(Note note, int depth, int breadth)
 		=> FromExpression(() => NoteDescendants(note.Id, depth, breadth));
+
+	public IQueryable<Note> Conversations(string userId)
+		=> FromExpression(() => Conversations(userId));
+
+	public IQueryable<Note> Conversations(User user)
+		=> FromExpression(() => Conversations(user.Id));
 }
 
 [SuppressMessage("ReSharper", "UnusedType.Global",

@@ -39,11 +39,47 @@ public static class QueryableExtensions
 			                                        .Where(p => p.Id.IsGreaterThan(pq.MinId) &&
 			                                                    p.Id.IsLessThan(pq.MaxId))
 			                                        .OrderBy(p => p.Id),
-			{ SinceId: not null } => query.Where(note => note.Id.IsGreaterThan(pq.SinceId))
+			{ SinceId: not null } => query.Where(p => p.Id.IsGreaterThan(pq.SinceId))
 			                              .OrderByDescending(p => p.Id),
 			{ MinId: not null } => query.Where(p => p.Id.IsGreaterThan(pq.MinId)).OrderBy(p => p.Id),
 			{ MaxId: not null } => query.Where(p => p.Id.IsLessThan(pq.MaxId)).OrderByDescending(p => p.Id),
 			_                   => query.OrderByDescending(p => p.Id)
+		};
+
+		return query.Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
+	}
+
+	public static IQueryable<T> Paginate<T>(
+		this IQueryable<T> query,
+		Expression<Func<T, string>> predicate,
+		MastodonPaginationQuery pq,
+		int defaultLimit,
+		int maxLimit
+	) where T : IEntity
+	{
+		if (pq.Limit is < 1)
+			throw GracefulException.BadRequest("Limit cannot be less than 1");
+
+		if (pq is { SinceId: not null, MinId: not null })
+			throw GracefulException.BadRequest("Can't use sinceId and minId params simultaneously");
+
+		query = pq switch
+		{
+			{ SinceId: not null, MaxId: not null } => query
+			                                          .Where(predicate.Compose(id => id.IsGreaterThan(pq.SinceId) &&
+				                                                                   id.IsLessThan(pq.MaxId)))
+			                                          .OrderByDescending(predicate),
+			{ MinId: not null, MaxId: not null } => query
+			                                        .Where(predicate.Compose(id => id.IsGreaterThan(pq.MinId) &&
+				                                                                 id.IsLessThan(pq.MaxId)))
+			                                        .OrderBy(predicate),
+			{ SinceId: not null } => query.Where(predicate.Compose(id => id.IsGreaterThan(pq.SinceId)))
+			                              .OrderByDescending(predicate),
+			{ MinId: not null } => query.Where(predicate.Compose(id => id.IsGreaterThan(pq.MinId)))
+			                            .OrderBy(predicate),
+			{ MaxId: not null } => query.Where(predicate.Compose(id => id.IsLessThan(pq.MaxId)))
+			                            .OrderByDescending(predicate),
+			_ => query.OrderByDescending(predicate)
 		};
 
 		return query.Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
@@ -86,6 +122,22 @@ public static class QueryableExtensions
 			throw new GracefulException("Route doesn't have a LinkPaginationAttribute");
 
 		return Paginate(query, pq, filter.DefaultLimit, filter.MaxLimit);
+	}
+
+	public static IQueryable<T> Paginate<T>(
+		this IQueryable<T> query,
+		Expression<Func<T, string>> predicate,
+		MastodonPaginationQuery pq,
+		ControllerContext context
+	) where T : IEntity
+	{
+		var filter = context.ActionDescriptor.FilterDescriptors.Select(p => p.Filter)
+		                    .OfType<LinkPaginationAttribute>()
+		                    .FirstOrDefault();
+		if (filter == null)
+			throw new GracefulException("Route doesn't have a LinkPaginationAttribute");
+
+		return Paginate(query, predicate, pq, filter.DefaultLimit, filter.MaxLimit);
 	}
 
 	public static IQueryable<T> Paginate<T>(
