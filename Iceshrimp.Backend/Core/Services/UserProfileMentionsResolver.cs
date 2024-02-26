@@ -8,7 +8,11 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, IOptions<Config.InstanceSection> config, ILogger<UserProfileMentionsResolver> logger)
+public class UserProfileMentionsResolver(
+	ActivityPub.UserResolver userResolver,
+	IOptions<Config.InstanceSection> config,
+	ILogger<UserProfileMentionsResolver> logger
+)
 {
 	private int _recursionLimit = 10;
 
@@ -24,24 +28,21 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 
 		var nodes        = input.SelectMany(p => MfmParser.Parse(p));
 		var mentionNodes = EnumerateMentions(nodes);
-		var users = await mentionNodes.DistinctBy(p => p.Acct)
-		                              .Select(async p =>
-		                              {
-			                              try
-			                              {
-				                              return await userResolver.ResolveAsyncLimited(p.Username, p.Host ?? host,
-						                               () =>
-						                               {
-							                               logger.LogDebug("Recursion limiter is at: {limit}", _recursionLimit);
-							                               return _recursionLimit-- <= 0;
-						                               });
-			                              }
-			                              catch
-			                              {
-				                              return null;
-			                              }
-		                              })
-		                              .AwaitAllNoConcurrencyAsync();
+		var users = await mentionNodes
+		                  .DistinctBy(p => p.Acct)
+		                  .Select(async p =>
+		                  {
+			                  try
+			                  {
+				                  return await userResolver.ResolveAsyncLimited(p.Username, p.Host ?? host,
+					                                                                () => _recursionLimit-- <= 0);
+			                  }
+			                  catch
+			                  {
+				                  return null;
+			                  }
+		                  })
+		                  .AwaitAllNoConcurrencyAsync();
 
 		return users.Where(p => p != null)
 		            .Cast<User>()
