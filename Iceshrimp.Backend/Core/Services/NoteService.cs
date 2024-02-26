@@ -91,7 +91,8 @@ public class NoteService(
 			AttachedFileTypes    = attachments?.Select(p => p.Type).ToList() ?? [],
 			Mentions             = mentionedUserIds,
 			VisibleUserIds       = visibility == Note.NoteVisibility.Specified ? mentionedUserIds : [],
-			MentionedRemoteUsers = remoteMentions
+			MentionedRemoteUsers = remoteMentions,
+			ThreadId             = reply?.ThreadId ?? reply?.Id
 		};
 
 		if (!note.IsPureRenote) user.NotesCount++;
@@ -358,6 +359,7 @@ public class NoteService(
 		{
 			dbNote.ReplyUserId   = dbNote.Reply.UserId;
 			dbNote.ReplyUserHost = dbNote.Reply.UserHost;
+			dbNote.ThreadId      = dbNote.Reply.ThreadId ?? dbNote.Reply.ThreadId;
 		}
 
 		if (dbNote.Renote != null)
