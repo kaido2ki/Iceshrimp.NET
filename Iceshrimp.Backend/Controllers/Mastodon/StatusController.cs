@@ -276,18 +276,30 @@ public class StatusController(
 	[HttpDelete("{id}")]
 	[Authorize("write:statuses")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> DeleteNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
 		           throw GracefulException.RecordNotFound();
-		if (user.Id != note.UserId)
-			throw GracefulException.RecordNotFound();
 
-		var res = await noteRenderer.RenderAsync(note, user);
+		var res = await noteRenderer.RenderAsync(note, user, new NoteRenderer.NoteRendererDto { Source = true });
 		await noteSvc.DeleteNoteAsync(note);
+
+		return Ok(res);
+	}
+
+	[HttpGet("{id}/source")]
+	[Authorize("read:statuses")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusSource))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetNoteSource(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var res = await db.Notes.Where(p => p.Id == id && p.User == user)
+		                  .Select(p => new StatusSource { Id = p.Id, ContentWarning = p.Cw ?? "", Text = p.Text ?? "" })
+		                  .FirstOrDefaultAsync() ??
+		          throw GracefulException.RecordNotFound();
 
 		return Ok(res);
 	}

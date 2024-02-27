@@ -75,7 +75,7 @@ public class NoteRenderer(
 		                             })
 		                             .ToList();
 
-		var content = text != null
+		var content = text != null && data?.Source != true
 			? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost)
 			: null;
 
@@ -106,7 +106,7 @@ public class NoteRenderer(
 			ContentWarning = note.Cw ?? "",
 			Visibility     = StatusEntity.EncodeVisibility(note.Visibility),
 			Content        = content,
-			Text           = text,
+			Text           = data?.Source == true ? text : null,
 			Mentions       = mentions,
 			IsPinned       = false,
 			Attachments    = attachments,
@@ -226,5 +226,6 @@ public class NoteRenderer(
 		public List<string>?            LikedNotes;
 		public List<string>?            Renotes;
 		public List<EmojiEntity>?       Emoji;
+		public bool                     Source;
 	}
 }

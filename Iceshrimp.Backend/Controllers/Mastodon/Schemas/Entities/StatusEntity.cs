@@ -86,3 +86,10 @@ public class StatusContext
 	[J("ancestors")]   public required List<StatusEntity> Ancestors   { get; set; }
 	[J("descendants")] public required List<StatusEntity> Descendants { get; set; }
 }
+
+public class StatusSource
+{
+	[J("id")]           public required string Id             { get; set; }
+	[J("text")]         public required string Text           { get; set; }
+	[J("spoiler_text")] public required string ContentWarning { get; set; }
+}
