@@ -42,6 +42,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<HtmlNoteCacheEntry>   HtmlNoteCacheEntries  { get; init; } = null!;
 	public virtual DbSet<HtmlUserCacheEntry>   HtmlUserCacheEntries  { get; init; } = null!;
 	public virtual DbSet<Instance>             Instances             { get; init; } = null!;
+	public virtual DbSet<Marker>               Markers               { get; init; } = null!;
 	public virtual DbSet<MessagingMessage>     MessagingMessages     { get; init; } = null!;
 	public virtual DbSet<Meta>                 Meta                  { get; init; } = null!;
 	public virtual DbSet<ModerationLog>        ModerationLogs        { get; init; } = null!;
@@ -108,6 +109,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		dataSourceBuilder.MapEnum<Page.PageVisibility>();
 		dataSourceBuilder.MapEnum<Relay.RelayStatus>();
 		dataSourceBuilder.MapEnum<UserProfile.UserProfileFFVisibility>();
+		dataSourceBuilder.MapEnum<Marker.MarkerType>();
 
 		dataSourceBuilder.EnableDynamicJson();
 
@@ -130,6 +132,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			.HasPostgresEnum<Page.PageVisibility>()
 			.HasPostgresEnum<Relay.RelayStatus>()
 			.HasPostgresEnum<UserProfile.UserProfileFFVisibility>()
+			.HasPostgresEnum<Marker.MarkerType>()
 			.HasPostgresExtension("pg_trgm");
 
 		modelBuilder
@@ -516,6 +519,15 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasOne(d => d.User).WithMany(p => p.MessagingMessageUsers);
+		});
+
+		modelBuilder.Entity<Marker>(entity =>
+		{
+			entity.Property(d => d.Version).HasDefaultValue(0);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Markers)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Meta>(entity =>

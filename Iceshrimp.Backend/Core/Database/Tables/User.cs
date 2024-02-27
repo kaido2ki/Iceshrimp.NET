@@ -361,6 +361,9 @@ public class User : IEntity
 	[InverseProperty(nameof(Tables.HtmlUserCacheEntry.User))]
 	public virtual HtmlUserCacheEntry? HtmlUserCacheEntry { get; set; }
 
+	[InverseProperty(nameof(Marker.User))]
+	public virtual ICollection<Marker> Markers { get; set; } = new List<Marker>();
+
 	[InverseProperty(nameof(MessagingMessage.Recipient))]
 	public virtual ICollection<MessagingMessage> MessagingMessageRecipients { get; set; } =
 		new List<MessagingMessage>();
