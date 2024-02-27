@@ -24,86 +24,49 @@ public class MarkerController(DatabaseContext db) : ControllerBase
 {
 	[HttpGet]
 	[Authorize("read:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MarkerSchemas.MarkerResponse))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Dictionary<string, MarkerEntity>))]
 	public async Task<IActionResult> GetMarkers([FromQuery(Name = "timeline")] List<string> types)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var markers = await db.Markers.Where(p => p.User == user && types.Select(DecodeType).Contains(p.Type))
 		                      .ToListAsync();
 
-		var res           = new MarkerSchemas.MarkerResponse();
-		var home          = markers.FirstOrDefault(p => p.Type == Marker.MarkerType.Home);
-		var notifications = markers.FirstOrDefault(p => p.Type == Marker.MarkerType.Notifications);
-		if (home != null)
-		{
-			res.Home = new MarkerEntity
-			{
-				Position  = home.Position,
-				Version   = home.Version,
-				UpdatedAt = home.LastUpdatedAt.ToStringIso8601Like()
-			};
-		}
-
-		if (notifications != null)
-		{
-			res.Notifications = new MarkerEntity
-			{
-				Position  = notifications.Position,
-				Version   = notifications.Version,
-				UpdatedAt = notifications.LastUpdatedAt.ToStringIso8601Like()
-			};
-		}
-
+		var res = markers.ToDictionary(p => EncodeType(p.Type),
+		                               p => new MarkerEntity
+		                               {
+			                               Position  = p.Position,
+			                               Version   = p.Version,
+			                               UpdatedAt = p.LastUpdatedAt.ToStringIso8601Like()
+		                               });
 
 		return Ok(res);
 	}
 
 	[HttpPost]
 	[Authorize("write:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(MarkerSchemas.MarkerResponse))]
-	public async Task<IActionResult> SetMarkers([FromHybrid] MarkerSchemas.MarkerRequest request)
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Dictionary<string, MarkerEntity>))]
+	public async Task<IActionResult> SetMarkers([FromHybrid] Dictionary<string, MarkerSchemas.MarkerPosition> request)
 	{
-		var user  = HttpContext.GetUserOrFail();
-		var types = new List<Marker.MarkerType>();
+		var user = HttpContext.GetUserOrFail();
 		try
 		{
-			if (request.Home != null)
+			foreach (var item in request)
 			{
-				types.Add(Marker.MarkerType.Home);
-				var marker = await db.Markers.FirstOrDefaultAsync(p => p.User == user &&
-				                                                       p.Type == Marker.MarkerType.Home);
+				var type = DecodeType(item.Key);
+
+				var marker = await db.Markers.FirstOrDefaultAsync(p => p.User == user && p.Type == type);
 				if (marker == null)
 				{
-					marker = new Marker { User = user, Type = Marker.MarkerType.Home };
+					marker = new Marker { User = user, Type = type };
 					await db.AddAsync(marker);
 				}
-				else if (marker.Position != request.Home.LastReadId)
+				else if (marker.Position != item.Value.LastReadId)
 				{
 					marker.Version++;
 				}
 
 				marker.LastUpdatedAt = DateTime.UtcNow;
-				marker.Position      = request.Home.LastReadId;
-			}
-
-			if (request.Notifications != null)
-			{
-				types.Add(Marker.MarkerType.Notifications);
-
-				var marker = await db.Markers.FirstOrDefaultAsync(p => p.User == user &&
-				                                                       p.Type == Marker.MarkerType.Notifications);
-				if (marker == null)
-				{
-					marker = new Marker { User = user, Type = Marker.MarkerType.Notifications };
-					await db.AddAsync(marker);
-				}
-				else if (marker.Position != request.Notifications.LastReadId)
-				{
-					marker.Version++;
-				}
-
-				marker.LastUpdatedAt = DateTime.UtcNow;
-				marker.Position      = request.Notifications.LastReadId;
+				marker.Position      = item.Value.LastReadId;
 			}
 
 			await db.SaveChangesAsync();
@@ -113,7 +76,7 @@ public class MarkerController(DatabaseContext db) : ControllerBase
 			throw new GracefulException(HttpStatusCode.Conflict, "Conflict during update, please try again");
 		}
 
-		return await GetMarkers(types.Select(EncodeType).ToList());
+		return await GetMarkers(request.Keys.ToList());
 	}
 
 	public Marker.MarkerType DecodeType(string type) =>
