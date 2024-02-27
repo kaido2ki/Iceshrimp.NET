@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EntityFrameworkCore.Projectables;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
@@ -39,4 +40,9 @@ public class Announcement
 
 	[InverseProperty(nameof(AnnouncementRead.Announcement))]
 	public virtual ICollection<AnnouncementRead> AnnouncementReads { get; set; } = new List<AnnouncementRead>();
+
+	[NotMapped] [Projectable] public virtual IEnumerable<User> ReadBy => AnnouncementReads.Select(p => p.User);
+	
+	[Projectable]
+	public bool IsReadBy(User user) => ReadBy.Contains(user);
 }
