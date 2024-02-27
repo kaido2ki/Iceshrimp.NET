@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
@@ -274,6 +275,40 @@ public class AccountController(
 		                  .Select(p => p.Follower)
 		                  .Paginate(query, ControllerContext)
 		                  .RenderAllForMastodonAsync(userRenderer);
+
+		return Ok(res);
+	}
+	
+	[HttpGet("/api/v1/favourites")]
+	[Authorize("read:favourites")]
+	[LinkPagination(20, 40)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
+	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
+	public async Task<IActionResult> GetLikedNotes(MastodonPaginationQuery query)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var res = await db.Notes
+		                  .Where(p => db.Users.First(u => u == user).HasLiked(p))
+		                  .IncludeCommonProperties()
+		                  .Paginate(query, ControllerContext)
+		                  .RenderAllForMastodonAsync(noteRenderer, user);
+
+		return Ok(res);
+	}
+	
+	[HttpGet("/api/v1/bookmarks")]
+	[Authorize("read:bookmarks")]
+	[LinkPagination(20, 40)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
+	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
+	public async Task<IActionResult> GetBookmarkedNotes(MastodonPaginationQuery query)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var res = await db.Notes
+		                  .Where(p => db.Users.First(u => u == user).HasBookmarked(p))
+		                  .IncludeCommonProperties()
+		                  .Paginate(query, ControllerContext)
+		                  .RenderAllForMastodonAsync(noteRenderer, user);
 
 		return Ok(res);
 	}
