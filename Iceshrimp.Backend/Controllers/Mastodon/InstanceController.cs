@@ -1,6 +1,7 @@
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Microsoft.AspNetCore.Cors;
@@ -18,6 +19,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 public class InstanceController(DatabaseContext db) : ControllerBase
 {
 	[HttpGet("/api/v1/instance")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstanceInfoV1Response))]
 	public async Task<IActionResult> GetInstanceInfoV1([FromServices] IOptionsSnapshot<Config> config)
 	{
 		var userCount =
@@ -35,6 +37,7 @@ public class InstanceController(DatabaseContext db) : ControllerBase
 	}
 
 	[HttpGet("/api/v2/instance")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstanceInfoV2Response))]
 	public async Task<IActionResult> GetInstanceInfoV2([FromServices] IOptionsSnapshot<Config> config)
 	{
 		var cutoff = DateTime.UtcNow - TimeSpan.FromDays(30);
@@ -47,6 +50,24 @@ public class InstanceController(DatabaseContext db) : ControllerBase
 		{
 			Usage = new InstanceUsage { Users = new InstanceUsersUsage { ActiveMonth = activeMonth } }
 		};
+
+		return Ok(res);
+	}
+
+	[HttpGet("/api/v1/custom_emojis")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<EmojiEntity>))]
+	public async Task<IActionResult> GetCustomEmojis()
+	{
+		var res = await db.Emojis.Where(p => p.Host == null)
+		                  .Select(p => new EmojiEntity
+		                  {
+			                  Id              = p.Id,
+			                  Shortcode       = p.Name,
+			                  Url             = p.PublicUrl,
+			                  StaticUrl       = p.PublicUrl, //TODO
+			                  VisibleInPicker = true
+		                  })
+		                  .ToListAsync();
 
 		return Ok(res);
 	}
