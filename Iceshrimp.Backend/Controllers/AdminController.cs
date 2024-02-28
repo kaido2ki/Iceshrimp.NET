@@ -4,10 +4,13 @@ using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers;
 
@@ -43,9 +46,15 @@ public class AdminController(DatabaseContext db, ActivityPubController apControl
 	[HttpGet("activities/notes/{id}")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASNote))]
 	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-	public async Task<IActionResult> GetNoteActivity(string id)
+	public async Task<IActionResult> GetNoteActivity(string id, [FromServices] ActivityPub.NoteRenderer noteRenderer)
 	{
-		return await apController.GetNote(id);
+		var note = await db.Notes
+		                   .IncludeCommonProperties()
+		                   .FirstOrDefaultAsync(p => p.Id == id && p.UserHost == null);
+		if (note == null) return NotFound();
+		var rendered  = await noteRenderer.RenderAsync(note);
+		var compacted = LdHelpers.Compact(rendered);
+		return Ok(compacted);
 	}
 
 	[UseNewtonsoftJson]
