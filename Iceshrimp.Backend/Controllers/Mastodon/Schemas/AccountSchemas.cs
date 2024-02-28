@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
-using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
