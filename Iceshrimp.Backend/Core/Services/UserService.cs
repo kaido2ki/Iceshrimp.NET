@@ -296,11 +296,30 @@ public class UserService(
 		return user;
 	}
 
-	public async Task UpdateLocalUserAsync(User user)
+	public async Task<User> UpdateLocalUserAsync(User user, string? prevAvatarId, string? prevBannerId)
 	{
 		if (user.Host != null) throw new Exception("This method is only valid for local users");
+		if (user.UserProfile == null) throw new Exception("user.UserProfile must not be null at this stage");
+
+		db.Update(user);
+		db.Update(user.UserProfile);
+		await db.SaveChangesAsync();
+
+		user = await UpdateProfileMentions(user, null);
+
 		var activity = activityRenderer.RenderUpdate(await userRenderer.RenderAsync(user));
 		await deliverSvc.DeliverToFollowersAsync(activity, user, []);
+
+		_ = followupTaskSvc.ExecuteTask("UpdateLocalUserAsync", async provider =>
+		{
+			var bgDriveSvc = provider.GetRequiredService<DriveService>();
+			if (prevAvatarId != null && user.Avatar?.Id != prevAvatarId)
+				await bgDriveSvc.RemoveFile(prevAvatarId);
+			if (prevBannerId != null && user.Banner?.Id != prevBannerId)
+				await bgDriveSvc.RemoveFile(prevBannerId);
+		});
+
+		return user;
 	}
 
 	public async Task<User> CreateLocalUserAsync(string username, string password, string? invite)

@@ -107,16 +107,7 @@ public class AccountController(
 			user.BannerUrl      = banner.Url;
 		}
 
-		db.Update(user);
-		db.Update(user.UserProfile);
-		await db.SaveChangesAsync();
-		await userSvc.UpdateLocalUserAsync(user);
-
-		if (prevAvatarId != null && user.Avatar?.Id != prevAvatarId)
-			await driveSvc.RemoveFile(prevAvatarId);
-
-		if (prevBannerId != null && user.Banner?.Id != prevBannerId)
-			await driveSvc.RemoveFile(prevBannerId);
+		user = await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 
 		var res = await userRenderer.RenderAsync(user, user.UserProfile, source: true);
 		return Ok(res);
