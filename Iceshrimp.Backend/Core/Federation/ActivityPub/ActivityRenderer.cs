@@ -34,6 +34,14 @@ public class ActivityRenderer(
 		Cc     = obj.Cc
 	};
 
+	public ASUpdate RenderUpdate(ASActor actor) => new()
+	{
+		Id     = GenerateActivityId(),
+		Actor  = ASActor.FromObject(actor),
+		Object = actor,
+		To     = [new ASObjectBase($"{Constants.ActivityStreamsNs}#Public")]
+	};
+
 	public ASDelete RenderDelete(ASActor actor, ASObject obj) => new()
 	{
 		Id = $"{obj.Id}#Delete", Actor = actor.Compact(), Object = obj

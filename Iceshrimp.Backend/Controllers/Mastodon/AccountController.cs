@@ -28,7 +28,8 @@ public class AccountController(
 	UserRenderer userRenderer,
 	NoteRenderer noteRenderer,
 	UserService userSvc,
-	ActivityPub.UserResolver userResolver
+	ActivityPub.UserResolver userResolver,
+	DriveService driveSvc
 ) : ControllerBase
 {
 	[HttpGet("verify_credentials")]
@@ -38,6 +39,86 @@ public class AccountController(
 	{
 		var user = HttpContext.GetUserOrFail();
 		var res  = await userRenderer.RenderAsync(user, user.UserProfile, source: true);
+		return Ok(res);
+	}
+
+	[HttpPatch("update_credentials")]
+	[Authorize("write:accounts")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
+	public async Task<IActionResult> UpdateUserCredentials([FromHybrid] AccountSchemas.AccountUpdateRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.UserProfile == null)
+			throw new Exception("User profile must not be null at this stage");
+
+		if (request.DisplayName != null)
+			user.DisplayName = !string.IsNullOrWhiteSpace(request.DisplayName) ? request.DisplayName : user.Username;
+		if (request.Bio != null)
+			user.UserProfile.Description = request.Bio;
+		if (request.IsLocked.HasValue)
+			user.IsLocked = request.IsLocked.Value;
+		if (request.IsBot.HasValue)
+			user.IsBot = request.IsBot.Value;
+		if (request.IsExplorable.HasValue)
+			user.IsExplorable = request.IsExplorable.Value;
+		if (request.Source?.Sensitive.HasValue ?? false)
+			user.UserProfile.AlwaysMarkNsfw = request.Source.Sensitive.Value;
+		if (request.HideCollections.HasValue)
+			user.UserProfile.FFVisibility = request.HideCollections.Value
+				? UserProfile.UserProfileFFVisibility.Private
+				: UserProfile.UserProfileFFVisibility.Public;
+
+		if (request.Source?.Privacy != null)
+		{
+			//TODO (user settings store!)
+		}
+
+		if (request.Fields?.Where(p => p is { Name: not null, Value: not null }).ToList() is { Count: > 0 } fields)
+		{
+			user.UserProfile.Fields =
+				fields.Select(p => new UserProfile.Field { Name = p.Name!, Value = p.Value!, IsVerified = false })
+				      .ToArray();
+		}
+
+		var prevAvatarId = user.AvatarId;
+		var prevBannerId = user.BannerId;
+
+		if (request.Avatar != null)
+		{
+			var rq = new DriveFileCreationRequest
+			{
+				Filename = request.Avatar.FileName, IsSensitive = false, MimeType = request.Avatar.ContentType
+			};
+			var avatar = await driveSvc.StoreFile(request.Avatar.OpenReadStream(), user, rq);
+			user.Avatar         = avatar;
+			user.AvatarBlurhash = avatar.Blurhash;
+			user.AvatarUrl      = avatar.Url;
+		}
+
+		if (request.Banner != null)
+		{
+			var rq = new DriveFileCreationRequest
+			{
+				Filename = request.Banner.FileName, IsSensitive = false, MimeType = request.Banner.ContentType
+			};
+			var banner = await driveSvc.StoreFile(request.Banner.OpenReadStream(), user, rq);
+			user.Banner         = banner;
+			user.BannerBlurhash = banner.Blurhash;
+			user.BannerUrl      = banner.Url;
+		}
+
+		db.Update(user);
+		db.Update(user.UserProfile);
+		await db.SaveChangesAsync();
+		await userSvc.UpdateUserAsync(user);
+
+		if (prevAvatarId != null && user.Avatar?.Id != prevAvatarId)
+			await driveSvc.RemoveFile(prevAvatarId);
+
+		if (prevBannerId != null && user.Banner?.Id != prevBannerId)
+			await driveSvc.RemoveFile(prevBannerId);
+
+		var res = await userRenderer.RenderAsync(user, user.UserProfile, source: true);
 		return Ok(res);
 	}
 
@@ -278,7 +359,7 @@ public class AccountController(
 
 		return Ok(res);
 	}
-	
+
 	[HttpGet("/api/v1/favourites")]
 	[Authorize("read:favourites")]
 	[LinkPagination(20, 40)]
@@ -295,7 +376,7 @@ public class AccountController(
 
 		return Ok(res);
 	}
-	
+
 	[HttpGet("/api/v1/bookmarks")]
 	[Authorize("read:bookmarks")]
 	[LinkPagination(20, 40)]

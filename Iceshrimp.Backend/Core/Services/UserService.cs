@@ -29,7 +29,8 @@ public class UserService(
 	FollowupTaskService followupTaskSvc,
 	NotificationService notificationSvc,
 	EmojiService emojiSvc,
-	ActivityPub.MentionsResolver mentionsResolver
+	ActivityPub.MentionsResolver mentionsResolver,
+	ActivityPub.UserRenderer userRenderer
 )
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -293,6 +294,13 @@ public class UserService(
 		await processPendingDeletes();
 		user = await UpdateProfileMentions(user, actor, force: true);
 		return user;
+	}
+
+	public async Task UpdateUserAsync(User user)
+	{
+		if (user.Host != null) throw new Exception("This method is only valid for local users");
+		var activity = activityRenderer.RenderUpdate(await userRenderer.RenderAsync(user));
+		await deliverSvc.DeliverToFollowersAsync(activity, user, []);
 	}
 
 	public async Task<User> CreateLocalUserAsync(string username, string password, string? invite)
