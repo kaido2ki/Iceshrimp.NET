@@ -79,7 +79,7 @@ public class MarkerController(DatabaseContext db) : ControllerBase
 		return await GetMarkers(request.Keys.ToList());
 	}
 
-	public Marker.MarkerType DecodeType(string type) =>
+	private static Marker.MarkerType DecodeType(string type) =>
 		type switch
 		{
 			"home"          => Marker.MarkerType.Home,
@@ -87,7 +87,7 @@ public class MarkerController(DatabaseContext db) : ControllerBase
 			_               => throw GracefulException.BadRequest($"Unknown marker type {type}")
 		};
 
-	public string EncodeType(Marker.MarkerType type) =>
+	private static string EncodeType(Marker.MarkerType type) =>
 		type switch
 		{
 			Marker.MarkerType.Home          => "home",
