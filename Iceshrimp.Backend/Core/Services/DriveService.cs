@@ -132,7 +132,11 @@ public class DriveService(
 			try
 			{
 				var image = await Image.LoadAsync<Rgba32>(buf);
-				blurhash = Blurhasher.Encode(image, 7, 7);
+
+				// Calculate blurhash using a x200px image for improved performance
+				var blurhashImage = image.Clone();
+				blurhashImage.Mutate(p => p.Resize(image.Width > image.Height ? new Size(200, 0) : new Size(0, 200)));
+				blurhash = Blurhasher.Encode(blurhashImage, 7, 7);
 
 				// Correct mime type
 				if (request.MimeType == "image" && image.Metadata.DecodedImageFormat?.DefaultMimeType != null)
@@ -144,11 +148,14 @@ public class DriveService(
 				{
 					// Generate thumbnail
 					var thumbnailImage = image.Clone();
-					if (image.Size.Width > 1000)
-						thumbnailImage.Mutate(p => p.Resize(new Size(1000, 0)));
+					if (Math.Max(image.Size.Width, image.Size.Height) > 1000)
+						thumbnailImage.Mutate(p => p.Resize(image.Width > image.Height
+							                                    ? new Size(1000, 0)
+							                                    : new Size(0, 1000)));
 
 					thumbnail = new MemoryStream();
-					await thumbnailImage.SaveAsWebpAsync(thumbnail);
+					var thumbEncoder = new WebpEncoder { Quality = 75, FileFormat = WebpFileFormatType.Lossy };
+					await thumbnailImage.SaveAsWebpAsync(thumbnail, thumbEncoder);
 					thumbnail.Seek(0, SeekOrigin.Begin);
 
 					// Generate webpublic for local users
@@ -157,12 +164,16 @@ public class DriveService(
 						var webpublicImage = image.Clone();
 						webpublicImage.Metadata.ExifProfile = null;
 						webpublicImage.Metadata.XmpProfile  = null;
-						if (image.Size.Width > 2048)
-							webpublicImage.Mutate(p => p.Resize(new Size(2048, 0)));
+						if (Math.Max(image.Size.Width, image.Size.Height) > 2048)
+							webpublicImage.Mutate(p => p.Resize(image.Width > image.Height
+								                                    ? new Size(2048, 0)
+								                                    : new Size(0, 2048)));
 
-						var encoder = request.MimeType == "image/png"
-							? new WebpEncoder { Quality = 100, NearLossless = true, NearLosslessQuality = 60 }
-							: new WebpEncoder { Quality = 75 };
+						var encoder = new WebpEncoder
+						{
+							Quality    = request.MimeType == "image/png" ? 100 : 75,
+							FileFormat = WebpFileFormatType.Lossy
+						};
 
 						webpublic = new MemoryStream();
 						await webpublicImage.SaveAsWebpAsync(webpublic, encoder);
