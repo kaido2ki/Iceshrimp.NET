@@ -41,10 +41,10 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 
 		var id = user.GetPublicUri(config.Value);
 		var type = Constants.SystemUsers.Contains(user.UsernameLower)
-			? "Application"
+			? ASActor.Types.Application
 			: user.IsBot
-				? "Service"
-				: "Person";
+				? ASActor.Types.Service
+				: ASActor.Types.Person;
 
 		return new ASActor
 		{
