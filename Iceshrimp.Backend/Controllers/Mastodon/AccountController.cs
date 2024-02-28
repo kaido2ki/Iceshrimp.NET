@@ -110,7 +110,7 @@ public class AccountController(
 		db.Update(user);
 		db.Update(user.UserProfile);
 		await db.SaveChangesAsync();
-		await userSvc.UpdateUserAsync(user);
+		await userSvc.UpdateLocalUserAsync(user);
 
 		if (prevAvatarId != null && user.Avatar?.Id != prevAvatarId)
 			await driveSvc.RemoveFile(prevAvatarId);

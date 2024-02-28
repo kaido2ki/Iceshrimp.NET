@@ -296,7 +296,7 @@ public class UserService(
 		return user;
 	}
 
-	public async Task UpdateUserAsync(User user)
+	public async Task UpdateLocalUserAsync(User user)
 	{
 		if (user.Host != null) throw new Exception("This method is only valid for local users");
 		var activity = activityRenderer.RenderUpdate(await userRenderer.RenderAsync(user));
