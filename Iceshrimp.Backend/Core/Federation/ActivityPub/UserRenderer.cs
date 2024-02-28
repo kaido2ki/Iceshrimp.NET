@@ -63,10 +63,13 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			IsCat = user.IsCat,
 			IsDiscoverable = user.IsExplorable,
 			IsLocked = user.IsLocked,
-			Endpoints = new ASEndpoints
-			{
-				SharedInbox = new ASObjectBase($"https://{config.Value.WebDomain}/inbox")
-			},
+			Avatar = user.AvatarUrl != null
+				? new ASImage { Url = new ASLink(user.AvatarUrl) }
+				: null,
+			Banner = user.BannerUrl != null
+				? new ASImage { Url = new ASLink(user.BannerUrl) }
+				: null,
+			Endpoints = new ASEndpoints { SharedInbox = new ASObjectBase($"https://{config.Value.WebDomain}/inbox") },
 			PublicKey = new ASPublicKey
 			{
 				Id = $"{id}#main-key", Owner = new ASObjectBase(id), PublicKey = keypair.PublicKey
