@@ -521,8 +521,10 @@ public class UserService(
 			FolloweeSharedInbox = request.FolloweeSharedInbox
 		};
 
-		request.Followee.FollowersCount++;
-		request.Follower.FollowingCount++;
+		await db.Users.Where(p => p.Id == request.Follower.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
+		await db.Users.Where(p => p.Id == request.Followee.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount + 1));
 
 		db.Remove(request);
 		await db.AddAsync(following);
@@ -624,8 +626,10 @@ public class UserService(
 		// otherwise we'll do it when receiving the Accept activity / the local followee accepts the request
 		if (followee.Host == null && !followee.IsLocked)
 		{
-			followee.FollowersCount++;
-			user.FollowingCount++;
+			await db.Users.Where(p => p.Id == user.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
+			await db.Users.Where(p => p.Id == followee.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount + 1));
 		}
 
 		await db.SaveChangesAsync();
@@ -651,8 +655,14 @@ public class UserService(
 		if (followee.PrecomputedIsFollowedBy ?? false)
 		{
 			var followings = await db.Followings.Where(p => p.Follower == user && p.Followee == followee).ToListAsync();
-			user.FollowingCount     -= followings.Count;
-			followee.FollowersCount -= followings.Count;
+
+			await db.Users.Where(p => p.Id == user.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount,
+			                                               i => i.FollowingCount - followings.Count));
+			await db.Users.Where(p => p.Id == followee.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount,
+			                                               i => i.FollowersCount - followings.Count));
+
 			db.RemoveRange(followings);
 			await db.SaveChangesAsync();
 

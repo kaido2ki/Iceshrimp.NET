@@ -332,8 +332,10 @@ public class ActivityHandlerService(
 				FollowerSharedInbox = follower.SharedInbox
 			};
 
-			follower.FollowingCount++;
-			followee.FollowersCount++;
+			await db.Users.Where(p => p.Id == follower.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
+			await db.Users.Where(p => p.Id == followee.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount + 1));
 
 			_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
 			{
@@ -361,8 +363,12 @@ public class ActivityHandlerService(
 		var followings = await db.Followings.Where(p => p.Follower == follower && p.Followee == followee).ToListAsync();
 		if (followings.Count > 0)
 		{
-			followee.FollowersCount -= followings.Count;
-			follower.FollowingCount -= followings.Count;
+			await db.Users.Where(p => p.Id == follower.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount,
+			                                               i => i.FollowingCount - followings.Count));
+			await db.Users.Where(p => p.Id == followee.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount,
+			                                               i => i.FollowersCount - followings.Count));
 			db.RemoveRange(followings);
 			await db.SaveChangesAsync();
 
@@ -417,8 +423,10 @@ public class ActivityHandlerService(
 			FolloweeSharedInbox = request.FolloweeSharedInbox
 		};
 
-		actor.FollowersCount++;
-		request.Follower.FollowingCount++;
+		await db.Users.Where(p => p.Id == request.Follower.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
+		await db.Users.Where(p => p.Id == actor.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount + 1));
 
 		_ = followupTaskSvc.ExecuteTask("IncrementInstanceOutgoingFollowsCounter", async provider =>
 		{
@@ -450,8 +458,10 @@ public class ActivityHandlerService(
 		                    .ExecuteDeleteAsync();
 		if (count > 0)
 		{
-			actor.FollowersCount            -= count;
-			resolvedFollower.FollowingCount -= count;
+			await db.Users.Where(p => p.Id == resolvedFollower.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount - count));
+			await db.Users.Where(p => p.Id == actor.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount - count));
 			await db.SaveChangesAsync();
 		}
 

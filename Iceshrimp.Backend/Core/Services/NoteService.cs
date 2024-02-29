@@ -87,7 +87,7 @@ public class NoteService(
 			Renote               = renote,
 			RenoteUserId         = renote?.UserId,
 			RenoteUserHost       = renote?.UserHost,
-			UserId               = user.Id,
+			User                 = user,
 			CreatedAt            = DateTime.UtcNow,
 			UserHost             = null,
 			Visibility           = visibility,
@@ -99,11 +99,7 @@ public class NoteService(
 			ThreadId             = reply?.ThreadId ?? reply?.Id
 		};
 
-		if (!note.IsPureRenote) user.NotesCount++;
-		if (reply != null) reply.RepliesCount++;
-		if (renote != null && !note.IsQuote)
-			if (!db.Notes.Any(p => p.UserId == user.Id && p.RenoteId == renote.Id && p.IsPureRenote))
-				renote.RenoteCount++;
+		await UpdateNoteCountersAsync(note, true);
 
 		await db.AddAsync(note);
 		await db.SaveChangesAsync();
@@ -149,6 +145,34 @@ public class NoteService(
 			await deliverSvc.DeliverToFollowersAsync(activity, user, recipients);
 
 		return note;
+	}
+
+	/// <remarks>
+	/// This needs to be called before SaveChangesAsync on create & after on delete
+	/// </remarks>
+	private async Task UpdateNoteCountersAsync(Note note, bool create)
+	{
+		var diff = create ? 1 : -1;
+
+		if (note is { Renote.Id: not null, IsPureRenote: true })
+		{
+			if (!db.Notes.Any(p => p.UserId == note.User.Id && p.RenoteId == note.Renote.Id && p.IsPureRenote))
+			{
+				await db.Notes.Where(p => p.Id == note.Renote.Id)
+				        .ExecuteUpdateAsync(p => p.SetProperty(n => n.RenoteCount, n => n.RenoteCount + diff));
+			}
+		}
+		else
+		{
+			await db.Users.Where(p => p.Id == note.User.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(u => u.NotesCount, u => u.NotesCount + diff));
+		}
+
+		if (note.Reply != null)
+		{
+			await db.Notes.Where(p => p.Id == note.Reply.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(n => n.RepliesCount, n => n.RepliesCount + diff));
+		}
 	}
 
 	public async Task<Note> UpdateNoteAsync(
@@ -238,11 +262,11 @@ public class NoteService(
 
 	public async Task DeleteNoteAsync(Note note)
 	{
-		note.User.NotesCount--;
 		db.Update(note.User);
 		db.Remove(note);
 		eventSvc.RaiseNoteDeleted(this, note);
 		await db.SaveChangesAsync();
+		await UpdateNoteCountersAsync(note, false);
 
 		if (note.UserHost != null)
 		{
@@ -301,11 +325,10 @@ public class NoteService(
 
 		logger.LogDebug("Deleting note '{id}' owned by {userId}", note.Id, actor.Id);
 
-		actor.NotesCount--;
-		if (dbNote.IsPureRenote) dbNote.RenoteCount--;
 		db.Remove(dbNote);
 		eventSvc.RaiseNoteDeleted(this, dbNote);
 		await db.SaveChangesAsync();
+		await UpdateNoteCountersAsync(dbNote, false);
 
 		// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataUsage (same reason as above)
 		if (dbNote.User.Uri != null && dbNote.UserHost != null)
@@ -331,9 +354,10 @@ public class NoteService(
 		                    .ToListAsync();
 
 		if (notes.Count == 0) return;
-		renote.RenoteCount--;
 		db.RemoveRange(notes);
 		await db.SaveChangesAsync();
+		await db.Notes.Where(p => p.Id == note.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(n => n.RenoteCount, n => n.RenoteCount - 1));
 
 		foreach (var hit in notes)
 			eventSvc.RaiseNoteDeleted(this, hit);
@@ -388,7 +412,7 @@ public class NoteService(
 			Url        = note.Url?.Id, //FIXME: this doesn't seem to work yet
 			Text       = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content, mentions),
 			Cw         = note.Summary,
-			UserId     = actor.Id,
+			User       = actor,
 			CreatedAt  = createdAt,
 			UserHost   = actor.Host,
 			Visibility = note.GetVisibility(actor),
@@ -449,8 +473,7 @@ public class NoteService(
 		var emoji = await emojiSvc.ProcessEmojiAsync(note.Tags?.OfType<ASEmoji>().ToList(), actor.Host);
 		dbNote.Emojis = emoji.Select(p => p.Id).ToList();
 
-		actor.NotesCount++;
-		if (dbNote.Reply != null) dbNote.Reply.RepliesCount++;
+		await UpdateNoteCountersAsync(dbNote, true);
 		await db.Notes.AddAsync(dbNote);
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotePublished(this, dbNote);

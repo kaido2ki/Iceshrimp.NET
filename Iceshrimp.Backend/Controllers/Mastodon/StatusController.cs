@@ -139,6 +139,7 @@ public class StatusController(
 				throw GracefulException.BadRequest("Renote visibility must be one of: public, unlisted, private");
 
 			await noteSvc.CreateNoteAsync(user, renoteVisibility, renote: note);
+			note.RenoteCount++; // we do not want to call save changes after this point
 		}
 
 		return await GetNote(id);
@@ -158,13 +159,9 @@ public class StatusController(
 		                      .IncludeCommonProperties()
 		                      .ToListAsync();
 
-		if (renotes.Count > 0)
-		{
-			renotes[0].Renote!.RenoteCount--;
-			await db.SaveChangesAsync();
-		}
-
 		foreach (var renote in renotes) await noteSvc.DeleteNoteAsync(renote);
+
+		renotes[0].Renote!.RenoteCount--; // we do not want to call save changes after this point
 
 		return await GetNote(id);
 	}
