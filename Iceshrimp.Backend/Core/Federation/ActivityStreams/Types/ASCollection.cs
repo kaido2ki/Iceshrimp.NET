@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -7,23 +8,37 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASCollection<T>() : ASObjectBase where T : ASObject
+public class ASCollection : ASObject
 {
-	public ASCollection(string id) : this()
-	{
-		Id = id;
-	}
+	public ASCollection() => Type = ObjectType;
+
+	[SetsRequiredMembers]
+	public ASCollection(string id) : this() => Id = id;
 
 	[J($"{Constants.ActivityStreamsNs}#items")]
 	[JC(typeof(ASCollectionItemsConverter))]
-	public List<T>? Items { get; set; }
+	public List<ASObject>? Items { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#totalItems")]
 	[JC(typeof(VC))]
-	public uint? TotalItems { get; set; }
+	public ulong? TotalItems { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#current")]
+	[JC(typeof(ASLinkConverter))]
+	public ASLink? Current { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#first")]
+	[JC(typeof(ASLinkConverter))]
+	public ASLink? First { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#last")]
+	[JC(typeof(ASLinkConverter))]
+	public ASLink? Last { get; set; }
+
+	public const string ObjectType = $"{Constants.ActivityStreamsNs}#Collection";
 }
 
-public sealed class ASCollectionConverter : ASSerializer.ListSingleObjectConverter<ASCollection<ASObject>>;
+public sealed class ASCollectionConverter : ASSerializer.ListSingleObjectConverter<ASCollection>;
 
 internal sealed class ASCollectionItemsConverter : JsonConverter
 {

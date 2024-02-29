@@ -35,25 +35,29 @@ public class ASObject : ASObjectBase
 					var type      = typeToken is JValue ? typeToken.Value<string>() : typeToken?[0]?.Value<string>();
 					return type switch
 					{
-						ASActor.Types.Person       => token.ToObject<ASActor>(),
-						ASActor.Types.Service      => token.ToObject<ASActor>(),
-						ASActor.Types.Group        => token.ToObject<ASActor>(),
-						ASActor.Types.Organization => token.ToObject<ASActor>(),
-						ASActor.Types.Application  => token.ToObject<ASActor>(),
-						ASNote.Types.Note          => token.ToObject<ASNote>(),
-						Types.Tombstone            => token.ToObject<ASTombstone>(),
-						ASActivity.Types.Create    => token.ToObject<ASCreate>(),
-						ASActivity.Types.Update    => token.ToObject<ASUpdate>(),
-						ASActivity.Types.Delete    => token.ToObject<ASDelete>(),
-						ASActivity.Types.Follow    => token.ToObject<ASFollow>(),
-						ASActivity.Types.Unfollow  => token.ToObject<ASUnfollow>(),
-						ASActivity.Types.Accept    => token.ToObject<ASAccept>(),
-						ASActivity.Types.Reject    => token.ToObject<ASReject>(),
-						ASActivity.Types.Undo      => token.ToObject<ASUndo>(),
-						ASActivity.Types.Like      => token.ToObject<ASLike>(),
-						ASActivity.Types.Bite      => token.ToObject<ASBite>(),
-						ASActivity.Types.Announce  => token.ToObject<ASAnnounce>(),
-						_                          => token.ToObject<ASObject>()
+						ASActor.Types.Person               => token.ToObject<ASActor>(),
+						ASActor.Types.Service              => token.ToObject<ASActor>(),
+						ASActor.Types.Group                => token.ToObject<ASActor>(),
+						ASActor.Types.Organization         => token.ToObject<ASActor>(),
+						ASActor.Types.Application          => token.ToObject<ASActor>(),
+						ASNote.Types.Note                  => token.ToObject<ASNote>(),
+						ASCollection.ObjectType            => token.ToObject<ASCollection>(),
+						ASCollectionPage.ObjectType        => token.ToObject<ASCollectionPage>(),
+						ASOrderedCollection.ObjectType     => token.ToObject<ASOrderedCollection>(),
+						ASOrderedCollectionPage.ObjectType => token.ToObject<ASOrderedCollectionPage>(),
+						Types.Tombstone                    => token.ToObject<ASTombstone>(),
+						ASActivity.Types.Create            => token.ToObject<ASCreate>(),
+						ASActivity.Types.Update            => token.ToObject<ASUpdate>(),
+						ASActivity.Types.Delete            => token.ToObject<ASDelete>(),
+						ASActivity.Types.Follow            => token.ToObject<ASFollow>(),
+						ASActivity.Types.Unfollow          => token.ToObject<ASUnfollow>(),
+						ASActivity.Types.Accept            => token.ToObject<ASAccept>(),
+						ASActivity.Types.Reject            => token.ToObject<ASReject>(),
+						ASActivity.Types.Undo              => token.ToObject<ASUndo>(),
+						ASActivity.Types.Like              => token.ToObject<ASLike>(),
+						ASActivity.Types.Bite              => token.ToObject<ASBite>(),
+						ASActivity.Types.Announce          => token.ToObject<ASAnnounce>(),
+						_                                  => token.ToObject<ASObject>()
 					};
 				case JTokenType.Array:
 					token = token.First();

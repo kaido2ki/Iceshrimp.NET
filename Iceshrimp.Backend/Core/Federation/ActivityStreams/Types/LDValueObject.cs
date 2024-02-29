@@ -32,23 +32,40 @@ public class ValueObjectConverter : JsonConverter
 			var list = obj.ToObject<List<LDValueObject<object?>>>();
 			if (list == null || list.Count == 0)
 				return null;
-			if (list[0].Value is not string s || (objectType != typeof(DateTime?) && objectType != typeof(DateTime)))
-				return list[0].Value;
-			var succeeded = DateTime.TryParse(s, out var result);
-			return succeeded ? result : null;
+			return HandleObject(list[0], objectType);
 		}
 
 		if (reader.TokenType == JsonToken.StartObject)
 		{
 			var obj      = JObject.Load(reader);
 			var finalObj = obj.ToObject<LDValueObject<object?>>();
-			if (finalObj?.Value is not string s || (objectType != typeof(DateTime?) && objectType != typeof(DateTime)))
-				return finalObj?.Value;
+			return HandleObject(finalObj, objectType);
+		}
+
+		return null;
+	}
+
+	private static object? HandleObject(LDValueObject<object?>? obj, Type objectType)
+	{
+		if (obj?.Value is string s && (objectType == typeof(DateTime?) || objectType == typeof(DateTime)))
+		{
 			var succeeded = DateTime.TryParse(s, out var result);
 			return succeeded ? result : null;
 		}
 
-		return null;
+		if (objectType == typeof(uint?))
+		{
+			var val = obj?.Value;
+			return val != null ? Convert.ToUInt32(val) : null;
+		}
+
+		if (objectType == typeof(ulong?))
+		{
+			var val = obj?.Value;
+			return val != null ? Convert.ToUInt64(val) : null;
+		}
+
+		return obj?.Value;
 	}
 
 	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
@@ -68,6 +85,12 @@ public class ValueObjectConverter : JsonConverter
 				writer.WriteValue($"{Constants.XsdNs}#nonNegativeInteger");
 				writer.WritePropertyName("@value");
 				writer.WriteValue(ui);
+				break;
+			case ulong ul:
+				writer.WritePropertyName("@type");
+				writer.WriteValue($"{Constants.XsdNs}#nonNegativeInteger");
+				writer.WritePropertyName("@value");
+				writer.WriteValue(ul);
 				break;
 			default:
 				writer.WritePropertyName("@value");
