@@ -484,8 +484,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		modelBuilder.Entity<Instance>(entity =>
 		{
 			entity.Property(e => e.CaughtAt).HasComment("The caught date of the Instance.");
-			entity.Property(e => e.FollowersCount).HasDefaultValue(0);
-			entity.Property(e => e.FollowingCount).HasDefaultValue(0);
+			entity.Property(e => e.OutgoingFollows).HasDefaultValue(0);
+			entity.Property(e => e.IncomingFollows).HasDefaultValue(0);
 			entity.Property(e => e.Host).HasComment("The host of the Instance.");
 			entity.Property(e => e.IsNotResponding).HasDefaultValue(false);
 			entity.Property(e => e.IsSuspended).HasDefaultValue(false);

@@ -30,10 +30,10 @@ public class DatabaseMaintenanceService(DatabaseContext db)
 		                                                         i => db.Notes.Count(n => n.UserHost == i.Host))
 		                                            .SetProperty(i => i.UsersCount,
 		                                                         i => db.Users.Count(u => u.Host == i.Host))
-		                                            .SetProperty(i => i.FollowersCount,
+		                                            .SetProperty(i => i.OutgoingFollows,
 		                                                         i => db.Followings
 		                                                                .Count(n => n.FolloweeHost == i.Host))
-		                                            .SetProperty(i => i.FollowingCount,
+		                                            .SetProperty(i => i.IncomingFollows,
 		                                                         i => db.Followings
 		                                                                .Count(n => n.FollowerHost == i.Host)));
 	}

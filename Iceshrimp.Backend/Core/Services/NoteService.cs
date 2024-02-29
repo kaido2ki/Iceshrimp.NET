@@ -114,18 +114,14 @@ public class NoteService(
 
 		if (user.Host != null)
 		{
-			if (user.Uri != null)
+			_ = followupTaskSvc.ExecuteTask("UpdateInstanceNoteCounter", async provider =>
 			{
-				_ = followupTaskSvc.ExecuteTask("UpdateInstanceNoteCounter", async provider =>
-				{
-					var bgDb          = provider.GetRequiredService<DatabaseContext>();
-					var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-					var dbInstance =
-						await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user.Host, new Uri(user.Uri).Host);
-					await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount + 1));
-				});
-			}
+				var bgDb          = provider.GetRequiredService<DatabaseContext>();
+				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user);
+				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount + 1));
+			});
 
 			return note;
 		}
@@ -256,8 +252,7 @@ public class NoteService(
 				{
 					var bgDb          = provider.GetRequiredService<DatabaseContext>();
 					var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-					var dbInstance =
-						await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(note.UserHost, new Uri(note.User.Uri).Host);
+					var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(note.User);
 					await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount - 1));
 				});
@@ -320,8 +315,7 @@ public class NoteService(
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
 				// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataUsage (same reason as above)
-				var dbInstance =
-					await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(dbNote.UserHost, new Uri(dbNote.User.Uri).Host);
+				var dbInstance = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(dbNote.User);
 				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount - 1));
 			});

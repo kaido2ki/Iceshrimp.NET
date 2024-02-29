@@ -57,6 +57,12 @@ public class InstanceService(DatabaseContext db, HttpClient httpClient)
 		await db.SaveChangesAsync();
 		return instance;
 	}
+	
+	public async Task<Instance> GetUpdatedInstanceMetadataAsync(User user)
+	{
+		if (user.Host == null || user.Uri == null) throw new Exception("Can't fetch instance metadata for local user");
+		return await GetUpdatedInstanceMetadataAsync(user.Host, new Uri(user.Uri).Host);
+	}
 
 	private async Task<NodeInfoResponse?> GetNodeInfoAsync(string webDomain)
 	{

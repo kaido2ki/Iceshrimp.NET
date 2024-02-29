@@ -41,9 +41,9 @@ public class Instance
 	[Column("notesCount")]
 	public int NotesCount { get; set; }
 
-	[Column("followingCount")] public int FollowingCount { get; set; }
+	[Column("incomingFollows")] public int IncomingFollows { get; set; }
 
-	[Column("followersCount")] public int FollowersCount { get; set; }
+	[Column("outgoingFollows")] public int OutgoingFollows { get; set; }
 
 	[Column("latestRequestSentAt")] public DateTime? LatestRequestSentAt { get; set; }
 

@@ -335,14 +335,13 @@ public class ActivityHandlerService(
 			follower.FollowingCount++;
 			followee.FollowersCount++;
 
-			_ = followupTaskSvc.ExecuteTask("UpdateInstanceFollowingCounter", async provider =>
+			_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-				var dbInstance = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower.Host,
-					new Uri(follower.Uri!).Host);
+				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower);
 				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
+				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows, i => i.IncomingFollows + 1));
 			});
 
 			await db.AddAsync(following);
@@ -367,7 +366,15 @@ public class ActivityHandlerService(
 			db.RemoveRange(followings);
 			await db.SaveChangesAsync();
 
-			if (followee.Host != null) return;
+			_ = followupTaskSvc.ExecuteTask("DecrementInstanceIncomingFollowsCounter", async provider =>
+			{
+				var bgDb          = provider.GetRequiredService<DatabaseContext>();
+				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower);
+				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows, i => i.IncomingFollows + 1));
+			});
+
 			await db.Notifications
 			        .Where(p => p.Type == Notification.NotificationType.Follow &&
 			                    p.Notifiee == followee &&
@@ -413,14 +420,13 @@ public class ActivityHandlerService(
 		actor.FollowersCount++;
 		request.Follower.FollowingCount++;
 
-		_ = followupTaskSvc.ExecuteTask("UpdateInstanceFollowersCounter", async provider =>
+		_ = followupTaskSvc.ExecuteTask("IncrementInstanceOutgoingFollowsCounter", async provider =>
 		{
 			var bgDb          = provider.GetRequiredService<DatabaseContext>();
 			var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-			var dbInstance = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(request.Followee.Host!,
-				new Uri(request.Followee.Uri!).Host);
+			var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(request.Followee);
 			await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-			          .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount + 1));
+			          .ExecuteUpdateAsync(p => p.SetProperty(i => i.OutgoingFollows, i => i.OutgoingFollows + 1));
 		});
 
 		db.Remove(request);

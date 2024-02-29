@@ -189,7 +189,7 @@ public class UserService(
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(host, new Uri(uri).Host);
+				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user);
 				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.UsersCount, i => i.UsersCount + 1));
 			});
@@ -447,9 +447,9 @@ public class UserService(
 
 		_ = followupTaskSvc.ExecuteTask("UpdateInstanceUserCounter", async provider =>
 		{
-			var bgDb = provider.GetRequiredService<DatabaseContext>();
+			var bgDb          = provider.GetRequiredService<DatabaseContext>();
 			var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-			var dbInstance = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user.Host!, new Uri(user.Uri!).Host);
+			var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user);
 			await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 			          .ExecuteUpdateAsync(p => p.SetProperty(i => i.UsersCount, i => i.UsersCount - 1));
 		});
@@ -530,14 +530,13 @@ public class UserService(
 
 		if (request.Follower is { Host: not null })
 		{
-			_ = followupTaskSvc.ExecuteTask("UpdateInstanceFollowingCounter", async provider =>
+			_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-				var dbInstance = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(request.Follower.Host,
-					new Uri(request.Follower.Uri!).Host);
+				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(request.Follower);
 				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
+				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows, i => i.IncomingFollows + 1));
 			});
 		}
 
@@ -659,14 +658,15 @@ public class UserService(
 
 			if (followee.Host != null)
 			{
-				_ = followupTaskSvc.ExecuteTask("UpdateInstanceFollowersCounter", async provider =>
+				_ = followupTaskSvc.ExecuteTask("DecrementInstanceOutgoingFollowsCounter", async provider =>
 				{
 					var bgDb          = provider.GetRequiredService<DatabaseContext>();
 					var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
 					var dbInstance =
-						await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(followee.Host, new Uri(followee.Uri!).Host);
+						await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(followee);
 					await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount - 1));
+					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.OutgoingFollows,
+					                                                 i => i.OutgoingFollows - 1));
 				});
 			}
 
