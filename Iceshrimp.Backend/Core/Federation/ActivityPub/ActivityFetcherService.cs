@@ -31,6 +31,12 @@ public class ActivityFetcherService(
 		return await FetchActivityAsync(url, actor, keypair);
 	}
 
+	public async Task<string?> FetchRawActivityAsync(string url)
+	{
+		var (actor, keypair) = await systemUserSvc.GetInstanceActorWithKeypairAsync();
+		return await FetchRawActivityAsync(url, actor, keypair);
+	}
+
 	public async Task<IEnumerable<ASObject>> FetchActivityAsync(string url, User actor, UserKeypair keypair)
 	{
 		var request  = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair);
@@ -67,6 +73,29 @@ public class ActivityFetcherService(
 			throw new GracefulException("Activity identifier doesn't match final host");
 
 		return activities;
+	}
+
+	public async Task<string?> FetchRawActivityAsync(string url, User actor, UserKeypair keypair)
+	{
+		var request  = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair);
+		var response = await client.SendAsync(request);
+
+		if (!response.IsSuccessStatusCode)
+		{
+			if (response.StatusCode == HttpStatusCode.Gone)
+				throw AuthFetchException.NotFound("The remote user no longer exists.");
+			logger.LogDebug("Failed to fetch activity: response status was {code}", response.StatusCode);
+			return null;
+		}
+
+		if (!IsValidActivityContentType(response.Content.Headers.ContentType))
+		{
+			logger.LogDebug("Failed to fetch activity: content type {type} is invalid",
+			                response.Content.Headers.ContentType);
+			return null;
+		}
+
+		return await response.Content.ReadAsStringAsync();
 	}
 
 	public static bool IsValidActivityContentType(MediaTypeHeaderValue? headersContentType) =>

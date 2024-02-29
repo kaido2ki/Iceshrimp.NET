@@ -21,7 +21,11 @@ namespace Iceshrimp.Backend.Controllers;
 [Route("/api/v1/iceshrimp/admin")]
 [SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor",
                  Justification = "We only have a DatabaseContext in our DI pool, not the base type")]
-public class AdminController(DatabaseContext db, ActivityPubController apController) : ControllerBase
+public class AdminController(
+	DatabaseContext db,
+	ActivityPubController apController,
+	ActivityPub.ActivityFetcherService fetchSvc
+) : ControllerBase
 {
 	[HttpPost("invites/generate")]
 	[Produces(MediaTypeNames.Application.Json)]
@@ -74,5 +78,31 @@ public class AdminController(DatabaseContext db, ActivityPubController apControl
 	public async Task<IActionResult> GetUserActivityByUsername(string acct)
 	{
 		return await apController.GetUserByUsername(acct);
+	}
+
+	[UseNewtonsoftJson]
+	[HttpGet("activities/fetch")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASObject))]
+	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
+	public async Task<IActionResult> FetchActivityAsync([FromQuery] string uri)
+	{
+		return Ok(LdHelpers.Compact(await fetchSvc.FetchActivityAsync(uri)));
+	}
+
+	[UseNewtonsoftJson]
+	[HttpGet("activities/fetch-raw")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASObject))]
+	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ErrorResponse))]
+	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
+	public async Task FetchRawActivityByUsername([FromQuery] string uri)
+	{
+		var activity = await fetchSvc.FetchRawActivityAsync(uri);
+		if (activity == null) throw GracefulException.UnprocessableEntity("Failed to fetch activity");
+
+		Response.ContentType = Request.Headers.Accept.Any(p => p != null && p.StartsWith("application/ld+json"))
+			? "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\""
+			: "application/activity+json";
+
+		await Response.WriteAsync(activity);
 	}
 }
