@@ -9,9 +9,6 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 public class StatusEntity : IEntity
 {
-	[J("text")] [JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public required string? Text;
-
 	[J("content")]                public required string?       Content        { get; set; }
 	[J("uri")]                    public required string        Uri            { get; set; }
 	[J("url")]                    public required string        Url            { get; set; }
@@ -33,6 +30,10 @@ public class StatusEntity : IEntity
 	[J("sensitive")]              public required bool          IsSensitive    { get; set; }
 	[J("spoiler_text")]           public required string        ContentWarning { get; set; }
 	[J("visibility")]             public required string        Visibility     { get; set; }
+
+	[J("text")]
+	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public required string? Text { get; set; }
 
 	[J("pinned")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
