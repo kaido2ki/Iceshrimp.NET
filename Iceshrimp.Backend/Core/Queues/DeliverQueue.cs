@@ -60,7 +60,7 @@ public class DeliverQueue
 			{
 				var instanceSvc = provider.GetRequiredService<InstanceService>();
 				await instanceSvc.UpdateInstanceStatusAsync(job.RecipientHost, new Uri(job.InboxUrl).Host,
-				                                            (int)response.StatusCode, response.IsSuccessStatusCode);
+				                                            (int)response.StatusCode, !response.IsSuccessStatusCode);
 			});
 
 			response.EnsureSuccessStatusCode();
