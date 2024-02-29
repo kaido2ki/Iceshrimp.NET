@@ -8,7 +8,7 @@ public class DatabaseMaintenanceService(DatabaseContext db)
 	public async Task RecomputeNoteCountersAsync()
 	{
 		await db.Notes.ExecuteUpdateAsync(p => p.SetProperty(n => n.RenoteCount,
-		                                                     n => db.Notes.Count(r => r.IsPureRenote))
+		                                                     n => db.Notes.Count(r => r.IsPureRenote && r.Renote == n))
 		                                        .SetProperty(n => n.RepliesCount,
 		                                                     n => db.Notes.Count(r => r.Reply == n)));
 		//TODO: update reaction counts as well? (can likely not be done database-side :/)
