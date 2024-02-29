@@ -88,10 +88,11 @@ public static class WebApplicationExtensions
 
 		if (args.Contains("--recompute-counters"))
 		{
-			app.Logger.LogInformation("Recomputing note & user counters, this will take a while...");
+			app.Logger.LogInformation("Recomputing note, user & instance counters, this will take a while...");
 			var maintenanceSvc = provider.GetRequiredService<DatabaseMaintenanceService>();
 			await maintenanceSvc.RecomputeNoteCountersAsync();
 			await maintenanceSvc.RecomputeUserCountersAsync();
+			await maintenanceSvc.RecomputeInstanceCountersAsync();
 		}
 
 		app.Logger.LogInformation("Verifying redis connection...");

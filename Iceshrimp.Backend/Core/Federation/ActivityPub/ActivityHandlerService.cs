@@ -335,6 +335,16 @@ public class ActivityHandlerService(
 			follower.FollowingCount++;
 			followee.FollowersCount++;
 
+			_ = followupTaskSvc.ExecuteTask("UpdateInstanceFollowingCounter", async provider =>
+			{
+				var bgDb          = provider.GetRequiredService<DatabaseContext>();
+				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+				var dbInstance = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower.Host,
+					new Uri(follower.Uri!).Host);
+				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
+			});
+
 			await db.AddAsync(following);
 			await db.SaveChangesAsync();
 			await notificationSvc.GenerateFollowNotification(follower, followee);
@@ -402,6 +412,16 @@ public class ActivityHandlerService(
 
 		actor.FollowersCount++;
 		request.Follower.FollowingCount++;
+
+		_ = followupTaskSvc.ExecuteTask("UpdateInstanceFollowersCounter", async provider =>
+		{
+			var bgDb          = provider.GetRequiredService<DatabaseContext>();
+			var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+			var dbInstance = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(request.Followee.Host!,
+				new Uri(request.Followee.Uri!).Host);
+			await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+			          .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount + 1));
+		});
 
 		db.Remove(request);
 		await db.AddAsync(following);

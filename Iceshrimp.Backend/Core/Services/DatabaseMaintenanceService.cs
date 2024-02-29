@@ -23,4 +23,18 @@ public class DatabaseMaintenanceService(DatabaseContext db)
 		                                        .SetProperty(u => u.NotesCount,
 		                                                     u => db.Notes.Count(n => n.User == u && !n.IsPureRenote)));
 	}
+
+	public async Task RecomputeInstanceCountersAsync()
+	{
+		await db.Instances.ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount,
+		                                                         i => db.Notes.Count(n => n.UserHost == i.Host))
+		                                            .SetProperty(i => i.UsersCount,
+		                                                         i => db.Users.Count(u => u.Host == i.Host))
+		                                            .SetProperty(i => i.FollowersCount,
+		                                                         i => db.Followings
+		                                                                .Count(n => n.FolloweeHost == i.Host))
+		                                            .SetProperty(i => i.FollowingCount,
+		                                                         i => db.Followings
+		                                                                .Count(n => n.FollowerHost == i.Host)));
+	}
 }

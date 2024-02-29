@@ -37,7 +37,8 @@ public class NoteService(
 	NotificationService notificationSvc,
 	EventService eventSvc,
 	ActivityPub.ActivityRenderer activityRenderer,
-	EmojiService emojiSvc
+	EmojiService emojiSvc,
+	FollowupTaskService followupTaskSvc
 )
 {
 	private readonly List<string> _resolverHistory = [];
@@ -111,7 +112,23 @@ public class NoteService(
 		await notificationSvc.GenerateReplyNotifications(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateRenoteNotification(note);
 
-		if (user.Host != null) return note;
+		if (user.Host != null)
+		{
+			if (user.Uri != null)
+			{
+				_ = followupTaskSvc.ExecuteTask("UpdateInstanceNoteCounter", async provider =>
+				{
+					var bgDb          = provider.GetRequiredService<DatabaseContext>();
+					var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+					var dbInstance =
+						await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user.Host, new Uri(user.Uri).Host);
+					await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount + 1));
+				});
+			}
+
+			return note;
+		}
 
 		var actor = userRenderer.RenderLite(user);
 		ASActivity activity = note is { IsPureRenote: true, Renote: not null }
@@ -232,7 +249,22 @@ public class NoteService(
 		await db.SaveChangesAsync();
 
 		if (note.UserHost != null)
+		{
+			if (note.User.Uri != null)
+			{
+				_ = followupTaskSvc.ExecuteTask("UpdateInstanceNoteCounter", async provider =>
+				{
+					var bgDb          = provider.GetRequiredService<DatabaseContext>();
+					var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+					var dbInstance =
+						await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(note.UserHost, new Uri(note.User.Uri).Host);
+					await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount - 1));
+				});
+			}
+
 			return;
+		}
 
 		var recipients = await db.Users.Where(p => note.Mentions.Concat(note.VisibleUserIds).Distinct().Contains(p.Id))
 		                         .Select(p => new User { Host = p.Host, Inbox = p.Inbox })
@@ -279,6 +311,21 @@ public class NoteService(
 		db.Remove(dbNote);
 		eventSvc.RaiseNoteDeleted(this, dbNote);
 		await db.SaveChangesAsync();
+
+		// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataUsage (same reason as above)
+		if (dbNote.User.Uri != null && dbNote.UserHost != null)
+		{
+			_ = followupTaskSvc.ExecuteTask("UpdateInstanceNoteCounter", async provider =>
+			{
+				var bgDb          = provider.GetRequiredService<DatabaseContext>();
+				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+				// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataUsage (same reason as above)
+				var dbInstance =
+					await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(dbNote.UserHost, new Uri(dbNote.User.Uri).Host);
+				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount - 1));
+			});
+		}
 	}
 
 	public async Task UndoAnnounceAsync(ASNote note, User actor)

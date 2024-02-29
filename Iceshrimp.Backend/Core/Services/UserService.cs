@@ -185,6 +185,14 @@ public class UserService(
 			await db.SaveChangesAsync();
 			await processPendingDeletes();
 			user = await UpdateProfileMentions(user, actor);
+			_ = followupTaskSvc.ExecuteTask("UpdateInstanceUserCounter", async provider =>
+			{
+				var bgDb          = provider.GetRequiredService<DatabaseContext>();
+				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(host, new Uri(uri).Host);
+				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.UsersCount, i => i.UsersCount + 1));
+			});
 			return user;
 		}
 		catch (UniqueConstraintException)
@@ -437,6 +445,15 @@ public class UserService(
 		db.Remove(user);
 		await db.SaveChangesAsync();
 
+		_ = followupTaskSvc.ExecuteTask("UpdateInstanceUserCounter", async provider =>
+		{
+			var bgDb = provider.GetRequiredService<DatabaseContext>();
+			var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+			var dbInstance = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user.Host!, new Uri(user.Uri!).Host);
+			await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+			          .ExecuteUpdateAsync(p => p.SetProperty(i => i.UsersCount, i => i.UsersCount - 1));
+		});
+
 		if (user.Avatar != null)
 			await driveSvc.RemoveFile(user.Avatar);
 		if (user.Banner != null)
@@ -510,6 +527,19 @@ public class UserService(
 		db.Remove(request);
 		await db.AddAsync(following);
 		await db.SaveChangesAsync();
+
+		if (request.Follower is { Host: not null })
+		{
+			_ = followupTaskSvc.ExecuteTask("UpdateInstanceFollowingCounter", async provider =>
+			{
+				var bgDb          = provider.GetRequiredService<DatabaseContext>();
+				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+				var dbInstance = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(request.Follower.Host,
+					new Uri(request.Follower.Uri!).Host);
+				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
+			});
+		}
 
 		await notificationSvc.GenerateFollowNotification(request.Follower, request.Followee);
 		await notificationSvc.GenerateFollowRequestAcceptedNotification(request);
@@ -626,6 +656,19 @@ public class UserService(
 			followee.FollowersCount -= followings.Count;
 			db.RemoveRange(followings);
 			await db.SaveChangesAsync();
+
+			if (followee.Host != null)
+			{
+				_ = followupTaskSvc.ExecuteTask("UpdateInstanceFollowersCounter", async provider =>
+				{
+					var bgDb          = provider.GetRequiredService<DatabaseContext>();
+					var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+					var dbInstance =
+						await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(followee.Host, new Uri(followee.Uri!).Host);
+					await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount - 1));
+				});
+			}
 
 			followee.PrecomputedIsFollowedBy = false;
 		}

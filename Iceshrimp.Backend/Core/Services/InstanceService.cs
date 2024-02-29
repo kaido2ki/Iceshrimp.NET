@@ -14,7 +14,7 @@ public class InstanceService(DatabaseContext db, HttpClient httpClient)
 		o.PoolInitialFill = 5;
 	});
 
-	private async Task<Instance> GetUpdatedInstanceMetadataAsync(string host, string webDomain)
+	public async Task<Instance> GetUpdatedInstanceMetadataAsync(string host, string webDomain)
 	{
 		host = host.ToLowerInvariant();
 		var instance = db.Instances.FirstOrDefault(p => p.Host == host);
