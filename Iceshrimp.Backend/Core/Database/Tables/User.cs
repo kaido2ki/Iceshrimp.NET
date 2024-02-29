@@ -483,6 +483,9 @@ public class User : IEntity
 
 	[InverseProperty(nameof(Tables.UserPublickey.User))]
 	public virtual UserPublickey? UserPublickey { get; set; }
+	
+	[InverseProperty(nameof(Tables.UserSettings.User))]
+	public virtual UserSettings? UserSettings { get; set; }
 
 	[InverseProperty(nameof(UserSecurityKey.User))]
 	public virtual ICollection<UserSecurityKey> UserSecurityKeys { get; set; } = new List<UserSecurityKey>();

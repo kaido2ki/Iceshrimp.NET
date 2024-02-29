@@ -85,6 +85,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<UserProfile>          UserProfiles          { get; init; } = null!;
 	public virtual DbSet<UserPublickey>        UserPublickeys        { get; init; } = null!;
 	public virtual DbSet<UserSecurityKey>      UserSecurityKeys      { get; init; } = null!;
+	public virtual DbSet<UserSettings>         UserSettings          { get; init; } = null!;
 	public virtual DbSet<Webhook>              Webhooks              { get; init; } = null!;
 	public virtual DbSet<AllowedInstance>      AllowedInstances      { get; init; } = null!;
 	public virtual DbSet<BlockedInstance>      BlockedInstances      { get; init; } = null!;
@@ -1117,6 +1118,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .HasComment("Variable-length public key used to verify attestations (hex-encoded).");
 
 			entity.HasOne(d => d.User).WithMany(p => p.UserSecurityKeys);
+		});
+
+		modelBuilder.Entity<UserSettings>(entity =>
+		{
+			entity.Property(e => e.PrivateMode).HasDefaultValue(false);
+			entity.Property(e => e.DefaultNoteVisibility).HasDefaultValue(Note.NoteVisibility.Public);
+			entity.HasOne(e => e.User).WithOne(e => e.UserSettings);
 		});
 
 		modelBuilder.Entity<Webhook>(entity =>

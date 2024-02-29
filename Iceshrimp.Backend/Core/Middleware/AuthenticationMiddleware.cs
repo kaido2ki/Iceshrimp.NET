@@ -30,8 +30,8 @@ public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc) :
 			if (isMastodon)
 			{
 				var oauthToken = await db.OauthTokens
-				                         .Include(p => p.User)
-				                         .ThenInclude(p => p.UserProfile)
+				                         .Include(p => p.User.UserProfile)
+				                         .Include(p => p.User.UserSettings)
 				                         .Include(p => p.App)
 				                         .FirstOrDefaultAsync(p => p.Token == token && p.Active);
 
@@ -62,8 +62,8 @@ public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc) :
 			else
 			{
 				var session = await db.Sessions
-				                      .Include(p => p.User)
-				                      .ThenInclude(p => p.UserProfile)
+				                      .Include(p => p.User.UserProfile)
+				                      .Include(p => p.User.UserSettings)
 				                      .FirstOrDefaultAsync(p => p.Token == token && p.Active);
 
 				if (session == null)

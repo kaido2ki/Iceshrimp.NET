@@ -66,10 +66,11 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			//TODO: populate these
 			res.Source = new AccountSource
 			{
-				Fields    = [],
-				Language  = "",
-				Note      = profile?.Description ?? "",
-				Privacy   = StatusEntity.EncodeVisibility(Note.NoteVisibility.Public),
+				Fields   = [],
+				Language = "",
+				Note     = profile?.Description ?? "",
+				Privacy = StatusEntity.EncodeVisibility(user.UserSettings?.DefaultNoteVisibility ??
+				                                        Note.NoteVisibility.Public),
 				Sensitive = false
 			};
 		}

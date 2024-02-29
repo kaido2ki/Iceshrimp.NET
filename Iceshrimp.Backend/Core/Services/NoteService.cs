@@ -72,6 +72,9 @@ public class NoteService(
 		if (cw != null && string.IsNullOrWhiteSpace(cw))
 			cw = null;
 
+		if ((user.UserSettings?.PrivateMode ?? false) && visibility < Note.NoteVisibility.Followers)
+			visibility = Note.NoteVisibility.Followers;
+
 		var note = new Note
 		{
 			Id                   = IdHelpers.GenerateSlowflakeId(),
