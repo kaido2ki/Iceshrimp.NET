@@ -65,6 +65,14 @@ public class ValueObjectConverter : JsonConverter
 			return val != null ? Convert.ToUInt64(val) : null;
 		}
 
+		if (obj?.Value is string id)
+		{
+			if (objectType == typeof(ASOrderedCollection))
+				return new ASOrderedCollection(id);
+			if (objectType == typeof(ASCollection))
+				return new ASCollection(id);
+		}
+
 		return obj?.Value;
 	}
 
@@ -91,6 +99,18 @@ public class ValueObjectConverter : JsonConverter
 				writer.WriteValue($"{Constants.XsdNs}#nonNegativeInteger");
 				writer.WritePropertyName("@value");
 				writer.WriteValue(ul);
+				break;
+			case ASOrderedCollection oc:
+				writer.WritePropertyName("@type");
+				writer.WriteValue(ASOrderedCollection.ObjectType);
+				writer.WritePropertyName("@value");
+				writer.WriteRawValue(JsonConvert.SerializeObject(oc));
+				break;
+			case ASCollection c:
+				writer.WritePropertyName("@type");
+				writer.WriteValue(ASCollection.ObjectType);
+				writer.WritePropertyName("@value");
+				writer.WriteRawValue(JsonConvert.SerializeObject(c));
 				break;
 			default:
 				writer.WritePropertyName("@value");

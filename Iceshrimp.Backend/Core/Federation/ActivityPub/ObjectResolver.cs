@@ -14,15 +14,15 @@ public class ObjectResolver(
 	IOptions<Config.InstanceSection> config
 )
 {
-	public async Task<ASObject?> ResolveObject(ASObjectBase baseObj, int recurse = 5)
+	public async Task<ASObject?> ResolveObject(ASObjectBase baseObj, int recurse = 5, bool force = false)
 	{
 		if (baseObj is ASActivity { Object.IsUnresolved: true } activity && recurse > 0)
 		{
-			activity.Object = await ResolveObject(activity.Object, --recurse);
+			activity.Object = await ResolveObject(activity.Object, --recurse, force);
 			return await ResolveObject(activity, recurse);
 		}
 
-		if (baseObj is ASObject { IsUnresolved: false } obj)
+		if (baseObj is ASObject { IsUnresolved: false } obj && !force)
 			return obj;
 		if (baseObj.Id == null)
 		{

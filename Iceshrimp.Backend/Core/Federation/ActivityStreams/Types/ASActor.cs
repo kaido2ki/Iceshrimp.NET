@@ -75,12 +75,12 @@ public class ASActor : ASObject
 	public ASLink? Inbox { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#followers")]
-	[JC(typeof(ASCollectionConverter))]
-	public ASCollection? Followers { get; set; }
+	[JC(typeof(ASOrderedCollectionConverter))]
+	public ASOrderedCollection? Followers { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#following")]
-	[JC(typeof(ASCollectionConverter))]
-	public ASCollection? Following { get; set; }
+	[JC(typeof(ASOrderedCollectionConverter))]
+	public ASOrderedCollection? Following { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#sharedInbox")]
 	[JC(typeof(ASLinkConverter))]
@@ -98,8 +98,8 @@ public class ASActor : ASObject
 	public List<ASLink>? AlsoKnownAs { get; set; }
 
 	[J("http://joinmastodon.org/ns#featured")]
-	[JC(typeof(ASLinkConverter))]
-	public ASLink? Featured { get; set; }
+	[JC(typeof(VC))]
+	public ASOrderedCollection? Featured { get; set; }
 
 	[J("http://joinmastodon.org/ns#featuredTags")]
 	[JC(typeof(ASLinkConverter))]

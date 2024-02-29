@@ -153,7 +153,7 @@ public class UserService(
 			FollowersUri  = actor.Followers?.Id,
 			Uri           = actor.Id,
 			IsCat         = actor.IsCat ?? false,
-			Featured      = actor.Featured?.Link,
+			Featured      = actor.Featured?.Id,
 			//TODO: FollowersCount
 			//TODO: FollowingCount
 			Emojis = emoji.Select(p => p.Id).ToList(),
@@ -185,6 +185,7 @@ public class UserService(
 			await db.SaveChangesAsync();
 			await processPendingDeletes();
 			user = await UpdateProfileMentions(user, actor);
+			UpdateUserPinnedNotesInBackground(actor, user);
 			_ = followupTaskSvc.ExecuteTask("UpdateInstanceUserCounter", async provider =>
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
@@ -256,7 +257,7 @@ public class UserService(
 		user.IsExplorable  = actor.IsDiscoverable ?? false;
 		user.FollowersUri  = actor.Followers?.Id;
 		user.IsCat         = actor.IsCat ?? false;
-		user.Featured      = actor.Featured?.Link;
+		user.Featured      = actor.Featured?.Id;
 
 		var emoji = await emojiSvc.ProcessEmojiAsync(actor.Tags?.OfType<ASEmoji>().ToList(),
 		                                             user.Host ??
@@ -301,6 +302,7 @@ public class UserService(
 		await db.SaveChangesAsync();
 		await processPendingDeletes();
 		user = await UpdateProfileMentions(user, actor, force: true);
+		UpdateUserPinnedNotesInBackground(actor, user, force: true);
 		return user;
 	}
 
@@ -701,6 +703,20 @@ public class UserService(
 
 		// Clean up user list memberships
 		await db.UserListMembers.Where(p => p.UserList.User == user && p.User == followee).ExecuteDeleteAsync();
+	}
+	
+	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
+	private void UpdateUserPinnedNotesInBackground(ASActor actor, User user, bool force = false)
+	{
+		if (followupTaskSvc.IsBackgroundWorker && !force) return;
+		_ = followupTaskSvc.ExecuteTask("UpdateUserPinnedNotes", async provider =>
+		{
+			var bgDb      = provider.GetRequiredService<DatabaseContext>();
+			var bgNoteSvc = provider.GetRequiredService<NoteService>();
+			var bgUser    = await bgDb.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == user.Id);
+			if (bgUser == null) return;
+			await bgNoteSvc.UpdatePinnedNotesAsync(actor, bgUser);
+		});
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "Projectables")]

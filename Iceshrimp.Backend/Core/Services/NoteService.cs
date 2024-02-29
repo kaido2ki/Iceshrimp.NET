@@ -38,7 +38,8 @@ public class NoteService(
 	EventService eventSvc,
 	ActivityPub.ActivityRenderer activityRenderer,
 	EmojiService emojiSvc,
-	FollowupTaskService followupTaskSvc
+	FollowupTaskService followupTaskSvc,
+	ActivityPub.ObjectResolver objectResolver
 )
 {
 	private readonly List<string> _resolverHistory = [];
@@ -766,5 +767,38 @@ public class NoteService(
 	{
 		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot unregister like for unknown note");
 		await UnlikeNoteAsync(dbNote, actor);
+	}
+
+	public async Task UpdatePinnedNotesAsync(ASActor actor, User user)
+	{
+		logger.LogDebug("Updating pinned notes for user {user}", user.Id);
+		var collection = actor.Featured;
+		if (collection == null) return;
+		if (collection.IsUnresolved)
+			collection = await objectResolver.ResolveObject(collection, force: true) as ASOrderedCollection;
+		if (collection is not { OrderedItems: not null }) return;
+
+		var items = await collection.OrderedItems.Take(10).Select(p => objectResolver.ResolveObject(p)).AwaitAllAsync();
+		var notes = await items.OfType<ASNote>().Select(p => ResolveNoteAsync(p.Id, p)).AwaitAllNoConcurrencyAsync();
+		var previousPins = await db.Users.Where(p => p.Id == user.Id)
+		                           .Select(p => p.PinnedNotes.Select(i => i.Id))
+		                           .FirstOrDefaultAsync() ??
+		                   throw new Exception("existingPins must not be null at this stage");
+
+		if (previousPins.SequenceEqual(notes.Where(p => p != null).Cast<Note>().Select(p => p.Id))) return;
+
+		var pins = notes.Where(p => p != null)
+		                .Cast<Note>()
+		                .Select(p => new UserNotePin
+		                {
+			                Id        = IdHelpers.GenerateSlowflakeId(),
+			                CreatedAt = DateTime.UtcNow,
+			                Note      = p,
+			                User      = user
+		                });
+
+		db.RemoveRange(await db.UserNotePins.Where(p => p.User == user).ToListAsync());
+		await db.AddRangeAsync(pins);
+		await db.SaveChangesAsync();
 	}
 }

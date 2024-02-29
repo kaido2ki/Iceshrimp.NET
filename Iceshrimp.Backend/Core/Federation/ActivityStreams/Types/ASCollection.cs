@@ -35,6 +35,8 @@ public class ASCollection : ASObject
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? Last { get; set; }
 
+	public new bool IsUnresolved => !TotalItems.HasValue;
+
 	public const string ObjectType = $"{Constants.ActivityStreamsNs}#Collection";
 }
 
@@ -59,7 +61,7 @@ internal sealed class ASCollectionItemsConverter : JsonConverter
 		var obj = JArray.Load(reader);
 		return obj.Count == 0
 			? null
-			: obj.SelectToken("..@list")?.Children().Select(ASObject.Deserialize).OfType<ASObject>().ToList();
+			: obj.SelectToken("$.[*].@list")?.Children().Select(ASObject.Deserialize).OfType<ASObject>().ToList();
 	}
 
 	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
