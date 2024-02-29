@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
@@ -7,10 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Iceshrimp.Backend.Controllers;
+namespace Iceshrimp.Backend.Controllers.Federation;
 
-[ApiController]
-[Tags("Federation")]
+[FederationApiController]
 [Route("/nodeinfo")]
 [EnableCors("well-known")]
 [Produces(MediaTypeNames.Application.Json)]

@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Attributes;
+using Iceshrimp.Backend.Controllers.Federation;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;

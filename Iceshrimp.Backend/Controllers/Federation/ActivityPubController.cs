@@ -1,5 +1,6 @@
 using System.Text;
 using Iceshrimp.Backend.Controllers.Attributes;
+using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
@@ -11,10 +12,9 @@ using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace Iceshrimp.Backend.Controllers;
+namespace Iceshrimp.Backend.Controllers.Federation;
 
-[ApiController]
-[Tags("ActivityPub")]
+[FederationApiController]
 [UseNewtonsoftJson]
 [Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 public class ActivityPubController(

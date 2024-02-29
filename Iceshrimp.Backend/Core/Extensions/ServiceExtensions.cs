@@ -1,6 +1,6 @@
 using System.Net.Sockets;
 using System.Threading.RateLimiting;
-using Iceshrimp.Backend.Controllers;
+using Iceshrimp.Backend.Controllers.Federation;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
@@ -141,8 +141,11 @@ public static class ServiceExtensions
 		services.AddEndpointsApiExplorer();
 		services.AddSwaggerGen(options =>
 		{
-			options.SwaggerDoc("v1", new OpenApiInfo { Title = "Iceshrimp.NET", Version = "1.0" });
-			options.AddSecurityDefinition("user",
+			options.SwaggerDoc("iceshrimp", new OpenApiInfo { Title  = "Iceshrimp.NET" });
+			options.SwaggerDoc("federation", new OpenApiInfo { Title = "Federation" });
+			options.SwaggerDoc("mastodon", new OpenApiInfo { Title   = "Mastodon" });
+
+			options.AddSecurityDefinition("iceshrimp",
 			                              new OpenApiSecurityScheme
 			                              {
 				                              Name   = "Authorization token",

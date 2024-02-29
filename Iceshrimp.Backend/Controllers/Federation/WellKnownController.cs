@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -9,10 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Iceshrimp.Backend.Controllers;
+namespace Iceshrimp.Backend.Controllers.Federation;
 
-[ApiController]
-[Tags("Federation")]
+[FederationApiController]
 [Route("/.well-known")]
 [EnableCors("well-known")]
 public class WellKnownController(IOptions<Config.InstanceSection> config, DatabaseContext db) : ControllerBase

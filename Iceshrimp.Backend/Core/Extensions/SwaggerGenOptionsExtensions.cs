@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -15,26 +16,29 @@ public static class SwaggerGenOptionsExtensions
 	{
 		options.OperationFilter<AuthorizeCheckOperationFilter>();
 		options.OperationFilter<HybridRequestOperationFilter>();
-		options.OperationFilter<MastodonApiControllerOperationFilter>();
+		options.DocInclusionPredicate(DocInclusionPredicate);
 	}
 
-	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
-	                 Justification = "SwaggerGenOptions.OperationFilter<T> instantiates this class at runtime")]
-	private class MastodonApiControllerOperationFilter : IOperationFilter
+	private static bool DocInclusionPredicate(string docName, ApiDescription apiDesc)
 	{
-		public void Apply(OpenApiOperation operation, OperationFilterContext context)
+		if (!apiDesc.TryGetMethodInfo(out var methodInfo)) return false;
+		if (methodInfo.DeclaringType is null) return false;
+
+		var isMastodonController = methodInfo.DeclaringType.GetCustomAttributes(true)
+		                                     .OfType<MastodonApiControllerAttribute>()
+		                                     .Any();
+
+		var isFederationController = methodInfo.DeclaringType.GetCustomAttributes(true)
+		                                       .OfType<FederationApiControllerAttribute>()
+		                                       .Any();
+
+		return docName switch
 		{
-			if (context.MethodInfo.DeclaringType is null)
-				return;
-
-			var isMastodonController = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                                  .OfType<MastodonApiControllerAttribute>()
-			                                  .Any();
-
-			if (!isMastodonController) return;
-
-			operation.Tags = [new OpenApiTag { Name = "Mastodon" }];
-		}
+			"mastodon" when isMastodonController                              => true,
+			"federation" when isFederationController                          => true,
+			"iceshrimp" when !isMastodonController && !isFederationController => true,
+			_                                                                 => false
+		};
 	}
 
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
@@ -70,7 +74,7 @@ public static class SwaggerGenOptionsExtensions
 			{
 				Reference = new OpenApiReference
 				{
-					Type = ReferenceType.SecurityScheme, Id = isMastodonController ? "mastodon" : "user"
+					Type = ReferenceType.SecurityScheme, Id = isMastodonController ? "mastodon" : "iceshrimp"
 				}
 			};
 

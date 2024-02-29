@@ -28,7 +28,9 @@ public static class WebApplicationExtensions
 		app.UseSwaggerUI(options =>
 		{
 			options.DocumentTitle = "Iceshrimp API documentation";
-			options.SwaggerEndpoint("v1/swagger.json", "Iceshrimp.NET");
+			options.SwaggerEndpoint("iceshrimp/swagger.json", "Iceshrimp.NET");
+			options.SwaggerEndpoint("federation/swagger.json", "Federation");
+			options.SwaggerEndpoint("mastodon/swagger.json", "Mastodon");
 			options.InjectStylesheet("/swagger/styles.css");
 			options.EnablePersistAuthorization();
 			options.EnableTryItOutByDefault();
