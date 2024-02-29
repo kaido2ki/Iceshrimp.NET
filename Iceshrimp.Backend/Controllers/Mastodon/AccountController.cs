@@ -113,6 +113,50 @@ public class AccountController(
 		return Ok(res);
 	}
 
+	[HttpDelete("/api/v1/profile/avatar")]
+	[Authorize("write:accounts")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
+	public async Task<IActionResult> DeleteUserAvatar()
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.AvatarId != null)
+		{
+			var id = user.AvatarId;
+
+			user.AvatarId       = null;
+			user.AvatarUrl      = null;
+			user.AvatarBlurhash = null;
+
+			db.Update(user);
+			await db.SaveChangesAsync();
+			await driveSvc.RemoveFile(id);
+		}
+
+		return await VerifyUserCredentials();
+	}
+
+	[HttpDelete("/api/v1/profile/header")]
+	[Authorize("write:accounts")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
+	public async Task<IActionResult> DeleteUserBanner()
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.BannerId != null)
+		{
+			var id = user.BannerId;
+
+			user.BannerId       = null;
+			user.BannerUrl      = null;
+			user.BannerBlurhash = null;
+
+			db.Update(user);
+			await db.SaveChangesAsync();
+			await driveSvc.RemoveFile(id);
+		}
+
+		return await VerifyUserCredentials();
+	}
+
 	[HttpGet("{id}")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
