@@ -236,6 +236,9 @@ public class UserResolver(
 				logger.LogError("UpdateUserAsync for user {user} failed with {error}", user.Uri, e.Message);
 		}
 
-		return success ? await db.Users.IncludeCommonProperties().FirstAsync(p => p.Id == user.Id) : user;
+		if (success)
+			await db.ReloadEntityRecursiveAsync(user);
+
+		return user;
 	}
 }

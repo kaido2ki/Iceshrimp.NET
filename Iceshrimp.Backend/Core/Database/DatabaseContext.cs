@@ -1139,6 +1139,20 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		});
 	}
 
+	public async Task ReloadEntityAsync(object entity)
+	{
+		await Entry(entity).ReloadAsync();
+	}
+
+	public async Task ReloadEntityRecursiveAsync(object entity)
+	{
+		await ReloadEntityAsync(entity);
+		await Entry(entity)
+		      .References.Where(p => p is { IsLoaded: true, TargetEntry: not null })
+		      .Select(p => p.TargetEntry!.ReloadAsync())
+		      .AwaitAllAsync();
+	}
+
 	public IQueryable<Note> NoteAncestors(string noteId, int depth)
 		=> FromExpression(() => NoteAncestors(noteId, depth));
 

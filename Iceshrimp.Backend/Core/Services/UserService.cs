@@ -781,6 +781,9 @@ public class UserService(
 
 		await task.SafeWaitAsync(TimeSpan.FromMilliseconds(500));
 
-		return success ? await db.Users.IncludeCommonProperties().FirstAsync(p => p.Id == user.Id) : user;
+		if (success)
+			await db.ReloadEntityRecursiveAsync(user);
+
+		return user;
 	}
 }
