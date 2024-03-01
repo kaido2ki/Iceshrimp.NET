@@ -112,10 +112,10 @@ public sealed class MfmLinkNode : MfmPureInlineNode
 
 public sealed class MfmFnNode : MfmPureInlineNode
 {
-	public required Dictionary<string, string> Args;
+	// (string, bool) args = (string, null as string?)
+	public required Dictionary<string, string?> Args;
 
 	public required string Name;
-	//TODO: implement (string, bool) args
 }
 
 public sealed class MfmPlainNode : MfmInlineNode

@@ -29,7 +29,9 @@ public static class MfmSerializer
 				}
 				case MfmSearchNode mfmSearchNode:
 				{
-					throw new NotImplementedException();
+					result.Append(mfmSearchNode.Query);
+					result.Append(" [search]");
+					break;
 				}
 				case MfmBoldNode:
 				{
@@ -52,7 +54,15 @@ public static class MfmSerializer
 				}
 				case MfmFnNode mfmFnNode:
 				{
-					throw new NotImplementedException();
+					result.Append("$[");
+					result.Append(mfmFnNode.Name);
+					result.Append('.');
+					var args = mfmFnNode.Args.Select(p => p.Value != null ? $"{p.Key}={p.Value}" : $"{p.Key}");
+					result.Append(string.Join(',', args));
+					result.Append(' ');
+					result.Append(Serialize(node.Children));
+					result.Append(']');
+					break;
 				}
 				case MfmHashtagNode mfmHashtagNode:
 				{
@@ -134,9 +144,18 @@ public static class MfmSerializer
 						result.Append(mfmUrlNode.Url);
 					break;
 				}
-				case MfmQuoteNode mfmQuoteNode:
+				case MfmQuoteNode:
 				{
-					throw new NotImplementedException();
+					var serialized = Serialize(node.Children);
+					var split      = serialized.Split('\n');
+
+					for (var i = 0; i < split.Length; i++)
+					{
+						split[i] = "> " + split[i];
+					}
+
+					result.Append(string.Join('\n', split));
+					break;
 				}
 				default:
 				{
