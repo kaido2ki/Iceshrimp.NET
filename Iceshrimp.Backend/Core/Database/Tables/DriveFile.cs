@@ -189,6 +189,9 @@ public class DriveFile : IEntity
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
 
+	[NotMapped] public string PublicUrl          => WebpublicUrl ?? Url;
+	[NotMapped] public string PublicThumbnailUrl => ThumbnailUrl ?? WebpublicUrl ?? Url;
+
 	public class FileProperties
 	{
 		[J("width")]  public int? Width  { get; set; }

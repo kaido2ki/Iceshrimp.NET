@@ -43,26 +43,11 @@ public class NoteRenderer(
 		var noteEmoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmoji([note]);
 
 		var mentions = data?.Mentions == null
-			? await db.Users.IncludeCommonProperties()
-			          .Where(p => note.Mentions.Contains(p.Id))
-			          .Select(u => new MentionEntity(u, config.Value.WebDomain))
-			          .ToListAsync()
+			? await GetMentions([note])
 			: [..data.Mentions.Where(p => note.Mentions.Contains(p.Id))];
 
 		var attachments = data?.Attachments == null
-			? await db.DriveFiles.Where(p => note.FileIds.Contains(p.Id))
-			          .Select(f => new AttachmentEntity
-			          {
-				          Id          = f.Id,
-				          Url         = f.WebpublicUrl ?? f.Url,
-				          Blurhash    = f.Blurhash,
-				          PreviewUrl  = f.ThumbnailUrl,
-				          Description = f.Comment,
-				          Metadata    = null,
-				          RemoteUrl   = f.Uri,
-				          Type        = AttachmentEntity.GetType(f.Type)
-			          })
-			          .ToListAsync()
+			? await GetAttachments([note])
 			: [..data.Attachments.Where(p => note.FileIds.Contains(p.Id))];
 
 
@@ -132,9 +117,9 @@ public class NoteRenderer(
 		               .Select(f => new AttachmentEntity
 		               {
 			               Id          = f.Id,
-			               Url         = f.Url,
+			               Url         = f.PublicUrl,
 			               Blurhash    = f.Blurhash,
-			               PreviewUrl  = f.ThumbnailUrl,
+			               PreviewUrl  = f.PublicThumbnailUrl,
 			               Description = f.Comment,
 			               Metadata    = null,
 			               RemoteUrl   = f.Uri,

@@ -296,13 +296,6 @@ public class DriveService(
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(job);
 	}
 
-	public string GetPublicUrl(DriveFile file, bool thumbnail)
-	{
-		return thumbnail
-			? file.ThumbnailUrl ?? file.WebpublicUrl ?? file.Url
-			: file.WebpublicUrl ?? file.Url;
-	}
-
 	private static string GenerateFilenameKeepingExtension(string filename)
 	{
 		var guid = Guid.NewGuid().ToString().ToLowerInvariant();
