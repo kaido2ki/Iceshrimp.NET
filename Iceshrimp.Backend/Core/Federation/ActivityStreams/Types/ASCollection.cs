@@ -10,10 +10,11 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASCollection : ASObject
 {
-	public ASCollection() => Type = ObjectType;
+	[JsonConstructor]
+	public ASCollection(bool withType = true) => Type = withType ? ObjectType : null;
 
 	[SetsRequiredMembers]
-	public ASCollection(string id) : this() => Id = id;
+	public ASCollection(string id, bool withType = false) : this(withType) => Id = id;
 
 	[J($"{Constants.ActivityStreamsNs}#items")]
 	[JC(typeof(ASCollectionItemsConverter))]

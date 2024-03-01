@@ -10,10 +10,11 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASOrderedCollectionPage : ASObject
 {
-	public ASOrderedCollectionPage() => Type = ObjectType;
+	[JsonConstructor]
+	public ASOrderedCollectionPage(bool withType = true) => Type = withType ? ObjectType : null;
 	
 	[SetsRequiredMembers]
-	public ASOrderedCollectionPage(string id) : this() => Id = id;
+	public ASOrderedCollectionPage(string id, bool withType = false) : this(withType) => Id = id;
 
 	[J($"{Constants.ActivityStreamsNs}#items")]
 	[JC(typeof(ASCollectionItemsConverter))]
