@@ -782,7 +782,7 @@ public class UserService(
 		await task.SafeWaitAsync(TimeSpan.FromMilliseconds(500));
 
 		if (success)
-			await db.ReloadEntityRecursiveAsync(user);
+			await db.ReloadEntityRecursivelyAsync(user);
 
 		return user;
 	}

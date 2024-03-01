@@ -1144,13 +1144,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		await Entry(entity).ReloadAsync();
 	}
 
-	public async Task ReloadEntityRecursiveAsync(object entity)
+	public async Task ReloadEntityRecursivelyAsync(object entity)
 	{
 		await ReloadEntityAsync(entity);
 		await Entry(entity)
 		      .References.Where(p => p is { IsLoaded: true, TargetEntry: not null })
 		      .Select(p => p.TargetEntry!.ReloadAsync())
-		      .AwaitAllAsync();
+		      .AwaitAllNoConcurrencyAsync();
 	}
 
 	public IQueryable<Note> NoteAncestors(string noteId, int depth)

@@ -237,7 +237,7 @@ public class UserResolver(
 		}
 
 		if (success)
-			await db.ReloadEntityRecursiveAsync(user);
+			await db.ReloadEntityRecursivelyAsync(user);
 
 		return user;
 	}
