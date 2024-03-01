@@ -704,18 +704,22 @@ public class UserService(
 		// Clean up user list memberships
 		await db.UserListMembers.Where(p => p.UserList.User == user && p.User == followee).ExecuteDeleteAsync();
 	}
-	
+
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
 	private void UpdateUserPinnedNotesInBackground(ASActor actor, User user, bool force = false)
 	{
 		if (followupTaskSvc.IsBackgroundWorker && !force) return;
+		if (KeyedLocker.IsInUse($"pinnedNotes:{user.Id}")) return;
 		_ = followupTaskSvc.ExecuteTask("UpdateUserPinnedNotes", async provider =>
 		{
-			var bgDb      = provider.GetRequiredService<DatabaseContext>();
-			var bgNoteSvc = provider.GetRequiredService<NoteService>();
-			var bgUser    = await bgDb.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == user.Id);
-			if (bgUser == null) return;
-			await bgNoteSvc.UpdatePinnedNotesAsync(actor, bgUser);
+			using (await KeyedLocker.LockAsync($"pinnedNotes:{user.Id}"))
+			{
+				var bgDb      = provider.GetRequiredService<DatabaseContext>();
+				var bgNoteSvc = provider.GetRequiredService<NoteService>();
+				var bgUser    = await bgDb.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == user.Id);
+				if (bgUser == null) return;
+				await bgNoteSvc.UpdatePinnedNotesAsync(actor, bgUser);
+			}
 		});
 	}
 
