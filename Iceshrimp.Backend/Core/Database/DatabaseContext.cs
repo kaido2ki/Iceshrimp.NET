@@ -39,8 +39,6 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<GalleryLike>          GalleryLikes          { get; init; } = null!;
 	public virtual DbSet<GalleryPost>          GalleryPosts          { get; init; } = null!;
 	public virtual DbSet<Hashtag>              Hashtags              { get; init; } = null!;
-	public virtual DbSet<HtmlNoteCacheEntry>   HtmlNoteCacheEntries  { get; init; } = null!;
-	public virtual DbSet<HtmlUserCacheEntry>   HtmlUserCacheEntries  { get; init; } = null!;
 	public virtual DbSet<Instance>             Instances             { get; init; } = null!;
 	public virtual DbSet<Marker>               Markers               { get; init; } = null!;
 	public virtual DbSet<MessagingMessage>     MessagingMessages     { get; init; } = null!;
@@ -467,18 +465,6 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.MentionedLocalUsersCount).HasDefaultValue(0);
 			entity.Property(e => e.MentionedRemoteUsersCount).HasDefaultValue(0);
 			entity.Property(e => e.MentionedUsersCount).HasDefaultValue(0);
-		});
-
-		modelBuilder.Entity<HtmlNoteCacheEntry>(entity =>
-		{
-			entity.HasOne(d => d.Note).WithOne(p => p.HtmlNoteCacheEntry);
-		});
-
-		modelBuilder.Entity<HtmlUserCacheEntry>(entity =>
-		{
-			entity.Property(e => e.Fields).HasDefaultValueSql("'[]'::jsonb");
-
-			entity.HasOne(d => d.User).WithOne(p => p.HtmlUserCacheEntry);
 		});
 
 		modelBuilder.Entity<Instance>(entity =>

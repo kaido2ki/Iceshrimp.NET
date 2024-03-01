@@ -358,9 +358,6 @@ public class User : IEntity
 	[InverseProperty(nameof(GalleryPost.User))]
 	public virtual ICollection<GalleryPost> GalleryPosts { get; set; } = new List<GalleryPost>();
 
-	[InverseProperty(nameof(Tables.HtmlUserCacheEntry.User))]
-	public virtual HtmlUserCacheEntry? HtmlUserCacheEntry { get; set; }
-
 	[InverseProperty(nameof(Marker.User))]
 	public virtual ICollection<Marker> Markers { get; set; } = new List<Marker>();
 

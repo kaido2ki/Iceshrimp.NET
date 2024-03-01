@@ -190,9 +190,6 @@ public class Note : IEntity
 	[InverseProperty(nameof(ClipNote.Note))]
 	public virtual ICollection<ClipNote> ClipNotes { get; set; } = new List<ClipNote>();
 
-	[InverseProperty(nameof(Tables.HtmlNoteCacheEntry.Note))]
-	public virtual HtmlNoteCacheEntry? HtmlNoteCacheEntry { get; set; }
-
 	[InverseProperty(nameof(Renote))] public virtual ICollection<Note> InverseRenote { get; set; } = new List<Note>();
 
 	[InverseProperty(nameof(Reply))] public virtual ICollection<Note> InverseReply { get; set; } = new List<Note>();
