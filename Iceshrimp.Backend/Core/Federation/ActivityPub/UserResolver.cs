@@ -1,9 +1,12 @@
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
@@ -13,7 +16,8 @@ public class UserResolver(
 	UserService userSvc,
 	WebFingerService webFingerSvc,
 	FollowupTaskService followupTaskSvc,
-	IOptions<Config.InstanceSection> config
+	IOptions<Config.InstanceSection> config,
+	DatabaseContext db
 )
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -207,6 +211,8 @@ public class UserResolver(
 		if (!user.NeedsUpdate) return user;
 		user.LastFetchedAt = DateTime.UtcNow; // Prevent multiple background tasks from being started
 
+		var success = false;
+
 		try
 		{
 			var task = followupTaskSvc.ExecuteTask("UpdateUserAsync", async provider =>
@@ -215,8 +221,8 @@ public class UserResolver(
 				var bgUserSvc = provider.GetRequiredService<UserService>();
 
 				// Use the id overload so it doesn't attempt to insert in the main thread's DbContext
-				var fetchedUser = await bgUserSvc.UpdateUserAsync(user.Id);
-				user = fetchedUser;
+				await bgUserSvc.UpdateUserAsync(user.Id);
+				success = true;
 			});
 
 			// Return early, but continue execution in background
@@ -230,6 +236,6 @@ public class UserResolver(
 				logger.LogError("UpdateUserAsync for user {user} failed with {error}", user.Uri, e.Message);
 		}
 
-		return user;
+		return success ? await db.Users.IncludeCommonProperties().FirstAsync(p => p.Id == user.Id) : user;
 	}
 }

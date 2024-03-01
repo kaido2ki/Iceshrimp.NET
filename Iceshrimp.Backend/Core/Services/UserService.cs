@@ -402,7 +402,7 @@ public class UserService(
 
 		user.AvatarUrl = avatar?.Url;
 		user.BannerUrl = banner?.Url;
-        
+
 		await db.SaveChangesAsync();
 
 		return async () =>
@@ -731,6 +731,8 @@ public class UserService(
 		if (followupTaskSvc.IsBackgroundWorker && !force) return user;
 		if (KeyedLocker.IsInUse($"profileMentions:{user.Id}")) return user;
 
+		var success = false;
+
 		var task = followupTaskSvc.ExecuteTask("UpdateProfileMentionsInBackground", async provider =>
 		{
 			using (await KeyedLocker.LockAsync($"profileMentions:{user.Id}"))
@@ -773,11 +775,12 @@ public class UserService(
 				bgUser.UserProfile.MentionsResolved = true;
 				bgDbContext.Update(bgUser.UserProfile);
 				await bgDbContext.SaveChangesAsync();
-				user = bgUser;
+				success = true;
 			}
 		});
 
 		await task.SafeWaitAsync(TimeSpan.FromMilliseconds(500));
-		return user;
+
+		return success ? await db.Users.IncludeCommonProperties().FirstAsync(p => p.Id == user.Id) : user;
 	}
 }
