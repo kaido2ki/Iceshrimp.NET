@@ -179,10 +179,8 @@ public class UserService(
 		try
 		{
 			await db.AddRangeAsync(user, profile, publicKey);
-
-			// We need to do this after calling db.Add(Range) to ensure data consistency
-			var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
 			await db.SaveChangesAsync();
+			var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
 			await processPendingDeletes();
 			user = await UpdateProfileMentions(user, actor);
 			UpdateUserPinnedNotesInBackground(actor, user);
@@ -404,6 +402,8 @@ public class UserService(
 
 		user.AvatarUrl = avatar?.Url;
 		user.BannerUrl = banner?.Url;
+        
+		await db.SaveChangesAsync();
 
 		return async () =>
 		{
