@@ -694,7 +694,7 @@ public class NoteService(
 
 		if (fetchedNote.Id != uri)
 		{
-			var res = await db.Notes.FirstOrDefaultAsync(p => p.Uri == fetchedNote.Id);
+			var res = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == fetchedNote.Id);
 			if (res != null) return res;
 		}
 
