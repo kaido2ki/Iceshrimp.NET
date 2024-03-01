@@ -45,7 +45,7 @@ public class ValueObjectConverter : JsonConverter
 		return null;
 	}
 
-	private static object? HandleObject(LDValueObject<object?>? obj, Type objectType)
+	internal static object? HandleObject(LDValueObject<object?>? obj, Type objectType)
 	{
 		if (obj?.Value is string s && (objectType == typeof(DateTime?) || objectType == typeof(DateTime)))
 		{

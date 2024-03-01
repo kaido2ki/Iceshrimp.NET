@@ -40,7 +40,45 @@ public class ASCollection : ASObject
 	public const string ObjectType = $"{Constants.ActivityStreamsNs}#Collection";
 }
 
-public sealed class ASCollectionConverter : ASSerializer.ListSingleObjectConverter<ASCollection>;
+public sealed class ASCollectionConverter : JsonConverter
+{
+	public override bool CanWrite => false;
+
+	public override bool CanConvert(Type objectType)
+	{
+		return true;
+	}
+
+	public override object? ReadJson(
+		JsonReader reader, Type objectType, object? existingValue,
+		JsonSerializer serializer
+	)
+	{
+		if (reader.TokenType == JsonToken.StartArray)
+		{
+			var obj       = JArray.Load(reader);
+			var valueList = obj.ToObject<List<LDValueObject<object?>>>();
+			if (valueList is { Count: > 0 })
+				return VC.HandleObject(valueList[0], objectType);
+			var list = obj.ToObject<List<ASCollection?>>();
+			return list == null || list.Count == 0 ? null : list[0];
+		}
+
+		if (reader.TokenType == JsonToken.StartObject)
+		{
+			var obj      = JObject.Load(reader);
+			var valueObj = obj.ToObject<LDValueObject<object?>>();
+			return valueObj != null ? VC.HandleObject(valueObj, objectType) : obj.ToObject<ASCollection?>();
+		}
+
+		return null;
+	}
+
+	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+	{
+		throw new NotImplementedException();
+	}
+}
 
 internal sealed class ASCollectionItemsConverter : JsonConverter
 {

@@ -98,7 +98,7 @@ public class ASActor : ASObject
 	public List<ASLink>? AlsoKnownAs { get; set; }
 
 	[J("http://joinmastodon.org/ns#featured")]
-	[JC(typeof(VC))]
+	[JC(typeof(ASOrderedCollectionConverter))]
 	public ASOrderedCollection? Featured { get; set; }
 
 	[J("http://joinmastodon.org/ns#featuredTags")]

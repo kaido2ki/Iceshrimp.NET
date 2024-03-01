@@ -4,6 +4,9 @@
       "@id": "https://www.w3.org/ns/activitystreams#movedTo",
       "@type": "@id"
     },
-    "featured": "http://joinmastodon.org/ns#featured"
+    "featured": {
+      "@id": "http://joinmastodon.org/ns#featured",
+      "@type": "@id"
+    }
   }
 }
