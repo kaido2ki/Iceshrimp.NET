@@ -9,8 +9,8 @@ Want to donate to the project?
 
 ---
 
-> **Warning**
-> This is alpha software, do **not** use with a production database.
+> **Note**
+> This is alpha software. While the Mastodon client API is relatively complete, the frontend is not. It is therefore not advisable to upgrade existing Iceshrimp instances at present. Setting up staging instances to help us with testing is very appreciated, however, and will help us ensure eventual upgrades go as smoothly as possible.
 
 ---
 
