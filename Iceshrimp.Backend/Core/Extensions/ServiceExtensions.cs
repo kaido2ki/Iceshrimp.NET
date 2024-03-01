@@ -57,12 +57,12 @@ public static class ServiceExtensions
 			.AddScoped<NotificationRenderer>()
 			.AddScoped<ActivityPubController>()
 			.AddScoped<FollowupTaskService>()
-			.AddScoped<InstanceService>();
+			.AddScoped<InstanceService>()
+			.AddScoped<MfmConverter>();
 
 		// Singleton = instantiated once across application lifetime
 		services
 			.AddSingleton<HttpClient, CustomHttpClient>()
-			.AddSingleton<MfmConverter>()
 			.AddSingleton<HttpRequestService>()
 			.AddSingleton<CronService>()
 			.AddSingleton<QueueService>()

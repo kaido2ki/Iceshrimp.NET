@@ -2,12 +2,13 @@ using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
-public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc) : IMiddleware
+public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc, MfmConverter mfmConverter) : IMiddleware
 {
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
 	{
@@ -58,6 +59,8 @@ public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc) :
 
 				userSvc.UpdateOauthTokenMetadata(oauthToken);
 				ctx.SetOauthToken(oauthToken);
+				
+				mfmConverter.SupportsHtmlFormatting = oauthToken.SupportsHtmlFormatting;
 			}
 			else
 			{

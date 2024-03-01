@@ -17,6 +17,8 @@ namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 
 public class MfmConverter(IOptions<Config.InstanceSection> config)
 {
+	public bool SupportsHtmlFormatting { private get; set; } = true;
+
 	public static async Task<string?> FromHtmlAsync(string? html, List<Note.MentionedUser>? mentions = null)
 	{
 		if (html == null) return null;
@@ -77,7 +79,8 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 		{
 			case MfmBoldNode:
 			{
-				var el = document.CreateElement("b");
+				var el = CreateInlineFormattingElement(document, "b");
+				AddHtmlMarkup(node, "**");
 				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
@@ -89,21 +92,23 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 			}
 			case MfmStrikeNode:
 			{
-				var el = document.CreateElement("del");
+				var el = CreateInlineFormattingElement(document, "del");
+				AddHtmlMarkup(node, "~~");
 				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
 			case MfmItalicNode:
 			case MfmFnNode:
 			{
-				var el = document.CreateElement("i");
+				var el = CreateInlineFormattingElement(document, "i");
+				AddHtmlMarkup(node, "*");
 				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
 			case MfmCodeBlockNode codeBlockNode:
 			{
-				var el    = document.CreateElement("pre");
-				var inner = document.CreateElement("code");
+				var el    = CreateInlineFormattingElement(document, "pre");
+				var inner = CreateInlineFormattingElement(document, "code");
 				inner.TextContent = codeBlockNode.Code;
 				el.AppendNodes(inner);
 				return el;
@@ -132,19 +137,19 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 			}
 			case MfmInlineCodeNode inlineCodeNode:
 			{
-				var el = document.CreateElement("code");
+				var el = CreateInlineFormattingElement(document, "code");
 				el.TextContent = inlineCodeNode.Code;
 				return el;
 			}
 			case MfmMathInlineNode mathInlineNode:
 			{
-				var el = document.CreateElement("code");
+				var el = CreateInlineFormattingElement(document, "code");
 				el.TextContent = mathInlineNode.Formula;
 				return el;
 			}
 			case MfmMathBlockNode mathBlockNode:
 			{
-				var el = document.CreateElement("code");
+				var el = CreateInlineFormattingElement(document, "code");
 				el.TextContent = mathBlockNode.Formula;
 				return el;
 			}
@@ -188,7 +193,8 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 			}
 			case MfmQuoteNode:
 			{
-				var el = document.CreateElement("blockquote");
+				var el = CreateInlineFormattingElement(document, "blockquote");
+				AddHtmlMarkupStartOnly(node, "> ");
 				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
@@ -246,5 +252,24 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 	)
 	{
 		foreach (var node in parent.Children) element.AppendNodes(FromMfmNode(document, node, mentions, host));
+	}
+
+	private IElement CreateInlineFormattingElement(IDocument document, string name)
+	{
+		return document.CreateElement(SupportsHtmlFormatting ? name : "span");
+	}
+
+	private void AddHtmlMarkup(MfmNode node, string chars)
+	{
+		if (SupportsHtmlFormatting) return;
+		var markupNode = new MfmTextNode { Text = chars };
+		node.Children = node.Children.Prepend(markupNode).Append(markupNode);
+	}
+	
+	private void AddHtmlMarkupStartOnly(MfmNode node, string chars)
+	{
+		if (SupportsHtmlFormatting) return;
+		var markupNode = new MfmTextNode { Text = chars };
+		node.Children = node.Children.Prepend(markupNode);
 	}
 }
