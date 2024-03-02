@@ -8,6 +8,7 @@
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
         <VersionPrefix>2024.1</VersionPrefix>
         <VersionSuffix>alpha</VersionSuffix>
+        <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
 
         <RestoreAdditionalProjectSources>
             https://iceshrimp.dev/api/packages/iceshrimp/nuget/index.json;
