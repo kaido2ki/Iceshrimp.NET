@@ -25,6 +25,7 @@
         <PackageReference Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="8.0.0"/>
         <PackageReference Include="EntityFrameworkCore.Projectables" Version="3.0.4"/>
         <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0"/>
+        <PackageReference Include="libsodium" Version="1.0.18.4" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.1"/>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0"/>
