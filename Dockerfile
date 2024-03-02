@@ -35,7 +35,6 @@ RUN dotnet publish --no-restore -a $TARGETARCH -o /app
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
 # final stage/image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine-composite
-RUN apk add --no-cache --no-progress libsodium
 WORKDIR /app
 COPY --from=backend /app .
 COPY --from=frontend /frontend/dist ./wwwroot
