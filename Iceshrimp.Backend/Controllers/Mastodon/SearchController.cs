@@ -176,8 +176,8 @@ public class SearchController(
 
 		return await db.Notes
 		               .IncludeCommonProperties()
-		               .Where(p => p.TextContainsCaseInsensitive(search.Query!) &&
-		                           (!search.Following || p.User.IsFollowedBy(user)))
+		               .FilterByFtsQuery(search.Query!, user, db)
+		               .Where(p => !search.Following || p.User.IsFollowedBy(user))
 		               .FilterByUser(search.UserId)
 		               .EnsureVisibleFor(user)
 		               .FilterHiddenListMembers(user)

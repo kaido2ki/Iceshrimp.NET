@@ -146,6 +146,10 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			.HasDbFunction(typeof(DatabaseContext).GetMethod(nameof(Conversations),
 			                                                 [typeof(string)])!)
 			.HasName("conversations");
+		modelBuilder
+			.HasDbFunction(typeof(Note).GetMethod(nameof(Note.InternalRawAttachments),
+			                                      [typeof(string)])!)
+			.HasName("note_attachments_raw");
 
 		modelBuilder.Entity<AbuseUserReport>(entity =>
 		{

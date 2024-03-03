@@ -60,4 +60,8 @@
         <None Remove="migrate.sql"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj" />
+    </ItemGroup>
+
 </Project>

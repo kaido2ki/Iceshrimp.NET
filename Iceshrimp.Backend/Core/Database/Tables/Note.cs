@@ -235,6 +235,13 @@ public class Note : IEntity
 	[InverseProperty(nameof(InverseReply))]
 	public virtual Note? Reply { get; set; }
 
+	[Projectable]
+	public string RawAttachments
+		=> InternalRawAttachments(Id);
+
+	public static string InternalRawAttachments(string id)
+		=> throw new NotSupportedException();
+
 	[NotMapped] [Projectable] public bool IsPureRenote => (RenoteId != null || Renote != null) && !IsQuote;
 
 	[NotMapped]

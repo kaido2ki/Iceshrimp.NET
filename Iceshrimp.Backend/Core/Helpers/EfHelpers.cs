@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Iceshrimp.Backend.Core.Helpers;
 
 public static class EfHelpers
@@ -8,4 +10,7 @@ public static class EfHelpers
 	                                                           .Replace("^", @"\^")
 	                                                           .Replace("[", @"\[")
 	                                                           .Replace("]", @"\]");
+
+	public static string EscapeRegexQuery(string input) =>
+		new Regex(@"([!$()*+.:<=>?[\\\]^{|}-])").Replace(input, "\\$1");
 }
