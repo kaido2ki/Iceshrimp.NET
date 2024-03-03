@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iceshrimp.Backend", "Iceshr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iceshrimp.Tests", "Iceshrimp.Tests\Iceshrimp.Tests.csproj", "{0C93C33B-3D68-41DE-8BD6-2C19EB1C95F7}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Iceshrimp.Parsing", "Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj", "{665B7CCA-6B5B-44DC-9CDB-D070622476C2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{0C93C33B-3D68-41DE-8BD6-2C19EB1C95F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C93C33B-3D68-41DE-8BD6-2C19EB1C95F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C93C33B-3D68-41DE-8BD6-2C19EB1C95F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{665B7CCA-6B5B-44DC-9CDB-D070622476C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{665B7CCA-6B5B-44DC-9CDB-D070622476C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{665B7CCA-6B5B-44DC-9CDB-D070622476C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{665B7CCA-6B5B-44DC-9CDB-D070622476C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
