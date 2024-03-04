@@ -259,12 +259,17 @@ internal class StrikeNodeParser : INodeParser
 
 internal class HashtagNodeParser : INodeParser
 {
-	private const           string Pre  = "#";
-	private static readonly Regex  Post = new(@"\s|$");
+	private const           string Pre        = "#";
+	private static readonly Regex  Full       = new(@"^[^\s]+$");
+	private static readonly Regex  Post       = new(@"\s|$");
+	private static readonly Regex  Lookbehind = new(@"\s");
 
 	public bool IsValid(string buffer, int position)
 	{
-		return buffer[position..].StartsWith(Pre);
+		if (!buffer[position..].StartsWith(Pre)) return false;
+		if (position != 0 && !Lookbehind.IsMatch(buffer[position - 1].ToString())) return false;
+		var (start, end, _) = NodeParserAbstractions.HandlePosition(Pre, Post, buffer, position);
+		return Full.IsMatch(buffer[start..end]);
 	}
 
 	public (MfmNode node, int chars) Parse(string buffer, int position, int nestLimit)
