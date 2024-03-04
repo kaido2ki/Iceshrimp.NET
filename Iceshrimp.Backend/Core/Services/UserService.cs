@@ -187,6 +187,7 @@ public class UserService(
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+				
 				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user);
 				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.UsersCount, i => i.UsersCount + 1));

@@ -17,13 +17,10 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	: DbContext(options), IDataProtectionKeyContext
 {
 	public virtual DbSet<AbuseUserReport>      AbuseUserReports      { get; init; } = null!;
-	public virtual DbSet<AccessToken>          AccessTokens          { get; init; } = null!;
 	public virtual DbSet<Announcement>         Announcements         { get; init; } = null!;
 	public virtual DbSet<AnnouncementRead>     AnnouncementReads     { get; init; } = null!;
 	public virtual DbSet<Antenna>              Antennas              { get; init; } = null!;
-	public virtual DbSet<App>                  Apps                  { get; init; } = null!;
 	public virtual DbSet<AttestationChallenge> AttestationChallenges { get; init; } = null!;
-	public virtual DbSet<AuthSession>          AuthSessions          { get; init; } = null!;
 	public virtual DbSet<Bite>                 Bites                 { get; init; } = null!;
 	public virtual DbSet<Blocking>             Blockings             { get; init; } = null!;
 	public virtual DbSet<Channel>              Channels              { get; init; } = null!;
@@ -68,7 +65,6 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<Relay>                Relays                { get; init; } = null!;
 	public virtual DbSet<RenoteMuting>         RenoteMutings         { get; init; } = null!;
 	public virtual DbSet<Session>              Sessions              { get; init; } = null!;
-	public virtual DbSet<Signin>               Signins               { get; init; } = null!;
 	public virtual DbSet<SwSubscription>       SwSubscriptions       { get; init; } = null!;
 	public virtual DbSet<UsedUsername>         UsedUsernames         { get; init; } = null!;
 	public virtual DbSet<User>                 Users                 { get; init; } = null!;
@@ -163,22 +159,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .WithMany(p => p.AbuseUserReportAssignees)
 			      .OnDelete(DeleteBehavior.SetNull);
 
-			entity.HasOne(d => d.Reporter).WithMany(p => p.AbuseUserReportReporters);
-
-			entity.HasOne(d => d.TargetUser).WithMany(p => p.AbuseUserReportTargetUsers);
-		});
-
-		modelBuilder.Entity<AccessToken>(entity =>
-		{
-			entity.Property(e => e.CreatedAt).HasComment("The created date of the AccessToken.");
-			entity.Property(e => e.Fetched).HasDefaultValue(false);
-			entity.Property(e => e.Permission).HasDefaultValueSql("'{}'::character varying[]");
-
-			entity.HasOne(d => d.App)
-			      .WithMany(p => p.AccessTokens)
+			entity.HasOne(d => d.Reporter)
+			      .WithMany(p => p.AbuseUserReportReporters)
 			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.AccessTokens);
+			entity.HasOne(d => d.TargetUser)
+			      .WithMany(p => p.AbuseUserReportTargetUsers)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Announcement>(entity =>
@@ -193,9 +180,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		{
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the AnnouncementRead.");
 
-			entity.HasOne(d => d.Announcement).WithMany(p => p.AnnouncementReads);
+			entity.HasOne(d => d.Announcement)
+			      .WithMany(p => p.AnnouncementReads)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.AnnouncementReads);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.AnnouncementReads)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Antenna>(entity =>
@@ -214,26 +205,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .WithMany(p => p.Antennas)
 			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.Antennas);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Antennas)
+			      .OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasOne(d => d.UserList)
 			      .WithMany(p => p.Antennas)
 			      .OnDelete(DeleteBehavior.Cascade);
-		});
-
-		modelBuilder.Entity<App>(entity =>
-		{
-			entity.Property(e => e.CallbackUrl).HasComment("The callbackUrl of the App.");
-			entity.Property(e => e.CreatedAt).HasComment("The created date of the App.");
-			entity.Property(e => e.Description).HasComment("The description of the App.");
-			entity.Property(e => e.Name).HasComment("The name of the App.");
-			entity.Property(e => e.Permission).HasComment("The permission of the App.");
-			entity.Property(e => e.Secret).HasComment("The secret key of the App.");
-			entity.Property(e => e.UserId).HasComment("The owner ID.");
-
-			entity.HasOne(d => d.User)
-			      .WithMany(p => p.Apps)
-			      .OnDelete(DeleteBehavior.SetNull);
 		});
 
 		modelBuilder.Entity<AttestationChallenge>(entity =>
@@ -244,17 +222,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .HasDefaultValue(false)
 			      .HasComment("Indicates that the challenge is only for registration purposes if true to prevent the challenge for being used as authentication.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.AttestationChallenges);
-		});
-
-		modelBuilder.Entity<AuthSession>(entity =>
-		{
-			entity.Property(e => e.CreatedAt).HasComment("The created date of the AuthSession.");
-
-			entity.HasOne(d => d.App).WithMany(p => p.AuthSessions);
-
 			entity.HasOne(d => d.User)
-			      .WithMany(p => p.AuthSessions)
+			      .WithMany(p => p.AttestationChallenges)
 			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
@@ -272,9 +241,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.BlockerId).HasComment("The blocker user ID.");
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the Blocking.");
 
-			entity.HasOne(d => d.Blockee).WithMany(p => p.IncomingBlocks);
+			entity.HasOne(d => d.Blockee)
+			      .WithMany(p => p.IncomingBlocks)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.Blocker).WithMany(p => p.OutgoingBlocks);
+			entity.HasOne(d => d.Blocker)
+			      .WithMany(p => p.OutgoingBlocks)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Channel>(entity =>
@@ -306,18 +279,26 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.FolloweeId).HasComment("The followee channel ID.");
 			entity.Property(e => e.FollowerId).HasComment("The follower user ID.");
 
-			entity.HasOne(d => d.Followee).WithMany(p => p.ChannelFollowings);
+			entity.HasOne(d => d.Followee)
+			      .WithMany(p => p.ChannelFollowings)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.Follower).WithMany(p => p.ChannelFollowings);
+			entity.HasOne(d => d.Follower)
+			      .WithMany(p => p.ChannelFollowings)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<ChannelNotePin>(entity =>
 		{
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the ChannelNotePin.");
 
-			entity.HasOne(d => d.Channel).WithMany(p => p.ChannelNotePins);
+			entity.HasOne(d => d.Channel)
+			      .WithMany(p => p.ChannelNotePins)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.Note).WithMany(p => p.ChannelNotePins);
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.ChannelNotePins)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Clip>(entity =>
@@ -328,7 +309,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.Name).HasComment("The name of the Clip.");
 			entity.Property(e => e.UserId).HasComment("The owner ID.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.Clips);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Clips)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<ClipNote>(entity =>
@@ -336,9 +319,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.ClipId).HasComment("The clip ID.");
 			entity.Property(e => e.NoteId).HasComment("The note ID.");
 
-			entity.HasOne(d => d.Clip).WithMany(p => p.ClipNotes);
+			entity.HasOne(d => d.Clip)
+			      .WithMany(p => p.ClipNotes)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.Note).WithMany(p => p.ClipNotes);
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.ClipNotes)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<DriveFile>(entity =>
@@ -417,9 +404,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.FollowerSharedInbox).HasComment("[Denormalized]");
 			entity.Property(e => e.RequestId).HasComment("id of Follow Activity.");
 
-			entity.HasOne(d => d.Followee).WithMany(p => p.IncomingFollowRequests);
+			entity.HasOne(d => d.Followee)
+			      .WithMany(p => p.IncomingFollowRequests)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.Follower).WithMany(p => p.OutgoingFollowRequests);
+			entity.HasOne(d => d.Follower)
+			      .WithMany(p => p.OutgoingFollowRequests)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Following>(entity =>
@@ -434,16 +425,24 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.FollowerInbox).HasComment("[Denormalized]");
 			entity.Property(e => e.FollowerSharedInbox).HasComment("[Denormalized]");
 
-			entity.HasOne(d => d.Followee).WithMany(p => p.IncomingFollowRelationships);
+			entity.HasOne(d => d.Followee)
+			      .WithMany(p => p.IncomingFollowRelationships)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.Follower).WithMany(p => p.OutgoingFollowRelationships);
+			entity.HasOne(d => d.Follower)
+			      .WithMany(p => p.OutgoingFollowRelationships)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<GalleryLike>(entity =>
 		{
-			entity.HasOne(d => d.Post).WithMany(p => p.GalleryLikes);
+			entity.HasOne(d => d.Post)
+			      .WithMany(p => p.GalleryLikes)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.GalleryLikes);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.GalleryLikes)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<GalleryPost>(entity =>
@@ -458,7 +457,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.UpdatedAt).HasComment("The updated date of the GalleryPost.");
 			entity.Property(e => e.UserId).HasComment("The ID of author.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.GalleryPosts);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.GalleryPosts)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Hashtag>();
@@ -501,7 +502,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .WithMany(p => p.MessagingMessageRecipients)
 			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.MessagingMessageUsers);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.MessagingMessageUsers)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Marker>(entity =>
@@ -572,7 +575,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		{
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the ModerationLog.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.ModerationLogs);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.ModerationLogs)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Muting>(entity =>
@@ -581,9 +586,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.MuteeId).HasComment("The mutee user ID.");
 			entity.Property(e => e.MuterId).HasComment("The muter user ID.");
 
-			entity.HasOne(d => d.Mutee).WithMany(p => p.IncomingMutes);
+			entity.HasOne(d => d.Mutee)
+			      .WithMany(p => p.IncomingMutes)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.Muter).WithMany(p => p.OutgoingMutes);
+			entity.HasOne(d => d.Muter)
+			      .WithMany(p => p.OutgoingMutes)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Note>(entity =>
@@ -636,7 +645,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .WithMany(p => p.InverseReply)
 			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.Notes);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Notes)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<NoteEdit>(entity =>
@@ -645,36 +656,53 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.NoteId).HasComment("The ID of note.");
 			entity.Property(e => e.UpdatedAt).HasComment("The updated date of the Note.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.NoteEdits);
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.NoteEdits)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<NoteBookmark>(entity =>
 		{
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the NoteBookmark.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.NoteBookmarks);
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.NoteBookmarks)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.NoteBookmarks);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.NoteBookmarks)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<NoteLike>(entity =>
 		{
-			entity.HasOne(d => d.Note).WithMany(p => p.NoteLikes);
-			entity.HasOne(d => d.User).WithMany(p => p.NoteLikes);
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.NoteLikes)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.NoteLikes)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<NoteReaction>(entity =>
 		{
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the NoteReaction.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.NoteReactions);
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.NoteReactions)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.NoteReactions);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.NoteReactions)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<NoteThreadMuting>(entity =>
 		{
-			entity.HasOne(d => d.User).WithMany(p => p.NoteThreadMutings);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.NoteThreadMutings)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<NoteUnread>(entity =>
@@ -682,9 +710,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.NoteChannelId).HasComment("[Denormalized]");
 			entity.Property(e => e.NoteUserId).HasComment("[Denormalized]");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.NoteUnreads);
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.NoteUnreads)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.NoteUnreads);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.NoteUnreads)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<NoteWatching>(entity =>
@@ -694,9 +726,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.NoteUserId).HasComment("[Denormalized]");
 			entity.Property(e => e.UserId).HasComment("The watcher ID.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.NoteWatchings);
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.NoteWatchings)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.NoteWatchings);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.NoteWatchings)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Notification>(entity =>
@@ -709,10 +745,6 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.NotifierId).HasComment("The ID of sender user of the Notification.");
 			entity.Property(e => e.Type).HasComment("The type of the Notification.");
 
-			entity.HasOne(d => d.AppAccessToken)
-			      .WithMany(p => p.Notifications)
-			      .OnDelete(DeleteBehavior.Cascade);
-
 			entity.HasOne(d => d.FollowRequest)
 			      .WithMany(p => p.Notifications)
 			      .OnDelete(DeleteBehavior.Cascade);
@@ -721,7 +753,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .WithMany(p => p.Notifications)
 			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.Notifiee).WithMany(p => p.NotificationNotifiees);
+			entity.HasOne(d => d.Notifiee)
+			      .WithMany(p => p.NotificationNotifiees)
+			      .OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasOne(d => d.Notifier)
 			      .WithMany(p => p.NotificationNotifiers)
@@ -758,8 +792,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .HasComment("Whether the backend should automatically detect quote posts coming from this client")
 			      .HasDefaultValue(true);
 
-			entity.HasOne(d => d.App).WithMany(p => p.OauthTokens);
-			entity.HasOne(d => d.User).WithMany(p => p.OauthTokens);
+			entity.HasOne(d => d.App)
+			      .WithMany(p => p.OauthTokens)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.OauthTokens)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Page>(entity =>
@@ -778,19 +817,27 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .WithMany(p => p.Pages)
 			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.Pages);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Pages)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<PageLike>(entity =>
 		{
-			entity.HasOne(d => d.Page).WithMany(p => p.PageLikes);
+			entity.HasOne(d => d.Page)
+			      .WithMany(p => p.PageLikes)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.PageLikes);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.PageLikes)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<PasswordResetRequest>(entity =>
 		{
-			entity.HasOne(d => d.User).WithMany(p => p.PasswordResetRequests);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.PasswordResetRequests)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Poll>(entity =>
@@ -800,35 +847,47 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.UserId).HasComment("[Denormalized]");
 			entity.Property(e => e.NoteVisibility).HasComment("[Denormalized]");
 
-			entity.HasOne(d => d.Note).WithOne(p => p.Poll);
+			entity.HasOne(d => d.Note)
+			      .WithOne(p => p.Poll)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<PollVote>(entity =>
 		{
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the PollVote.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.PollVotes);
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.PollVotes)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.PollVotes);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.PollVotes)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<PromoNote>(entity =>
 		{
 			entity.Property(e => e.UserId).HasComment("[Denormalized]");
 
-			entity.HasOne(d => d.Note).WithOne(p => p.PromoNote);
+			entity.HasOne(d => d.Note)
+			      .WithOne(p => p.PromoNote)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<PromoRead>(entity =>
 		{
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the PromoRead.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.PromoReads);
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.PromoReads)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.PromoReads);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.PromoReads)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
-		modelBuilder.Entity<RegistrationInvite>(_ => { });
+		modelBuilder.Entity<RegistrationInvite>();
 
 		modelBuilder.Entity<RegistryItem>(entity =>
 		{
@@ -841,7 +900,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .HasDefaultValueSql("'{}'::jsonb")
 			      .HasComment("The value of the RegistryItem.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.RegistryItems);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.RegistryItems)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Relay>(_ => { });
@@ -852,9 +913,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.MuteeId).HasComment("The mutee user ID.");
 			entity.Property(e => e.MuterId).HasComment("The muter user ID.");
 
-			entity.HasOne(d => d.Mutee).WithMany(p => p.RenoteMutingMutees);
+			entity.HasOne(d => d.Mutee)
+			      .WithMany(p => p.RenoteMutingMutees)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.Muter).WithMany(p => p.RenoteMutingMuters);
+			entity.HasOne(d => d.Muter)
+			      .WithMany(p => p.RenoteMutingMuters)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<Session>(entity =>
@@ -864,24 +929,21 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the OAuth token");
 			entity.Property(e => e.Token).HasComment("The authorization token");
 
-			entity.HasOne(d => d.User).WithMany(p => p.Sessions);
-		});
-
-		modelBuilder.Entity<Signin>(entity =>
-		{
-			entity.Property(e => e.CreatedAt).HasComment("The created date of the Signin.");
-
-			entity.HasOne(d => d.User).WithMany(p => p.Signins);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Sessions)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<SwSubscription>(entity =>
 		{
 			entity.Property(e => e.SendReadMessage).HasDefaultValue(false);
 
-			entity.HasOne(d => d.User).WithMany(p => p.SwSubscriptions);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.SwSubscriptions)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
-		modelBuilder.Entity<UsedUsername>(_ => { });
+		modelBuilder.Entity<UsedUsername>();
 
 		modelBuilder.Entity<User>(entity =>
 		{
@@ -972,7 +1034,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.IsPrivate).HasDefaultValue(false);
 			entity.Property(e => e.UserId).HasComment("The ID of owner.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserGroups);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.UserGroups)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<UserGroupInvitation>(entity =>
@@ -981,9 +1045,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.UserGroupId).HasComment("The group ID.");
 			entity.Property(e => e.UserId).HasComment("The user ID.");
 
-			entity.HasOne(d => d.UserGroup).WithMany(p => p.UserGroupInvitations);
+			entity.HasOne(d => d.UserGroup)
+			      .WithMany(p => p.UserGroupInvitations)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserGroupInvitations);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.UserGroupInvitations)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<UserGroupMember>(entity =>
@@ -992,12 +1060,21 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.UserGroupId).HasComment("The group ID.");
 			entity.Property(e => e.UserId).HasComment("The user ID.");
 
-			entity.HasOne(d => d.UserGroup).WithMany(p => p.UserGroupMembers);
+			entity.HasOne(d => d.UserGroup)
+			      .WithMany(p => p.UserGroupMembers)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserGroupMemberships);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.UserGroupMemberships)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
-		modelBuilder.Entity<UserKeypair>(entity => { entity.HasOne(d => d.User).WithOne(p => p.UserKeypair); });
+		modelBuilder.Entity<UserKeypair>(entity =>
+		{
+			entity.HasOne(d => d.User)
+			      .WithOne(p => p.UserKeypair)
+			      .OnDelete(DeleteBehavior.Cascade);
+		});
 
 		modelBuilder.Entity<UserList>(entity =>
 		{
@@ -1008,7 +1085,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.Name).HasComment("The name of the UserList.");
 			entity.Property(e => e.UserId).HasComment("The owner ID.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserLists);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.UserLists)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<UserListMember>(entity =>
@@ -1017,21 +1096,29 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.UserId).HasComment("The user ID.");
 			entity.Property(e => e.UserListId).HasComment("The list ID.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserListMembers);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.UserListMembers)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.UserList).WithMany(p => p.UserListMembers);
+			entity.HasOne(d => d.UserList)
+			      .WithMany(p => p.UserListMembers)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<UserNotePin>(entity =>
 		{
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserNotePins.");
 
-			entity.HasOne(d => d.Note).WithMany(p => p.UserNotePins);
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.UserNotePins)
+			      .OnDelete(DeleteBehavior.Cascade);
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserNotePins);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.UserNotePins)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
-		modelBuilder.Entity<UserPending>(_ => { });
+		modelBuilder.Entity<UserPending>();
 
 		modelBuilder.Entity<UserProfile>(entity =>
 		{
@@ -1086,10 +1173,17 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .WithOne(p => p.UserProfile)
 			      .OnDelete(DeleteBehavior.SetNull);
 
-			entity.HasOne(d => d.User).WithOne(p => p.UserProfile);
+			entity.HasOne(d => d.User)
+			      .WithOne(p => p.UserProfile)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
-		modelBuilder.Entity<UserPublickey>(entity => { entity.HasOne(d => d.User).WithOne(p => p.UserPublickey); });
+		modelBuilder.Entity<UserPublickey>(entity =>
+		{
+			entity.HasOne(d => d.User)
+			      .WithOne(p => p.UserPublickey)
+			      .OnDelete(DeleteBehavior.Cascade);
+		});
 
 		modelBuilder.Entity<UserSecurityKey>(entity =>
 		{
@@ -1100,7 +1194,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.PublicKey)
 			      .HasComment("Variable-length public key used to verify attestations (hex-encoded).");
 
-			entity.HasOne(d => d.User).WithMany(p => p.UserSecurityKeys);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.UserSecurityKeys)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<UserSettings>(entity =>
@@ -1118,7 +1214,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.On).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.UserId).HasComment("The owner ID.");
 
-			entity.HasOne(d => d.User).WithMany(p => p.Webhooks);
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Webhooks)
+			      .OnDelete(DeleteBehavior.Cascade);
 		});
 	}
 

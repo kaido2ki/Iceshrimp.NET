@@ -274,23 +274,15 @@ public class User : IEntity
 	[InverseProperty(nameof(AbuseUserReport.TargetUser))]
 	public virtual ICollection<AbuseUserReport> AbuseUserReportTargetUsers { get; set; } = new List<AbuseUserReport>();
 
-	[InverseProperty(nameof(AccessToken.User))]
-	public virtual ICollection<AccessToken> AccessTokens { get; set; } = new List<AccessToken>();
-
 	[InverseProperty(nameof(AnnouncementRead.User))]
 	public virtual ICollection<AnnouncementRead> AnnouncementReads { get; set; } = new List<AnnouncementRead>();
 
 	[InverseProperty(nameof(Antenna.User))]
 	public virtual ICollection<Antenna> Antennas { get; set; } = new List<Antenna>();
 
-	[InverseProperty(nameof(App.User))] public virtual ICollection<App> Apps { get; set; } = new List<App>();
-
 	[InverseProperty(nameof(AttestationChallenge.User))]
 	public virtual ICollection<AttestationChallenge> AttestationChallenges { get; set; } =
 		new List<AttestationChallenge>();
-
-	[InverseProperty(nameof(AuthSession.User))]
-	public virtual ICollection<AuthSession> AuthSessions { get; set; } = new List<AuthSession>();
 
 	[ForeignKey("AvatarId")]
 	[InverseProperty(nameof(DriveFile.UserAvatar))]
@@ -444,9 +436,6 @@ public class User : IEntity
 
 	[InverseProperty(nameof(Session.User))]
 	public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
-
-	[InverseProperty(nameof(Signin.User))]
-	public virtual ICollection<Signin> Signins { get; set; } = new List<Signin>();
 
 	[InverseProperty(nameof(SwSubscription.User))]
 	public virtual ICollection<SwSubscription> SwSubscriptions { get; set; } = new List<SwSubscription>();

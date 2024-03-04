@@ -95,10 +95,6 @@ public class Notification : IEntity
 	[StringLength(32)]
 	public string? AppAccessTokenId { get; set; }
 
-	[ForeignKey("AppAccessTokenId")]
-	[InverseProperty(nameof(AccessToken.Notifications))]
-	public virtual AccessToken? AppAccessToken { get; set; }
-
 	[ForeignKey("FollowRequestId")]
 	[InverseProperty(nameof(Tables.FollowRequest.Notifications))]
 	public virtual FollowRequest? FollowRequest { get; set; }
