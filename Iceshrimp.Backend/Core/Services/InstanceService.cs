@@ -3,6 +3,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
@@ -14,20 +15,36 @@ public class InstanceService(DatabaseContext db, HttpClient httpClient)
 		o.PoolInitialFill = 5;
 	});
 
-	public async Task<Instance> GetUpdatedInstanceMetadataAsync(string host, string webDomain)
+	private async Task<Instance> GetUpdatedInstanceMetadataAsync(string host, string webDomain)
 	{
 		host = host.ToLowerInvariant();
-		var instance = db.Instances.FirstOrDefault(p => p.Host == host);
+		var instance = await db.Instances.FirstOrDefaultAsync(p => p.Host == host);
 		if (instance == null)
 		{
-			instance = new Instance
+			if (!KeyedLocker.IsInUse(host))
 			{
-				Id                 = IdHelpers.GenerateSlowflakeId(),
-				Host               = host,
-				CaughtAt           = DateTime.UtcNow,
-				LastCommunicatedAt = DateTime.UtcNow,
-			};
-			await db.AddAsync(instance);
+				using (await KeyedLocker.LockAsync(host))
+				{
+					instance = new Instance
+					{
+						Id                 = IdHelpers.GenerateSlowflakeId(),
+						Host               = host,
+						CaughtAt           = DateTime.UtcNow,
+						LastCommunicatedAt = DateTime.UtcNow,
+					};
+					await db.AddAsync(instance);
+					await db.SaveChangesAsync();
+				}
+			}
+			else
+			{
+				using (await KeyedLocker.LockAsync(host))
+				{
+					instance = await db.Instances.FirstOrDefaultAsync(p => p.Host == host);
+				}
+
+				if (instance == null) throw new Exception("Failed to get instance metadata for {host}");
+			}
 		}
 
 		if (instance.NeedsUpdate && !KeyedLocker.IsInUse(host))
@@ -51,13 +68,14 @@ public class InstanceService(DatabaseContext db, HttpClient httpClient)
 					instance.SoftwareVersion   = nodeinfo.Software?.Version;
 					instance.ThemeColor        = nodeinfo.Metadata?.ThemeColor;
 				}
+
+				await db.SaveChangesAsync();
 			}
 		}
 
-		await db.SaveChangesAsync();
 		return instance;
 	}
-	
+
 	public async Task<Instance> GetUpdatedInstanceMetadataAsync(User user)
 	{
 		if (user.Host == null || user.Uri == null) throw new Exception("Can't fetch instance metadata for local user");
