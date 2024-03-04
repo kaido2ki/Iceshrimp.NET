@@ -63,7 +63,7 @@ public class Note : IEntity
 
 	[Column("name")] [StringLength(256)] public string? Name { get; set; }
 
-	[Column("cw")] [StringLength(512)] public string? Cw { get; set; }
+	[Column("cw")] public string? Cw { get; set; }
 
 	/// <summary>
 	///     The ID of author.
