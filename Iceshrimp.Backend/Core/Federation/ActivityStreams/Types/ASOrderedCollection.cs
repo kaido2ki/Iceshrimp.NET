@@ -30,21 +30,6 @@ internal sealed class ASOrderedCollectionItemsConverter : ASCollectionItemsConve
 {
 	public override bool CanWrite => true;
 
-	public override bool CanConvert(Type objectType) => true;
-
-	public override object? ReadJson(
-		JsonReader reader, Type objectType, object? existingValue,
-		JsonSerializer serializer
-	)
-	{
-		if (reader.TokenType != JsonToken.StartArray) throw new Exception("this shouldn't happen");
-
-		var obj = JArray.Load(reader);
-		return obj.Count == 0
-			? null
-			: obj.SelectToken("$.[*].@list")?.Children().Select(ASObject.Deserialize).OfType<ASObject>().ToList();
-	}
-
 	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
 	{
 		if (value == null)
