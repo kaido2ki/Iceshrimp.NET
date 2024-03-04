@@ -69,6 +69,28 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, I
 		return Ok(res);
 	}
 
+	[Authorize("read:statuses")]
+	[HttpGet("tag/{hashtag}")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
+	public async Task<IActionResult> GetHashtagTimeline(
+		string hashtag, MastodonPaginationQuery query, TimelineSchemas.HashtagTimelineRequest request
+	)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var res = await db.Notes
+		                  .IncludeCommonProperties()
+		                  .Where(p => p.Tags.Contains(hashtag.ToLowerInvariant()))
+		                  .FilterByHashtagTimelineRequest(request)
+		                  .FilterBlocked(user)
+		                  .FilterMuted(user)
+		                  .Paginate(query, ControllerContext)
+		                  .PrecomputeVisibilities(user)
+		                  .RenderAllForMastodonAsync(noteRenderer, user);
+
+		return Ok(res);
+	}
+
 	[Authorize("read:lists")]
 	[HttpGet("list/{id}")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]

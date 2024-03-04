@@ -408,6 +408,20 @@ public static class QueryableExtensions
 		return query;
 	}
 
+	public static IQueryable<Note> FilterByHashtagTimelineRequest(
+		this IQueryable<Note> query, TimelineSchemas.HashtagTimelineRequest request
+	)
+	{
+		if (request.Any.Count > 0)
+			query = query.Where(p => request.Any.Any(t => p.Tags.Contains(t)));
+		if (request.All.Count > 0)
+			query = query.Where(p => request.All.All(t => p.Tags.Contains(t)));
+		if (request.None.Count > 0)
+			query = query.Where(p => request.None.All(t => !p.Tags.Contains(t)));
+
+		return query.FilterByPublicTimelineRequest(request);
+	}
+
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 // Justification: in the context of nullable EF navigation properties, null values are ignored and therefore irrelevant.
 // Source: https://learn.microsoft.com/en-us/ef/core/miscellaneous/nullable-reference-types#navigating-and-including-nullable-relationships
