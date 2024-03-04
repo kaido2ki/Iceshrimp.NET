@@ -795,6 +795,31 @@ public class NoteService(
 		await db.NoteBookmarks.Where(p => p.Note == note && p.User == actor).ExecuteDeleteAsync();
 	}
 
+	public async Task PinNoteAsync(Note note, User user)
+	{
+		if (note.User != user)
+			throw GracefulException.UnprocessableEntity("Validation failed: Someone else's post cannot be pinned");
+
+		if (!await db.UserNotePins.AnyAsync(p => p.Note == note && p.User == user))
+		{
+			if (await db.UserNotePins.CountAsync(p => p.User == user) > 10)
+				throw GracefulException.UnprocessableEntity("You cannot pin more than 10 notes at once.");
+
+			var pin = new UserNotePin
+			{
+				Id = IdHelpers.GenerateSlowflakeId(), CreatedAt = DateTime.UtcNow, User = user, Note = note
+			};
+
+			await db.UserNotePins.AddAsync(pin);
+			await db.SaveChangesAsync();
+		}
+	}
+
+	public async Task UnpinNoteAsync(Note note, User actor)
+	{
+		await db.UserNotePins.Where(p => p.Note == note && p.User == actor).ExecuteDeleteAsync();
+	}
+
 	public async Task UpdatePinnedNotesAsync(ASActor actor, User user)
 	{
 		logger.LogDebug("Updating pinned notes for user {user}", user.Id);

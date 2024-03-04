@@ -148,7 +148,40 @@ public class StatusController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
-		await noteSvc.BookmarkNoteAsync(note, user);
+		await noteSvc.UnbookmarkNoteAsync(note, user);
+		return await GetNote(id);
+	}
+
+	[HttpPost("{id}/pin")]
+	[Authorize("write:accounts")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> PinNote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		await noteSvc.PinNoteAsync(note, user);
+		return await GetNote(id);
+	}
+
+	[HttpPost("{id}/unpin")]
+	[Authorize("write:accounts")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> UnpinNote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id).FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		await noteSvc.UnpinNoteAsync(note, user);
 		return await GetNote(id);
 	}
 

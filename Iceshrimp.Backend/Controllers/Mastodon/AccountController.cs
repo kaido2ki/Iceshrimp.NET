@@ -305,7 +305,7 @@ public class AccountController(
 		var res = await db.Notes
 		                  .IncludeCommonProperties()
 		                  .FilterByUser(account)
-		                  .FilterByAccountStatusesRequest(request, account)
+		                  .FilterByAccountStatusesRequest(request)
 		                  .EnsureVisibleFor(user)
 		                  .Paginate(query, ControllerContext)
 		                  .PrecomputeVisibilities(user)

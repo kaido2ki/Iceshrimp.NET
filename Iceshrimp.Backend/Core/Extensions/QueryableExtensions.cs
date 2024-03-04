@@ -358,9 +358,7 @@ public static class QueryableExtensions
 	}
 
 	public static IQueryable<Note> FilterByAccountStatusesRequest(
-		this IQueryable<Note> query,
-		AccountSchemas.AccountStatusesRequest request,
-		User account
+		this IQueryable<Note> query, AccountSchemas.AccountStatusesRequest request
 	)
 	{
 		if (request.ExcludeReplies)
@@ -372,7 +370,7 @@ public static class QueryableExtensions
 		if (request.OnlyMedia)
 			query = query.Where(p => p.FileIds.Count != 0);
 		if (request.Pinned)
-			query = query.Where(note => account.HasPinned(note));
+			query = query.Where(note => note.User.HasPinned(note));
 
 		return query;
 	}

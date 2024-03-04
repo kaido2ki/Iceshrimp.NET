@@ -37,6 +37,8 @@ public class NoteRenderer(
 		            await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 		var bookmarked = data?.BookmarkedNotes?.Contains(note.Id) ??
 		                 await db.NoteBookmarks.AnyAsync(p => p.Note == note && p.User == user);
+		var pinned = data?.PinnedNotes?.Contains(note.Id) ??
+		             await db.UserNotePins.AnyAsync(p => p.Note == note && p.User == user);
 		var renoted = data?.Renotes?.Contains(note.Id) ??
 		              await db.Notes.AnyAsync(p => p.Renote == note && p.User == user && p.IsPureRenote);
 
@@ -93,7 +95,7 @@ public class NoteRenderer(
 			Content        = content,
 			Text           = data?.Source == true ? text : null,
 			Mentions       = mentions,
-			IsPinned       = false,
+			IsPinned       = pinned,
 			Attachments    = attachments,
 			Emojis         = noteEmoji
 		};
@@ -149,6 +151,14 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
+	private async Task<List<string>> GetPinnedNotes(IEnumerable<Note> notes, User? user)
+	{
+		if (user == null) return [];
+		return await db.UserNotePins.Where(p => p.User == user && notes.Contains(p.Note))
+		               .Select(p => p.NoteId)
+		               .ToListAsync();
+	}
+
 	private async Task<List<string>> GetRenotes(IEnumerable<Note> notes, User? user)
 	{
 		if (user == null) return [];
@@ -195,6 +205,7 @@ public class NoteRenderer(
 			Attachments     = await GetAttachments(noteList),
 			LikedNotes      = await GetLikedNotes(noteList, user),
 			BookmarkedNotes = await GetBookmarkedNotes(noteList, user),
+			PinnedNotes     = await GetPinnedNotes(noteList, user),
 			Renotes         = await GetRenotes(noteList, user),
 			Emoji           = await GetEmoji(noteList)
 		};
@@ -209,6 +220,7 @@ public class NoteRenderer(
 		public List<AttachmentEntity>? Attachments;
 		public List<string>?           LikedNotes;
 		public List<string>?           BookmarkedNotes;
+		public List<string>?           PinnedNotes;
 		public List<string>?           Renotes;
 		public List<EmojiEntity>?      Emoji;
 		public bool                    Source;
