@@ -59,14 +59,18 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			_                        => []
 		};
 
-		var tags = mentions
-		           .Select(mention => new ASMention
-		           {
-			           Name = $"@{mention.Username}@{mention.Host}",
-			           Href = new ASObjectBase(mention.Uri)
-		           })
-		           .Cast<ASTag>()
-		           .ToList();
+		var tags = note.Tags.Select(tag => new ASHashtag
+		               {
+			               Name = $"#{tag}",
+			               Href = new ASObjectBase($"https://{config.Value.WebDomain}/tags/{tag}")
+		               })
+		               .Concat<ASTag>(mentions.Select(mention => new ASMention
+		               {
+			               Name = $"@{mention.Username}@{mention.Host}",
+			               Href = new ASObjectBase(mention.Uri)
+		               }))
+		               .ToList();
+
 
 		var attachments = note.FileIds.Count > 0
 			? await db.DriveFiles

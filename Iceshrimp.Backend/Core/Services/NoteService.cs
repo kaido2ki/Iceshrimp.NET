@@ -77,6 +77,8 @@ public class NoteService(
 		if ((user.UserSettings?.PrivateMode ?? false) && visibility < Note.NoteVisibility.Followers)
 			visibility = Note.NoteVisibility.Followers;
 
+		var tags = ResolveHashtags(text);
+
 		var note = new Note
 		{
 			Id                   = IdHelpers.GenerateSlowflakeId(),
@@ -97,7 +99,8 @@ public class NoteService(
 			Mentions             = mentionedUserIds,
 			VisibleUserIds       = visibility == Note.NoteVisibility.Specified ? mentionedUserIds : [],
 			MentionedRemoteUsers = remoteMentions,
-			ThreadId             = reply?.ThreadId ?? reply?.Id
+			ThreadId             = reply?.ThreadId ?? reply?.Id,
+			Tags                 = tags
 		};
 
 		await UpdateNoteCountersAsync(note, true);
@@ -213,7 +216,7 @@ public class NoteService(
 
 		mentionedLocalUserIds = mentionedLocalUserIds.Except(previousMentionedLocalUserIds).ToList();
 		note.Text             = text;
-
+		note.Tags             = ResolveHashtags(text);
 
 		if (text is not null)
 		{
@@ -396,8 +399,6 @@ public class NoteService(
 		if (actor.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
 
-		//TODO: resolve emoji
-
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			await ResolveNoteMentionsAsync(note);
 
@@ -461,6 +462,7 @@ public class NoteService(
 			}
 
 			dbNote.Text = mentionsResolver.ResolveMentions(dbNote.Text, dbNote.UserHost, mentions, splitDomainMapping);
+			dbNote.Tags = ResolveHashtags(dbNote.Text, note);
 		}
 
 		var sensitive = (note.Sensitive ?? false) || dbNote.Cw != null;
@@ -544,6 +546,7 @@ public class NoteService(
 			}
 
 			dbNote.Text = mentionsResolver.ResolveMentions(dbNote.Text, dbNote.UserHost, mentions, splitDomainMapping);
+			dbNote.Tags = ResolveHashtags(dbNote.Text, note);
 		}
 
 		//TODO: handle updated alt text et al
@@ -606,6 +609,49 @@ public class NoteService(
 			: [];
 
 		return ResolveNoteMentions(users.Where(p => p != null).Select(p => p!).ToList());
+	}
+
+	private List<string> ResolveHashtags(string? text, ASNote? note = null)
+	{
+		List<string> tags = [];
+
+		if (text != null)
+		{
+			tags = MfmParser.Parse(text)
+			                .SelectMany(p => p.Children.Append(p))
+			                .OfType<MfmHashtagNode>()
+			                .Select(p => p.Hashtag.ToLowerInvariant())
+			                .Select(p => p.Trim('#'))
+			                .Distinct()
+			                .ToList();
+		}
+
+		var extracted = note?.Tags?.OfType<ASHashtag>()
+		                    .Select(p => p.Name?.ToLowerInvariant())
+		                    .Where(p => p != null)
+		                    .Cast<string>()
+		                    .Select(p => p.Trim('#'))
+		                    .Distinct()
+		                    .ToList();
+
+		if (extracted != null)
+			tags.AddRange(extracted);
+
+		if (tags.Count == 0) return [];
+
+		tags = tags.Distinct().ToList();
+
+		_ = followupTaskSvc.ExecuteTask("UpdateHashtagsTable", async provider =>
+		{
+			var bgDb     = provider.GetRequiredService<DatabaseContext>();
+			var existing = await bgDb.Hashtags.Where(p => tags.Contains(p.Name)).Select(p => p.Name).ToListAsync();
+			var dbTags = tags.Except(existing)
+			                 .Select(p => new Hashtag { Id = IdHelpers.GenerateSlowflakeId(), Name = p });
+			await bgDb.AddRangeAsync(dbTags);
+			await bgDb.SaveChangesAsync();
+		});
+
+		return tags;
 	}
 
 	private MentionQuintuple ResolveNoteMentions(IReadOnlyCollection<User> users)

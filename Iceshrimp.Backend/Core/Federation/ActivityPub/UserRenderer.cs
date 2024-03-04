@@ -46,6 +46,15 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 				? ASActor.Types.Service
 				: ASActor.Types.Person;
 
+		var tags = user.Tags
+		               .Select(tag => new ASHashtag
+		               {
+			               Name = $"#{tag}",
+			               Href = new ASObjectBase($"https://{config.Value.WebDomain}/tags/{tag}")
+		               })
+		               .Cast<ASTag>()
+		               .ToList();
+
 		return new ASActor
 		{
 			Id = id,
@@ -74,7 +83,8 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			PublicKey = new ASPublicKey
 			{
 				Id = $"{id}#main-key", Owner = new ASObjectBase(id), PublicKey = keypair.PublicKey
-			}
+			},
+			Tags = tags
 		};
 	}
 }

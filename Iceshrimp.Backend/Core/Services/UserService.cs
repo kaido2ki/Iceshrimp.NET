@@ -10,6 +10,8 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -115,11 +117,6 @@ public class UserService(
 		var host = AcctToTuple(acct).Host ?? throw new Exception("Host must not be null at this stage");
 
 		var emoji = await emojiSvc.ProcessEmojiAsync(actor.Tags?.OfType<ASEmoji>().ToList(), host);
-		var tags = actor.Tags?.OfType<ASHashtag>()
-		                .Select(p => p.Name?.ToLowerInvariant())
-		                .Where(p => p != null)
-		                .Cast<string>()
-		                .ToList();
 
 		var fields = actor.Attachments != null
 			? await actor.Attachments
@@ -133,6 +130,8 @@ public class UserService(
 			: null;
 
 		var bio = actor.MkSummary ?? await MfmConverter.FromHtmlAsync(actor.Summary);
+
+		var tags = ResolveHashtags(bio, actor);
 
 		user = new User
 		{
@@ -261,12 +260,6 @@ public class UserService(
 		                                             user.Host ??
 		                                             throw new Exception("User host must not be null at this stage"));
 
-		var tags = actor.Tags?.OfType<ASHashtag>()
-		                .Select(p => p.Name?.ToLowerInvariant())
-		                .Where(p => p != null)
-		                .Cast<string>()
-		                .ToList();
-
 		var fields = actor.Attachments != null
 			? await actor.Attachments
 			             .OfType<ASField>()
@@ -279,7 +272,6 @@ public class UserService(
 			: null;
 
 		user.Emojis = emoji.Select(p => p.Id).ToList();
-		user.Tags   = tags ?? [];
 		//TODO: FollowersCount
 		//TODO: FollowingCount
 
@@ -296,6 +288,8 @@ public class UserService(
 
 		user.UserProfile.MentionsResolved = false;
 
+		user.Tags = ResolveHashtags(user.UserProfile.Description, actor);
+
 		db.Update(user);
 		await db.SaveChangesAsync();
 		await processPendingDeletes();
@@ -308,6 +302,8 @@ public class UserService(
 	{
 		if (user.Host != null) throw new Exception("This method is only valid for local users");
 		if (user.UserProfile == null) throw new Exception("user.UserProfile must not be null at this stage");
+		
+		user.Tags = ResolveHashtags(user.UserProfile.Description);
 
 		db.Update(user);
 		db.Update(user.UserProfile);
@@ -785,5 +781,48 @@ public class UserService(
 			await db.ReloadEntityRecursivelyAsync(user);
 
 		return user;
+	}
+
+	private List<string> ResolveHashtags(string? text, ASActor? actor = null)
+	{
+		List<string> tags = [];
+
+		if (text != null)
+		{
+			tags = MfmParser.Parse(text)
+			                .SelectMany(p => p.Children.Append(p))
+			                .OfType<MfmHashtagNode>()
+			                .Select(p => p.Hashtag.ToLowerInvariant())
+			                .Select(p => p.Trim('#'))
+			                .Distinct()
+			                .ToList();
+		}
+
+		var extracted = actor?.Tags?.OfType<ASHashtag>()
+		                     .Select(p => p.Name?.ToLowerInvariant())
+		                     .Where(p => p != null)
+		                     .Cast<string>()
+		                     .Select(p => p.Trim('#'))
+		                     .Distinct()
+		                     .ToList();
+
+		if (extracted != null)
+			tags.AddRange(extracted);
+
+		if (tags.Count == 0) return [];
+		
+		tags = tags.Distinct().ToList();
+
+		_ = followupTaskSvc.ExecuteTask("UpdateHashtagsTable", async provider =>
+		{
+			var bgDb     = provider.GetRequiredService<DatabaseContext>();
+			var existing = await bgDb.Hashtags.Where(p => tags.Contains(p.Name)).Select(p => p.Name).ToListAsync();
+			var dbTags = tags.Except(existing)
+			                 .Select(p => new Hashtag { Id = IdHelpers.GenerateSlowflakeId(), Name = p });
+			await bgDb.AddRangeAsync(dbTags);
+			await bgDb.SaveChangesAsync();
+		});
+
+		return tags;
 	}
 }

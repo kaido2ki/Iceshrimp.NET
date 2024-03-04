@@ -461,15 +461,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.HasOne(d => d.User).WithMany(p => p.GalleryPosts);
 		});
 
-		modelBuilder.Entity<Hashtag>(entity =>
-		{
-			entity.Property(e => e.AttachedLocalUsersCount).HasDefaultValue(0);
-			entity.Property(e => e.AttachedRemoteUsersCount).HasDefaultValue(0);
-			entity.Property(e => e.AttachedUsersCount).HasDefaultValue(0);
-			entity.Property(e => e.MentionedLocalUsersCount).HasDefaultValue(0);
-			entity.Property(e => e.MentionedRemoteUsersCount).HasDefaultValue(0);
-			entity.Property(e => e.MentionedUsersCount).HasDefaultValue(0);
-		});
+		modelBuilder.Entity<Hashtag>();
 
 		modelBuilder.Entity<Instance>(entity =>
 		{
