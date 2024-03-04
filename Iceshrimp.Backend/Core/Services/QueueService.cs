@@ -257,6 +257,15 @@ public class JobQueue<T>(
 		await _redisDb.ListRightPushAsync("queued", RedisValue.Unbox(RedisHelpers.Serialize(job)));
 		await _subscriber.PublishAsync(_queuedChannel, "");
 	}
+	
+	public async Task ScheduleAsync(T job, DateTime triggerAt)
+	{
+		job.Status = Job.JobStatus.Delayed;
+		job.DelayedUntil = triggerAt;
+		var timestamp = (long)job.DelayedUntil.Value.Subtract(DateTime.UnixEpoch).TotalSeconds;
+    	await _redisDb.SortedSetAddAsync("delayed", RedisValue.Unbox(RedisHelpers.Serialize(job)), timestamp);
+    	await _subscriber.PublishAsync(_delayedChannel, "");
+    }
 }
 
 [ProtoContract]

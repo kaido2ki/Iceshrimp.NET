@@ -180,6 +180,43 @@ public class NotificationService(
 		eventSvc.RaiseNotification(this, notification);
 	}
 
+	public async Task GeneratePollEndedNotifications(Note note)
+	{
+		var notifications = await db.PollVotes
+		                            .Where(p => p.Note == note)
+		                            .Where(p => p.User.Host == null)
+		                            .Select(p => p.User)
+		                            .Distinct()
+		                            .Select(p => new Notification
+		                            {
+			                            Id        = IdHelpers.GenerateSlowflakeId(DateTime.UtcNow),
+			                            CreatedAt = DateTime.UtcNow,
+			                            Notifiee  = p,
+			                            Notifier  = note.User,
+			                            Note      = note,
+			                            Type      = Notification.NotificationType.PollEnded
+		                            })
+		                            .ToListAsync();
+
+		if (note.UserHost == null && notifications.All(p => p.Notifiee != note.User))
+		{
+			notifications.Add(new Notification
+			{
+				Id        = IdHelpers.GenerateSlowflakeId(DateTime.UtcNow),
+				CreatedAt = DateTime.UtcNow,
+				Notifiee  = note.User,
+				Note      = note,
+				Type      = Notification.NotificationType.PollEnded
+			});
+		}
+
+		await db.AddRangeAsync(notifications);
+		await db.SaveChangesAsync();
+
+		foreach (var notification in notifications)
+			eventSvc.RaiseNotification(this, notification);
+	}
+
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
 	public async Task GenerateRenoteNotification(Note note)
 	{

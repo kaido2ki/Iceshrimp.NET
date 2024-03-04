@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -28,6 +29,10 @@ public abstract class BackgroundTaskQueue
 				await ProcessDriveFileExpire(driveFileDeleteJob, scope, token);
 			else
 				await ProcessDriveFileDelete(driveFileDeleteJob, scope, token);
+		}
+		else if (job is PollExpiryJob pollExpiryJob)
+		{
+			await ProcessPollExpiry(pollExpiryJob, scope, token);
 		}
 	}
 
@@ -125,10 +130,28 @@ public abstract class BackgroundTaskQueue
 			}
 		}
 	}
+
+	private static async Task ProcessPollExpiry(
+		PollExpiryJob job,
+		IServiceProvider scope,
+		CancellationToken token
+	)
+	{
+		var db   = scope.GetRequiredService<DatabaseContext>();
+		var poll = await db.Polls.FirstOrDefaultAsync(p => p.NoteId == job.NoteId, cancellationToken: token);
+		if (poll == null) return;
+		if (poll.ExpiresAt > DateTime.UtcNow + TimeSpan.FromMinutes(5)) return;
+		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == poll.NoteId, cancellationToken: token);
+		if (note == null) return;
+		//TODO: try to update poll before completing it
+		var notificationSvc = scope.GetRequiredService<NotificationService>();
+		await notificationSvc.GeneratePollEndedNotifications(note);
+	}
 }
 
 [ProtoContract]
 [ProtoInclude(100, typeof(DriveFileDeleteJob))]
+[ProtoInclude(101, typeof(PollExpiryJob))]
 public class BackgroundTaskJob : Job;
 
 [ProtoContract]
@@ -136,4 +159,10 @@ public class DriveFileDeleteJob : BackgroundTaskJob
 {
 	[ProtoMember(1)] public required string DriveFileId;
 	[ProtoMember(2)] public required bool   Expire;
+}
+
+[ProtoContract]
+public class PollExpiryJob : BackgroundTaskJob
+{
+	[ProtoMember(1)] public required string NoteId;
 }

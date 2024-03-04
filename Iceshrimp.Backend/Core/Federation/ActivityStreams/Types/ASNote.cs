@@ -42,6 +42,10 @@ public class ASNote : ASObject
 	[J($"{Constants.ActivityStreamsNs}#summary")]
 	[JC(typeof(VC))]
 	public string? Summary { get; set; }
+	
+	[J($"{Constants.ActivityStreamsNs}#name")]
+	[JC(typeof(VC))]
+	public string? Name { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#published")]
 	[JC(typeof(VC))]

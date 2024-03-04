@@ -38,17 +38,18 @@ public class StatusEntity : IEntity
 	[J("pinned")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public required bool? IsPinned { get; set; }
+	
+	[J("poll")] public required PollEntity? Poll { get; set; }
 
 	[J("mentions")]          public required List<MentionEntity>    Mentions    { get; set; }
 	[J("media_attachments")] public required List<AttachmentEntity> Attachments { get; set; }
 	[J("emojis")]            public required List<EmojiEntity>      Emojis      { get; set; }
 
-	[J("tags")]        public object[] Tags        => [];   //FIXME
-	[J("reactions")]   public object[] Reactions   => [];   //FIXME
-	[J("filtered")]    public object[] Filtered    => [];   //FIXME
-	[J("card")]        public object?  Card        => null; //FIXME
-	[J("poll")]        public object?  Poll        => null; //FIXME
-	[J("application")] public object?  Application => null; //FIXME
+	[J("tags")]        public object[]    Tags        => [];        //FIXME
+	[J("reactions")]   public object[]    Reactions   => [];        //FIXME
+	[J("filtered")]    public object[]    Filtered    => [];        //FIXME
+	[J("card")]        public object?     Card        => null;      //FIXME
+	[J("application")] public object?     Application => null;      //FIXME
 
 	[J("language")] public string? Language => null; //FIXME
 

@@ -52,6 +52,8 @@ public static class ServiceExtensions
 			.AddScoped<ErrorHandlerMiddleware>()
 			.AddScoped<Controllers.Mastodon.Renderers.UserRenderer>()
 			.AddScoped<Controllers.Mastodon.Renderers.NoteRenderer>()
+			.AddScoped<PollRenderer>()
+			.AddScoped<PollService>()
 			.AddScoped<NoteRenderer>()
 			.AddScoped<UserRenderer>()
 			.AddScoped<NotificationRenderer>()

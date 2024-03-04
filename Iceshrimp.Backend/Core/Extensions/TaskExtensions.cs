@@ -13,4 +13,9 @@ public static class TaskExtensions
 			// ignored
 		}
 	}
+
+	public static async Task<List<T>> ToListAsync<T>(this Task<IEnumerable<T>> task)
+	{
+		return (await task).ToList();
+	}
 }

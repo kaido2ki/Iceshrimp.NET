@@ -9,6 +9,7 @@ using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -39,7 +40,8 @@ public class NoteService(
 	ActivityPub.ActivityRenderer activityRenderer,
 	EmojiService emojiSvc,
 	FollowupTaskService followupTaskSvc,
-	ActivityPub.ObjectResolver objectResolver
+	ActivityPub.ObjectResolver objectResolver,
+	QueueService queueSvc
 )
 {
 	private readonly List<string> _resolverHistory = [];
@@ -61,6 +63,8 @@ public class NoteService(
 			throw GracefulException.BadRequest("Content warning cannot be longer than 100.000 characters");
 		if (renote?.IsPureRenote ?? false)
 			throw GracefulException.BadRequest("Cannot renote or quote a pure renote");
+		if (reply?.IsPureRenote ?? false)
+			throw GracefulException.BadRequest("Cannot reply to a pure renote");
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			await ResolveNoteMentionsAsync(text);
@@ -424,6 +428,36 @@ public class NoteService(
 
 		if (dbNote.Renote?.IsPureRenote ?? false)
 			throw GracefulException.UnprocessableEntity("Cannot renote or quote a pure renote");
+		if (dbNote.Reply?.IsPureRenote ?? false)
+			throw GracefulException.UnprocessableEntity("Cannot reply to a pure renote");
+
+		if (note is ASQuestion question)
+		{
+			if (question is { AnyOf: not null, OneOf: not null })
+				throw GracefulException.UnprocessableEntity("Polls cannot have both anyOf and oneOf set");
+
+			var choices = (question.AnyOf ?? question.OneOf)?.Where(p => p.Name != null).ToList() ??
+			              throw GracefulException.UnprocessableEntity("Polls must have either anyOf or oneOf set");
+
+			if (choices.Count == 0)
+				throw GracefulException.UnprocessableEntity("Poll must have at least one option");
+
+			var poll = new Poll
+			{
+				Note           = dbNote,
+				UserId         = dbNote.User.Id,
+				UserHost       = dbNote.UserHost,
+				ExpiresAt      = question.EndTime ?? question.Closed,
+				Multiple       = question.AnyOf != null,
+				Choices        = choices.Select(p => p.Name).Cast<string>().ToList(),
+				NoteVisibility = dbNote.Visibility,
+				Votes          = choices.Select(p => (int?)p.Replies?.TotalItems ?? 0).ToList()
+			};
+
+			await db.AddAsync(poll);
+			dbNote.HasPoll = true;
+			await EnqueuePollExpiryTask(poll);
+		}
 
 		if (dbNote.Reply != null)
 		{
@@ -492,7 +526,10 @@ public class NoteService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "See above")]
 	public async Task<Note> ProcessNoteUpdateAsync(ASNote note, User actor)
 	{
-		var dbNote = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
+		var dbNote = await db.Notes.IncludeCommonProperties()
+		                     .Include(p => p.Poll)
+		                     .FirstOrDefaultAsync(p => p.Uri == note.Id);
+
 		if (dbNote == null) return await ProcessNoteAsync(note, actor);
 
 		if (dbNote.User != actor)
@@ -547,6 +584,68 @@ public class NoteService(
 
 			dbNote.Text = mentionsResolver.ResolveMentions(dbNote.Text, dbNote.UserHost, mentions, splitDomainMapping);
 			dbNote.Tags = ResolveHashtags(dbNote.Text, note);
+		}
+
+		if (note is ASQuestion question)
+		{
+			if (question is { AnyOf: not null, OneOf: not null })
+				throw GracefulException.UnprocessableEntity("Polls cannot have both anyOf and oneOf set");
+
+			var choices = (question.AnyOf ?? question.OneOf)?.Where(p => p.Name != null).ToList() ??
+			              throw GracefulException.UnprocessableEntity("Polls must have either anyOf or oneOf set");
+
+			if (choices.Count == 0)
+				throw GracefulException.UnprocessableEntity("Poll must have at least one option");
+
+			if (dbNote.Poll != null)
+			{
+				if (!dbNote.Poll.Choices.SequenceEqual(choices.Select(p => p.Name)))
+				{
+					await db.PollVotes.Where(p => p.Note == dbNote).ExecuteDeleteAsync();
+					dbNote.Poll.Choices   = choices.Select(p => p.Name).Cast<string>().ToList();
+					dbNote.Poll.Votes     = choices.Select(p => (int?)p.Replies?.TotalItems ?? 0).ToList();
+					dbNote.Poll.ExpiresAt = question.EndTime ?? question.Closed;
+					dbNote.Poll.Multiple  = question.AnyOf != null;
+					db.Update(dbNote.Poll);
+				}
+				else
+				{
+					dbNote.Poll.Votes = choices.Select(p => (int?)p.Replies?.TotalItems ?? 0).ToList();
+					db.Update(dbNote.Poll);
+				}
+			}
+			else
+			{
+				var poll = new Poll
+				{
+					Note           = dbNote,
+					UserId         = dbNote.User.Id,
+					UserHost       = dbNote.UserHost,
+					ExpiresAt      = question.EndTime ?? question.Closed,
+					Multiple       = question.AnyOf != null,
+					Choices        = choices.Select(p => p.Name).Cast<string>().ToList(),
+					NoteVisibility = dbNote.Visibility,
+					Votes          = choices.Select(p => (int?)p.Replies?.TotalItems ?? 0).ToList()
+				};
+
+				await db.AddAsync(poll);
+				await EnqueuePollExpiryTask(poll);
+			}
+
+			dbNote.HasPoll = true;
+		}
+		else
+		{
+			if (dbNote.HasPoll)
+			{
+				dbNote.HasPoll = false;
+			}
+
+			if (dbNote.Poll != null)
+			{
+				db.Remove(dbNote.Poll);
+				dbNote.Poll = null;
+			}
 		}
 
 		//TODO: handle updated alt text et al
@@ -912,5 +1011,12 @@ public class NoteService(
 		db.RemoveRange(await db.UserNotePins.Where(p => p.User == user).ToListAsync());
 		await db.AddRangeAsync(pins);
 		await db.SaveChangesAsync();
+	}
+
+	private async Task EnqueuePollExpiryTask(Poll poll)
+	{
+		if (!poll.ExpiresAt.HasValue) return;
+		var job = new PollExpiryJob { NoteId = poll.NoteId };
+		await queueSvc.BackgroundTaskQueue.ScheduleAsync(job, poll.ExpiresAt.Value);
 	}
 }

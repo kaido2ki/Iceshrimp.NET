@@ -162,4 +162,13 @@ public class ActivityRenderer(
 
 		return RenderAnnounce(note, actor, to, cc, renoteUri);
 	}
+	
+	public ASNote RenderVote(PollVote vote, Poll poll, Note note) => new()
+	{
+		Id           = GenerateActivityId(),
+		AttributedTo = [userRenderer.RenderLite(vote.User)],
+		To           = [new ASObjectBase(note.User.Uri ?? note.User.GetPublicUri(config.Value))],
+		InReplyTo    = new ASObjectBase(note.Uri ?? note.GetPublicUri(config.Value)),
+		Name         = poll.Choices[vote.Choice]
+	};
 }

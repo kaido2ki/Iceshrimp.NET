@@ -12,6 +12,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 public class NoteRenderer(
 	IOptions<Config.InstanceSection> config,
 	UserRenderer userRenderer,
+	PollRenderer pollRenderer,
 	MfmConverter mfmConverter,
 	DatabaseContext db
 )
@@ -69,6 +70,10 @@ public class NoteRenderer(
 		var account = data?.Accounts?.FirstOrDefault(p => p.Id == note.UserId) ??
 		              await userRenderer.RenderAsync(note.User);
 
+		var poll = note.HasPoll
+			? (data?.Polls ?? await GetPolls([note], user)).FirstOrDefault(p => p.Id == note.Id)
+			: null;
+
 		var res = new StatusEntity
 		{
 			Id             = note.Id,
@@ -97,7 +102,8 @@ public class NoteRenderer(
 			Mentions       = mentions,
 			IsPinned       = pinned,
 			Attachments    = attachments,
-			Emojis         = noteEmoji
+			Emojis         = noteEmoji,
+			Poll           = poll
 		};
 
 		return res;
@@ -170,6 +176,14 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
+	private async Task<List<PollEntity>> GetPolls(IEnumerable<Note> notes, User? user)
+	{
+		var polls = await db.Polls.Where(p => notes.Contains(p.Note))
+		                    .ToListAsync();
+
+		return await pollRenderer.RenderManyAsync(polls, user).ToListAsync();
+	}
+
 	private async Task<List<EmojiEntity>> GetEmoji(IEnumerable<Note> notes)
 	{
 		var ids = notes.SelectMany(p => p.Emojis).ToList();
@@ -203,6 +217,7 @@ public class NoteRenderer(
 			Accounts        = accounts ?? await GetAccounts(noteList.Select(p => p.User)),
 			Mentions        = await GetMentions(noteList),
 			Attachments     = await GetAttachments(noteList),
+			Polls           = await GetPolls(noteList, user),
 			LikedNotes      = await GetLikedNotes(noteList, user),
 			BookmarkedNotes = await GetBookmarkedNotes(noteList, user),
 			PinnedNotes     = await GetPinnedNotes(noteList, user),
@@ -218,6 +233,7 @@ public class NoteRenderer(
 		public List<AccountEntity>?    Accounts;
 		public List<MentionEntity>?    Mentions;
 		public List<AttachmentEntity>? Attachments;
+		public List<PollEntity>?       Polls;
 		public List<string>?           LikedNotes;
 		public List<string>?           BookmarkedNotes;
 		public List<string>?           PinnedNotes;

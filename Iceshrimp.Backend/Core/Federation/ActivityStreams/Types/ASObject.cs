@@ -41,6 +41,7 @@ public class ASObject : ASObjectBase
 						ASActor.Types.Organization         => token.ToObject<ASActor>(),
 						ASActor.Types.Application          => token.ToObject<ASActor>(),
 						ASNote.Types.Note                  => token.ToObject<ASNote>(),
+						ASQuestion.Types.Question          => token.ToObject<ASQuestion>(),
 						ASCollection.ObjectType            => token.ToObject<ASCollection>(),
 						ASCollectionPage.ObjectType        => token.ToObject<ASCollectionPage>(),
 						ASOrderedCollection.ObjectType     => token.ToObject<ASOrderedCollection>(),

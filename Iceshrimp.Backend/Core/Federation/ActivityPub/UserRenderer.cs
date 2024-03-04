@@ -19,12 +19,9 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 	/// <returns>ASActor with only the Id field populated</returns>
 	public ASActor RenderLite(User user)
 	{
-		if (user.Host != null)
-		{
-			return new ASActor { Id = user.Uri ?? throw new GracefulException("Remote user must have an URI") };
-		}
-
-		return new ASActor { Id = user.GetPublicUri(config.Value) };
+		return user.Host != null
+			? new ASActor { Id = user.Uri ?? throw new GracefulException("Remote user must have an URI") }
+			: new ASActor { Id = user.GetPublicUri(config.Value) };
 	}
 
 	public async Task<ASActor> RenderAsync(User user)
