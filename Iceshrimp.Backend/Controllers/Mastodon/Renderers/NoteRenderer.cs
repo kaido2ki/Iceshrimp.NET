@@ -33,8 +33,6 @@ public class NoteRenderer(
 				text += $"\n\nRE: {quoteUri}"; //TODO: render as inline quote
 		}
 
-		var likeCount = data?.LikeCounts?.GetValueOrDefault(note.Id, 0) ??
-		                await db.NoteLikes.CountAsync(p => p.Note == note);
 		var liked = data?.LikedNotes?.Contains(note.Id) ??
 		            await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 		var renoted = data?.Renotes?.Contains(note.Id) ??
@@ -82,7 +80,7 @@ public class NoteRenderer(
 			EditedAt       = note.UpdatedAt?.ToStringIso8601Like(),
 			RepliesCount   = note.RepliesCount,
 			RenoteCount    = note.RenoteCount,
-			FavoriteCount  = likeCount,
+			FavoriteCount  = note.LikeCount,
 			IsFavorited    = liked,
 			IsRenoted      = renoted,
 			IsBookmarked   = false, //FIXME
@@ -131,14 +129,6 @@ public class NoteRenderer(
 	internal async Task<List<AccountEntity>> GetAccounts(IEnumerable<User> users)
 	{
 		return (await userRenderer.RenderManyAsync(users.DistinctBy(p => p.Id))).ToList();
-	}
-
-	private async Task<Dictionary<string, int>> GetLikeCounts(IEnumerable<Note> notes)
-	{
-		return await db.NoteLikes.Where(p => notes.Contains(p.Note))
-		               .Select(p => p.NoteId)
-		               .GroupBy(p => p)
-		               .ToDictionaryAsync(p => p.First(), p => p.Count());
 	}
 
 	private async Task<List<string>> GetLikedNotes(IEnumerable<Note> notes, User? user)
@@ -193,7 +183,6 @@ public class NoteRenderer(
 			Accounts    = accounts ?? await GetAccounts(noteList.Select(p => p.User)),
 			Mentions    = await GetMentions(noteList),
 			Attachments = await GetAttachments(noteList),
-			LikeCounts  = await GetLikeCounts(noteList),
 			LikedNotes  = await GetLikedNotes(noteList, user),
 			Renotes     = await GetRenotes(noteList, user),
 			Emoji       = await GetEmoji(noteList)
@@ -204,13 +193,12 @@ public class NoteRenderer(
 
 	public class NoteRendererDto
 	{
-		public List<AccountEntity>?     Accounts;
-		public List<MentionEntity>?     Mentions;
-		public List<AttachmentEntity>?  Attachments;
-		public Dictionary<string, int>? LikeCounts;
-		public List<string>?            LikedNotes;
-		public List<string>?            Renotes;
-		public List<EmojiEntity>?       Emoji;
-		public bool                     Source;
+		public List<AccountEntity>?    Accounts;
+		public List<MentionEntity>?    Mentions;
+		public List<AttachmentEntity>? Attachments;
+		public List<string>?           LikedNotes;
+		public List<string>?           Renotes;
+		public List<EmojiEntity>?      Emoji;
+		public bool                    Source;
 	}
 }

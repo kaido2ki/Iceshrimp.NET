@@ -86,6 +86,8 @@ public class Note : IEntity
 
 	[Column("repliesCount")] public short RepliesCount { get; set; }
 
+	[Column("likeCount")] public int LikeCount { get; set; }
+
 	[Column("reactions", TypeName = "jsonb")]
 	public Dictionary<string, long> Reactions { get; set; } = null!;
 

@@ -727,6 +727,9 @@ public class NoteService(
 
 			await db.NoteLikes.AddAsync(like);
 			await db.SaveChangesAsync();
+			await db.Notes.Where(p => p.Id == note.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(n => n.LikeCount, n => n.LikeCount + 1));
+
 			if (user.Host == null && note.UserHost != null)
 			{
 				var activity = activityRenderer.RenderLike(note, user);
@@ -742,6 +745,10 @@ public class NoteService(
 	{
 		var count = await db.NoteLikes.Where(p => p.Note == note && p.User == actor).ExecuteDeleteAsync();
 		if (count == 0) return;
+
+		await db.Notes.Where(p => p.Id == note.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(n => n.LikeCount, n => n.LikeCount - count));
+
 		if (actor.Host == null && note.UserHost != null)
 		{
 			var activity = activityRenderer.RenderUndo(userRenderer.RenderLite(actor),

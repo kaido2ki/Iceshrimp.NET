@@ -96,6 +96,7 @@ public class StatusController(
 		           throw GracefulException.RecordNotFound();
 
 		await noteSvc.LikeNoteAsync(note, user);
+		note.LikeCount++; // we do not want to call save changes after this point
 		return await GetNote(id);
 	}
 
@@ -113,6 +114,7 @@ public class StatusController(
 		           throw GracefulException.RecordNotFound();
 
 		await noteSvc.UnlikeNoteAsync(note, user);
+		note.LikeCount--; // we do not want to call save changes after this point
 		return await GetNote(id);
 	}
 

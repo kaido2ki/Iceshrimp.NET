@@ -609,6 +609,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.Emojis).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.FileIds).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.HasPoll).HasDefaultValue(false);
+			entity.Property(e => e.LikeCount).HasDefaultValue(0);
 			entity.Property(e => e.LocalOnly).HasDefaultValue(false);
 			entity.Property(e => e.MentionedRemoteUsers).HasDefaultValueSql("'[]'::jsonb");
 			entity.Property(e => e.Mentions).HasDefaultValueSql("'{}'::character varying[]");
