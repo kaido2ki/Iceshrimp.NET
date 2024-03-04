@@ -778,6 +778,8 @@ public class NoteService(
 
 	public async Task BookmarkNoteAsync(Note note, User user)
 	{
+		if (user.Host != null) throw new Exception("This method is only valid for local users");
+
 		if (!await db.NoteBookmarks.AnyAsync(p => p.Note == note && p.User == user))
 		{
 			var bookmark = new NoteBookmark
@@ -790,13 +792,17 @@ public class NoteService(
 		}
 	}
 
-	public async Task UnbookmarkNoteAsync(Note note, User actor)
+	public async Task UnbookmarkNoteAsync(Note note, User user)
 	{
-		await db.NoteBookmarks.Where(p => p.Note == note && p.User == actor).ExecuteDeleteAsync();
+		if (user.Host != null) throw new Exception("This method is only valid for local users");
+
+		await db.NoteBookmarks.Where(p => p.Note == note && p.User == user).ExecuteDeleteAsync();
 	}
 
 	public async Task PinNoteAsync(Note note, User user)
 	{
+		if (user.Host != null) throw new Exception("This method is only valid for local users");
+
 		if (note.User != user)
 			throw GracefulException.UnprocessableEntity("Validation failed: Someone else's post cannot be pinned");
 
@@ -812,12 +818,21 @@ public class NoteService(
 
 			await db.UserNotePins.AddAsync(pin);
 			await db.SaveChangesAsync();
+
+			var activity = activityRenderer.RenderUpdate(await userRenderer.RenderAsync(user));
+			await deliverSvc.DeliverToFollowersAsync(activity, user, []);
 		}
 	}
 
-	public async Task UnpinNoteAsync(Note note, User actor)
+	public async Task UnpinNoteAsync(Note note, User user)
 	{
-		await db.UserNotePins.Where(p => p.Note == note && p.User == actor).ExecuteDeleteAsync();
+		if (user.Host != null) throw new Exception("This method is only valid for local users");
+
+		var count = await db.UserNotePins.Where(p => p.Note == note && p.User == user).ExecuteDeleteAsync();
+		if (count == 0) return;
+
+		var activity = activityRenderer.RenderUpdate(await userRenderer.RenderAsync(user));
+		await deliverSvc.DeliverToFollowersAsync(activity, user, []);
 	}
 
 	public async Task UpdatePinnedNotesAsync(ASActor actor, User user)
@@ -827,9 +842,9 @@ public class NoteService(
 		if (collection == null) return;
 		if (collection.IsUnresolved)
 			collection = await objectResolver.ResolveObject(collection, force: true) as ASOrderedCollection;
-		if (collection is not { OrderedItems: not null }) return;
+		if (collection is not { Items: not null }) return;
 
-		var items = await collection.OrderedItems.Take(10).Select(p => objectResolver.ResolveObject(p)).AwaitAllAsync();
+		var items = await collection.Items.Take(10).Select(p => objectResolver.ResolveObject(p)).AwaitAllAsync();
 		var notes = await items.OfType<ASNote>().Select(p => ResolveNoteAsync(p.Id, p)).AwaitAllNoConcurrencyAsync();
 		var previousPins = await db.Users.Where(p => p.Id == user.Id)
 		                           .Select(p => p.PinnedNotes.Select(i => i.Id))

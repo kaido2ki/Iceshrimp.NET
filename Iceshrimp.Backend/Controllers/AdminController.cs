@@ -72,6 +72,15 @@ public class AdminController(
 	}
 
 	[UseNewtonsoftJson]
+	[HttpGet("activities/users/{id}/collections/featured")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
+	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
+	public async Task<IActionResult> GetUserFeaturedActivity(string id)
+	{
+		return await apController.GetUserFeatured(id);
+	}
+
+	[UseNewtonsoftJson]
 	[HttpGet("activities/users/@{acct}")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
 	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]

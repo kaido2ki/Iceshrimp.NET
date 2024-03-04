@@ -81,7 +81,7 @@ public sealed class ASCollectionConverter : JsonConverter
 	}
 }
 
-internal sealed class ASCollectionItemsConverter : JsonConverter
+internal class ASCollectionItemsConverter : JsonConverter
 {
 	public override bool CanWrite => false;
 

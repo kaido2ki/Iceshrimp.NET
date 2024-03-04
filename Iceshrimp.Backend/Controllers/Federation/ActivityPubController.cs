@@ -2,6 +2,7 @@ using System.Text;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Schemas;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
@@ -11,6 +12,7 @@ using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Federation;
 
@@ -21,7 +23,8 @@ public class ActivityPubController(
 	DatabaseContext db,
 	QueueService queues,
 	ActivityPub.NoteRenderer noteRenderer,
-	ActivityPub.UserRenderer userRenderer
+	ActivityPub.UserRenderer userRenderer,
+	IOptions<Config.InstanceSection> config
 ) : ControllerBase
 {
 	[HttpGet("/notes/{id}")]
@@ -55,6 +58,37 @@ public class ActivityPubController(
 		if (user.Host != null) return user.Uri != null ? RedirectPermanent(user.Uri) : NotFound();
 		var rendered  = await userRenderer.RenderAsync(user);
 		var compacted = LdHelpers.Compact(rendered);
+		return Ok(compacted);
+	}
+
+	[HttpGet("/users/{id}/collections/featured")]
+	[AuthorizedFetch]
+	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> GetUserFeatured(string id)
+	{
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && p.Host == null);
+		if (user == null) return NotFound();
+
+		var pins = await db.UserNotePins.Where(p => p.User == user)
+		                   .OrderByDescending(p => p.Id)
+		                   .Include(p => p.Note.User.UserProfile)
+		                   .Include(p => p.Note.Renote!.User.UserProfile)
+		                   .Include(p => p.Note.Reply!.User.UserProfile)
+		                   .Select(p => p.Note)
+		                   .Take(10)
+		                   .ToListAsync();
+
+		var rendered = await pins.Select(p => noteRenderer.RenderAsync(p)).AwaitAllNoConcurrencyAsync();
+		var res = new ASOrderedCollection
+		{
+			Id           = $"{user.GetPublicUri(config.Value)}/collections/featured",
+			TotalItems   = (ulong)rendered.Count,
+			Items = rendered.Cast<ASObject>().ToList()
+		};
+
+		var compacted = LdHelpers.Compact(res);
 		return Ok(compacted);
 	}
 
