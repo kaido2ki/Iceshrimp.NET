@@ -61,21 +61,34 @@ public sealed class ASOrderedCollectionConverter : JsonConverter
 	{
 		if (reader.TokenType == JsonToken.StartArray)
 		{
-			var obj       = JArray.Load(reader);
-			var valueList = obj.ToObject<List<LDValueObject<object?>>>();
-			if (valueList?.Any(p => p.Value != null) ?? false)
-				return ValueObjectConverter.HandleObject(valueList[0], objectType);
+			var obj = JArray.Load(reader);
+			try
+			{
+				var valueList = obj.ToObject<List<LDValueObject<object?>>>();
+				if (valueList?.Any(p => p.Value != null) ?? false)
+					return ValueObjectConverter.HandleObject(valueList[0], objectType);
+			}
+			catch
+			{
+				//ignored
+			}
+
 			var list = obj.ToObject<List<ASOrderedCollection?>>();
 			return list == null || list.Count == 0 ? null : list[0];
 		}
 
 		if (reader.TokenType == JsonToken.StartObject)
 		{
-			var obj      = JObject.Load(reader);
-			var valueObj = obj.ToObject<LDValueObject<object?>>();
-			return valueObj is { Value: not null }
-				? ValueObjectConverter.HandleObject(valueObj, objectType)
-				: obj.ToObject<ASOrderedCollection?>();
+			var obj = JObject.Load(reader);
+			try { }
+			catch
+			{
+				var valueObj = obj.ToObject<LDValueObject<object?>>();
+				if (valueObj is { Value: not null })
+					return ValueObjectConverter.HandleObject(valueObj, objectType);
+			}
+
+			return obj.ToObject<ASOrderedCollection?>();
 		}
 
 		return null;

@@ -57,19 +57,38 @@ public sealed class ASCollectionConverter : JsonConverter
 	{
 		if (reader.TokenType == JsonToken.StartArray)
 		{
-			var obj       = JArray.Load(reader);
-			var valueList = obj.ToObject<List<LDValueObject<object?>>>();
-			if (valueList is { Count: > 0 })
-				return VC.HandleObject(valueList[0], objectType);
+			var obj = JArray.Load(reader);
+
+			try
+			{
+				var valueList = obj.ToObject<List<LDValueObject<object?>>>();
+				if (valueList is { Count: > 0 })
+					return VC.HandleObject(valueList[0], objectType);
+			}
+			catch
+			{
+				// ignored
+			}
+
 			var list = obj.ToObject<List<ASCollection?>>();
 			return list == null || list.Count == 0 ? null : list[0];
 		}
 
 		if (reader.TokenType == JsonToken.StartObject)
 		{
-			var obj      = JObject.Load(reader);
-			var valueObj = obj.ToObject<LDValueObject<object?>>();
-			return valueObj != null ? VC.HandleObject(valueObj, objectType) : obj.ToObject<ASCollection?>();
+			var obj = JObject.Load(reader);
+			try
+			{
+				var valueObj = obj.ToObject<LDValueObject<object?>>();
+				if (valueObj != null)
+					return VC.HandleObject(valueObj, objectType);
+			}
+			catch
+			{
+				// ignored
+			}
+
+			return obj.ToObject<ASCollection?>();
 		}
 
 		return null;
