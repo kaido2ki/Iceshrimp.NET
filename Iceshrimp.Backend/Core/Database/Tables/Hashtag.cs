@@ -12,7 +12,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("Name", IsUnique = true)]
 [Index("MentionedRemoteUsersCount")]
 [Index("AttachedUsersCount")]
-public class Hashtag
+public class Hashtag : IEntity
 {
 	[Key]
 	[Column("id")]

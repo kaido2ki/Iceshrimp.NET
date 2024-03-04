@@ -6,14 +6,17 @@ using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -27,7 +30,8 @@ public class SearchController(
 	NoteRenderer noteRenderer,
 	UserRenderer userRenderer,
 	NoteService noteSvc,
-	ActivityPub.UserResolver userResolver
+	ActivityPub.UserResolver userResolver,
+	IOptions<Config.InstanceSection> config
 ) : ControllerBase
 {
 	[HttpGet("/api/v2/search")]
@@ -43,8 +47,8 @@ public class SearchController(
 		var result = new SearchSchemas.SearchResponse
 		{
 			Accounts = search.Type is null or "accounts" ? await SearchUsersAsync(search, pagination) : [],
-			Statuses = search.Type is null or "statuses" ? await SearchNotesAsync(search, pagination) : []
-			//TODO: implement hashtags
+			Statuses = search.Type is null or "statuses" ? await SearchNotesAsync(search, pagination) : [],
+			Hashtags = search.Type is null or "hashtags" ? await SearchTagsAsync(search, pagination) : []
 		};
 
 		return Ok(result);
@@ -187,5 +191,26 @@ public class SearchController(
 		               .Skip(pagination.Offset ?? 0)
 		               .PrecomputeVisibilities(user)
 		               .RenderAllForMastodonAsync(noteRenderer, user);
+	}
+
+	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
+	                 Justification = "Inspection doesn't know about the Projectable attribute")]
+	private async Task<List<TagEntity>> SearchTagsAsync(
+		SearchSchemas.SearchRequest search,
+		MastodonPaginationQuery pagination
+	)
+	{
+		return await db.Hashtags
+		               .Where(p => EF.Functions.ILike(p.Name, "%" + EfHelpers.EscapeLikeQuery(search.Query!) + "%"))
+		               .Paginate(pagination, ControllerContext)
+		               .OrderByDescending(p => p.Id)
+		               .Skip(pagination.Offset ?? 0)
+		               .Select(p => new TagEntity
+		               {
+			               Name      = p.Name,
+			               Url       = $"https://{config.Value.WebDomain}/tags/{p.Name}",
+			               Following = false, //TODO
+		               })
+		               .ToListAsync();
 	}
 }
