@@ -118,6 +118,40 @@ public class StatusController(
 		return await GetNote(id);
 	}
 
+	[HttpPost("{id}/bookmark")]
+	[Authorize("write:bookmarks")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> BookmarkNote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		await noteSvc.BookmarkNoteAsync(note, user);
+		return await GetNote(id);
+	}
+
+	[HttpPost("{id}/unbookmark")]
+	[Authorize("write:bookmarks")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> UnbookmarkNote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		await noteSvc.BookmarkNoteAsync(note, user);
+		return await GetNote(id);
+	}
+
 	[HttpPost("{id}/reblog")]
 	[Authorize("write:favourites")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]

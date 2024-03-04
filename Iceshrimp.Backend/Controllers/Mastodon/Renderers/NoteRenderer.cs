@@ -35,6 +35,8 @@ public class NoteRenderer(
 
 		var liked = data?.LikedNotes?.Contains(note.Id) ??
 		            await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
+		var bookmarked = data?.BookmarkedNotes?.Contains(note.Id) ??
+		                 await db.NoteBookmarks.AnyAsync(p => p.Note == note && p.User == user);
 		var renoted = data?.Renotes?.Contains(note.Id) ??
 		              await db.Notes.AnyAsync(p => p.Renote == note && p.User == user && p.IsPureRenote);
 
@@ -83,8 +85,8 @@ public class NoteRenderer(
 			FavoriteCount  = note.LikeCount,
 			IsFavorited    = liked,
 			IsRenoted      = renoted,
-			IsBookmarked   = false, //FIXME
-			IsMuted        = null,  //FIXME
+			IsBookmarked   = bookmarked,
+			IsMuted        = null, //FIXME
 			IsSensitive    = note.Cw != null,
 			ContentWarning = note.Cw ?? "",
 			Visibility     = StatusEntity.EncodeVisibility(note.Visibility),
@@ -139,6 +141,14 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
+	private async Task<List<string>> GetBookmarkedNotes(IEnumerable<Note> notes, User? user)
+	{
+		if (user == null) return [];
+		return await db.NoteBookmarks.Where(p => p.User == user && notes.Contains(p.Note))
+		               .Select(p => p.NoteId)
+		               .ToListAsync();
+	}
+
 	private async Task<List<string>> GetRenotes(IEnumerable<Note> notes, User? user)
 	{
 		if (user == null) return [];
@@ -180,12 +190,13 @@ public class NoteRenderer(
 
 		var data = new NoteRendererDto
 		{
-			Accounts    = accounts ?? await GetAccounts(noteList.Select(p => p.User)),
-			Mentions    = await GetMentions(noteList),
-			Attachments = await GetAttachments(noteList),
-			LikedNotes  = await GetLikedNotes(noteList, user),
-			Renotes     = await GetRenotes(noteList, user),
-			Emoji       = await GetEmoji(noteList)
+			Accounts        = accounts ?? await GetAccounts(noteList.Select(p => p.User)),
+			Mentions        = await GetMentions(noteList),
+			Attachments     = await GetAttachments(noteList),
+			LikedNotes      = await GetLikedNotes(noteList, user),
+			BookmarkedNotes = await GetBookmarkedNotes(noteList, user),
+			Renotes         = await GetRenotes(noteList, user),
+			Emoji           = await GetEmoji(noteList)
 		};
 
 		return await noteList.Select(p => RenderAsync(p, user, data)).AwaitAllAsync();
@@ -197,6 +208,7 @@ public class NoteRenderer(
 		public List<MentionEntity>?    Mentions;
 		public List<AttachmentEntity>? Attachments;
 		public List<string>?           LikedNotes;
+		public List<string>?           BookmarkedNotes;
 		public List<string>?           Renotes;
 		public List<EmojiEntity>?      Emoji;
 		public bool                    Source;

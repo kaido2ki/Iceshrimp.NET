@@ -776,6 +776,25 @@ public class NoteService(
 		await UnlikeNoteAsync(dbNote, actor);
 	}
 
+	public async Task BookmarkNoteAsync(Note note, User user)
+	{
+		if (!await db.NoteBookmarks.AnyAsync(p => p.Note == note && p.User == user))
+		{
+			var bookmark = new NoteBookmark
+			{
+				Id = IdHelpers.GenerateSlowflakeId(), CreatedAt = DateTime.UtcNow, User = user, Note = note
+			};
+
+			await db.NoteBookmarks.AddAsync(bookmark);
+			await db.SaveChangesAsync();
+		}
+	}
+
+	public async Task UnbookmarkNoteAsync(Note note, User actor)
+	{
+		await db.NoteBookmarks.Where(p => p.Note == note && p.User == actor).ExecuteDeleteAsync();
+	}
+
 	public async Task UpdatePinnedNotesAsync(ASActor actor, User user)
 	{
 		logger.LogDebug("Updating pinned notes for user {user}", user.Id);
