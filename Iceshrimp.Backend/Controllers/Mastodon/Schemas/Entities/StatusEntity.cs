@@ -9,6 +9,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 public class StatusEntity : IEntity
 {
+	[J("id")]                     public required string        Id             { get; set; }
 	[J("content")]                public required string?       Content        { get; set; }
 	[J("uri")]                    public required string        Uri            { get; set; }
 	[J("url")]                    public required string        Url            { get; set; }
@@ -38,22 +39,20 @@ public class StatusEntity : IEntity
 	[J("pinned")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public required bool? IsPinned { get; set; }
-	
+
 	[J("poll")] public required PollEntity? Poll { get; set; }
 
 	[J("mentions")]          public required List<MentionEntity>    Mentions    { get; set; }
 	[J("media_attachments")] public required List<AttachmentEntity> Attachments { get; set; }
 	[J("emojis")]            public required List<EmojiEntity>      Emojis      { get; set; }
+	[J("reactions")]         public required List<ReactionEntity>   Reactions   { get; set; }
 
-	[J("tags")]        public object[]    Tags        => [];        //FIXME
-	[J("reactions")]   public object[]    Reactions   => [];        //FIXME
-	[J("filtered")]    public object[]    Filtered    => [];        //FIXME
-	[J("card")]        public object?     Card        => null;      //FIXME
-	[J("application")] public object?     Application => null;      //FIXME
+	[J("tags")]        public object[] Tags        => [];   //FIXME
+	[J("filtered")]    public object[] Filtered    => [];   //FIXME
+	[J("card")]        public object?  Card        => null; //FIXME
+	[J("application")] public object?  Application => null; //FIXME
 
 	[J("language")] public string? Language => null; //FIXME
-
-	[J("id")] public required string Id { get; set; }
 
 	public static string EncodeVisibility(Note.NoteVisibility visibility)
 	{

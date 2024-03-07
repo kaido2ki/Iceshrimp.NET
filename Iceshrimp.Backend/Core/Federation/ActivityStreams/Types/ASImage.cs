@@ -7,6 +7,10 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASImage
 {
+	[J("@type")]
+	[JC(typeof(StringListSingleConverter))]
+	public string Type => $"{Constants.ActivityStreamsNs}#Image";
+	
 	[J($"{Constants.ActivityStreamsNs}#url")]
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? Url { get; set; }

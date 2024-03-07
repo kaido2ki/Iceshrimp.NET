@@ -1,13 +1,19 @@
+using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class ActivityDeliverService(ILogger<ActivityDeliverService> logger, QueueService queueService)
+public class ActivityDeliverService(
+	ILogger<ActivityDeliverService> logger,
+	QueueService queueService,
+	DatabaseContext db
+)
 {
 	public async Task DeliverToFollowersAsync(ASActivity activity, User actor, IEnumerable<User> recipients)
 	{
@@ -39,5 +45,19 @@ public class ActivityDeliverService(ILogger<ActivityDeliverService> logger, Queu
 				                            LdHelpers.JsonSerializerSettings),
 			DeliverToFollowers = false
 		});
+	}
+
+	public async Task DeliverToConditionalAsync(ASActivity activity, User actor, Note note)
+	{
+		if (note.Visibility != Note.NoteVisibility.Specified)
+		{
+			await DeliverToFollowersAsync(activity, actor, [note.User]);
+			return;
+		}
+
+		await DeliverToAsync(activity, actor, await db.Users.Where(p => note.VisibleUserIds
+		                                                                    .Prepend(note.User.Id)
+		                                                                    .Contains(p.Id))
+		                                              .ToArrayAsync());
 	}
 }

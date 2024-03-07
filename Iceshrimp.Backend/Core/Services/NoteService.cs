@@ -288,7 +288,8 @@ public class NoteService(
 					db.Update(note.Poll);
 				}
 			}
-			else {
+			else
+			{
 				poll.Note           = note;
 				poll.UserId         = note.User.Id;
 				poll.UserHost       = note.UserHost;
@@ -976,8 +977,8 @@ public class NoteService(
 
 			if (user.Host == null && note.UserHost != null)
 			{
-				var activity = activityRenderer.RenderLike(note, user);
-				await deliverSvc.DeliverToFollowersAsync(activity, user, [note.User]);
+				var activity = activityRenderer.RenderLike(like);
+				await deliverSvc.DeliverToConditionalAsync(activity, user, note);
 			}
 
 			eventSvc.RaiseNoteLiked(this, note, user);
@@ -988,26 +989,28 @@ public class NoteService(
 		return false;
 	}
 
-	public async Task<bool> UnlikeNoteAsync(Note note, User actor)
+	public async Task<bool> UnlikeNoteAsync(Note note, User user)
 	{
-		var count = await db.NoteLikes.Where(p => p.Note == note && p.User == actor).ExecuteDeleteAsync();
-		if (count == 0) return false;
+		var like = await db.NoteLikes.Where(p => p.Note == note && p.User == user).FirstOrDefaultAsync();
+		if (like == null) return false;
+		db.Remove(like);
+		await db.SaveChangesAsync();
 
 		await db.Notes.Where(p => p.Id == note.Id)
-		        .ExecuteUpdateAsync(p => p.SetProperty(n => n.LikeCount, n => n.LikeCount - count));
+		        .ExecuteUpdateAsync(p => p.SetProperty(n => n.LikeCount, n => n.LikeCount - 1));
 
-		if (actor.Host == null && note.UserHost != null)
+		if (user.Host == null && note.UserHost != null)
 		{
-			var activity = activityRenderer.RenderUndo(userRenderer.RenderLite(actor),
-			                                           activityRenderer.RenderLike(note, actor));
-			await deliverSvc.DeliverToFollowersAsync(activity, actor, [note.User]);
+			var activity =
+				activityRenderer.RenderUndo(userRenderer.RenderLite(user), activityRenderer.RenderLike(like));
+			await deliverSvc.DeliverToConditionalAsync(activity, user, note);
 		}
 
-		eventSvc.RaiseNoteUnliked(this, note, actor);
+		eventSvc.RaiseNoteUnliked(this, note, user);
 		await db.Notifications
 		        .Where(p => p.Type == Notification.NotificationType.Like &&
 		                    p.Notifiee == note.User &&
-		                    p.Notifier == actor)
+		                    p.Notifier == user)
 		        .ExecuteDeleteAsync();
 
 		return true;
@@ -1019,10 +1022,10 @@ public class NoteService(
 		await LikeNoteAsync(dbNote, actor);
 	}
 
-	public async Task UnlikeNoteAsync(ASNote note, User actor)
+	public async Task UnlikeNoteAsync(ASNote note, User user)
 	{
 		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot unregister like for unknown note");
-		await UnlikeNoteAsync(dbNote, actor);
+		await UnlikeNoteAsync(dbNote, user);
 	}
 
 	public async Task BookmarkNoteAsync(Note note, User user)
@@ -1121,5 +1124,89 @@ public class NoteService(
 		if (!poll.ExpiresAt.HasValue) return;
 		var job = new PollExpiryJob { NoteId = poll.Note.Id };
 		await queueSvc.BackgroundTaskQueue.ScheduleAsync(job, poll.ExpiresAt.Value);
+	}
+
+	public async Task<string?> ReactToNoteAsync(Note note, User user, string name)
+	{
+		name = await emojiSvc.ResolveEmojiName(name, user.Host);
+		if (await db.NoteReactions.AnyAsync(p => p.Note == note && p.User == user && p.Reaction == name))
+			return null;
+
+		var reaction = new NoteReaction
+		{
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			Note      = note,
+			User      = user,
+			Reaction  = name
+		};
+
+		await db.AddAsync(reaction);
+		await db.SaveChangesAsync();
+		eventSvc.RaiseNoteReacted(this, reaction);
+		await notificationSvc.GenerateReactionNotification(reaction);
+
+		await db.Database
+		        .ExecuteSqlAsync($"""UPDATE "note" SET "reactions" = jsonb_set("reactions", ARRAY[{name}], (COALESCE("reactions"->>{name}, '0')::int + 1)::text::jsonb) WHERE "id" = {note.Id}""");
+
+		if (user.Host == null && note.User.Host != null)
+		{
+			var emoji    = await emojiSvc.ResolveEmoji(reaction.Reaction);
+			var activity = activityRenderer.RenderReact(reaction, emoji);
+			await deliverSvc.DeliverToConditionalAsync(activity, user, note);
+		}
+
+		return name;
+	}
+
+	public async Task ReactToNoteAsync(ASNote note, User actor, string name)
+	{
+		var dbNote = await ResolveNoteAsync(note.Id, note.VerifiedFetch ? note : null);
+		if (dbNote == null)
+			throw GracefulException.UnprocessableEntity("Failed to resolve reaction target");
+
+		await ReactToNoteAsync(dbNote, actor, name);
+	}
+
+	public async Task<string?> RemoveReactionFromNoteAsync(Note note, User user, string name)
+	{
+		name = await emojiSvc.ResolveEmojiName(name, user.Host);
+
+		var reaction =
+			await db.NoteReactions.FirstOrDefaultAsync(p => p.Note == note && p.User == user && p.Reaction == name);
+
+		if (reaction == null) return null;
+		db.Remove(reaction);
+		await db.SaveChangesAsync();
+		eventSvc.RaiseNoteUnreacted(this, reaction);
+
+		await db.Database
+		        .ExecuteSqlAsync($"""UPDATE "note" SET "reactions" = jsonb_set("reactions", ARRAY[{name}], (COALESCE("reactions"->>{name}, '1')::int - 1)::text::jsonb) WHERE "id" = {note.Id}""");
+
+		if (user.Host == null && note.User.Host != null)
+		{
+			var actor    = userRenderer.RenderLite(user);
+			var emoji    = await emojiSvc.ResolveEmoji(reaction.Reaction);
+			var activity = activityRenderer.RenderUndo(actor, activityRenderer.RenderReact(reaction, emoji));
+			await deliverSvc.DeliverToConditionalAsync(activity, user, note);
+		}
+
+		if (note.User.Host == null && note.User != user)
+		{
+			await db.Notifications
+			        .Where(p => p.Note == note &&
+			                    p.Notifier == user &&
+			                    p.Type == Notification.NotificationType.Reaction)
+			        .ExecuteDeleteAsync();
+		}
+
+		return name;
+	}
+
+	public async Task RemoveReactionFromNoteAsync(ASNote note, User actor, string name)
+	{
+		var dbNote = await ResolveNoteAsync(note.Id, note.VerifiedFetch ? note : null);
+		if (dbNote == null) return;
+		await RemoveReactionFromNoteAsync(dbNote, actor, name);
 	}
 }

@@ -104,6 +104,26 @@ public class NotificationService(
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotification(this, notification);
 	}
+	
+	public async Task GenerateReactionNotification(NoteReaction reaction)
+	{
+		if (reaction.Note.User.Host != null) return;
+		if (reaction.Note.User == reaction.User) return;
+
+		var notification = new Notification
+		{
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			Note      = reaction.Note,
+			Notifiee  = reaction.Note.User,
+			Notifier  = reaction.User,
+			Type      = Notification.NotificationType.Reaction
+		};
+
+		await db.AddAsync(notification);
+		await db.SaveChangesAsync();
+		eventSvc.RaiseNotification(this, notification);
+	}
 
 	public async Task GenerateFollowNotification(User follower, User followee)
 	{

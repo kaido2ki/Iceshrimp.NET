@@ -10,6 +10,8 @@ public class EventService
 	public event EventHandler<Note>?            NoteDeleted;
 	public event EventHandler<NoteInteraction>? NoteLiked;
 	public event EventHandler<NoteInteraction>? NoteUnliked;
+	public event EventHandler<NoteReaction>?    NoteReacted;
+	public event EventHandler<NoteReaction>?    NoteUnreacted;
 	public event EventHandler<Notification>?    Notification;
 
 	public void RaiseNotePublished(object? sender, Note note) => NotePublished?.Invoke(sender, note);
@@ -29,4 +31,10 @@ public class EventService
 
 	public void RaiseNoteUnliked(object? sender, Note note, User user) =>
 		NoteUnliked?.Invoke(sender, new NoteInteraction { Note = note, User = user });
+
+	public void RaiseNoteReacted(object? sender, NoteReaction reaction) =>
+		NoteReacted?.Invoke(sender, reaction);
+
+	public void RaiseNoteUnreacted(object? sender, NoteReaction reaction) =>
+		NoteUnreacted?.Invoke(sender, reaction);
 }

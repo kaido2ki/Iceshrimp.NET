@@ -122,6 +122,46 @@ public class StatusController(
 		return await GetNote(id);
 	}
 
+	[HttpPost("{id}/react/{reaction}")]
+	[Authorize("write:favourites")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> ReactNote(string id, string reaction)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		var res = await noteSvc.ReactToNoteAsync(note, user, reaction);
+		if (res != null && !note.Reactions.TryAdd(res, 1))
+			note.Reactions[res]++; // we do not want to call save changes after this point
+
+		return await GetNote(id);
+	}
+
+	[HttpPost("{id}/unreact/{reaction}")]
+	[Authorize("write:favourites")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> UnreactNote(string id, string reaction)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		var res = await noteSvc.RemoveReactionFromNoteAsync(note, user, reaction);
+		if (res != null && note.Reactions.TryGetValue(res, out var value))
+			note.Reactions[res] = --value; // we do not want to call save changes after this point
+
+		return await GetNote(id);
+	}
+
 	[HttpPost("{id}/bookmark")]
 	[Authorize("write:bookmarks")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]

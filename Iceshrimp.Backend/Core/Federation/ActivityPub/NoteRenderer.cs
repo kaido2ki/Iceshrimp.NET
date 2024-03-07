@@ -45,6 +45,10 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		                     })
 		                     .ToListAsync();
 
+		var emoji = note.Emojis.Count != 0
+			? await db.Emojis.Where(p => note.Emojis.Contains(p.Id) && p.Host == null).ToListAsync()
+			: [];
+
 		var to = note.Visibility switch
 		{
 			Note.NoteVisibility.Public    => [new ASLink($"{Constants.ActivityStreamsNs}#Public")],
@@ -69,8 +73,13 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			               Name = $"@{mention.Username}@{mention.Host}",
 			               Href = new ASObjectBase(mention.Uri)
 		               }))
+		               .Concat(emoji.Select(e => new ASEmoji
+		               {
+			               Id    = $"https://{config.Value.WebDomain}/emoji/{e.Name}",
+			               Name  = e.Name,
+			               Image = new ASImage { Url = new ASLink(e.PublicUrl) }
+		               }))
 		               .ToList();
-
 
 		var attachments = note.FileIds.Count > 0
 			? await db.DriveFiles

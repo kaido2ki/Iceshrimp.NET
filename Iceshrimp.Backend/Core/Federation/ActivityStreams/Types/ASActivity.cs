@@ -2,6 +2,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
+using JR = Newtonsoft.Json.JsonRequiredAttribute;
 using JI = Newtonsoft.Json.JsonIgnoreAttribute;
 using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
 
@@ -34,7 +35,8 @@ public class ASActivity : ASObject
 		public const string Like     = $"{Ns}#Like";
 
 		// Extensions
-		public const string Bite = "https://ns.mia.jetzt/as#Bite";
+		public const string Bite       = "https://ns.mia.jetzt/as#Bite";
+		public const string EmojiReact = $"http://litepub.social/ns#EmojiReact";
 	}
 }
 
@@ -148,6 +150,7 @@ public class ASBite : ASActivity
 {
 	public ASBite() => Type = Types.Bite;
 
+	[JR]
 	[J($"{Constants.ActivityStreamsNs}#target")]
 	[JC(typeof(ASObjectBaseConverter))]
 	public required ASObjectBase Target { get; set; }
@@ -159,4 +162,18 @@ public class ASBite : ASActivity
 	[J($"{Constants.ActivityStreamsNs}#published")]
 	[JC(typeof(VC))]
 	public DateTime? PublishedAt { get; set; }
+}
+
+public class ASEmojiReact : ASActivity
+{
+	public ASEmojiReact() => Type = Types.EmojiReact;
+
+	[JR]
+	[J($"{Constants.ActivityStreamsNs}#content")]
+	[JC(typeof(VC))]
+	public required string Content { get; set; }
+	
+	[J($"{Constants.ActivityStreamsNs}#tag")]
+	[JC(typeof(ASTagConverter))]
+	public List<ASTag>? Tags { get; set; }
 }

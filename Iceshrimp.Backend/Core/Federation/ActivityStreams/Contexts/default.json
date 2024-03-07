@@ -33,7 +33,8 @@
       "isCat": "misskey:isCat",
       "fedibird": "http://fedibird.com/ns#",
       "vcard": "http://www.w3.org/2006/vcard/ns#",
-      "Bite": "https://ns.mia.jetzt/as#Bite"
+      "Bite": "https://ns.mia.jetzt/as#Bite",
+      "EmojiReact": "http://litepub.social/ns#EmojiReact"
     }
   ]
 }

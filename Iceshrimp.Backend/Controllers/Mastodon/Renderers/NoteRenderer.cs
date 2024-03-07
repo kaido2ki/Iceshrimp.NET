@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -14,7 +15,8 @@ public class NoteRenderer(
 	UserRenderer userRenderer,
 	PollRenderer pollRenderer,
 	MfmConverter mfmConverter,
-	DatabaseContext db
+	DatabaseContext db,
+	EmojiService emojiSvc
 )
 {
 	public async Task<StatusEntity> RenderAsync(Note note, User? user, NoteRendererDto? data = null, int recurse = 2)
@@ -53,6 +55,9 @@ public class NoteRenderer(
 			? await GetAttachments([note])
 			: [..data.Attachments.Where(p => note.FileIds.Contains(p.Id))];
 
+		var reactions = data?.Reactions == null
+			? await GetReactions([note], user)
+			: [..data.Reactions.Where(p => p.NoteId == note.Id)];
 
 		var mentionedUsers = mentions.Select(p => new Note.MentionedUser
 		                             {
@@ -103,7 +108,8 @@ public class NoteRenderer(
 			IsPinned       = pinned,
 			Attachments    = attachments,
 			Emojis         = noteEmoji,
-			Poll           = poll
+			Poll           = poll,
+			Reactions      = reactions
 		};
 
 		return res;
@@ -147,6 +153,37 @@ public class NoteRenderer(
 		return await db.NoteLikes.Where(p => p.User == user && notes.Contains(p.Note))
 		               .Select(p => p.NoteId)
 		               .ToListAsync();
+	}
+
+	private async Task<List<ReactionEntity>> GetReactions(List<Note> notes, User? user)
+	{
+		if (user == null) return [];
+		var counts = notes.ToDictionary(p => p.Id, p => p.Reactions);
+		var res = await db.NoteReactions
+		                  .Where(p => notes.Contains(p.Note))
+		                  .GroupBy(p => p.Reaction)
+		                  .Select(p => new ReactionEntity
+		                  {
+			                  NoteId = p.First().NoteId,
+			                  Count  = (int)counts[p.First().NoteId].GetValueOrDefault(p.First().Reaction, 1),
+			                  Me = db.NoteReactions.Any(i => i.NoteId == p.First().NoteId &&
+			                                                 i.Reaction == p.First().Reaction &&
+			                                                 i.User == user),
+			                  Name      = p.First().Reaction,
+			                  Url       = null,
+			                  StaticUrl = null
+		                  })
+		                  .ToListAsync();
+
+		foreach (var item in res.Where(item => item.Name.StartsWith(':')))
+		{
+			var hit = await emojiSvc.ResolveEmoji(item.Name);
+			if (hit == null) continue;
+			item.Url       = hit.PublicUrl;
+			item.StaticUrl = hit.PublicUrl;
+		}
+
+		return res;
 	}
 
 	private async Task<List<string>> GetBookmarkedNotes(IEnumerable<Note> notes, User? user)
@@ -222,7 +259,8 @@ public class NoteRenderer(
 			BookmarkedNotes = await GetBookmarkedNotes(noteList, user),
 			PinnedNotes     = await GetPinnedNotes(noteList, user),
 			Renotes         = await GetRenotes(noteList, user),
-			Emoji           = await GetEmoji(noteList)
+			Emoji           = await GetEmoji(noteList),
+			Reactions       = await GetReactions(noteList, user)
 		};
 
 		return await noteList.Select(p => RenderAsync(p, user, data)).AwaitAllAsync();
@@ -239,6 +277,8 @@ public class NoteRenderer(
 		public List<string>?           PinnedNotes;
 		public List<string>?           Renotes;
 		public List<EmojiEntity>?      Emoji;
-		public bool                    Source;
+		public List<ReactionEntity>?   Reactions;
+
+		public bool Source;
 	}
 }

@@ -59,17 +59,47 @@ public class ActivityRenderer(
 		Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj
 	};
 
-	public ASLike RenderLike(Note note, User user)
+	public ASLike RenderLike(NoteLike like)
 	{
-		if (note.UserHost == null)
+		if (like.Note.UserHost == null)
 			throw GracefulException.BadRequest("Refusing to render like activity: note user must be remote");
-		if (user.Host != null)
+		if (like.User.Host != null)
 			throw GracefulException.BadRequest("Refusing to render like activity: actor must be local");
 
 		return new ASLike
 		{
-			Id = GenerateActivityId(), Actor = userRenderer.RenderLite(user), Object = noteRenderer.RenderLite(note)
+			Id     = $"https://{config.Value.WebDomain}/likes/${like.Id}",
+			Actor  = userRenderer.RenderLite(like.User),
+			Object = noteRenderer.RenderLite(like.Note)
 		};
+	}
+
+	public ASEmojiReact RenderReact(NoteReaction reaction, Emoji? emoji)
+	{
+		if (reaction.Note.UserHost == null)
+			throw GracefulException.BadRequest("Refusing to render like activity: note user must be remote");
+		if (reaction.User.Host != null)
+			throw GracefulException.BadRequest("Refusing to render like activity: actor must be local");
+
+		var res = new ASEmojiReact
+		{
+			Id      = $"https://{config.Value.WebDomain}/reactions/{reaction.Id}",
+			Actor   = userRenderer.RenderLite(reaction.User),
+			Object  = noteRenderer.RenderLite(reaction.Note),
+			Content = reaction.Reaction
+		};
+
+		if (emoji != null)
+		{
+			var e = new ASEmoji
+			{
+				Id = emoji.PublicUrl, Name = emoji.Name, Image = new ASImage { Url = new ASLink(emoji.PublicUrl) }
+			};
+
+			res.Tags = [e];
+		}
+
+		return res;
 	}
 
 	public ASFollow RenderFollow(User follower, User followee)
@@ -162,7 +192,7 @@ public class ActivityRenderer(
 
 		return RenderAnnounce(note, actor, to, cc, renoteUri);
 	}
-	
+
 	public ASNote RenderVote(PollVote vote, Poll poll, Note note) => new()
 	{
 		Id           = GenerateActivityId(),

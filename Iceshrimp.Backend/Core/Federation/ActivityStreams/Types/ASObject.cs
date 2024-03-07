@@ -58,6 +58,7 @@ public class ASObject : ASObjectBase
 						ASActivity.Types.Like              => token.ToObject<ASLike>(),
 						ASActivity.Types.Bite              => token.ToObject<ASBite>(),
 						ASActivity.Types.Announce          => token.ToObject<ASAnnounce>(),
+						ASActivity.Types.EmojiReact        => token.ToObject<ASEmojiReact>(),
 						_                                  => token.ToObject<ASObject>()
 					};
 				case JTokenType.Array:

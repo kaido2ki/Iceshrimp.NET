@@ -30,7 +30,8 @@ public class ActivityHandlerService(
 	NotificationService notificationSvc,
 	ActivityDeliverService deliverSvc,
 	ObjectResolver objectResolver,
-	FollowupTaskService followupTaskSvc
+	FollowupTaskService followupTaskSvc,
+	EmojiService emojiSvc
 )
 {
 	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId, string? authFetchUserId)
@@ -149,6 +150,9 @@ public class ActivityHandlerService(
 					case ASAnnounce { Object: ASNote likedNote }:
 						await noteSvc.UndoAnnounceAsync(likedNote, resolvedActor);
 						return;
+					case ASEmojiReact { Object: ASNote note } react:
+						await noteSvc.RemoveReactionFromNoteAsync(note, resolvedActor, react.Content);
+						return;
 					default:
 						throw GracefulException.UnprocessableEntity("Undo activity object is invalid");
 				}
@@ -244,6 +248,14 @@ public class ActivityHandlerService(
 
 				var dbNote = await noteSvc.ResolveNoteAsync(note.Id, note.VerifiedFetch ? note : null);
 				await noteSvc.CreateNoteAsync(resolvedActor, announce.GetVisibility(activity.Actor), renote: dbNote);
+				return;
+			}
+			case ASEmojiReact reaction:
+			{
+				if (reaction.Object is not ASNote note)
+					throw GracefulException.UnprocessableEntity("Invalid or unsupported reaction target");
+				await emojiSvc.ProcessEmojiAsync(reaction.Tags?.OfType<ASEmoji>().ToList(), resolvedActor.Host);
+				await noteSvc.ReactToNoteAsync(note, resolvedActor, reaction.Content);
 				return;
 			}
 			default:
