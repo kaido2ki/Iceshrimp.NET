@@ -123,7 +123,7 @@ public class JobQueue<T>(
 
 	private async Task DelayedJobHandlerAsync(IServiceScopeFactory scopeFactory, CancellationToken token)
 	{
-		var channel = await _subscriber.SubscribeAsync(_queuedChannel);
+		var channel = await _subscriber.SubscribeAsync(_delayedChannel);
 		var logger  = scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<QueueService>>();
 		while (!token.IsCancellationRequested)
 		{
@@ -134,7 +134,10 @@ public class JobQueue<T>(
 
 				if (res.Length == 0)
 				{
+					var tokenSource = new CancellationTokenSource();
+					await ScheduleDelayedEvent(tokenSource.Token);
 					await channel.ReadAsync(token);
+					await tokenSource.CancelAsync();
 					continue;
 				}
 
@@ -155,6 +158,27 @@ public class JobQueue<T>(
 					await Task.Delay(1000, token);
 				}
 			}
+		}
+	}
+
+	private async Task ScheduleDelayedEvent(CancellationToken token)
+	{
+		var res = await _redisDb.SortedSetRangeByScoreWithScoresAsync("delayed", take: 1);
+		if (res.Length == 0) return;
+		var ts        = res.First().Score;
+		var currentTs = (long)DateTime.UtcNow.Subtract(DateTime.UnixEpoch).TotalSeconds;
+		if (ts < currentTs)
+		{
+			await _subscriber.PublishAsync(_delayedChannel, "");
+		}
+		else
+		{
+			var trigger = DateTime.UnixEpoch + TimeSpan.FromSeconds(ts);
+			_ = Task.Run(async () =>
+			{
+				await Task.Delay(trigger - DateTime.UtcNow, token);
+				await _subscriber.PublishAsync(_delayedChannel, "");
+			}, token);
 		}
 	}
 
