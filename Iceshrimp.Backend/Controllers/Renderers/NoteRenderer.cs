@@ -10,7 +10,7 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db)
 {
 	public async Task<NoteResponse> RenderOne(Note note, NoteRendererDto? data = null)
 	{
-		var user        = (data?.Users ?? await GetUsers([note])).First(p => p.Id == note.Id);
+		var user        = (data?.Users ?? await GetUsers([note])).First(p => p.Id == note.User.Id);
 		var attachments = (data?.Attachments ?? await GetAttachments([note])).Where(p => note.FileIds.Contains(p.Id));
 
 		return new NoteResponse
