@@ -69,6 +69,15 @@ public class NoteService(
 		if (poll is { Choices.Count: < 2 })
 			throw GracefulException.BadRequest("Polls must have at least two options");
 
+		if (renote is { Visibility: > Note.NoteVisibility.Home } &&
+		    renote.User != user &&
+		    text == null &&
+		    poll == null &&
+		    attachments is not { Count: > 0 })
+		{
+			throw GracefulException.BadRequest("You're not allowed to renote this note");
+		}
+
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			await ResolveNoteMentionsAsync(text);
 
@@ -911,7 +920,7 @@ public class NoteService(
 		return await ResolveNoteAsync(note.Id, note);
 	}
 
-	public async Task LikeNoteAsync(Note note, User user)
+	public async Task<bool> LikeNoteAsync(Note note, User user)
 	{
 		if (!await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user))
 		{
@@ -933,13 +942,16 @@ public class NoteService(
 
 			eventSvc.RaiseNoteLiked(this, note, user);
 			await notificationSvc.GenerateLikeNotification(note, user);
+			return true;
 		}
+
+		return false;
 	}
 
-	public async Task UnlikeNoteAsync(Note note, User actor)
+	public async Task<bool> UnlikeNoteAsync(Note note, User actor)
 	{
 		var count = await db.NoteLikes.Where(p => p.Note == note && p.User == actor).ExecuteDeleteAsync();
-		if (count == 0) return;
+		if (count == 0) return false;
 
 		await db.Notes.Where(p => p.Id == note.Id)
 		        .ExecuteUpdateAsync(p => p.SetProperty(n => n.LikeCount, n => n.LikeCount - count));
@@ -957,6 +969,8 @@ public class NoteService(
 		                    p.Notifiee == note.User &&
 		                    p.Notifier == actor)
 		        .ExecuteDeleteAsync();
+
+		return true;
 	}
 
 	public async Task LikeNoteAsync(ASNote note, User actor)
