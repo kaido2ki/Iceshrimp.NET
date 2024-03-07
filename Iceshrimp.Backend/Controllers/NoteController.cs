@@ -50,7 +50,7 @@ public class NoteController(DatabaseContext db, NoteService noteSvc, NoteRendere
 
 		var success = await noteSvc.LikeNoteAsync(note, user);
 
-		return Ok(new ValueResponse(success ? --note.LikeCount : note.LikeCount));
+		return Ok(new ValueResponse(success ? ++note.LikeCount : note.LikeCount));
 	}
 
 	[HttpPost("{id}/unlike")]
