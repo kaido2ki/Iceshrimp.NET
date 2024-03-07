@@ -36,6 +36,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		var res = await db.Notifications
 		                  .IncludeCommonProperties()
 		                  .Where(p => p.Notifiee == user)
+		                  .Where(p => p.Notifier != null)
 		                  .Where(p => p.Type == NotificationType.Follow ||
 		                              p.Type == NotificationType.Mention ||
 		                              p.Type == NotificationType.Reply ||
