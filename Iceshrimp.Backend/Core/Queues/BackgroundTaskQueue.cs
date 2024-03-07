@@ -144,7 +144,7 @@ public abstract class BackgroundTaskQueue
 		var db   = scope.GetRequiredService<DatabaseContext>();
 		var poll = await db.Polls.FirstOrDefaultAsync(p => p.NoteId == job.NoteId, cancellationToken: token);
 		if (poll == null) return;
-		if (poll.ExpiresAt > DateTime.UtcNow + TimeSpan.FromMinutes(5)) return;
+		if (poll.ExpiresAt > DateTime.UtcNow + TimeSpan.FromSeconds(30)) return;
 		var note = await db.Notes.IncludeCommonProperties()
 		                   .FirstOrDefaultAsync(p => p.Id == poll.NoteId, cancellationToken: token);
 		if (note == null) return;

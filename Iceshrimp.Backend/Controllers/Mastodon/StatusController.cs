@@ -98,7 +98,7 @@ public class StatusController(
 		var success = await noteSvc.LikeNoteAsync(note, user);
 		if (success)
 			note.LikeCount++; // we do not want to call save changes after this point
-		
+
 		return await GetNote(id);
 	}
 
@@ -118,7 +118,7 @@ public class StatusController(
 		var success = await noteSvc.UnlikeNoteAsync(note, user);
 		if (success)
 			note.LikeCount--; // we do not want to call save changes after this point
-		
+
 		return await GetNote(id);
 	}
 
@@ -331,20 +331,29 @@ public class StatusController(
 	public async Task<IActionResult> EditNote(string id, [FromHybrid] StatusSchemas.EditStatusRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
+		var note = await db.Notes
+		                   .Include(p => p.Poll)
+		                   .IncludeCommonProperties()
+		                   .FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
 		           throw GracefulException.RecordNotFound();
 
 		if (request.Text == null && request.MediaIds is not { Count: > 0 } && request.Poll == null)
 			throw GracefulException.BadRequest("Posts must have text, media or poll");
 
-		if (request.Poll != null)
-			throw GracefulException.BadRequest("Poll edits haven't been implemented yet, please delete & redraft instead");
+		var poll = request.Poll != null
+			? new Poll
+			{
+				Choices   = request.Poll.Options,
+				Multiple  = request.Poll.Multiple,
+				ExpiresAt = DateTime.UtcNow + TimeSpan.FromSeconds(request.Poll.ExpiresIn)
+			}
+			: null;
 
 		var attachments = request.MediaIds != null
 			? await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id)).ToListAsync()
 			: [];
 
-		note = await noteSvc.UpdateNoteAsync(note, request.Text, request.Cw, attachments);
+		note = await noteSvc.UpdateNoteAsync(note, request.Text, request.Cw, attachments, poll);
 		var res = await noteRenderer.RenderAsync(note, user);
 
 		return Ok(res);

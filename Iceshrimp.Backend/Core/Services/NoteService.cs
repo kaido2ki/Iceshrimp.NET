@@ -208,7 +208,8 @@ public class NoteService(
 	}
 
 	public async Task<Note> UpdateNoteAsync(
-		Note note, string? text = null, string? cw = null, IReadOnlyCollection<DriveFile>? attachments = null
+		Note note, string? text = null, string? cw = null, IReadOnlyCollection<DriveFile>? attachments = null,
+		Poll? poll = null
 	)
 	{
 		var noteEdit = new NoteEdit
@@ -267,6 +268,38 @@ public class NoteService(
 		note.AttachedFileTypes = attachments?.Select(p => p.Type).ToList() ?? [];
 
 		note.UpdatedAt = DateTime.UtcNow;
+
+		if (poll != null)
+		{
+			if (note.Poll != null)
+			{
+				if (note.Poll.ExpiresAt != poll.ExpiresAt)
+				{
+					note.Poll.ExpiresAt = poll.ExpiresAt;
+					await EnqueuePollExpiryTask(note.Poll);
+				}
+
+				if (!note.Poll.Choices.SequenceEqual(poll.Choices) || note.Poll.Multiple != poll.Multiple)
+				{
+					await db.PollVotes.Where(p => p.Note == note).ExecuteDeleteAsync();
+					note.Poll.Choices  = poll.Choices;
+					note.Poll.Votes    = poll.Choices.Select(p => 0).ToList();
+					note.Poll.Multiple = poll.Multiple;
+					db.Update(note.Poll);
+				}
+			}
+			else {
+				poll.Note           = note;
+				poll.UserId         = note.User.Id;
+				poll.UserHost       = note.UserHost;
+				poll.Votes          = poll.Choices.Select(_ => 0).ToList();
+				poll.NoteVisibility = note.Visibility;
+				await db.AddAsync(poll);
+				await EnqueuePollExpiryTask(poll);
+			}
+
+			note.HasPoll = true;
+		}
 
 		db.Update(note);
 		await db.AddAsync(noteEdit);
@@ -658,13 +691,20 @@ public class NoteService(
 
 			if (dbNote.Poll != null)
 			{
-				if (!dbNote.Poll.Choices.SequenceEqual(choices.Select(p => p.Name)))
+				if (dbNote.Poll.ExpiresAt != (question.EndTime ?? question.Closed))
+				{
+					dbNote.Poll.ExpiresAt = question.EndTime ?? question.Closed;
+					if (dbNote.Poll.ExpiresAt != null)
+						await EnqueuePollExpiryTask(dbNote.Poll);
+				}
+
+				if (!dbNote.Poll.Choices.SequenceEqual(choices.Select(p => p.Name)) ||
+				    dbNote.Poll.Multiple != (question.AnyOf != null))
 				{
 					await db.PollVotes.Where(p => p.Note == dbNote).ExecuteDeleteAsync();
-					dbNote.Poll.Choices   = choices.Select(p => p.Name).Cast<string>().ToList();
-					dbNote.Poll.Votes     = choices.Select(p => (int?)p.Replies?.TotalItems ?? 0).ToList();
-					dbNote.Poll.ExpiresAt = question.EndTime ?? question.Closed;
-					dbNote.Poll.Multiple  = question.AnyOf != null;
+					dbNote.Poll.Choices  = choices.Select(p => p.Name).Cast<string>().ToList();
+					dbNote.Poll.Votes    = choices.Select(p => (int?)p.Replies?.TotalItems ?? 0).ToList();
+					dbNote.Poll.Multiple = question.AnyOf != null;
 					db.Update(dbNote.Poll);
 				}
 				else
