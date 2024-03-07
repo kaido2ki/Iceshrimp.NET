@@ -149,6 +149,8 @@ public class DriveService(
 				{
 					// Generate thumbnail
 					var thumbnailImage = image.Clone();
+					thumbnailImage.Metadata.ExifProfile = null;
+					thumbnailImage.Metadata.XmpProfile  = null;
 					if (Math.Max(image.Size.Width, image.Size.Height) > 1000)
 						thumbnailImage.Mutate(p => p.Resize(image.Width > image.Height
 							                                    ? new Size(1000, 0)
