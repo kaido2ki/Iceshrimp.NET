@@ -35,10 +35,13 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 			Token  = session.Token,
 			User = new UserResponse
 			{
-				Username  = session.User.Username,
-				Id        = session.User.Id,
-				AvatarUrl = session.User.AvatarUrl,
-				BannerUrl = session.User.BannerUrl
+				Username        = session.User.Username,
+				Id              = session.User.Id,
+				AvatarUrl       = session.User.AvatarUrl,
+				BannerUrl       = session.User.BannerUrl,
+				DisplayName     = session.User.DisplayName,
+				InstanceName    = null,
+				InstanceIconUrl = null
 			}
 		});
 	}
@@ -85,10 +88,13 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 			Token  = session.Token,
 			User = new UserResponse
 			{
-				Username  = session.User.Username,
-				Id        = session.User.Id,
-				AvatarUrl = session.User.AvatarUrl,
-				BannerUrl = session.User.BannerUrl
+				Username        = session.User.Username,
+				Id              = session.User.Id,
+				AvatarUrl       = session.User.AvatarUrl,
+				BannerUrl       = session.User.BannerUrl,
+				DisplayName     = session.User.DisplayName,
+				InstanceName    = null,
+				InstanceIconUrl = null
 			}
 		});
 	}
