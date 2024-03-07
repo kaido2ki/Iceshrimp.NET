@@ -31,7 +31,7 @@ public class UserController(
 		                   .FirstOrDefaultAsync(p => p.Id == id) ??
 		           throw GracefulException.NotFound("User not found");
 
-		return Ok(userRenderer.RenderOne(await userResolver.GetUpdatedUser(user)));
+		return Ok(await userRenderer.RenderOne(await userResolver.GetUpdatedUser(user)));
 	}
 
 	[HttpGet("notes")]
@@ -53,6 +53,6 @@ public class UserController(
 		                    .Paginate(pq, ControllerContext)
 		                    .ToListAsync();
 
-		return Ok(noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility()));
+		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility()));
 	}
 }

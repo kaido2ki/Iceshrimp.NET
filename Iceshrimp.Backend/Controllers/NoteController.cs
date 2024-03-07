@@ -32,7 +32,7 @@ public class NoteController(DatabaseContext db, NoteService noteSvc, NoteRendere
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 
-		return Ok(noteRenderer.RenderOne(note.EnforceRenoteReplyVisibility()));
+		return Ok(await noteRenderer.RenderOne(note.EnforceRenoteReplyVisibility()));
 	}
 
 	[HttpPost("{id}/like")]
@@ -99,6 +99,6 @@ public class NoteController(DatabaseContext db, NoteService noteSvc, NoteRendere
 		var note = await noteSvc.CreateNoteAsync(user, Note.NoteVisibility.Public, request.Text, request.Cw, reply,
 		                                         renote);
 
-		return Ok(noteRenderer.RenderOne(note));
+		return Ok(await noteRenderer.RenderOne(note));
 	}
 }
