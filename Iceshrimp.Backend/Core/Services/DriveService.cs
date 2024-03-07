@@ -132,6 +132,7 @@ public class DriveService(
 			try
 			{
 				var image = await Image.LoadAsync<Rgba32>(buf);
+				image.Mutate(x => x.AutoOrient());
 
 				// Calculate blurhash using a x200px image for improved performance
 				var blurhashImage = image.Clone();
