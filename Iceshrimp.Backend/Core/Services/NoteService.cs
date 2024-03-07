@@ -283,7 +283,7 @@ public class NoteService(
 				{
 					await db.PollVotes.Where(p => p.Note == note).ExecuteDeleteAsync();
 					note.Poll.Choices  = poll.Choices;
-					note.Poll.Votes    = poll.Choices.Select(p => 0).ToList();
+					note.Poll.Votes    = poll.Choices.Select(_ => 0).ToList();
 					note.Poll.Multiple = poll.Multiple;
 					db.Update(note.Poll);
 				}
