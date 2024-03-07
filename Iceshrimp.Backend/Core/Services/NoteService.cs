@@ -41,7 +41,8 @@ public class NoteService(
 	EmojiService emojiSvc,
 	FollowupTaskService followupTaskSvc,
 	ActivityPub.ObjectResolver objectResolver,
-	QueueService queueSvc
+	QueueService queueSvc,
+	PollService pollSvc
 )
 {
 	private readonly List<string> _resolverHistory = [];
@@ -49,7 +50,7 @@ public class NoteService(
 
 	public async Task<Note> CreateNoteAsync(
 		User user, Note.NoteVisibility visibility, string? text = null, string? cw = null, Note? reply = null,
-		Note? renote = null, IReadOnlyCollection<DriveFile>? attachments = null
+		Note? renote = null, IReadOnlyCollection<DriveFile>? attachments = null, Poll? poll = null
 	)
 	{
 		if (text?.Length > config.Value.CharacterLimit)
@@ -65,6 +66,8 @@ public class NoteService(
 			throw GracefulException.BadRequest("Cannot renote or quote a pure renote");
 		if (reply?.IsPureRenote ?? false)
 			throw GracefulException.BadRequest("Cannot reply to a pure renote");
+		if (poll is { Choices.Count: < 2 })
+			throw GracefulException.BadRequest("Polls must have at least two options");
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			await ResolveNoteMentionsAsync(text);
@@ -106,6 +109,18 @@ public class NoteService(
 			ThreadId             = reply?.ThreadId ?? reply?.Id,
 			Tags                 = tags
 		};
+
+		if (poll != null)
+		{
+			poll.Note           = note;
+			poll.UserId         = note.User.Id;
+			poll.UserHost       = note.UserHost;
+			poll.Votes          = poll.Choices.Select(_ => 0).ToList();
+			poll.NoteVisibility = note.Visibility;
+			await db.AddAsync(poll);
+			note.HasPoll = true;
+			await EnqueuePollExpiryTask(poll);
+		}
 
 		await UpdateNoteCountersAsync(note, true);
 
@@ -371,7 +386,7 @@ public class NoteService(
 			eventSvc.RaiseNoteDeleted(this, hit);
 	}
 
-	public async Task<Note> ProcessNoteAsync(ASNote note, User actor, User? user = null)
+	public async Task<Note?> ProcessNoteAsync(ASNote note, User actor, User? user = null)
 	{
 		var dbHit = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
 
@@ -398,10 +413,45 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Note.Id schema is invalid");
 		if (note.Url?.Link != null && !note.Url.Link.StartsWith("https://"))
 			throw GracefulException.UnprocessableEntity("Note.Url schema is invalid");
-		if (note.PublishedAt is null or { Year: < 2007 } || note.PublishedAt > DateTime.Now + TimeSpan.FromDays(3))
-			throw GracefulException.UnprocessableEntity("Note.PublishedAt is nonsensical");
 		if (actor.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
+
+		var reply = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id, user: user) : null;
+		
+        if (reply is { HasPoll: true } && note.Name != null)
+		{
+			if (reply.UserHost != null)
+				throw GracefulException.UnprocessableEntity("Poll vote not destined for this instance");
+
+			var poll = await db.Polls.FirstOrDefaultAsync(p => p.Note == reply) ??
+			           throw GracefulException.UnprocessableEntity("Poll does not exist");
+
+			if (poll.Choices.All(p => p != note.Name))
+				throw GracefulException.UnprocessableEntity("Unknown poll option");
+
+			var existingVotes = await db.PollVotes.Where(p => p.User == actor && p.Note == reply).ToListAsync();
+			if (existingVotes.Any(p => poll.Choices[p.Choice] == note.Name))
+				throw GracefulException.UnprocessableEntity("Actor has already voted for this option");
+			if (!poll.Multiple && existingVotes.Count != 0)
+				throw GracefulException.UnprocessableEntity("Actor has already voted in this poll");
+			
+			var vote = new PollVote
+			{
+				Id        = IdHelpers.GenerateSlowflakeId(),
+				CreatedAt = DateTime.UtcNow,
+				User      = actor,
+				Note      = reply,
+				Choice    = poll.Choices.IndexOf(note.Name)
+			};
+			await db.AddAsync(vote);
+			await db.SaveChangesAsync();
+			await pollSvc.RegisterPollVote(vote, poll, reply);
+
+			return null;
+		}
+        
+		if (note.PublishedAt is null or { Year: < 2007 } || note.PublishedAt > DateTime.Now + TimeSpan.FromDays(3))
+			throw GracefulException.UnprocessableEntity("Note.PublishedAt is nonsensical");
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			await ResolveNoteMentionsAsync(note);
@@ -422,7 +472,7 @@ public class NoteService(
 			CreatedAt  = createdAt,
 			UserHost   = actor.Host,
 			Visibility = note.GetVisibility(actor),
-			Reply      = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id, user: user) : null,
+			Reply      = reply,
 			Renote     = quoteUrl != null ? await ResolveNoteAsync(quoteUrl, user: user) : null
 		};
 
@@ -524,7 +574,7 @@ public class NoteService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage",
 	                 Justification = "Inspection doesn't understand IncludeCommonProperties()")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "See above")]
-	public async Task<Note> ProcessNoteUpdateAsync(ASNote note, User actor)
+	public async Task<Note?> ProcessNoteUpdateAsync(ASNote note, User actor)
 	{
 		var dbNote = await db.Notes.IncludeCommonProperties()
 		                     .Include(p => p.Poll)
@@ -1016,7 +1066,7 @@ public class NoteService(
 	private async Task EnqueuePollExpiryTask(Poll poll)
 	{
 		if (!poll.ExpiresAt.HasValue) return;
-		var job = new PollExpiryJob { NoteId = poll.NoteId };
+		var job = new PollExpiryJob { NoteId = poll.Note.Id };
 		await queueSvc.BackgroundTaskQueue.ScheduleAsync(job, poll.ExpiresAt.Value);
 	}
 }

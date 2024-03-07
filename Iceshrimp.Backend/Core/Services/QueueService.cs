@@ -129,7 +129,7 @@ public class JobQueue<T>(
 		{
 			try
 			{
-				var timestamp = (long)DateTime.Now.Subtract(DateTime.UnixEpoch).TotalSeconds;
+				var timestamp = (long)DateTime.UtcNow.Subtract(DateTime.UnixEpoch).TotalSeconds;
 				var res       = await _redisDb.SortedSetRangeByScoreAsync("delayed", 0, timestamp, take: 10);
 
 				if (res.Length == 0)
@@ -233,13 +233,14 @@ public class JobQueue<T>(
 		await _redisDb.ListRemoveAsync("running", res, 1);
 		if (targetQueue == "delayed")
 		{
-			job.DelayedUntil ??= DateTime.Now;
+			job.DelayedUntil = (job.DelayedUntil ?? DateTime.Now).ToLocalTime();
+
 			var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
 			logger.LogTrace("Job in queue {queue} was delayed to {time} after {duration} ms, has been queued since {time}",
 			                name, job.DelayedUntil.Value.ToStringIso8601Like(), job.Duration,
 			                job.QueuedAt.ToStringIso8601Like());
 
-			var timestamp = (long)job.DelayedUntil.Value.Subtract(DateTime.UnixEpoch).TotalSeconds;
+			var timestamp = (long)job.DelayedUntil.Value.ToUniversalTime().Subtract(DateTime.UnixEpoch).TotalSeconds;
 			await _redisDb.SortedSetAddAsync(targetQueue, RedisValue.Unbox(RedisHelpers.Serialize(job)), timestamp);
 			await _subscriber.PublishAsync(_delayedChannel, "");
 		}
@@ -257,15 +258,15 @@ public class JobQueue<T>(
 		await _redisDb.ListRightPushAsync("queued", RedisValue.Unbox(RedisHelpers.Serialize(job)));
 		await _subscriber.PublishAsync(_queuedChannel, "");
 	}
-	
+
 	public async Task ScheduleAsync(T job, DateTime triggerAt)
 	{
-		job.Status = Job.JobStatus.Delayed;
-		job.DelayedUntil = triggerAt;
-		var timestamp = (long)job.DelayedUntil.Value.Subtract(DateTime.UnixEpoch).TotalSeconds;
-    	await _redisDb.SortedSetAddAsync("delayed", RedisValue.Unbox(RedisHelpers.Serialize(job)), timestamp);
-    	await _subscriber.PublishAsync(_delayedChannel, "");
-    }
+		job.Status       = Job.JobStatus.Delayed;
+		job.DelayedUntil = triggerAt.ToLocalTime();
+		var timestamp = (long)job.DelayedUntil.Value.ToUniversalTime().Subtract(DateTime.UnixEpoch).TotalSeconds;
+		await _redisDb.SortedSetAddAsync("delayed", RedisValue.Unbox(RedisHelpers.Serialize(job)), timestamp);
+		await _subscriber.PublishAsync(_delayedChannel, "");
+	}
 }
 
 [ProtoContract]

@@ -89,11 +89,61 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		var quoteUri = note.IsQuote ? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value) : null;
 		var text     = quoteUri != null ? note.Text + $"\n\nRE: {quoteUri}" : note.Text;
 
+		if (note.HasPoll)
+		{
+			var poll = await db.Polls.FirstOrDefaultAsync(p => p.Note == note);
+			if (poll != null)
+			{
+				var closed  = poll.ExpiresAt != null && poll.ExpiresAt < DateTime.UtcNow ? poll.ExpiresAt : null;
+				var endTime = poll.ExpiresAt != null && poll.ExpiresAt > DateTime.UtcNow ? poll.ExpiresAt : null;
+
+				var choices = poll.Choices
+				                  .Select(p => new ASQuestion.ASQuestionOption
+				                  {
+					                  Name = p,
+					                  Replies = new ASCollectionBase
+					                  {
+						                  TotalItems =
+							                  (ulong)poll.Votes[poll.Choices.IndexOf(p)]
+					                  }
+				                  })
+				                  .ToList();
+
+				var anyOf = poll.Multiple ? choices : null;
+				var oneOf = !poll.Multiple ? choices : null;
+
+				return new ASQuestion
+				{
+					Id           = id,
+					AttributedTo = [new ASObjectBase(userId)],
+					MkContent    = note.Text,
+					PublishedAt  = note.CreatedAt,
+					Sensitive    = note.Cw != null,
+					InReplyTo    = replyId,
+					Cc           = cc,
+					To           = to,
+					Tags         = tags,
+					Attachments  = attachments,
+					Content      = text != null ? await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost) : null,
+					Summary      = note.Cw,
+					Source = text != null
+						? new ASNoteSource { Content = text, MediaType = "text/x.misskeymarkdown" }
+						: null,
+					MkQuote  = quoteUri,
+					QuoteUri = quoteUri,
+					QuoteUrl = quoteUri,
+					EndTime  = endTime,
+					Closed   = closed,
+					AnyOf    = anyOf,
+					OneOf    = oneOf
+				};
+			}
+		}
+
 		return new ASNote
 		{
 			Id           = id,
 			AttributedTo = [new ASObjectBase(userId)],
-			Type         = $"{Constants.ActivityStreamsNs}#Note",
 			MkContent    = note.Text,
 			PublishedAt  = note.CreatedAt,
 			Sensitive    = note.Cw != null,
@@ -104,10 +154,9 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			Attachments  = attachments,
 			Content      = text != null ? await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost) : null,
 			Summary      = note.Cw,
-			Source =
-				text != null
-					? new ASNoteSource { Content = text, MediaType = "text/x.misskeymarkdown" }
-					: null,
+			Source = text != null
+				? new ASNoteSource { Content = text, MediaType = "text/x.misskeymarkdown" }
+				: null,
 			MkQuote  = quoteUri,
 			QuoteUri = quoteUri,
 			QuoteUrl = quoteUri

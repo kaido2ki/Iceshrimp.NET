@@ -60,7 +60,6 @@ public class PollController(DatabaseContext db, PollRenderer pollRenderer, PollS
 			throw GracefulException.BadRequest("This poll is expired");
 
 		var            existingVotes = await db.PollVotes.Where(p => p.User == user && p.Note == note).ToListAsync();
-		List<int>      incr          = [];
 		List<PollVote> votes         = [];
 		if (!poll.Multiple)
 		{
@@ -81,7 +80,6 @@ public class PollController(DatabaseContext db, PollRenderer pollRenderer, PollS
 			};
 
 			await db.AddAsync(vote);
-			incr.Add(choice);
 			votes.Add(vote);
 		}
 		else
@@ -101,17 +99,11 @@ public class PollController(DatabaseContext db, PollRenderer pollRenderer, PollS
 				};
 
 				await db.AddAsync(vote);
-				incr.Add(choice);
 				votes.Add(vote);
 			}
 		}
 
 		await db.SaveChangesAsync();
-		foreach (var c in incr)
-		{
-			await db.Database
-			        .ExecuteSqlAsync($"""UPDATE "poll" SET "votes"[{c + 1}] = "votes"[{c + 1}] + 1 WHERE "noteId" = {note.Id}""");
-		}
 
 		foreach (var vote in votes)
 			await pollSvc.RegisterPollVote(vote, poll, note);

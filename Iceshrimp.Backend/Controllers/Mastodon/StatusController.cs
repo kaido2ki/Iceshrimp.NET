@@ -268,11 +268,17 @@ public class StatusController(
 			}
 		}
 
-		if (request.Text == null && request.MediaIds is not { Count: > 0 } && request.Poll == null)
+		if (string.IsNullOrWhiteSpace(request.Text) && request.MediaIds is not { Count: > 0 } && request.Poll == null)
 			throw GracefulException.BadRequest("Posts must have text, media or poll");
 
-		if (request.Poll != null)
-			throw GracefulException.BadRequest("Polls haven't been implemented yet");
+		var poll = request.Poll != null
+			? new Poll
+			{
+				Choices   = request.Poll.Options,
+				Multiple  = request.Poll.Multiple,
+				ExpiresAt = DateTime.UtcNow + TimeSpan.FromSeconds(request.Poll.ExpiresIn),
+			}
+			: null;
 
 		var visibility = StatusEntity.DecodeVisibility(request.Visibility);
 		var reply = request.ReplyId != null
@@ -302,7 +308,8 @@ public class StatusController(
 		if (quote != null && quoteUri != null && request.Text != null)
 			request.Text = request.Text[..(request.Text.Length - quoteUri.Length - 1)];
 
-		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply, quote, attachments);
+		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply, quote, attachments,
+		                                         poll);
 
 		if (idempotencyKey != null)
 			await cache.SetAsync($"idempotency:{idempotencyKey}", note.Id, TimeSpan.FromHours(24));
@@ -327,7 +334,7 @@ public class StatusController(
 			throw GracefulException.BadRequest("Posts must have text, media or poll");
 
 		if (request.Poll != null)
-			throw GracefulException.BadRequest("Polls haven't been implemented yet");
+			throw GracefulException.BadRequest("Poll edits haven't been implemented yet, please delete & redraft instead");
 
 		var attachments = request.MediaIds != null
 			? await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id)).ToListAsync()

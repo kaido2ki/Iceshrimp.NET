@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
@@ -131,6 +132,9 @@ public abstract class BackgroundTaskQueue
 		}
 	}
 
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery",
+	                 Justification = "IncludeCommonProperties()")]
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
 	private static async Task ProcessPollExpiry(
 		PollExpiryJob job,
 		IServiceProvider scope,
@@ -141,11 +145,31 @@ public abstract class BackgroundTaskQueue
 		var poll = await db.Polls.FirstOrDefaultAsync(p => p.NoteId == job.NoteId, cancellationToken: token);
 		if (poll == null) return;
 		if (poll.ExpiresAt > DateTime.UtcNow + TimeSpan.FromMinutes(5)) return;
-		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == poll.NoteId, cancellationToken: token);
+		var note = await db.Notes.IncludeCommonProperties()
+		                   .FirstOrDefaultAsync(p => p.Id == poll.NoteId, cancellationToken: token);
 		if (note == null) return;
-		//TODO: try to update poll before completing it
+
 		var notificationSvc = scope.GetRequiredService<NotificationService>();
 		await notificationSvc.GeneratePollEndedNotifications(note);
+		if (note.User.Host == null)
+		{
+			var voters = await db.PollVotes.Where(p => p.Note == note && p.User.Host != null)
+			                     .Select(p => p.User)
+			                     .ToListAsync(cancellationToken: token);
+
+			if (voters.Count == 0) return;
+
+			var activityRenderer = scope.GetRequiredService<ActivityPub.ActivityRenderer>();
+			var userRenderer     = scope.GetRequiredService<ActivityPub.UserRenderer>();
+			var noteRenderer     = scope.GetRequiredService<ActivityPub.NoteRenderer>();
+			var deliverSvc       = scope.GetRequiredService<ActivityPub.ActivityDeliverService>();
+
+			var actor    = userRenderer.RenderLite(note.User);
+			var rendered = await noteRenderer.RenderAsync(note);
+			var activity = activityRenderer.RenderUpdate(rendered, actor);
+
+			await deliverSvc.DeliverToAsync(activity, note.User, voters.ToArray());
+		}
 	}
 }
 
