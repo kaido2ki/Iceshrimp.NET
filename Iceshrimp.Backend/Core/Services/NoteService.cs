@@ -417,8 +417,8 @@ public class NoteService(
 			throw GracefulException.Forbidden("User is suspended");
 
 		var reply = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id, user: user) : null;
-		
-        if (reply is { HasPoll: true } && note.Name != null)
+
+		if (reply is { HasPoll: true } && note.Name != null)
 		{
 			if (reply.UserHost != null)
 				throw GracefulException.UnprocessableEntity("Poll vote not destined for this instance");
@@ -434,7 +434,7 @@ public class NoteService(
 				throw GracefulException.UnprocessableEntity("Actor has already voted for this option");
 			if (!poll.Multiple && existingVotes.Count != 0)
 				throw GracefulException.UnprocessableEntity("Actor has already voted in this poll");
-			
+
 			var vote = new PollVote
 			{
 				Id        = IdHelpers.GenerateSlowflakeId(),
@@ -449,7 +449,7 @@ public class NoteService(
 
 			return null;
 		}
-        
+
 		if (note.PublishedAt is null or { Year: < 2007 } || note.PublishedAt > DateTime.Now + TimeSpan.FromDays(3))
 			throw GracefulException.UnprocessableEntity("Note.PublishedAt is nonsensical");
 
@@ -1043,8 +1043,7 @@ public class NoteService(
 		var notes = await items.OfType<ASNote>().Select(p => ResolveNoteAsync(p.Id, p)).AwaitAllNoConcurrencyAsync();
 		var previousPins = await db.Users.Where(p => p.Id == user.Id)
 		                           .Select(p => p.PinnedNotes.Select(i => i.Id))
-		                           .FirstOrDefaultAsync() ??
-		                   throw new Exception("existingPins must not be null at this stage");
+		                           .FirstOrDefaultAsync() ?? [];
 
 		if (previousPins.SequenceEqual(notes.Where(p => p != null).Cast<Note>().Select(p => p.Id))) return;
 
