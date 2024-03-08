@@ -18,6 +18,7 @@ public class NoteRenote : NoteBase
 public class NoteBase
 {
 	[J("id")]          public required string               Id          { get; set; }
+	[J("createdAt")]   public required string               CreatedAt   { get; set; }
 	[J("text")]        public required string?              Text        { get; set; }
 	[J("cw")]          public required string?              Cw          { get; set; }
 	[J("visibility")]  public required string               Visibility  { get; set; }
