@@ -16,6 +16,7 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db)
 		return new NoteResponse
 		{
 			Id          = note.Id,
+			CreatedAt	= note.CreatedAt.ToStringIso8601Like(),
 			Text        = note.Text,
 			Cw          = note.Cw,
 			Visibility  = RenderVisibility(note.Visibility),
