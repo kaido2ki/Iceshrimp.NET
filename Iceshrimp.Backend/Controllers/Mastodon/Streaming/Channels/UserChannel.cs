@@ -13,6 +13,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 	public  List<string> Scopes       => ["read:statuses", "read:notifications"];
 	public  bool         IsSubscribed { get; private set; }
 
+	public readonly ILogger<UserChannel> Logger =
+		connection.ScopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<UserChannel>>();
+
 	public async Task Subscribe(StreamingRequestMessage _)
 	{
 		if (IsSubscribed) return;
@@ -61,47 +64,75 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 
 	private async void OnNotePublished(object? _, Note note)
 	{
-		if (!IsApplicable(note)) return;
-		var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
-		var renderer = provider.GetRequiredService<NoteRenderer>();
-		var rendered = await renderer.RenderAsync(note, connection.Token.User);
-		var message = new StreamingUpdateMessage
+		try
 		{
-			Stream = [Name], Event = "update", Payload = JsonSerializer.Serialize(rendered)
-		};
-		await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+			if (!IsApplicable(note)) return;
+			var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
+			var renderer = provider.GetRequiredService<NoteRenderer>();
+			var rendered = await renderer.RenderAsync(note, connection.Token.User);
+			var message = new StreamingUpdateMessage
+			{
+				Stream = [Name], Event = "update", Payload = JsonSerializer.Serialize(rendered)
+			};
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+		}
+		catch (Exception e)
+		{
+			Logger.LogError("Event handler OnNoteUpdated threw exception: {e}", e);
+		}
 	}
 
 	private async void OnNoteUpdated(object? _, Note note)
 	{
-		if (!IsApplicable(note)) return;
-		var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
-		var renderer = provider.GetRequiredService<NoteRenderer>();
-		var rendered = await renderer.RenderAsync(note, connection.Token.User);
-		var message = new StreamingUpdateMessage
+		try
 		{
-			Stream = [Name], Event = "status.update", Payload = JsonSerializer.Serialize(rendered)
-		};
-		await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+			if (!IsApplicable(note)) return;
+			var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
+			var renderer = provider.GetRequiredService<NoteRenderer>();
+			var rendered = await renderer.RenderAsync(note, connection.Token.User);
+			var message = new StreamingUpdateMessage
+			{
+				Stream = [Name], Event = "status.update", Payload = JsonSerializer.Serialize(rendered)
+			};
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+		}
+		catch (Exception e)
+		{
+			Logger.LogError("Event handler OnNoteUpdated threw exception: {e}", e);
+		}
 	}
 
 	private async void OnNoteDeleted(object? _, Note note)
 	{
-		if (!IsApplicable(note)) return;
-		var message = new StreamingUpdateMessage { Stream = [Name], Event = "delete", Payload = note.Id };
-		await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+		try
+		{
+			if (!IsApplicable(note)) return;
+			var message = new StreamingUpdateMessage { Stream = [Name], Event = "delete", Payload = note.Id };
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+		}
+		catch (Exception e)
+		{
+			Logger.LogError("Event handler OnNoteDeleted threw exception: {e}", e);
+		}
 	}
 
 	private async void OnNotification(object? _, Notification notification)
 	{
-		if (!IsApplicable(notification)) return;
-		var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
-		var renderer = provider.GetRequiredService<NotificationRenderer>();
-		var rendered = await renderer.RenderAsync(notification, connection.Token.User);
-		var message = new StreamingUpdateMessage
+		try
 		{
-			Stream = [Name], Event = "notification", Payload = JsonSerializer.Serialize(rendered)
-		};
-		await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+			if (!IsApplicable(notification)) return;
+			var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
+			var renderer = provider.GetRequiredService<NotificationRenderer>();
+			var rendered = await renderer.RenderAsync(notification, connection.Token.User);
+			var message = new StreamingUpdateMessage
+			{
+				Stream = [Name], Event = "notification", Payload = JsonSerializer.Serialize(rendered)
+			};
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+		}
+		catch (Exception e)
+		{
+			Logger.LogError("Event handler OnNotification threw exception: {e}", e);
+		}
 	}
 }
