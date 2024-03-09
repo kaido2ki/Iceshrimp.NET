@@ -98,8 +98,8 @@ public class NoteService(
 		var note = new Note
 		{
 			Id                   = IdHelpers.GenerateSlowflakeId(),
-			Text                 = text,
-			Cw                   = cw,
+			Text                 = text?.Trim(),
+			Cw                   = cw?.Trim(),
 			Reply                = reply,
 			ReplyUserId          = reply?.UserId,
 			ReplyUserHost        = reply?.UserHost,
@@ -244,7 +244,8 @@ public class NoteService(
 			text = mentionsResolver.ResolveMentions(text, null, mentions, splitDomainMapping);
 
 		mentionedLocalUserIds = mentionedLocalUserIds.Except(previousMentionedLocalUserIds).ToList();
-		note.Text             = text;
+		note.Text             = text?.Trim();
+		note.Cw               = cw?.Trim();
 		note.Tags             = ResolveHashtags(text);
 
 		if (text is not null)
