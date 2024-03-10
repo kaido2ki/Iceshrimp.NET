@@ -1,5 +1,8 @@
 using System.Net.Mime;
+using System.Text;
+using System.Xml.Serialization;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
+using Iceshrimp.Backend.Controllers.Federation.Schemas;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -106,9 +109,16 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
 	public IActionResult HostMeta()
 	{
-		//TODO: use a proper xml serializer for this
-		return
-			Content($$"""<?xml version="1.0" encoding="UTF-8"?><XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0"><Link rel="lrdd" type="application/xrd+xml" template="https://{{config.Value.WebDomain}}/.well-known/webfinger?resource={uri}"/></XRD>""",
-			        "application/xrd+xml");
+		var obj        = new HostMetaXmlResponse(config.Value.WebDomain);
+		var serializer = new XmlSerializer(obj.GetType());
+		var writer     = new Utf8StringWriter();
+
+		serializer.Serialize(writer, obj);
+		return Content(writer.ToString(), "application/xrd+xml");
+	}
+
+	private class Utf8StringWriter : StringWriter
+	{
+		public override Encoding Encoding => Encoding.UTF8;
 	}
 }
