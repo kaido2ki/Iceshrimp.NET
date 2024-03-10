@@ -69,7 +69,10 @@ public static class LdHelpers
 		ExpandContext  = ASExtensions,
 		ProcessingMode = JsonLdProcessingMode.JsonLd11,
 		KeepIRIs       = [$"{Constants.ActivityStreamsNs}#Public"],
-		ForceArray     = ASForceArray.Select(p => $"{Constants.ActivityStreamsNs}#{p}").ToList()
+		ForceArray     = ASForceArray.Select(p => $"{Constants.ActivityStreamsNs}#{p}").ToList(),
+
+		// separated for readability
+		RemoveUnusedInlineContextProperties = true,
 	};
 
 	public static readonly JsonSerializerSettings JsonSerializerSettings = new()
