@@ -21,19 +21,23 @@ public class WebSocketController(
 {
 	[Route("/api/v1/streaming")]
 	[ApiExplorerSettings(IgnoreApi = true)]
-	public async Task GetStreamingSocket([FromQuery] string? stream, [FromQuery] string? list, [FromQuery] string? tag)
+	public async Task GetStreamingSocket(
+		[FromQuery(Name = "access_token")] string? accessToken,
+		[FromQuery] string? stream, [FromQuery] string? list, [FromQuery] string? tag
+	)
 	{
 		if (!HttpContext.WebSockets.IsWebSocketRequest)
 			throw GracefulException.BadRequest("Not a WebSocket request");
 
 		var ct = appLifetime.ApplicationStopping;
-		var accessToken = HttpContext.WebSockets.WebSocketRequestedProtocols.FirstOrDefault() ??
-		                  throw GracefulException.BadRequest("Missing WebSocket protocol header");
+		accessToken ??= HttpContext.WebSockets.WebSocketRequestedProtocols.FirstOrDefault() ??
+		                throw GracefulException.BadRequest("Missing WebSocket protocol header");
+
+		var token = await Authenticate(accessToken);
 
 		using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
 		try
 		{
-			var token = await Authenticate(accessToken);
 			await WebSocketHandler.HandleConnectionAsync(webSocket, token, eventSvc, scopeFactory,
 			                                             stream, list, tag, ct);
 		}
