@@ -62,7 +62,10 @@ public static class LdHelpers
 
 	private static readonly JsonLdProcessorOptions Options = new()
 	{
-		DocumentLoader = CustomLoader, ExpandContext = ASExtensions, ProcessingMode = JsonLdProcessingMode.JsonLd11
+		DocumentLoader = CustomLoader,
+		ExpandContext  = ASExtensions,
+		ProcessingMode = JsonLdProcessingMode.JsonLd11,
+		KeepIRIs       = ["https://www.w3.org/ns/activitystreams#Public"]
 	};
 
 	public static readonly JsonSerializerSettings JsonSerializerSettings = new()
