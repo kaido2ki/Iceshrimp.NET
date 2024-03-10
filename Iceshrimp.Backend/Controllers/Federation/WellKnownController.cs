@@ -1,6 +1,7 @@
 using System.Net.Mime;
 using System.Text;
 using System.Xml.Serialization;
+using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Federation.Schemas;
 using Iceshrimp.Backend.Controllers.Schemas;
@@ -105,7 +106,7 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 	}
 
 	[HttpGet("host-meta")]
-	[Produces("application/xrd+xml")]
+	[Produces("application/xrd+xml", "application/xml")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
 	public IActionResult HostMeta()
 	{
@@ -115,6 +116,21 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 
 		serializer.Serialize(writer, obj);
 		return Content(writer.ToString(), "application/xrd+xml");
+	}
+
+	[HttpGet("host-meta")]
+	[Produces("application/jrd+json")]
+	[MediaTypeRouteFilter("application/jrd+json", "application/json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+	public IActionResult HostMetaJsonFallback()
+		=> HostMetaJson();
+
+	[HttpGet("host-meta.json")]
+	[Produces("application/jrd+json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+	public IActionResult HostMetaJson()
+	{
+		return Ok(new HostMetaJsonResponse(config.Value.WebDomain));
 	}
 
 	private class Utf8StringWriter : StringWriter
