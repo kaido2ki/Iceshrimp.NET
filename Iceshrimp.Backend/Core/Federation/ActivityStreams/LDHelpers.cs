@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
@@ -60,12 +61,15 @@ public static class LdHelpers
 		JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams", "Contexts",
 		                                           "as-extensions.json")));
 
+	private static IEnumerable<string> ASForceArray => ["tag", "to", "cc", "bcc", "bto"];
+
 	private static readonly JsonLdProcessorOptions Options = new()
 	{
 		DocumentLoader = CustomLoader,
 		ExpandContext  = ASExtensions,
 		ProcessingMode = JsonLdProcessingMode.JsonLd11,
-		KeepIRIs       = ["https://www.w3.org/ns/activitystreams#Public"]
+		KeepIRIs       = [$"{Constants.ActivityStreamsNs}#Public"],
+		ForceArray     = ASForceArray.Select(p => $"{Constants.ActivityStreamsNs}#{p}").ToList()
 	};
 
 	public static readonly JsonSerializerSettings JsonSerializerSettings = new()

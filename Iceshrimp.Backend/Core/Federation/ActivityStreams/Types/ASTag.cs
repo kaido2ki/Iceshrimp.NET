@@ -54,7 +54,7 @@ public class ASEmoji : ASTag
 
 public sealed class ASTagConverter : JsonConverter
 {
-	public override bool CanWrite => true;
+	public override bool CanWrite => false;
 
 	public override bool CanConvert(Type objectType)
 	{
@@ -74,27 +74,7 @@ public sealed class ASTagConverter : JsonConverter
 
 		if (reader.TokenType == JsonToken.StartArray)
 		{
-			// We have to use @list here because otherwise Akkoma will refuse to process activities with only one Tag.
-			// To solve this, we've patched the AS2 context to render & parse the tag type as @list, forcing it to be an array.
-			// Ref: https://akkoma.dev/AkkomaGang/akkoma/issues/720
-			var array = JArray.Load(reader);
-			if (array.Count > 0)
-			{
-				try
-				{
-					return array.SelectToken("$.[*].@list")
-					            ?.Children()
-					            .OfType<JObject>()
-					            .Select(HandleObject)
-					            .OfType<ASTag>()
-					            .ToList();
-				}
-				catch
-				{
-					//ignored
-				}
-			}
-
+			var array  = JArray.Load(reader);
 			var result = new List<ASTag>();
 			foreach (var token in array)
 			{
@@ -125,15 +105,6 @@ public sealed class ASTagConverter : JsonConverter
 
 	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
 	{
-		if (value == null)
-		{
-			writer.WriteNull();
-			return;
-		}
-
-		writer.WriteStartObject();
-		writer.WritePropertyName("@list");
-		serializer.Serialize(writer, value);
-		writer.WriteEndObject();
+		throw new NotImplementedException();
 	}
 }

@@ -200,8 +200,7 @@
     },
     "tag": {
       "@id": "as:tag",
-      "@type": "@id",
-      "@container": "@list"
+      "@type": "@id"
     },
     "target": {
       "@id": "as:target",
