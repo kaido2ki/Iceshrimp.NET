@@ -76,8 +76,6 @@ public class ActivityRenderer(
 
 	public ASEmojiReact RenderReact(NoteReaction reaction, Emoji? emoji)
 	{
-		if (reaction.Note.UserHost == null)
-			throw GracefulException.BadRequest("Refusing to render like activity: note user must be remote");
 		if (reaction.User.Host != null)
 			throw GracefulException.BadRequest("Refusing to render like activity: actor must be local");
 
@@ -91,9 +89,11 @@ public class ActivityRenderer(
 
 		if (emoji != null)
 		{
+			var name = emoji.Host == null ? emoji.Name : $"{emoji.Name}@{emoji.Host}";
+
 			var e = new ASEmoji
 			{
-				Id = emoji.PublicUrl, Name = emoji.Name, Image = new ASImage { Url = new ASLink(emoji.PublicUrl) }
+				Id = emoji.PublicUrl, Name = name, Image = new ASImage { Url = new ASLink(emoji.PublicUrl) }
 			};
 
 			res.Tags = [e];

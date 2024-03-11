@@ -51,13 +51,14 @@ public class ActivityDeliverService(
 	{
 		if (note.Visibility != Note.NoteVisibility.Specified)
 		{
-			await DeliverToFollowersAsync(activity, actor, [note.User]);
+			await DeliverToFollowersAsync(activity, actor, note.User.Host == null ? [] : [note.User]);
 			return;
 		}
 
-		await DeliverToAsync(activity, actor, await db.Users.Where(p => note.VisibleUserIds
-		                                                                    .Prepend(note.User.Id)
-		                                                                    .Contains(p.Id))
-		                                              .ToArrayAsync());
+		var recipients = await db.Users
+		                         .Where(p => note.VisibleUserIds.Prepend(note.User.Id).Contains(p.Id) && p.Host != null)
+		                         .ToArrayAsync();
+
+		await DeliverToAsync(activity, actor, recipients);
 	}
 }

@@ -1184,7 +1184,7 @@ public class NoteService(
 		await db.Database
 		        .ExecuteSqlAsync($"""UPDATE "note" SET "reactions" = jsonb_set("reactions", ARRAY[{name}], (COALESCE("reactions"->>{name}, '0')::int + 1)::text::jsonb) WHERE "id" = {note.Id}""");
 
-		if (user.Host == null && note.User.Host != null)
+		if (user.Host == null)
 		{
 			var emoji    = await emojiSvc.ResolveEmoji(reaction.Reaction);
 			var activity = activityRenderer.RenderReact(reaction, emoji);
@@ -1218,7 +1218,7 @@ public class NoteService(
 		await db.Database
 		        .ExecuteSqlAsync($"""UPDATE "note" SET "reactions" = jsonb_set("reactions", ARRAY[{name}], (COALESCE("reactions"->>{name}, '1')::int - 1)::text::jsonb) WHERE "id" = {note.Id}""");
 
-		if (user.Host == null && note.User.Host != null)
+		if (user.Host == null)
 		{
 			var actor    = userRenderer.RenderLite(user);
 			var emoji    = await emojiSvc.ResolveEmoji(reaction.Reaction);
