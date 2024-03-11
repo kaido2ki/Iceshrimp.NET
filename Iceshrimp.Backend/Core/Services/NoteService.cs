@@ -985,6 +985,9 @@ public class NoteService(
 
 	public async Task<bool> LikeNoteAsync(Note note, User user)
 	{
+		if (note.IsPureRenote)
+			throw GracefulException.BadRequest("Cannot like a pure renote");
+
 		if (!await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user))
 		{
 			var like = new NoteLike
@@ -1054,6 +1057,9 @@ public class NoteService(
 	{
 		if (user.Host != null) throw new Exception("This method is only valid for local users");
 
+		if (note.IsPureRenote)
+			throw GracefulException.BadRequest("Cannot bookmark a pure renote");
+
 		if (!await db.NoteBookmarks.AnyAsync(p => p.Note == note && p.User == user))
 		{
 			var bookmark = new NoteBookmark
@@ -1077,6 +1083,8 @@ public class NoteService(
 	{
 		if (user.Host != null) throw new Exception("This method is only valid for local users");
 
+		if (note.IsPureRenote)
+			throw GracefulException.BadRequest("Cannot pin a pure renote");
 		if (note.User != user)
 			throw GracefulException.UnprocessableEntity("Validation failed: Someone else's post cannot be pinned");
 
@@ -1150,6 +1158,9 @@ public class NoteService(
 
 	public async Task<string?> ReactToNoteAsync(Note note, User user, string name)
 	{
+		if (note.IsPureRenote)
+			throw GracefulException.BadRequest("Cannot react to a pure renote");
+
 		name = await emojiSvc.ResolveEmojiName(name, user.Host);
 		if (await db.NoteReactions.AnyAsync(p => p.Note == note && p.User == user && p.Reaction == name))
 			return null;
