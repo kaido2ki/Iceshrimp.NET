@@ -116,6 +116,10 @@ public class UserResolver(
 	public async Task<User> ResolveAsync(string query)
 	{
 		query = NormalizeQuery(query);
+		
+		// Before we begin, let's skip local note urls
+		if (query.StartsWith($"https://{config.Value.WebDomain}/notes/"))
+			throw GracefulException.BadRequest("Refusing to resolve local note URL as user");
 
 		// First, let's see if we already know the user
 		var user = await userSvc.GetUserFromQueryAsync(query);
