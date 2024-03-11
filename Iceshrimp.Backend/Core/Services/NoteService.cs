@@ -659,8 +659,11 @@ public class NoteService(
 
 		if (dbNote.Text is not null)
 		{
-			dbNote.Mentions             = mentionedUserIds;
-			dbNote.MentionedRemoteUsers = remoteMentions;
+			if (!dbNote.Mentions.SequenceEqual(mentionedUserIds))
+				dbNote.Mentions = mentionedUserIds;
+			if (!dbNote.MentionedRemoteUsers.SequenceEqual(remoteMentions))
+				dbNote.MentionedRemoteUsers = remoteMentions;
+
 			if (dbNote.Visibility == Note.NoteVisibility.Specified)
 			{
 				var visibleUserIds = (await note.GetRecipients(actor)
@@ -673,12 +676,16 @@ public class NoteService(
 					visibleUserIds.Add(dbNote.ReplyUserId);
 
 				// We want to make sure not to revoke visibility
-				dbNote.VisibleUserIds = visibleUserIds.Concat(dbNote.VisibleUserIds).Distinct().ToList();
+				var missing = visibleUserIds.Except(dbNote.VisibleUserIds).ToList();
+				if (missing.Count != 0)
+					dbNote.VisibleUserIds.AddRange(missing);
 			}
 
 			dbNote.Text = mentionsResolver.ResolveMentions(dbNote.Text, dbNote.UserHost, mentions, splitDomainMapping);
 			dbNote.Tags = ResolveHashtags(dbNote.Text, note);
 		}
+		
+		var isPollEdited = false;
 
 		if (note is ASQuestion question)
 		{
@@ -703,6 +710,8 @@ public class NoteService(
 				if (!dbNote.Poll.Choices.SequenceEqual(choices.Select(p => p.Name)) ||
 				    dbNote.Poll.Multiple != (question.AnyOf != null))
 				{
+					isPollEdited = true;
+
 					await db.PollVotes.Where(p => p.Note == dbNote).ExecuteDeleteAsync();
 					dbNote.Poll.Choices  = choices.Select(p => p.Name).Cast<string>().ToList();
 					dbNote.Poll.Votes    = choices.Select(p => (int?)p.Replies?.TotalItems ?? 0).ToList();
@@ -717,6 +726,8 @@ public class NoteService(
 			}
 			else
 			{
+				isPollEdited = true;
+                
 				var poll = new Poll
 				{
 					Note           = dbNote,
@@ -755,7 +766,11 @@ public class NoteService(
 		dbNote.FileIds           = files.Select(p => p.Id).ToList();
 		dbNote.AttachedFileTypes = files.Select(p => p.Type).ToList();
 
-		dbNote.UpdatedAt = DateTime.UtcNow;
+		if (note is not ASQuestion || isPollEdited || db.Entry(dbNote).State != EntityState.Unchanged)
+		{
+			dbNote.UpdatedAt = DateTime.UtcNow;
+			await db.AddAsync(noteEdit);
+		}
 
 		db.Update(dbNote);
 		await db.AddAsync(noteEdit);
