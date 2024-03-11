@@ -339,7 +339,15 @@ public class StatusController(
 
 		var lastToken = request.Text?.Split(' ').LastOrDefault();
 		var quoteUri  = token.AutoDetectQuotes && (lastToken?.StartsWith("https://") ?? false) ? lastToken : null;
-		var quote = quoteUri != null
+		var quote = request.QuoteId != null
+			? await db.Notes
+			          .IncludeCommonProperties()
+			          .EnsureVisibleFor(user)
+			          .FirstOrDefaultAsync(p => p.Id == request.QuoteId) ??
+			  throw GracefulException.BadRequest("Quote target is nonexistent or inaccessible")
+			: null;
+
+		quote ??= quoteUri != null
 			? lastToken?.StartsWith($"https://{config.Value.WebDomain}/notes/") ?? false
 				? await db.Notes.IncludeCommonProperties()
 				          .FirstOrDefaultAsync(p => p.Id ==
@@ -349,11 +357,11 @@ public class StatusController(
 				          .FirstOrDefaultAsync(p => p.Uri == quoteUri || p.Url == quoteUri)
 			: null;
 
-		if (quote != null && quoteUri != null && request.Text != null)
+		if (quote != null && quoteUri != null && request.QuoteId == null && request.Text != null)
 			request.Text = request.Text[..(request.Text.Length - quoteUri.Length - 1)];
 
 		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply, quote, attachments,
-		                                         poll);
+		                                         poll, request.LocalOnly);
 
 		if (idempotencyKey != null)
 			await cache.SetAsync($"idempotency:{idempotencyKey}", note.Id, TimeSpan.FromHours(24));

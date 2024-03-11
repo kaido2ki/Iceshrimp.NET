@@ -50,7 +50,8 @@ public class NoteService(
 
 	public async Task<Note> CreateNoteAsync(
 		User user, Note.NoteVisibility visibility, string? text = null, string? cw = null, Note? reply = null,
-		Note? renote = null, IReadOnlyCollection<DriveFile>? attachments = null, Poll? poll = null
+		Note? renote = null, IReadOnlyCollection<DriveFile>? attachments = null, Poll? poll = null,
+		bool localOnly = false
 	)
 	{
 		if (text?.Length > config.Value.CharacterLimit)
@@ -116,7 +117,8 @@ public class NoteService(
 			VisibleUserIds       = visibility == Note.NoteVisibility.Specified ? mentionedUserIds : [],
 			MentionedRemoteUsers = remoteMentions,
 			ThreadId             = reply?.ThreadId ?? reply?.Id,
-			Tags                 = tags
+			Tags                 = tags,
+			LocalOnly            = localOnly
 		};
 
 		if (poll != null)
@@ -153,6 +155,8 @@ public class NoteService(
 
 			return note;
 		}
+
+		if (localOnly) return note;
 
 		var actor = userRenderer.RenderLite(user);
 		ASActivity activity = note is { IsPureRenote: true, Renote: not null }
@@ -310,6 +314,8 @@ public class NoteService(
 		await notificationSvc.GenerateReplyNotifications(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateEditNotifications(note);
 		eventSvc.RaiseNoteUpdated(this, note);
+
+		if (note.LocalOnly) return note;
 
 		var actor    = userRenderer.RenderLite(note.User);
 		var obj      = await noteRenderer.RenderAsync(note, mentions);
@@ -684,7 +690,7 @@ public class NoteService(
 			dbNote.Text = mentionsResolver.ResolveMentions(dbNote.Text, dbNote.UserHost, mentions, splitDomainMapping);
 			dbNote.Tags = ResolveHashtags(dbNote.Text, note);
 		}
-		
+
 		var isPollEdited = false;
 
 		if (note is ASQuestion question)
@@ -727,7 +733,7 @@ public class NoteService(
 			else
 			{
 				isPollEdited = true;
-                
+
 				var poll = new Poll
 				{
 					Note           = dbNote,

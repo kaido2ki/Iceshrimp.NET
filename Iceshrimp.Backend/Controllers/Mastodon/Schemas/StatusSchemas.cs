@@ -37,6 +37,12 @@ public abstract class StatusSchemas
 		[J("media_ids")]
 		public List<string>? MediaIds { get; set; }
 
+		[B(Name = "local_only")]
+		[J("local_only")]
+		public bool LocalOnly { get; set; } = false;
+
+		[B(Name = "quote_id")] [J("quote_id")] public string? QuoteId { get; set; }
+
 		[B(Name = "poll")] [J("poll")] public PollData? Poll { get; set; }
 
 		public class PollData
