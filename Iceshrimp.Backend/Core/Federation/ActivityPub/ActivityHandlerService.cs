@@ -144,11 +144,13 @@ public class ActivityHandlerService(
 					case ASFollow { Object: ASActor followee }:
 						await UnfollowAsync(followee, resolvedActor);
 						return;
-					case ASLike { Object: ASNote likedNote }:
-						await noteSvc.UnlikeNoteAsync(likedNote, resolvedActor);
+					case ASLike { Object: ASNote note } like:
+						var dbNote = await noteSvc.UnlikeNoteAsync(note, resolvedActor);
+						if (like.MisskeyReaction != null)
+							await noteSvc.RemoveReactionFromNoteAsync(dbNote, resolvedActor, like.MisskeyReaction);
 						return;
-					case ASAnnounce { Object: ASNote likedNote }:
-						await noteSvc.UndoAnnounceAsync(likedNote, resolvedActor);
+					case ASAnnounce { Object: ASNote note }:
+						await noteSvc.UndoAnnounceAsync(note, resolvedActor);
 						return;
 					case ASEmojiReact { Object: ASNote note } react:
 						await noteSvc.RemoveReactionFromNoteAsync(note, resolvedActor, react.Content);
@@ -157,11 +159,18 @@ public class ActivityHandlerService(
 						throw GracefulException.UnprocessableEntity("Undo activity object is invalid");
 				}
 			}
-			case ASLike:
+			case ASLike like:
 			{
 				if (activity.Object is not ASNote note)
 					throw GracefulException.UnprocessableEntity("Like activity object is invalid");
-				await noteSvc.LikeNoteAsync(note, resolvedActor);
+				var dbNote = await noteSvc.LikeNoteAsync(note, resolvedActor);
+
+				if (like.MisskeyReaction != null)
+				{
+					await emojiSvc.ProcessEmojiAsync(like.Tags?.OfType<ASEmoji>().ToList(), resolvedActor.Host);
+					await noteSvc.ReactToNoteAsync(dbNote, resolvedActor, like.MisskeyReaction);
+				}
+
 				return;
 			}
 			case ASUpdate:

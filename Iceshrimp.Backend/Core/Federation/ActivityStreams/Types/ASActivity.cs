@@ -119,6 +119,14 @@ public class ASUndo : ASActivity
 public class ASLike : ASActivity
 {
 	public ASLike() => Type = Types.Like;
+	
+	[J($"{Constants.MisskeyNs}#_misskey_reaction")]
+	[JC(typeof(VC))]
+	public string? MisskeyReaction { get; set; }
+	
+	[J($"{Constants.ActivityStreamsNs}#tag")]
+	[JC(typeof(ASTagConverter))]
+	public List<ASTag>? Tags { get; set; }
 }
 
 public class ASUpdate : ASActivity
