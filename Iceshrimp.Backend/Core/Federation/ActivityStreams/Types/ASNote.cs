@@ -9,7 +9,7 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 public class ASNote : ASObject
 {
 	public bool VerifiedFetch = false;
-	public ASNote() => Type = Types.Note;
+	public ASNote(bool withType = true) => Type = withType ? Types.Note : null;
 
 	[J("https://misskey-hub.net/ns#_misskey_content")]
 	[JC(typeof(VC))]
@@ -56,13 +56,13 @@ public class ASNote : ASObject
 	public ASNoteSource? Source { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#to")]
-	public List<ASObjectBase> To { get; set; } = [];
+	public List<ASObjectBase>? To { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#cc")]
-	public List<ASObjectBase> Cc { get; set; } = [];
+	public List<ASObjectBase>? Cc { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#attributedTo")]
-	public List<ASObjectBase> AttributedTo { get; set; } = [];
+	public List<ASObjectBase>? AttributedTo { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#inReplyTo")]
 	[JC(typeof(ASObjectBaseConverter))]
@@ -80,11 +80,11 @@ public class ASNote : ASObject
 	{
 		if (actor.Host == null) throw new Exception("Can't get recipients for local actor");
 
-		if (To.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public"))
+		if (To?.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public") ?? false)
 			return Note.NoteVisibility.Public;
-		if (Cc.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public"))
+		if (Cc?.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public") ?? false)
 			return Note.NoteVisibility.Home;
-		if (To.Any(p => p.Id is not null && p.Id == (actor.FollowersUri ?? actor.Uri + "/followers")))
+		if (To?.Any(p => p.Id is not null && p.Id == (actor.FollowersUri ?? actor.Uri + "/followers")) ?? false)
 			return Note.NoteVisibility.Followers;
 
 		return Note.NoteVisibility.Specified;
@@ -93,7 +93,7 @@ public class ASNote : ASObject
 	public List<string> GetRecipients(User actor)
 	{
 		if (actor.Host == null) throw new Exception("Can't get recipients for local actor");
-		return To.Concat(Cc)
+		return (To ?? []).Concat(Cc ?? [])
 		         .Select(p => p.Id)
 		         .Distinct()
 		         .Where(p => p != $"{Constants.ActivityStreamsNs}#Public" &&

@@ -19,7 +19,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 	/// <returns>ASNote with only the Id field populated</returns>
 	public ASNote RenderLite(Note note)
 	{
-		return new ASNote { Id = note.Uri ?? note.GetPublicUri(config.Value) };
+		return new ASNote(false) { Id = note.Uri ?? note.GetPublicUri(config.Value) };
 	}
 
 	public async Task<ASNote> RenderAsync(Note note, List<Note.MentionedUser>? mentions = null)
