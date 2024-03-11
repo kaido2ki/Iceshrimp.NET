@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
@@ -11,7 +12,7 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams;
 
 public static class LdHelpers
 {
-	private static readonly Dictionary<string, RemoteDocument> ContextCache = new()
+	private static readonly Dictionary<string, RemoteDocument> PreloadedContexts = new()
 	{
 		{
 			"https://www.w3.org/ns/activitystreams", new RemoteDocument
@@ -52,6 +53,8 @@ public static class LdHelpers
 		}
 	};
 
+	private static readonly ConcurrentDictionary<string, RemoteDocument> ContextCache = new();
+
 	private static readonly JToken DefaultContext =
 		JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams", "Contexts",
 		                                           "default.json")));
@@ -88,7 +91,9 @@ public static class LdHelpers
 	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions)
 	{
 		var key = uri.AbsolutePath == "/schemas/litepub-0.1.jsonld" ? "litepub-0.1" : uri.ToString();
-		ContextCache.TryGetValue(key, out var result);
+		if (!PreloadedContexts.TryGetValue(key, out var result))
+			ContextCache.TryGetValue(key, out result);
+
 		if (result != null)
 		{
 			result.ContextUrl = uri;
@@ -97,7 +102,16 @@ public static class LdHelpers
 
 		//TODO: cache in redis
 		result = DefaultDocumentLoader.LoadJson(uri, jsonLdLoaderOptions);
-		ContextCache.Add(uri.ToString(), result);
+		ContextCache.TryAdd(uri.ToString(), result);
+
+		// Cleanup to make sure this doesn't take up more and more memory
+		while (ContextCache.Count > 20)
+		{
+			var hit = ContextCache.Keys.FirstOrDefault();
+			if (hit == null) break;
+			var success = ContextCache.TryRemove(hit, out _);
+			if (!success) break;
+		}
 
 		return result;
 	}
