@@ -19,6 +19,7 @@ public class UserController(
 	DatabaseContext db,
 	UserRenderer userRenderer,
 	NoteRenderer noteRenderer,
+	UserProfileRenderer userProfileRenderer,
 	ActivityPub.UserResolver userResolver
 ) : ControllerBase
 {
@@ -32,6 +33,19 @@ public class UserController(
 		           throw GracefulException.NotFound("User not found");
 
 		return Ok(await userRenderer.RenderOne(await userResolver.GetUpdatedUser(user)));
+	}
+	
+	[HttpGet("profile")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserProfileResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> GetUserProfile(string id)
+	{
+		var localUser = HttpContext.GetUser();
+		var user = await db.Users.IncludeCommonProperties()
+		                   .FirstOrDefaultAsync(p => p.Id == id) ??
+		           throw GracefulException.NotFound("User not found");
+
+		return Ok(await userProfileRenderer.RenderOne(await userResolver.GetUpdatedUser(user), localUser));
 	}
 
 	[HttpGet("notes")]

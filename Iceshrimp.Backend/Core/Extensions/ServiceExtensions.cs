@@ -2,6 +2,7 @@ using System.Net.Sockets;
 using System.Threading.RateLimiting;
 using Iceshrimp.Backend.Controllers.Federation;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
+using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -60,7 +61,8 @@ public static class ServiceExtensions
 			.AddScoped<ActivityPubController>()
 			.AddScoped<FollowupTaskService>()
 			.AddScoped<InstanceService>()
-			.AddScoped<MfmConverter>();
+			.AddScoped<MfmConverter>()
+			.AddScoped<UserProfileRenderer>();
 
 		// Singleton = instantiated once across application lifetime
 		services
