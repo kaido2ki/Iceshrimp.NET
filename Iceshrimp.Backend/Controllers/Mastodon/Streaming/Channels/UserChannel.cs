@@ -1,7 +1,9 @@
 using System.Text.Json;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
@@ -123,7 +125,18 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			if (!IsApplicable(notification)) return;
 			var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
 			var renderer = provider.GetRequiredService<NotificationRenderer>();
-			var rendered = await renderer.RenderAsync(notification, connection.Token.User);
+
+			NotificationEntity rendered;
+			try
+			{
+				rendered = await renderer.RenderAsync(notification, connection.Token.User);
+			}
+			catch (GracefulException)
+			{
+				// Unsupported notification type
+				return;
+			}
+
 			var message = new StreamingUpdateMessage
 			{
 				Stream = [Name], Event = "notification", Payload = JsonSerializer.Serialize(rendered)
