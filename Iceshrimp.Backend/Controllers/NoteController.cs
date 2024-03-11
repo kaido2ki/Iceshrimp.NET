@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
@@ -16,7 +17,12 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/note")]
 [Produces(MediaTypeNames.Application.Json)]
-public class NoteController(DatabaseContext db, NoteService noteSvc, NoteRenderer noteRenderer) : ControllerBase
+public class NoteController(
+	DatabaseContext db,
+	NoteService noteSvc,
+	NoteRenderer noteRenderer,
+	UserRenderer userRenderer
+) : ControllerBase
 {
 	[HttpGet("{id}")]
 	[Authenticate]
@@ -32,7 +38,30 @@ public class NoteController(DatabaseContext db, NoteService noteSvc, NoteRendere
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 
-		return Ok(await noteRenderer.RenderOne(note.EnforceRenoteReplyVisibility()));
+		return Ok(await noteRenderer.RenderOne(note.EnforceRenoteReplyVisibility(), user));
+	}
+
+	[HttpGet("{id}/reactions/{name}")]
+	[Authenticate]
+	[Authorize]
+	[LinkPagination(20, 40)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserResponse>))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> GetNoteReactions(string id, string name)
+	{
+		var user = HttpContext.GetUser();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
+
+		var users = await db.NoteReactions
+		                    .Where(p => p.Note == note && p.Reaction == $":{name.Trim(':')}:")
+		                    .Include(p => p.User.UserProfile)
+		                    .Select(p => p.User)
+		                    .ToListAsync();
+
+		return Ok(await userRenderer.RenderMany(users));
 	}
 
 	[HttpPost("{id}/like")]
@@ -71,6 +100,44 @@ public class NoteController(DatabaseContext db, NoteService noteSvc, NoteRendere
 		return Ok(new ValueResponse(success ? --note.LikeCount : note.LikeCount));
 	}
 
+	[HttpPost("{id}/react/{name}")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ValueResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> ReactToNote(string id, string name)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
+
+		var res = await noteSvc.ReactToNoteAsync(note, user, name);
+		note.Reactions.TryGetValue(res.name, out var count);
+		return Ok(new ValueResponse(res.success ? ++count : count));
+	}
+
+	[HttpPost("{id}/unreact/{name}")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ValueResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> RemoveReactionFromNote(string id, string name)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
+
+		var res = await noteSvc.RemoveReactionFromNoteAsync(note, user, name);
+		note.Reactions.TryGetValue(res.name, out var count);
+		return Ok(new ValueResponse(res.success ? --count : count));
+	}
+
 	[HttpPost]
 	[Authenticate]
 	[Authorize]
@@ -99,6 +166,6 @@ public class NoteController(DatabaseContext db, NoteService noteSvc, NoteRendere
 		var note = await noteSvc.CreateNoteAsync(user, Note.NoteVisibility.Public, request.Text, request.Cw, reply,
 		                                         renote);
 
-		return Ok(await noteRenderer.RenderOne(note));
+		return Ok(await noteRenderer.RenderOne(note, user));
 	}
 }

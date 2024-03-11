@@ -38,6 +38,6 @@ public class TimelineController(DatabaseContext db, IDistributedCache cache, Not
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
 
-		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility()));
+		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user));
 	}
 }

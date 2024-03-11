@@ -136,8 +136,8 @@ public class StatusController(
 		           throw GracefulException.RecordNotFound();
 
 		var res = await noteSvc.ReactToNoteAsync(note, user, reaction);
-		if (res != null && !note.Reactions.TryAdd(res, 1))
-			note.Reactions[res]++; // we do not want to call save changes after this point
+		if (res.success && !note.Reactions.TryAdd(res.name, 1))
+			note.Reactions[res.name]++; // we do not want to call save changes after this point
 
 		return await GetNote(id);
 	}
@@ -156,8 +156,8 @@ public class StatusController(
 		           throw GracefulException.RecordNotFound();
 
 		var res = await noteSvc.RemoveReactionFromNoteAsync(note, user, reaction);
-		if (res != null && note.Reactions.TryGetValue(res, out var value))
-			note.Reactions[res] = --value; // we do not want to call save changes after this point
+		if (res.success && note.Reactions.TryGetValue(res.name, out var value))
+			note.Reactions[res.name] = --value; // we do not want to call save changes after this point
 
 		return await GetNote(id);
 	}

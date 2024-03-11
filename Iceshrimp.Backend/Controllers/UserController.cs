@@ -67,6 +67,6 @@ public class UserController(
 		                    .Paginate(pq, ControllerContext)
 		                    .ToListAsync();
 
-		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility()));
+		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), localUser));
 	}
 }

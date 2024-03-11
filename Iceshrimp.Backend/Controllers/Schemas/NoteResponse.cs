@@ -17,13 +17,14 @@ public class NoteRenote : NoteBase
 
 public class NoteBase
 {
-	[J("id")]          public required string               Id          { get; set; }
-	[J("createdAt")]   public required string               CreatedAt   { get; set; }
-	[J("text")]        public required string?              Text        { get; set; }
-	[J("cw")]          public required string?              Cw          { get; set; }
-	[J("visibility")]  public required string               Visibility  { get; set; }
-	[J("user")]        public required UserResponse         User        { get; set; }
-	[J("attachments")] public required List<NoteAttachment> Attachments { get; set; }
+	[J("id")]          public required string                   Id          { get; set; }
+	[J("createdAt")]   public required string                   CreatedAt   { get; set; }
+	[J("text")]        public required string?                  Text        { get; set; }
+	[J("cw")]          public required string?                  Cw          { get; set; }
+	[J("visibility")]  public required string                   Visibility  { get; set; }
+	[J("user")]        public required UserResponse             User        { get; set; }
+	[J("attachments")] public required List<NoteAttachment>     Attachments { get; set; }
+	[J("reactions")]   public required List<NoteReactionSchema> Reactions   { get; set; }
 }
 
 public class NoteAttachment
@@ -33,4 +34,13 @@ public class NoteAttachment
 	[J("thumbnailUrl")] public required string  ThumbnailUrl { get; set; }
 	[J("blurhash")]     public required string? Blurhash     { get; set; }
 	[J("alt")]          public required string? AltText      { get; set; }
+}
+
+public class NoteReactionSchema
+{
+	[JI]           public required string  NoteId;
+	[J("name")]    public required string  Name    { get; set; }
+	[J("count")]   public required int     Count   { get; set; }
+	[J("reacted")] public required bool    Reacted { get; set; }
+	[J("url")]     public required string? Url     { get; set; }
 }

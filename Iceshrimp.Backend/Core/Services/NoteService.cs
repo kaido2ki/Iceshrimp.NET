@@ -1158,14 +1158,14 @@ public class NoteService(
 		await queueSvc.BackgroundTaskQueue.ScheduleAsync(job, poll.ExpiresAt.Value);
 	}
 
-	public async Task<string?> ReactToNoteAsync(Note note, User user, string name)
+	public async Task<(string name, bool success)> ReactToNoteAsync(Note note, User user, string name)
 	{
 		if (note.IsPureRenote)
 			throw GracefulException.BadRequest("Cannot react to a pure renote");
 
 		name = await emojiSvc.ResolveEmojiName(name, user.Host);
 		if (await db.NoteReactions.AnyAsync(p => p.Note == note && p.User == user && p.Reaction == name))
-			return null;
+			return (name, false);
 
 		var reaction = new NoteReaction
 		{
@@ -1191,7 +1191,7 @@ public class NoteService(
 			await deliverSvc.DeliverToConditionalAsync(activity, user, note);
 		}
 
-		return name;
+		return (name, true);
 	}
 
 	public async Task ReactToNoteAsync(ASNote note, User actor, string name)
@@ -1203,14 +1203,14 @@ public class NoteService(
 		await ReactToNoteAsync(dbNote, actor, name);
 	}
 
-	public async Task<string?> RemoveReactionFromNoteAsync(Note note, User user, string name)
+	public async Task<(string name, bool success)> RemoveReactionFromNoteAsync(Note note, User user, string name)
 	{
 		name = await emojiSvc.ResolveEmojiName(name, user.Host);
 
 		var reaction =
 			await db.NoteReactions.FirstOrDefaultAsync(p => p.Note == note && p.User == user && p.Reaction == name);
 
-		if (reaction == null) return null;
+		if (reaction == null) return (name, false);
 		db.Remove(reaction);
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNoteUnreacted(this, reaction);
@@ -1235,7 +1235,7 @@ public class NoteService(
 			        .ExecuteDeleteAsync();
 		}
 
-		return name;
+		return (name, true);
 	}
 
 	public async Task RemoveReactionFromNoteAsync(ASNote note, User actor, string name)
