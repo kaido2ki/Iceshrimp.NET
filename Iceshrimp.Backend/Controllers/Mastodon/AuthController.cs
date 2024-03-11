@@ -106,12 +106,12 @@ public class AuthController(DatabaseContext db) : ControllerBase
 			throw GracefulException
 				.BadRequest("The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.");
 
-		if (MastodonOauthHelpers.ExpandScopes(request.Scopes)
+		if (MastodonOauthHelpers.ExpandScopes(request.Scopes ?? [])
 		                        .Except(MastodonOauthHelpers.ExpandScopes(token.Scopes))
 		                        .Any())
 			throw GracefulException.BadRequest("The requested scope is invalid, unknown, or malformed.");
 
-		token.Scopes = request.Scopes;
+		token.Scopes = request.Scopes ?? token.Scopes;
 		token.Active = true;
 		await db.SaveChangesAsync();
 

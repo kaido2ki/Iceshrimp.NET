@@ -70,14 +70,14 @@ public abstract class AuthSchemas
 
 	public class OauthTokenRequest
 	{
-		public List<string> Scopes = ["read"];
+		public List<string>? Scopes;
 
 		[B(Name = "scope")]
 		[J("scope")]
 		[JC(typeof(EnsureArrayConverter))]
 		public List<string> ScopesInternal
 		{
-			get => Scopes;
+			get => Scopes ?? [];
 			set => Scopes = value.Count == 1
 				? value[0].Contains(' ')
 					? value[0].Split(' ').ToList()
