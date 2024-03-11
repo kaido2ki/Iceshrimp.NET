@@ -28,9 +28,17 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 	public async Task<IActionResult> WebFinger([FromQuery] string resource)
 	{
 		User? user;
-		if (resource.StartsWith("acct:"))
+		if (resource.StartsWith($"https://{config.Value.WebDomain}/users/"))
 		{
-			var split = resource[5..].TrimStart('@').Split('@');
+			var id = resource[$"https://{config.Value.WebDomain}/users/".Length..];
+			user = await db.Users.FirstOrDefaultAsync(p => p.Id == id && p.Host == null);
+		}
+		else
+		{
+			if (resource.StartsWith("acct:"))
+				resource = resource[5..];
+
+			var split = resource.TrimStart('@').Split('@');
 			if (split.Length > 2) return NotFound();
 			if (split.Length == 2)
 			{
@@ -39,16 +47,6 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 			}
 
 			user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == split[0].ToLowerInvariant() &&
-			                                               p.Host == null);
-		}
-		else if (resource.StartsWith($"https://{config.Value.WebDomain}/users/"))
-		{
-			var id = resource[$"https://{config.Value.WebDomain}/users/".Length..];
-			user = await db.Users.FirstOrDefaultAsync(p => p.Id == id && p.Host == null);
-		}
-		else
-		{
-			user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == resource.ToLowerInvariant() &&
 			                                               p.Host == null);
 		}
 
