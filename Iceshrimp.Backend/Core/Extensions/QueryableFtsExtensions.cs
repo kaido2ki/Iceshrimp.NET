@@ -244,18 +244,26 @@ public static class QueryableFtsExtensions
 		=> matchType.Equals(MatchFilterType.Substring)
 			? caseSensitivity.Equals(CaseFilterType.Sensitive)
 				? negated
-					? !EF.Functions.Like(note.Text!, "%" + query + "%", @"\")
-					: EF.Functions.Like(note.Text!, "%" + query + "%", @"\")
+					? !EF.Functions.Like(note.Text!, "%" + query + "%", @"\") &&
+					  !EF.Functions.Like(note.Cw!, "%" + query + "%", @"\")
+					: EF.Functions.Like(note.Text!, "%" + query + "%", @"\") ||
+					  EF.Functions.Like(note.Cw!, "%" + query + "%", @"\")
 				: negated
-					? !EF.Functions.ILike(note.Text!, "%" + query + "%", @"\")
-					: EF.Functions.ILike(note.Text!, "%" + query + "%", @"\")
+					? !EF.Functions.ILike(note.Text!, "%" + query + "%", @"\") &&
+					  !EF.Functions.ILike(note.Cw!, "%" + query + "%", @"\")
+					: EF.Functions.ILike(note.Text!, "%" + query + "%", @"\") ||
+					  EF.Functions.ILike(note.Cw!, "%" + query + "%", @"\")
 			: caseSensitivity.Equals(CaseFilterType.Sensitive)
 				? negated
-					? !Regex.IsMatch(note.Text!, "\\y" + query + "\\y")
-					: Regex.IsMatch(note.Text!, "\\y" + query + "\\y")
+					? !Regex.IsMatch(note.Text!, "\\y" + query + "\\y") &&
+					  !Regex.IsMatch(note.Cw!, "\\y" + query + "\\y")
+					: Regex.IsMatch(note.Text!, "\\y" + query + "\\y") ||
+					  Regex.IsMatch(note.Cw!, "\\y" + query + "\\y")
 				: negated
-					? !Regex.IsMatch(note.Text!, "\\y" + query + "\\y", RegexOptions.IgnoreCase)
-					: Regex.IsMatch(note.Text!, "\\y" + query + "\\y", RegexOptions.IgnoreCase);
+					? !Regex.IsMatch(note.Text!, "\\y" + query + "\\y", RegexOptions.IgnoreCase) &&
+					  !Regex.IsMatch(note.Cw!, "\\y" + query + "\\y", RegexOptions.IgnoreCase)
+					: Regex.IsMatch(note.Text!, "\\y" + query + "\\y", RegexOptions.IgnoreCase) ||
+					  Regex.IsMatch(note.Cw!, "\\y" + query + "\\y", RegexOptions.IgnoreCase);
 
 	internal static string PreEscapeFtsQuery(string query, MatchFilterType matchType) =>
 		matchType.Equals(MatchFilterType.Substring)

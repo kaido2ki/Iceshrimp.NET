@@ -603,6 +603,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.HasIndex(e => e.Text, "GIN_TRGM_note_text")
 			      .HasMethod("gin")
 			      .HasOperators("gin_trgm_ops");
+			entity.HasIndex(e => e.Cw, "GIN_TRGM_note_cw")
+			      .HasMethod("gin")
+			      .HasOperators("gin_trgm_ops");
 
 			entity.Property(e => e.AttachedFileTypes).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.ChannelId).HasComment("The ID of source channel.");
