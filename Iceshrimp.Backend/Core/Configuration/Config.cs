@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Iceshrimp.Backend.Core.Middleware;
 
@@ -38,12 +39,12 @@ public sealed class Config
 
 		public string UserAgent => $"Iceshrimp.NET/{Version} (https://{WebDomain})";
 
-		public int     ListenPort     { get; init; } = 3000;
-		public string  ListenHost     { get; init; } = "localhost";
-		public string? ListenSocket   { get; init; }
-		public string  WebDomain      { get; init; } = null!;
-		public string  AccountDomain  { get; init; } = null!;
-		public int     CharacterLimit { get; init; } = 8192;
+		[Range(1, 65535)] public  int     ListenPort     { get; init; } = 3000;
+		[Required]        public  string  ListenHost     { get; init; } = "localhost";
+		public                    string? ListenSocket   { get; init; }
+		[Required]         public string  WebDomain      { get; init; } = null!;
+		[Required]         public string  AccountDomain  { get; init; } = null!;
+		[Range(1, 100000)] public int     CharacterLimit { get; init; } = 8192;
 	}
 
 	public sealed class SecuritySection
@@ -60,22 +61,22 @@ public sealed class Config
 
 	public sealed class DatabaseSection
 	{
-		public string  Host     { get; init; } = "localhost";
-		public int     Port     { get; init; } = 5432;
-		public string  Database { get; init; } = null!;
-		public string  Username { get; init; } = null!;
-		public string? Password { get; init; }
+		[Required]        public string  Host     { get; init; } = "localhost";
+		[Range(1, 65535)] public int     Port     { get; init; } = 5432;
+		[Required]        public string  Database { get; init; } = null!;
+		[Required]        public string  Username { get; init; } = null!;
+		public                   string? Password { get; init; }
 	}
 
 	public sealed class RedisSection
 	{
-		public string  Host             { get; init; } = "localhost";
-		public int     Port             { get; init; } = 6379;
-		public string? UnixDomainSocket { get; init; }
-		public string? Prefix           { get; init; }
-		public string? Username         { get; init; }
-		public string? Password         { get; init; }
-		public int?    Database         { get; init; }
+		[Required]        public string  Host             { get; init; } = "localhost";
+		[Range(1, 65535)] public int     Port             { get; init; } = 6379;
+		public                   string? UnixDomainSocket { get; init; }
+		public                   string? Prefix           { get; init; }
+		public                   string? Username         { get; init; }
+		public                   string? Password         { get; init; }
+		public                   int?    Database         { get; init; }
 
 		//TODO: TLS settings
 	}

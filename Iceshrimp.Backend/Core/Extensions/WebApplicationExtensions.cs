@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -46,11 +47,18 @@ public static class WebApplicationExtensions
 		var instanceConfig = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
 		                     throw new Exception("Failed to read Instance config section");
 
-		var storageConfig = app.Configuration.GetSection("Storage").Get<Config.StorageSection>() ??
-		                    throw new Exception("Failed to read Storage config section");
-
 		app.Logger.LogInformation("Iceshrimp.NET v{version} ({domain})", instanceConfig.Version,
 		                          instanceConfig.AccountDomain);
+		try
+		{
+			app.Logger.LogInformation("Validating configuration...");
+			app.Services.CreateScope().ServiceProvider.GetRequiredService<IStartupValidator>().Validate();
+		}
+		catch (OptionsValidationException e)
+		{
+			app.Logger.LogCritical("Failed to validate configuration: {error}", e.Message);
+			Environment.Exit(1);
+		}
 
 		if (app.Environment.IsDevelopment())
 		{
@@ -114,6 +122,9 @@ public static class WebApplicationExtensions
 			app.Logger.LogCritical("Failed to connect to redis");
 			Environment.Exit(1);
 		}
+
+		var storageConfig = app.Configuration.GetSection("Storage").Get<Config.StorageSection>() ??
+		                    throw new Exception("Failed to read Storage config section");
 
 		if (storageConfig.Mode == Enums.FileStorage.Local)
 		{

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 using NoteRenderer = Iceshrimp.Backend.Controllers.Renderers.NoteRenderer;
@@ -85,15 +86,36 @@ public static class ServiceExtensions
 
 	public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration)
 	{
-		//TODO: fail if config doesn't parse correctly / required things are missing
-		services.Configure<Config>(configuration);
-		services.Configure<Config.InstanceSection>(configuration.GetSection("Instance"));
-		services.Configure<Config.SecuritySection>(configuration.GetSection("Security"));
-		services.Configure<Config.DatabaseSection>(configuration.GetSection("Database"));
-		services.Configure<Config.RedisSection>(configuration.GetSection("Redis"));
-		services.Configure<Config.StorageSection>(configuration.GetSection("Storage"));
-		services.Configure<Config.LocalStorageSection>(configuration.GetSection("Storage:Local"));
-		services.Configure<Config.ObjectStorageSection>(configuration.GetSection("Storage:ObjectStorage"));
+		services.ConfigureWithValidation<Config>(configuration)
+		        .ConfigureWithValidation<Config.InstanceSection>(configuration, "Instance")
+		        .ConfigureWithValidation<Config.SecuritySection>(configuration, "Security")
+		        .ConfigureWithValidation<Config.DatabaseSection>(configuration, "Database")
+		        .ConfigureWithValidation<Config.RedisSection>(configuration, "Redis")
+		        .ConfigureWithValidation<Config.StorageSection>(configuration, "Storage")
+		        .ConfigureWithValidation<Config.LocalStorageSection>(configuration, "Storage:Local")
+		        .ConfigureWithValidation<Config.ObjectStorageSection>(configuration, "Storage:ObjectStorage");
+	}
+
+	private static IServiceCollection ConfigureWithValidation<T>(
+		this IServiceCollection services, IConfiguration config
+	) where T : class
+	{
+		services.AddOptionsWithValidateOnStart<T>()
+		        .Bind(config)
+		        .ValidateDataAnnotations();
+
+		return services;
+	}
+
+	private static IServiceCollection ConfigureWithValidation<T>(
+		this IServiceCollection services, IConfiguration config, string name
+	) where T : class
+	{
+		services.AddOptionsWithValidateOnStart<T>()
+		        .Bind(config.GetSection(name))
+		        .ValidateDataAnnotations();
+
+		return services;
 	}
 
 	public static void AddDatabaseContext(this IServiceCollection services, IConfiguration configuration)
