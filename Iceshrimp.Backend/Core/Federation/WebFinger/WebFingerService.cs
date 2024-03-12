@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Encodings.Web;
 using System.Xml;
+using Iceshrimp.Backend.Controllers.Federation.Schemas;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 
@@ -75,17 +76,20 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc, I
 
 	private async Task<string> GetWebFingerUrlAsync(string query, string proto, string domain)
 	{
-		var template = await GetWebFingerTemplateFromHostMetaAsync($"{proto}://{domain}/.well-known/host-meta") ??
+		var template = await GetWebFingerTemplateFromHostMetaXmlAsync(proto, domain) ??
+		               await GetWebFingerTemplateFromHostMetaJsonAsync(proto, domain) ??
 		               $"{proto}://{domain}/.well-known/webfinger?resource={{uri}}";
+
 		var finalQuery = query.StartsWith('@') ? $"acct:{query[1..]}" : query;
 		var encoded    = UrlEncoder.Default.Encode(finalQuery);
 		return template.Replace("{uri}", encoded);
 	}
 
-	private async Task<string?> GetWebFingerTemplateFromHostMetaAsync(string hostMetaUrl)
+	private async Task<string?> GetWebFingerTemplateFromHostMetaXmlAsync(string proto, string domain)
 	{
 		try
 		{
+			var hostMetaUrl = $"{proto}://{domain}/.well-known/host-meta";
 			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/xrd+xml"]),
 			                                       HttpCompletionOption.ResponseHeadersRead);
 			using var stream = await res.Content.ReadAsStreamAsync();
@@ -108,5 +112,53 @@ public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc, I
 		{
 			return null;
 		}
+	}
+
+	private async Task<string?> GetWebFingerTemplateFromHostMetaJsonAsync(string proto, string domain)
+	{
+		try
+		{
+			var hostMetaUrl = $"{proto}://{domain}/.well-known/host-meta.json";
+			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/jrd+json"]),
+			                                       HttpCompletionOption.ResponseHeadersRead);
+			var deserialized = await res.Content.ReadFromJsonAsync<HostMetaJsonResponse>();
+
+			var result = deserialized?.Links?.FirstOrDefault(p => p is
+			{
+				Rel: "lrdd",
+				Type: "application/jrd+json",
+				Template: not null
+			});
+
+			if (result?.Template != null)
+				return result.Template;
+		}
+		catch
+		{
+			// ignored
+		}
+
+		try
+		{
+			var hostMetaUrl = $"{proto}://{domain}/.well-known/host-meta";
+			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/jrd+json"]),
+			                                       HttpCompletionOption.ResponseHeadersRead);
+			var deserialized = await res.Content.ReadFromJsonAsync<HostMetaJsonResponse>();
+
+			var result = deserialized?.Links?.FirstOrDefault(p => p is
+			{
+				Rel: "lrdd",
+				Type: "application/jrd+json",
+				Template: not null
+			});
+
+			return result?.Template;
+		}
+		catch
+		{
+			// ignored
+		}
+
+		return null;
 	}
 }
