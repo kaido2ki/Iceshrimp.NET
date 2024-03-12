@@ -1,17 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Net.Http.Headers;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Federation.ActivityStreams;
-using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
@@ -27,9 +22,6 @@ public class AuthorizedFetchMiddleware(
 	IHostApplicationLifetime appLifetime
 ) : IMiddleware
 {
-	private static readonly JsonSerializerSettings JsonSerializerSettings =
-		new() { DateParseHandling = DateParseHandling.None };
-
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
 	{
 		var attribute = ctx.GetEndpoint()?.Metadata.GetMetadata<AuthorizedFetchAttribute>();
@@ -95,9 +87,7 @@ public class AuthorizedFetchMiddleware(
 					throw new GracefulException(HttpStatusCode.Forbidden, "Forbidden", "Instance is blocked",
 					                            suppressLog: true);
 
-				List<string> headers = request.ContentLength > 0 || attribute.ForceBody
-					? ["(request-target)", "digest", "host", "date"]
-					: ["(request-target)", "host", "date"];
+				List<string> headers = ["(request-target)", "host", "date"];
 
 				verified = await HttpSignature.VerifyAsync(request, sig, headers, key.KeyPem);
 				logger.LogDebug("HttpSignature.Verify returned {result} for key {keyId}", verified, sig.KeyId);
@@ -117,78 +107,6 @@ public class AuthorizedFetchMiddleware(
 				logger.LogDebug("Error validating HTTP signature: {error}", e.Message);
 			}
 
-			if (!verified &&
-			    request is { ContentType: not null, ContentLength: > 0 } &&
-			    config.Value.AcceptLdSignatures)
-			{
-				logger.LogDebug("Trying LD signature next...");
-				try
-				{
-					var contentType = new MediaTypeHeaderValue(request.ContentType);
-					if (!ActivityPub.ActivityFetcherService.IsValidActivityContentType(contentType))
-						throw new Exception("Request body is not an activity");
-
-					var body = await new StreamReader(request.Body).ReadToEndAsync(ct);
-					request.Body.Seek(0, SeekOrigin.Begin);
-					var deserialized = JsonConvert.DeserializeObject<JObject?>(body);
-					var expanded     = LdHelpers.Expand(deserialized);
-					if (expanded == null)
-						throw new Exception("Failed to expand ASObject");
-					var obj = ASObject.Deserialize(expanded);
-					if (obj == null)
-						throw new Exception("Failed to deserialize ASObject");
-					if (obj is not ASActivity activity)
-						throw new Exception($"Job data is not an ASActivity - Type: {obj.Type}");
-					if (activity.Actor == null)
-						throw new Exception("Activity has no actor");
-					if (await fedCtrlSvc.ShouldBlockAsync(new Uri(activity.Actor.Id).Host))
-						throw new GracefulException(HttpStatusCode.Forbidden, "Forbidden", "Instance is blocked",
-						                            suppressLog: true);
-					key = null;
-					key = await db.UserPublickeys
-					              .Include(p => p.User)
-					              .FirstOrDefaultAsync(p => p.User.Uri == activity.Actor.Id, ct);
-
-					if (key == null)
-					{
-						var user = await userResolver.ResolveAsync(activity.Actor.Id).WaitAsync(ct);
-						key = await db.UserPublickeys
-						              .Include(p => p.User)
-						              .FirstOrDefaultAsync(p => p.User == user, ct);
-
-						if (key == null)
-							throw new Exception($"Failed to fetch public key for user {activity.Actor.Id}");
-					}
-
-					if (await fedCtrlSvc.ShouldBlockAsync(key.User.Host, new Uri(key.KeyId).Host))
-						throw new GracefulException(HttpStatusCode.Forbidden, "Forbidden", "Instance is blocked",
-						                            suppressLog: true);
-
-					// We need to re-run deserialize & expand with date time handling disabled for JSON-LD canonicalization to work correctly
-					var rawDeserialized = JsonConvert.DeserializeObject<JObject?>(body, JsonSerializerSettings);
-					var rawExpanded     = LdHelpers.Expand(rawDeserialized);
-					if (rawExpanded == null)
-						throw new Exception("Failed to expand activity for LD signature processing");
-					verified = await LdSignature.VerifyAsync(expanded, rawExpanded, key.KeyPem, key.KeyId);
-					logger.LogDebug("LdSignature.VerifyAsync returned {result} for actor {id}",
-					                verified, activity.Actor.Id);
-					if (!verified)
-					{
-						logger.LogDebug("Refetching user key...");
-						key      = await userSvc.UpdateUserPublicKeyAsync(key);
-						verified = await LdSignature.VerifyAsync(expanded, rawExpanded, key.KeyPem, key.KeyId);
-						logger.LogDebug("LdSignature.VerifyAsync returned {result} for actor {id}",
-						                verified, activity.Actor.Id);
-					}
-				}
-				catch (Exception e)
-				{
-					if (e is AuthFetchException afe) throw GracefulException.Accepted(afe.Message);
-					if (e is GracefulException { SuppressLog: true }) throw;
-					logger.LogError("Error validating JSON-LD signature: {error}", e.Message);
-				}
-			}
-
 			if (!verified || key == null)
 				throw new GracefulException(HttpStatusCode.Forbidden, "Request signature validation failed");
 
@@ -199,10 +117,7 @@ public class AuthorizedFetchMiddleware(
 	}
 }
 
-public class AuthorizedFetchAttribute(bool forceBody = false) : Attribute
-{
-	public bool ForceBody { get; } = forceBody;
-}
+public class AuthorizedFetchAttribute : Attribute;
 
 public static partial class HttpContextExtensions
 {

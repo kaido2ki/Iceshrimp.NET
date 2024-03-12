@@ -34,7 +34,7 @@ public class InboxQueue
 		var logger    = scope.GetRequiredService<ILogger<InboxQueue>>();
 
 		logger.LogTrace("Preparation took {ms} ms", job.Duration);
-		await apHandler.PerformActivityAsync(activity, job.InboxUserId, job.AuthFetchUserId);
+		await apHandler.PerformActivityAsync(activity, job.InboxUserId, job.AuthenticatedUserId);
 	}
 }
 
@@ -43,5 +43,5 @@ public class InboxJob : Job
 {
 	[ProtoMember(1)] public required string  Body;
 	[ProtoMember(2)] public required string? InboxUserId;
-	[ProtoMember(3)] public required string? AuthFetchUserId;
+	[ProtoMember(3)] public required string? AuthenticatedUserId;
 }

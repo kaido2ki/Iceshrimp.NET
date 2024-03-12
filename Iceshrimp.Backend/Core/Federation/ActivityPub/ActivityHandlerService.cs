@@ -24,7 +24,6 @@ public class ActivityHandlerService(
 	QueueService queueService,
 	ActivityRenderer activityRenderer,
 	IOptions<Config.InstanceSection> config,
-	IOptions<Config.SecuritySection> security,
 	FederationControlService federationCtrl,
 	ObjectResolver resolver,
 	NotificationService notificationSvc,
@@ -34,7 +33,7 @@ public class ActivityHandlerService(
 	EmojiService emojiSvc
 )
 {
-	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId, string? authFetchUserId)
+	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId, string? authenticatedUserId)
 	{
 		logger.LogDebug("Processing activity: {activity}", activity.Id);
 		if (activity.Actor == null)
@@ -45,12 +44,12 @@ public class ActivityHandlerService(
 			throw GracefulException.UnprocessableEntity("Activity object is null");
 
 		var resolvedActor = await userResolver.ResolveAsync(activity.Actor.Id);
-		if (security.Value.AuthorizedFetch && authFetchUserId == null)
+		if (authenticatedUserId == null)
 			throw GracefulException
-				.UnprocessableEntity("Refusing to process activity without authFetchUserId in authorized fetch mode");
-		if (resolvedActor.Id != authFetchUserId && authFetchUserId != null)
+				.UnprocessableEntity("Refusing to process activity without authFetchUserId");
+		if (resolvedActor.Id != authenticatedUserId && authenticatedUserId != null)
 			throw GracefulException
-				.UnprocessableEntity($"Authorized fetch user id {authFetchUserId} doesn't match resolved actor id {resolvedActor.Id}");
+				.UnprocessableEntity($"Authorized fetch user id {authenticatedUserId} doesn't match resolved actor id {resolvedActor.Id}");
 		if (new Uri(activity.Actor.Id).Host != new Uri(activity.Id).Host)
 			throw GracefulException
 				.UnprocessableEntity($"Activity identifier ({activity.Actor.Id}) host doesn't match actor identifier ({activity.Id}) host");

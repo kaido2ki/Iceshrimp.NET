@@ -49,6 +49,7 @@ public static class ServiceExtensions
 			.AddScoped<DatabaseMaintenanceService>()
 			.AddScoped<UserProfileMentionsResolver>()
 			.AddScoped<AuthorizedFetchMiddleware>()
+			.AddScoped<InboxValidationMiddleware>()
 			.AddScoped<AuthenticationMiddleware>()
 			.AddScoped<ErrorHandlerMiddleware>()
 			.AddScoped<Controllers.Mastodon.Renderers.UserRenderer>()

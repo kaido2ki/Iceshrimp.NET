@@ -116,7 +116,7 @@ public class UserResolver(
 	public async Task<User> ResolveAsync(string query)
 	{
 		query = NormalizeQuery(query);
-		
+
 		// Before we begin, let's skip local note urls
 		if (query.StartsWith($"https://{config.Value.WebDomain}/notes/"))
 			throw GracefulException.BadRequest("Refusing to resolve local note URL as user");
@@ -125,6 +125,38 @@ public class UserResolver(
 		var user = await userSvc.GetUserFromQueryAsync(query);
 		if (user != null)
 			return await GetUpdatedUser(user);
+
+		// We don't, so we need to run WebFinger
+		var (acct, uri) = await WebFingerAsync(query);
+
+		// Check the database again with the new data
+		if (uri != query) user = await userSvc.GetUserFromQueryAsync(uri);
+		if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
+		if (user != null)
+			return await GetUpdatedUser(user);
+
+		using (await KeyedLocker.LockAsync(uri))
+		{
+			// Pass the job on to userSvc, which will create the user
+			return await userSvc.CreateUserAsync(uri, acct);
+		}
+	}
+
+	public async Task<User?> ResolveAsync(string query, bool onlyExisting)
+	{
+		query = NormalizeQuery(query);
+
+		// Before we begin, let's skip local note urls
+		if (query.StartsWith($"https://{config.Value.WebDomain}/notes/"))
+			throw GracefulException.BadRequest("Refusing to resolve local note URL as user");
+
+		// First, let's see if we already know the user
+		var user = await userSvc.GetUserFromQueryAsync(query);
+		if (user != null)
+			return await GetUpdatedUser(user);
+
+		if (onlyExisting)
+			return null;
 
 		// We don't, so we need to run WebFinger
 		var (acct, uri) = await WebFingerAsync(query);

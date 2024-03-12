@@ -20,7 +20,8 @@ public static class WebApplicationExtensions
 		          .UseMiddleware<RequestBufferingMiddleware>()
 		          .UseMiddleware<AuthenticationMiddleware>()
 		          .UseMiddleware<AuthorizationMiddleware>()
-		          .UseMiddleware<AuthorizedFetchMiddleware>();
+		          .UseMiddleware<AuthorizedFetchMiddleware>()
+		          .UseMiddleware<InboxValidationMiddleware>();
 	}
 
 	public static IApplicationBuilder UseSwaggerWithOptions(this WebApplication app)

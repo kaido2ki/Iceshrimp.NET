@@ -83,9 +83,9 @@ public class ActivityPubController(
 		var rendered = await pins.Select(p => noteRenderer.RenderAsync(p)).AwaitAllNoConcurrencyAsync();
 		var res = new ASOrderedCollection
 		{
-			Id           = $"{user.GetPublicUri(config.Value)}/collections/featured",
-			TotalItems   = (ulong)rendered.Count,
-			Items = rendered.Cast<ASObject>().ToList()
+			Id         = $"{user.GetPublicUri(config.Value)}/collections/featured",
+			TotalItems = (ulong)rendered.Count,
+			Items      = rendered.Cast<ASObject>().ToList()
 		};
 
 		var compacted = LdHelpers.Compact(res);
@@ -119,7 +119,7 @@ public class ActivityPubController(
 
 	[HttpPost("/inbox")]
 	[HttpPost("/users/{id}/inbox")]
-	[AuthorizedFetch(true)]
+	[InboxValidation]
 	[EnableRequestBuffering(1024 * 1024)]
 	[Produces("text/plain")]
 	[Consumes("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
@@ -130,9 +130,9 @@ public class ActivityPubController(
 		Request.Body.Position = 0;
 		await queues.InboxQueue.EnqueueAsync(new InboxJob
 		{
-			Body            = body,
-			InboxUserId     = id,
-			AuthFetchUserId = HttpContext.GetActor()?.Id
+			Body                = body,
+			InboxUserId         = id,
+			AuthenticatedUserId = HttpContext.GetActor()?.Id
 		});
 		return Accepted();
 	}
