@@ -29,7 +29,8 @@ public class StatusController(
 	NoteRenderer noteRenderer,
 	NoteService noteSvc,
 	IDistributedCache cache,
-	IOptions<Config.InstanceSection> config
+	IOptions<Config.InstanceSection> config,
+	UserRenderer userRenderer
 ) : ControllerBase
 {
 	[HttpGet("{id}")]
@@ -434,6 +435,49 @@ public class StatusController(
 		                  .Select(p => new StatusSource { Id = p.Id, ContentWarning = p.Cw ?? "", Text = p.Text ?? "" })
 		                  .FirstOrDefaultAsync() ??
 		          throw GracefulException.RecordNotFound();
+
+		return Ok(res);
+	}
+
+	[HttpGet("{id}/favourited_by")]
+	[Authenticate("read:statuses")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetNoteLikes(string id)
+	{
+		var user = HttpContext.GetUser();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		var res = await db.NoteLikes.Where(p => p.Note == note)
+		                  .Include(p => p.User.UserProfile)
+		                  .Select(p => p.User)
+		                  .RenderAllForMastodonAsync(userRenderer);
+
+		return Ok(res);
+	}
+
+	[HttpGet("{id}/reblogged_by")]
+	[Authenticate("read:statuses")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetNoteRenotes(string id)
+	{
+		var user = HttpContext.GetUser();
+		var note = await db.Notes
+		                   .Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		var res = await db.Notes
+		                  .Where(p => p.Renote == note && p.IsPureRenote)
+		                  .EnsureVisibleFor(user)
+		                  .Include(p => p.User.UserProfile)
+		                  .Select(p => p.User)
+		                  .RenderAllForMastodonAsync(userRenderer);
 
 		return Ok(res);
 	}
