@@ -28,12 +28,16 @@ public class NoteRenderer(
 		var quote = note is { Renote: not null, IsQuote: true } && recurse > 0
 			? await RenderAsync(note.Renote, user, data, --recurse)
 			: null;
-		var text = note.Text;
+		var     text     = note.Text;
+		string? quoteUri = null;
+
 		if (note is { Renote: not null, IsQuote: true } && text != null)
 		{
-			var quoteUri = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value);
-			if (quoteUri != null)
-				text += $"\n\nRE: {quoteUri}"; //TODO: render as inline quote
+			var qUri = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value);
+			var alt  = note.Renote?.Uri;
+
+			if (qUri != null && !text.Contains(qUri) && (alt == null || qUri == alt || !text.Contains(alt)))
+				quoteUri = qUri;
 		}
 
 		var liked = data?.LikedNotes?.Contains(note.Id) ??
@@ -69,7 +73,7 @@ public class NoteRenderer(
 		                             .ToList();
 
 		var content = text != null && data?.Source != true
-			? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost)
+			? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost, quoteUri)
 			: null;
 
 		var account = data?.Accounts?.FirstOrDefault(p => p.Id == note.UserId) ??

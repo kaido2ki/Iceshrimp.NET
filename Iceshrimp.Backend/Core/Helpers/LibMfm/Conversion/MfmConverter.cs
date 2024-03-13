@@ -54,7 +54,9 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 		return parser.Mentions;
 	}
 
-	public async Task<string> ToHtmlAsync(IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions, string? host)
+	public async Task<string> ToHtmlAsync(
+		IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null
+	)
 	{
 		var context  = BrowsingContext.New();
 		var document = await context.OpenNewAsync();
@@ -62,15 +64,33 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 
 		foreach (var node in nodes) element.AppendNodes(FromMfmNode(document, node, mentions, host));
 
+		if (quoteUri != null)
+		{
+			var a = document.CreateElement("a");
+			a.SetAttribute("href", quoteUri);
+			a.TextContent = quoteUri.StartsWith("https://") ? quoteUri[8..] : quoteUri[7..];
+			var quote = document.CreateElement("span");
+			quote.ClassList.Add("quote-inline");
+			quote.AppendChild(document.CreateElement("br"));
+			quote.AppendChild(document.CreateElement("br"));
+			var re = document.CreateElement("span");
+			re.TextContent = "RE: ";
+			quote.AppendChild(re);
+			quote.AppendChild(a);
+			element.AppendChild(quote);
+		}
+
 		await using var sw = new StringWriter();
 		await element.ToHtmlAsync(sw);
 		return sw.ToString();
 	}
 
-	public async Task<string> ToHtmlAsync(string mfm, List<Note.MentionedUser> mentions, string? host)
+	public async Task<string> ToHtmlAsync(
+		string mfm, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null
+	)
 	{
 		var nodes = MfmParser.Parse(mfm);
-		return await ToHtmlAsync(nodes, mentions, host);
+		return await ToHtmlAsync(nodes, mentions, host, quoteUri);
 	}
 
 	private INode FromMfmNode(IDocument document, MfmNode node, List<Note.MentionedUser> mentions, string? host)
@@ -265,7 +285,7 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 		var markupNode = new MfmTextNode { Text = chars };
 		node.Children = node.Children.Prepend(markupNode).Append(markupNode);
 	}
-	
+
 	private void AddHtmlMarkupStartOnly(MfmNode node, string chars)
 	{
 		if (SupportsHtmlFormatting) return;
