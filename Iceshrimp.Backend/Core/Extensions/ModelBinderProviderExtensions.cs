@@ -18,7 +18,11 @@ public static class ModelBinderProviderExtensions
 		    CollectionModelBinderProvider collectionProvider)
 			throw new Exception("Failed to set up query collection model binding provider");
 
-		var hybridProvider           = new HybridModelBinderProvider(bodyProvider, complexProvider);
+		if (providers.Single(provider => provider.GetType() == typeof(DictionaryModelBinderProvider)) is not
+		    DictionaryModelBinderProvider dictionaryProvider)
+			throw new Exception("Failed to set up dictionary model binding provider");
+
+		var hybridProvider           = new HybridModelBinderProvider(bodyProvider, complexProvider, dictionaryProvider);
 		var customCollectionProvider = new CustomCollectionModelBinderProvider(collectionProvider);
 
 		providers.Insert(0, hybridProvider);
@@ -28,7 +32,8 @@ public static class ModelBinderProviderExtensions
 
 public class HybridModelBinderProvider(
 	IModelBinderProvider bodyProvider,
-	IModelBinderProvider complexProvider
+	IModelBinderProvider complexProvider,
+	IModelBinderProvider dictionaryProvider
 ) : IModelBinderProvider
 {
 	public IModelBinder? GetBinder(ModelBinderProviderContext context)
@@ -40,8 +45,10 @@ public class HybridModelBinderProvider(
 		var bodyBinder = bodyProvider.GetBinder(context);
 		context.BindingInfo.BindingSource = BindingSource.ModelBinding;
 		var complexBinder = complexProvider.GetBinder(context);
+		context.BindingInfo.BindingSource = BindingSource.Query;
+		var dictionaryBinder = dictionaryProvider.GetBinder(context);
 
-		return new HybridModelBinder(bodyBinder, complexBinder);
+		return new HybridModelBinder(bodyBinder, complexBinder, dictionaryBinder);
 	}
 }
 
@@ -56,18 +63,29 @@ public class CustomCollectionModelBinderProvider(IModelBinderProvider provider) 
 	}
 }
 
-public class HybridModelBinder(IModelBinder? bodyBinder, IModelBinder? complexBinder) : IModelBinder
+public class HybridModelBinder(
+	IModelBinder? bodyBinder,
+	IModelBinder? complexBinder,
+	IModelBinder? dictionaryBinder
+) : IModelBinder
 {
 	public async Task BindModelAsync(ModelBindingContext bindingContext)
 	{
-		if (bodyBinder != null &&
-		    bindingContext is
-		    {
-			    IsTopLevelObject: true, HttpContext.Request: { HasFormContentType: false, ContentLength: > 0 }
-		    })
+		if (bindingContext.IsTopLevelObject)
 		{
-			bindingContext.BindingSource = BindingSource.Body;
-			await bodyBinder.BindModelAsync(bindingContext);
+			if (bindingContext is { HttpContext.Request: { HasFormContentType: false, ContentLength: > 0 } })
+			{
+				if (bodyBinder != null)
+				{
+					bindingContext.BindingSource = BindingSource.Body;
+					await bodyBinder.BindModelAsync(bindingContext);
+				}
+			}
+			else if (bindingContext.HttpContext.Request.ContentLength == 0 && dictionaryBinder != null)
+			{
+				bindingContext.BindingSource = BindingSource.Query;
+				await dictionaryBinder.BindModelAsync(bindingContext);
+			}
 		}
 
 		if (complexBinder != null && !bindingContext.Result.IsModelSet)

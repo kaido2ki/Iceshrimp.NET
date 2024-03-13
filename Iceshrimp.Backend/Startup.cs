@@ -7,9 +7,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.Sources.Clear();
 builder.Configuration.AddCustomConfiguration();
 
-builder.Services.AddControllers(options => { options.ModelBinderProviders.AddHybridBindingProvider(); })
+builder.Services.AddControllers()
        .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json (or we switch to LinkedData.NET)
-       .AddMultiFormatter();
+       .AddMultiFormatter()
+       .AddModelBindingProviders()
+       .AddValueProviderFactories();
+
 builder.Services.AddApiVersioning(options =>
 {
 	options.DefaultApiVersion               = new ApiVersion(1);

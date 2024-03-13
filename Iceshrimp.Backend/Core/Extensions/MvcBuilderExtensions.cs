@@ -3,6 +3,7 @@ using System.Text.Encodings.Web;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
@@ -32,6 +33,26 @@ public static class MvcBuilderExtensions
 			       opts.InputFormatters.Insert(0, new JsonInputMultiFormatter());
 			       opts.OutputFormatters.Insert(0, new JsonOutputMultiFormatter());
 		       });
+
+		return builder;
+	}
+
+	public static IMvcBuilder AddModelBindingProviders(this IMvcBuilder builder)
+	{
+		builder.Services.AddOptions<MvcOptions>().PostConfigure(options =>
+		{
+			options.ModelBinderProviders.AddHybridBindingProvider();
+		});
+
+		return builder;
+	}
+	
+	public static IMvcBuilder AddValueProviderFactories(this IMvcBuilder builder)
+	{
+		builder.Services.AddOptions<MvcOptions>().PostConfigure(options =>
+		{
+			options.ValueProviderFactories.Add(new JQueryQueryStringValueProviderFactory());
+		});
 
 		return builder;
 	}
