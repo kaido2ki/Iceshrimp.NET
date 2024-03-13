@@ -7,6 +7,9 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
@@ -338,8 +341,24 @@ public class StatusController(
 			? await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id)).ToListAsync()
 			: null;
 
-		var lastToken = request.Text?.Split(' ').LastOrDefault();
-		var quoteUri  = token.AutoDetectQuotes && (lastToken?.StartsWith("https://") ?? false) ? lastToken : null;
+		string? quoteUri = null;
+		string? newText  = null;
+
+		if (token.AutoDetectQuotes && request.Text != null)
+		{
+			var parsed = MfmParser.Parse(request.Text);
+			quoteUri = MfmParser.Parse(request.Text).LastOrDefault() switch
+			{
+				MfmUrlNode urlNode   => urlNode.Url,
+				MfmLinkNode linkNode => linkNode.Url,
+				_                    => quoteUri
+			};
+
+			if (quoteUri != null)
+				parsed = parsed.SkipLast(1);
+			newText = MfmSerializer.Serialize(parsed).Trim();
+		}
+
 		var quote = request.QuoteId != null
 			? await db.Notes
 			          .IncludeCommonProperties()
@@ -349,17 +368,19 @@ public class StatusController(
 			: null;
 
 		quote ??= quoteUri != null
-			? lastToken?.StartsWith($"https://{config.Value.WebDomain}/notes/") ?? false
+			? quoteUri.StartsWith($"https://{config.Value.WebDomain}/notes/")
 				? await db.Notes.IncludeCommonProperties()
 				          .FirstOrDefaultAsync(p => p.Id ==
-				                                    lastToken.Substring($"https://{config.Value.WebDomain}/notes/"
-					                                                        .Length))
+				                                    quoteUri.Substring($"https://{config.Value.WebDomain}/notes/"
+					                                                       .Length))
 				: await db.Notes.IncludeCommonProperties()
 				          .FirstOrDefaultAsync(p => p.Uri == quoteUri || p.Url == quoteUri)
 			: null;
 
-		if (quote != null && quoteUri != null && request.QuoteId == null && request.Text != null)
-			request.Text = request.Text[..(request.Text.Length - quoteUri.Length - 1)];
+		List<string?> urls = quote == null ? [] : [quote.Url, quote.Uri, quote.GetPublicUriOrNull(config.Value)];
+
+		if (quote != null && request.Text != null && newText != null && urls.OfType<string>().Contains(quoteUri))
+			request.Text = newText;
 
 		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply, quote, attachments,
 		                                         poll, request.LocalOnly);
