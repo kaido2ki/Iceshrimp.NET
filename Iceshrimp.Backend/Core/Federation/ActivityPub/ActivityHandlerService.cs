@@ -154,6 +154,9 @@ public class ActivityHandlerService(
 					case ASEmojiReact { Object: ASNote note } react:
 						await noteSvc.RemoveReactionFromNoteAsync(note, resolvedActor, react.Content);
 						return;
+					case ASBlock { Object: ASActor blockee }:
+						await UnblockAsync(resolvedActor, blockee);
+						return;
 					default:
 						throw GracefulException.UnprocessableEntity("Undo activity object is invalid");
 				}
@@ -264,6 +267,18 @@ public class ActivityHandlerService(
 					throw GracefulException.UnprocessableEntity("Invalid or unsupported reaction target");
 				await emojiSvc.ProcessEmojiAsync(reaction.Tags?.OfType<ASEmoji>().ToList(), resolvedActor.Host);
 				await noteSvc.ReactToNoteAsync(note, resolvedActor, reaction.Content);
+				return;
+			}
+			case ASBlock block:
+			{
+				if (block.Object is not ASActor blockee)
+					throw GracefulException.UnprocessableEntity("Invalid or unsupported block target");
+				var resolvedBlockee = await userResolver.ResolveAsync(blockee.Id, true);
+				if (resolvedBlockee == null)
+					throw GracefulException.UnprocessableEntity("Unknown block target");
+				if (resolvedBlockee.Host != null)
+					throw GracefulException.UnprocessableEntity("Refusing to process block between two remote users");
+				await userSvc.BlockUserAsync(resolvedActor, resolvedBlockee);
 				return;
 			}
 			default:
@@ -407,6 +422,17 @@ public class ActivityHandlerService(
 			                    p.Notifier == follower)
 			        .ExecuteDeleteAsync();
 		}
+	}
+
+	private async Task UnblockAsync(User blocker, ASActor blockee)
+	{
+		var resolvedBlockee = await userResolver.ResolveAsync(blockee.Id, true);
+		if (resolvedBlockee == null)
+			throw GracefulException.UnprocessableEntity("Unknown block target");
+		if (resolvedBlockee.Host != null)
+			throw GracefulException
+				.UnprocessableEntity("Refusing to process unblock between two remote users");
+		await userSvc.UnblockUserAsync(blocker, resolvedBlockee);
 	}
 
 	private async Task AcceptAsync(ASFollow obj, User actor)

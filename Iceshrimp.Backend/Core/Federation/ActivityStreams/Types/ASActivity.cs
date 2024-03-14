@@ -33,6 +33,7 @@ public class ASActivity : ASObject
 		public const string Reject   = $"{Ns}#Reject";
 		public const string Undo     = $"{Ns}#Undo";
 		public const string Like     = $"{Ns}#Like";
+		public const string Block    = $"{Ns}#Block";
 
 		// Extensions
 		public const string Bite       = "https://ns.mia.jetzt/as#Bite";
@@ -116,14 +117,19 @@ public class ASUndo : ASActivity
 	public ASUndo() => Type = Types.Undo;
 }
 
+public class ASBlock : ASActivity
+{
+	public ASBlock() => Type = Types.Block;
+}
+
 public class ASLike : ASActivity
 {
 	public ASLike() => Type = Types.Like;
-	
+
 	[J($"{Constants.MisskeyNs}#_misskey_reaction")]
 	[JC(typeof(VC))]
 	public string? MisskeyReaction { get; set; }
-	
+
 	[J($"{Constants.ActivityStreamsNs}#tag")]
 	[JC(typeof(ASTagConverter))]
 	public List<ASTag>? Tags { get; set; }
@@ -180,7 +186,7 @@ public class ASEmojiReact : ASActivity
 	[J($"{Constants.ActivityStreamsNs}#content")]
 	[JC(typeof(VC))]
 	public required string Content { get; set; }
-	
+
 	[J($"{Constants.ActivityStreamsNs}#tag")]
 	[JC(typeof(ASTagConverter))]
 	public List<ASTag>? Tags { get; set; }

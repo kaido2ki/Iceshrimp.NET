@@ -469,7 +469,7 @@ public class User : IEntity
 
 	[InverseProperty(nameof(Tables.UserPublickey.User))]
 	public virtual UserPublickey? UserPublickey { get; set; }
-	
+
 	[InverseProperty(nameof(Tables.UserSettings.User))]
 	public virtual UserSettings? UserSettings { get; set; }
 
@@ -592,4 +592,7 @@ public class User : IEntity
 		: throw new Exception("Cannot access PublicUrl for remote user");
 
 	public string GetIdenticonUrl(string webDomain) => $"https://{webDomain}/identicon/{Id}";
+
+	public bool IsLocalUser  => Host == null;
+	public bool IsRemoteUser => Host != null;
 }

@@ -914,6 +914,14 @@ public class UserService(
 
 		await db.AddAsync(blocking);
 		await db.SaveChangesAsync();
+
+		if (blocker.IsLocalUser && blockee.IsRemoteUser)
+		{
+			var actor    = userRenderer.RenderLite(blocker);
+			var obj      = userRenderer.RenderLite(blockee);
+			var activity = activityRenderer.RenderBlock(actor, obj, blocking.Id);
+			await deliverSvc.DeliverToAsync(activity, blocker, blockee);
+		}
 	}
 
 	public async Task UnblockUserAsync(User blocker, User blockee)
@@ -921,8 +929,21 @@ public class UserService(
 		if (!blockee.PrecomputedIsBlockedBy ?? false)
 			return;
 
-		await db.Blockings.Where(p => p.Blocker == blocker && p.Blockee == blockee).ExecuteDeleteAsync();
-
 		blockee.PrecomputedIsBlockedBy = false;
+
+		var blocking = await db.Blockings.FirstOrDefaultAsync(p => p.Blocker == blocker && p.Blockee == blockee);
+		if (blocking == null) return;
+
+		db.Remove(blocking);
+		await db.SaveChangesAsync();
+
+		if (blocker.IsLocalUser && blockee.IsRemoteUser)
+		{
+			var actor    = userRenderer.RenderLite(blocker);
+			var obj      = userRenderer.RenderLite(blockee);
+			var block    = activityRenderer.RenderBlock(actor, obj, blocking.Id);
+			var activity = activityRenderer.RenderUndo(actor, block);
+			await deliverSvc.DeliverToAsync(activity, blocker, blockee);
+		}
 	}
 }

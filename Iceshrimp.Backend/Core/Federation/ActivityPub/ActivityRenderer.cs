@@ -44,7 +44,9 @@ public class ActivityRenderer(
 
 	public ASDelete RenderDelete(ASActor actor, ASObject obj) => new()
 	{
-		Id = $"{obj.Id}#Delete", Actor = actor.Compact(), Object = obj
+		Id     = $"{obj.Id}#Delete",
+		Actor  = actor.Compact(),
+		Object = obj
 	};
 
 	public ASAccept RenderAccept(User followee, User follower, string requestId) => new()
@@ -56,7 +58,9 @@ public class ActivityRenderer(
 
 	public ASAccept RenderAccept(ASActor actor, ASObject obj) => new()
 	{
-		Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj
+		Id     = GenerateActivityId(),
+		Actor  = actor.Compact(),
+		Object = obj
 	};
 
 	public ASLike RenderLike(NoteLike like)
@@ -93,7 +97,9 @@ public class ActivityRenderer(
 
 			var e = new ASEmoji
 			{
-				Id = emoji.PublicUrl, Name = name, Image = new ASImage { Url = new ASLink(emoji.PublicUrl) }
+				Id    = emoji.PublicUrl,
+				Name  = name,
+				Image = new ASImage { Url = new ASLink(emoji.PublicUrl) }
 			};
 
 			res.Tags = [e];
@@ -137,17 +143,23 @@ public class ActivityRenderer(
 
 	public static ASFollow RenderFollow(ASObject followerActor, ASObject followeeActor, string requestId) => new()
 	{
-		Id = requestId, Actor = ASActor.FromObject(followerActor), Object = ASActor.FromObject(followeeActor)
+		Id     = requestId,
+		Actor  = ASActor.FromObject(followerActor),
+		Object = ASActor.FromObject(followeeActor)
 	};
 
 	public ASUndo RenderUndo(ASActor actor, ASObject obj) => new()
 	{
-		Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj
+		Id     = GenerateActivityId(),
+		Actor  = actor.Compact(),
+		Object = obj
 	};
 
 	public ASReject RenderReject(ASActor actor, ASObject obj) => new()
 	{
-		Id = GenerateActivityId(), Actor = actor.Compact(), Object = obj
+		Id     = GenerateActivityId(),
+		Actor  = actor.Compact(),
+		Object = obj
 	};
 
 	public ASReject RenderReject(User followee, User follower, string requestId) => new()
@@ -155,6 +167,13 @@ public class ActivityRenderer(
 		Id     = GenerateActivityId(),
 		Actor  = userRenderer.RenderLite(followee),
 		Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
+	};
+
+	public ASBlock RenderBlock(ASActor actor, ASActor obj, string blockId) => new()
+	{
+		Id     = $"https://{config.Value.WebDomain}/blocks/{blockId}",
+		Actor  = actor.Compact(),
+		Object = obj.Compact()
 	};
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "This only makes sense for users")]
