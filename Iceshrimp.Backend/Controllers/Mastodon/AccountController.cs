@@ -271,6 +271,52 @@ public class AccountController(
 
 		return Ok(res);
 	}
+	
+	[HttpPost("{id}/block")]
+	[Authorize("write:blocks")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
+	public async Task<IActionResult> BlockUser(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot block yourself");
+
+		var blockee = await db.Users
+		                    .Where(p => p.Id == id)
+		                    .IncludeCommonProperties()
+		                    .PrecomputeRelationshipData(user)
+		                    .FirstOrDefaultAsync() ??
+		            throw GracefulException.RecordNotFound();
+
+		await userSvc.BlockUserAsync(user, blockee);
+
+		var res = RenderRelationship(blockee);
+
+		return Ok(res);
+	}
+	
+	[HttpPost("{id}/unblock")]
+	[Authorize("write:blocks")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
+	public async Task<IActionResult> UnblockUser(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot unblock yourself");
+
+		var blockee = await db.Users
+		                    .Where(p => p.Id == id)
+		                    .IncludeCommonProperties()
+		                    .PrecomputeRelationshipData(user)
+		                    .FirstOrDefaultAsync() ??
+		            throw GracefulException.RecordNotFound();
+
+		await userSvc.UnblockUserAsync(user, blockee);
+
+		var res = RenderRelationship(blockee);
+
+		return Ok(res);
+	}
 
 	[HttpGet("relationships")]
 	[Authorize("read:follows")]

@@ -174,7 +174,9 @@ public class UserService(
 
 		var publicKey = new UserPublickey
 		{
-			UserId = user.Id, KeyId = actor.PublicKey.Id, KeyPem = actor.PublicKey.PublicKey
+			UserId = user.Id,
+			KeyId  = actor.PublicKey.Id,
+			KeyPem = actor.PublicKey.PublicKey
 		};
 
 		try
@@ -872,5 +874,55 @@ public class UserService(
 		await db.Mutings.Where(p => p.Muter == muter && p.Mutee == mutee).ExecuteDeleteAsync();
 
 		mutee.PrecomputedIsMutedBy = false;
+	}
+
+	public async Task BlockUserAsync(User blocker, User blockee)
+	{
+		if (blockee.PrecomputedIsBlockedBy ?? false) return;
+		blockee.PrecomputedIsBlockedBy = true;
+
+		var blocking = new Blocking
+		{
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			Blockee   = blockee,
+			Blocker   = blocker
+		};
+
+		await db.FollowRequests.Where(p => p.Follower == blockee && p.Followee == blocker).ExecuteDeleteAsync();
+		await db.FollowRequests.Where(p => p.Follower == blocker && p.Followee == blockee).ExecuteDeleteAsync();
+
+		var cnt1 = await db.Followings.Where(p => p.Follower == blockee && p.Followee == blocker).ExecuteDeleteAsync();
+		var cnt2 = await db.Followings.Where(p => p.Follower == blocker && p.Followee == blockee).ExecuteDeleteAsync();
+
+		await db.Users.Where(p => p == blocker)
+		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount - cnt1)
+		                                  .SetProperty(i => i.FollowingCount, i => i.FollowingCount - cnt2));
+		await db.Users.Where(p => p == blockee)
+		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount - cnt2)
+		                                  .SetProperty(i => i.FollowingCount, i => i.FollowingCount - cnt1));
+
+		// clean up notifications
+		await db.Notifications.Where(p => ((p.Notifiee == blocker &&
+		                                    p.Notifier == blockee) ||
+		                                   (p.Notifiee == blockee &&
+		                                    p.Notifier == blocker)) &&
+		                                  (p.Type == Notification.NotificationType.Follow ||
+		                                   p.Type == Notification.NotificationType.FollowRequestAccepted ||
+		                                   p.Type == Notification.NotificationType.FollowRequestReceived))
+		        .ExecuteDeleteAsync();
+
+		await db.AddAsync(blocking);
+		await db.SaveChangesAsync();
+	}
+
+	public async Task UnblockUserAsync(User blocker, User blockee)
+	{
+		if (!blockee.PrecomputedIsBlockedBy ?? false)
+			return;
+
+		await db.Blockings.Where(p => p.Blocker == blocker && p.Blockee == blockee).ExecuteDeleteAsync();
+
+		blockee.PrecomputedIsBlockedBy = false;
 	}
 }
