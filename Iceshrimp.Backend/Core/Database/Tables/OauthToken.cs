@@ -65,6 +65,9 @@ public class OauthToken
 	[InverseProperty(nameof(Tables.User.OauthTokens))]
 	public virtual User User { get; set; } = null!;
 
+	[InverseProperty(nameof(Tables.PushSubscription.OauthToken))]
+	public virtual PushSubscription? PushSubscription { get; set; }
+
 	[Column("supportsHtmlFormatting")] public bool SupportsHtmlFormatting { get; set; }
 	[Column("autoDetectQuotes")]       public bool AutoDetectQuotes       { get; set; }
 

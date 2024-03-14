@@ -1,13 +1,24 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using NpgsqlTypes;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
-[Table("sw_subscription")]
+[Table("push_subscription")]
 [Index("UserId")]
-public class SwSubscription
+[Index("OauthTokenId", IsUnique = true)]
+public class PushSubscription
 {
+	[PgName("push_subscription_policy_enum")]
+	public enum PushPolicy
+	{
+		[PgName("all")]      All,
+		[PgName("followed")] Followed,
+		[PgName("follower")] Follower,
+		[PgName("none")]     None,
+	}
+
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
@@ -16,6 +27,10 @@ public class SwSubscription
 	[Column("createdAt")] public DateTime CreatedAt { get; set; }
 
 	[Column("userId")] [StringLength(32)] public string UserId { get; set; } = null!;
+
+	[Column("oauthTokenId")]
+	[StringLength(32)]
+	public string OauthTokenId { get; set; } = null!;
 
 	[Column("endpoint")]
 	[StringLength(512)]
@@ -27,9 +42,16 @@ public class SwSubscription
 	[StringLength(128)]
 	public string PublicKey { get; set; } = null!;
 
-	[Column("sendReadMessage")] public bool SendReadMessage { get; set; }
+	[Column("types", TypeName = "character varying(32)[]")]
+	public List<string> Types = null!;
+
+	[Column("policy")] public PushPolicy Policy { get; set; }
 
 	[ForeignKey("UserId")]
-	[InverseProperty(nameof(Tables.User.SwSubscriptions))]
+	[InverseProperty(nameof(Tables.User.PushSubscriptions))]
 	public virtual User User { get; set; } = null!;
+
+	[ForeignKey("OauthTokenId")]
+	[InverseProperty(nameof(Tables.OauthToken.PushSubscription))]
+	public virtual OauthToken OauthToken { get; set; } = null!;
 }

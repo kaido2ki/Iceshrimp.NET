@@ -1,6 +1,7 @@
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -30,7 +31,7 @@ public class AuthController(DatabaseContext db) : ControllerBase
 
 		var res = new AuthSchemas.VerifyAppCredentialsResponse
 		{
-			App = token.App, VapidKey = null //FIXME
+			App = token.App, VapidKey = Constants.VapidPublicKey
 		};
 
 		return Ok(res);
@@ -80,7 +81,7 @@ public class AuthController(DatabaseContext db) : ControllerBase
 
 		var res = new AuthSchemas.RegisterAppResponse
 		{
-			App = app, VapidKey = null //FIXME
+			App = app, VapidKey = Constants.VapidPublicKey
 		};
 
 		return Ok(res);

@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20240315095854_AddPushSubscriptionTable")]
+    partial class AddPushSubscriptionTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -27,7 +30,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "note_visibility_enum", new[] { "public", "home", "followers", "specified" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "notification_type_enum", new[] { "follow", "mention", "reply", "renote", "quote", "like", "reaction", "pollVote", "pollEnded", "receiveFollowRequest", "followRequestAccepted", "groupInvited", "app", "edit", "bite" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "page_visibility_enum", new[] { "public", "followers", "specified" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "push_subscription_policy_enum", new[] { "all", "followed", "follower", "none" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "relay_status_enum", new[] { "requesting", "accepted", "rejected" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_profile_ffvisibility_enum", new[] { "public", "followers", "private" });
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pg_trgm");
@@ -3346,24 +3348,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("oauthTokenId");
 
-                    b.Property<PushSubscription.PushPolicy>("Policy")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("push_subscription_policy_enum")
-                        .HasDefaultValue(PushSubscription.PushPolicy.All)
-                        .HasColumnName("policy");
-
                     b.Property<string>("PublicKey")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .HasColumnName("publickey");
-
-                    b.Property<List<string>>("Types")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("character varying(32)[]")
-                        .HasColumnName("types")
-                        .HasDefaultValueSql("'{}'::character varying[]");
 
                     b.Property<string>("UserId")
                         .IsRequired()

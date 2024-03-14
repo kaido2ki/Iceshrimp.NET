@@ -439,6 +439,9 @@ public class User : IEntity
 
 	[InverseProperty(nameof(SwSubscription.User))]
 	public virtual ICollection<SwSubscription> SwSubscriptions { get; set; } = new List<SwSubscription>();
+	
+	[InverseProperty(nameof(PushSubscription.User))]
+	public virtual ICollection<PushSubscription> PushSubscriptions { get; set; } = new List<PushSubscription>();
 
 	[InverseProperty(nameof(UserGroupInvitation.User))]
 	public virtual ICollection<UserGroupInvitation> UserGroupInvitations { get; set; } =

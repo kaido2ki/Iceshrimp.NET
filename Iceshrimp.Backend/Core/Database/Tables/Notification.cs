@@ -121,6 +121,10 @@ public class Notification : IEntity
 	[Column("id")]
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
+	
+	[Column("masto_id")]
+	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+	public long MastoId { get; set; }
 
 	public Notification WithPrecomputedNoteVisibilities(bool reply, bool renote)
 	{

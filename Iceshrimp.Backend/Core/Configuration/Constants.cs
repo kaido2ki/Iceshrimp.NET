@@ -11,6 +11,12 @@ public static class Constants
 	public const           string   MisskeyNs         = "https://misskey-hub.net/ns";
 	public static readonly string[] SystemUsers       = ["instance.actor", "relay.actor"];
 
+	// TODO: reference runtime keys, these are just for initial testing
+	public const string VapidPrivateKey = "qmVGBbXSNVCmcZewcDr04MP7t1gvOFc2aQcThx3rD1A";
+
+	public const string VapidPublicKey =
+		"BEoyQxKBnLn8N1eLmh1va4Al7Azh2LJrfsp7w-PYb4sNSPG1C_SClRUpqw59dwQas3y8yEnFPE7MyGsMg1SItmE";
+
 	public static readonly string[] BrowserSafeMimeTypes =
 	[
 		"image/png",

@@ -76,12 +76,14 @@ public static class ServiceExtensions
 			.AddSingleton<RequestBufferingMiddleware>()
 			.AddSingleton<AuthorizationMiddleware>()
 			.AddSingleton<RequestVerificationMiddleware>()
-			.AddSingleton<RequestDurationMiddleware>();
+			.AddSingleton<RequestDurationMiddleware>()
+			.AddSingleton<PushService>();
 
 		// Hosted services = long running background tasks
 		// Note: These need to be added as a singleton as well to ensure data consistency
 		services.AddHostedService<CronService>(provider => provider.GetRequiredService<CronService>());
 		services.AddHostedService<QueueService>(provider => provider.GetRequiredService<QueueService>());
+		services.AddHostedService<PushService>(provider => provider.GetRequiredService<PushService>());
 	}
 
 	public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration)

@@ -64,12 +64,12 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 	[Authorize("read:notifications")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<NotificationEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetNotification(string id)
+	public async Task<IActionResult> GetNotification(long id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var notification = await db.Notifications
 		                           .IncludeCommonProperties()
-		                           .Where(p => p.Notifiee == user && p.Id == id)
+		                           .Where(p => p.Notifiee == user && p.MastoId == id)
 		                           .EnsureNoteVisibilityFor(p => p.Note, user)
 		                           .PrecomputeNoteVisibilities(user)
 		                           .FirstOrDefaultAsync() ??

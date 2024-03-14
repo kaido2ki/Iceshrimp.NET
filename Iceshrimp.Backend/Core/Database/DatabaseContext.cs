@@ -66,6 +66,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<RenoteMuting>         RenoteMutings         { get; init; } = null!;
 	public virtual DbSet<Session>              Sessions              { get; init; } = null!;
 	public virtual DbSet<SwSubscription>       SwSubscriptions       { get; init; } = null!;
+	public virtual DbSet<PushSubscription>     PushSubscriptions     { get; init; } = null!;
 	public virtual DbSet<UsedUsername>         UsedUsernames         { get; init; } = null!;
 	public virtual DbSet<User>                 Users                 { get; init; } = null!;
 	public virtual DbSet<UserGroup>            UserGroups            { get; init; } = null!;
@@ -105,6 +106,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		dataSourceBuilder.MapEnum<Relay.RelayStatus>();
 		dataSourceBuilder.MapEnum<UserProfile.UserProfileFFVisibility>();
 		dataSourceBuilder.MapEnum<Marker.MarkerType>();
+		dataSourceBuilder.MapEnum<PushSubscription.PushPolicy>();
 
 		dataSourceBuilder.EnableDynamicJson();
 
@@ -128,6 +130,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			.HasPostgresEnum<Relay.RelayStatus>()
 			.HasPostgresEnum<UserProfile.UserProfileFFVisibility>()
 			.HasPostgresEnum<Marker.MarkerType>()
+			.HasPostgresEnum<PushSubscription.PushPolicy>()
 			.HasPostgresExtension("pg_trgm");
 
 		modelBuilder
@@ -943,6 +946,20 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 
 			entity.HasOne(d => d.User)
 			      .WithMany(p => p.SwSubscriptions)
+			      .OnDelete(DeleteBehavior.Cascade);
+		});
+
+		modelBuilder.Entity<PushSubscription>(entity =>
+		{
+			entity.Property(e => e.Types).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.Policy).HasDefaultValue(PushSubscription.PushPolicy.All);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.PushSubscriptions)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.OauthToken)
+			      .WithOne(p => p.PushSubscription)
 			      .OnDelete(DeleteBehavior.Cascade);
 		});
 

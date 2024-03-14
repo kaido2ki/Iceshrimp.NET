@@ -28,7 +28,7 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 
 		var res = new NotificationEntity
 		{
-			Id        = notification.Id,
+			Id        = notification.MastoId.ToString(),
 			Type      = NotificationEntity.EncodeType(notification.Type),
 			Note      = note,
 			Notifier  = notifier,
