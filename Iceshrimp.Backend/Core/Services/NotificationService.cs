@@ -16,8 +16,14 @@ public class NotificationService(
 	{
 		if (mentionedLocalUserIds.Count == 0) return;
 
+		var blocks = await db.Blockings
+		                     .Where(p => p.BlockeeId == note.UserId && mentionedLocalUserIds.Contains(p.BlockerId))
+		                     .Select(p => p.BlockerId)
+		                     .ToListAsync();
+
 		var notifications = mentionedLocalUserIds
 		                    .Where(p => p != note.UserId)
+		                    .Except(blocks)
 		                    .Select(p => new Notification
 		                    {
 			                    Id         = IdHelpers.GenerateSlowflakeId(),
@@ -42,8 +48,14 @@ public class NotificationService(
 		var users = mentionedLocalUserIds.Concat(note.VisibleUserIds).Distinct().Except(mentionedLocalUserIds).ToList();
 		if (users.Count == 0) return;
 
+		var blocks = await db.Blockings
+		                     .Where(p => p.BlockeeId == note.UserId && mentionedLocalUserIds.Contains(p.BlockerId))
+		                     .Select(p => p.BlockerId)
+		                     .ToListAsync();
+
 		var notifications = users
 		                    .Where(p => p != note.UserId)
+		                    .Except(blocks)
 		                    .Select(p => new Notification
 		                    {
 			                    Id         = IdHelpers.GenerateSlowflakeId(),
@@ -104,7 +116,7 @@ public class NotificationService(
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotification(this, notification);
 	}
-	
+
 	public async Task GenerateReactionNotification(NoteReaction reaction)
 	{
 		if (reaction.Note.User.Host != null) return;

@@ -289,6 +289,18 @@ public static class QueryableExtensions
 		            .Where(note => note.Reply == null || !note.Reply.User.IsMuting(user));
 	}
 
+	public static IQueryable<Note> FilterBlockedConversations(this IQueryable<Note> query, User user, DatabaseContext db)
+	{
+		return query.Where(p => !db.Blockings.Any(i => i.Blocker == user && p.VisibleUserIds.Contains(i.BlockeeId)));
+	}
+
+	public static IQueryable<Note> FilterMutedConversations(this IQueryable<Note> query, User user, DatabaseContext db)
+	{
+		//TODO: handle muted instances
+
+		return query.Where(p => !db.Mutings.Any(i => i.Muter == user && p.VisibleUserIds.Contains(i.MuteeId)));
+	}
+
 	public static IQueryable<Note> FilterHiddenListMembers(this IQueryable<Note> query, User user)
 	{
 		return query.Where(note => !note.User.UserListMembers.Any(p => p.UserList.User == user &&

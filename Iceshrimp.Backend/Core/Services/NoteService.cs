@@ -79,6 +79,12 @@ public class NoteService(
 			throw GracefulException.BadRequest("You're not allowed to renote this note");
 		}
 
+		if (renote != null && renote.User != user)
+		{
+			if (await db.Blockings.AnyAsync(p => p.Blockee == user && p.Blocker == renote.User))
+				throw GracefulException.Forbidden("You are not allowed to interact with this user");
+		}
+
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			await ResolveNoteMentionsAsync(text);
 
@@ -532,6 +538,12 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Cannot renote or quote a pure renote");
 		if (dbNote.Reply?.IsPureRenote ?? false)
 			throw GracefulException.UnprocessableEntity("Cannot reply to a pure renote");
+		
+		if (dbNote.Renote != null && dbNote.Renote.User != user)
+		{
+			if (await db.Blockings.AnyAsync(p => p.Blockee == user && p.Blocker == dbNote.Renote.User))
+				throw GracefulException.Forbidden("You are not allowed to interact with this user");
+		}
 
 		if (note is ASQuestion question)
 		{
@@ -992,9 +1004,15 @@ public class NoteService(
 
 		if (!await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user))
 		{
+			if (await db.Blockings.AnyAsync(p => p.Blockee == user && p.Blocker == note.User))
+				throw GracefulException.Forbidden("You are not allowed to interact with this user");
+
 			var like = new NoteLike
 			{
-				Id = IdHelpers.GenerateSlowflakeId(), CreatedAt = DateTime.UtcNow, User = user, Note = note
+				Id        = IdHelpers.GenerateSlowflakeId(),
+				CreatedAt = DateTime.UtcNow,
+				User      = user,
+				Note      = note
 			};
 
 			await db.NoteLikes.AddAsync(like);
@@ -1068,7 +1086,10 @@ public class NoteService(
 		{
 			var bookmark = new NoteBookmark
 			{
-				Id = IdHelpers.GenerateSlowflakeId(), CreatedAt = DateTime.UtcNow, User = user, Note = note
+				Id        = IdHelpers.GenerateSlowflakeId(),
+				CreatedAt = DateTime.UtcNow,
+				User      = user,
+				Note      = note
 			};
 
 			await db.NoteBookmarks.AddAsync(bookmark);
@@ -1099,7 +1120,10 @@ public class NoteService(
 
 			var pin = new UserNotePin
 			{
-				Id = IdHelpers.GenerateSlowflakeId(), CreatedAt = DateTime.UtcNow, User = user, Note = note
+				Id        = IdHelpers.GenerateSlowflakeId(),
+				CreatedAt = DateTime.UtcNow,
+				User      = user,
+				Note      = note
 			};
 
 			await db.UserNotePins.AddAsync(pin);
@@ -1168,6 +1192,9 @@ public class NoteService(
 		name = await emojiSvc.ResolveEmojiName(name, user.Host);
 		if (await db.NoteReactions.AnyAsync(p => p.Note == note && p.User == user && p.Reaction == name))
 			return (name, false);
+
+		if (await db.Blockings.AnyAsync(p => p.Blockee == user && p.Blocker == note.User))
+			throw GracefulException.Forbidden("You are not allowed to interact with this user");
 
 		var reaction = new NoteReaction
 		{

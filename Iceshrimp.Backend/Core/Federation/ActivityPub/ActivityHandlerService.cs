@@ -247,6 +247,11 @@ public class ActivityHandlerService(
 				    dbBite.TargetBite?.User.Host != null)
 					throw GracefulException.Accepted("Ignoring bite for remote user");
 
+				var finalTarget = dbBite.TargetUser ?? dbBite.TargetNote?.User ?? dbBite.TargetBite?.User;
+
+				if (await db.Blockings.AnyAsync(p => p.Blockee == resolvedActor && p.Blocker == finalTarget))
+					throw GracefulException.Forbidden("You are not allowed to interact with this user");
+
 				await db.AddAsync(dbBite);
 				await db.SaveChangesAsync();
 				await notificationSvc.GenerateBiteNotification(dbBite);

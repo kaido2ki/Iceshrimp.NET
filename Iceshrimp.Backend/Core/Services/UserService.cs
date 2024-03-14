@@ -580,8 +580,13 @@ public class UserService(
 		        .ExecuteDeleteAsync();
 	}
 
+	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
 	public async Task FollowUserAsync(User user, User followee)
 	{
+		// Check blocks first
+		if (await db.Users.AnyAsync(p => p == followee && p.IsBlocking(user)))
+			throw GracefulException.Forbidden("You are not allowed to follow this user");
+
 		if (followee.Host != null)
 		{
 			var activity = activityRenderer.RenderFollow(user, followee);
