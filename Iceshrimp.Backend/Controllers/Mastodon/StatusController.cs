@@ -423,6 +423,18 @@ public class StatusController(
 			? await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id)).ToListAsync()
 			: [];
 
+		if (request.MediaAttributes != null)
+		{
+			foreach (var attr in request.MediaAttributes)
+			{
+				var file = attachments.FirstOrDefault(p => p.Id == attr.Id);
+				if (file != null)
+					file.Comment = attr.Description;
+			}
+
+			await db.SaveChangesAsync();
+		}
+
 		note = await noteSvc.UpdateNoteAsync(note, request.Text, request.Cw, attachments, poll);
 		var res = await noteRenderer.RenderAsync(note, user);
 

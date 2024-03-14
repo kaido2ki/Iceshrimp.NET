@@ -82,9 +82,16 @@ public abstract class StatusSchemas
 		[B(Name = "media_ids")]
 		[J("media_ids")]
 		public List<string>? MediaIds { get; set; }
-
-		//TODO: media_attributes
+		
+		[B(Name = "media_attributes")]
+		[J("media_attributes")]
+		public List<MediaAttributesEntry>? MediaAttributes { get; set; }
 
 		[B(Name = "poll")] [J("poll")] public PostStatusRequest.PollData? Poll { get; set; }
+	}
+
+	public class MediaAttributesEntry : MediaSchemas.UpdateMediaRequest
+	{
+		[JR] [J("id")] [B(Name = "id")] public required string Id { get; set; }
 	}
 }

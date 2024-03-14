@@ -246,6 +246,8 @@ public class NoteService(
 			await ResolveNoteMentionsAsync(text);
 		if (text != null)
 			text = mentionsResolver.ResolveMentions(text, null, mentions, splitDomainMapping);
+		if (cw != null && string.IsNullOrWhiteSpace(cw))
+			cw = null;
 
 		mentionedLocalUserIds = mentionedLocalUserIds.Except(previousMentionedLocalUserIds).ToList();
 		note.Text             = text?.Trim();
