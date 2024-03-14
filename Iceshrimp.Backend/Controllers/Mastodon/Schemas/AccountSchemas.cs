@@ -62,4 +62,13 @@ public abstract class AccountSchemas
 		[B(Name = "sensitive")]
 		public bool? Sensitive { get; set; }
 	}
+
+	public class AccountMuteRequest
+	{
+		[J("notifications")]
+		[B(Name = "notifications")]
+		public bool Notifications { get; set; } = true;
+
+		[J("duration")] [B(Name = "duration")] public long Duration { get; set; } = 0;
+	}
 }

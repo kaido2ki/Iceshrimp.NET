@@ -24,16 +24,20 @@ public abstract class BackgroundTaskQueue
 		CancellationToken token
 	)
 	{
-		if (job is DriveFileDeleteJob driveFileDeleteJob)
+		switch (job)
 		{
-			if (driveFileDeleteJob.Expire)
+			case DriveFileDeleteJob { Expire: true } driveFileDeleteJob:
 				await ProcessDriveFileExpire(driveFileDeleteJob, scope, token);
-			else
+				break;
+			case DriveFileDeleteJob driveFileDeleteJob:
 				await ProcessDriveFileDelete(driveFileDeleteJob, scope, token);
-		}
-		else if (job is PollExpiryJob pollExpiryJob)
-		{
-			await ProcessPollExpiry(pollExpiryJob, scope, token);
+				break;
+			case PollExpiryJob pollExpiryJob:
+				await ProcessPollExpiry(pollExpiryJob, scope, token);
+				break;
+			case MuteExpiryJob muteExpiryJob:
+				await ProcessMuteExpiry(muteExpiryJob, scope, token);
+				break;
 		}
 	}
 
@@ -171,11 +175,26 @@ public abstract class BackgroundTaskQueue
 			await deliverSvc.DeliverToAsync(activity, note.User, voters.ToArray());
 		}
 	}
+
+	private static async Task ProcessMuteExpiry(
+		MuteExpiryJob job,
+		IServiceProvider scope,
+		CancellationToken token
+	)
+	{
+		var db     = scope.GetRequiredService<DatabaseContext>();
+		var muting = await db.Mutings.FirstOrDefaultAsync(p => p.Id == job.MuteId, token);
+		if (muting is not { ExpiresAt: not null }) return;
+		if (muting.ExpiresAt > DateTime.UtcNow + TimeSpan.FromSeconds(30)) return;
+		db.Remove(muting);
+		await db.SaveChangesAsync(token);
+	}
 }
 
 [ProtoContract]
 [ProtoInclude(100, typeof(DriveFileDeleteJob))]
 [ProtoInclude(101, typeof(PollExpiryJob))]
+[ProtoInclude(102, typeof(MuteExpiryJob))]
 public class BackgroundTaskJob : Job;
 
 [ProtoContract]
@@ -189,4 +208,10 @@ public class DriveFileDeleteJob : BackgroundTaskJob
 public class PollExpiryJob : BackgroundTaskJob
 {
 	[ProtoMember(1)] public required string NoteId;
+}
+
+[ProtoContract]
+public class MuteExpiryJob : BackgroundTaskJob
+{
+	[ProtoMember(1)] public required string MuteId;
 }

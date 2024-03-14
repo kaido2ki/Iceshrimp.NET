@@ -197,23 +197,7 @@ public class AccountController(
 				followee.PrecomputedIsFollowedBy = true;
 		}
 
-		var res = new RelationshipEntity
-		{
-			Id                  = followee.Id,
-			Following           = followee.PrecomputedIsFollowedBy ?? false,
-			FollowedBy          = followee.PrecomputedIsFollowing ?? false,
-			Blocking            = followee.PrecomputedIsBlockedBy ?? false,
-			BlockedBy           = followee.PrecomputedIsBlocking ?? false,
-			Requested           = followee.PrecomputedIsRequestedBy ?? false,
-			RequestedBy         = followee.PrecomputedIsRequested ?? false,
-			Muting              = followee.PrecomputedIsMutedBy ?? false,
-			Endorsed            = false, //FIXME
-			Note                = "",    //FIXME
-			Notifying           = false, //FIXME
-			DomainBlocking      = false, //FIXME
-			MutingNotifications = false, //FIXME
-			ShowingReblogs      = true   //FIXME
-		};
+		var res = RenderRelationship(followee);
 
 		return Ok(res);
 	}
@@ -236,23 +220,54 @@ public class AccountController(
 
 		await userSvc.UnfollowUserAsync(user, followee);
 
-		var res = new RelationshipEntity
-		{
-			Id                  = followee.Id,
-			Following           = followee.PrecomputedIsFollowedBy ?? false,
-			FollowedBy          = followee.PrecomputedIsFollowing ?? false,
-			Blocking            = followee.PrecomputedIsBlockedBy ?? false,
-			BlockedBy           = followee.PrecomputedIsBlocking ?? false,
-			Requested           = followee.PrecomputedIsRequestedBy ?? false,
-			RequestedBy         = followee.PrecomputedIsRequested ?? false,
-			Muting              = followee.PrecomputedIsMutedBy ?? false,
-			Endorsed            = false, //FIXME
-			Note                = "",    //FIXME
-			Notifying           = false, //FIXME
-			DomainBlocking      = false, //FIXME
-			MutingNotifications = false, //FIXME
-			ShowingReblogs      = true   //FIXME
-		};
+		var res = RenderRelationship(followee);
+
+		return Ok(res);
+	}
+
+	[HttpPost("{id}/mute")]
+	[Authorize("write:mutes")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
+	public async Task<IActionResult> MuteUser(string id, [FromHybrid] AccountSchemas.AccountMuteRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot mute yourself");
+
+		var mutee = await db.Users
+		                    .Where(p => p.Id == id)
+		                    .IncludeCommonProperties()
+		                    .PrecomputeRelationshipData(user)
+		                    .FirstOrDefaultAsync() ??
+		            throw GracefulException.RecordNotFound();
+
+		//TODO: handle notifications parameter
+		await userSvc.MuteUserAsync(user, mutee, DateTime.UtcNow + TimeSpan.FromSeconds(request.Duration));
+
+		var res = RenderRelationship(mutee);
+
+		return Ok(res);
+	}
+	
+	[HttpPost("{id}/unmute")]
+	[Authorize("write:mutes")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
+	public async Task<IActionResult> UnmuteUser(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot unmute yourself");
+
+		var mutee = await db.Users
+		                    .Where(p => p.Id == id)
+		                    .IncludeCommonProperties()
+		                    .PrecomputeRelationshipData(user)
+		                    .FirstOrDefaultAsync() ??
+		            throw GracefulException.RecordNotFound();
+
+		await userSvc.UnmuteUserAsync(user, mutee);
+
+		var res = RenderRelationship(mutee);
 
 		return Ok(res);
 	}
@@ -270,23 +285,7 @@ public class AccountController(
 		                    .PrecomputeRelationshipData(user)
 		                    .ToListAsync();
 
-		var res = users.Select(u => new RelationshipEntity
-		{
-			Id                  = u.Id,
-			Following           = u.PrecomputedIsFollowedBy ?? false,
-			FollowedBy          = u.PrecomputedIsFollowing ?? false,
-			Blocking            = u.PrecomputedIsBlockedBy ?? false,
-			BlockedBy           = u.PrecomputedIsBlocking ?? false,
-			Requested           = u.PrecomputedIsRequestedBy ?? false,
-			RequestedBy         = u.PrecomputedIsRequested ?? false,
-			Muting              = u.PrecomputedIsMutedBy ?? false,
-			Endorsed            = false, //FIXME
-			Note                = "",    //FIXME
-			Notifying           = false, //FIXME
-			DomainBlocking      = false, //FIXME
-			MutingNotifications = false, //FIXME
-			ShowingReblogs      = true   //FIXME
-		});
+		var res = users.Select(RenderRelationship);
 
 		return Ok(res);
 	}
@@ -447,23 +446,7 @@ public class AccountController(
 		var relationship = await db.Users.Where(p => id == p.Id)
 		                           .IncludeCommonProperties()
 		                           .PrecomputeRelationshipData(user)
-		                           .Select(u => new RelationshipEntity
-		                           {
-			                           Id                  = u.Id,
-			                           Following           = u.PrecomputedIsFollowedBy ?? false,
-			                           FollowedBy          = u.PrecomputedIsFollowing ?? false,
-			                           Blocking            = u.PrecomputedIsBlockedBy ?? false,
-			                           BlockedBy           = u.PrecomputedIsBlocking ?? false,
-			                           Requested           = u.PrecomputedIsRequestedBy ?? false,
-			                           RequestedBy         = u.PrecomputedIsRequested ?? false,
-			                           Muting              = u.PrecomputedIsMutedBy ?? false,
-			                           Endorsed            = false, //FIXME
-			                           Note                = "",    //FIXME
-			                           Notifying           = false, //FIXME
-			                           DomainBlocking      = false, //FIXME
-			                           MutingNotifications = false, //FIXME
-			                           ShowingReblogs      = true   //FIXME
-		                           })
+		                           .Select(u => RenderRelationship(u))
 		                           .FirstOrDefaultAsync();
 
 		if (relationship == null)
@@ -490,23 +473,7 @@ public class AccountController(
 		var relationship = await db.Users.Where(p => id == p.Id)
 		                           .IncludeCommonProperties()
 		                           .PrecomputeRelationshipData(user)
-		                           .Select(u => new RelationshipEntity
-		                           {
-			                           Id                  = u.Id,
-			                           Following           = u.PrecomputedIsFollowedBy ?? false,
-			                           FollowedBy          = u.PrecomputedIsFollowing ?? false,
-			                           Blocking            = u.PrecomputedIsBlockedBy ?? false,
-			                           BlockedBy           = u.PrecomputedIsBlocking ?? false,
-			                           Requested           = u.PrecomputedIsRequestedBy ?? false,
-			                           RequestedBy         = u.PrecomputedIsRequested ?? false,
-			                           Muting              = u.PrecomputedIsMutedBy ?? false,
-			                           Endorsed            = false, //FIXME
-			                           Note                = "",    //FIXME
-			                           Notifying           = false, //FIXME
-			                           DomainBlocking      = false, //FIXME
-			                           MutingNotifications = false, //FIXME
-			                           ShowingReblogs      = true   //FIXME
-		                           })
+		                           .Select(u => RenderRelationship(u))
 		                           .FirstOrDefaultAsync();
 
 		if (relationship == null)
@@ -523,5 +490,26 @@ public class AccountController(
 		var user = await userResolver.LookupAsync(acct) ?? throw GracefulException.RecordNotFound();
 		var res  = await userRenderer.RenderAsync(user);
 		return Ok(res);
+	}
+
+	private static RelationshipEntity RenderRelationship(User u)
+	{
+		return new RelationshipEntity
+		{
+			Id                  = u.Id,
+			Following           = u.PrecomputedIsFollowedBy ?? false,
+			FollowedBy          = u.PrecomputedIsFollowing ?? false,
+			Blocking            = u.PrecomputedIsBlockedBy ?? false,
+			BlockedBy           = u.PrecomputedIsBlocking ?? false,
+			Requested           = u.PrecomputedIsRequestedBy ?? false,
+			RequestedBy         = u.PrecomputedIsRequested ?? false,
+			Muting              = u.PrecomputedIsMutedBy ?? false,
+			Endorsed            = false, //FIXME
+			Note                = "",    //FIXME
+			Notifying           = false, //FIXME
+			DomainBlocking      = false, //FIXME
+			MutingNotifications = false, //FIXME
+			ShowingReblogs      = true   //FIXME
+		};
 	}
 }

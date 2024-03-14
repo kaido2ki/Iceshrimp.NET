@@ -13,6 +13,7 @@ using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -32,7 +33,8 @@ public class UserService(
 	NotificationService notificationSvc,
 	EmojiService emojiSvc,
 	ActivityPub.MentionsResolver mentionsResolver,
-	ActivityPub.UserRenderer userRenderer
+	ActivityPub.UserRenderer userRenderer,
+	QueueService queueSvc
 )
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -187,8 +189,8 @@ public class UserService(
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-				
-				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user);
+
+				var dbInstance = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user);
 				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.UsersCount, i => i.UsersCount + 1));
 			});
@@ -303,7 +305,7 @@ public class UserService(
 	{
 		if (user.Host != null) throw new Exception("This method is only valid for local users");
 		if (user.UserProfile == null) throw new Exception("user.UserProfile must not be null at this stage");
-		
+
 		user.Tags = ResolveHashtags(user.UserProfile.Description);
 
 		db.Update(user);
@@ -811,7 +813,7 @@ public class UserService(
 			tags.AddRange(extracted);
 
 		if (tags.Count == 0) return [];
-		
+
 		tags = tags.Distinct().ToList();
 
 		_ = followupTaskSvc.ExecuteTask("UpdateHashtagsTable", async provider =>
@@ -825,5 +827,50 @@ public class UserService(
 		});
 
 		return tags;
+	}
+
+	public async Task MuteUserAsync(User muter, User mutee, DateTime? expiration)
+	{
+		mutee.PrecomputedIsMutedBy = true;
+
+		var muting = await db.Mutings.FirstOrDefaultAsync(p => p.Muter == muter && p.Mutee == mutee);
+
+		if (muting != null)
+		{
+			if (muting.ExpiresAt == expiration) return;
+			muting.ExpiresAt = expiration;
+			await db.SaveChangesAsync();
+			if (expiration == null) return;
+			var job = new MuteExpiryJob { MuteId = muting.Id };
+			await queueSvc.BackgroundTaskQueue.ScheduleAsync(job, expiration.Value);
+			return;
+		}
+
+		muting = new Muting
+		{
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			Mutee     = mutee,
+			Muter     = muter,
+			ExpiresAt = expiration
+		};
+		await db.AddAsync(muting);
+		await db.SaveChangesAsync();
+
+		if (expiration != null)
+		{
+			var job = new MuteExpiryJob { MuteId = muting.Id };
+			await queueSvc.BackgroundTaskQueue.ScheduleAsync(job, expiration.Value);
+		}
+	}
+
+	public async Task UnmuteUserAsync(User muter, User mutee)
+	{
+		if (!mutee.PrecomputedIsMutedBy ?? false)
+			return;
+
+		await db.Mutings.Where(p => p.Muter == muter && p.Mutee == mutee).ExecuteDeleteAsync();
+
+		mutee.PrecomputedIsMutedBy = false;
 	}
 }
