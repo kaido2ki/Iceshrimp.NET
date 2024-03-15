@@ -40,7 +40,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		{
 			Id                 = user.Id,
 			DisplayName        = user.DisplayName ?? user.Username,
-			AvatarUrl          = user.AvatarUrl ?? user.GetIdenticonUrl(config.Value),
+			AvatarUrl          = user.AvatarUrl ?? user.GetIdenticonUrlPng(config.Value),
 			Username           = user.Username,
 			Acct               = acct,
 			FullyQualifiedName = $"{user.Username}@{user.Host ?? config.Value.AccountDomain}",

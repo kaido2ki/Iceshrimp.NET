@@ -13,6 +13,7 @@ namespace Iceshrimp.Backend.Controllers;
 [ApiController]
 [EnableCors("drive")]
 [Route("/identicon/{id}")]
+[Route("/identicon/{id}.png")]
 [Produces(MediaTypeNames.Image.Png)]
 [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
 public class IdenticonController : ControllerBase

@@ -585,6 +585,7 @@ public class User : IEntity
 	public string GetPublicUrl(Config.InstanceSection config)    => GetPublicUrl(config.WebDomain);
 	public string GetPublicUri(Config.InstanceSection config)    => GetPublicUri(config.WebDomain);
 	public string GetIdenticonUrl(Config.InstanceSection config) => GetIdenticonUrl(config.WebDomain);
+	public string GetIdenticonUrlPng(Config.InstanceSection config) => GetIdenticonUrl(config.WebDomain) + ".png";
 
 	public string GetPublicUri(string webDomain) => Host == null
 		? $"https://{webDomain}/users/{Id}"
