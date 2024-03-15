@@ -1,11 +1,13 @@
 using System.Runtime.InteropServices;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
+using WebPush;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -69,15 +71,15 @@ public static class WebApplicationExtensions
 		}
 
 		var provider = app.Services.CreateScope().ServiceProvider;
-		var context  = provider.GetService<DatabaseContext>();
-		if (context == null)
+		var db       = provider.GetService<DatabaseContext>();
+		if (db == null)
 		{
 			app.Logger.LogCritical("Failed to initialize database context");
 			Environment.Exit(1);
 		}
 
 		app.Logger.LogInformation("Verifying database connection...");
-		if (!await context.Database.CanConnectAsync())
+		if (!await db.Database.CanConnectAsync())
 		{
 			app.Logger.LogCritical("Failed to connect to database");
 			Environment.Exit(1);
@@ -86,12 +88,12 @@ public static class WebApplicationExtensions
 		if (args.Contains("--migrate") || args.Contains("--migrate-and-start"))
 		{
 			app.Logger.LogInformation("Running migrations...");
-			context.Database.SetCommandTimeout(0);
-			await context.Database.MigrateAsync();
-			context.Database.SetCommandTimeout(30);
+			db.Database.SetCommandTimeout(0);
+			await db.Database.MigrateAsync();
+			db.Database.SetCommandTimeout(30);
 			if (args.Contains("--migrate")) Environment.Exit(0);
 		}
-		else if ((await context.Database.GetPendingMigrationsAsync()).Any())
+		else if ((await db.Database.GetPendingMigrationsAsync()).Any())
 		{
 			app.Logger.LogCritical("Database has pending migrations, please restart with --migrate or --migrate-and-start");
 			Environment.Exit(1);
@@ -163,6 +165,28 @@ public static class WebApplicationExtensions
 				app.Logger.LogCritical("Failed to initialize object storage: {message}", e.Message);
 				Environment.Exit(1);
 			}
+		}
+
+		app.Logger.LogInformation("Initializing VAPID keys...");
+		var vapidPublicKey  = await db.MetaStore.FirstOrDefaultAsync(p => p.Key == "vapid_public_key");
+		var vapidPrivateKey = await db.MetaStore.FirstOrDefaultAsync(p => p.Key == "vapid_private_key");
+		if (vapidPrivateKey == null || vapidPublicKey == null)
+		{
+			var keypair = VapidHelper.GenerateVapidKeys();
+			vapidPrivateKey = new MetaStore
+			{
+				Key = "vapid_private_key",
+				Value = keypair.PrivateKey
+			};
+			
+			vapidPublicKey = new MetaStore
+			{
+				Key   = "vapid_public_key",
+				Value = keypair.PublicKey
+			};
+
+			db.AddRange(vapidPublicKey, vapidPrivateKey);
+			await db.SaveChangesAsync();
 		}
 
 		app.Logger.LogInformation("Initializing application, please wait...");

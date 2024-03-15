@@ -77,7 +77,8 @@ public static class ServiceExtensions
 			.AddSingleton<AuthorizationMiddleware>()
 			.AddSingleton<RequestVerificationMiddleware>()
 			.AddSingleton<RequestDurationMiddleware>()
-			.AddSingleton<PushService>();
+			.AddSingleton<PushService>()
+			.AddSingleton<MetaService>();
 
 		// Hosted services = long running background tasks
 		// Note: These need to be added as a singleton as well to ensure data consistency

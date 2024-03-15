@@ -21,7 +21,8 @@ public class PushService(
 	ILogger<PushService> logger,
 	IServiceScopeFactory scopeFactory,
 	HttpClient httpClient,
-	IOptions<Config.InstanceSection> config
+	IOptions<Config.InstanceSection> config,
+	MetaService metaService
 ) : BackgroundService
 {
 	protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -84,9 +85,14 @@ public class PushService(
 				if (body.Length > 137)
 					body = body.Truncate(137).TrimEnd() + "...";
 
+				var priv = await metaService.GetVapidPrivateKey();
+				var pub  = await metaService.GetVapidPublicKey();
+
+				if (priv == null || pub == null)
+					throw new Exception("Failed to fetch VAPID keys");
+
 				var client = new WebPushClient(httpClient);
-				client.SetVapidDetails(new VapidDetails($"https://{config.Value.WebDomain}",
-				                                        Constants.VapidPublicKey, Constants.VapidPrivateKey));
+				client.SetVapidDetails(new VapidDetails($"https://{config.Value.WebDomain}", pub, priv));
 
 				var matchingSubscriptions =
 					from subscription in subscriptions

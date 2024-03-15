@@ -1,12 +1,12 @@
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
-using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -21,7 +21,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableRateLimiting("sliding")]
 [EnableCors("mastodon")]
 [Produces(MediaTypeNames.Application.Json)]
-public class PushController(DatabaseContext db) : ControllerBase
+public class PushController(DatabaseContext db, MetaService meta) : ControllerBase
 {
 	[HttpPost]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PushSchemas.PushSubscription))]
@@ -49,7 +49,7 @@ public class PushController(DatabaseContext db) : ControllerBase
 			await db.SaveChangesAsync();
 		}
 
-		var res = RenderSubscription(pushSubscription);
+		var res = await RenderSubscription(pushSubscription);
 
 		return Ok(res);
 	}
@@ -68,7 +68,7 @@ public class PushController(DatabaseContext db) : ControllerBase
 		pushSubscription.Policy = GetPolicy(request.Data.Policy);
 		await db.SaveChangesAsync();
 
-		var res = RenderSubscription(pushSubscription);
+		var res = await RenderSubscription(pushSubscription);
 
 		return Ok(res);
 	}
@@ -83,7 +83,7 @@ public class PushController(DatabaseContext db) : ControllerBase
 		var pushSubscription = await db.PushSubscriptions.FirstOrDefaultAsync(p => p.OauthToken == token) ??
 		                       throw GracefulException.RecordNotFound();
 
-		var res = RenderSubscription(pushSubscription);
+		var res = await RenderSubscription(pushSubscription);
 
 		return Ok(res);
 	}
@@ -99,7 +99,7 @@ public class PushController(DatabaseContext db) : ControllerBase
 		return Ok(new object());
 	}
 
-	private PushSubscription.PushPolicy GetPolicy(string policy)
+	private static PushSubscription.PushPolicy GetPolicy(string policy)
 	{
 		return policy switch
 		{
@@ -111,7 +111,7 @@ public class PushController(DatabaseContext db) : ControllerBase
 		};
 	}
 
-	private string GetPolicyString(PushSubscription.PushPolicy policy)
+	private static string GetPolicyString(PushSubscription.PushPolicy policy)
 	{
 		return policy switch
 		{
@@ -123,7 +123,7 @@ public class PushController(DatabaseContext db) : ControllerBase
 		};
 	}
 
-	private List<string> GetTypes(PushSchemas.Alerts alerts)
+	private static List<string> GetTypes(PushSchemas.Alerts alerts)
 	{
 		List<string> types = [];
 
@@ -147,13 +147,13 @@ public class PushController(DatabaseContext db) : ControllerBase
 		return types;
 	}
 
-	private PushSchemas.PushSubscription RenderSubscription(PushSubscription sub)
+	private async Task<PushSchemas.PushSubscription> RenderSubscription(PushSubscription sub)
 	{
 		return new PushSchemas.PushSubscription
 		{
 			Id        = sub.Id,
 			Endpoint  = sub.Endpoint,
-			ServerKey = Constants.VapidPublicKey,
+			ServerKey = await meta.GetVapidPublicKey() ?? throw new Exception("Failed to fetch VAPID key"),
 			Policy    = GetPolicyString(sub.Policy),
 			Alerts = new PushSchemas.Alerts
 			{

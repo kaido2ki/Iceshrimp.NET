@@ -85,6 +85,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<AllowedInstance>      AllowedInstances      { get; init; } = null!;
 	public virtual DbSet<BlockedInstance>      BlockedInstances      { get; init; } = null!;
 	public virtual DbSet<DataProtectionKey>    DataProtectionKeys    { get; init; } = null!;
+	public virtual DbSet<MetaStore>            MetaStore             { get; init; } = null!;
 
 	public static NpgsqlDataSource GetDataSource(Config.DatabaseSection? config)
 	{

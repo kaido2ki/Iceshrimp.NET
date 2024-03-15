@@ -15,7 +15,7 @@ public static class DistributedCacheExtensions
 	private static readonly JsonSerializerOptions Options =
 		new(JsonSerializerOptions.Default) { ReferenceHandler = ReferenceHandler.Preserve };
 
-	public static async Task<T?> GetAsync<T>(this IDistributedCache cache, string key) where T : class
+	public static async Task<T?> GetAsync<T>(this IDistributedCache cache, string key) where T : class?
 	{
 		var buffer = await cache.GetAsync(key);
 		if (buffer == null || buffer.Length == 0) return null;
@@ -51,7 +51,7 @@ public static class DistributedCacheExtensions
 
 	public static async Task<T> FetchAsync<T>(
 		this IDistributedCache cache, string key, TimeSpan ttl, Func<Task<T>> fetcher
-	) where T : class
+	) where T : class?
 	{
 		var hit = await cache.GetAsync<T>(key);
 		if (hit != null) return hit;

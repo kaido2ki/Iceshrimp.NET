@@ -1,12 +1,12 @@
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
-using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -18,20 +18,20 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableRateLimiting("sliding")]
 [EnableCors("mastodon")]
 [Produces(MediaTypeNames.Application.Json)]
-public class AuthController(DatabaseContext db) : ControllerBase
+public class AuthController(DatabaseContext db, MetaService meta) : ControllerBase
 {
 	[HttpGet("/api/v1/apps/verify_credentials")]
 	[Authenticate]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.VerifyAppCredentialsResponse))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	public IActionResult VerifyAppCredentials()
+	public async Task<IActionResult> VerifyAppCredentials()
 	{
 		var token = HttpContext.GetOauthToken();
 		if (token == null) throw GracefulException.Unauthorized("The access token is invalid");
 
 		var res = new AuthSchemas.VerifyAppCredentialsResponse
 		{
-			App = token.App, VapidKey = Constants.VapidPublicKey
+			App = token.App, VapidKey = await meta.GetVapidPublicKey()
 		};
 
 		return Ok(res);
@@ -79,10 +79,7 @@ public class AuthController(DatabaseContext db) : ControllerBase
 		await db.AddAsync(app);
 		await db.SaveChangesAsync();
 
-		var res = new AuthSchemas.RegisterAppResponse
-		{
-			App = app, VapidKey = Constants.VapidPublicKey
-		};
+		var res = new AuthSchemas.RegisterAppResponse { App = app, VapidKey = await meta.GetVapidPublicKey() };
 
 		return Ok(res);
 	}
@@ -118,7 +115,9 @@ public class AuthController(DatabaseContext db) : ControllerBase
 
 		var res = new AuthSchemas.OauthTokenResponse
 		{
-			CreatedAt = token.CreatedAt, Scopes = token.Scopes, AccessToken = token.Token
+			CreatedAt   = token.CreatedAt,
+			Scopes      = token.Scopes,
+			AccessToken = token.Token
 		};
 
 		return Ok(res);
