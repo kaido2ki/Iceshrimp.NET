@@ -1,7 +1,6 @@
 using System.Runtime.InteropServices;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
-using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
@@ -168,26 +167,15 @@ public static class WebApplicationExtensions
 		}
 
 		app.Logger.LogInformation("Initializing VAPID keys...");
-		var vapidPublicKey  = await db.MetaStore.FirstOrDefaultAsync(p => p.Key == "vapid_public_key");
-		var vapidPrivateKey = await db.MetaStore.FirstOrDefaultAsync(p => p.Key == "vapid_private_key");
-		if (vapidPrivateKey == null || vapidPublicKey == null)
+		var meta = provider.GetRequiredService<MetaService>();
+		await meta.EnsureSet([MetaEntity.VapidPublicKey, MetaEntity.VapidPrivateKey], () =>
 		{
 			var keypair = VapidHelper.GenerateVapidKeys();
-			vapidPrivateKey = new MetaStore
-			{
-				Key = "vapid_private_key",
-				Value = keypair.PrivateKey
-			};
-			
-			vapidPublicKey = new MetaStore
-			{
-				Key   = "vapid_public_key",
-				Value = keypair.PublicKey
-			};
-
-			db.AddRange(vapidPublicKey, vapidPrivateKey);
-			await db.SaveChangesAsync();
-		}
+			return [keypair.PublicKey, keypair.PrivateKey];
+		});
+		
+		app.Logger.LogInformation("Warming up meta cache...");
+		await meta.WarmupCache();
 
 		app.Logger.LogInformation("Initializing application, please wait...");
 

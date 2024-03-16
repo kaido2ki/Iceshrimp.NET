@@ -31,7 +31,7 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 
 		var res = new AuthSchemas.VerifyAppCredentialsResponse
 		{
-			App = token.App, VapidKey = await meta.GetVapidPublicKey()
+			App = token.App, VapidKey = await meta.Get(MetaEntity.VapidPublicKey)
 		};
 
 		return Ok(res);
@@ -79,7 +79,10 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 		await db.AddAsync(app);
 		await db.SaveChangesAsync();
 
-		var res = new AuthSchemas.RegisterAppResponse { App = app, VapidKey = await meta.GetVapidPublicKey() };
+		var res = new AuthSchemas.RegisterAppResponse
+		{
+			App = app, VapidKey = await meta.Get(MetaEntity.VapidPublicKey)
+		};
 
 		return Ok(res);
 	}

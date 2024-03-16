@@ -6,12 +6,12 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("meta_store")]
 [Index("Key")]
-public class MetaStore
+public class MetaStoreEntry
 {
 	[Key]
 	[Column("key")]
 	[StringLength(128)]
 	public string Key { get; set; } = null!;
 
-	[Column("value")] public string Value { get; set; } = null!;
+	[Column("value")] public string? Value { get; set; } = null!;
 }

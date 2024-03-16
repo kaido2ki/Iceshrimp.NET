@@ -153,7 +153,7 @@ public class PushController(DatabaseContext db, MetaService meta) : ControllerBa
 		{
 			Id        = sub.Id,
 			Endpoint  = sub.Endpoint,
-			ServerKey = await meta.GetVapidPublicKey() ?? throw new Exception("Failed to fetch VAPID key"),
+			ServerKey = await meta.Get(MetaEntity.VapidPublicKey),
 			Policy    = GetPolicyString(sub.Policy),
 			Alerts = new PushSchemas.Alerts
 			{

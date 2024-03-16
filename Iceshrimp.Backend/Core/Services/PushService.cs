@@ -22,7 +22,7 @@ public class PushService(
 	IServiceScopeFactory scopeFactory,
 	HttpClient httpClient,
 	IOptions<Config.InstanceSection> config,
-	MetaService metaService
+	MetaService meta
 ) : BackgroundService
 {
 	protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -85,11 +85,8 @@ public class PushService(
 				if (body.Length > 137)
 					body = body.Truncate(137).TrimEnd() + "...";
 
-				var priv = await metaService.GetVapidPrivateKey();
-				var pub  = await metaService.GetVapidPublicKey();
-
-				if (priv == null || pub == null)
-					throw new Exception("Failed to fetch VAPID keys");
+				var priv = await meta.Get(MetaEntity.VapidPrivateKey);
+				var pub  = await meta.Get(MetaEntity.VapidPublicKey);
 
 				var client = new WebPushClient(httpClient);
 				client.SetVapidDetails(new VapidDetails($"https://{config.Value.WebDomain}", pub, priv));
