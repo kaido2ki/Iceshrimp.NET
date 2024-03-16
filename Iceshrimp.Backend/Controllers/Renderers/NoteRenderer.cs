@@ -92,7 +92,9 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 		var notesList = notes.ToList();
 		var data = new NoteRendererDto
 		{
-			Users = await GetUsers(notesList), Attachments = await GetAttachments(notesList)
+			Users       = await GetUsers(notesList),
+			Attachments = await GetAttachments(notesList),
+			Reactions   = await GetReactions(notesList, user)
 		};
 
 		return await notesList.Select(p => RenderOne(p, user, data)).AwaitAllAsync();
