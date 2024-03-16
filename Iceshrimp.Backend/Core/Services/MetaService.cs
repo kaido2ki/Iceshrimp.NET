@@ -1,3 +1,4 @@
+using System.Reflection;
 using EntityFramework.Exceptions.Common;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -46,10 +47,32 @@ public class MetaService(IServiceScopeFactory scopeFactory, IDistributedCache ca
 
 	public async Task WarmupCache()
 	{
-		await Get(MetaEntity.VapidPrivateKey);
-		await Get(MetaEntity.VapidPublicKey);
-		await Get(MetaEntity.InstanceName);
-		await Get(MetaEntity.InstanceDescription);
+		var entities = typeof(MetaEntity).GetMembers(BindingFlags.Static | BindingFlags.Public)
+		                                 .OfType<FieldInfo>();
+
+		foreach (var entity in entities)
+		{
+			var value = entity.GetValue(this);
+			var type  = entity.FieldType;
+
+			while (type?.GenericTypeArguments == null ||
+			       type.GenericTypeArguments.Length == 0 ||
+			       type.GetGenericTypeDefinition() != typeof(Meta<>))
+			{
+				if (type == typeof(object) || type == null)
+					continue;
+
+				type = type.BaseType;
+			}
+
+			var genericType = type.GenericTypeArguments.First();
+			var task = typeof(MetaService)
+			           .GetMethod(nameof(Get))!
+			           .MakeGenericMethod(genericType)
+			           .Invoke(this, [value]);
+
+			await (Task)task!;
+		}
 	}
 
 	private async Task<T> Fetch<T>(Meta<T> meta) => meta.GetConverter(await Fetch(meta.Key));
