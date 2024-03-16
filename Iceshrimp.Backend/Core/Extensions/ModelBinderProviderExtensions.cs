@@ -113,7 +113,8 @@ public class HybridModelBinder(
 	{
 		if (bindingContext.IsTopLevelObject)
 		{
-			if (bindingContext is { HttpContext.Request: { HasFormContentType: false, ContentLength: > 0 } })
+			if (bindingContext is { HttpContext.Request.HasFormContentType: false } &&
+			    bindingContext.HttpContext.Request.HasBody())
 			{
 				if (bodyBinder != null)
 				{
@@ -121,7 +122,7 @@ public class HybridModelBinder(
 					await bodyBinder.BindModelAsync(bindingContext);
 				}
 			}
-			else if (bindingContext.HttpContext.Request.ContentLength == 0 && dictionaryBinder != null)
+			else if (!bindingContext.HttpContext.Request.HasBody() && dictionaryBinder != null)
 			{
 				bindingContext.BindingSource = BindingSource.Query;
 				await dictionaryBinder.BindModelAsync(bindingContext);
