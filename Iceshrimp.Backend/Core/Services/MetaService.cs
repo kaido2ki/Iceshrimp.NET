@@ -11,10 +11,10 @@ namespace Iceshrimp.Backend.Core.Services;
 public class MetaService(IServiceScopeFactory scopeFactory, IDistributedCache cache)
 {
 	public async Task<T> Get<T>(Meta<T> meta) where T : class? =>
-		await cache.FetchAsync($"cache:meta:{meta.Key}", meta.Ttl, async () => await Fetch(meta));
+		await cache.FetchAsync($"meta:{meta.Key}", meta.Ttl, async () => await Fetch(meta), true);
 
 	public async Task<T> GetValue<T>(Meta<T> meta) where T : struct =>
-		await cache.FetchAsyncValue($"cache:meta:{meta.Key}", meta.Ttl, async () => await Fetch(meta));
+		await cache.FetchAsyncValue($"meta:{meta.Key}", meta.Ttl, async () => await Fetch(meta), true);
 
 	public async Task EnsureSet<T>(Meta<T> meta, T value) => await EnsureSet(meta, () => value);
 
@@ -47,35 +47,28 @@ public class MetaService(IServiceScopeFactory scopeFactory, IDistributedCache ca
 
 	public async Task WarmupCache()
 	{
-		var entities = typeof(MetaEntity).GetMembers(BindingFlags.Static | BindingFlags.Public)
-		                                 .OfType<FieldInfo>();
+		var entities =
+			typeof(MetaEntity)
+				.GetMembers(BindingFlags.Static | BindingFlags.Public)
+				.OfType<FieldInfo>()
+				.Where(p => p.FieldType.IsAssignableTo(typeof(Meta)))
+				.Select(p => p.GetValue(this))
+				.Cast<Meta>();
 
-		foreach (var entity in entities)
-		{
-			var value = entity.GetValue(this);
-			var type  = entity.FieldType;
+		var store = await GetDbContext().MetaStore.ToListAsync();
+		var dict = entities.ToDictionary(p => p, p => p.ConvertCache(store.FirstOrDefault(i => i.Key == p.Key)?.Value));
+		var invalid = dict.Where(p => !p.Key.IsNullable && p.Value == null).Select(p => p.Key.Key).ToList();
+		if (invalid.Count != 0)
+			throw new Exception($"Invalid meta store entries: [{string.Join(", ", invalid)}] must not be null");
 
-			while (type?.GenericTypeArguments == null ||
-			       type.GenericTypeArguments.Length == 0 ||
-			       type.GetGenericTypeDefinition() != typeof(Meta<>))
-			{
-				if (type == typeof(object) || type == null)
-					continue;
-
-				type = type.BaseType;
-			}
-
-			var genericType = type.GenericTypeArguments.First();
-			var task = typeof(MetaService)
-			           .GetMethod(nameof(Get))!
-			           .MakeGenericMethod(genericType)
-			           .Invoke(this, [value]);
-
-			await (Task)task!;
-		}
+		foreach (var entry in dict)
+			await Cache(entry.Key, entry.Value);
 	}
 
-	private async Task<T> Fetch<T>(Meta<T> meta) => meta.GetConverter(await Fetch(meta.Key));
+	private async Task Cache(Meta meta, object? value) =>
+		await cache.CacheAsync($"meta:{meta.Key}", meta.Ttl, value, meta.Type, true);
+
+	private async Task<T> Fetch<T>(Meta<T> meta) => meta.ConvertGet(await Fetch(meta.Key));
 
 	private async Task<string?> Fetch(string key) =>
 		await GetDbContext().MetaStore.Where(p => p.Key == key).Select(p => p.Value).FirstOrDefaultAsync();
@@ -107,7 +100,7 @@ public class MetaService(IServiceScopeFactory scopeFactory, IDistributedCache ca
 			}
 		}
 
-		await cache.SetAsync($"cache:meta:{key}", value, ttl, true);
+		await cache.SetAsync($"meta:{key}", value, ttl, true);
 	}
 
 	private DatabaseContext GetDbContext() =>
@@ -122,12 +115,25 @@ public static class MetaEntity
 	public static readonly NullableStringMeta InstanceDescription = new("instance_description");
 }
 
-public class Meta<T>(string key, TimeSpan? ttl, Func<string?, T> getConverter, Func<T, string?> setConverter)
+public class Meta<T>(
+	string key,
+	TimeSpan? ttl,
+	Func<string?, T> getConverter,
+	Func<T, string?> setConverter,
+	bool isNullable = true
+) : Meta(key, ttl, typeof(T), isNullable, val => val != null ? getConverter(val) : null)
 {
-	public string           Key          => key;
-	public TimeSpan         Ttl          => ttl ?? TimeSpan.FromDays(30);
-	public Func<string?, T> GetConverter => getConverter;
-	public Func<T, string?> ConvertSet   => setConverter;
+	public Func<string?, T> ConvertGet => getConverter;
+	public Func<T, string?> ConvertSet => setConverter;
+}
+
+public class Meta(string key, TimeSpan? ttl, Type type, bool isNullable, Func<string?, object?> cacheConverter)
+{
+	public Type                   Type         => type;
+	public bool                   IsNullable   => isNullable;
+	public string                 Key          => key;
+	public TimeSpan               Ttl          => ttl ?? TimeSpan.FromDays(30);
+	public Func<string?, object?> ConvertCache => cacheConverter;
 }
 
 public class StringMeta(string key, TimeSpan? ttl = null) : NonNullableMeta<string>(key, ttl, val => val, val => val);
@@ -145,7 +151,8 @@ public class NullableIntMeta(string key, TimeSpan? ttl = null)
 public class NonNullableMeta<T>(string key, TimeSpan? ttl, Func<string, T> getConverter, Func<T, string> setConverter)
 	: Meta<T>(key, ttl,
 	          val => getConverter(val ?? throw new Exception($"Fetched meta value {key} was null")),
-	          setConverter) where T : class;
+	          setConverter,
+	          false) where T : class;
 
 public class NonNullableValueMeta<T>(
 	string key,
@@ -154,4 +161,5 @@ public class NonNullableValueMeta<T>(
 	Func<T, string> setConverter
 ) : Meta<T>(key, ttl,
             val => getConverter(val ?? throw new Exception($"Fetched meta value {key} was null")),
-            setConverter) where T : struct;
+            setConverter,
+            false) where T : struct;

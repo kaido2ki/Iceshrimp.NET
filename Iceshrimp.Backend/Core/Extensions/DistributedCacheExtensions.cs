@@ -105,4 +105,43 @@ public static class DistributedCacheExtensions
 			: new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = ttl };
 		await cache.SetAsync(key, stream.ToArray(), options);
 	}
+
+	public static async Task CacheAsync(
+		this IDistributedCache cache, string key, TimeSpan ttl, Func<Task<object?>> fetcher, Type type,
+		bool renew = false
+	)
+	{
+		var res = await cache.GetAsync(key);
+		if (res != null) return;
+		await SetAsync(cache, key, await fetcher(), type, ttl, renew);
+	}
+
+	public static async Task CacheAsync(
+		this IDistributedCache cache, string key, TimeSpan ttl, Func<object?> fetcher, Type type, bool renew = false
+	)
+	{
+		var res = await cache.GetAsync(key);
+		if (res != null) return;
+		await SetAsync(cache, key, fetcher(), type, ttl, renew);
+	}
+	
+	public static async Task CacheAsync(
+		this IDistributedCache cache, string key, TimeSpan ttl, object? value, Type type, bool renew = false
+	)
+	{
+		await CacheAsync(cache, key, ttl, () => value, type, renew);
+	}
+
+	private static async Task SetAsync(
+		this IDistributedCache cache, string key, object? data, Type type, TimeSpan ttl, bool sliding = false
+	)
+	{
+		using var stream = new MemoryStream();
+		await JsonSerializer.SerializeAsync(stream, data, type, Options);
+		stream.Position = 0;
+		var options = sliding
+			? new DistributedCacheEntryOptions { SlidingExpiration               = ttl }
+			: new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = ttl };
+		await cache.SetAsync(key, stream.ToArray(), options);
+	}
 }
