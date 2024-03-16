@@ -45,8 +45,9 @@ public class NoteService(
 	PollService pollSvc
 )
 {
-	private readonly List<string> _resolverHistory = [];
-	private          int          _recursionLimit  = 100;
+	private const    int          DefaultRecursionLimit = 100;
+	private readonly List<string> _resolverHistory      = [];
+	private          int          _recursionLimit       = DefaultRecursionLimit;
 
 	public async Task<Note> CreateNoteAsync(
 		User user, Note.NoteVisibility visibility, string? text = null, string? cw = null, Note? reply = null,
@@ -538,7 +539,7 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Cannot renote or quote a pure renote");
 		if (dbNote.Reply?.IsPureRenote ?? false)
 			throw GracefulException.UnprocessableEntity("Cannot reply to a pure renote");
-		
+
 		if (dbNote.Renote != null && dbNote.Renote.User != user)
 		{
 			if (await db.Blockings.AnyAsync(p => p.Blockee == user && p.Blocker == dbNote.Renote.User))
@@ -941,8 +942,16 @@ public class NoteService(
 		return result.Where(p => p != null).Cast<DriveFile>().ToList();
 	}
 
-	public async Task<Note?> ResolveNoteAsync(string uri, ASNote? fetchedNote = null, User? user = null)
+	public async Task<Note?> ResolveNoteAsync(
+		string uri, ASNote? fetchedNote = null, User? user = null, bool clearHistory = false
+	)
 	{
+		if (clearHistory)
+		{
+			_resolverHistory.Clear();
+			_recursionLimit = DefaultRecursionLimit;
+		}
+
 		//TODO: is this enough to prevent DoS attacks?
 		if (_recursionLimit-- <= 0)
 			throw GracefulException.UnprocessableEntity("Refusing to resolve threads this long");
@@ -1155,7 +1164,9 @@ public class NoteService(
 		if (collection is not { Items: not null }) return;
 
 		var items = await collection.Items.Take(10).Select(p => objectResolver.ResolveObject(p)).AwaitAllAsync();
-		var notes = await items.OfType<ASNote>().Select(p => ResolveNoteAsync(p.Id, p)).AwaitAllNoConcurrencyAsync();
+		var notes = await items.OfType<ASNote>()
+		                       .Select(p => ResolveNoteAsync(p.Id, p, null, true))
+		                       .AwaitAllNoConcurrencyAsync();
 		var previousPins = await db.Users.Where(p => p.Id == user.Id)
 		                           .Select(p => p.PinnedNotes.Select(i => i.Id))
 		                           .FirstOrDefaultAsync() ?? [];
