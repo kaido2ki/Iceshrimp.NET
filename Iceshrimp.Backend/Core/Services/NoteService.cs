@@ -178,7 +178,7 @@ public class NoteService(
 
 		var recipients = await db.Users
 		                         .Where(p => mentionedUserIds.Concat(additionalUserIds).Contains(p.Id))
-		                         .Select(p => new User { Host = p.Host, Inbox = p.Inbox })
+		                         .Select(p => new User { Id = p.Id })
 		                         .ToListAsync();
 
 		if (note.Visibility == Note.NoteVisibility.Specified)
@@ -330,7 +330,7 @@ public class NoteService(
 		var activity = activityRenderer.RenderUpdate(obj, actor);
 
 		var recipients = await db.Users.Where(p => mentionedUserIds.Contains(p.Id))
-		                         .Select(p => new User { Host = p.Host, Inbox = p.Inbox })
+		                         .Select(p => new User { Id = p.Id })
 		                         .ToListAsync();
 
 		if (note.Visibility == Note.NoteVisibility.Specified)
@@ -367,7 +367,7 @@ public class NoteService(
 		}
 
 		var recipients = await db.Users.Where(p => note.Mentions.Concat(note.VisibleUserIds).Distinct().Contains(p.Id))
-		                         .Select(p => new User { Host = p.Host, Inbox = p.Inbox })
+		                         .Select(p => new User { Id = p.Id })
 		                         .ToListAsync();
 
 		var actor = userRenderer.RenderLite(note.User);
