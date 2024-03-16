@@ -67,6 +67,9 @@ public class AuthorizedFetchMiddleware(
 						var user = await userResolver.ResolveAsync(sig.KeyId).WaitAsync(ct);
 						key = await db.UserPublickeys.Include(p => p.User)
 						              .FirstOrDefaultAsync(p => p.User == user, ct);
+
+						// If the key is still null here, we have a data consistency issue and need to update the key manually
+						key ??= await userSvc.UpdateUserPublicKeyAsync(user).WaitAsync(ct);
 					}
 					catch (Exception e)
 					{

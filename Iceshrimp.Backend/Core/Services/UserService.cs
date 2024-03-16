@@ -432,6 +432,24 @@ public class UserService(
 		return key;
 	}
 
+	public async Task<UserPublickey> UpdateUserPublicKeyAsync(User user)
+	{
+		var uri   = user.Uri ?? throw new Exception("Can't update public key of user without Uri");
+		var actor = await fetchSvc.FetchActorAsync(uri);
+
+		if (actor.PublicKey?.PublicKey == null)
+			throw new Exception("Failed to update user public key: Invalid or missing public key");
+
+		var key = await db.UserPublickeys.FirstOrDefaultAsync(p => p.User == user) ?? new UserPublickey { User = user };
+
+		key.KeyId  = actor.PublicKey.Id;
+		key.KeyPem = actor.PublicKey.PublicKey;
+
+		db.Update(key);
+		await db.SaveChangesAsync();
+		return key;
+	}
+
 	public async Task DeleteUserAsync(ASActor actor)
 	{
 		var user = await db.Users
