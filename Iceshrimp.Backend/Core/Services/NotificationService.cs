@@ -262,7 +262,7 @@ public class NotificationService(
 		{
 			Id        = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt = DateTime.UtcNow,
-			Note      = note,
+			Note      = note.IsQuote ? note : note.Renote,
 			Notifiee  = note.Renote.User,
 			Notifier  = note.User,
 			Type      = note.IsQuote ? Notification.NotificationType.Quote : Notification.NotificationType.Renote
