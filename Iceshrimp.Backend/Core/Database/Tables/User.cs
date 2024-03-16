@@ -439,7 +439,7 @@ public class User : IEntity
 
 	[InverseProperty(nameof(SwSubscription.User))]
 	public virtual ICollection<SwSubscription> SwSubscriptions { get; set; } = new List<SwSubscription>();
-	
+
 	[InverseProperty(nameof(PushSubscription.User))]
 	public virtual ICollection<PushSubscription> PushSubscriptions { get; set; } = new List<PushSubscription>();
 
@@ -500,11 +500,31 @@ public class User : IEntity
 	public string Id { get; set; } = null!;
 
 	[Projectable]
+	public string GetFqnLower(string accountDomain) => UsernameLower + "@" + (Host ?? accountDomain);
+
+	[Projectable]
+	public string GetFqn(string accountDomain) => Username + "@" + (Host ?? accountDomain);
+
+	[Projectable]
 	public bool DisplayNameContainsCaseInsensitive(string str) =>
 		DisplayName != null && EF.Functions.ILike(DisplayName, "%" + EfHelpers.EscapeLikeQuery(str) + "%", @"\");
 
 	[Projectable]
-	public bool UsernameContainsCaseInsensitive(string str) => UsernameLower.Contains(str);
+	public bool UsernameContainsCaseInsensitive(string str) => UsernameLower.Contains(str.ToLowerInvariant());
+
+	[Projectable]
+	public bool FqnContainsCaseInsensitive(string str, string accountDomain) =>
+		GetFqnLower(accountDomain).Contains(str.ToLowerInvariant());
+
+	[Projectable]
+	public bool UsernameOrFqnContainsCaseInsensitive(string str, string accountDomain) =>
+		str.Contains('@') ? FqnContainsCaseInsensitive(str, accountDomain) : UsernameContainsCaseInsensitive(str);
+
+	[Projectable]
+	public bool DisplayNameOrUsernameOrFqnContainsCaseInsensitive(string str, string accountDomain) =>
+		str.Contains('@') && !str.Contains(' ')
+			? FqnContainsCaseInsensitive(str, accountDomain)
+			: UsernameContainsCaseInsensitive(str) || DisplayNameContainsCaseInsensitive(str);
 
 	[Projectable]
 	public bool IsBlockedBy(User user) => BlockedBy.Contains(user);
@@ -582,9 +602,9 @@ public class User : IEntity
 		return this;
 	}
 
-	public string GetPublicUrl(Config.InstanceSection config)    => GetPublicUrl(config.WebDomain);
-	public string GetPublicUri(Config.InstanceSection config)    => GetPublicUri(config.WebDomain);
-	public string GetIdenticonUrl(Config.InstanceSection config) => GetIdenticonUrl(config.WebDomain);
+	public string GetPublicUrl(Config.InstanceSection config)       => GetPublicUrl(config.WebDomain);
+	public string GetPublicUri(Config.InstanceSection config)       => GetPublicUri(config.WebDomain);
+	public string GetIdenticonUrl(Config.InstanceSection config)    => GetIdenticonUrl(config.WebDomain);
 	public string GetIdenticonUrlPng(Config.InstanceSection config) => GetIdenticonUrl(config.WebDomain) + ".png";
 
 	public string GetPublicUri(string webDomain) => Host == null

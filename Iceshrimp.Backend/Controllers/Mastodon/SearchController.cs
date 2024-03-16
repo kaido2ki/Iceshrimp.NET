@@ -130,8 +130,8 @@ public class SearchController(
 
 		return await db.Users
 		               .IncludeCommonProperties()
-		               .Where(p => p.DisplayNameContainsCaseInsensitive(search.Query!) ||
-		                           p.UsernameContainsCaseInsensitive(search.Query!))
+		               .Where(p => p.DisplayNameOrUsernameOrFqnContainsCaseInsensitive(search.Query!,
+			                      config.Value.AccountDomain))
 		               .Where(p => !search.Following || p.IsFollowedBy(user))
 		               .Paginate(pagination, ControllerContext) //TODO: this will mess up our sorting
 		               .OrderByDescending(p => p.NotesCount)
