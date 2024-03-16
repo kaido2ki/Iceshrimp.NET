@@ -442,10 +442,13 @@ public class UserService(
 
 		var key = await db.UserPublickeys.FirstOrDefaultAsync(p => p.User == user) ?? new UserPublickey { User = user };
 
+		var insert = key.KeyId == null!;
+
 		key.KeyId  = actor.PublicKey.Id;
 		key.KeyPem = actor.PublicKey.PublicKey;
 
-		db.Update(key);
+		if (insert) db.Add(key);
+		else db.Update(key);
 		await db.SaveChangesAsync();
 		return key;
 	}
