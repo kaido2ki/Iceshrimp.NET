@@ -47,7 +47,7 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 		var activeMonth = await db.Users.LongCountAsync(p => p.Host == null &&
 		                                                     !Constants.SystemUsers.Contains(p.UsernameLower) &&
 		                                                     p.LastActiveDate > cutoff);
-		
+
 		var instanceName        = await meta.Get(MetaEntity.InstanceName);
 		var instanceDescription = await meta.Get(MetaEntity.InstanceDescription);
 		var adminContact        = await meta.Get(MetaEntity.AdminContactEmail);
@@ -83,5 +83,14 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 	public IActionResult GetTranslationLanguages()
 	{
 		return Ok(new Dictionary<string, IEnumerable<string>>());
+	}
+
+	[HttpGet("/api/v1/instance/extended_description")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstanceExtendedDescription))]
+	public async Task<IActionResult> GetExtendedDescription()
+	{
+		var description = await meta.Get(MetaEntity.InstanceDescription);
+		var res         = new InstanceExtendedDescription(description);
+		return Ok(res);
 	}
 }

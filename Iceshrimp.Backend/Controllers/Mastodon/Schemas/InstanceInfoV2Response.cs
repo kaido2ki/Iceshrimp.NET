@@ -61,3 +61,11 @@ public class InstanceContact(string? adminContact)
 {
 	[J("email")] public string Email => adminContact ?? "unset@example.org";
 }
+
+public class InstanceExtendedDescription(string? description)
+{
+	[J("updated_at")] public string UpdatedAt => DateTime.Now.ToStringIso8601Like();
+
+	[J("content")]
+	public string Content => description ?? "This Iceshrimp.NET instance does not appear to have a description";
+}
