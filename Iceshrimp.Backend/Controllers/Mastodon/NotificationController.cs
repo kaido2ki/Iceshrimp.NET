@@ -54,13 +54,10 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                  .PrecomputeNoteVisibilities(user)
 		                  .RenderAllForMastodonAsync(notificationRenderer, user);
 
-		//TODO: handle mutes
-		//TODO: handle reply/renote visibility
-
 		return Ok(res);
 	}
 
-	[HttpGet("{id}")]
+	[HttpGet("{id:long}")]
 	[Authorize("read:notifications")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<NotificationEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
@@ -74,8 +71,6 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                           .PrecomputeNoteVisibilities(user)
 		                           .FirstOrDefaultAsync() ??
 		                   throw GracefulException.RecordNotFound();
-
-		//TODO: handle reply/renote visibility
 
 		var res = await notificationRenderer.RenderAsync(notification.EnforceRenoteReplyVisibility(p => p.Note), user);
 

@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 using NoteRenderer = Iceshrimp.Backend.Controllers.Renderers.NoteRenderer;
+using NotificationRenderer = Iceshrimp.Backend.Controllers.Renderers.NotificationRenderer;
 using UserRenderer = Iceshrimp.Backend.Controllers.Renderers.UserRenderer;
 
 namespace Iceshrimp.Backend.Core.Extensions;
@@ -54,6 +55,7 @@ public static class ServiceExtensions
 			.AddScoped<ErrorHandlerMiddleware>()
 			.AddScoped<Controllers.Mastodon.Renderers.UserRenderer>()
 			.AddScoped<Controllers.Mastodon.Renderers.NoteRenderer>()
+			.AddScoped<Controllers.Mastodon.Renderers.NotificationRenderer>()
 			.AddScoped<PollRenderer>()
 			.AddScoped<PollService>()
 			.AddScoped<NoteRenderer>()
@@ -227,7 +229,9 @@ public static class ServiceExtensions
 				context.HttpContext.Response.ContentType = "application/json";
 				var res = new ErrorResponse
 				{
-					Error = "Too Many Requests", StatusCode = 429, RequestId = context.HttpContext.TraceIdentifier
+					Error      = "Too Many Requests",
+					StatusCode = 429,
+					RequestId  = context.HttpContext.TraceIdentifier
 				};
 				await context.HttpContext.Response.WriteAsJsonAsync(res, token);
 			};
