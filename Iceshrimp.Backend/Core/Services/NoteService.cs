@@ -578,7 +578,7 @@ public class NoteService(
 		{
 			dbNote.ReplyUserId   = dbNote.Reply.UserId;
 			dbNote.ReplyUserHost = dbNote.Reply.UserHost;
-			dbNote.ThreadId      = dbNote.Reply.ThreadId ?? dbNote.Reply.ThreadId;
+			dbNote.ThreadId      = dbNote.Reply.ThreadId ?? dbNote.Reply.Id;
 		}
 
 		if (dbNote.Renote != null)
