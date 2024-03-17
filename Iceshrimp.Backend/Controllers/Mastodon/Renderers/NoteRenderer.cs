@@ -273,15 +273,15 @@ public class NoteRenderer(
 	public class NoteRendererDto
 	{
 		public List<AccountEntity>?    Accounts;
-		public List<MentionEntity>?    Mentions;
 		public List<AttachmentEntity>? Attachments;
-		public List<PollEntity>?       Polls;
-		public List<string>?           LikedNotes;
 		public List<string>?           BookmarkedNotes;
-		public List<string>?           PinnedNotes;
-		public List<string>?           Renotes;
 		public List<EmojiEntity>?      Emoji;
+		public List<string>?           LikedNotes;
+		public List<MentionEntity>?    Mentions;
+		public List<string>?           PinnedNotes;
+		public List<PollEntity>?       Polls;
 		public List<ReactionEntity>?   Reactions;
+		public List<string>?           Renotes;
 
 		public bool Source;
 	}

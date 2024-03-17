@@ -10,13 +10,13 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
 
 public class UserChannel(WebSocketConnection connection, bool notificationsOnly) : IChannel
 {
+	public readonly ILogger<UserChannel> Logger =
+		connection.ScopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<UserChannel>>();
+
 	private List<string> _followedUsers = [];
 	public  string       Name         => notificationsOnly ? "user:notification" : "user";
 	public  List<string> Scopes       => ["read:statuses", "read:notifications"];
 	public  bool         IsSubscribed { get; private set; }
-
-	public readonly ILogger<UserChannel> Logger =
-		connection.ScopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<UserChannel>>();
 
 	public async Task Subscribe(StreamingRequestMessage _)
 	{
@@ -74,7 +74,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			var rendered = await renderer.RenderAsync(note, connection.Token.User);
 			var message = new StreamingUpdateMessage
 			{
-				Stream = [Name], Event = "update", Payload = JsonSerializer.Serialize(rendered)
+				Stream  = [Name],
+				Event   = "update",
+				Payload = JsonSerializer.Serialize(rendered)
 			};
 			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
 		}
@@ -94,7 +96,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			var rendered = await renderer.RenderAsync(note, connection.Token.User);
 			var message = new StreamingUpdateMessage
 			{
-				Stream = [Name], Event = "status.update", Payload = JsonSerializer.Serialize(rendered)
+				Stream  = [Name],
+				Event   = "status.update",
+				Payload = JsonSerializer.Serialize(rendered)
 			};
 			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
 		}
@@ -109,7 +113,12 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		try
 		{
 			if (!IsApplicable(note)) return;
-			var message = new StreamingUpdateMessage { Stream = [Name], Event = "delete", Payload = note.Id };
+			var message = new StreamingUpdateMessage
+			{
+				Stream  = [Name],
+				Event   = "delete",
+				Payload = note.Id
+			};
 			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
 		}
 		catch (Exception e)
@@ -139,7 +148,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 
 			var message = new StreamingUpdateMessage
 			{
-				Stream = [Name], Event = "notification", Payload = JsonSerializer.Serialize(rendered)
+				Stream  = [Name],
+				Event   = "notification",
+				Payload = JsonSerializer.Serialize(rendered)
 			};
 			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
 		}

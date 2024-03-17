@@ -298,8 +298,8 @@ public class UserService(
 		db.Update(user);
 		await db.SaveChangesAsync();
 		await processPendingDeletes();
-		user = await UpdateProfileMentions(user, actor, force: true);
-		UpdateUserPinnedNotesInBackground(actor, user, force: true);
+		user = await UpdateProfileMentions(user, actor, true);
+		UpdateUserPinnedNotesInBackground(actor, user, true);
 		return user;
 	}
 

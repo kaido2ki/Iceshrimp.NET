@@ -37,7 +37,7 @@ public class ASActivity : ASObject
 
 		// Extensions
 		public const string Bite       = "https://ns.mia.jetzt/as#Bite";
-		public const string EmojiReact = $"http://litepub.social/ns#EmojiReact";
+		public const string EmojiReact = "http://litepub.social/ns#EmojiReact";
 	}
 }
 

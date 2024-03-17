@@ -9,7 +9,6 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 public class StatusEntity : IEntity
 {
-	[J("id")]                     public required string        Id             { get; set; }
 	[J("content")]                public required string?       Content        { get; set; }
 	[J("uri")]                    public required string        Uri            { get; set; }
 	[J("url")]                    public required string        Url            { get; set; }
@@ -52,7 +51,8 @@ public class StatusEntity : IEntity
 	[J("card")]        public object?  Card        => null; //FIXME
 	[J("application")] public object?  Application => null; //FIXME
 
-	[J("language")] public string? Language => null; //FIXME
+	[J("language")] public          string? Language => null; //FIXME
+	[J("id")]       public required string  Id       { get; set; }
 
 	public static string EncodeVisibility(Note.NoteVisibility visibility)
 	{

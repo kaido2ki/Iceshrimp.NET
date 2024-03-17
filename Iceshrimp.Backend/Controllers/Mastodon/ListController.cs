@@ -34,7 +34,12 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer) : Con
 
 		var res = await db.UserLists
 		                  .Where(p => p.User == user)
-		                  .Select(p => new ListEntity { Id = p.Id, Title = p.Name, Exclusive = p.HideFromHomeTl })
+		                  .Select(p => new ListEntity
+		                  {
+			                  Id        = p.Id,
+			                  Title     = p.Name,
+			                  Exclusive = p.HideFromHomeTl
+		                  })
 		                  .ToListAsync();
 
 		return Ok(res);
@@ -50,7 +55,12 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer) : Con
 
 		var res = await db.UserLists
 		                  .Where(p => p.User == user && p.Id == id)
-		                  .Select(p => new ListEntity { Id = p.Id, Title = p.Name, Exclusive = p.HideFromHomeTl })
+		                  .Select(p => new ListEntity
+		                  {
+			                  Id        = p.Id,
+			                  Title     = p.Name,
+			                  Exclusive = p.HideFromHomeTl
+		                  })
 		                  .FirstOrDefaultAsync() ??
 		          throw GracefulException.RecordNotFound();
 
@@ -79,7 +89,12 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer) : Con
 		await db.AddAsync(list);
 		await db.SaveChangesAsync();
 
-		var res = new ListEntity { Id = list.Id, Title = list.Name, Exclusive = list.HideFromHomeTl };
+		var res = new ListEntity
+		{
+			Id        = list.Id,
+			Title     = list.Name,
+			Exclusive = list.HideFromHomeTl
+		};
 		return Ok(res);
 	}
 
@@ -105,7 +120,12 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer) : Con
 		db.Update(list);
 		await db.SaveChangesAsync();
 
-		var res = new ListEntity { Id = list.Id, Title = list.Name, Exclusive = list.HideFromHomeTl };
+		var res = new ListEntity
+		{
+			Id        = list.Id,
+			Title     = list.Name,
+			Exclusive = list.HideFromHomeTl
+		};
 		return Ok(res);
 	}
 

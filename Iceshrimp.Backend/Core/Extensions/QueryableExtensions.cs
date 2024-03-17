@@ -289,7 +289,9 @@ public static class QueryableExtensions
 		            .Where(note => note.Reply == null || !note.Reply.User.IsMuting(user));
 	}
 
-	public static IQueryable<Note> FilterBlockedConversations(this IQueryable<Note> query, User user, DatabaseContext db)
+	public static IQueryable<Note> FilterBlockedConversations(
+		this IQueryable<Note> query, User user, DatabaseContext db
+	)
 	{
 		return query.Where(p => !db.Blockings.Any(i => i.Blocker == user && p.VisibleUserIds.Contains(i.BlockeeId)));
 	}

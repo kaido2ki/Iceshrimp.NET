@@ -494,6 +494,9 @@ public class User : IEntity
 	[NotMapped] public bool? PrecomputedIsRequested   { get; set; }
 	[NotMapped] public bool? PrecomputedIsRequestedBy { get; set; }
 
+	public bool IsLocalUser  => Host == null;
+	public bool IsRemoteUser => Host != null;
+
 	[Key]
 	[Column("id")]
 	[StringLength(32)]
@@ -616,7 +619,4 @@ public class User : IEntity
 		: throw new Exception("Cannot access PublicUrl for remote user");
 
 	public string GetIdenticonUrl(string webDomain) => $"https://{webDomain}/identicon/{Id}";
-
-	public bool IsLocalUser  => Host == null;
-	public bool IsRemoteUser => Host != null;
 }

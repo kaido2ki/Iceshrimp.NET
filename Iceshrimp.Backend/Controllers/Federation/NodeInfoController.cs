@@ -55,7 +55,9 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 				//FIXME Implement members
 				Users = new NodeInfoResponse.NodeInfoUsers
 				{
-					Total = totalUsers, ActiveMonth = activeMonth, ActiveHalfYear = activeHalfYear
+					Total          = totalUsers,
+					ActiveMonth    = activeMonth,
+					ActiveHalfYear = activeHalfYear
 				},
 				LocalComments = 0,
 				LocalPosts    = localPosts

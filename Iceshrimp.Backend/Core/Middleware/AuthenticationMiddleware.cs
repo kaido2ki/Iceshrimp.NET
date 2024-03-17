@@ -59,7 +59,7 @@ public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc, M
 
 				userSvc.UpdateOauthTokenMetadata(oauthToken);
 				ctx.SetOauthToken(oauthToken);
-				
+
 				mfmConverter.SupportsHtmlFormatting = oauthToken.SupportsHtmlFormatting;
 			}
 			else

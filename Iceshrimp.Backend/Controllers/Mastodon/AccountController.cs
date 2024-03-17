@@ -76,7 +76,12 @@ public class AccountController(
 		if (request.Fields?.Where(p => p is { Name: not null, Value: not null }).ToList() is { Count: > 0 } fields)
 		{
 			user.UserProfile.Fields =
-				fields.Select(p => new UserProfile.Field { Name = p.Name!, Value = p.Value!, IsVerified = false })
+				fields.Select(p => new UserProfile.Field
+				      {
+					      Name       = p.Name!,
+					      Value      = p.Value!,
+					      IsVerified = false
+				      })
 				      .ToArray();
 		}
 
@@ -87,7 +92,9 @@ public class AccountController(
 		{
 			var rq = new DriveFileCreationRequest
 			{
-				Filename = request.Avatar.FileName, IsSensitive = false, MimeType = request.Avatar.ContentType
+				Filename    = request.Avatar.FileName,
+				IsSensitive = false,
+				MimeType    = request.Avatar.ContentType
 			};
 			var avatar = await driveSvc.StoreFile(request.Avatar.OpenReadStream(), user, rq);
 			user.Avatar         = avatar;
@@ -99,7 +106,9 @@ public class AccountController(
 		{
 			var rq = new DriveFileCreationRequest
 			{
-				Filename = request.Banner.FileName, IsSensitive = false, MimeType = request.Banner.ContentType
+				Filename    = request.Banner.FileName,
+				IsSensitive = false,
+				MimeType    = request.Banner.ContentType
 			};
 			var banner = await driveSvc.StoreFile(request.Banner.OpenReadStream(), user, rq);
 			user.Banner         = banner;
@@ -248,7 +257,7 @@ public class AccountController(
 
 		return Ok(res);
 	}
-	
+
 	[HttpPost("{id}/unmute")]
 	[Authorize("write:mutes")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
@@ -271,7 +280,7 @@ public class AccountController(
 
 		return Ok(res);
 	}
-	
+
 	[HttpPost("{id}/block")]
 	[Authorize("write:blocks")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
@@ -282,11 +291,11 @@ public class AccountController(
 			throw GracefulException.BadRequest("You cannot block yourself");
 
 		var blockee = await db.Users
-		                    .Where(p => p.Id == id)
-		                    .IncludeCommonProperties()
-		                    .PrecomputeRelationshipData(user)
-		                    .FirstOrDefaultAsync() ??
-		            throw GracefulException.RecordNotFound();
+		                      .Where(p => p.Id == id)
+		                      .IncludeCommonProperties()
+		                      .PrecomputeRelationshipData(user)
+		                      .FirstOrDefaultAsync() ??
+		              throw GracefulException.RecordNotFound();
 
 		await userSvc.BlockUserAsync(user, blockee);
 
@@ -294,7 +303,7 @@ public class AccountController(
 
 		return Ok(res);
 	}
-	
+
 	[HttpPost("{id}/unblock")]
 	[Authorize("write:blocks")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
@@ -305,11 +314,11 @@ public class AccountController(
 			throw GracefulException.BadRequest("You cannot unblock yourself");
 
 		var blockee = await db.Users
-		                    .Where(p => p.Id == id)
-		                    .IncludeCommonProperties()
-		                    .PrecomputeRelationshipData(user)
-		                    .FirstOrDefaultAsync() ??
-		            throw GracefulException.RecordNotFound();
+		                      .Where(p => p.Id == id)
+		                      .IncludeCommonProperties()
+		                      .PrecomputeRelationshipData(user)
+		                      .FirstOrDefaultAsync() ??
+		              throw GracefulException.RecordNotFound();
 
 		await userSvc.UnblockUserAsync(user, blockee);
 

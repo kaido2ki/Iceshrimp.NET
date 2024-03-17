@@ -28,7 +28,7 @@ public static class MvcBuilderExtensions
 
 			       if (!opts.OutputFormatters.OfType<SystemTextJsonOutputFormatter>().Any())
 				       opts.OutputFormatters.Add(new SystemTextJsonOutputFormatter(jsonOpts.Value
-							                                  .JsonSerializerOptions));
+					                                 .JsonSerializerOptions));
 
 			       opts.InputFormatters.Insert(0, new JsonInputMultiFormatter());
 			       opts.OutputFormatters.Insert(0, new JsonOutputMultiFormatter());
@@ -39,20 +39,19 @@ public static class MvcBuilderExtensions
 
 	public static IMvcBuilder AddModelBindingProviders(this IMvcBuilder builder)
 	{
-		builder.Services.AddOptions<MvcOptions>().PostConfigure(options =>
-		{
-			options.ModelBinderProviders.AddHybridBindingProvider();
-		});
+		builder.Services.AddOptions<MvcOptions>()
+		       .PostConfigure(options => { options.ModelBinderProviders.AddHybridBindingProvider(); });
 
 		return builder;
 	}
-	
+
 	public static IMvcBuilder AddValueProviderFactories(this IMvcBuilder builder)
 	{
-		builder.Services.AddOptions<MvcOptions>().PostConfigure(options =>
-		{
-			options.ValueProviderFactories.Add(new JQueryQueryStringValueProviderFactory());
-		});
+		builder.Services.AddOptions<MvcOptions>()
+		       .PostConfigure(options =>
+		       {
+			       options.ValueProviderFactories.Add(new JQueryQueryStringValueProviderFactory());
+		       });
 
 		return builder;
 	}

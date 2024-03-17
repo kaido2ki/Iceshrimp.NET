@@ -173,7 +173,7 @@ public static class WebApplicationExtensions
 			var keypair = VapidHelper.GenerateVapidKeys();
 			return [keypair.PublicKey, keypair.PrivateKey];
 		});
-		
+
 		app.Logger.LogInformation("Warming up meta cache...");
 		await meta.WarmupCache();
 

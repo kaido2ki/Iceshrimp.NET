@@ -76,7 +76,12 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 			PublicKey  = keypair.ExportSubjectPublicKeyInfoPem()
 		};
 
-		var userProfile = new UserProfile { UserId = user.Id, AutoAcceptFollowed = false, Password = null };
+		var userProfile = new UserProfile
+		{
+			UserId             = user.Id,
+			AutoAcceptFollowed = false,
+			Password           = null
+		};
 
 		var usedUsername = new UsedUsername { CreatedAt = DateTime.UtcNow, Username = username.ToLowerInvariant() };
 

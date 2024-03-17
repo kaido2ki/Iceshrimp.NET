@@ -145,9 +145,9 @@ public class ConversationsController(
 
 	private class Conversation
 	{
-		public required string     Id { get; init; }
 		public required Note       LastNote;
-		public required List<User> Users;
 		public required bool       Unread;
+		public required List<User> Users;
+		public required string     Id { get; init; }
 	}
 }

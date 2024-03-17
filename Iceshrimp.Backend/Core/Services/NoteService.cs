@@ -191,7 +191,7 @@ public class NoteService(
 	}
 
 	/// <remarks>
-	/// This needs to be called before SaveChangesAsync on create & after on delete
+	///     This needs to be called before SaveChangesAsync on create & after on delete
 	/// </remarks>
 	private async Task UpdateNoteCountersAsync(Note note, bool create)
 	{

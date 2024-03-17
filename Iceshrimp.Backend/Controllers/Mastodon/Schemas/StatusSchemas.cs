@@ -82,7 +82,7 @@ public abstract class StatusSchemas
 		[B(Name = "media_ids")]
 		[J("media_ids")]
 		public List<string>? MediaIds { get; set; }
-		
+
 		[B(Name = "media_attributes")]
 		[J("media_attributes")]
 		public List<MediaAttributesEntry>? MediaAttributes { get; set; }

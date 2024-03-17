@@ -1,9 +1,6 @@
 using Iceshrimp.Backend.Controllers.Schemas;
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
-using Iceshrimp.Backend.Core.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Renderers;
 
@@ -81,7 +78,7 @@ public class NotificationRenderer(
 
 	public class NotificationRendererDto
 	{
-		public List<UserResponse>? Users;
 		public List<NoteResponse>? Notes;
+		public List<UserResponse>? Users;
 	}
 }

@@ -30,7 +30,7 @@ public class InstanceService(DatabaseContext db, HttpClient httpClient)
 						Id                 = IdHelpers.GenerateSlowflakeId(),
 						Host               = host,
 						CaughtAt           = DateTime.UtcNow,
-						LastCommunicatedAt = DateTime.UtcNow,
+						LastCommunicatedAt = DateTime.UtcNow
 					};
 					await db.AddAsync(instance);
 					await db.SaveChangesAsync();

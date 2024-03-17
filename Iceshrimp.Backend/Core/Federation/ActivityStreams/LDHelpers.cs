@@ -64,8 +64,6 @@ public static class LdHelpers
 		JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams", "Contexts",
 		                                           "as-extensions.json")));
 
-	private static IEnumerable<string> ASForceArray => ["tag", "to", "cc", "bcc", "bto"];
-
 	private static readonly JsonLdProcessorOptions Options = new()
 	{
 		DocumentLoader = CustomLoader,
@@ -75,7 +73,7 @@ public static class LdHelpers
 		ForceArray     = ASForceArray.Select(p => $"{Constants.ActivityStreamsNs}#{p}").ToList(),
 
 		// separated for readability
-		RemoveUnusedInlineContextProperties = true,
+		RemoveUnusedInlineContextProperties = true
 	};
 
 	public static readonly JsonSerializerSettings JsonSerializerSettings = new()
@@ -87,6 +85,8 @@ public static class LdHelpers
 	{
 		NullValueHandling = NullValueHandling.Ignore, DateTimeZoneHandling = DateTimeZoneHandling.Local
 	};
+
+	private static IEnumerable<string> ASForceArray => ["tag", "to", "cc", "bcc", "bto"];
 
 	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions)
 	{

@@ -42,7 +42,7 @@ public class Announcement
 	public virtual ICollection<AnnouncementRead> AnnouncementReads { get; set; } = new List<AnnouncementRead>();
 
 	[NotMapped] [Projectable] public virtual IEnumerable<User> ReadBy => AnnouncementReads.Select(p => p.User);
-	
+
 	[Projectable]
 	public bool IsReadBy(User user) => ReadBy.Contains(user);
 }

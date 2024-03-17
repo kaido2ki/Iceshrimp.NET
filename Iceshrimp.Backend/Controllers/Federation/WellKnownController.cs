@@ -59,7 +59,9 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 			[
 				new WebFingerLink
 				{
-					Rel = "self", Type = "application/activity+json", Href = user.GetPublicUri(config.Value)
+					Rel  = "self",
+					Type = "application/activity+json",
+					Href = user.GetPublicUri(config.Value)
 				},
 				new WebFingerLink
 				{

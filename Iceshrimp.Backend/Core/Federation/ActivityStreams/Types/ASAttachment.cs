@@ -36,13 +36,13 @@ public class ASDocument : ASAttachment
 
 public class ASField : ASAttachment
 {
-	public ASField() => Type = $"{Constants.SchemaNs}#PropertyValue";
-
 	[J($"{Constants.ActivityStreamsNs}#name")] [JC(typeof(ValueObjectConverter))]
 	public string? Name;
 
 	[J($"{Constants.SchemaNs}#value")] [JC(typeof(ValueObjectConverter))]
 	public string? Value;
+
+	public ASField() => Type = $"{Constants.SchemaNs}#PropertyValue";
 }
 
 public sealed class ASAttachmentConverter : JsonConverter

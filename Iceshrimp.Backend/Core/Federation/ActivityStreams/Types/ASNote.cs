@@ -42,7 +42,7 @@ public class ASNote : ASObject
 	[J($"{Constants.ActivityStreamsNs}#summary")]
 	[JC(typeof(VC))]
 	public string? Summary { get; set; }
-	
+
 	[J($"{Constants.ActivityStreamsNs}#name")]
 	[JC(typeof(VC))]
 	public string? Name { get; set; }
@@ -94,13 +94,13 @@ public class ASNote : ASObject
 	{
 		if (actor.Host == null) throw new Exception("Can't get recipients for local actor");
 		return (To ?? []).Concat(Cc ?? [])
-		         .Select(p => p.Id)
-		         .Distinct()
-		         .Where(p => p != $"{Constants.ActivityStreamsNs}#Public" &&
-		                     p != (actor.FollowersUri ?? actor.Uri + "/followers"))
-		         .Where(p => p != null)
-		         .Select(p => p!)
-		         .ToList();
+		                 .Select(p => p.Id)
+		                 .Distinct()
+		                 .Where(p => p != $"{Constants.ActivityStreamsNs}#Public" &&
+		                             p != (actor.FollowersUri ?? actor.Uri + "/followers"))
+		                 .Where(p => p != null)
+		                 .Select(p => p!)
+		                 .ToList();
 	}
 
 	public new static class Types

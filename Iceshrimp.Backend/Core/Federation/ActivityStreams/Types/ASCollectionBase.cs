@@ -7,6 +7,8 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASCollectionBase : ASObjectBase
 {
+	public const string ObjectType = $"{Constants.ActivityStreamsNs}#Collection";
+
 	[J("@type")]
 	[JC(typeof(StringListSingleConverter))]
 	public string Type => ObjectType;
@@ -14,8 +16,6 @@ public class ASCollectionBase : ASObjectBase
 	[J($"{Constants.ActivityStreamsNs}#totalItems")]
 	[JC(typeof(VC))]
 	public ulong? TotalItems { get; set; }
-
-	public const string ObjectType = $"{Constants.ActivityStreamsNs}#Collection";
 }
 
 public sealed class ASCollectionBaseConverter : ASSerializer.ListSingleObjectConverter<ASCollectionBase>;

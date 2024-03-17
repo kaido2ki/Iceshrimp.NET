@@ -34,7 +34,7 @@ public class UserController(
 
 		return Ok(await userRenderer.RenderOne(await userResolver.GetUpdatedUser(user)));
 	}
-	
+
 	[HttpGet("profile")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserProfileResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]

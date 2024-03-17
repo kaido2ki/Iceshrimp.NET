@@ -120,7 +120,7 @@ public class ASActor : ASObject
 	[J($"{Constants.ActivityStreamsNs}#tag")]
 	[JC(typeof(ASTagConverter))]
 	public List<ASTag>? Tags { get; set; }
-	
+
 	[J($"{Constants.ActivityStreamsNs}#attachment")]
 	[JC(typeof(ASAttachmentConverter))]
 	public List<ASAttachment>? Attachments { get; set; }

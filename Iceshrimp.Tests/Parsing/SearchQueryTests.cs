@@ -16,7 +16,8 @@ public class SearchQueryTests
 	}
 
 	[TestMethod]
-	[DataRow(false), DataRow(true)]
+	[DataRow(false)]
+	[DataRow(true)]
 	public void TestParseFrom(bool negated)
 	{
 		List<string> candidates = ["from", "author", "by", "user"];
@@ -27,7 +28,8 @@ public class SearchQueryTests
 	}
 
 	[TestMethod]
-	[DataRow(false), DataRow(true)]
+	[DataRow(false)]
+	[DataRow(true)]
 	public void TestParseMention(bool negated)
 	{
 		List<string> candidates = ["mention", "mentions", "mentioning"];
@@ -38,7 +40,8 @@ public class SearchQueryTests
 	}
 
 	[TestMethod]
-	[DataRow(false), DataRow(true)]
+	[DataRow(false)]
+	[DataRow(true)]
 	public void TestParseReply(bool negated)
 	{
 		List<string> candidates = ["reply", "replying", "to"];
@@ -49,7 +52,8 @@ public class SearchQueryTests
 	}
 
 	[TestMethod]
-	[DataRow(false), DataRow(true)]
+	[DataRow(false)]
+	[DataRow(true)]
 	public void TestParseInstance(bool negated)
 	{
 		List<string> candidates = ["instance", "domain", "host"];
@@ -78,7 +82,8 @@ public class SearchQueryTests
 	}
 
 	[TestMethod]
-	[DataRow(false), DataRow(true)]
+	[DataRow(false)]
+	[DataRow(true)]
 	public void TestParseAttachment(bool negated)
 	{
 		List<string> keyCandidates = ["has", "attachment", "attached"];
@@ -127,7 +132,8 @@ public class SearchQueryTests
 	}
 
 	[TestMethod]
-	[DataRow(false), DataRow(true)]
+	[DataRow(false)]
+	[DataRow(true)]
 	public void TestParseIn(bool negated)
 	{
 		var          key        = negated ? "-in" : "in";
@@ -147,7 +153,8 @@ public class SearchQueryTests
 	}
 
 	[TestMethod]
-	[DataRow(false), DataRow(true)]
+	[DataRow(false)]
+	[DataRow(true)]
 	public void TestParseMisc(bool negated)
 	{
 		var key = negated ? "-filter" : "filter";
@@ -165,7 +172,7 @@ public class SearchQueryTests
 			new MiscFilter(negated, "renotes"),
 			new MiscFilter(negated, "renotes"),
 			new MiscFilter(negated, "renotes"),
-			new MiscFilter(negated, "renotes"),
+			new MiscFilter(negated, "renotes")
 		];
 		results.Should()
 		       .HaveCount(expectedResults.Count)
@@ -173,7 +180,8 @@ public class SearchQueryTests
 	}
 
 	[TestMethod]
-	[DataRow(false), DataRow(true)]
+	[DataRow(false)]
+	[DataRow(true)]
 	public void TestParseWord(bool negated)
 	{
 		List<string> candidates = ["test", "word", "since:2023-10-10invalid", "in:bookmarkstypo"];

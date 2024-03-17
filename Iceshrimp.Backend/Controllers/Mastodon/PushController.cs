@@ -165,7 +165,7 @@ public class PushController(DatabaseContext db, MetaService meta) : ControllerBa
 				Status        = sub.Types.Contains("status"),
 				Update        = sub.Types.Contains("update"),
 				FollowRequest = sub.Types.Contains("follow_request")
-			},
+			}
 		};
 	}
 }

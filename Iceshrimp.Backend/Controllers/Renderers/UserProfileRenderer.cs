@@ -36,7 +36,7 @@ public class UserProfileRenderer(DatabaseContext db)
 			Fields    = user.UserProfile?.Fields,
 			Location  = user.UserProfile?.Location,
 			Followers = followers,
-			Following = following,
+			Following = following
 		};
 	}
 

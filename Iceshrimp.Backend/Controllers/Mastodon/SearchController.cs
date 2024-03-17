@@ -209,7 +209,7 @@ public class SearchController(
 		               {
 			               Name      = p.Name,
 			               Url       = $"https://{config.Value.WebDomain}/tags/{p.Name}",
-			               Following = false, //TODO
+			               Following = false //TODO
 		               })
 		               .ToListAsync();
 	}

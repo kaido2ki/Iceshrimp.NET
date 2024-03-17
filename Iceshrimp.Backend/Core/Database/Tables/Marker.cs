@@ -11,13 +11,16 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [PrimaryKey("UserId", "Type")]
 public class Marker
 {
-	[Column("userId")]
-	[StringLength(32)]
-	public string UserId { get; set; } = null!;
+	[PgName("marker_type_enum")]
+	public enum MarkerType
+	{
+		[PgName("home")]          Home,
+		[PgName("notifications")] Notifications
+	}
 
-	[Column("type")]
-	[StringLength(32)]
-	public MarkerType Type { get; set; }
+	[Column("userId")] [StringLength(32)] public string UserId { get; set; } = null!;
+
+	[Column("type")] [StringLength(32)] public MarkerType Type { get; set; }
 
 	[Column("position")]
 	[StringLength(32)]
@@ -30,11 +33,4 @@ public class Marker
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.Markers))]
 	public virtual User User { get; set; } = null!;
-
-	[PgName("marker_type_enum")]
-	public enum MarkerType
-	{
-		[PgName("home")]          Home,
-		[PgName("notifications")] Notifications
-	}
 }

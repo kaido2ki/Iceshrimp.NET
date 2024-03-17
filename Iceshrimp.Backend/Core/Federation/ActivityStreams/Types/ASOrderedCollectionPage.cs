@@ -10,9 +10,11 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASOrderedCollectionPage : ASObject
 {
+	public const string ObjectType = $"{Constants.ActivityStreamsNs}#OrderedCollectionPage";
+
 	[JsonConstructor]
 	public ASOrderedCollectionPage(bool withType = true) => Type = withType ? ObjectType : null;
-	
+
 	[SetsRequiredMembers]
 	public ASOrderedCollectionPage(string id, bool withType = false) : this(withType) => Id = id;
 
@@ -35,8 +37,6 @@ public class ASOrderedCollectionPage : ASObject
 	[J($"{Constants.ActivityStreamsNs}#next")]
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? Next { get; set; }
-
-	public const string ObjectType = $"{Constants.ActivityStreamsNs}#OrderedCollectionPage";
 }
 
 public sealed class ASOrderedCollectionPageConverter : JsonConverter

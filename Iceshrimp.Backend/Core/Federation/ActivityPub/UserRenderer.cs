@@ -79,7 +79,9 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			Endpoints = new ASEndpoints { SharedInbox = new ASObjectBase($"https://{config.Value.WebDomain}/inbox") },
 			PublicKey = new ASPublicKey
 			{
-				Id = $"{id}#main-key", Owner = new ASObjectBase(id), PublicKey = keypair.PublicKey
+				Id        = $"{id}#main-key",
+				Owner     = new ASObjectBase(id),
+				PublicKey = keypair.PublicKey
 			},
 			Tags = tags
 		};

@@ -71,7 +71,7 @@ public class InstanceController(DatabaseContext db) : ControllerBase
 
 		return Ok(res);
 	}
-	
+
 	[HttpGet("/api/v1/instance/translation_languages")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Dictionary<string, IEnumerable<string>>))]
 	public IActionResult GetTranslationLanguages()

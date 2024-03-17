@@ -10,6 +10,8 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASCollection : ASObject
 {
+	public const string ObjectType = $"{Constants.ActivityStreamsNs}#Collection";
+
 	[JsonConstructor]
 	public ASCollection(bool withType = true) => Type = withType ? ObjectType : null;
 
@@ -37,8 +39,6 @@ public class ASCollection : ASObject
 	public ASLink? Last { get; set; }
 
 	public new bool IsUnresolved => !TotalItems.HasValue;
-
-	public const string ObjectType = $"{Constants.ActivityStreamsNs}#Collection";
 }
 
 public sealed class ASCollectionConverter : JsonConverter

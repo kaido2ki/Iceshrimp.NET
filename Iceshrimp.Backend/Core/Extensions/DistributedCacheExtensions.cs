@@ -124,7 +124,7 @@ public static class DistributedCacheExtensions
 		if (res != null) return;
 		await SetAsync(cache, key, fetcher(), type, ttl, renew);
 	}
-	
+
 	public static async Task CacheAsync(
 		this IDistributedCache cache, string key, TimeSpan ttl, object? value, Type type, bool renew = false
 	)

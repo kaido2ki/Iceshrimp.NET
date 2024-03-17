@@ -16,8 +16,11 @@ public class PushSubscription
 		[PgName("all")]      All,
 		[PgName("followed")] Followed,
 		[PgName("follower")] Follower,
-		[PgName("none")]     None,
+		[PgName("none")]     None
 	}
+
+	[Column("types", TypeName = "character varying(32)[]")]
+	public List<string> Types = null!;
 
 	[Key]
 	[Column("id")]
@@ -41,9 +44,6 @@ public class PushSubscription
 	[Column("publickey")]
 	[StringLength(128)]
 	public string PublicKey { get; set; } = null!;
-
-	[Column("types", TypeName = "character varying(32)[]")]
-	public List<string> Types = null!;
 
 	[Column("policy")] public PushPolicy Policy { get; set; }
 

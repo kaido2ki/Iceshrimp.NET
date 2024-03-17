@@ -306,7 +306,9 @@ internal class MentionNodeParser : INodeParser
 
 		var node = new MfmMentionNode
 		{
-			Username = split[0], Host = split.Length == 2 ? split[1] : null, Acct = $"@{buffer[start..end]}"
+			Username = split[0],
+			Host     = split.Length == 2 ? split[1] : null,
+			Acct     = $"@{buffer[start..end]}"
 		};
 
 		return (node, chars);

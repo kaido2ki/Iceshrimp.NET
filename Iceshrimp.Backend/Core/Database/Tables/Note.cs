@@ -241,9 +241,6 @@ public class Note : IEntity
 	public string RawAttachments
 		=> InternalRawAttachments(Id);
 
-	public static string InternalRawAttachments(string id)
-		=> throw new NotSupportedException();
-
 	[NotMapped] [Projectable] public bool IsPureRenote => (RenoteId != null || Renote != null) && !IsQuote;
 
 	[NotMapped]
@@ -264,6 +261,9 @@ public class Note : IEntity
 	[Column("id")]
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
+
+	public static string InternalRawAttachments(string id)
+		=> throw new NotSupportedException();
 
 	[Projectable]
 	public bool TextContainsCaseInsensitive(string str) =>

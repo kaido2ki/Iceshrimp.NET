@@ -6,11 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="SearchQuery.fs" />
+        <Compile Include="SearchQuery.fs"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="FParsec" Version="1.1.1" />
+        <PackageReference Include="FParsec" Version="1.1.1"/>
     </ItemGroup>
 
 </Project>

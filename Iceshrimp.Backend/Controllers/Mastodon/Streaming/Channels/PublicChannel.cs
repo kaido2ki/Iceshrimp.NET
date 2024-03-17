@@ -12,12 +12,12 @@ public class PublicChannel(
 	bool onlyMedia
 ) : IChannel
 {
+	public readonly ILogger<PublicChannel> Logger =
+		connection.ScopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<PublicChannel>>();
+
 	public string       Name         => name;
 	public List<string> Scopes       => ["read:statuses"];
 	public bool         IsSubscribed { get; private set; }
-	
-	public readonly ILogger<PublicChannel> Logger =
-		connection.ScopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<PublicChannel>>();
 
 	public Task Subscribe(StreamingRequestMessage _)
 	{
@@ -65,7 +65,9 @@ public class PublicChannel(
 			var rendered = await renderer.RenderAsync(note, connection.Token.User);
 			var message = new StreamingUpdateMessage
 			{
-				Stream = [Name], Event = "update", Payload = JsonSerializer.Serialize(rendered)
+				Stream  = [Name],
+				Event   = "update",
+				Payload = JsonSerializer.Serialize(rendered)
 			};
 			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
 		}
@@ -85,7 +87,9 @@ public class PublicChannel(
 			var rendered = await renderer.RenderAsync(note, connection.Token.User);
 			var message = new StreamingUpdateMessage
 			{
-				Stream = [Name], Event = "status.update", Payload = JsonSerializer.Serialize(rendered)
+				Stream  = [Name],
+				Event   = "status.update",
+				Payload = JsonSerializer.Serialize(rendered)
 			};
 			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
 		}
@@ -100,7 +104,12 @@ public class PublicChannel(
 		try
 		{
 			if (!IsApplicable(note)) return;
-			var message = new StreamingUpdateMessage { Stream = [Name], Event = "delete", Payload = note.Id };
+			var message = new StreamingUpdateMessage
+			{
+				Stream  = [Name],
+				Event   = "delete",
+				Payload = note.Id
+			};
 			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
 		}
 		catch (Exception e)

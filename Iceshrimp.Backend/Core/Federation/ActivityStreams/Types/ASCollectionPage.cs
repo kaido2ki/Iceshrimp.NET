@@ -10,6 +10,8 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASCollectionPage : ASObject
 {
+	public const string ObjectType = $"{Constants.ActivityStreamsNs}#CollectionPage";
+
 	[JsonConstructor]
 	public ASCollectionPage(bool withType = true) => Type = withType ? ObjectType : null;
 
@@ -35,8 +37,6 @@ public class ASCollectionPage : ASObject
 	[J($"{Constants.ActivityStreamsNs}#next")]
 	[JC(typeof(ASLinkConverter))]
 	public ASLink? Next { get; set; }
-
-	public const string ObjectType = $"{Constants.ActivityStreamsNs}#CollectionPage";
 }
 
 public sealed class ASCollectionPageConverter : JsonConverter

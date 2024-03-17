@@ -73,7 +73,7 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 			                                                      i.Reaction == p.First().Reaction &&
 			                                                      i.User == user),
 			                  Name = p.First().Reaction,
-			                  Url  = null,
+			                  Url  = null
 		                  })
 		                  .ToListAsync();
 
@@ -102,8 +102,8 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 
 	public class NoteRendererDto
 	{
-		public List<UserResponse>?       Users;
 		public List<NoteAttachment>?     Attachments;
 		public List<NoteReactionSchema>? Reactions;
+		public List<UserResponse>?       Users;
 	}
 }

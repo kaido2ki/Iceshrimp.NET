@@ -146,11 +146,11 @@ public abstract class BackgroundTaskQueue
 	)
 	{
 		var db   = scope.GetRequiredService<DatabaseContext>();
-		var poll = await db.Polls.FirstOrDefaultAsync(p => p.NoteId == job.NoteId, cancellationToken: token);
+		var poll = await db.Polls.FirstOrDefaultAsync(p => p.NoteId == job.NoteId, token);
 		if (poll == null) return;
 		if (poll.ExpiresAt > DateTime.UtcNow + TimeSpan.FromSeconds(30)) return;
 		var note = await db.Notes.IncludeCommonProperties()
-		                   .FirstOrDefaultAsync(p => p.Id == poll.NoteId, cancellationToken: token);
+		                   .FirstOrDefaultAsync(p => p.Id == poll.NoteId, token);
 		if (note == null) return;
 
 		var notificationSvc = scope.GetRequiredService<NotificationService>();
@@ -159,7 +159,7 @@ public abstract class BackgroundTaskQueue
 		{
 			var voters = await db.PollVotes.Where(p => p.Note == note && p.User.Host != null)
 			                     .Select(p => p.User)
-			                     .ToListAsync(cancellationToken: token);
+			                     .ToListAsync(token);
 
 			if (voters.Count == 0) return;
 

@@ -90,7 +90,7 @@ public class InboxValidationMiddleware(
 						if (user == null) throw AuthFetchException.NotFound("Delete activity actor is unknown");
 						key = await db.UserPublickeys.Include(p => p.User)
 						              .FirstOrDefaultAsync(p => p.User == user, ct);
-						
+
 						// If the key is still null here, we have a data consistency issue and need to update the key manually
 						key ??= await userSvc.UpdateUserPublicKeyAsync(user).WaitAsync(ct);
 					}

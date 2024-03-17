@@ -7,10 +7,9 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASQuestion : ASNote
 {
-	public ASQuestion() => Type = Types.Question;
-
 	private List<ASQuestionOption>? _anyOf;
 	private List<ASQuestionOption>? _oneOf;
+	public ASQuestion() => Type = Types.Question;
 
 	[J($"{Constants.ActivityStreamsNs}#oneOf")]
 	public List<ASQuestionOption>? OneOf

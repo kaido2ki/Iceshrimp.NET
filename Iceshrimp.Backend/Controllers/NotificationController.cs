@@ -3,10 +3,8 @@ using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
-using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
-using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +12,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
-[Authenticate, Authorize]
+[Authenticate]
+[Authorize]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/notification")]
 [Produces(MediaTypeNames.Application.Json)]
@@ -67,7 +66,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 
 		return Ok(new object());
 	}
-	
+
 	[HttpDelete("{id}")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]

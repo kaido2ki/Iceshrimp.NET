@@ -9,6 +9,8 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASOrderedCollection : ASCollection
 {
+	public new const string ObjectType = $"{Constants.ActivityStreamsNs}#OrderedCollection";
+
 	[JsonConstructor]
 	public ASOrderedCollection(bool withType = true) => Type = withType ? ObjectType : null;
 
@@ -22,8 +24,6 @@ public class ASOrderedCollection : ASCollection
 		get => base.Items;
 		set => base.Items = value;
 	}
-
-	public new const string ObjectType = $"{Constants.ActivityStreamsNs}#OrderedCollection";
 }
 
 internal sealed class ASOrderedCollectionItemsConverter : ASCollectionItemsConverter

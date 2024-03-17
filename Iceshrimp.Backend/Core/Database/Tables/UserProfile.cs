@@ -20,6 +20,8 @@ public class UserProfile
 		[PgName("private")]   Private
 	}
 
+	[Column("mentionsResolved")] public bool MentionsResolved;
+
 	[Key]
 	[Column("userId")]
 	[StringLength(32)]
@@ -175,9 +177,6 @@ public class UserProfile
 	[ForeignKey("UserId")]
 	[InverseProperty(nameof(Tables.User.UserProfile))]
 	public virtual User User { get; set; } = null!;
-
-	[Column("mentionsResolved")]
-	public bool MentionsResolved;
 
 	public class Field
 	{

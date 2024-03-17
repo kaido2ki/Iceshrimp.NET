@@ -324,7 +324,7 @@ public class StatusController(
 			{
 				Choices   = request.Poll.Options,
 				Multiple  = request.Poll.Multiple,
-				ExpiresAt = DateTime.UtcNow + TimeSpan.FromSeconds(request.Poll.ExpiresIn),
+				ExpiresAt = DateTime.UtcNow + TimeSpan.FromSeconds(request.Poll.ExpiresIn)
 			}
 			: null;
 
@@ -465,7 +465,12 @@ public class StatusController(
 	{
 		var user = HttpContext.GetUserOrFail();
 		var res = await db.Notes.Where(p => p.Id == id && p.User == user)
-		                  .Select(p => new StatusSource { Id = p.Id, ContentWarning = p.Cw ?? "", Text = p.Text ?? "" })
+		                  .Select(p => new StatusSource
+		                  {
+			                  Id             = p.Id,
+			                  ContentWarning = p.Cw ?? "",
+			                  Text           = p.Text ?? ""
+		                  })
 		                  .FirstOrDefaultAsync() ??
 		          throw GracefulException.RecordNotFound();
 

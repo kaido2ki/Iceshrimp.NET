@@ -5,7 +5,6 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 public class PollEntity : IEntity
 {
-	[J("id")]           public required string  Id          { get; set; }
 	[J("expires_at")]   public required string? ExpiresAt   { get; set; }
 	[J("expired")]      public required bool    Expired     { get; set; }
 	[J("multiple")]     public required bool    Multiple    { get; set; }
@@ -16,6 +15,7 @@ public class PollEntity : IEntity
 
 	[J("options")] public required List<PollOptionEntity> Options { get; set; }
 	[J("emojis")]  public          List<EmojiEntity>      Emoji   => []; //TODO
+	[J("id")]      public required string                 Id      { get; set; }
 }
 
 public class PollOptionEntity
