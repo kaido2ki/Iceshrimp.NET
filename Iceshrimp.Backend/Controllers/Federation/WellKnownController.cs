@@ -1,7 +1,7 @@
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using System.Xml.Serialization;
-using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Federation.Schemas;
 using Iceshrimp.Backend.Controllers.Schemas;
@@ -106,10 +106,18 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 	}
 
 	[HttpGet("host-meta")]
-	[Produces("application/xrd+xml", "application/xml")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+	[Produces("application/xrd+xml", "application/jrd+json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(HostMetaJsonResponse))]
 	public IActionResult HostMeta()
 	{
+		var accept = Request.Headers.Accept.OfType<string>()
+		                    .Select(MediaTypeWithQualityHeaderValue.Parse)
+		                    .Select(p => p.MediaType)
+		                    .ToList();
+
+		if (accept.Contains("application/jrd+json") || accept.Contains("application/json"))
+			return HostMetaJson();
+
 		var obj        = new HostMetaXmlResponse(config.Value.WebDomain);
 		var serializer = new XmlSerializer(obj.GetType());
 		var writer     = new Utf8StringWriter();
@@ -118,16 +126,9 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 		return Content(writer.ToString(), "application/xrd+xml");
 	}
 
-	[HttpGet("host-meta")]
-	[Produces("application/jrd+json")]
-	[MediaTypeRouteFilter("application/jrd+json", "application/json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-	public IActionResult HostMetaJsonFallback()
-		=> HostMetaJson();
-
 	[HttpGet("host-meta.json")]
 	[Produces("application/jrd+json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(HostMetaJsonResponse))]
 	public IActionResult HostMetaJson()
 	{
 		return Ok(new HostMetaJsonResponse(config.Value.WebDomain));
