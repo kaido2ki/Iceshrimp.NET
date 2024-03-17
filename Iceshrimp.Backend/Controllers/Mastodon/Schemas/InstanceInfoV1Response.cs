@@ -1,18 +1,31 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Extensions;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
-public class InstanceInfoV1Response(Config config)
+public class InstanceInfoV1Response(
+	Config config,
+	string? instanceName,
+	string? instanceDescription,
+	string? adminContact
+)
 {
 	[J("stats")]   public required InstanceStats Stats;
 	[J("version")] public          string Version => $"4.2.1 (compatible; Iceshrimp.NET/{config.Instance.Version})";
 
-	[J("max_toot_chars")]    public int    MaxNoteChars     => config.Instance.CharacterLimit;
-	[J("uri")]               public string AccountDomain    => config.Instance.AccountDomain;
-	[J("title")]             public string InstanceName     => config.Instance.AccountDomain;
-	[J("short_description")] public string ShortDescription => $"{config.Instance.AccountDomain} on Iceshrimp.NET";
-	[J("description")]       public string Description      => $"{config.Instance.AccountDomain} on Iceshrimp.NET";
+	[J("max_toot_chars")] public int    MaxNoteChars  => config.Instance.CharacterLimit;
+	[J("uri")]            public string AccountDomain => config.Instance.AccountDomain;
+	[J("title")]          public string InstanceName  => instanceName ?? config.Instance.AccountDomain;
+	[J("email")]          public string Email         => adminContact ?? "unset@example.org";
+
+	[J("short_description")]
+	public string ShortDescription => instanceDescription?.Truncate(140) ??
+	                                  "This Iceshrimp.NET instance does not appear to have a description";
+
+	[J("description")]
+	public string Description => instanceDescription ??
+	                             "This Iceshrimp.NET instance does not appear to have a description";
 
 	[J("registrations")]     public bool RegsOpen   => config.Security.Registrations == Enums.Registrations.Open;
 	[J("invites_enabled")]   public bool RegsInvite => config.Security.Registrations == Enums.Registrations.Invite;

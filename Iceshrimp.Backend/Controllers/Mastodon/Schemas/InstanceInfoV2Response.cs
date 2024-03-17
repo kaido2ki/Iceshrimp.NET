@@ -1,20 +1,30 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Extensions;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
-public class InstanceInfoV2Response(Config config)
+public class InstanceInfoV2Response(
+	Config config,
+	string? instanceName,
+	string? instanceDescription,
+	string? adminContact
+)
 {
-	[J("version")]     public string Version       => $"4.2.1 (compatible; Iceshrimp.NET/{config.Instance.Version})";
-	[J("source_url")]  public string SourceUrl     => "https://iceshrimp.dev/iceshrimp/iceshrimp.net";
-	[J("domain")]      public string AccountDomain => config.Instance.AccountDomain;
-	[J("title")]       public string InstanceName  => config.Instance.AccountDomain;
-	[J("description")] public string Description   => $"{config.Instance.AccountDomain} on Iceshrimp.NET";
+	[J("version")]    public string Version       => $"4.2.1 (compatible; Iceshrimp.NET/{config.Instance.Version})";
+	[J("source_url")] public string SourceUrl     => "https://iceshrimp.dev/iceshrimp/iceshrimp.net";
+	[J("domain")]     public string AccountDomain => config.Instance.AccountDomain;
+	[J("title")]      public string InstanceName  => instanceName ?? config.Instance.AccountDomain;
 
+	[J("description")]
+	public string Description => instanceDescription?.Truncate(140) ??
+	                             "This Iceshrimp.NET instance does not appear to have a description";
+
+	[J("contact")]       public InstanceContact         Contact       => new(adminContact);
 	[J("registrations")] public InstanceRegistrations   Registrations => new(config.Security);
 	[J("configuration")] public InstanceConfigurationV2 Configuration => new(config.Instance);
 
-	[J("usage")] public required InstanceUsage Usage { get; set; }
+	[J("usage")]   public required InstanceUsage   Usage   { get; set; }
 
 	//TODO: add the rest
 }
@@ -45,4 +55,9 @@ public class InstanceUsage
 public class InstanceUsersUsage
 {
 	[J("active_month")] public required long ActiveMonth { get; set; }
+}
+
+public class InstanceContact(string? adminContact)
+{
+	[J("email")] public string Email => adminContact ?? "unset@example.org";
 }

@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -16,7 +17,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
-public class InstanceController(DatabaseContext db) : ControllerBase
+public class InstanceController(DatabaseContext db, MetaService meta) : ControllerBase
 {
 	[HttpGet("/api/v1/instance")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InstanceInfoV1Response))]
@@ -24,11 +25,13 @@ public class InstanceController(DatabaseContext db) : ControllerBase
 	{
 		var userCount =
 			await db.Users.LongCountAsync(p => p.Host == null && !Constants.SystemUsers.Contains(p.UsernameLower));
-		var noteCount     = await db.Notes.LongCountAsync(p => p.UserHost == null);
-		var instanceCount = await db.Instances.LongCountAsync();
-		//TODO: admin contact
+		var noteCount           = await db.Notes.LongCountAsync(p => p.UserHost == null);
+		var instanceCount       = await db.Instances.LongCountAsync();
+		var instanceName        = await meta.Get(MetaEntity.InstanceName);
+		var instanceDescription = await meta.Get(MetaEntity.InstanceDescription);
+		var adminContact        = await meta.Get(MetaEntity.AdminContactEmail);
 
-		var res = new InstanceInfoV1Response(config.Value)
+		var res = new InstanceInfoV1Response(config.Value, instanceName, instanceDescription, adminContact)
 		{
 			Stats = new InstanceStats(userCount, noteCount, instanceCount)
 		};
@@ -44,9 +47,12 @@ public class InstanceController(DatabaseContext db) : ControllerBase
 		var activeMonth = await db.Users.LongCountAsync(p => p.Host == null &&
 		                                                     !Constants.SystemUsers.Contains(p.UsernameLower) &&
 		                                                     p.LastActiveDate > cutoff);
-		//TODO: admin contact
+		
+		var instanceName        = await meta.Get(MetaEntity.InstanceName);
+		var instanceDescription = await meta.Get(MetaEntity.InstanceDescription);
+		var adminContact        = await meta.Get(MetaEntity.AdminContactEmail);
 
-		var res = new InstanceInfoV2Response(config.Value)
+		var res = new InstanceInfoV2Response(config.Value, instanceName, instanceDescription, adminContact)
 		{
 			Usage = new InstanceUsage { Users = new InstanceUsersUsage { ActiveMonth = activeMonth } }
 		};
