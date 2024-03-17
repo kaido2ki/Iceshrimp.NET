@@ -170,6 +170,8 @@ public static class ServiceExtensions
 		services.AddEndpointsApiExplorer();
 		services.AddSwaggerGen(options =>
 		{
+			options.SupportNonNullableReferenceTypes();
+
 			options.SwaggerDoc("iceshrimp", new OpenApiInfo { Title  = "Iceshrimp.NET" });
 			options.SwaggerDoc("federation", new OpenApiInfo { Title = "Federation" });
 			options.SwaggerDoc("mastodon", new OpenApiInfo { Title   = "Mastodon" });
