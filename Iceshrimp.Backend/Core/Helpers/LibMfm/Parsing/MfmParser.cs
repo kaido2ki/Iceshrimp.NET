@@ -457,7 +457,7 @@ internal class SilentLinkNodeParser : INodeParser
 internal class EmojiCodeNodeParser : INodeParser
 {
 	private const           string Char = ":";
-	private static readonly Regex  Full = new("^[a-z0-9_+-]+$");
+	private static readonly Regex  Full = new("^[^.@\\s]+$");
 
 	public bool IsValid(string buffer, int position)
 	{
