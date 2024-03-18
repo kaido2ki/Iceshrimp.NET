@@ -280,12 +280,14 @@ public class Note : IEntity
 	                                                 (Visibility == NoteVisibility.Followers &&
 	                                                  (User.IsFollowedBy(user) || ReplyUserId == user.Id));
 
-	public Note WithPrecomputedVisibilities(bool reply, bool renote)
+	public Note WithPrecomputedVisibilities(bool reply, bool renote, bool renoteRenote)
 	{
 		if (Reply != null)
 			PrecomputedIsReplyVisible = reply;
 		if (Renote != null)
 			PrecomputedIsRenoteVisible = renote;
+		if (Renote?.Renote != null)
+			Renote.PrecomputedIsRenoteVisible = renoteRenote;
 
 		return this;
 	}

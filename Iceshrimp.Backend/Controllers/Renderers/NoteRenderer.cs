@@ -11,6 +11,38 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 {
 	public async Task<NoteResponse> RenderOne(Note note, User? localUser, NoteRendererDto? data = null)
 	{
+		var res = await RenderBaseInternal(note, localUser, data);
+
+		var renote = note.Renote is { IsPureRenote: true } ? await RenderRenote(note.Renote, localUser, data) : null;
+		var quote  = note.Renote is { IsPureRenote: false } ? await RenderBase(note.Renote, localUser, data) : null;
+		var reply  = note.Reply != null ? await RenderBase(note.Reply, localUser, data) : null;
+
+		res.Renote   = renote;
+		res.RenoteId = note.RenoteId;
+		res.Quote    = quote;
+		res.QuoteId  = note.RenoteId;
+		res.Reply    = reply;
+		res.ReplyId  = note.ReplyId;
+
+		return res;
+	}
+
+	private async Task<NoteWithQuote> RenderRenote(Note note, User? localUser, NoteRendererDto? data = null)
+	{
+		var res   = await RenderBaseInternal(note, localUser, data);
+		var quote = note.Renote is { IsPureRenote: false } ? await RenderBase(note.Renote, localUser, data) : null;
+
+		res.Quote   = quote;
+		res.QuoteId = note.RenoteId;
+
+		return res;
+	}
+
+	private async Task<NoteBase> RenderBase(Note note, User? localUser, NoteRendererDto? data = null)
+		=> await RenderBaseInternal(note, localUser, data);
+
+	private async Task<NoteResponse> RenderBaseInternal(Note note, User? localUser, NoteRendererDto? data = null)
+	{
 		var user        = (data?.Users ?? await GetUsers([note])).First(p => p.Id == note.User.Id);
 		var attachments = (data?.Attachments ?? await GetAttachments([note])).Where(p => note.FileIds.Contains(p.Id));
 		var reactions   = (data?.Reactions ?? await GetReactions([note], localUser)).Where(p => p.NoteId == note.Id);
@@ -87,14 +119,23 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 		return res;
 	}
 
+	private static List<Note> GetAllNotes(IEnumerable<Note> notes)
+	{
+		return notes.SelectMany<Note, Note?>(p => [p, p.Reply, p.Renote, p.Renote?.Renote])
+		            .OfType<Note>()
+		            .Distinct()
+		            .ToList();
+	}
+
 	public async Task<IEnumerable<NoteResponse>> RenderMany(IEnumerable<Note> notes, User? user)
 	{
 		var notesList = notes.ToList();
+		var allNotes  = GetAllNotes(notesList);
 		var data = new NoteRendererDto
 		{
-			Users       = await GetUsers(notesList),
-			Attachments = await GetAttachments(notesList),
-			Reactions   = await GetReactions(notesList, user)
+			Users       = await GetUsers(allNotes),
+			Attachments = await GetAttachments(allNotes),
+			Reactions   = await GetReactions(allNotes, user)
 		};
 
 		return await notesList.Select(p => RenderOne(p, user, data)).AwaitAllAsync();

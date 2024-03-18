@@ -3,16 +3,18 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Schemas;
 
-public class NoteResponse : NoteBase
+public class NoteResponse : NoteWithQuote
 {
-	[J("reply")]  public NoteBase?   Reply  { get; set; }
-	[J("renote")] public NoteRenote? Renote { get; set; }
-	[J("quote")]  public NoteBase?   Quote  { get; set; }
+	[J("reply")]    public NoteBase?      Reply    { get; set; }
+	[J("replyId")]  public string?        ReplyId  { get; set; }
+	[J("renote")]   public NoteWithQuote? Renote   { get; set; }
+	[J("renoteId")] public string?        RenoteId { get; set; }
 }
 
-public class NoteRenote : NoteBase
+public class NoteWithQuote : NoteBase
 {
-	[J("quote")] public NoteBase? Quote { get; set; }
+	[J("quote")]   public NoteBase? Quote   { get; set; }
+	[J("quoteId")] public string?   QuoteId { get; set; }
 }
 
 public class NoteBase

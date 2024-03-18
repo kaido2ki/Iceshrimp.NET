@@ -225,7 +225,10 @@ public static class QueryableExtensions
 	{
 		return query.Select(p => p.WithPrecomputedVisibilities(p.Reply != null && p.Reply.IsVisibleFor(user),
 		                                                       p.Renote != null &&
-		                                                       p.Renote.IsVisibleFor(user)));
+		                                                       p.Renote.IsVisibleFor(user),
+		                                                       p.Renote != null &&
+		                                                       p.Renote.Renote != null &&
+		                                                       p.Renote.Renote.IsVisibleFor(user)));
 	}
 
 	public static IQueryable<Notification> PrecomputeNoteVisibilities(this IQueryable<Notification> query, User user)
@@ -235,7 +238,11 @@ public static class QueryableExtensions
 		                                                           p.Note.Reply.IsVisibleFor(user),
 		                                                           p.Note != null &&
 		                                                           p.Note.Renote != null &&
-		                                                           p.Note.Renote.IsVisibleFor(user)));
+		                                                           p.Note.Renote.IsVisibleFor(user),
+		                                                           p.Note != null &&
+		                                                           p.Note.Renote != null &&
+		                                                           p.Note.Renote.Renote != null &&
+		                                                           p.Note.Renote.Renote.IsVisibleFor(user)));
 	}
 
 	public static IQueryable<User> PrecomputeRelationshipData(this IQueryable<User> query, User user)
@@ -251,6 +258,10 @@ public static class QueryableExtensions
 		return query.Where(note => !note.User.IsBlocking(user) && !note.User.IsBlockedBy(user))
 		            .Where(note => note.Renote == null ||
 		                           (!note.Renote.User.IsBlockedBy(user) && !note.Renote.User.IsBlocking(user)))
+		            .Where(note => note.Renote == null ||
+		                           note.Renote.Renote == null ||
+		                           (!note.Renote.Renote.User.IsBlockedBy(user) &&
+		                            !note.Renote.Renote.User.IsBlocking(user)))
 		            .Where(note => note.Reply == null ||
 		                           (!note.Reply.User.IsBlockedBy(user) && !note.Reply.User.IsBlocking(user)));
 	}
@@ -275,6 +286,10 @@ public static class QueryableExtensions
 		                                              (note.Renote == null ||
 		                                               (!note.Renote.User.IsBlockedBy(user) &&
 		                                                !note.Renote.User.IsBlocking(user))) &&
+		                                              (note.Renote == null ||
+		                                               note.Renote.Renote == null ||
+		                                               (!note.Renote.Renote.User.IsBlockedBy(user) &&
+		                                                !note.Renote.Renote.User.IsBlocking(user))) &&
 		                                              (note.Reply == null ||
 		                                               (!note.Reply.User.IsBlockedBy(user) &&
 		                                                !note.Reply.User.IsBlocking(user))))));
@@ -286,6 +301,9 @@ public static class QueryableExtensions
 
 		return query.Where(note => !note.User.IsMuting(user))
 		            .Where(note => note.Renote == null || !note.Renote.User.IsMuting(user))
+		            .Where(note => note.Renote == null ||
+		                           note.Renote.Renote == null ||
+		                           !note.Renote.Renote.User.IsMuting(user))
 		            .Where(note => note.Reply == null || !note.Reply.User.IsMuting(user));
 	}
 
@@ -315,6 +333,8 @@ public static class QueryableExtensions
 			note.Reply = null;
 		if (!(note.PrecomputedIsRenoteVisible ?? false))
 			note.Renote = null;
+		if (note.Renote?.Renote != null && !(note.Renote.PrecomputedIsRenoteVisible ?? false))
+			note.Renote.Renote = null;
 
 		return note;
 	}
@@ -332,6 +352,8 @@ public static class QueryableExtensions
 			note.Reply = null;
 		if (!(note.PrecomputedIsRenoteVisible ?? false))
 			note.Renote = null;
+		if (note.Renote?.Renote != null && !(note.Renote.PrecomputedIsRenoteVisible ?? false))
+			note.Renote.Renote = null;
 
 		return source;
 	}
@@ -444,6 +466,7 @@ public static class QueryableExtensions
 	{
 		return query.Include(p => p.User.UserProfile)
 		            .Include(p => p.Renote.User.UserProfile)
+		            .Include(p => p.Renote.Renote.User.UserProfile)
 		            .Include(p => p.Reply.User.UserProfile);
 	}
 

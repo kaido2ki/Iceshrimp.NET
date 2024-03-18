@@ -126,9 +126,9 @@ public class Notification : IEntity
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
 
-	public Notification WithPrecomputedNoteVisibilities(bool reply, bool renote)
+	public Notification WithPrecomputedNoteVisibilities(bool reply, bool renote, bool renoteRenote)
 	{
-		Note = Note?.WithPrecomputedVisibilities(reply, renote);
+		Note = Note?.WithPrecomputedVisibilities(reply, renote, renoteRenote);
 		return this;
 	}
 }
