@@ -1,6 +1,7 @@
 ﻿namespace Iceshrimp.Parsing
 
 open System
+open System.Runtime.InteropServices.JavaScript
 open FParsec
 
 module SearchQueryFilters =
@@ -247,6 +248,7 @@ module private SearchQueryParser =
 module SearchQuery =
     open SearchQueryParser
 
+    [<JSExport>]
     let parse str =
         match run parse str with
         | Success(result, _, _) -> result
