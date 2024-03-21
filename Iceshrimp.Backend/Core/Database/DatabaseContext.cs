@@ -1280,14 +1280,9 @@ public class DesignTimeDatabaseContextFactory : IDesignTimeDbContextFactory<Data
 {
 	DatabaseContext IDesignTimeDbContextFactory<DatabaseContext>.CreateDbContext(string[] args)
 	{
-		var configuration = new ConfigurationBuilder()
-		                    .SetBasePath(Directory.GetCurrentDirectory())
-		                    .AddCustomConfiguration()
-		                    .Build();
-
-		var config     = configuration.GetSection("Database").Get<Config.DatabaseSection>();
-		var dataSource = DatabaseContext.GetDataSource(config);
-		var builder    = new DbContextOptionsBuilder<DatabaseContext>();
+		var npgsqlBuilder = new NpgsqlDataSourceBuilder { ConnectionStringBuilder = { Host = "localhost" } };
+		var dataSource    = DatabaseContext.ConfigureDataSource(npgsqlBuilder);
+		var builder       = new DbContextOptionsBuilder<DatabaseContext>();
 		DatabaseContext.Configure(builder, dataSource);
 		return new DatabaseContext(builder.Options);
 	}
