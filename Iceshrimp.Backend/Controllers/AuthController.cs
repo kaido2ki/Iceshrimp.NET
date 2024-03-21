@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
+using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -17,12 +18,12 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
 [Route("/api/iceshrimp/v1/auth")]
-public class AuthController(DatabaseContext db, UserService userSvc) : ControllerBase
+public class AuthController(DatabaseContext db, UserService userSvc, UserRenderer userRenderer) : ControllerBase
 {
 	[HttpGet]
 	[Authenticate]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
-	public IActionResult GetAuthStatus()
+	public async Task<IActionResult> GetAuthStatus()
 	{
 		var session = HttpContext.GetSession();
 
@@ -33,16 +34,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 		{
 			Status = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
 			Token  = session.Token,
-			User = new UserResponse
-			{
-				Username        = session.User.Username,
-				Id              = session.User.Id,
-				AvatarUrl       = session.User.AvatarUrl,
-				BannerUrl       = session.User.BannerUrl,
-				DisplayName     = session.User.DisplayName,
-				InstanceName    = null,
-				InstanceIconUrl = null
-			}
+			User   = await userRenderer.RenderOne(session.User)
 		});
 	}
 
@@ -86,16 +78,7 @@ public class AuthController(DatabaseContext db, UserService userSvc) : Controlle
 		{
 			Status = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
 			Token  = session.Token,
-			User = new UserResponse
-			{
-				Username        = session.User.Username,
-				Id              = session.User.Id,
-				AvatarUrl       = session.User.AvatarUrl,
-				BannerUrl       = session.User.BannerUrl,
-				DisplayName     = session.User.DisplayName,
-				InstanceName    = null,
-				InstanceIconUrl = null
-			}
+			User   = await userRenderer.RenderOne(user)
 		});
 	}
 

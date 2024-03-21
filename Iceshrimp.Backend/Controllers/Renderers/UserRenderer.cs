@@ -25,7 +25,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			Id              = user.Id,
 			Username        = user.Username,
 			DisplayName     = user.DisplayName,
-			AvatarUrl       = user.AvatarUrl ?? $"https://{config.Value.WebDomain}/identicon/{user.Id}",
+			AvatarUrl       = user.AvatarUrl ?? user.GetIdenticonUrl(config.Value),
 			BannerUrl       = user.BannerUrl,
 			InstanceName    = instanceName,
 			InstanceIconUrl = instanceIcon
