@@ -100,6 +100,11 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		dataSourceBuilder.ConnectionStringBuilder.Password = config.Password;
 		dataSourceBuilder.ConnectionStringBuilder.Database = config.Database;
 
+		return ConfigureDataSource(dataSourceBuilder);
+	}
+
+	public static NpgsqlDataSource ConfigureDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
+	{
 		dataSourceBuilder.MapEnum<Antenna.AntennaSource>();
 		dataSourceBuilder.MapEnum<Note.NoteVisibility>();
 		dataSourceBuilder.MapEnum<Notification.NotificationType>();
