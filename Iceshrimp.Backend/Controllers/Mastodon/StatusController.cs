@@ -296,7 +296,7 @@ public class StatusController(
 		var idempotencyKey = idempotencyKeyHeader.FirstOrDefault();
 		if (idempotencyKey != null)
 		{
-			var hit = await cache.FetchAsync($"idempotency:{idempotencyKey}", TimeSpan.FromHours(24),
+			var hit = await cache.FetchAsync($"idempotency:{user.Id}:{idempotencyKey}", TimeSpan.FromHours(24),
 			                                 () => $"_:{HttpContext.TraceIdentifier}");
 
 			if (hit != $"_:{HttpContext.TraceIdentifier}")
@@ -305,7 +305,7 @@ public class StatusController(
 				{
 					if (!hit.StartsWith('_')) break;
 					await Task.Delay(100);
-					hit = await cache.GetAsync<string>($"idempotency:{idempotencyKey}") ??
+					hit = await cache.GetAsync<string>($"idempotency:{user.Id}:{idempotencyKey}") ??
 					      throw new Exception("Idempotency key status disappeared in for loop");
 					if (i >= 10)
 						throw GracefulException.RequestTimeout("Failed to resolve idempotency key note within 1000 ms");
@@ -385,7 +385,7 @@ public class StatusController(
 		                                         poll, request.LocalOnly);
 
 		if (idempotencyKey != null)
-			await cache.SetAsync($"idempotency:{idempotencyKey}", note.Id, TimeSpan.FromHours(24));
+			await cache.SetAsync($"idempotency:{user.Id}:{idempotencyKey}", note.Id, TimeSpan.FromHours(24));
 
 		var res = await noteRenderer.RenderAsync(note, user);
 
