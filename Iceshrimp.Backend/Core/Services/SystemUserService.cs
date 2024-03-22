@@ -1,15 +1,13 @@
 using System.Security.Cryptography;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContext db, IDistributedCache cache)
+public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContext db, CacheService cache)
 {
 	public async Task<User> GetInstanceActorAsync()
 	{
@@ -34,7 +32,7 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 	private async Task<(User user, UserKeypair keypair)> GetOrCreateSystemUserAndKeypairAsync(string username)
 	{
 		var user    = await GetOrCreateSystemUserAsync(username);
-		var keypair = await db.UserKeypairs.FirstAsync(p => p.User == user); //TODO: cache this in redis as well
+		var keypair = await db.UserKeypairs.FirstAsync(p => p.User == user); //TODO: cache this in postgres as well
 
 		return (user, keypair);
 	}

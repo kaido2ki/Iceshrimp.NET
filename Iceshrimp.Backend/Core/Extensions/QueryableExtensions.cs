@@ -8,9 +8,9 @@ using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -178,9 +178,9 @@ public static class QueryableExtensions
 	}
 
 	//TODO: move this into another class where it makes more sense
-	public static async Task<int> GetHeuristic(User user, DatabaseContext db, IDistributedCache cache)
+	public static async Task<int> GetHeuristic(User user, DatabaseContext db, CacheService cache)
 	{
-		return await cache.FetchAsyncValue($"following-query-heuristic:{user.Id}",
+		return await cache.FetchValueAsync($"following-query-heuristic:{user.Id}",
 		                                   TimeSpan.FromHours(24), FetchHeuristic);
 
 		[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall")]

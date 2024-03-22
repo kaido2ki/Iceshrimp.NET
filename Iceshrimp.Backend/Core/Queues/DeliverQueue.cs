@@ -1,8 +1,6 @@
 using Iceshrimp.Backend.Core.Database;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 using ProtoBuf;
 using StackExchange.Redis;
 
@@ -23,7 +21,7 @@ public class DeliverQueue
 		var logger     = scope.GetRequiredService<ILogger<DeliverQueue>>();
 		var httpClient = scope.GetRequiredService<HttpClient>();
 		var httpRqSvc  = scope.GetRequiredService<HttpRequestService>();
-		var cache      = scope.GetRequiredService<IDistributedCache>();
+		var cache      = scope.GetRequiredService<CacheService>();
 		var db         = scope.GetRequiredService<DatabaseContext>();
 		var fedCtrl    = scope.GetRequiredService<ActivityPub.FederationControlService>();
 		var followup   = scope.GetRequiredService<FollowupTaskService>();

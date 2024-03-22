@@ -100,7 +100,7 @@ public static class LdHelpers
 			return result;
 		}
 
-		//TODO: cache in redis
+		//TODO: cache in postgres with ttl 24h
 		result = DefaultDocumentLoader.LoadJson(uri, jsonLdLoaderOptions);
 		ContextCache.TryAdd(uri.ToString(), result);
 

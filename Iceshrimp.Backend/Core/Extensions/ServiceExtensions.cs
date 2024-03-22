@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 using NoteRenderer = Iceshrimp.Backend.Controllers.Renderers.NoteRenderer;
@@ -65,7 +67,8 @@ public static class ServiceExtensions
 			.AddScoped<FollowupTaskService>()
 			.AddScoped<InstanceService>()
 			.AddScoped<MfmConverter>()
-			.AddScoped<UserProfileRenderer>();
+			.AddScoped<UserProfileRenderer>()
+			.AddScoped<CacheService>();
 
 		// Singleton = instantiated once across application lifetime
 		services
@@ -128,6 +131,7 @@ public static class ServiceExtensions
 		var config     = configuration.GetSection("Database").Get<Config.DatabaseSection>();
 		var dataSource = DatabaseContext.GetDataSource(config);
 		services.AddDbContext<DatabaseContext>(options => { DatabaseContext.Configure(options, dataSource); });
+		services.AddKeyedDatabaseContext<DatabaseContext>("cache");
 		services.AddDataProtection()
 		        .PersistKeysToDbContext<DatabaseContext>()
 		        .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration
@@ -135,6 +139,13 @@ public static class ServiceExtensions
 			        EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
 			        ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
 		        });
+	}
+
+	private static void AddKeyedDatabaseContext<T>(
+		this IServiceCollection services, string key, ServiceLifetime contextLifetime = ServiceLifetime.Scoped
+	) where T : DbContext
+	{
+		services.TryAdd(new ServiceDescriptor(typeof(T), key, typeof(T), contextLifetime));
 	}
 
 	public static void AddRedis(this IServiceCollection services, IConfiguration configuration)
@@ -159,12 +170,6 @@ public static class ServiceExtensions
 			redisOptions.EndPoints.Add(redis.Host, redis.Port);
 
 		services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisOptions));
-
-		services.AddStackExchangeRedisCache(options =>
-		{
-			options.InstanceName         = (redis.Prefix ?? instance.WebDomain) + ":cache:";
-			options.ConfigurationOptions = redisOptions;
-		});
 	}
 
 	public static void AddSwaggerGenWithOptions(this IServiceCollection services)

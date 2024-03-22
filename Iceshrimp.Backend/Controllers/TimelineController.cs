@@ -5,10 +5,10 @@ using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace Iceshrimp.Backend.Controllers;
 
@@ -17,7 +17,7 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/v1/timeline")]
 [Produces(MediaTypeNames.Application.Json)]
-public class TimelineController(DatabaseContext db, IDistributedCache cache, NoteRenderer noteRenderer) : ControllerBase
+public class TimelineController(DatabaseContext db, CacheService cache, NoteRenderer noteRenderer) : ControllerBase
 {
 	[HttpGet("home")]
 	[Authenticate]

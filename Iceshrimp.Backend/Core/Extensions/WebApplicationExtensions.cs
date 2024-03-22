@@ -4,7 +4,6 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 using WebPush;
 
@@ -105,24 +104,6 @@ public static class WebApplicationExtensions
 			await maintenanceSvc.RecomputeNoteCountersAsync();
 			await maintenanceSvc.RecomputeUserCountersAsync();
 			await maintenanceSvc.RecomputeInstanceCountersAsync();
-		}
-
-		app.Logger.LogInformation("Verifying redis connection...");
-		var cache = provider.GetService<IDistributedCache>();
-		if (cache == null)
-		{
-			app.Logger.LogCritical("Failed to initialize redis cache");
-			Environment.Exit(1);
-		}
-
-		try
-		{
-			await cache.GetAsync("test");
-		}
-		catch
-		{
-			app.Logger.LogCritical("Failed to connect to redis");
-			Environment.Exit(1);
 		}
 
 		var storageConfig = app.Configuration.GetSection("Storage").Get<Config.StorageSection>() ??

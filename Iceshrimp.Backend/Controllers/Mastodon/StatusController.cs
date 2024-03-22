@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
@@ -31,7 +30,7 @@ public class StatusController(
 	DatabaseContext db,
 	NoteRenderer noteRenderer,
 	NoteService noteSvc,
-	IDistributedCache cache,
+	CacheService cache,
 	IOptions<Config.InstanceSection> config,
 	UserRenderer userRenderer
 ) : ControllerBase
