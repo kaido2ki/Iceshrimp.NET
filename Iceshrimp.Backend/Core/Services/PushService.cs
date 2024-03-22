@@ -85,8 +85,7 @@ public class PushService(
 				if (body.Length > 137)
 					body = body.Truncate(137).TrimEnd() + "...";
 
-				var priv = await meta.Get(MetaEntity.VapidPrivateKey);
-				var pub  = await meta.Get(MetaEntity.VapidPublicKey);
+				var (priv, pub) = await meta.GetMany(MetaEntity.VapidPrivateKey, MetaEntity.VapidPublicKey);
 
 				var client = new WebPushClient(httpClient);
 				client.SetVapidDetails(new VapidDetails($"https://{config.Value.WebDomain}", pub, priv));

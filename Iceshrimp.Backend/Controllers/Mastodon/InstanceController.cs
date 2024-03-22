@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -25,11 +26,11 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 	{
 		var userCount =
 			await db.Users.LongCountAsync(p => p.Host == null && !Constants.SystemUsers.Contains(p.UsernameLower));
-		var noteCount           = await db.Notes.LongCountAsync(p => p.UserHost == null);
-		var instanceCount       = await db.Instances.LongCountAsync();
-		var instanceName        = await meta.Get(MetaEntity.InstanceName);
-		var instanceDescription = await meta.Get(MetaEntity.InstanceDescription);
-		var adminContact        = await meta.Get(MetaEntity.AdminContactEmail);
+		var noteCount     = await db.Notes.LongCountAsync(p => p.UserHost == null);
+		var instanceCount = await db.Instances.LongCountAsync();
+
+		var (instanceName, instanceDescription, adminContact) =
+			await meta.GetMany(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
 
 		var res = new InstanceInfoV1Response(config.Value, instanceName, instanceDescription, adminContact)
 		{
@@ -48,9 +49,8 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 		                                                     !Constants.SystemUsers.Contains(p.UsernameLower) &&
 		                                                     p.LastActiveDate > cutoff);
 
-		var instanceName        = await meta.Get(MetaEntity.InstanceName);
-		var instanceDescription = await meta.Get(MetaEntity.InstanceDescription);
-		var adminContact        = await meta.Get(MetaEntity.AdminContactEmail);
+		var (instanceName, instanceDescription, adminContact) =
+			await meta.GetMany(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
 
 		var res = new InstanceInfoV2Response(config.Value, instanceName, instanceDescription, adminContact)
 		{
