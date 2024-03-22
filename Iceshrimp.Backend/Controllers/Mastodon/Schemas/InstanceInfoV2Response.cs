@@ -12,7 +12,7 @@ public class InstanceInfoV2Response(
 )
 {
 	[J("version")]    public string Version       => $"4.2.1 (compatible; Iceshrimp.NET/{config.Instance.Version})";
-	[J("source_url")] public string SourceUrl     => "https://iceshrimp.dev/iceshrimp/iceshrimp.net";
+	[J("source_url")] public string SourceUrl     => Constants.RepositoryUrl;
 	[J("domain")]     public string AccountDomain => config.Instance.AccountDomain;
 	[J("title")]      public string InstanceName  => instanceName ?? config.Instance.AccountDomain;
 

@@ -43,9 +43,9 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 			{
 				Version  = instance.Version,
 				Name     = "Iceshrimp.NET",
-				Homepage = new Uri("https://iceshrimp.dev/iceshrimp/Iceshrimp.NET"),
+				Homepage = new Uri(Constants.ProjectHomepageUrl),
 				Repository = Request.Path.Value?.EndsWith("2.1") ?? false
-					? new Uri("https://iceshrimp.dev/iceshrimp/Iceshrimp.NET")
+					? new Uri(Constants.RepositoryUrl)
 					: null
 			},
 			Protocols = ["activitypub"],
@@ -70,8 +70,8 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 				Maintainer                 = new NodeInfoResponse.Maintainer { Name = "todo", Email = "todo" },
 				Languages                  = [],
 				TosUrl                     = "todo",
-				RepositoryUrl              = new Uri("https://iceshrimp.dev/iceshrimp/Iceshrimp.NET"),
-				FeedbackUrl                = new Uri("https://iceshrimp.dev/iceshrimp/Iceshrimp.NET"),
+				RepositoryUrl              = new Uri(Constants.RepositoryUrl),
+				FeedbackUrl                = new Uri(Constants.IssueTrackerUrl),
 				ThemeColor                 = "#000000",
 				DisableRegistration        = true,
 				DisableLocalTimeline       = false,

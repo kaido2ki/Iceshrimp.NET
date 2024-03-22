@@ -2,6 +2,15 @@ namespace Iceshrimp.Backend.Core.Configuration;
 
 public static class Constants
 {
+	// To ensure compliance with the license of this project, adjust the link below if you are distributing a modified copy
+	public const string RepositoryUrl = "https://iceshrimp.dev/iceshrimp/Iceshrimp.NET";
+
+	// Leave this as-is if you're running upstream code, or your fork does not have any meaningful behavioral changes, otherwise please link to your own issue tracker here
+	public const string IssueTrackerUrl = "https://issues.iceshrimp.dev";
+
+	// Leave this as-is, unless you've forked the project & want to reference your own website / repository (irrelevant for license compliance)
+	public const string ProjectHomepageUrl = "https://iceshrimp.dev/iceshrimp/Iceshrimp.NET";
+
 	public const           string   ActivityStreamsNs = "https://www.w3.org/ns/activitystreams";
 	public const           string   W3IdSecurityNs    = "https://w3id.org/security";
 	public const           string   PurlDcNs          = "http://purl.org/dc/terms";
