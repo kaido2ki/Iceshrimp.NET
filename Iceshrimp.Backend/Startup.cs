@@ -30,7 +30,6 @@ builder.Services.AddViteServices(options =>
 });
 builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
 builder.Services.AddDatabaseContext(builder.Configuration);
-builder.Services.AddRedis(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
 builder.Services.AddCorsPolicies();
 

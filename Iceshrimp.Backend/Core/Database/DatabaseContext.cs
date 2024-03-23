@@ -87,6 +87,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<MetaStoreEntry>       MetaStore             { get; init; } = null!;
 	public virtual DbSet<DataProtectionKey>    DataProtectionKeys    { get; init; } = null!;
 	public virtual DbSet<CacheEntry>           CacheStore            { get; init; } = null!;
+	public virtual DbSet<Job>          Jobs                  { get; init; } = null!;
 
 	public static NpgsqlDataSource GetDataSource(Config.DatabaseSection? config)
 	{
@@ -114,6 +115,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		dataSourceBuilder.MapEnum<UserProfile.UserProfileFFVisibility>();
 		dataSourceBuilder.MapEnum<Marker.MarkerType>();
 		dataSourceBuilder.MapEnum<PushSubscription.PushPolicy>();
+		dataSourceBuilder.MapEnum<Job.JobStatus>();
 
 		dataSourceBuilder.EnableDynamicJson();
 
@@ -138,6 +140,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			.HasPostgresEnum<UserProfile.UserProfileFFVisibility>()
 			.HasPostgresEnum<Marker.MarkerType>()
 			.HasPostgresEnum<PushSubscription.PushPolicy>()
+			.HasPostgresEnum<Job.JobStatus>()
 			.HasPostgresExtension("pg_trgm");
 
 		modelBuilder
@@ -1244,6 +1247,12 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.HasOne(d => d.User)
 			      .WithMany(p => p.Webhooks)
 			      .OnDelete(DeleteBehavior.Cascade);
+		});
+		
+		modelBuilder.Entity<Job>(entity =>
+		{
+			entity.Property(e => e.Status).HasDefaultValue(Job.JobStatus.Queued);
+			entity.Property(e => e.QueuedAt).HasDefaultValueSql("now()");
 		});
 	}
 

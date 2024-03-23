@@ -1,21 +1,17 @@
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
-using ProtoBuf;
-using StackExchange.Redis;
+using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 
 namespace Iceshrimp.Backend.Core.Queues;
 
-public class DeliverQueue
+public class DeliverQueue()
+	: PostgresJobQueue<DeliverJobData>("deliver", DeliverQueueProcessorDelegateAsync, 20)
 {
-	public static JobQueue<DeliverJob> Create(IConnectionMultiplexer redis, string prefix)
-	{
-		return new JobQueue<DeliverJob>("deliver", DeliverQueueProcessorDelegateAsync, 20, redis, prefix);
-	}
-
 	private static async Task DeliverQueueProcessorDelegateAsync(
-		DeliverJob job, IServiceProvider scope,
-		CancellationToken token
+		Job job, DeliverJobData jobData, IServiceProvider scope, CancellationToken token
 	)
 	{
 		var logger     = scope.GetRequiredService<ILogger<DeliverQueue>>();
@@ -26,29 +22,30 @@ public class DeliverQueue
 		var fedCtrl    = scope.GetRequiredService<ActivityPub.FederationControlService>();
 		var followup   = scope.GetRequiredService<FollowupTaskService>();
 
-		if (await fedCtrl.ShouldBlockAsync(job.InboxUrl, job.RecipientHost))
+		if (await fedCtrl.ShouldBlockAsync(jobData.InboxUrl, jobData.RecipientHost))
 		{
-			logger.LogDebug("Refusing to deliver activity to blocked instance ({uri})", job.InboxUrl);
+			logger.LogDebug("Refusing to deliver activity to blocked instance ({uri})", jobData.InboxUrl);
 			return;
 		}
 
-		if (await fedCtrl.ShouldSkipAsync(job.RecipientHost))
+		if (await fedCtrl.ShouldSkipAsync(jobData.RecipientHost))
 		{
 			logger.LogDebug("fedCtrl.ShouldSkipAsync returned true, skipping");
 			return;
 		}
 
-		logger.LogDebug("Delivering activity to: {uri}", job.InboxUrl);
+		logger.LogDebug("Delivering activity to: {uri}", jobData.InboxUrl);
 
-		var key = await cache.FetchAsync($"userPrivateKey:{job.UserId}", TimeSpan.FromMinutes(60), async () =>
+		var key = await cache.FetchAsync($"userPrivateKey:{jobData.UserId}", TimeSpan.FromMinutes(60), async () =>
 		{
 			var keypair =
-				await db.UserKeypairs.FirstOrDefaultAsync(p => p.UserId == job.UserId, token);
-			return keypair?.PrivateKey ?? throw new Exception($"Failed to get keypair for user {job.UserId}");
+				await db.UserKeypairs.FirstOrDefaultAsync(p => p.UserId == jobData.UserId, token);
+			return keypair?.PrivateKey ?? throw new Exception($"Failed to get keypair for user {jobData.UserId}");
 		});
 
 		var request =
-			await httpRqSvc.PostSignedAsync(job.InboxUrl, job.Payload, job.ContentType, job.UserId, key);
+			await httpRqSvc.PostSignedAsync(jobData.InboxUrl, jobData.Payload, jobData.ContentType, jobData.UserId,
+			                                key);
 
 		try
 		{
@@ -57,7 +54,7 @@ public class DeliverQueue
 			_ = followup.ExecuteTask("UpdateInstanceMetadata", async provider =>
 			{
 				var instanceSvc = provider.GetRequiredService<InstanceService>();
-				await instanceSvc.UpdateInstanceStatusAsync(job.RecipientHost, new Uri(job.InboxUrl).Host,
+				await instanceSvc.UpdateInstanceStatusAsync(jobData.RecipientHost, new Uri(jobData.InboxUrl).Host,
 				                                            (int)response.StatusCode, !response.IsSuccessStatusCode);
 			});
 
@@ -65,8 +62,6 @@ public class DeliverQueue
 		}
 		catch (Exception e)
 		{
-			//TODO: prune dead instances after a while (and only resume sending activities after they come back)
-
 			if (job.RetryCount++ < 10)
 			{
 				var jitter     = TimeSpan.FromSeconds(new Random().Next(0, 60));
@@ -90,13 +85,11 @@ public class DeliverQueue
 	}
 }
 
-[ProtoContract]
-public class DeliverJob : Job
+public class DeliverJobData
 {
-	[ProtoMember(1)] public required string InboxUrl;
-	[ProtoMember(2)] public required string Payload;
-	[ProtoMember(3)] public required string ContentType;
-
-	[ProtoMember(10)] public required string UserId;
-	[ProtoMember(11)] public required string RecipientHost;
+	[JR] [J("inboxUrl")]      public required string InboxUrl      { get; set; }
+	[JR] [J("payload")]       public required string Payload       { get; set; }
+	[JR] [J("contentType")]   public required string ContentType   { get; set; }
+	[JR] [J("userId")]        public required string UserId        { get; set; }
+	[JR] [J("recipientHost")] public required string RecipientHost { get; set; }
 }

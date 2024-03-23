@@ -1,26 +1,23 @@
 using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
-using ProtoBuf;
-using StackExchange.Redis;
+using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 
 namespace Iceshrimp.Backend.Core.Queues;
 
-public class PreDeliverQueue
+public class PreDeliverQueue()
+	: PostgresJobQueue<PreDeliverJobData>("pre-deliver", PreDeliverQueueProcessorDelegateAsync, 4)
 {
-	public static JobQueue<PreDeliverJob> Create(IConnectionMultiplexer redis, string prefix)
-	{
-		return new JobQueue<PreDeliverJob>("pre-deliver", PreDeliverQueueProcessorDelegateAsync, 4, redis, prefix);
-	}
-
 	private static async Task PreDeliverQueueProcessorDelegateAsync(
-		PreDeliverJob job, IServiceProvider scope, CancellationToken token
+		Job job, PreDeliverJobData jobData, IServiceProvider scope, CancellationToken token
 	)
 	{
 		var logger   = scope.GetRequiredService<ILogger<DeliverQueue>>();
@@ -28,35 +25,35 @@ public class PreDeliverQueue
 		var queueSvc = scope.GetRequiredService<QueueService>();
 		var config   = scope.GetRequiredService<IOptionsSnapshot<Config.SecuritySection>>();
 
-		var parsed       = JToken.Parse(job.SerializedActivity);
+		var parsed       = JToken.Parse(jobData.SerializedActivity);
 		var expanded     = LdHelpers.Expand(parsed) ?? throw new Exception("Failed to expand activity");
 		var deserialized = ASObject.Deserialize(expanded);
 		if (deserialized is not ASActivity activity)
 			throw new Exception("Deserialized ASObject is not an activity");
 
-		if (job.DeliverToFollowers)
+		if (jobData.DeliverToFollowers)
 			logger.LogDebug("Delivering activity {id} to followers", activity.Id);
 		else
 			logger.LogDebug("Delivering activity {id} to specified recipients", activity.Id);
 
 		if (activity.Actor == null) throw new Exception("Actor must not be null");
 
-		if (job is { DeliverToFollowers: false, RecipientIds.Count: < 1 })
+		if (jobData is { DeliverToFollowers: false, RecipientIds.Count: < 1 })
 			return;
 
-		var query = job.DeliverToFollowers
-			? db.Followings.Where(p => p.FolloweeId == job.ActorId)
+		var query = jobData.DeliverToFollowers
+			? db.Followings.Where(p => p.FolloweeId == jobData.ActorId)
 			    .Select(p => new InboxQueryResult
 			    {
 				    InboxUrl = p.FollowerSharedInbox ?? p.FollowerInbox, Host = p.FollowerHost
 			    })
-			: db.Users.Where(p => job.RecipientIds.Contains(p.Id))
+			: db.Users.Where(p => jobData.RecipientIds.Contains(p.Id))
 			    .Select(p => new InboxQueryResult { InboxUrl = p.SharedInbox ?? p.Inbox, Host = p.Host });
 
 		// We want to deliver activities to the explicitly specified recipients first
-		if (job is { DeliverToFollowers: true, RecipientIds.Count: > 0 })
+		if (jobData is { DeliverToFollowers: true, RecipientIds.Count: > 0 })
 		{
-			query = db.Users.Where(p => job.RecipientIds.Contains(p.Id))
+			query = db.Users.Where(p => jobData.RecipientIds.Contains(p.Id))
 			          .Select(p => new InboxQueryResult { InboxUrl = p.SharedInbox ?? p.Inbox, Host = p.Host })
 			          .Concat(query);
 		}
@@ -70,7 +67,7 @@ public class PreDeliverQueue
 		string payload;
 		if (config.Value.AttachLdSignatures)
 		{
-			var keypair = await db.UserKeypairs.FirstAsync(p => p.UserId == job.ActorId, token);
+			var keypair = await db.UserKeypairs.FirstAsync(p => p.UserId == jobData.ActorId, token);
 			payload = await activity.SignAndCompactAsync(keypair);
 		}
 		else
@@ -79,7 +76,7 @@ public class PreDeliverQueue
 		}
 
 		foreach (var inboxQueryResult in inboxQueryResults)
-			await queueSvc.DeliverQueue.EnqueueAsync(new DeliverJob
+			await queueSvc.DeliverQueue.EnqueueAsync(new DeliverJobData
 			{
 				RecipientHost =
 					inboxQueryResult.Host ??
@@ -90,7 +87,7 @@ public class PreDeliverQueue
 						Exception("Recipient inboxUrl must not be null"),
 				Payload     = payload,
 				ContentType = "application/activity+json",
-				UserId      = job.ActorId
+				UserId      = jobData.ActorId
 			});
 	}
 
@@ -133,11 +130,10 @@ public class PreDeliverQueue
 	}
 }
 
-[ProtoContract]
-public class PreDeliverJob : Job
+public class PreDeliverJobData : Job
 {
-	[ProtoMember(1)] public required string       SerializedActivity;
-	[ProtoMember(2)] public required string       ActorId;
-	[ProtoMember(3)] public required List<string> RecipientIds;
-	[ProtoMember(4)] public required bool         DeliverToFollowers;
+	[JR] [J("serializedActivity")] public required string       SerializedActivity { get; set; }
+	[JR] [J("actorId")]            public required string       ActorId            { get; set; }
+	[JR] [J("recipientIds")]       public required List<string> RecipientIds       { get; set; }
+	[JR] [J("deliverToFollowers")] public required bool         DeliverToFollowers { get; set; }
 }

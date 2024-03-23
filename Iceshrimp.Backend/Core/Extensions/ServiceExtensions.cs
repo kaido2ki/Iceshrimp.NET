@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 using System.Threading.RateLimiting;
 using Iceshrimp.Backend.Controllers.Federation;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
@@ -17,7 +16,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
-using StackExchange.Redis;
 using NoteRenderer = Iceshrimp.Backend.Controllers.Renderers.NoteRenderer;
 using NotificationRenderer = Iceshrimp.Backend.Controllers.Renderers.NotificationRenderer;
 using UserRenderer = Iceshrimp.Backend.Controllers.Renderers.UserRenderer;
@@ -98,7 +96,6 @@ public static class ServiceExtensions
 		        .ConfigureWithValidation<Config.InstanceSection>(configuration, "Instance")
 		        .ConfigureWithValidation<Config.SecuritySection>(configuration, "Security")
 		        .ConfigureWithValidation<Config.DatabaseSection>(configuration, "Database")
-		        .ConfigureWithValidation<Config.RedisSection>(configuration, "Redis")
 		        .ConfigureWithValidation<Config.StorageSection>(configuration, "Storage")
 		        .ConfigureWithValidation<Config.LocalStorageSection>(configuration, "Storage:Local")
 		        .ConfigureWithValidation<Config.ObjectStorageSection>(configuration, "Storage:ObjectStorage");
@@ -146,30 +143,6 @@ public static class ServiceExtensions
 	) where T : DbContext
 	{
 		services.TryAdd(new ServiceDescriptor(typeof(T), key, typeof(T), contextLifetime));
-	}
-
-	public static void AddRedis(this IServiceCollection services, IConfiguration configuration)
-	{
-		var instance = configuration.GetSection("Instance").Get<Config.InstanceSection>();
-		var redis    = configuration.GetSection("Redis").Get<Config.RedisSection>();
-		if (redis == null || instance == null)
-			throw new Exception("Failed to initialize redis: Failed to load configuration");
-
-
-		var redisOptions = new ConfigurationOptions
-		{
-			User            = redis.Username,
-			Password        = redis.Password,
-			DefaultDatabase = redis.Database,
-			EndPoints       = new EndPointCollection()
-		};
-
-		if (redis.UnixDomainSocket != null)
-			redisOptions.EndPoints.Add(new UnixDomainSocketEndPoint(redis.UnixDomainSocket));
-		else
-			redisOptions.EndPoints.Add(redis.Host, redis.Port);
-
-		services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisOptions));
 	}
 
 	public static void AddSwaggerGenWithOptions(this IServiceCollection services)

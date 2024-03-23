@@ -869,7 +869,7 @@ public class UserService(
 			muting.ExpiresAt = expiration;
 			await db.SaveChangesAsync();
 			if (expiration == null) return;
-			var job = new MuteExpiryJob { MuteId = muting.Id };
+			var job = new MuteExpiryJobData { MuteId = muting.Id };
 			await queueSvc.BackgroundTaskQueue.ScheduleAsync(job, expiration.Value);
 			return;
 		}
@@ -887,7 +887,7 @@ public class UserService(
 
 		if (expiration != null)
 		{
-			var job = new MuteExpiryJob { MuteId = muting.Id };
+			var job = new MuteExpiryJobData { MuteId = muting.Id };
 			await queueSvc.BackgroundTaskQueue.ScheduleAsync(job, expiration.Value);
 		}
 	}

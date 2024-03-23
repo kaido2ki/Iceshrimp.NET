@@ -8,7 +8,6 @@ public sealed class Config
 {
 	public required InstanceSection Instance { get; init; } = new();
 	public required DatabaseSection Database { get; init; } = new();
-	public required RedisSection    Redis    { get; init; } = new();
 	public required SecuritySection Security { get; init; } = new();
 	public required StorageSection  Storage  { get; init; } = new();
 
@@ -66,19 +65,6 @@ public sealed class Config
 		[Required]        public string  Database { get; init; } = null!;
 		[Required]        public string  Username { get; init; } = null!;
 		public                   string? Password { get; init; }
-	}
-
-	public sealed class RedisSection
-	{
-		[Required]        public string  Host             { get; init; } = "localhost";
-		[Range(1, 65535)] public int     Port             { get; init; } = 6379;
-		public                   string? UnixDomainSocket { get; init; }
-		public                   string? Prefix           { get; init; }
-		public                   string? Username         { get; init; }
-		public                   string? Password         { get; init; }
-		public                   int?    Database         { get; init; }
-
-		//TODO: TLS settings
 	}
 
 	public sealed class StorageSection

@@ -1,62 +1,60 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using ProtoBuf;
-using StackExchange.Redis;
+using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 
 namespace Iceshrimp.Backend.Core.Queues;
 
-public abstract class BackgroundTaskQueue
+public class BackgroundTaskQueue()
+	: PostgresJobQueue<BackgroundTaskJobData>("background-task", BackgroundTaskQueueProcessorDelegateAsync, 4)
 {
-	public static JobQueue<BackgroundTaskJob> Create(IConnectionMultiplexer redis, string prefix)
-	{
-		return new JobQueue<BackgroundTaskJob>("background-task", BackgroundTaskQueueProcessorDelegateAsync, 4, redis,
-		                                       prefix);
-	}
-
 	private static async Task BackgroundTaskQueueProcessorDelegateAsync(
-		BackgroundTaskJob job,
+		Job job,
+		BackgroundTaskJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
 	)
 	{
-		switch (job)
+		switch (jobData)
 		{
-			case DriveFileDeleteJob { Expire: true } driveFileDeleteJob:
+			case DriveFileDeleteJobData { Expire: true } driveFileDeleteJob:
 				await ProcessDriveFileExpire(driveFileDeleteJob, scope, token);
 				break;
-			case DriveFileDeleteJob driveFileDeleteJob:
+			case DriveFileDeleteJobData driveFileDeleteJob:
 				await ProcessDriveFileDelete(driveFileDeleteJob, scope, token);
 				break;
-			case PollExpiryJob pollExpiryJob:
+			case PollExpiryJobData pollExpiryJob:
 				await ProcessPollExpiry(pollExpiryJob, scope, token);
 				break;
-			case MuteExpiryJob muteExpiryJob:
+			case MuteExpiryJobData muteExpiryJob:
 				await ProcessMuteExpiry(muteExpiryJob, scope, token);
 				break;
 		}
 	}
 
 	private static async Task ProcessDriveFileDelete(
-		DriveFileDeleteJob job,
+		DriveFileDeleteJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
 	)
 	{
 		var db = scope.GetRequiredService<DatabaseContext>();
 		var usedAsAvatarOrBanner =
-			await db.Users.AnyAsync(p => p.AvatarId == job.DriveFileId ||
-			                             p.BannerId == job.DriveFileId, token);
+			await db.Users.AnyAsync(p => p.AvatarId == jobData.DriveFileId ||
+			                             p.BannerId == jobData.DriveFileId, token);
 
-		var usedInNote = await db.Notes.AnyAsync(p => p.FileIds.Contains(job.DriveFileId), token);
+		var usedInNote = await db.Notes.AnyAsync(p => p.FileIds.Contains(jobData.DriveFileId), token);
 
 		if (!usedAsAvatarOrBanner && !usedInNote)
 		{
-			var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == job.DriveFileId, token);
+			var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == jobData.DriveFileId, token);
 			if (file != null)
 			{
 				string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.WebpublicAccessKey];
@@ -85,16 +83,16 @@ public abstract class BackgroundTaskQueue
 	}
 
 	private static async Task ProcessDriveFileExpire(
-		DriveFileDeleteJob job,
+		DriveFileDeleteJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
 	)
 	{
 		var db     = scope.GetRequiredService<DatabaseContext>();
 		var logger = scope.GetRequiredService<ILogger<BackgroundTaskQueue>>();
-		logger.LogDebug("Expiring file {id}...", job.DriveFileId);
+		logger.LogDebug("Expiring file {id}...", jobData.DriveFileId);
 
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == job.DriveFileId, token);
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == jobData.DriveFileId, token);
 		if (file is not { UserHost: not null, Uri: not null }) return;
 
 		file.IsLink             = true;
@@ -140,13 +138,13 @@ public abstract class BackgroundTaskQueue
 	                 Justification = "IncludeCommonProperties()")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
 	private static async Task ProcessPollExpiry(
-		PollExpiryJob job,
+		PollExpiryJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
 	)
 	{
 		var db   = scope.GetRequiredService<DatabaseContext>();
-		var poll = await db.Polls.FirstOrDefaultAsync(p => p.NoteId == job.NoteId, token);
+		var poll = await db.Polls.FirstOrDefaultAsync(p => p.NoteId == jobData.NoteId, token);
 		if (poll == null) return;
 		if (poll.ExpiresAt > DateTime.UtcNow + TimeSpan.FromSeconds(30)) return;
 		var note = await db.Notes.IncludeCommonProperties()
@@ -177,13 +175,13 @@ public abstract class BackgroundTaskQueue
 	}
 
 	private static async Task ProcessMuteExpiry(
-		MuteExpiryJob job,
+		MuteExpiryJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
 	)
 	{
 		var db     = scope.GetRequiredService<DatabaseContext>();
-		var muting = await db.Mutings.FirstOrDefaultAsync(p => p.Id == job.MuteId, token);
+		var muting = await db.Mutings.FirstOrDefaultAsync(p => p.Id == jobData.MuteId, token);
 		if (muting is not { ExpiresAt: not null }) return;
 		if (muting.ExpiresAt > DateTime.UtcNow + TimeSpan.FromSeconds(30)) return;
 		db.Remove(muting);
@@ -191,27 +189,24 @@ public abstract class BackgroundTaskQueue
 	}
 }
 
-[ProtoContract]
-[ProtoInclude(100, typeof(DriveFileDeleteJob))]
-[ProtoInclude(101, typeof(PollExpiryJob))]
-[ProtoInclude(102, typeof(MuteExpiryJob))]
-public class BackgroundTaskJob : Job;
+[JsonDerivedType(typeof(BackgroundTaskJobData), typeDiscriminator: "base")]
+[JsonDerivedType(typeof(DriveFileDeleteJobData), typeDiscriminator: "driveFileDelete")]
+[JsonDerivedType(typeof(PollExpiryJobData), typeDiscriminator: "pollExpiry")]
+[JsonDerivedType(typeof(MuteExpiryJobData), typeDiscriminator: "muteExpiry")]
+public class BackgroundTaskJobData : Job;
 
-[ProtoContract]
-public class DriveFileDeleteJob : BackgroundTaskJob
+public class DriveFileDeleteJobData : BackgroundTaskJobData
 {
-	[ProtoMember(1)] public required string DriveFileId;
-	[ProtoMember(2)] public required bool   Expire;
+	[JR] [J("driveFileId")] public required string DriveFileId { get; set; }
+	[JR] [J("expire")]      public required bool   Expire      { get; set; }
 }
 
-[ProtoContract]
-public class PollExpiryJob : BackgroundTaskJob
+public class PollExpiryJobData : BackgroundTaskJobData
 {
-	[ProtoMember(1)] public required string NoteId;
+	[JR] [J("noteId")] public required string NoteId { get; set; }
 }
 
-[ProtoContract]
-public class MuteExpiryJob : BackgroundTaskJob
+public class MuteExpiryJobData : BackgroundTaskJobData
 {
-	[ProtoMember(1)] public required string MuteId;
+	[JR] [J("muteId")] public required string MuteId { get; set; }
 }

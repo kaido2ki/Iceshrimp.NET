@@ -1189,7 +1189,7 @@ public class NoteService(
 	private async Task EnqueuePollExpiryTask(Poll poll)
 	{
 		if (!poll.ExpiresAt.HasValue) return;
-		var job = new PollExpiryJob { NoteId = poll.Note.Id };
+		var job = new PollExpiryJobData { NoteId = poll.Note.Id };
 		await queueSvc.BackgroundTaskQueue.ScheduleAsync(job, poll.ExpiresAt.Value);
 	}
 

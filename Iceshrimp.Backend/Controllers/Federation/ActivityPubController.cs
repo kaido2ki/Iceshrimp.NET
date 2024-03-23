@@ -128,7 +128,7 @@ public class ActivityPubController(
 		using var reader = new StreamReader(Request.Body, Encoding.UTF8, true, 1024, true);
 		var       body   = await reader.ReadToEndAsync();
 		Request.Body.Position = 0;
-		await queues.InboxQueue.EnqueueAsync(new InboxJob
+		await queues.InboxQueue.EnqueueAsync(new InboxJobData
 		{
 			Body                = body,
 			InboxUserId         = id,

@@ -20,7 +20,7 @@ public class ActivityDeliverService(
 		logger.LogDebug("Queuing deliver-to-followers jobs for activity {id}", activity.Id);
 		if (activity.Actor == null) throw new Exception("Actor must not be null");
 
-		await queueService.PreDeliverQueue.EnqueueAsync(new PreDeliverJob
+		await queueService.PreDeliverQueue.EnqueueAsync(new PreDeliverJobData
 		{
 			ActorId      = actor.Id,
 			RecipientIds = recipients.Select(p => p.Id).ToList(),
@@ -36,7 +36,7 @@ public class ActivityDeliverService(
 		logger.LogDebug("Queuing deliver-to-recipients jobs for activity {id}", activity.Id);
 		if (activity.Actor == null) throw new Exception("Actor must not be null");
 
-		await queueService.PreDeliverQueue.EnqueueAsync(new PreDeliverJob
+		await queueService.PreDeliverQueue.EnqueueAsync(new PreDeliverJobData
 		{
 			ActorId      = actor.Id,
 			RecipientIds = recipients.Select(p => p.Id).ToList(),

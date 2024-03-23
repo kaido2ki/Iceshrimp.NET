@@ -1,27 +1,24 @@
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Newtonsoft.Json.Linq;
-using ProtoBuf;
-using StackExchange.Redis;
+using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 
 namespace Iceshrimp.Backend.Core.Queues;
 
-public class InboxQueue
+public class InboxQueue() : PostgresJobQueue<InboxJobData>("inbox", InboxQueueProcessorDelegateAsync, 4)
 {
-	public static JobQueue<InboxJob> Create(IConnectionMultiplexer redis, string prefix)
-	{
-		return new JobQueue<InboxJob>("inbox", InboxQueueProcessorDelegateAsync, 4, redis, prefix);
-	}
-
 	private static async Task InboxQueueProcessorDelegateAsync(
-		InboxJob job,
+		Job job,
+		InboxJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
 	)
 	{
-		var expanded = LdHelpers.Expand(JToken.Parse(job.Body));
+		var expanded = LdHelpers.Expand(JToken.Parse(jobData.Body));
 		if (expanded == null)
 			throw new Exception("Failed to expand ASObject");
 		var obj = ASObject.Deserialize(expanded);
@@ -33,15 +30,14 @@ public class InboxQueue
 		var apHandler = scope.GetRequiredService<ActivityPub.ActivityHandlerService>();
 		var logger    = scope.GetRequiredService<ILogger<InboxQueue>>();
 
-		logger.LogTrace("Preparation took {ms} ms", job.Duration);
-		await apHandler.PerformActivityAsync(activity, job.InboxUserId, job.AuthenticatedUserId);
+		logger.LogTrace("Preparation took {ms} ms", jobData.Duration);
+		await apHandler.PerformActivityAsync(activity, jobData.InboxUserId, jobData.AuthenticatedUserId);
 	}
 }
 
-[ProtoContract]
-public class InboxJob : Job
+public class InboxJobData : Job
 {
-	[ProtoMember(1)] public required string  Body;
-	[ProtoMember(2)] public required string? InboxUserId;
-	[ProtoMember(3)] public required string? AuthenticatedUserId;
+	[JR] [J("body")]                public required string  Body                { get; set; }
+	[JR] [J("inboxUserId")]         public required string? InboxUserId         { get; set; }
+	[JR] [J("authenticatedUserId")] public required string? AuthenticatedUserId { get; set; }
 }

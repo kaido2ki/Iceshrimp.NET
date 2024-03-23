@@ -346,7 +346,7 @@ public class ActivityHandlerService(
 		var payload = await acceptActivity.SignAndCompactAsync(keypair);
 		var inboxUri = follower.SharedInbox ??
 		               follower.Inbox ?? throw new Exception("Can't accept follow: user has no inbox");
-		var job = new DeliverJob
+		var job = new DeliverJobData
 		{
 			InboxUrl      = inboxUri,
 			RecipientHost = follower.Host ?? throw new Exception("Can't accept follow: follower host is null"),
