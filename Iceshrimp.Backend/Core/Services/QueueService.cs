@@ -32,7 +32,6 @@ public class QueueService(IServiceScopeFactory scopeFactory) : BackgroundService
 	{
 		_queues.AddRange([InboxQueue, PreDeliverQueue, DeliverQueue, BackgroundTaskQueue]);
 
-		await RecoverOrPrepareForExitAsync();
 		token.Register(RecoverOrPrepareForExit);
 
 		_ = Task.Run(RegisterNotificationChannels, token);
@@ -147,6 +146,7 @@ public class PostgresJobQueue<T>(
 	public async Task ExecuteAsync(IServiceScopeFactory scopeFactory, CancellationToken token)
 	{
 		_scopeFactory = scopeFactory;
+		await RecoverOrPrepareForExitAsync();
 
 		QueuedChannelEvent  += (_, _) => _queuedChannel.Set();
 		DelayedChannelEvent += (_, _) => _delayedChannel.Set();
