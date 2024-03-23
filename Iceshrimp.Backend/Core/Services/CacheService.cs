@@ -147,21 +147,16 @@ public class CacheService([FromKeyedServices("cache")] DatabaseContext db)
 				Expiry = expiry,
 				Ttl    = ttl
 			};
-			db.Add(entity);
-			try
-			{
-				await db.SaveChangesAsync();
-			}
-			catch (UniqueConstraintException)
-			{
-				db.Remove(entity);
-				entity = await db.CacheStore.FirstOrDefaultAsync(p => p.Key == key) ??
-				         throw new Exception("Failed to fetch entity after UniqueConstraintException");
-				entity.Value  = value;
-				entity.Expiry = expiry;
-				entity.Ttl    = ttl;
-				await db.SaveChangesAsync();
-			}
+
+			await db.CacheStore.Upsert(entity)
+			        .On(p => p.Key)
+			        .WhenMatched((_, orig) => new CacheEntry
+			        {
+				        Value  = orig.Value,
+				        Expiry = orig.Expiry,
+				        Ttl    = orig.Ttl
+			        })
+			        .RunAsync();
 		}
 	}
 
