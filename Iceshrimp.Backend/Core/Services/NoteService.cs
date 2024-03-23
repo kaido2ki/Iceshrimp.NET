@@ -55,11 +55,9 @@ public class NoteService(
 		bool localOnly = false
 	)
 	{
-		if (text?.Length > config.Value.CharacterLimit)
-			throw GracefulException.BadRequest($"Text cannot be longer than {config.Value.CharacterLimit} characters");
-		if (cw?.Length > config.Value.CharacterLimit)
+		if ((text?.Length ?? 0) + (cw?.Length ?? 0) > config.Value.CharacterLimit)
 			throw GracefulException
-				.BadRequest($"Content warning cannot be longer than {config.Value.CharacterLimit} characters");
+				.BadRequest($"Text & content warning cannot exceed {config.Value.CharacterLimit} characters in total");
 		if (text is { Length: > 100000 })
 			throw GracefulException.BadRequest("Text cannot be longer than 100.000 characters");
 		if (cw is { Length: > 100000 })
