@@ -14,9 +14,7 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 	{
 		var dbNotifier = notification.Notifier ?? throw new GracefulException("Notification has no notifier");
 
-		var targetNote = notification.Type == Notification.NotificationType.Renote
-			? notification.Note?.Renote
-			: notification.Note;
+		var targetNote = notification.Note;
 
 		var note = targetNote != null
 			? statuses?.FirstOrDefault(p => p.Id == targetNote.Id) ??
