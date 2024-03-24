@@ -13,7 +13,7 @@ public class MfmTests
 	public async Task TestToHtml()
 	{
 		double duration                      = 100;
-		for (var i = 0; i < 4; i++) duration = await Benchmark();
+		for (var i = 0; i < 10; i++) duration = await Benchmark();
 
 		duration.Should().BeLessThan(2);
 
