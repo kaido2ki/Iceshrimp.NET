@@ -50,10 +50,14 @@ public static class WebApplicationExtensions
 
 		app.Logger.LogInformation("Iceshrimp.NET v{version} ({domain})", instanceConfig.Version,
 		                          instanceConfig.AccountDomain);
+
+		await using var scope    = app.Services.CreateAsyncScope();
+		var             provider = scope.ServiceProvider;
+
 		try
 		{
 			app.Logger.LogInformation("Validating configuration...");
-			app.Services.CreateScope().ServiceProvider.GetRequiredService<IStartupValidator>().Validate();
+			provider.GetRequiredService<IStartupValidator>().Validate();
 		}
 		catch (OptionsValidationException e)
 		{
@@ -68,8 +72,7 @@ public static class WebApplicationExtensions
 			app.Logger.LogWarning("If this is not a local development instance, please set the environment to Production.");
 		}
 
-		var provider = app.Services.CreateScope().ServiceProvider;
-		var db       = provider.GetService<DatabaseContext>();
+		await using var db = provider.GetService<DatabaseContext>();
 		if (db == null)
 		{
 			app.Logger.LogCritical("Failed to initialize database context");
@@ -168,9 +171,9 @@ public static class WebApplicationExtensions
 		var config = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
 		             throw new Exception("Failed to read instance config");
 		if (config.ListenSocket == null) return;
-		var logger = app.Services.CreateScope()
-		                .ServiceProvider.GetRequiredService<ILoggerFactory>()
-		                .CreateLogger("Microsoft.Hosting.Lifetime");
+		using var scope = app.Services.CreateScope();
+		var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
+		                  .CreateLogger("Microsoft.Hosting.Lifetime");
 
 		if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS() && !OperatingSystem.IsFreeBSD())
 			throw new Exception("Can't set unix socket permissions on a non-UNIX system");

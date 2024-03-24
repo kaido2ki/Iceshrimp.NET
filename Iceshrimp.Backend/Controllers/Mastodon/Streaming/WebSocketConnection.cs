@@ -19,13 +19,15 @@ public sealed class WebSocketConnection(
 	private readonly SemaphoreSlim        _lock        = new(1);
 	public readonly  List<IChannel>       Channels     = [];
 	public readonly  EventService         EventService = eventSvc;
-	public readonly  IServiceScopeFactory ScopeFactory = scopeFactory;
 	public readonly  OauthToken           Token        = token;
+	public readonly  IServiceScope        Scope        = scopeFactory.CreateScope();
 
 	public void Dispose()
 	{
 		foreach (var channel in Channels)
 			channel.Dispose();
+		
+		Scope.Dispose();
 	}
 
 	public void InitializeStreamingWorker()

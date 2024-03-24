@@ -31,7 +31,10 @@ public class MetaService(IServiceScopeFactory scopeFactory)
 
 	public async Task EnsureSet<T>(IReadOnlyList<Meta<T>> metas, Func<List<T>> values)
 	{
-		if (await GetDbContext().MetaStore.CountAsync(p => metas.Select(m => m.Key).Contains(p.Key)) == metas.Count)
+		await using var scope = GetScope();
+		await using var db    = GetDbContext(scope);
+
+		if (await db.MetaStore.CountAsync(p => metas.Select(m => m.Key).Contains(p.Key)) == metas.Count)
 			return;
 
 		var resolvedValues = values();
@@ -45,18 +48,37 @@ public class MetaService(IServiceScopeFactory scopeFactory)
 	public async Task Set<T>(Meta<T> meta, T value) => await Set(meta.Key, meta.ConvertSet(value));
 
 	// Ensures the table is in memory (we could use pg_prewarm for this but that extension requires superuser privileges to install)
-	public async Task WarmupCache() => await GetDbContext().MetaStore.ToListAsync();
+	public async Task WarmupCache()
+	{
+		await using var scope = GetScope();
+		await using var db    = GetDbContext(scope);
 
-	private async Task<string?> Fetch(string key) =>
-		await GetDbContext().MetaStore.Where(p => p.Key == key).Select(p => p.Value).FirstOrDefaultAsync();
+		await db.MetaStore.ToListAsync();
+	}
 
-	private async Task<Dictionary<string, string?>> FetchMany(IEnumerable<string> keys) =>
-		await GetDbContext().MetaStore.Where(p => keys.Contains(p.Key)).ToDictionaryAsync(p => p.Key, p => p.Value);
+	private async Task<string?> Fetch(string key)
+	{
+		await using var scope = GetScope();
+		await using var db    = GetDbContext(scope);
+
+		return await db.MetaStore.Where(p => p.Key == key).Select(p => p.Value).FirstOrDefaultAsync();
+	}
+
+	private async Task<Dictionary<string, string?>> FetchMany(IEnumerable<string> keys)
+	{
+		await using var scope = GetScope();
+		await using var db    = GetDbContext(scope);
+
+		return await db
+		             .MetaStore.Where(p => keys.Contains(p.Key))
+		             .ToDictionaryAsync(p => p.Key, p => p.Value);
+	}
 
 	private async Task Set(string key, string? value)
 	{
-		var db     = GetDbContext();
-		var entity = await db.MetaStore.FirstOrDefaultAsync(p => p.Key == key);
+		await using var scope  = GetScope();
+		await using var db     = GetDbContext(scope);
+		var             entity = await db.MetaStore.FirstOrDefaultAsync(p => p.Key == key);
 		if (entity != null)
 		{
 			entity.Value = value;
@@ -81,8 +103,10 @@ public class MetaService(IServiceScopeFactory scopeFactory)
 		}
 	}
 
-	private DatabaseContext GetDbContext() =>
-		scopeFactory.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
+	private static DatabaseContext GetDbContext(IServiceScope scope) =>
+		scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
+	private AsyncServiceScope GetScope() => scopeFactory.CreateAsyncScope();
 }
 
 public static class MetaEntity

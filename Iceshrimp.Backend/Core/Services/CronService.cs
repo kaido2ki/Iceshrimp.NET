@@ -20,7 +20,18 @@ public class CronService(IServiceScopeFactory serviceScopeFactory) : BackgroundS
 				_                     => throw new ArgumentOutOfRangeException()
 			};
 
-			trigger.OnTrigger += async () => await task.Invoke(serviceScopeFactory.CreateScope().ServiceProvider);
+			trigger.OnTrigger += async void () =>
+			{
+				try
+				{
+					await using var scope = serviceScopeFactory.CreateAsyncScope(); 
+					await task.Invoke(scope.ServiceProvider);
+				}
+				catch
+				{
+					// ignored (errors in the event handler crash the host process)
+				}
+			};
 		}
 
 		return Task.CompletedTask;

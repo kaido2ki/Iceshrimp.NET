@@ -8,7 +8,7 @@ public class FollowupTaskService(IServiceScopeFactory serviceScopeFactory)
 	{
 		return Task.Run(async () =>
 		{
-			using var scope = serviceScopeFactory.CreateScope();
+			await using var scope = serviceScopeFactory.CreateAsyncScope();
 			try
 			{
 				var provider = scope.ServiceProvider;

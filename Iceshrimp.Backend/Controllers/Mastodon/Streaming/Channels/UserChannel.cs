@@ -11,7 +11,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
 public class UserChannel(WebSocketConnection connection, bool notificationsOnly) : IChannel
 {
 	public readonly ILogger<UserChannel> Logger =
-		connection.ScopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<UserChannel>>();
+		connection.Scope.ServiceProvider.GetRequiredService<ILogger<UserChannel>>();
 
 	private List<string> _followedUsers = [];
 	public  string       Name         => notificationsOnly ? "user:notification" : "user";
@@ -23,7 +23,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		if (IsSubscribed) return;
 		IsSubscribed = true;
 
-		var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
+		var provider = connection.Scope.ServiceProvider;
 		var db       = provider.GetRequiredService<DatabaseContext>();
 
 		_followedUsers = await db.Users.Where(p => p == connection.Token.User)
@@ -69,7 +69,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		try
 		{
 			if (!IsApplicable(note)) return;
-			var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
+			var provider = connection.Scope.ServiceProvider;
 			var renderer = provider.GetRequiredService<NoteRenderer>();
 			var rendered = await renderer.RenderAsync(note, connection.Token.User);
 			var message = new StreamingUpdateMessage
@@ -91,7 +91,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		try
 		{
 			if (!IsApplicable(note)) return;
-			var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
+			var provider = connection.Scope.ServiceProvider;
 			var renderer = provider.GetRequiredService<NoteRenderer>();
 			var rendered = await renderer.RenderAsync(note, connection.Token.User);
 			var message = new StreamingUpdateMessage
@@ -132,7 +132,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		try
 		{
 			if (!IsApplicable(notification)) return;
-			var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
+			var provider = connection.Scope.ServiceProvider;
 			var renderer = provider.GetRequiredService<NotificationRenderer>();
 
 			NotificationEntity rendered;

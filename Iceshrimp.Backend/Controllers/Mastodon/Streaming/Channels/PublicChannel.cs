@@ -13,7 +13,7 @@ public class PublicChannel(
 ) : IChannel
 {
 	public readonly ILogger<PublicChannel> Logger =
-		connection.ScopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<PublicChannel>>();
+		connection.Scope.ServiceProvider.GetRequiredService<ILogger<PublicChannel>>();
 
 	public string       Name         => name;
 	public List<string> Scopes       => ["read:statuses"];
@@ -60,7 +60,7 @@ public class PublicChannel(
 		try
 		{
 			if (!IsApplicable(note)) return;
-			var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
+			var provider = connection.Scope.ServiceProvider;
 			var renderer = provider.GetRequiredService<NoteRenderer>();
 			var rendered = await renderer.RenderAsync(note, connection.Token.User);
 			var message = new StreamingUpdateMessage
@@ -82,7 +82,7 @@ public class PublicChannel(
 		try
 		{
 			if (!IsApplicable(note)) return;
-			var provider = connection.ScopeFactory.CreateScope().ServiceProvider;
+			var provider = connection.Scope.ServiceProvider;
 			var renderer = provider.GetRequiredService<NoteRenderer>();
 			var rendered = await renderer.RenderAsync(note, connection.Token.User);
 			var message = new StreamingUpdateMessage

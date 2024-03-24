@@ -55,14 +55,21 @@ public class QueueService(IServiceScopeFactory scopeFactory) : BackgroundService
 
 					conn.Notification += (_, args) =>
 					{
-						if (args.Channel is not "queued" and not "delayed") return;
-						var queue = _queues.FirstOrDefault(p => p.Name == args.Payload);
-						if (queue == null) return;
+						try
+						{
+							if (args.Channel is not "queued" and not "delayed") return;
+							var queue = _queues.FirstOrDefault(p => p.Name == args.Payload);
+							if (queue == null) return;
 
-						if (args.Channel == "queued")
-							queue.RaiseJobQueuedEvent();
-						else
-							queue.RaiseJobDelayedEvent();
+							if (args.Channel == "queued")
+								queue.RaiseJobQueuedEvent();
+							else
+								queue.RaiseJobDelayedEvent();
+						}
+						catch
+						{
+							// ignored (errors will crash the host process)
+						}
 					};
 
 					await using (var cmd = new NpgsqlCommand("LISTEN queued", conn))
@@ -151,7 +158,8 @@ public class PostgresJobQueue<T>(
 		QueuedChannelEvent  += (_, _) => _queuedChannel.Set();
 		DelayedChannelEvent += (_, _) => _delayedChannel.Set();
 
-		var logger = scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<QueueService>>();
+		using var loggerScope = _scopeFactory.CreateScope();
+		var       logger      = loggerScope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
 		_ = Task.Run(() => DelayedJobHandlerAsync(token), token);
 		while (!token.IsCancellationRequested)
 		{
@@ -192,7 +200,8 @@ public class PostgresJobQueue<T>(
 
 	private async Task DelayedJobHandlerAsync(CancellationToken token)
 	{
-		var logger = _scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<QueueService>>();
+		using var loggerScope = _scopeFactory.CreateScope();
+		var       logger      = loggerScope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
 		while (!token.IsCancellationRequested)
 		{
 			try
