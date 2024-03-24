@@ -9,7 +9,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
+using static Iceshrimp.Parsing.MfmNodeTypes;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;

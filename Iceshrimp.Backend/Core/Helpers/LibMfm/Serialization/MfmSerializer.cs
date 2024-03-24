@@ -1,5 +1,5 @@
 using System.Text;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
+using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 
@@ -15,7 +15,7 @@ public static class MfmSerializer
 			{
 				case MfmCodeBlockNode mfmCodeBlockNode:
 				{
-					result.Append($"```{mfmCodeBlockNode.Language ?? ""}\n");
+					result.Append($"```{mfmCodeBlockNode.Language?.Value ?? ""}\n");
 					result.Append(mfmCodeBlockNode.Code);
 					result.Append("```");
 					break;
@@ -101,7 +101,7 @@ public static class MfmSerializer
 				{
 					result.Append($"@{mfmMentionNode.Username}");
 					if (mfmMentionNode.Host != null)
-						result.Append($"@{mfmMentionNode.Host}");
+						result.Append($"@{mfmMentionNode.Host.Value}");
 					break;
 				}
 				case MfmPlainNode:

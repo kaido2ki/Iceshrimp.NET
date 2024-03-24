@@ -7,7 +7,7 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
+using static Iceshrimp.Parsing.MfmNodeTypes;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;

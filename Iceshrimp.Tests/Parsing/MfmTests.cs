@@ -1,5 +1,4 @@
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Iceshrimp.Tests.Parsing;
@@ -9,13 +8,6 @@ public class MfmTests
 {
 	private const string Mfm =
 		"<plain>*blabla*</plain> *test* #example @example @example@invalid @example@example.com @invalid:matrix.org https://hello.com http://test.de <https://大石泉すき.example.com> javascript://sdfgsdf [test](https://asdfg) ?[test](https://asdfg) `asd`";
-
-	[TestMethod]
-	public void TestParse()
-	{
-		//TODO: actually validate the output (this currently only checks that no exception is thrown)
-		MfmParser.Parse(Mfm);
-	}
 
 	[TestMethod]
 	public async Task TestToHtml()

@@ -5,7 +5,7 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
+using static Iceshrimp.Parsing.MfmNodeTypes;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -39,7 +39,7 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 
 		var users = await mentionNodes
 		                  .DistinctBy(p => p.Acct)
-		                  .Select(async p => await userResolver.ResolveAsyncOrNull(p.Username, p.Host ?? host))
+		                  .Select(async p => await userResolver.ResolveAsyncOrNull(p.Username, p.Host?.Value ?? host))
 		                  .AwaitAllNoConcurrencyAsync();
 
 		users.AddRange(await userUris
@@ -82,7 +82,7 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 		var mentionNodes = EnumerateMentions(nodes);
 		var users = await mentionNodes
 		                  .DistinctBy(p => p.Acct)
-		                  .Select(async p => await userResolver.ResolveAsyncOrNull(p.Username, p.Host ?? host))
+		                  .Select(async p => await userResolver.ResolveAsyncOrNull(p.Username, p.Host?.Value ?? host))
 		                  .AwaitAllNoConcurrencyAsync();
 
 		return users.Where(p => p != null)

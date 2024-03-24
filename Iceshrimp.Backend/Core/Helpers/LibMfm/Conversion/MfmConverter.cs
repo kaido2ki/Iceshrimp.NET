@@ -8,8 +8,9 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
+using static Iceshrimp.Parsing.MfmNodeTypes;
 using Microsoft.Extensions.Options;
+using Microsoft.FSharp.Collections;
 using MfmHtmlParser = Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing.HtmlParser;
 using HtmlParser = AngleSharp.Html.Parser.HtmlParser;
 
@@ -55,7 +56,8 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 	}
 
 	public async Task<string> ToHtmlAsync(
-		IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null
+		IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions, string? host,
+		string? quoteUri = null
 	)
 	{
 		var context  = BrowsingContext.New();
@@ -93,7 +95,9 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 		return await ToHtmlAsync(nodes, mentions, host, quoteUri);
 	}
 
-	private INode FromMfmNode(IDocument document, MfmNode node, List<Note.MentionedUser> mentions, string? host)
+	private INode FromMfmNode(
+		IDocument document, MfmNode node, List<Note.MentionedUser> mentions, string? host
+	)
 	{
 		switch (node)
 		{
@@ -185,13 +189,13 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 				var el = document.CreateElement("span");
 
 				// Fall back to object host, as localpart-only mentions are relative to the instance the note originated from
-				mentionNode.Host ??= host ?? config.Value.AccountDomain;
+				var finalHost = mentionNode.Host?.Value ?? host ?? config.Value.AccountDomain;
 
-				if (mentionNode.Host == config.Value.WebDomain)
-					mentionNode.Host = config.Value.AccountDomain;
+				if (finalHost == config.Value.WebDomain)
+					finalHost = config.Value.AccountDomain;
 
 				var mention = mentions.FirstOrDefault(p => p.Username.EqualsIgnoreCase(mentionNode.Username) &&
-				                                           p.Host.EqualsIgnoreCase(mentionNode.Host));
+				                                           p.Host.EqualsIgnoreCase(finalHost));
 				if (mention == null)
 				{
 					el.TextContent = mentionNode.Acct;
@@ -282,14 +286,14 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 	private void AddHtmlMarkup(MfmNode node, string chars)
 	{
 		if (SupportsHtmlFormatting) return;
-		var markupNode = new MfmTextNode { Text = chars };
-		node.Children = node.Children.Prepend(markupNode).Append(markupNode);
+		var markupNode = new MfmTextNode(chars);
+		node.Children = ListModule.OfSeq(node.Children.Prepend(markupNode).Append(markupNode));
 	}
 
 	private void AddHtmlMarkupStartOnly(MfmNode node, string chars)
 	{
 		if (SupportsHtmlFormatting) return;
-		var markupNode = new MfmTextNode { Text = chars };
-		node.Children = node.Children.Prepend(markupNode);
+		var markupNode = new MfmTextNode(chars);
+		node.Children = ListModule.OfSeq(node.Children.Prepend(markupNode));
 	}
 }

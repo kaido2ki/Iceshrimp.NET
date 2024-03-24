@@ -3,8 +3,9 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Types;
+using static Iceshrimp.Parsing.MfmNodeTypes;
 using Microsoft.Extensions.Options;
+using Microsoft.FSharp.Collections;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
@@ -42,7 +43,8 @@ public class MentionsResolver(
 		{
 			if (node is not MfmMentionNode mention)
 			{
-				node.Children = ResolveMentions(node.Children, host, mentionCache, splitDomainMapping);
+				node.Children =
+					ListModule.OfSeq(ResolveMentions(node.Children, host, mentionCache, splitDomainMapping));
 				continue;
 			}
 
@@ -59,27 +61,24 @@ public class MentionsResolver(
 	)
 	{
 		// Fall back to object host, as localpart-only mentions are relative to the instance the note originated from
-		node.Host ??= host ?? config.Value.AccountDomain;
+		var finalHost = node.Host?.Value ?? host ?? config.Value.AccountDomain;
 
-		if (node.Host == config.Value.WebDomain)
-			node.Host = config.Value.AccountDomain;
+		if (finalHost == config.Value.WebDomain)
+			finalHost = config.Value.AccountDomain;
 
-		if (node.Host != config.Value.AccountDomain &&
-		    splitDomainMapping.TryGetValue((node.Username.ToLowerInvariant(), node.Host), out var value))
-			node.Host = value;
+		if (finalHost != config.Value.AccountDomain &&
+		    splitDomainMapping.TryGetValue((node.Username.ToLowerInvariant(), finalHost), out var value))
+			finalHost = value;
 
 		var resolvedUser =
-			mentionCache.FirstOrDefault(p => p.Username.EqualsIgnoreCase(node.Username) && p.Host == node.Host);
+			mentionCache.FirstOrDefault(p => p.Username.EqualsIgnoreCase(node.Username) && p.Host == finalHost);
 
 		if (resolvedUser != null)
 		{
-			node.Username = resolvedUser.Username;
-			node.Host     = resolvedUser.Host;
-			node.Acct     = $"@{resolvedUser.Username}@{resolvedUser.Host}";
-
-			return node;
+			return new MfmMentionNode($"@{resolvedUser.Username}@{resolvedUser.Host}",
+			                          resolvedUser.Username, resolvedUser.Host);
 		}
 
-		return new MfmPlainNode { Children = [new MfmTextNode { Text = node.Acct }] };
+		return new MfmPlainNode(node.Acct);
 	}
 }
