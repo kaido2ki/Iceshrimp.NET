@@ -1,4 +1,3 @@
-using EntityFramework.Exceptions.Common;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore;

@@ -21,8 +21,7 @@ public class PushService(
 	ILogger<PushService> logger,
 	IServiceScopeFactory scopeFactory,
 	HttpClient httpClient,
-	IOptions<Config.InstanceSection> config,
-	MetaService meta
+	IOptions<Config.InstanceSection> config
 ) : BackgroundService
 {
 	protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -86,6 +85,7 @@ public class PushService(
 				if (body.Length > 137)
 					body = body.Truncate(137).TrimEnd() + "...";
 
+				var meta = scope.ServiceProvider.GetRequiredService<MetaService>();
 				var (priv, pub) = await meta.GetMany(MetaEntity.VapidPrivateKey, MetaEntity.VapidPublicKey);
 
 				var client = new WebPushClient(httpClient);
