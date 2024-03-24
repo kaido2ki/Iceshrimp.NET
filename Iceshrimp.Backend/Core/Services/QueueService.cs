@@ -82,7 +82,7 @@ public class QueueService(IServiceScopeFactory scopeFactory) : BackgroundService
 				}
 				catch
 				{
-					//TODO: log reconnect here
+					// ignored (logging this would spam logs on restart)
 				}
 			}
 		}
