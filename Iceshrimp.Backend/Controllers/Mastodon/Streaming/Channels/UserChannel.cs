@@ -23,8 +23,8 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		if (IsSubscribed) return;
 		IsSubscribed = true;
 
-		var provider = connection.Scope.ServiceProvider;
-		var db       = provider.GetRequiredService<DatabaseContext>();
+		await using var scope = connection.ScopeFactory.CreateAsyncScope();
+		await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
 		_followedUsers = await db.Users.Where(p => p == connection.Token.User)
 		                         .SelectMany(p => p.Following)
@@ -69,8 +69,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		try
 		{
 			if (!IsApplicable(note)) return;
-			var provider = connection.Scope.ServiceProvider;
-			var renderer = provider.GetRequiredService<NoteRenderer>();
+			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+
+			var renderer = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
 			var rendered = await renderer.RenderAsync(note, connection.Token.User);
 			var message = new StreamingUpdateMessage
 			{
@@ -91,8 +92,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		try
 		{
 			if (!IsApplicable(note)) return;
-			var provider = connection.Scope.ServiceProvider;
-			var renderer = provider.GetRequiredService<NoteRenderer>();
+			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+
+			var renderer = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
 			var rendered = await renderer.RenderAsync(note, connection.Token.User);
 			var message = new StreamingUpdateMessage
 			{
@@ -132,8 +134,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		try
 		{
 			if (!IsApplicable(notification)) return;
-			var provider = connection.Scope.ServiceProvider;
-			var renderer = provider.GetRequiredService<NotificationRenderer>();
+			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+
+			var renderer = scope.ServiceProvider.GetRequiredService<NotificationRenderer>();
 
 			NotificationEntity rendered;
 			try

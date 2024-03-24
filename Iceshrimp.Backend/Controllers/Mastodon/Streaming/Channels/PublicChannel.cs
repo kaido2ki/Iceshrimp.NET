@@ -60,7 +60,9 @@ public class PublicChannel(
 		try
 		{
 			if (!IsApplicable(note)) return;
-			var provider = connection.Scope.ServiceProvider;
+			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+
+			var provider = scope.ServiceProvider;
 			var renderer = provider.GetRequiredService<NoteRenderer>();
 			var rendered = await renderer.RenderAsync(note, connection.Token.User);
 			var message = new StreamingUpdateMessage
@@ -82,7 +84,9 @@ public class PublicChannel(
 		try
 		{
 			if (!IsApplicable(note)) return;
-			var provider = connection.Scope.ServiceProvider;
+			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+
+			var provider = scope.ServiceProvider;
 			var renderer = provider.GetRequiredService<NoteRenderer>();
 			var rendered = await renderer.RenderAsync(note, connection.Token.User);
 			var message = new StreamingUpdateMessage
