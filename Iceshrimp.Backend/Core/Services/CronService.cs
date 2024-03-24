@@ -24,7 +24,7 @@ public class CronService(IServiceScopeFactory serviceScopeFactory) : BackgroundS
 			{
 				try
 				{
-					await using var scope = serviceScopeFactory.CreateAsyncScope(); 
+					await using var scope = serviceScopeFactory.CreateAsyncScope();
 					await task.Invoke(scope.ServiceProvider);
 				}
 				catch

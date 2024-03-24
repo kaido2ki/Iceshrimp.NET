@@ -14,12 +14,12 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class QueueService(IServiceScopeFactory scopeFactory) : BackgroundService
 {
-	private readonly List<IPostgresJobQueue> _queues = [];
+	private readonly List<IPostgresJobQueue> _queues             = [];
+	public readonly  BackgroundTaskQueue     BackgroundTaskQueue = new();
+	public readonly  DeliverQueue            DeliverQueue        = new();
 
-	public readonly InboxQueue          InboxQueue          = new();
-	public readonly DeliverQueue        DeliverQueue        = new();
-	public readonly PreDeliverQueue     PreDeliverQueue     = new();
-	public readonly BackgroundTaskQueue BackgroundTaskQueue = new();
+	public readonly InboxQueue      InboxQueue      = new();
+	public readonly PreDeliverQueue PreDeliverQueue = new();
 
 	private async Task<NpgsqlConnection> GetNpgsqlConnection(IServiceScope scope)
 	{
@@ -124,31 +124,15 @@ public class PostgresJobQueue<T>(
 	int parallelism
 ) : IPostgresJobQueue where T : class
 {
-	public string Name => name;
-
-	private event EventHandler? QueuedChannelEvent;
-	private event EventHandler? DelayedChannelEvent;
-
-	private readonly AsyncAutoResetEvent _queuedChannel  = new(false);
 	private readonly AsyncAutoResetEvent _delayedChannel = new(false);
+
+	private readonly AsyncAutoResetEvent _queuedChannel = new(false);
+
+	private IServiceScopeFactory _scopeFactory = null!;
+	public  string               Name => name;
 
 	public void RaiseJobQueuedEvent()  => QueuedChannelEvent?.Invoke(null, EventArgs.Empty);
 	public void RaiseJobDelayedEvent() => DelayedChannelEvent?.Invoke(null, EventArgs.Empty);
-
-	// ReSharper disable once SuggestBaseTypeForParameter
-	private async Task RaiseJobQueuedEvent(DatabaseContext db) =>
-		await db.Database.ExecuteSqlAsync($"SELECT pg_notify('queued', {name});");
-
-	// ReSharper disable once SuggestBaseTypeForParameter
-	private async Task RaiseJobDelayedEvent(DatabaseContext db) =>
-		await db.Database.ExecuteSqlAsync($"SELECT pg_notify('delayed', {name});");
-
-	private AsyncServiceScope GetScope() => _scopeFactory.CreateAsyncScope();
-
-	private static DatabaseContext GetDbContext(IServiceScope scope) =>
-		scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-
-	private IServiceScopeFactory _scopeFactory = null!;
 
 	public async Task ExecuteAsync(IServiceScopeFactory scopeFactory, CancellationToken token)
 	{
@@ -170,10 +154,10 @@ public class PostgresJobQueue<T>(
 
 				var runningCount =
 					await db.Jobs.CountAsync(p => p.Queue == name && p.Status == Job.JobStatus.Running,
-					                         cancellationToken: token);
+					                         token);
 				var queuedCount =
 					await db.Jobs.CountAsync(p => p.Queue == name && p.Status == Job.JobStatus.Queued,
-					                         cancellationToken: token);
+					                         token);
 
 				var actualParallelism = Math.Min(parallelism - runningCount, queuedCount);
 				if (actualParallelism == 0)
@@ -198,6 +182,31 @@ public class PostgresJobQueue<T>(
 		}
 	}
 
+	public async Task RecoverOrPrepareForExitAsync()
+	{
+		//TODO: Make this support clustering
+		await using var scope = GetScope();
+		await using var db    = GetDbContext(scope);
+		await db.Jobs.Where(p => p.Status == Job.JobStatus.Running)
+		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.Status, i => Job.JobStatus.Queued));
+	}
+
+	private event EventHandler? QueuedChannelEvent;
+	private event EventHandler? DelayedChannelEvent;
+
+	// ReSharper disable once SuggestBaseTypeForParameter
+	private async Task RaiseJobQueuedEvent(DatabaseContext db) =>
+		await db.Database.ExecuteSqlAsync($"SELECT pg_notify('queued', {name});");
+
+	// ReSharper disable once SuggestBaseTypeForParameter
+	private async Task RaiseJobDelayedEvent(DatabaseContext db) =>
+		await db.Database.ExecuteSqlAsync($"SELECT pg_notify('delayed', {name});");
+
+	private AsyncServiceScope GetScope() => _scopeFactory.CreateAsyncScope();
+
+	private static DatabaseContext GetDbContext(IServiceScope scope) =>
+		scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
 	private async Task DelayedJobHandlerAsync(CancellationToken token)
 	{
 		using var loggerScope = _scopeFactory.CreateScope();
@@ -214,7 +223,7 @@ public class PostgresJobQueue<T>(
 				                                p.Status == Job.JobStatus.Delayed &&
 				                                (p.DelayedUntil == null || p.DelayedUntil < DateTime.UtcNow))
 				                    .ExecuteUpdateAsync(p => p.SetProperty(i => i.Status, i => Job.JobStatus.Queued),
-				                                        cancellationToken: token);
+				                                        token);
 
 				if (count > 0) continue;
 
@@ -402,14 +411,5 @@ public class PostgresJobQueue<T>(
 		await db.SaveChangesAsync();
 
 		await RaiseJobDelayedEvent(db);
-	}
-
-	public async Task RecoverOrPrepareForExitAsync()
-	{
-		//TODO: Make this support clustering
-		await using var scope = GetScope();
-		await using var db    = GetDbContext(scope);
-		await db.Jobs.Where(p => p.Status == Job.JobStatus.Running)
-		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.Status, i => Job.JobStatus.Queued));
 	}
 }

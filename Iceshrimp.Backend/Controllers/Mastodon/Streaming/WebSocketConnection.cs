@@ -16,17 +16,17 @@ public sealed class WebSocketConnection(
 	CancellationToken ct
 ) : IDisposable
 {
-	private readonly SemaphoreSlim        _lock        = new(1);
-	public readonly  List<IChannel>       Channels     = [];
-	public readonly  EventService         EventService = eventSvc;
-	public readonly  OauthToken           Token        = token;
-	public readonly  IServiceScope        Scope        = scopeFactory.CreateScope();
+	private readonly SemaphoreSlim  _lock        = new(1);
+	public readonly  List<IChannel> Channels     = [];
+	public readonly  EventService   EventService = eventSvc;
+	public readonly  IServiceScope  Scope        = scopeFactory.CreateScope();
+	public readonly  OauthToken     Token        = token;
 
 	public void Dispose()
 	{
 		foreach (var channel in Channels)
 			channel.Dispose();
-		
+
 		Scope.Dispose();
 	}
 

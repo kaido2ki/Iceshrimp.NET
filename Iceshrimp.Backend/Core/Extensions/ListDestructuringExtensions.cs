@@ -39,8 +39,10 @@ public static class ListDestructuringExtensions
 		item3 = list[2];
 		item4 = list[3];
 	}
-	
-	public static void Deconstruct<T>(this IList<T> list, out T item1, out T item2, out T item3, out T item4, out T item5)
+
+	public static void Deconstruct<T>(
+		this IList<T> list, out T item1, out T item2, out T item3, out T item4, out T item5
+	)
 	{
 		if (list.Count != 5)
 			throw new Exception("This deconstructor only takes lists of length 5");

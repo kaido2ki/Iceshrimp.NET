@@ -85,9 +85,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<AllowedInstance>      AllowedInstances      { get; init; } = null!;
 	public virtual DbSet<BlockedInstance>      BlockedInstances      { get; init; } = null!;
 	public virtual DbSet<MetaStoreEntry>       MetaStore             { get; init; } = null!;
-	public virtual DbSet<DataProtectionKey>    DataProtectionKeys    { get; init; } = null!;
 	public virtual DbSet<CacheEntry>           CacheStore            { get; init; } = null!;
-	public virtual DbSet<Job>          Jobs                  { get; init; } = null!;
+	public virtual DbSet<Job>                  Jobs                  { get; init; } = null!;
+	public virtual DbSet<DataProtectionKey>    DataProtectionKeys    { get; init; } = null!;
 
 	public static NpgsqlDataSource GetDataSource(Config.DatabaseSection? config)
 	{
@@ -1248,7 +1248,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			      .WithMany(p => p.Webhooks)
 			      .OnDelete(DeleteBehavior.Cascade);
 		});
-		
+
 		modelBuilder.Entity<Job>(entity =>
 		{
 			entity.Property(e => e.Status).HasDefaultValue(Job.JobStatus.Queued);

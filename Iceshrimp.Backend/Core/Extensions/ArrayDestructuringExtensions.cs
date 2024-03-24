@@ -39,7 +39,7 @@ public static class ArrayDestructuringExtensions
 		item3 = array[2];
 		item4 = array[3];
 	}
-	
+
 	public static void Deconstruct<T>(this T[] array, out T item1, out T item2, out T item3, out T item4, out T item5)
 	{
 		if (array.Length != 5)

@@ -19,7 +19,7 @@ public sealed class AsyncAutoResetEvent(bool signaled)
 			{
 				// If the token is cancelled, cancel the waiter.
 				var registration =
-					cancellationToken.Register(() => tcs.TrySetCanceled(), useSynchronizationContext: false);
+					cancellationToken.Register(() => tcs.TrySetCanceled(), false);
 
 				// If the waiter completes or faults, unregister our interest in cancellation.
 				tcs.Task.ContinueWith(

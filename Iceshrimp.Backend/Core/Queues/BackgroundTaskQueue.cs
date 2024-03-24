@@ -189,10 +189,10 @@ public class BackgroundTaskQueue()
 	}
 }
 
-[JsonDerivedType(typeof(BackgroundTaskJobData), typeDiscriminator: "base")]
-[JsonDerivedType(typeof(DriveFileDeleteJobData), typeDiscriminator: "driveFileDelete")]
-[JsonDerivedType(typeof(PollExpiryJobData), typeDiscriminator: "pollExpiry")]
-[JsonDerivedType(typeof(MuteExpiryJobData), typeDiscriminator: "muteExpiry")]
+[JsonDerivedType(typeof(BackgroundTaskJobData), "base")]
+[JsonDerivedType(typeof(DriveFileDeleteJobData), "driveFileDelete")]
+[JsonDerivedType(typeof(PollExpiryJobData), "pollExpiry")]
+[JsonDerivedType(typeof(MuteExpiryJobData), "muteExpiry")]
 public class BackgroundTaskJobData : Job;
 
 public class DriveFileDeleteJobData : BackgroundTaskJobData

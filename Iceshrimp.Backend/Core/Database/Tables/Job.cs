@@ -11,6 +11,15 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("DelayedUntil")]
 public class Job
 {
+	public enum JobStatus
+	{
+		Queued,
+		Delayed,
+		Running,
+		Completed,
+		Failed
+	}
+
 	[Key] [Column("id")] public Guid Id { get; set; }
 
 	[Column("queue")]             public string    Queue            { get; set; } = null!;
@@ -28,13 +37,4 @@ public class Job
 	public long Duration => (long)((FinishedAt ?? DateTime.Now) - (StartedAt ?? QueuedAt)).TotalMilliseconds;
 
 	[NotMapped] public long QueueDuration => (long)((StartedAt ?? DateTime.Now) - QueuedAt).TotalMilliseconds;
-
-	public enum JobStatus
-	{
-		Queued,
-		Delayed,
-		Running,
-		Completed,
-		Failed
-	}
 }

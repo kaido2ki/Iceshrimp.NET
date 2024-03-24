@@ -24,7 +24,7 @@ public class InstanceInfoV2Response(
 	[J("registrations")] public InstanceRegistrations   Registrations => new(config.Security);
 	[J("configuration")] public InstanceConfigurationV2 Configuration => new(config.Instance);
 
-	[J("usage")]   public required InstanceUsage   Usage   { get; set; }
+	[J("usage")] public required InstanceUsage Usage { get; set; }
 
 	//TODO: add the rest
 }
