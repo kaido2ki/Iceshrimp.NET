@@ -74,7 +74,7 @@ public class DeliverQueue()
 
 				job.ExceptionMessage = e.Message;
 				job.ExceptionSource  = e.Source;
-				job.DelayedUntil     = DateTime.Now + backoff;
+				job.DelayedUntil     = DateTime.UtcNow + backoff;
 				job.Status           = Job.JobStatus.Delayed;
 			}
 			else
