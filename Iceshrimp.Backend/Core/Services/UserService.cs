@@ -113,9 +113,10 @@ public class UserService(
 
 		if (actor.Id != uri)
 			throw GracefulException.UnprocessableEntity("Uri doesn't match id of fetched actor");
-
 		if (actor.PublicKey?.Id == null || actor.PublicKey?.PublicKey == null)
 			throw GracefulException.UnprocessableEntity("Actor has no valid public key");
+		if (new Uri(actor.PublicKey.Id).Host != new Uri(actor.Id).Host)
+			throw GracefulException.UnprocessableEntity("Actor public key id host doesn't match actor id host");
 
 		var host = AcctToTuple(acct).Host ?? throw new Exception("Host must not be null at this stage");
 
