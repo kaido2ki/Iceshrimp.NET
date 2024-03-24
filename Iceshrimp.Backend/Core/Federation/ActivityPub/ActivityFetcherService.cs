@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -8,12 +9,14 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
 public class ActivityFetcherService(
+	IOptions<Config.InstanceSection> config,
 	HttpClient client,
 	HttpRequestService httpRqSvc,
 	SystemUserService systemUserSvc,
@@ -38,52 +41,82 @@ public class ActivityFetcherService(
 		return await FetchRawActivityAsync(url, actor, keypair);
 	}
 
-	public async Task<IEnumerable<ASObject>> FetchActivityAsync(
+	public async Task<IEnumerable<ASObject>> FetchActivityAsync(string url, User actor, UserKeypair keypair)
+	{
+		var (activity, finalUri) = await FetchActivityInternal(url, actor, keypair);
+		if (activity == null) return [];
+
+		var activityUri = new Uri(activity.Id);
+
+		if (activityUri.ToString() == finalUri.ToString())
+			return [activity];
+
+		if (new Uri(activity.Id).Host != finalUri.Host)
+			throw GracefulException.UnprocessableEntity("Activity identifier doesn't match final host");
+
+		(activity, finalUri) = await FetchActivityInternal(url, actor, keypair);
+		if (activity == null) return [];
+
+		activityUri = new Uri(activity.Id);
+
+		if (activityUri.ToString() == finalUri.ToString())
+			return [activity];
+
+		throw GracefulException
+			.UnprocessableEntity("Activity identifier still doesn't match final URL after second fetch attempt");
+	}
+
+	private async Task<(ASObject? obj, Uri finalUri)> FetchActivityInternal(
 		string url, User actor, UserKeypair keypair, int recurse = 3
 	)
 	{
-		var request = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair).DisableAutoRedirects();
-		var response = await client.SendAsync(request);
+		var requestHost = new Uri(url).Host;
+		if (requestHost == config.Value.WebDomain || requestHost == config.Value.AccountDomain)
+			throw GracefulException.UnprocessableEntity("Refusing to fetch activity from local domain");
 
+		var request  = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair);
+		var response = await client.SendAsync(request);
+		
 		if (IsRedirect(response))
 		{
 			var location = response.Headers.Location;
 			if (location == null) throw new Exception("Redirection requested but no location header found");
 			if (recurse <= 0) throw new Exception("Redirection requested but recurse counter is at zero");
-			return await FetchActivityAsync(location.ToString(), actor, keypair, --recurse);
+			return await FetchActivityInternal(location.ToString(), actor, keypair, --recurse);
 		}
+
+		var finalUri = response.RequestMessage?.RequestUri ??
+		               throw new Exception("RequestMessage must not be null at this stage");
 
 		if (!response.IsSuccessStatusCode)
 		{
 			if (response.StatusCode == HttpStatusCode.Gone)
 				throw AuthFetchException.NotFound("The remote user no longer exists.");
 			logger.LogDebug("Failed to fetch activity: response status was {code}", response.StatusCode);
-			return [];
+			return (null, finalUri);
 		}
 
 		if (!IsValidActivityContentType(response.Content.Headers.ContentType))
 		{
 			logger.LogDebug("Failed to fetch activity: content type {type} is invalid",
 			                response.Content.Headers.ContentType);
-			return [];
+			return (null, finalUri);
 		}
-
-		var finalUri = response.RequestMessage?.RequestUri ??
-		               throw new Exception("RequestMessage must not be null at this stage");
 
 		var input = await response.Content.ReadAsStringAsync();
 		var json  = JsonConvert.DeserializeObject<JObject?>(input);
 
 		var res = LdHelpers.Expand(json) ?? throw new GracefulException("Failed to expand JSON-LD object");
-		var activities =
-			res.Select(p => p.ToObject<ASObject>(new JsonSerializer { Converters = { new ASObjectConverter() } }) ??
-			                throw new GracefulException("Failed to deserialize activity"))
-			   .ToList();
+		if (res is not [{ } token])
+			throw new GracefulException("Received zero or more than one activity");
 
-		if (activities.Any(p => new Uri(p.Id).Host != finalUri.Host))
-			throw new GracefulException("Activity identifier doesn't match final host");
+		var activity = token.ToObject<ASObject>(new JsonSerializer { Converters = { new ASObjectConverter() } }) ??
+		               throw new GracefulException("Failed to deserialize activity");
 
-		return activities;
+		if (finalUri.Host == config.Value.WebDomain || finalUri.Host == config.Value.WebDomain)
+			throw GracefulException.UnprocessableEntity("Refusing to process activity from local domain");
+
+		return (activity, finalUri);
 	}
 
 	private static bool IsRedirect(HttpResponseMessage response)
