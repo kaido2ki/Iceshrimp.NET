@@ -1,4 +1,3 @@
-using Asp.Versioning;
 using Iceshrimp.Backend.Core.Extensions;
 using Vite.AspNetCore.Extensions;
 
@@ -13,12 +12,6 @@ builder.Services.AddControllers()
        .AddModelBindingProviders()
        .AddValueProviderFactories();
 
-builder.Services.AddApiVersioning(options =>
-{
-	options.DefaultApiVersion               = new ApiVersion(1);
-	options.ReportApiVersions               = true;
-	options.UnsupportedApiVersionStatusCode = 501;
-});
 builder.Services.AddSwaggerGenWithOptions();
 builder.Services.AddRazorPages();
 builder.Services.AddViteServices(options =>

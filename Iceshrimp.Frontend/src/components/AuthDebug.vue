@@ -5,7 +5,7 @@ import { onMounted, ref } from "vue";
 const field = ref<HTMLElement>();
 
 onMounted(() => {
-	api('/v1/auth').then(res => {
+	api('/auth').then(res => {
 		field.value!.textContent = JSON.stringify(res, null, 2);
 	});
 });

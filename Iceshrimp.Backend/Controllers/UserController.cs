@@ -13,7 +13,7 @@ namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
 [EnableRateLimiting("sliding")]
-[Route("/api/iceshrimp/v1/user/{id}")]
+[Route("/api/iceshrimp/user/{id}")]
 [Produces(MediaTypeNames.Application.Json)]
 public class UserController(
 	DatabaseContext db,

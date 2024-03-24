@@ -18,7 +18,7 @@ namespace Iceshrimp.Backend.Controllers;
 [Authenticate]
 [Authorize("role:admin")]
 [ApiController]
-[Route("/api/v1/iceshrimp/admin")]
+[Route("/api/iceshrimp/admin")]
 [SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor",
                  Justification = "We only have a DatabaseContext in our DI pool, not the base type")]
 public class AdminController(
