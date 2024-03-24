@@ -66,7 +66,8 @@ public static class ServiceExtensions
 			.AddScoped<InstanceService>()
 			.AddScoped<MfmConverter>()
 			.AddScoped<UserProfileRenderer>()
-			.AddScoped<CacheService>();
+			.AddScoped<CacheService>()
+			.AddScoped<MetaService>();
 
 		// Singleton = instantiated once across application lifetime
 		services
@@ -80,8 +81,7 @@ public static class ServiceExtensions
 			.AddSingleton<AuthorizationMiddleware>()
 			.AddSingleton<RequestVerificationMiddleware>()
 			.AddSingleton<RequestDurationMiddleware>()
-			.AddSingleton<PushService>()
-			.AddSingleton<MetaService>();
+			.AddSingleton<PushService>();
 
 		// Hosted services = long running background tasks
 		// Note: These need to be added as a singleton as well to ensure data consistency

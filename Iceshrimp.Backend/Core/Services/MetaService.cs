@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class MetaService(IServiceScopeFactory scopeFactory)
+public class MetaService([FromKeyedServices("cache")] DatabaseContext db)
 {
 	public async Task<T> Get<T>(Meta<T> meta) => meta.ConvertGet(await Fetch(meta.Key));
 
@@ -31,9 +31,6 @@ public class MetaService(IServiceScopeFactory scopeFactory)
 
 	public async Task EnsureSet<T>(IReadOnlyList<Meta<T>> metas, Func<List<T>> values)
 	{
-		await using var scope = GetScope();
-		await using var db    = GetDbContext(scope);
-
 		if (await db.MetaStore.CountAsync(p => metas.Select(m => m.Key).Contains(p.Key)) == metas.Count)
 			return;
 
@@ -48,37 +45,18 @@ public class MetaService(IServiceScopeFactory scopeFactory)
 	public async Task Set<T>(Meta<T> meta, T value) => await Set(meta.Key, meta.ConvertSet(value));
 
 	// Ensures the table is in memory (we could use pg_prewarm for this but that extension requires superuser privileges to install)
-	public async Task WarmupCache()
-	{
-		await using var scope = GetScope();
-		await using var db    = GetDbContext(scope);
+	public async Task WarmupCache() => await db.MetaStore.ToListAsync();
 
-		await db.MetaStore.ToListAsync();
-	}
+	private async Task<string?> Fetch(string key) =>
+		await db.MetaStore.Where(p => p.Key == key).Select(p => p.Value).FirstOrDefaultAsync();
 
-	private async Task<string?> Fetch(string key)
-	{
-		await using var scope = GetScope();
-		await using var db    = GetDbContext(scope);
-
-		return await db.MetaStore.Where(p => p.Key == key).Select(p => p.Value).FirstOrDefaultAsync();
-	}
-
-	private async Task<Dictionary<string, string?>> FetchMany(IEnumerable<string> keys)
-	{
-		await using var scope = GetScope();
-		await using var db    = GetDbContext(scope);
-
-		return await db
-		             .MetaStore.Where(p => keys.Contains(p.Key))
-		             .ToDictionaryAsync(p => p.Key, p => p.Value);
-	}
+	private async Task<Dictionary<string, string?>> FetchMany(IEnumerable<string> keys) =>
+		await db.MetaStore.Where(p => keys.Contains(p.Key))
+		        .ToDictionaryAsync(p => p.Key, p => p.Value);
 
 	private async Task Set(string key, string? value)
 	{
-		await using var scope  = GetScope();
-		await using var db     = GetDbContext(scope);
-		var             entity = await db.MetaStore.FirstOrDefaultAsync(p => p.Key == key);
+		var entity = await db.MetaStore.FirstOrDefaultAsync(p => p.Key == key);
 		if (entity != null)
 		{
 			entity.Value = value;
@@ -86,27 +64,12 @@ public class MetaService(IServiceScopeFactory scopeFactory)
 		}
 		else
 		{
-			entity = new MetaStoreEntry { Key = key, Value = value };
-			db.Add(entity);
-			try
-			{
-				await db.SaveChangesAsync();
-			}
-			catch (UniqueConstraintException)
-			{
-				db.Remove(entity);
-				entity = await db.MetaStore.FirstOrDefaultAsync(p => p.Key == key) ??
-				         throw new Exception("Failed to fetch entity after UniqueConstraintException");
-				entity.Value = value;
-				await db.SaveChangesAsync();
-			}
+			await db.MetaStore.Upsert(new MetaStoreEntry { Key = key, Value = value })
+			        .On(p => p.Key)
+			        .WhenMatched((_, orig) => new MetaStoreEntry { Value = orig.Value, })
+			        .RunAsync();
 		}
 	}
-
-	private static DatabaseContext GetDbContext(IServiceScope scope) =>
-		scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-
-	private AsyncServiceScope GetScope() => scopeFactory.CreateAsyncScope();
 }
 
 public static class MetaEntity
