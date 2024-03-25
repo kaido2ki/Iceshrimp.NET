@@ -884,7 +884,7 @@ public class NoteService(
 			var existing = await bgDb.Hashtags.Where(p => tags.Contains(p.Name)).Select(p => p.Name).ToListAsync();
 			var dbTags = tags.Except(existing)
 			                 .Select(p => new Hashtag { Id = IdHelpers.GenerateSlowflakeId(), Name = p });
-			await db.UpsertRange(dbTags).On(p => p.Name).NoUpdate().RunAsync();
+			await bgDb.UpsertRange(dbTags).On(p => p.Name).NoUpdate().RunAsync();
 		});
 
 		return tags;
