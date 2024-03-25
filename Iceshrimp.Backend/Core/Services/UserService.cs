@@ -850,8 +850,7 @@ public class UserService(
 			var existing = await bgDb.Hashtags.Where(p => tags.Contains(p.Name)).Select(p => p.Name).ToListAsync();
 			var dbTags = tags.Except(existing)
 			                 .Select(p => new Hashtag { Id = IdHelpers.GenerateSlowflakeId(), Name = p });
-			await bgDb.AddRangeAsync(dbTags);
-			await bgDb.SaveChangesAsync();
+			await db.UpsertRange(dbTags).On(p => p.Name).NoUpdate().RunAsync();
 		});
 
 		return tags;
