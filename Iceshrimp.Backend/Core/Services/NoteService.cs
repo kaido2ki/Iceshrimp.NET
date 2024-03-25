@@ -326,7 +326,7 @@ public class NoteService(
 
 		var actor    = userRenderer.RenderLite(note.User);
 		var obj      = await noteRenderer.RenderAsync(note, mentions);
-		var activity = activityRenderer.RenderUpdate(obj, actor);
+		var activity = ActivityPub.ActivityRenderer.RenderUpdate(obj, actor);
 
 		var recipients = await db.Users.Where(p => mentionedUserIds.Contains(p.Id))
 		                         .Select(p => new User { Id = p.Id })
@@ -650,10 +650,13 @@ public class NoteService(
 		if (dbNote.User.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
 
+		if (dbNote.UpdatedAt != null && dbNote.UpdatedAt > (note.UpdatedAt ?? DateTime.UtcNow))
+			throw GracefulException.UnprocessableEntity("Note update is older than last known version");
+
 		var noteEdit = new NoteEdit
 		{
 			Id        = IdHelpers.GenerateSlowflakeId(),
-			UpdatedAt = DateTime.UtcNow,
+			UpdatedAt = note.UpdatedAt ?? DateTime.UtcNow,
 			Note      = dbNote,
 			Text      = dbNote.Text,
 			Cw        = dbNote.Cw,

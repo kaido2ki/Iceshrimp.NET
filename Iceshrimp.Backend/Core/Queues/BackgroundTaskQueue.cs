@@ -161,14 +161,13 @@ public class BackgroundTaskQueue()
 
 			if (voters.Count == 0) return;
 
-			var activityRenderer = scope.GetRequiredService<ActivityPub.ActivityRenderer>();
 			var userRenderer     = scope.GetRequiredService<ActivityPub.UserRenderer>();
 			var noteRenderer     = scope.GetRequiredService<ActivityPub.NoteRenderer>();
 			var deliverSvc       = scope.GetRequiredService<ActivityPub.ActivityDeliverService>();
 
 			var actor    = userRenderer.RenderLite(note.User);
 			var rendered = await noteRenderer.RenderAsync(note);
-			var activity = activityRenderer.RenderUpdate(rendered, actor);
+			var activity = ActivityPub.ActivityRenderer.RenderUpdate(rendered, actor);
 
 			await deliverSvc.DeliverToAsync(activity, note.User, voters.ToArray());
 		}

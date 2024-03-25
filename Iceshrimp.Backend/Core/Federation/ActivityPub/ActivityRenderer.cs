@@ -25,9 +25,9 @@ public class ActivityRenderer(
 		Cc     = obj.Cc
 	};
 
-	public ASUpdate RenderUpdate(ASNote obj, ASObject actor) => new()
+	public static ASUpdate RenderUpdate(ASNote obj, ASObject actor) => new()
 	{
-		Id     = GenerateActivityId(),
+		Id     = $"{obj.Id}#Update/{(int)(obj.UpdatedAt ?? DateTime.UtcNow).Subtract(DateTime.UnixEpoch).TotalSeconds}",
 		Actor  = ASActor.FromObject(actor),
 		Object = obj,
 		To     = obj.To,

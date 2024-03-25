@@ -50,6 +50,10 @@ public class ASNote : ASObject
 	[J($"{Constants.ActivityStreamsNs}#published")]
 	[JC(typeof(VC))]
 	public DateTime? PublishedAt { get; set; }
+	
+	[J($"{Constants.ActivityStreamsNs}#updated")]
+	[JC(typeof(VC))]
+	public DateTime? UpdatedAt { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#source")]
 	[JC(typeof(ASNoteSourceConverter))]
