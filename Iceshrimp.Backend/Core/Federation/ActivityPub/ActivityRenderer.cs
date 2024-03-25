@@ -72,7 +72,7 @@ public class ActivityRenderer(
 
 		return new ASLike
 		{
-			Id     = $"https://{config.Value.WebDomain}/likes/${like.Id}",
+			Id     = $"https://{config.Value.WebDomain}/likes/{like.Id}",
 			Actor  = userRenderer.RenderLite(like.User),
 			Object = noteRenderer.RenderLite(like.Note)
 		};
