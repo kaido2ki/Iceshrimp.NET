@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Middleware;
@@ -37,10 +38,20 @@ public class ActivityFetcherService(
 		return await FetchRawActivityAsync(url, actor, keypair);
 	}
 
-	public async Task<IEnumerable<ASObject>> FetchActivityAsync(string url, User actor, UserKeypair keypair)
+	public async Task<IEnumerable<ASObject>> FetchActivityAsync(
+		string url, User actor, UserKeypair keypair, int recurse = 3
+	)
 	{
-		var request  = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair);
+		var request = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair).DisableAutoRedirects();
 		var response = await client.SendAsync(request);
+
+		if (IsRedirect(response))
+		{
+			var location = response.Headers.Location;
+			if (location == null) throw new Exception("Redirection requested but no location header found");
+			if (recurse <= 0) throw new Exception("Redirection requested but recurse counter is at zero");
+			return await FetchActivityAsync(location.ToString(), actor, keypair, --recurse);
+		}
 
 		if (!response.IsSuccessStatusCode)
 		{
@@ -75,9 +86,26 @@ public class ActivityFetcherService(
 		return activities;
 	}
 
+	private static bool IsRedirect(HttpResponseMessage response)
+	{
+		switch (response.StatusCode)
+		{
+			case HttpStatusCode.MultipleChoices:
+			case HttpStatusCode.Moved:
+			case HttpStatusCode.Found:
+			case HttpStatusCode.SeeOther:
+			case HttpStatusCode.TemporaryRedirect:
+			case HttpStatusCode.PermanentRedirect:
+				return true;
+
+			default:
+				return false;
+		}
+	}
+
 	public async Task<string?> FetchRawActivityAsync(string url, User actor, UserKeypair keypair)
 	{
-		var request  = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair);
+		var request  = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair).DisableAutoRedirects();
 		var response = await client.SendAsync(request);
 
 		if (!response.IsSuccessStatusCode)

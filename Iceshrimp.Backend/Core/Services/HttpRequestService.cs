@@ -9,7 +9,7 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class HttpRequestService(IOptions<Config.InstanceSection> options)
 {
-	private HttpRequestMessage GenerateRequest(
+	private static HttpRequestMessage GenerateRequest(
 		string url, HttpMethod method,
 		string? body = null,
 		string? contentType = null,

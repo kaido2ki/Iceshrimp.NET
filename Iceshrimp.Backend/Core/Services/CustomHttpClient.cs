@@ -1,19 +1,23 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
 public class CustomHttpClient : HttpClient
 {
-	private static readonly HttpMessageHandler Handler = new SocketsHttpHandler
+	private static readonly HttpMessageHandler InnerHandler = new SocketsHttpHandler
 	{
 		AutomaticDecompression      = DecompressionMethods.All,
 		ConnectCallback             = new FastFallback().ConnectCallback,
 		PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
 		PooledConnectionLifetime    = TimeSpan.FromMinutes(60)
 	};
+
+	private static readonly HttpMessageHandler Handler = new RedirectHandler(InnerHandler);
 
 	public CustomHttpClient(IOptions<Config.InstanceSection> options) : base(Handler)
 	{
@@ -153,6 +157,162 @@ public class CustomHttpClient : HttpClient
 				{
 					enumerator.Dispose();
 				}
+			}
+		}
+	}
+
+	private class RedirectHandler : DelegatingHandler
+	{
+		private int  MaxAutomaticRedirections { get; set; }
+		private bool InitialAutoRedirect      { get; set; }
+
+		public RedirectHandler(HttpMessageHandler innerHandler) : base(innerHandler)
+		{
+			var mostInnerHandler = innerHandler.GetMostInnerHandler();
+			SetupCustomAutoRedirect(mostInnerHandler);
+		}
+
+		private void SetupCustomAutoRedirect(HttpMessageHandler? mostInnerHandler)
+		{
+			//Store the initial auto-redirect & max-auto-redirect values.
+			//Disabling auto-redirect and handle redirects manually.
+			try
+			{
+				switch (mostInnerHandler)
+				{
+					case HttpClientHandler hch:
+						InitialAutoRedirect      = hch.AllowAutoRedirect;
+						MaxAutomaticRedirections = hch.MaxAutomaticRedirections;
+						hch.AllowAutoRedirect    = false;
+						break;
+					case SocketsHttpHandler shh:
+						InitialAutoRedirect      = shh.AllowAutoRedirect;
+						MaxAutomaticRedirections = shh.MaxAutomaticRedirections;
+						shh.AllowAutoRedirect    = false;
+						break;
+					default:
+						Debug.WriteLine("[SetupCustomAutoRedirect] Unknown handler type: {0}",
+						                mostInnerHandler?.GetType().FullName);
+						InitialAutoRedirect      = true;
+						MaxAutomaticRedirections = 17;
+						break;
+				}
+			}
+			catch (Exception e)
+			{
+				Debug.WriteLine(e.Message);
+				InitialAutoRedirect      = true;
+				MaxAutomaticRedirections = 17;
+			}
+		}
+
+		private bool IsRedirectAllowed(HttpRequestMessage request)
+		{
+			var value = request.GetAutoRedirect();
+			if (value == null)
+				return InitialAutoRedirect;
+
+			return value == true;
+		}
+
+		protected override async Task<HttpResponseMessage> SendAsync(
+			HttpRequestMessage request, CancellationToken cancellationToken
+		)
+		{
+			var redirectCount = 0;
+			var response      = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+			//Manual Redirect
+			//https://github.com/dotnet/runtime/blob/ccfe21882e4a2206ce49cd5b32d3eb3cab3e530f/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/RedirectHandler.cs
+			Uri? redirectUri;
+			while (IsRedirect(response) &&
+			       IsRedirectAllowed(request) &&
+			       (redirectUri = GetUriForRedirect(request.RequestUri!, response)) != null)
+			{
+				redirectCount++;
+				if (redirectCount > MaxAutomaticRedirections)
+					break;
+
+				response.Dispose();
+
+				// Clear the authorization header.
+				request.Headers.Authorization = null;
+				// Set up for the redirect
+				request.RequestUri = redirectUri;
+
+				if (RequestRequiresForceGet(response.StatusCode, request.Method))
+				{
+					request.Method  = HttpMethod.Get;
+					request.Content = null;
+					if (request.Headers.TransferEncodingChunked == true)
+						request.Headers.TransferEncodingChunked = false;
+				}
+
+				// Issue the redirected request.
+				response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+			}
+
+			return response;
+		}
+
+		private static bool IsRedirect(HttpResponseMessage response)
+		{
+			switch (response.StatusCode)
+			{
+				case HttpStatusCode.MultipleChoices:
+				case HttpStatusCode.Moved:
+				case HttpStatusCode.Found:
+				case HttpStatusCode.SeeOther:
+				case HttpStatusCode.TemporaryRedirect:
+				case HttpStatusCode.PermanentRedirect:
+					return true;
+
+				default:
+					return false;
+			}
+		}
+
+		private static Uri? GetUriForRedirect(Uri requestUri, HttpResponseMessage response)
+		{
+			var location = response.Headers.Location;
+			if (location == null)
+			{
+				return null;
+			}
+
+			// Ensure the redirect location is an absolute URI.
+			if (!location.IsAbsoluteUri)
+			{
+				location = new Uri(requestUri, location);
+			}
+
+			// Per https://tools.ietf.org/html/rfc7231#section-7.1.2, a redirect location without a
+			// fragment should inherit the fragment from the original URI.
+			var requestFragment = requestUri.Fragment;
+			if (!string.IsNullOrEmpty(requestFragment))
+			{
+				var redirectFragment = location.Fragment;
+				if (string.IsNullOrEmpty(redirectFragment))
+				{
+					location = new UriBuilder(location) { Fragment = requestFragment }.Uri;
+				}
+			}
+
+			return location;
+		}
+
+		private static bool RequestRequiresForceGet(HttpStatusCode statusCode, HttpMethod requestMethod)
+		{
+			switch (statusCode)
+			{
+				case HttpStatusCode.Moved:
+				case HttpStatusCode.Found:
+				case HttpStatusCode.MultipleChoices:
+					return requestMethod == HttpMethod.Post;
+				case HttpStatusCode.SeeOther:
+					return requestMethod != HttpMethod.Get && requestMethod != HttpMethod.Head;
+				default:
+					return false;
 			}
 		}
 	}
