@@ -253,8 +253,9 @@ public static class QueryableExtensions
 		                                                       p.IsRequested(user), p.IsRequestedBy(user)));
 	}
 
-	public static IQueryable<Note> FilterBlocked(this IQueryable<Note> query, User user)
+	public static IQueryable<Note> FilterBlocked(this IQueryable<Note> query, User? user)
 	{
+		if (user == null) return query;
 		return query.Where(note => !note.User.IsBlocking(user) && !note.User.IsBlockedBy(user))
 		            .Where(note => note.Renote == null ||
 		                           (!note.Renote.User.IsBlockedBy(user) && !note.Renote.User.IsBlocking(user)))
@@ -264,6 +265,17 @@ public static class QueryableExtensions
 		                            !note.Renote.Renote.User.IsBlocking(user)))
 		            .Where(note => note.Reply == null ||
 		                           (!note.Reply.User.IsBlockedBy(user) && !note.Reply.User.IsBlocking(user)));
+	}
+
+	public static IQueryable<Note> FilterIncomingBlocks(this IQueryable<Note> query, User? user)
+	{
+		if (user == null) return query;
+		return query.Where(note => !note.User.IsBlocking(user))
+		            .Where(note => note.Renote == null || !note.Renote.User.IsBlocking(user))
+		            .Where(note => note.Renote == null ||
+		                           note.Renote.Renote == null ||
+		                           !note.Renote.Renote.User.IsBlocking(user))
+		            .Where(note => note.Reply == null || !note.Reply.User.IsBlocking(user));
 	}
 
 	public static IQueryable<TSource> FilterBlocked<TSource>(
@@ -295,9 +307,10 @@ public static class QueryableExtensions
 		                                                !note.Reply.User.IsBlocking(user))))));
 	}
 
-	public static IQueryable<Note> FilterMuted(this IQueryable<Note> query, User user)
+	public static IQueryable<Note> FilterMuted(this IQueryable<Note> query, User? user)
 	{
 		//TODO: handle muted instances
+		if (user == null) return query;
 
 		return query.Where(note => !note.User.IsMuting(user))
 		            .Where(note => note.Renote == null || !note.Renote.User.IsMuting(user))

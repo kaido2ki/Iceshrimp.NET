@@ -45,6 +45,7 @@ public class StatusController(
 		var note = await db.Notes
 		                   .Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
+		                   .FilterIncomingBlocks(user)
 		                   .EnsureVisibleFor(user)
 		                   .PrecomputeVisibilities(user)
 		                   .FirstOrDefaultAsync() ??
@@ -55,7 +56,7 @@ public class StatusController(
 
 	[HttpGet("{id}/context")]
 	[Authenticate("read:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusContext))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetStatusContext(string id)
 	{
@@ -64,12 +65,27 @@ public class StatusController(
 		var maxDescendants = user != null ? 4096 : 60;
 		var maxDepth       = user != null ? 4096 : 20;
 
-		if (!db.Notes.Any(p => p.Id == id))
-			throw GracefulException.RecordNotFound();
+		_ = await db.Notes
+		            .Where(p => p.Id == id)
+		            .EnsureVisibleFor(user)
+		            .FilterIncomingBlocks(user)
+		            .FirstOrDefaultAsync() ??
+		    throw GracefulException.RecordNotFound();
+
+		var shouldShowContext = await db.Notes
+		                                .Where(p => p.Id == id)
+		                                .FilterBlocked(user)
+		                                .FilterMuted(user)
+		                                .AnyAsync();
+
+		if (!shouldShowContext)
+			return Ok(new StatusContext { Ancestors = [], Descendants = [] });
 
 		var ancestors = await db.NoteAncestors(id, maxAncestors)
 		                        .IncludeCommonProperties()
 		                        .EnsureVisibleFor(user)
+		                        .FilterBlocked(user)
+		                        .FilterMuted(user)
 		                        .PrecomputeVisibilities(user)
 		                        .RenderAllForMastodonAsync(noteRenderer, user);
 
@@ -77,6 +93,8 @@ public class StatusController(
 		                          .Where(p => !p.IsQuote || p.RenoteId != id)
 		                          .IncludeCommonProperties()
 		                          .EnsureVisibleFor(user)
+		                          .FilterBlocked(user)
+		                          .FilterMuted(user)
 		                          .PrecomputeVisibilities(user)
 		                          .RenderAllForMastodonAsync(noteRenderer, user);
 
@@ -95,6 +113,7 @@ public class StatusController(
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
+		                   .FilterBlocked(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
@@ -115,6 +134,7 @@ public class StatusController(
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
+		                   .FilterBlocked(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
@@ -135,6 +155,7 @@ public class StatusController(
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
+		                   .FilterBlocked(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
@@ -155,6 +176,7 @@ public class StatusController(
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
+		                   .FilterBlocked(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
@@ -175,6 +197,7 @@ public class StatusController(
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
+		                   .FilterBlocked(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
@@ -192,6 +215,7 @@ public class StatusController(
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
+		                   .FilterBlocked(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
@@ -244,6 +268,7 @@ public class StatusController(
 			var note = await db.Notes.Where(p => p.Id == id)
 			                   .IncludeCommonProperties()
 			                   .EnsureVisibleFor(user)
+			                   .FilterBlocked(user)
 			                   .FirstOrDefaultAsync() ??
 			           throw GracefulException.RecordNotFound();
 
@@ -332,6 +357,7 @@ public class StatusController(
 			? await db.Notes.Where(p => p.Id == request.ReplyId)
 			          .IncludeCommonProperties()
 			          .EnsureVisibleFor(user)
+			          .FilterBlocked(user)
 			          .FirstOrDefaultAsync() ??
 			  throw GracefulException.BadRequest("Reply target is nonexistent or inaccessible")
 			: null;
@@ -362,18 +388,25 @@ public class StatusController(
 			? await db.Notes
 			          .IncludeCommonProperties()
 			          .EnsureVisibleFor(user)
+			          .FilterBlocked(user)
 			          .FirstOrDefaultAsync(p => p.Id == request.QuoteId) ??
 			  throw GracefulException.BadRequest("Quote target is nonexistent or inaccessible")
 			: null;
 
 		quote ??= quoteUri != null
 			? quoteUri.StartsWith($"https://{config.Value.WebDomain}/notes/")
-				? await db.Notes.IncludeCommonProperties()
-				          .FirstOrDefaultAsync(p => p.Id ==
-				                                    quoteUri.Substring($"https://{config.Value.WebDomain}/notes/"
-					                                                       .Length))
-				: await db.Notes.IncludeCommonProperties()
-				          .FirstOrDefaultAsync(p => p.Uri == quoteUri || p.Url == quoteUri)
+				? await db.Notes
+				          .IncludeCommonProperties()
+				          .Where(p => p.Id == quoteUri.Substring($"https://{config.Value.WebDomain}/notes/".Length))
+				          .EnsureVisibleFor(user)
+				          .FilterBlocked(user)
+				          .FirstOrDefaultAsync()
+				: await db.Notes
+				          .IncludeCommonProperties()
+				          .Where(p => p.Uri == quoteUri || p.Url == quoteUri)
+				          .EnsureVisibleFor(user)
+				          .FilterBlocked(user)
+				          .FirstOrDefaultAsync()
 			: null;
 
 		List<string?> urls = quote == null ? [] : [quote.Url, quote.Uri, quote.GetPublicUriOrNull(config.Value)];
@@ -485,6 +518,7 @@ public class StatusController(
 		var user = HttpContext.GetUser();
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .EnsureVisibleFor(user)
+		                   .FilterBlocked(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
@@ -506,6 +540,7 @@ public class StatusController(
 		var note = await db.Notes
 		                   .Where(p => p.Id == id)
 		                   .EnsureVisibleFor(user)
+		                   .FilterBlocked(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
