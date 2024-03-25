@@ -29,7 +29,7 @@ public class CustomHttpClient : HttpClient
 			var sortedRecords = await GetSortedAddresses(context.DnsEndPoint.Host, token);
 
 			var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(token);
-			var tasks       = new List<Task<NetworkStream>>();
+			var tasks       = new List<Task<(NetworkStream? stream, Exception? exception)>>();
 
 			var delayCts = CancellationTokenSource.CreateLinkedTokenSource(linkedToken.Token);
 			for (var i = 0; i < sortedRecords.Count; i++)
@@ -46,14 +46,31 @@ public class CustomHttpClient : HttpClient
 				delayCts = nextDelayCts;
 			}
 
-			var stream = await await Task.WhenAny(tasks).ConfigureAwait(false);
+			NetworkStream? stream        = null;
+			Exception?     lastException = null;
+
+			while (tasks.Count > 0 && stream == null)
+			{
+				var task = await Task.WhenAny(tasks).ConfigureAwait(false);
+				var res  = await task;
+				tasks.Remove(task);
+				stream        = res.stream;
+				lastException = res.exception;
+			}
+
+			if (stream == null)
+			{
+				throw lastException ??
+				      new Exception("An unknown exception occured during fast fallback connection attempt");
+			}
+
 			await linkedToken.CancelAsync();
 			tasks.ForEach(task => { task.ContinueWith(_ => Task.CompletedTask, CancellationToken.None); });
 
 			return stream;
 		}
 
-		private static async Task<NetworkStream> AttemptConnection(
+		private static async Task<(NetworkStream? stream, Exception? exception)> AttemptConnection(
 			IPAddress address, int port, CancellationToken token, CancellationToken delayToken
 		)
 		{
@@ -70,12 +87,12 @@ public class CustomHttpClient : HttpClient
 			try
 			{
 				await socket.ConnectAsync(address, port, token).ConfigureAwait(false);
-				return new NetworkStream(socket, true);
+				return (new NetworkStream(socket, true), null);
 			}
-			catch
+			catch (Exception e)
 			{
 				socket.Dispose();
-				throw;
+				return (null, e);
 			}
 		}
 
