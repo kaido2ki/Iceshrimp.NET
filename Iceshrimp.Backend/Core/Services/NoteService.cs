@@ -1163,7 +1163,9 @@ public class NoteService(
 			collection = await objectResolver.ResolveObject(collection, force: true) as ASOrderedCollection;
 		if (collection is not { Items: not null }) return;
 
-		var items = await collection.Items.Take(10).Select(p => objectResolver.ResolveObject(p)).AwaitAllAsync();
+		var items = await collection.Items.Take(10)
+		                            .Select(p => objectResolver.ResolveObject(p))
+		                            .AwaitAllNoConcurrencyAsync();
 		var notes = await items.OfType<ASNote>()
 		                       .Select(p => ResolveNoteAsync(p.Id, p, null, true))
 		                       .AwaitAllNoConcurrencyAsync();
