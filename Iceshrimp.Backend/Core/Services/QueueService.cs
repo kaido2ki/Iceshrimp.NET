@@ -390,41 +390,10 @@ public class PostgresJobQueue<T>(
 
 	private async Task ProcessJobAsync(IServiceScope scope, CancellationToken token)
 	{
-		await using var db    = GetDbContext(scope);
+		await using var db = GetDbContext(scope);
 
-		var sql = _workerId == null
-			? (FormattableString)
-			$"""
-			 UPDATE "jobs" SET "status" = 'running', "started_at" = now()
-			 WHERE "id" = (
-			     SELECT "id" FROM "jobs"
-			     WHERE queue = {name} AND status = 'queued'
-			     ORDER BY COALESCE("delayed_until", "queued_at")
-			     LIMIT 1
-			     FOR UPDATE SKIP LOCKED)
-			 RETURNING "jobs".*;
-			 """
-			: $"""
-			   UPDATE "jobs" SET "status" = 'running', "started_at" = now(), "worker_id" = {_workerId}::varchar
-			   WHERE "id" = (
-			       SELECT "id" FROM "jobs"
-			       WHERE queue = {name} AND
-			             (status = 'queued' OR
-			              (status = 'running' AND
-			               "worker_id" IS NOT NULL AND NOT EXISTS
-			                (SELECT FROM "worker"
-			                 WHERE "id" = "jobs"."worker_id" AND
-			                 "heartbeat" > now() - '45 seconds'::interval)))
-			       ORDER BY COALESCE("delayed_until", "queued_at")
-			       LIMIT 1
-			       FOR UPDATE SKIP LOCKED)
-			   RETURNING "jobs".*;
-			   """;
-
-		var res = await db.Database.SqlQuery<Job>(sql)
-		                  .ToListAsync(token);
-
-		if (res is not [{ } job]) return;
+		if (await db.GetJobs(name, _workerId).ToListAsync(token) is not [{ } job])
+			return;
 
 		var data = JsonSerializer.Deserialize<T>(job.Data);
 		if (data == null)
