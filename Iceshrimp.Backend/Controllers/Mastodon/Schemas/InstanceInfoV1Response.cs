@@ -11,7 +11,7 @@ public class InstanceInfoV1Response(
 	string? adminContact
 )
 {
-	[J("stats")]   public required InstanceStats Stats;
+	[J("stats")]   public required InstanceStats Stats { get; set; }
 	[J("version")] public          string Version => $"4.2.1 (compatible; Iceshrimp.NET/{config.Instance.Version})";
 
 	[J("max_toot_chars")] public int    MaxNoteChars  => config.Instance.CharacterLimit;
