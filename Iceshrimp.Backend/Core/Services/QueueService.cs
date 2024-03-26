@@ -67,6 +67,8 @@ public class QueueService(
 
 		async Task RegisterNotificationChannels()
 		{
+			if (config.Value.WorkerId == null) return;
+
 			while (!token.IsCancellationRequested)
 			{
 				try
@@ -290,12 +292,22 @@ public class PostgresJobQueue<T>(
 	private event EventHandler? DelayedChannelEvent;
 
 	// ReSharper disable once SuggestBaseTypeForParameter
-	private async Task RaiseJobQueuedEvent(DatabaseContext db) =>
-		await db.Database.ExecuteSqlAsync($"SELECT pg_notify('queued', {name});");
+	private async Task RaiseJobQueuedEvent(DatabaseContext db)
+	{
+		if (_workerId == null)
+			QueuedChannelEvent?.Invoke(null, EventArgs.Empty);
+		else
+			await db.Database.ExecuteSqlAsync($"SELECT pg_notify('queued', {name});");
+	}
 
 	// ReSharper disable once SuggestBaseTypeForParameter
-	private async Task RaiseJobDelayedEvent(DatabaseContext db) =>
-		await db.Database.ExecuteSqlAsync($"SELECT pg_notify('delayed', {name});");
+	private async Task RaiseJobDelayedEvent(DatabaseContext db)
+	{
+		if (_workerId == null)
+			DelayedChannelEvent?.Invoke(null, EventArgs.Empty);
+		else
+			await db.Database.ExecuteSqlAsync($"SELECT pg_notify('delayed', {name});");
+	}
 
 	private AsyncServiceScope GetScope() => _scopeFactory.CreateAsyncScope();
 
