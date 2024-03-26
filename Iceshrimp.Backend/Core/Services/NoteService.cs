@@ -81,11 +81,24 @@ public class NoteService(
 		if (renote != null && renote.User != user)
 		{
 			if (await db.Blockings.AnyAsync(p => p.Blockee == user && p.Blocker == renote.User))
-				throw GracefulException.Forbidden("You are not allowed to interact with this user");
+				throw GracefulException.Forbidden($"You are not allowed to interact with @{renote.User.Acct}");
 		}
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			await ResolveNoteMentionsAsync(text);
+
+		// ReSharper disable EntityFramework.UnsupportedServerSideFunctionCall
+		if (mentionedUserIds.Count > 0)
+		{
+			var blockAcct = await db.Users
+			                        .Where(p => mentionedUserIds.Contains(p.Id) &&
+			                                    (p.IsBlocking(user) || p.IsBlockedBy(user)))
+			                        .Select(p => p.Acct)
+			                        .FirstOrDefaultAsync();
+			if (blockAcct != null)
+				throw GracefulException.Forbidden($"You're not allowed to interact with @{blockAcct}");
+		}
+		// ReSharper restore EntityFramework.UnsupportedServerSideFunctionCall
 
 		if (text != null)
 			text = mentionsResolver.ResolveMentions(text, null, mentions, splitDomainMapping);
@@ -247,12 +260,29 @@ public class NoteService(
 		                                            .Select(p => p.Id)
 		                                            .ToListAsync();
 
+		var previousMentionedUserIds = await db.Users.Where(p => note.Mentions.Contains(p.Id))
+		                                       .Select(p => p.Id)
+		                                       .ToListAsync();
+
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			await ResolveNoteMentionsAsync(text);
 		if (text != null)
 			text = mentionsResolver.ResolveMentions(text, null, mentions, splitDomainMapping);
 		if (cw != null && string.IsNullOrWhiteSpace(cw))
 			cw = null;
+
+		// ReSharper disable EntityFramework.UnsupportedServerSideFunctionCall
+		if (mentionedUserIds.Except(previousMentionedUserIds).Any())
+		{
+			var blockAcct = await db.Users
+			                        .Where(p => mentionedUserIds.Except(previousMentionedUserIds).Contains(p.Id) &&
+			                                    (p.IsBlocking(note.User) || p.IsBlockedBy(note.User)))
+			                        .Select(p => p.Acct)
+			                        .FirstOrDefaultAsync();
+			if (blockAcct != null)
+				throw GracefulException.Forbidden($"You're not allowed to interact with @{blockAcct}");
+		}
+		// ReSharper restore EntityFramework.UnsupportedServerSideFunctionCall
 
 		mentionedLocalUserIds = mentionedLocalUserIds.Except(previousMentionedLocalUserIds).ToList();
 		note.Text             = text?.Trim();
