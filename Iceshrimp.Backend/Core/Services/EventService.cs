@@ -12,6 +12,12 @@ public class EventService
 	public event EventHandler<NoteInteraction>? NoteUnliked;
 	public event EventHandler<NoteReaction>?    NoteReacted;
 	public event EventHandler<NoteReaction>?    NoteUnreacted;
+	public event EventHandler<UserInteraction>? UserFollowed;
+	public event EventHandler<UserInteraction>? UserUnfollowed;
+	public event EventHandler<UserInteraction>? UserBlocked;
+	public event EventHandler<UserInteraction>? UserUnblocked;
+	public event EventHandler<UserInteraction>? UserMuted;
+	public event EventHandler<UserInteraction>? UserUnmuted;
 	public event EventHandler<Notification>?    Notification;
 
 	public void RaiseNotePublished(object? sender, Note note) => NotePublished?.Invoke(sender, note);
@@ -37,4 +43,22 @@ public class EventService
 
 	public void RaiseNoteUnreacted(object? sender, NoteReaction reaction) =>
 		NoteUnreacted?.Invoke(sender, reaction);
+
+	public void RaiseUserFollowed(object? sender, User actor, User obj) =>
+		UserFollowed?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+
+	public void RaiseUserUnfollowed(object? sender, User actor, User obj) =>
+		UserUnfollowed?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+
+	public void RaiseUserBlocked(object? sender, User actor, User obj) =>
+		UserBlocked?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+
+	public void RaiseUserUnblocked(object? sender, User actor, User obj) =>
+		UserUnblocked?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+
+	public void RaiseUserMuted(object? sender, User actor, User obj) =>
+		UserMuted?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+
+	public void RaiseUserUnmuted(object? sender, User actor, User obj) =>
+		UserUnmuted?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
 }

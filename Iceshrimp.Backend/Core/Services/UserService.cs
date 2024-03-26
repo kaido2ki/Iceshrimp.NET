@@ -34,7 +34,8 @@ public class UserService(
 	EmojiService emojiSvc,
 	ActivityPub.MentionsResolver mentionsResolver,
 	ActivityPub.UserRenderer userRenderer,
-	QueueService queueSvc
+	QueueService queueSvc,
+	EventService eventSvc
 )
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -708,8 +709,9 @@ public class UserService(
 					                                                 i => i.OutgoingFollows - 1));
 				});
 			}
-
+			
 			followee.PrecomputedIsFollowedBy = false;
+			eventSvc.RaiseUserUnfollowed(this, user, followee);
 		}
 
 		if (followee.PrecomputedIsRequestedBy ?? false)
@@ -883,6 +885,8 @@ public class UserService(
 		};
 		await db.AddAsync(muting);
 		await db.SaveChangesAsync();
+		
+		eventSvc.RaiseUserMuted(this, muter, mutee);
 
 		if (expiration != null)
 		{
@@ -897,6 +901,7 @@ public class UserService(
 			return;
 
 		await db.Mutings.Where(p => p.Muter == muter && p.Mutee == mutee).ExecuteDeleteAsync();
+		eventSvc.RaiseUserUnmuted(this, muter, mutee);
 
 		mutee.PrecomputedIsMutedBy = false;
 	}
@@ -939,6 +944,8 @@ public class UserService(
 
 		await db.AddAsync(blocking);
 		await db.SaveChangesAsync();
+		
+		eventSvc.RaiseUserBlocked(this, blocker, blockee);
 
 		if (blocker.IsLocalUser && blockee.IsRemoteUser)
 		{
@@ -961,6 +968,8 @@ public class UserService(
 
 		db.Remove(blocking);
 		await db.SaveChangesAsync();
+		
+		eventSvc.RaiseUserUnblocked(this, blocker, blockee);
 
 		if (blocker.IsLocalUser && blockee.IsRemoteUser)
 		{

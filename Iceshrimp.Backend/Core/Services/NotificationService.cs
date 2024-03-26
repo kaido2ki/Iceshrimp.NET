@@ -153,6 +153,7 @@ public class NotificationService(
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotification(this, notification);
+		eventSvc.RaiseUserFollowed(this, follower, followee);
 	}
 
 	public async Task GenerateFollowRequestReceivedNotification(FollowRequest followRequest)
@@ -192,6 +193,7 @@ public class NotificationService(
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotification(this, notification);
+		eventSvc.RaiseUserFollowed(this, followRequest.Follower, followRequest.Followee);
 	}
 
 	public async Task GenerateBiteNotification(Bite bite)
