@@ -3,6 +3,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Events;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,9 +34,12 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 
 		if (!notificationsOnly)
 		{
-			connection.EventService.NotePublished += OnNotePublished;
-			connection.EventService.NoteUpdated   += OnNoteUpdated;
-			connection.EventService.NoteDeleted   += OnNoteDeleted;
+			connection.EventService.NotePublished  += OnNotePublished;
+			connection.EventService.NoteUpdated    += OnNoteUpdated;
+			connection.EventService.NoteDeleted    += OnNoteDeleted;
+			connection.EventService.UserFollowed   += OnRelationChange;
+			connection.EventService.UserUnfollowed += OnRelationChange;
+			connection.EventService.UserBlocked    += OnRelationChange;
 		}
 
 		connection.EventService.Notification += OnNotification;
@@ -53,9 +57,12 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 	{
 		if (!notificationsOnly)
 		{
-			connection.EventService.NotePublished -= OnNotePublished;
-			connection.EventService.NoteUpdated   -= OnNoteUpdated;
-			connection.EventService.NoteDeleted   -= OnNoteDeleted;
+			connection.EventService.NotePublished  -= OnNotePublished;
+			connection.EventService.NoteUpdated    -= OnNoteUpdated;
+			connection.EventService.NoteDeleted    -= OnNoteDeleted;
+			connection.EventService.UserFollowed   -= OnRelationChange;
+			connection.EventService.UserUnfollowed -= OnRelationChange;
+			connection.EventService.UserBlocked    -= OnRelationChange;
 		}
 
 		connection.EventService.Notification -= OnNotification;
@@ -63,6 +70,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 
 	private bool IsApplicable(Note note) => _followedUsers.Prepend(connection.Token.User.Id).Contains(note.UserId);
 	private bool IsApplicable(Notification notification) => notification.NotifieeId == connection.Token.User.Id;
+
+	private bool IsApplicable(UserInteraction interaction) => interaction.Actor.Id == connection.Token.User.Id ||
+	                                                          interaction.Object.Id == connection.Token.User.Id;
 
 	private async void OnNotePublished(object? _, Note note)
 	{
@@ -160,6 +170,24 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		catch (Exception e)
 		{
 			Logger.LogError("Event handler OnNotification threw exception: {e}", e);
+		}
+	}
+
+	private async void OnRelationChange(object? _, UserInteraction interaction)
+	{
+		try
+		{
+			if (!IsApplicable(interaction)) return;
+			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+			_followedUsers = await db.Users.Where(p => p == connection.Token.User)
+			                         .SelectMany(p => p.Following)
+			                         .Select(p => p.Id)
+			                         .ToListAsync();
+		}
+		catch (Exception e)
+		{
+			Logger.LogError("Event handler OnRelationChange threw exception: {e}", e);
 		}
 	}
 }
