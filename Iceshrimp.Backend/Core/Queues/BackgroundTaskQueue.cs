@@ -161,9 +161,9 @@ public class BackgroundTaskQueue()
 
 			if (voters.Count == 0) return;
 
-			var userRenderer     = scope.GetRequiredService<ActivityPub.UserRenderer>();
-			var noteRenderer     = scope.GetRequiredService<ActivityPub.NoteRenderer>();
-			var deliverSvc       = scope.GetRequiredService<ActivityPub.ActivityDeliverService>();
+			var userRenderer = scope.GetRequiredService<ActivityPub.UserRenderer>();
+			var noteRenderer = scope.GetRequiredService<ActivityPub.NoteRenderer>();
+			var deliverSvc   = scope.GetRequiredService<ActivityPub.ActivityDeliverService>();
 
 			var actor    = userRenderer.RenderLite(note.User);
 			var rendered = await noteRenderer.RenderAsync(note);
@@ -179,12 +179,18 @@ public class BackgroundTaskQueue()
 		CancellationToken token
 	)
 	{
-		var db     = scope.GetRequiredService<DatabaseContext>();
-		var muting = await db.Mutings.FirstOrDefaultAsync(p => p.Id == jobData.MuteId, token);
+		var db = scope.GetRequiredService<DatabaseContext>();
+		var muting = await db.Mutings.Include(muting => muting.Mutee)
+		                     .Include(muting => muting.Muter)
+		                     .FirstOrDefaultAsync(p => p.Id == jobData.MuteId, token);
+
 		if (muting is not { ExpiresAt: not null }) return;
 		if (muting.ExpiresAt > DateTime.UtcNow + TimeSpan.FromSeconds(30)) return;
+
 		db.Remove(muting);
 		await db.SaveChangesAsync(token);
+		var eventSvc = scope.GetRequiredService<EventService>();
+		eventSvc.RaiseUserUnmuted(null, muting.Muter, muting.Mutee);
 	}
 }
 
