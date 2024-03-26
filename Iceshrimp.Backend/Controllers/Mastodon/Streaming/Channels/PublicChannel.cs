@@ -54,12 +54,18 @@ public class PublicChannel(
 
 		return true;
 	}
+	
+	private bool IsFiltered(Note note) => connection.IsFiltered(note.User) ||
+	                                      (note.Renote?.User != null && connection.IsFiltered(note.Renote.User)) ||
+	                                      note.Renote?.Renote?.User != null &&
+	                                      connection.IsFiltered(note.Renote.Renote.User);
 
 	private async void OnNotePublished(object? _, Note note)
 	{
 		try
 		{
 			if (!IsApplicable(note)) return;
+			if (IsFiltered(note)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
 
 			var provider = scope.ServiceProvider;
@@ -84,6 +90,7 @@ public class PublicChannel(
 		try
 		{
 			if (!IsApplicable(note)) return;
+			if (IsFiltered(note)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
 
 			var provider = scope.ServiceProvider;
@@ -108,6 +115,7 @@ public class PublicChannel(
 		try
 		{
 			if (!IsApplicable(note)) return;
+			if (IsFiltered(note)) return;
 			var message = new StreamingUpdateMessage
 			{
 				Stream  = [Name],

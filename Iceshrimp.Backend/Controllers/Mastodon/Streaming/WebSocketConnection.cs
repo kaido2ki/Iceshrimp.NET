@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Events;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
 
@@ -22,11 +24,19 @@ public sealed class WebSocketConnection(
 	public readonly  IServiceScope        Scope        = scopeFactory.CreateScope();
 	public readonly  IServiceScopeFactory ScopeFactory = scopeFactory;
 	public readonly  OauthToken           Token        = token;
+	private readonly List<string>         _blocking    = [];
+	private readonly List<string>         _blockedBy   = [];
+	private readonly List<string>         _mutedUsers  = [];
 
 	public void Dispose()
 	{
 		foreach (var channel in Channels)
 			channel.Dispose();
+
+		EventService.UserBlocked   -= OnUserUnblock;
+		EventService.UserUnblocked -= OnUserBlock;
+		EventService.UserMuted     -= OnUserMute;
+		EventService.UserUnmuted   -= OnUserUnmute;
 
 		Scope.Dispose();
 	}
@@ -43,6 +53,11 @@ public sealed class WebSocketConnection(
 		Channels.Add(new PublicChannel(this, "public:local:media", true, false, true));
 		Channels.Add(new PublicChannel(this, "public:remote", false, true, false));
 		Channels.Add(new PublicChannel(this, "public:remote:media", false, true, true));
+
+		EventService.UserBlocked   += OnUserUnblock;
+		EventService.UserUnblocked += OnUserBlock;
+		EventService.UserMuted     += OnUserMute;
+		EventService.UserUnmuted   += OnUserUnmute;
 	}
 
 	public async Task HandleSocketMessageAsync(string payload)
@@ -107,6 +122,79 @@ public sealed class WebSocketConnection(
 			_lock.Release();
 		}
 	}
+
+	private void OnUserBlock(object? _, UserInteraction interaction)
+	{
+		try
+		{
+			if (interaction.Actor.Id == Token.User.Id)
+				lock (_blocking)
+					_blocking.Add(interaction.Object.Id);
+
+			if (interaction.Object.Id == Token.User.Id)
+				lock (_blockedBy)
+					_blockedBy.Add(interaction.Actor.Id);
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnUserBlock threw exception: {e}", e);
+		}
+	}
+
+	private void OnUserUnblock(object? _, UserInteraction interaction)
+	{
+		try
+		{
+			if (interaction.Actor.Id == Token.User.Id)
+				lock (_blocking)
+					_blocking.Remove(interaction.Object.Id);
+
+			if (interaction.Object.Id == Token.User.Id)
+				lock (_blockedBy)
+					_blockedBy.Remove(interaction.Actor.Id);
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnUserUnblock threw exception: {e}", e);
+		}
+	}
+
+	private void OnUserMute(object? _, UserInteraction interaction)
+	{
+		try
+		{
+			if (interaction.Actor.Id == Token.User.Id)
+				lock (_mutedUsers)
+					_mutedUsers.Add(interaction.Object.Id);
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnUserMute threw exception: {e}", e);
+		}
+	}
+
+	private void OnUserUnmute(object? _, UserInteraction interaction)
+	{
+		try
+		{
+			if (interaction.Actor.Id == Token.User.Id)
+				lock (_mutedUsers)
+					_mutedUsers.Remove(interaction.Object.Id);
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnUserUnmute threw exception: {e}", e);
+		}
+	}
+
+	[SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
+	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
+	public bool IsFiltered(User user) =>
+		_blocking.Contains(user.Id) || _blockedBy.Contains(user.Id) || _mutedUsers.Contains(user.Id);
 
 	public async Task CloseAsync(WebSocketCloseStatus status)
 	{

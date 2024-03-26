@@ -27,13 +27,13 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		await using var scope = connection.ScopeFactory.CreateAsyncScope();
 		await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
-		_followedUsers = await db.Users.Where(p => p == connection.Token.User)
-		                         .SelectMany(p => p.Following)
-		                         .Select(p => p.Id)
-		                         .ToListAsync();
-
 		if (!notificationsOnly)
 		{
+			_followedUsers = await db.Users.Where(p => p == connection.Token.User)
+			                         .SelectMany(p => p.Following)
+			                         .Select(p => p.Id)
+			                         .ToListAsync();
+
 			connection.EventService.NotePublished  += OnNotePublished;
 			connection.EventService.NoteUpdated    += OnNoteUpdated;
 			connection.EventService.NoteDeleted    += OnNoteDeleted;
@@ -74,11 +74,21 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 	private bool IsApplicable(UserInteraction interaction) => interaction.Actor.Id == connection.Token.User.Id ||
 	                                                          interaction.Object.Id == connection.Token.User.Id;
 
+	private bool IsFiltered(Note note) => connection.IsFiltered(note.User) ||
+	                                      (note.Renote?.User != null && connection.IsFiltered(note.Renote.User)) ||
+	                                      note.Renote?.Renote?.User != null &&
+	                                      connection.IsFiltered(note.Renote.Renote.User);
+
+	private bool IsFiltered(Notification notification) =>
+		(notification.Notifier != null && connection.IsFiltered(notification.Notifier)) ||
+		(notification.Note != null && IsFiltered(notification.Note));
+
 	private async void OnNotePublished(object? _, Note note)
 	{
 		try
 		{
 			if (!IsApplicable(note)) return;
+			if (IsFiltered(note)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
 
 			var renderer = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
@@ -102,6 +112,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		try
 		{
 			if (!IsApplicable(note)) return;
+			if (IsFiltered(note)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
 
 			var renderer = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
@@ -125,6 +136,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		try
 		{
 			if (!IsApplicable(note)) return;
+			if (IsFiltered(note)) return;
 			var message = new StreamingUpdateMessage
 			{
 				Stream  = [Name],
@@ -144,6 +156,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		try
 		{
 			if (!IsApplicable(notification)) return;
+			if (IsFiltered(notification)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
 
 			var renderer = scope.ServiceProvider.GetRequiredService<NotificationRenderer>();
