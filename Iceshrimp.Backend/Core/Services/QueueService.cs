@@ -246,7 +246,7 @@ public class PostgresJobQueue<T>(
 						                          p.WorkerId != null &&
 						                          !db.Workers.Any(w => w.Id == p.WorkerId &&
 						                                               w.Heartbeat >
-						                                               DateTime.UtcNow - TimeSpan.FromSeconds(60)))),
+						                                               DateTime.UtcNow - TimeSpan.FromSeconds(45)))),
 						                   token);
 
 				var actualParallelism = Math.Min(parallelism - runningCount, queuedCount);
