@@ -1293,7 +1293,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public IQueryable<Job> GetJobs(string queue, string? workerId) =>
 		workerId == null ? GetJobs(queue) : GetWorkerJobs(queue, workerId);
 
-	public IQueryable<Job> GetJobs(string queue)
+	private IQueryable<Job> GetJobs(string queue)
 		=> Database.SqlQuery<Job>($"""
 		                           UPDATE "jobs" SET "status" = 'running', "started_at" = now()
 		                           WHERE "id" = (
@@ -1305,7 +1305,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		                           RETURNING "jobs".*;
 		                           """);
 
-	public IQueryable<Job> GetWorkerJobs(string queue, string workerId)
+	private IQueryable<Job> GetWorkerJobs(string queue, string workerId)
 		=> Database.SqlQuery<Job>($"""
 		                           UPDATE "jobs" SET "status" = 'running', "started_at" = now(), "worker_id" = {workerId}::varchar
 		                           WHERE "id" = (
