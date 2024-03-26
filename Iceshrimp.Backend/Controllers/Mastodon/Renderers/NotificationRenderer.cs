@@ -41,6 +41,7 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 	)
 	{
 		var notificationList = notifications.ToList();
+		if (notificationList.Count == 0) return [];
 
 		var accounts = await noteRenderer.GetAccounts(notificationList.Where(p => p.Notifier != null)
 		                                                              .Select(p => p.Notifier)
@@ -49,7 +50,8 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 		                                                                      .Select(p => p.Note?.Renote?.User)
 		                                                                      .Where(p => p != null))
 		                                                              .Cast<User>()
-		                                                              .DistinctBy(p => p.Id));
+		                                                              .DistinctBy(p => p.Id)
+		                                                              .ToList());
 
 		var notes = await noteRenderer.RenderManyAsync(notificationList.Where(p => p.Note != null)
 		                                                               .Select(p => p.Note)

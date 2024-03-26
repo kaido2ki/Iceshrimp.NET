@@ -119,8 +119,9 @@ public class NoteRenderer(
 		return res;
 	}
 
-	private async Task<List<MentionEntity>> GetMentions(IEnumerable<Note> notes)
+	private async Task<List<MentionEntity>> GetMentions(List<Note> notes)
 	{
+		if (notes.Count == 0) return [];
 		var ids = notes.SelectMany(n => n.Mentions).Distinct();
 		return await db.Users.IncludeCommonProperties()
 		               .Where(p => ids.Contains(p.Id))
@@ -128,8 +129,9 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	private async Task<List<AttachmentEntity>> GetAttachments(IEnumerable<Note> notes)
+	private async Task<List<AttachmentEntity>> GetAttachments(List<Note> notes)
 	{
+		if (notes.Count == 0) return [];
 		var ids = notes.SelectMany(n => n.FileIds).Distinct();
 		return await db.DriveFiles.Where(p => ids.Contains(p.Id))
 		               .Select(f => new AttachmentEntity
@@ -146,14 +148,16 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	internal async Task<List<AccountEntity>> GetAccounts(IEnumerable<User> users)
+	internal async Task<List<AccountEntity>> GetAccounts(List<User> users)
 	{
+		if (users.Count == 0) return [];
 		return (await userRenderer.RenderManyAsync(users.DistinctBy(p => p.Id))).ToList();
 	}
 
-	private async Task<List<string>> GetLikedNotes(IEnumerable<Note> notes, User? user)
+	private async Task<List<string>> GetLikedNotes(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
+		if (notes.Count == 0) return [];
 		return await db.NoteLikes.Where(p => p.User == user && notes.Contains(p.Note))
 		               .Select(p => p.NoteId)
 		               .ToListAsync();
@@ -162,6 +166,7 @@ public class NoteRenderer(
 	private async Task<List<ReactionEntity>> GetReactions(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
+		if (notes.Count == 0) return [];
 		var counts = notes.ToDictionary(p => p.Id, p => p.Reactions);
 		var res = await db.NoteReactions
 		                  .Where(p => notes.Contains(p.Note))
@@ -190,26 +195,29 @@ public class NoteRenderer(
 		return res;
 	}
 
-	private async Task<List<string>> GetBookmarkedNotes(IEnumerable<Note> notes, User? user)
+	private async Task<List<string>> GetBookmarkedNotes(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
+		if (notes.Count == 0) return [];
 		return await db.NoteBookmarks.Where(p => p.User == user && notes.Contains(p.Note))
 		               .Select(p => p.NoteId)
 		               .ToListAsync();
 	}
 
-	private async Task<List<string>> GetPinnedNotes(IEnumerable<Note> notes, User? user)
+	private async Task<List<string>> GetPinnedNotes(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
+		if (notes.Count == 0) return [];
 		return await db.UserNotePins.Where(p => p.User == user && notes.Contains(p.Note))
 		               .Select(p => p.NoteId)
 		               .ToListAsync();
 	}
 
-	private async Task<List<string>> GetRenotes(IEnumerable<Note> notes, User? user)
+	private async Task<List<string>> GetRenotes(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
-		return await db.Notes.Where(p => p.User == user && p.IsPureRenote && notes.Contains(p.Renote))
+		if (notes.Count == 0) return [];
+		return await db.Notes.Where(p => p.User == user && p.IsPureRenote && notes.Contains(p.Renote!))
 		               .Select(p => p.RenoteId)
 		               .Where(p => p != null)
 		               .Distinct()
@@ -217,8 +225,9 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	private async Task<List<PollEntity>> GetPolls(IEnumerable<Note> notes, User? user)
+	private async Task<List<PollEntity>> GetPolls(List<Note> notes, User? user)
 	{
+		if (notes.Count == 0) return [];
 		var polls = await db.Polls.Where(p => notes.Contains(p.Note))
 		                    .ToListAsync();
 
@@ -252,10 +261,12 @@ public class NoteRenderer(
 		                    .Cast<Note>()
 		                    .DistinctBy(p => p.Id)
 		                    .ToList();
+		
+		if (noteList.Count == 0) return [];
 
 		var data = new NoteRendererDto
 		{
-			Accounts        = accounts ?? await GetAccounts(noteList.Select(p => p.User)),
+			Accounts        = accounts ?? await GetAccounts(noteList.Select(p => p.User).ToList()),
 			Mentions        = await GetMentions(noteList),
 			Attachments     = await GetAttachments(noteList),
 			Polls           = await GetPolls(noteList, user),

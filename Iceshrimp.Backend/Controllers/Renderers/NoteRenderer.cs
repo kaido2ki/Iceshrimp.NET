@@ -1,4 +1,4 @@
-using Iceshrimp.Backend.Controllers.Schemas;
+ using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -69,14 +69,16 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 		_                             => throw new ArgumentOutOfRangeException(nameof(visibility), visibility, null)
 	};
 
-	private async Task<List<UserResponse>> GetUsers(IEnumerable<Note> notesList)
+	private async Task<List<UserResponse>> GetUsers(List<Note> notesList)
 	{
+		if (notesList.Count == 0) return [];
 		var users = notesList.Select(p => p.User).DistinctBy(p => p.Id);
 		return await userRenderer.RenderMany(users).ToListAsync();
 	}
 
-	private async Task<List<NoteAttachment>> GetAttachments(IEnumerable<Note> notesList)
+	private async Task<List<NoteAttachment>> GetAttachments(List<Note> notesList)
 	{
+		if (notesList.Count == 0) return [];
 		var ids   = notesList.SelectMany(p => p.FileIds).Distinct();
 		var files = await db.DriveFiles.Where(p => ids.Contains(p.Id)).ToListAsync();
 		return files.Select(p => new NoteAttachment
@@ -93,6 +95,7 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 	private async Task<List<NoteReactionSchema>> GetReactions(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
+		if (notes.Count == 0) return [];
 		var counts = notes.ToDictionary(p => p.Id, p => p.Reactions);
 		var res = await db.NoteReactions
 		                  .Where(p => notes.Contains(p.Note))
@@ -130,6 +133,7 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 	public async Task<IEnumerable<NoteResponse>> RenderMany(IEnumerable<Note> notes, User? user)
 	{
 		var notesList = notes.ToList();
+		if (notesList.Count == 0) return [];
 		var allNotes  = GetAllNotes(notesList);
 		var data = new NoteRendererDto
 		{

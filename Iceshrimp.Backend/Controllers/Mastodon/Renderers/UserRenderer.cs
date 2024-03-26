@@ -104,6 +104,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 	public async Task<IEnumerable<AccountEntity>> RenderManyAsync(IEnumerable<User> users)
 	{
 		var userList = users.ToList();
+		if (userList.Count == 0) return [];
 		var emoji    = await GetEmoji(userList);
 		return await userList.Select(p => RenderAsync(p, emoji)).AwaitAllAsync();
 	}
