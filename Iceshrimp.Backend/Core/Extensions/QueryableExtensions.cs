@@ -312,12 +312,12 @@ public static class QueryableExtensions
 		//TODO: handle muted instances
 		if (user == null) return query;
 
-		return query.Where(note => !note.User.IsMuting(user))
-		            .Where(note => note.Renote == null || !note.Renote.User.IsMuting(user))
+		return query.Where(note => !note.User.IsMutedBy(user))
+		            .Where(note => note.Renote == null || !note.Renote.User.IsMutedBy(user))
 		            .Where(note => note.Renote == null ||
 		                           note.Renote.Renote == null ||
-		                           !note.Renote.Renote.User.IsMuting(user))
-		            .Where(note => note.Reply == null || !note.Reply.User.IsMuting(user));
+		                           !note.Renote.Renote.User.IsMutedBy(user))
+		            .Where(note => note.Reply == null || !note.Reply.User.IsMutedBy(user));
 	}
 
 	public static IQueryable<Note> FilterBlockedConversations(
