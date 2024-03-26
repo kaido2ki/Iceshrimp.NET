@@ -34,7 +34,7 @@ public class Job
 	[Column("data")]              public string    Data             { get; set; } = null!;
 
 	[NotMapped]
-	public long Duration => (long)((FinishedAt ?? DateTime.Now) - (StartedAt ?? QueuedAt)).TotalMilliseconds;
+	public long Duration => (long)((FinishedAt ?? DateTime.UtcNow) - (StartedAt ?? QueuedAt)).TotalMilliseconds;
 
-	[NotMapped] public long QueueDuration => (long)((StartedAt ?? DateTime.Now) - QueuedAt).TotalMilliseconds;
+	[NotMapped] public long QueueDuration => (long)((StartedAt ?? DateTime.UtcNow) - QueuedAt).TotalMilliseconds;
 }

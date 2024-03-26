@@ -348,8 +348,8 @@ public class PostgresJobQueue<T>(
 			{
 				var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
 				logger.LogTrace("Job in queue {queue} was delayed to {time} after {duration} ms, has been queued since {time}",
-				                name, job.DelayedUntil.Value.ToStringIso8601Like(), job.Duration,
-				                job.QueuedAt.ToStringIso8601Like());
+				                name, job.DelayedUntil.Value.ToLocalTime().ToStringIso8601Like(), job.Duration,
+				                job.QueuedAt.ToLocalTime().ToStringIso8601Like());
 				db.Update(job);
 				await db.SaveChangesAsync(token);
 				await RaiseJobDelayedEvent(db);
