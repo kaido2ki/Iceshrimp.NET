@@ -251,7 +251,8 @@ public class AccountController(
 		            throw GracefulException.RecordNotFound();
 
 		//TODO: handle notifications parameter
-		await userSvc.MuteUserAsync(user, mutee, DateTime.UtcNow + TimeSpan.FromSeconds(request.Duration));
+		DateTime? expiration = request.Duration == 0 ? null : DateTime.UtcNow + TimeSpan.FromSeconds(request.Duration);
+		await userSvc.MuteUserAsync(user, mutee, expiration);
 
 		var res = RenderRelationship(mutee);
 
