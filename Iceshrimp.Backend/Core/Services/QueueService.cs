@@ -9,10 +9,11 @@ using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using TaskExtensions = Iceshrimp.Backend.Core.Extensions.TaskExtensions;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class QueueService(IServiceScopeFactory scopeFactory) : BackgroundService
+public class QueueService(IServiceScopeFactory scopeFactory, ILogger<QueueService> logger) : BackgroundService
 {
 	private readonly List<IPostgresJobQueue> _queues             = [];
 	public readonly  BackgroundTaskQueue     BackgroundTaskQueue = new();
@@ -21,7 +22,7 @@ public class QueueService(IServiceScopeFactory scopeFactory) : BackgroundService
 	public readonly InboxQueue      InboxQueue      = new();
 	public readonly PreDeliverQueue PreDeliverQueue = new();
 
-	private async Task<NpgsqlConnection> GetNpgsqlConnection(IServiceScope scope)
+	private static async Task<NpgsqlConnection> GetNpgsqlConnection(IServiceScope scope)
 	{
 		var config     = scope.ServiceProvider.GetRequiredService<IOptions<Config.DatabaseSection>>();
 		var dataSource = DatabaseContext.GetDataSource(config.Value);
@@ -32,16 +33,30 @@ public class QueueService(IServiceScopeFactory scopeFactory) : BackgroundService
 	{
 		_queues.AddRange([InboxQueue, PreDeliverQueue, DeliverQueue, BackgroundTaskQueue]);
 
-		token.Register(RecoverOrPrepareForExit);
+		var cts = new CancellationTokenSource();
+
+		token.Register(() =>
+		{
+			if (cts.Token.IsCancellationRequested) return;
+			logger.LogInformation("Shutting down queue processors...");
+			cts.CancelAfter(TimeSpan.FromSeconds(10));
+		});
+
+		cts.Token.Register(() =>
+		{
+			RecoverOrPrepareForExit();
+			logger.LogInformation("Queue shutdown complete.");
+		});
 
 		_ = Task.Run(RegisterNotificationChannels, token);
-		await Task.Run(ExecuteBackgroundWorkers, token);
+		await Task.Run(ExecuteBackgroundWorkers, cts.Token);
 		return;
 
 		async Task? ExecuteBackgroundWorkers()
 		{
-			var tasks = _queues.Select(queue => queue.ExecuteAsync(scopeFactory, token));
+			var tasks = _queues.Select(queue => queue.ExecuteAsync(scopeFactory, cts.Token, token));
 			await Task.WhenAll(tasks);
+			await cts.CancelAsync();
 		}
 
 		async Task RegisterNotificationChannels()
@@ -111,7 +126,7 @@ public interface IPostgresJobQueue
 {
 	public string Name { get; }
 
-	public Task ExecuteAsync(IServiceScopeFactory scopeFactory, CancellationToken token);
+	public Task ExecuteAsync(IServiceScopeFactory scopeFactory, CancellationToken token, CancellationToken queueToken);
 	public Task RecoverOrPrepareForExitAsync();
 
 	public void RaiseJobQueuedEvent();
@@ -134,7 +149,9 @@ public class PostgresJobQueue<T>(
 	public void RaiseJobQueuedEvent()  => QueuedChannelEvent?.Invoke(null, EventArgs.Empty);
 	public void RaiseJobDelayedEvent() => DelayedChannelEvent?.Invoke(null, EventArgs.Empty);
 
-	public async Task ExecuteAsync(IServiceScopeFactory scopeFactory, CancellationToken token)
+	public async Task ExecuteAsync(
+		IServiceScopeFactory scopeFactory, CancellationToken token, CancellationToken queueToken
+	)
 	{
 		_scopeFactory = scopeFactory;
 		await RecoverOrPrepareForExitAsync();
@@ -145,7 +162,7 @@ public class PostgresJobQueue<T>(
 		using var loggerScope = _scopeFactory.CreateScope();
 		var       logger      = loggerScope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
 		_ = Task.Run(() => DelayedJobHandlerAsync(token), token);
-		while (!token.IsCancellationRequested)
+		while (!token.IsCancellationRequested && !queueToken.IsCancellationRequested)
 		{
 			try
 			{
@@ -162,14 +179,12 @@ public class PostgresJobQueue<T>(
 				var actualParallelism = Math.Min(parallelism - runningCount, queuedCount);
 				if (actualParallelism == 0)
 				{
-					await _queuedChannel.WaitAsync(token);
+					await _queuedChannel.WaitAsync(token).SafeWaitAsync(queueToken);
 					continue;
 				}
 
-				var tasks = new List<Task>();
-				for (var i = 0; i < actualParallelism; i++) tasks.Add(ProcessJobAsync(token));
-
-				await Task.WhenAny(tasks);
+				var tasks = TaskExtensions.QueueMany(() => ProcessJobAsync(token), actualParallelism);
+				await Task.WhenAny(tasks).SafeWaitAsync(queueToken, () => Task.WhenAll(tasks).WaitAsync(token));
 			}
 			catch (Exception e)
 			{
