@@ -12,6 +12,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("NotifieeId")]
 [Index("CreatedAt")]
 [Index("AppAccessTokenId")]
+[Index("MastoId")]
 public class Notification : IEntity
 {
 	[PgName("notification_type_enum")]

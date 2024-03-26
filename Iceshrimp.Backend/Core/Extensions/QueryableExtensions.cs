@@ -87,6 +87,60 @@ public static class QueryableExtensions
 
 	public static IQueryable<T> Paginate<T>(
 		this IQueryable<T> query,
+		Expression<Func<T, long>> predicate,
+		MastodonPaginationQuery pq,
+		int defaultLimit,
+		int maxLimit
+	) where T : IEntity
+	{
+		if (pq.Limit is < 1)
+			throw GracefulException.BadRequest("Limit cannot be less than 1");
+
+		if (pq is { SinceId: not null, MinId: not null })
+			throw GracefulException.BadRequest("Can't use sinceId and minId params simultaneously");
+
+		long? sinceId = null;
+		long? minId   = null;
+		long? maxId   = null;
+
+		if (pq.SinceId != null)
+		{
+			if (!long.TryParse(pq.SinceId, out var res))
+				throw GracefulException.BadRequest("sinceId must be an integer");
+			sinceId = res;
+		}
+
+		if (pq.MinId != null)
+		{
+			if (!long.TryParse(pq.MinId, out var res))
+				throw GracefulException.BadRequest("minId must be an integer");
+			minId = res;
+		}
+
+		if (pq.MaxId != null)
+		{
+			if (!long.TryParse(pq.MaxId, out var res))
+				throw GracefulException.BadRequest("maxId must be an integer");
+			maxId = res;
+		}
+
+		query = pq switch
+		{
+			{ SinceId: not null, MaxId: not null } => query.Where(predicate.Compose(id => id > sinceId && id < maxId))
+			                                               .OrderByDescending(predicate),
+			{ MinId: not null, MaxId: not null } => query.Where(predicate.Compose(id => id > minId && id < maxId))
+			                                             .OrderBy(predicate),
+			{ SinceId: not null } => query.Where(predicate.Compose(id => id > sinceId)).OrderByDescending(predicate),
+			{ MinId: not null }   => query.Where(predicate.Compose(id => id > minId)).OrderBy(predicate),
+			{ MaxId: not null }   => query.Where(predicate.Compose(id => id < maxId)).OrderByDescending(predicate),
+			_                     => query.OrderByDescending(predicate)
+		};
+
+		return query.Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
+	}
+
+	public static IQueryable<T> Paginate<T>(
+		this IQueryable<T> query,
 		PaginationQuery pq,
 		int defaultLimit,
 		int maxLimit
@@ -127,6 +181,22 @@ public static class QueryableExtensions
 	public static IQueryable<T> Paginate<T>(
 		this IQueryable<T> query,
 		Expression<Func<T, string>> predicate,
+		MastodonPaginationQuery pq,
+		ControllerContext context
+	) where T : IEntity
+	{
+		var filter = context.ActionDescriptor.FilterDescriptors.Select(p => p.Filter)
+		                    .OfType<LinkPaginationAttribute>()
+		                    .FirstOrDefault();
+		if (filter == null)
+			throw new GracefulException("Route doesn't have a LinkPaginationAttribute");
+
+		return Paginate(query, predicate, pq, filter.DefaultLimit, filter.MaxLimit);
+	}
+
+	public static IQueryable<T> Paginate<T>(
+		this IQueryable<T> query,
+		Expression<Func<T, long>> predicate,
 		MastodonPaginationQuery pq,
 		ControllerContext context
 	) where T : IEntity

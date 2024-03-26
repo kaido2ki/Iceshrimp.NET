@@ -50,7 +50,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                  .EnsureNoteVisibilityFor(p => p.Note, user)
 		                  .FilterBlocked(p => p.Notifier, user)
 		                  .FilterBlocked(p => p.Note, user)
-		                  .Paginate(query, ControllerContext)
+		                  .Paginate(p => p.MastoId, query, ControllerContext)
 		                  .PrecomputeNoteVisibilities(user)
 		                  .RenderAllForMastodonAsync(notificationRenderer, user);
 
