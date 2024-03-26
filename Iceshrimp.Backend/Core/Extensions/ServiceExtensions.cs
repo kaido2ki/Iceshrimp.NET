@@ -94,6 +94,7 @@ public static class ServiceExtensions
 	{
 		services.ConfigureWithValidation<Config>(configuration)
 		        .ConfigureWithValidation<Config.InstanceSection>(configuration, "Instance")
+		        .ConfigureWithValidation<Config.WorkerSection>(configuration, "Worker")
 		        .ConfigureWithValidation<Config.SecuritySection>(configuration, "Security")
 		        .ConfigureWithValidation<Config.DatabaseSection>(configuration, "Database")
 		        .ConfigureWithValidation<Config.StorageSection>(configuration, "Storage")

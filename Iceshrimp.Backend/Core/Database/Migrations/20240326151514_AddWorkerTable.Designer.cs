@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20240326151514_AddWorkerTable")]
+    partial class AddWorkerTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1533,10 +1536,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(Job.JobStatus.Queued)
                         .HasColumnName("status");
 
-                    b.Property<string>("WorkerId")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("worker_id");
+                    b.Property<string>("worker_id")
+                        .HasColumnType("character varying(64)");
 
                     b.HasKey("Id");
 
@@ -1548,7 +1549,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex("Status");
 
-                    b.HasIndex("WorkerId");
+                    b.HasIndex("worker_id");
 
                     b.ToTable("jobs");
                 });
@@ -5115,10 +5116,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Job", b =>
                 {
-                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Worker", null)
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Worker", "Worker")
                         .WithMany()
-                        .HasForeignKey("WorkerId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("worker_id");
+
+                    b.Navigation("Worker");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Marker", b =>

@@ -87,6 +87,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<MetaStoreEntry>       MetaStore             { get; init; } = null!;
 	public virtual DbSet<CacheEntry>           CacheStore            { get; init; } = null!;
 	public virtual DbSet<Job>                  Jobs                  { get; init; } = null!;
+	public virtual DbSet<Worker>               Workers               { get; init; } = null!;
 	public virtual DbSet<DataProtectionKey>    DataProtectionKeys    { get; init; } = null!;
 
 	public static NpgsqlDataSource GetDataSource(Config.DatabaseSection? config)
@@ -1253,6 +1254,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		{
 			entity.Property(e => e.Status).HasDefaultValue(Job.JobStatus.Queued);
 			entity.Property(e => e.QueuedAt).HasDefaultValueSql("now()");
+			entity.HasOne<Worker>().WithMany().HasForeignKey(d => d.WorkerId).OnDelete(DeleteBehavior.SetNull);
 		});
 	}
 
