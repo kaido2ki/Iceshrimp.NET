@@ -225,7 +225,11 @@ public class PostgresJobQueue<T>(
 				                    .ExecuteUpdateAsync(p => p.SetProperty(i => i.Status, i => Job.JobStatus.Queued),
 				                                        token);
 
-				if (count > 0) continue;
+				if (count > 0)
+				{
+					await RaiseJobQueuedEvent(db);
+					continue;
+				}
 
 				var tokenSource = new CancellationTokenSource();
 				await ScheduleDelayedEvent(tokenSource.Token);
