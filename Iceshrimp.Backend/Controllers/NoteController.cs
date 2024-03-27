@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Renderers;
@@ -34,11 +36,68 @@ public class NoteController(
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
+		                   .FilterIncomingBlocks(user)
 		                   .PrecomputeVisibilities(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 
 		return Ok(await noteRenderer.RenderOne(note.EnforceRenoteReplyVisibility(), user));
+	}
+
+	[HttpGet("{id}/ascendants")]
+	[Authenticate]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NoteResponse>))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> GetNoteAscendants(
+		string id, [FromQuery] [DefaultValue(20)] [Range(1, 100)] int? limit
+	)
+	{
+		var user = HttpContext.GetUser();
+
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FilterIncomingBlocks(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
+
+		var notes = await db.NoteAncestors(note, limit ?? 20)
+		                    .Include(p => p.User.UserProfile)
+		                    .Include(p => p.Renote!.User.UserProfile)
+		                    .EnsureVisibleFor(user)
+		                    .FilterBlocked(user)
+		                    .FilterMuted(user)
+		                    .PrecomputeNoteContextVisibilities(user)
+		                    .ToListAsync();
+
+		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user));
+	}
+
+	[HttpGet("{id}/descendants")]
+	[Authenticate]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> GetNoteDescendants(
+		string id, [FromQuery] [DefaultValue(20)] [Range(1, 100)] int? depth
+	)
+	{
+		var user = HttpContext.GetUser();
+
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FilterIncomingBlocks(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
+
+		var notes = await db.NoteDescendants(note, depth ?? 20, 100)
+		                    .Include(p => p.User.UserProfile)
+		                    .Include(p => p.Renote!.User.UserProfile)
+		                    .EnsureVisibleFor(user)
+		                    .FilterBlocked(user)
+		                    .FilterMuted(user)
+		                    .PrecomputeNoteContextVisibilities(user)
+		                    .ToListAsync();
+
+		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user));
 	}
 
 	[HttpGet("{id}/reactions/{name}")]

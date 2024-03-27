@@ -301,6 +301,14 @@ public static class QueryableExtensions
 		                                                       p.Renote.Renote.IsVisibleFor(user)));
 	}
 
+	public static IQueryable<Note> PrecomputeNoteContextVisibilities(this IQueryable<Note> query, User? user)
+	{
+		return query.Select(p => p.WithPrecomputedVisibilities(false,
+		                                                       p.Renote != null && p.Renote.IsVisibleFor(user),
+		                                                       p.Renote != null &&
+		                                                       false));
+	}
+
 	public static IQueryable<Notification> PrecomputeNoteVisibilities(this IQueryable<Notification> query, User user)
 	{
 		return query.Select(p => p.WithPrecomputedNoteVisibilities(p.Note != null &&
