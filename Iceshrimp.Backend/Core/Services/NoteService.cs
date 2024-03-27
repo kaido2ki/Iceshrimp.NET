@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -48,6 +49,12 @@ public class NoteService(
 	private const    int          DefaultRecursionLimit = 100;
 	private readonly List<string> _resolverHistory      = [];
 	private          int          _recursionLimit       = DefaultRecursionLimit;
+
+	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
+	{
+		o.PoolSize        = 100;
+		o.PoolInitialFill = 5;
+	});
 
 	public async Task<Note> CreateNoteAsync(
 		User user, Note.NoteVisibility visibility, string? text = null, string? cw = null, Note? reply = null,
@@ -1020,14 +1027,17 @@ public class NoteService(
 
 		var actor = await userResolver.ResolveAsync(attrTo.Id);
 
-		try
+		using (await KeyedLocker.LockAsync(uri))
 		{
-			return await ProcessNoteAsync(fetchedNote, actor, user);
-		}
-		catch (Exception e)
-		{
-			logger.LogDebug("Failed to create resolved note: {error}", e.Message);
-			return null;
+			try
+			{
+				return await ProcessNoteAsync(fetchedNote, actor, user);
+			}
+			catch (Exception e)
+			{
+				logger.LogDebug("Failed to create resolved note: {error}", e.Message);
+				return null;
+			}
 		}
 	}
 
