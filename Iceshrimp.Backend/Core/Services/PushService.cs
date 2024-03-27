@@ -38,9 +38,10 @@ public class PushService(
 			await using var scope = scopeFactory.CreateAsyncScope();
 			await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
+			var type = NotificationEntity.EncodeType(notification.Type);
 			var subscriptions = await db.PushSubscriptions.Where(p => p.User == notification.Notifiee)
 			                            .Include(pushSubscription => pushSubscription.OauthToken)
-			                            .Where(p => p.Types.Contains(NotificationEntity.EncodeType(notification.Type)))
+			                            .Where(p => p.Types.Contains(type))
 			                            .ToListAsync();
 
 			if (subscriptions.Count == 0)
@@ -58,91 +59,88 @@ public class PushService(
 			               await db.Followings.AnyAsync(p => p.Follower == notification.Notifier &&
 			                                                 p.Followee == notification.Notifiee);
 
-			try
+			var renderer = scope.ServiceProvider.GetRequiredService<NotificationRenderer>();
+			var rendered = await renderer.RenderAsync(notification, notification.Notifiee);
+			var name     = rendered.Notifier.DisplayName;
+			var subject = rendered.Type switch
 			{
-				var renderer = scope.ServiceProvider.GetRequiredService<NotificationRenderer>();
-				var rendered = await renderer.RenderAsync(notification, notification.Notifiee);
-				var name     = rendered.Notifier.DisplayName;
-				var subject = rendered.Type switch
+				"favourite"      => $"{name} favorited your post",
+				"follow"         => $"{name} is now following you",
+				"follow_request" => $"Pending follower: {name}",
+				"mention"        => $"You were mentioned by {name}",
+				"poll"           => $"A poll by {name} has ended",
+				"reblog"         => $"{name} boosted your post",
+				"status"         => $"{name} just posted",
+				"update"         => $"{name} edited a post",
+				_                => $"New notification from {name}"
+			};
+
+			var body = "";
+
+			if (notification.Note != null)
+				body = notification.Note.Cw ?? notification.Note.Text ?? "";
+
+			body = body.Trim().Truncate(140).TrimEnd();
+			if (body.Length > 137)
+				body = body.Truncate(137).TrimEnd() + "...";
+
+			var meta = scope.ServiceProvider.GetRequiredService<MetaService>();
+			var (priv, pub) = await meta.GetMany(MetaEntity.VapidPrivateKey, MetaEntity.VapidPublicKey);
+
+			var client = new WebPushClient(httpClient);
+			client.SetVapidDetails(new VapidDetails($"https://{config.Value.WebDomain}", pub, priv));
+
+			var matchingSubscriptions =
+				from subscription in subscriptions
+				where subscription.Policy != PushSubscription.PushPolicy.Followed || followed
+				where subscription.Policy != PushSubscription.PushPolicy.Follower || follower
+				where subscription.Policy != PushSubscription.PushPolicy.None || isSelf
+				select subscription;
+
+			foreach (var subscription in matchingSubscriptions)
+			{
+				try
 				{
-					"favourite"      => $"{name} favorited your post",
-					"follow"         => $"{name} is now following you",
-					"follow_request" => $"Pending follower: {name}",
-					"mention"        => $"You were mentioned by {name}",
-					"poll"           => $"A poll by {name} has ended",
-					"reblog"         => $"{name} boosted your post",
-					"status"         => $"{name} just posted",
-					"update"         => $"{name} edited a post",
-					_                => $"New notification from {name}"
-				};
+					var res = new PushSchemas.PushNotification
+					{
+						AccessToken      = subscription.OauthToken.Token,
+						NotificationType = rendered.Type,
+						NotificationId   = long.Parse(rendered.Id),
+						IconUrl          = rendered.Notifier.AvatarUrl,
+						Title            = subject,
+						Body             = body
+					};
 
-				var body = "";
+					var sub = new WebPushSubscription
+					{
+						Endpoint = subscription.Endpoint,
+						P256DH   = subscription.PublicKey,
+						Auth     = subscription.AuthSecret,
+						PushMode = PushMode.AesGcm
+					};
 
-				if (notification.Note != null)
-					body = notification.Note.Cw ?? notification.Note.Text ?? "";
-
-				body = body.Trim().Truncate(140).TrimEnd();
-				if (body.Length > 137)
-					body = body.Truncate(137).TrimEnd() + "...";
-
-				var meta = scope.ServiceProvider.GetRequiredService<MetaService>();
-				var (priv, pub) = await meta.GetMany(MetaEntity.VapidPrivateKey, MetaEntity.VapidPublicKey);
-
-				var client = new WebPushClient(httpClient);
-				client.SetVapidDetails(new VapidDetails($"https://{config.Value.WebDomain}", pub, priv));
-
-				var matchingSubscriptions =
-					from subscription in subscriptions
-					where subscription.Policy != PushSubscription.PushPolicy.Followed || followed
-					where subscription.Policy != PushSubscription.PushPolicy.Follower || follower
-					where subscription.Policy != PushSubscription.PushPolicy.None || isSelf
-					select subscription;
-
-				foreach (var subscription in matchingSubscriptions)
+					await client.SendNotificationAsync(sub, JsonSerializer.Serialize(res));
+				}
+				catch (Exception e)
 				{
-					try
+					switch (e)
 					{
-						var res = new PushSchemas.PushNotification
-						{
-							AccessToken      = subscription.OauthToken.Token,
-							NotificationType = rendered.Type,
-							NotificationId   = long.Parse(rendered.Id),
-							IconUrl          = rendered.Notifier.AvatarUrl,
-							Title            = subject,
-							Body             = body
-						};
-
-						var sub = new WebPushSubscription
-						{
-							Endpoint = subscription.Endpoint,
-							P256DH   = subscription.PublicKey,
-							Auth     = subscription.AuthSecret,
-							PushMode = PushMode.AesGcm
-						};
-
-						await client.SendNotificationAsync(sub, JsonSerializer.Serialize(res));
-					}
-					catch (Exception e)
-					{
-						switch (e)
-						{
-							case WebPushException { StatusCode: HttpStatusCode.Gone }:
-								await db.PushSubscriptions.Where(p => p.Id == subscription.Id).ExecuteDeleteAsync();
-								break;
-							case WebPushException we:
-								logger.LogDebug("Push notification delivery failed: {e}", we.Message);
-								break;
-							default:
-								logger.LogDebug("Push notification delivery threw exception: {e}", e);
-								break;
-						}
+						case WebPushException { StatusCode: HttpStatusCode.Gone }:
+							await db.PushSubscriptions.Where(p => p.Id == subscription.Id).ExecuteDeleteAsync();
+							break;
+						case WebPushException we:
+							logger.LogDebug("Push notification delivery failed: {e}", we.Message);
+							break;
+						default:
+							logger.LogDebug("Push notification delivery threw exception: {e}", e);
+							break;
 					}
 				}
 			}
-			catch (GracefulException)
-			{
-				// Unsupported notification type
-			}
+		}
+		catch (GracefulException)
+		{
+			// Unsupported notification type
 		}
 		catch (Exception e)
 		{
