@@ -43,7 +43,8 @@ public class DriveController(
 			var path   = Path.Join(pathBase, accessKey);
 			var stream = System.IO.File.OpenRead(path);
 
-			Response.Headers.CacheControl = "max-age=31536000, immutable";
+			Response.Headers.CacheControl        = "max-age=31536000, immutable";
+			Response.Headers.XContentTypeOptions = "nosniff";
 			return File(stream, file.Type, true);
 		}
 		else
@@ -61,7 +62,8 @@ public class DriveController(
 				return NotFound();
 			}
 
-			Response.Headers.CacheControl = "max-age=31536000, immutable";
+			Response.Headers.CacheControl        = "max-age=31536000, immutable";
+			Response.Headers.XContentTypeOptions = "nosniff";
 			return File(stream, file.Type, true);
 		}
 	}
