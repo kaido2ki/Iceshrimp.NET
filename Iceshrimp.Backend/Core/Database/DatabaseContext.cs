@@ -1316,7 +1316,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		                                       "worker_id" IS NOT NULL AND NOT EXISTS
 		                                        (SELECT FROM "worker"
 		                                         WHERE "id" = "jobs"."worker_id" AND
-		                                         "heartbeat" > now() - '45 seconds'::interval)))
+		                                         "heartbeat" > now() - '90 seconds'::interval)))
 		                               ORDER BY COALESCE("delayed_until", "queued_at")
 		                               LIMIT 1
 		                               FOR UPDATE SKIP LOCKED)
