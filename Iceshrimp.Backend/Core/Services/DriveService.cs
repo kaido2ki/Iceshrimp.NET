@@ -46,6 +46,14 @@ public class DriveService(
 				{
 					logger.LogDebug("File {uri} is already registered for user, returning existing file {id}",
 					                uri, file.Id);
+
+					if (file.Comment != description)
+					{
+						file.Comment = description;
+						db.Update(file);
+						await db.SaveChangesAsync();
+					}
+
 					return file;
 				}
 
@@ -54,6 +62,7 @@ public class DriveService(
 				{
 					Uri         = uri,
 					IsSensitive = sensitive,
+					Comment     = description,
 					Filename    = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
 					MimeType    = null! // Not needed in .Clone
 				};
