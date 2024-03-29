@@ -30,12 +30,12 @@ public class InboxQueue() : PostgresJobQueue<InboxJobData>("inbox", InboxQueuePr
 		var apHandler = scope.GetRequiredService<ActivityPub.ActivityHandlerService>();
 		var logger    = scope.GetRequiredService<ILogger<InboxQueue>>();
 
-		logger.LogTrace("Preparation took {ms} ms", jobData.Duration);
+		logger.LogTrace("Preparation took {ms} ms", job.Duration);
 		await apHandler.PerformActivityAsync(activity, jobData.InboxUserId, jobData.AuthenticatedUserId);
 	}
 }
 
-public class InboxJobData : Job
+public class InboxJobData
 {
 	[JR] [J("body")]                public required string  Body                { get; set; }
 	[JR] [J("inboxUserId")]         public required string? InboxUserId         { get; set; }

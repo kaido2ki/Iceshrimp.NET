@@ -130,7 +130,7 @@ public class PreDeliverQueue()
 	}
 }
 
-public class PreDeliverJobData : Job
+public class PreDeliverJobData
 {
 	[JR] [J("serializedActivity")] public required string       SerializedActivity { get; set; }
 	[JR] [J("actorId")]            public required string       ActorId            { get; set; }
