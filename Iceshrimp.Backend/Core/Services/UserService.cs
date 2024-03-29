@@ -390,8 +390,10 @@ public class UserService(
 
 	private async Task<Func<Task>> ResolveAvatarAndBanner(User user, ASActor actor)
 	{
-		var avatar = await driveSvc.StoreFile(actor.Avatar?.Url?.Link, user, actor.Avatar?.Sensitive ?? false);
-		var banner = await driveSvc.StoreFile(actor.Banner?.Url?.Link, user, actor.Banner?.Sensitive ?? false);
+		var avatar = await driveSvc.StoreFile(actor.Avatar?.Url?.Link, user, actor.Avatar?.Sensitive ?? false,
+		                                      logExisting: false);
+		var banner = await driveSvc.StoreFile(actor.Banner?.Url?.Link, user, actor.Banner?.Sensitive ?? false,
+		                                      logExisting: false);
 
 		var prevAvatarId = user.AvatarId;
 		var prevBannerId = user.BannerId;
@@ -709,7 +711,7 @@ public class UserService(
 					                                                 i => i.OutgoingFollows - 1));
 				});
 			}
-			
+
 			followee.PrecomputedIsFollowedBy = false;
 			eventSvc.RaiseUserUnfollowed(this, user, followee);
 		}
@@ -885,7 +887,7 @@ public class UserService(
 		};
 		await db.AddAsync(muting);
 		await db.SaveChangesAsync();
-		
+
 		eventSvc.RaiseUserMuted(this, muter, mutee);
 
 		if (expiration != null)
@@ -944,7 +946,7 @@ public class UserService(
 
 		await db.AddAsync(blocking);
 		await db.SaveChangesAsync();
-		
+
 		eventSvc.RaiseUserBlocked(this, blocker, blockee);
 
 		if (blocker.IsLocalUser && blockee.IsRemoteUser)
@@ -968,7 +970,7 @@ public class UserService(
 
 		db.Remove(blocking);
 		await db.SaveChangesAsync();
-		
+
 		eventSvc.RaiseUserUnblocked(this, blocker, blockee);
 
 		if (blocker.IsLocalUser && blockee.IsRemoteUser)

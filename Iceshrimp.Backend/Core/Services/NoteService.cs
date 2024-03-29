@@ -821,7 +821,7 @@ public class NoteService(
 
 		//TODO: handle updated alt text et al
 		var sensitive = (note.Sensitive ?? false) || dbNote.Cw != null;
-		var files     = await ProcessAttachmentsAsync(note.Attachments, actor, sensitive);
+		var files     = await ProcessAttachmentsAsync(note.Attachments, actor, sensitive, false);
 		dbNote.FileIds           = files.Select(p => p.Id).ToList();
 		dbNote.AttachedFileTypes = files.Select(p => p.Type).ToList();
 
@@ -965,7 +965,7 @@ public class NoteService(
 	}
 
 	private async Task<List<DriveFile>> ProcessAttachmentsAsync(
-		List<ASAttachment>? attachments, User user, bool sensitive
+		List<ASAttachment>? attachments, User user, bool sensitive, bool logExisting = true
 	)
 	{
 		if (attachments is not { Count: > 0 }) return [];
@@ -973,7 +973,7 @@ public class NoteService(
 		                   .OfType<ASDocument>()
 		                   .Take(10)
 		                   .Select(p => driveSvc.StoreFile(p.Url?.Id, user, p.Sensitive ?? sensitive, p.Description,
-		                                                   p.MediaType))
+		                                                   p.MediaType, logExisting))
 		                   .AwaitAllNoConcurrencyAsync();
 
 		return result.Where(p => p != null).Cast<DriveFile>().ToList();

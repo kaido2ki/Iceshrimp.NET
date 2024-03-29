@@ -28,12 +28,14 @@ public class DriveService(
 )
 {
 	public async Task<DriveFile?> StoreFile(
-		string? uri, User user, bool sensitive, string? description = null, string? mimeType = null
+		string? uri, User user, bool sensitive, string? description = null, string? mimeType = null,
+		bool logExisting = true
 	)
 	{
 		if (uri == null) return null;
 
-		logger.LogDebug("Storing file {uri} for user {userId}", uri, user.Id);
+		if (logExisting)
+			logger.LogDebug("Storing file {uri} for user {userId}", uri, user.Id);
 
 		try
 		{
@@ -44,8 +46,11 @@ public class DriveService(
 				// If the user matches, return the existing file
 				if (file.UserId == user.Id)
 				{
-					logger.LogDebug("File {uri} is already registered for user, returning existing file {id}",
-					                uri, file.Id);
+					if (logExisting)
+					{
+						logger.LogDebug("File {uri} is already registered for user, returning existing file {id}",
+						                uri, file.Id);
+					}
 
 					if (file.Comment != description)
 					{
@@ -56,6 +61,9 @@ public class DriveService(
 
 					return file;
 				}
+				
+				if (!logExisting)
+					logger.LogDebug("Storing file {uri} for user {userId}", uri, user.Id);
 
 				// Otherwise, clone the file
 				var req = new DriveFileCreationRequest
