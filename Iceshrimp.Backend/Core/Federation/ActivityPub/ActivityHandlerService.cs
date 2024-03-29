@@ -160,7 +160,7 @@ public class ActivityHandlerService(
 						return;
 					default:
 						throw GracefulException
-							.UnprocessableEntity($"Undo activity object is invalid: {activity.Object.Type}");
+							.UnprocessableEntity($"Undo activity object is invalid: {activity.Object?.Type}");
 				}
 			}
 			case ASLike like:
