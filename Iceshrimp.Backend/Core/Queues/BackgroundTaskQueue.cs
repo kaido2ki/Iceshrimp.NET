@@ -194,7 +194,6 @@ public class BackgroundTaskQueue()
 	}
 }
 
-[JsonDerivedType(typeof(BackgroundTaskJobData), "base")]
 [JsonDerivedType(typeof(DriveFileDeleteJobData), "driveFileDelete")]
 [JsonDerivedType(typeof(PollExpiryJobData), "pollExpiry")]
 [JsonDerivedType(typeof(MuteExpiryJobData), "muteExpiry")]
