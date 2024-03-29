@@ -159,7 +159,8 @@ public class ActivityHandlerService(
 						await UnblockAsync(resolvedActor, blockee);
 						return;
 					default:
-						throw GracefulException.UnprocessableEntity("Undo activity object is invalid");
+						throw GracefulException
+							.UnprocessableEntity($"Undo activity object is invalid: {activity.Object.Type}");
 				}
 			}
 			case ASLike like:
@@ -427,7 +428,7 @@ public class ActivityHandlerService(
 			                    p.Notifiee == followee &&
 			                    p.Notifier == follower)
 			        .ExecuteDeleteAsync();
-			
+
 			eventSvc.RaiseUserUnfollowed(this, follower, followee);
 		}
 	}
