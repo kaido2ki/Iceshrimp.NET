@@ -76,7 +76,7 @@ public class ActivityFetcherService(
 
 		var request  = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair);
 		var response = await client.SendAsync(request);
-		
+
 		if (IsRedirect(response))
 		{
 			var location = response.Headers.Location;
@@ -107,10 +107,10 @@ public class ActivityFetcherService(
 		var json  = JsonConvert.DeserializeObject<JObject?>(input);
 
 		var res = LdHelpers.Expand(json) ?? throw new GracefulException("Failed to expand JSON-LD object");
-		if (res is not [{ } token])
+		if (res.Count != 1)
 			throw new GracefulException("Received zero or more than one activity");
 
-		var activity = token.ToObject<ASObject>(new JsonSerializer { Converters = { new ASObjectConverter() } }) ??
+		var activity = res[0].ToObject<ASObject>(new JsonSerializer { Converters = { new ASObjectConverter() } }) ??
 		               throw new GracefulException("Failed to deserialize activity");
 
 		if (finalUri.Host == config.Value.WebDomain || finalUri.Host == config.Value.WebDomain)
