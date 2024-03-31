@@ -3,32 +3,19 @@ on:
     branches-ignore:
       - 'dev'
 jobs:
-  test-frontend:
-    runs-on: docker
-    container:
-      image: iceshrimp.dev/iceshrimp/ci-env:latest
-    steps:
-      - name: Clone repository
-        run: git clone https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git --branch=${{ github.ref_name }} --depth=1 /iceshrimp
-      - name: Build the frontend
-        run: |
-          cd /iceshrimp/Iceshrimp.Frontend
-          yarn --immutable
-          yarn build
-  test-backend:
+  test-build:
     runs-on: docker
     container:
       image: mcr.microsoft.com/dotnet/sdk:8.0-alpine
     steps:
       - name: Clone repository
         run: git clone https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git --branch=${{ github.ref_name }} --depth=1 /iceshrimp
-      - name: Build the backend
+      - name: Build backend & frontend
         run: |
           cd /iceshrimp/Iceshrimp.Backend
           dotnet restore
-          mkdir -p ./wwwroot/.vite/ && touch ./wwwroot/.vite/manifest.json
           dotnet build
-      - name: Test the backend
+      - name: Run tests
         run: |
           cd /iceshrimp
           dotnet test
