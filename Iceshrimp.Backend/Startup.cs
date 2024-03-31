@@ -1,5 +1,4 @@
 using Iceshrimp.Backend.Core.Extensions;
-using Vite.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,13 +12,6 @@ builder.Services.AddControllers()
        .AddValueProviderFactories();
 
 builder.Services.AddSwaggerGenWithOptions();
-builder.Services.AddViteServices(options =>
-{
-	options.PackageDirectory     = "../Iceshrimp.Frontend";
-	options.PackageManager       = "yarn";
-	options.Server.AutoRun       = false; //TODO: Fix script generation on macOS
-	options.Server.UseFullDevUrl = true;
-});
 builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
 builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
@@ -47,13 +39,15 @@ app.UseCors();
 app.UseAuthorization();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
 app.UseCustomMiddleware();
+app.UseBlazorFrameworkFiles();
 
 app.MapControllers();
 app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback");
 app.MapRazorPages();
 app.MapFallbackToPage("/Shared/FrontendSPA");
 
-if (app.Environment.IsDevelopment()) app.UseViteDevMiddleware();
+if (app.Environment.IsDevelopment())
+	app.UseWebAssemblyDebugging();
 
 app.Urls.Clear();
 if (config.ListenSocket == null)

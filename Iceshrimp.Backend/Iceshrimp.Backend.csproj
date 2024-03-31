@@ -29,7 +29,7 @@
         <PackageReference Include="libsodium" Version="1.0.18.4"/>
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.1"/>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.2"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
             <PrivateAssets>all</PrivateAssets>
@@ -40,8 +40,8 @@
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.1"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
         <PackageReference Include="System.IO.Hashing" Version="8.0.0"/>
-        <PackageReference Include="Vite.AspNetCore" Version="1.11.0"/>
         <PackageReference Include="WebPush" Version="1.0.24-iceshrimp"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.1" PrivateAssets="all"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -52,15 +52,19 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="wwwroot\.vite\manifest.json" CopyToPublishDirectory="PreserveNewest"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <None Remove="migrate.sql"/>
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Iceshrimp.Frontend\Iceshrimp.Frontend.csproj" />
         <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Update="Pages\Shared\FrontendSPA.cshtml">
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>
