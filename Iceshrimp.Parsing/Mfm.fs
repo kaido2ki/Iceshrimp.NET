@@ -2,7 +2,6 @@ namespace Iceshrimp.Parsing
 
 open System
 open System.Collections.Generic
-open System.Runtime.InteropServices.JavaScript
 open FParsec
 
 module MfmNodeTypes =
@@ -330,7 +329,6 @@ module private MfmParser =
 open MfmParser
 
 module Mfm =
-    [<JSExport>]
     let parse str =
         match run parse str with
         | Success(result, _, _) -> aggregateText result

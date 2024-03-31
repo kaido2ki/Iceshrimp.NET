@@ -4,12 +4,6 @@
         <TargetFramework>net8.0</TargetFramework>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
-    
-    <PropertyGroup Condition="'$(WASM)' == 'true'">
-        <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-        <PublishTrimmed>true</PublishTrimmed>
-        <RunAOTCompilation>true</RunAOTCompilation>
-    </PropertyGroup>
 
     <ItemGroup>
         <Compile Include="SearchQuery.fs"/>
