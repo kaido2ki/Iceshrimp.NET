@@ -41,13 +41,13 @@ public class StatusEntity : IEntity
 
 	[J("poll")] public required PollEntity? Poll { get; set; }
 
-	[J("mentions")]          public required List<MentionEntity>    Mentions    { get; set; }
-	[J("media_attachments")] public required List<AttachmentEntity> Attachments { get; set; }
-	[J("emojis")]            public required List<EmojiEntity>      Emojis      { get; set; }
-	[J("reactions")]         public required List<ReactionEntity>   Reactions   { get; set; }
+	[J("filtered")]          public required List<FilterResultEntity> Filtered    { get; set; }
+	[J("mentions")]          public required List<MentionEntity>      Mentions    { get; set; }
+	[J("media_attachments")] public required List<AttachmentEntity>   Attachments { get; set; }
+	[J("emojis")]            public required List<EmojiEntity>        Emojis      { get; set; }
+	[J("reactions")]         public required List<ReactionEntity>     Reactions   { get; set; }
 
 	[J("tags")]        public object[] Tags        => [];   //FIXME
-	[J("filtered")]    public object[] Filtered    => [];   //FIXME
 	[J("card")]        public object?  Card        => null; //FIXME
 	[J("application")] public object?  Application => null; //FIXME
 

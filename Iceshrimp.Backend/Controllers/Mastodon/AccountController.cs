@@ -365,7 +365,7 @@ public class AccountController(
 		                  .FilterIncomingBlocks(user)
 		                  .Paginate(query, ControllerContext)
 		                  .PrecomputeVisibilities(user)
-		                  .RenderAllForMastodonAsync(noteRenderer, user);
+		                  .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Accounts);
 
 		return Ok(res);
 	}

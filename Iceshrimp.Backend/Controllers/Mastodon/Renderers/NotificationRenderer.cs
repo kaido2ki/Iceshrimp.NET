@@ -18,7 +18,8 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 
 		var note = targetNote != null
 			? statuses?.FirstOrDefault(p => p.Id == targetNote.Id) ??
-			  await noteRenderer.RenderAsync(targetNote, user, new NoteRenderer.NoteRendererDto { Accounts = accounts })
+			  await noteRenderer.RenderAsync(targetNote, user, Filter.FilterContext.Notifications,
+			                                 new NoteRenderer.NoteRendererDto { Accounts = accounts })
 			: null;
 
 		var notifier = accounts?.FirstOrDefault(p => p.Id == dbNotifier.Id) ??
@@ -59,7 +60,8 @@ public class NotificationRenderer(NoteRenderer noteRenderer, UserRenderer userRe
 		                                                                       .Select(p => p.Note?.Renote)
 		                                                                       .Where(p => p != null))
 		                                                               .Cast<Note>()
-		                                                               .DistinctBy(p => p.Id), user, accounts);
+		                                                               .DistinctBy(p => p.Id),
+		                                               user, Filter.FilterContext.Notifications, accounts);
 
 		return await notificationList
 		             .Select(p => RenderAsync(p, user, accounts, notes))

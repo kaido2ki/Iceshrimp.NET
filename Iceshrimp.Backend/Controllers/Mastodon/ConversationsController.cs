@@ -64,7 +64,7 @@ public class ConversationsController(
 		               .DistinctBy(p => p.Id)
 		               .ToList();
 
-		var notes = await noteRenderer.RenderManyAsync(conversations.Select(p => p.LastNote), user, accounts);
+		var notes = await noteRenderer.RenderManyAsync(conversations.Select(p => p.LastNote), user, accounts: accounts);
 
 		var res = conversations.Select(p => new ConversationEntity
 		{
@@ -136,7 +136,7 @@ public class ConversationsController(
 		{
 			Id         = conversation.Id,
 			Unread     = conversation.Unread,
-			LastStatus = await noteRenderer.RenderAsync(conversation.LastNote, user, noteRendererDto),
+			LastStatus = await noteRenderer.RenderAsync(conversation.LastNote, user, data: noteRendererDto),
 			Accounts   = accounts
 		};
 

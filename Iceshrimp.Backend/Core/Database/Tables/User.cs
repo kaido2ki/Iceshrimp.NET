@@ -4,6 +4,7 @@ using EntityFrameworkCore.Projectables;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -481,6 +482,9 @@ public class User : IEntity
 
 	[InverseProperty(nameof(Webhook.User))]
 	public virtual ICollection<Webhook> Webhooks { get; set; } = new List<Webhook>();
+	
+	[InverseProperty(nameof(Filter.User))]
+	public virtual ICollection<Filter> Filters { get; set; } = new List<Filter>();
 
 	[NotMapped] public bool? PrecomputedIsBlocking  { get; set; }
 	[NotMapped] public bool? PrecomputedIsBlockedBy { get; set; }
@@ -619,4 +623,90 @@ public class User : IEntity
 		: throw new Exception("Cannot access PublicUrl for remote user");
 
 	public string GetIdenticonUrl(string webDomain) => $"https://{webDomain}/identicon/{Id}";
+}
+
+public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
+{
+	public void Configure(EntityTypeBuilder<User> entity)
+	{
+		entity.Property(e => e.AlsoKnownAs).HasComment("URIs the user is known as too");
+		entity.Property(e => e.AvatarBlurhash).HasComment("The blurhash of the avatar DriveFile");
+		entity.Property(e => e.AvatarId).HasComment("The ID of avatar DriveFile.");
+		entity.Property(e => e.AvatarUrl).HasComment("The URL of the avatar DriveFile");
+		entity.Property(e => e.BannerBlurhash).HasComment("The blurhash of the banner DriveFile");
+		entity.Property(e => e.BannerId).HasComment("The ID of banner DriveFile.");
+		entity.Property(e => e.BannerUrl).HasComment("The URL of the banner DriveFile");
+		entity.Property(e => e.CreatedAt).HasComment("The created date of the User.");
+		entity.Property(e => e.DriveCapacityOverrideMb).HasComment("Overrides user drive capacity limit");
+		entity.Property(e => e.Emojis).HasDefaultValueSql("'{}'::character varying[]");
+		entity.Property(e => e.Featured)
+		      .HasComment("The featured URL of the User. It will be null if the origin of the user is local.");
+		entity.Property(e => e.FollowersCount)
+		      .HasDefaultValue(0)
+		      .HasComment("The count of followers.");
+		entity.Property(e => e.FollowersUri)
+		      .HasComment("The URI of the user Follower Collection. It will be null if the origin of the user is local.");
+		entity.Property(e => e.FollowingCount)
+		      .HasDefaultValue(0)
+		      .HasComment("The count of following.");
+		entity.Property(e => e.HideOnlineStatus).HasDefaultValue(false);
+		entity.Property(e => e.Host)
+		      .HasComment("The host of the User. It will be null if the origin of the user is local.");
+		entity.Property(e => e.Inbox)
+		      .HasComment("The inbox URL of the User. It will be null if the origin of the user is local.");
+		entity.Property(e => e.IsAdmin)
+		      .HasDefaultValue(false)
+		      .HasComment("Whether the User is the admin.");
+		entity.Property(e => e.IsBot)
+		      .HasDefaultValue(false)
+		      .HasComment("Whether the User is a bot.");
+		entity.Property(e => e.IsCat)
+		      .HasDefaultValue(false)
+		      .HasComment("Whether the User is a cat.");
+		entity.Property(e => e.IsDeleted)
+		      .HasDefaultValue(false)
+		      .HasComment("Whether the User is deleted.");
+		entity.Property(e => e.IsExplorable)
+		      .HasDefaultValue(true)
+		      .HasComment("Whether the User is explorable.");
+		entity.Property(e => e.IsLocked)
+		      .HasDefaultValue(false)
+		      .HasComment("Whether the User is locked.");
+		entity.Property(e => e.IsModerator)
+		      .HasDefaultValue(false)
+		      .HasComment("Whether the User is a moderator.");
+		entity.Property(e => e.IsSilenced)
+		      .HasDefaultValue(false)
+		      .HasComment("Whether the User is silenced.");
+		entity.Property(e => e.IsSuspended)
+		      .HasDefaultValue(false)
+		      .HasComment("Whether the User is suspended.");
+		entity.Property(e => e.MovedToUri).HasComment("The URI of the new account of the User");
+		entity.Property(e => e.DisplayName).HasComment("The name of the User.");
+		entity.Property(e => e.NotesCount)
+		      .HasDefaultValue(0)
+		      .HasComment("The count of notes.");
+		entity.Property(e => e.SharedInbox)
+		      .HasComment("The sharedInbox URL of the User. It will be null if the origin of the user is local.");
+		entity.Property(e => e.SpeakAsCat)
+		      .HasDefaultValue(true)
+		      .HasComment("Whether to speak as a cat if isCat.");
+		entity.Property(e => e.Tags).HasDefaultValueSql("'{}'::character varying[]");
+		entity.Property(e => e.Token)
+		      .IsFixedLength()
+		      .HasComment("The native access token of the User. It will be null if the origin of the user is local.");
+		entity.Property(e => e.UpdatedAt).HasComment("The updated date of the User.");
+		entity.Property(e => e.Uri)
+		      .HasComment("The URI of the User. It will be null if the origin of the user is local.");
+		entity.Property(e => e.Username).HasComment("The username of the User.");
+		entity.Property(e => e.UsernameLower).HasComment("The username (lowercased) of the User.");
+
+		entity.HasOne(d => d.Avatar)
+		      .WithOne(p => p.UserAvatar)
+		      .OnDelete(DeleteBehavior.SetNull);
+
+		entity.HasOne(d => d.Banner)
+		      .WithOne(p => p.UserBanner)
+		      .OnDelete(DeleteBehavior.SetNull);
+	}
 }

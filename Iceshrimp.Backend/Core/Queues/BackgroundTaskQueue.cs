@@ -36,6 +36,9 @@ public class BackgroundTaskQueue()
 			case MuteExpiryJobData muteExpiryJob:
 				await ProcessMuteExpiry(muteExpiryJob, scope, token);
 				break;
+			case FilterExpiryJobData filterExpiryJob:
+				await ProcessFilterExpiry(filterExpiryJob, scope, token);
+				break;
 		}
 	}
 
@@ -192,11 +195,28 @@ public class BackgroundTaskQueue()
 		var eventSvc = scope.GetRequiredService<EventService>();
 		eventSvc.RaiseUserUnmuted(null, muting.Muter, muting.Mutee);
 	}
+	
+	private static async Task ProcessFilterExpiry(
+		FilterExpiryJobData jobData,
+		IServiceProvider scope,
+		CancellationToken token
+	)
+	{
+		var db = scope.GetRequiredService<DatabaseContext>();
+		var filter = await db.Filters.FirstOrDefaultAsync(p => p.Id == jobData.FilterId, token);
+
+		if (filter is not { Expiry: not null }) return;
+		if (filter.Expiry > DateTime.UtcNow + TimeSpan.FromSeconds(30)) return;
+
+		db.Remove(filter);
+		await db.SaveChangesAsync(token);
+	}
 }
 
 [JsonDerivedType(typeof(DriveFileDeleteJobData), "driveFileDelete")]
 [JsonDerivedType(typeof(PollExpiryJobData), "pollExpiry")]
 [JsonDerivedType(typeof(MuteExpiryJobData), "muteExpiry")]
+[JsonDerivedType(typeof(FilterExpiryJobData), "filterExpiry")]
 public abstract class BackgroundTaskJobData;
 
 public class DriveFileDeleteJobData : BackgroundTaskJobData
@@ -213,4 +233,9 @@ public class PollExpiryJobData : BackgroundTaskJobData
 public class MuteExpiryJobData : BackgroundTaskJobData
 {
 	[JR] [J("muteId")] public required string MuteId { get; set; }
+}
+
+public class FilterExpiryJobData : BackgroundTaskJobData
+{
+	[JR] [J("filterId")] public required long FilterId { get; set; }
 }

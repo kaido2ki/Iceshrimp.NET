@@ -457,13 +457,13 @@ public static class QueryableExtensions
 	}
 
 	public static async Task<List<StatusEntity>> RenderAllForMastodonAsync(
-		this IQueryable<Note> notes, NoteRenderer renderer, User? user
+		this IQueryable<Note> notes, NoteRenderer renderer, User? user, Filter.FilterContext? filterContext = null
 	)
 	{
 		var list = (await notes.ToListAsync())
 		           .EnforceRenoteReplyVisibility()
 		           .ToList();
-		return (await renderer.RenderManyAsync(list, user)).ToList();
+		return (await renderer.RenderManyAsync(list, user, filterContext)).ToList();
 	}
 
 	public static async Task<List<AccountEntity>> RenderAllForMastodonAsync(

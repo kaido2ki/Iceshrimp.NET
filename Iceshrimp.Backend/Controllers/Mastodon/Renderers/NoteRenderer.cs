@@ -3,6 +3,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
@@ -19,14 +20,16 @@ public class NoteRenderer(
 	EmojiService emojiSvc
 )
 {
-	public async Task<StatusEntity> RenderAsync(Note note, User? user, NoteRendererDto? data = null, int recurse = 2)
+	public async Task<StatusEntity> RenderAsync(
+		Note note, User? user, Filter.FilterContext? filterContext = null, NoteRendererDto? data = null, int recurse = 2
+	)
 	{
 		var uri = note.Uri ?? note.GetPublicUri(config.Value);
 		var renote = note is { Renote: not null, IsQuote: false } && recurse > 0
-			? await RenderAsync(note.Renote, user, data, 0)
+			? await RenderAsync(note.Renote, user, filterContext, data, 0)
 			: null;
 		var quote = note is { Renote: not null, IsQuote: true } && recurse > 0
-			? await RenderAsync(note.Renote, user, data, --recurse)
+			? await RenderAsync(note.Renote, user, filterContext, data, --recurse)
 			: null;
 		var     text     = note.Text;
 		string? quoteUri = null;
@@ -83,6 +86,10 @@ public class NoteRenderer(
 			? (data?.Polls ?? await GetPolls([note], user)).FirstOrDefault(p => p.Id == note.Id)
 			: null;
 
+		var filters      = data?.Filters ?? await GetFilters(user, filterContext);
+		var filtered     = FilterHelper.IsFiltered([note, note.Reply, note.Renote, note.Renote?.Renote], filters);
+		var filterResult = GetFilterResult(filtered);
+
 		var res = new StatusEntity
 		{
 			Id             = note.Id,
@@ -113,10 +120,19 @@ public class NoteRenderer(
 			Attachments    = attachments,
 			Emojis         = noteEmoji,
 			Poll           = poll,
-			Reactions      = reactions
+			Reactions      = reactions,
+			Filtered       = filterResult
 		};
 
 		return res;
+	}
+
+	private static List<FilterResultEntity> GetFilterResult((Filter filter, string keyword)? filtered)
+	{
+		if (filtered == null) return [];
+		var (filter, keyword) = filtered.Value;
+
+		return [new FilterResultEntity { Filter = FilterRenderer.RenderOne(filter), KeywordMatches = [keyword] }];
 	}
 
 	private async Task<List<MentionEntity>> GetMentions(List<Note> notes)
@@ -252,8 +268,14 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
+	private async Task<List<Filter>> GetFilters(User? user, Filter.FilterContext? filterContext)
+	{
+		if (filterContext == null) return [];
+		return await db.Filters.Where(p => p.User == user && p.Contexts.Contains(filterContext.Value)).ToListAsync();
+	}
+
 	public async Task<IEnumerable<StatusEntity>> RenderManyAsync(
-		IEnumerable<Note> notes, User? user, List<AccountEntity>? accounts = null
+		IEnumerable<Note> notes, User? user, Filter.FilterContext? filterContext = null, List<AccountEntity>? accounts = null
 	)
 	{
 		var noteList = notes.SelectMany<Note, Note?>(p => [p, p.Renote])
@@ -261,7 +283,7 @@ public class NoteRenderer(
 		                    .Cast<Note>()
 		                    .DistinctBy(p => p.Id)
 		                    .ToList();
-		
+
 		if (noteList.Count == 0) return [];
 
 		var data = new NoteRendererDto
@@ -275,10 +297,11 @@ public class NoteRenderer(
 			PinnedNotes     = await GetPinnedNotes(noteList, user),
 			Renotes         = await GetRenotes(noteList, user),
 			Emoji           = await GetEmoji(noteList),
-			Reactions       = await GetReactions(noteList, user)
+			Reactions       = await GetReactions(noteList, user),
+			Filters         = await GetFilters(user, filterContext)
 		};
 
-		return await noteList.Select(p => RenderAsync(p, user, data)).AwaitAllAsync();
+		return await noteList.Select(p => RenderAsync(p, user, filterContext, data)).AwaitAllAsync();
 	}
 
 	public class NoteRendererDto
@@ -293,6 +316,7 @@ public class NoteRenderer(
 		public List<PollEntity>?       Polls;
 		public List<ReactionEntity>?   Reactions;
 		public List<string>?           Renotes;
+		public List<Filter>?           Filters;
 
 		public bool Source;
 	}

@@ -87,7 +87,7 @@ public class StatusController(
 		                        .FilterBlocked(user)
 		                        .FilterMuted(user)
 		                        .PrecomputeVisibilities(user)
-		                        .RenderAllForMastodonAsync(noteRenderer, user);
+		                        .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Threads);
 
 		var descendants = await db.NoteDescendants(id, maxDepth, maxDescendants)
 		                          .Where(p => !p.IsQuote || p.RenoteId != id)
@@ -96,7 +96,7 @@ public class StatusController(
 		                          .FilterBlocked(user)
 		                          .FilterMuted(user)
 		                          .PrecomputeVisibilities(user)
-		                          .RenderAllForMastodonAsync(noteRenderer, user);
+		                          .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Threads);
 
 		var res = new StatusContext { Ancestors = ancestors, Descendants = descendants };
 
@@ -483,7 +483,7 @@ public class StatusController(
 		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
 		           throw GracefulException.RecordNotFound();
 
-		var res = await noteRenderer.RenderAsync(note, user, new NoteRenderer.NoteRendererDto { Source = true });
+		var res = await noteRenderer.RenderAsync(note, user, data: new NoteRenderer.NoteRendererDto { Source = true });
 		await noteSvc.DeleteNoteAsync(note);
 
 		return Ok(res);
