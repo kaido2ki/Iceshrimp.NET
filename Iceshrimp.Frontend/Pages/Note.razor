@@ -1,9 +1,9 @@
-@page "/TestNote/{id}"
+@page "/notes/{id}"
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
 @inject ApiService Api
-<h3>TestNote</h3>
+<h3>Authenticated note preview</h3>
 
 @if (_note != null)
 {

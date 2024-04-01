@@ -4,5 +4,5 @@ namespace Iceshrimp.Frontend.Core.Services;
 
 internal class ApiService(HttpClient client)
 {
-	internal NoteControllerModel Notes = new(client);
+	internal readonly NoteControllerModel Notes = new(client);
 }
