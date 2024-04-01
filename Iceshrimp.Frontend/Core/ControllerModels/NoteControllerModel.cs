@@ -10,17 +10,17 @@ internal class NoteControllerModel(HttpClient api)
 {
 	public Task<NoteResponse?> GetNote(string id) => api.CallNullable<NoteResponse>(HttpMethod.Get, $"/note/{id}");
 
-	public Task<NoteResponse?> GetNoteAscendants(string id, [DefaultValue(20)] [Range(1, 100)] int? limit)
+	public Task<List<NoteResponse>?> GetNoteAscendants(string id, [DefaultValue(20)] [Range(1, 100)] int? limit)
 	{
 		var query = new QueryString();
 		if (limit.HasValue) query.Add("limit", limit.ToString());
-		return api.CallNullable<NoteResponse>(HttpMethod.Get, $"/note/{id}/ascendants", query);
+		return api.CallNullable<List<NoteResponse>>(HttpMethod.Get, $"/note/{id}/ascendants", query);
 	}
 
-	public Task<NoteResponse?> GetNoteDescendants(string id, [DefaultValue(20)] [Range(1, 100)] int? depth)
+	public Task<List<NoteResponse>?> GetNoteDescendants(string id, [DefaultValue(20)] [Range(1, 100)] int? depth)
 	{
 		var query = new QueryString();
 		if (depth.HasValue) query.Add("depth", depth.ToString());
-		return api.CallNullable<NoteResponse>(HttpMethod.Get, $"/note/{id}/descendants", query);
+		return api.CallNullable<List<NoteResponse>>(HttpMethod.Get, $"/note/{id}/descendants", query);
 	}
 }
