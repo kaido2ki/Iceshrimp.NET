@@ -3,17 +3,15 @@ ARG TARGETARCH
 WORKDIR /src
 
 # copy csproj/fsproj and restore as distinct layers
-RUN mkdir Iceshrimp.Backend Iceshrimp.Parsing Iceshrimp.Frontend
-COPY Iceshrimp.Backend/*.csproj /src/Iceshrimp.Backend
-COPY Iceshrimp.Parsing/*.fsproj /src/Iceshrimp.Parsing
-COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend
+COPY Iceshrimp.Backend/*.csproj /src/Iceshrimp.Backend/
+COPY Iceshrimp.Parsing/*.fsproj /src/Iceshrimp.Parsing/
+COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
+COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 WORKDIR /src/Iceshrimp.Backend
 RUN dotnet restore -a $TARGETARCH
 
 # copy build files
-COPY Iceshrimp.Backend/. /src/Iceshrimp.Backend
-COPY Iceshrimp.Parsing/. /src/Iceshrimp.Parsing
-COPY Iceshrimp.Frontend/. /src/Iceshrimp.Frontend
+COPY . /src/
 
 # build
 RUN dotnet publish --no-restore -a $TARGETARCH -o /app
