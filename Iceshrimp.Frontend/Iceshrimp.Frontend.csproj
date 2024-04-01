@@ -15,4 +15,13 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Properties\launchSettings.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\assets\logo.png" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\transparent.png" />
+    </ItemGroup>
+
 </Project>
