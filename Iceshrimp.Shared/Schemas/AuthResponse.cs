@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using JE = System.Runtime.Serialization.EnumMemberAttribute;
 
-namespace Iceshrimp.Backend.Controllers.Schemas;
+namespace Iceshrimp.Shared.Schemas;
 
 public class AuthStatusConverter() : JsonStringEnumConverter<AuthStatusEnum>(JsonNamingPolicy.SnakeCaseLower);
 

@@ -1,6 +1,6 @@
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
-namespace Iceshrimp.Backend.Controllers.Schemas;
+namespace Iceshrimp.Shared.Schemas;
 
 public class ValueResponse(long count)
 {

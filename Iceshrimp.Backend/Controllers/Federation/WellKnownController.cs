@@ -4,7 +4,7 @@ using System.Text;
 using System.Xml.Serialization;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Federation.Schemas;
-using Iceshrimp.Backend.Controllers.Schemas;
+using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;

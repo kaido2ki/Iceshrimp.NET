@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Renderers;
-using Iceshrimp.Backend.Controllers.Schemas;
+using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -74,7 +74,7 @@ public class NoteController(
 
 	[HttpGet("{id}/descendants")]
 	[Authenticate]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteResponse))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NoteResponse>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> GetNoteDescendants(
 		string id, [FromQuery] [DefaultValue(20)] [Range(1, 100)] int? depth

@@ -33,6 +33,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="8.0.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.3">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -59,6 +60,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Iceshrimp.Frontend\Iceshrimp.Frontend.csproj" />
         <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj"/>
+        <ProjectReference Include="..\Iceshrimp.Shared\Iceshrimp.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>

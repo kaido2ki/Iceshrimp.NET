@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,8 @@ builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
 builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
 builder.Services.AddCorsPolicies();
+builder.Services.AddSignalR().AddMessagePackProtocol();
+builder.Services.AddResponseCompression();
 
 if (builder.Environment.IsDevelopment())
 	builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
@@ -31,6 +34,9 @@ var app    = builder.Build();
 var config = await app.Initialize(args);
 
 // This determines the order of middleware execution in the request pipeline
+if (!app.Environment.IsDevelopment())
+	app.UseResponseCompression();
+
 app.UseRouting();
 app.UseSwaggerWithOptions();
 app.UseBlazorFrameworkFiles();
@@ -43,6 +49,7 @@ app.UseCustomMiddleware();
 
 app.MapControllers();
 app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback");
+app.MapHub<ExampleHub>("/hubs/example");
 app.MapRazorPages();
 app.MapFallbackToPage("/Shared/FrontendSPA");
 

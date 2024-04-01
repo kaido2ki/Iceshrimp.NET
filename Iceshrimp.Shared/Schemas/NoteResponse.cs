@@ -1,7 +1,7 @@
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
-namespace Iceshrimp.Backend.Controllers.Schemas;
+namespace Iceshrimp.Shared.Schemas;
 
 public class NoteResponse : NoteWithQuote
 {

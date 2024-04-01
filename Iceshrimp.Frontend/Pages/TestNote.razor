@@ -1,0 +1,44 @@
+@page "/TestNote/{id}"
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas
+@inject ApiService Api
+<h3>TestNote</h3>
+
+@if (_note != null)
+{
+    <p id="text">@_note.Text</p>
+}
+else if (_error != null)
+{
+    <p>Error!: @_error.Error</p>
+}
+else
+{
+    <p>Fetching note...</p>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = null!;
+
+    private ErrorResponse? _error;
+    private NoteResponse?  _note;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _note = await Api.Notes.GetNote(Id) ?? throw new ApiException(new ErrorResponse
+            {
+                StatusCode = 404,
+                Error      = "Note not found",
+                RequestId  = "-"
+            });
+        }
+        catch (ApiException e)
+        {
+            _error = e.Response;
+        }
+    }
+}

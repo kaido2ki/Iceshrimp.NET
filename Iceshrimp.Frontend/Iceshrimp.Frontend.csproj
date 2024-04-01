@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <PublishTrimmed>true</PublishTrimmed>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(EnableAOT)' == 'true'">
@@ -13,6 +14,9 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="8.0.3" />
     </ItemGroup>
 
     <ItemGroup>
@@ -22,6 +26,11 @@
     <ItemGroup>
       <_ContentIncludedByDefault Remove="wwwroot\assets\logo.png" />
       <_ContentIncludedByDefault Remove="wwwroot\assets\transparent.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj" />
+      <ProjectReference Include="..\Iceshrimp.Shared\Iceshrimp.Shared.csproj" />
     </ItemGroup>
 
 </Project>

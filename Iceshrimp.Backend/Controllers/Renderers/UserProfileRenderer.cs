@@ -1,4 +1,4 @@
-using Iceshrimp.Backend.Controllers.Schemas;
+using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -28,12 +28,19 @@ public class UserProfileRenderer(DatabaseContext db)
 			_                                             => throw new ArgumentOutOfRangeException()
 		};
 
+		var fields = user.UserProfile?.Fields.Select(p => new UserProfileField
+		{
+			Name       = p.Name,
+			Value      = p.Value,
+			IsVerified = p.IsVerified
+		});
+
 		return new UserProfileResponse
 		{
 			Id        = user.Id,
 			Bio       = user.UserProfile?.Description,
 			Birthday  = user.UserProfile?.Birthday,
-			Fields    = user.UserProfile?.Fields,
+			Fields    = fields?.ToList(),
 			Location  = user.UserProfile?.Location,
 			Followers = followers,
 			Following = following

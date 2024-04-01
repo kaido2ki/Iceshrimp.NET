@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Mime;
-using Iceshrimp.Backend.Controllers.Schemas;
+using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 

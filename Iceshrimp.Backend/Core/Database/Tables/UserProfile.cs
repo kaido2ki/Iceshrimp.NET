@@ -180,8 +180,8 @@ public class UserProfile
 
 	public class Field
 	{
-		[J("name")]     public required string Name       { get; set; }
-		[J("value")]    public required string Value      { get; set; }
-		[J("verified")] public          bool?  IsVerified { get; set; }
+		public required string Name       { get; set; }
+		public required string Value      { get; set; }
+		public          bool?  IsVerified { get; set; }
 	}
 }
