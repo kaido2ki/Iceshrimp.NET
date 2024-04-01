@@ -33,13 +33,13 @@ var config = await app.Initialize(args);
 // This determines the order of middleware execution in the request pipeline
 app.UseRouting();
 app.UseSwaggerWithOptions();
+app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 app.UseRateLimiter();
 app.UseCors();
 app.UseAuthorization();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
 app.UseCustomMiddleware();
-app.UseBlazorFrameworkFiles();
 
 app.MapControllers();
 app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback");
