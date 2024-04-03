@@ -67,7 +67,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 				Id        = IdHelpers.GenerateSlowflakeId(),
 				UserId    = user.Id,
 				Active    = !profile.TwoFactorEnabled,
-				CreatedAt = new DateTime(),
+				CreatedAt = DateTime.UtcNow,
 				Token     = CryptographyHelpers.GenerateRandomString(32)
 			};
 			await db.AddAsync(session);
