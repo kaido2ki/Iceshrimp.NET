@@ -16,7 +16,7 @@ namespace Iceshrimp.Backend.Controllers;
 [Authenticate]
 [Authorize]
 [EnableRateLimiting("sliding")]
-[Route("/api/iceshrimp/notification")]
+[Route("/api/iceshrimp/notifications")]
 [Produces(MediaTypeNames.Application.Json)]
 public class NotificationController(DatabaseContext db, NotificationRenderer notificationRenderer) : ControllerBase
 {

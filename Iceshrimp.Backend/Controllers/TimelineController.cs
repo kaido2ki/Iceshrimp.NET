@@ -16,7 +16,7 @@ namespace Iceshrimp.Backend.Controllers;
 [ApiController]
 [LinkPagination(20, 80)]
 [EnableRateLimiting("sliding")]
-[Route("/api/iceshrimp/timeline")]
+[Route("/api/iceshrimp/timelines")]
 [Produces(MediaTypeNames.Application.Json)]
 public class TimelineController(DatabaseContext db, CacheService cache, NoteRenderer noteRenderer) : ControllerBase
 {

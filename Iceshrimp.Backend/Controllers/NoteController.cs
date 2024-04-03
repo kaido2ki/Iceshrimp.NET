@@ -17,7 +17,7 @@ namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
 [EnableRateLimiting("sliding")]
-[Route("/api/iceshrimp/note")]
+[Route("/api/iceshrimp/notes")]
 [Produces(MediaTypeNames.Application.Json)]
 public class NoteController(
 	DatabaseContext db,
