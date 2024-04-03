@@ -9,6 +9,8 @@ using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Backend.Hubs.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -16,6 +18,8 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
+using AuthenticationMiddleware = Iceshrimp.Backend.Core.Middleware.AuthenticationMiddleware;
+using AuthorizationMiddleware = Iceshrimp.Backend.Core.Middleware.AuthorizationMiddleware;
 using NoteRenderer = Iceshrimp.Backend.Controllers.Renderers.NoteRenderer;
 using NotificationRenderer = Iceshrimp.Backend.Controllers.Renderers.NotificationRenderer;
 using UserRenderer = Iceshrimp.Backend.Controllers.Renderers.UserRenderer;
@@ -240,6 +244,25 @@ public static class ServiceExtensions
 				      .WithHeaders("Authorization", "Content-Type", "Idempotency-Key")
 				      .WithExposedHeaders("Link", "Connection", "Sec-Websocket-Accept", "Upgrade");
 			});
+		});
+	}
+
+	public static void AddAuthorizationPolicies(this IServiceCollection services)
+	{
+		services.AddAuthorizationBuilder()
+		        .AddPolicy("HubAuthorization", policy =>
+		        {
+			        policy.Requirements.Add(new HubAuthorizationRequirement());
+			        policy.AuthenticationSchemes = ["HubAuthenticationScheme"];
+		        });
+
+		services.AddAuthentication(options =>
+		{
+			options.AddScheme<HubAuthenticationHandler>("HubAuthenticationScheme", null);
+			
+			// Add a stub authentication handler to bypass strange ASP.NET Core >=7.0 defaults
+			// Ref: https://github.com/dotnet/aspnetcore/issues/44661
+			options.AddScheme<IAuthenticationHandler>("StubAuthenticationHandler", null);
 		});
 	}
 }

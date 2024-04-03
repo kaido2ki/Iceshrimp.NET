@@ -40,6 +40,9 @@
                          .WithUrl(Navigation.ToAbsoluteUri("/hubs/example"))
                          .AddMessagePackProtocol()
                          .Build();
+        
+        //TODO: authentication is done like this:
+        //options => { options.AccessTokenProvider = () => Task.FromResult("the_access_token")!; })
 
         _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
         {

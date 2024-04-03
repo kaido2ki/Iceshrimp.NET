@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Hubs;
+using Iceshrimp.Backend.Hubs.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
 builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
 builder.Services.AddCorsPolicies();
+builder.Services.AddAuthorizationPolicies();
+builder.Services.AddAuthenticationServices();
 builder.Services.AddSignalR().AddMessagePackProtocol();
 builder.Services.AddResponseCompression();
 
@@ -50,6 +53,7 @@ app.UseCustomMiddleware();
 app.MapControllers();
 app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback");
 app.MapHub<ExampleHub>("/hubs/example");
+app.MapHub<StreamingHub>("/hubs/streaming");
 app.MapRazorPages();
 app.MapFallbackToPage("/Shared/FrontendSPA");
 

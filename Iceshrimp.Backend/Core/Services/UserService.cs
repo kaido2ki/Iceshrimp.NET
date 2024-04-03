@@ -506,6 +506,9 @@ public class UserService(
 	{
 		UpdateUserLastActive(session.User);
 
+		if (session.LastActiveDate != null && session.LastActiveDate > DateTime.UtcNow - TimeSpan.FromMinutes(5))
+			return;
+
 		_ = followupTaskSvc.ExecuteTask("UpdateSessionMetadata", async provider =>
 		{
 			var bgDb = provider.GetRequiredService<DatabaseContext>();
@@ -516,7 +519,8 @@ public class UserService(
 
 	private void UpdateUserLastActive(User user)
 	{
-		if (user.LastActiveDate != null && user.LastActiveDate > DateTime.UtcNow - TimeSpan.FromHours(1)) return;
+		if (user.LastActiveDate != null && user.LastActiveDate > DateTime.UtcNow - TimeSpan.FromMinutes(5))
+			return;
 
 		_ = followupTaskSvc.ExecuteTask("UpdateUserLastActive", async provider =>
 		{
