@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using NpgsqlTypes;
+using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -179,8 +180,8 @@ public class UserProfile
 
 	public class Field
 	{
-		public required string Name       { get; set; }
-		public required string Value      { get; set; }
-		public          bool?  IsVerified { get; set; }
+		[J("name")]     public required string Name       { get; set; }
+		[J("value")]    public required string Value      { get; set; }
+		[J("verified")] public          bool?  IsVerified { get; set; }
 	}
 }
