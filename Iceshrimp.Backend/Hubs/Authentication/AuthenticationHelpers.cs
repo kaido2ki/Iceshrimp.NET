@@ -78,12 +78,12 @@ public class HubAuthorizationHandler(
 
 public class HubUserIdProvider(IHttpContextAccessor httpContextAccessor) : IUserIdProvider
 {
-	public string GetUserId(HubConnectionContext connection)
+	public string? GetUserId(HubConnectionContext connection)
 	{
 		if (httpContextAccessor.HttpContext == null)
 			throw new Exception("HttpContext must not be null at this stage");
 
-		return httpContextAccessor.HttpContext.GetUserOrFail().Id;
+		return httpContextAccessor.HttpContext.GetUser()?.Id;
 	}
 }
 
