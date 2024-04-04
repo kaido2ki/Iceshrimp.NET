@@ -1,0 +1,25 @@
+@page "/"
+@model Iceshrimp.Backend.Pages.IndexModel
+@{
+    ViewData["title"] = $"Home - {Model.InstanceName}";
+
+    //TODO: logo / banner & favicon
+}
+
+@section head
+{
+    <meta name="twitter:card" content="summary">
+    <meta name="og:title" content="Home - @Model.InstanceName">
+    <meta name="og:description" content="@Model.InstanceDescription">
+    <meta name="og:site_name" content="@Model.InstanceName">
+}
+
+<h1>@Model.InstanceName</h1>
+<p>@Model.InstanceDescription</p>
+
+<a href="/login">Login</a>
+
+@if (Model.ContactEmail != null)
+{
+    <span>| <a href="mailto:@Model.ContactEmail">Contact instance administrators</a></span>
+}
