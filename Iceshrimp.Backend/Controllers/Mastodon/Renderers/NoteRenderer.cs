@@ -26,10 +26,10 @@ public class NoteRenderer(
 	{
 		var uri = note.Uri ?? note.GetPublicUri(config.Value);
 		var renote = note is { Renote: not null, IsQuote: false } && recurse > 0
-			? await RenderAsync(note.Renote, user, filterContext, data, 0)
+			? await RenderAsync(note.Renote, user, null, data, 0)
 			: null;
 		var quote = note is { Renote: not null, IsQuote: true } && recurse > 0
-			? await RenderAsync(note.Renote, user, filterContext, data, --recurse)
+			? await RenderAsync(note.Renote, user, null, data, --recurse)
 			: null;
 		var     text     = note.Text;
 		string? quoteUri = null;
