@@ -5,10 +5,11 @@ namespace Iceshrimp.Shared.Schemas;
 
 public class NoteResponse : NoteWithQuote
 {
-	[J("reply")]    public NoteBase?      Reply    { get; set; }
-	[J("replyId")]  public string?        ReplyId  { get; set; }
-	[J("renote")]   public NoteWithQuote? Renote   { get; set; }
-	[J("renoteId")] public string?        RenoteId { get; set; }
+	[J("reply")]    public NoteBase?           Reply    { get; set; }
+	[J("replyId")]  public string?             ReplyId  { get; set; }
+	[J("renote")]   public NoteWithQuote?      Renote   { get; set; }
+	[J("renoteId")] public string?             RenoteId { get; set; }
+	[J("filtered")] public NoteFilteredSchema? Filtered { get; set; }
 }
 
 public class NoteWithQuote : NoteBase
@@ -45,4 +46,11 @@ public class NoteReactionSchema
 	[J("count")]   public required int     Count   { get; set; }
 	[J("reacted")] public required bool    Reacted { get; set; }
 	[J("url")]     public required string? Url     { get; set; }
+}
+
+public class NoteFilteredSchema
+{
+	[J("filterId")] public required long   Id      { get; set; }
+	[J("keyword")]  public required string Keyword { get; set; }
+	[J("drop")]     public required bool   Hide    { get; set; }
 }

@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
@@ -39,6 +40,6 @@ public class TimelineController(DatabaseContext db, CacheService cache, NoteRend
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
 
-		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user));
+		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user, Filter.FilterContext.Home));
 	}
 }

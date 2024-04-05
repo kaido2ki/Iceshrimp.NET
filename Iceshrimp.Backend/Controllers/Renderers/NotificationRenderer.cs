@@ -62,7 +62,7 @@ public class NotificationRenderer(
 	private async Task<List<NoteResponse>> GetNotes(IEnumerable<Notification> notifications, User user)
 	{
 		var notes = notifications.Select(p => p.Note).OfType<Note>().DistinctBy(p => p.Id);
-		return await noteRenderer.RenderMany(notes, user).ToListAsync();
+		return await noteRenderer.RenderMany(notes, user, Filter.FilterContext.Notifications).ToListAsync();
 	}
 
 	public async Task<IEnumerable<NotificationResponse>> RenderMany(IEnumerable<Notification> notifications, User user)

@@ -69,7 +69,8 @@ public class NoteController(
 		                    .PrecomputeNoteContextVisibilities(user)
 		                    .ToListAsync();
 
-		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user));
+		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user,
+		                                        Filter.FilterContext.Threads));
 	}
 
 	[HttpGet("{id}/descendants")]
@@ -97,7 +98,8 @@ public class NoteController(
 		                    .PrecomputeNoteContextVisibilities(user)
 		                    .ToListAsync();
 
-		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user));
+		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user,
+		                                        Filter.FilterContext.Threads));
 	}
 
 	[HttpGet("{id}/reactions/{name}")]

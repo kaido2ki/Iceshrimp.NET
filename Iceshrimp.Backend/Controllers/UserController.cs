@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
@@ -69,6 +70,7 @@ public class UserController(
 		                    .Paginate(pq, ControllerContext)
 		                    .ToListAsync();
 
-		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), localUser));
+		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), localUser,
+		                                        Filter.FilterContext.Accounts));
 	}
 }
