@@ -51,10 +51,12 @@ public class ActivityFetcherService(
 		if (activityUri.ToString() == finalUri.ToString())
 			return [activity];
 
-		if (new Uri(activity.Id).Host != finalUri.Host)
+		var activityIdUri = new Uri(activity.Id);
+
+		if (activityIdUri.Host != finalUri.Host)
 			throw GracefulException.UnprocessableEntity("Activity identifier doesn't match final host");
 
-		(activity, finalUri) = await FetchActivityInternal(url, actor, keypair);
+		(activity, finalUri) = await FetchActivityInternal(activityIdUri.AbsoluteUri, actor, keypair);
 		if (activity == null) return [];
 
 		activityUri = new Uri(activity.Id);
