@@ -2,7 +2,8 @@ FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS builde
 ARG TARGETARCH
 WORKDIR /src
 
-# copy csproj/fsproj and restore as distinct layers
+# copy csproj/fsproj & nuget config, then restore as distinct layers
+COPY NuGet.Config /src
 COPY Iceshrimp.Backend/*.csproj /src/Iceshrimp.Backend/
 COPY Iceshrimp.Parsing/*.fsproj /src/Iceshrimp.Parsing/
 COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
