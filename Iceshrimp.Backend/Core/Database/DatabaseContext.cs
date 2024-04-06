@@ -980,7 +980,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		});
 
 		modelBuilder.Entity<UsedUsername>();
-		
+
 		modelBuilder.Entity<UserGroup>(entity =>
 		{
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserGroup.");
@@ -1202,11 +1202,29 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public IQueryable<Note> NoteAncestors(Note note, int depth)
 		=> FromExpression(() => NoteAncestors(note.Id, depth));
 
-	public IQueryable<Note> NoteDescendants(string noteId, int depth, int breadth)
-		=> FromExpression(() => NoteDescendants(noteId, depth, breadth));
+	public IQueryable<Note> NoteDescendants(string noteId, int depth, int limit)
+		=> Notes.FromSql($"""
+		                  SELECT * FROM note WHERE id IN (
+		                    WITH RECURSIVE search_tree(id, path) AS (
+		                      SELECT id, ARRAY[id]::VARCHAR[]
+		                      FROM note
+		                      WHERE id = {noteId}
+		                      UNION ALL (
+		                        SELECT note.id, path || note.id
+		                        FROM search_tree
+		                        JOIN note ON note."replyId" = search_tree.id
+		                        WHERE COALESCE(array_length(path, 1) < {depth + 1}, TRUE) AND NOT note.id = ANY(path)
+		                      )
+		                    )
+		                    SELECT id
+		                    FROM search_tree
+		                    WHERE id <> {noteId}
+		                    LIMIT {limit}
+		                  )
+		                  """);
 
 	public IQueryable<Note> NoteDescendants(Note note, int depth, int breadth)
-		=> FromExpression(() => NoteDescendants(note.Id, depth, breadth));
+		=> NoteDescendants(note.Id, depth, breadth);
 
 	public IQueryable<Note> Conversations(string userId)
 		=> FromExpression(() => Conversations(userId));

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
@@ -10,6 +11,13 @@ public class NoteResponse : NoteWithQuote
 	[J("renote")]   public NoteWithQuote?      Renote   { get; set; }
 	[J("renoteId")] public string?             RenoteId { get; set; }
 	[J("filtered")] public NoteFilteredSchema? Filtered { get; set; }
+
+	// The properties below are only necessary for building a descendants tree
+	[JI] public NoteResponse? Parent;
+
+	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	[J("descendants")]
+	public List<NoteResponse>? Descendants { get; set; }
 }
 
 public class NoteWithQuote : NoteBase

@@ -7,6 +7,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 using static Iceshrimp.Parsing.MfmNodeTypes;
@@ -98,7 +99,7 @@ public class StatusController(
 		                          .PrecomputeVisibilities(user)
 		                          .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Threads);
 
-		var res = new StatusContext { Ancestors = ancestors, Descendants = descendants };
+		var res = new StatusContext { Ancestors = ancestors, Descendants = descendants.OrderDescendants() };
 
 		return Ok(res);
 	}

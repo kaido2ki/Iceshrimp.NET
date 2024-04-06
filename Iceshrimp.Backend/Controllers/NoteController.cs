@@ -7,6 +7,7 @@ using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -89,17 +90,18 @@ public class NoteController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 
-		var notes = await db.NoteDescendants(note, depth ?? 20, 100)
-		                    .Include(p => p.User.UserProfile)
-		                    .Include(p => p.Renote!.User.UserProfile)
-		                    .EnsureVisibleFor(user)
-		                    .FilterBlocked(user)
-		                    .FilterMuted(user)
-		                    .PrecomputeNoteContextVisibilities(user)
-		                    .ToListAsync();
+		var hits = await db.NoteDescendants(note, depth ?? 20, 100)
+		                   .Include(p => p.User.UserProfile)
+		                   .Include(p => p.Renote!.User.UserProfile)
+		                   .EnsureVisibleFor(user)
+		                   .FilterBlocked(user)
+		                   .FilterMuted(user)
+		                   .PrecomputeNoteContextVisibilities(user)
+		                   .ToListAsync();
 
-		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user,
-		                                        Filter.FilterContext.Threads));
+		var notes = hits.EnforceRenoteReplyVisibility();
+		var res   = await noteRenderer.RenderMany(notes, user, Filter.FilterContext.Threads);
+		return Ok(res.ToList().OrderDescendants());
 	}
 
 	[HttpGet("{id}/reactions/{name}")]
