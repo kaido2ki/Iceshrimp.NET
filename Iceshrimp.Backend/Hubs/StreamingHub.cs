@@ -15,7 +15,7 @@ public class StreamingHub : Hub<IStreamingHubClient>, IStreamingHubServer
 	public override async Task OnConnectedAsync()
 	{
 		await base.OnConnectedAsync();
-		var userId = Context.UserIdentifier;
-		//Clients.User(userId);
+		var userId = Context.UserIdentifier ?? throw new Exception("UserIdentifier must not be null at this stage");
+		await Clients.User(userId).ReceiveMessage("SignalR", "Device connected");
 	}
 }
