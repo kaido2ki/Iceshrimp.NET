@@ -10,10 +10,6 @@
         <VersionSuffix>alpha</VersionSuffix>
         <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
         <PublishTrimmed>false</PublishTrimmed>
-
-        <RestoreAdditionalProjectSources>
-            https://iceshrimp.dev/api/packages/iceshrimp/nuget/index.json;
-        </RestoreAdditionalProjectSources>
     </PropertyGroup>
 
     <ItemGroup>
