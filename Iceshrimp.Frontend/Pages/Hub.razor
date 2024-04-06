@@ -1,5 +1,4 @@
 @page "/hub"
-@using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
 @implements IAsyncDisposable
 
@@ -29,48 +28,5 @@
 </ul>
 
 @code {
-    private HubConnection? _hubConnection;
-    private List<string>   _messages = [];
-    private string?        _userInput;
-    private string?        _messageInput;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _hubConnection = new HubConnectionBuilder()
-                         .WithUrl(Navigation.ToAbsoluteUri("/hubs/example"))
-                         .AddMessagePackProtocol()
-                         .Build();
-        
-        //TODO: authentication is done like this:
-        //options => { options.AccessTokenProvider = () => Task.FromResult("the_access_token")!; })
-
-        _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
-        {
-            var encodedMsg = $"{user}: {message}";
-            _messages.Add(encodedMsg);
-            InvokeAsync(StateHasChanged);
-        });
-
-        await _hubConnection.StartAsync();
-    }
-
-    private async Task Send()
-    {
-        if (_hubConnection is not null)
-        {
-            await _hubConnection.SendAsync("SendMessage", _userInput, _messageInput);
-        }
-    }
-
-    public bool IsConnected =>
-        _hubConnection?.State == HubConnectionState.Connected;
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_hubConnection is not null)
-        {
-            await _hubConnection.DisposeAsync();
-        }
-    }
-
+    // See Hub.razor.cs
 }
