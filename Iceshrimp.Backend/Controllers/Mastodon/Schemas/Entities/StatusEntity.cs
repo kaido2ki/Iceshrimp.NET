@@ -54,6 +54,8 @@ public class StatusEntity : IEntity
 	[J("language")] public          string? Language => null; //FIXME
 	[J("id")]       public required string  Id       { get; set; }
 
+	[JI] public string? MastoReplyUserId;
+
 	public static string EncodeVisibility(Note.NoteVisibility visibility)
 	{
 		return visibility switch

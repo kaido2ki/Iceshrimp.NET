@@ -138,6 +138,13 @@ public class Note : IEntity
 	public string? ReplyUserId { get; set; }
 
 	/// <summary>
+	///     Mastodon requires a slightly differently computed replyUserId field. To save processing time, we do this ahead of time.
+	/// </summary>
+	[Column("mastoReplyUserId")]
+	[StringLength(32)]
+	public string? MastoReplyUserId { get; set; }
+
+	/// <summary>
 	///     [Denormalized]
 	/// </summary>
 	[Column("replyUserHost")]

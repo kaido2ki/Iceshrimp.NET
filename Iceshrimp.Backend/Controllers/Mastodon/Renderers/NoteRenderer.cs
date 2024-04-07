@@ -92,36 +92,37 @@ public class NoteRenderer(
 
 		var res = new StatusEntity
 		{
-			Id             = note.Id,
-			Uri            = uri,
-			Url            = note.Url ?? uri,
-			Account        = account,
-			ReplyId        = note.ReplyId,
-			ReplyUserId    = note.ReplyUserId,
-			Renote         = renote,
-			Quote          = quote,
-			ContentType    = "text/x.misskeymarkdown",
-			CreatedAt      = note.CreatedAt.ToStringIso8601Like(),
-			EditedAt       = note.UpdatedAt?.ToStringIso8601Like(),
-			RepliesCount   = note.RepliesCount,
-			RenoteCount    = note.RenoteCount,
-			FavoriteCount  = note.LikeCount,
-			IsFavorited    = liked,
-			IsRenoted      = renoted,
-			IsBookmarked   = bookmarked,
-			IsMuted        = null, //FIXME
-			IsSensitive    = note.Cw != null,
-			ContentWarning = note.Cw ?? "",
-			Visibility     = StatusEntity.EncodeVisibility(note.Visibility),
-			Content        = content,
-			Text           = data?.Source == true ? text : null,
-			Mentions       = mentions,
-			IsPinned       = pinned,
-			Attachments    = attachments,
-			Emojis         = noteEmoji,
-			Poll           = poll,
-			Reactions      = reactions,
-			Filtered       = filterResult
+			Id               = note.Id,
+			Uri              = uri,
+			Url              = note.Url ?? uri,
+			Account          = account,
+			ReplyId          = note.ReplyId,
+			ReplyUserId      = note.MastoReplyUserId ?? note.ReplyUserId,
+			MastoReplyUserId = note.MastoReplyUserId,
+			Renote           = renote,
+			Quote            = quote,
+			ContentType      = "text/x.misskeymarkdown",
+			CreatedAt        = note.CreatedAt.ToStringIso8601Like(),
+			EditedAt         = note.UpdatedAt?.ToStringIso8601Like(),
+			RepliesCount     = note.RepliesCount,
+			RenoteCount      = note.RenoteCount,
+			FavoriteCount    = note.LikeCount,
+			IsFavorited      = liked,
+			IsRenoted        = renoted,
+			IsBookmarked     = bookmarked,
+			IsMuted          = null, //FIXME
+			IsSensitive      = note.Cw != null,
+			ContentWarning   = note.Cw ?? "",
+			Visibility       = StatusEntity.EncodeVisibility(note.Visibility),
+			Content          = content,
+			Text             = data?.Source == true ? text : null,
+			Mentions         = mentions,
+			IsPinned         = pinned,
+			Attachments      = attachments,
+			Emojis           = noteEmoji,
+			Poll             = poll,
+			Reactions        = reactions,
+			Filtered         = filterResult
 		};
 
 		return res;
@@ -275,7 +276,8 @@ public class NoteRenderer(
 	}
 
 	public async Task<IEnumerable<StatusEntity>> RenderManyAsync(
-		IEnumerable<Note> notes, User? user, Filter.FilterContext? filterContext = null, List<AccountEntity>? accounts = null
+		IEnumerable<Note> notes, User? user, Filter.FilterContext? filterContext = null,
+		List<AccountEntity>? accounts = null
 	)
 	{
 		var noteList = notes.SelectMany<Note, Note?>(p => [p, p.Renote])

@@ -49,7 +49,7 @@ public static class NoteThreadHelpers
 			parent.Descendants.Add(node);
 			node.Parent = parent;
 			if (parent.Self.Account.Id == node.Self.Account.Id)
-				node.Self.ReplyUserId = parent.Self.ReplyUserId ?? parent.Self.Account.Id;
+				node.Self.ReplyUserId = node.Self.MastoReplyUserId ?? parent.Self.ReplyUserId ?? parent.Self.Account.Id;
 		}
 
 		foreach (var note in nodes.Where(p => p.Descendants.Count > 0))

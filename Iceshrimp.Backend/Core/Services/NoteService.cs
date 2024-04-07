@@ -121,6 +121,10 @@ public class NoteService(
 
 		var tags = ResolveHashtags(text);
 
+		var mastoReplyUserId = reply?.UserId != user.Id
+			? reply?.UserId
+			: reply.MastoReplyUserId ?? reply.ReplyUserId ?? reply.UserId;
+
 		var note = new Note
 		{
 			Id                   = IdHelpers.GenerateSlowflakeId(),
@@ -128,6 +132,7 @@ public class NoteService(
 			Cw                   = cw?.Trim(),
 			Reply                = reply,
 			ReplyUserId          = reply?.UserId,
+			MastoReplyUserId     = mastoReplyUserId,
 			ReplyUserHost        = reply?.UserHost,
 			Renote               = renote,
 			RenoteUserId         = renote?.UserId,
@@ -614,6 +619,10 @@ public class NoteService(
 			dbNote.ReplyUserId   = dbNote.Reply.UserId;
 			dbNote.ReplyUserHost = dbNote.Reply.UserHost;
 			dbNote.ThreadId      = dbNote.Reply.ThreadId ?? dbNote.Reply.Id;
+
+			dbNote.MastoReplyUserId = dbNote.Reply.UserId != actor.Id
+				? dbNote.Reply.UserId
+				: dbNote.Reply.MastoReplyUserId ?? dbNote.Reply.ReplyUserId ?? dbNote.Reply.UserId;
 		}
 
 		if (dbNote.Renote != null)
