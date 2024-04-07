@@ -12,6 +12,11 @@
         <PublishTrimmed>false</PublishTrimmed>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <BlazorWebAssemblyOmitDebugProxyOutput>true</BlazorWebAssemblyOmitDebugProxyOutput>
+        <PreserveCompilationContext>false</PreserveCompilationContext>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="Amazon.S3" Version="0.31.2"/>
         <PackageReference Include="AngleSharp" Version="1.1.2" />

@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <PublishTrimmed>true</PublishTrimmed>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(EnableAOT)' == 'true'">
