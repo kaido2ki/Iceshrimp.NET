@@ -48,10 +48,12 @@ public class BackgroundTaskQueue()
 		CancellationToken token
 	)
 	{
-		var db = scope.GetRequiredService<DatabaseContext>();
-		var usedAsAvatarOrBanner =
-			await db.Users.AnyAsync(p => p.AvatarId == jobData.DriveFileId ||
-			                             p.BannerId == jobData.DriveFileId, token);
+		var db     = scope.GetRequiredService<DatabaseContext>();
+		var logger = scope.GetRequiredService<ILogger<BackgroundTaskQueue>>();
+		logger.LogDebug("Expiring file {id}...", jobData.DriveFileId);
+
+		var usedAsAvatarOrBanner = await db.Users.AnyAsync(p => p.AvatarId == jobData.DriveFileId ||
+		                                                        p.BannerId == jobData.DriveFileId, token);
 
 		var usedInNote = await db.Notes.AnyAsync(p => p.FileIds.Contains(jobData.DriveFileId), token);
 
@@ -195,14 +197,14 @@ public class BackgroundTaskQueue()
 		var eventSvc = scope.GetRequiredService<EventService>();
 		eventSvc.RaiseUserUnmuted(null, muting.Muter, muting.Mutee);
 	}
-	
+
 	private static async Task ProcessFilterExpiry(
 		FilterExpiryJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
 	)
 	{
-		var db = scope.GetRequiredService<DatabaseContext>();
+		var db     = scope.GetRequiredService<DatabaseContext>();
 		var filter = await db.Filters.FirstOrDefaultAsync(p => p.Id == jobData.FilterId, token);
 
 		if (filter is not { Expiry: not null }) return;
