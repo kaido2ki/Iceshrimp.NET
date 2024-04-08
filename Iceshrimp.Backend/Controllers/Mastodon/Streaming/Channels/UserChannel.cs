@@ -5,7 +5,6 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Events;
 using Iceshrimp.Backend.Core.Middleware;
-using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
 
@@ -14,10 +13,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 	public readonly ILogger<UserChannel> Logger =
 		connection.Scope.ServiceProvider.GetRequiredService<ILogger<UserChannel>>();
 
-	private List<string> _followedUsers = [];
-	public  string       Name         => notificationsOnly ? "user:notification" : "user";
-	public  List<string> Scopes       => ["read:statuses", "read:notifications"];
-	public  bool         IsSubscribed { get; private set; }
+	public string       Name         => notificationsOnly ? "user:notification" : "user";
+	public List<string> Scopes       => ["read:statuses", "read:notifications"];
+	public bool         IsSubscribed { get; private set; }
 
 	public async Task Subscribe(StreamingRequestMessage _)
 	{
@@ -29,17 +27,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 
 		if (!notificationsOnly)
 		{
-			_followedUsers = await db.Users.Where(p => p == connection.Token.User)
-			                         .SelectMany(p => p.Following)
-			                         .Select(p => p.Id)
-			                         .ToListAsync();
-
 			connection.EventService.NotePublished  += OnNotePublished;
 			connection.EventService.NoteUpdated    += OnNoteUpdated;
 			connection.EventService.NoteDeleted    += OnNoteDeleted;
-			connection.EventService.UserFollowed   += OnRelationChange;
-			connection.EventService.UserUnfollowed += OnRelationChange;
-			connection.EventService.UserBlocked    += OnRelationChange;
 		}
 
 		connection.EventService.Notification += OnNotification;
@@ -60,15 +50,15 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			connection.EventService.NotePublished  -= OnNotePublished;
 			connection.EventService.NoteUpdated    -= OnNoteUpdated;
 			connection.EventService.NoteDeleted    -= OnNoteDeleted;
-			connection.EventService.UserFollowed   -= OnRelationChange;
-			connection.EventService.UserUnfollowed -= OnRelationChange;
-			connection.EventService.UserBlocked    -= OnRelationChange;
 		}
 
 		connection.EventService.Notification -= OnNotification;
 	}
 
-	private bool IsApplicable(Note note) => _followedUsers.Prepend(connection.Token.User.Id).Contains(note.UserId);
+	private bool IsApplicable(Note note) =>
+		connection.Following.Prepend(connection.Token.User.Id).Contains(note.UserId) &&
+		EnforceRenoteReplyVisibility(note) is not { IsPureRenote: true, Renote: null };
+
 	private bool IsApplicable(Notification notification) => notification.NotifieeId == connection.Token.User.Id;
 
 	private bool IsApplicable(UserInteraction interaction) => interaction.Actor.Id == connection.Token.User.Id ||
@@ -82,6 +72,16 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 	private bool IsFiltered(Notification notification) =>
 		(notification.Notifier != null && connection.IsFiltered(notification.Notifier)) ||
 		(notification.Note != null && IsFiltered(notification.Note));
+	
+	private Note EnforceRenoteReplyVisibility(Note note)
+	{
+		if (note.Renote?.IsVisibleFor(connection.Token.User, connection.Following) ?? false)
+			note.Renote = null;
+		if (note.Reply?.IsVisibleFor(connection.Token.User, connection.Following) ?? false)
+			note.Reply = null;
+
+		return note;
+	}
 
 	private async void OnNotePublished(object? _, Note note)
 	{
@@ -183,24 +183,6 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		catch (Exception e)
 		{
 			Logger.LogError("Event handler OnNotification threw exception: {e}", e);
-		}
-	}
-
-	private async void OnRelationChange(object? _, UserInteraction interaction)
-	{
-		try
-		{
-			if (!IsApplicable(interaction)) return;
-			await using var scope = connection.ScopeFactory.CreateAsyncScope();
-			await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-			_followedUsers = await db.Users.Where(p => p == connection.Token.User)
-			                         .SelectMany(p => p.Following)
-			                         .Select(p => p.Id)
-			                         .ToListAsync();
-		}
-		catch (Exception e)
-		{
-			Logger.LogError("Event handler OnRelationChange threw exception: {e}", e);
 		}
 	}
 }

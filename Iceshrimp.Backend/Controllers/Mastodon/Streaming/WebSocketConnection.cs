@@ -3,10 +3,12 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
+using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Events;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming;
 
@@ -24,6 +26,7 @@ public sealed class WebSocketConnection(
 	public readonly  IServiceScope            Scope        = scopeFactory.CreateScope();
 	public readonly  IServiceScopeFactory     ScopeFactory = scopeFactory;
 	public readonly  OauthToken               Token        = token;
+	public readonly  WriteLockingList<string> Following    = [];
 	private readonly WriteLockingList<string> _blocking    = [];
 	private readonly WriteLockingList<string> _blockedBy   = [];
 	private readonly WriteLockingList<string> _mutedUsers  = [];
@@ -54,10 +57,23 @@ public sealed class WebSocketConnection(
 		Channels.Add(new PublicChannel(this, "public:remote", false, true, false));
 		Channels.Add(new PublicChannel(this, "public:remote:media", false, true, true));
 
-		EventService.UserBlocked   += OnUserUnblock;
-		EventService.UserUnblocked += OnUserBlock;
-		EventService.UserMuted     += OnUserMute;
-		EventService.UserUnmuted   += OnUserUnmute;
+		EventService.UserBlocked    += OnUserUnblock;
+		EventService.UserUnblocked  += OnUserBlock;
+		EventService.UserMuted      += OnUserMute;
+		EventService.UserUnmuted    += OnUserUnmute;
+		EventService.UserFollowed   -= OnUserFollow;
+		EventService.UserUnfollowed -= OnUserUnfollow;
+
+		_ = InitializeFollowing();
+	}
+
+	private async Task InitializeFollowing()
+	{
+		await using var db = Scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+		Following.AddRange(await db.Users.Where(p => p == Token.User)
+		                           .SelectMany(p => p.Following)
+		                           .Select(p => p.Id)
+		                           .ToListAsync());
 	}
 
 	public async Task HandleSocketMessageAsync(string payload)
@@ -182,6 +198,34 @@ public sealed class WebSocketConnection(
 		{
 			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
 			logger.LogError("Event handler OnUserUnmute threw exception: {e}", e);
+		}
+	}
+	
+	private void OnUserFollow(object? _, UserInteraction interaction)
+	{
+		try
+		{
+			if (interaction.Actor.Id == Token.User.Id)
+				Following.Add(interaction.Object.Id);
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnUserFollow threw exception: {e}", e);
+		}
+	}
+
+	private void OnUserUnfollow(object? _, UserInteraction interaction)
+	{
+		try
+		{
+			if (interaction.Actor.Id == Token.User.Id)
+				Following.Remove(interaction.Object.Id);
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnUserUnfollow threw exception: {e}", e);
 		}
 	}
 

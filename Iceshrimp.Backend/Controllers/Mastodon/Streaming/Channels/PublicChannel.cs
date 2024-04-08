@@ -51,8 +51,17 @@ public class PublicChannel(
 		if (!local && note.UserHost == null) return false;
 		if (!remote && note.UserHost != null) return false;
 		if (onlyMedia && note.FileIds.Count == 0) return false;
+		return EnforceRenoteReplyVisibility(note) is not { IsPureRenote: true, Renote: null };
+	}
+	
+	private Note EnforceRenoteReplyVisibility(Note note)
+	{
+		if (note.Renote?.IsVisibleFor(connection.Token.User, connection.Following) ?? false)
+			note.Renote = null;
+		if (note.Reply?.IsVisibleFor(connection.Token.User, connection.Following) ?? false)
+			note.Reply = null;
 
-		return true;
+		return note;
 	}
 	
 	private bool IsFiltered(Note note) => connection.IsFiltered(note.User) ||
