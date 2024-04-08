@@ -28,11 +28,10 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	private readonly StreamingService     _streamingService;
 	private readonly ILogger              _logger;
 
-	private readonly WriteLockingList<string> _following  = [];
-	private readonly WriteLockingList<string> _followedBy = [];
-	private readonly WriteLockingList<string> _blocking   = [];
-	private readonly WriteLockingList<string> _blockedBy  = [];
-	private readonly WriteLockingList<string> _muting     = [];
+	private readonly WriteLockingList<string> _following = [];
+	private readonly WriteLockingList<string> _muting    = [];
+	private readonly WriteLockingList<string> _blocking  = [];
+	private readonly WriteLockingList<string> _blockedBy = [];
 
 	private readonly ConcurrentDictionary<string, WriteLockingList<StreamingTimeline>> _subscriptions = [];
 
@@ -67,8 +66,8 @@ public sealed class StreamingConnectionAggregate : IDisposable
 
 	private async Task InitializeAsync()
 	{
-		_eventService.UserBlocked    += OnUserUnblock;
-		_eventService.UserUnblocked  += OnUserBlock;
+		_eventService.UserBlocked    += OnUserBlock;
+		_eventService.UserUnblocked  += OnUserUnblock;
 		_eventService.UserMuted      += OnUserMute;
 		_eventService.UserUnmuted    += OnUserUnmute;
 		_eventService.UserFollowed   += OnUserFollow;
@@ -88,9 +87,6 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		_following.AddRange(await db.Followings.Where(p => p.Follower == _user)
 		                            .Select(p => p.FolloweeId)
 		                            .ToListAsync());
-		_followedBy.AddRange(await db.Followings.Where(p => p.Followee == _user)
-		                             .Select(p => p.FollowerId)
-		                             .ToListAsync());
 		_blocking.AddRange(await db.Blockings.Where(p => p.Blocker == _user)
 		                           .Select(p => p.BlockeeId)
 		                           .ToListAsync());
@@ -238,10 +234,15 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		try
 		{
 			if (interaction.Actor.Id == _userId)
+			{
 				_blocking.Add(interaction.Object.Id);
-
-			if (interaction.Object.Id == _userId)
+				_following.Remove(interaction.Object.Id);
+			}
+			else if (interaction.Object.Id == _userId)
+			{
 				_blockedBy.Add(interaction.Actor.Id);
+				_following.Remove(interaction.Actor.Id);
+			}
 		}
 		catch (Exception e)
 		{
@@ -297,9 +298,6 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		{
 			if (interaction.Actor.Id == _userId)
 				_following.Add(interaction.Object.Id);
-
-			if (interaction.Object.Id == _userId)
-				_followedBy.Add(interaction.Actor.Id);
 		}
 		catch (Exception e)
 		{
@@ -313,9 +311,6 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		{
 			if (interaction.Actor.Id == _userId)
 				_following.Remove(interaction.Object.Id);
-
-			if (interaction.Object.Id == _userId)
-				_followedBy.Remove(interaction.Actor.Id);
 		}
 		catch (Exception e)
 		{
@@ -354,8 +349,8 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		_streamingService.NotePublished -= OnNotePublished;
 		_streamingService.NoteUpdated   -= OnNoteUpdated;
 		_eventService.Notification      -= OnNotification;
-		_eventService.UserBlocked       -= OnUserUnblock;
-		_eventService.UserUnblocked     -= OnUserBlock;
+		_eventService.UserBlocked       -= OnUserBlock;
+		_eventService.UserUnblocked     -= OnUserUnblock;
 		_eventService.UserMuted         -= OnUserMute;
 		_eventService.UserUnmuted       -= OnUserUnmute;
 		_eventService.UserFollowed      -= OnUserFollow;
