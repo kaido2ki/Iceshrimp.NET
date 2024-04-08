@@ -179,7 +179,7 @@ public static class ServiceExtensions
 				                              Scheme = "bearer"
 			                              });
 
-			options.AddOperationFilters();
+			options.AddFilters();
 		});
 	}
 

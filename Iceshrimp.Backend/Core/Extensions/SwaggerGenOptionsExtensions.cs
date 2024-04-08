@@ -12,11 +12,28 @@ namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class SwaggerGenOptionsExtensions
 {
-	public static void AddOperationFilters(this SwaggerGenOptions options)
+	public static void AddFilters(this SwaggerGenOptions options)
 	{
+		options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
 		options.OperationFilter<AuthorizeCheckOperationFilter>();
 		options.OperationFilter<HybridRequestOperationFilter>();
 		options.DocInclusionPredicate(DocInclusionPredicate);
+	}
+
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
+	                 Justification = "SwaggerGenOptions.SchemaFilter<T> instantiates this class at runtime")]
+	private class RequireNonNullablePropertiesSchemaFilter : ISchemaFilter
+	{
+		public void Apply(OpenApiSchema model, SchemaFilterContext context)
+		{
+			var additionalRequiredProps = model.Properties
+			                                   .Where(x => !x.Value.Nullable && !model.Required.Contains(x.Key))
+			                                   .Select(x => x.Key);
+			foreach (var propKey in additionalRequiredProps)
+			{
+				model.Required.Add(propKey);
+			}
+		}
 	}
 
 	private static bool DocInclusionPredicate(string docName, ApiDescription apiDesc)
