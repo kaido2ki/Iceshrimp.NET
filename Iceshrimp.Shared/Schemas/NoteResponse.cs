@@ -4,7 +4,7 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Shared.Schemas;
 
-public class NoteResponse : NoteWithQuote
+public class NoteResponse : NoteWithQuote, ICloneable
 {
 	[J("reply")]    public NoteBase?           Reply    { get; set; }
 	[J("replyId")]  public string?             ReplyId  { get; set; }
@@ -18,6 +18,8 @@ public class NoteResponse : NoteWithQuote
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	[J("descendants")]
 	public List<NoteResponse>? Descendants { get; set; }
+
+	public object Clone() => MemberwiseClone();
 }
 
 public class NoteWithQuote : NoteBase

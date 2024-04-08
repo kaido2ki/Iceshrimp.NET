@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database.Tables;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
@@ -12,7 +13,7 @@ public class PublicChannel(
 	bool onlyMedia
 ) : IChannel
 {
-	public readonly ILogger<PublicChannel> Logger =
+	private readonly ILogger<PublicChannel> _logger =
 		connection.Scope.ServiceProvider.GetRequiredService<ILogger<PublicChannel>>();
 
 	public string       Name         => name;
@@ -45,25 +46,46 @@ public class PublicChannel(
 		connection.EventService.NoteDeleted   -= OnNoteDeleted;
 	}
 
-	private bool IsApplicable(Note note)
+	private NoteWithVisibilities? IsApplicable(Note note)
+	{
+		if (!IsApplicableBool(note)) return null;
+		var res = EnforceRenoteReplyVisibility(note);
+		return res is not { Note.IsPureRenote: true, Renote: null } ? null : res;
+	}
+
+	private bool IsApplicableBool(Note note)
 	{
 		if (note.Visibility != Note.NoteVisibility.Public) return false;
 		if (!local && note.UserHost == null) return false;
 		if (!remote && note.UserHost != null) return false;
-		if (onlyMedia && note.FileIds.Count == 0) return false;
-		return EnforceRenoteReplyVisibility(note) is not { IsPureRenote: true, Renote: null };
+		return !onlyMedia || note.FileIds.Count != 0;
 	}
-	
-	private Note EnforceRenoteReplyVisibility(Note note)
-	{
-		if (note.Renote?.IsVisibleFor(connection.Token.User, connection.Following) ?? false)
-			note.Renote = null;
-		if (note.Reply?.IsVisibleFor(connection.Token.User, connection.Following) ?? false)
-			note.Reply = null;
 
-		return note;
+	private NoteWithVisibilities EnforceRenoteReplyVisibility(Note note)
+	{
+		var wrapped = new NoteWithVisibilities(note);
+		if (wrapped.Renote?.IsVisibleFor(connection.Token.User, connection.Following) ?? false)
+			wrapped.Renote = null;
+
+		return wrapped;
 	}
-	
+
+	private class NoteWithVisibilities(Note note)
+	{
+		public readonly Note  Note   = note;
+		public          Note? Renote = note.Renote;
+	}
+
+	private static StatusEntity EnforceRenoteReplyVisibility(StatusEntity rendered, NoteWithVisibilities note)
+	{
+		var renote = note.Renote == null && rendered.Renote != null;
+		if (!renote) return rendered;
+
+		rendered = (StatusEntity)rendered.Clone();
+		if (renote) rendered.Renote = null;
+		return rendered;
+	}
+
 	private bool IsFiltered(Note note) => connection.IsFiltered(note.User) ||
 	                                      (note.Renote?.User != null && connection.IsFiltered(note.Renote.User)) ||
 	                                      note.Renote?.Renote?.User != null &&
@@ -73,13 +95,14 @@ public class PublicChannel(
 	{
 		try
 		{
-			if (!IsApplicable(note)) return;
+			var wrapped = IsApplicable(note);
+			if (wrapped == null) return;
 			if (IsFiltered(note)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
 
-			var provider = scope.ServiceProvider;
-			var renderer = provider.GetRequiredService<NoteRenderer>();
-			var rendered = await renderer.RenderAsync(note, connection.Token.User);
+			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
+			var intermediate = await renderer.RenderAsync(note, connection.Token.User);
+			var rendered     = EnforceRenoteReplyVisibility(intermediate, wrapped);
 			var message = new StreamingUpdateMessage
 			{
 				Stream  = [Name],
@@ -90,7 +113,7 @@ public class PublicChannel(
 		}
 		catch (Exception e)
 		{
-			Logger.LogError("Event handler OnNotePublished threw exception: {e}", e);
+			_logger.LogError("Event handler OnNotePublished threw exception: {e}", e);
 		}
 	}
 
@@ -98,13 +121,14 @@ public class PublicChannel(
 	{
 		try
 		{
-			if (!IsApplicable(note)) return;
+			var wrapped = IsApplicable(note);
+			if (wrapped == null) return;
 			if (IsFiltered(note)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
 
-			var provider = scope.ServiceProvider;
-			var renderer = provider.GetRequiredService<NoteRenderer>();
-			var rendered = await renderer.RenderAsync(note, connection.Token.User);
+			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
+			var intermediate = await renderer.RenderAsync(note, connection.Token.User);
+			var rendered     = EnforceRenoteReplyVisibility(intermediate, wrapped);
 			var message = new StreamingUpdateMessage
 			{
 				Stream  = [Name],
@@ -115,7 +139,7 @@ public class PublicChannel(
 		}
 		catch (Exception e)
 		{
-			Logger.LogError("Event handler OnNoteUpdated threw exception: {e}", e);
+			_logger.LogError("Event handler OnNoteUpdated threw exception: {e}", e);
 		}
 	}
 
@@ -123,7 +147,7 @@ public class PublicChannel(
 	{
 		try
 		{
-			if (!IsApplicable(note)) return;
+			if (!IsApplicableBool(note)) return;
 			if (IsFiltered(note)) return;
 			var message = new StreamingUpdateMessage
 			{
@@ -135,7 +159,7 @@ public class PublicChannel(
 		}
 		catch (Exception e)
 		{
-			Logger.LogError("Event handler OnNoteDeleted threw exception: {e}", e);
+			_logger.LogError("Event handler OnNoteDeleted threw exception: {e}", e);
 		}
 	}
 }

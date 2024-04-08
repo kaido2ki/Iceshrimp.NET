@@ -138,13 +138,13 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	{
 		try
 		{
-			if (!IsApplicable(data.note)) return;
+			var wrapped = IsApplicable(data.note);
+			if (wrapped == null) return;
 			var recipients = FindRecipients(data.note);
 			if (recipients.connectionIds.Count == 0) return;
 
-			await _hub.Clients
-			          .Clients(recipients.connectionIds)
-			          .NotePublished(recipients.timelines, await data.rendered());
+			var rendered = EnforceRenoteReplyVisibility(await data.rendered(), wrapped);
+			await _hub.Clients.Clients(recipients.connectionIds).NotePublished(recipients.timelines, rendered);
 		}
 		catch (Exception e)
 		{
@@ -156,13 +156,13 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	{
 		try
 		{
-			if (!IsApplicable(data.note)) return;
+			var wrapped = IsApplicable(data.note);
+			if (wrapped == null) return;
 			var recipients = FindRecipients(data.note);
 			if (recipients.connectionIds.Count == 0) return;
 
-			await _hub.Clients
-			          .Clients(recipients.connectionIds)
-			          .NoteUpdated(recipients.timelines, await data.rendered());
+			var rendered = EnforceRenoteReplyVisibility(await data.rendered(), wrapped);
+			await _hub.Clients.Clients(recipients.connectionIds).NoteUpdated(recipients.timelines, rendered);
 		}
 		catch (Exception e)
 		{
@@ -170,16 +170,29 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private bool IsApplicable(Note note)
+	private static NoteResponse EnforceRenoteReplyVisibility(NoteResponse rendered, NoteWithVisibilities note)
 	{
-		if (_subscriptions.IsEmpty) return false;
-		if (!note.IsVisibleFor(_user, _following)) return false;
-		if (note.Visibility != Note.NoteVisibility.Public && !IsFollowingOrSelf(note.User)) return false;
-		if (IsFiltered(note.User)) return false;
-		if (note.Reply != null && IsFiltered(note.Reply.User)) return false;
-		if (note.Renote != null && IsFiltered(note.Renote.User)) return false;
+		var renote = note.Renote == null && rendered.Renote != null;
+		var reply  = note.Reply == null && rendered.Reply != null;
+		if (!renote && !reply) return rendered;
 
-		return EnforceRenoteReplyVisibility(note) is not { IsPureRenote: true, Renote: null };
+		rendered = (NoteResponse)rendered.Clone();
+		if (renote) rendered.Renote = null;
+		if (reply) rendered.Reply   = null;
+		return rendered;
+	}
+
+	private NoteWithVisibilities? IsApplicable(Note note)
+	{
+		if (_subscriptions.IsEmpty) return null;
+		if (!note.IsVisibleFor(_user, _following)) return null;
+		if (note.Visibility != Note.NoteVisibility.Public && !IsFollowingOrSelf(note.User)) return null;
+		if (IsFiltered(note.User)) return null;
+		if (note.Reply != null && IsFiltered(note.Reply.User)) return null;
+		if (note.Renote != null && IsFiltered(note.Renote.User)) return null;
+
+		var res = EnforceRenoteReplyVisibility(note);
+		return res is not { Note.IsPureRenote: true, Renote: null } ? null : res;
 	}
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
@@ -193,14 +206,22 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
 	private bool IsFollowingOrSelf(User user) => user.Id == _userId || _following.Contains(user.Id);
 
-	private Note EnforceRenoteReplyVisibility(Note note)
+	private NoteWithVisibilities EnforceRenoteReplyVisibility(Note note)
 	{
-		if (note.Renote?.IsVisibleFor(_user, _following) ?? false)
-			note.Renote = null;
-		if (note.Reply?.IsVisibleFor(_user, _following) ?? false)
-			note.Reply = null;
+		var wrapped = new NoteWithVisibilities(note);
+		if (wrapped.Renote?.IsVisibleFor(_user, _following) ?? false)
+			wrapped.Renote = null;
+		if (wrapped.Reply?.IsVisibleFor(_user, _following) ?? false)
+			wrapped.Reply = null;
 
-		return note;
+		return wrapped;
+	}
+
+	private class NoteWithVisibilities(Note note)
+	{
+		public readonly Note  Note   = note;
+		public          Note? Reply  = note.Reply;
+		public          Note? Renote = note.Renote;
 	}
 
 	private (List<string> connectionIds, List<StreamingTimeline> timelines) FindRecipients(Note note)

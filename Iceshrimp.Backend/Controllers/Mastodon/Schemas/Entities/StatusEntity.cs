@@ -7,7 +7,7 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class StatusEntity : IEntity
+public class StatusEntity : IEntity, ICloneable
 {
 	[J("content")]                public required string?       Content        { get; set; }
 	[J("uri")]                    public required string        Uri            { get; set; }
@@ -79,6 +79,8 @@ public class StatusEntity : IEntity
 			_          => throw GracefulException.BadRequest($"Unknown visibility: {visibility}")
 		};
 	}
+
+	public object Clone() => MemberwiseClone();
 }
 
 public class StatusContext
