@@ -15,6 +15,9 @@ public static class SwaggerGenOptionsExtensions
 	public static void AddFilters(this SwaggerGenOptions options)
 	{
 		options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
+		options.SupportNonNullableReferenceTypes(); // Sets Nullable flags appropriately.              
+		options.UseAllOfToExtendReferenceSchemas(); // Allows $ref enums to be nullable
+		options.UseAllOfForInheritance();           // Allows $ref objects to be nullable
 		options.OperationFilter<AuthorizeCheckOperationFilter>();
 		options.OperationFilter<HybridRequestOperationFilter>();
 		options.DocInclusionPredicate(DocInclusionPredicate);
