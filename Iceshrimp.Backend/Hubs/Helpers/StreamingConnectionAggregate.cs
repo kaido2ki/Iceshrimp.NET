@@ -179,8 +179,19 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		if (_subscriptions.IsEmpty) return false;
 		if (!note.IsVisibleFor(_user, _following)) return false;
 		if (note.Visibility != Note.NoteVisibility.Public && !IsFollowingOrSelf(note.User)) return false;
+		if (IsFiltered(note.User)) return false;
+		if (note.Reply != null && IsFiltered(note.Reply.User)) return false;
+		if (note.Renote != null && IsFiltered(note.Renote.User)) return false;
 
 		return EnforceRenoteReplyVisibility(note) is not { IsPureRenote: true, Renote: null };
+	}
+
+	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
+	private bool IsFiltered(User user)
+	{
+		return !_blockedBy.Contains(user.Id) &&
+		       !_blocking.Contains(user.Id) &&
+		       !_muting.Contains(user.Id);
 	}
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
