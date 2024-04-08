@@ -1,8 +1,72 @@
 @page "/login"
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Schemas
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas
+@inject ApiService     Api
+@inject SessionService        SessionService
+@inject NavigationManager Navigation
 <h3>Login</h3>
+<div>
+    <input
+        @bind="@Username" />
+    <input  
+        @bind="@Password" />
+    <button @onclick="Submit" disabled="@Loading">Login</button>
+</div>
+@if (Loading)
+{
+    <span>Loading!</span>
+}
+@if (Failure)
+{
+    <span>Authentication Failed</span>
+}
 
 <p>A login page is being constructed here.</p>
 
 @code {
-    
+    private string? Password { get; set; }
+    private string? Username { get; set; }
+    private bool    Loading  { get; set; }
+    private bool    Failure  { get; set; }
+
+    private async void Submit()
+    {
+        Loading = true;
+        try
+        {
+            var res = await Api.Auth.Login(new AuthRequest { Username = Username, Password = Password });
+            switch (res.Status)
+            {
+                case AuthStatusEnum.Authenticated:
+                    SessionService.AddUser(new StoredUser
+                    { // Token nor user will ever be null on an authenticated response
+                        Id              = res.User!.Id, 
+                        Username        = res.User.Username,
+                        DisplayName     = res.User.DisplayName,
+                        AvatarUrl       = res.User.AvatarUrl,
+                        BannerUrl       = res.User.BannerUrl,
+                        InstanceName    = res.User.InstanceName,
+                        InstanceIconUrl = res.User.InstanceIconUrl,
+                        Token           = res.Token!
+                    });
+                    SessionService.SetSession(res.User.Id);
+                    Navigation.NavigateTo("/");
+                    break;
+                case AuthStatusEnum.Guest:
+                    Failure = true;
+                    Loading = false;
+                    break;
+                case AuthStatusEnum.TwoFactor:
+                    //FixMe: Implement Two Factor
+                    break;
+            }
+        }
+        catch (ApiException)
+        {
+            Loading = false;
+            Failure = true;
+        }
+    }
 }
