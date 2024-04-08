@@ -287,6 +287,16 @@ public class Note : IEntity
 	                                                 (Visibility == NoteVisibility.Followers &&
 	                                                  (User.IsFollowedBy(user) || ReplyUserId == user.Id));
 
+	public bool IsVisibleFor(User? user, IEnumerable<string> followingIds) =>
+		VisibilityIsPublicOrHome || (user != null && CheckComplexVisibility(user, followingIds));
+
+	private bool CheckComplexVisibility(User user, IEnumerable<string> followingIds)
+		=> User.Id == user.Id ||
+		   VisibleUserIds.Contains(user.Id) ||
+		   Mentions.Contains(user.Id) ||
+		   (Visibility == NoteVisibility.Followers &&
+		    (followingIds.Contains(User.Id) || ReplyUserId == user.Id));
+
 	public Note WithPrecomputedVisibilities(bool reply, bool renote, bool renoteRenote)
 	{
 		if (Reply != null)

@@ -26,4 +26,14 @@ public static class EnumerableExtensions
 	{
 		foreach (var task in tasks) await task;
 	}
+
+	public static bool IsDisjoint<T>(this IEnumerable<T> x, IEnumerable<T> y)
+	{
+		return x.All(item => !y.Contains(item));
+	}
+	
+	public static bool Intersects<T>(this IEnumerable<T> x, IEnumerable<T> y)
+	{
+		return x.Any(y.Contains);
+	}
 }

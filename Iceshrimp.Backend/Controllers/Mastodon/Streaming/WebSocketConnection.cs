@@ -18,15 +18,15 @@ public sealed class WebSocketConnection(
 	CancellationToken ct
 ) : IDisposable
 {
-	private readonly SemaphoreSlim        _lock        = new(1);
-	public readonly  List<IChannel>       Channels     = [];
-	public readonly  EventService         EventService = eventSvc;
-	public readonly  IServiceScope        Scope        = scopeFactory.CreateScope();
-	public readonly  IServiceScopeFactory ScopeFactory = scopeFactory;
-	public readonly  OauthToken           Token        = token;
-	private readonly List<string>         _blocking    = [];
-	private readonly List<string>         _blockedBy   = [];
-	private readonly List<string>         _mutedUsers  = [];
+	private readonly SemaphoreSlim            _lock        = new(1);
+	public readonly  List<IChannel>           Channels     = [];
+	public readonly  EventService             EventService = eventSvc;
+	public readonly  IServiceScope            Scope        = scopeFactory.CreateScope();
+	public readonly  IServiceScopeFactory     ScopeFactory = scopeFactory;
+	public readonly  OauthToken               Token        = token;
+	private readonly WriteLockingList<string> _blocking    = [];
+	private readonly WriteLockingList<string> _blockedBy   = [];
+	private readonly WriteLockingList<string> _mutedUsers  = [];
 
 	public void Dispose()
 	{
@@ -128,12 +128,10 @@ public sealed class WebSocketConnection(
 		try
 		{
 			if (interaction.Actor.Id == Token.User.Id)
-				lock (_blocking)
-					_blocking.Add(interaction.Object.Id);
+				_blocking.Add(interaction.Object.Id);
 
 			if (interaction.Object.Id == Token.User.Id)
-				lock (_blockedBy)
-					_blockedBy.Add(interaction.Actor.Id);
+				_blockedBy.Add(interaction.Actor.Id);
 		}
 		catch (Exception e)
 		{
@@ -147,12 +145,10 @@ public sealed class WebSocketConnection(
 		try
 		{
 			if (interaction.Actor.Id == Token.User.Id)
-				lock (_blocking)
-					_blocking.Remove(interaction.Object.Id);
+				_blocking.Remove(interaction.Object.Id);
 
 			if (interaction.Object.Id == Token.User.Id)
-				lock (_blockedBy)
-					_blockedBy.Remove(interaction.Actor.Id);
+				_blockedBy.Remove(interaction.Actor.Id);
 		}
 		catch (Exception e)
 		{
@@ -166,8 +162,7 @@ public sealed class WebSocketConnection(
 		try
 		{
 			if (interaction.Actor.Id == Token.User.Id)
-				lock (_mutedUsers)
-					_mutedUsers.Add(interaction.Object.Id);
+				_mutedUsers.Add(interaction.Object.Id);
 		}
 		catch (Exception e)
 		{
@@ -181,8 +176,7 @@ public sealed class WebSocketConnection(
 		try
 		{
 			if (interaction.Actor.Id == Token.User.Id)
-				lock (_mutedUsers)
-					_mutedUsers.Remove(interaction.Object.Id);
+				_mutedUsers.Remove(interaction.Object.Id);
 		}
 		catch (Exception e)
 		{
@@ -191,7 +185,6 @@ public sealed class WebSocketConnection(
 		}
 	}
 
-	[SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
 	public bool IsFiltered(User user) =>
 		_blocking.Contains(user.Id) || _blockedBy.Contains(user.Id) || _mutedUsers.Contains(user.Id);
