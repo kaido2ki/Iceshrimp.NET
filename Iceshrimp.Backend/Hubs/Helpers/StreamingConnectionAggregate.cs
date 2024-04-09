@@ -9,11 +9,13 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.HubSchemas;
 using Iceshrimp.Shared.Schemas;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Hubs.Helpers;
 
+[MustDisposeResource]
 public sealed class StreamingConnectionAggregate : IDisposable
 {
 	private readonly User                     _user;

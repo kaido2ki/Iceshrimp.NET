@@ -18,20 +18,21 @@
     </PropertyGroup>
     
     <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.3" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Amazon.S3" Version="0.31.2"/>
+        <PackageReference Include="Amazon.S3" Version="0.31.2" />
         <PackageReference Include="AngleSharp" Version="1.1.2" />
-        <PackageReference Include="AsyncKeyedLock" Version="6.3.4"/>
-        <PackageReference Include="Blurhash.ImageSharp" Version="3.0.0"/>
-        <PackageReference Include="cuid.net" Version="5.0.2"/>
-        <PackageReference Include="dotNetRdf.Core" Version="3.2.6-iceshrimp"/>
+        <PackageReference Include="AsyncKeyedLock" Version="6.3.4" />
+        <PackageReference Include="Blurhash.ImageSharp" Version="3.0.0" />
+        <PackageReference Include="cuid.net" Version="5.0.2" />
+        <PackageReference Include="dotNetRdf.Core" Version="3.2.6-iceshrimp" />
         <PackageReference Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="8.1.2" />
-        <PackageReference Include="EntityFrameworkCore.Projectables" Version="3.0.4"/>
-        <PackageReference Include="FlexLabs.EntityFrameworkCore.Upsert" Version="8.0.0"/>
-        <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0"/>
+        <PackageReference Include="EntityFrameworkCore.Projectables" Version="3.0.4" />
+        <PackageReference Include="FlexLabs.EntityFrameworkCore.Upsert" Version="8.0.0" />
+        <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0" />
         <PackageReference Include="libsodium" Version="1.0.18.4" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.3" />
@@ -43,29 +44,29 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.3" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="8.0.0" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.2" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
-        <PackageReference Include="System.IO.Hashing" Version="8.0.0"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
         <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
-        <PackageReference Include="WebPush" Version="1.0.24-iceshrimp"/>
+        <PackageReference Include="WebPush" Version="1.0.24-iceshrimp" />
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="Pages\Error.cshtml"/>
-        <AdditionalFiles Include="Pages\Shared\_Layout.cshtml"/>
-        <AdditionalFiles Include="Pages\_ViewImports.cshtml"/>
-        <AdditionalFiles Include="Pages\_ViewStart.cshtml"/>
+        <AdditionalFiles Include="Pages\Error.cshtml" />
+        <AdditionalFiles Include="Pages\Shared\_Layout.cshtml" />
+        <AdditionalFiles Include="Pages\_ViewImports.cshtml" />
+        <AdditionalFiles Include="Pages\_ViewStart.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="migrate.sql"/>
+        <None Remove="migrate.sql" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Iceshrimp.Frontend\Iceshrimp.Frontend.csproj" />
-        <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj"/>
+        <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj" />
         <ProjectReference Include="..\Iceshrimp.Shared\Iceshrimp.Shared.csproj" />
     </ItemGroup>
 

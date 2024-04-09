@@ -8,10 +8,12 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Events;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming;
 
+[MustDisposeResource]
 public sealed class WebSocketConnection(
 	WebSocket socket,
 	OauthToken token,
