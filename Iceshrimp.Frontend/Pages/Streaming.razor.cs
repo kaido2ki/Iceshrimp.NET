@@ -1,5 +1,7 @@
+using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Shared.HubSchemas;
 using Iceshrimp.Shared.Schemas;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Client;
 using TypedSignalR.Client;
@@ -8,6 +10,8 @@ namespace Iceshrimp.Frontend.Pages;
 
 public partial class Streaming
 {
+	[Inject] private SessionService? Session { get; set; }
+
 	private readonly List<string> _messages = [];
 
 	private HubConnection?       _hubConnection;
@@ -92,7 +96,7 @@ public partial class Streaming
 
 		void Auth(HttpConnectionOptions options)
 		{
-			options.AccessTokenProvider = () => Task.FromResult<string?>("the_access_token");
+			options.AccessTokenProvider = () => Task.FromResult(Session?.Current?.Token);
 		}
 	}
 
