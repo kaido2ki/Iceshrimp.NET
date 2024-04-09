@@ -13,6 +13,7 @@ builder.Services.AddSingleton(_ => new HttpClient { BaseAddress = new Uri(builde
 builder.Services.AddSingleton<ApiClient>();
 builder.Services.AddSingleton<ApiService>();
 builder.Services.AddSingleton<SessionService>();
+builder.Services.AddSingleton<StreamingService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();

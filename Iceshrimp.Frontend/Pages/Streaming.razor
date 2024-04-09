@@ -1,6 +1,8 @@
 @page "/streaming"
-@inject NavigationManager Navigation
-@implements IAsyncDisposable
+
+@code {
+    // See Streaming.razor.cs
+}
 
 <PageTitle>Home</PageTitle>
 
@@ -16,7 +18,7 @@
         <input class="form-control" @bind="_messageInput" size="50"/>
     </label>
 </div>
-<button class="btn btn-primary" @onclick="Send" disabled="@(!IsConnected)">Send</button>
+<button class="btn btn-primary" @onclick="Send" disabled="@(!StreamingService.IsConnected)">Send</button>
 
 <hr>
 
@@ -26,7 +28,3 @@
         <li>@message</li>
     }
 </ul>
-
-@code {
-    // See Streaming.razor.cs
-}
