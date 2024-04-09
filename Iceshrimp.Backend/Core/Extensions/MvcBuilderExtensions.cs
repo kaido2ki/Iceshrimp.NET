@@ -1,6 +1,9 @@
 using System.Buffers;
+using System.Net;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using Iceshrimp.Backend.Controllers.Attributes;
+using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -52,6 +55,27 @@ public static class MvcBuilderExtensions
 		       {
 			       options.ValueProviderFactories.Add(new JQueryQueryStringValueProviderFactory());
 		       });
+
+		return builder;
+	}
+
+	public static IMvcBuilder AddApiBehaviorOptions(this IMvcBuilder builder)
+	{
+		builder.ConfigureApiBehaviorOptions(o =>
+		{
+			o.InvalidModelStateResponseFactory = actionContext =>
+			{
+				var details = new ValidationProblemDetails(actionContext.ModelState);
+
+				var status  = (HttpStatusCode?)details.Status ?? HttpStatusCode.BadRequest;
+				var message = details.Title ?? "One or more validation errors occurred.";
+				if (details.Detail != null)
+					message += $" - {details.Detail}";
+				var errors = JsonSerializer.Serialize(details.Errors);
+
+				throw new GracefulException(status, status.ToString(), message, errors);
+			};
+		});
 
 		return builder;
 	}

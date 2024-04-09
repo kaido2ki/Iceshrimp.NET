@@ -11,7 +11,8 @@ builder.Services.AddControllers()
        .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json (or we switch to LinkedData.NET)
        .AddMultiFormatter()
        .AddModelBindingProviders()
-       .AddValueProviderFactories();
+       .AddValueProviderFactories()
+       .AddApiBehaviorOptions();
 
 builder.Services.AddSwaggerGenWithOptions();
 builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
