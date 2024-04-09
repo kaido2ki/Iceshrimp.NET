@@ -47,6 +47,9 @@ public class PushService(
 			if (subscriptions.Count == 0)
 				return;
 
+			logger.LogDebug("Delivering mastodon push notification {id} for user {userId}", notification.Id,
+			                notification.Notifiee.Id);
+
 			var isSelf = notification.Notifier == notification.Notifiee;
 
 			var followed = subscriptions.All(p => p.Policy != PushSubscription.PushPolicy.Followed) ||

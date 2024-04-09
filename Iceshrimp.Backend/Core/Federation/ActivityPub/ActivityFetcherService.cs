@@ -41,8 +41,9 @@ public class ActivityFetcherService(
 		return await FetchRawActivityAsync(url, actor, keypair);
 	}
 
-	public async Task<IEnumerable<ASObject>> FetchActivityAsync(string url, User actor, UserKeypair keypair)
+	private async Task<IEnumerable<ASObject>> FetchActivityAsync(string url, User actor, UserKeypair keypair)
 	{
+		logger.LogDebug("Fetching activity {url} as user {id}", url, actor.Id);
 		var (activity, finalUri) = await FetchActivityInternal(url, actor, keypair);
 		if (activity == null) return [];
 
@@ -55,7 +56,8 @@ public class ActivityFetcherService(
 
 		if (activityIdUri.Host != finalUri.Host)
 			throw GracefulException.UnprocessableEntity("Activity identifier doesn't match final host");
-
+		
+		logger.LogDebug("Fetching activity {url} as user {id} (attempt 2)", activityIdUri.AbsoluteUri, actor.Id);
 		(activity, finalUri) = await FetchActivityInternal(activityIdUri.AbsoluteUri, actor, keypair);
 		if (activity == null) return [];
 
@@ -138,7 +140,7 @@ public class ActivityFetcherService(
 		}
 	}
 
-	public async Task<string?> FetchRawActivityAsync(string url, User actor, UserKeypair keypair)
+	private async Task<string?> FetchRawActivityAsync(string url, User actor, UserKeypair keypair)
 	{
 		var request  = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair).DisableAutoRedirects();
 		var response = await client.SendAsync(request);
@@ -197,7 +199,7 @@ public class ActivityFetcherService(
 	public async Task<ASNote?> FetchNoteAsync(string uri, User actor)
 	{
 		var keypair = await db.UserKeypairs.FirstOrDefaultAsync(p => p.User == actor) ??
-		              throw new Exception("User has no keypair");
+		              throw new Exception("Actor has no keypair");
 		var activity = await FetchActivityAsync(uri, actor, keypair);
 		return activity.OfType<ASNote>().FirstOrDefault();
 	}

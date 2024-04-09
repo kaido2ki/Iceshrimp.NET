@@ -16,6 +16,8 @@ public class ObjectResolver(
 {
 	public async Task<ASObject?> ResolveObject(ASObjectBase baseObj, int recurse = 5, bool force = false)
 	{
+		logger.LogDebug("Resolving object: {id}", baseObj.Id ?? "<anonymous>");
+
 		if (baseObj is ASActivity { Object.IsUnresolved: true } activity && recurse > 0)
 		{
 			activity.Object = await ResolveObject(activity.Object, --recurse, force);

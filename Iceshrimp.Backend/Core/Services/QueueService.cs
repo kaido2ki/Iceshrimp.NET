@@ -428,15 +428,16 @@ public class PostgresJobQueue<T>(
 			job.ExceptionMessage = e.Message;
 			job.ExceptionSource  = e.TargetSite?.DeclaringType?.FullName ?? "Unknown";
 
-			var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
+			var logger    = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
+			var queueName = data is BackgroundTaskJobData ? name + $" ({data.GetType().Name})" : name;
 			if (e is GracefulException { Details: not null } ce)
 			{
 				logger.LogError("Failed to process job in {queue} queue: {error} - {details}",
-				                name, ce.Message, ce.Details);
+				                queueName, ce.Message, ce.Details);
 			}
 			else
 			{
-				logger.LogError(e, "Failed to process job in {queue} queue:", name);
+				logger.LogError(e, "Failed to process job in {queue} queue:", queueName);
 			}
 		}
 

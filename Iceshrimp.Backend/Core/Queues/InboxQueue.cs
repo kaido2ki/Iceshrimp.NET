@@ -18,19 +18,15 @@ public class InboxQueue() : PostgresJobQueue<InboxJobData>("inbox", InboxQueuePr
 		CancellationToken token
 	)
 	{
-		var expanded = LdHelpers.Expand(JToken.Parse(jobData.Body));
-		if (expanded == null)
-			throw new Exception("Failed to expand ASObject");
-		var obj = ASObject.Deserialize(expanded);
-		if (obj == null)
-			throw new Exception("Failed to deserialize ASObject");
+		var logger = scope.GetRequiredService<ILogger<InboxQueue>>();
+		logger.LogDebug("Processing inbox job {id}", job.Id.ToString().ToLowerInvariant());
+		var expanded = LdHelpers.Expand(JToken.Parse(jobData.Body)) ?? throw new Exception("Failed to expand ASObject");
+		var obj      = ASObject.Deserialize(expanded) ?? throw new Exception("Failed to deserialize ASObject");
 		if (obj is not ASActivity activity)
 			throw new GracefulException("Job data is not an ASActivity", $"Type: {obj.Type}");
+		logger.LogTrace("Preparation took {ms} ms", job.Duration);
 
 		var apHandler = scope.GetRequiredService<ActivityPub.ActivityHandlerService>();
-		var logger    = scope.GetRequiredService<ILogger<InboxQueue>>();
-
-		logger.LogTrace("Preparation took {ms} ms", job.Duration);
 		await apHandler.PerformActivityAsync(activity, jobData.InboxUserId, jobData.AuthenticatedUserId);
 	}
 }

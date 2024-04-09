@@ -62,6 +62,8 @@ public class NoteService(
 		bool localOnly = false
 	)
 	{
+		logger.LogDebug("Creating note for local user {id}", user.Id);
+
 		if ((text?.Length ?? 0) + (cw?.Length ?? 0) > config.Value.CharacterLimit)
 			throw GracefulException
 				.BadRequest($"Text & content warning cannot exceed {config.Value.CharacterLimit} characters in total");
@@ -163,6 +165,8 @@ public class NoteService(
 			await EnqueuePollExpiryTask(poll);
 		}
 
+		logger.LogDebug("Inserting created note {noteId} for local user {userId} into the database", note.Id, user.Id);
+
 		await UpdateNoteCountersAsync(note, true);
 
 		await db.AddAsync(note);
@@ -246,6 +250,8 @@ public class NoteService(
 		Poll? poll = null
 	)
 	{
+		logger.LogDebug("Processing note update for note {id}", note.Id);
+
 		var noteEdit = new NoteEdit
 		{
 			Id        = IdHelpers.GenerateSlowflakeId(),
@@ -384,6 +390,8 @@ public class NoteService(
 
 	public async Task DeleteNoteAsync(Note note)
 	{
+		logger.LogDebug("Deleting note {id}", note.Id);
+
 		db.Update(note.User);
 		db.Remove(note);
 		eventSvc.RaiseNoteDeleted(this, note);
@@ -669,6 +677,9 @@ public class NoteService(
 		var emoji = await emojiSvc.ProcessEmojiAsync(note.Tags?.OfType<ASEmoji>().ToList(), actor.Host);
 		dbNote.Emojis = emoji.Select(p => p.Id).ToList();
 
+		logger.LogDebug("Inserting created note {noteId} for remote user {userId} into the database", note.Id,
+		                actor.Id);
+
 		await UpdateNoteCountersAsync(dbNote, true);
 		await db.Notes.AddAsync(dbNote);
 		await db.SaveChangesAsync();
@@ -690,6 +701,8 @@ public class NoteService(
 		                     .FirstOrDefaultAsync(p => p.Uri == note.Id);
 
 		if (dbNote == null) return await ProcessNoteAsync(note, actor);
+		
+		logger.LogDebug("Processing note update {id} for note {noteId}", note.Id, dbNote.Id);
 
 		if (dbNote.User != actor)
 			throw GracefulException.UnprocessableEntity("Refusing to update note of user other than actor");

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class InstanceService(DatabaseContext db, HttpClient httpClient)
+public class InstanceService(DatabaseContext db, HttpClient httpClient, ILogger<InstanceService> logger)
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{
@@ -17,6 +17,11 @@ public class InstanceService(DatabaseContext db, HttpClient httpClient)
 
 	private async Task<Instance> GetUpdatedInstanceMetadataAsync(string host, string webDomain)
 	{
+		if (host == webDomain)
+			logger.LogDebug("Updating instance metadata for {host}", host);
+		else
+			logger.LogDebug("Updating instance metadata for {host} ({domain})", host, webDomain);
+		
 		host = host.ToLowerInvariant();
 		var instance = await db.Instances.FirstOrDefaultAsync(p => p.Host == host);
 		if (instance == null)

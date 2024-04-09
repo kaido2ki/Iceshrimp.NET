@@ -110,11 +110,12 @@ public class ErrorHandlerMiddleware(
 				if (!ce.SuppressLog)
 				{
 					if (ce.Details != null)
-						logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message} - {details}",
-						                ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message, ce.Details);
+						logger.LogDebug("Request {id} was rejected by {source} with {statusCode} {error}: {message} - {details}",
+						                ctx.TraceIdentifier, ce.Source, (int)ce.StatusCode, ce.Error, ce.Message,
+						                ce.Details);
 					else
-						logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message}",
-						                ctx.TraceIdentifier, (int)ce.StatusCode, ce.Error, ce.Message);
+						logger.LogDebug("Request {id} was rejected by {source} with {statusCode} {error}: {message}",
+						                ctx.TraceIdentifier, ce.Source, (int)ce.StatusCode, ce.Error, ce.Message);
 				}
 			}
 			else
