@@ -3,15 +3,15 @@
 @using Iceshrimp.Frontend.Core.Schemas
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
-@inject ApiService     Api
-@inject SessionService        SessionService
+@inject ApiService        Api
+@inject SessionService    SessionService
 @inject NavigationManager Navigation
 <h3>Login</h3>
 <div>
     <input
-        @bind="@Username" />
-    <input  
-        @bind="@Password" />
+        @bind="@Username"/>
+    <input
+        @bind="@Password"/>
     <button @onclick="Submit" disabled="@Loading">Login</button>
 </div>
 @if (Loading)
@@ -36,13 +36,21 @@
         Loading = true;
         try
         {
+            if (Username == null || Password == null)
+            {
+                Loading = false;
+                Failure = true;
+                StateHasChanged(); // Manually triggering a state update, else component will not re-render.
+                return;
+            }
+
             var res = await Api.Auth.Login(new AuthRequest { Username = Username, Password = Password });
             switch (res.Status)
             {
                 case AuthStatusEnum.Authenticated:
                     SessionService.AddUser(new StoredUser
                     { // Token nor user will ever be null on an authenticated response
-                        Id              = res.User!.Id, 
+                        Id              = res.User!.Id,
                         Username        = res.User.Username,
                         DisplayName     = res.User.DisplayName,
                         AvatarUrl       = res.User.AvatarUrl,
@@ -70,4 +78,5 @@
             StateHasChanged(); // Manually triggering a state update, else component will not re-render.
         }
     }
+
 }

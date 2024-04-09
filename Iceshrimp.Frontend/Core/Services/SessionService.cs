@@ -1,6 +1,5 @@
 using Blazored.LocalStorage;
 using Iceshrimp.Frontend.Core.Schemas;
-using Iceshrimp.Shared.Schemas;
 using Microsoft.AspNetCore.Components;
 
 namespace Iceshrimp.Frontend.Core.Services;
@@ -50,7 +49,7 @@ internal class SessionService
 		WriteUsers();
 	}
 
-	private StoredUser? GetUserById(string id)
+	private StoredUser GetUserById(string id)
 	{
 		var user = Users[id];
 		return user;
