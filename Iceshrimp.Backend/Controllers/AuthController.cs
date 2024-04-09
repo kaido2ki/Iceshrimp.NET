@@ -52,12 +52,12 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		var user = await db.Users.FirstOrDefaultAsync(p => p.Host == null &&
 		                                                   p.UsernameLower == request.Username.ToLowerInvariant());
 		if (user == null)
-			return StatusCode(StatusCodes.Status403Forbidden);
+			throw GracefulException.Forbidden("Invalid username or password");
 		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
 		if (profile?.Password == null)
-			return StatusCode(StatusCodes.Status403Forbidden);
+			throw GracefulException.Forbidden("Invalid username or password");
 		if (!AuthHelpers.ComparePassword(request.Password, profile.Password))
-			return StatusCode(StatusCodes.Status403Forbidden);
+			throw GracefulException.Forbidden("Invalid username or password");
 
 		var session = HttpContext.GetSession();
 		if (session == null)
