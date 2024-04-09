@@ -16,11 +16,6 @@
         <BlazorWebAssemblyOmitDebugProxyOutput>true</BlazorWebAssemblyOmitDebugProxyOutput>
         <PreserveCompilationContext>false</PreserveCompilationContext>
     </PropertyGroup>
-    
-    <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.3" />
-    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Amazon.S3" Version="0.31.2" />
@@ -33,6 +28,7 @@
         <PackageReference Include="EntityFrameworkCore.Projectables" Version="3.0.4" />
         <PackageReference Include="FlexLabs.EntityFrameworkCore.Upsert" Version="8.0.0" />
         <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0" />
+        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" />
         <PackageReference Include="libsodium" Version="1.0.18.4" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.3" />
@@ -51,6 +47,10 @@
         <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
         <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
         <PackageReference Include="WebPush" Version="1.0.24-iceshrimp" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.3" />
     </ItemGroup>
 
     <ItemGroup>
