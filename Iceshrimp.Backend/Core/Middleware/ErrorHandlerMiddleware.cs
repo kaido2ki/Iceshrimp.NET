@@ -111,11 +111,11 @@ public class ErrorHandlerMiddleware(
 				{
 					if (ce.Details != null)
 						logger.LogDebug("Request {id} was rejected by {source} with {statusCode} {error}: {message} - {details}",
-						                ctx.TraceIdentifier, ce.Source, (int)ce.StatusCode, ce.Error, ce.Message,
+						                ctx.TraceIdentifier, type, (int)ce.StatusCode, ce.Error, ce.Message,
 						                ce.Details);
 					else
 						logger.LogDebug("Request {id} was rejected by {source} with {statusCode} {error}: {message}",
-						                ctx.TraceIdentifier, ce.Source, (int)ce.StatusCode, ce.Error, ce.Message);
+						                ctx.TraceIdentifier, type, (int)ce.StatusCode, ce.Error, ce.Message);
 				}
 			}
 			else
