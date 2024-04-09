@@ -43,7 +43,6 @@ RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app -p:EnableAOT=t
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
 # final stage/image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine-composite AS image-aot
-ARG mode=jit
 WORKDIR /app
 COPY --from=builder-aot /app .
 ENTRYPOINT ["./Iceshrimp.Backend", "--environment", "Production", "--migrate-and-start"]
@@ -52,7 +51,6 @@ ENTRYPOINT ["./Iceshrimp.Backend", "--environment", "Production", "--migrate-and
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
 # final stage/image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine-composite AS image-jit
-ARG mode=jit
 WORKDIR /app
 COPY --from=builder-jit /app .
 ENTRYPOINT ["./Iceshrimp.Backend", "--environment", "Production", "--migrate-and-start"]
