@@ -67,6 +67,7 @@
         {
             Loading = false;
             Failure = true;
+            StateHasChanged(); // Manually triggering a state update, else component will not re-render.
         }
     }
 }
