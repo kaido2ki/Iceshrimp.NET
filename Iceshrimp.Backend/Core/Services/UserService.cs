@@ -459,10 +459,7 @@ public class UserService(
 
 	public async Task DeleteUserAsync(ASActor actor)
 	{
-		var user = await db.Users
-		                   .Include(user => user.Avatar)
-		                   .Include(user => user.Banner)
-		                   .FirstOrDefaultAsync(p => p.Uri == actor.Id && p.Host != null);
+		var user = await db.Users.FirstOrDefaultAsync(p => p.Uri == actor.Id && p.Host != null);
 
 		if (user == null)
 		{
@@ -470,22 +467,7 @@ public class UserService(
 			return;
 		}
 
-		db.Remove(user);
-		await db.SaveChangesAsync();
-
-		_ = followupTaskSvc.ExecuteTask("UpdateInstanceUserCounter", async provider =>
-		{
-			var bgDb          = provider.GetRequiredService<DatabaseContext>();
-			var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-			var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user);
-			await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-			          .ExecuteUpdateAsync(p => p.SetProperty(i => i.UsersCount, i => i.UsersCount - 1));
-		});
-
-		if (user.Avatar != null)
-			await driveSvc.RemoveFile(user.Avatar);
-		if (user.Banner != null)
-			await driveSvc.RemoveFile(user.Banner);
+		await queueSvc.BackgroundTaskQueue.EnqueueAsync(new UserDeleteJobData { UserId = user.Id });
 	}
 
 	public void UpdateOauthTokenMetadata(OauthToken token)

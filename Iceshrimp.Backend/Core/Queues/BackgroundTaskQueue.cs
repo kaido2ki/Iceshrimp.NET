@@ -39,6 +39,9 @@ public class BackgroundTaskQueue()
 			case FilterExpiryJobData filterExpiryJob:
 				await ProcessFilterExpiry(filterExpiryJob, scope, token);
 				break;
+			case UserDeleteJobData userDeleteJob:
+				await ProcessUserDelete(userDeleteJob, scope, token);
+				break;
 		}
 	}
 
@@ -213,12 +216,59 @@ public class BackgroundTaskQueue()
 		db.Remove(filter);
 		await db.SaveChangesAsync(token);
 	}
+
+	private static async Task ProcessUserDelete(
+		UserDeleteJobData jobData,
+		IServiceProvider scope,
+		CancellationToken token
+	)
+	{
+		var db              = scope.GetRequiredService<DatabaseContext>();
+		var queue           = scope.GetRequiredService<QueueService>();
+		var logger          = scope.GetRequiredService<ILogger<BackgroundTaskQueue>>();
+		var followupTaskSvc = scope.GetRequiredService<FollowupTaskService>();
+
+		logger.LogDebug("Processing delete for user {id}", jobData.UserId);
+
+		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == jobData.UserId, token);
+		if (user == null)
+		{
+			logger.LogDebug("Failed to delete user {id}: id not found in database", jobData.UserId);
+			return;
+		}
+
+		var fileIds = await db.DriveFiles.Where(p => p.User == user).Select(p => p.Id).ToListAsync(token);
+		logger.LogDebug("Removing {count} files for user {id}", fileIds.Count, user.Id);
+		foreach (var id in fileIds)
+		{
+			await queue.BackgroundTaskQueue.EnqueueAsync(new DriveFileDeleteJobData
+			{
+				DriveFileId = id, Expire = false
+			});
+		}
+
+		db.Remove(user);
+		await db.SaveChangesAsync(token);
+
+		await followupTaskSvc.ExecuteTask("UpdateInstanceUserCounter", async provider =>
+		{
+			var bgDb          = provider.GetRequiredService<DatabaseContext>();
+			var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+			var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user);
+			await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+			          .ExecuteUpdateAsync(p => p.SetProperty(i => i.UsersCount, i => i.UsersCount - 1),
+			                              cancellationToken: token);
+		});
+
+		logger.LogDebug("User {id} deleted successfully", jobData.UserId);
+	}
 }
 
 [JsonDerivedType(typeof(DriveFileDeleteJobData), "driveFileDelete")]
 [JsonDerivedType(typeof(PollExpiryJobData), "pollExpiry")]
 [JsonDerivedType(typeof(MuteExpiryJobData), "muteExpiry")]
 [JsonDerivedType(typeof(FilterExpiryJobData), "filterExpiry")]
+[JsonDerivedType(typeof(UserDeleteJobData), "userDelete")]
 public abstract class BackgroundTaskJobData;
 
 public class DriveFileDeleteJobData : BackgroundTaskJobData
@@ -240,4 +290,9 @@ public class MuteExpiryJobData : BackgroundTaskJobData
 public class FilterExpiryJobData : BackgroundTaskJobData
 {
 	[JR] [J("filterId")] public required long FilterId { get; set; }
+}
+
+public class UserDeleteJobData : BackgroundTaskJobData
+{
+	[JR] [J("userId")] public required string UserId { get; set; }
 }
