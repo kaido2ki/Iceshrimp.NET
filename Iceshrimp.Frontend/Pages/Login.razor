@@ -3,9 +3,11 @@
 @using Iceshrimp.Frontend.Core.Schemas
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
+@using Iceshrimp.Frontend.Components
 @inject ApiService        Api
 @inject SessionService    SessionService
 @inject NavigationManager Navigation
+@layout LoginLayout
 <h3>Login</h3>
 <div>
     <input
@@ -74,7 +76,7 @@
         catch (ApiException)
         {
             Loading = false;
-            Failure = true;
+            Failure = false;
             StateHasChanged(); // Manually triggering a state update, else component will not re-render.
         }
     }

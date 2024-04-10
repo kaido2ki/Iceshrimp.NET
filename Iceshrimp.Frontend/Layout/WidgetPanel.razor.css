@@ -1,0 +1,5 @@
+.widget-panel{
+    display: flex;
+    max-width: 20rem;
+    min-width: 20rem;
+}

@@ -2,12 +2,13 @@
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
+@using Iceshrimp.Frontend.Components
 @inject ApiService Api
 <h3>Authenticated note preview</h3>
 
 @if (_note != null)
 {
-    <p id="text">@_note.Text</p>
+    <TimelineNote Note="_note" />
 }
 else if (_error != null)
 {
