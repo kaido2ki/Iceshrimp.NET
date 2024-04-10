@@ -1,0 +1,48 @@
+@using Iceshrimp.Assets.PhosphorIcons
+<div class="metadata">
+    <span class="info">
+        <span class="time">@RenderDate(CreatedAt)</span>
+        <span class="visibility">
+            @switch (Visibility)
+            {
+                case "public":
+                    <Icon Name="Icons.Globe"/>
+                    break;
+                case "home":
+                    <Icon Name="Icons.House"/>
+                    break;
+                case "followers":
+                    <Icon Name="Icons.Lock"/>
+                    break;
+                case "specified":
+                    <Icon Name="Icons.Envelope"/>
+                    break;
+            }
+        </span>
+    </span>
+    @if (InstanceName != null)
+    {
+    <span class="instance">@InstanceName</span>
+    }
+</div>
+@code {
+    [Parameter] [EditorRequired] public required DateTime CreatedAt    { get; set; }
+    [Parameter] [EditorRequired] public required string   Visibility   { get; set; }
+    [Parameter] [EditorRequired] public required string?  InstanceName { get; set; }
+
+    private string RenderDate(DateTime date)
+    {
+        var diff = DateTime.Now - date;
+        return diff switch
+        {
+            { Days: >= 365 }    => $"{diff.Days / 365}yr",
+            { Days: >= 30 }     => $"{diff.Days / 30}mo",
+            { Days: >= 7 }      => $"{diff.Days / 7}w",
+            { Days: >= 1 }      => $"{diff.Days}d",
+            { Hours: >= 1 }     => $"{diff.Hours}h",
+            { Minutes: >= 1 }   => $"{diff.Minutes}m",
+            _                   => "Just now."
+        };
+    }
+
+}

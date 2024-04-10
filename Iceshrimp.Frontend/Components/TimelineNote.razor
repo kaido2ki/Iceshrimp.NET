@@ -1,0 +1,7 @@
+@using Iceshrimp.Shared.Schemas
+<div class="note-container">
+    <NoteComponent Note="Note"></NoteComponent>
+</div>
+@code {
+    [Parameter][EditorRequired] public required NoteResponse Note { get; set; }
+}

@@ -1,0 +1,52 @@
+@using Iceshrimp.Frontend.Pages
+@using Iceshrimp.Shared.Schemas
+
+@if (NoteBase.Cw != null)
+{
+    <div class="cw">
+        <span class="cw-field">@NoteBase.Cw</span><button class="cw-button" @onclick="ToggleCw"></button>
+    </div>
+    <div hidden="@CwToggle" class="note-body">
+        @NoteBase.Text
+    </div>
+}
+@if (NoteBase.Cw == null && OverLength)
+{
+    <div 
+        class="note-body @(Truncate ? "truncated" : "")" 
+        style="max-height: @(Truncate ? MaxHeight + "px" : "initial")" 
+    >
+        @NoteBase.Text
+    </div>
+    <button class="truncate-btn" @onclick="ToggleTruncate">
+        @if (Truncate)
+        {<span>Show more</span> }
+        @if (!Truncate)
+        {<span>Show less</span>}
+    </button>
+}
+@if (NoteBase.Cw == null && OverLength == false)
+{
+    <div class="note-body">
+        @NoteBase.Text
+    </div>
+}
+
+
+@code {
+    [Parameter] public required NoteBase NoteBase   { get; set; }
+    [Parameter] public required bool     OverLength { get; set; }
+
+    private static int  MaxHeight => 500;
+    private        bool Truncate  { get; set; } = true;
+    private        bool CwToggle  { get; set; }
+    private void ToggleCw()
+    {
+        CwToggle = !CwToggle;
+    }
+
+    private void ToggleTruncate()
+    {
+        Truncate = !Truncate;
+    }
+}

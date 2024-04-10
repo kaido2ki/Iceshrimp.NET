@@ -1,0 +1,23 @@
+@using Iceshrimp.Shared.Schemas
+<div class="note-header">
+    <NoteUserInfo
+        AvatarUrl="@Note.User.AvatarUrl"
+        DisplayName="@Note.User.DisplayName"
+        Username="@Note.User.Username" 
+    />
+    <NoteMetadata 
+        Visibility="@Note.Visibility"
+        InstanceName="@Note.User.InstanceName"
+        CreatedAt="DateTime.Parse(Note.CreatedAt)"></NoteMetadata>
+</div>
+<NoteBody NoteBase="Note" OverLength="@CheckLen()"/>
+<NoteFooter />
+
+@code {
+    [Parameter][EditorRequired] public required NoteResponse Note { get; set; }
+
+    private bool CheckLen()
+    {
+        return Note.Text?.Length > 500;
+    }
+}

@@ -1,0 +1,10 @@
+.note-footer{
+    margin-top: 0.5em;
+}
+.btn{
+    width: 2.5em;
+    height: 2em;
+    padding: 0.5em;
+    margin-right: 0.5em;
+    background-color: var(--foreground-color);
+}

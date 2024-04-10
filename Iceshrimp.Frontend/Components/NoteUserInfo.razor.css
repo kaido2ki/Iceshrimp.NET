@@ -1,0 +1,14 @@
+.user-avatar {
+    border-radius: 8px;
+    object-fit: cover;
+    width: 3em;
+    height: 3em;
+}
+.name-section {
+    display: flex;
+    flex-direction: column;
+    padding-left: 10px;
+    .identifier {
+        font-size: 0.9em;
+    }
+}
