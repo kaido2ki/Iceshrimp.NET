@@ -1,6 +1,8 @@
 <p><img src="/iceshrimp/iceshrimp/media/branch/dev/assets/logo.png" alt="Iceshrimp" width="400px"></p>
 <p><strong>Iceshrimp</strong> is a decentralized and federated social networking service, implementing the <strong>ActivityPub</strong> standard.<br>
-This repository contains our efforts to rewrite both the backend and the frontend, to improve performance, stability and maintainability.</p>
+This repository contains our efforts to continue the Iceshrimp project's legacy - in the form of an entirely new codebase, with a focus on performance, stability and maintainability.</p>
+
+Check back here after the beta release (scheduled for 2024-05-01) for a feature comparison matrix with the legacy JS codebase.
 
 Want to join development efforts? Have a look at the [knowledgebase](https://kb.iceshrimp.dev) and join the [chat room](https://chat.iceshrimp.dev)!
 
@@ -10,7 +12,7 @@ Want to donate to the project?
 ---
 
 > **Note**
-> This is alpha software. While the Mastodon client API is relatively complete, the frontend is not. It is therefore not advisable to upgrade existing Iceshrimp instances at present. Setting up staging instances to help us with testing is very appreciated, however, and will help us ensure eventual upgrades go as smoothly as possible.
+> This is alpha ([soon](https://issues.iceshrimp.dev/agiles/157-4/current) to be beta!) software. While the Mastodon client API is relatively complete, the frontend is not. It is therefore not advisable to upgrade existing Iceshrimp instances at present. Setting up staging instances to help us with testing is very appreciated, however, and will help us ensure eventual upgrades go as smoothly as possible.
 >
 > We estimate there'll be a beta release in early May, and, if everything goes well, a stable release by the end of 2024.
 
