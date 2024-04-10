@@ -101,6 +101,7 @@ public class NoteRenderer(
 			MastoReplyUserId = note.MastoReplyUserId,
 			Renote           = renote,
 			Quote            = quote,
+			QuoteId          = note.IsQuote ? note.RenoteId : null,
 			ContentType      = "text/x.misskeymarkdown",
 			CreatedAt        = note.CreatedAt.ToStringIso8601Like(),
 			EditedAt         = note.UpdatedAt?.ToStringIso8601Like(),

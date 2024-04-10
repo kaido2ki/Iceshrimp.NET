@@ -17,6 +17,7 @@ public class StatusEntity : IEntity, ICloneable
 	[J("in_reply_to_account_id")] public required string?       ReplyUserId    { get; set; }
 	[J("reblog")]                 public required StatusEntity? Renote         { get; set; }
 	[J("quote")]                  public required StatusEntity? Quote          { get; set; }
+	[J("quote_id")]               public required string?       QuoteId        { get; set; }
 	[J("content_type")]           public required string        ContentType    { get; set; }
 	[J("created_at")]             public required string        CreatedAt      { get; set; }
 	[J("edited_at")]              public required string?       EditedAt       { get; set; }
