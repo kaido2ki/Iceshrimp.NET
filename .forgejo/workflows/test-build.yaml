@@ -9,7 +9,7 @@ jobs:
       image: mcr.microsoft.com/dotnet/sdk:8.0-alpine
     steps:
       - name: Clone repository
-        run: git clone https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git --branch=${{ github.ref_name }} --depth=1 /iceshrimp
+        run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 /iceshrimp
       - name: Build backend & frontend
         run: |
           cd /iceshrimp/Iceshrimp.Backend
