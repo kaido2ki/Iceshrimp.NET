@@ -1,0 +1,53 @@
+on:
+  release:
+    types: [published]
+jobs:
+  unit-tests:
+    runs-on: docker
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:8.0-alpine
+    steps:
+      - name: Clone repository
+        run: git clone https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git --branch=${{ github.ref_name }} --depth=1 /iceshrimp
+      - name: Run unit tests
+        run: |
+          cd /iceshrimp
+          dotnet test
+  build-and-push:
+    needs:
+      - unit-tests
+    runs-on: docker
+    container:
+      image: node:16-bullseye
+      options: --volume /opt/iceshrimp-cache/rewrite:/buildkit-cache
+    permissions:
+      packages: write
+    steps:
+      - name: Install Docker Cli
+        run: |-
+          install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          chmod a+r /etc/apt/keyrings/docker.gpg
+          echo \
+            "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+            "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list
+          apt-get -qq update
+          DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -qq -y docker-ce-cli docker-buildx-plugin docker-compose-plugin
+      - name: Set up Docker Buildx
+        uses: https://code.forgejo.org/docker/setup-buildx-action@v3
+      - name: Authenticate against the registry
+        uses: https://code.forgejo.org/docker/login-action@v3
+        with:
+          registry: iceshrimp.dev
+          username: ${{ github.actor }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+      - name: Build and push
+        uses: https://code.forgejo.org/docker/build-push-action@v5
+        with:
+          push: true
+          tags: iceshrimp.dev/iceshrimp/iceshrimp.net:${{ github.event.release.name }}
+          target: image-aot
+          platforms: linux/amd64,linux/arm64
+          provenance: false
+          cache-from: type=local,src=/buildkit-cache
+          cache-to: type=local,dest=/buildkit-cache
