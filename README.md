@@ -4,6 +4,8 @@ This repository contains our efforts to continue the Iceshrimp project's legacy 
 
 Check back here after the beta release (scheduled for 2024-05-01) for a feature comparison matrix with the legacy JS codebase.
 
+Want to set up an instance? Have a look at the [documentation](https://kb.iceshrimp.dev/s/docs)!
+
 Want to join development efforts? Have a look at the [knowledgebase](https://kb.iceshrimp.dev) and join the [chat room](https://chat.iceshrimp.dev)!
 
 Want to donate to the project?
