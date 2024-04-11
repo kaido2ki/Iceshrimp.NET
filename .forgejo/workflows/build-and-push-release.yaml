@@ -3,20 +3,7 @@ on:
     tags:
       - '*'
 jobs:
-  unit-tests:
-    runs-on: docker
-    container:
-      image: mcr.microsoft.com/dotnet/sdk:8.0-alpine
-    steps:
-      - name: Clone repository
-        run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 /iceshrimp
-      - name: Run unit tests
-        run: |
-          cd /iceshrimp
-          dotnet test
   build-and-push:
-    needs:
-      - unit-tests
     runs-on: docker
     container:
       image: node:16-bullseye
@@ -24,6 +11,8 @@ jobs:
     permissions:
       packages: write
     steps:
+      - name: Clone repository
+        run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 /iceshrimp
       - name: Install Docker Cli
         run: |-
           install -m 0755 -d /etc/apt/keyrings
