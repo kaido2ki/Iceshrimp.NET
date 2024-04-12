@@ -1,7 +1,6 @@
 # To build with ILLink & AOT enabled, run docker build --target image-aot
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS builder-jit
-ARG TARGETARCH
 WORKDIR /src
 # copy csproj/fsproj & nuget config, then restore as distinct layers
 COPY NuGet.Config /src
@@ -10,6 +9,7 @@ COPY Iceshrimp.Parsing/*.fsproj /src/Iceshrimp.Parsing/
 COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 WORKDIR /src/Iceshrimp.Backend
+ARG TARGETARCH
 RUN dotnet restore -a $TARGETARCH
 
 # copy build files
@@ -19,7 +19,6 @@ COPY . /src/
 RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS builder-aot
-ARG TARGETARCH
 RUN dotnet workload install wasm-tools
 RUN apt-get update && apt-get install python3 -y
 WORKDIR /src
@@ -31,6 +30,7 @@ COPY Iceshrimp.Parsing/*.fsproj /src/Iceshrimp.Parsing/
 COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 WORKDIR /src/Iceshrimp.Backend
+ARG TARGETARCH
 RUN dotnet restore -a $TARGETARCH
 
 # copy build files
