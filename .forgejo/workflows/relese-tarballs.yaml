@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Prepare actions environment
         run: |-
-          apt-get update && apt-get install nodejs zstd -y
+          apt-get update && apt-get install nodejs zstd python3 -y
           dotnet workload install wasm-tools
       - name: Clone repository
         run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 /src
