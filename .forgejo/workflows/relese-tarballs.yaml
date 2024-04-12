@@ -11,7 +11,9 @@ jobs:
       releases: write
     steps:
       - name: Prepare actions environment
-        run: apt-get update && apt-get install nodejs zstd -y
+        run: |-
+          apt-get update && apt-get install nodejs zstd -y
+          dotnet workload install wasm-tools
       - name: Clone repository
         run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 /src
       - name: Setup go
