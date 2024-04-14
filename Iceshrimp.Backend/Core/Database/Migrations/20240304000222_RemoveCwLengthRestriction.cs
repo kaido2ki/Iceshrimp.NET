@@ -1,10 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 #nullable disable
 
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(DatabaseContext))]
+    [Migration("20240304000222_RemoveCwLengthRestriction")]
     public partial class RemoveCwLengthRestriction : Migration
     {
         /// <inheritdoc />

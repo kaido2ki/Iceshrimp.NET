@@ -1,4 +1,5 @@
 ﻿using Iceshrimp.Backend.Core.Database.Tables;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,6 +7,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(DatabaseContext))]
+    [Migration("20240229174129_AddUserSettingsTable")]
     public partial class AddUserSettingsTable : Migration
     {
         /// <inheritdoc />

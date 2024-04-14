@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,6 +7,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(DatabaseContext))]
+    [Migration("20240322184225_AddCacheStore")]
     public partial class AddCacheStore : Migration
     {
         /// <inheritdoc />

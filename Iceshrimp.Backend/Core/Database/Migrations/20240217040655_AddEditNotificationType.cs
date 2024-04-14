@@ -1,10 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 #nullable disable
 
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(DatabaseContext))]
+    [Migration("20240217040655_AddEditNotificationType")]
     public partial class AddEditNotificationType : Migration
     {
         /// <inheritdoc />

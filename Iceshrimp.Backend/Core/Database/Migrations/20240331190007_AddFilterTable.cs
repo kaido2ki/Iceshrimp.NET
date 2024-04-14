@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using System.Collections.Generic;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -9,6 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(DatabaseContext))]
+    [Migration("20240331190007_AddFilterTable")]
     public partial class AddFilterTable : Migration
     {
         /// <inheritdoc />

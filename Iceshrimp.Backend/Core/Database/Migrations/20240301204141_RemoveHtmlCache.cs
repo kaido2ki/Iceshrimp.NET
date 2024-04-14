@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -7,6 +8,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(DatabaseContext))]
+    [Migration("20240301204141_RemoveHtmlCache")]
     public partial class RemoveHtmlCache : Migration
     {
         /// <inheritdoc />

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -6,6 +7,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(DatabaseContext))]
+    [Migration("20240127190613_AddDataProtectionKeyTable")]
     public partial class AddDataProtectionKeyTable : Migration
     {
         /// <inheritdoc />

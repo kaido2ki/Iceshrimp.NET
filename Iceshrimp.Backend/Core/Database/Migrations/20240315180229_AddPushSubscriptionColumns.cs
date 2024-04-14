@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -7,6 +8,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(DatabaseContext))]
+    [Migration("20240315180229_AddPushSubscriptionColumns")]
     public partial class AddPushSubscriptionColumns : Migration
     {
         /// <inheritdoc />

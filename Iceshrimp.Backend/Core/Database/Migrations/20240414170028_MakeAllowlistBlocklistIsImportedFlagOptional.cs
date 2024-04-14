@@ -1,10 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 #nullable disable
 
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     /// <inheritdoc />
+    [DbContext(typeof(DatabaseContext))]
+    [Migration("20240414170028_MakeAllowlistBlocklistIsImportedFlagOptional")]
     public partial class MakeAllowlistBlocklistIsImportedFlagOptional : Migration
     {
         /// <inheritdoc />
