@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -13,7 +15,15 @@ public class BlockedInstance
 
 	[Column("reason")]
 	[StringLength(1024)]
-	public string? Reason { get; set; } = null!;
+	public string? Reason { get; set; }
 
 	[Column("imported")] public bool IsImported { get; set; }
+}
+
+public class BlockedInstanceEntityTypeConfiguration : IEntityTypeConfiguration<BlockedInstance>
+{
+	public void Configure(EntityTypeBuilder<BlockedInstance> builder)
+	{
+		builder.Property(p => p.IsImported).HasDefaultValue(false);
+	}
 }
