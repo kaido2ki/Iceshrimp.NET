@@ -18,6 +18,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Iceshrimp.Frontend\Iceshrimp.Frontend.csproj" />
+        <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj" />
+        <ProjectReference Include="..\Iceshrimp.Shared\Iceshrimp.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Amazon.S3" Version="0.31.2" />
         <PackageReference Include="AngleSharp" Version="1.1.2" />
         <PackageReference Include="AsyncKeyedLock" Version="6.3.4" />
@@ -54,27 +60,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="Pages\Error.cshtml" />
-        <AdditionalFiles Include="Pages\Shared\_Layout.cshtml" />
-        <AdditionalFiles Include="Pages\_ViewImports.cshtml" />
-        <AdditionalFiles Include="Pages\_ViewStart.cshtml" />
+        <Content Include="configuration.ini" CopyToOutputDirectory="Always"/>
     </ItemGroup>
 
     <ItemGroup>
         <None Remove="migrate.sql" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\Iceshrimp.Frontend\Iceshrimp.Frontend.csproj" />
-        <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj" />
-        <ProjectReference Include="..\Iceshrimp.Shared\Iceshrimp.Shared.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Update="Pages\Shared\FrontendSPA.cshtml">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
     </ItemGroup>
 
 </Project>
