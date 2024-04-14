@@ -8,14 +8,10 @@ jobs:
     runs-on: docker
     container:
       image: mcr.microsoft.com/dotnet/sdk:8.0-alpine
+      options: --volume /opt/iceshrimp-cache/nuget:/root/.nuget
     steps:
       - name: Clone repository
         run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 /iceshrimp
-      - name: Build backend & frontend
-        run: |
-          cd /iceshrimp/Iceshrimp.Backend
-          dotnet restore
-          dotnet build
       - name: Run tests
         run: |
           cd /iceshrimp
