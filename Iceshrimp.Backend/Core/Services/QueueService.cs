@@ -460,6 +460,7 @@ public class PostgresJobQueue<T>(
 				logger.LogTrace("Job in queue {queue} was delayed to {time} after {duration} ms, has been queued since {time}",
 				                name, job.DelayedUntil.Value.ToLocalTime().ToStringIso8601Like(), job.Duration,
 				                job.QueuedAt.ToLocalTime().ToStringIso8601Like());
+				db.ChangeTracker.Clear();
 				db.Update(job);
 				await db.SaveChangesAsync(token);
 				await RaiseJobDelayedEvent(db);
@@ -484,6 +485,7 @@ public class PostgresJobQueue<T>(
 			}
 		}
 
+		db.ChangeTracker.Clear();
 		db.Update(job);
 		await db.SaveChangesAsync(token);
 
