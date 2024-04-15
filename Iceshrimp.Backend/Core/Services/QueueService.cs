@@ -265,8 +265,9 @@ public class PostgresJobQueue<T>(
 			{
 				if (!token.IsCancellationRequested)
 				{
-					logger.LogError("ExecuteAsync in queue {queue} failed with: {error}", name, e.Message);
+					logger.LogError("ExecuteAsync for queue {queue} failed with: {error}", name, e);
 					await Task.Delay(1000, token);
+					logger.LogDebug("Restarting ExecuteAsync worker for queue {queue}", name);
 				}
 			}
 		}
@@ -347,8 +348,9 @@ public class PostgresJobQueue<T>(
 			{
 				if (!token.IsCancellationRequested)
 				{
-					logger.LogError("DelayedJobHandlerAsync in queue {queue} failed with: {error}", name, e.Message);
+					logger.LogError("DelayedJobHandlerAsync for queue {queue} failed with: {error}", name, e);
 					await Task.Delay(1000, token);
+					logger.LogDebug("Restarting DelayedJobHandlerAsync worker for queue {queue}", name);
 				}
 			}
 		}
@@ -396,7 +398,9 @@ public class PostgresJobQueue<T>(
 		catch (Exception e)
 		{
 			var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
-			logger.LogError("ProcessJobAsync failed with: {e}", e.Message);
+			logger.LogError("ProcessJobAsync for queue {queue} failed with: {error}", name, e);
+			logger.LogError("Queue worker(s) for queue {queue} might be degraded or stalled. Please report this bug to the developers.",
+			                name);
 		}
 	}
 
