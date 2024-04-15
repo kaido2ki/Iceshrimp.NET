@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Runtime.InteropServices;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -46,26 +45,6 @@ public static class WebApplicationExtensions
 
 	public static async Task<Config.InstanceSection> Initialize(this WebApplication app, string[] args)
 	{
-		if (args.Contains("-h") || args.Contains("--help") || args.Contains("-?"))
-		{
-			Console.WriteLine($"""
-			                  Usage: ./{typeof(Program).Assembly.GetName().Name} [options...]
-			                   --migrate             Apply pending migrations, then exit
-			                   --migrate-and-start   Apply pending migrations, then start the application
-			                   --printconfig         Print the example config, then exit
-			                   --help                Print information on available command line arguments
-			                  """);
-			Environment.Exit(0);
-		}
-
-		if (args.Contains("--printconfig"))
-		{
-			var assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			var config = await File.ReadAllTextAsync(Path.Join(assemblyDir, "configuration.ini"));
-			Console.WriteLine(config);
-			Environment.Exit(0);
-		}
-		
 		var instanceConfig = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
 		                     throw new Exception("Failed to read Instance config section");
 		var workerId = app.Configuration.GetSection("Worker").Get<Config.WorkerSection>()?.WorkerId;

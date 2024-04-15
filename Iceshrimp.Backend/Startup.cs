@@ -1,6 +1,9 @@
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Hubs;
 using Iceshrimp.Backend.Hubs.Authentication;
+
+StartupHelpers.ParseCliArguments(args);
 
 var builder = WebApplication.CreateBuilder(args);
 
