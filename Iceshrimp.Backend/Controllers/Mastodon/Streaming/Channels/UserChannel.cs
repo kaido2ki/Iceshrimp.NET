@@ -56,7 +56,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 
 	private NoteWithVisibilities? IsApplicable(Note note)
 	{
-		if (IsApplicableBool(note)) return null;
+		if (!IsApplicableBool(note)) return null;
 		var res = EnforceRenoteReplyVisibility(note);
 		return res is not { Note.IsPureRenote: true, Renote: null } ? null : res;
 	}
