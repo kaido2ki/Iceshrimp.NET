@@ -266,7 +266,7 @@ public class UserResolver(
 		{
 			if (e is TimeoutException)
 				logger.LogDebug("UpdateUserAsync timed out for user {user}", user.Uri);
-			else
+			else if (e is not AuthFetchException { Message: "The remote user no longer exists." })
 				logger.LogError("UpdateUserAsync for user {user} failed with {error}", user.Uri, e.Message);
 		}
 
