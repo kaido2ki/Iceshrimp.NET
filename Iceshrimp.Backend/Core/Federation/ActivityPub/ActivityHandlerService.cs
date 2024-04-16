@@ -145,9 +145,10 @@ public class ActivityHandlerService(
 						await UnfollowAsync(followee, resolvedActor);
 						return;
 					case ASLike { Object: ASNote note } like:
-						var dbNote = await noteSvc.UnlikeNoteAsync(note, resolvedActor);
 						if (like.MisskeyReaction != null)
-							await noteSvc.RemoveReactionFromNoteAsync(dbNote, resolvedActor, like.MisskeyReaction);
+							await noteSvc.RemoveReactionFromNoteAsync(note, resolvedActor, like.MisskeyReaction);
+						else
+							await noteSvc.UnlikeNoteAsync(note, resolvedActor);
 						return;
 					case ASAnnounce { Object: ASNote note }:
 						await noteSvc.UndoAnnounceAsync(note, resolvedActor);
@@ -167,12 +168,15 @@ public class ActivityHandlerService(
 			{
 				if (activity.Object is not ASNote note)
 					throw GracefulException.UnprocessableEntity("Like activity object is invalid");
-				var dbNote = await noteSvc.LikeNoteAsync(note, resolvedActor);
 
 				if (like.MisskeyReaction != null)
 				{
 					await emojiSvc.ProcessEmojiAsync(like.Tags?.OfType<ASEmoji>().ToList(), resolvedActor.Host);
-					await noteSvc.ReactToNoteAsync(dbNote, resolvedActor, like.MisskeyReaction);
+					await noteSvc.ReactToNoteAsync(note, resolvedActor, like.MisskeyReaction);
+				}
+				else
+				{
+					await noteSvc.LikeNoteAsync(note, resolvedActor);
 				}
 
 				return;

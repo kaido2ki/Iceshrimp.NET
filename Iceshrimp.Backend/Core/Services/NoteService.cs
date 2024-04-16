@@ -1135,18 +1135,16 @@ public class NoteService(
 		return true;
 	}
 
-	public async Task<Note> LikeNoteAsync(ASNote note, User actor)
+	public async Task LikeNoteAsync(ASNote note, User actor)
 	{
 		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot register like for unknown note");
 		await LikeNoteAsync(dbNote, actor);
-		return dbNote;
 	}
 
-	public async Task<Note> UnlikeNoteAsync(ASNote note, User user)
+	public async Task UnlikeNoteAsync(ASNote note, User user)
 	{
 		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot unregister like for unknown note");
 		await UnlikeNoteAsync(dbNote, user);
-		return dbNote;
 	}
 
 	public async Task BookmarkNoteAsync(Note note, User user)
