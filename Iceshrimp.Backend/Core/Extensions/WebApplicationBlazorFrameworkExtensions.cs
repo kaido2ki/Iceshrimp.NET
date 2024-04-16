@@ -77,6 +77,11 @@ public static class WebApplicationBlazorFrameworkExtensions
 			});
 			subBuilder.UseMiddleware<ContentEncodingNegotiator>();
 			subBuilder.UseStaticFiles(options);
+			subBuilder.Use(async (HttpContext context, RequestDelegate _) =>
+			{
+				context.Response.StatusCode = 404;
+				await context.Response.StartAsync();
+			});
 		});
 
 		return app;
