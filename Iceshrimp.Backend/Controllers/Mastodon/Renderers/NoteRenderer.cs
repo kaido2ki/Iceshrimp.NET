@@ -281,26 +281,27 @@ public class NoteRenderer(
 		List<AccountEntity>? accounts = null
 	)
 	{
-		var noteList = notes.SelectMany<Note, Note?>(p => [p, p.Renote])
-		                    .Where(p => p != null)
-		                    .Cast<Note>()
-		                    .DistinctBy(p => p.Id)
-		                    .ToList();
-
+		var noteList = notes.ToList();
 		if (noteList.Count == 0) return [];
+
+		var allNotes = noteList.SelectMany<Note, Note?>(p => [p, p.Renote])
+		                       .Where(p => p != null)
+		                       .Cast<Note>()
+		                       .DistinctBy(p => p.Id)
+		                       .ToList();
 
 		var data = new NoteRendererDto
 		{
-			Accounts        = accounts ?? await GetAccounts(noteList.Select(p => p.User).ToList()),
-			Mentions        = await GetMentions(noteList),
-			Attachments     = await GetAttachments(noteList),
-			Polls           = await GetPolls(noteList, user),
-			LikedNotes      = await GetLikedNotes(noteList, user),
-			BookmarkedNotes = await GetBookmarkedNotes(noteList, user),
-			PinnedNotes     = await GetPinnedNotes(noteList, user),
-			Renotes         = await GetRenotes(noteList, user),
-			Emoji           = await GetEmoji(noteList),
-			Reactions       = await GetReactions(noteList, user),
+			Accounts        = accounts ?? await GetAccounts(allNotes.Select(p => p.User).ToList()),
+			Mentions        = await GetMentions(allNotes),
+			Attachments     = await GetAttachments(allNotes),
+			Polls           = await GetPolls(allNotes, user),
+			LikedNotes      = await GetLikedNotes(allNotes, user),
+			BookmarkedNotes = await GetBookmarkedNotes(allNotes, user),
+			PinnedNotes     = await GetPinnedNotes(allNotes, user),
+			Renotes         = await GetRenotes(allNotes, user),
+			Emoji           = await GetEmoji(allNotes),
+			Reactions       = await GetReactions(allNotes, user),
 			Filters         = await GetFilters(user, filterContext)
 		};
 
