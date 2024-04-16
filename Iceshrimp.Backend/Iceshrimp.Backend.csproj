@@ -64,10 +64,6 @@
         <Content Include="configuration.ini" CopyToOutputDirectory="Always"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <None Remove="migrate.sql" />
-    </ItemGroup>
-
     <Target Name="KeepOnlyBrotliCompressedStaticAssets" AfterTargets="Publish">
         <ItemGroup>
             <CompressedFiles Include="$(PublishDir)\wwwroot\_framework\*.br" />
