@@ -194,7 +194,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		if (note.Renote != null && IsFiltered(note.Renote.User)) return null;
 
 		var res = EnforceRenoteReplyVisibility(note);
-		return res is not { Note.IsPureRenote: true, Renote: null } ? null : res;
+		return res is not { Note.IsPureRenote: true, Renote: null } ? res : null;
 	}
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
