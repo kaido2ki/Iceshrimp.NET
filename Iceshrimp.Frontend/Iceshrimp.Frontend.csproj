@@ -9,6 +9,10 @@
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
     <PropertyGroup Condition="'$(EnableAOT)' == 'true'">
         <RunAOTCompilation>true</RunAOTCompilation>
     </PropertyGroup>

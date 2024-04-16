@@ -8,6 +8,10 @@
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\Iceshrimp.Backend\Iceshrimp.Backend.csproj"/>
     </ItemGroup>

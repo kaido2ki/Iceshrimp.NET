@@ -15,6 +15,7 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <BlazorWebAssemblyOmitDebugProxyOutput>true</BlazorWebAssemblyOmitDebugProxyOutput>
         <PreserveCompilationContext>false</PreserveCompilationContext>
+        <DebugType>embedded</DebugType>
     </PropertyGroup>
 
     <ItemGroup>
