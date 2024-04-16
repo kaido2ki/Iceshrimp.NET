@@ -45,7 +45,9 @@ var app    = builder.Build();
 var config = await app.Initialize(args);
 
 // This determines the order of middleware execution in the request pipeline
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+	app.UseWebAssemblyDebugging();
+else
 	app.UseResponseCompression();
 
 app.UseRouting();
@@ -64,9 +66,6 @@ app.MapHub<ExampleHub>("/hubs/example");
 app.MapHub<StreamingHub>("/hubs/streaming");
 app.MapRazorPages();
 app.MapFallbackToPage("/Shared/FrontendSPA");
-
-if (app.Environment.IsDevelopment())
-	app.UseWebAssemblyDebugging();
 
 app.Urls.Clear();
 if (config.ListenSocket == null)
