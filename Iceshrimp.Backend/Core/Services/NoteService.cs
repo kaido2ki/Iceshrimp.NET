@@ -1228,12 +1228,12 @@ public class NoteService(
 			collection = await objectResolver.ResolveObject(collection, force: true) as ASOrderedCollection;
 		if (collection is not { Items: not null }) return;
 
-		var items = await collection.Items.Take(10)
-		                            .Select(p => objectResolver.ResolveObject(p))
+		// ReSharper disable once EntityFramework.UnsupportedServerSideFunctionCall
+		var followingUser = await db.Users.FirstOrDefaultAsync(p => p.IsFollowing(user));
+		var notes = await collection.Items.Take(10)
+		                            .Select(p => ResolveNoteAsync(p.Id, null, followingUser, true))
 		                            .AwaitAllNoConcurrencyAsync();
-		var notes = await items.OfType<ASNote>()
-		                       .Select(p => ResolveNoteAsync(p.Id, p, null, true))
-		                       .AwaitAllNoConcurrencyAsync();
+
 		var previousPins = await db.Users.Where(p => p.Id == user.Id)
 		                           .Select(p => p.PinnedNotes.Select(i => i.Id))
 		                           .FirstOrDefaultAsync() ?? [];
