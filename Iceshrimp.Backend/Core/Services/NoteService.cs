@@ -701,7 +701,7 @@ public class NoteService(
 		                     .FirstOrDefaultAsync(p => p.Uri == note.Id);
 
 		if (dbNote == null) return await ProcessNoteAsync(note, actor);
-		
+
 		logger.LogDebug("Processing note update {id} for note {noteId}", note.Id, dbNote.Id);
 
 		if (dbNote.User != actor)
@@ -1237,8 +1237,11 @@ public class NoteService(
 
 		if (previousPins.SequenceEqual(notes.Where(p => p != null).Cast<Note>().Select(p => p.Id))) return;
 
-		var pins = notes.Where(p => p != null)
-		                .Cast<Note>()
+		if (notes.OfType<Note>().Any(p => p.User != user))
+			throw GracefulException
+				.UnprocessableEntity("Refusing to ingest pinned notes attributed to different actor");
+
+		var pins = notes.OfType<Note>()
 		                .Select(p => new UserNotePin
 		                {
 			                Id        = IdHelpers.GenerateSlowflakeId(),
