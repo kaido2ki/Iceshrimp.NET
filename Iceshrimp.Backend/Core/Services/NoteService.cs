@@ -1027,6 +1027,9 @@ public class NoteService(
 
 		if (note != null) return note;
 
+		if (!fetchedNote?.VerifiedFetch ?? false)
+			fetchedNote = null;
+
 		fetchedNote ??= user != null ? await fetchSvc.FetchNoteAsync(uri, user) : await fetchSvc.FetchNoteAsync(uri);
 
 		if (fetchedNote == null)
@@ -1303,7 +1306,7 @@ public class NoteService(
 
 	public async Task ReactToNoteAsync(ASNote note, User actor, string name)
 	{
-		var dbNote = await ResolveNoteAsync(note.Id, note.VerifiedFetch ? note : null);
+		var dbNote = await ResolveNoteAsync(note.Id, note);
 		if (dbNote == null)
 			throw GracefulException.UnprocessableEntity("Failed to resolve reaction target");
 
@@ -1347,7 +1350,7 @@ public class NoteService(
 
 	public async Task RemoveReactionFromNoteAsync(ASNote note, User actor, string name)
 	{
-		var dbNote = await ResolveNoteAsync(note.Id, note.VerifiedFetch ? note : null);
+		var dbNote = await ResolveNoteAsync(note.Id, note);
 		if (dbNote == null) return;
 		await RemoveReactionFromNoteAsync(dbNote, actor, name);
 	}
