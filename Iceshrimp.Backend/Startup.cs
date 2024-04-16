@@ -50,7 +50,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseRouting();
 app.UseSwaggerWithOptions();
-app.UseBlazorFrameworkFiles();
+app.UseBlazorFrameworkFilesWithTransparentDecompression();
 app.UseStaticFiles();
 app.UseRateLimiter();
 app.UseCors();

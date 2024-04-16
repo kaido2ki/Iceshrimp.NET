@@ -68,4 +68,14 @@
         <None Remove="migrate.sql" />
     </ItemGroup>
 
+    <Target Name="KeepOnlyBrotliCompressedStaticAssets" AfterTargets="Publish">
+        <ItemGroup>
+            <CompressedFiles Include="$(PublishUrl)\wwwroot\_framework\*.br" />
+            <FilesToClean Include="@(CompressedFiles->'%(RootDir)%(Directory)%(Filename)')" />
+            <FilesToClean Include="@(CompressedFiles->'%(RootDir)%(Directory)%(Filename).gz')" />
+        </ItemGroup>
+
+        <Delete Files="@(FilesToClean->Exists())"/>
+    </Target>
+
 </Project>
