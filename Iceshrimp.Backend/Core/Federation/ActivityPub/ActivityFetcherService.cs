@@ -56,7 +56,7 @@ public class ActivityFetcherService(
 
 		if (activityIdUri.Host != finalUri.Host)
 			throw GracefulException.UnprocessableEntity("Activity identifier doesn't match final host");
-		
+
 		logger.LogDebug("Fetching activity {url} as user {id} (attempt 2)", activityIdUri.AbsoluteUri, actor.Id);
 		(activity, finalUri) = await FetchActivityInternal(activityIdUri.AbsoluteUri, actor, keypair);
 		if (activity == null) return [];
@@ -190,24 +190,25 @@ public class ActivityFetcherService(
 		       throw new GracefulException("Failed to fetch actor");
 	}
 
-	public async Task<ASNote?> FetchNoteAsync(string uri, User actor, UserKeypair keypair)
+	private async Task<ASNote?> FetchNoteAsync(string uri, User actor, UserKeypair keypair)
 	{
 		var activity = await FetchActivityAsync(uri, actor, keypair);
-		return activity.OfType<ASNote>().FirstOrDefault();
+		var note     = activity.OfType<ASNote>().FirstOrDefault();
+		if (note != null)
+			note.VerifiedFetch = true;
+		return note;
 	}
 
 	public async Task<ASNote?> FetchNoteAsync(string uri, User actor)
 	{
 		var keypair = await db.UserKeypairs.FirstOrDefaultAsync(p => p.User == actor) ??
 		              throw new Exception("Actor has no keypair");
-		var activity = await FetchActivityAsync(uri, actor, keypair);
-		return activity.OfType<ASNote>().FirstOrDefault();
+		return await FetchNoteAsync(uri, actor, keypair);
 	}
 
 	public async Task<ASNote?> FetchNoteAsync(string uri)
 	{
 		var (actor, keypair) = await systemUserSvc.GetInstanceActorWithKeypairAsync();
-		var activity = await FetchActivityAsync(uri, actor, keypair);
-		return activity.OfType<ASNote>().FirstOrDefault();
+		return await FetchNoteAsync(uri, actor, keypair);
 	}
 }
