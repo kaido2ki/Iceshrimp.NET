@@ -434,6 +434,20 @@ public class AccountController(
 		return Ok(res);
 	}
 
+	[HttpGet("{id}/featured_tags")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<object>))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetUserFeaturedTags(string id)
+	{
+		_ = await db.Users
+		            .Include(p => p.UserProfile)
+		            .FirstOrDefaultAsync(p => p.Id == id) ??
+		    throw GracefulException.RecordNotFound();
+
+		var res = Array.Empty<object>();
+		return Ok(res);
+	}
+
 	[HttpGet("/api/v1/follow_requests")]
 	[Authorize("read:follows")]
 	[LinkPagination(40, 80)]
