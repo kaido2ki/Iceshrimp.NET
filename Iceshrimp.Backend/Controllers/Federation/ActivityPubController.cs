@@ -80,7 +80,7 @@ public class ActivityPubController(
 		                   .Take(10)
 		                   .ToListAsync();
 
-		var rendered = await pins.Select(p => noteRenderer.RenderAsync(p)).AwaitAllNoConcurrencyAsync();
+		var rendered = pins.Select(noteRenderer.RenderLite).ToList();
 		var res = new ASOrderedCollection
 		{
 			Id         = $"{user.GetPublicUri(config.Value)}/collections/featured",
