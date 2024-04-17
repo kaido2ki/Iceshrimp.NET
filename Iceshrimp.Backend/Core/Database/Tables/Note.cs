@@ -277,7 +277,10 @@ public class Note : IEntity
 		Text != null && EF.Functions.ILike(Text, "%" + EfHelpers.EscapeLikeQuery(str) + "%", @"\");
 
 	[Projectable]
-	public bool IsVisibleFor(User? user) => VisibilityIsPublicOrHome || (user != null && CheckComplexVisibility(user));
+	[SuppressMessage("ReSharper", "MergeIntoPattern", Justification = "Projectable chain must not contain patterns")]
+	public bool IsVisibleFor(User? user) =>
+		VisibilityIsPublicOrHome && (!LocalOnly || (user != null && user.Host == null)) ||
+		(user != null && CheckComplexVisibility(user));
 
 	[Projectable]
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global", Justification = "Projectable chain must to be public")]
