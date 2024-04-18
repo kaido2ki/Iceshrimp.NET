@@ -4028,6 +4028,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("speakAsCat")
                         .HasComment("Whether to speak as a cat if isCat.");
 
+                    b.Property<bool>("SplitDomainResolved")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("splitDomainResolved");
+
                     b.Property<List<string>>("Tags")
                         .IsRequired()
                         .ValueGeneratedOnAdd()

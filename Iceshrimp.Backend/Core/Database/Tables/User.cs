@@ -265,6 +265,9 @@ public class User : IEntity
 	[Column("bannerBlurhash")]
 	[StringLength(128)]
 	public string? BannerBlurhash { get; set; }
+	
+	[Column("splitDomainResolved")]
+	public bool SplitDomainResolved { get; set; }
 
 	[InverseProperty(nameof(AbuseUserReport.Assignee))]
 	public virtual ICollection<AbuseUserReport> AbuseUserReportAssignees { get; set; } = new List<AbuseUserReport>();
@@ -700,6 +703,7 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
 		      .HasComment("The URI of the User. It will be null if the origin of the user is local.");
 		entity.Property(e => e.Username).HasComment("The username of the User.");
 		entity.Property(e => e.UsernameLower).HasComment("The username (lowercased) of the User.");
+		entity.Property(e => e.SplitDomainResolved).HasDefaultValue(false);
 
 		entity.HasOne(d => d.Avatar)
 		      .WithOne(p => p.UserAvatar)

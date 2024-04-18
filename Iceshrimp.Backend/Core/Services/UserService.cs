@@ -8,6 +8,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
+using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
@@ -35,7 +36,8 @@ public class UserService(
 	ActivityPub.MentionsResolver mentionsResolver,
 	ActivityPub.UserRenderer userRenderer,
 	QueueService queueSvc,
-	EventService eventSvc
+	EventService eventSvc,
+	WebFingerService webFingerSvc
 )
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -139,28 +141,29 @@ public class UserService(
 
 		user = new User
 		{
-			Id            = IdHelpers.GenerateSlowflakeId(),
-			CreatedAt     = DateTime.UtcNow,
-			LastFetchedAt = followupTaskSvc.IsBackgroundWorker ? null : DateTime.UtcNow,
-			DisplayName   = actor.DisplayName,
-			IsLocked      = actor.IsLocked ?? false,
-			IsBot         = actor.IsBot,
-			Username      = actor.Username!,
-			UsernameLower = actor.Username!.ToLowerInvariant(),
-			Host          = AcctToTuple(acct).Host,
-			MovedToUri    = actor.MovedTo?.Link,
-			AlsoKnownAs   = actor.AlsoKnownAs?.Where(p => p.Link != null).Select(p => p.Link!).ToList(),
-			IsExplorable  = actor.IsDiscoverable ?? false,
-			Inbox         = actor.Inbox?.Link,
-			SharedInbox   = actor.SharedInbox?.Link ?? actor.Endpoints?.SharedInbox?.Id,
-			FollowersUri  = actor.Followers?.Id,
-			Uri           = actor.Id,
-			IsCat         = actor.IsCat ?? false,
-			Featured      = actor.Featured?.Id,
+			Id                  = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt           = DateTime.UtcNow,
+			LastFetchedAt       = followupTaskSvc.IsBackgroundWorker ? null : DateTime.UtcNow,
+			DisplayName         = actor.DisplayName,
+			IsLocked            = actor.IsLocked ?? false,
+			IsBot               = actor.IsBot,
+			Username            = actor.Username!,
+			UsernameLower       = actor.Username!.ToLowerInvariant(),
+			Host                = AcctToTuple(acct).Host,
+			MovedToUri          = actor.MovedTo?.Link,
+			AlsoKnownAs         = actor.AlsoKnownAs?.Where(p => p.Link != null).Select(p => p.Link!).ToList(),
+			IsExplorable        = actor.IsDiscoverable ?? false,
+			Inbox               = actor.Inbox?.Link,
+			SharedInbox         = actor.SharedInbox?.Link ?? actor.Endpoints?.SharedInbox?.Id,
+			FollowersUri        = actor.Followers?.Id,
+			Uri                 = actor.Id,
+			IsCat               = actor.IsCat ?? false,
+			Featured            = actor.Featured?.Id,
+			SplitDomainResolved = true,
 			//TODO: FollowersCount
 			//TODO: FollowingCount
 			Emojis = emoji.Select(p => p.Id).ToList(),
-			Tags   = tags
+			Tags   = tags,
 		};
 
 		var profile = new UserProfile
@@ -296,6 +299,7 @@ public class UserService(
 		user.UserProfile.MentionsResolved = false;
 
 		user.Tags = ResolveHashtags(user.UserProfile.Description, actor);
+		user.Host = await UpdateUserHostAsync(user);
 
 		db.Update(user);
 		await db.SaveChangesAsync();
@@ -968,5 +972,56 @@ public class UserService(
 			var activity = activityRenderer.RenderUndo(actor, block);
 			await deliverSvc.DeliverToAsync(activity, blocker, blockee);
 		}
+	}
+
+	private async Task<string?> UpdateUserHostAsync(User user)
+	{
+		if (user.Host == null || user.Uri == null || user.SplitDomainResolved)
+			return user.Host;
+
+		var res   = await webFingerSvc.ResolveAsync(user.Uri);
+		var match = res?.Links.FirstOrDefault(p => p is { Rel: "self", Type: "application/activity+json" })?.Href;
+		if (res == null || match != user.Uri)
+		{
+			logger.LogWarning("Updating split domain host failed for user {id}: uri mismatch (pass 1) - '{uri}' <> '{match}'",
+			                  user.Id, user.Uri, match);
+			return user.Host;
+		}
+
+		var acct  = ActivityPub.UserResolver.NormalizeQuery(res.Subject);
+		var split = acct.Split('@');
+		if (split.Length != 2)
+		{
+			logger.LogWarning("Updating split domain host failed for user {id}: invalid acct - '{acct}'",
+			                  user.Id, acct);
+			return user.Host;
+		}
+
+		if (user.Host == split[1])
+		{
+			user.SplitDomainResolved = true;
+			return user.Host;
+		}
+
+		logger.LogDebug("Updating split domain for user {id}: {host} -> {newHost}", user.Id, user.Host, split[1]);
+
+		res   = await webFingerSvc.ResolveAsync(acct);
+		match = res?.Links.FirstOrDefault(p => p is { Rel: "self", Type: "application/activity+json" })?.Href;
+		if (res == null || match != user.Uri)
+		{
+			logger.LogWarning("Updating split domain host failed for user {id}: uri mismatch (pass 2) - '{uri}' <> '{match}'",
+			                  user.Id, user.Uri, match);
+			return user.Host;
+		}
+
+		if (acct != ActivityPub.UserResolver.NormalizeQuery(res.Subject))
+		{
+			logger.LogWarning("Updating split domain host failed for user {id}: subject mismatch - '{acct}' <> '{subject}'",
+			                  user.Id, acct, res.Subject.TrimStart('@'));
+			return user.Host;
+		}
+
+		user.SplitDomainResolved = true;
+		return split[1];
 	}
 }

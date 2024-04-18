@@ -84,7 +84,7 @@ public class UserResolver(
 		return (finalAcct, finalUri);
 	}
 
-	private static string NormalizeQuery(string query)
+	public static string NormalizeQuery(string query)
 	{
 		if (query.StartsWith("https://") || query.StartsWith("http://"))
 			if (query.Contains('#'))
@@ -93,7 +93,7 @@ public class UserResolver(
 				return query;
 		else if (query.StartsWith('@'))
 			query = $"acct:{query[1..]}";
-		else
+		else if (!query.StartsWith("acct:"))
 			query = $"acct:{query}";
 
 		return query;
