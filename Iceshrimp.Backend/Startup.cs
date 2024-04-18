@@ -45,10 +45,14 @@ var app    = builder.Build();
 var config = await app.Initialize(args);
 
 // This determines the order of middleware execution in the request pipeline
+#if DEBUG
 if (app.Environment.IsDevelopment())
 	app.UseWebAssemblyDebugging();
 else
 	app.UseResponseCompression();
+#else
+app.UseResponseCompression();
+#endif
 
 app.UseRouting();
 app.UseSwaggerWithOptions();
