@@ -30,7 +30,7 @@ public class UserResolver(
 	 * 1. WebFinger(input_uri), find the rel=self type=application/activity+json entry, that's ap_uri
 	 * 2. WebFinger(ap_uri), find the first acct: URI in [subject] + aliases, that's candidate_acct_uri
 	 * 3. WebFinger(candidate_acct_uri), validate it also points to ap_uri. If so, you have acct_uri
-	 * 4. Failing this, acct_uri = "acct:" + preferredUsername from AP actor + "@" + hostname from ap_uri (TODO: implement this)
+	 * 4. Failing this, acct_uri = "acct:" + preferredUsername from AP actor + "@" + hostname from ap_uri
 	 *
 	 * Avoid repeating WebFinger's with same URI for performance, TODO: optimize away validation checks when the domain matches
 	 */
@@ -80,6 +80,16 @@ public class UserResolver(
 		var finalUri = fingerRes.Links.FirstOrDefault(p => p is { Rel: "self", Type: "application/activity+json" })
 		                        ?.Href ??
 		               throw new GracefulException("Final AP URI was null");
+
+		if (apUri != finalUri)
+		{
+			logger.LogDebug("WebFinger: finalUri doesn't match apUri, setting acct host to apUri host: {apUri}", apUri);
+			var split = finalAcct.Split('@');
+			if (split.Length != 2)
+				throw new GracefulException($"Failed to finalize WebFinger for '{apUri}': invalid acct '{finalAcct}'");
+			split[1]  = new Uri(apUri).Host;
+			finalAcct = string.Join('@', split);
+		}
 
 		return (finalAcct, finalUri);
 	}
