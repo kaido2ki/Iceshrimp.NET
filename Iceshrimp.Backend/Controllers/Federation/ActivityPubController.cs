@@ -136,4 +136,26 @@ public class ActivityPubController(
 		});
 		return Accepted();
 	}
+
+	[HttpGet("/emoji/{name}")]
+	[AuthorizedFetch]
+	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASEmoji))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> GetEmoji(string name)
+	{
+		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Name == name && p.Host == null);
+		if (emoji == null) return NotFound();
+
+		var rendered = new ASEmoji
+		{
+			Id    = emoji.GetPublicUri(config.Value),
+			Name  = emoji.Name,
+			Image = new ASImage { Url = new ASLink(emoji.PublicUrl) }
+		};
+
+		var compacted = LdHelpers.Compact(rendered);
+		return Ok(compacted);
+	}
 }
