@@ -52,7 +52,7 @@ public class WebFingerService(
 		return await res.Content.ReadFromJsonAsync<WebFingerResponse>(cts.Token);
 	}
 
-	private static (string query, string proto, string domain) ParseQuery(string query)
+	public static (string query, string proto, string domain) ParseQuery(string query)
 	{
 		string domain;
 		string proto;

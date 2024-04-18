@@ -32,10 +32,9 @@ public class UserResolver(
 	 * 3. WebFinger(candidate_acct_uri), validate it also points to ap_uri. If so, you have acct_uri
 	 * 4. Failing this, acct_uri = "acct:" + preferredUsername from AP actor + "@" + hostname from ap_uri
 	 *
-	 * Avoid repeating WebFinger's with same URI for performance, TODO: optimize away validation checks when the domain matches
+	 * Avoid repeating WebFinger's with same URI for performance, optimize away validation checks when the domain matches
 	 */
 
-	//TODO: split domain handling can get stuck in an infinite loop, limit recursion
 	private async Task<(string Acct, string Uri)> WebFingerAsync(string query)
 	{
 		logger.LogDebug("Running WebFinger for query '{query}'", query);
@@ -45,10 +44,15 @@ public class UserResolver(
 		if (fingerRes == null) throw new GracefulException($"Failed to WebFinger '{query}'");
 		responses.Add(query, fingerRes);
 
-		var apUri = fingerRes.Links.FirstOrDefault(p => p.Rel == "self" && p.Type == "application/activity+json")
-		                     ?.Href;
+		var apUri = fingerRes.Links.FirstOrDefault(p => p is { Rel: "self", Type: "application/activity+json" })?.Href;
 		if (apUri == null)
 			throw new GracefulException($"WebFinger response for '{query}' didn't contain a candidate link");
+
+		var queryHost   = WebFingerService.ParseQuery(query).domain;
+		var subjectHost = WebFingerService.ParseQuery(fingerRes.Subject).domain;
+		var apUriHost   = new Uri(apUri).Host;
+		if (subjectHost == apUriHost && subjectHost == queryHost)
+			return (fingerRes.Subject, apUri);
 
 		fingerRes = responses.GetValueOrDefault(apUri);
 		if (fingerRes == null)
@@ -64,6 +68,9 @@ public class UserResolver(
 		var acctUri = (fingerRes.Aliases ?? []).Prepend(fingerRes.Subject).FirstOrDefault(p => p.StartsWith("acct:"));
 		if (acctUri == null)
 			throw new GracefulException($"WebFinger response for '{apUri}' didn't contain any acct uris");
+
+		if (WebFingerService.ParseQuery(acctUri).domain == apUriHost)
+			return (acctUri, apUri);
 
 		fingerRes = responses.GetValueOrDefault(acctUri);
 		if (fingerRes == null)
