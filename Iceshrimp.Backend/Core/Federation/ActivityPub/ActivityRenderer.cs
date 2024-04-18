@@ -97,7 +97,7 @@ public class ActivityRenderer(
 
 			var e = new ASEmoji
 			{
-				Id    = emoji.PublicUrl,
+				Id    = emoji.Host == null ? $"https://{config.Value.WebDomain}/emoji/{emoji.Name}" : null,
 				Name  = name,
 				Image = new ASImage { Url = new ASLink(emoji.PublicUrl) }
 			};
