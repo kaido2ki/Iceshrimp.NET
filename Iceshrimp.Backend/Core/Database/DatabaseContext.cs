@@ -1264,6 +1264,14 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		                               FOR UPDATE SKIP LOCKED)
 		                           RETURNING "jobs".*;
 		                           """);
+
+	public async Task<bool> IsDatabaseEmpty()
+		=> !await Database.SqlQuery<object>($"""
+		                                     select s.nspname from pg_class c
+		                                     join pg_namespace s on s.oid = c.relnamespace
+		                                     where s.nspname in ('public')
+		                                     """)
+		                  .AnyAsync();
 }
 
 [SuppressMessage("ReSharper", "UnusedType.Global",

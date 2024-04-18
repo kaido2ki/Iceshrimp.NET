@@ -1,9 +1,11 @@
 using System.Runtime.InteropServices;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Migrations;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Options;
 using WebPush;
 
@@ -48,7 +50,7 @@ public static class WebApplicationExtensions
 		var instanceConfig = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
 		                     throw new Exception("Failed to read Instance config section");
 		var workerId = app.Configuration.GetSection("Worker").Get<Config.WorkerSection>()?.WorkerId;
-		
+
 		if (workerId == null)
 		{
 			app.Logger.LogInformation("Iceshrimp.NET v{version} ({domain})", instanceConfig.Version,
@@ -95,18 +97,30 @@ public static class WebApplicationExtensions
 			Environment.Exit(1);
 		}
 
-		if (args.Contains("--migrate") || args.Contains("--migrate-and-start"))
+		var pendingMigration = (await db.Database.GetPendingMigrationsAsync()).FirstOrDefault();
+		if (pendingMigration != null)
 		{
-			app.Logger.LogInformation("Running migrations...");
-			db.Database.SetCommandTimeout(0);
-			await db.Database.MigrateAsync();
-			db.Database.SetCommandTimeout(30);
-			if (args.Contains("--migrate")) Environment.Exit(0);
-		}
-		else if ((await db.Database.GetPendingMigrationsAsync()).Any())
-		{
-			app.Logger.LogCritical("Database has pending migrations, please restart with --migrate or --migrate-and-start");
-			Environment.Exit(1);
+			var initialMigration = typeof(Initial).GetCustomAttribute<MigrationAttribute>()?.Id;
+			if (pendingMigration == initialMigration && !await db.IsDatabaseEmpty())
+			{
+				app.Logger.LogCritical("Initial migration is pending but database is not empty.");
+				app.Logger.LogCritical("If you are trying to migrate from iceshrimp-js, please follow the instructions in the wiki.");
+				Environment.Exit(1);
+			}
+
+			if (args.Contains("--migrate") || args.Contains("--migrate-and-start"))
+			{
+				app.Logger.LogInformation("Running migrations...");
+				db.Database.SetCommandTimeout(0);
+				await db.Database.MigrateAsync();
+				db.Database.SetCommandTimeout(30);
+				if (args.Contains("--migrate")) Environment.Exit(0);
+			}
+			else
+			{
+				app.Logger.LogCritical("Database has pending migrations, please restart with --migrate or --migrate-and-start");
+				Environment.Exit(1);
+			}
 		}
 
 		if (args.Contains("--recompute-counters"))
