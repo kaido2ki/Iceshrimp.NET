@@ -75,7 +75,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		               }))
 		               .Concat(emoji.Select(e => new ASEmoji
 		               {
-			               Id    = $"https://{config.Value.WebDomain}/emoji/{e.Name}",
+			               Id    = e.GetPublicUri(config.Value),
 			               Name  = e.Name,
 			               Image = new ASImage { Url = new ASLink(e.PublicUrl) }
 		               }))

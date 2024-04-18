@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Iceshrimp.Backend.Core.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
@@ -55,4 +56,12 @@ public class Emoji
 	/// </summary>
 	[Column("height")]
 	public int? Height { get; set; }
+	
+	public string GetPublicUri(Config.InstanceSection config) => Host == null
+		? $"https://{config.WebDomain}/emoji/{Name}"
+		: throw new Exception("Cannot access PublicUri for remote emoji");
+
+	public string? GetPublicUriOrNull(Config.InstanceSection config) => Host == null
+		? $"https://{config.WebDomain}/emoji/{Name}"
+		: null;
 }
