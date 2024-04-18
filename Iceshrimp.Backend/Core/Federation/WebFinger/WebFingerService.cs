@@ -2,8 +2,10 @@ using System.Net;
 using System.Text.Encodings.Web;
 using System.Xml;
 using Iceshrimp.Backend.Controllers.Federation.Schemas;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.WebFinger;
 
@@ -18,13 +20,20 @@ namespace Iceshrimp.Backend.Core.Federation.WebFinger;
  */
 
 //FIXME: handle cursed person/group acct collisions like https://lemmy.ml/.well-known/webfinger?resource=acct:linux@lemmy.ml
-//FIXME: also check if the query references the local instance in other ways (e.g. @user@{WebDomain}, @user@{AccountDomain}, https://{WebDomain}/..., etc)
 
-public class WebFingerService(HttpClient client, HttpRequestService httpRqSvc, IHostApplicationLifetime appLifetime)
+public class WebFingerService(
+	HttpClient client,
+	HttpRequestService httpRqSvc,
+	IHostApplicationLifetime appLifetime,
+	IOptions<Config.InstanceSection> config
+)
 {
 	public async Task<WebFingerResponse?> ResolveAsync(string query)
 	{
 		(query, var proto, var domain) = ParseQuery(query);
+		if (domain == config.Value.WebDomain || domain == config.Value.AccountDomain)
+			throw new GracefulException(HttpStatusCode.BadRequest, "Can't run WebFinger for local user");
+
 		var webFingerUrl = await GetWebFingerUrlAsync(query, proto, domain);
 
 		using var cts = CancellationTokenSource.CreateLinkedTokenSource(appLifetime.ApplicationStopping);
