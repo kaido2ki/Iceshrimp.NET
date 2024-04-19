@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("oauth_token")]
-[Index("Token")]
-[Index("Code")]
+[Index(nameof(Token))]
+[Index(nameof(Code))]
 public class OauthToken
 {
 	[Key]

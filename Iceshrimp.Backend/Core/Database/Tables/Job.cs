@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("jobs")]
-[Index("Queue")]
-[Index("Status")]
-[Index("FinishedAt")]
-[Index("DelayedUntil")]
+[Index(nameof(Queue))]
+[Index(nameof(Status))]
+[Index(nameof(FinishedAt))]
+[Index(nameof(DelayedUntil))]
 public class Job
 {
 	public enum JobStatus

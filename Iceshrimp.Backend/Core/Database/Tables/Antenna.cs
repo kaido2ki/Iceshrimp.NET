@@ -6,7 +6,7 @@ using NpgsqlTypes;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("antenna")]
-[Index("UserId")]
+[Index(nameof(UserId))]
 public class Antenna
 {
 	[PgName("antenna_src_enum")]

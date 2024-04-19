@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("drive_folder")]
-[Index("ParentId")]
-[Index("CreatedAt")]
-[Index("UserId")]
+[Index(nameof(ParentId))]
+[Index(nameof(CreatedAt))]
+[Index(nameof(UserId))]
 public class DriveFolder
 {
 	[Key]

@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("poll_vote")]
-[Index("CreatedAt")]
+[Index(nameof(CreatedAt))]
 [Index("UserId", "NoteId", "Choice", IsUnique = true)]
-[Index("UserId")]
-[Index("NoteId")]
+[Index(nameof(UserId))]
+[Index(nameof(NoteId))]
 public class PollVote
 {
 	[Key]

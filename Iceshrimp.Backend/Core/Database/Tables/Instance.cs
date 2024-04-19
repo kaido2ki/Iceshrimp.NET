@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("instance")]
-[Index("CaughtAt")]
-[Index("IsSuspended")]
+[Index(nameof(CaughtAt))]
+[Index(nameof(IsSuspended))]
 [Index("Host", IsUnique = true)]
 public class Instance
 {

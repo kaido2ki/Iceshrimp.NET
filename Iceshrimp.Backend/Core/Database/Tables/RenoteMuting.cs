@@ -6,9 +6,9 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("renote_muting")]
 [Index("MuterId", "MuteeId", IsUnique = true)]
-[Index("MuterId")]
-[Index("MuteeId")]
-[Index("CreatedAt")]
+[Index(nameof(MuterId))]
+[Index(nameof(MuteeId))]
+[Index(nameof(CreatedAt))]
 public class RenoteMuting
 {
 	[Key]

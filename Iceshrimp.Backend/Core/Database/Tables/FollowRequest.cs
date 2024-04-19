@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("follow_request")]
-[Index("FolloweeId")]
-[Index("FollowerId")]
+[Index(nameof(FolloweeId))]
+[Index(nameof(FollowerId))]
 [Index("FollowerId", "FolloweeId", IsUnique = true)]
 public class FollowRequest : IEntity
 {

@@ -6,7 +6,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_note_pin")]
 [Index("UserId", "NoteId", IsUnique = true)]
-[Index("UserId")]
+[Index(nameof(UserId))]
 public class UserNotePin
 {
 	[Key]

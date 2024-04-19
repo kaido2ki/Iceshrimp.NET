@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("channel_note_pin")]
-[Index("ChannelId")]
+[Index(nameof(ChannelId))]
 [Index("ChannelId", "NoteId", IsUnique = true)]
 public class ChannelNotePin
 {

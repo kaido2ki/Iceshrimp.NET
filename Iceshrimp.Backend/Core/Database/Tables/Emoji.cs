@@ -7,8 +7,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("emoji")]
 [Index("Name", "Host", IsUnique = true)]
-[Index("Host")]
-[Index("Name")]
+[Index(nameof(Host))]
+[Index(nameof(Name))]
 public class Emoji
 {
 	[Key]

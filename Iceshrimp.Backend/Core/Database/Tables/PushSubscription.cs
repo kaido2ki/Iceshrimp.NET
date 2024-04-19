@@ -6,7 +6,7 @@ using NpgsqlTypes;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("push_subscription")]
-[Index("UserId")]
+[Index(nameof(UserId))]
 [Index("OauthTokenId", IsUnique = true)]
 public class PushSubscription
 {

@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("poll")]
-[Index("UserId")]
-[Index("UserHost")]
+[Index(nameof(UserId))]
+[Index(nameof(UserHost))]
 public class Poll
 {
 	[Key]

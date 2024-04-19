@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("abuse_user_report")]
-[Index("ReporterId")]
-[Index("Resolved")]
-[Index("TargetUserHost")]
-[Index("TargetUserId")]
-[Index("CreatedAt")]
-[Index("ReporterHost")]
+[Index(nameof(ReporterId))]
+[Index(nameof(Resolved))]
+[Index(nameof(TargetUserHost))]
+[Index(nameof(TargetUserId))]
+[Index(nameof(CreatedAt))]
+[Index(nameof(ReporterHost))]
 public class AbuseUserReport
 {
 	[Key]

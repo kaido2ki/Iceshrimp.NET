@@ -7,11 +7,11 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("page")]
 [Index("UserId", "Name", IsUnique = true)]
-[Index("VisibleUserIds")]
-[Index("UserId")]
-[Index("UpdatedAt")]
-[Index("Name")]
-[Index("CreatedAt")]
+[Index(nameof(VisibleUserIds))]
+[Index(nameof(UserId))]
+[Index(nameof(UpdatedAt))]
+[Index(nameof(Name))]
+[Index(nameof(CreatedAt))]
 public class Page
 {
 	[PgName("page_visibility_enum")]

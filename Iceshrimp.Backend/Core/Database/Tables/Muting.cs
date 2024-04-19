@@ -6,10 +6,10 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("muting")]
 [Index("MuterId", "MuteeId", IsUnique = true)]
-[Index("MuterId")]
-[Index("ExpiresAt")]
-[Index("MuteeId")]
-[Index("CreatedAt")]
+[Index(nameof(MuterId))]
+[Index(nameof(ExpiresAt))]
+[Index(nameof(MuteeId))]
+[Index(nameof(CreatedAt))]
 public class Muting
 {
 	[Key]

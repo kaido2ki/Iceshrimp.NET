@@ -6,12 +6,12 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("bite")]
-[Index("Uri")]
-[Index("UserId")]
-[Index("UserHost")]
-[Index("TargetUserId")]
-[Index("TargetNoteId")]
-[Index("TargetBiteId")]
+[Index(nameof(Uri))]
+[Index(nameof(UserId))]
+[Index(nameof(UserHost))]
+[Index(nameof(TargetUserId))]
+[Index(nameof(TargetNoteId))]
+[Index(nameof(TargetBiteId))]
 public class Bite
 {
 	[Key]

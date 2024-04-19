@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("meta_store")]
-[Index("Key", "Value")]
+[Index(nameof(Key), nameof(Value))]
 public class MetaStoreEntry
 {
 	[Key]

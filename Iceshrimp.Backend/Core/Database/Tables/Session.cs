@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("session")]
-[Index("Token")]
+[Index(nameof(Token))]
 public class Session
 {
 	[Key]

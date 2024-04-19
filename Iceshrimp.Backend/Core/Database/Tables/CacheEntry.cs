@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("cache_store")]
-[Index("Expiry")]
+[Index(nameof(Expiry))]
 public class CacheEntry
 {
 	[Key]

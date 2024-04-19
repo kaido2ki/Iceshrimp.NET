@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("note_reaction")]
-[Index("CreatedAt")]
-[Index("UserId")]
-[Index("NoteId")]
+[Index(nameof(CreatedAt))]
+[Index(nameof(UserId))]
+[Index(nameof(NoteId))]
 [Index("UserId", "NoteId", "Reaction", IsUnique = true)]
 public class NoteReaction
 {

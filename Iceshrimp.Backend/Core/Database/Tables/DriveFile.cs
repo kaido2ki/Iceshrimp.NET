@@ -6,19 +6,19 @@ using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("drive_file")]
-[Index("IsLink")]
-[Index("Sha256")]
-[Index("UserId", "FolderId", "Id")]
-[Index("UserId")]
-[Index("UserHost")]
-[Index("Type")]
-[Index("IsSensitive")]
-[Index("FolderId")]
-[Index("WebpublicAccessKey")]
-[Index("CreatedAt")]
-[Index("AccessKey")]
-[Index("Uri")]
-[Index("ThumbnailAccessKey")]
+[Index(nameof(IsLink))]
+[Index(nameof(Sha256))]
+[Index(nameof(UserId), nameof(FolderId), nameof(Id))]
+[Index(nameof(UserId))]
+[Index(nameof(UserHost))]
+[Index(nameof(Type))]
+[Index(nameof(IsSensitive))]
+[Index(nameof(FolderId))]
+[Index(nameof(WebpublicAccessKey))]
+[Index(nameof(CreatedAt))]
+[Index(nameof(AccessKey))]
+[Index(nameof(Uri))]
+[Index(nameof(ThumbnailAccessKey))]
 public class DriveFile : IEntity
 {
 	/// <summary>

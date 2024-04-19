@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("note_like")]
-[Index("UserId")]
-[Index("NoteId")]
+[Index(nameof(UserId))]
+[Index(nameof(NoteId))]
 [Index("UserId", "NoteId", IsUnique = true)]
 public class NoteLike
 {

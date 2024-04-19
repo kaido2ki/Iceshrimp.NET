@@ -6,7 +6,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("promo_read")]
 [Index("UserId", "NoteId", IsUnique = true)]
-[Index("UserId")]
+[Index(nameof(UserId))]
 public class PromoRead
 {
 	[Key]

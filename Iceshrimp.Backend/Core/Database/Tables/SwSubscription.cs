@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("sw_subscription")]
-[Index("UserId")]
+[Index(nameof(UserId))]
 public class SwSubscription
 {
 	[Key]

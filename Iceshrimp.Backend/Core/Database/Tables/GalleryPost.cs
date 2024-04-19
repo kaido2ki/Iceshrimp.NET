@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("gallery_post")]
-[Index("Tags")]
-[Index("LikedCount")]
-[Index("FileIds")]
-[Index("CreatedAt")]
-[Index("UserId")]
-[Index("IsSensitive")]
-[Index("UpdatedAt")]
+[Index(nameof(Tags))]
+[Index(nameof(LikedCount))]
+[Index(nameof(FileIds))]
+[Index(nameof(CreatedAt))]
+[Index(nameof(UserId))]
+[Index(nameof(IsSensitive))]
+[Index(nameof(UpdatedAt))]
 public class GalleryPost
 {
 	[Key]

@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("messaging_message")]
-[Index("GroupId")]
-[Index("UserId")]
-[Index("RecipientId")]
-[Index("CreatedAt")]
+[Index(nameof(GroupId))]
+[Index(nameof(UserId))]
+[Index(nameof(RecipientId))]
+[Index(nameof(CreatedAt))]
 public class MessagingMessage
 {
 	[Key]

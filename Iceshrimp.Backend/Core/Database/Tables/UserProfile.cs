@@ -7,8 +7,8 @@ using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_profile")]
-[Index("EnableWordMute")]
-[Index("UserHost")]
+[Index(nameof(EnableWordMute))]
+[Index(nameof(UserHost))]
 [Index("PinnedPageId", IsUnique = true)]
 public class UserProfile
 {

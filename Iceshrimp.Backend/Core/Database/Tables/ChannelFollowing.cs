@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("channel_following")]
-[Index("FolloweeId")]
-[Index("CreatedAt")]
+[Index(nameof(FolloweeId))]
+[Index(nameof(CreatedAt))]
 [Index("FollowerId", "FolloweeId", IsUnique = true)]
-[Index("FollowerId")]
+[Index(nameof(FollowerId))]
 public class ChannelFollowing
 {
 	[Key]

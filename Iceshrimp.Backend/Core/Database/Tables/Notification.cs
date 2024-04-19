@@ -6,13 +6,13 @@ using NpgsqlTypes;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("notification")]
-[Index("Type")]
-[Index("IsRead")]
-[Index("NotifierId")]
-[Index("NotifieeId")]
-[Index("CreatedAt")]
-[Index("AppAccessTokenId")]
-[Index("MastoId")]
+[Index(nameof(Type))]
+[Index(nameof(IsRead))]
+[Index(nameof(NotifierId))]
+[Index(nameof(NotifieeId))]
+[Index(nameof(CreatedAt))]
+[Index(nameof(AppAccessTokenId))]
+[Index(nameof(MastoId))]
 public class Notification : IEntity
 {
 	[PgName("notification_type_enum")]

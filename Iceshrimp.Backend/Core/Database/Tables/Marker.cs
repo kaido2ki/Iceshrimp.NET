@@ -6,7 +6,7 @@ using NpgsqlTypes;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("marker")]
-[Index("UserId")]
+[Index(nameof(UserId))]
 [Index("UserId", "Type", IsUnique = true)]
 [PrimaryKey("UserId", "Type")]
 public class Marker

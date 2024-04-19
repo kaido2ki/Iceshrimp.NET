@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("note_thread_muting")]
-[Index("UserId")]
+[Index(nameof(UserId))]
 [Index("UserId", "ThreadId", IsUnique = true)]
-[Index("ThreadId")]
+[Index(nameof(ThreadId))]
 public class NoteThreadMuting
 {
 	[Key]

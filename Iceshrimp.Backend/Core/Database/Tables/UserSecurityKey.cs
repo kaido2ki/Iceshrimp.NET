@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_security_key")]
-[Index("PublicKey")]
-[Index("UserId")]
+[Index(nameof(PublicKey))]
+[Index(nameof(UserId))]
 public class UserSecurityKey
 {
 	/// <summary>

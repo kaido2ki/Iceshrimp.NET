@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("note_edit")]
-[Index("NoteId")]
+[Index(nameof(NoteId))]
 public class NoteEdit
 {
 	[Key]

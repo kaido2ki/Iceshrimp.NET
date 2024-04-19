@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("moderation_log")]
-[Index("UserId")]
+[Index(nameof(UserId))]
 public class ModerationLog
 {
 	[Key]

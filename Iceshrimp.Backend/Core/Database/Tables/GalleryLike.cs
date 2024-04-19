@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("gallery_like")]
-[Index("UserId")]
+[Index(nameof(UserId))]
 [Index("UserId", "PostId", IsUnique = true)]
 public class GalleryLike
 {

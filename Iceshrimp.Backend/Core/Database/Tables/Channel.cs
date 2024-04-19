@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("channel")]
-[Index("UsersCount")]
-[Index("NotesCount")]
-[Index("LastNotedAt")]
-[Index("CreatedAt")]
-[Index("UserId")]
+[Index(nameof(UsersCount))]
+[Index(nameof(NotesCount))]
+[Index(nameof(LastNotedAt))]
+[Index(nameof(CreatedAt))]
+[Index(nameof(UserId))]
 public class Channel
 {
 	[Key]

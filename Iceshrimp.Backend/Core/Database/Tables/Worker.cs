@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("worker")]
-[Index("Id")]
-[Index("Heartbeat")]
+[Index(nameof(Id))]
+[Index(nameof(Heartbeat))]
 public class Worker
 {
 	[Key]
