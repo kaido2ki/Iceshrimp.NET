@@ -64,6 +64,18 @@
     <ItemGroup>
         <Content Include="configuration.ini" CopyToOutputDirectory="Always"/>
     </ItemGroup>
+    
+    <ItemGroup>
+        <Content Update="Core\Federation\ActivityStreams\Contexts\*.json">
+            <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+            <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+        </Content>
+        <ContentWithTargetPath Include="Core\Federation\ActivityStreams\Contexts\*.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+            <TargetPath>contexts\%(Filename)%(Extension)</TargetPath>
+        </ContentWithTargetPath>
+    </ItemGroup>
 
     <ItemGroup>
         <None Remove="Core\Database\prune-designer-cs-files.sh" />

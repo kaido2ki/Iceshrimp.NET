@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Reflection;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
@@ -12,57 +13,34 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams;
 
 public static class LdHelpers
 {
+	private static readonly string? AssemblyLocation =
+		Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
+
+	private static readonly string Prefix = Path.Combine(AssemblyLocation, "contexts");
+
+	private static JToken GetPreloadedDocument(string filename) =>
+		JToken.Parse(File.ReadAllText(Path.Combine(Prefix, filename)));
+
+	private static RemoteDocument GetPreloadedContext(string filename) => new()
+	{
+		Document = GetPreloadedDocument(filename)
+	};
+
 	private static readonly Dictionary<string, RemoteDocument> PreloadedContexts = new()
 	{
-		{
-			"https://www.w3.org/ns/activitystreams", new RemoteDocument
-			{
-				DocumentUrl = new Uri("https://www.w3.org/ns/activitystreams"),
-				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
-				                                                      "Contexts", "as.json")))
-			}
-		},
-		{
-			"https://w3id.org/security/v1", new RemoteDocument
-			{
-				DocumentUrl = new Uri("https://w3c-ccg.github.io/security-vocab/contexts/security-v1.jsonld"),
-				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
-				                                                      "Contexts", "security.json")))
-			}
-		},
-		{
-			"http://joinmastodon.org/ns", new RemoteDocument
-			{
-				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
-				                                                      "Contexts", "toot.json")))
-			}
-		},
-		{
-			"http://schema.org/", new RemoteDocument
-			{
-				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
-				                                                      "Contexts", "schema.json")))
-			}
-		},
-		{
-			"litepub-0.1", new RemoteDocument
-			{
-				Document = JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams",
-				                                                      "Contexts", "litepub.json")))
-			}
-		}
+		{ "https://www.w3.org/ns/activitystreams", GetPreloadedContext("as.json") },
+		{ "https://w3id.org/security/v1", GetPreloadedContext("security.json") },
+		{ "http://joinmastodon.org/ns", GetPreloadedContext("toot.json") },
+		{ "http://schema.org/", GetPreloadedContext("schema.json") },
+		{ "litepub-0.1", GetPreloadedContext("litepub.json") }
 	};
 
 	private static readonly ConcurrentDictionary<string, RemoteDocument> ContextCache = new();
 
-	private static readonly JToken DefaultContext =
-		JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams", "Contexts",
-		                                           "default.json")));
+	private static readonly JToken FederationContext = GetPreloadedDocument("iceshrimp.json");
 
 	// Nonstandard extensions to the AS context need to be loaded in to fix federation with certain AP implementations
-	private static readonly JToken ASExtensions =
-		JToken.Parse(File.ReadAllText(Path.Combine("Core", "Federation", "ActivityStreams", "Contexts",
-		                                           "as-extensions.json")));
+	private static readonly JToken ASExtensions = GetPreloadedDocument("as-extensions.json");
 
 	private static readonly JsonLdProcessorOptions Options = new()
 	{
@@ -148,7 +126,7 @@ public static class LdHelpers
 
 	public static JObject? Compact(JToken? json)
 	{
-		return JsonLdProcessor.Compact(json, DefaultContext, Options);
+		return JsonLdProcessor.Compact(json, FederationContext, Options);
 	}
 
 	public static JArray? Expand(JToken? json)
