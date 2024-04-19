@@ -72,7 +72,9 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 			Visibility  = RenderVisibility(note.Visibility),
 			User        = noteUser,
 			Attachments = attachments.ToList(),
-			Reactions   = reactions.ToList()
+			Reactions   = reactions.ToList(),
+			Likes       = note.LikeCount,
+			Renotes     = note.RenoteCount
 		};
 	}
 
