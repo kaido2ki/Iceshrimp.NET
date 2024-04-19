@@ -1638,9 +1638,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.HasIndex("UserId", "Type")
-                        .IsUnique();
-
                     b.ToTable("marker");
                 });
 

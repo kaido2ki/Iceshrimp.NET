@@ -7,7 +7,6 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("marker")]
 [Index(nameof(UserId))]
-[Index(nameof(UserId), nameof(Type), IsUnique = true)]
 [PrimaryKey(nameof(UserId), nameof(Type))]
 public class Marker
 {
