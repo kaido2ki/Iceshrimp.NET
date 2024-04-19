@@ -6,7 +6,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("channel_note_pin")]
 [Index(nameof(ChannelId))]
-[Index("ChannelId", "NoteId", IsUnique = true)]
+[Index(nameof(ChannelId), nameof(NoteId), IsUnique = true)]
 public class ChannelNotePin
 {
 	[Key]

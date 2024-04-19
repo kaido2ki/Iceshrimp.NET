@@ -8,7 +8,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("instance")]
 [Index(nameof(CaughtAt))]
 [Index(nameof(IsSuspended))]
-[Index("Host", IsUnique = true)]
+[Index(nameof(Host), IsUnique = true)]
 public class Instance
 {
 	[Key]

@@ -7,7 +7,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("follow_request")]
 [Index(nameof(FolloweeId))]
 [Index(nameof(FollowerId))]
-[Index("FollowerId", "FolloweeId", IsUnique = true)]
+[Index(nameof(FollowerId), nameof(FolloweeId), IsUnique = true)]
 public class FollowRequest : IEntity
 {
 	/// <summary>

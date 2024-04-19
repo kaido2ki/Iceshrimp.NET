@@ -10,7 +10,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user")]
 [Index(nameof(Host))]
-[Index("UsernameLower", "Host", IsUnique = true)]
+[Index(nameof(UsernameLower), nameof(Host), IsUnique = true)]
 [Index(nameof(UpdatedAt))]
 [Index(nameof(UsernameLower))]
 [Index(nameof(Uri))]
@@ -20,9 +20,9 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(IsModerator))]
 [Index(nameof(CreatedAt))]
 [Index(nameof(Tags))]
-[Index("AvatarId", IsUnique = true)]
-[Index("BannerId", IsUnique = true)]
-[Index("Token", IsUnique = true)]
+[Index(nameof(AvatarId), IsUnique = true)]
+[Index(nameof(BannerId), IsUnique = true)]
+[Index(nameof(Token), IsUnique = true)]
 public class User : IEntity
 {
 	/// <summary>

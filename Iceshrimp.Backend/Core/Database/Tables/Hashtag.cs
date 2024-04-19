@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("hashtag")]
-[Index("Name", IsUnique = true)]
+[Index(nameof(Name), IsUnique = true)]
 public class Hashtag : IEntity
 {
 	[Column("name")] [StringLength(128)] public string Name { get; set; } = null!;

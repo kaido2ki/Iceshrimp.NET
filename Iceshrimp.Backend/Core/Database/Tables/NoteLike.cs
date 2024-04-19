@@ -7,7 +7,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("note_like")]
 [Index(nameof(UserId))]
 [Index(nameof(NoteId))]
-[Index("UserId", "NoteId", IsUnique = true)]
+[Index(nameof(UserId), nameof(NoteId), IsUnique = true)]
 public class NoteLike
 {
 	[Key]

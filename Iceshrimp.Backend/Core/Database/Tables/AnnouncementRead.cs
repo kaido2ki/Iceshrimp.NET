@@ -7,7 +7,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("announcement_read")]
 [Index(nameof(AnnouncementId))]
 [Index(nameof(UserId))]
-[Index("UserId", "AnnouncementId", IsUnique = true)]
+[Index(nameof(UserId), nameof(AnnouncementId), IsUnique = true)]
 public class AnnouncementRead
 {
 	[Key]

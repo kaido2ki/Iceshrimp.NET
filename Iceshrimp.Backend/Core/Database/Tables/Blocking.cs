@@ -7,7 +7,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("blocking")]
 [Index(nameof(BlockerId))]
 [Index(nameof(BlockeeId))]
-[Index("BlockerId", "BlockeeId", IsUnique = true)]
+[Index(nameof(BlockerId), nameof(BlockeeId), IsUnique = true)]
 [Index(nameof(CreatedAt))]
 public class Blocking
 {

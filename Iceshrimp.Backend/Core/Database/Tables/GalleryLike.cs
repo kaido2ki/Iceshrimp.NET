@@ -6,7 +6,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("gallery_like")]
 [Index(nameof(UserId))]
-[Index("UserId", "PostId", IsUnique = true)]
+[Index(nameof(UserId), nameof(PostId), IsUnique = true)]
 public class GalleryLike
 {
 	[Key]

@@ -6,7 +6,7 @@ using NpgsqlTypes;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("relay")]
-[Index("Inbox", IsUnique = true)]
+[Index(nameof(Inbox), IsUnique = true)]
 public class Relay
 {
 	[PgName("relay_status_enum")]

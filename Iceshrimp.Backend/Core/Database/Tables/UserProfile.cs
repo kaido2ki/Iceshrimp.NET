@@ -9,7 +9,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("user_profile")]
 [Index(nameof(EnableWordMute))]
 [Index(nameof(UserHost))]
-[Index("PinnedPageId", IsUnique = true)]
+[Index(nameof(PinnedPageId), IsUnique = true)]
 public class UserProfile
 {
 	[PgName("user_profile_ffvisibility_enum")]

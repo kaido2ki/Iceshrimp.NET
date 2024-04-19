@@ -7,7 +7,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("push_subscription")]
 [Index(nameof(UserId))]
-[Index("OauthTokenId", IsUnique = true)]
+[Index(nameof(OauthTokenId), IsUnique = true)]
 public class PushSubscription
 {
 	[PgName("push_subscription_policy_enum")]

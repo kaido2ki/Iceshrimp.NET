@@ -6,7 +6,7 @@ using NpgsqlTypes;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("page")]
-[Index("UserId", "Name", IsUnique = true)]
+[Index(nameof(UserId), nameof(Name), IsUnique = true)]
 [Index(nameof(VisibleUserIds))]
 [Index(nameof(UserId))]
 [Index(nameof(UpdatedAt))]

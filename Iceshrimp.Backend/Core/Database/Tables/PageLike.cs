@@ -6,7 +6,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("page_like")]
 [Index(nameof(UserId))]
-[Index("UserId", "PageId", IsUnique = true)]
+[Index(nameof(UserId), nameof(PageId), IsUnique = true)]
 public class PageLike
 {
 	[Key]

@@ -6,7 +6,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("following")]
 [Index(nameof(FolloweeId))]
-[Index("FollowerId", "FolloweeId", IsUnique = true)]
+[Index(nameof(FollowerId), nameof(FolloweeId), IsUnique = true)]
 [Index(nameof(FollowerHost))]
 [Index(nameof(CreatedAt))]
 [Index(nameof(FollowerId))]

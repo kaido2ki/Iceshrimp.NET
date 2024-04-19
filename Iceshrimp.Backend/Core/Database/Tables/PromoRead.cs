@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("promo_read")]
-[Index("UserId", "NoteId", IsUnique = true)]
+[Index(nameof(UserId), nameof(NoteId), IsUnique = true)]
 [Index(nameof(UserId))]
 public class PromoRead
 {

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("oauth_app")]
-[Index("ClientId", IsUnique = true)]
+[Index(nameof(ClientId), IsUnique = true)]
 public class OauthApp
 {
 	[Key]

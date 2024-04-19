@@ -6,7 +6,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_group_member")]
 [Index(nameof(UserGroupId))]
-[Index("UserId", "UserGroupId", IsUnique = true)]
+[Index(nameof(UserId), nameof(UserGroupId), IsUnique = true)]
 [Index(nameof(UserId))]
 public class UserGroupMember
 {

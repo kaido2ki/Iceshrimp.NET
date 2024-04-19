@@ -6,7 +6,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("note_thread_muting")]
 [Index(nameof(UserId))]
-[Index("UserId", "ThreadId", IsUnique = true)]
+[Index(nameof(UserId), nameof(ThreadId), IsUnique = true)]
 [Index(nameof(ThreadId))]
 public class NoteThreadMuting
 {

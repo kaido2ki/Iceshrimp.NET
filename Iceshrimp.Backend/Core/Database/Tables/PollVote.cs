@@ -6,7 +6,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("poll_vote")]
 [Index(nameof(CreatedAt))]
-[Index("UserId", "NoteId", "Choice", IsUnique = true)]
+[Index(nameof(UserId), nameof(NoteId), nameof(Choice), IsUnique = true)]
 [Index(nameof(UserId))]
 [Index(nameof(NoteId))]
 public class PollVote

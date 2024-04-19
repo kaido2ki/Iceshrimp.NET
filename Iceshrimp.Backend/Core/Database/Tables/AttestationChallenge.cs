@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
-[PrimaryKey("Id", "UserId")]
+[PrimaryKey(nameof(Id), nameof(UserId))]
 [Table("attestation_challenge")]
 [Index(nameof(Challenge))]
 [Index(nameof(UserId))]

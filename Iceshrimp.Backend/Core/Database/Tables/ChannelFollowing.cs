@@ -7,7 +7,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Table("channel_following")]
 [Index(nameof(FolloweeId))]
 [Index(nameof(CreatedAt))]
-[Index("FollowerId", "FolloweeId", IsUnique = true)]
+[Index(nameof(FollowerId), nameof(FolloweeId), IsUnique = true)]
 [Index(nameof(FollowerId))]
 public class ChannelFollowing
 {

@@ -8,7 +8,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(CreatedAt))]
 [Index(nameof(UserId))]
 [Index(nameof(NoteId))]
-[Index("UserId", "NoteId", "Reaction", IsUnique = true)]
+[Index(nameof(UserId), nameof(NoteId), nameof(Reaction), IsUnique = true)]
 public class NoteReaction
 {
 	[Key]

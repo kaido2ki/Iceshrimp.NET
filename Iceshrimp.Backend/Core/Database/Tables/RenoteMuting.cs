@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("renote_muting")]
-[Index("MuterId", "MuteeId", IsUnique = true)]
+[Index(nameof(MuterId), nameof(MuteeId), IsUnique = true)]
 [Index(nameof(MuterId))]
 [Index(nameof(MuteeId))]
 [Index(nameof(CreatedAt))]

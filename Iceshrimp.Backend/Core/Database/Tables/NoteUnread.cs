@@ -10,7 +10,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(UserId))]
 [Index(nameof(NoteChannelId))]
 [Index(nameof(IsSpecified))]
-[Index("UserId", "NoteId", IsUnique = true)]
+[Index(nameof(UserId), nameof(NoteId), IsUnique = true)]
 [Index(nameof(NoteId))]
 public class NoteUnread
 {

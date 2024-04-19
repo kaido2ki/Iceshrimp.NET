@@ -7,8 +7,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("marker")]
 [Index(nameof(UserId))]
-[Index("UserId", "Type", IsUnique = true)]
-[PrimaryKey("UserId", "Type")]
+[Index(nameof(UserId), nameof(Type), IsUnique = true)]
+[PrimaryKey(nameof(UserId), nameof(Type))]
 public class Marker
 {
 	[PgName("marker_type_enum")]

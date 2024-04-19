@@ -11,7 +11,7 @@ using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("note")]
-[Index("Uri", IsUnique = true)]
+[Index(nameof(Uri), IsUnique = true)]
 [Index(nameof(ReplyId))]
 [Index(nameof(AttachedFileTypes))]
 [Index(nameof(FileIds))]
