@@ -230,10 +230,15 @@ public static class QueryableExtensions
 		return query.Where(note => note.Visibility == visibility);
 	}
 
+	/// <summary>
+	/// Runs the most efficient following query for the user in question.
+	/// The different queries are identical but nudge the query planner towards the smartest query plan available.
+	/// </summary>
 	public static IQueryable<Note> FilterByFollowingAndOwn(
 		this IQueryable<Note> query, User user, DatabaseContext db, int heuristic
 	)
 	{
+		// Determined empirically in 2023. Ask zotan for the spreadsheet if you're curious.
 		const int cutoff = 250;
 
 		if (heuristic < cutoff)
