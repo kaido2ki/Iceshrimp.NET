@@ -65,6 +65,10 @@
         <Content Include="configuration.ini" CopyToOutputDirectory="Always"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <None Remove="Core\Database\prune-designer-cs-files.sh" />
+    </ItemGroup>
+
     <Target Name="KeepOnlyBrotliCompressedStaticAssets" AfterTargets="Publish">
         <ItemGroup>
             <CompressedFiles Include="$(PublishDir)\wwwroot\_framework\*.br" />
