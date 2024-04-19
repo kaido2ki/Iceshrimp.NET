@@ -37,6 +37,7 @@ public class NoteBase
 	[J("visibility")]  public required string                   Visibility  { get; set; }
 	[J("likes")]       public required int                      Likes       { get; set; }
 	[J("renotes")]     public required int                      Renotes     { get; set; }
+	[J("replies")]     public required int                      Replies     { get; set; }
 	[J("user")]        public required UserResponse             User        { get; set; }
 	[J("attachments")] public required List<NoteAttachment>     Attachments { get; set; }
 	[J("reactions")]   public required List<NoteReactionSchema> Reactions   { get; set; }

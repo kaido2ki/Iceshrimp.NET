@@ -74,7 +74,8 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 			Attachments = attachments.ToList(),
 			Reactions   = reactions.ToList(),
 			Likes       = note.LikeCount,
-			Renotes     = note.RenoteCount
+			Renotes     = note.RenoteCount,
+			Replies     = note.RepliesCount
 		};
 	}
 
