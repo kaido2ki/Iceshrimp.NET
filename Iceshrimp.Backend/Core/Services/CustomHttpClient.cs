@@ -298,7 +298,8 @@ public class CustomHttpClient : HttpClient
 				}
 			}
 
-			return location;
+			// Reject circular redirects
+			return location == requestUri ? null : location;
 		}
 
 		private static bool RequestRequiresForceGet(HttpStatusCode statusCode, HttpMethod requestMethod)
