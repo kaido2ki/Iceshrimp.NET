@@ -44,11 +44,11 @@ public class NoteWatching
 	[StringLength(32)]
 	public string NoteUserId { get; set; } = null!;
 
-	[ForeignKey("NoteId")]
+	[ForeignKey(nameof(NoteId))]
 	[InverseProperty(nameof(Tables.Note.NoteWatchings))]
 	public virtual Note Note { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.NoteWatchings))]
 	public virtual User User { get; set; } = null!;
 }

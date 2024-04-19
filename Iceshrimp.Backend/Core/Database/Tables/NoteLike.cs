@@ -21,11 +21,11 @@ public class NoteLike
 
 	[Column("noteId")] [StringLength(32)] public string NoteId { get; set; } = null!;
 
-	[ForeignKey("NoteId")]
+	[ForeignKey(nameof(NoteId))]
 	[InverseProperty(nameof(Tables.Note.NoteLikes))]
 	public virtual Note Note { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.NoteLikes))]
 	public virtual User User { get; set; } = null!;
 }

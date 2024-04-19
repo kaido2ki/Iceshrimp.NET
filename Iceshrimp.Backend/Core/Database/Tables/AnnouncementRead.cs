@@ -27,11 +27,11 @@ public class AnnouncementRead
 	[Column("createdAt")]
 	public DateTime CreatedAt { get; set; }
 
-	[ForeignKey("AnnouncementId")]
+	[ForeignKey(nameof(AnnouncementId))]
 	[InverseProperty(nameof(Tables.Announcement.AnnouncementReads))]
 	public virtual Announcement Announcement { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.AnnouncementReads))]
 	public virtual User User { get; set; } = null!;
 }

@@ -164,7 +164,7 @@ public class DriveFile : IEntity
 	[InverseProperty(nameof(Channel.Banner))]
 	public virtual ICollection<Channel> Channels { get; set; } = new List<Channel>();
 
-	[ForeignKey("FolderId")]
+	[ForeignKey(nameof(FolderId))]
 	[InverseProperty(nameof(DriveFolder.DriveFiles))]
 	public virtual DriveFolder? Folder { get; set; }
 
@@ -174,7 +174,7 @@ public class DriveFile : IEntity
 	[InverseProperty(nameof(Page.EyeCatchingImage))]
 	public virtual ICollection<Page> Pages { get; set; } = new List<Page>();
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.DriveFiles))]
 	public virtual User? User { get; set; }
 

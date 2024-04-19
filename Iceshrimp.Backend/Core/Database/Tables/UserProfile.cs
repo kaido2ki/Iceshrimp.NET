@@ -170,11 +170,11 @@ public class UserProfile
 	[Column("mentions", TypeName = "jsonb")]
 	public List<Note.MentionedUser> Mentions { get; set; } = null!;
 
-	[ForeignKey("PinnedPageId")]
+	[ForeignKey(nameof(PinnedPageId))]
 	[InverseProperty(nameof(Page.UserProfile))]
 	public virtual Page? PinnedPage { get; set; }
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.UserProfile))]
 	public virtual User User { get; set; } = null!;
 

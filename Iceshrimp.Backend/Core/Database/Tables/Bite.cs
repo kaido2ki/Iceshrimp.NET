@@ -40,10 +40,10 @@ public class Bite
 	[StringLength(32)]
 	public string? TargetBiteId { get; set; }
 
-	[ForeignKey("UserId")]       public virtual User  User       { get; set; } = null!;
-	[ForeignKey("TargetUserId")] public virtual User? TargetUser { get; set; }
-	[ForeignKey("TargetNoteId")] public virtual Note? TargetNote { get; set; }
-	[ForeignKey("TargetBiteId")] public virtual Bite? TargetBite { get; set; }
+	[ForeignKey(nameof(UserId))]       public virtual User  User       { get; set; } = null!;
+	[ForeignKey(nameof(TargetUserId))] public virtual User? TargetUser { get; set; }
+	[ForeignKey(nameof(TargetNoteId))] public virtual Note? TargetNote { get; set; }
+	[ForeignKey(nameof(TargetBiteId))] public virtual Bite? TargetBite { get; set; }
 
 	public static string GetIdFromPublicUri(string uri, Config.InstanceSection config) =>
 		GetIdFromPublicUri(uri, config.WebDomain);

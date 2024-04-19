@@ -34,7 +34,7 @@ public class Session
 	[Column("active")]
 	public bool Active { get; set; }
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.Sessions))]
 	public virtual User User { get; set; } = null!;
 

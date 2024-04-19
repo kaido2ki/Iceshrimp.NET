@@ -85,14 +85,14 @@ public class Page
 
 	[Column("isPublic")] public bool IsPublic { get; set; }
 
-	[ForeignKey("EyeCatchingImageId")]
+	[ForeignKey(nameof(EyeCatchingImageId))]
 	[InverseProperty(nameof(DriveFile.Pages))]
 	public virtual DriveFile? EyeCatchingImage { get; set; }
 
 	[InverseProperty(nameof(PageLike.Page))]
 	public virtual ICollection<PageLike> PageLikes { get; set; } = new List<PageLike>();
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.Pages))]
 	public virtual User User { get; set; } = null!;
 

@@ -19,7 +19,7 @@ public class UserKeypair
 	[StringLength(4096)]
 	public string PrivateKey { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.UserKeypair))]
 	public virtual User User { get; set; } = null!;
 }

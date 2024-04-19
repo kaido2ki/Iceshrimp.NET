@@ -42,7 +42,7 @@ public class UserList
 	[InverseProperty(nameof(Antenna.UserList))]
 	public virtual ICollection<Antenna> Antennas { get; set; } = new List<Antenna>();
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.UserLists))]
 	public virtual User User { get; set; } = null!;
 

@@ -189,7 +189,7 @@ public class Note : IEntity
 	[Column("updatedAt")]
 	public DateTime? UpdatedAt { get; set; }
 
-	[ForeignKey("ChannelId")]
+	[ForeignKey(nameof(ChannelId))]
 	[InverseProperty(nameof(Tables.Channel.Notes))]
 	public virtual Channel? Channel { get; set; }
 
@@ -236,11 +236,11 @@ public class Note : IEntity
 	[InverseProperty(nameof(PromoRead.Note))]
 	public virtual ICollection<PromoRead> PromoReads { get; set; } = new List<PromoRead>();
 
-	[ForeignKey("RenoteId")]
+	[ForeignKey(nameof(RenoteId))]
 	[InverseProperty(nameof(InverseRenote))]
 	public virtual Note? Renote { get; set; }
 
-	[ForeignKey("ReplyId")]
+	[ForeignKey(nameof(ReplyId))]
 	[InverseProperty(nameof(InverseReply))]
 	public virtual Note? Reply { get; set; }
 
@@ -254,7 +254,7 @@ public class Note : IEntity
 	[Projectable]
 	public bool IsQuote => (RenoteId != null || Renote != null) && (Text != null || HasPoll || FileIds.Count > 0);
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.Notes))]
 	public virtual User User { get; set; } = null!;
 

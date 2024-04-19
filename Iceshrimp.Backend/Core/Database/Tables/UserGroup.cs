@@ -34,7 +34,7 @@ public class UserGroup
 	[InverseProperty(nameof(MessagingMessage.Group))]
 	public virtual ICollection<MessagingMessage> MessagingMessages { get; set; } = new List<MessagingMessage>();
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.UserGroups))]
 	public virtual User User { get; set; } = null!;
 

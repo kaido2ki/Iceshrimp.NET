@@ -36,11 +36,11 @@ public class Blocking
 	[StringLength(32)]
 	public string BlockerId { get; set; } = null!;
 
-	[ForeignKey("BlockeeId")]
+	[ForeignKey(nameof(BlockeeId))]
 	[InverseProperty(nameof(User.IncomingBlocks))]
 	public virtual User Blockee { get; set; } = null!;
 
-	[ForeignKey("BlockerId")]
+	[ForeignKey(nameof(BlockerId))]
 	[InverseProperty(nameof(User.OutgoingBlocks))]
 	public virtual User Blocker { get; set; } = null!;
 }

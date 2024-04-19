@@ -30,11 +30,11 @@ public class UserListMember : IEntity
 	[StringLength(32)]
 	public string UserListId { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.UserListMembers))]
 	public virtual User User { get; set; } = null!;
 
-	[ForeignKey("UserListId")]
+	[ForeignKey(nameof(UserListId))]
 	[InverseProperty(nameof(Tables.UserList.UserListMembers))]
 	public virtual UserList UserList { get; set; } = null!;
 

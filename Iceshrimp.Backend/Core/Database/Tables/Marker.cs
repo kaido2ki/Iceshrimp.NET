@@ -30,7 +30,7 @@ public class Marker
 
 	[Column("lastUpdated")] public DateTime LastUpdatedAt { get; set; }
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.Markers))]
 	public virtual User User { get; set; } = null!;
 }

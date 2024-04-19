@@ -96,25 +96,25 @@ public class Notification : IEntity
 	[StringLength(32)]
 	public string? AppAccessTokenId { get; set; }
 
-	[ForeignKey("FollowRequestId")]
+	[ForeignKey(nameof(FollowRequestId))]
 	[InverseProperty(nameof(Tables.FollowRequest.Notifications))]
 	public virtual FollowRequest? FollowRequest { get; set; }
 
-	[ForeignKey("NoteId")]
+	[ForeignKey(nameof(NoteId))]
 	[InverseProperty(nameof(Tables.Note.Notifications))]
 	public virtual Note? Note { get; set; }
 
-	[ForeignKey("BiteId")] public virtual Bite? Bite { get; set; }
+	[ForeignKey(nameof(BiteId))] public virtual Bite? Bite { get; set; }
 
-	[ForeignKey("NotifieeId")]
+	[ForeignKey(nameof(NotifieeId))]
 	[InverseProperty(nameof(User.NotificationNotifiees))]
 	public virtual User Notifiee { get; set; } = null!;
 
-	[ForeignKey("NotifierId")]
+	[ForeignKey(nameof(NotifierId))]
 	[InverseProperty(nameof(User.NotificationNotifiers))]
 	public virtual User? Notifier { get; set; }
 
-	[ForeignKey("UserGroupInvitationId")]
+	[ForeignKey(nameof(UserGroupInvitationId))]
 	[InverseProperty(nameof(Tables.UserGroupInvitation.Notifications))]
 	public virtual UserGroupInvitation? UserGroupInvitation { get; set; }
 

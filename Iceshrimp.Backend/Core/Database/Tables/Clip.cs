@@ -45,7 +45,7 @@ public class Clip
 	[InverseProperty(nameof(ClipNote.Clip))]
 	public virtual ICollection<ClipNote> ClipNotes { get; set; } = new List<ClipNote>();
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.Clips))]
 	public virtual User User { get; set; } = null!;
 }

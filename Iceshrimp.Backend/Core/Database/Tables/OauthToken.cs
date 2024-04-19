@@ -57,11 +57,11 @@ public class OauthToken
 	[StringLength(512)]
 	public string RedirectUri { get; set; } = null!;
 
-	[ForeignKey("AppId")]
+	[ForeignKey(nameof(AppId))]
 	[InverseProperty(nameof(OauthApp.OauthTokens))]
 	public virtual OauthApp App { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.OauthTokens))]
 	public virtual User User { get; set; } = null!;
 

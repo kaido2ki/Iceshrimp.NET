@@ -23,7 +23,7 @@ public class NoteThreadMuting
 	[StringLength(256)]
 	public string ThreadId { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.NoteThreadMutings))]
 	public virtual User User { get; set; } = null!;
 }

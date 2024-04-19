@@ -53,7 +53,7 @@ public class RegistryItem
 	[Column("value", TypeName = "jsonb")]
 	public string? Value { get; set; }
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.RegistryItems))]
 	public virtual User User { get; set; } = null!;
 }

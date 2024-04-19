@@ -36,11 +36,11 @@ public class ChannelFollowing
 	[StringLength(32)]
 	public string FollowerId { get; set; } = null!;
 
-	[ForeignKey("FolloweeId")]
+	[ForeignKey(nameof(FolloweeId))]
 	[InverseProperty(nameof(Channel.ChannelFollowings))]
 	public virtual Channel Followee { get; set; } = null!;
 
-	[ForeignKey("FollowerId")]
+	[ForeignKey(nameof(FollowerId))]
 	[InverseProperty(nameof(User.ChannelFollowings))]
 	public virtual User Follower { get; set; } = null!;
 }

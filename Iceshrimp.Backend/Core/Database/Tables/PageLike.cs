@@ -20,11 +20,11 @@ public class PageLike
 
 	[Column("pageId")] [StringLength(32)] public string PageId { get; set; } = null!;
 
-	[ForeignKey("PageId")]
+	[ForeignKey(nameof(PageId))]
 	[InverseProperty(nameof(Tables.Page.PageLikes))]
 	public virtual Page Page { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.PageLikes))]
 	public virtual User User { get; set; } = null!;
 }

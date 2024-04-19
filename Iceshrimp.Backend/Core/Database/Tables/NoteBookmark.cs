@@ -24,11 +24,11 @@ public class NoteBookmark
 
 	[Column("noteId")] [StringLength(32)] public string NoteId { get; set; } = null!;
 
-	[ForeignKey("NoteId")]
+	[ForeignKey(nameof(NoteId))]
 	[InverseProperty(nameof(Tables.Note.NoteBookmarks))]
 	public virtual Note Note { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.NoteBookmarks))]
 	public virtual User User { get; set; } = null!;
 }

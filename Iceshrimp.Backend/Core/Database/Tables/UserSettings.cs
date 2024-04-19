@@ -11,7 +11,7 @@ public class UserSettings
 	[StringLength(32)]
 	public string UserId { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.UserSettings))]
 	public virtual User User { get; set; } = null!;
 

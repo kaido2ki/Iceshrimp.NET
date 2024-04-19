@@ -61,7 +61,7 @@ public class GalleryPost
 	[InverseProperty(nameof(GalleryLike.Post))]
 	public virtual ICollection<GalleryLike> GalleryLikes { get; set; } = new List<GalleryLike>();
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.GalleryPosts))]
 	public virtual User User { get; set; } = null!;
 }

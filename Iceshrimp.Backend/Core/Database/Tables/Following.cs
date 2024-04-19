@@ -80,11 +80,11 @@ public class Following
 	[StringLength(512)]
 	public string? FolloweeSharedInbox { get; set; }
 
-	[ForeignKey("FolloweeId")]
+	[ForeignKey(nameof(FolloweeId))]
 	[InverseProperty(nameof(User.IncomingFollowRelationships))]
 	public virtual User Followee { get; set; } = null!;
 
-	[ForeignKey("FollowerId")]
+	[ForeignKey(nameof(FollowerId))]
 	[InverseProperty(nameof(User.OutgoingFollowRelationships))]
 	public virtual User Follower { get; set; } = null!;
 }

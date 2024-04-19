@@ -288,11 +288,11 @@ public class User : IEntity
 	public virtual ICollection<AttestationChallenge> AttestationChallenges { get; set; } =
 		new List<AttestationChallenge>();
 
-	[ForeignKey("AvatarId")]
+	[ForeignKey(nameof(AvatarId))]
 	[InverseProperty(nameof(DriveFile.UserAvatar))]
 	public virtual DriveFile? Avatar { get; set; }
 
-	[ForeignKey("BannerId")]
+	[ForeignKey(nameof(BannerId))]
 	[InverseProperty(nameof(DriveFile.UserBanner))]
 	public virtual DriveFile? Banner { get; set; }
 

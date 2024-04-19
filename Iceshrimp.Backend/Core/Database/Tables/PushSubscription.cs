@@ -47,11 +47,11 @@ public class PushSubscription
 
 	[Column("policy")] public PushPolicy Policy { get; set; }
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.PushSubscriptions))]
 	public virtual User User { get; set; } = null!;
 
-	[ForeignKey("OauthTokenId")]
+	[ForeignKey(nameof(OauthTokenId))]
 	[InverseProperty(nameof(Tables.OauthToken.PushSubscription))]
 	public virtual OauthToken OauthToken { get; set; } = null!;
 }

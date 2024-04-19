@@ -50,7 +50,7 @@ public class Webhook
 
 	[Column("latestStatus")] public int? LatestStatus { get; set; }
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.Webhooks))]
 	public virtual User User { get; set; } = null!;
 }

@@ -28,11 +28,11 @@ public class PollVote
 
 	[Column("choice")] public int Choice { get; set; }
 
-	[ForeignKey("NoteId")]
+	[ForeignKey(nameof(NoteId))]
 	[InverseProperty(nameof(Tables.Note.PollVotes))]
 	public virtual Note Note { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.PollVotes))]
 	public virtual User User { get; set; } = null!;
 }

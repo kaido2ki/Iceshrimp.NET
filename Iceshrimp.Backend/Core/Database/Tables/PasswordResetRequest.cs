@@ -20,7 +20,7 @@ public class PasswordResetRequest
 
 	[Column("userId")] [StringLength(32)] public string UserId { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.PasswordResetRequests))]
 	public virtual User User { get; set; } = null!;
 }

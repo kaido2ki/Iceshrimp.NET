@@ -80,15 +80,15 @@ public class Antenna
 	[Column("instances", TypeName = "jsonb")]
 	public List<string> Instances { get; set; } = [];
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.Antennas))]
 	public virtual User User { get; set; } = null!;
 
-	[ForeignKey("UserGroupMemberId")]
+	[ForeignKey(nameof(UserGroupMemberId))]
 	[InverseProperty(nameof(Tables.UserGroupMember.Antennas))]
 	public virtual UserGroupMember? UserGroupMember { get; set; }
 
-	[ForeignKey("UserListId")]
+	[ForeignKey(nameof(UserListId))]
 	[InverseProperty(nameof(Tables.UserList.Antennas))]
 	public virtual UserList? UserList { get; set; }
 }

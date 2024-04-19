@@ -79,11 +79,11 @@ public class FollowRequest : IEntity
 	[StringLength(512)]
 	public string? FolloweeSharedInbox { get; set; }
 
-	[ForeignKey("FolloweeId")]
+	[ForeignKey(nameof(FolloweeId))]
 	[InverseProperty(nameof(User.IncomingFollowRequests))]
 	public virtual User Followee { get; set; } = null!;
 
-	[ForeignKey("FollowerId")]
+	[ForeignKey(nameof(FollowerId))]
 	[InverseProperty(nameof(User.OutgoingFollowRequests))]
 	public virtual User Follower { get; set; } = null!;
 

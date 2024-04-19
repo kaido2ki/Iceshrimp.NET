@@ -48,11 +48,11 @@ public class DriveFolder
 	[InverseProperty(nameof(Parent))]
 	public virtual ICollection<DriveFolder> InverseParent { get; set; } = new List<DriveFolder>();
 
-	[ForeignKey("ParentId")]
+	[ForeignKey(nameof(ParentId))]
 	[InverseProperty(nameof(InverseParent))]
 	public virtual DriveFolder? Parent { get; set; }
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.DriveFolders))]
 	public virtual User? User { get; set; }
 }

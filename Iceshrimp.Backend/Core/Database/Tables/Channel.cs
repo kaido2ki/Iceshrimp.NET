@@ -65,7 +65,7 @@ public class Channel
 	[Column("usersCount")]
 	public int UsersCount { get; set; }
 
-	[ForeignKey("BannerId")]
+	[ForeignKey(nameof(BannerId))]
 	[InverseProperty(nameof(DriveFile.Channels))]
 	public virtual DriveFile? Banner { get; set; }
 
@@ -78,7 +78,7 @@ public class Channel
 	[InverseProperty(nameof(Note.Channel))]
 	public virtual ICollection<Note> Notes { get; set; } = new List<Note>();
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.Channels))]
 	public virtual User? User { get; set; }
 }

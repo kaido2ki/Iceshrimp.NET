@@ -20,11 +20,11 @@ public class GalleryLike
 
 	[Column("postId")] [StringLength(32)] public string PostId { get; set; } = null!;
 
-	[ForeignKey("PostId")]
+	[ForeignKey(nameof(PostId))]
 	[InverseProperty(nameof(GalleryPost.GalleryLikes))]
 	public virtual GalleryPost Post { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.GalleryLikes))]
 	public virtual User User { get; set; } = null!;
 }

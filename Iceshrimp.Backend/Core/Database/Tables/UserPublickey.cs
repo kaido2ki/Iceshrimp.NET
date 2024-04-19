@@ -19,7 +19,7 @@ public class UserPublickey
 	[StringLength(4096)]
 	public string KeyPem { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.UserPublickey))]
 	public virtual User User { get; set; } = null!;
 }

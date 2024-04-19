@@ -26,7 +26,7 @@ public class ModerationLog
 	//TODO: refactor this column (it's currently a Dictionary<string, any>, which is terrible) 
 	[Column("info", TypeName = "jsonb")] public string Info { get; set; } = null!;
 
-	[ForeignKey("UserId")]
+	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.ModerationLogs))]
 	public virtual User User { get; set; } = null!;
 }
