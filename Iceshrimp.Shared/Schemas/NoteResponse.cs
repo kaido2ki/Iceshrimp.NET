@@ -35,6 +35,7 @@ public class NoteBase
 	[J("text")]        public required string?                  Text        { get; set; }
 	[J("cw")]          public required string?                  Cw          { get; set; }
 	[J("visibility")]  public required string                   Visibility  { get; set; }
+	[J("liked")]       public required bool                     Liked       { get; set; }
 	[J("likes")]       public required int                      Likes       { get; set; }
 	[J("renotes")]     public required int                      Renotes     { get; set; }
 	[J("replies")]     public required int                      Replies     { get; set; }

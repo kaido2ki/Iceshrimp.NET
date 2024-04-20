@@ -62,6 +62,8 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 		var noteUser    = (data?.Users ?? await GetUsers([note])).First(p => p.Id == note.User.Id);
 		var attachments = (data?.Attachments ?? await GetAttachments([note])).Where(p => note.FileIds.Contains(p.Id));
 		var reactions   = (data?.Reactions ?? await GetReactions([note], user)).Where(p => p.NoteId == note.Id);
+		var liked = data?.LikedNotes?.Contains(note.Id) ??
+		            await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 
 		return new NoteResponse
 		{
@@ -75,7 +77,8 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 			Reactions   = reactions.ToList(),
 			Likes       = note.LikeCount,
 			Renotes     = note.RenoteCount,
-			Replies     = note.RepliesCount
+			Replies     = note.RepliesCount,
+			Liked       = liked
 		};
 	}
 
@@ -141,6 +144,15 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 		return res;
 	}
 
+	private async Task<List<string>> GetLikedNotes(List<Note> notes, User? user)
+	{
+		if (user == null) return [];
+		if (notes.Count == 0) return [];
+		return await db.NoteLikes.Where(p => p.User == user && notes.Contains(p.Note))
+		               .Select(p => p.NoteId)
+		               .ToListAsync();
+	}
+
 	private static List<Note> GetAllNotes(IEnumerable<Note> notes)
 	{
 		return notes.SelectMany<Note, Note?>(p => [p, p.Reply, p.Renote, p.Renote?.Renote])
@@ -167,7 +179,8 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 			Users       = await GetUsers(allNotes),
 			Attachments = await GetAttachments(allNotes),
 			Reactions   = await GetReactions(allNotes, user),
-			Filters     = await GetFilters(user, filterContext)
+			Filters     = await GetFilters(user, filterContext),
+			LikedNotes  = await GetLikedNotes(allNotes, user)
 		};
 
 		return await notesList.Select(p => RenderOne(p, user, filterContext, data)).AwaitAllAsync();
@@ -179,5 +192,6 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 		public List<NoteReactionSchema>? Reactions;
 		public List<UserResponse>?       Users;
 		public List<Filter>?             Filters;
+		public List<string>?             LikedNotes;
 	}
 }
