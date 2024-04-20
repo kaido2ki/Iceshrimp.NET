@@ -16,8 +16,17 @@
     <button class="btn">
         <Icon Name="Icons.ArrowsClockwise"/>
     </button>
-    <button class="btn">
-        <Icon Name="Icons.Heart"/>
+    <button @onclick="Like" class="btn">
+        @if (IsLiked)
+        {
+            <Icon Name="Icons.Heart" Pack="IconStyle.Fill"/>
+        }else {
+            <Icon Name="Icons.Heart"/>
+        }
+        @if (Likes > 0)
+        {
+            <span class="like-count">@Likes</span>
+        }
     </button>
     <button class="btn">
         <Icon Name="Icons.Smiley"/>
@@ -27,6 +36,14 @@
     </button>
 </div>
 @code {
-    [Parameter] [EditorRequired] public required List<NoteReactionSchema> Reactions     { get; set; }
+    [Parameter] [EditorRequired] public required  List<NoteReactionSchema> Reactions { get; set; }
+    [Parameter] [EditorRequired] public required  int                      Likes     { get; set; }
+    [Parameter] [EditorRequired] public required bool                      IsLiked   { get; set; }
     
+    [CascadingParameter] NoteComponent NoteComponent { get; set; }
+
+    private void Like()
+    {
+        NoteComponent.Like();
+    }
 }

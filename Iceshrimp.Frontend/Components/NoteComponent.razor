@@ -14,7 +14,7 @@
             CreatedAt="DateTime.Parse(Note.CreatedAt)"></NoteMetadata>
     </div>
     <NoteBody NoteBase="Note" OverLength="@CheckLen()"/>
-    <NoteFooter Reactions="Note.Reactions"/>
+    <NoteFooter Reactions="Note.Reactions" Likes="Note.Likes" IsLiked="Note.Liked"/>
 </CascadingValue>
 @code {
     [Parameter][EditorRequired] public required NoteResponse  Note          { get; set; }
@@ -45,6 +45,24 @@
                 }
                 StateHasChanged();
                 break;
+        }
+    }
+
+    public void Like()
+    {
+        if (Note.Liked)
+        {
+            ApiService.Notes.UnlikeNote(Note.Id);
+            Note.Liked = false;
+            Note.Likes--;
+            StateHasChanged();
+        }
+        else
+        {
+            ApiService.Notes.LikeNote(Note.Id);
+            Note.Liked = true;
+            Note.Likes++;
+            StateHasChanged();
         }
     }
 }
