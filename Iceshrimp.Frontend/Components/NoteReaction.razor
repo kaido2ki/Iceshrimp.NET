@@ -1,0 +1,26 @@
+@using Iceshrimp.Shared.Schemas
+<button @onclick="React" class="reaction">
+    <span class="icon">
+    @if (Reaction.Url == null)
+    {
+        @Reaction.Name
+    }
+    @if (Reaction.Url != null)
+    {
+        <img src="@Reaction.Url" alt="@Reaction.Name"/>
+    }
+    </span>
+    <span class="count">
+        @Reaction.Count
+    </span>
+</button>
+@code {
+    [Parameter][EditorRequired] public required NoteReactionSchema Reaction      { get; set; }
+    [CascadingParameter]                        NoteComponent      NoteComponent { get; set; }
+
+    private void React()
+    {
+        NoteComponent.React(Reaction.Name, !Reaction.Reacted);
+    }
+    
+}

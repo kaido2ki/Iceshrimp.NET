@@ -1,23 +1,50 @@
+@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
-<div class="note-header">
-    <NoteUserInfo
-        AvatarUrl="@Note.User.AvatarUrl"
-        DisplayName="@Note.User.DisplayName"
-        Username="@Note.User.Username" 
-    />
-    <NoteMetadata 
-        Visibility="@Note.Visibility"
-        InstanceName="@Note.User.InstanceName"
-        CreatedAt="DateTime.Parse(Note.CreatedAt)"></NoteMetadata>
-</div>
-<NoteBody NoteBase="Note" OverLength="@CheckLen()"/>
-<NoteFooter />
-
+@inject ApiService ApiService;
+<CascadingValue Value="this">
+    <div class="note-header">
+        <NoteUserInfo
+            AvatarUrl="@Note.User.AvatarUrl"
+            DisplayName="@Note.User.DisplayName"
+            Username="@Note.User.Username" 
+        />
+        <NoteMetadata 
+            Visibility="@Note.Visibility"
+            InstanceName="@Note.User.InstanceName"
+            CreatedAt="DateTime.Parse(Note.CreatedAt)"></NoteMetadata>
+    </div>
+    <NoteBody NoteBase="Note" OverLength="@CheckLen()"/>
+    <NoteFooter Reactions="Note.Reactions"/>
+</CascadingValue>
 @code {
-    [Parameter][EditorRequired] public required NoteResponse Note { get; set; }
-
+    [Parameter][EditorRequired] public required NoteResponse  Note          { get; set; }
     private bool CheckLen()
     {
         return Note.Text?.Length > 500;
+    }
+
+    public void React(string name, bool target)
+    {
+        var index = Note.Reactions.FindIndex(x => x.Name == name);
+        switch (target)
+        {
+            case true:
+                ApiService.Notes.ReactToNote(Note.Id, name);
+                Note.Reactions[index].Count++;
+                StateHasChanged();
+                break;
+            case false:
+                ApiService.Notes.RemoveReactionFromNote(Note.Id, name);
+                if (Note.Reactions[index].Count <= 1)
+                {
+                    Note.Reactions.RemoveAt(index);
+                }
+                else
+                {
+                    Note.Reactions[index].Count--;
+                }
+                StateHasChanged();
+                break;
+        }
     }
 }

@@ -1,21 +1,32 @@
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Shared.Schemas
 <div class="note-footer">
+    @if (Reactions.Count > 0)
+    {
+        <div claass="reactions">
+            @foreach (var reaction in Reactions)
+            {
+                <NoteReaction Reaction="reaction"/>
+            }
+        </div>
+    }
     <button class="btn">
-        <Icon Name="Icons.ArrowUUpLeft" />
+        <Icon Name="Icons.ArrowUUpLeft"/>
     </button>
     <button class="btn">
-        <Icon Name="Icons.ArrowsClockwise" />
+        <Icon Name="Icons.ArrowsClockwise"/>
     </button>
     <button class="btn">
-        <Icon Name="Icons.Heart" />
+        <Icon Name="Icons.Heart"/>
     </button>
     <button class="btn">
         <Icon Name="Icons.Smiley"/>
     </button>
     <button class="btn">
-        <Icon Name="Icons.DotsThreeOutline" />
+        <Icon Name="Icons.DotsThreeOutline"/>
     </button>
 </div>
 @code {
+    [Parameter] [EditorRequired] public required List<NoteReactionSchema> Reactions     { get; set; }
     
 }
