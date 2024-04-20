@@ -241,15 +241,14 @@ public static class QueryableExtensions
 		// Determined empirically in 2023. Ask zotan for the spreadsheet if you're curious.
 		const int cutoff = 250;
 
-		if (heuristic < cutoff)
-			return query.Where(note => db.Users
-			                             .First(p => p == user)
-			                             .Following
-			                             .Select(p => p.Id)
-			                             .Concat(new[] { user.Id })
-			                             .Contains(note.UserId));
-
-		return query.Where(note => note.User == user || note.User.IsFollowedBy(user));
+		return heuristic < cutoff
+			? query.Where(note => db.Users
+			                        .First(p => p == user)
+			                        .Following
+			                        .Select(p => p.Id)
+			                        .Concat(new[] { user.Id })
+			                        .Contains(note.UserId))
+			: query.Where(note => note.User == user || note.User.IsFollowedBy(user));
 	}
 
 	//TODO: move this into another class where it makes more sense
