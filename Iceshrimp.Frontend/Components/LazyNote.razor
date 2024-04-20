@@ -1,0 +1,53 @@
+@using Iceshrimp.Shared.Schemas
+@using Ljbc1994.Blazor.IntersectionObserver.API
+@using Ljbc1994.Blazor.IntersectionObserver.Components
+@inject IJSRuntime Js
+<IntersectionObserve OnChange="@(entry => Change(Note.Id, entry))">
+    <div class="tgt" @ref="context.Ref.Current">
+        @if (_isIntersecting)
+        {
+            <TimelineNote Note="Note" />
+        }else {
+        <div class="placeholder" style="height: @(Height ?? 150)px"></div>
+        }
+    </div>
+</IntersectionObserve>
+@code {
+    [Parameter] public required NoteResponse        Note { get; set; }
+    private            IJSObjectReference? _module;
+    private            int?                Height { get; set; } = null;
+    private            bool                _isIntersecting = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                              "./Components/LazyNote.razor.js");
+        }
+    }
+
+    private async Task Change(string id, IntersectionObserverEntry entry)
+    {
+        if (id == Note.Id && entry.IsIntersecting == false)
+        {
+            Height          = await GetHeight();
+            _isIntersecting = false;
+            StateHasChanged();
+            return;
+        }
+
+        if (id == Note.Id && entry.IsIntersecting)
+        {
+            _isIntersecting = true;
+        }
+    }
+
+    private async Task<int?> GetHeight()
+    {
+        var height = await (_module ?? throw new Exception("Call to JS module was made before it was loaded, this should not have happened"))
+            .InvokeAsync<int?>("getScrollHeight", Note.Id);
+        return height;
+    }
+
+}
