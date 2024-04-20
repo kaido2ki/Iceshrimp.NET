@@ -1,0 +1,29 @@
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas
+@inject ApiService ApiService
+@if (_init)
+{
+    @foreach (var note in Timeline)
+    {
+        <TimelineNote Note="note" />
+    }
+}
+
+@code {
+     private List<NoteResponse> Timeline { get; set; } = [];
+     private bool               _init = false;
+
+     public async Task Initialize()
+     {
+         var res = await ApiService.Timelines.GetHomeTimeline(new PaginationQuery() { Limit = 50 });
+         Timeline = res;
+     }
+
+     protected override async Task OnInitializedAsync()
+     {
+         await Initialize();
+         _init = true;
+     }
+
+}
