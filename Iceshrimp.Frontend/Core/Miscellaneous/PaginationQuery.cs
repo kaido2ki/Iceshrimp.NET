@@ -15,11 +15,11 @@ internal class PaginationQuery
 		var query = new QueryString();
 
 		if (MaxId != null)
-			query.Add("max_id", MaxId);
+			query = query.Add("max_id", MaxId);
 		if (MinId != null)
-			query.Add("min_id", MinId);
+			query = query.Add("min_id", MinId);
 		if (Limit.HasValue)
-			query.Add("limit", Limit.Value.ToString());
+			query = query.Add("limit", Limit.Value.ToString());
 
 		return query;
 	}
