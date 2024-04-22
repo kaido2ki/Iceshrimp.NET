@@ -83,16 +83,18 @@ internal class ApiClient(HttpClient client)
 
 		if (data is IBrowserFile file)
 		{
-			request.Content = new MultipartContent
+			request.Content = new MultipartFormDataContent
 			{
 				new StreamContent(file.OpenReadStream())
 				{
 					Headers =
 					{
 						ContentType = new MediaTypeHeaderValue(file.ContentType),
-						ContentDisposition = new ContentDispositionHeaderValue("attachment")
+						ContentDisposition = new ContentDispositionHeaderValue("form-data")
 						{
-							FileName = file.Name, Size = file.Size
+							Name     = "file",
+							FileName = file.Name,
+							Size     = file.Size
 						}
 					}
 				}
