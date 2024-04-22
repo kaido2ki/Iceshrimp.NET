@@ -38,7 +38,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		});
 	}
 
-	[HttpPost]
+	[HttpPost("login")]
 	[HideRequestDuration]
 	[EnableRateLimiting("strict")]
 	[Consumes(MediaTypeNames.Application.Json)]
@@ -82,7 +82,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		});
 	}
 
-	[HttpPut]
+	[HttpPost("register")]
 	[EnableRateLimiting("strict")]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
@@ -97,7 +97,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		return await Login(request);
 	}
 
-	[HttpPatch]
+	[HttpPost("change-password")]
 	[Authenticate]
 	[Authorize]
 	[EnableRateLimiting("strict")]

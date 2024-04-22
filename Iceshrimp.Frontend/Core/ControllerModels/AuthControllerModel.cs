@@ -9,11 +9,11 @@ internal class AuthControllerModel(ApiClient api)
 		api.Call<AuthResponse>(HttpMethod.Get, "/auth");
 
 	public Task<AuthResponse> Login(AuthRequest request) =>
-		api.Call<AuthResponse>(HttpMethod.Post, "/auth", data: request);
+		api.Call<AuthResponse>(HttpMethod.Post, "/auth/login", data: request);
 
 	public Task<AuthResponse> Register(RegistrationRequest request) =>
-		api.Call<AuthResponse>(HttpMethod.Put, "/auth", data: request);
+		api.Call<AuthResponse>(HttpMethod.Post, "/auth/register", data: request);
 
 	public Task<AuthResponse> ChangePassword(ChangePasswordRequest request) =>
-		api.Call<AuthResponse>(HttpMethod.Patch, "/auth", data: request);
+		api.Call<AuthResponse>(HttpMethod.Post, "/auth/change-password", data: request);
 }
