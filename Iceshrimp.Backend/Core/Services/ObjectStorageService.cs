@@ -24,7 +24,7 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 
 	private static S3Bucket? GetBucketSafely(IOptions<Config.StorageSection> config)
 	{
-		if (config.Value.Mode != Enums.FileStorage.Local) return GetBucket(config);
+		if (config.Value.Provider != Enums.FileStorage.Local) return GetBucket(config);
 
 		try
 		{

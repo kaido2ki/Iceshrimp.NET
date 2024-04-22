@@ -135,7 +135,7 @@ public static class WebApplicationExtensions
 		var storageConfig = app.Configuration.GetSection("Storage").Get<Config.StorageSection>() ??
 		                    throw new Exception("Failed to read Storage config section");
 
-		if (storageConfig.Mode == Enums.FileStorage.Local)
+		if (storageConfig.Provider == Enums.FileStorage.Local)
 		{
 			if (string.IsNullOrWhiteSpace(storageConfig.Local?.Path) ||
 			    !Directory.Exists(storageConfig.Local.Path))
@@ -158,7 +158,7 @@ public static class WebApplicationExtensions
 				}
 			}
 		}
-		else if (storageConfig.Mode == Enums.FileStorage.ObjectStorage)
+		else if (storageConfig.Provider == Enums.FileStorage.ObjectStorage)
 		{
 			app.Logger.LogInformation("Verifying object storage configuration...");
 			var svc = provider.GetRequiredService<ObjectStorageService>();

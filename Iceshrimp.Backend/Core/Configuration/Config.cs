@@ -46,7 +46,7 @@ public sealed class Config
 		[Required]         public string  AccountDomain  { get; init; } = null!;
 		[Range(1, 100000)] public int     CharacterLimit { get; init; } = 8192;
 	}
-	
+
 	public sealed class WorkerSection
 	{
 		[MaxLength(64)] public string? WorkerId { get; init; }
@@ -80,7 +80,14 @@ public sealed class Config
 
 		public bool              CleanAvatars = false;
 		public bool              CleanBanners = false;
-		public Enums.FileStorage Mode { get; init; } = Enums.FileStorage.Local;
+		public Enums.FileStorage Provider { get; init; } = Enums.FileStorage.Local;
+
+		[Obsolete("This property is for backwards compatibility only, use StorageSection.Provider instead", true)]
+		public Enums.FileStorage Mode
+		{
+			get => Provider;
+			init => Provider = value;
+		}
 
 		public string? MediaRetention
 		{

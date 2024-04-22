@@ -133,7 +133,7 @@ public class DriveService(
 		buf.Seek(0, SeekOrigin.Begin);
 
 		var shouldStore    = storageConfig.Value.MediaRetention != null || user.Host == null;
-		var storedInternal = storageConfig.Value.Mode == Enums.FileStorage.Local;
+		var storedInternal = storageConfig.Value.Provider == Enums.FileStorage.Local;
 
 		if (request.Uri == null && user.Host != null)
 			throw GracefulException.UnprocessableEntity("Refusing to store file without uri for remote user");
