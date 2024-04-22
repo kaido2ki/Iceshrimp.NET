@@ -72,7 +72,8 @@ public static class ServiceExtensions
 			.AddScoped<MfmConverter>()
 			.AddScoped<UserProfileRenderer>()
 			.AddScoped<CacheService>()
-			.AddScoped<MetaService>();
+			.AddScoped<MetaService>()
+			.AddScoped<StorageMaintenanceService>();
 
 		// Singleton = instantiated once across application lifetime
 		services

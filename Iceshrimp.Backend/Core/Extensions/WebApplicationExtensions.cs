@@ -130,6 +130,15 @@ public static class WebApplicationExtensions
 			await maintenanceSvc.RecomputeNoteCountersAsync();
 			await maintenanceSvc.RecomputeUserCountersAsync();
 			await maintenanceSvc.RecomputeInstanceCountersAsync();
+			Environment.Exit(0);
+		}
+		
+		if (args.Contains("--migrate-storage"))
+		{
+			app.Logger.LogInformation("Migrating files to object storage, this will take a while...");
+			db.Database.SetCommandTimeout(0);
+			await provider.GetRequiredService<StorageMaintenanceService>().MigrateLocalFiles();
+			Environment.Exit(0);
 		}
 
 		var storageConfig = app.Configuration.GetSection("Storage").Get<Config.StorageSection>() ??

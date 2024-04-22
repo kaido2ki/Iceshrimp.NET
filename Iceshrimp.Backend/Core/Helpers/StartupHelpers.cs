@@ -10,10 +10,13 @@ public static class StartupHelpers
 		{
 			Console.WriteLine($"""
 			                   Usage: ./{typeof(Program).Assembly.GetName().Name} [options...]
-			                    --migrate             Apply pending migrations, then exit
-			                    --migrate-and-start   Apply pending migrations, then start the application
-			                    --printconfig         Print the example config, then exit
-			                    --help                Print information on available command line arguments
+			                    -h, -?, --help        Prints information on available command line arguments.
+			                    --migrate             Applies pending migrations.
+			                    --migrate-and-start   Applies pending migrations, then starts the application.
+			                    --printconfig         Prints the example config.
+			                    --recompute-counters  Recomputes denormalized database counters.
+			                    --migrate-storage     Migrates all files currently stored locally to the
+			                                          configured object storage bucket.
 			                   """);
 			Environment.Exit(0);
 		}
