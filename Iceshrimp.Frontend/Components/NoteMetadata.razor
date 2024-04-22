@@ -1,22 +1,25 @@
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Shared.Schemas
 <div class="metadata">
     <span class="info">
         <span class="time">@RenderDate(CreatedAt)</span>
         <span class="visibility">
             @switch (Visibility)
             {
-                case "public":
+                case NoteVisibility.Public:
                     <Icon Name="Icons.Globe"/>
                     break;
-                case "home":
+                case NoteVisibility.Home:
                     <Icon Name="Icons.House"/>
                     break;
-                case "followers":
+                case NoteVisibility.Followers:
                     <Icon Name="Icons.Lock"/>
                     break;
-                case "specified":
+                case NoteVisibility.Specified:
                     <Icon Name="Icons.Envelope"/>
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         </span>
     </span>
@@ -27,7 +30,7 @@
 </div>
 @code {
     [Parameter] [EditorRequired] public required DateTime CreatedAt    { get; set; }
-    [Parameter] [EditorRequired] public required string   Visibility   { get; set; }
+    [Parameter] [EditorRequired] public required NoteVisibility   Visibility   { get; set; }
     [Parameter] [EditorRequired] public required string?  InstanceName { get; set; }
 
     private string RenderDate(DateTime date)
