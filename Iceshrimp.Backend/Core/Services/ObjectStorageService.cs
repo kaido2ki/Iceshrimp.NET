@@ -18,6 +18,10 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 
 	private readonly string? _prefix = config.Value.ObjectStorage?.Prefix?.Trim('/');
 
+	private readonly IReadOnlyDictionary<string, string>? _acl = config.Value.ObjectStorage?.SetAcl != null
+		? new Dictionary<string, string> { { "x-amz-acl", config.Value.ObjectStorage.SetAcl } }.AsReadOnly()
+		: null;
+
 	private static S3Bucket? GetBucketSafely(IOptions<Config.StorageSection> config)
 	{
 		if (config.Value.Mode != Enums.FileStorage.Local) return GetBucket(config);
@@ -71,24 +75,13 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 		throw new Exception("Failed to verify access url (content mismatch)");
 	}
 
-	public async Task UploadFileAsync(string filename, byte[] data)
-	{
-		if (_bucket == null) throw new Exception("Refusing to upload to object storage with invalid configuration");
-		await _bucket.PutAsync(new Blob(GetFilenameWithPrefix(filename), data));
-	}
+	private Task UploadFileAsync(string filename, byte[] data) => UploadFileAsync(filename, new MemoryStream(data));
 
 	public async Task UploadFileAsync(string filename, Stream data)
 	{
 		if (_bucket == null) throw new Exception("Refusing to upload to object storage with invalid configuration");
-		await _bucket.PutAsync(new Blob(GetFilenameWithPrefix(filename), data));
-	}
-
-	public async Task<string> UploadFileAsync(byte[] data)
-	{
-		if (_bucket == null) throw new Exception("Refusing to upload to object storage with invalid configuration");
-		var filename = Guid.NewGuid().ToString().ToLowerInvariant();
-		await _bucket.PutAsync(new Blob(GetFilenameWithPrefix(filename), data));
-		return filename;
+		var blob = new Blob(GetFilenameWithPrefix(filename), data, _acl ?? BlobProperties.Empty);
+		await _bucket.PutAsync(blob);
 	}
 
 	public Uri GetFilePublicUrl(string filename)

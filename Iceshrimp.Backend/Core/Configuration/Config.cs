@@ -133,5 +133,6 @@ public sealed class Config
 		public string? Bucket    { get; init; }
 		public string? Prefix    { get; init; }
 		public string? AccessUrl { get; init; }
+		public string? SetAcl    { get; init; }
 	}
 }
