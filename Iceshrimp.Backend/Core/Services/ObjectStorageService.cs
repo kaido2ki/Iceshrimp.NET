@@ -1,82 +1,51 @@
 using System.Collections.Immutable;
 using System.Text;
-using Amazon;
-using Amazon.S3;
 using Carbon.Storage;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.ObjectStorage.Core.Models;
+using Iceshrimp.ObjectStorage.Core.Security;
+using Iceshrimp.ObjectStorage.S3.Client;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class ObjectStorageService
+public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpClient httpClient)
 {
-	private readonly string? _accessUrl;
+	private readonly string? _accessUrl = config.Value.ObjectStorage?.AccessUrl;
 
-	private readonly S3Bucket? _bucket;
-	private readonly S3Client? _client;
+	private readonly S3Bucket? _bucket = GetBucketSafely(config);
 
-	private readonly string?    _prefix;
-	private readonly HttpClient _httpClient;
+	private readonly string? _prefix = config.Value.ObjectStorage?.Prefix?.Trim('/');
 
-	public ObjectStorageService(IOptions<Config.StorageSection> config, HttpClient httpClient)
+	private static S3Bucket? GetBucketSafely(IOptions<Config.StorageSection> config)
 	{
-		_httpClient = httpClient;
-		_accessUrl  = config.Value.ObjectStorage?.AccessUrl;
-		_client     = GetClientSafely(config);
-		_bucket     = GetBucketSafely(config, _client);
-		_prefix     = config.Value.ObjectStorage?.Prefix?.Trim('/');
-	}
+		if (config.Value.Mode != Enums.FileStorage.Local) return GetBucket(config);
 
-	private static S3Client? GetClientSafely(IOptions<Config.StorageSection> config)
-	{
 		try
 		{
-			return GetClient(config);
+			return GetBucket(config);
 		}
 		catch
 		{
-			if (config.Value.Mode == Enums.FileStorage.ObjectStorage)
-				throw;
-
 			return null;
 		}
 	}
 
-	private static S3Bucket? GetBucketSafely(IOptions<Config.StorageSection> config, S3Client? client)
+	private static S3Bucket GetBucket(IOptions<Config.StorageSection> config)
 	{
-		try
-		{
-			return GetBucket(config, client);
-		}
-		catch
-		{
-			if (config.Value.Mode == Enums.FileStorage.ObjectStorage)
-				throw;
+		var s3Config = config.Value.ObjectStorage ?? throw new Exception("Invalid object storage configuration");
 
-			return null;
-		}
-	}
-
-	private static S3Client GetClient(IOptions<Config.StorageSection> config)
-	{
-		var s3Config  = config.Value.ObjectStorage ?? throw new Exception("Invalid object storage configuration");
 		var region    = s3Config.Region ?? throw new Exception("Invalid object storage region");
 		var endpoint  = s3Config.Endpoint ?? throw new Exception("Invalid object storage endpoint");
 		var accessKey = s3Config.KeyId ?? throw new Exception("Invalid object storage access key");
 		var secretKey = s3Config.SecretKey ?? throw new Exception("Invalid object storage secret key");
-		return new S3Client(new AwsRegion(region), endpoint, new AwsCredential(accessKey, secretKey));
-	}
-
-	private static S3Bucket GetBucket(IOptions<Config.StorageSection> config, S3Client? client)
-	{
-		if (client == null) throw new Exception("S3Client is null");
-		var s3Config = config.Value.ObjectStorage ?? throw new Exception("Invalid object storage configuration");
-		var bucket   = s3Config.Bucket ?? throw new Exception("Invalid object storage bucket");
+		var bucket    = s3Config.Bucket ?? throw new Exception("Invalid object storage bucket");
 
 		if (config.Value.ObjectStorage?.AccessUrl == null)
 			throw new Exception("Invalid object storage access url");
 
+		var client = new S3Client(new AwsRegion(region), endpoint, new AwsCredential(accessKey, secretKey));
 		return new S3Bucket(bucket, client);
 	}
 
@@ -90,7 +59,7 @@ public class ObjectStorageService
 		string result;
 		try
 		{
-			result = await _httpClient.GetStringAsync(GetFilePublicUrl(filename));
+			result = await httpClient.GetStringAsync(GetFilePublicUrl(filename));
 		}
 		catch (Exception e)
 		{
@@ -145,13 +114,9 @@ public class ObjectStorageService
 
 	public async Task RemoveFilesAsync(params string[] filenames)
 	{
-		if (_bucket == null || _client == null)
+		if (_bucket == null)
 			throw new Exception("Refusing to remove file from object storage with invalid configuration");
-
-		// We need to construct this request manually as the library will throw an exception on missing keys otherwise
-		var batch   = new DeleteBatch(filenames.Select(GetFilenameWithPrefix).ToImmutableList(), quite: true);
-		var request = new DeleteObjectsRequest(_client.Host, _bucket.Name, batch);
-		await _client.DeleteObjectsAsync(request);
+		await _bucket.DeleteAsync(filenames.Select(GetFilenameWithPrefix).ToImmutableList());
 	}
 
 	private string GetFilenameWithPrefix(string filename)
