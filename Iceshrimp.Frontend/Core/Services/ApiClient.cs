@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Shared.Schemas;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
 
 namespace Iceshrimp.Frontend.Core.Services;
@@ -76,11 +77,32 @@ internal class ApiClient(HttpClient client)
 		HttpMethod method, string path, QueryString? query, object? data
 	)
 	{
-		var body    = data != null ? JsonSerializer.Serialize(data) : null;
 		var request = new HttpRequestMessage(method, "/api/iceshrimp/" + path.TrimStart('/') + query);
 		request.Headers.Accept.ParseAdd(MediaTypeNames.Application.Json);
 		if (_token != null) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _token);
-		if (body != null) request.Content = new StringContent(body, Encoding.UTF8, MediaTypeNames.Application.Json);
+
+		if (data is IBrowserFile file)
+		{
+			request.Content = new MultipartContent
+			{
+				new StreamContent(file.OpenReadStream())
+				{
+					Headers =
+					{
+						ContentType = new MediaTypeHeaderValue(file.ContentType),
+						ContentDisposition = new ContentDispositionHeaderValue("attachment")
+						{
+							FileName = file.Name, Size = file.Size
+						}
+					}
+				}
+			};
+		}
+		else if (data is not null)
+		{
+			request.Content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8,
+			                                    MediaTypeNames.Application.Json);
+		}
 
 		return await client.SendAsync(request);
 	}

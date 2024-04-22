@@ -8,5 +8,6 @@ public class NoteCreateRequest
 	[J("cw")]         public          string?        Cw         { get; set; }
 	[J("replyId")]    public          string?        ReplyId    { get; set; }
 	[J("renoteId")]   public          string?        RenoteId   { get; set; }
+	[J("mediaIds")]   public          List<string>?  MediaIds   { get; set; }
 	[J("visibility")] public required NoteVisibility Visibility { get; set; }
 }

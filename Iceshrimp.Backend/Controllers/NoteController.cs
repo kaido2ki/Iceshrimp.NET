@@ -226,8 +226,12 @@ public class NoteController(
 			  throw GracefulException.BadRequest("Renote target is nonexistent or inaccessible")
 			: null;
 
+		var attachments = request.MediaIds != null
+			? await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id)).ToListAsync()
+			: null;
+
 		var note = await noteSvc.CreateNoteAsync(user, (Note.NoteVisibility)request.Visibility, request.Text,
-		                                         request.Cw, reply, renote);
+		                                         request.Cw, reply, renote, attachments);
 
 		return Ok(await noteRenderer.RenderOne(note, user));
 	}
