@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Iceshrimp.Backend.Core.Middleware;
 
@@ -83,6 +84,7 @@ public sealed class Config
 		public Enums.FileStorage Provider { get; init; } = Enums.FileStorage.Local;
 
 		[Obsolete("This property is for backwards compatibility only, use StorageSection.Provider instead", true)]
+		[SuppressMessage("ReSharper", "UnusedMember.Global")]
 		public Enums.FileStorage Mode
 		{
 			get => Provider;
