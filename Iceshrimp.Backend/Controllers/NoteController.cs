@@ -226,8 +226,8 @@ public class NoteController(
 			  throw GracefulException.BadRequest("Renote target is nonexistent or inaccessible")
 			: null;
 
-		var note = await noteSvc.CreateNoteAsync(user, Note.NoteVisibility.Public, request.Text, request.Cw, reply,
-		                                         renote);
+		var note = await noteSvc.CreateNoteAsync(user, (Note.NoteVisibility)request.Visibility, request.Text,
+		                                         request.Cw, reply, renote);
 
 		return Ok(await noteRenderer.RenderOne(note, user));
 	}

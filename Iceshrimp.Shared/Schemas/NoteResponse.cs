@@ -34,7 +34,7 @@ public class NoteBase
 	[J("createdAt")]   public required string                   CreatedAt   { get; set; }
 	[J("text")]        public required string?                  Text        { get; set; }
 	[J("cw")]          public required string?                  Cw          { get; set; }
-	[J("visibility")]  public required string                   Visibility  { get; set; }
+	[J("visibility")]  public required NoteVisibility           Visibility  { get; set; }
 	[J("liked")]       public required bool                     Liked       { get; set; }
 	[J("likes")]       public required int                      Likes       { get; set; }
 	[J("renotes")]     public required int                      Renotes     { get; set; }
@@ -67,4 +67,12 @@ public class NoteFilteredSchema
 	[J("filterId")] public required long   Id      { get; set; }
 	[J("keyword")]  public required string Keyword { get; set; }
 	[J("drop")]     public required bool   Hide    { get; set; }
+}
+
+public enum NoteVisibility
+{
+	Public    = 0,
+	Home      = 1,
+	Followers = 2,
+	Specified = 3
 }

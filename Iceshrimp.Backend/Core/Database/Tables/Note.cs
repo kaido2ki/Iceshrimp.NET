@@ -33,10 +33,10 @@ public class Note : IEntity
 	[PgName("note_visibility_enum")]
 	public enum NoteVisibility
 	{
-		[PgName("public")]    Public,
-		[PgName("home")]      Home,
-		[PgName("followers")] Followers,
-		[PgName("specified")] Specified
+		[PgName("public")]    Public    = 0,
+		[PgName("home")]      Home      = 1,
+		[PgName("followers")] Followers = 2,
+		[PgName("specified")] Specified = 3
 	}
 
 	/// <summary>

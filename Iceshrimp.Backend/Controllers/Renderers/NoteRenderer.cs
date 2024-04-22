@@ -71,7 +71,7 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 			CreatedAt   = note.CreatedAt.ToStringIso8601Like(),
 			Text        = note.Text,
 			Cw          = note.Cw,
-			Visibility  = RenderVisibility(note.Visibility),
+			Visibility  = (NoteVisibility)note.Visibility,
 			User        = noteUser,
 			Attachments = attachments.ToList(),
 			Reactions   = reactions.ToList(),
@@ -81,15 +81,6 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 			Liked       = liked
 		};
 	}
-
-	private static string RenderVisibility(Note.NoteVisibility visibility) => visibility switch
-	{
-		Note.NoteVisibility.Public    => "public",
-		Note.NoteVisibility.Home      => "home",
-		Note.NoteVisibility.Followers => "followers",
-		Note.NoteVisibility.Specified => "specified",
-		_                             => throw new ArgumentOutOfRangeException(nameof(visibility), visibility, null)
-	};
 
 	private async Task<List<UserResponse>> GetUsers(List<Note> notesList)
 	{
