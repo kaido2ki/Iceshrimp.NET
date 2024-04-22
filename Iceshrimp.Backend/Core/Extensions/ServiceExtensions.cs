@@ -10,6 +10,7 @@ using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Backend.Hubs.Authentication;
+using Iceshrimp.Shared.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -105,6 +106,20 @@ public static class ServiceExtensions
 		        .ConfigureWithValidation<Config.StorageSection>(configuration, "Storage")
 		        .ConfigureWithValidation<Config.LocalStorageSection>(configuration, "Storage:Local")
 		        .ConfigureWithValidation<Config.ObjectStorageSection>(configuration, "Storage:ObjectStorage");
+
+		services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+		{
+			options.SerializerOptions.PropertyNamingPolicy = JsonSerialization.Options.PropertyNamingPolicy;
+			foreach (var converter in JsonSerialization.Options.Converters)
+				options.SerializerOptions.Converters.Add(converter);
+		});
+
+		services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
+		{
+			options.JsonSerializerOptions.PropertyNamingPolicy = JsonSerialization.Options.PropertyNamingPolicy;
+			foreach (var converter in JsonSerialization.Options.Converters)
+				options.JsonSerializerOptions.Converters.Add(converter);
+		});
 	}
 
 	private static IServiceCollection ConfigureWithValidation<T>(
@@ -260,7 +275,7 @@ public static class ServiceExtensions
 		services.AddAuthentication(options =>
 		{
 			options.AddScheme<HubAuthenticationHandler>("HubAuthenticationScheme", null);
-			
+
 			// Add a stub authentication handler to bypass strange ASP.NET Core >=7.0 defaults
 			// Ref: https://github.com/dotnet/aspnetcore/issues/44661
 			options.AddScheme<IAuthenticationHandler>("StubAuthenticationHandler", null);

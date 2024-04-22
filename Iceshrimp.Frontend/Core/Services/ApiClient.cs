@@ -4,6 +4,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using Iceshrimp.Frontend.Core.Miscellaneous;
+using Iceshrimp.Shared.Configuration;
 using Iceshrimp.Shared.Schemas;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
@@ -22,7 +23,7 @@ internal class ApiClient(HttpClient client)
 		if (res.IsSuccessStatusCode)
 			return;
 
-		var error = await res.Content.ReadFromJsonAsync<ErrorResponse>();
+		var error = await res.Content.ReadFromJsonAsync<ErrorResponse>(JsonSerialization.Options);
 		if (error == null)
 			throw new Exception("Deserialized API error was null");
 		throw new ApiException(error);
@@ -61,13 +62,13 @@ internal class ApiClient(HttpClient client)
 
 		if (res.IsSuccessStatusCode)
 		{
-			var deserialized = await res.Content.ReadFromJsonAsync<T>();
+			var deserialized = await res.Content.ReadFromJsonAsync<T>(JsonSerialization.Options);
 			if (deserialized == null)
 				throw new Exception("Deserialized API response was null");
 			return (deserialized, null);
 		}
 
-		var error = await res.Content.ReadFromJsonAsync<ErrorResponse>();
+		var error = await res.Content.ReadFromJsonAsync<ErrorResponse>(JsonSerialization.Options);
 		if (error == null)
 			throw new Exception("Deserialized API error was null");
 		return (null, error);
@@ -102,8 +103,8 @@ internal class ApiClient(HttpClient client)
 		}
 		else if (data is not null)
 		{
-			request.Content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8,
-			                                    MediaTypeNames.Application.Json);
+			request.Content = new StringContent(JsonSerializer.Serialize(data, JsonSerialization.Options),
+			                                    Encoding.UTF8, MediaTypeNames.Application.Json);
 		}
 
 		return await client.SendAsync(request);

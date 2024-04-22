@@ -32,7 +32,7 @@ public class UserProfileRenderer(DatabaseContext db)
 		{
 			Name       = p.Name,
 			Value      = p.Value,
-			IsVerified = p.IsVerified
+			Verified = p.IsVerified
 		});
 
 		return new UserProfileResponse

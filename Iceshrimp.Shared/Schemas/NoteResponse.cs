@@ -1,22 +1,20 @@
 using System.Text.Json.Serialization;
-using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Shared.Schemas;
 
 public class NoteResponse : NoteWithQuote, ICloneable
 {
-	[J("reply")]    public NoteBase?           Reply    { get; set; }
-	[J("replyId")]  public string?             ReplyId  { get; set; }
-	[J("renote")]   public NoteWithQuote?      Renote   { get; set; }
-	[J("renoteId")] public string?             RenoteId { get; set; }
-	[J("filtered")] public NoteFilteredSchema? Filtered { get; set; }
+	public NoteBase?           Reply    { get; set; }
+	public string?             ReplyId  { get; set; }
+	public NoteWithQuote?      Renote   { get; set; }
+	public string?             RenoteId { get; set; }
+	public NoteFilteredSchema? Filtered { get; set; }
 
 	// The properties below are only necessary for building a descendants tree
 	[JI] public NoteResponse? Parent;
 
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	[J("descendants")]
 	public List<NoteResponse>? Descendants { get; set; }
 
 	public object Clone() => MemberwiseClone();
@@ -24,49 +22,49 @@ public class NoteResponse : NoteWithQuote, ICloneable
 
 public class NoteWithQuote : NoteBase
 {
-	[J("quote")]   public NoteBase? Quote   { get; set; }
-	[J("quoteId")] public string?   QuoteId { get; set; }
+	public NoteBase? Quote   { get; set; }
+	public string?   QuoteId { get; set; }
 }
 
 public class NoteBase
 {
-	[J("id")]          public required string                   Id          { get; set; }
-	[J("createdAt")]   public required string                   CreatedAt   { get; set; }
-	[J("text")]        public required string?                  Text        { get; set; }
-	[J("cw")]          public required string?                  Cw          { get; set; }
-	[J("visibility")]  public required NoteVisibility           Visibility  { get; set; }
-	[J("liked")]       public required bool                     Liked       { get; set; }
-	[J("likes")]       public required int                      Likes       { get; set; }
-	[J("renotes")]     public required int                      Renotes     { get; set; }
-	[J("replies")]     public required int                      Replies     { get; set; }
-	[J("user")]        public required UserResponse             User        { get; set; }
-	[J("attachments")] public required List<NoteAttachment>     Attachments { get; set; }
-	[J("reactions")]   public required List<NoteReactionSchema> Reactions   { get; set; }
+	public required string                   Id          { get; set; }
+	public required string                   CreatedAt   { get; set; }
+	public required string?                  Text        { get; set; }
+	public required string?                  Cw          { get; set; }
+	public required NoteVisibility           Visibility  { get; set; }
+	public required bool                     Liked       { get; set; }
+	public required int                      Likes       { get; set; }
+	public required int                      Renotes     { get; set; }
+	public required int                      Replies     { get; set; }
+	public required UserResponse             User        { get; set; }
+	public required List<NoteAttachment>     Attachments { get; set; }
+	public required List<NoteReactionSchema> Reactions   { get; set; }
 }
 
 public class NoteAttachment
 {
-	[JI]                public required string  Id;
-	[J("url")]          public required string  Url          { get; set; }
-	[J("thumbnailUrl")] public required string  ThumbnailUrl { get; set; }
-	[J("blurhash")]     public required string? Blurhash     { get; set; }
-	[J("alt")]          public required string? AltText      { get; set; }
+	[JI] public required string  Id;
+	public required      string  Url          { get; set; }
+	public required      string  ThumbnailUrl { get; set; }
+	public required      string? Blurhash     { get; set; }
+	public required      string? AltText      { get; set; }
 }
 
 public class NoteReactionSchema
 {
-	[JI]           public required string  NoteId;
-	[J("name")]    public required string  Name    { get; set; }
-	[J("count")]   public required int     Count   { get; set; }
-	[J("reacted")] public required bool    Reacted { get; set; }
-	[J("url")]     public required string? Url     { get; set; }
+	[JI] public required string  NoteId;
+	public required      string  Name    { get; set; }
+	public required      int     Count   { get; set; }
+	public required      bool    Reacted { get; set; }
+	public required      string? Url     { get; set; }
 }
 
 public class NoteFilteredSchema
 {
-	[J("filterId")] public required long   Id      { get; set; }
-	[J("keyword")]  public required string Keyword { get; set; }
-	[J("drop")]     public required bool   Hide    { get; set; }
+	public required long   Id      { get; set; }
+	public required string Keyword { get; set; }
+	public required bool   Hide    { get; set; }
 }
 
 public enum NoteVisibility
