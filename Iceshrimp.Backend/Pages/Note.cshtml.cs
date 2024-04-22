@@ -23,6 +23,9 @@ public class NoteModel(
 	public Dictionary<string, string>          TextContent      = new();
 	public Dictionary<string, List<DriveFile>> MediaAttachments = new();
 
+	public bool ShowMedia         = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
+	public bool ShowRemoteReplies = security.Value.PublicPreview > Enums.PublicPreview.Restricted;
+
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery",
 	                 Justification = "IncludeCommonProperties")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
@@ -31,12 +34,12 @@ public class NoteModel(
 		if (Request.Cookies.ContainsKey("session"))
 			return Partial("Shared/FrontendSPA");
 
-		if (!security.Value.EnablePublicPreview)
+		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown)
 			throw new Exception("Public preview is disabled on this instance");
-		
+
 		//TODO: redirect to login (with route as url param) when public preview is disabled
 		//TODO: login button
-		//TODO: thread view
+		//TODO: thread view (respect public preview settings - don't show remote replies if set to restricted or lower)
 		//TODO: emoji
 
 		Note = await db.Notes

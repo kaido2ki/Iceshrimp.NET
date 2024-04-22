@@ -49,6 +49,15 @@ else
         }
 
         if (!Model.MediaAttachments.TryGetValue(note.Id, out var files)) return;
+
+        if (!Model.ShowMedia)
+        {
+            <p>
+                <i>This post has attachments, but this server's configuration prevents them from being displayed here.</i>
+            </p>
+            return;
+        }
+
         @foreach (var file in files)
         {
             if (file.Type.StartsWith("image/"))
@@ -80,6 +89,9 @@ else
     ViewData["title"] = $"Note by @{Model.Note.User.Username} - Iceshrimp.NET";
     @section head
     {
+        @{
+            Model.MediaAttachments.TryGetValue(Model.Note.Id, out var attachments);
+        }
         <meta name="twitter:card" content="summary">
         <meta name="og:title" content="Note by @@@Model.Note.User.Username">
         @if (Model.Note.Cw != null)
@@ -88,10 +100,20 @@ else
         }
         else
         {
-            <meta name="og:description" content="@(Model.Note.Text + (Model.QuoteUrl != null ? $"\n\nRE: {Model.QuoteUrl}" : ""))">
+            var text = Model.Note.Text;
+            if (attachments != null)
+            {
+                var attachmentText = $"({attachments.Count} attachments)";
+                if (string.IsNullOrWhiteSpace(text))
+                    text = attachmentText;
+                else
+                    text += $"\n{attachmentText}";
+            }
+
+            <meta name="og:description" content="@(text + (Model.QuoteUrl != null ? $"\n\nRE: {Model.QuoteUrl}" : ""))">
         }
         <meta name="og:site_name" content="Iceshrimp.NET">
-        @if (Model.MediaAttachments.TryGetValue(Model.Note.Id, out var attachments))
+        @if (Model.ShowMedia && attachments != null)
         {
             if (attachments.Any(p => p.Type.StartsWith("image/")))
             {
@@ -108,4 +130,10 @@ else
                 await RenderQuoteUrl(Model.QuoteUrl);
         }
     </div>
+    if (!Model.ShowRemoteReplies)
+    {
+        <p>
+            <i>This server's configuration is preventing remotely originating content from being shown. This view may therefore be incomplete.</i>
+        </p>
+    }
 }

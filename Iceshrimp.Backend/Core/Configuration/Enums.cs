@@ -27,4 +27,12 @@ public static class Enums
 		Invite = 1,
 		Open   = 2
 	}
+
+	public enum PublicPreview
+	{
+		Lockdown = 0,
+		RestrictedNoMedia = 1,
+		Restricted = 2,
+		Public = 3
+	}
 }
