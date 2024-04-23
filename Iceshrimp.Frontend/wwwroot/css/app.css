@@ -66,6 +66,10 @@ menu {
     padding: 0;
 }
 
+dialog {
+    border: 0;
+}
+
 button {
     border-radius: 8px;
     border: 0;
