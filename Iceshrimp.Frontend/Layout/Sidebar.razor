@@ -1,3 +1,4 @@
+@using Iceshrimp.Frontend.Components
 <div class="sidebar">
     <div class="header">
             <account-dropdown />
@@ -13,8 +14,18 @@
                 Notifications
             </NavLink>
         </div>
+        <div class="sidebar-btn">
+            <Compose @ref="_compose" />
+            <button @onclick="Open">Open!</button>
+        </div>
     </div>
 </div>
 @code {
-    
+    private Compose _compose;
+
+    private void Open()
+    {
+        _compose.OpenDialog();
+    }
+
 }

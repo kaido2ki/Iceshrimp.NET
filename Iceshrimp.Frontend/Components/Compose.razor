@@ -1,0 +1,83 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas
+@inject IJSRuntime Js
+@inject ApiService ApiService
+<dialog class="compose" @ref="Dialog">
+    <div class="header">
+        <button @onclick="CloseDialog">
+            <Icon Name="Icons.X"/>
+        </button>
+        <select @bind="NoteDraft.Visibility">
+            @foreach (var vis in Enum.GetValues<NoteVisibility>())
+            {
+                <option value="@vis">@vis</option>
+            }
+        </select>
+        <button @onclick="SendNote">Send!</button>
+    </div>
+    @if (NoteDraft.Cw != null) {
+    <input @bind="NoteDraft.Cw" class="input" />
+    }
+    <textarea @bind="NoteDraft.Text" class="textarea" rows="5" cols="35"></textarea>
+    <div class="footer">
+        <button @onclick="ToggleCw"><Icon Name="Icons.EyeSlash"></Icon></button>
+        <InputFile OnChange="Upload">Upload!</InputFile>
+        </div>
+</dialog>
+
+@code {
+    private ElementReference         Dialog { get; set; }
+    private IJSObjectReference?      _module;
+    private IList<DriveFileResponse> Attachments { get; set; } = [];
+    private NoteCreateRequest NoteDraft { get;          set; } = new NoteCreateRequest
+    {
+        Text       = "",
+        Visibility = NoteVisibility.Public, // FIXME: Default to visibilty in settings
+        Cw = null
+    };
+
+    public async Task OpenDialog()
+    {
+        await _module.InvokeVoidAsync("openDialog", Dialog);
+    }
+
+    private async Task CloseDialog()
+    {
+        await _module.InvokeVoidAsync("closeDialog", Dialog);
+    }
+
+    private async Task SendNote()
+    {
+        if (Attachments.Count > 0)
+        {
+            NoteDraft.MediaIds = Attachments.Select(x => x.Id).ToList();
+        }
+        await ApiService.Notes.CreateNote(NoteDraft);
+        await CloseDialog();
+        // FIXME: Implement timeline refresh and call it here.
+    }
+
+    private void ToggleCw()
+    {
+        NoteDraft.Cw = NoteDraft.Cw == null ? "" : null;
+    }
+
+    private async Task Upload(InputFileChangeEventArgs e)
+    {
+        Console.WriteLine(e.File.Size);
+        var res = await ApiService.Drive.UploadFile(e.File);
+        Console.WriteLine(res.Id);
+        Attachments.Add(res);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                               "./Components/Compose.razor.js");
+        }
+    }
+    
+}

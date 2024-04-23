@@ -1,0 +1,10 @@
+.compose {
+    background-color: var(--background-color);
+    border-radius: 1rem;
+}
+.textarea {
+    display: block;
+}
+.input {
+    display: block;
+}
