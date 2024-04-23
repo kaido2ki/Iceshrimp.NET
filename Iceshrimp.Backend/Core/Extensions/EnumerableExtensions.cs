@@ -31,7 +31,7 @@ public static class EnumerableExtensions
 	{
 		return x.All(item => !y.Contains(item));
 	}
-	
+
 	public static bool Intersects<T>(this IEnumerable<T> x, IEnumerable<T> y)
 	{
 		return x.Any(y.Contains);

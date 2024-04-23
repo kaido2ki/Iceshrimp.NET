@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using EntityFrameworkCore.Projectables;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
@@ -335,92 +336,130 @@ public static class QueryableExtensions
 		                                                       p.IsRequested(user), p.IsRequestedBy(user)));
 	}
 
-	public static IQueryable<Note> FilterBlocked(this IQueryable<Note> query, User? user)
-	{
-		if (user == null) return query;
-		return query.Where(note => !note.User.IsBlocking(user) && !note.User.IsBlockedBy(user))
-		            .Where(note => note.Renote == null ||
-		                           (!note.Renote.User.IsBlockedBy(user) && !note.Renote.User.IsBlocking(user)))
-		            .Where(note => note.Renote == null ||
-		                           note.Renote.Renote == null ||
-		                           (!note.Renote.Renote.User.IsBlockedBy(user) &&
-		                            !note.Renote.Renote.User.IsBlocking(user)))
-		            .Where(note => note.Reply == null ||
-		                           (!note.Reply.User.IsBlockedBy(user) && !note.Reply.User.IsBlocking(user)));
-	}
-
-	public static IQueryable<Note> FilterIncomingBlocks(this IQueryable<Note> query, User? user)
-	{
-		if (user == null) return query;
-		return query.Where(note => !note.User.IsBlocking(user))
-		            .Where(note => note.Renote == null || !note.Renote.User.IsBlocking(user))
-		            .Where(note => note.Renote == null ||
-		                           note.Renote.Renote == null ||
-		                           !note.Renote.Renote.User.IsBlocking(user))
-		            .Where(note => note.Reply == null || !note.Reply.User.IsBlocking(user));
-	}
-
-	public static IQueryable<TSource> FilterBlocked<TSource>(
-		this IQueryable<TSource> query, Expression<Func<TSource, User?>> predicate, User? user
+	public static IQueryable<Notification> FilterHiddenNotifications(
+		this IQueryable<Notification> query, User user, DatabaseContext db
 	)
 	{
-		return user == null ? query : query.Where(predicate.Compose(p => p == null || !p.IsBlocking(user)));
+		var blocks = db.Blockings.Where(i => i.Blocker == user).Select(p => p.BlockeeId);
+		var mutes  = db.Mutings.Where(i => i.Muter == user).Select(p => p.MuteeId);
+		var hidden = blocks.Concat(mutes);
+
+		return query.Where(p => !hidden.Contains(p.NotifierId) && (p.Note == null || !hidden.Contains(p.Note.Id)));
 	}
 
-	public static IQueryable<TSource> FilterBlocked<TSource>(
-		this IQueryable<TSource> query, Expression<Func<TSource, Note?>> predicate, User? user
+	public static IQueryable<Note> FilterHiddenConversations(this IQueryable<Note> query, User user, DatabaseContext db)
+	{
+		//TODO: handle muted instances
+
+		var blocks = db.Blockings.Where(i => i.Blocker == user).Select(p => p.BlockeeId);
+		var mutes  = db.Mutings.Where(i => i.Muter == user).Select(p => p.MuteeId);
+		var hidden = blocks.Concat(mutes);
+
+		return query.Where(p => p.VisibleUserIds.IsDisjoint(hidden));
+	}
+
+	private static (IQueryable<string> hidden, IQueryable<string>? mentionsHidden) FilterHiddenInternal(
+		User? user,
+		DatabaseContext db,
+		bool filterOutgoingBlocks = true, bool filterMutes = true,
+		bool filterHiddenListMembers = false,
+		string? except = null
+	)
+	{
+		//TODO: handle muted instances
+
+		var                 hidden         = db.Blockings.Where(p => p.Blockee == user).Select(p => p.BlockerId);
+		IQueryable<string>? mentionsHidden = null;
+
+		if (filterOutgoingBlocks)
+		{
+			var blockOut = db.Blockings.Where(p => p.Blocker == user).Select(p => p.BlockeeId);
+			hidden         = hidden.Concat(blockOut);
+			mentionsHidden = mentionsHidden == null ? blockOut : mentionsHidden.Concat(blockOut);
+		}
+
+		if (filterMutes)
+		{
+			var mute = db.Mutings.Where(p => p.Muter == user).Select(p => p.MuteeId);
+			hidden         = hidden.Concat(mute);
+			mentionsHidden = mentionsHidden == null ? mute : mentionsHidden.Concat(mute);
+		}
+
+		if (filterHiddenListMembers)
+		{
+			var list = db.UserListMembers.Where(p => p.UserList.User == user && p.UserList.HideFromHomeTl)
+			             .Select(p => p.UserId);
+			hidden         = hidden.Concat(list);
+			mentionsHidden = mentionsHidden == null ? list : mentionsHidden.Concat(list);
+		}
+
+		if (except != null)
+		{
+			hidden         = hidden.Except(new[] { except });
+			mentionsHidden = mentionsHidden?.Except(new[] { except });
+		}
+
+		return (hidden, mentionsHidden);
+	}
+
+	private static Expression<Func<Note, bool>> FilterHiddenExpr(
+		IQueryable<string> hidden, IQueryable<string>? mentionsHidden, bool filterMentions
+	)
+	{
+		if (filterMentions && mentionsHidden != null)
+		{
+			return note => !hidden.Contains(note.UserId) &&
+			               !hidden.Contains(note.RenoteUserId) &&
+			               !hidden.Contains(note.ReplyUserId) &&
+			               (note.Renote == null ||
+			                !hidden.Contains(note.Renote.RenoteUserId)) &&
+			               note.Mentions.IsDisjoint(mentionsHidden);
+		}
+
+		return note => !hidden.Contains(note.UserId) &&
+		               !hidden.Contains(note.RenoteUserId) &&
+		               !hidden.Contains(note.ReplyUserId) &&
+		               (note.Renote == null ||
+		                !hidden.Contains(note.Renote.RenoteUserId));
+	}
+
+	public static IQueryable<TSource> FilterHidden<TSource>(
+		this IQueryable<TSource> query, Expression<Func<TSource, Note>> pred, User? user,
+		DatabaseContext db,
+		bool filterOutgoingBlocks = true, bool filterMutes = true,
+		bool filterHiddenListMembers = false, bool filterMentions = true,
+		string? except = null
 	)
 	{
 		if (user == null)
 			return query;
 
-		return query.Where(predicate.Compose(note => note == null ||
-		                                             (!note.User.IsBlocking(user) &&
-		                                              !note.User.IsBlockedBy(user) &&
-		                                              (note.Renote == null ||
-		                                               (!note.Renote.User.IsBlockedBy(user) &&
-		                                                !note.Renote.User.IsBlocking(user))) &&
-		                                              (note.Renote == null ||
-		                                               note.Renote.Renote == null ||
-		                                               (!note.Renote.Renote.User.IsBlockedBy(user) &&
-		                                                !note.Renote.Renote.User.IsBlocking(user))) &&
-		                                              (note.Reply == null ||
-		                                               (!note.Reply.User.IsBlockedBy(user) &&
-		                                                !note.Reply.User.IsBlocking(user))))));
+		var (hidden, mentionsHidden) = FilterHiddenInternal(user, db, filterOutgoingBlocks, filterMutes,
+		                                                    filterHiddenListMembers, except);
+
+		return query.Where(pred.Compose(FilterHiddenExpr(hidden, mentionsHidden, filterMentions)));
 	}
 
-	public static IQueryable<Note> FilterMuted(this IQueryable<Note> query, User? user)
-	{
-		//TODO: handle muted instances
-		if (user == null) return query;
-
-		return query.Where(note => !note.User.IsMutedBy(user))
-		            .Where(note => note.Renote == null || !note.Renote.User.IsMutedBy(user))
-		            .Where(note => note.Renote == null ||
-		                           note.Renote.Renote == null ||
-		                           !note.Renote.Renote.User.IsMutedBy(user))
-		            .Where(note => note.Reply == null || !note.Reply.User.IsMutedBy(user));
-	}
-
-	public static IQueryable<Note> FilterBlockedConversations(
-		this IQueryable<Note> query, User user, DatabaseContext db
+	public static IQueryable<Note> FilterHidden(
+		this IQueryable<Note> query, User? user, DatabaseContext db,
+		bool filterOutgoingBlocks = true, bool filterMutes = true,
+		bool filterHiddenListMembers = false, bool filterMentions = true,
+		string? except = null
 	)
 	{
-		return query.Where(p => !db.Blockings.Any(i => i.Blocker == user && p.VisibleUserIds.Contains(i.BlockeeId)));
+		if (user == null)
+			return query;
+
+		var (hidden, mentionsHidden) = FilterHiddenInternal(user, db, filterOutgoingBlocks, filterMutes,
+		                                                    filterHiddenListMembers, except);
+
+		return query.Where(FilterHiddenExpr(hidden, mentionsHidden, filterMentions));
 	}
 
-	public static IQueryable<Note> FilterMutedConversations(this IQueryable<Note> query, User user, DatabaseContext db)
-	{
-		//TODO: handle muted instances
-
-		return query.Where(p => !db.Mutings.Any(i => i.Muter == user && p.VisibleUserIds.Contains(i.MuteeId)));
-	}
-
-	public static IQueryable<Note> FilterHiddenListMembers(this IQueryable<Note> query, User user)
-	{
-		return query.Where(note => !note.User.UserListMembers.Any(p => p.UserList.User == user &&
-		                                                               p.UserList.HideFromHomeTl));
-	}
+	[Projectable]
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+	[SuppressMessage("ReSharper", "ParameterTypeCanBeEnumerable.Global")]
+	public static bool IsDisjoint<T>(this List<T> x, IQueryable<T> y) => x.All(item => !y.Contains(item));
 
 	public static Note EnforceRenoteReplyVisibility(this Note note)
 	{

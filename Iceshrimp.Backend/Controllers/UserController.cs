@@ -65,7 +65,7 @@ public class UserController(
 		                    .IncludeCommonProperties()
 		                    .Where(p => p.User == user)
 		                    .EnsureVisibleFor(localUser)
-		                    .FilterBlocked(localUser)
+		                    .FilterHidden(localUser, db, filterMutes: false)
 		                    .PrecomputeVisibilities(localUser)
 		                    .Paginate(pq, ControllerContext)
 		                    .ToListAsync();

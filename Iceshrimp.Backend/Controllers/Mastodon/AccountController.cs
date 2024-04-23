@@ -362,7 +362,7 @@ public class AccountController(
 		                  .FilterByUser(account)
 		                  .FilterByAccountStatusesRequest(request)
 		                  .EnsureVisibleFor(user)
-		                  .FilterIncomingBlocks(user)
+		                  .FilterHidden(user, db, except: id)
 		                  .Paginate(query, ControllerContext)
 		                  .PrecomputeVisibilities(user)
 		                  .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Accounts);

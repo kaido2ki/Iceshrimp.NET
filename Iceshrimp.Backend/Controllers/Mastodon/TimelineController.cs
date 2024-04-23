@@ -37,9 +37,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                  .IncludeCommonProperties()
 		                  .FilterByFollowingAndOwn(user, db, heuristic)
 		                  .EnsureVisibleFor(user)
-		                  .FilterHiddenListMembers(user)
-		                  .FilterBlocked(user)
-		                  .FilterMuted(user)
+		                  .FilterHidden(user, db, filterHiddenListMembers: true)
 		                  .Paginate(query, ControllerContext)
 		                  .PrecomputeVisibilities(user)
 		                  .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Home);
@@ -60,8 +58,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                  .IncludeCommonProperties()
 		                  .HasVisibility(Note.NoteVisibility.Public)
 		                  .FilterByPublicTimelineRequest(request)
-		                  .FilterBlocked(user)
-		                  .FilterMuted(user)
+		                  .FilterHidden(user, db)
 		                  .Paginate(query, ControllerContext)
 		                  .PrecomputeVisibilities(user)
 		                  .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Public);
@@ -82,8 +79,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                  .IncludeCommonProperties()
 		                  .Where(p => p.Tags.Contains(hashtag.ToLowerInvariant()))
 		                  .FilterByHashtagTimelineRequest(request)
-		                  .FilterBlocked(user)
-		                  .FilterMuted(user)
+		                  .FilterHidden(user, db)
 		                  .Paginate(query, ControllerContext)
 		                  .PrecomputeVisibilities(user)
 		                  .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Public);
@@ -104,8 +100,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                  .IncludeCommonProperties()
 		                  .Where(p => db.UserListMembers.Any(l => l.UserListId == id && l.UserId == p.UserId))
 		                  .EnsureVisibleFor(user)
-		                  .FilterBlocked(user)
-		                  .FilterMuted(user)
+		                  .FilterHidden(user, db)
 		                  .Paginate(query, ControllerContext)
 		                  .PrecomputeVisibilities(user)
 		                  .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Lists);

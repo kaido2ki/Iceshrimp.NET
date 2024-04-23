@@ -30,8 +30,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                            .Where(p => p.Notifiee == user)
 		                            .IncludeCommonProperties()
 		                            .EnsureNoteVisibilityFor(p => p.Note, user)
-		                            .FilterBlocked(p => p.Notifier, user)
-		                            .FilterBlocked(p => p.Note, user)
+		                            .FilterHiddenNotifications(user, db)
 		                            .Paginate(query, ControllerContext)
 		                            .PrecomputeNoteVisibilities(user)
 		                            .ToListAsync();

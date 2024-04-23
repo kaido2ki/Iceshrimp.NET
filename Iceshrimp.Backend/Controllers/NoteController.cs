@@ -37,7 +37,7 @@ public class NoteController(
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
-		                   .FilterIncomingBlocks(user)
+		                   .FilterHidden(user, db, filterOutgoingBlocks: false, filterMutes: false)
 		                   .PrecomputeVisibilities(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
@@ -57,7 +57,7 @@ public class NoteController(
 
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .EnsureVisibleFor(user)
-		                   .FilterIncomingBlocks(user)
+		                   .FilterHidden(user, db, filterOutgoingBlocks: false, filterMutes: false)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 
@@ -65,8 +65,7 @@ public class NoteController(
 		                    .Include(p => p.User.UserProfile)
 		                    .Include(p => p.Renote!.User.UserProfile)
 		                    .EnsureVisibleFor(user)
-		                    .FilterBlocked(user)
-		                    .FilterMuted(user)
+		                    .FilterHidden(user, db)
 		                    .PrecomputeNoteContextVisibilities(user)
 		                    .ToListAsync();
 
@@ -86,7 +85,7 @@ public class NoteController(
 
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .EnsureVisibleFor(user)
-		                   .FilterIncomingBlocks(user)
+		                   .FilterHidden(user, db, filterOutgoingBlocks: false, filterMutes: false)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 
@@ -94,8 +93,7 @@ public class NoteController(
 		                   .Include(p => p.User.UserProfile)
 		                   .Include(p => p.Renote!.User.UserProfile)
 		                   .EnsureVisibleFor(user)
-		                   .FilterBlocked(user)
-		                   .FilterMuted(user)
+		                   .FilterHidden(user, db)
 		                   .PrecomputeNoteContextVisibilities(user)
 		                   .ToListAsync();
 

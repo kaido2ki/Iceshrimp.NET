@@ -33,9 +33,7 @@ public class TimelineController(DatabaseContext db, CacheService cache, NoteRend
 		var notes = await db.Notes.IncludeCommonProperties()
 		                    .FilterByFollowingAndOwn(user, db, heuristic)
 		                    .EnsureVisibleFor(user)
-		                    .FilterHiddenListMembers(user)
-		                    .FilterBlocked(user)
-		                    .FilterMuted(user)
+		                    .FilterHidden(user, db, filterHiddenListMembers: true)
 		                    .Paginate(pq, ControllerContext)
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
