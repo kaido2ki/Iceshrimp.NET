@@ -4,9 +4,9 @@
 @if (NoteBase.Cw != null)
 {
     <div class="cw">
-        <span class="cw-field">@NoteBase.Cw</span><button class="cw-button" @onclick="ToggleCw"></button>
+        <span class="cw-field">@NoteBase.Cw</span><button class="cw-button" @onclick="ToggleCw">Toggle CW</button>
     </div>
-    <div hidden="@CwToggle" class="note-body">
+    <div hidden="@CwToggle" class="note-body @(CwToggle ? "hidden" : "")">
         @NoteBase.Text
     </div>
 }
@@ -31,7 +31,13 @@
         @NoteBase.Text
     </div>
 }
-
+@if (NoteBase.Attachments.Count > 0)
+{
+    foreach (var element in NoteBase.Attachments)
+    {
+        <img class="attachment" src="@element.Url"/>
+    }
+}
 
 @code {
     [Parameter] public required NoteBase NoteBase   { get; set; }
@@ -39,10 +45,11 @@
 
     private static int  MaxHeight => 500;
     private        bool Truncate  { get; set; } = true;
-    private        bool CwToggle  { get; set; }
+    private        bool CwToggle  { get; set; } = true;
     private void ToggleCw()
     {
         CwToggle = !CwToggle;
+        StateHasChanged();
     }
 
     private void ToggleTruncate()
