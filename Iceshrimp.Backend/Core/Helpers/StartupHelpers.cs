@@ -17,6 +17,10 @@ public static class StartupHelpers
 			                    --recompute-counters  Recomputes denormalized database counters.
 			                    --migrate-storage     Migrates all files currently stored locally to the
 			                                          configured object storage bucket.
+			                    --https               For development purposes only. Listens using https
+			                                          instead of http on the specified port.
+			                    --environment <env>   Specifies the ASP.NET Core environment. Available options
+			                                          are 'Development' and 'Production'.
 			                   """);
 			Environment.Exit(0);
 		}

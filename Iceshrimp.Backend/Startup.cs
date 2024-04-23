@@ -73,7 +73,7 @@ app.MapFallbackToPage("/Shared/FrontendSPA");
 
 app.Urls.Clear();
 if (config.ListenSocket == null)
-	app.Urls.Add($"http://{config.ListenHost}:{config.ListenPort}");
+	app.Urls.Add($"{(args.Contains("--https") ? "https" : "http")}://{config.ListenHost}:{config.ListenPort}");
 
 await app.StartAsync();
 app.SetKestrelUnixSocketPermissions();
