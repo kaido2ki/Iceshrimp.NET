@@ -86,7 +86,7 @@ internal class ApiClient(HttpClient client)
 		{
 			request.Content = new MultipartFormDataContent
 			{
-				new StreamContent(file.OpenReadStream())
+				new StreamContent(file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 50))
 				{
 					Headers =
 					{
