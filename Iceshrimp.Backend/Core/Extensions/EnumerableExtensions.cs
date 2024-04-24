@@ -36,4 +36,11 @@ public static class EnumerableExtensions
 	{
 		return x.Any(y.Contains);
 	}
+
+	public static bool IsEquivalent<T>(this IEnumerable<T> x, IEnumerable<T> y)
+	{
+		var xArray = x as T[] ?? x.ToArray();
+		var yArray = y as T[] ?? y.ToArray();
+		return xArray.Length == yArray.Length && xArray.All(yArray.Contains);
+	}
 }
