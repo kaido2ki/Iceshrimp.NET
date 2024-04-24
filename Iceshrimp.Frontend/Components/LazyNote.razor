@@ -1,22 +1,32 @@
 @using Iceshrimp.Shared.Schemas
+@using Ljbc1994.Blazor.IntersectionObserver
 @using Ljbc1994.Blazor.IntersectionObserver.API
 @using Ljbc1994.Blazor.IntersectionObserver.Components
 @inject IJSRuntime Js
-<IntersectionObserve OnChange="@(entry => Change(Note.Id, entry))">
+@if(_init) // FIXME: We need to wait for the Component to render once before initializing the Intersection Observer.
+           // With the <IntersectionObserver> Component this is AFAIK only possible by not rendering it until then.
+           // The proper fix for this is to change to the Service Pattern.
+           // But that requires the IntersectionObserver Library to be modified to return what element an observation update is for.
+{ 
+<IntersectionObserve Options="new IntersectionObserverOptions(){ Root = Scroller, RootMargin = margin}" OnChange="@(entry => Change(entry))">
     <div class="tgt" @ref="context.Ref.Current">
         @if (_isIntersecting)
         {
             <TimelineNote Note="Note" />
         }else {
-        <div class="placeholder" style="height: @(Height ?? 150)px"></div>
+            <div class="placeholder" style="height: @(Height ?? 150)px"></div>
         }
     </div>
 </IntersectionObserve>
+}
 @code {
-    [Parameter] public required NoteResponse        Note { get; set; }
-    private            IJSObjectReference? _module;
-    private            int?                Height { get; set; } = null;
-    private            bool                _isIntersecting = true;
+    [Parameter][EditorRequired] public required NoteResponse        Note     { get; set; }
+    [Parameter][EditorRequired] public          ElementReference    Scroller { get; set; }
+    private                                     IJSObjectReference? _module;
+    private                                     int?                Height { get; set; } = null;
+    private                                     bool                _isIntersecting = true;
+    private                                     string              margin          = "200%";
+    private bool                                                     _init           = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -24,12 +34,22 @@
         {
             _module = await Js.InvokeAsync<IJSObjectReference>("import",
                                                               "./Components/LazyNote.razor.js");
+
         }
     }
 
-    private async Task Change(string id, IntersectionObserverEntry entry)
+    protected override void OnAfterRender(bool firstRender)
     {
-        if (id == Note.Id && entry.IsIntersecting == false)
+        if (firstRender)
+        {
+            _init = true;
+        }
+
+    }
+
+    private async Task Change (IntersectionObserverEntry entry)
+    {
+        if (entry.IsIntersecting == false)
         {
             Height          = await GetHeight();
             _isIntersecting = false;
@@ -37,7 +57,7 @@
             return;
         }
 
-        if (id == Note.Id && entry.IsIntersecting)
+        if (entry.IsIntersecting)
         {
             _isIntersecting = true;
         }

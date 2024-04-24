@@ -6,13 +6,15 @@
 @inject ApiService ApiService
 @if (_init)
 {
-    @foreach (var note in Timeline)
-    {
-        <LazyNote Note="note" />
-    }
-    <IntersectionObserve OnChange="entry => OnEnd(entry)">
-        <div @ref="context.Ref.Current" class="end">END!</div>
-    </IntersectionObserve>
+    <div @ref="Scroller" class="scroller">
+        @foreach (var note in Timeline)
+        {
+            <LazyNote Scroller="Scroller" Note="note" />
+        }
+        <IntersectionObserve OnChange="entry => OnEnd(entry)">
+            <div @ref="context.Ref.Current" class="end">END!</div>
+        </IntersectionObserve>
+    </div>
 }
 else
 {
@@ -25,6 +27,7 @@ else
     private string?            MaxId     { get; set; }
     private string?            MinId     { get; set; }
     private bool               LockFetch { get; set; }
+    public  ElementReference   Scroller  { get; set; }
 
     private async Task Initialize()
     {

@@ -73,5 +73,6 @@ internal class SessionService
 		LocalStorage.SetItem("last_user", user.Id);
 		((IJSInProcessRuntime)Js).InvokeVoid("eval",
 		$"document.cookie = \"session={user.Id}; expires=Fri, 31 Dec 9999 23:59:59 GMT; SameSite=Strict\"");
+		// Security implications of this need a second pass? user.Id should never be user controllable, but still.
 	}
 }
