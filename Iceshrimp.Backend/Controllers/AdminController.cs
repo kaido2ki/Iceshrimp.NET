@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Federation;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -12,6 +13,7 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers;
 
@@ -59,6 +61,30 @@ public class AdminController(
 		if (note == null) return NotFound();
 		var rendered  = await noteRenderer.RenderAsync(note);
 		var compacted = LdHelpers.Compact(rendered);
+		return Ok(compacted);
+	}
+
+	[UseNewtonsoftJson]
+	[HttpGet("activities/notes/{id}/activity")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASAnnounce))]
+	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage")]
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery")]
+	public async Task<IActionResult> GetRenoteActivity(
+		string id, [FromServices] ActivityPub.NoteRenderer noteRenderer,
+		[FromServices] ActivityPub.UserRenderer userRenderer, [FromServices] IOptions<Config.InstanceSection> config
+	)
+	{
+		var note = await db.Notes
+		                   .IncludeCommonProperties()
+		                   .FirstOrDefaultAsync(p => p.Id == id && p.UserHost == null);
+		if (note is not { IsPureRenote: true, Renote: not null }) return NotFound();
+		var rendered = ActivityPub.ActivityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
+		                                                           note.GetPublicUri(config.Value),
+		                                                           userRenderer.RenderLite(note.User),
+		                                                           note.Visibility,
+		                                                           note.User.GetPublicUri(config.Value) + "/followers");
+		var compacted = rendered.Compact();
 		return Ok(compacted);
 	}
 
