@@ -46,9 +46,7 @@ public class ConversationsController(
 		                            {
 			                            Id       = p.ThreadId ?? p.Id,
 			                            LastNote = p,
-			                            Users = db.Users.IncludeCommonProperties()
-			                                      .Where(u => p.VisibleUserIds.Contains(u.Id) || u.Id == p.UserId)
-			                                      .ToList(),
+			                            UserIds  = p.VisibleUserIds,
 			                            Unread = db.Notifications.Any(n => n.Note == p &&
 			                                                               n.Notifiee == user &&
 			                                                               !n.IsRead &&
@@ -59,9 +57,15 @@ public class ConversationsController(
 		                            })
 		                            .ToListAsync();
 
-		var accounts = (await userRenderer.RenderManyAsync(conversations.SelectMany(p => p.Users)))
-		               .DistinctBy(p => p.Id)
-		               .ToList();
+		var userIds = conversations.SelectMany(i => i.UserIds)
+		                           .Concat(conversations.Select(p => p.LastNote.UserId))
+		                           .Distinct();
+
+		var users = await db.Users.IncludeCommonProperties()
+		                    .Where(p => userIds.Contains(p.Id))
+		                    .ToListAsync();
+
+		var accounts = await userRenderer.RenderManyAsync(users).ToListAsync();
 
 		var notes = await noteRenderer.RenderManyAsync(conversations.Select(p => p.LastNote), user, accounts: accounts);
 
@@ -70,7 +74,7 @@ public class ConversationsController(
 			Id         = p.Id,
 			Unread     = p.Unread,
 			LastStatus = notes.First(n => n.Id == p.LastNote.Id),
-			Accounts = accounts.Where(a => p.Users.Any(u => u.Id == a.Id))
+			Accounts = accounts.Where(a => p.UserIds.Any(u => u == a.Id))
 			                   .DefaultIfEmpty(accounts.First(a => a.Id == user.Id))
 			                   .ToList()
 		});
@@ -98,9 +102,7 @@ public class ConversationsController(
 		                           {
 			                           Id       = p.ThreadId ?? p.Id,
 			                           LastNote = p,
-			                           Users = db.Users.IncludeCommonProperties()
-			                                     .Where(u => p.VisibleUserIds.Contains(u.Id) || u.Id == p.UserId)
-			                                     .ToList(),
+			                           UserIds  = p.VisibleUserIds,
 			                           Unread = db.Notifications.Any(n => n.Note == p &&
 			                                                              n.Notifiee == user &&
 			                                                              !n.IsRead &&
@@ -125,9 +127,13 @@ public class ConversationsController(
 			conversation.Unread = false;
 		}
 
-		var accounts = (await userRenderer.RenderManyAsync(conversation.Users))
-		               .DistinctBy(p => p.Id)
-		               .ToList();
+		var userIds = conversation.UserIds.Append(conversation.LastNote.UserId).Distinct();
+
+		var users = await db.Users.IncludeCommonProperties()
+		                    .Where(p => userIds.Contains(p.Id))
+		                    .ToListAsync();
+
+		var accounts = await userRenderer.RenderManyAsync(users).ToListAsync();
 
 		var noteRendererDto = new NoteRenderer.NoteRendererDto { Accounts = accounts };
 
@@ -144,9 +150,9 @@ public class ConversationsController(
 
 	private class Conversation
 	{
-		public required Note       LastNote;
-		public required bool       Unread;
-		public required List<User> Users;
-		public required string     Id { get; init; }
+		public required Note         LastNote;
+		public required bool         Unread;
+		public required List<string> UserIds;
+		public required string       Id { get; init; }
 	}
 }
