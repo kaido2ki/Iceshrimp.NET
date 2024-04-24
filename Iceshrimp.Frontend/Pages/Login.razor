@@ -12,7 +12,7 @@
 <div>
     <input
         @bind="@Username"/>
-    <input
+    <input type="password" required="required"
         @bind="@Password"/>
     <button @onclick="Submit" disabled="@Loading">Login</button>
 </div>
