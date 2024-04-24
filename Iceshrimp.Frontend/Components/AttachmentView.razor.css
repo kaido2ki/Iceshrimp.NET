@@ -1,0 +1,60 @@
+.attachment-view {
+    background-color: transparent;
+    max-height: 100vh;
+    max-width: 100vw;
+}
+
+.container {
+    display: flex;
+    flex: 0 0 auto;
+    width: 100%;
+    height: 100%;
+    scroll-snap-align: center;
+    justify-content: center;
+    align-content: center;
+    background-color: transparent;
+}
+.attachment {
+    max-width: 85%;
+    max-height: 85%;
+    object-fit: contain;
+    margin: auto;
+}
+.wrap {
+    background-color: transparent;
+    scroll-snap-type: x mandatory;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    overflow: scroll;
+    flex-wrap: nowrap;
+}
+
+::backdrop{
+    opacity: 50%;
+    background-color: black;
+}
+
+.close{
+    position: absolute;
+    top: 0%;
+    right: 0%;
+    background-color: transparent;
+    color: white;
+}
+
+.next {
+    position: absolute;
+    top: 50%;
+    right: 0%;
+    background-color: transparent;
+    color: white;
+}
+
+.prev {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    background-color: transparent;
+    color: white;
+}

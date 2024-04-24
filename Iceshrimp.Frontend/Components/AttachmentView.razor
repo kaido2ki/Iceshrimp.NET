@@ -1,0 +1,91 @@
+@using Iceshrimp.Shared.Schemas
+@using Iceshrimp.Assets.PhosphorIcons
+@inject IJSRuntime Js
+
+<dialog class="attachment-view" @ref="Dialog">
+    <button @onclick="CloseDialog" class="close"><Icon Name="Icons.X" Size="5rem"></Icon></button>
+    @if (Focused < _refs.Count -1 )
+    {
+        <button @onclick="Next" class="next"><Icon Name="Icons.ArrowRight" Size="5rem"></Icon></button>
+    }
+    @if (Focused > 0)
+    {
+        <button @onclick="Prev" class="prev"><Icon Name="Icons.ArrowLeft" Size="5rem"></Icon></button>
+    }
+    <div class="wrap" @ref="Scroller" @onscroll="Scroll">
+        @foreach (var element in Attachments)
+        {
+            <div class="container" @ref="@Ref">
+                <img class="attachment" src="@element.Url" alt="@element.AltText"/>
+            </div>
+        }
+    </div>
+</dialog>
+
+@code {
+    [Parameter][EditorRequired] public IList<NoteAttachment>  Attachments { get; set; }
+    private                            ElementReference       Dialog      { get; set; }
+    private                            IJSObjectReference?    Module      { get; set; }
+    private                            int                    Focused     { get; set; }
+    private                            List<ElementReference> _refs = [];
+    public                             ElementReference       Ref         { set => _refs.Add(value); }
+    private                            ElementReference       Scroller    { get; set; }
+    private                            int                    ScrollWidth { get; set; }
+    private                            int                    ScrollLeft  { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        Focused = 0;
+    }
+    
+    private async Task Scroll()
+    {
+        // This should probably be moved to floating point.
+        // So the state transition happens sooner, i.e. at 2.5 vs 3?
+        ScrollLeft = await Module.InvokeAsync<int>("getScrollLeft", Scroller);
+        var fraction = ScrollWidth / _refs.Count;
+        var section  = ScrollLeft / fraction;
+        Focused = section;
+    }
+
+    private async Task Next()
+    {
+        if (Focused >= _refs.Count)
+        {
+            return;
+        }
+        Focused += 1;
+        await Module.InvokeVoidAsync("scrollTo", _refs[Focused]);
+    }
+
+    private async Task Prev()
+    {
+        if (Focused <= 0)
+        {
+            return;
+        }
+        Focused -= 1;
+        await Module.InvokeVoidAsync("scrollTo", _refs[Focused]);
+
+    }
+
+    public async Task OpenDialog()
+    {
+        await Module.InvokeVoidAsync("openDialog", Dialog);
+        ScrollWidth = await Module.InvokeAsync<int>("getScrollWidth", Scroller);
+    }
+
+    private async Task CloseDialog()
+    {
+        await Module.InvokeVoidAsync("closeDialog", Dialog);
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                               "./Components/AttachmentView.razor.js");
+        }
+    }
+}

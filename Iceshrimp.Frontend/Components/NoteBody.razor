@@ -1,4 +1,3 @@
-@using Iceshrimp.Frontend.Pages
 @using Iceshrimp.Shared.Schemas
 
 @if (NoteBase.Cw != null)
@@ -33,11 +32,9 @@
 }
 @if (NoteBase.Attachments.Count > 0)
 {
-    foreach (var element in NoteBase.Attachments)
-    {
-        <img class="attachment" src="@element.Url"/>
-    }
+    <NoteAttachments Attachments="NoteBase.Attachments"/>
 }
+
 
 @code {
     [Parameter] public required NoteBase NoteBase   { get; set; }
