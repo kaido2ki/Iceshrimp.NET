@@ -14,7 +14,7 @@ public class ActivityRenderer(
 )
 {
 	private string GenerateActivityId() =>
-		$"https://{config.Value.WebDomain}/activities/{Guid.NewGuid().ToString().ToLowerInvariant()}";
+		$"https://{config.Value.WebDomain}/activities/ephemeral/{Guid.NewGuid().ToString().ToLowerInvariant()}";
 
 	public static ASCreate RenderCreate(ASNote obj, ASObject actor) => new()
 	{
