@@ -184,7 +184,6 @@ public class NotificationService(
 		{
 			Id            = IdHelpers.GenerateSlowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
-			FollowRequest = followRequest,
 			Notifier      = followRequest.Followee,
 			Notifiee      = followRequest.Follower,
 			Type          = Notification.NotificationType.FollowRequestAccepted
