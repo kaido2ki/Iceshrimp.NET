@@ -471,6 +471,11 @@ public class UserService(
 			return;
 		}
 
+		await DeleteUserAsync(user);
+	}
+	
+	public async Task DeleteUserAsync(User user)
+	{
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(new UserDeleteJobData { UserId = user.Id });
 	}
 

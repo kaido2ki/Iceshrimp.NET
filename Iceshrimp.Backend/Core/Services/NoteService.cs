@@ -254,7 +254,7 @@ public class NoteService(
 	}
 
 	/// <remarks>
-	///     This needs to be called before SaveChangesAsync on create & after on delete
+	///     This needs to be called before SaveChangesAsync on create, and afterwards on delete
 	/// </remarks>
 	private async Task UpdateNoteCountersAsync(Note note, bool create)
 	{
@@ -489,15 +489,14 @@ public class NoteService(
 
 	public async Task DeleteNoteAsync(Note note)
 	{
-		logger.LogDebug("Deleting note {id}", note.Id);
+		logger.LogDebug("Deleting note '{id}' owned by {userId}", note.Id, note.User.Id);
 
-		db.Update(note.User);
 		db.Remove(note);
 		eventSvc.RaiseNoteDeleted(this, note);
 		await db.SaveChangesAsync();
 		await UpdateNoteCountersAsync(note, false);
 
-		if (note.UserHost != null)
+		if (note.User.Host != null)
 		{
 			if (note.User.Uri != null)
 			{
@@ -554,24 +553,7 @@ public class NoteService(
 
 		logger.LogDebug("Deleting note '{id}' owned by {userId}", note.Id, actor.Id);
 
-		db.Remove(dbNote);
-		eventSvc.RaiseNoteDeleted(this, dbNote);
-		await db.SaveChangesAsync();
-		await UpdateNoteCountersAsync(dbNote, false);
-
-		// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataUsage (same reason as above)
-		if (dbNote.User.Uri != null && dbNote.UserHost != null)
-		{
-			_ = followupTaskSvc.ExecuteTask("UpdateInstanceNoteCounter", async provider =>
-			{
-				var bgDb          = provider.GetRequiredService<DatabaseContext>();
-				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-				// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataUsage (same reason as above)
-				var dbInstance = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(dbNote.User);
-				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount - 1));
-			});
-		}
+		await DeleteNoteAsync(dbNote);
 	}
 
 	public async Task UndoAnnounceAsync(ASNote note, User actor)
