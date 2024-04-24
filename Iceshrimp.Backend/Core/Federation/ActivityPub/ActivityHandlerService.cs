@@ -269,7 +269,8 @@ public class ActivityHandlerService(
 					throw GracefulException.UnprocessableEntity("Invalid or unsupported announce object");
 
 				var dbNote = await noteSvc.ResolveNoteAsync(note.Id, note);
-				await noteSvc.CreateNoteAsync(resolvedActor, announce.GetVisibility(activity.Actor), renote: dbNote);
+				await noteSvc.CreateNoteAsync(resolvedActor, announce.GetVisibility(activity.Actor), renote: dbNote,
+				                              uri: announce.Id);
 				return;
 			}
 			case ASEmojiReact reaction:

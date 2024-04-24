@@ -59,7 +59,7 @@ public class NoteService(
 	public async Task<Note> CreateNoteAsync(
 		User user, Note.NoteVisibility visibility, string? text = null, string? cw = null, Note? reply = null,
 		Note? renote = null, IReadOnlyCollection<DriveFile>? attachments = null, Poll? poll = null,
-		bool localOnly = false
+		bool localOnly = false, string? uri = null
 	)
 	{
 		logger.LogDebug("Creating note for local user {id}", user.Id);
@@ -130,6 +130,7 @@ public class NoteService(
 		var note = new Note
 		{
 			Id                   = IdHelpers.GenerateSlowflakeId(),
+			Uri                  = uri,
 			Text                 = text?.Trim(),
 			Cw                   = cw?.Trim(),
 			Reply                = reply,
