@@ -2,11 +2,9 @@ using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
-using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -21,13 +19,10 @@ public class ActivityHandlerService(
 	UserService userSvc,
 	UserResolver userResolver,
 	DatabaseContext db,
-	QueueService queueService,
-	ActivityRenderer activityRenderer,
 	IOptions<Config.InstanceSection> config,
 	FederationControlService federationCtrl,
 	ObjectResolver resolver,
 	NotificationService notificationSvc,
-	ActivityDeliverService deliverSvc,
 	ObjectResolver objectResolver,
 	FollowupTaskService followupTaskSvc,
 	EmojiService emojiSvc,
@@ -113,7 +108,9 @@ public class ActivityHandlerService(
 			{
 				if (activity.Object is not ASActor obj)
 					throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
-				await FollowAsync(obj, activity.Actor, resolvedActor, activity.Id);
+				var followee = await userResolver.ResolveAsync(obj.Id);
+				if (followee.Host != null) throw new Exception("Cannot process follow for remote followee");
+				await userSvc.FollowUserAsync(resolvedActor, followee, activity.Id);
 				return;
 			}
 			case ASUnfollow:
@@ -307,98 +304,6 @@ public class ActivityHandlerService(
 		});
 	}
 
-	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
-	                 Justification = "Projectable functions can very much be translated to SQL")]
-	private async Task FollowAsync(ASActor followeeActor, ASActor followerActor, User follower, string requestId)
-	{
-		var followee = await userResolver.ResolveAsync(followeeActor.Id);
-
-		if (followee.Host != null) throw new Exception("Cannot process follow for remote followee");
-
-		// Check blocks first
-		if (await db.Users.AnyAsync(p => p == followee && p.IsBlocking(follower)))
-		{
-			var activity = activityRenderer.RenderReject(followee, follower, requestId);
-			await deliverSvc.DeliverToAsync(activity, followee, follower);
-			return;
-		}
-
-		if (followee.IsLocked)
-		{
-			var followRequest = new FollowRequest
-			{
-				Id                  = IdHelpers.GenerateSlowflakeId(),
-				CreatedAt           = DateTime.UtcNow,
-				Followee            = followee,
-				Follower            = follower,
-				FolloweeHost        = followee.Host,
-				FollowerHost        = follower.Host,
-				FolloweeInbox       = followee.Inbox,
-				FollowerInbox       = follower.Inbox,
-				FolloweeSharedInbox = followee.SharedInbox,
-				FollowerSharedInbox = follower.SharedInbox,
-				RequestId           = requestId
-			};
-
-			await db.AddAsync(followRequest);
-			await db.SaveChangesAsync();
-			await notificationSvc.GenerateFollowRequestReceivedNotification(followRequest);
-			return;
-		}
-
-		var acceptActivity = activityRenderer.RenderAccept(followeeActor,
-		                                                   ActivityRenderer.RenderFollow(followerActor,
-			                                                   followeeActor, requestId));
-		var keypair = await db.UserKeypairs.FirstAsync(p => p.User == followee);
-		var payload = await acceptActivity.SignAndCompactAsync(keypair);
-		var inboxUri = follower.SharedInbox ??
-		               follower.Inbox ?? throw new Exception("Can't accept follow: user has no inbox");
-		var job = new DeliverJobData
-		{
-			InboxUrl      = inboxUri,
-			RecipientHost = follower.Host ?? throw new Exception("Can't accept follow: follower host is null"),
-			Payload       = payload,
-			ContentType   = "application/activity+json",
-			UserId        = followee.Id
-		};
-		await queueService.DeliverQueue.EnqueueAsync(job);
-
-		if (!await db.Followings.AnyAsync(p => p.Follower == follower && p.Followee == followee))
-		{
-			var following = new Following
-			{
-				Id                  = IdHelpers.GenerateSlowflakeId(),
-				CreatedAt           = DateTime.UtcNow,
-				Followee            = followee,
-				Follower            = follower,
-				FolloweeHost        = followee.Host,
-				FollowerHost        = follower.Host,
-				FolloweeInbox       = followee.Inbox,
-				FollowerInbox       = follower.Inbox,
-				FolloweeSharedInbox = followee.SharedInbox,
-				FollowerSharedInbox = follower.SharedInbox
-			};
-
-			await db.Users.Where(p => p.Id == follower.Id)
-			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
-			await db.Users.Where(p => p.Id == followee.Id)
-			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount + 1));
-
-			_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
-			{
-				var bgDb          = provider.GetRequiredService<DatabaseContext>();
-				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower);
-				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows, i => i.IncomingFollows + 1));
-			});
-
-			await db.AddAsync(following);
-			await db.SaveChangesAsync();
-			await notificationSvc.GenerateFollowNotification(follower, followee);
-		}
-	}
-
 	private async Task UnfollowAsync(ASActor followeeActor, User follower)
 	{
 		//TODO: send reject? or do we not want to copy that part of the old ap core
@@ -469,38 +374,7 @@ public class ActivityHandlerService(
 			throw GracefulException
 				.UnprocessableEntity($"No follow request matching follower '{ids[0]}' and followee '{actor.Id}' found");
 
-		var following = new Following
-		{
-			Id                  = IdHelpers.GenerateSlowflakeId(),
-			CreatedAt           = DateTime.UtcNow,
-			Follower            = request.Follower,
-			Followee            = actor,
-			FollowerHost        = request.FollowerHost,
-			FolloweeHost        = request.FolloweeHost,
-			FollowerInbox       = request.FollowerInbox,
-			FolloweeInbox       = request.FolloweeInbox,
-			FollowerSharedInbox = request.FollowerSharedInbox,
-			FolloweeSharedInbox = request.FolloweeSharedInbox
-		};
-
-		await db.Users.Where(p => p.Id == request.Follower.Id)
-		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
-		await db.Users.Where(p => p.Id == actor.Id)
-		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount + 1));
-
-		_ = followupTaskSvc.ExecuteTask("IncrementInstanceOutgoingFollowsCounter", async provider =>
-		{
-			var bgDb          = provider.GetRequiredService<DatabaseContext>();
-			var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-			var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(request.Followee);
-			await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-			          .ExecuteUpdateAsync(p => p.SetProperty(i => i.OutgoingFollows, i => i.OutgoingFollows + 1));
-		});
-
-		db.Remove(request);
-		await db.AddAsync(following);
-		await db.SaveChangesAsync();
-		await notificationSvc.GenerateFollowRequestAcceptedNotification(request);
+		await userSvc.AcceptFollowRequestAsync(request);
 	}
 
 	private async Task RejectAsync(ASFollow follow, User actor)

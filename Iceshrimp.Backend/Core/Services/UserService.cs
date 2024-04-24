@@ -473,7 +473,7 @@ public class UserService(
 
 		await DeleteUserAsync(user);
 	}
-	
+
 	public async Task DeleteUserAsync(User user)
 	{
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(new UserDeleteJobData { UserId = user.Id });
@@ -523,12 +523,8 @@ public class UserService(
 
 	public async Task AcceptFollowRequestAsync(FollowRequest request)
 	{
-		if (request.FollowerHost != null)
-		{
-			var requestId = request.RequestId ?? throw new Exception("Cannot accept request without request id");
-			var activity  = activityRenderer.RenderAccept(request.Followee, request.Follower, requestId);
-			await deliverSvc.DeliverToAsync(activity, request.Followee, request.Follower);
-		}
+		if (request is { Follower.Host: not null, RequestId: null })
+			throw GracefulException.UnprocessableEntity("Cannot accept request without request id");
 
 		var following = new Following
 		{
@@ -562,6 +558,20 @@ public class UserService(
 				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(request.Follower);
 				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows, i => i.IncomingFollows + 1));
+			});
+
+			var activity = activityRenderer.RenderAccept(request.Followee, request.Follower, request.RequestId!);
+			await deliverSvc.DeliverToAsync(activity, request.Followee, request.Follower);
+		}
+		else if (request.Followee is { Host: not null })
+		{
+			_ = followupTaskSvc.ExecuteTask("IncrementInstanceOutgoingFollowsCounter", async provider =>
+			{
+				var bgDb          = provider.GetRequiredService<DatabaseContext>();
+				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(request.Followee);
+				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.OutgoingFollows, i => i.OutgoingFollows + 1));
 			});
 		}
 
@@ -601,69 +611,125 @@ public class UserService(
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	public async Task FollowUserAsync(User user, User followee)
+	public async Task FollowUserAsync(User follower, User followee, string? requestId = null)
 	{
-		// Check blocks first
-		if (await db.Users.AnyAsync(p => p == followee && p.IsBlocking(user)))
-			throw GracefulException.Forbidden("You are not allowed to follow this user");
+		if (follower.Id == followee.Id)
+			throw GracefulException.UnprocessableEntity("You cannot follow yourself");
+		if (follower.Host != null && followee.Host != null)
+			throw GracefulException.UnprocessableEntity("Cannot process follow between two remote users");
 
 		if (followee.Host != null)
 		{
-			var activity = activityRenderer.RenderFollow(user, followee);
-			await deliverSvc.DeliverToAsync(activity, user, followee);
+			var activity = activityRenderer.RenderFollow(follower, followee);
+			await deliverSvc.DeliverToAsync(activity, follower, followee);
+		}
+
+		if (follower.Host != null)
+		{
+			if (requestId == null)
+				throw GracefulException.UnprocessableEntity("Cannot process remote follow without requestId");
+
+			// Check blocks first
+			if (await db.Users.AnyAsync(p => p == followee && p.IsBlocking(follower)))
+			{
+				var activity = activityRenderer.RenderReject(followee, follower, requestId);
+				await deliverSvc.DeliverToAsync(activity, followee, follower);
+				return;
+			}
+		}
+		else
+		{
+			if (await db.Users.AnyAsync(p => p == followee && p.IsBlocking(follower)))
+				throw GracefulException.UnprocessableEntity("You are not allowed to follow this user");
 		}
 
 		if (followee.IsLocked || followee.Host != null)
 		{
-			var request = new FollowRequest
+			if (!await db.FollowRequests.AnyAsync(p => p.Follower == follower && p.Followee == followee))
 			{
-				Id                  = IdHelpers.GenerateSlowflakeId(),
-				CreatedAt           = DateTime.UtcNow,
-				Followee            = followee,
-				Follower            = user,
-				FolloweeHost        = followee.Host,
-				FollowerHost        = user.Host,
-				FolloweeInbox       = followee.Inbox,
-				FollowerInbox       = user.Inbox,
-				FolloweeSharedInbox = followee.SharedInbox,
-				FollowerSharedInbox = user.SharedInbox
-			};
+				if (!await db.Followings.AnyAsync(p => p.Follower == follower && p.Followee == followee))
+				{
+					var request = new FollowRequest
+					{
+						Id                  = IdHelpers.GenerateSlowflakeId(),
+						CreatedAt           = DateTime.UtcNow,
+						RequestId           = requestId,
+						Followee            = followee,
+						Follower            = follower,
+						FolloweeHost        = followee.Host,
+						FollowerHost        = follower.Host,
+						FolloweeInbox       = followee.Inbox,
+						FollowerInbox       = follower.Inbox,
+						FolloweeSharedInbox = followee.SharedInbox,
+						FollowerSharedInbox = follower.SharedInbox
+					};
 
-			await db.AddAsync(request);
+					await db.AddAsync(request);
+					await db.SaveChangesAsync();
+					await notificationSvc.GenerateFollowRequestReceivedNotification(request);
+				}
+				else
+				{
+					if (requestId == null)
+						throw new Exception("requestId must not be null at this stage");
+
+					var activity = activityRenderer.RenderAccept(followee, follower, requestId);
+					await deliverSvc.DeliverToAsync(activity, followee, follower);
+				}
+			}
+			else
+			{
+				await db.FollowRequests.Where(p => p.Follower == follower && p.Followee == followee)
+				        .ExecuteUpdateAsync(p => p.SetProperty(i => i.RequestId, _ => requestId));
+			}
 		}
 		else
 		{
-			var following = new Following
+			if (!await db.Followings.AnyAsync(p => p.Follower == follower && p.Followee == followee))
 			{
-				Id                  = IdHelpers.GenerateSlowflakeId(),
-				CreatedAt           = DateTime.UtcNow,
-				Followee            = followee,
-				Follower            = user,
-				FolloweeHost        = followee.Host,
-				FollowerHost        = user.Host,
-				FolloweeInbox       = followee.Inbox,
-				FollowerInbox       = user.Inbox,
-				FolloweeSharedInbox = followee.SharedInbox,
-				FollowerSharedInbox = user.SharedInbox
-			};
+				var following = new Following
+				{
+					Id                  = IdHelpers.GenerateSlowflakeId(),
+					CreatedAt           = DateTime.UtcNow,
+					Followee            = followee,
+					Follower            = follower,
+					FolloweeHost        = followee.Host,
+					FollowerHost        = follower.Host,
+					FolloweeInbox       = followee.Inbox,
+					FollowerInbox       = follower.Inbox,
+					FolloweeSharedInbox = followee.SharedInbox,
+					FollowerSharedInbox = follower.SharedInbox
+				};
 
-			await db.AddAsync(following);
+				await db.AddAsync(following);
+				await db.SaveChangesAsync();
+				await notificationSvc.GenerateFollowNotification(follower, followee);
+
+				await db.Users.Where(p => p.Id == follower.Id)
+				        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
+				await db.Users.Where(p => p.Id == followee.Id)
+				        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount + 1));
+
+				_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
+				{
+					var bgDb          = provider.GetRequiredService<DatabaseContext>();
+					var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+					var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower);
+					await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows,
+					                                                 i => i.IncomingFollows + 1));
+				});
+			}
+
+			if (follower.Host != null)
+			{
+				if (requestId == null)
+					throw new Exception("requestId must not be null at this stage");
+
+				var activity = activityRenderer.RenderAccept(followee, follower, requestId);
+				await deliverSvc.DeliverToAsync(activity, followee, follower);
+			}
 		}
-
-		// If user is local & not locked, we need to increment following/follower counts here,
-		// otherwise we'll do it when receiving the Accept activity / the local followee accepts the request
-		if (followee.Host == null && !followee.IsLocked)
-		{
-			await db.Users.Where(p => p.Id == user.Id)
-			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
-			await db.Users.Where(p => p.Id == followee.Id)
-			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount + 1));
-		}
-
-		await db.SaveChangesAsync();
-
-		if (followee.Host == null && !followee.IsLocked)
-			await notificationSvc.GenerateFollowNotification(user, followee);
 	}
 
 	/// <remarks>
