@@ -1,6 +1,7 @@
 using Blazored.LocalStorage;
 using Iceshrimp.Frontend.Core.Schemas;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace Iceshrimp.Frontend.Core.Services;
 
@@ -8,13 +9,15 @@ internal class SessionService
 {
 	[Inject] public ISyncLocalStorageService       LocalStorage { get; }
 	[Inject] public ApiService                     ApiService   { get; }
+	[Inject] public IJSRuntime                     Js           { get; }
 	public          Dictionary<string, StoredUser> Users        { get; }
 	public          StoredUser?                    Current      { get; private set; }
 
-	public SessionService(ApiService apiService, ISyncLocalStorageService localStorage)
+	public SessionService(ApiService apiService, ISyncLocalStorageService localStorage, IJSRuntime js)
 	{
 		ApiService   = apiService;
 		LocalStorage = localStorage;
+		Js           = js;
 		Users        = LocalStorage.GetItem<Dictionary<string, StoredUser>>("Users") ?? [];
 		var lastUser = LocalStorage.GetItem<string?>("last_user");
 		if (lastUser != null)
@@ -68,5 +71,7 @@ internal class SessionService
 		ApiService.SetBearerToken(user.Token);
 		Current = user;
 		LocalStorage.SetItem("last_user", user.Id);
+		((IJSInProcessRuntime)Js).InvokeVoid("eval",
+		$"document.cookie = \"session={user.Id}; expires=Fri, 31 Dec 9999 23:59:59 GMT; SameSite=Strict\"");
 	}
 }
