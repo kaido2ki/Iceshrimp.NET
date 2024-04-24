@@ -28,6 +28,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(Id), nameof(UserHost))]
 [Index(nameof(Url))]
 [Index(nameof(UserId), nameof(Id))]
+[Index(nameof(Visibility))]
 public class Note : IEntity
 {
 	[PgName("note_visibility_enum")]

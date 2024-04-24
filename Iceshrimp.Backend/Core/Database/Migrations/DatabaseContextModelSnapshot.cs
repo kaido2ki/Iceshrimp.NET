@@ -2541,6 +2541,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("Visibility");
+
                     b.HasIndex("VisibleUserIds");
 
                     b.HasIndex("CreatedAt", "UserId");
