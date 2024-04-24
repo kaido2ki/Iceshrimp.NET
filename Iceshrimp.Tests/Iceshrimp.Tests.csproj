@@ -27,8 +27,4 @@
         </PackageReference>
     </ItemGroup>
 
-    <ItemGroup>
-        <Content Include="configuration.ini" CopyToOutputDirectory="PreserveNewest"/>
-    </ItemGroup>
-
 </Project>
