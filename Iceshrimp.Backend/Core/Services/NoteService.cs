@@ -141,7 +141,7 @@ public class NoteService(
 			RenoteUserHost       = renote?.UserHost,
 			User                 = user,
 			CreatedAt            = DateTime.UtcNow,
-			UserHost             = null,
+			UserHost             = user.Host,
 			Visibility           = visibility,
 			FileIds              = attachments?.Select(p => p.Id).ToList() ?? [],
 			AttachedFileTypes    = attachments?.Select(p => p.Type).ToList() ?? [],
