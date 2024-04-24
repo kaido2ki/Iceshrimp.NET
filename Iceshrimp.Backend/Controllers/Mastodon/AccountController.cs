@@ -499,6 +499,38 @@ public class AccountController(
 		return Ok(res);
 	}
 
+	[HttpGet("/api/v1/blocks")]
+	[Authorize("read:blocks")]
+	[LinkPagination(40, 80)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
+	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
+	public async Task<IActionResult> GetBlockedUsers(MastodonPaginationQuery pq)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var res = await db.Users.Where(p => p.IsBlockedBy(user))
+		                  .IncludeCommonProperties()
+		                  .Paginate(pq, ControllerContext)
+		                  .RenderAllForMastodonAsync(userRenderer);
+
+		return Ok(res);
+	}
+	
+	[HttpGet("/api/v1/mutes")]
+	[Authorize("read:mutes")]
+	[LinkPagination(40, 80)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
+	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
+	public async Task<IActionResult> GetMutedUsers(MastodonPaginationQuery pq)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var res = await db.Users.Where(p => p.IsMutedBy(user))
+		                  .IncludeCommonProperties()
+		                  .Paginate(pq, ControllerContext)
+		                  .RenderAllForMastodonAsync(userRenderer);
+
+		return Ok(res);
+	}
+
 	[HttpPost("/api/v1/follow_requests/{id}/authorize")]
 	[Authorize("write:follows")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
