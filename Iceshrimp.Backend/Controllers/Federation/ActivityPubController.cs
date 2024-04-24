@@ -48,8 +48,7 @@ public class ActivityPubController(
 
 	[HttpGet("/notes/{id}/activity")]
 	[AuthorizedFetch]
-	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASNote))]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActivity))]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> GetRenote(string id)
@@ -88,7 +87,6 @@ public class ActivityPubController(
 
 	[HttpGet("/users/{id}/collections/featured")]
 	[AuthorizedFetch]
-	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> GetUserFeatured(string id)
