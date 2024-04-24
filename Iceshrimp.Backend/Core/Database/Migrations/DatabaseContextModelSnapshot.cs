@@ -1527,7 +1527,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.HasIndex("Host")
                         .IsUnique();
 
+                    b.HasIndex("IncomingFollows");
+
                     b.HasIndex("IsSuspended");
+
+                    b.HasIndex("OutgoingFollows");
 
                     b.ToTable("instance");
                 });
