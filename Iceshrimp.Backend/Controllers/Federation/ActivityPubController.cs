@@ -42,7 +42,32 @@ public class ActivityPubController(
 		                   .FirstOrDefaultAsync(p => p.Id == id && p.UserHost == null);
 		if (note == null) return NotFound();
 		var rendered  = await noteRenderer.RenderAsync(note);
-		var compacted = LdHelpers.Compact(rendered);
+		var compacted = rendered.Compact();
+		return Ok(compacted);
+	}
+
+	[HttpGet("/notes/{id}/activity")]
+	[AuthorizedFetch]
+	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASNote))]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> GetRenote(string id)
+	{
+		var actor = HttpContext.GetActor();
+		var note = await db.Notes
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(actor)
+		                   .FirstOrDefaultAsync(p => p.Id == id && p.UserHost == null);
+
+		if (note is not { IsPureRenote: true, Renote: not null }) return NotFound();
+
+		var rendered = ActivityPub.ActivityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
+		                                                           note.GetPublicUri(config.Value),
+		                                                           userRenderer.RenderLite(note.User),
+		                                                           note.Visibility,
+		                                                           note.User.GetPublicUri(config.Value) + "/followers");
+		var compacted = rendered.Compact();
 		return Ok(compacted);
 	}
 
@@ -88,7 +113,7 @@ public class ActivityPubController(
 			Items      = rendered.Cast<ASObject>().ToList()
 		};
 
-		var compacted = LdHelpers.Compact(res);
+		var compacted = res.Compact();
 		return Ok(compacted);
 	}
 

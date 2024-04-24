@@ -209,7 +209,7 @@ public class ActivityRenderer(
 			_                        => []
 		};
 
-		return RenderAnnounce(note, actor, to, cc, renoteUri);
+		return RenderAnnounce(note, actor, to, cc, $"{renoteUri}/activity");
 	}
 
 	public ASNote RenderVote(PollVote vote, Poll poll, Note note) => new()
