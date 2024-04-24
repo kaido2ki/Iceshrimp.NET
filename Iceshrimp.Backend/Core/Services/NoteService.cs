@@ -449,17 +449,25 @@ public class NoteService(
 			}
 		}
 
-		if (asNote is not ASQuestion || poll == null || isPollEdited || db.Entry(note).State != EntityState.Unchanged)
+		var isEdit = asNote is not ASQuestion ||
+		             poll == null ||
+		             isPollEdited ||
+		             db.Entry(note).State != EntityState.Unchanged;
+
+		if (isEdit)
 		{
 			note.UpdatedAt = updatedAt ?? DateTime.UtcNow;
 			await db.AddAsync(noteEdit);
 		}
 
 		await db.SaveChangesAsync();
+		eventSvc.RaiseNoteUpdated(this, note);
+
+		if (!isEdit) return note;
+		
 		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateReplyNotifications(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateEditNotifications(note);
-		eventSvc.RaiseNoteUpdated(this, note);
 
 		if (note.LocalOnly || note.User.Host != null) return note;
 

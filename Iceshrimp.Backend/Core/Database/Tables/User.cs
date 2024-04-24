@@ -573,10 +573,13 @@ public class User : IEntity
 	public bool HasReacted(Note note) => ReactedNotes.Contains(note);
 
 	[Projectable]
-	public bool HasRenoted(Note note) => Notes.Any(p => p.Renote == note);
+	public bool HasRenoted(Note note) => Notes.Any(p => p.Renote == note && p.User == this);
 
 	[Projectable]
-	public bool HasReplied(Note note) => Notes.Any(p => p.Reply == note);
+	public bool HasReplied(Note note) => Notes.Any(p => p.Reply == note && p.User == this);
+	
+	[Projectable]
+	public bool HasVoted(Note note) => PollVotes.Any(p => p.Note == note && p.User == this);
 
 	[Projectable]
 	public bool HasInteractedWith(Note note) =>
@@ -584,7 +587,8 @@ public class User : IEntity
 		HasReacted(note) ||
 		HasBookmarked(note) ||
 		HasReplied(note) ||
-		HasRenoted(note);
+		HasRenoted(note) ||
+		HasVoted(note);
 
 	public User WithPrecomputedBlockStatus(bool blocking, bool blockedBy)
 	{
