@@ -72,7 +72,7 @@ public class PreDeliverQueue()
 		}
 		else
 		{
-			payload = activity.Compact();
+			payload = activity.CompactToPayload();
 		}
 
 		foreach (var inboxQueryResult in inboxQueryResults)

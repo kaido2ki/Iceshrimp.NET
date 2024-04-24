@@ -106,12 +106,17 @@ public static class LdHelpers
 		return payload;
 	}
 
-	public static string Compact(this ASActivity activity)
+	public static string CompactToPayload(this ASActivity activity)
 	{
-		var compacted = Compact((object)activity) ?? throw new Exception("Failed to compact signed activity");
+		var compacted = Compact(activity) ?? throw new Exception("Failed to compact signed activity");
 		var payload   = JsonConvert.SerializeObject(compacted, JsonSerializerSettings);
 
 		return payload;
+	}
+
+	public static JObject? Compact(this ASObject obj)
+	{
+		return Compact((object)obj);
 	}
 
 	public static JObject? Compact(object obj)
