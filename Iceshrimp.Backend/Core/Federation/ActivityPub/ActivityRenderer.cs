@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.Extensions.Options;
@@ -14,7 +15,7 @@ public class ActivityRenderer(
 )
 {
 	private string GenerateActivityId() =>
-		$"https://{config.Value.WebDomain}/activities/ephemeral/{Guid.NewGuid().ToString().ToLowerInvariant()}";
+		$"https://{config.Value.WebDomain}/activities/ephemeral/{Guid.NewGuid().ToStringLower()}";
 
 	public static ASCreate RenderCreate(ASNote obj, ASObject actor) => new()
 	{

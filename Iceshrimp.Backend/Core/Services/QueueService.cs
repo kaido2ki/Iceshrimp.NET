@@ -436,12 +436,13 @@ public class PostgresJobQueue<T>(
 			var queueName = data is BackgroundTaskJobData ? name + $" ({data.GetType().Name})" : name;
 			if (e is GracefulException { Details: not null } ce)
 			{
-				logger.LogError("Failed to process job in {queue} queue: {error} - {details}",
-				                queueName, ce.Message, ce.Details);
+				logger.LogError("Failed to process job {id} in {queue} queue: {error} - {details}",
+				                queueName, job.Id.ToStringLower(), ce.Message, ce.Details);
 			}
 			else
 			{
-				logger.LogError(e, "Failed to process job in {queue} queue:", queueName);
+				logger.LogError(e, "Failed to process job {id} in {queue} queue:", job.Id.ToStringLower(),
+				                queueName);
 			}
 		}
 

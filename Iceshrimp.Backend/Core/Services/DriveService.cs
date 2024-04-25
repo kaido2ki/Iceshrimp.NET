@@ -3,6 +3,7 @@ using Blurhash.ImageSharp;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
@@ -318,14 +319,14 @@ public class DriveService(
 
 	private static string GenerateFilenameKeepingExtension(string filename)
 	{
-		var guid = Guid.NewGuid().ToString().ToLowerInvariant();
+		var guid = Guid.NewGuid().ToStringLower();
 		var ext  = Path.GetExtension(filename);
 		return guid + ext;
 	}
 
 	private static string GenerateWebpFilename(string prefix = "")
 	{
-		var guid = Guid.NewGuid().ToString().ToLowerInvariant();
+		var guid = Guid.NewGuid().ToStringLower();
 		return $"{prefix}{guid}.webp";
 	}
 
@@ -340,7 +341,7 @@ public class DriveService(
 public class DriveFileCreationRequest
 {
 	public          string?                     Comment;
-	public required string                      Filename = Guid.NewGuid().ToString().ToLowerInvariant();
+	public required string                      Filename = Guid.NewGuid().ToStringLower();
 	public required bool                        IsSensitive;
 	public required string                      MimeType;
 	public          Dictionary<string, string>? RequestHeaders;
