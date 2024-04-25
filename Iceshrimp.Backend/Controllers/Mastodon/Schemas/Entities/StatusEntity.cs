@@ -96,3 +96,15 @@ public class StatusSource
 	[J("text")]         public required string Text           { get; set; }
 	[J("spoiler_text")] public required string ContentWarning { get; set; }
 }
+
+public class StatusEdit
+{
+	[J("content")]           public required string?                Content        { get; set; }
+	[J("spoiler_text")]      public required string                 ContentWarning { get; set; }
+	[J("sensitive")]         public required bool                   IsSensitive    { get; set; }
+	[J("created_at")]        public required string                 CreatedAt      { get; set; }
+	[J("account")]           public required AccountEntity          Account        { get; set; }
+	[J("poll")]              public required PollEntity?            Poll           { get; set; }
+	[J("media_attachments")] public required List<AttachmentEntity> Attachments    { get; set; }
+	[J("emojis")]            public required List<EmojiEntity>      Emojis         { get; set; }
+}

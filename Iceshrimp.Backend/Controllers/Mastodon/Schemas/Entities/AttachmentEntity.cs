@@ -1,10 +1,12 @@
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 public class AttachmentEntity
 {
-	public required                    AttachmentType      Type;
+	[JI]               public required bool                Sensitive;
+	[JI]               public required AttachmentType      Type;
 	[J("id")]          public required string              Id          { get; set; }
 	[J("url")]         public required string              Url         { get; set; }
 	[J("remote_url")]  public          string?             RemoteUrl   { get; set; }

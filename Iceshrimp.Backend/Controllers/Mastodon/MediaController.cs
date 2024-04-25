@@ -77,8 +77,9 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 			Blurhash    = file.Blurhash,
 			Description = file.Comment,
 			PreviewUrl  = file.ThumbnailUrl,
-			RemoteUrl   = file.Uri
-			//Metadata = TODO
+			RemoteUrl   = file.Uri,
+			Sensitive   = file.IsSensitive,
+			//Metadata    = TODO,
 		};
 	}
 }

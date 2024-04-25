@@ -552,4 +552,22 @@ public class StatusController(
 
 		return Ok(res);
 	}
+
+	[HttpGet("{id}/history")]
+	[Authenticate("read:statuses")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	public async Task<IActionResult> GetNoteEditHistory(string id)
+	{
+		var user = HttpContext.GetUser();
+		var note = await db.Notes
+		                   .Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FilterHidden(user, db, filterMutes: false)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		var res = await noteRenderer.RenderHistoryAsync(note);
+		return Ok(res);
+	}
 }

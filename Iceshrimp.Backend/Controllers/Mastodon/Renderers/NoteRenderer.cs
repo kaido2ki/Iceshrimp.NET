@@ -129,6 +129,57 @@ public class NoteRenderer(
 		return res;
 	}
 
+	public async Task<List<StatusEdit>> RenderHistoryAsync(Note note)
+	{
+		var edits = await db.NoteEdits.Where(p => p.Note == note).OrderBy(p => p.Id).ToListAsync();
+		edits.Add(RenderEdit(note));
+
+		var attachments = await GetAttachments(note.FileIds.Concat(edits.SelectMany(p => p.FileIds)));
+		var mentions    = await GetMentions([note]);
+		var mentionedUsers = mentions.Select(p => new Note.MentionedUser
+		                             {
+			                             Host     = p.Host ?? config.Value.AccountDomain,
+			                             Uri      = p.Uri,
+			                             Username = p.Username,
+			                             Url      = p.Url
+		                             })
+		                             .ToList();
+
+		var account  = await userRenderer.RenderAsync(note.User);
+		var lastDate = note.CreatedAt;
+
+		List<StatusEdit> history = [];
+		foreach (var edit in edits)
+		{
+			var files = attachments.Where(p => edit.FileIds.Contains(p.Id)).ToList();
+			var entry = new StatusEdit
+			{
+				Account        = account,
+				Content        = await mfmConverter.ToHtmlAsync(edit.Text ?? "", mentionedUsers, note.UserHost),
+				CreatedAt      = lastDate.ToStringIso8601Like(),
+				Emojis         = [],
+				IsSensitive    = files.Any(p => p.Sensitive),
+				Attachments    = files,
+				Poll           = null,
+				ContentWarning = edit.Cw ?? ""
+			};
+			history.Add(entry);
+		}
+
+		return history;
+	}
+
+	private NoteEdit RenderEdit(Note note)
+	{
+		return new NoteEdit
+		{
+			Text      = note.Text,
+			Cw        = note.Cw,
+			FileIds   = note.FileIds,
+			UpdatedAt = note.UpdatedAt ?? note.CreatedAt
+		};
+	}
+
 	private static List<FilterResultEntity> GetFilterResult((Filter filter, string keyword)? filtered)
 	{
 		if (filtered == null) return [];
@@ -161,7 +212,28 @@ public class NoteRenderer(
 			               Description = f.Comment,
 			               Metadata    = null,
 			               RemoteUrl   = f.Uri,
-			               Type        = AttachmentEntity.GetType(f.Type)
+			               Type        = AttachmentEntity.GetType(f.Type),
+			               Sensitive   = f.IsSensitive
+		               })
+		               .ToListAsync();
+	}
+
+	private async Task<List<AttachmentEntity>> GetAttachments(IEnumerable<string> fileIds)
+	{
+		var ids = fileIds.Distinct().ToList();
+		if (ids.Count == 0) return [];
+		return await db.DriveFiles.Where(p => ids.Contains(p.Id))
+		               .Select(f => new AttachmentEntity
+		               {
+			               Id          = f.Id,
+			               Url         = f.PublicUrl,
+			               Blurhash    = f.Blurhash,
+			               PreviewUrl  = f.PublicThumbnailUrl,
+			               Description = f.Comment,
+			               Metadata    = null,
+			               RemoteUrl   = f.Uri,
+			               Type        = AttachmentEntity.GetType(f.Type),
+			               Sensitive   = f.IsSensitive
 		               })
 		               .ToListAsync();
 	}
