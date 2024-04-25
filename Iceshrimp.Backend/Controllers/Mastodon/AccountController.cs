@@ -8,6 +8,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
@@ -29,7 +30,8 @@ public class AccountController(
 	NoteRenderer noteRenderer,
 	UserService userSvc,
 	ActivityPub.UserResolver userResolver,
-	DriveService driveSvc
+	DriveService driveSvc,
+	EmojiService emojiSvc
 ) : ControllerBase
 {
 	[HttpGet("verify_credentials")]
@@ -114,6 +116,14 @@ public class AccountController(
 			user.Banner         = banner;
 			user.BannerBlurhash = banner.Blurhash;
 			user.BannerUrl      = banner.Url;
+		}
+
+		user.Emojis = [];
+
+		if (user.UserProfile.Description != null)
+		{
+			var nodes = MfmParser.Parse(user.UserProfile.Description);
+			user.Emojis = (await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList();
 		}
 
 		user = await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
@@ -514,7 +524,7 @@ public class AccountController(
 
 		return Ok(res);
 	}
-	
+
 	[HttpGet("/api/v1/mutes")]
 	[Authorize("read:mutes")]
 	[LinkPagination(40, 80)]

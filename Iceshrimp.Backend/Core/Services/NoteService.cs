@@ -8,6 +8,7 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 using static Iceshrimp.Parsing.MfmNodeTypes;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
@@ -112,8 +113,13 @@ public class NoteService(
 		}
 		// ReSharper restore EntityFramework.UnsupportedServerSideFunctionCall
 
+		List<MfmNode>? nodes = null;
 		if (text != null)
-			text = mentionsResolver.ResolveMentions(text, user.Host, mentions, splitDomainMapping);
+		{
+			nodes = MfmParser.Parse(text).ToList();
+			nodes = mentionsResolver.ResolveMentions(nodes, user.Host, mentions, splitDomainMapping).ToList();
+			text  = MfmSerializer.Serialize(nodes);
+		}
 
 		if (attachments != null && attachments.Any(p => p.UserId != user.Id))
 			throw GracefulException.UnprocessableEntity("Refusing to create note with files belonging to someone else");
@@ -130,9 +136,9 @@ public class NoteService(
 			? reply?.UserId
 			: reply.MastoReplyUserId ?? reply.ReplyUserId ?? reply.UserId;
 
-		if (emoji == null && user.Host == null)
+		if (emoji == null && user.Host == null && nodes != null)
 		{
-			//TODO: resolve emoji
+			emoji = (await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList();
 		}
 
 		List<string> visibleUserIds = [];
@@ -320,8 +326,15 @@ public class NoteService(
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			resolvedMentions ?? await ResolveNoteMentionsAsync(text);
 
+
+		List<MfmNode>? nodes = null;
 		if (text != null)
-			text = mentionsResolver.ResolveMentions(text, note.User.Host, mentions, splitDomainMapping);
+		{
+			nodes = MfmParser.Parse(text).ToList();
+			nodes = mentionsResolver.ResolveMentions(nodes, note.User.Host, mentions, splitDomainMapping).ToList();
+			text  = MfmSerializer.Serialize(nodes);
+		}
+
 		if (cw != null && string.IsNullOrWhiteSpace(cw))
 			cw = null;
 
@@ -343,14 +356,15 @@ public class NoteService(
 		note.Cw               = cw?.Trim();
 		note.Tags             = ResolveHashtags(text, asNote);
 
+		if (note.User.Host == null && nodes != null)
+		{
+			emoji = (await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList();
+		}
+
 		if (emoji != null && !note.Emojis.IsEquivalent(emoji))
-		{
 			note.Emojis = emoji;
-		}
-		else if (note.User.Host == null)
-		{
-			//TODO: resolve emoji
-		}
+		else if (emoji == null && note.Emojis.Count != 0)
+			note.Emojis = [];
 
 		if (text is not null)
 		{
@@ -464,7 +478,7 @@ public class NoteService(
 		eventSvc.RaiseNoteUpdated(this, note);
 
 		if (!isEdit) return note;
-		
+
 		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateReplyNotifications(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateEditNotifications(note);

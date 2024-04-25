@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Parsing;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -97,5 +98,24 @@ public class EmojiService(DatabaseContext db)
 		var host  = split.Length > 1 ? split[1] : null;
 
 		return await db.Emojis.FirstOrDefaultAsync(p => p.Host == host && p.Name == name);
+	}
+
+	public async Task<List<Emoji>> ResolveEmoji(IEnumerable<MfmNodeTypes.MfmNode> nodes)
+	{
+		var list = new List<MfmNodeTypes.MfmEmojiCodeNode>();
+		ResolveChildren(nodes, ref list);
+		return await db.Emojis.Where(p => p.Host == null && list.Select(i => i.Name).Contains(p.Name)).ToListAsync();
+	}
+
+	private static void ResolveChildren(
+		IEnumerable<MfmNodeTypes.MfmNode> nodes, ref List<MfmNodeTypes.MfmEmojiCodeNode> list
+	)
+	{
+		foreach (var node in nodes)
+		{
+			if (node is MfmNodeTypes.MfmEmojiCodeNode emojiNode) list.Add(emojiNode);
+			list.AddRange(node.Children.OfType<MfmNodeTypes.MfmEmojiCodeNode>());
+			ResolveChildren(node.Children, ref list);
+		}
 	}
 }
