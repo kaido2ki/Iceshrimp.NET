@@ -10,13 +10,13 @@
             }
         </div>
     }
-    <button class="btn">
+    <button @onclick:StopPropagation="true" class="btn">
         <Icon Name="Icons.ArrowUUpLeft"/>
     </button>
-    <button class="btn">
+    <button @onclick:StopPropagation="true" class="btn">
         <Icon Name="Icons.ArrowsClockwise"/>
     </button>
-    <button @onclick="Like" class="btn">
+    <button @onclick="Like" @onclick:StopPropagation="true" class="btn">
         @if (IsLiked)
         {
             <Icon Name="Icons.Heart" Pack="IconStyle.Fill"/>
@@ -28,10 +28,10 @@
             <span class="like-count">@Likes</span>
         }
     </button>
-    <button class="btn">
+    <button @onclick:StopPropagation="true" class="btn">
         <Icon Name="Icons.Smiley"/>
     </button>
-    <button class="btn">
+    <button @onclick:StopPropagation="true" class="btn">
         <Icon Name="Icons.DotsThreeOutline"/>
     </button>
 </div>
