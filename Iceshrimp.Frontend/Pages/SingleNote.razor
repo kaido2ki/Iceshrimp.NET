@@ -1,6 +1,32 @@
-@page "/SingleNote"
-<h3>SingleNote</h3>
+@page "/notes/{NoteId}"
+@using Iceshrimp.Shared.Schemas
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Services
+@inject ApiService ApiService
 
+@if (_init)
+{
+    <div class="root-note">
+        <NoteComponent Note="RootNote"></NoteComponent>
+    </div>
+    <div class="descendants">
+        @foreach (var element in Descendants)
+        {
+            <RecursiveNote Note="element"/>
+        }
+    </div>
+}
 @code {
-    
+    [Parameter] public string?             NoteId      { get; set; }
+    public             NoteResponse        RootNote    { get; set; }
+    public             IList<NoteResponse> Descendants { get; set; }
+    private            bool                _init = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        RootNote    = await ApiService.Notes.GetNote(NoteId);
+        Descendants = await ApiService.Notes.GetNoteDescendants(NoteId, default);
+        _init       = true;
+    }
+
 }

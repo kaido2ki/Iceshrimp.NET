@@ -1,7 +1,13 @@
 @using Iceshrimp.Shared.Schemas
-<div class="note-container" id="@Note.Id">
+@inject NavigationManager Navigation
+<div class="note-container" @onclick="OpenNote" id="@Note.Id">
     <NoteComponent Note="Note"></NoteComponent>
 </div>
 @code {
     [Parameter][EditorRequired] public required NoteResponse Note { get; set; }
+
+    private void OpenNote()
+    {
+        Navigation.NavigateTo($"/notes/{Note.Id}");
+    }
 }

@@ -1,0 +1,26 @@
+.indent {
+    padding-left: 0rem;
+}
+.root-note {
+    max-width: 40rem;
+    min-width: 15rem;
+    background-color: var(--foreground-color);
+    padding: 1.5rem 1.5rem 1rem; /* top, left-right, bottom*/
+    border-radius: 0.75rem;
+    margin-top: 1rem;
+    margin-right: 1.5rem;
+    margin-left: 1.5rem;
+    width: 100%;
+}
+
+.descendant {
+    max-width: 40rem;
+    min-width: 15rem;
+    background-color: var(--foreground-color);
+    padding: 1.5rem 1.5rem 1rem; /* top, left-right, bottom*/
+    border-radius: 0.75rem;
+    margin-top: 1rem;
+    margin-right: 1.5rem;
+    margin-left: 1.5rem;
+    width: 100%;
+}

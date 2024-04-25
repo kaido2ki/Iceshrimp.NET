@@ -1,5 +1,17 @@
-<h3>RecursiveNote</h3>
+@using Iceshrimp.Shared.Schemas
 
+<div class="root-note">
+    <NoteComponent Note="Note" />
+</div>
+<div class="indent">
+    @if(Note.Descendants != null)
+    @foreach (var note in Note.Descendants)
+    {
+        <div class="descendant">
+            <RecursiveNote Note="note"/>
+        </div>
+    }
+</div>
 @code {
-    
+    [Parameter][EditorRequired] public required NoteResponse Note { get; set; }
 }
