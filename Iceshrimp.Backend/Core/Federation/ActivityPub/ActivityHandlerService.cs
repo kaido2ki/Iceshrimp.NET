@@ -85,6 +85,12 @@ public class ActivityHandlerService(
 					return;
 				}
 
+				if (activity.Object is ASNote note)
+				{
+					await noteSvc.DeleteNoteAsync(note, resolvedActor);
+					return;
+				}
+
 				if (activity.Object is not ASTombstone tombstone)
 					throw GracefulException
 						.UnprocessableEntity($"Delete activity object is invalid: {activity.Object?.Type}");

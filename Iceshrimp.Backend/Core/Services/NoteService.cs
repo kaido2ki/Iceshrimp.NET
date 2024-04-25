@@ -569,6 +569,28 @@ public class NoteService(
 
 		await DeleteNoteAsync(dbNote);
 	}
+	
+	public async Task DeleteNoteAsync(ASNote note, User actor)
+	{
+		// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataQuery (it doesn't know about IncludeCommonProperties())
+		var dbNote = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
+		if (dbNote == null)
+		{
+			logger.LogDebug("Note '{id}' isn't known, skipping", note.Id);
+			return;
+		}
+
+		// ReSharper disable once EntityFramework.NPlusOne.IncompleteDataUsage (same reason as above)
+		if (dbNote.User != actor)
+		{
+			logger.LogDebug("Note '{id}' isn't owned by actor requesting its deletion, skipping", note.Id);
+			return;
+		}
+
+		logger.LogDebug("Deleting note '{id}' owned by {userId}", note.Id, actor.Id);
+
+		await DeleteNoteAsync(dbNote);
+	}
 
 	public async Task UndoAnnounceAsync(ASNote note, User actor)
 	{
