@@ -47,6 +47,17 @@ public class PushService(
 			if (subscriptions.Count == 0)
 				return;
 
+			var skip = await db.Blockings.AnyAsync(p => p.Blocker == notification.Notifiee &&
+			                                            p.Blockee == notification.Notifier) ||
+			           await db.Mutings.AnyAsync(p => p.Muter == notification.Notifiee &&
+			                                          p.Mutee == notification.Notifier);
+
+			if (skip)
+			{
+				// Notifier is blocked or muted, so we shouldn't deliver the notification
+				return;
+			}
+
 			logger.LogDebug("Delivering mastodon push notification {id} for user {userId}", notification.Id,
 			                notification.Notifiee.Id);
 
