@@ -211,9 +211,9 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	private NoteWithVisibilities EnforceRenoteReplyVisibility(Note note)
 	{
 		var wrapped = new NoteWithVisibilities(note);
-		if (wrapped.Renote?.IsVisibleFor(_user, _following) ?? false)
+		if (!wrapped.Renote?.IsVisibleFor(_user, _following) ?? false)
 			wrapped.Renote = null;
-		if (wrapped.Reply?.IsVisibleFor(_user, _following) ?? false)
+		if (!wrapped.Reply?.IsVisibleFor(_user, _following) ?? false)
 			wrapped.Reply = null;
 
 		return wrapped;

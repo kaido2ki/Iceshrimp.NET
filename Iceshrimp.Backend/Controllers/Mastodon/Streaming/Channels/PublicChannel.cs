@@ -64,7 +64,7 @@ public class PublicChannel(
 	private NoteWithVisibilities EnforceRenoteReplyVisibility(Note note)
 	{
 		var wrapped = new NoteWithVisibilities(note);
-		if (wrapped.Renote?.IsVisibleFor(connection.Token.User, connection.Following) ?? false)
+		if (!wrapped.Renote?.IsVisibleFor(connection.Token.User, connection.Following) ?? false)
 			wrapped.Renote = null;
 
 		return wrapped;
