@@ -3,20 +3,20 @@
 <div class="note-footer">
     @if (Reactions.Count > 0)
     {
-        <div claass="reactions">
+        <div class="reactions">
             @foreach (var reaction in Reactions)
             {
                 <NoteReaction Reaction="reaction"/>
             }
         </div>
     }
-    <button @onclick:StopPropagation="true" class="btn">
+    <button class="btn" @onclick:stopPropagation="true">
         <Icon Name="Icons.ArrowUUpLeft"/>
     </button>
-    <button @onclick:StopPropagation="true" class="btn">
+    <button class="btn" @onclick:stopPropagation="true">
         <Icon Name="Icons.ArrowsClockwise"/>
     </button>
-    <button @onclick="Like" @onclick:StopPropagation="true" class="btn">
+    <button @onclick="Like" @onclick:stopPropagation="true" class="btn">
         @if (IsLiked)
         {
             <Icon Name="Icons.Heart" Pack="IconStyle.Fill"/>
@@ -28,10 +28,10 @@
             <span class="like-count">@Likes</span>
         }
     </button>
-    <button @onclick:StopPropagation="true" class="btn">
+    <button class="btn" @onclick:stopPropagation="true">
         <Icon Name="Icons.Smiley"/>
     </button>
-    <button @onclick:StopPropagation="true" class="btn">
+    <button class="btn" @onclick:stopPropagation="true">
         <Icon Name="Icons.DotsThreeOutline"/>
     </button>
 </div>
