@@ -259,7 +259,7 @@ public class StatusController(
 	[Authorize("write:favourites")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> Renote(string id, [FromHybrid] string? visibility)
+	public async Task<IActionResult> Renote(string id, [FromHybrid] StatusSchemas.ReblogRequest? request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (!await db.Notes.AnyAsync(p => p.RenoteId == id && p.User == user && p.IsPureRenote))
@@ -271,8 +271,8 @@ public class StatusController(
 			                   .FirstOrDefaultAsync() ??
 			           throw GracefulException.RecordNotFound();
 
-			var renoteVisibility = visibility != null
-				? StatusEntity.DecodeVisibility(visibility)
+			var renoteVisibility = request?.Visibility != null
+				? StatusEntity.DecodeVisibility(request.Visibility)
 				: Note.NoteVisibility.Followers;
 
 			if (renoteVisibility == Note.NoteVisibility.Specified)

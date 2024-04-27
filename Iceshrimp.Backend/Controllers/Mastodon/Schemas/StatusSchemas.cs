@@ -94,4 +94,9 @@ public abstract class StatusSchemas
 	{
 		[JR] [J("id")] [B(Name = "id")] public required string Id { get; set; }
 	}
+
+	public class ReblogRequest
+	{
+		[B(Name = "visibility")] [J("visibility")] public string? Visibility { get; set; }
+	}
 }
