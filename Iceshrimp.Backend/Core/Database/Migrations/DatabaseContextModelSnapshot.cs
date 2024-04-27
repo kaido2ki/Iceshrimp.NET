@@ -1498,14 +1498,14 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("outgoingFollows");
 
                     b.Property<string>("SoftwareName")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
                         .HasColumnName("softwareName")
                         .HasComment("The software of the Instance.");
 
                     b.Property<string>("SoftwareVersion")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
                         .HasColumnName("softwareVersion");
 
                     b.Property<string>("ThemeColor")

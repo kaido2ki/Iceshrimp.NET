@@ -61,11 +61,11 @@ public class Instance
 	///     The software of the Instance.
 	/// </summary>
 	[Column("softwareName")]
-	[StringLength(64)]
+	[StringLength(256)]
 	public string? SoftwareName { get; set; }
 
 	[Column("softwareVersion")]
-	[StringLength(64)]
+	[StringLength(256)]
 	public string? SoftwareVersion { get; set; }
 
 	[Column("openRegistrations")] public bool? OpenRegistrations { get; set; }
