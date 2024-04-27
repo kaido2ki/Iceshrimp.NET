@@ -12,6 +12,7 @@ public class AuthorizationMiddleware : IMiddleware
 
 		if (attribute != null)
 		{
+			ctx.Response.Headers.CacheControl = "private, no-store";
 			var isMastodon = endpoint?.Metadata.GetMetadata<MastodonApiControllerAttribute>() != null;
 
 			if (isMastodon)

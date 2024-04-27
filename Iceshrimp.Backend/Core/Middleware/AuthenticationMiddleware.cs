@@ -17,6 +17,7 @@ public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc, M
 
 		if (attribute != null)
 		{
+			ctx.Response.Headers.CacheControl = "private, no-store";
 			var request = ctx.Request;
 			var header  = request.Headers.Authorization.ToString();
 			if (!header.ToLowerInvariant().StartsWith("bearer "))

@@ -28,7 +28,7 @@ public class AuthorizedFetchMiddleware(
 
 		if (attribute != null && config.Value.AuthorizedFetch)
 		{
-			ctx.Response.Headers.CacheControl = "no-store";
+			ctx.Response.Headers.CacheControl = "private, no-store";
 
 			var request = ctx.Request;
 			var ct      = appLifetime.ApplicationStopping;
