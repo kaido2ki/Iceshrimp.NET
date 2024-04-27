@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +36,7 @@ public class NoteModel(
 			return Partial("Shared/FrontendSPA");
 
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown)
-			throw new Exception("Public preview is disabled on this instance");
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
 		//TODO: redirect to login (with route as url param) when public preview is disabled
 		//TODO: login button
