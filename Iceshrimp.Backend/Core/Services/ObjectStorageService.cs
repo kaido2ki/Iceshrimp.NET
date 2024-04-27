@@ -55,6 +55,9 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 
 	public async Task VerifyCredentialsAsync()
 	{
+		if (config.Value.ObjectStorage?.DisableValidation ?? false)
+			return;
+
 		const string filename = ".iceshrimp-test";
 		var          content  = CryptographyHelpers.GenerateRandomString(16);
 

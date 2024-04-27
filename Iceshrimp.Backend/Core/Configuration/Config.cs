@@ -136,13 +136,14 @@ public sealed class Config
 
 	public sealed class ObjectStorageSection
 	{
-		public string? Endpoint  { get; init; }
-		public string? Region    { get; init; }
-		public string? KeyId     { get; init; }
-		public string? SecretKey { get; init; }
-		public string? Bucket    { get; init; }
-		public string? Prefix    { get; init; }
-		public string? AccessUrl { get; init; }
-		public string? SetAcl    { get; init; }
+		public string? Endpoint          { get; init; }
+		public string? Region            { get; init; }
+		public string? KeyId             { get; init; }
+		public string? SecretKey         { get; init; }
+		public string? Bucket            { get; init; }
+		public string? Prefix            { get; init; }
+		public string? AccessUrl         { get; init; }
+		public string? SetAcl            { get; init; }
+		public bool    DisableValidation { get; init; } = false;
 	}
 }
