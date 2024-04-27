@@ -262,7 +262,10 @@ public class StatusController(
 	public async Task<IActionResult> Renote(string id, [FromHybrid] StatusSchemas.ReblogRequest? request)
 	{
 		var user = HttpContext.GetUserOrFail();
-		if (!await db.Notes.AnyAsync(p => p.RenoteId == id && p.User == user && p.IsPureRenote))
+		var renote = await db.Notes.IncludeCommonProperties()
+		                     .FirstOrDefaultAsync(p => p.RenoteId == id && p.User == user && p.IsPureRenote);
+
+		if (renote == null)
 		{
 			var note = await db.Notes.Where(p => p.Id == id)
 			                   .IncludeCommonProperties()
@@ -278,11 +281,11 @@ public class StatusController(
 			if (renoteVisibility == Note.NoteVisibility.Specified)
 				throw GracefulException.BadRequest("Renote visibility must be one of: public, unlisted, private");
 
-			await noteSvc.CreateNoteAsync(user, renoteVisibility, renote: note);
+			renote = await noteSvc.CreateNoteAsync(user, renoteVisibility, renote: note);
 			note.RenoteCount++; // we do not want to call save changes after this point
 		}
 
-		return await GetNote(id);
+		return await GetNote(renote.Id);
 	}
 
 	[HttpPost("{id}/unreblog")]
