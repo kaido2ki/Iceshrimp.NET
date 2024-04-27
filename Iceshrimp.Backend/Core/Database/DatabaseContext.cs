@@ -98,11 +98,12 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		if (config == null)
 			throw new Exception("Failed to initialize database: Failed to load configuration");
 
-		dataSourceBuilder.ConnectionStringBuilder.Host     = config.Host;
-		dataSourceBuilder.ConnectionStringBuilder.Port     = config.Port;
-		dataSourceBuilder.ConnectionStringBuilder.Username = config.Username;
-		dataSourceBuilder.ConnectionStringBuilder.Password = config.Password;
-		dataSourceBuilder.ConnectionStringBuilder.Database = config.Database;
+		dataSourceBuilder.ConnectionStringBuilder.Host        = config.Host;
+		dataSourceBuilder.ConnectionStringBuilder.Port        = config.Port;
+		dataSourceBuilder.ConnectionStringBuilder.Username    = config.Username;
+		dataSourceBuilder.ConnectionStringBuilder.Password    = config.Password;
+		dataSourceBuilder.ConnectionStringBuilder.Database    = config.Database;
+		dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize = config.MaxConnections;
 
 		return ConfigureDataSource(dataSourceBuilder);
 	}
