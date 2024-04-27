@@ -214,7 +214,7 @@ module private MfmParser =
         |>> fun f -> MfmMathBlockNode(f) :> MfmNode
 
     let emojiCodeNode =
-        skipChar ':' >>. manyCharsTill letter (skipChar ':')
+        skipChar ':' >>. manyCharsTill (satisfy isAsciiLetter <|> anyOf "+-_") (skipChar ':')
         |>> fun e -> MfmEmojiCodeNode(e) :> MfmNode
 
     let plainNode =
