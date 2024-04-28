@@ -564,6 +564,7 @@ public class StatusController(
 	{
 		var user = HttpContext.GetUser();
 		var note = await db.Notes
+		                   .IncludeCommonProperties()
 		                   .Where(p => p.Id == id)
 		                   .EnsureVisibleFor(user)
 		                   .FilterHidden(user, db, filterMutes: false)
