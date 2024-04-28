@@ -236,10 +236,10 @@ public sealed class StreamingConnectionAggregate : IDisposable
 			if (note.UserHost == null)
 				timelines.Add(StreamingTimeline.Local);
 
-			if (IsFollowingOrSelf(note.User))
+			if (IsFollowingOrSelf(note.User) && note.CreatedAt > DateTime.UtcNow - TimeSpan.FromMinutes(5))
 				timelines.Add(StreamingTimeline.Home);
 		}
-		else
+		else if (note.CreatedAt > DateTime.UtcNow - TimeSpan.FromMinutes(5))
 		{
 			// We already enumerated _following in IsApplicable()
 			timelines.Add(StreamingTimeline.Home);
