@@ -1157,6 +1157,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		{
 			entity.Property(e => e.PrivateMode).HasDefaultValue(false);
 			entity.Property(e => e.DefaultNoteVisibility).HasDefaultValue(Note.NoteVisibility.Public);
+			entity.Property(e => e.DefaultRenoteVisibility).HasDefaultValue(Note.NoteVisibility.Public);
 			entity.HasOne(e => e.User).WithOne(e => e.UserSettings);
 		});
 

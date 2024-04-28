@@ -276,7 +276,7 @@ public class StatusController(
 
 			var renoteVisibility = request?.Visibility != null
 				? StatusEntity.DecodeVisibility(request.Visibility)
-				: Note.NoteVisibility.Followers;
+				: user.UserSettings?.DefaultRenoteVisibility ?? Note.NoteVisibility.Public;
 
 			if (renoteVisibility == Note.NoteVisibility.Specified)
 				throw GracefulException.BadRequest("Renote visibility must be one of: public, unlisted, private");

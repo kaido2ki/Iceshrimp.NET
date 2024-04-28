@@ -4742,6 +4742,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(Note.NoteVisibility.Public)
                         .HasColumnName("defaultNoteVisibility");
 
+                    b.Property<Note.NoteVisibility>("DefaultRenoteVisibility")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("note_visibility_enum")
+                        .HasDefaultValue(Note.NoteVisibility.Public)
+                        .HasColumnName("defaultRenoteVisibility");
+
                     b.Property<bool>("PrivateMode")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")

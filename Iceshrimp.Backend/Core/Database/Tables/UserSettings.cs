@@ -15,6 +15,7 @@ public class UserSettings
 	[InverseProperty(nameof(Tables.User.UserSettings))]
 	public virtual User User { get; set; } = null!;
 
-	[Column("defaultNoteVisibility")] public Note.NoteVisibility DefaultNoteVisibility { get; set; }
-	[Column("privateMode")]           public bool                PrivateMode           { get; set; }
+	[Column("defaultNoteVisibility")]   public Note.NoteVisibility DefaultNoteVisibility   { get; set; }
+	[Column("defaultRenoteVisibility")] public Note.NoteVisibility DefaultRenoteVisibility { get; set; }
+	[Column("privateMode")]             public bool                PrivateMode             { get; set; }
 }
