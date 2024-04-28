@@ -94,6 +94,29 @@ public class MfmTests
 	}
 
 	[TestMethod]
+	public void TestCodeBlock()
+	{
+		const string input = """
+		                     test 123
+		                     ```
+		                     this is a code block
+		                     ```
+		                     test 123
+		                     """;
+		List<MfmNode> expected =
+		[
+			new MfmTextNode("test 123\n"),
+			new MfmCodeBlockNode("this is a code block", null),
+			new MfmTextNode("\ntest 123")
+		];
+		var res = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
+
+	[TestMethod]
 	public void Benchmark()
 	{
 		const string mfm =
