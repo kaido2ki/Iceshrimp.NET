@@ -100,8 +100,10 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 	private static string RenderFieldValue(string value)
 	{
 		if (!value.StartsWith("http://") && !value.StartsWith("https://")) return value;
-		return !Uri.TryCreate(value, UriKind.Absolute, out var result)
-			? value
-			: $"<a href=\"{result.ToString()}\" rel=\"me nofollow noopener\" target=\"_blank\">{value}</a>";
+		if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
+			return value;
+
+		var displayUri = uri.Host + uri.PathAndQuery + uri.Fragment;
+		return $"<a href=\"{uri.ToString()}\" rel=\"me nofollow noopener\" target=\"_blank\">{displayUri}</a>";
 	}
 }
