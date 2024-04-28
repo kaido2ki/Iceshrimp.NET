@@ -32,11 +32,11 @@
     private string?            MinId     { get; set; }
     private bool               LockFetch { get; set; }
     public  ElementReference   Scroller  { get; set; }
-    private string             _rootMagin = "200%";
+    private string             _rootMagin = "100%";
 
     private async Task Initialize()
     {
-        var pq  = new PaginationQuery() { Limit = 5 };
+        var pq  = new PaginationQuery() { Limit = 10 };
         var res = await ApiService.Timelines.GetHomeTimeline(pq);
         MaxId    = res[0].Id;
         MinId    = res.Last().Id;
@@ -53,8 +53,8 @@
         {
             MinId = res.Last().Id;
             Timeline.AddRange(res);
+            StateHasChanged(); 
         }
-
         LockFetch = false;
     }
 

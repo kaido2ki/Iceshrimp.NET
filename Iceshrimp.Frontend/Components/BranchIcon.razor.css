@@ -1,0 +1,4 @@
+.branch {
+    stroke: var(--highlight-color);
+    stroke-width: 0.55rem;
+}

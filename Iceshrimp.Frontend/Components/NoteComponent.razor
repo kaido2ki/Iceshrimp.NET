@@ -7,17 +7,19 @@
             AvatarUrl="@Note.User.AvatarUrl"
             DisplayName="@Note.User.DisplayName"
             Username="@Note.User.Username" 
+            Indented="Indented"
         />
         <NoteMetadata 
             Visibility="@Note.Visibility"
             InstanceName="@Note.User.InstanceName"
             CreatedAt="DateTime.Parse(Note.CreatedAt)"></NoteMetadata>
     </div>
-    <NoteBody NoteBase="Note" OverLength="@CheckLen()"/>
+    <NoteBody NoteBase="Note" OverLength="@CheckLen()" Indented="Indented"/>
     <NoteFooter Reactions="Note.Reactions" Likes="Note.Likes" IsLiked="Note.Liked"/>
 </CascadingValue>
 @code {
-    [Parameter][EditorRequired] public required NoteResponse  Note          { get; set; }
+    [Parameter][EditorRequired] public required NoteResponse Note     { get; set; }
+    [Parameter]                 public          bool         Indented { get; set; }
     private bool CheckLen()
     {
         return Note.Text?.Length > 500;

@@ -1,15 +1,32 @@
-.indent {
-    padding-left: 0rem;
+
+
+.replies {
+    width: 100%;
+}
+.indented-reply {
+    display: flex;
+    width: 100%;
+}
+.reply-indent {
+    display: flex;
+    flex-direction: column;
+    width: 3em;
+    min-width: 3em;
+    justify-content: center;
+
+}
+.note {
+    width: 100%;
 }
 .root-note {
     max-width: 40rem;
     min-width: 15rem;
     background-color: var(--foreground-color);
-    padding: 1.5rem 1.5rem 1rem; /* top, left-right, bottom*/
+    padding: 1.5rem 1.5rem 1rem 1.5rem; /* top, left-right, bottom*/
     border-radius: 0.75rem;
     margin-top: 1rem;
-    margin-right: 1.5rem;
-    margin-left: 1.5rem;
+    margin-right: 1rem;
+    margin-left: 1rem;
     width: 100%;
 }
 
@@ -17,10 +34,30 @@
     max-width: 40rem;
     min-width: 15rem;
     background-color: var(--foreground-color);
-    padding: 1.5rem 1.5rem 1rem; /* top, left-right, bottom*/
+    padding: 0; /* top, right, bottom, left*/
     border-radius: 0.75rem;
-    margin-top: 1rem;
-    margin-right: 1.5rem;
-    margin-left: 1.5rem;
+    margin: 0;
     width: 100%;
+}
+
+.user-avatar {
+    border-radius: 8px;
+    object-fit: cover;
+    width: 3em;
+    height: 3em;
+}
+.note-container {
+    display: flex;
+}
+.line-container {
+    height: 100%;
+    text-align: center;
+}
+.note-indent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.replies {
+    width: 100%
 }

@@ -6,27 +6,58 @@
 
 @if (_init)
 {
-    <div class="root-note">
-        <NoteComponent Note="RootNote"></NoteComponent>
-    </div>
-    <div class="descendants">
-        @foreach (var element in Descendants)
+    <div class="scroller">
+        <div class="root-note">
+            <NoteComponent Note="RootNote"></NoteComponent>
+        </div>
+        @if (Descendants != null)
         {
-            <RecursiveNote Note="element"/>
+            <div class="descendants">
+                @foreach (var element in Descendants)
+                {
+                    <RecursiveNote Note="element" Depth="0"/>
+                }
+            </div>
         }
     </div>
 }
+else
+{
+    <div>Loading</div>
+}
+@if (_error)
+{
+    <div>This note does not exist!</div>
+}
 @code {
-    [Parameter] public string?             NoteId      { get; set; }
-    public             NoteResponse        RootNote    { get; set; }
-    public             IList<NoteResponse> Descendants { get; set; }
-    private            bool                _init = false;
+    [Parameter] public string?              NoteId      { get; set; }
+    public             NoteResponse?        RootNote    { get; set; }
+    private            IList<NoteResponse>? Descendants { get; set; }
+    private            bool                 _init  = false;
+    private            bool                 _error = false;
 
     protected override async Task OnInitializedAsync()
     {
+       
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (NoteId == null)
+        {
+            _error = true;
+            return;
+        }
         RootNote    = await ApiService.Notes.GetNote(NoteId);
+        if (RootNote == null)
+        {
+            _error = true;
+            return;
+        }
         Descendants = await ApiService.Notes.GetNoteDescendants(NoteId, default);
         _init       = true;
+        
+        StateHasChanged();
     }
 
 }

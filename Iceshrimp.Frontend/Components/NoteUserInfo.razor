@@ -1,10 +1,14 @@
-<img class="user-avatar" src="@AvatarUrl"/>
+@if (Indented == false)
+{
+    <img class="user-avatar" src="@AvatarUrl"/>
+}
 <div class="name-section">
     <span class="display-name">@(DisplayName ?? Username)</span>
     <span class="identifier">@Username</span>
 </div>
 @code {
-    [Parameter] public required string  AvatarUrl   { get; set; }
-    [Parameter] public required string? DisplayName { get; set; }
-    [Parameter] public required string  Username    { get; set; }
+    [Parameter][EditorRequired] public required string  AvatarUrl   { get; set; }
+    [Parameter][EditorRequired] public required string? DisplayName { get; set; }
+    [Parameter][EditorRequired] public required string  Username    { get; set; }
+    [Parameter][EditorRequired] public required bool    Indented    { get; set; }
 }

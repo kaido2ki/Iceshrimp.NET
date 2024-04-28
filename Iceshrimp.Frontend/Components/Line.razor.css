@@ -1,0 +1,9 @@
+.line {
+    display: inline-flex;
+    height: 100%;
+    width: 0;
+    border-left: var(--highlight-color);
+    border-left-width: 0.2rem;
+    border-left-style: solid;
+    align-self: center;
+}

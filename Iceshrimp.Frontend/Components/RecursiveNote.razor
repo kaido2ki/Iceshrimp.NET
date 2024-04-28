@@ -1,17 +1,74 @@
 @using Iceshrimp.Shared.Schemas
+@inject NavigationManager NavigationManager
 
-<div class="root-note">
-    <NoteComponent Note="Note" />
-</div>
-<div class="indent">
-    @if(Note.Descendants != null)
-    @foreach (var note in Note.Descendants)
+<div class="@(Depth > 0 ? "descendant" : "root-note")">
+    <div class="note-container">
+        @if (_indented)
+        {
+            <div class="note-indent">
+                <img class="user-avatar" src="@Note.User.AvatarUrl"/>
+                @if (Note.Descendants?.Count > 0)
+                {
+                    <Line></Line>
+                }
+            </div>
+        }
+        <div class="note" @onclick="OpenNote">
+            <NoteComponent Indented="_indented" Note="Note"/>
+        </div>
+    </div>
+    @if (Note.Descendants != null)
     {
-        <div class="descendant">
-            <RecursiveNote Note="note"/>
+        <div class="@(Note.Descendants?.Count > 1 ? "replies" : "reply")">
+           
+            @* @foreach (var note in Note.Descendants!) // We are checking for null 3 lines up. *@
+            @for (int i = 0; i < Note.Descendants!.Count; i++)
+            {
+                var note = Note.Descendants[i];
+                @if (Note.Descendants?.Count > 1)
+                {
+                    <div class="indented-reply">
+                        <div class="reply-indent">
+                            @if (i == Note.Descendants.Count - 1)
+                            {
+                                <EndIcon />
+                                <div class="line-container"></div>
+                            }else 
+                            {
+                                <BranchIcon />
+                                <div class="line-container">
+                                    <Line/>
+                                </div>
+                            }
+                        </div>
+                        <RecursiveNote Note="note" Depth="Depth + 1"/>
+
+                    </div>
+                } else
+                {
+                    <RecursiveNote Note="note" Depth="Depth + 1"/>
+                }
+            }
         </div>
     }
 </div>
+
 @code {
-    [Parameter][EditorRequired] public required NoteResponse Note { get; set; }
+    [Parameter] [EditorRequired] public required NoteResponse Note  { get; set; }
+    [Parameter] [EditorRequired] public required int          Depth { get; set; }
+    private                                      bool         _indented = false;
+
+    protected override void OnInitialized()
+    {
+        if (Depth > 0 || Note.Descendants?.Count > 0)
+        {
+            _indented = true;
+        }
+    }
+    
+    private void OpenNote()
+    {
+        NavigationManager.NavigateTo($"/notes/{Note.Id}");
+    }
+
 }

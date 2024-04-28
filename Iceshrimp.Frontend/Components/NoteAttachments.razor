@@ -3,14 +3,14 @@
 <div class="attachment-container">
     @foreach (var element in Attachments)
     {
-        <div class="wrapper" @onclick="Open">
+        <div class="wrapper" @onclick="Open" @onclick:stopPropagation="true">
             <img class="attachment" src="@element.Url" alt="@element.AltText"/>
         </div>
     }
     <AttachmentView @ref="View" Attachments="Attachments"></AttachmentView>
 </div>
 @code {
-    [Parameter] [EditorRequired] public IList<NoteAttachment> Attachments    { get; set; }
+    [Parameter] [EditorRequired] public required IList<NoteAttachment> Attachments    { get; set; }
     private                             AttachmentView        View { get; set; }
 
     private void Open()
