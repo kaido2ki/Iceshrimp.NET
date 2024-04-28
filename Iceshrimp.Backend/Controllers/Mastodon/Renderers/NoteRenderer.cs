@@ -270,7 +270,7 @@ public class NoteRenderer(
 			                  Me = user != null &&
 			                       db.NoteReactions.Any(i => i.NoteId == p.First().NoteId &&
 			                                                 i.Reaction == p.First().Reaction &&
-			                                                 i.User == user),
+			                                                 i.User == user)
 		                  })
 		                  .ToListAsync();
 
