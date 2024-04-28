@@ -24,3 +24,7 @@
 .hidden {
     display: none;
 }
+
+.indent {
+    padding-left: 0.75em;
+}

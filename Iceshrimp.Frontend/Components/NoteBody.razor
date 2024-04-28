@@ -3,21 +3,21 @@
 @if (NoteBase.Cw != null)
 {
     <div class="cw">
-        <span class="cw-field">@NoteBase.Cw</span><button class="cw-button" @onclick="ToggleCw">Toggle CW</button>
+        <span class="cw-field">@NoteBase.Cw</span><button class="cw-button" @onclick="ToggleCw" @onclick:stopPropagation="true">Toggle CW</button>
     </div>
-    <div hidden="@CwToggle" class="note-body @(CwToggle ? "hidden" : "")">
+    <div hidden="@CwToggle" class="note-body @(CwToggle ? "hidden" : "") @(Indented ? "indent" : "")">
         @NoteBase.Text
     </div>
 }
 @if (NoteBase.Cw == null && OverLength)
 {
     <div 
-        class="note-body @(Truncate ? "truncated" : "")" 
+        class="note-body @(Truncate ? "truncated" : "") @(Indented ? "indent" : "")" 
         style="max-height: @(Truncate ? MaxHeight + "px" : "initial")" 
     >
         @NoteBase.Text
     </div>
-    <button class="truncate-btn" @onclick="ToggleTruncate">
+    <button class="truncate-btn" @onclick="ToggleTruncate" @onclick:stopPropagation="true">
         @if (Truncate)
         {<span>Show more</span> }
         @if (!Truncate)
@@ -26,7 +26,7 @@
 }
 @if (NoteBase.Cw == null && OverLength == false)
 {
-    <div class="note-body">
+    <div class="note-body @(Indented ? "indent" : "")">
         @NoteBase.Text
     </div>
 }
@@ -39,10 +39,12 @@
 @code {
     [Parameter] public required NoteBase NoteBase   { get; set; }
     [Parameter] public required bool     OverLength { get; set; }
+    [Parameter] public          bool     Indented   { get; set; } = false;
 
     private static int  MaxHeight => 500;
     private        bool Truncate  { get; set; } = true;
     private        bool CwToggle  { get; set; } = true;
+
     private void ToggleCw()
     {
         CwToggle = !CwToggle;
@@ -53,4 +55,5 @@
     {
         Truncate = !Truncate;
     }
+
 }
