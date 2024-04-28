@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db)
+public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db, MfmConverter mfmConverter)
 {
 	/// <summary>
 	///     This function is meant for compacting an actor into the @id form as specified in ActivityStreams
@@ -52,24 +52,33 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		               .Cast<ASTag>()
 		               .ToList();
 
+		var attachments = profile?.Fields
+		                         .Select(p => new ASField { Name = p.Name, Value = RenderFieldValue(p.Value) })
+		                         .Cast<ASAttachment>()
+		                         .ToList();
+
+		var summary = profile?.Description != null
+			? await mfmConverter.ToHtmlAsync(profile.Description, profile.Mentions, user.Host)
+			: null;
+
 		return new ASActor
 		{
-			Id = id,
-			Type = type,
-			Inbox = new ASLink($"{id}/inbox"),
-			Outbox = new ASCollection($"{id}/outbox"),
-			Followers = new ASOrderedCollection($"{id}/followers"),
-			Following = new ASOrderedCollection($"{id}/following"),
-			SharedInbox = new ASLink($"https://{config.Value.WebDomain}/inbox"),
-			Url = new ASLink(user.GetPublicUrl(config.Value)),
-			Username = user.Username,
-			DisplayName = user.DisplayName ?? user.Username,
-			Summary = profile?.Description != null ? await MfmConverter.FromHtmlAsync(profile.Description) : null,
-			MkSummary = profile?.Description,
-			IsCat = user.IsCat,
+			Id             = id,
+			Type           = type,
+			Inbox          = new ASLink($"{id}/inbox"),
+			Outbox         = new ASCollection($"{id}/outbox"),
+			Followers      = new ASOrderedCollection($"{id}/followers"),
+			Following      = new ASOrderedCollection($"{id}/following"),
+			SharedInbox    = new ASLink($"https://{config.Value.WebDomain}/inbox"),
+			Url            = new ASLink(user.GetPublicUrl(config.Value)),
+			Username       = user.Username,
+			DisplayName    = user.DisplayName ?? user.Username,
+			Summary        = summary,
+			MkSummary      = profile?.Description,
+			IsCat          = user.IsCat,
 			IsDiscoverable = user.IsExplorable,
-			IsLocked = user.IsLocked,
-			Featured = new ASOrderedCollection($"{id}/collections/featured"),
+			IsLocked       = user.IsLocked,
+			Featured       = new ASOrderedCollection($"{id}/collections/featured"),
 			Avatar = user.AvatarUrl != null
 				? new ASImage { Url = new ASLink(user.AvatarUrl) }
 				: null,
@@ -83,7 +92,16 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 				Owner     = new ASObjectBase(id),
 				PublicKey = keypair.PublicKey
 			},
-			Tags = tags
+			Tags        = tags,
+			Attachments = attachments
 		};
+	}
+
+	private static string RenderFieldValue(string value)
+	{
+		if (!value.StartsWith("http://") && !value.StartsWith("https://")) return value;
+		return !Uri.TryCreate(value, UriKind.Absolute, out var result)
+			? value
+			: $"<a href=\"{result.ToString()}\" rel=\"me nofollow noopener\" target=\"_blank\">{value}</a>";
 	}
 }

@@ -64,7 +64,7 @@ public static class LdHelpers
 		NullValueHandling = NullValueHandling.Ignore, DateTimeZoneHandling = DateTimeZoneHandling.Local
 	};
 
-	private static IEnumerable<string> ASForceArray => ["tag", "to", "cc", "bcc", "bto"];
+	private static IEnumerable<string> ASForceArray => ["tag", "attachment", "to", "cc", "bcc", "bto"];
 
 	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions)
 	{
