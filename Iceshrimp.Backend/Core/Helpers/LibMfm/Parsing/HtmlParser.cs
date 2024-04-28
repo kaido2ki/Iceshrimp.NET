@@ -60,7 +60,7 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions)
 			case "I":
 			case "EM":
 			{
-				return $"<i>{ParseChildren(node)}</i>";
+				return $"*{ParseChildren(node)}*";
 			}
 			case "PRE":
 			{
