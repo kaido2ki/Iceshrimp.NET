@@ -36,6 +36,10 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			               .AwaitAllAsync()
 			: null;
 
+		var fieldsSource = source
+			? profile?.Fields.Select(p => new Field { Name = p.Name, Value = p.Value }).ToList() ?? []
+			: [];
+
 		var res = new AccountEntity
 		{
 			Id                 = user.Id,
@@ -66,7 +70,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			//TODO: populate these
 			res.Source = new AccountSource
 			{
-				Fields   = [],
+				Fields   = fieldsSource,
 				Language = "",
 				Note     = profile?.Description ?? "",
 				Privacy = StatusEntity.EncodeVisibility(user.UserSettings?.DefaultNoteVisibility ??
@@ -105,7 +109,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 	{
 		var userList = users.ToList();
 		if (userList.Count == 0) return [];
-		var emoji    = await GetEmoji(userList);
+		var emoji = await GetEmoji(userList);
 		return await userList.Select(p => RenderAsync(p, emoji)).AwaitAllAsync();
 	}
 }
