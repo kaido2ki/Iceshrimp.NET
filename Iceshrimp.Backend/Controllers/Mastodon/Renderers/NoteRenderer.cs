@@ -255,7 +255,6 @@ public class NoteRenderer(
 
 	private async Task<List<ReactionEntity>> GetReactions(List<Note> notes, User? user)
 	{
-		if (user == null) return [];
 		if (notes.Count == 0) return [];
 		var counts = notes.ToDictionary(p => p.Id, p => p.Reactions);
 		var res = await db.NoteReactions
@@ -263,14 +262,15 @@ public class NoteRenderer(
 		                  .GroupBy(p => p.Reaction)
 		                  .Select(p => new ReactionEntity
 		                  {
-			                  NoteId = p.First().NoteId,
-			                  Count  = (int)counts[p.First().NoteId].GetValueOrDefault(p.First().Reaction, 1),
-			                  Me = db.NoteReactions.Any(i => i.NoteId == p.First().NoteId &&
-			                                                 i.Reaction == p.First().Reaction &&
-			                                                 i.User == user),
+			                  NoteId    = p.First().NoteId,
+			                  Count     = (int)counts[p.First().NoteId].GetValueOrDefault(p.First().Reaction, 1),
 			                  Name      = p.First().Reaction,
 			                  Url       = null,
-			                  StaticUrl = null
+			                  StaticUrl = null,
+			                  Me = user != null &&
+			                       db.NoteReactions.Any(i => i.NoteId == p.First().NoteId &&
+			                                                 i.Reaction == p.First().Reaction &&
+			                                                 i.User == user),
 		                  })
 		                  .ToListAsync();
 
