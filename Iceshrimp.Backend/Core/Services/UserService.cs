@@ -316,6 +316,27 @@ public class UserService(
 
 		user.Tags = ResolveHashtags(user.UserProfile.Description);
 
+		user.Emojis = [];
+
+		if (user.UserProfile.Description != null)
+		{
+			var nodes = MfmParser.Parse(user.UserProfile.Description);
+			user.Emojis.AddRange((await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList());
+		}
+
+		if (user.DisplayName != null)
+		{
+			var nodes = MfmParser.Parse(user.DisplayName);
+			user.Emojis.AddRange((await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList());
+		}
+
+		if (user.UserProfile.Fields.Length != 0)
+		{
+			var input = user.UserProfile.Fields.Select(p => $"{p.Name} {p.Value}");
+			var nodes = MfmParser.Parse(string.Join('\n', input));
+			user.Emojis.AddRange((await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList());
+		}
+
 		db.Update(user);
 		db.Update(user.UserProfile);
 		await db.SaveChangesAsync();

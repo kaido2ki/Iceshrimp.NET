@@ -30,8 +30,7 @@ public class AccountController(
 	NoteRenderer noteRenderer,
 	UserService userSvc,
 	ActivityPub.UserResolver userResolver,
-	DriveService driveSvc,
-	EmojiService emojiSvc
+	DriveService driveSvc
 ) : ControllerBase
 {
 	[HttpGet("verify_credentials")]
@@ -116,14 +115,6 @@ public class AccountController(
 			user.Banner         = banner;
 			user.BannerBlurhash = banner.Blurhash;
 			user.BannerUrl      = banner.Url;
-		}
-
-		user.Emojis = [];
-
-		if (user.UserProfile.Description != null)
-		{
-			var nodes = MfmParser.Parse(user.UserProfile.Description);
-			user.Emojis = (await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList();
 		}
 
 		user = await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
