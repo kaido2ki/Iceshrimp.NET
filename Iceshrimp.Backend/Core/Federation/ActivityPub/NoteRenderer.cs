@@ -87,7 +87,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			          .Select(p => new ASDocument
 			          {
 				          Sensitive   = p.IsSensitive,
-				          Url         = new ASObjectBase(p.WebpublicUrl ?? p.Url),
+				          Url         = new ASLink(p.WebpublicUrl ?? p.Url),
 				          MediaType   = p.Type,
 				          Description = p.Comment
 			          })

@@ -18,8 +18,8 @@ public class ASDocument : ASAttachment
 	public ASDocument() => Type = $"{Constants.ActivityStreamsNs}#Document";
 
 	[J($"{Constants.ActivityStreamsNs}#url")]
-	[JC(typeof(ASObjectBaseConverter))]
-	public ASObjectBase? Url { get; set; }
+	[JC(typeof(ASLinkConverter))]
+	public ASLink? Url { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#mediaType")]
 	[JC(typeof(ValueObjectConverter))]
@@ -34,6 +34,11 @@ public class ASDocument : ASAttachment
 	public string? Description { get; set; }
 }
 
+public class ASImage : ASDocument
+{
+	public ASImage() => Type = $"{Constants.ActivityStreamsNs}#Image";
+}
+
 public class ASField : ASAttachment
 {
 	[J($"{Constants.ActivityStreamsNs}#name")] [JC(typeof(ValueObjectConverter))]
@@ -44,6 +49,8 @@ public class ASField : ASAttachment
 
 	public ASField() => Type = $"{Constants.SchemaNs}#PropertyValue";
 }
+
+public class ASImageConverter : ASSerializer.ListSingleObjectConverter<ASImage>;
 
 public sealed class ASAttachmentConverter : JsonConverter
 {
@@ -90,6 +97,7 @@ public sealed class ASAttachmentConverter : JsonConverter
 		return attachment?.Type switch
 		{
 			$"{Constants.ActivityStreamsNs}#Document" => obj.ToObject<ASDocument?>(),
+			$"{Constants.ActivityStreamsNs}#Image"    => obj.ToObject<ASImage?>(),
 			$"{Constants.SchemaNs}#PropertyValue"     => obj.ToObject<ASField?>(),
 			_                                         => attachment
 		};
