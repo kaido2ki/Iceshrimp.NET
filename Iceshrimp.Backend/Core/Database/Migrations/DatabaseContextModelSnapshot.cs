@@ -4859,7 +4859,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DataProtectionKeys");
+                    b.ToTable("data_protection_keys", (string)null);
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.AbuseUserReport", b =>

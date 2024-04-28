@@ -1180,6 +1180,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.HasOne<Worker>().WithMany().HasForeignKey(d => d.WorkerId).OnDelete(DeleteBehavior.SetNull);
 		});
 
+		modelBuilder.Entity<DataProtectionKey>().ToTable("data_protection_keys");
+
 		modelBuilder.ApplyConfigurationsFromAssembly(typeof(DatabaseContext).Assembly);
 	}
 
