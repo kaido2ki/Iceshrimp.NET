@@ -232,7 +232,7 @@ module private MfmParser =
     let mentionNode =
         previousCharSatisfiesNot isNotWhitespace
         >>. skipString "@"
-        >>. manyChars (satisfy isAsciiLetter <|> satisfy isDigit <|> anyOf "._-")
+        >>. many1Chars (satisfy isAsciiLetter <|> satisfy isDigit <|> anyOf "._-")
         .>>. opt (skipChar '@' >>. domain)
         .>> (lookAhead
              <| choice

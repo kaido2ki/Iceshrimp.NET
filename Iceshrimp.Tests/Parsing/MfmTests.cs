@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 using Iceshrimp.Parsing;
 using Microsoft.FSharp.Collections;
 using static Iceshrimp.Parsing.MfmNodeTypes;
@@ -48,6 +49,48 @@ public class MfmTests
 
 		AssertionOptions.FormattingOptions.MaxDepth = 100;
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
+	}
+
+	[TestMethod]
+	public void TestWhitespaceAtSign()
+	{
+		const string  input    = "test @ test";
+		List<MfmNode> expected = [new MfmTextNode(input)];
+		var           res      = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
+
+	[TestMethod]
+	public void TestMention()
+	{
+		const string input = "test @test test";
+		List<MfmNode> expected =
+		[
+			new MfmTextNode("test "), new MfmMentionNode("test", "test", null), new MfmTextNode(" test")
+		];
+		var res = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
+	
+	[TestMethod]
+	public void TestInvalidMention()
+	{
+		const string input = "test @test@ test";
+		List<MfmNode> expected =
+		[
+			new MfmTextNode("test @test@ test")
+		];
+		var res = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
 	}
 
 	[TestMethod]
