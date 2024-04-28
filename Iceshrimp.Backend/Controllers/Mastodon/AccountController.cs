@@ -8,7 +8,6 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
