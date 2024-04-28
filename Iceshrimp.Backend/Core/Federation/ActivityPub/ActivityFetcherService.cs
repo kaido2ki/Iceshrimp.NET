@@ -21,7 +21,8 @@ public class ActivityFetcherService(
 	HttpRequestService httpRqSvc,
 	SystemUserService systemUserSvc,
 	DatabaseContext db,
-	ILogger<ActivityFetcherService> logger
+	ILogger<ActivityFetcherService> logger,
+	FederationControlService fedCtrlSvc
 )
 {
 	private static readonly IReadOnlyCollection<string> AcceptableActivityTypes =
@@ -77,6 +78,12 @@ public class ActivityFetcherService(
 		var requestHost = new Uri(url).Host;
 		if (requestHost == config.Value.WebDomain || requestHost == config.Value.AccountDomain)
 			throw GracefulException.UnprocessableEntity("Refusing to fetch activity from local domain");
+		
+		if (await fedCtrlSvc.ShouldBlockAsync(requestHost))
+		{
+			logger.LogDebug("Refusing to fetch activity from blocked instance");
+			return (null, new Uri(url));
+		}
 
 		var request  = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair);
 		var response = await client.SendAsync(request);
