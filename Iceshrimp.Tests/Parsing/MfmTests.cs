@@ -115,6 +115,27 @@ public class MfmTests
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
 		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
 	}
+	
+	[TestMethod]
+	public void TestCodeBlockMultiLine()
+	{
+		const string input = """
+		                     ```cs
+		                     asd
+		                     sdf
+		                     ```
+		                     """;
+		
+		List<MfmNode> expected =
+		[
+			new MfmCodeBlockNode("asd\nsdf", "cs")
+		];
+		var res = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
 
 	[TestMethod]
 	public void Benchmark()
