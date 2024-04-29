@@ -113,7 +113,12 @@ public class InboxValidationMiddleware(
 					throw new GracefulException(HttpStatusCode.Forbidden, "Forbidden", "Instance is blocked",
 					                            suppressLog: true);
 
-				List<string> headers = ["(request-target)", "digest", "host", "date"];
+				List<string> headers = ["(request-target)", "digest", "host"];
+				
+				if (sig.Created != null && !sig.Headers.Contains("date"))
+					headers.Add("(created)");
+				else
+					headers.Add("date");
 
 				verified = await HttpSignature.VerifyAsync(request, sig, headers, key.KeyPem);
 				logger.LogDebug("HttpSignature.Verify returned {result} for key {keyId}", verified, sig.KeyId);
