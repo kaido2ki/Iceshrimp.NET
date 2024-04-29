@@ -82,18 +82,27 @@ public class NoteService(
 		if (user.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
 
-		var pureRenote = renote != null && text == null && poll == null && attachments is not { Count: > 0 };
-
-		if (renote != null && renote.User != user)
+		if (renote != null)
 		{
-			if (pureRenote && renote.Visibility > Note.NoteVisibility.Home)
-				throw GracefulException.UnprocessableEntity("You're not allowed to renote this note");
-			if (await db.Blockings.AnyAsync(p => p.Blockee == user && p.Blocker == renote.User))
-				throw GracefulException.Forbidden($"You are not allowed to interact with @{renote.User.Acct}");
+			var pureRenote = text == null && poll == null && attachments is not { Count: > 0 };
+
+			if (renote.Visibility > Note.NoteVisibility.Followers)
+			{
+				var target = pureRenote ? "renote" : "quote";
+				throw GracefulException.UnprocessableEntity($"You're not allowed to {target} this note");
+			}
+
+			if (renote.User != user)
+			{
+				if (pureRenote && renote.Visibility > Note.NoteVisibility.Home)
+					throw GracefulException.UnprocessableEntity("You're not allowed to renote this note");
+				if (await db.Blockings.AnyAsync(p => p.Blockee == user && p.Blocker == renote.User))
+					throw GracefulException.Forbidden($"You are not allowed to interact with @{renote.User.Acct}");
+			}
+
+			if (pureRenote && renote.Visibility > visibility)
+				visibility = renote.Visibility;
 		}
-		
-		if (pureRenote && renote!.Visibility > visibility)
-			visibility = renote.Visibility;
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			resolvedMentions ?? await ResolveNoteMentionsAsync(text);
