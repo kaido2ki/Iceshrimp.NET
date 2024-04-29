@@ -17,9 +17,8 @@ public static class HttpSignature
 		if (!requiredHeaders.All(signature.Headers.Contains))
 			throw new GracefulException(HttpStatusCode.Forbidden, "Request is missing required headers");
 
-		var signingString = GenerateSigningString(signature.Headers, request.Method,
-		                                          request.Path,
-		                                          request.Headers);
+		var signingString =
+			GenerateSigningString(signature.Headers, request.Method, request.Path, request.Headers, null, signature);
 
 		if (request.Body.CanSeek) request.Body.Position = 0;
 		return await VerifySignatureAsync(key, signingString, signature, request.Headers,
@@ -32,7 +31,8 @@ public static class HttpSignature
 		var signature       = Parse(signatureHeader);
 		var signingString = GenerateSigningString(signature.Headers, request.Method.Method,
 		                                          request.RequestUri!.AbsolutePath,
-		                                          request.Headers.ToHeaderDictionary());
+		                                          request.Headers.ToHeaderDictionary(),
+		                                          null, signature);
 
 		Stream? body = null;
 
@@ -41,16 +41,31 @@ public static class HttpSignature
 		return await VerifySignatureAsync(key, signingString, signature, request.Headers.ToHeaderDictionary(), body);
 	}
 
-	private static async Task<bool> VerifySignatureAsync(
+	public static async Task<bool> VerifySignatureAsync(
 		string key, string signingString,
 		HttpSignatureHeader signature,
 		IHeaderDictionary headers, Stream? body
 	)
 	{
-		if (!headers.TryGetValue("date", out var date))
-			throw new GracefulException(HttpStatusCode.Forbidden, "Date header is missing");
-		if (DateTime.Now - DateTime.Parse(date!) > TimeSpan.FromHours(12))
-			throw new GracefulException(HttpStatusCode.Forbidden, "Request signature too old");
+		var created     = signature.Created;
+		var datePresent = headers.TryGetValue("date", out var date);
+		if (created == null && !datePresent)
+			throw new GracefulException(HttpStatusCode.Forbidden, "Neither date nor (created) are present, refusing");
+
+		var dateCheck = datePresent && DateTime.Now - DateTime.Parse(date!) > TimeSpan.FromHours(12);
+		var createdCheck = created != null &&
+		                   DateTime.UtcNow - (DateTime.UnixEpoch + TimeSpan.FromSeconds(long.Parse(created))) >
+		                   TimeSpan.FromHours(12);
+
+		if (dateCheck || createdCheck)
+			throw new GracefulException(HttpStatusCode.Forbidden, "Request signature is too old");
+
+		var expiryCheck = signature.Expires != null &&
+		                  DateTime.UtcNow - (DateTime.UnixEpoch + TimeSpan.FromSeconds(long.Parse(signature.Expires))) >
+		                  TimeSpan.Zero;
+
+		if (expiryCheck)
+			throw new GracefulException(HttpStatusCode.Forbidden, "Request signature is expired");
 
 		if (body is { Length: > 0 })
 		{
@@ -98,20 +113,24 @@ public static class HttpSignature
 		return request;
 	}
 
-	private static string GenerateSigningString(
+	public static string GenerateSigningString(
 		IEnumerable<string> headers, string requestMethod, string requestPath,
-		IHeaderDictionary requestHeaders, string? host = null
+		IHeaderDictionary requestHeaders, string? host = null, HttpSignatureHeader? signature = null
 	)
 	{
 		var sb = new StringBuilder();
 
-		//TODO: handle additional params, see https://github.com/Chocobozzz/node-http-signature/blob/master/lib/parser.js#L294-L310
 		foreach (var header in headers)
 		{
 			sb.Append($"{header}: ");
 			sb.AppendLine(header switch
 			{
 				"(request-target)" => $"{requestMethod.ToLowerInvariant()} {requestPath}",
+				"(created)"        => signature?.Created ?? throw new Exception("Signature is missing created param"),
+				"(keyid)"          => signature?.KeyId ?? throw new Exception("Signature is missing keyId param"),
+				"(algorithm)"      => signature?.Algo ?? throw new Exception("Signature is missing algorithm param"),
+				"(expires)"        => signature?.Expires ?? throw new Exception("Signature is missing expires param"),
+				"(opaque)"         => signature?.Opaque ?? throw new Exception("Signature is missing opaque param"),
 				"host"             => $"{host ?? requestHeaders[header]}",
 				_                  => string.Join(", ", requestHeaders[header].AsEnumerable())
 			});
@@ -132,33 +151,44 @@ public static class HttpSignature
 		                .Select(s => s.Split('='))
 		                .ToDictionary(p => p[0], p => (p[1] + new string('=', p.Length - 2)).Trim('"'));
 
-		//TODO: these fail if the dictionary doesn't contain the key, use TryGetValue instead
-		var signatureBase64 = sig["signature"] ??
-		                      throw new GracefulException(HttpStatusCode.Forbidden,
-		                                                  "Signature string is missing the signature field");
-		var headers = sig["headers"].Split(" ") ??
-		              throw new GracefulException(HttpStatusCode.Forbidden,
-		                                          "Signature data is missing the headers field");
+		if (!sig.TryGetValue("signature", out var signatureBase64))
+			throw GracefulException.Forbidden("Signature string is missing the signature field");
 
-		var keyId = sig["keyId"] ??
-		            throw new GracefulException(HttpStatusCode.Forbidden,
-		                                        "Signature string is missing the keyId field");
+		if (!sig.TryGetValue("headers", out var headers))
+			throw GracefulException.Forbidden("Signature string is missing the headers field");
+
+		if (!sig.TryGetValue("keyId", out var keyId))
+			throw GracefulException.Forbidden("Signature string is missing the keyId field");
 
 		//TODO: this should fallback to sha256
-		var algo = sig["algorithm"] ??
-		           throw new GracefulException(HttpStatusCode.Forbidden,
-		                                       "Signature string is missing the algorithm field");
+		if (!sig.TryGetValue("algorithm", out var algo))
+			throw GracefulException.Forbidden("Signature string is missing the algorithm field");
+
+		sig.TryGetValue("created", out var created);
+		sig.TryGetValue("expires", out var expires);
+		sig.TryGetValue("opaque", out var opaque);
 
 		var signature = Convert.FromBase64String(signatureBase64);
 
-		return new HttpSignatureHeader(keyId, algo, signature, headers);
+		return new HttpSignatureHeader(keyId, algo, signature, headers.Split(" "), created, expires, opaque);
 	}
 
-	public class HttpSignatureHeader(string keyId, string algo, byte[] signature, IEnumerable<string> headers)
+	public class HttpSignatureHeader(
+		string keyId,
+		string algo,
+		byte[] signature,
+		IEnumerable<string> headers,
+		string? created,
+		string? expires,
+		string? opaque
+	)
 	{
 		public readonly string              Algo      = algo;
 		public readonly IEnumerable<string> Headers   = headers;
 		public readonly string              KeyId     = keyId;
 		public readonly byte[]              Signature = signature;
+		public readonly string?             Created   = created;
+		public readonly string?             Expires   = expires;
+		public readonly string?             Opaque    = opaque;
 	}
 }
