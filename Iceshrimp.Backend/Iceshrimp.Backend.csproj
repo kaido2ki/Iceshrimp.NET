@@ -10,6 +10,7 @@
         <VersionSuffix>alpha</VersionSuffix>
         <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
         <PublishTrimmed>false</PublishTrimmed>
+        <GarbageCollectionAdaptationMode>1</GarbageCollectionAdaptationMode>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
