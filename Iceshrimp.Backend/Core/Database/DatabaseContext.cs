@@ -655,6 +655,10 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.UserHost).HasComment("[Denormalized]");
 			entity.Property(e => e.UserId).HasComment("The ID of author.");
 			entity.Property(e => e.VisibleUserIds).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.ReplyUri)
+			      .HasComment("The URI of the reply target, if it couldn't be resolved at time of ingestion.");
+			entity.Property(e => e.RenoteUri)
+			      .HasComment("The URI of the renote target, if it couldn't be resolved at time of ingestion.");
 
 			entity.HasOne(d => d.Channel)
 			      .WithMany(p => p.Notes)

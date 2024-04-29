@@ -2417,6 +2417,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("renoteId")
                         .HasComment("The ID of renote target.");
 
+                    b.Property<string>("RenoteUri")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("renoteUri")
+                        .HasComment("The URI of the renote target, if it couldn't be resolved at time of ingestion.");
+
                     b.Property<string>("RenoteUserHost")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
@@ -2440,6 +2446,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("replyId")
                         .HasComment("The ID of reply target.");
+
+                    b.Property<string>("ReplyUri")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("replyUri")
+                        .HasComment("The URI of the reply target, if it couldn't be resolved at time of ingestion.");
 
                     b.Property<string>("ReplyUserHost")
                         .HasMaxLength(512)
@@ -2530,7 +2542,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex("RenoteId");
 
+                    b.HasIndex("RenoteUri");
+
                     b.HasIndex("ReplyId");
+
+                    b.HasIndex("ReplyUri");
 
                     b.HasIndex("Tags");
 

@@ -29,6 +29,8 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(Url))]
 [Index(nameof(UserId), nameof(Id))]
 [Index(nameof(Visibility))]
+[Index(nameof(ReplyUri))]
+[Index(nameof(RenoteUri))]
 public class Note : IEntity
 {
 	[PgName("note_visibility_enum")]
@@ -59,6 +61,20 @@ public class Note : IEntity
 	[Column("renoteId")]
 	[StringLength(32)]
 	public string? RenoteId { get; set; }
+	
+	/// <summary>
+	///		The URI of the reply target, if it couldn't be resolved at time of ingestion.
+	/// </summary>
+	[Column("replyUri")]
+	[StringLength(512)]
+	public string? ReplyUri { get; set; }
+	
+	/// <summary>
+	///		The URI of the renote target, if it couldn't be resolved at time of ingestion.
+	/// </summary>
+	[Column("renoteUri")]
+	[StringLength(512)]
+	public string? RenoteUri { get; set; }
 
 	[Column("text")] public string? Text { get; set; }
 
