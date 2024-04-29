@@ -61,7 +61,8 @@ public class NoteService(
 		User user, Note.NoteVisibility visibility, string? text = null, string? cw = null, Note? reply = null,
 		Note? renote = null, IReadOnlyCollection<DriveFile>? attachments = null, Poll? poll = null,
 		bool localOnly = false, string? uri = null, string? url = null, List<string>? emoji = null,
-		MentionQuintuple? resolvedMentions = null, DateTime? createdAt = null, ASNote? asNote = null
+		MentionQuintuple? resolvedMentions = null, DateTime? createdAt = null, ASNote? asNote = null,
+		string? replyUri = null, string? renoteUri = null
 	)
 	{
 		logger.LogDebug("Creating note for user {id}", user.Id);
@@ -195,7 +196,9 @@ public class NoteService(
 			ThreadId             = reply?.ThreadId ?? reply?.Id,
 			Tags                 = tags,
 			LocalOnly            = localOnly,
-			Emojis               = emoji ?? []
+			Emojis               = emoji ?? [],
+			ReplyUri             = replyUri,
+			RenoteUri            = renoteUri
 		};
 
 		if (poll != null)
@@ -224,6 +227,33 @@ public class NoteService(
 		await notificationSvc.GenerateRenoteNotification(note);
 
 		logger.LogDebug("Note {id} created successfully", note.Id);
+
+		if (uri != null || url != null)
+		{
+			_ = followupTaskSvc.ExecuteTask("ResolvePendingReplyRenoteTargets", async provider =>
+			{
+				var bgDb = provider.GetRequiredService<DatabaseContext>();
+				if (uri != null)
+				{
+					await bgDb.Notes.Where(p => p.ReplyUri == uri)
+					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.ReplyId, _ => note.Id)
+					                                    .SetProperty(i => i.ReplyUri, _ => null));
+					await bgDb.Notes.Where(p => p.RenoteUri == uri)
+					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RenoteId, _ => note.Id)
+					                                    .SetProperty(i => i.RenoteUri, _ => null));
+				}
+
+				if (url != null)
+				{
+					await bgDb.Notes.Where(p => p.ReplyUri == url)
+					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.ReplyId, _ => note.Id)
+					                                    .SetProperty(i => i.ReplyUri, _ => null));
+					await bgDb.Notes.Where(p => p.RenoteUri == url)
+					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RenoteId, _ => note.Id)
+					                                    .SetProperty(i => i.RenoteUri, _ => null));
+				}
+			});
+		}
 
 		if (user.Host != null)
 		{
@@ -649,8 +679,9 @@ public class NoteService(
 		if (actor.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
 
-		var   reply = note.InReplyTo?.Id != null ? await ResolveNoteAsync(note.InReplyTo.Id, user: user) : null;
-		Poll? poll  = null;
+		var   replyUri = note.InReplyTo?.Id;
+		var   reply    = replyUri != null ? await ResolveNoteAsync(replyUri, user: user) : null;
+		Poll? poll     = null;
 
 		if (reply is { HasPoll: true } && note.Name != null)
 		{
@@ -684,12 +715,21 @@ public class NoteService(
 			return null;
 		}
 
+		if (replyUri != null)
+		{
+			if (reply == null && note.Name != null)
+				throw GracefulException.UnprocessableEntity("Refusing to ingest poll vote for unknown note");
+			if (reply != null)
+				replyUri = null;
+		}
+
 		var mentionQuintuple = await ResolveNoteMentionsAsync(note);
 		var createdAt = note.PublishedAt?.ToUniversalTime() ??
 		                throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field");
 
 		var quoteUrl   = note.MkQuote ?? note.QuoteUri ?? note.QuoteUrl;
 		var renote     = quoteUrl != null ? await ResolveNoteAsync(quoteUrl, user: user) : null;
+		var renoteUri  = renote == null ? quoteUrl : null;
 		var visibility = note.GetVisibility(actor);
 		var text       = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content, mentionQuintuple.mentions);
 		var cw         = note.Summary;
@@ -723,7 +763,7 @@ public class NoteService(
 		            .ToList();
 
 		return await CreateNoteAsync(actor, visibility, text, cw, reply, renote, files, poll, false, uri, url, emoji,
-		                             mentionQuintuple, createdAt, note);
+		                             mentionQuintuple, createdAt, note, replyUri, renoteUri);
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage",

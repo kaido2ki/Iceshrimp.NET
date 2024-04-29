@@ -34,7 +34,7 @@ public class NoteRenderer(
 		var     text     = note.Text;
 		string? quoteUri = null;
 
-		if (note is { Renote: not null, IsQuote: true } && text != null)
+		if ((note is { Renote: not null, IsQuote: true } || note.RenoteUri != null) && text != null)
 		{
 			var qUri = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value);
 			var alt  = note.Renote?.Uri;
@@ -75,8 +75,12 @@ public class NoteRenderer(
 		                             })
 		                             .ToList();
 
+		var replyInaccessible = note.Reply == null && (note.ReplyId != null || note.ReplyUri != null);
+		var quoteInaccessible = note is { RenoteId: not null, RenoteUri: null };
+
 		var content = text != null && data?.Source != true
-			? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost, quoteUri)
+			? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost, quoteUri, quoteInaccessible,
+			                                 replyInaccessible)
 			: null;
 
 		var account = data?.Accounts?.FirstOrDefault(p => p.Id == note.UserId) ??

@@ -272,7 +272,9 @@ public class ActivityHandlerService(
 				if (announce.Object is not ASNote note)
 					throw GracefulException.UnprocessableEntity("Invalid or unsupported announce object");
 
-				var dbNote = await noteSvc.ResolveNoteAsync(note.Id, note);
+				var dbNote = await noteSvc.ResolveNoteAsync(note.Id, note) ??
+				             throw GracefulException.UnprocessableEntity("Failed to resolve announce target");
+
 				await noteSvc.CreateNoteAsync(resolvedActor, announce.GetVisibility(activity.Actor), renote: dbNote,
 				                              uri: announce.Id);
 				return;

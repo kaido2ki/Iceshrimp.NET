@@ -33,12 +33,14 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 			};
 		}
 
-		res.Renote   = renote;
-		res.RenoteId = note.RenoteId;
-		res.Quote    = quote;
-		res.QuoteId  = note.RenoteId;
-		res.Reply    = reply;
-		res.ReplyId  = note.ReplyId;
+		res.Renote            = renote;
+		res.RenoteId          = note.RenoteId;
+		res.Quote             = quote;
+		res.QuoteId           = note.RenoteId;
+		res.QuoteInaccessible = note.RenoteUri != null;
+		res.Reply             = reply;
+		res.ReplyId           = note.ReplyId;
+		res.ReplyInaccessible = note.ReplyUri != null;
 
 		return res;
 	}
@@ -48,8 +50,9 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 		var res   = await RenderBaseInternal(note, user, data);
 		var quote = note.Renote is { IsPureRenote: false } ? await RenderBase(note.Renote, user, data) : null;
 
-		res.Quote   = quote;
-		res.QuoteId = note.RenoteId;
+		res.Quote             = quote;
+		res.QuoteId           = note.RenoteId;
+		res.QuoteInaccessible = note.RenoteUri != null;
 
 		return res;
 	}

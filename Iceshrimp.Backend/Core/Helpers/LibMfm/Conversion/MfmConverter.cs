@@ -57,12 +57,23 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 
 	public async Task<string> ToHtmlAsync(
 		IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions, string? host,
-		string? quoteUri = null
+		string? quoteUri = null, bool quoteInaccessible = false, bool replyInaccessible = false
 	)
 	{
 		var context  = BrowsingContext.New();
 		var document = await context.OpenNewAsync();
 		var element  = document.CreateElement("p");
+
+		if (replyInaccessible)
+		{
+			var wrapper = document.CreateElement("span");
+			var re      = document.CreateElement("span");
+			re.TextContent = "RE: \ud83d\udd12"; // lock emoji
+			wrapper.AppendChild(re);
+			wrapper.AppendChild(document.CreateElement("br"));
+			wrapper.AppendChild(document.CreateElement("br"));
+			element.AppendChild(wrapper);
+		}
 
 		foreach (var node in nodes) element.AppendNodes(FromMfmNode(document, node, mentions, host));
 
@@ -81,6 +92,16 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 			quote.AppendChild(a);
 			element.AppendChild(quote);
 		}
+		else if (quoteInaccessible)
+		{
+			var wrapper = document.CreateElement("span");
+			var re      = document.CreateElement("span");
+			re.TextContent = "RE: \ud83d\udd12"; // lock emoji
+			wrapper.AppendChild(document.CreateElement("br"));
+			wrapper.AppendChild(document.CreateElement("br"));
+			wrapper.AppendChild(re);
+			element.AppendChild(wrapper);
+		}
 
 		await using var sw = new StringWriter();
 		await element.ToHtmlAsync(sw);
@@ -88,11 +109,12 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 	}
 
 	public async Task<string> ToHtmlAsync(
-		string mfm, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null
+		string mfm, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
+		bool quoteInaccessible = false, bool replyInaccessible = false
 	)
 	{
 		var nodes = MfmParser.Parse(mfm);
-		return await ToHtmlAsync(nodes, mentions, host, quoteUri);
+		return await ToHtmlAsync(nodes, mentions, host, quoteUri, quoteInaccessible, replyInaccessible);
 	}
 
 	private INode FromMfmNode(

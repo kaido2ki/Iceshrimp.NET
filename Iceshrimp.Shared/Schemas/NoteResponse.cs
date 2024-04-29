@@ -5,11 +5,12 @@ namespace Iceshrimp.Shared.Schemas;
 
 public class NoteResponse : NoteWithQuote, ICloneable
 {
-	public NoteBase?           Reply    { get; set; }
-	public string?             ReplyId  { get; set; }
-	public NoteWithQuote?      Renote   { get; set; }
-	public string?             RenoteId { get; set; }
-	public NoteFilteredSchema? Filtered { get; set; }
+	public NoteBase?           Reply             { get; set; }
+	public string?             ReplyId           { get; set; }
+	public bool                ReplyInaccessible { get; set; }
+	public NoteWithQuote?      Renote            { get; set; }
+	public string?             RenoteId          { get; set; }
+	public NoteFilteredSchema? Filtered          { get; set; }
 
 	// The properties below are only necessary for building a descendants tree
 	[JI] public NoteResponse? Parent;
@@ -22,8 +23,9 @@ public class NoteResponse : NoteWithQuote, ICloneable
 
 public class NoteWithQuote : NoteBase
 {
-	public NoteBase? Quote   { get; set; }
-	public string?   QuoteId { get; set; }
+	public NoteBase? Quote             { get; set; }
+	public string?   QuoteId           { get; set; }
+	public bool?     QuoteInaccessible { get; set; }
 }
 
 public class NoteBase
