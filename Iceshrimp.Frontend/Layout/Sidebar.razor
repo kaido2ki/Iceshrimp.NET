@@ -1,23 +1,54 @@
 @using Iceshrimp.Frontend.Components
+@using Iceshrimp.Assets.PhosphorIcons
 <div class="sidebar">
     <div class="header">
-            <account-dropdown />
+        <account-dropdown />
     </div>
     <div class="nav">
         <div class="sidebar-btn">
             <NavLink href="/">
-                Timeline
+                <Icon Name="Icons.House" />
+                <span class="text">Timeline</span>
             </NavLink>
         </div>
         <div class="sidebar-btn">
             <NavLink href="/notifications">
-                Notifications
+                <Icon Name="Icons.Bell"/>
+                <span class="text">Notifications</span>
+            </NavLink>
+        </div>
+        <button @onclick="Open" class="sidebar-btn">
+            <Icon Name="Icons.Pencil"/>
+            <span class="text">Open!</span>
+            <Compose @ref="_compose"/>
+            @* <button @onclick="Open">Open!</button> *@
+        </button>
+    </div>
+</div>
+
+<div class="bottom-bar">
+    <div class="nav">
+        <button class="sidebar-btn">
+            <Icon Name="Icons.List" /> 
+        </button>
+        <div class="sidebar-btn">
+            <NavLink href="/">
+                <Icon Name="Icons.House"/>
+                <span class="text">Timeline</span>
             </NavLink>
         </div>
         <div class="sidebar-btn">
-            <Compose @ref="_compose" />
-            <button @onclick="Open">Open!</button>
+            <NavLink href="/notifications">
+                <Icon Name="Icons.Bell"/>
+                <span class="text">Notifications</span>
+            </NavLink>
         </div>
+        <button @onclick="Open" class="sidebar-btn">
+            <Icon Name="Icons.Pencil"/>
+            <span class="text">Open!</span>
+            <Compose @ref="_compose"/>
+            @* <button @onclick="Open">Open!</button> *@
+        </button>
     </div>
 </div>
 @code {

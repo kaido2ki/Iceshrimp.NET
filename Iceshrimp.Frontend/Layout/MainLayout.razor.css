@@ -7,3 +7,17 @@
 .main {
     width: 100%;
 }
+
+.widget-panel{
+    
+}
+.sidebar {
+    
+}
+
+@media (max-width: 700px) {
+    .widget-panel {
+        display: none;
+    }
+    
+}

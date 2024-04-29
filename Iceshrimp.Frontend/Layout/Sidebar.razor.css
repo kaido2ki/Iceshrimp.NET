@@ -1,37 +1,91 @@
-.sidebar {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    max-width: 15rem;
-    min-width: 15rem;
-    flex-grow: 1;
-    background-color: var(--foreground-color);
+@media (min-width: 701px) {
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        max-width: 15rem;
+        min-width: 15rem;
+        flex-grow: 1;
+        background-color: var(--foreground-color);
+    }
+
+    .header {
+        height: 5rem;
+    }
+
+    .sidebar-btn {
+        display: flex;
+        height: 2.5rem;
+        align-items: center;
+        justify-content: start;
+        border-radius: 1.25rem;
+        padding-inline: 0.5rem;
+        margin-bottom: 0.5rem;
+        margin-inline: 1rem;
+        color: black;
+        font-size: 0.9em;
+        background: var(--accent-color)
+    }
+
+    .btn:hover {
+        background-color: var(--hover-color);
+    }
+
+    .icon {
+        display: flex;
+        margin: 0.5rem;
+        align-items: center;
+        color: black;
+    }
+
+    .bottom-bar {
+        display: none;
+    }
 }
 
-.header {
-    height: 5rem;
-}
-.sidebar-btn {
-    display: flex;
-    height: 2.5rem;
-    align-items: center;
-    justify-content: start;
-    border-radius: 1.25rem;
-    padding-inline: 0.5rem;
-    margin-bottom: 0.5rem;
-    margin-inline: 1rem;
-    color: black;
-    font-size: 0.9em;
-    background: var(--accent-color)
-}
+@media (max-width: 700px) {
+    .sidebar {
+        display: none;
+    }
+    .bottom-bar {
+        width: 100vw;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        background-color: var(--foreground-color);
+    }
+    
+    .nav {
+        display: flex;
+        justify-content: space-around;
+    }
+    
+    .sidebar-btn {
+        display: inline-flex;
+        height: 3rem;
+        width: 4rem;
+        min-width: 4rem;
+        max-width: 4rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1.25rem;
+        margin-bottom: 0.5rem;
+        margin-top: 0.5rem;
+        color: black;
+        background: var(--accent-color);
+        .text {
+            display: none;
+        }
+    }
 
-.btn:hover {
-    background-color: var(--hover-color);
-}
+    .btn:hover {
+        background-color: var(--hover-color);
+    }
 
-.icon {
-    display: flex;
-    margin: 0.5rem;
-    align-items: center;
-    color: black;
+    .icon {
+        display: flex;
+        margin: 0.5rem;
+        align-items: center;
+        color: black;
+    }
 }
