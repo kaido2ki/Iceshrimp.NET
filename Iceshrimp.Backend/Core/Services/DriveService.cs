@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Blurhash.ImageSharp;
+using Blurhash;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -10,11 +10,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using ImageSharp = SixLabors.ImageSharp.Image;
 
 namespace Iceshrimp.Backend.Core.Services;
 
@@ -157,7 +153,8 @@ public class DriveService(
 		{
 			try
 			{
-				var ident      = await Image.IdentifyAsync(buf);
+				var pre        = DateTime.Now;
+				var ident      = await ImageSharp.IdentifyAsync(buf);
 				var isAnimated = ident.FrameMetadataCollection.Count != 0;
 				properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
 
@@ -167,67 +164,49 @@ public class DriveService(
 
 				buf.Seek(0, SeekOrigin.Begin);
 
-				var limit = user.Host == null && !isAnimated
-					? 2048
-					: shouldStore
-						? 1024
-						: 200;
-
-				var width  = Math.Min(ident.Width, limit);
-				var height = Math.Min(ident.Height, limit);
-				var size   = new Size(width, height);
-
-				var       options = new DecoderOptions { MaxFrames = 1, TargetSize = size };
-				using var image   = await Image.LoadAsync<Rgba32>(options, buf);
-
-				image.Mutate(x => x.AutoOrient());
+				using var image     = NetVips.Image.NewFromStream(buf);
+				using var processed = image.Autorot();
+				buf.Seek(0, SeekOrigin.Begin);
 
 				// Calculate blurhash using a x200px image for improved performance
-				using var blurhashImage = image.Clone();
-				var       blurOpts      = new ResizeOptions { Size = new Size(200, 200), Mode = ResizeMode.Max };
-				blurhashImage.Mutate(p => p.Resize(blurOpts));
-				blurhash = Blurhasher.Encode(blurhashImage, 7, 7);
+				using var blurhashImage = processed.ThumbnailImage(200, 200, NetVips.Enums.Size.Down);
+				var       blurBuf       = blurhashImage.WriteToMemory();
+				var       blurArr       = new Pixel[blurhashImage.Width, blurhashImage.Height];
+
+				var idx  = 0;
+				var incr = image.Bands - 3;
+				for (var i = 0; i < blurhashImage.Height; i++)
+				{
+					for (var j = 0; j < blurhashImage.Width; j++)
+					{
+						blurArr[j, i] =  new Pixel(blurBuf[idx++] / 255d, blurBuf[idx++] / 255d, blurBuf[idx++] / 255d);
+						idx           += incr;
+					}
+				}
+
+				blurhash = Blurhash.Core.Encode(blurArr, 7, 7, new Progress<int>());
 
 				if (shouldStore)
 				{
 					// Generate thumbnail
-					using var thumbnailImage = image.Clone();
-					thumbnailImage.Metadata.ExifProfile = null;
-					thumbnailImage.Metadata.XmpProfile  = null;
-					if (Math.Max(image.Size.Width, image.Size.Height) > 1000)
-					{
-						var thumbOpts = new ResizeOptions { Size = new Size(1000, 1000), Mode = ResizeMode.Max };
-						thumbnailImage.Mutate(p => p.Resize(thumbOpts));
-					}
+					using var thumbnailImage = processed.ThumbnailImage(1000, 1000, NetVips.Enums.Size.Down);
 
 					thumbnail = new MemoryStream();
-					var thumbEncoder = new WebpEncoder { Quality = 75, FileFormat = WebpFileFormatType.Lossy };
-					await thumbnailImage.SaveAsWebpAsync(thumbnail, thumbEncoder);
+					thumbnailImage.WebpsaveStream(thumbnail, 75, false);
 					thumbnail.Seek(0, SeekOrigin.Begin);
 
 					// Generate webpublic for local users, if image is not animated
 					if (user.Host == null && !isAnimated)
 					{
-						using var webpublicImage = image.Clone();
-						webpublicImage.Metadata.ExifProfile = null;
-						webpublicImage.Metadata.XmpProfile  = null;
-						if (Math.Max(image.Size.Width, image.Size.Height) > 2048)
-						{
-							var webpOpts = new ResizeOptions { Size = new Size(2048, 2048), Mode = ResizeMode.Max };
-							webpublicImage.Mutate(p => p.Resize(webpOpts));
-						}
-
-						var encoder = new WebpEncoder
-						{
-							Quality    = request.MimeType == "image/png" ? 100 : 75,
-							FileFormat = WebpFileFormatType.Lossy
-						};
+						using var webpublicImage = processed.ThumbnailImage(2048, 2048, NetVips.Enums.Size.Down);
 
 						webpublic = new MemoryStream();
-						await webpublicImage.SaveAsWebpAsync(webpublic, encoder);
+						webpublicImage.WebpsaveStream(webpublic, request.MimeType == "image/png" ? 100 : 75, false);
 						webpublic.Seek(0, SeekOrigin.Begin);
 					}
 				}
+				
+				logger.LogTrace("Image processing took {ms} ms", (int)(DateTime.Now - pre).TotalMilliseconds);
 			}
 			catch
 			{
@@ -266,6 +245,7 @@ public class DriveService(
 					var             thumbPath   = Path.Combine(pathBase, thumbnailFilename);
 					await using var thumbWriter = File.OpenWrite(thumbPath);
 					await thumbnail.CopyToAsync(thumbWriter);
+					await thumbnail.DisposeAsync();
 				}
 
 				if (webpublicFilename != null && webpublic is { Length: > 0 })
@@ -273,23 +253,26 @@ public class DriveService(
 					var             webpPath   = Path.Combine(pathBase, webpublicFilename);
 					await using var webpWriter = File.OpenWrite(webpPath);
 					await webpublic.CopyToAsync(webpWriter);
+					await webpublic.DisposeAsync();
 				}
 			}
 			else
 			{
-				await storageSvc.UploadFileAsync(filename, data);
+				await storageSvc.UploadFileAsync(filename, buf);
 				url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
 
 				if (thumbnailFilename != null && thumbnail is { Length: > 0 })
 				{
 					await storageSvc.UploadFileAsync(thumbnailFilename, thumbnail);
 					thumbnailUrl = storageSvc.GetFilePublicUrl(thumbnailFilename).AbsoluteUri;
+					await thumbnail.DisposeAsync();
 				}
 
 				if (webpublicFilename != null && webpublic is { Length: > 0 })
 				{
 					await storageSvc.UploadFileAsync(webpublicFilename, webpublic);
 					webpublicUrl = storageSvc.GetFilePublicUrl(webpublicFilename).AbsoluteUri;
+					await webpublic.DisposeAsync();
 				}
 			}
 		}

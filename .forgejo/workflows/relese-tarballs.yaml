@@ -26,8 +26,8 @@ jobs:
         run: |-
           cd /src/Iceshrimp.Backend
           mkdir -p /out/{linux-x64,linux-arm64}
-          dotnet publish -c Release -p:EnableAOT=true -r linux-x64 -o /out/linux-x64
-          dotnet publish -c Release -p:EnableAOT=true -r linux-arm64 -o /out/linux-arm64
+          dotnet publish -c Release -p:EnableAOT=true -p:BundleNativeDeps=true -r linux-x64 -o /out/linux-x64
+          dotnet publish -c Release -p:EnableAOT=true -p:BundleNativeDeps=true -r linux-arm64 -o /out/linux-arm64
       - name: Generate artifacts
         shell: bash
         run: |-

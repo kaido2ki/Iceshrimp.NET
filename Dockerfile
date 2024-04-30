@@ -10,13 +10,13 @@ COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 WORKDIR /src/Iceshrimp.Backend
 ARG TARGETARCH
-RUN dotnet restore -a $TARGETARCH
+RUN dotnet restore -a $TARGETARCH -p:BundleNativeDeps=true
 
 # copy build files
 COPY . /src/
 
 # build
-RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app
+RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app -p:BundleNativeDeps=true
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS builder-aot
 RUN dotnet workload install wasm-tools
@@ -31,13 +31,13 @@ COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 WORKDIR /src/Iceshrimp.Backend
 ARG TARGETARCH
-RUN dotnet restore -a $TARGETARCH
+RUN dotnet restore -a $TARGETARCH -p:BundleNativeDeps=true
 
 # copy build files
 COPY . /src/
 
 # build
-RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app -p:EnableAOT=true
+RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app -p:EnableAOT=true -p:BundleNativeDeps=true
 
 # Enable globalization and time zones:
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
