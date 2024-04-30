@@ -196,16 +196,15 @@ public static class WebApplicationExtensions
 
 		SixLabors.ImageSharp.Configuration.Default.MemoryAllocator =
 			MemoryAllocator.Create(new MemoryAllocatorOptions { AllocationLimitMegabytes = 20 });
-		
-		NetVips.Log.SetLogHandler("VIPS", NetVips.Enums.LogLevelFlags.Warning, null);
-        NetVips.Log.SetLogHandler("VIPS", NetVips.Enums.LogLevelFlags.Error, (domain, _, message) =>
-        {
-	        app.Logger.LogWarning("libvips error: {domain} - {message}", domain, message);
-		});
 
-		app.Logger.LogInformation("Initializing application, please wait...");
+		var logger = app.Services.GetRequiredService<ILogger<DriveService>>();
+		NetVips.Log.SetLogHandler("VIPS", NetVips.Enums.LogLevelFlags.Warning | NetVips.Enums.LogLevelFlags.Error,
+		                          VipsLogDelegate);
 
 		return instanceConfig;
+
+		void VipsLogDelegate(string domain, NetVips.Enums.LogLevelFlags _, string message) =>
+			logger.LogWarning("libvips: {domain} - {message}", domain, message);
 	}
 
 	public static void SetKestrelUnixSocketPermissions(this WebApplication app)
