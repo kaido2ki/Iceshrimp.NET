@@ -85,7 +85,7 @@ public class ActivityFetcherService(
 			return (null, new Uri(url));
 		}
 
-		var request  = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair);
+		var request  = httpRqSvc.GetSigned(url, AcceptableActivityTypes, actor, keypair).DisableAutoRedirects();
 		var response = await client.SendAsync(request);
 
 		if (IsRedirect(response))
