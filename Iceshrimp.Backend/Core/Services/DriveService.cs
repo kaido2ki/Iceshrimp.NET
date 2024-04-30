@@ -246,6 +246,7 @@ public class DriveService(
 					await using var thumbWriter = File.OpenWrite(thumbPath);
 					await thumbnail.CopyToAsync(thumbWriter);
 					await thumbnail.DisposeAsync();
+					thumbnailUrl = $"https://{instanceConfig.Value.WebDomain}/files/{thumbnailFilename}";
 				}
 
 				if (webpublicFilename != null && webpublic is { Length: > 0 })
@@ -254,6 +255,7 @@ public class DriveService(
 					await using var webpWriter = File.OpenWrite(webpPath);
 					await webpublic.CopyToAsync(webpWriter);
 					await webpublic.DisposeAsync();
+					webpublicUrl = $"https://{instanceConfig.Value.WebDomain}/files/{webpublicFilename}";
 				}
 			}
 			else
