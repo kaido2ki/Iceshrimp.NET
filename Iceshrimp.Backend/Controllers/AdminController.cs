@@ -129,7 +129,7 @@ public class AdminController(
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASObject))]
 	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ErrorResponse))]
 	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-	public async Task FetchRawActivityByUsername([FromQuery] string uri)
+	public async Task FetchRawActivityAsync([FromQuery] string uri)
 	{
 		var activity = await fetchSvc.FetchRawActivityAsync(uri);
 		if (activity == null) throw GracefulException.UnprocessableEntity("Failed to fetch activity");
