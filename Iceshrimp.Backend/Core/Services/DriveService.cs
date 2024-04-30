@@ -85,6 +85,9 @@ public class DriveService(
 				await db.SaveChangesAsync();
 				return clonedFile;
 			}
+			
+			if (!logExisting)
+				logger.LogDebug("Storing file {uri} for user {userId}", uri, user.Id);
 
 			var res = await httpClient.GetAsync(uri);
 
