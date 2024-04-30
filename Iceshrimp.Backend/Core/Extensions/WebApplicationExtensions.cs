@@ -7,6 +7,7 @@ using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Options;
+using SixLabors.ImageSharp.Memory;
 using WebPush;
 
 namespace Iceshrimp.Backend.Core.Extensions;
@@ -132,7 +133,7 @@ public static class WebApplicationExtensions
 			await maintenanceSvc.RecomputeInstanceCountersAsync();
 			Environment.Exit(0);
 		}
-		
+
 		if (args.Contains("--migrate-storage"))
 		{
 			app.Logger.LogInformation("Migrating files to object storage, this will take a while...");
@@ -192,6 +193,9 @@ public static class WebApplicationExtensions
 
 		app.Logger.LogInformation("Warming up meta cache...");
 		await meta.WarmupCache();
+
+		SixLabors.ImageSharp.Configuration.Default.MemoryAllocator =
+			MemoryAllocator.Create(new MemoryAllocatorOptions { AllocationLimitMegabytes = 20 });
 
 		app.Logger.LogInformation("Initializing application, please wait...");
 

@@ -11,6 +11,7 @@ using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -62,7 +63,7 @@ public class DriveService(
 
 					return file;
 				}
-				
+
 				if (!logExisting)
 					logger.LogDebug("Storing file {uri} for user {userId}", uri, user.Id);
 
@@ -85,7 +86,7 @@ public class DriveService(
 				await db.SaveChangesAsync();
 				return clonedFile;
 			}
-			
+
 			if (!logExisting)
 				logger.LogDebug("Storing file {uri} for user {userId}", uri, user.Id);
 
@@ -111,8 +112,8 @@ public class DriveService(
 
 	public async Task<DriveFile> StoreFile(Stream data, User user, DriveFileCreationRequest request)
 	{
-		var buf    = new BufferedStream(data);
-		var digest = await DigestHelpers.Sha256DigestAsync(buf);
+		await using var buf    = new BufferedStream(data);
+		var             digest = await DigestHelpers.Sha256DigestAsync(buf);
 		logger.LogDebug("Storing file {digest} for user {userId}", digest, user.Id);
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest);
 		if (file is { IsLink: false })
@@ -148,50 +149,73 @@ public class DriveService(
 
 		DriveFile.FileProperties? properties = null;
 
-		if (request.MimeType.StartsWith("image/") || request.MimeType == "image")
+		var isImage = request.MimeType.StartsWith("image/") || request.MimeType == "image";
+		// skip images larger than 10MB
+		var isReasonableSize = buf.Length < 10 * 1024 * 1024;
+
+		if (isImage && isReasonableSize)
 		{
 			try
 			{
-				var image = await Image.LoadAsync<Rgba32>(buf);
+				var ident      = await Image.IdentifyAsync(buf);
+				var isAnimated = ident.FrameMetadataCollection.Count != 0;
+				properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
+
+				// Correct mime type
+				if (request.MimeType == "image" && ident.Metadata.DecodedImageFormat?.DefaultMimeType != null)
+					request.MimeType = ident.Metadata.DecodedImageFormat.DefaultMimeType;
+
+				buf.Seek(0, SeekOrigin.Begin);
+
+				var limit = user.Host == null && !isAnimated
+					? 2048
+					: shouldStore
+						? 1024
+						: 200;
+
+				var width  = Math.Min(ident.Width, limit);
+				var height = Math.Min(ident.Height, limit);
+				var size   = new Size(width, height);
+
+				var       options = new DecoderOptions { MaxFrames = 1, TargetSize = size };
+				using var image   = await Image.LoadAsync<Rgba32>(options, buf);
+
 				image.Mutate(x => x.AutoOrient());
 
 				// Calculate blurhash using a x200px image for improved performance
-				var blurhashImage = image.Clone();
-				blurhashImage.Mutate(p => p.Resize(image.Width > image.Height ? new Size(200, 0) : new Size(0, 200)));
+				using var blurhashImage = image.Clone();
+				var       blurOpts      = new ResizeOptions { Size = new Size(200, 200), Mode = ResizeMode.Max };
+				blurhashImage.Mutate(p => p.Resize(blurOpts));
 				blurhash = Blurhasher.Encode(blurhashImage, 7, 7);
-
-				// Correct mime type
-				if (request.MimeType == "image" && image.Metadata.DecodedImageFormat?.DefaultMimeType != null)
-					request.MimeType = image.Metadata.DecodedImageFormat.DefaultMimeType;
-
-				properties = new DriveFile.FileProperties { Width = image.Size.Width, Height = image.Size.Height };
 
 				if (shouldStore)
 				{
 					// Generate thumbnail
-					var thumbnailImage = image.Clone();
+					using var thumbnailImage = image.Clone();
 					thumbnailImage.Metadata.ExifProfile = null;
 					thumbnailImage.Metadata.XmpProfile  = null;
 					if (Math.Max(image.Size.Width, image.Size.Height) > 1000)
-						thumbnailImage.Mutate(p => p.Resize(image.Width > image.Height
-							                                    ? new Size(1000, 0)
-							                                    : new Size(0, 1000)));
+					{
+						var thumbOpts = new ResizeOptions { Size = new Size(1000, 1000), Mode = ResizeMode.Max };
+						thumbnailImage.Mutate(p => p.Resize(thumbOpts));
+					}
 
 					thumbnail = new MemoryStream();
 					var thumbEncoder = new WebpEncoder { Quality = 75, FileFormat = WebpFileFormatType.Lossy };
 					await thumbnailImage.SaveAsWebpAsync(thumbnail, thumbEncoder);
 					thumbnail.Seek(0, SeekOrigin.Begin);
 
-					// Generate webpublic for local users
-					if (user.Host == null)
+					// Generate webpublic for local users, if image is not animated
+					if (user.Host == null && !isAnimated)
 					{
-						var webpublicImage = image.Clone();
+						using var webpublicImage = image.Clone();
 						webpublicImage.Metadata.ExifProfile = null;
 						webpublicImage.Metadata.XmpProfile  = null;
 						if (Math.Max(image.Size.Width, image.Size.Height) > 2048)
-							webpublicImage.Mutate(p => p.Resize(image.Width > image.Height
-								                                    ? new Size(2048, 0)
-								                                    : new Size(0, 2048)));
+						{
+							var webpOpts = new ResizeOptions { Size = new Size(2048, 2048), Mode = ResizeMode.Max };
+							webpublicImage.Mutate(p => p.Resize(webpOpts));
+						}
 
 						var encoder = new WebpEncoder
 						{
