@@ -196,6 +196,12 @@ public static class WebApplicationExtensions
 
 		SixLabors.ImageSharp.Configuration.Default.MemoryAllocator =
 			MemoryAllocator.Create(new MemoryAllocatorOptions { AllocationLimitMegabytes = 20 });
+		
+		NetVips.Log.SetLogHandler("VIPS", NetVips.Enums.LogLevelFlags.Warning, null);
+        NetVips.Log.SetLogHandler("VIPS", NetVips.Enums.LogLevelFlags.Error, (domain, _, message) =>
+        {
+	        app.Logger.LogWarning("libvips error: {domain} - {message}", domain, message);
+		});
 
 		app.Logger.LogInformation("Initializing application, please wait...");
 

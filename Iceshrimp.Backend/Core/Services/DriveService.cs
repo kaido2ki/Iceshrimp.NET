@@ -168,23 +168,32 @@ public class DriveService(
 				using var processed = image.Autorot();
 				buf.Seek(0, SeekOrigin.Begin);
 
-				// Calculate blurhash using a x200px image for improved performance
-				using var blurhashImage = processed.ThumbnailImage(200, 200, NetVips.Enums.Size.Down);
-				var       blurBuf       = blurhashImage.WriteToMemory();
-				var       blurArr       = new Pixel[blurhashImage.Width, blurhashImage.Height];
-
-				var idx  = 0;
-				var incr = image.Bands - 3;
-				for (var i = 0; i < blurhashImage.Height; i++)
+				try
 				{
-					for (var j = 0; j < blurhashImage.Width; j++)
-					{
-						blurArr[j, i] =  new Pixel(blurBuf[idx++] / 255d, blurBuf[idx++] / 255d, blurBuf[idx++] / 255d);
-						idx           += incr;
-					}
-				}
+					// Calculate blurhash using a x200px image for improved performance
+					using var blurhashImage = processed.ThumbnailImage(200, 200, NetVips.Enums.Size.Down);
+					var       blurBuf       = blurhashImage.WriteToMemory();
+					var       blurArr       = new Pixel[blurhashImage.Width, blurhashImage.Height];
 
-				blurhash = Blurhash.Core.Encode(blurArr, 7, 7, new Progress<int>());
+					var idx  = 0;
+					var incr = image.Bands - 3;
+					for (var i = 0; i < blurhashImage.Height; i++)
+					{
+						for (var j = 0; j < blurhashImage.Width; j++)
+						{
+							blurArr[j, i] = new Pixel(blurBuf[idx++] / 255d, blurBuf[idx++] / 255d,
+							                          blurBuf[idx++] / 255d);
+							idx += incr;
+						}
+					}
+
+					blurhash = Blurhash.Core.Encode(blurArr, 7, 7, new Progress<int>());
+				}
+				catch (Exception e)
+				{
+					logger.LogWarning("Failed to generate blurhash for image with mime type {type}: {e}",
+					                  request.MimeType, e.Message);
+				}
 
 				if (shouldStore)
 				{
@@ -205,13 +214,13 @@ public class DriveService(
 						webpublic.Seek(0, SeekOrigin.Begin);
 					}
 				}
-				
+
 				logger.LogTrace("Image processing took {ms} ms", (int)(DateTime.Now - pre).TotalMilliseconds);
 			}
-			catch
+			catch (Exception e)
 			{
-				logger.LogError("Failed to generate blurhash & thumbnail for image with mime type {type}",
-				                request.MimeType);
+				logger.LogError("Failed to generate thumbnails for image with mime type {type}: {e}",
+				                request.MimeType, e.Message);
 
 				// We want to make sure no images are federated out without stripping metadata & converting to webp
 				if (user.Host == null) throw;
