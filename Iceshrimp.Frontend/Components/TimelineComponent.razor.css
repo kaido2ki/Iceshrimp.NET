@@ -6,4 +6,5 @@
     width: 100%;
     align-items: center;
     overflow-anchor: none;
+    overscroll-behavior: contain;
 }
