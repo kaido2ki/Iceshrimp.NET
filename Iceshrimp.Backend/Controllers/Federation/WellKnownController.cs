@@ -111,6 +111,7 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 	public IActionResult HostMeta()
 	{
 		var accept = Request.Headers.Accept.OfType<string>()
+		                    .SelectMany(p => p.Split(","))
 		                    .Select(MediaTypeWithQualityHeaderValue.Parse)
 		                    .Select(p => p.MediaType)
 		                    .ToList();
