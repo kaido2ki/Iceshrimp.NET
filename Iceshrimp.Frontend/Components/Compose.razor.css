@@ -1,6 +1,8 @@
 .compose {
     background-color: var(--background-color);
     border-radius: 1rem;
+    margin: 0 auto;
+    top: 10%
 }
 .textarea {
     display: block;

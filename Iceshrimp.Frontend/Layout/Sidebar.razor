@@ -17,13 +17,9 @@
                 <span class="text">Notifications</span>
             </NavLink>
         </div>
-        <button @onclick="Open" class="sidebar-btn">
-            <Icon Name="Icons.Pencil"/>
-            <span class="text">Open!</span>
-            <Compose @ref="_compose"/>
-            @* <button @onclick="Open">Open!</button> *@
-        </button>
     </div>
+    <hr/>
+    <button class="sidebar-btn" @onclick="Open">Open</button>
 </div>
 
 <div class="bottom-bar">
@@ -43,19 +39,23 @@
                 <span class="text">Notifications</span>
             </NavLink>
         </div>
-        <button @onclick="Open" class="sidebar-btn">
-            <Icon Name="Icons.Pencil"/>
-            <span class="text">Open!</span>
-            <Compose @ref="_compose"/>
-            @* <button @onclick="Open">Open!</button> *@
-        </button>
+        <div>
+            <button @onclick="Open" class="sidebar-btn">
+                <Icon Name="Icons.Pencil"/>
+                <span class="text">Open!</span>
+            </button>
+        </div>
     </div>
+    
 </div>
+
+<Compose @ref="_compose"/>
 @code {
     private Compose _compose;
 
     private void Open()
     {
+        Console.WriteLine("open pressed");
         _compose.OpenDialog();
     }
 
