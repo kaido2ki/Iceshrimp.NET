@@ -3,14 +3,14 @@
 @inject IJSRuntime Js
 
 <dialog class="attachment-view" @ref="Dialog">
-    <button @onclick="CloseDialog" class="close"><Icon Name="Icons.X" Size="5rem"></Icon></button>
+    <button @onclick="CloseDialog" @onclick:stopPropagation="true" class="close"><Icon Name="Icons.X" Size="5rem"></Icon></button>
     @if (Focused < _refs.Count -1 )
     {
-        <button @onclick="Next" class="next"><Icon Name="Icons.ArrowRight" Size="5rem"></Icon></button>
+        <button @onclick="Next" @onclick:stopPropagation="true" class="next"><Icon Name="Icons.ArrowRight" Size="5rem"></Icon></button>
     }
     @if (Focused > 0)
     {
-        <button @onclick="Prev" class="prev"><Icon Name="Icons.ArrowLeft" Size="5rem"></Icon></button>
+        <button @onclick="Prev" @onclick:stopPropagation="true" class="prev"><Icon Name="Icons.ArrowLeft" Size="5rem"></Icon></button>
     }
     <div class="wrap" @ref="Scroller" @onscroll="Scroll">
         @foreach (var element in Attachments)
