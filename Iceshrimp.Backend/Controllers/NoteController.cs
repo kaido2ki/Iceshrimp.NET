@@ -68,9 +68,10 @@ public class NoteController(
 		                    .FilterHidden(user, db)
 		                    .PrecomputeNoteContextVisibilities(user)
 		                    .ToListAsync();
+		var res = await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user,
+		                                        Filter.FilterContext.Threads);
 
-		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user,
-		                                        Filter.FilterContext.Threads));
+		return Ok(res.ToList().OrderAncestors());
 	}
 
 	[HttpGet("{id}/descendants")]

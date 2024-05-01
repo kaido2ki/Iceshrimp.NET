@@ -97,7 +97,10 @@ public class StatusController(
 		                          .PrecomputeVisibilities(user)
 		                          .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Threads);
 
-		var res = new StatusContext { Ancestors = ancestors, Descendants = descendants.OrderDescendants() };
+		var res = new StatusContext
+		{
+			Ancestors = ancestors.OrderAncestors(), Descendants = descendants.OrderDescendants()
+		};
 
 		return Ok(res);
 	}

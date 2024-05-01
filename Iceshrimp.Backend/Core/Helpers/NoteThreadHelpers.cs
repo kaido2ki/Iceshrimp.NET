@@ -13,6 +13,48 @@ public static class NoteThreadHelpers
 		public          TreeNode<T>?      Parent;
 	}
 
+	public static List<NoteResponse> OrderAncestors(this List<NoteResponse> notes)
+	{
+		var final = new List<NoteResponse>();
+		foreach (var note in notes)
+		{
+			if (note.ReplyId == null)
+			{
+				final.Insert(0, note);
+				continue;
+			}
+
+			var parent = final.Find(p => p.Id == note.ReplyId);
+			if (parent != null)
+				final.Insert(final.IndexOf(parent) + 1, note);
+			else
+				final.Add(note);
+		}
+
+		return final;
+	}
+
+	public static List<StatusEntity> OrderAncestors(this List<StatusEntity> notes)
+	{
+		var final = new List<StatusEntity>();
+		foreach (var note in notes)
+		{
+			if (note.ReplyId == null)
+			{
+				final.Insert(0, note);
+				continue;
+			}
+
+			var parent = final.Find(p => p.Id == note.ReplyId);
+			if (parent != null)
+				final.Insert(final.IndexOf(parent) + 1, note);
+			else
+				final.Add(note);
+		}
+
+		return final;
+	}
+
 	public static List<NoteResponse> OrderDescendants(this List<NoteResponse> notes)
 	{
 		foreach (var note in notes)
