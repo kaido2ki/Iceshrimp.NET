@@ -169,10 +169,6 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 			{
 				return document.CreateTextNode($"\u200B:{emojiCodeNode.Name}:\u200B");
 			}
-			case MfmUnicodeEmojiNode unicodeEmojiNode:
-			{
-				return document.CreateTextNode(unicodeEmojiNode.Emoji);
-			}
 			case MfmHashtagNode hashtagNode:
 			{
 				var el = document.CreateElement("a");

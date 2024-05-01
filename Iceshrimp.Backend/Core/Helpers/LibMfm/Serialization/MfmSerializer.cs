@@ -131,11 +131,6 @@ public static class MfmSerializer
 					result.Append(mfmTextNode.Text);
 					break;
 				}
-				case MfmUnicodeEmojiNode mfmUnicodeEmojiNode:
-				{
-					result.Append(mfmUnicodeEmojiNode.Emoji);
-					break;
-				}
 				case MfmUrlNode mfmUrlNode:
 				{
 					if (mfmUrlNode.Brackets)
