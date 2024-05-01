@@ -24,6 +24,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		{
 			Id              = user.Id,
 			Username        = user.Username,
+			Host            = user.Host,
 			DisplayName     = user.DisplayName,
 			AvatarUrl       = user.AvatarUrl ?? user.GetIdenticonUrl(config.Value),
 			BannerUrl       = user.BannerUrl,
