@@ -1,7 +1,8 @@
 @using Iceshrimp.Shared.Schemas
+@using Iceshrimp.Frontend.Components.Note
 @inject NavigationManager Navigation
 <div class="note-container" @onclick="OpenNote" id="@Note.Id">
-    <NoteComponent Note="Note"></NoteComponent>
+    <Note NoteResponse="Note"></Note>
 </div>
 @code {
     [Parameter][EditorRequired] public required NoteResponse Note { get; set; }

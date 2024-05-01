@@ -1,6 +1,7 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
 @inject ApiService ApiService;
+@inject NavigationManager NavigationManager
 <CascadingValue Value="this">
     <div class="note-header">
         <NoteUserInfo
@@ -15,14 +16,30 @@
             CreatedAt="DateTime.Parse(Note.CreatedAt)"></NoteMetadata>
     </div>
     <NoteBody NoteBase="Note" OverLength="@CheckLen()" Indented="Indented"/>
-    <NoteFooter Reactions="Note.Reactions" Likes="Note.Likes" IsLiked="Note.Liked"/>
+    @if (Quote != null)
+    {
+        <div @onclick="OpenQuote" @onclick:stopPropagation="true" class="quote">
+            <NoteComponent Note="Quote" AsQuote="true"></NoteComponent>
+        </div>
+    }
+    @if (!AsQuote)
+    {
+        <NoteFooter Reactions="Note.Reactions" Likes="Note.Likes" IsLiked="Note.Liked"/>
+    }
 </CascadingValue>
 @code {
-    [Parameter][EditorRequired] public required NoteResponse Note     { get; set; }
-    [Parameter]                 public          bool         Indented { get; set; }
+    [Parameter][EditorRequired] public required NoteBase  Note     { get; set; }
+    [Parameter]                 public          bool      Indented { get; set; }
+    [Parameter]                 public          NoteBase? Quote    { get; set; }
+    [Parameter]                 public          bool      AsQuote  { get; set; }
     private bool CheckLen()
     {
         return Note.Text?.Length > 500;
+    }
+
+    private void OpenQuote()
+    {
+        NavigationManager.NavigateTo($"/notes/{Quote!.Id}");
     }
 
     public void React(string name, bool target)

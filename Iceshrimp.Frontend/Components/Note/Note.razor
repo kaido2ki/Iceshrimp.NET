@@ -1,0 +1,9 @@
+@using Iceshrimp.Shared.Schemas
+
+<NoteComponent Note="NoteResponse" Quote="NoteResponse.Quote" Indented="Indented"></NoteComponent>
+
+@code {
+    [Parameter][EditorRequired] public required NoteResponse NoteResponse { get; set; }
+    [Parameter]                 public          bool         Indented     { get; set; }
+
+}

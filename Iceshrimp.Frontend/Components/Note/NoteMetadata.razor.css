@@ -3,6 +3,7 @@
     flex-direction: column;
     align-items: end;
     font-size: 0.9em;
+    white-space: nowrap;
     margin-left: auto;
     .info {
         display: block;
