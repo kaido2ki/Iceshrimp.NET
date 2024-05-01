@@ -79,6 +79,6 @@ public class MentionsResolver(
 			                          resolvedUser.Username, resolvedUser.Host);
 		}
 
-		return new MfmPlainNode(node.Acct);
+		return new MfmPlainNode($"@{node.Acct}");
 	}
 }
