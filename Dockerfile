@@ -1,6 +1,5 @@
 # To build with ILLink & AOT enabled, run docker build --target image-aot
 # To build without VIPS support, run docker build --build-arg="VIPS=false"
-ARG VIPS=true
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS builder-jit
 WORKDIR /src
@@ -11,6 +10,7 @@ COPY Iceshrimp.Parsing/*.fsproj /src/Iceshrimp.Parsing/
 COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 WORKDIR /src/Iceshrimp.Backend
+ARG VIPS=true
 ARG TARGETARCH
 RUN dotnet restore -a $TARGETARCH -p:BundleNativeDepsMusl=$VIPS -p:EnableLibVips=$VIPS
 
@@ -32,6 +32,7 @@ COPY Iceshrimp.Parsing/*.fsproj /src/Iceshrimp.Parsing/
 COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 WORKDIR /src/Iceshrimp.Backend
+ARG VIPS=true
 ARG TARGETARCH
 RUN dotnet restore -a $TARGETARCH -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS
 
