@@ -1,0 +1,264 @@
+using Blurhash.ImageSharp;
+using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database.Tables;
+using Microsoft.Extensions.Options;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.Memory;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using ImageSharp = SixLabors.ImageSharp.Image;
+
+#if EnableLibVips
+using Blurhash;
+#endif
+
+namespace Iceshrimp.Backend.Core.Services;
+
+public class ImageProcessor
+{
+	private readonly ILogger<ImageProcessor> _logger;
+
+	#if EnableLibVips
+	private readonly IOptions<Config.StorageSection> _config;
+	#endif
+
+	public ImageProcessor(ILogger<ImageProcessor> logger, IOptions<Config.StorageSection> config)
+	{
+		_logger = logger;
+
+		SixLabors.ImageSharp.Configuration.Default.MemoryAllocator =
+			MemoryAllocator.Create(new MemoryAllocatorOptions { AllocationLimitMegabytes = 20 });
+
+		#if EnableLibVips
+		_config = config;
+		if (!_config.Value.EnableLibVips)
+		{
+			_logger.LogInformation("VIPS support was enabled at compile time, but is not enabled in the configuration, skipping VIPS init");
+			_logger.LogInformation("Using ImageSharp for image processing.");
+			return;
+		}
+
+		//TODO: Implement something similar to https://github.com/lovell/sharp/blob/da655a1859744deec9f558effa5c9981ef5fd6d3/lib/utility.js#L153C5-L158
+		NetVips.NetVips.Concurrency = 1;
+
+		// We want to know when we have a memory leak
+		NetVips.NetVips.Leak = true;
+
+		// We don't need the VIPS operation or file cache
+		NetVips.Cache.Max = 0;
+		NetVips.Cache.MaxFiles = 0;
+		NetVips.Cache.MaxMem = 0;
+
+		NetVips.Log.SetLogHandler("VIPS", NetVips.Enums.LogLevelFlags.Warning | NetVips.Enums.LogLevelFlags.Error,
+		                          VipsLogDelegate);
+		_logger.LogInformation("Using VIPS for image processing.");
+		#else
+		if (config.Value.EnableLibVips)
+		{
+			_logger.LogWarning("VIPS support was disabled at compile time, but EnableLibVips is set in the configuration. Either compile with -p:EnableLibVips=true, or disable EnableLibVips in the configuration.");
+		}
+		else
+		{
+			_logger.LogDebug("VIPS support was disabled at compile time, skipping VIPS init");
+		}
+
+		_logger.LogInformation("Using ImageSharp for image processing.");
+		#endif
+	}
+
+	public class Result
+	{
+		public string?             Blurhash;
+		public Func<Stream, Task>? RenderThumbnail;
+		public Func<Stream, Task>? RenderWebpublic;
+
+		public required DriveFile.FileProperties Properties;
+	}
+
+	public async Task<Result?> ProcessImage(Stream data, DriveFileCreationRequest request, bool genThumb, bool genWebp)
+	{
+		try
+		{
+			var pre   = DateTime.Now;
+			var ident = await ImageSharp.IdentifyAsync(data);
+			data.Seek(0, SeekOrigin.Begin);
+
+			Result? res = null;
+
+			// Correct mime type
+			if (request.MimeType == "image" && ident.Metadata.DecodedImageFormat?.DefaultMimeType != null)
+				request.MimeType = ident.Metadata.DecodedImageFormat.DefaultMimeType;
+
+			// Don't generate thumb/webp for animated images
+			if (ident.FrameMetadataCollection.Count != 0)
+			{
+				genThumb = false;
+				genWebp  = false;
+			}
+
+			if (ident.Width * ident.Height > 30000000)
+			{
+				_logger.LogDebug("Image is larger than 30mpx ({width}x{height}), bypassing image processing pipeline",
+				                 ident.Width, ident.Height);
+				var props = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
+				return new Result { Properties = props };
+			}
+
+			#if EnableLibVips
+			if (_config.Value.EnableLibVips)
+			{
+				try
+				{
+					byte[] buf;
+					await using (var memoryStream = new MemoryStream())
+					{
+						await data.CopyToAsync(memoryStream);
+						buf = memoryStream.ToArray();
+					}
+
+					res = await ProcessImageVips(buf, ident, request, genThumb, genWebp);
+				}
+				catch (Exception e)
+				{
+					_logger.LogWarning("Failed to process image of type {type} with VIPS, falling back to ImageSharp: {e}",
+					                   request.MimeType, e.Message);
+				}
+			}
+			#endif
+
+			try
+			{
+				res ??= await ProcessImageSharp(data, ident, request, genThumb, genWebp);
+			}
+			catch (Exception e)
+			{
+				_logger.LogWarning("Failed to process image of type {type} with ImageSharp: {e}",
+				                   request.MimeType, e.Message);
+				var props = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
+				return new Result { Properties = props };
+			}
+
+			_logger.LogTrace("Image processing took {ms} ms", (int)(DateTime.Now - pre).TotalMilliseconds);
+			return res;
+		}
+		catch (Exception e)
+		{
+			_logger.LogError("Failed to process image with mime type {type}: {e}",
+			                 request.MimeType, e.Message);
+			return null;
+		}
+	}
+
+	private static async Task<Result> ProcessImageSharp(
+		Stream data, ImageInfo ident, DriveFileCreationRequest request, bool genThumb, bool genWebp
+	)
+	{
+		var properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
+		var res        = new Result { Properties              = properties };
+
+		// Calculate blurhash using a x200px image for improved performance
+		{
+			using var image = await GetImage(data, ident, 200);
+			res.Blurhash = Blurhasher.Encode(image, 7, 7);
+		}
+
+		if (genThumb)
+		{
+			res.RenderThumbnail = async stream =>
+			{
+				using var image        = await GetImage(data, ident, 1000);
+				var       thumbEncoder = new WebpEncoder { Quality = 75, FileFormat = WebpFileFormatType.Lossy };
+				await image.SaveAsWebpAsync(stream, thumbEncoder);
+			};
+		}
+
+		if (genWebp)
+		{
+			res.RenderWebpublic = async stream =>
+			{
+				using var image        = await GetImage(data, ident, 2048);
+				var       q            = request.MimeType == "image/png" ? 100 : 75;
+				var       thumbEncoder = new WebpEncoder { Quality = q, FileFormat = WebpFileFormatType.Lossy };
+				await image.SaveAsWebpAsync(stream, thumbEncoder);
+			};
+		}
+
+		return res;
+	}
+
+	private static async Task<Image<Rgba32>> GetImage(Stream data, ImageInfo ident, int width, int? height = null)
+	{
+		width  = Math.Min(ident.Width, width);
+		height = Math.Min(ident.Height, height ?? width);
+		var size    = new Size(width, height.Value);
+		var options = new DecoderOptions { MaxFrames = 1, TargetSize = size };
+
+		data.Seek(0, SeekOrigin.Begin);
+		var image = await ImageSharp.LoadAsync<Rgba32>(options, data);
+		image.Mutate(x => x.AutoOrient());
+		var opts = new ResizeOptions { Size = size, Mode = ResizeMode.Max };
+		image.Mutate(p => p.Resize(opts));
+		return image;
+	}
+
+	#if EnableLibVips
+	private Task<Result> ProcessImageVips(
+		byte[] buf, ImageInfo ident, DriveFileCreationRequest request, bool genThumb, bool genWebp
+	)
+	{
+		var properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
+		var res = new Result { Properties = properties };
+
+		// Calculate blurhash using a x200px image for improved performance
+		using var blurhashImage =
+			NetVips.Image.ThumbnailBuffer(buf, width: 200, height: 200, size: NetVips.Enums.Size.Down);
+		var blurBuf = blurhashImage.WriteToMemory();
+		var blurArr = new Pixel[blurhashImage.Width, blurhashImage.Height];
+
+		var idx = 0;
+		var incr = blurhashImage.Bands - 3;
+		for (var i = 0; i < blurhashImage.Height; i++)
+		{
+			for (var j = 0; j < blurhashImage.Width; j++)
+			{
+				blurArr[j, i] = new Pixel(blurBuf[idx++] / 255d, blurBuf[idx++] / 255d,
+				                          blurBuf[idx++] / 255d);
+				idx += incr;
+			}
+		}
+
+		res.Blurhash = Blurhash.Core.Encode(blurArr, 7, 7, new Progress<int>());
+
+		if (genThumb)
+		{
+			res.RenderThumbnail = stream =>
+			{
+				using var thumbnailImage =
+					NetVips.Image.ThumbnailBuffer(buf, width: 1000, height: 1000, size: NetVips.Enums.Size.Down);
+				thumbnailImage.WebpsaveStream(stream, 75, false);
+				return Task.CompletedTask;
+			};
+
+			// Generate webpublic for local users, if image is not animated
+			if (genWebp)
+			{
+				res.RenderWebpublic = stream =>
+				{
+					using var webpublicImage =
+						NetVips.Image.ThumbnailBuffer(buf, width: 2048, height: 2048,
+						                              size: NetVips.Enums.Size.Down);
+					webpublicImage.WebpsaveStream(stream, request.MimeType == "image/png" ? 100 : 75, false);
+					return Task.CompletedTask;
+				};
+			}
+		}
+
+		return Task.FromResult(res);
+	}
+
+	private void VipsLogDelegate(string domain, NetVips.Enums.LogLevelFlags _, string message) =>
+		_logger.LogWarning("{domain} - {message}", domain, message);
+	#endif
+}

@@ -88,7 +88,8 @@ public static class ServiceExtensions
 			.AddSingleton<RequestVerificationMiddleware>()
 			.AddSingleton<RequestDurationMiddleware>()
 			.AddSingleton<PushService>()
-			.AddSingleton<StreamingService>();
+			.AddSingleton<StreamingService>()
+			.AddSingleton<ImageProcessor>();
 
 		// Hosted services = long running background tasks
 		// Note: These need to be added as a singleton as well to ensure data consistency

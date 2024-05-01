@@ -7,7 +7,6 @@ using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Options;
-using SixLabors.ImageSharp.Memory;
 using WebPush;
 
 namespace Iceshrimp.Backend.Core.Extensions;
@@ -193,18 +192,11 @@ public static class WebApplicationExtensions
 
 		app.Logger.LogInformation("Warming up meta cache...");
 		await meta.WarmupCache();
-
-		SixLabors.ImageSharp.Configuration.Default.MemoryAllocator =
-			MemoryAllocator.Create(new MemoryAllocatorOptions { AllocationLimitMegabytes = 20 });
-
-		var logger = app.Services.GetRequiredService<ILogger<DriveService>>();
-		NetVips.Log.SetLogHandler("VIPS", NetVips.Enums.LogLevelFlags.Warning | NetVips.Enums.LogLevelFlags.Error,
-		                          VipsLogDelegate);
+		
+		// Initialize image processing
+		provider.GetRequiredService<ImageProcessor>();
 
 		return instanceConfig;
-
-		void VipsLogDelegate(string domain, NetVips.Enums.LogLevelFlags _, string message) =>
-			logger.LogWarning("libvips: {domain} - {message}", domain, message);
 	}
 
 	public static void SetKestrelUnixSocketPermissions(this WebApplication app)

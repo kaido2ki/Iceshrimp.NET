@@ -28,7 +28,7 @@
     <ItemGroup>
         <PackageReference Include="AngleSharp" Version="1.1.2" />
         <PackageReference Include="AsyncKeyedLock" Version="6.3.4" />
-        <PackageReference Include="Blurhash.Core" Version="2.0.0" />
+        <PackageReference Include="Blurhash.ImageSharp" Version="3.0.0" />
         <PackageReference Include="cuid.net" Version="5.0.2" />
         <PackageReference Include="dotNetRdf.Core" Version="3.2.6-iceshrimp" />
         <PackageReference Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="8.1.2" />
@@ -49,7 +49,6 @@
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.4" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="8.0.0" />
-        <PackageReference Include="NetVips" Version="2.4.1" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.3" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
@@ -63,22 +62,30 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.4" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(BundleNativeDeps)' == 'true' ">
+    <PropertyGroup Condition=" '$(EnableLibVips)' == 'true' ">
+        <DefineConstants>$(DefineConstants);EnableLibVips</DefineConstants>
+    </PropertyGroup>
+    
+    <ItemGroup Condition=" '$(EnableLibVips)' == 'true' ">
+        <PackageReference Include="NetVips" Version="2.4.1" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(EnableLibVips)' == 'true' And '$(BundleNativeDeps)' == 'true' ">
         <PackageReference Include="NetVips.Native.linux-x64" Version="8.15.2" />
         <PackageReference Include="NetVips.Native.linux-arm64" Version="8.15.2" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(BundleNativeDepsMusl)' == 'true' ">
+    <ItemGroup Condition=" '$(EnableLibVips)' == 'true' And '$(BundleNativeDepsMusl)' == 'true' ">
         <PackageReference Include="NetVips.Native.linux-musl-x64" Version="8.15.2" />
         <PackageReference Include="NetVips.Native.linux-musl-arm64" Version="8.15.2" />
     </ItemGroup>
     
-    <ItemGroup Condition=" $([MSBuild]::IsOSPlatform('macOS')) Or '$(BundleNativeDepsMacOS)' == 'true' ">
+    <ItemGroup Condition=" '$(EnableLibVips)' == 'true' And ($([MSBuild]::IsOSPlatform('macOS')) Or '$(BundleNativeDepsMacOS)' == 'true') ">
         <PackageReference Include="NetVips.Native.osx-x64" Version="8.15.2" />
         <PackageReference Include="NetVips.Native.osx-arm64" Version="8.15.2" />
     </ItemGroup>
 
-    <ItemGroup Condition=" $([MSBuild]::IsOSPlatform('Windows')) Or '$(BundleNativeDepsWindows)' == 'true' ">
+    <ItemGroup Condition=" '$(EnableLibVips)' == 'true' And ($([MSBuild]::IsOSPlatform('Windows')) Or '$(BundleNativeDepsWindows)' == 'true') ">
         <PackageReference Include="NetVips.Native.win-x64" Version="8.15.2" />
         <PackageReference Include="NetVips.Native.win-arm64" Version="8.15.2" />
     </ItemGroup>

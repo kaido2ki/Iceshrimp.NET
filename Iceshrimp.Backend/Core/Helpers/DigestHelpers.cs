@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Iceshrimp.Backend.Core.Federation.Cryptography;
+namespace Iceshrimp.Backend.Core.Helpers;
 
 public static class DigestHelpers
 {

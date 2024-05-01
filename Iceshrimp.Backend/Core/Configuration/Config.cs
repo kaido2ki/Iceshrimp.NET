@@ -125,6 +125,8 @@ public sealed class Config
 			}
 		}
 
+		public bool EnableLibVips { get; init; }
+
 		public LocalStorageSection?  Local         { get; init; }
 		public ObjectStorageSection? ObjectStorage { get; init; }
 	}

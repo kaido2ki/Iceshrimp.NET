@@ -1,16 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
-using Blurhash;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
-using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using ImageSharp = SixLabors.ImageSharp.Image;
 
 namespace Iceshrimp.Backend.Core.Services;
 
@@ -22,7 +19,8 @@ public class DriveService(
 	IOptions<Config.InstanceSection> instanceConfig,
 	HttpClient httpClient,
 	QueueService queueSvc,
-	ILogger<DriveService> logger
+	ILogger<DriveService> logger,
+	ImageProcessor imageProcessor
 )
 {
 	public async Task<DriveFile?> StoreFile(
@@ -106,10 +104,10 @@ public class DriveService(
 		}
 	}
 
-	public async Task<DriveFile> StoreFile(Stream data, User user, DriveFileCreationRequest request)
+	public async Task<DriveFile> StoreFile(Stream input, User user, DriveFileCreationRequest request)
 	{
-		await using var buf    = new BufferedStream(data);
-		var             digest = await DigestHelpers.Sha256DigestAsync(buf);
+		await using var data   = new BufferedStream(input);
+		var             digest = await DigestHelpers.Sha256DigestAsync(data);
 		logger.LogDebug("Storing file {digest} for user {userId}", digest, user.Id);
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest);
 		if (file is { IsLink: false })
@@ -131,7 +129,7 @@ public class DriveService(
 			return clonedFile;
 		}
 
-		buf.Seek(0, SeekOrigin.Begin);
+		data.Seek(0, SeekOrigin.Begin);
 
 		var shouldStore    = storageConfig.Value.MediaRetention != null || user.Host == null;
 		var storedInternal = storageConfig.Value.Provider == Enums.FileStorage.Local;
@@ -139,106 +137,30 @@ public class DriveService(
 		if (request.Uri == null && user.Host != null)
 			throw GracefulException.UnprocessableEntity("Refusing to store file without uri for remote user");
 
-		string? blurhash  = null;
-		Stream? thumbnail = null;
-		Stream? webpublic = null;
+		string? blurhash = null;
 
 		DriveFile.FileProperties? properties = null;
-
-		var isImage = request.MimeType.StartsWith("image/") || request.MimeType == "image";
-		// skip images larger than 10MB
-		var isReasonableSize = buf.Length < 10 * 1024 * 1024;
-
-		if (isImage && isReasonableSize)
-		{
-			try
-			{
-				var pre        = DateTime.Now;
-				var ident      = await ImageSharp.IdentifyAsync(buf);
-				var isAnimated = ident.FrameMetadataCollection.Count != 0;
-				properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
-
-				// Correct mime type
-				if (request.MimeType == "image" && ident.Metadata.DecodedImageFormat?.DefaultMimeType != null)
-					request.MimeType = ident.Metadata.DecodedImageFormat.DefaultMimeType;
-
-				buf.Seek(0, SeekOrigin.Begin);
-
-				using var image     = NetVips.Image.NewFromStream(buf);
-				using var processed = image.Autorot();
-				buf.Seek(0, SeekOrigin.Begin);
-
-				try
-				{
-					// Calculate blurhash using a x200px image for improved performance
-					using var blurhashImage = processed.ThumbnailImage(200, 200, NetVips.Enums.Size.Down);
-					var       blurBuf       = blurhashImage.WriteToMemory();
-					var       blurArr       = new Pixel[blurhashImage.Width, blurhashImage.Height];
-
-					var idx  = 0;
-					var incr = image.Bands - 3;
-					for (var i = 0; i < blurhashImage.Height; i++)
-					{
-						for (var j = 0; j < blurhashImage.Width; j++)
-						{
-							blurArr[j, i] = new Pixel(blurBuf[idx++] / 255d, blurBuf[idx++] / 255d,
-							                          blurBuf[idx++] / 255d);
-							idx += incr;
-						}
-					}
-
-					blurhash = Blurhash.Core.Encode(blurArr, 7, 7, new Progress<int>());
-				}
-				catch (Exception e)
-				{
-					logger.LogWarning("Failed to generate blurhash for image with mime type {type}: {e}",
-					                  request.MimeType, e.Message);
-				}
-
-				if (shouldStore)
-				{
-					// Generate thumbnail
-					using var thumbnailImage = processed.ThumbnailImage(1000, 1000, NetVips.Enums.Size.Down);
-
-					thumbnail = new MemoryStream();
-					thumbnailImage.WebpsaveStream(thumbnail, 75, false);
-					thumbnail.Seek(0, SeekOrigin.Begin);
-
-					// Generate webpublic for local users, if image is not animated
-					if (user.Host == null && !isAnimated)
-					{
-						using var webpublicImage = processed.ThumbnailImage(2048, 2048, NetVips.Enums.Size.Down);
-
-						webpublic = new MemoryStream();
-						webpublicImage.WebpsaveStream(webpublic, request.MimeType == "image/png" ? 100 : 75, false);
-						webpublic.Seek(0, SeekOrigin.Begin);
-					}
-				}
-
-				logger.LogTrace("Image processing took {ms} ms", (int)(DateTime.Now - pre).TotalMilliseconds);
-			}
-			catch (Exception e)
-			{
-				logger.LogError("Failed to generate thumbnails for image with mime type {type}: {e}",
-				                request.MimeType, e.Message);
-
-				// We want to make sure no images are federated out without stripping metadata & converting to webp
-				if (user.Host == null) throw;
-			}
-
-			buf.Seek(0, SeekOrigin.Begin);
-		}
 
 		string  url;
 		string? thumbnailUrl = null;
 		string? webpublicUrl = null;
 
-		var filename          = GenerateFilenameKeepingExtension(request.Filename);
-		var thumbnailFilename = thumbnail != null ? GenerateWebpFilename("thumbnail-") : null;
-		var webpublicFilename = webpublic != null ? GenerateWebpFilename("webpublic-") : null;
+		var isReasonableSize = data.Length < 10 * 1024 * 1024; // skip images larger than 10MB
+		var isImage          = request.MimeType.StartsWith("image/") || request.MimeType == "image";
+		var filename         = GenerateFilenameKeepingExtension(request.Filename);
 
-		if (shouldStore)
+		string? thumbnailFilename = null;
+		string? webpublicFilename = null;
+
+		if (shouldStore && isImage && isReasonableSize)
 		{
+			var genWebp = user.Host == null;
+			var res     = await imageProcessor.ProcessImage(data, request, shouldStore, genWebp);
+
+			blurhash          = res?.Blurhash;
+			thumbnailFilename = res?.RenderThumbnail != null ? GenerateWebpFilename("thumbnail-") : null;
+			webpublicFilename = res?.RenderThumbnail != null ? GenerateWebpFilename("webpublic-") : null;
+
 			if (storedInternal)
 			{
 				var pathBase = storageConfig.Value.Local?.Path ??
@@ -246,44 +168,75 @@ public class DriveService(
 				var path = Path.Combine(pathBase, filename);
 
 				await using var writer = File.OpenWrite(path);
-				await buf.CopyToAsync(writer);
+				await data.CopyToAsync(writer);
 				url = $"https://{instanceConfig.Value.WebDomain}/files/{filename}";
 
-				if (thumbnailFilename != null && thumbnail is { Length: > 0 })
+				if (thumbnailFilename != null && res?.RenderThumbnail != null)
 				{
 					var             thumbPath   = Path.Combine(pathBase, thumbnailFilename);
 					await using var thumbWriter = File.OpenWrite(thumbPath);
-					await thumbnail.CopyToAsync(thumbWriter);
-					await thumbnail.DisposeAsync();
-					thumbnailUrl = $"https://{instanceConfig.Value.WebDomain}/files/{thumbnailFilename}";
+					try
+					{
+						await res.RenderThumbnail(thumbWriter);
+						thumbnailUrl = $"https://{instanceConfig.Value.WebDomain}/files/{thumbnailFilename}";
+					}
+					catch (Exception e)
+					{
+						logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
+					}
 				}
 
-				if (webpublicFilename != null && webpublic is { Length: > 0 })
+				if (webpublicFilename != null && res?.RenderWebpublic != null)
 				{
 					var             webpPath   = Path.Combine(pathBase, webpublicFilename);
 					await using var webpWriter = File.OpenWrite(webpPath);
-					await webpublic.CopyToAsync(webpWriter);
-					await webpublic.DisposeAsync();
-					webpublicUrl = $"https://{instanceConfig.Value.WebDomain}/files/{webpublicFilename}";
+					try
+					{
+						await res.RenderWebpublic(webpWriter);
+						webpublicUrl = $"https://{instanceConfig.Value.WebDomain}/files/{webpublicFilename}";
+					}
+					catch (Exception e)
+					{
+						logger.LogDebug("Failed to generate/write webp: {e}", e.Message);
+					}
 				}
 			}
 			else
 			{
-				await storageSvc.UploadFileAsync(filename, buf);
+				data.Seek(0, SeekOrigin.Begin);
+				await storageSvc.UploadFileAsync(filename, data);
 				url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
 
-				if (thumbnailFilename != null && thumbnail is { Length: > 0 })
+				if (thumbnailFilename != null && res?.RenderThumbnail != null)
 				{
-					await storageSvc.UploadFileAsync(thumbnailFilename, thumbnail);
-					thumbnailUrl = storageSvc.GetFilePublicUrl(thumbnailFilename).AbsoluteUri;
-					await thumbnail.DisposeAsync();
+					try
+					{
+						await using var stream = new MemoryStream();
+						await res.RenderThumbnail(stream);
+						stream.Seek(0, SeekOrigin.Begin);
+						await storageSvc.UploadFileAsync(thumbnailFilename, stream);
+						thumbnailUrl = storageSvc.GetFilePublicUrl(thumbnailFilename).AbsoluteUri;
+					}
+					catch (Exception e)
+					{
+						logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
+					}
 				}
 
-				if (webpublicFilename != null && webpublic is { Length: > 0 })
+				if (webpublicFilename != null && res?.RenderWebpublic != null)
 				{
-					await storageSvc.UploadFileAsync(webpublicFilename, webpublic);
-					webpublicUrl = storageSvc.GetFilePublicUrl(webpublicFilename).AbsoluteUri;
-					await webpublic.DisposeAsync();
+					try
+					{
+						await using var stream = new MemoryStream();
+						await res.RenderWebpublic(stream);
+						stream.Seek(0, SeekOrigin.Begin);
+						await storageSvc.UploadFileAsync(webpublicFilename, stream);
+						webpublicUrl = storageSvc.GetFilePublicUrl(webpublicFilename).AbsoluteUri;
+					}
+					catch (Exception e)
+					{
+						logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
+					}
 				}
 			}
 		}
@@ -299,7 +252,7 @@ public class DriveService(
 			User               = user,
 			UserHost           = user.Host,
 			Sha256             = digest,
-			Size               = (int)buf.Length,
+			Size               = (int)data.Length,
 			IsLink             = !shouldStore && user.Host != null,
 			AccessKey          = filename,
 			IsSensitive        = request.IsSensitive,
