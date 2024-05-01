@@ -4568,7 +4568,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValueSql("'[]'::jsonb")
                         .HasComment("List of instances muted by the user.");
 
-                    b.Property<List<List<string>>>("MutedWords")
+                    b.Property<string>("MutedWords")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("jsonb")

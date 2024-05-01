@@ -135,8 +135,9 @@ public class UserProfile
 
 	[Column("enableWordMute")] public bool EnableWordMute { get; set; }
 
+	//TODO: refactor this column (it's currently a List<string | string[]>, which is terrible) 
 	[Column("mutedWords", TypeName = "jsonb")]
-	public List<List<string>> MutedWords { get; set; } = null!;
+	public string MutedWords { get; set; } = null!;
 
 	/// <summary>
 	///     Whether reject index by crawler.
