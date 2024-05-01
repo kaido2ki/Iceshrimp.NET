@@ -113,6 +113,8 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		if (userProfile is not { Password: not null }) throw new GracefulException("userProfile?.Password was null");
 		if (!AuthHelpers.ComparePassword(request.OldPassword, userProfile.Password))
 			throw GracefulException.BadRequest("old_password is invalid");
+		if (request.NewPassword.Length < 8)
+			throw GracefulException.BadRequest("Password must be at least 8 characters long");
 
 		userProfile.Password = AuthHelpers.HashPassword(request.NewPassword);
 		await db.SaveChangesAsync();

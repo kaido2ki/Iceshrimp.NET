@@ -49,6 +49,26 @@ public class AdminController(
 		return Ok(res);
 	}
 
+	[HttpPost("users/{id}/reset-password")]
+	[Produces(MediaTypeNames.Application.Json)]
+	[Consumes(MediaTypeNames.Application.Json)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public async Task<IActionResult> ResetPassword(string id, [FromBody] ResetPasswordRequest request)
+	{
+		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == id && p.UserHost == null) ??
+		              throw GracefulException.RecordNotFound();
+
+		if (request.Password.Length < 8)
+			throw GracefulException.BadRequest("Password must be at least 8 characters long");
+
+		profile.Password = AuthHelpers.HashPassword(request.Password);
+		await db.SaveChangesAsync();
+
+		return Ok();
+	}
+
 	[UseNewtonsoftJson]
 	[HttpGet("activities/notes/{id}")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASNote))]
