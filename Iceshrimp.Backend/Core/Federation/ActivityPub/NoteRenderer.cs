@@ -136,7 +136,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 					Attachments  = attachments,
 					Content      = text != null ? await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost) : null,
 					Summary      = note.Cw,
-					Source = text != null
+					Source = note.Text != null
 						? new ASNoteSource { Content = note.Text, MediaType = "text/x.misskeymarkdown" }
 						: null,
 					MkQuote  = quoteUri,
@@ -165,8 +165,8 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			Attachments  = attachments,
 			Content      = text != null ? await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost) : null,
 			Summary      = note.Cw,
-			Source = text != null
-				? new ASNoteSource { Content = text, MediaType = "text/x.misskeymarkdown" }
+			Source = note.Text != null
+				? new ASNoteSource { Content = note.Text, MediaType = "text/x.misskeymarkdown" }
 				: null,
 			MkQuote  = quoteUri,
 			QuoteUri = quoteUri,
