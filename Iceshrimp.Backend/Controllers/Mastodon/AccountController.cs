@@ -477,6 +477,7 @@ public class AccountController(
 		                  .Where(p => db.Users.First(u => u == user).HasLiked(p))
 		                  .IncludeCommonProperties()
 		                  .Paginate(query, ControllerContext)
+		                  .PrecomputeVisibilities(user)
 		                  .RenderAllForMastodonAsync(noteRenderer, user);
 
 		return Ok(res);
@@ -494,6 +495,7 @@ public class AccountController(
 		                  .Where(p => db.Users.First(u => u == user).HasBookmarked(p))
 		                  .IncludeCommonProperties()
 		                  .Paginate(query, ControllerContext)
+		                  .PrecomputeVisibilities(user)
 		                  .RenderAllForMastodonAsync(noteRenderer, user);
 
 		return Ok(res);
