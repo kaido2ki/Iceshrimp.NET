@@ -10,13 +10,13 @@ COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 WORKDIR /src/Iceshrimp.Backend
 ARG TARGETARCH
-RUN dotnet restore -a $TARGETARCH -p:BundleNativeDeps=true
+RUN dotnet restore -a $TARGETARCH -p:BundleNativeDepsMusl=true
 
 # copy build files
 COPY . /src/
 
 # build
-RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app -p:BundleNativeDeps=true
+RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app -p:BundleNativeDepsMusl=true
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS builder-aot
 RUN dotnet workload install wasm-tools
