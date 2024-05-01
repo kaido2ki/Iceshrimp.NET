@@ -1,4 +1,6 @@
 # To build with ILLink & AOT enabled, run docker build --target image-aot
+# To build without VIPS support, run docker build --build-arg="VIPS=false"
+ARG VIPS=true
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS builder-jit
 WORKDIR /src
@@ -10,13 +12,13 @@ COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 WORKDIR /src/Iceshrimp.Backend
 ARG TARGETARCH
-RUN dotnet restore -a $TARGETARCH -p:BundleNativeDepsMusl=true
+RUN dotnet restore -a $TARGETARCH -p:BundleNativeDepsMusl=$VIPS -p:EnableLibVips=$VIPS
 
 # copy build files
 COPY . /src/
 
 # build
-RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app -p:BundleNativeDepsMusl=true
+RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app -p:BundleNativeDepsMusl=$VIPS -p:EnableLibVips=$VIPS
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS builder-aot
 RUN dotnet workload install wasm-tools
@@ -31,13 +33,13 @@ COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 WORKDIR /src/Iceshrimp.Backend
 ARG TARGETARCH
-RUN dotnet restore -a $TARGETARCH -p:BundleNativeDeps=true
+RUN dotnet restore -a $TARGETARCH -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS
 
 # copy build files
 COPY . /src/
 
 # build
-RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app -p:EnableAOT=true -p:BundleNativeDeps=true
+RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app -p:EnableAOT=true -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS
 
 # Enable globalization and time zones:
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
