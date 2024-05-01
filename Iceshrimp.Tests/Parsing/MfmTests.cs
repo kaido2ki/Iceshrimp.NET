@@ -236,12 +236,6 @@ public class MfmTests
 				if (searchNode.Content != bx.Content) return false;
 				break;
 			}
-			case MfmUnicodeEmojiNode ax:
-			{
-				var bx = (MfmUnicodeEmojiNode)b;
-				if (ax.Emoji != bx.Emoji) return false;
-				break;
-			}
 			case MfmEmojiCodeNode ax:
 			{
 				var bx = (MfmEmojiCodeNode)b;
