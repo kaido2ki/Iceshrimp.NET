@@ -62,10 +62,6 @@ module MfmNodeTypes =
     type MfmCenterNode(c) =
         inherit MfmBlockNode(c)
 
-    type MfmUnicodeEmojiNode(e: string) =
-        inherit MfmInlineNode([])
-        member val Emoji = e
-
     type MfmEmojiCodeNode(n) =
         inherit MfmInlineNode([])
         member val Name = n
@@ -310,9 +306,6 @@ module private MfmParser =
           charNode ]
 
     //TODO: still missing: FnNode, MfmSearchNode, MfmQuoteNode
-
-    // This intentionally doesn't implement the node type UnicodeEmojiNode, both for performance,
-    // and because it's not needed for backend processing
 
     let blockNodeSeq =
         [ plainNode; centerNode; smallNode; codeBlockNode; mathBlockNode ]
