@@ -96,6 +96,9 @@ public class NoteRenderer(
 		var filtered     = FilterHelper.IsFiltered([note, note.Reply, note.Renote, note.Renote?.Renote], filters);
 		var filterResult = GetFilterResult(filtered);
 
+		if ((user?.UserSettings?.FilterInaccessible ?? false) && (replyInaccessible || quoteInaccessible))
+			filterResult.Insert(0, InaccessibleFilter);
+
 		var res = new StatusEntity
 		{
 			Id               = note.Id,
@@ -134,6 +137,20 @@ public class NoteRenderer(
 
 		return res;
 	}
+
+	private static readonly FilterResultEntity InaccessibleFilter = new()
+	{
+		Filter = new FilterEntity
+		{
+			Title        = "HideInaccessible",
+			FilterAction = "hide",
+			Id           = "0",
+			Context      = ["home", "thread", "notifications", "account", "public"],
+			Keywords     = [new FilterKeyword("RE: \ud83d\udd12", 0, 0)],
+			ExpiresAt    = null
+		},
+		KeywordMatches = ["RE: \ud83d\udd12"] // lock emoji
+	};
 
 	public async Task<List<StatusEdit>> RenderHistoryAsync(Note note)
 	{

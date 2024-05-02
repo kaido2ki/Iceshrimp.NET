@@ -18,4 +18,5 @@ public class UserSettings
 	[Column("defaultNoteVisibility")]   public Note.NoteVisibility DefaultNoteVisibility   { get; set; }
 	[Column("defaultRenoteVisibility")] public Note.NoteVisibility DefaultRenoteVisibility { get; set; }
 	[Column("privateMode")]             public bool                PrivateMode             { get; set; }
+	[Column("filterInaccessible")]      public bool                FilterInaccessible      { get; set; }
 }

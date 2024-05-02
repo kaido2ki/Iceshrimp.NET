@@ -4764,6 +4764,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(Note.NoteVisibility.Public)
                         .HasColumnName("defaultRenoteVisibility");
 
+                    b.Property<bool>("FilterInaccessible")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("filterInaccessible");
+
                     b.Property<bool>("PrivateMode")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
