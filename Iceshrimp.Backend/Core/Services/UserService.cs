@@ -37,7 +37,8 @@ public class UserService(
 	ActivityPub.UserRenderer userRenderer,
 	QueueService queueSvc,
 	EventService eventSvc,
-	WebFingerService webFingerSvc
+	WebFingerService webFingerSvc,
+	ActivityPub.FederationControlService fedCtrlSvc
 )
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -96,6 +97,10 @@ public class UserService(
 	public async Task<User> CreateUserAsync(string uri, string acct)
 	{
 		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
+		
+		var host = AcctToTuple(acct).Host ?? throw new Exception("Host must not be null at this stage");
+		if (await fedCtrlSvc.ShouldBlockAsync(uri, host))
+			throw GracefulException.UnprocessableEntity("Refusing to create user on blocked instance");
 
 		var user = await db.Users
 		                   .IncludeCommonProperties()
@@ -119,8 +124,6 @@ public class UserService(
 			throw GracefulException.UnprocessableEntity("Actor has no valid public key");
 		if (new Uri(actor.PublicKey.Id).Host != new Uri(actor.Id).Host)
 			throw GracefulException.UnprocessableEntity("Actor public key id host doesn't match actor id host");
-
-		var host = AcctToTuple(acct).Host ?? throw new Exception("Host must not be null at this stage");
 
 		var emoji = await emojiSvc.ProcessEmojiAsync(actor.Tags?.OfType<ASEmoji>().ToList(), host);
 

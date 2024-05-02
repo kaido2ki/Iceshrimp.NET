@@ -44,7 +44,8 @@ public class NoteService(
 	FollowupTaskService followupTaskSvc,
 	ActivityPub.ObjectResolver objectResolver,
 	QueueService queueSvc,
-	PollService pollSvc
+	PollService pollSvc,
+	ActivityPub.FederationControlService fedCtrlSvc
 )
 {
 	private const    int          DefaultRecursionLimit = 100;
@@ -678,6 +679,8 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Note.PublishedAt is nonsensical");
 		if (actor.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
+		if (await fedCtrlSvc.ShouldBlockAsync(note.Id, actor.Host))
+			throw GracefulException.UnprocessableEntity("Refusing to create note for user on blocked instance");
 
 		var   replyUri = note.InReplyTo?.Id;
 		var   reply    = replyUri != null ? await ResolveNoteAsync(replyUri, user: user) : null;
