@@ -136,6 +136,28 @@ public class MfmTests
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
 		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
 	}
+	
+	[TestMethod]
+	public void TestHashtag()
+	{
+		const string input = "test #test #test's #test. test";
+		
+		List<MfmNode> expected =
+		[
+			new MfmTextNode("test "),
+			new MfmHashtagNode("test"),
+			new MfmTextNode(" "),
+			new MfmHashtagNode("test"),
+			new MfmTextNode("'s "),
+			new MfmHashtagNode("test"),
+			new MfmTextNode(". test"),
+		];
+		var res = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
 
 	[TestMethod]
 	public void Benchmark()

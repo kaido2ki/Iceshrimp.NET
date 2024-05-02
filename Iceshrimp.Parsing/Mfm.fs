@@ -243,7 +243,7 @@ module private MfmParser =
     let hashtagNode =
         previousCharSatisfiesNot isNotWhitespace
         >>. skipChar '#'
-        >>. many1CharsTill letter (nextCharSatisfies isWhitespace <|> eof)
+        >>. many1CharsTill letter (nextCharSatisfiesNot isLetter)
         |>> fun h -> MfmHashtagNode(h) :> MfmNode
 
     let urlNodePlain =
