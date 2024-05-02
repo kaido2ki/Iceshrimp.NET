@@ -21,7 +21,7 @@ public class AttachmentEntity
 	{
 		AttachmentType.Unknown => "unknown",
 		AttachmentType.Image   => "image",
-		AttachmentType.Gif     => "gifv",
+		AttachmentType.Gif     => "image",
 		AttachmentType.Video   => "video",
 		AttachmentType.Audio   => "audio",
 		_                      => throw new ArgumentOutOfRangeException()
