@@ -141,7 +141,9 @@ public class AdminController(
 	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 	public async Task<IActionResult> FetchActivityAsync([FromQuery] string uri)
 	{
-		return Ok(LdHelpers.Compact(await fetchSvc.FetchActivityAsync(uri)));
+		var activity = await fetchSvc.FetchActivityAsync(uri);
+		if (!activity.Any()) throw GracefulException.UnprocessableEntity("Failed to fetch activity");
+		return Ok(LdHelpers.Compact(activity));
 	}
 
 	[UseNewtonsoftJson]
