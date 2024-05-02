@@ -262,6 +262,13 @@ public static class ServiceExtensions
 				      .WithHeaders("Authorization", "Content-Type", "Idempotency-Key")
 				      .WithExposedHeaders("Link", "Connection", "Sec-Websocket-Accept", "Upgrade");
 			});
+			options.AddPolicy("fallback", policy =>
+			{
+				policy.WithOrigins("*")
+				      .WithMethods("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "CONNECT")
+				      .WithHeaders("Authorization", "Content-Type", "Idempotency-Key")
+				      .WithExposedHeaders("Link", "Connection", "Sec-Websocket-Accept", "Upgrade");
+			});
 		});
 	}
 
