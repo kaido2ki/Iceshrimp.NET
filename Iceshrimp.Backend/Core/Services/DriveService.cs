@@ -152,91 +152,115 @@ public class DriveService(
 		string? thumbnailFilename = null;
 		string? webpublicFilename = null;
 
-		if (shouldStore && isImage && isReasonableSize)
+		if (shouldStore)
 		{
-			var genWebp = user.Host == null;
-			var res     = await imageProcessor.ProcessImage(data, request, shouldStore, genWebp);
-
-			blurhash          = res?.Blurhash;
-			thumbnailFilename = res?.RenderThumbnail != null ? GenerateWebpFilename("thumbnail-") : null;
-			webpublicFilename = res?.RenderThumbnail != null ? GenerateWebpFilename("webpublic-") : null;
-
-			if (storedInternal)
+			if (isImage && isReasonableSize)
 			{
-				var pathBase = storageConfig.Value.Local?.Path ??
-				               throw new Exception("Local storage path cannot be null");
-				var path = Path.Combine(pathBase, filename);
+				var genWebp = user.Host == null;
+				var res     = await imageProcessor.ProcessImage(data, request, true, genWebp);
 
-				await using var writer = File.OpenWrite(path);
-				await data.CopyToAsync(writer);
-				url = $"https://{instanceConfig.Value.WebDomain}/files/{filename}";
+				blurhash          = res?.Blurhash;
+				thumbnailFilename = res?.RenderThumbnail != null ? GenerateWebpFilename("thumbnail-") : null;
+				webpublicFilename = res?.RenderThumbnail != null ? GenerateWebpFilename("webpublic-") : null;
 
-				if (thumbnailFilename != null && res?.RenderThumbnail != null)
+				if (storedInternal)
 				{
-					var             thumbPath   = Path.Combine(pathBase, thumbnailFilename);
-					await using var thumbWriter = File.OpenWrite(thumbPath);
-					try
+					var pathBase = storageConfig.Value.Local?.Path ??
+					               throw new Exception("Local storage path cannot be null");
+					var path = Path.Combine(pathBase, filename);
+
+					data.Seek(0, SeekOrigin.Begin);
+					await using var writer = File.OpenWrite(path);
+					await data.CopyToAsync(writer);
+					url = $"https://{instanceConfig.Value.WebDomain}/files/{filename}";
+
+					if (thumbnailFilename != null && res?.RenderThumbnail != null)
 					{
-						await res.RenderThumbnail(thumbWriter);
-						thumbnailUrl = $"https://{instanceConfig.Value.WebDomain}/files/{thumbnailFilename}";
+						var             thumbPath   = Path.Combine(pathBase, thumbnailFilename);
+						await using var thumbWriter = File.OpenWrite(thumbPath);
+						try
+						{
+							await res.RenderThumbnail(thumbWriter);
+							thumbnailUrl = $"https://{instanceConfig.Value.WebDomain}/files/{thumbnailFilename}";
+						}
+						catch (Exception e)
+						{
+							logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
+						}
 					}
-					catch (Exception e)
+
+					if (webpublicFilename != null && res?.RenderWebpublic != null)
 					{
-						logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
+						var             webpPath   = Path.Combine(pathBase, webpublicFilename);
+						await using var webpWriter = File.OpenWrite(webpPath);
+						try
+						{
+							await res.RenderWebpublic(webpWriter);
+							webpublicUrl = $"https://{instanceConfig.Value.WebDomain}/files/{webpublicFilename}";
+						}
+						catch (Exception e)
+						{
+							logger.LogDebug("Failed to generate/write webp: {e}", e.Message);
+						}
 					}
 				}
-
-				if (webpublicFilename != null && res?.RenderWebpublic != null)
+				else
 				{
-					var             webpPath   = Path.Combine(pathBase, webpublicFilename);
-					await using var webpWriter = File.OpenWrite(webpPath);
-					try
+					data.Seek(0, SeekOrigin.Begin);
+					await storageSvc.UploadFileAsync(filename, data);
+					url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
+
+					if (thumbnailFilename != null && res?.RenderThumbnail != null)
 					{
-						await res.RenderWebpublic(webpWriter);
-						webpublicUrl = $"https://{instanceConfig.Value.WebDomain}/files/{webpublicFilename}";
+						try
+						{
+							await using var stream = new MemoryStream();
+							await res.RenderThumbnail(stream);
+							stream.Seek(0, SeekOrigin.Begin);
+							await storageSvc.UploadFileAsync(thumbnailFilename, stream);
+							thumbnailUrl = storageSvc.GetFilePublicUrl(thumbnailFilename).AbsoluteUri;
+						}
+						catch (Exception e)
+						{
+							logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
+						}
 					}
-					catch (Exception e)
+
+					if (webpublicFilename != null && res?.RenderWebpublic != null)
 					{
-						logger.LogDebug("Failed to generate/write webp: {e}", e.Message);
+						try
+						{
+							await using var stream = new MemoryStream();
+							await res.RenderWebpublic(stream);
+							stream.Seek(0, SeekOrigin.Begin);
+							await storageSvc.UploadFileAsync(webpublicFilename, stream);
+							webpublicUrl = storageSvc.GetFilePublicUrl(webpublicFilename).AbsoluteUri;
+						}
+						catch (Exception e)
+						{
+							logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
+						}
 					}
 				}
 			}
 			else
 			{
-				data.Seek(0, SeekOrigin.Begin);
-				await storageSvc.UploadFileAsync(filename, data);
-				url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
-
-				if (thumbnailFilename != null && res?.RenderThumbnail != null)
+				//TODO: check against file size limit
+				if (storedInternal)
 				{
-					try
-					{
-						await using var stream = new MemoryStream();
-						await res.RenderThumbnail(stream);
-						stream.Seek(0, SeekOrigin.Begin);
-						await storageSvc.UploadFileAsync(thumbnailFilename, stream);
-						thumbnailUrl = storageSvc.GetFilePublicUrl(thumbnailFilename).AbsoluteUri;
-					}
-					catch (Exception e)
-					{
-						logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
-					}
+					var pathBase = storageConfig.Value.Local?.Path ??
+					               throw new Exception("Local storage path cannot be null");
+					var path = Path.Combine(pathBase, filename);
+
+					await using var writer = File.OpenWrite(path);
+					await data.CopyToAsync(writer);
+					url = $"https://{instanceConfig.Value.WebDomain}/files/{filename}";
 				}
-
-				if (webpublicFilename != null && res?.RenderWebpublic != null)
+				else
 				{
-					try
-					{
-						await using var stream = new MemoryStream();
-						await res.RenderWebpublic(stream);
-						stream.Seek(0, SeekOrigin.Begin);
-						await storageSvc.UploadFileAsync(webpublicFilename, stream);
-						webpublicUrl = storageSvc.GetFilePublicUrl(webpublicFilename).AbsoluteUri;
-					}
-					catch (Exception e)
-					{
-						logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
-					}
+					data.Seek(0, SeekOrigin.Begin);
+					await storageSvc.UploadFileAsync(filename, data);
+					url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
 				}
 			}
 		}
@@ -253,7 +277,7 @@ public class DriveService(
 			UserHost           = user.Host,
 			Sha256             = digest,
 			Size               = (int)data.Length,
-			IsLink             = !shouldStore && user.Host != null,
+			IsLink             = !shouldStore,
 			AccessKey          = filename,
 			IsSensitive        = request.IsSensitive,
 			StoredInternal     = storedInternal,
