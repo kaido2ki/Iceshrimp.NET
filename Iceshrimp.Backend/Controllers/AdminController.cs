@@ -139,9 +139,10 @@ public class AdminController(
 	[HttpGet("activities/fetch")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASObject))]
 	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-	public async Task<IActionResult> FetchActivityAsync([FromQuery] string uri)
+	public async Task<IActionResult> FetchActivityAsync([FromQuery] string uri, [FromQuery] string? userId)
 	{
-		var activity = await fetchSvc.FetchActivityAsync(uri);
+		var user = userId != null ? await db.Users.FirstOrDefaultAsync(p => p.Id == userId && p.Host == null) : null;
+		var activity = await fetchSvc.FetchActivityAsync(uri, user);
 		if (!activity.Any()) throw GracefulException.UnprocessableEntity("Failed to fetch activity");
 		return Ok(LdHelpers.Compact(activity));
 	}
@@ -151,9 +152,10 @@ public class AdminController(
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASObject))]
 	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ErrorResponse))]
 	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-	public async Task FetchRawActivityAsync([FromQuery] string uri)
+	public async Task FetchRawActivityAsync([FromQuery] string uri, [FromQuery] string? userId)
 	{
-		var activity = await fetchSvc.FetchRawActivityAsync(uri);
+		var user = userId != null ? await db.Users.FirstOrDefaultAsync(p => p.Id == userId && p.Host == null) : null;
+		var activity = await fetchSvc.FetchRawActivityAsync(uri, user);
 		if (activity == null) throw GracefulException.UnprocessableEntity("Failed to fetch activity");
 
 		Response.ContentType = Request.Headers.Accept.Any(p => p != null && p.StartsWith("application/ld+json"))

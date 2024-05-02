@@ -36,9 +36,19 @@ public class ActivityFetcherService(
 		return await FetchActivityAsync(url, actor, keypair);
 	}
 
-	public async Task<string?> FetchRawActivityAsync(string url)
+	public async Task<IEnumerable<ASObject>> FetchActivityAsync(string url, User? actor)
 	{
-		var (actor, keypair) = await systemUserSvc.GetInstanceActorWithKeypairAsync();
+		var keypair = actor != null ? await db.UserKeypairs.FirstOrDefaultAsync(p => p.User == actor) : null;
+		if (actor == null || keypair == null)
+			(actor, keypair) = await systemUserSvc.GetInstanceActorWithKeypairAsync();
+		return await FetchActivityAsync(url, actor, keypair);
+	}
+
+	public async Task<string?> FetchRawActivityAsync(string url, User? actor)
+	{
+		var keypair = actor != null ? await db.UserKeypairs.FirstOrDefaultAsync(p => p.User == actor) : null;
+		if (actor == null || keypair == null)
+			(actor, keypair) = await systemUserSvc.GetInstanceActorWithKeypairAsync();
 		return await FetchRawActivityAsync(url, actor, keypair);
 	}
 
@@ -78,7 +88,7 @@ public class ActivityFetcherService(
 		var requestHost = new Uri(url).Host;
 		if (requestHost == config.Value.WebDomain || requestHost == config.Value.AccountDomain)
 			throw GracefulException.UnprocessableEntity("Refusing to fetch activity from local domain");
-		
+
 		if (await fedCtrlSvc.ShouldBlockAsync(requestHost))
 		{
 			logger.LogDebug("Refusing to fetch activity from blocked instance");
