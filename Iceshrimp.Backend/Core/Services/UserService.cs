@@ -97,7 +97,7 @@ public class UserService(
 	public async Task<User> CreateUserAsync(string uri, string acct)
 	{
 		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
-		
+
 		var host = AcctToTuple(acct).Host ?? throw new Exception("Host must not be null at this stage");
 		if (await fedCtrlSvc.ShouldBlockAsync(uri, host))
 			throw GracefulException.UnprocessableEntity("Refusing to create user on blocked instance");
@@ -599,6 +599,9 @@ public class UserService(
 			});
 		}
 
+		if (request.Followee.IsRemoteUser && request.Follower.IsLocalUser && request.Followee.FollowersCount == 0)
+			UpdateUserPinnedNotesInBackground(request.Followee);
+
 		await notificationSvc.GenerateFollowNotification(request.Follower, request.Followee);
 		await notificationSvc.GenerateFollowRequestAcceptedNotification(request);
 
@@ -835,6 +838,28 @@ public class UserService(
 				var bgNoteSvc = provider.GetRequiredService<NoteService>();
 				var bgUser    = await bgDb.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == user.Id);
 				if (bgUser == null) return;
+				await bgNoteSvc.UpdatePinnedNotesAsync(actor, bgUser);
+			}
+		});
+	}
+
+	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
+	private void UpdateUserPinnedNotesInBackground(User user, bool force = false)
+	{
+		if (user.Uri == null) return;
+		if (!user.IsRemoteUser) return;
+		if (followupTaskSvc.IsBackgroundWorker && !force) return;
+		if (KeyedLocker.IsInUse($"pinnedNotes:{user.Id}")) return;
+		_ = followupTaskSvc.ExecuteTask("UpdateUserPinnedNotes", async provider =>
+		{
+			using (await KeyedLocker.LockAsync($"pinnedNotes:{user.Id}"))
+			{
+				var bgDb      = provider.GetRequiredService<DatabaseContext>();
+				var bgNoteSvc = provider.GetRequiredService<NoteService>();
+				var bgUser    = await bgDb.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == user.Id);
+				if (bgUser == null) return;
+				var bgFetch = provider.GetRequiredService<ActivityPub.ActivityFetcherService>();
+				var actor   = await bgFetch.FetchActorAsync(user.Uri);
 				await bgNoteSvc.UpdatePinnedNotesAsync(actor, bgUser);
 			}
 		});
