@@ -31,7 +31,7 @@ public sealed class WebSocketConnection(
 	public readonly  WriteLockingList<string> Following    = [];
 	private readonly WriteLockingList<string> _blocking    = [];
 	private readonly WriteLockingList<string> _blockedBy   = [];
-	private readonly WriteLockingList<string> _mutedUsers  = [];
+	private readonly WriteLockingList<string> _muting      = [];
 
 	public void Dispose()
 	{
@@ -66,16 +66,24 @@ public sealed class WebSocketConnection(
 		EventService.UserFollowed   -= OnUserFollow;
 		EventService.UserUnfollowed -= OnUserUnfollow;
 
-		_ = InitializeFollowing();
+		_ = InitializeRelationships();
 	}
 
-	private async Task InitializeFollowing()
+	private async Task InitializeRelationships()
 	{
 		await using var db = Scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-		Following.AddRange(await db.Users.Where(p => p == Token.User)
-		                           .SelectMany(p => p.Following)
-		                           .Select(p => p.Id)
+		Following.AddRange(await db.Followings.Where(p => p.Follower == Token.User)
+		                           .Select(p => p.FolloweeId)
 		                           .ToListAsync());
+		_blocking.AddRange(await db.Blockings.Where(p => p.Blocker == Token.User)
+		                           .Select(p => p.BlockeeId)
+		                           .ToListAsync());
+		_blockedBy.AddRange(await db.Blockings.Where(p => p.Blockee == Token.User)
+		                            .Select(p => p.BlockerId)
+		                            .ToListAsync());
+		_muting.AddRange(await db.Mutings.Where(p => p.Muter == Token.User)
+		                         .Select(p => p.MuteeId)
+		                         .ToListAsync());
 	}
 
 	public async Task HandleSocketMessageAsync(string payload)
@@ -180,7 +188,7 @@ public sealed class WebSocketConnection(
 		try
 		{
 			if (interaction.Actor.Id == Token.User.Id)
-				_mutedUsers.Add(interaction.Object.Id);
+				_muting.Add(interaction.Object.Id);
 		}
 		catch (Exception e)
 		{
@@ -194,7 +202,7 @@ public sealed class WebSocketConnection(
 		try
 		{
 			if (interaction.Actor.Id == Token.User.Id)
-				_mutedUsers.Remove(interaction.Object.Id);
+				_muting.Remove(interaction.Object.Id);
 		}
 		catch (Exception e)
 		{
@@ -202,7 +210,7 @@ public sealed class WebSocketConnection(
 			logger.LogError("Event handler OnUserUnmute threw exception: {e}", e);
 		}
 	}
-	
+
 	private void OnUserFollow(object? _, UserInteraction interaction)
 	{
 		try
@@ -233,7 +241,7 @@ public sealed class WebSocketConnection(
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
 	public bool IsFiltered(User user) =>
-		_blocking.Contains(user.Id) || _blockedBy.Contains(user.Id) || _mutedUsers.Contains(user.Id);
+		_blocking.Contains(user.Id) || _blockedBy.Contains(user.Id) || _muting.Contains(user.Id);
 
 	public async Task CloseAsync(WebSocketCloseStatus status)
 	{
