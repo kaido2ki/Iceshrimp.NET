@@ -79,6 +79,8 @@ public sealed class Config
 	public sealed class StorageSection
 	{
 		public readonly TimeSpan? MediaRetentionTimeSpan;
+		public readonly int?      MaxCacheSizeBytes;
+		public readonly int?      MaxUploadSizeBytes;
 
 		public bool              CleanAvatars = false;
 		public bool              CleanBanners = false;
@@ -125,10 +127,69 @@ public sealed class Config
 			}
 		}
 
-		public bool EnableLibVips { get; init; }
+		public string? MaxUploadSize
+		{
+			get => MaxUploadSizeBytes?.ToString();
+			init
+			{
+				if (value == null || string.IsNullOrWhiteSpace(value) || value.Trim() == "0" || value.Trim() == "-1")
+				{
+					MaxUploadSizeBytes = null;
+					return;
+				}
 
-		public LocalStorageSection?  Local         { get; init; }
-		public ObjectStorageSection? ObjectStorage { get; init; }
+				var hasSuffix = !char.IsAsciiDigit(value.Trim()[^1]);
+				var substr    = hasSuffix ? value.Trim()[..^1] : value.Trim();
+
+				if (!int.TryParse(substr, out var num))
+					throw new Exception("Invalid max upload size");
+
+				char? suffix = hasSuffix ? value.Trim()[^1] : null;
+
+				MaxUploadSizeBytes = suffix switch
+				{
+					null => num,
+					'k' or 'K' => num * 1024,
+					'm' or 'M' => num * 1024 * 1024,
+					'g' or 'G' => num * 1024 * 1024 * 1024,
+					_ => throw new Exception("Unsupported suffix, use one of: [K]ilobytes, [M]egabytes, [G]igabytes")
+				};
+			}
+		}
+
+		public string? MaxCacheSize
+		{
+			get => MaxCacheSizeBytes?.ToString();
+			init
+			{
+				if (value == null || string.IsNullOrWhiteSpace(value) || value.Trim() == "0" || value.Trim() == "-1")
+				{
+					MaxCacheSizeBytes = null;
+					return;
+				}
+
+				var hasSuffix = !char.IsAsciiDigit(value.Trim()[^1]);
+				var substr    = hasSuffix ? value.Trim()[..^1] : value.Trim();
+
+				if (!int.TryParse(substr, out var num))
+					throw new Exception("Invalid max cache size");
+
+				char? suffix = hasSuffix ? value.Trim()[^1] : null;
+
+				MaxCacheSizeBytes = suffix switch
+				{
+					null => num,
+					'k' or 'K' => num * 1024,
+					'm' or 'M' => num * 1024 * 1024,
+					'g' or 'G' => num * 1024 * 1024 * 1024,
+					_ => throw new Exception("Unsupported suffix, use one of: [K]ilobytes, [M]egabytes, [G]igabytes")
+				};
+			}
+		}
+
+		public LocalStorageSection?   Local           { get; init; }
+		public ObjectStorageSection?  ObjectStorage   { get; init; }
+		public MediaProcessingSection MediaProcessing { get; init; } = new();
 	}
 
 	public sealed class LocalStorageSection
@@ -147,5 +208,43 @@ public sealed class Config
 		public string? AccessUrl         { get; init; }
 		public string? SetAcl            { get; init; }
 		public bool    DisableValidation { get; init; } = false;
+	}
+
+	public sealed class MediaProcessingSection
+	{
+		public readonly int                  MaxFileSizeBytes = 10 * 1024 * 1024;
+		public          Enums.ImageProcessor ImageProcessor   { get; init; } = Enums.ImageProcessor.ImageSharp;
+		public          int                  MaxResolutionMpx { get; init; } = 30;
+		public          bool                 LocalOnly        { get; init; } = false;
+
+		public string MaxFileSize
+		{
+			get => MaxFileSizeBytes.ToString();
+			init
+			{
+				if (value == null || string.IsNullOrWhiteSpace(value) || value.Trim() == "0" || value.Trim() == "-1")
+				{
+					throw new
+						Exception("Invalid max file size, to disable media processing set ImageProcessor to 'None'");
+				}
+
+				var hasSuffix = !char.IsAsciiDigit(value.Trim()[^1]);
+				var substr    = hasSuffix ? value.Trim()[..^1] : value.Trim();
+
+				if (!int.TryParse(substr, out var num))
+					throw new Exception("Invalid max file size");
+
+				char? suffix = hasSuffix ? value.Trim()[^1] : null;
+
+				MaxFileSizeBytes = suffix switch
+				{
+					null => num,
+					'k' or 'K' => num * 1024,
+					'm' or 'M' => num * 1024 * 1024,
+					'g' or 'G' => num * 1024 * 1024 * 1024,
+					_ => throw new Exception("Unsupported suffix, use one of: [K]ilobytes, [M]egabytes, [G]igabytes")
+				};
+			}
+		}
 	}
 }

@@ -35,4 +35,11 @@ public static class Enums
 		Restricted = 2,
 		Public = 3
 	}
+
+	public enum ImageProcessor
+	{
+		ImageSharp,
+		LibVips,
+		None
+	}
 }

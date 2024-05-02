@@ -18,24 +18,27 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class ImageProcessor
 {
-	private readonly ILogger<ImageProcessor> _logger;
+	private readonly ILogger<ImageProcessor>         _logger;
+	private readonly IOptionsMonitor<Config.StorageSection> _config;
 
-	#if EnableLibVips
-	private readonly IOptions<Config.StorageSection> _config;
-	#endif
-
-	public ImageProcessor(ILogger<ImageProcessor> logger, IOptions<Config.StorageSection> config)
+	public ImageProcessor(ILogger<ImageProcessor> logger, IOptionsMonitor<Config.StorageSection> config)
 	{
 		_logger = logger;
+		_config = config;
+
+		if (config.CurrentValue.MediaProcessing.ImageProcessor == Enums.ImageProcessor.None)
+		{
+			_logger.LogInformation("Image processing is disabled as per the configuration.");
+			return;
+		}
 
 		SixLabors.ImageSharp.Configuration.Default.MemoryAllocator =
 			MemoryAllocator.Create(new MemoryAllocatorOptions { AllocationLimitMegabytes = 20 });
 
 		#if EnableLibVips
-		_config = config;
-		if (!_config.Value.EnableLibVips)
+		if (_config.CurrentValue.MediaProcessing.ImageProcessor != Enums.ImageProcessor.LibVips)
 		{
-			_logger.LogInformation("VIPS support was enabled at compile time, but is not enabled in the configuration, skipping VIPS init");
+			_logger.LogDebug("VIPS support was enabled at compile time, but is not enabled in the configuration, skipping VIPS init");
 			_logger.LogInformation("Using ImageSharp for image processing.");
 			return;
 		}
@@ -55,9 +58,9 @@ public class ImageProcessor
 		                          VipsLogDelegate);
 		_logger.LogInformation("Using VIPS for image processing.");
 		#else
-		if (config.Value.EnableLibVips)
+		if (config.CurrentValue.MediaProcessing.ImageProcessor == Enums.ImageProcessor.LibVips)
 		{
-			_logger.LogWarning("VIPS support was disabled at compile time, but EnableLibVips is set in the configuration. Either compile with -p:EnableLibVips=true, or disable EnableLibVips in the configuration.");
+			_logger.LogWarning("VIPS support was disabled at compile time, but ImageProcessor is set to LibVips in the configuration. Either compile with -p:EnableLibVips=true, or set the ImageProcessor configuration option to something else.");
 		}
 		else
 		{
@@ -91,6 +94,12 @@ public class ImageProcessor
 			if (request.MimeType == "image" && ident.Metadata.DecodedImageFormat?.DefaultMimeType != null)
 				request.MimeType = ident.Metadata.DecodedImageFormat.DefaultMimeType;
 
+			if (_config.CurrentValue.MediaProcessing.ImageProcessor == Enums.ImageProcessor.None)
+			{
+				var props = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
+				return new Result { Properties = props };
+			}
+
 			// Don't generate thumb/webp for animated images
 			if (ident.FrameMetadataCollection.Count != 0)
 			{
@@ -98,16 +107,16 @@ public class ImageProcessor
 				genWebp  = false;
 			}
 
-			if (ident.Width * ident.Height > 30000000)
+			if (ident.Width * ident.Height > _config.CurrentValue.MediaProcessing.MaxResolutionMpx * 1000 * 1000)
 			{
-				_logger.LogDebug("Image is larger than 30mpx ({width}x{height}), bypassing image processing pipeline",
-				                 ident.Width, ident.Height);
+				_logger.LogDebug("Image is larger than {mpx}mpx ({width}x{height}), bypassing image processing pipeline",
+				                 _config.CurrentValue.MediaProcessing.MaxResolutionMpx, ident.Width, ident.Height);
 				var props = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
 				return new Result { Properties = props };
 			}
 
 			#if EnableLibVips
-			if (_config.Value.EnableLibVips)
+			if (_config.CurrentValue.MediaProcessing.ImageProcessor == Enums.ImageProcessor.LibVips)
 			{
 				try
 				{

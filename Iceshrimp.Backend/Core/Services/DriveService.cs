@@ -106,6 +106,9 @@ public class DriveService(
 
 	public async Task<DriveFile> StoreFile(Stream input, User user, DriveFileCreationRequest request)
 	{
+		if (user.Host == null && input.Length > storageConfig.Value.MaxUploadSizeBytes)
+			throw GracefulException.UnprocessableEntity("Attachment is too large.");
+
 		await using var data   = new BufferedStream(input);
 		var             digest = await DigestHelpers.Sha256DigestAsync(data);
 		logger.LogDebug("Storing file {digest} for user {userId}", digest, user.Id);
@@ -131,21 +134,26 @@ public class DriveService(
 
 		data.Seek(0, SeekOrigin.Begin);
 
-		var shouldStore    = storageConfig.Value.MediaRetention != null || user.Host == null;
 		var storedInternal = storageConfig.Value.Provider == Enums.FileStorage.Local;
+
+		var shouldCache =
+			storageConfig.Value is { MediaRetentionTimeSpan: not null, MediaProcessing.LocalOnly: false } &&
+			data.Length <= storageConfig.Value.MaxCacheSizeBytes;
+
+		var shouldStore = user.Host == null || shouldCache;
 
 		if (request.Uri == null && user.Host != null)
 			throw GracefulException.UnprocessableEntity("Refusing to store file without uri for remote user");
 
 		string? blurhash = null;
 
-		DriveFile.FileProperties? properties = null;
+		var properties = new DriveFile.FileProperties();
 
 		string  url;
 		string? thumbnailUrl = null;
 		string? webpublicUrl = null;
 
-		var isReasonableSize = data.Length < 10 * 1024 * 1024; // skip images larger than 10MB
+		var isReasonableSize = data.Length < storageConfig.Value.MediaProcessing.MaxFileSizeBytes;
 		var isImage          = request.MimeType.StartsWith("image/") || request.MimeType == "image";
 		var filename         = GenerateFilenameKeepingExtension(request.Filename);
 
@@ -158,6 +166,7 @@ public class DriveService(
 			{
 				var genWebp = user.Host == null;
 				var res     = await imageProcessor.ProcessImage(data, request, true, genWebp);
+				properties = res?.Properties ?? properties;
 
 				blurhash          = res?.Blurhash;
 				thumbnailFilename = res?.RenderThumbnail != null ? GenerateWebpFilename("thumbnail-") : null;
@@ -245,7 +254,6 @@ public class DriveService(
 			}
 			else
 			{
-				//TODO: check against file size limit
 				if (storedInternal)
 				{
 					var pathBase = storageConfig.Value.Local?.Path ??
@@ -290,7 +298,7 @@ public class DriveService(
 			RequestHeaders     = request.RequestHeaders,
 			RequestIp          = request.RequestIp,
 			Blurhash           = blurhash,
-			Properties         = properties!,
+			Properties         = properties,
 			ThumbnailUrl       = thumbnailUrl,
 			ThumbnailAccessKey = thumbnailFilename,
 			WebpublicType      = webpublicUrl != null ? "image/webp" : null,
