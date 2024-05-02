@@ -68,10 +68,14 @@ public class AccountController(
 				? UserProfile.UserProfileFFVisibility.Private
 				: UserProfile.UserProfileFFVisibility.Public;
 
-		if (request.Source?.Privacy != null)
+		if (user.UserSettings == null)
 		{
-			//TODO (user settings store!)
+			user.UserSettings = new UserSettings { User = user };
+			db.Add(user.UserSettings);
 		}
+
+		if (request.Source?.Privacy != null)
+			user.UserSettings.DefaultNoteVisibility = StatusEntity.DecodeVisibility(request.Source.Privacy);
 
 		if (request.Fields?.Where(p => p is { Name: not null, Value: not null }).ToList() is { Count: > 0 } fields)
 		{
