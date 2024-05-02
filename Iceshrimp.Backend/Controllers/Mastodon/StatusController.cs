@@ -33,6 +33,7 @@ public class StatusController(
 	NoteService noteSvc,
 	CacheService cache,
 	IOptions<Config.InstanceSection> config,
+	IOptions<Config.SecuritySection> security,
 	UserRenderer userRenderer
 ) : ControllerBase
 {
@@ -43,6 +44,9 @@ public class StatusController(
 	public async Task<IActionResult> GetNote(string id)
 	{
 		var user = HttpContext.GetUser();
+		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
 		var note = await db.Notes
 		                   .Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
@@ -52,6 +56,10 @@ public class StatusController(
 		                   .PrecomputeVisibilities(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
+
+		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.User.IsRemoteUser && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
 		var res = await noteRenderer.RenderAsync(note.EnforceRenoteReplyVisibility(), user);
 		return Ok(res);
 	}
@@ -62,17 +70,23 @@ public class StatusController(
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetStatusContext(string id)
 	{
-		var user           = HttpContext.GetUser();
+		var user = HttpContext.GetUser();
+		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
 		var maxAncestors   = user != null ? 4096 : 40;
 		var maxDescendants = user != null ? 4096 : 60;
 		var maxDepth       = user != null ? 4096 : 20;
 
-		_ = await db.Notes
-		            .Where(p => p.Id == id)
-		            .EnsureVisibleFor(user)
-		            .FilterHidden(user, db, filterOutgoingBlocks: false, filterMutes: false)
-		            .FirstOrDefaultAsync() ??
-		    throw GracefulException.RecordNotFound();
+		var note = await db.Notes
+		                   .Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FilterHidden(user, db, filterOutgoingBlocks: false, filterMutes: false)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.User.IsRemoteUser && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
 		var shouldShowContext = await db.Notes
 		                                .Where(p => p.Id == id)
@@ -527,11 +541,17 @@ public class StatusController(
 	public async Task<IActionResult> GetNoteLikes(string id)
 	{
 		var user = HttpContext.GetUser();
+		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .EnsureVisibleFor(user)
 		                   .FilterHidden(user, db, filterMutes: false)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
+
+		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.User.IsRemoteUser && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
 		var res = await db.NoteLikes.Where(p => p.Note == note)
 		                  .Include(p => p.User.UserProfile)
@@ -548,12 +568,18 @@ public class StatusController(
 	public async Task<IActionResult> GetNoteRenotes(string id)
 	{
 		var user = HttpContext.GetUser();
+		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
 		var note = await db.Notes
 		                   .Where(p => p.Id == id)
 		                   .EnsureVisibleFor(user)
 		                   .FilterHidden(user, db, filterMutes: false)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
+
+		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.User.IsRemoteUser && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
 		var res = await db.Notes
 		                  .Where(p => p.Renote == note && p.IsPureRenote)
@@ -572,6 +598,9 @@ public class StatusController(
 	public async Task<IActionResult> GetNoteEditHistory(string id)
 	{
 		var user = HttpContext.GetUser();
+		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
 		var note = await db.Notes
 		                   .IncludeCommonProperties()
 		                   .Where(p => p.Id == id)
@@ -579,6 +608,9 @@ public class StatusController(
 		                   .FilterHidden(user, db, filterMutes: false)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
+
+		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.User.IsRemoteUser && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
 		var res = await noteRenderer.RenderHistoryAsync(note);
 		return Ok(res);

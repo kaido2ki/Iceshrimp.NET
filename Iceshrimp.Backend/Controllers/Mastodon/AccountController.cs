@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -29,7 +31,8 @@ public class AccountController(
 	NoteRenderer noteRenderer,
 	UserService userSvc,
 	ActivityPub.UserResolver userResolver,
-	DriveService driveSvc
+	DriveService driveSvc,
+	IOptionsSnapshot<Config.SecuritySection> config
 ) : ControllerBase
 {
 	[HttpGet("verify_credentials")]
@@ -175,9 +178,18 @@ public class AccountController(
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetUser(string id)
 	{
+		var localUser = HttpContext.GetUser();
+		if (config.Value.PublicPreview == Enums.PublicPreview.Lockdown && localUser == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
 		           throw GracefulException.RecordNotFound();
+
+		if (config.Value.PublicPreview <= Enums.PublicPreview.Restricted && user.IsRemoteUser && localUser == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
 		var res = await userRenderer.RenderAsync(await userResolver.GetUpdatedUser(user));
+
 		return Ok(res);
 	}
 
@@ -382,10 +394,16 @@ public class AccountController(
 	public async Task<IActionResult> GetUserFollowers(string id, MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUser();
+		if (config.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
 		var account = await db.Users
 		                      .Include(p => p.UserProfile)
 		                      .FirstOrDefaultAsync(p => p.Id == id) ??
 		              throw GracefulException.RecordNotFound();
+
+		if (config.Value.PublicPreview <= Enums.PublicPreview.Restricted && account.IsRemoteUser && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
 		if (user == null || user.Id != account.Id)
 		{
@@ -414,10 +432,16 @@ public class AccountController(
 	public async Task<IActionResult> GetUserFollowing(string id, MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUser();
+		if (config.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
 		var account = await db.Users
 		                      .Include(p => p.UserProfile)
 		                      .FirstOrDefaultAsync(p => p.Id == id) ??
 		              throw GracefulException.RecordNotFound();
+
+		if (config.Value.PublicPreview <= Enums.PublicPreview.Restricted && account.IsRemoteUser && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
 		if (user == null || user.Id != account.Id)
 		{
