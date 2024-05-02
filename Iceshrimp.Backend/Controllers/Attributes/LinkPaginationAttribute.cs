@@ -29,7 +29,7 @@ public class LinkPaginationAttribute(int defaultLimit, int maxLimit) : ActionFil
 		if (query == null) return;
 
 		if (context.Result is not OkObjectResult result) return;
-		if (result.Value is not IEnumerable<IEntity> entities) return;
+		if ((context.HttpContext.GetPaginationData() ?? result.Value) is not IEnumerable<IEntity> entities) return;
 		var ids = entities.Select(p => p.Id).ToList();
 		if (ids.Count == 0) return;
 		if (query.MinId != null) ids.Reverse();
@@ -54,6 +54,22 @@ public class LinkPaginationAttribute(int defaultLimit, int maxLimit) : ActionFil
 	private static string GetUrl(HttpRequest request, QueryString query)
 	{
 		return UriHelper.BuildAbsolute("https", request.Host, request.PathBase, request.Path, query);
+	}
+}
+
+public static class HttpContextExtensions
+{
+	private const string Key = "link-pagination";
+
+	internal static void SetPaginationData(this HttpContext ctx, IEnumerable<IEntity> entities)
+	{
+		ctx.Items.Add(Key, entities);
+	}
+
+	public static IEnumerable<IEntity>? GetPaginationData(this HttpContext ctx)
+	{
+		ctx.Items.TryGetValue(Key, out var entities);
+		return entities as IEnumerable<IEntity>;
 	}
 }
 

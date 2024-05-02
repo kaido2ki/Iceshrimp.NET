@@ -483,12 +483,15 @@ public class AccountController(
 	public async Task<IActionResult> GetFollowRequests(MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var res = await db.FollowRequests
-		                  .Where(p => p.Followee == user)
-		                  .IncludeCommonProperties()
-		                  .Select(p => p.Follower)
-		                  .Paginate(query, ControllerContext)
-		                  .RenderAllForMastodonAsync(userRenderer);
+		var requests = await db.FollowRequests
+		                       .Where(p => p.Followee == user)
+		                       .IncludeCommonProperties()
+		                       .Select(p => new EntityWrapper<User> { Id = p.Id, Entity = p.Follower })
+		                       .Paginate(query, ControllerContext)
+		                       .ToListAsync();
+
+		HttpContext.SetPaginationData(requests);
+		var res = await userRenderer.RenderManyAsync(requests.Select(p => p.Entity));
 
 		return Ok(res);
 	}
@@ -537,10 +540,15 @@ public class AccountController(
 	public async Task<IActionResult> GetBlockedUsers(MastodonPaginationQuery pq)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var res = await db.Users.Where(p => p.IsBlockedBy(user))
-		                  .IncludeCommonProperties()
-		                  .Paginate(pq, ControllerContext)
-		                  .RenderAllForMastodonAsync(userRenderer);
+		var blocks = await db.Blockings
+		                     .Include(p => p.Blockee.UserProfile)
+		                     .Where(p => p.Blocker == user)
+		                     .Select(p => new EntityWrapper<User> { Id = p.Id, Entity = p.Blockee })
+		                     .Paginate(pq, ControllerContext)
+		                     .ToListAsync();
+
+		HttpContext.SetPaginationData(blocks);
+		var res = await userRenderer.RenderManyAsync(blocks.Select(p => p.Entity));
 
 		return Ok(res);
 	}
@@ -553,10 +561,15 @@ public class AccountController(
 	public async Task<IActionResult> GetMutedUsers(MastodonPaginationQuery pq)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var res = await db.Users.Where(p => p.IsMutedBy(user))
-		                  .IncludeCommonProperties()
-		                  .Paginate(pq, ControllerContext)
-		                  .RenderAllForMastodonAsync(userRenderer);
+		var mutes = await db.Mutings
+		                    .Include(p => p.Mutee.UserProfile)
+		                    .Where(p => p.Muter == user)
+		                    .Select(p => new EntityWrapper<User> { Id = p.Id, Entity = p.Mutee })
+		                    .Paginate(pq, ControllerContext)
+		                    .ToListAsync();
+
+		HttpContext.SetPaginationData(mutes);
+		var res = await userRenderer.RenderManyAsync(mutes.Select(p => p.Entity));
 
 		return Ok(res);
 	}
