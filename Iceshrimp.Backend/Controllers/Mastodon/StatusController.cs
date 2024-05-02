@@ -85,7 +85,7 @@ public class StatusController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
-		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.User.IsRemoteUser && user == null)
+		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
 		var shouldShowContext = await db.Notes
@@ -550,7 +550,7 @@ public class StatusController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
-		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.User.IsRemoteUser && user == null)
+		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
 		var res = await db.NoteLikes.Where(p => p.Note == note)
@@ -578,7 +578,7 @@ public class StatusController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
-		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.User.IsRemoteUser && user == null)
+		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
 		var res = await db.Notes
