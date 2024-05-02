@@ -389,6 +389,12 @@ public class StatusController(
 			newText = MfmSerializer.Serialize(parsed).Trim();
 		}
 
+		if (request is { Sensitive: true, MediaIds.Count: > 0 })
+		{
+			await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id) && !p.IsSensitive)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.IsSensitive, _ => true));
+		}
+
 		var quote = request.QuoteId != null
 			? await db.Notes
 			          .IncludeCommonProperties()
