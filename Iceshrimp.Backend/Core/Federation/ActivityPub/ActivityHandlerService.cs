@@ -21,7 +21,6 @@ public class ActivityHandlerService(
 	DatabaseContext db,
 	IOptions<Config.InstanceSection> config,
 	FederationControlService federationCtrl,
-	ObjectResolver resolver,
 	NotificationService notificationSvc,
 	ObjectResolver objectResolver,
 	FollowupTaskService followupTaskSvc,
@@ -56,7 +55,7 @@ public class ActivityHandlerService(
 
 		// Resolve object & children
 		if (activity.Object != null)
-			activity.Object = await resolver.ResolveObject(activity.Object) ??
+			activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri) ??
 			                  throw GracefulException.UnprocessableEntity("Failed to resolve activity object");
 
 		//TODO: validate inboxUserId
@@ -203,7 +202,7 @@ public class ActivityHandlerService(
 			}
 			case ASBite bite:
 			{
-				var target = await objectResolver.ResolveObject(bite.Target);
+				var target = await objectResolver.ResolveObject(bite.Target, resolvedActor.Uri);
 				var dbBite = target switch
 				{
 					ASActor targetActor => new Bite

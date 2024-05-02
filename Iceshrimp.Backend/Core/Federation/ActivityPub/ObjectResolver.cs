@@ -14,18 +14,31 @@ public class ObjectResolver(
 	IOptions<Config.InstanceSection> config
 )
 {
-	public async Task<ASObject?> ResolveObject(ASObjectBase baseObj, int recurse = 5, bool force = false)
+	public async Task<ASObject?> ResolveObject(
+		ASObjectBase baseObj, string? actorUri = null, int recurse = 5, bool force = false
+	)
 	{
 		logger.LogDebug("Resolving object: {id}", baseObj.Id ?? "<anonymous>");
 
 		if (baseObj is ASActivity { Object.IsUnresolved: true } activity && recurse > 0)
 		{
-			activity.Object = await ResolveObject(activity.Object, --recurse, force);
-			return await ResolveObject(activity, recurse);
+			activity.Object = await ResolveObject(activity.Object, actorUri, --recurse, force);
+			return await ResolveObject(activity, actorUri, recurse);
 		}
 
 		if (baseObj is ASObject { IsUnresolved: false } obj && !force)
-			return obj;
+		{
+			if (actorUri == null ||
+			    baseObj is not ASNote { AttributedTo.Count: > 0 } note ||
+			    note.AttributedTo.Any(p => p.Id != actorUri))
+			{
+				return obj;
+			}
+
+			note.VerifiedFetch = true;
+			return note;
+		}
+
 		if (baseObj.Id == null)
 		{
 			logger.LogDebug("Refusing to resolve object with null id property");
