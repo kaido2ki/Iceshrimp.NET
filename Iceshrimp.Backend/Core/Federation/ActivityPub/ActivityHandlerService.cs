@@ -53,254 +53,29 @@ public class ActivityHandlerService(
 
 		UpdateInstanceMetadataInBackground(resolvedActor.Host, new Uri(resolvedActor.Uri).Host);
 
-		// Resolve object & children
-		if (activity.Object != null)
-			activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri) ??
-			                  throw GracefulException.UnprocessableEntity("Failed to resolve activity object");
-
 		//TODO: validate inboxUserId
 
-		switch (activity)
+		var task = activity switch
 		{
-			case ASCreate:
-			{
-				//TODO: should we handle other types of creates?
-				if (activity.Object is not ASNote note)
-					throw GracefulException.UnprocessableEntity("Create activity object is invalid");
-				await noteSvc.ProcessNoteAsync(note, resolvedActor);
-				return;
-			}
-			case ASDelete:
-			{
-				if (activity.Object is ASActor actor)
-				{
-					if (!await db.Users.AnyAsync(p => p.Uri == actor.Id))
-						return;
+			ASAccept accept     => HandleAccept(accept, resolvedActor),
+			ASAnnounce announce => HandleAnnounce(announce, resolvedActor),
+			ASBite bite         => HandleBite(bite, resolvedActor),
+			ASBlock block       => HandleBlock(block, resolvedActor),
+			ASCreate create     => HandleCreate(create, resolvedActor),
+			ASDelete delete     => HandleDelete(delete, resolvedActor),
+			ASEmojiReact react  => HandleReact(react, resolvedActor),
+			ASFollow follow     => HandleFollow(follow, resolvedActor),
+			ASLike like         => HandleLike(like, resolvedActor),
+			ASReject reject     => HandleReject(reject, resolvedActor),
+			ASUndo undo         => HandleUndo(undo, resolvedActor),
+			ASUnfollow unfollow => HandleUnfollow(unfollow, resolvedActor),
+			ASUpdate update     => HandleUpdate(update, resolvedActor),
 
-					if (activity.Actor.Id != actor.Id)
-						throw GracefulException.UnprocessableEntity("Refusing to delete user: actor doesn't match");
+			// Separated for readability
+			_ => throw GracefulException.UnprocessableEntity($"Activity type {activity.Type} is unknown")
+		};
 
-					await userSvc.DeleteUserAsync(actor);
-					return;
-				}
-
-				if (activity.Object is ASNote note)
-				{
-					await noteSvc.DeleteNoteAsync(note, resolvedActor);
-					return;
-				}
-
-				if (activity.Object is not ASTombstone tombstone)
-					throw GracefulException
-						.UnprocessableEntity($"Delete activity object is invalid: {activity.Object?.Type}");
-				if (await db.Notes.AnyAsync(p => p.Uri == tombstone.Id))
-				{
-					await noteSvc.DeleteNoteAsync(tombstone, resolvedActor);
-					return;
-				}
-
-				if (await db.Users.AnyAsync(p => p.Uri == tombstone.Id))
-				{
-					if (tombstone.Id != activity.Actor.Id)
-						throw GracefulException.UnprocessableEntity("Refusing to delete user: actor doesn't match");
-
-					await userSvc.DeleteUserAsync(activity.Actor);
-				}
-
-				logger.LogDebug("Delete activity object {id} is unknown, skipping", tombstone.Id);
-				return;
-			}
-			case ASFollow:
-			{
-				if (activity.Object is not ASActor obj)
-					throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
-				var followee = await userResolver.ResolveAsync(obj.Id);
-				if (followee.Host != null) throw new Exception("Cannot process follow for remote followee");
-				await userSvc.FollowUserAsync(resolvedActor, followee, activity.Id);
-				return;
-			}
-			case ASUnfollow:
-			{
-				if (activity.Object is not ASActor obj)
-					throw GracefulException.UnprocessableEntity("Unfollow activity object is invalid");
-				await UnfollowAsync(obj, resolvedActor);
-				return;
-			}
-			case ASAccept:
-			{
-				if (activity.Object is not ASFollow obj)
-					throw GracefulException.UnprocessableEntity("Accept activity object is invalid");
-				await AcceptAsync(obj, resolvedActor);
-				return;
-			}
-			case ASReject:
-			{
-				if (activity.Object is not ASFollow obj)
-					throw GracefulException.UnprocessableEntity("Reject activity object is invalid");
-				await RejectAsync(obj, resolvedActor);
-				return;
-			}
-			case ASUndo:
-			{
-				switch (activity.Object)
-				{
-					case ASFollow { Object: ASActor followee }:
-						await UnfollowAsync(followee, resolvedActor);
-						return;
-					case ASLike { Object: ASNote note } like:
-						if (like.MisskeyReaction != null)
-							await noteSvc.RemoveReactionFromNoteAsync(note, resolvedActor, like.MisskeyReaction);
-						else
-							await noteSvc.UnlikeNoteAsync(note, resolvedActor);
-						return;
-					case ASAnnounce { Object: ASNote note }:
-						await noteSvc.UndoAnnounceAsync(note, resolvedActor);
-						return;
-					case ASEmojiReact { Object: ASNote note } react:
-						await noteSvc.RemoveReactionFromNoteAsync(note, resolvedActor, react.Content);
-						return;
-					case ASBlock { Object: ASActor blockee }:
-						await UnblockAsync(resolvedActor, blockee);
-						return;
-					default:
-						throw GracefulException
-							.UnprocessableEntity($"Undo activity object is invalid: {activity.Object?.Type}");
-				}
-			}
-			case ASLike like:
-			{
-				if (activity.Object is not ASNote note)
-					throw GracefulException.UnprocessableEntity("Like activity object is invalid");
-
-				if (like.MisskeyReaction != null)
-				{
-					await emojiSvc.ProcessEmojiAsync(like.Tags?.OfType<ASEmoji>().ToList(), resolvedActor.Host);
-					await noteSvc.ReactToNoteAsync(note, resolvedActor, like.MisskeyReaction);
-				}
-				else
-				{
-					await noteSvc.LikeNoteAsync(note, resolvedActor);
-				}
-
-				return;
-			}
-			case ASUpdate:
-			{
-				switch (activity.Object)
-				{
-					case ASActor actor:
-						if (actor.Id != activity.Actor.Id)
-							throw GracefulException.UnprocessableEntity("Refusing to update actor with mismatching id");
-						await userSvc.UpdateUserAsync(resolvedActor, actor);
-						return;
-					case ASNote note:
-						await noteSvc.ProcessNoteUpdateAsync(note, resolvedActor);
-						return;
-					default:
-						throw GracefulException.UnprocessableEntity("Update activity object is invalid");
-				}
-			}
-			case ASBite bite:
-			{
-				var target = await objectResolver.ResolveObject(bite.Target, resolvedActor.Uri);
-				var dbBite = target switch
-				{
-					ASActor targetActor => new Bite
-					{
-						Id         = IdHelpers.GenerateSlowflakeId(bite.PublishedAt),
-						CreatedAt  = bite.PublishedAt ?? DateTime.UtcNow,
-						Uri        = bite.Id,
-						User       = resolvedActor,
-						UserHost   = resolvedActor.Host,
-						TargetUser = await userResolver.ResolveAsync(targetActor.Id)
-					},
-					ASNote targetNote => new Bite
-					{
-						Id         = IdHelpers.GenerateSlowflakeId(bite.PublishedAt),
-						CreatedAt  = bite.PublishedAt ?? DateTime.UtcNow,
-						Uri        = bite.Id,
-						User       = resolvedActor,
-						UserHost   = resolvedActor.Host,
-						TargetNote = await noteSvc.ResolveNoteAsync(targetNote.Id)
-					},
-					ASBite targetBite => new Bite
-					{
-						Id        = IdHelpers.GenerateSlowflakeId(bite.PublishedAt),
-						CreatedAt = bite.PublishedAt ?? DateTime.UtcNow,
-						Uri       = bite.Id,
-						User      = resolvedActor,
-						UserHost  = resolvedActor.Host,
-						TargetBite =
-							await db.Bites.FirstAsync(p => p.UserHost == null &&
-							                               p.Id == Bite.GetIdFromPublicUri(targetBite.Id, config.Value))
-					},
-					null => throw
-						GracefulException.UnprocessableEntity($"Failed to resolve bite target {bite.Target.Id}"),
-					_ when bite.To?.Id != null => new Bite
-					{
-						Id         = IdHelpers.GenerateSlowflakeId(bite.PublishedAt),
-						CreatedAt  = bite.PublishedAt ?? DateTime.UtcNow,
-						Uri        = bite.Id,
-						User       = resolvedActor,
-						UserHost   = resolvedActor.Host,
-						TargetUser = await userResolver.ResolveAsync(bite.To.Id)
-					},
-					_ => throw GracefulException
-						.UnprocessableEntity($"Invalid bite target {target.Id} with type {target.Type}")
-
-					//TODO: more fallback
-				};
-
-				if (dbBite.TargetUser?.Host != null ||
-				    dbBite.TargetNote?.User.Host != null ||
-				    dbBite.TargetBite?.User.Host != null)
-					throw GracefulException.Accepted("Ignoring bite for remote user");
-
-				var finalTarget = dbBite.TargetUser ?? dbBite.TargetNote?.User ?? dbBite.TargetBite?.User;
-
-				if (await db.Blockings.AnyAsync(p => p.Blockee == resolvedActor && p.Blocker == finalTarget))
-					throw GracefulException.Forbidden("You are not allowed to interact with this user");
-
-				await db.AddAsync(dbBite);
-				await db.SaveChangesAsync();
-				await notificationSvc.GenerateBiteNotification(dbBite);
-				return;
-			}
-			case ASAnnounce announce:
-			{
-				if (announce.Object is not ASNote note)
-					throw GracefulException.UnprocessableEntity("Invalid or unsupported announce object");
-
-				var dbNote = await noteSvc.ResolveNoteAsync(note.Id, note) ??
-				             throw GracefulException.UnprocessableEntity("Failed to resolve announce target");
-
-				await noteSvc.CreateNoteAsync(resolvedActor, announce.GetVisibility(activity.Actor), renote: dbNote,
-				                              uri: announce.Id);
-				return;
-			}
-			case ASEmojiReact reaction:
-			{
-				if (reaction.Object is not ASNote note)
-					throw GracefulException.UnprocessableEntity("Invalid or unsupported reaction target");
-				await emojiSvc.ProcessEmojiAsync(reaction.Tags?.OfType<ASEmoji>().ToList(), resolvedActor.Host);
-				await noteSvc.ReactToNoteAsync(note, resolvedActor, reaction.Content);
-				return;
-			}
-			case ASBlock block:
-			{
-				if (block.Object is not ASActor blockee)
-					throw GracefulException.UnprocessableEntity("Invalid or unsupported block target");
-				var resolvedBlockee = await userResolver.ResolveAsync(blockee.Id, true);
-				if (resolvedBlockee == null)
-					throw GracefulException.UnprocessableEntity("Unknown block target");
-				if (resolvedBlockee.Host != null)
-					throw GracefulException.UnprocessableEntity("Refusing to process block between two remote users");
-				await userSvc.BlockUserAsync(resolvedActor, resolvedBlockee);
-				return;
-			}
-			default:
-				throw new NotImplementedException($"Activity type {activity.Type} is unknown");
-		}
+		await task;
 	}
 
 	private void UpdateInstanceMetadataInBackground(string host, string webDomain)
@@ -310,6 +85,372 @@ public class ActivityHandlerService(
 			var instanceSvc = provider.GetRequiredService<InstanceService>();
 			await instanceSvc.UpdateInstanceStatusAsync(host, webDomain);
 		});
+	}
+
+	private async Task HandleCreate(ASCreate activity, User actor)
+	{
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("Create activity object was null");
+
+		activity.Object = await objectResolver.ResolveObject(activity.Object, actor.Uri) as ASNote ??
+		                  throw GracefulException.UnprocessableEntity("Failed to resolve create object");
+
+		await noteSvc.ProcessNoteAsync(activity.Object, actor);
+	}
+
+	private async Task HandleDelete(ASDelete activity, User resolvedActor)
+	{
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("Delete activity object was null");
+
+		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+
+		switch (activity.Object)
+		{
+			case ASActor actor when !await db.Users.AnyAsync(p => p.Uri == actor.Id):
+				logger.LogDebug("Delete activity object {id} is unknown, skipping", actor.Id);
+				return;
+			case ASActor actor when activity.Actor?.Id != actor.Id:
+				throw GracefulException.UnprocessableEntity("Refusing to delete user: actor doesn't match");
+			case ASActor actor:
+				await userSvc.DeleteUserAsync(actor);
+				break;
+			case ASNote note:
+				await noteSvc.DeleteNoteAsync(note, resolvedActor);
+				break;
+			case ASTombstone tombstone when await db.Notes.AnyAsync(p => p.Uri == tombstone.Id):
+				await noteSvc.DeleteNoteAsync(tombstone, resolvedActor);
+				return;
+			case ASTombstone tombstone when await db.Users.AnyAsync(p => p.Uri == tombstone.Id):
+			{
+				if (tombstone.Id != activity.Actor?.Id)
+					throw GracefulException.UnprocessableEntity("Refusing to delete user: actor doesn't match");
+
+				await userSvc.DeleteUserAsync(activity.Actor);
+				break;
+			}
+			case ASTombstone tombstone:
+				logger.LogDebug("Delete activity object {id} is unknown, skipping", tombstone.Id);
+				break;
+			default:
+				logger.LogDebug("Delete activity object {id} couldn't be resolved, skipping", activity.Id);
+				break;
+		}
+	}
+
+	private async Task HandleFollow(ASFollow activity, User resolvedActor)
+	{
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("Follow activity object was null");
+
+		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		if (activity.Object is not ASActor obj)
+			throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
+
+		var followee = await userResolver.ResolveAsync(obj.Id);
+		if (followee.Host != null)
+			throw GracefulException.UnprocessableEntity("Cannot process follow for remote followee");
+
+		await userSvc.FollowUserAsync(resolvedActor, followee, activity.Id);
+	}
+
+	private async Task HandleUnfollow(ASUnfollow activity, User resolvedActor)
+	{
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("Unfollow activity object was null");
+
+		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		if (activity.Object is not ASActor obj)
+			throw GracefulException.UnprocessableEntity("Unfollow activity object is invalid");
+
+		await UnfollowAsync(obj, resolvedActor);
+	}
+
+	private async Task HandleAccept(ASAccept activity, User actor)
+	{
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("Accept activity object was null");
+
+		activity.Object = await objectResolver.ResolveObject(activity.Object, actor.Uri);
+		if (activity.Object is not ASFollow obj)
+			throw GracefulException.UnprocessableEntity("Accept activity object is invalid");
+
+		var prefix = $"https://{config.Value.WebDomain}/follows/";
+		if (!obj.Id.StartsWith(prefix))
+			throw GracefulException.UnprocessableEntity($"Object id '{obj.Id}' not a valid follow request id");
+
+		var ids = obj.Id[prefix.Length..].TrimEnd('/').Split("/");
+		if (ids.Length != 2 || ids[1] != actor.Id)
+			throw GracefulException
+				.UnprocessableEntity($"Actor id '{actor.Id}' doesn't match followee id '{ids[1]}'");
+
+		var request = await db.FollowRequests
+		                      .Include(p => p.Follower.UserProfile)
+		                      .Include(p => p.Followee.UserProfile)
+		                      .FirstOrDefaultAsync(p => p.Followee == actor && p.FollowerId == ids[0]);
+
+		if (request == null)
+			throw GracefulException
+				.UnprocessableEntity($"No follow request matching follower '{ids[0]}' and followee '{actor.Id}' found");
+
+		await userSvc.AcceptFollowRequestAsync(request);
+	}
+
+	private async Task HandleReject(ASReject activity, User resolvedActor)
+	{
+		if (activity.Actor == null)
+			throw GracefulException.UnprocessableEntity("Reject activity actor was null");
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("Reject activity object was null");
+
+		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		if (activity.Object is not ASFollow follow)
+			throw GracefulException.UnprocessableEntity("Reject activity object is invalid");
+
+		if (follow is not { Actor: not null })
+			throw GracefulException.UnprocessableEntity("Refusing to reject object with invalid follow object");
+
+		var resolvedFollower = await userResolver.ResolveAsync(activity.Actor.Id);
+		if (resolvedFollower is not { Host: null })
+			throw GracefulException.UnprocessableEntity("Refusing to reject remote follow");
+
+		await db.FollowRequests.Where(p => p.Followee == resolvedActor && p.Follower == resolvedFollower)
+		        .ExecuteDeleteAsync();
+		var count = await db.Followings.Where(p => p.Followee == resolvedActor && p.Follower == resolvedFollower)
+		                    .ExecuteDeleteAsync();
+		if (count > 0)
+		{
+			await db.Users.Where(p => p.Id == resolvedFollower.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount - count));
+			await db.Users.Where(p => p.Id == resolvedActor.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount - count));
+			await db.SaveChangesAsync();
+		}
+
+		await db.Notifications
+		        .Where(p => p.Type == Notification.NotificationType.FollowRequestAccepted)
+		        .Where(p => p.Notifiee == resolvedFollower &&
+		                    p.Notifier == resolvedActor)
+		        .ExecuteDeleteAsync();
+
+		await db.UserListMembers
+		        .Where(p => p.UserList.User == resolvedFollower && p.User == resolvedActor)
+		        .ExecuteDeleteAsync();
+	}
+
+	private async Task HandleUndo(ASUndo activity, User resolvedActor)
+	{
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("Undo activity object was null");
+
+		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+
+		switch (activity.Object)
+		{
+			case ASFollow { Object: ASActor followee }:
+				await UnfollowAsync(followee, resolvedActor);
+				break;
+			case ASLike { Object: ASNote note } like:
+				if (like.MisskeyReaction != null)
+					await noteSvc.RemoveReactionFromNoteAsync(note, resolvedActor, like.MisskeyReaction);
+				else
+					await noteSvc.UnlikeNoteAsync(note, resolvedActor);
+				break;
+			case ASAnnounce { Object: ASNote note }:
+				await noteSvc.UndoAnnounceAsync(note, resolvedActor);
+				break;
+			case ASEmojiReact { Object: ASNote note } react:
+				await noteSvc.RemoveReactionFromNoteAsync(note, resolvedActor, react.Content);
+				break;
+			case ASBlock { Object: ASActor blockee }:
+				await UnblockAsync(resolvedActor, blockee);
+				break;
+			case null:
+				logger.LogDebug("Unknown undo activity object, skipping");
+				break;
+			default:
+				logger.LogDebug("Unknown undo activity object {id} of type {type}, skipping", activity.Object?.Id,
+				                activity.Object?.Type);
+				break;
+		}
+	}
+
+	private async Task HandleLike(ASLike activity, User resolvedActor)
+	{
+		if (resolvedActor.Host == null)
+			throw GracefulException.UnprocessableEntity("Cannot process like for local actor");
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("Like activity object was null");
+
+		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+
+		if (activity.Object is not ASNote note)
+		{
+			logger.LogDebug("Like activity object is unknown, skipping");
+			return;
+		}
+
+		if (activity.MisskeyReaction != null)
+		{
+			await emojiSvc.ProcessEmojiAsync(activity.Tags?.OfType<ASEmoji>().ToList(), resolvedActor.Host);
+			await noteSvc.ReactToNoteAsync(note, resolvedActor, activity.MisskeyReaction);
+		}
+		else
+		{
+			await noteSvc.LikeNoteAsync(note, resolvedActor);
+		}
+	}
+
+	private async Task HandleUpdate(ASUpdate activity, User resolvedActor)
+	{
+		if (activity.Actor == null)
+			throw GracefulException.UnprocessableEntity("Cannot process update for null actor");
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("Update activity object was null");
+
+		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+
+		switch (activity.Object)
+		{
+			case ASActor actor:
+				if (actor.Id != activity.Actor.Id)
+					throw GracefulException.UnprocessableEntity("Refusing to update actor with mismatching id");
+				await userSvc.UpdateUserAsync(resolvedActor, actor);
+				break;
+			case ASNote note:
+				await noteSvc.ProcessNoteUpdateAsync(note, resolvedActor);
+				break;
+			default:
+				logger.LogDebug("Like activity object is unknown, skipping");
+				break;
+		}
+	}
+
+	private async Task HandleBite(ASBite activity, User resolvedActor)
+	{
+		var target = await objectResolver.ResolveObject(activity.Target, resolvedActor.Uri);
+		var dbBite = target switch
+		{
+			ASActor targetActor => new Bite
+			{
+				Id         = IdHelpers.GenerateSlowflakeId(activity.PublishedAt),
+				CreatedAt  = activity.PublishedAt ?? DateTime.UtcNow,
+				Uri        = activity.Id,
+				User       = resolvedActor,
+				UserHost   = resolvedActor.Host,
+				TargetUser = await userResolver.ResolveAsync(targetActor.Id)
+			},
+			ASNote targetNote => new Bite
+			{
+				Id         = IdHelpers.GenerateSlowflakeId(activity.PublishedAt),
+				CreatedAt  = activity.PublishedAt ?? DateTime.UtcNow,
+				Uri        = activity.Id,
+				User       = resolvedActor,
+				UserHost   = resolvedActor.Host,
+				TargetNote = await noteSvc.ResolveNoteAsync(targetNote.Id)
+			},
+			ASBite targetBite => new Bite
+			{
+				Id        = IdHelpers.GenerateSlowflakeId(activity.PublishedAt),
+				CreatedAt = activity.PublishedAt ?? DateTime.UtcNow,
+				Uri       = activity.Id,
+				User      = resolvedActor,
+				UserHost  = resolvedActor.Host,
+				TargetBite =
+					await db.Bites.FirstAsync(p => p.UserHost == null &&
+					                               p.Id == Bite.GetIdFromPublicUri(targetBite.Id, config.Value))
+			},
+			null => throw GracefulException.UnprocessableEntity($"Failed to resolve bite target {activity.Target.Id}"),
+			_ when activity.To?.Id != null => new Bite
+			{
+				Id         = IdHelpers.GenerateSlowflakeId(activity.PublishedAt),
+				CreatedAt  = activity.PublishedAt ?? DateTime.UtcNow,
+				Uri        = activity.Id,
+				User       = resolvedActor,
+				UserHost   = resolvedActor.Host,
+				TargetUser = await userResolver.ResolveAsync(activity.To.Id)
+			},
+			_ => throw GracefulException.UnprocessableEntity($"Invalid bite target {target.Id} with type {target.Type}")
+
+			//TODO: more fallback
+		};
+
+		if (dbBite.TargetUser?.Host != null ||
+		    dbBite.TargetNote?.User.Host != null ||
+		    dbBite.TargetBite?.User.Host != null)
+			throw GracefulException.Accepted("Ignoring bite for remote user");
+
+		var finalTarget = dbBite.TargetUser ?? dbBite.TargetNote?.User ?? dbBite.TargetBite?.User;
+
+		if (await db.Blockings.AnyAsync(p => p.Blockee == resolvedActor && p.Blocker == finalTarget))
+			throw GracefulException.Forbidden("You are not allowed to interact with this user");
+
+		await db.AddAsync(dbBite);
+		await db.SaveChangesAsync();
+		await notificationSvc.GenerateBiteNotification(dbBite);
+	}
+
+	private async Task HandleAnnounce(ASAnnounce activity, User resolvedActor)
+	{
+		if (activity.Actor == null)
+			throw GracefulException.UnprocessableEntity("Cannot process announce for null actor");
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("Announce activity object was null");
+
+		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		if (activity.Object is not ASNote note)
+		{
+			logger.LogDebug("Announce activity object is unknown, skipping");
+			return;
+		}
+
+		var dbNote = await noteSvc.ResolveNoteAsync(note.Id, note);
+		if (dbNote == null)
+		{
+			logger.LogDebug("Announce activity object is unknown, skipping");
+			return;
+		}
+
+		await noteSvc.CreateNoteAsync(resolvedActor, activity.GetVisibility(activity.Actor), renote: dbNote,
+		                              uri: activity.Id);
+	}
+
+	private async Task HandleReact(ASEmojiReact activity, User resolvedActor)
+	{
+		if (resolvedActor.Host == null)
+			throw GracefulException.UnprocessableEntity("Cannot process EmojiReact for local actor");
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("EmojiReact activity object was null");
+
+		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		if (activity.Object is not ASNote note)
+		{
+			logger.LogDebug("EmojiReact activity object is unknown, skipping");
+			return;
+		}
+
+		await emojiSvc.ProcessEmojiAsync(activity.Tags?.OfType<ASEmoji>().ToList(), resolvedActor.Host);
+		await noteSvc.ReactToNoteAsync(note, resolvedActor, activity.Content);
+	}
+
+	private async Task HandleBlock(ASBlock activity, User resolvedActor)
+	{
+		if (activity.Object == null)
+			throw GracefulException.UnprocessableEntity("EmojiReact activity object was null");
+
+		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		if (activity.Object is not ASActor blockee)
+		{
+			logger.LogDebug("Block activity object is unknown, skipping");
+			return;
+		}
+
+		var resolvedBlockee = await userResolver.ResolveAsync(blockee.Id, true);
+		if (resolvedBlockee == null)
+			throw GracefulException.UnprocessableEntity("Unknown block target");
+		if (resolvedBlockee.Host != null)
+			throw GracefulException.UnprocessableEntity("Refusing to process block between two remote users");
+		await userSvc.BlockUserAsync(resolvedActor, resolvedBlockee);
 	}
 
 	private async Task UnfollowAsync(ASActor followeeActor, User follower)
@@ -360,61 +501,5 @@ public class ActivityHandlerService(
 			throw GracefulException
 				.UnprocessableEntity("Refusing to process unblock between two remote users");
 		await userSvc.UnblockUserAsync(blocker, resolvedBlockee);
-	}
-
-	private async Task AcceptAsync(ASFollow obj, User actor)
-	{
-		var prefix = $"https://{config.Value.WebDomain}/follows/";
-		if (!obj.Id.StartsWith(prefix))
-			throw GracefulException.UnprocessableEntity($"Object id '{obj.Id}' not a valid follow request id");
-
-		var ids = obj.Id[prefix.Length..].TrimEnd('/').Split("/");
-		if (ids.Length != 2 || ids[1] != actor.Id)
-			throw GracefulException
-				.UnprocessableEntity($"Actor id '{actor.Id}' doesn't match followee id '{ids[1]}'");
-
-		var request = await db.FollowRequests
-		                      .Include(p => p.Follower.UserProfile)
-		                      .Include(p => p.Followee.UserProfile)
-		                      .FirstOrDefaultAsync(p => p.Followee == actor && p.FollowerId == ids[0]);
-
-		if (request == null)
-			throw GracefulException
-				.UnprocessableEntity($"No follow request matching follower '{ids[0]}' and followee '{actor.Id}' found");
-
-		await userSvc.AcceptFollowRequestAsync(request);
-	}
-
-	private async Task RejectAsync(ASFollow follow, User actor)
-	{
-		if (follow is not { Actor: not null })
-			throw GracefulException.UnprocessableEntity("Refusing to reject object with invalid follow object");
-
-		var resolvedFollower = await userResolver.ResolveAsync(follow.Actor.Id);
-		if (resolvedFollower is not { Host: null })
-			throw GracefulException.UnprocessableEntity("Refusing to reject remote follow");
-
-		await db.FollowRequests.Where(p => p.Followee == actor && p.Follower == resolvedFollower)
-		        .ExecuteDeleteAsync();
-		var count = await db.Followings.Where(p => p.Followee == actor && p.Follower == resolvedFollower)
-		                    .ExecuteDeleteAsync();
-		if (count > 0)
-		{
-			await db.Users.Where(p => p.Id == resolvedFollower.Id)
-			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount - count));
-			await db.Users.Where(p => p.Id == actor.Id)
-			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount - count));
-			await db.SaveChangesAsync();
-		}
-
-		await db.Notifications
-		        .Where(p => p.Type == Notification.NotificationType.FollowRequestAccepted)
-		        .Where(p => p.Notifiee == resolvedFollower &&
-		                    p.Notifier == actor)
-		        .ExecuteDeleteAsync();
-
-		await db.UserListMembers
-		        .Where(p => p.UserList.User == resolvedFollower && p.User == actor)
-		        .ExecuteDeleteAsync();
 	}
 }
