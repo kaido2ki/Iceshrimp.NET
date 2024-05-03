@@ -114,7 +114,7 @@ public class InboxValidationMiddleware(
 					                            suppressLog: true);
 
 				List<string> headers = ["(request-target)", "digest", "host"];
-				
+
 				if (sig.Created != null && !sig.Headers.Contains("date"))
 					headers.Add("(created)");
 				else
@@ -138,9 +138,13 @@ public class InboxValidationMiddleware(
 				logger.LogDebug("Error validating HTTP signature: {error}", e.Message);
 			}
 
-			if (!verified && (config.Value.AcceptLdSignatures || activity is ASDelete))
+			if ((!verified && config.Value.AcceptLdSignatures) ||
+			    (activity is ASDelete && (!verified || (key?.User.Uri != null && activity.Actor?.Id != key.User.Uri))))
 			{
-				logger.LogDebug("Trying LD signature next...");
+				if (activity is ASDelete)
+					logger.LogDebug("Activity is ASDelete & actor uri is not matching, trying LD signature next...");
+				else
+					logger.LogDebug("Trying LD signature next...");
 				try
 				{
 					var contentType = new MediaTypeHeaderValue(request.ContentType);
