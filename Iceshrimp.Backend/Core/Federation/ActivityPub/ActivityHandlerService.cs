@@ -40,11 +40,15 @@ public class ActivityHandlerService(
 
 		var resolvedActor = await userResolver.ResolveAsync(activity.Actor.Id);
 		if (authenticatedUserId == null)
-			throw GracefulException
-				.UnprocessableEntity("Refusing to process activity without authenticatedUserId");
-		if (resolvedActor.Id != authenticatedUserId && authenticatedUserId != null)
-			throw GracefulException
-				.UnprocessableEntity($"Authenticated user id {authenticatedUserId} doesn't match resolved actor id {resolvedActor.Id}");
+			throw GracefulException.UnprocessableEntity("Refusing to process activity without authenticatedUserId");
+
+		if (resolvedActor.Id != authenticatedUserId)
+		{
+			logger.LogDebug("Authenticated user id {authenticatedUserId} doesn't match resolved actor id {resolvedActorId}, skipping",
+			                authenticatedUserId, resolvedActor.Id);
+			return;
+		}
+
 		if (new Uri(activity.Actor.Id).Host != new Uri(activity.Id).Host)
 			throw GracefulException
 				.UnprocessableEntity($"Activity identifier ({activity.Actor.Id}) host doesn't match actor identifier ({activity.Id}) host");
