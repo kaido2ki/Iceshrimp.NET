@@ -1,4 +1,5 @@
 using System.Net.Mime;
+using AsyncKeyedLock;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
@@ -37,6 +38,12 @@ public class StatusController(
 	UserRenderer userRenderer
 ) : ControllerBase
 {
+	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
+	{
+		o.PoolSize        = 100;
+		o.PoolInitialFill = 5;
+	});
+
 	[HttpGet("{id}")]
 	[Authenticate("read:statuses")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
@@ -340,8 +347,12 @@ public class StatusController(
 		var idempotencyKey = idempotencyKeyHeader.FirstOrDefault();
 		if (idempotencyKey != null)
 		{
-			var hit = await cache.FetchAsync($"idempotency:{user.Id}:{idempotencyKey}", TimeSpan.FromHours(24),
-			                                 () => $"_:{HttpContext.TraceIdentifier}");
+			var    key = $"idempotency:{user.Id}:{idempotencyKey}";
+			string hit;
+			using (await KeyedLocker.LockAsync(key))
+			{
+				hit = await cache.FetchAsync(key, TimeSpan.FromHours(24), () => $"_:{HttpContext.TraceIdentifier}");
+			}
 
 			if (hit != $"_:{HttpContext.TraceIdentifier}")
 			{
