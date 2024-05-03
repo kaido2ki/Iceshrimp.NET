@@ -342,6 +342,9 @@ public class StatusController(
 		var token = HttpContext.GetOauthToken() ?? throw new Exception("Token must not be null at this stage");
 		var user  = token.User;
 
+		if (request.ScheduledAt != null)
+			throw GracefulException.UnprocessableEntity("Scheduled statuses are not supported yet");
+
 		//TODO: handle scheduled statuses
 		Request.Headers.TryGetValue("Idempotency-Key", out var idempotencyKeyHeader);
 		var idempotencyKey = idempotencyKeyHeader.FirstOrDefault();
