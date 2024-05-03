@@ -18,7 +18,7 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class ImageProcessor
 {
-	private readonly ILogger<ImageProcessor>         _logger;
+	private readonly ILogger<ImageProcessor>                _logger;
 	private readonly IOptionsMonitor<Config.StorageSection> _config;
 
 	public ImageProcessor(ILogger<ImageProcessor> logger, IOptionsMonitor<Config.StorageSection> config)
@@ -218,15 +218,18 @@ public class ImageProcessor
 	)
 	{
 		var properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
-		var res = new Result { Properties = properties };
+		var res        = new Result { Properties              = properties };
 
 		// Calculate blurhash using a x200px image for improved performance
-		using var blurhashImage =
+		using var blurhashImageSource =
 			NetVips.Image.ThumbnailBuffer(buf, width: 200, height: 200, size: NetVips.Enums.Size.Down);
+		using var blurhashImage = blurhashImageSource.Interpretation == NetVips.Enums.Interpretation.Srgb
+			? blurhashImageSource
+			: blurhashImageSource.Colourspace(NetVips.Enums.Interpretation.Srgb);
 		var blurBuf = blurhashImage.WriteToMemory();
 		var blurArr = new Pixel[blurhashImage.Width, blurhashImage.Height];
 
-		var idx = 0;
+		var idx  = 0;
 		var incr = blurhashImage.Bands - 3;
 		for (var i = 0; i < blurhashImage.Height; i++)
 		{
