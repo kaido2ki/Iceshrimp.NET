@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
@@ -202,28 +201,34 @@ public static class ServiceExtensions
 
 	public static void AddSlidingWindowRateLimiter(this IServiceCollection services)
 	{
-		//TODO: separate limiter for authenticated users, partitioned by user id
-		//TODO: ipv6 /64 subnet buckets
 		//TODO: rate limit status headers - maybe switch to https://github.com/stefanprodan/AspNetCoreRateLimit?
 		//TODO: alternatively just write our own
 		services.AddRateLimiter(options =>
 		{
-			options.AddSlidingWindowLimiter("sliding", limiterOptions =>
+			var sliding = new SlidingWindowRateLimiterOptions
 			{
-				limiterOptions.PermitLimit          = 500;
-				limiterOptions.SegmentsPerWindow    = 60;
-				limiterOptions.Window               = TimeSpan.FromSeconds(60);
-				limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-				limiterOptions.QueueLimit           = 0;
-			});
-			options.AddSlidingWindowLimiter("strict", limiterOptions =>
+				PermitLimit          = 500,
+				SegmentsPerWindow    = 60,
+				Window               = TimeSpan.FromSeconds(60),
+				QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+				QueueLimit           = 0
+			};
+
+			var strict = new SlidingWindowRateLimiterOptions
 			{
-				limiterOptions.PermitLimit          = 10;
-				limiterOptions.SegmentsPerWindow    = 60;
-				limiterOptions.Window               = TimeSpan.FromSeconds(60);
-				limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-				limiterOptions.QueueLimit           = 0;
-			});
+				PermitLimit          = 10,
+				SegmentsPerWindow    = 60,
+				Window               = TimeSpan.FromSeconds(60),
+				QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+				QueueLimit           = 0
+			};
+
+			options.AddPolicy("sliding", ctx => RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(),
+				                  _ => sliding));
+
+			options.AddPolicy("strict", ctx => RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(),
+				                  _ => strict));
+
 			options.OnRejected = async (context, token) =>
 			{
 				context.HttpContext.Response.StatusCode  = 429;
@@ -290,4 +295,12 @@ public static class ServiceExtensions
 			options.AddScheme<IAuthenticationHandler>("StubAuthenticationHandler", null);
 		});
 	}
+}
+
+public static class HttpContextExtensions
+{
+	public static string? GetRateLimitPartition(this HttpContext ctx) =>
+		ctx.GetUser()?.Id ??
+		ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault() ??
+		ctx.Connection.RemoteIpAddress?.ToString();
 }
