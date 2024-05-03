@@ -138,8 +138,8 @@ public class InboxValidationMiddleware(
 				logger.LogDebug("Error validating HTTP signature: {error}", e.Message);
 			}
 
-			if ((!verified && config.Value.AcceptLdSignatures) ||
-			    (activity is ASDelete && (!verified || (key?.User.Uri != null && activity.Actor?.Id != key.User.Uri))))
+			if ((!verified || (key?.User.Uri != null && activity.Actor?.Id != key.User.Uri)) &&
+			    (activity is ASDelete || config.Value.AcceptLdSignatures))
 			{
 				if (activity is ASDelete)
 					logger.LogDebug("Activity is ASDelete & actor uri is not matching, trying LD signature next...");
