@@ -209,7 +209,7 @@ public class NoteService(
 			poll.UserHost       = note.UserHost;
 			poll.NoteVisibility = note.Visibility;
 
-			if (poll.Votes.Count != poll.Choices.Count)
+			if (poll.Votes == null! || poll.Votes.Count != poll.Choices.Count)
 				poll.Votes = poll.Choices.Select(_ => 0).ToList();
 
 			await db.AddAsync(poll);
