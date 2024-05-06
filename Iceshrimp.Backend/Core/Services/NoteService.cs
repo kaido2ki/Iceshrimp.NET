@@ -759,7 +759,7 @@ public class NoteService(
 			};
 		}
 
-		var sensitive = (note.Sensitive ?? false) || cw != null;
+		var sensitive = (note.Sensitive ?? false) || !string.IsNullOrWhiteSpace(cw);
 		var files     = await ProcessAttachmentsAsync(note.Attachments, actor, sensitive);
 		var emoji = (await emojiSvc.ProcessEmojiAsync(note.Tags?.OfType<ASEmoji>().ToList(), actor.Host))
 		            .Select(p => p.Id)
@@ -820,7 +820,7 @@ public class NoteService(
 			};
 		}
 
-		var sensitive = (note.Sensitive ?? false) || dbNote.Cw != null;
+		var sensitive = (note.Sensitive ?? false) || !string.IsNullOrWhiteSpace(cw);
 		var files     = await ProcessAttachmentsAsync(note.Attachments, actor, sensitive, false);
 		var emoji = (await emojiSvc.ProcessEmojiAsync(note.Tags?.OfType<ASEmoji>().ToList(), actor.Host))
 		            .Select(p => p.Id)
