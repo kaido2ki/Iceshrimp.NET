@@ -124,6 +124,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		try
 		{
 			if (notification.NotifieeId != _userId) return;
+			if (notification.Notifier != null && IsFiltered(notification.Notifier)) return;
 			await using var scope = GetTempScope();
 
 			var renderer = scope.ServiceProvider.GetRequiredService<NotificationRenderer>();
@@ -199,14 +200,12 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	}
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-	private bool IsFiltered(Note note)
-	{
-		if (!_blockedBy.Contains(note.User.Id) &&
-		    !_blocking.Contains(note.User.Id) &&
-		    !_muting.Contains(note.User.Id)) return true;
+	private bool IsFiltered(Note note) =>
+		IsFiltered(note.User) || _blocking.Intersects(note.Mentions) || _muting.Intersects(note.Mentions);
 
-		return _blocking.Intersects(note.Mentions) || _muting.Intersects(note.Mentions);
-	}
+	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
+	private bool IsFiltered(User user) =>
+		!_blockedBy.Contains(user.Id) && !_blocking.Contains(user.Id) && !_muting.Contains(user.Id);
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
 	private bool IsFollowingOrSelf(User user) => user.Id == _userId || _following.Contains(user.Id);
