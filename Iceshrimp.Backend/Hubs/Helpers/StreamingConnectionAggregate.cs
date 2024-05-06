@@ -189,20 +189,23 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		if (_subscriptions.IsEmpty) return null;
 		if (!note.IsVisibleFor(_user, _following)) return null;
 		if (note.Visibility != Note.NoteVisibility.Public && !IsFollowingOrSelf(note.User)) return null;
-		if (IsFiltered(note.User)) return null;
-		if (note.Reply != null && IsFiltered(note.Reply.User)) return null;
-		if (note.Renote != null && IsFiltered(note.Renote.User)) return null;
+		if (IsFiltered(note)) return null;
+		if (note.Reply != null && IsFiltered(note.Reply)) return null;
+		if (note.Renote != null && IsFiltered(note.Renote)) return null;
+		if (note.Renote?.Renote != null && IsFiltered(note.Renote.Renote)) return null;
 
 		var res = EnforceRenoteReplyVisibility(note);
 		return res is not { Note.IsPureRenote: true, Renote: null } ? res : null;
 	}
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-	private bool IsFiltered(User user)
+	private bool IsFiltered(Note note)
 	{
-		return !_blockedBy.Contains(user.Id) &&
-		       !_blocking.Contains(user.Id) &&
-		       !_muting.Contains(user.Id);
+		if (!_blockedBy.Contains(note.User.Id) &&
+		    !_blocking.Contains(note.User.Id) &&
+		    !_muting.Contains(note.User.Id)) return true;
+
+		return _blocking.Intersects(note.Mentions) || _muting.Intersects(note.Mentions);
 	}
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]

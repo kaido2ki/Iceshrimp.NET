@@ -66,14 +66,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 
 	private bool IsApplicable(Notification notification) => notification.NotifieeId == connection.Token.User.Id;
 
-	private bool IsFiltered(Note note) => connection.IsFiltered(note.User) ||
-	                                      (note.Renote?.User != null && connection.IsFiltered(note.Renote.User)) ||
-	                                      note.Renote?.Renote?.User != null &&
-	                                      connection.IsFiltered(note.Renote.Renote.User);
-
 	private bool IsFiltered(Notification notification) =>
 		(notification.Notifier != null && connection.IsFiltered(notification.Notifier)) ||
-		(notification.Note != null && IsFiltered(notification.Note));
+		(notification.Note != null && connection.IsFiltered(notification.Note));
 
 	private NoteWithVisibilities EnforceRenoteReplyVisibility(Note note)
 	{
@@ -106,7 +101,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		{
 			var wrapped = IsApplicable(note);
 			if (wrapped == null) return;
-			if (IsFiltered(note)) return;
+			if (connection.IsFiltered(note)) return;
 			if (note.CreatedAt < DateTime.UtcNow - TimeSpan.FromMinutes(5)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
 
@@ -133,7 +128,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		{
 			var wrapped = IsApplicable(note);
 			if (wrapped == null) return;
-			if (IsFiltered(note)) return;
+			if (connection.IsFiltered(note)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
@@ -158,7 +153,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		try
 		{
 			if (!IsApplicableBool(note)) return;
-			if (IsFiltered(note)) return;
+			if (connection.IsFiltered(note)) return;
 			var message = new StreamingUpdateMessage
 			{
 				Stream  = [Name],

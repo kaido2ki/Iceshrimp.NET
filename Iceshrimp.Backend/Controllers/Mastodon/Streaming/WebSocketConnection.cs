@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Events;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
 using JetBrains.Annotations;
@@ -242,6 +243,18 @@ public sealed class WebSocketConnection(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
 	public bool IsFiltered(User user) =>
 		_blocking.Contains(user.Id) || _blockedBy.Contains(user.Id) || _muting.Contains(user.Id);
+
+	private bool IsFilteredMentions(IReadOnlyCollection<string> userIds) =>
+		_blocking.Intersects(userIds) || _muting.Intersects(userIds);
+
+	public bool IsFiltered(Note note) => IsFiltered(note.User) ||
+	                                     IsFilteredMentions(note.Mentions) ||
+	                                     (note.Renote?.User != null &&
+	                                      (IsFiltered(note.Renote.User) ||
+	                                       IsFilteredMentions(note.Renote.Mentions))) ||
+	                                     note.Renote?.Renote?.User != null &&
+	                                     (IsFiltered(note.Renote.Renote.User) ||
+	                                      IsFilteredMentions(note.Renote.Renote.Mentions));
 
 	public async Task CloseAsync(WebSocketCloseStatus status)
 	{
