@@ -7,7 +7,7 @@ Want to set up an instance? Have a look at the [documentation](https://kb.iceshr
 Want to join development efforts? Have a look at the [knowledgebase](https://kb.iceshrimp.dev) and join the [chat room](https://chat.iceshrimp.dev)!
 
 Want to donate to the project?
-  - Our backend lead dev (zotan) is in need of a better laptop, as their current one does not have enough memory. You can contribute [here](https://bunq.me/zotanlaptopcrowdfund). Any leftover money will be given to queers in need.
+  - Our frontend dev (Lilian) needs help paying for healthcare costs. You can contribute [here](https://bunq.me/lilianhealthcarefund). Money from the fund will be used for co-pays, and medical expenses not covered by insurance.
 
 ---
 
