@@ -363,7 +363,7 @@ public class StatusController(
 				{
 					if (!hit.StartsWith('_')) break;
 					await Task.Delay(100);
-					hit = await cache.GetAsync<string>($"idempotency:{user.Id}:{idempotencyKey}") ??
+					hit = await cache.GetAsync<string>(key) ??
 					      throw new Exception("Idempotency key status disappeared in for loop");
 					if (i >= 10)
 						throw GracefulException.RequestTimeout("Failed to resolve idempotency key note within 1000 ms");

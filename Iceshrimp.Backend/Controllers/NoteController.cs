@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
+using AsyncKeyedLock;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Shared.Schemas;
@@ -24,9 +25,16 @@ public class NoteController(
 	DatabaseContext db,
 	NoteService noteSvc,
 	NoteRenderer noteRenderer,
-	UserRenderer userRenderer
+	UserRenderer userRenderer,
+	CacheService cache
 ) : ControllerBase
 {
+	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
+	{
+		o.PoolSize        = 100;
+		o.PoolInitialFill = 5;
+	});
+
 	[HttpGet("{id}")]
 	[Authenticate]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteResponse))]
@@ -209,6 +217,31 @@ public class NoteController(
 	{
 		var user = HttpContext.GetUserOrFail();
 
+		if (request.IdempotencyKey != null)
+		{
+			var    key = $"idempotency:{user.Id}:{request.IdempotencyKey}";
+			string hit;
+			using (await KeyedLocker.LockAsync(key))
+			{
+				hit = await cache.FetchAsync(key, TimeSpan.FromHours(24), () => $"_:{HttpContext.TraceIdentifier}");
+			}
+
+			if (hit != $"_:{HttpContext.TraceIdentifier}")
+			{
+				for (var i = 0; i <= 10; i++)
+				{
+					if (!hit.StartsWith('_')) break;
+					await Task.Delay(100);
+					hit = await cache.GetAsync<string>(key) ??
+					      throw new Exception("Idempotency key status disappeared in for loop");
+					if (i >= 10)
+						throw GracefulException.RequestTimeout("Failed to resolve idempotency key note within 1000 ms");
+				}
+
+				return await GetNote(hit);
+			}
+		}
+
 		var reply = request.ReplyId != null
 			? await db.Notes.Where(p => p.Id == request.ReplyId)
 			          .IncludeCommonProperties()
@@ -231,6 +264,9 @@ public class NoteController(
 
 		var note = await noteSvc.CreateNoteAsync(user, (Note.NoteVisibility)request.Visibility, request.Text,
 		                                         request.Cw, reply, renote, attachments);
+
+		if (request.IdempotencyKey != null)
+			await cache.SetAsync($"idempotency:{user.Id}:{request.IdempotencyKey}", note.Id, TimeSpan.FromHours(24));
 
 		return Ok(await noteRenderer.RenderOne(note, user));
 	}
