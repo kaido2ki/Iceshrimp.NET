@@ -274,8 +274,11 @@ public class NoteService(
 
 		var actor = userRenderer.RenderLite(user);
 		ASActivity activity = note is { IsPureRenote: true, Renote: not null }
-			? ActivityPub.ActivityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
-			                                              note.GetPublicUri(config.Value), actor, note.Visibility,
+			? ActivityPub.ActivityRenderer.RenderAnnounce(note.Renote.User == note.User
+				                                              ? await noteRenderer.RenderAsync(note.Renote)
+				                                              : noteRenderer.RenderLite(note.Renote),
+			                                              note.GetPublicUri(config.Value), actor,
+			                                              note.Visibility,
 			                                              user.GetPublicUri(config.Value) + "/followers")
 			: ActivityPub.ActivityRenderer.RenderCreate(await noteRenderer.RenderAsync(note, mentions), actor);
 
