@@ -48,6 +48,7 @@ RUN dotnet publish --no-restore -c Release -a $TARGETARCH -o /app -p:EnableAOT=t
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled AS image-aot
 WORKDIR /app
 COPY --from=builder-aot /app .
+USER app
 ENTRYPOINT ["./Iceshrimp.Backend", "--environment", "Production", "--migrate-and-start"]
 
 # Enable globalization and time zones:
@@ -56,4 +57,5 @@ ENTRYPOINT ["./Iceshrimp.Backend", "--environment", "Production", "--migrate-and
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine-composite AS image-jit
 WORKDIR /app
 COPY --from=builder-jit /app .
+USER app
 ENTRYPOINT ["./Iceshrimp.Backend", "--environment", "Production", "--migrate-and-start"]
