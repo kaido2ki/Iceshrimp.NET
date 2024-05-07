@@ -2,11 +2,49 @@
     background-color: var(--background-color);
     border-radius: 1rem;
     margin: 0 auto;
-    top: 10%
+    top: 10%;
+    padding: 1rem;
+}
+.compose::backdrop {
+    background-color: black;
+    opacity: 50%;
+}
+.header {
+    margin-bottom: 0.5rem;
 }
 .textarea {
     display: block;
+    background-color: var(--background-color);
+    border: none;
+    outline: none;
 }
 .input {
     display: block;
+    background-color: var(--background-color);
+    border: none;
+    outline: none;
+ }
+
+.cw-field {
+    margin-bottom: 0.5rem;
+    width: 100%;
+}
+.post-btn {
+    background: var(--accent-color);
+    float: right;
+}
+
+.footer-btn {
+    width: 2.5rem;
+    height: max-content;
+    background-color: var(--background-color);
+}
+.separator {
+    color: var(--highlight-color);
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.file-input {
+    display: none;
 }

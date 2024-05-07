@@ -1,0 +1,42 @@
+@typeparam TBind
+
+<div @onclick="Toggle" class="dropdown-root">
+    @CurrentIcon
+</div>
+
+@if (Visible)
+{
+    <div class="dropdown-menu">
+        @foreach (var entry in Elements)
+        {
+            <DropdownElement TBind="TBind" OnSelect="UpdateSelected" Icon="entry.Icon" Content="entry.Content" Selection="entry.Selection"/>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] [EditorRequired] public required IEnumerable<DropdownElement<TBind>> Elements         { get; set; }
+    [Parameter] [EditorRequired] public required TBind                               Value            { get; set; }
+    [Parameter]                  public          EventCallback<TBind>                ValueChanged     { get; set; }
+    private                                      DropdownElement<TBind>?             CurrentSelection { get; set; }
+    private                                      RenderFragment?                     CurrentIcon      { get; set; }
+    private                                      bool                                Visible          { get; set; } = false;
+    
+    private void UpdateSelected(DropdownElement<TBind> element)
+    {
+        CurrentSelection = element;
+        CurrentIcon      = CurrentSelection.Icon;
+        ValueChanged.InvokeAsync(element.Selection);
+        Visible = false;
+    }
+
+    private void Toggle()
+    {
+        Visible = !Visible;
+    }
+    protected override void OnInitialized()
+    {
+        UpdateSelected(Elements.FirstOrDefault() ?? throw new InvalidOperationException());
+    }
+
+}

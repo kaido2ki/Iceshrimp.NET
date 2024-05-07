@@ -1,0 +1,19 @@
+@typeparam TBind
+
+<div @onclick="OnClick" class="dropdown-element">
+    <span class="icon">@Icon</span>
+    <span class="content">@Content</span>
+</div>
+
+@code {
+    [Parameter] [EditorRequired] public required RenderFragment                           Icon      { get; set; }
+    [Parameter] [EditorRequired] public required RenderFragment                           Content   { get; set; }
+    [Parameter] [EditorRequired] public EventCallback<DropdownElement<TBind>> OnSelect  { get; set; }
+    [Parameter] [EditorRequired] public required TBind                                 Selection { get; set; }
+
+    private async Task OnClick()
+    {
+        await OnSelect.InvokeAsync(this);
+    }
+
+}

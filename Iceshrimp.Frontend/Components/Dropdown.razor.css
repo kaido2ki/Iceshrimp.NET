@@ -1,0 +1,10 @@
+.dropdown-menu {
+    position: absolute;
+    top: 5rem;
+    background-color: var(--background-color);
+    padding: 0.5rem;
+    border-color: var(--highlight-color);
+    border-style: solid;
+    border-width: 0.1rem;
+    border-radius: 0.5rem;
+}
