@@ -7,5 +7,6 @@ public class TagEntity
 	[J("name")]      public required string Name      { get; set; }
 	[J("url")]       public required string Url       { get; set; }
 	[J("following")] public required bool   Following { get; set; }
-	[J("history")]   public          object History   => new();
+
+	[J("history")] public object[] History => [];
 }
