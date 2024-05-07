@@ -248,7 +248,7 @@ module private MfmParser =
 
     let urlNodePlain =
         lookAhead (skipString "https://" <|> skipString "http://")
-        >>. manyCharsTill anyChar (nextCharSatisfies isWhitespace <|> skipAnyOf "()" <|> eof) //FIXME: this needs significant improvements
+        >>. manyCharsTill anyChar (nextCharSatisfies isWhitespace <|> nextCharSatisfies (isAnyOf "()") <|> eof) //FIXME: this needs significant improvements
         >>= fun uri ->
             match Uri.TryCreate(uri, UriKind.Absolute) with
             | true, finalUri ->

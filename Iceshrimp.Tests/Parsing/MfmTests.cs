@@ -77,16 +77,13 @@ public class MfmTests
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
 		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
 	}
-	
+
 	[TestMethod]
 	public void TestInvalidMention()
 	{
-		const string input = "test @test@ test";
-		List<MfmNode> expected =
-		[
-			new MfmTextNode("test @test@ test")
-		];
-		var res = Mfm.parse(input);
+		const string  input    = "test @test@ test";
+		List<MfmNode> expected = [new MfmTextNode("test @test@ test")];
+		var           res      = Mfm.parse(input);
 
 		AssertionOptions.FormattingOptions.MaxDepth = 100;
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
@@ -115,7 +112,7 @@ public class MfmTests
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
 		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
 	}
-	
+
 	[TestMethod]
 	public void TestCodeBlockMultiLine()
 	{
@@ -125,23 +122,20 @@ public class MfmTests
 		                     sdf
 		                     ```
 		                     """;
-		
-		List<MfmNode> expected =
-		[
-			new MfmCodeBlockNode("asd\nsdf", "cs")
-		];
-		var res = Mfm.parse(input);
+
+		List<MfmNode> expected = [new MfmCodeBlockNode("asd\nsdf", "cs")];
+		var           res      = Mfm.parse(input);
 
 		AssertionOptions.FormattingOptions.MaxDepth = 100;
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
 		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
 	}
-	
+
 	[TestMethod]
 	public void TestHashtag()
 	{
 		const string input = "test #test #test's #test. test";
-		
+
 		List<MfmNode> expected =
 		[
 			new MfmTextNode("test "),
@@ -153,6 +147,19 @@ public class MfmTests
 			new MfmTextNode(". test"),
 		];
 		var res = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
+
+	[TestMethod]
+	public void TestUrl()
+	{
+		const string input = "https://example.org/path/Name_(test)_asdf";
+		//TODO: List<MfmNode> expected = [new MfmUrlNode(input, false),];
+		List<MfmNode> expected = [new MfmUrlNode(input[..30], false), new MfmTextNode(input[30..])];
+		var           res      = Mfm.parse(input);
 
 		AssertionOptions.FormattingOptions.MaxDepth = 100;
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
