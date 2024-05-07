@@ -49,6 +49,8 @@ public class ObjectResolver(
 			return new ASNote { Id = baseObj.Id, VerifiedFetch = true };
 		if (baseObj.Id.StartsWith($"https://{config.Value.WebDomain}/users/"))
 			return new ASActor { Id = baseObj.Id };
+		if (baseObj.Id.StartsWith($"https://{config.Value.WebDomain}/follows/"))
+			return new ASFollow { Id = baseObj.Id };
 
 		if (await federationCtrl.ShouldBlockAsync(baseObj.Id))
 		{

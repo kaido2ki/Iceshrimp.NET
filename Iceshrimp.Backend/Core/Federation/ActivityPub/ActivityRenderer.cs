@@ -179,7 +179,7 @@ public class ActivityRenderer(
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "This only makes sense for users")]
 	private string RenderFollowId(User follower, User followee) =>
-		$"https://{config.Value.WebDomain}/follows/{follower.Id}/{followee.Id}";
+		$"https://{config.Value.WebDomain}/follows/{follower.Id}/{followee.Id}/{Guid.NewGuid().ToStringLower()}";
 
 	public static ASAnnounce RenderAnnounce(
 		ASNote note, ASActor actor, List<ASObjectBase> to, List<ASObjectBase> cc, string uri

@@ -184,7 +184,10 @@ public class ActivityHandlerService(
 			throw GracefulException.UnprocessableEntity($"Object id '{obj.Id}' not a valid follow request id");
 
 		var ids = obj.Id[prefix.Length..].TrimEnd('/').Split("/");
-		if (ids.Length != 2 || ids[1] != actor.Id)
+		if (ids.Length < 2)
+			throw GracefulException
+				.UnprocessableEntity("Failed to parse ASAccept activity: ASFollow id doesn't have enough components");
+		if (ids[1] != actor.Id)
 			throw GracefulException
 				.UnprocessableEntity($"Actor id '{actor.Id}' doesn't match followee id '{ids[1]}'");
 
