@@ -3,7 +3,7 @@
     min-width: 20rem;
     background-color: var(--foreground-color);
     padding: 1.5rem 1.5rem 1rem; /* top, left-right, bottom*/
-    @media (max-width: 700px) {
+    @media (max-width: 1000px) {
         padding: 1.5rem 1rem 1rem;
     }
     border-radius: 0.75rem;

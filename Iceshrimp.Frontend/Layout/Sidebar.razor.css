@@ -1,4 +1,4 @@
-@media (min-width: 701px) {t
+@media (min-width: 1001px) {
     .sidebar {
         display: flex;
         flex-direction: column;
@@ -43,7 +43,7 @@
     }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 1000px) {
     .sidebar {
         display: none;
     }
