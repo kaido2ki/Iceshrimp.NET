@@ -9,6 +9,7 @@ internal class ApiService(ApiClient client)
 	public readonly AuthControllerModel         Auth          = new(client);
 	public readonly DriveControllerModel        Drive         = new(client);
 	public readonly AdminControllerModel        Admin         = new(client);
+	public readonly SettingsControllerModel     Settings      = new(client);
 	public readonly TimelineControllerModel     Timelines     = new(client);
 	public readonly NotificationControllerModel Notifications = new(client);
 
