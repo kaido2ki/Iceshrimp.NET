@@ -216,7 +216,7 @@ public class DriveService(
 				else
 				{
 					data.Seek(0, SeekOrigin.Begin);
-					await storageSvc.UploadFileAsync(filename, data);
+					await storageSvc.UploadFileAsync(filename, request.MimeType, data);
 					url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
 
 					if (thumbnailFilename != null && res?.RenderThumbnail != null)
@@ -226,7 +226,7 @@ public class DriveService(
 							await using var stream = new MemoryStream();
 							await res.RenderThumbnail(stream);
 							stream.Seek(0, SeekOrigin.Begin);
-							await storageSvc.UploadFileAsync(thumbnailFilename, stream);
+							await storageSvc.UploadFileAsync(thumbnailFilename, "image/webp", stream);
 							thumbnailUrl = storageSvc.GetFilePublicUrl(thumbnailFilename).AbsoluteUri;
 						}
 						catch (Exception e)
@@ -242,7 +242,7 @@ public class DriveService(
 							await using var stream = new MemoryStream();
 							await res.RenderWebpublic(stream);
 							stream.Seek(0, SeekOrigin.Begin);
-							await storageSvc.UploadFileAsync(webpublicFilename, stream);
+							await storageSvc.UploadFileAsync(webpublicFilename, "image/webp", stream);
 							webpublicUrl = storageSvc.GetFilePublicUrl(webpublicFilename).AbsoluteUri;
 						}
 						catch (Exception e)
@@ -267,7 +267,7 @@ public class DriveService(
 				else
 				{
 					data.Seek(0, SeekOrigin.Begin);
-					await storageSvc.UploadFileAsync(filename, data);
+					await storageSvc.UploadFileAsync(filename, request.MimeType, data);
 					url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
 				}
 			}

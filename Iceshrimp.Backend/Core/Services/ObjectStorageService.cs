@@ -61,7 +61,7 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 		const string filename = ".iceshrimp-test";
 		var          content  = CryptographyHelpers.GenerateRandomString(16);
 
-		await UploadFileAsync(filename, Encoding.UTF8.GetBytes(content));
+		await UploadFileAsync(filename, "text/plain", Encoding.UTF8.GetBytes(content));
 
 		string result;
 		try
@@ -78,12 +78,15 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 		throw new Exception("Failed to verify access url (content mismatch)");
 	}
 
-	private Task UploadFileAsync(string filename, byte[] data) => UploadFileAsync(filename, new MemoryStream(data));
+	private Task UploadFileAsync(string filename, string contentType, byte[] data) =>
+		UploadFileAsync(filename, contentType, new MemoryStream(data));
 
-	public async Task UploadFileAsync(string filename, Stream data)
+	public async Task UploadFileAsync(string filename, string contentType, Stream data)
 	{
 		if (_bucket == null) throw new Exception("Refusing to upload to object storage with invalid configuration");
-		var blob = new Blob(GetFilenameWithPrefix(filename), data, _acl ?? BlobProperties.Empty);
+		var properties = (_acl ?? BlobProperties.Empty).ToDictionary();
+		properties.Add("Content-Type", contentType);
+		var blob = new Blob(GetFilenameWithPrefix(filename), data, properties);
 		await _bucket.PutAsync(blob);
 	}
 

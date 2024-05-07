@@ -55,7 +55,7 @@ public class StorageMaintenanceService(
 				var path   = Path.Join(pathBase, file.AccessKey);
 				var stream = File.OpenRead(path);
 
-				await objectStorageSvc.UploadFileAsync(file.AccessKey, stream);
+				await objectStorageSvc.UploadFileAsync(file.AccessKey, file.Type, stream);
 				file.Url = objectStorageSvc.GetFilePublicUrl(file.AccessKey).AbsoluteUri;
 				pathsToDelete.Add(path);
 			}
@@ -65,7 +65,7 @@ public class StorageMaintenanceService(
 				var path   = Path.Join(pathBase, file.ThumbnailAccessKey);
 				var stream = File.OpenRead(path);
 
-				await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, stream);
+				await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, "image/webp", stream);
 				file.ThumbnailUrl = objectStorageSvc.GetFilePublicUrl(file.ThumbnailAccessKey).AbsoluteUri;
 				pathsToDelete.Add(path);
 			}
@@ -75,7 +75,7 @@ public class StorageMaintenanceService(
 				var path   = Path.Join(pathBase, file.WebpublicAccessKey);
 				var stream = File.OpenRead(path);
 
-				await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, stream);
+				await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, "image/webp", stream);
 				file.WebpublicUrl = objectStorageSvc.GetFilePublicUrl(file.WebpublicAccessKey).AbsoluteUri;
 				pathsToDelete.Add(path);
 			}
