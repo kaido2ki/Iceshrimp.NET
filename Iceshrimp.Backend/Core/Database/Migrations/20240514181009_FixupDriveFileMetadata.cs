@@ -13,8 +13,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-	        migrationBuilder.Sql("UPDATE "drive_file" SET "thumbnailAccessKey" = NULL WHERE "thumbnailUrl" IS NULL AND "thumbnailAccessKey" IS NOT NULL;");
-	        migrationBuilder.Sql("UPDATE "drive_file" SET "webpublicAccessKey" = NULL WHERE "webpublicUrl" IS NULL AND "webpublicAccessKey" IS NOT NULL;");
+	        migrationBuilder.Sql("""UPDATE "drive_file" SET "thumbnailAccessKey" = NULL WHERE "thumbnailUrl" IS NULL AND "thumbnailAccessKey" IS NOT NULL;""");
+	        migrationBuilder.Sql("""UPDATE "drive_file" SET "webpublicAccessKey" = NULL WHERE "webpublicUrl" IS NULL AND "webpublicAccessKey" IS NOT NULL;""");
         }
 
         /// <inheritdoc />
