@@ -27,7 +27,7 @@ public class StorageMaintenanceService(
 		logger.LogInformation("Found {total} files. Migrating in batches...", total);
 		while (total - completed > 0)
 		{
-			var hits = await db.DriveFiles.Where(p => p.StoredInternal)
+			var hits = await db.DriveFiles.Where(p => p.StoredInternal && !p.IsLink)
 			                   .OrderBy(p => p.Id)
 			                   .Skip(completed)
 			                   .Take(100)
