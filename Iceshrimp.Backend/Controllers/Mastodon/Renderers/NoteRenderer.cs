@@ -283,7 +283,7 @@ public class NoteRenderer(
 		var counts = notes.ToDictionary(p => p.Id, p => p.Reactions);
 		var res = await db.NoteReactions
 		                  .Where(p => notes.Contains(p.Note))
-		                  .GroupBy(p => p.Reaction)
+		                  .GroupBy(p => new { p.NoteId, p.Reaction })
 		                  .Select(p => new ReactionEntity
 		                  {
 			                  NoteId    = p.First().NoteId,

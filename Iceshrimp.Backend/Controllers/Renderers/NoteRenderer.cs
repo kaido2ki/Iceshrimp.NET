@@ -115,7 +115,7 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 		var counts = notes.ToDictionary(p => p.Id, p => p.Reactions);
 		var res = await db.NoteReactions
 		                  .Where(p => notes.Contains(p.Note))
-		                  .GroupBy(p => p.Reaction)
+		                  .GroupBy(p => new { p.NoteId, p.Reaction })
 		                  .Select(p => new NoteReactionSchema
 		                  {
 			                  NoteId = p.First().NoteId,
