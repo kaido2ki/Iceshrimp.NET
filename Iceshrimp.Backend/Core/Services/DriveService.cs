@@ -195,6 +195,7 @@ public class DriveService(
 						catch (Exception e)
 						{
 							logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
+							thumbnailFilename = null;
 						}
 					}
 
@@ -210,6 +211,7 @@ public class DriveService(
 						catch (Exception e)
 						{
 							logger.LogDebug("Failed to generate/write webp: {e}", e.Message);
+							webpublicFilename = null;
 						}
 					}
 				}
@@ -232,6 +234,7 @@ public class DriveService(
 						catch (Exception e)
 						{
 							logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
+							thumbnailFilename = null;
 						}
 					}
 
@@ -247,7 +250,8 @@ public class DriveService(
 						}
 						catch (Exception e)
 						{
-							logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
+							logger.LogDebug("Failed to generate/write webp: {e}", e.Message);
+							webpublicFilename = null;
 						}
 					}
 				}
