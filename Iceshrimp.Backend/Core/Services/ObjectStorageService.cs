@@ -86,7 +86,10 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 		if (_bucket == null) throw new Exception("Refusing to upload to object storage with invalid configuration");
 		var properties = (_acl ?? BlobProperties.Empty).ToDictionary();
 		properties.Add("Content-Type", contentType);
-		var blob = new Blob(GetFilenameWithPrefix(filename), data, properties);
+		IBlob blob = data.Length > 0
+			? new Blob(GetFilenameWithPrefix(filename), data, properties)
+			: new EmptyBlob(GetFilenameWithPrefix(filename), data, properties);
+
 		await _bucket.PutAsync(blob);
 	}
 
@@ -121,5 +124,24 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 	private string GetFilenameWithPrefix(string filename)
 	{
 		return !string.IsNullOrWhiteSpace(_prefix) ? _prefix + "/" + filename : filename;
+	}
+
+	private class EmptyBlob(string key, Stream stream, IReadOnlyDictionary<string, string> properties) : IBlob
+	{
+		private bool _isDisposed;
+
+		public void Dispose()
+		{
+			if (_isDisposed) return;
+			stream.Dispose();
+			_isDisposed = true;
+		}
+
+		public ValueTask<Stream> OpenAsync() => ValueTask.FromResult(stream);
+
+		public string                              Key        => key;
+		public long                                Size       => 0;
+		public DateTime                            Modified   => DateTime.UtcNow;
+		public IReadOnlyDictionary<string, string> Properties => properties;
 	}
 }

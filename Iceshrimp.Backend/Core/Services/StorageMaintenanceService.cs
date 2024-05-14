@@ -22,16 +22,24 @@ public class StorageMaintenanceService(
 		var pathsToDelete = new ConcurrentBag<string>();
 
 		logger.LogInformation("Migrating all files to object storage...");
-		var total     = await db.DriveFiles.CountAsync(p => p.StoredInternal);
+		var total     = await db.DriveFiles.CountAsync(p => p.StoredInternal && !p.IsLink);
 		var completed = 0;
 		logger.LogInformation("Found {total} files. Migrating in batches...", total);
-		while (total - completed > 0)
+		while (true)
 		{
-			var hits = await db.DriveFiles.Where(p => p.StoredInternal && !p.IsLink)
-			                   .OrderBy(p => p.Id)
-			                   .Skip(completed)
+			var keys = await db.DriveFiles
+			                   .Where(p => p.StoredInternal && !p.IsLink)
+			                   .GroupBy(p => p.AccessKey)
+			                   .Select(p => p.Key)
 			                   .Take(100)
 			                   .ToListAsync();
+			
+			var hits = await db.DriveFiles
+			                   .Where(p => p.StoredInternal && !p.IsLink && keys.Contains(p.AccessKey))
+			                   .GroupBy(p => p.AccessKey)
+			                   .ToListAsync();
+
+			if (hits.Count == 0) break;
 
 			await Parallel.ForEachAsync(hits, new ParallelOptions { MaxDegreeOfParallelism = 8 }, MigrateFile);
 			await db.SaveChangesAsync();
@@ -48,8 +56,12 @@ public class StorageMaintenanceService(
 
 		return;
 
-		async ValueTask MigrateFile(DriveFile file, CancellationToken token)
+		[SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+		async ValueTask MigrateFile(IEnumerable<DriveFile> files, CancellationToken token)
 		{
+			var file = files.FirstOrDefault();
+			if (file == null) return;
+
 			if (file.AccessKey != null)
 			{
 				var path   = Path.Join(pathBase, file.AccessKey);
@@ -80,7 +92,13 @@ public class StorageMaintenanceService(
 				pathsToDelete.Add(path);
 			}
 
-			file.StoredInternal = false;
+			foreach (var item in files)
+			{
+				item.StoredInternal = false;
+				item.Url            = file.Url;
+				item.ThumbnailUrl   = file.ThumbnailUrl;
+				item.WebpublicUrl   = file.WebpublicUrl;
+			}
 		}
 	}
 }
