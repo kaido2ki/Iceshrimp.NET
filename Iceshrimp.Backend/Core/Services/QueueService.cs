@@ -20,12 +20,14 @@ public class QueueService(
 	IOptions<Config.WorkerSection> config
 ) : BackgroundService
 {
-	private readonly List<IPostgresJobQueue> _queues             = [];
-	public readonly  BackgroundTaskQueue     BackgroundTaskQueue = new();
-	public readonly  DeliverQueue            DeliverQueue        = new();
+	private readonly List<IPostgresJobQueue> _queues = [];
 
-	public readonly InboxQueue      InboxQueue      = new();
-	public readonly PreDeliverQueue PreDeliverQueue = new();
+	public IEnumerable<string> QueueNames => _queues.Select(p => p.Name);
+
+	public readonly BackgroundTaskQueue BackgroundTaskQueue = new();
+	public readonly DeliverQueue        DeliverQueue        = new();
+	public readonly InboxQueue          InboxQueue          = new();
+	public readonly PreDeliverQueue     PreDeliverQueue     = new();
 
 	private static async Task<NpgsqlConnection> GetNpgsqlConnection(IServiceScope scope)
 	{
@@ -493,16 +495,6 @@ public class PostgresJobQueue<T>(
 		db.ChangeTracker.Clear();
 		db.Update(job);
 		await db.SaveChangesAsync(token);
-
-		await db.Jobs.Where(p => p.Queue == name && p.Status == Job.JobStatus.Completed)
-		        .OrderByDescending(p => p.FinishedAt)
-		        .Skip(10)
-		        .ExecuteDeleteAsync(token);
-
-		await db.Jobs.Where(p => p.Queue == name && p.Status == Job.JobStatus.Failed)
-		        .OrderByDescending(p => p.FinishedAt)
-		        .Skip(100)
-		        .ExecuteDeleteAsync(token);
 	}
 
 	public async Task EnqueueAsync(T jobData)
