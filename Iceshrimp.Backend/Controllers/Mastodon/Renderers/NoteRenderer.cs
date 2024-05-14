@@ -187,6 +187,7 @@ public class NoteRenderer(
 				ContentWarning = edit.Cw ?? ""
 			};
 			history.Add(entry);
+			lastDate = edit.UpdatedAt;
 		}
 
 		return history;
