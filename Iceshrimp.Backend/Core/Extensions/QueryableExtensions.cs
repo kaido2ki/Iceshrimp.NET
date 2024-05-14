@@ -621,6 +621,7 @@ public static class QueryableExtensions
 		            .Include(p => p.Notifier.UserProfile)
 		            .Include(p => p.Note.User.UserProfile)
 		            .Include(p => p.Note.Renote.User.UserProfile)
+		            .Include(p => p.Note.Renote.Renote.User.UserProfile)
 		            .Include(p => p.Note.Reply.User.UserProfile)
 		            .Include(p => p.FollowRequest.Follower.UserProfile)
 		            .Include(p => p.FollowRequest.Followee.UserProfile);
