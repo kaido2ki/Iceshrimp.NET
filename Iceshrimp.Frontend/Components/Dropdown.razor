@@ -15,12 +15,26 @@
 }
 
 @code {
+    private                                      TBind                               _value;
     [Parameter] [EditorRequired] public required IEnumerable<DropdownElement<TBind>> Elements         { get; set; }
-    [Parameter] [EditorRequired] public required TBind                               Value            { get; set; }
-    [Parameter]                  public          EventCallback<TBind>                ValueChanged     { get; set; }
-    private                                      DropdownElement<TBind>?             CurrentSelection { get; set; }
-    private                                      RenderFragment?                     CurrentIcon      { get; set; }
-    private                                      bool                                Visible          { get; set; } = false;
+
+    [Parameter]
+    [EditorRequired]
+    public required TBind Value
+    {
+        get => _value;
+        set
+        {
+            _value           = value;
+            CurrentSelection = Elements.First(element => element.Selection != null && element.Selection.Equals(value));
+            CurrentIcon      = CurrentSelection.Icon;
+        }
+    }
+
+    [Parameter]                      public          EventCallback<TBind>                ValueChanged     { get; set; }
+    private                                          DropdownElement<TBind>?             CurrentSelection { get; set; }
+    private                                          RenderFragment?                     CurrentIcon      { get; set; }
+    private                                          bool                                Visible          { get; set; } = false;
     
     private void UpdateSelected(DropdownElement<TBind> element)
     {
