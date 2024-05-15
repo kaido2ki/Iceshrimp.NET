@@ -12,7 +12,7 @@
     <input
         @bind="@Username"/>
     <input type="password" required="required"
-        @bind="@Password"/>
+           @bind="@Password"/>
     <button @onclick="Submit" disabled="@Loading">Login</button>
 </div>
 @if (Loading)
@@ -58,7 +58,8 @@
                         BannerUrl       = res.User.BannerUrl,
                         InstanceName    = res.User.InstanceName,
                         InstanceIconUrl = res.User.InstanceIconUrl,
-                        Token           = res.Token!
+                        Token           = res.Token!,
+                        Host            = res.User.Host
                     });
                     SessionService.SetSession(res.User.Id);
                     Navigation.NavigateTo("/");
