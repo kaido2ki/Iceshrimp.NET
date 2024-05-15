@@ -1,7 +1,8 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
-@inject ApiService ApiService;
+@inject ApiService        ApiService;
 @inject NavigationManager NavigationManager
+@inject ComposeService ComposeService
 <CascadingValue Value="this">
     <div class="note-header">
         <NoteUserInfo
@@ -83,5 +84,10 @@
             Note.Likes++;
             StateHasChanged();
         }
+    }
+
+    public void Reply()
+    {
+        ComposeService.ComposeDialog?.OpenDialog(Note);
     }
 }

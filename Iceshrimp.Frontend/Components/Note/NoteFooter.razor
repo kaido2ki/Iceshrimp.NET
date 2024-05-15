@@ -10,7 +10,7 @@
             }
         </div>
     }
-    <button class="btn" @onclick:stopPropagation="true">
+    <button class="btn" @onclick="Reply" @onclick:stopPropagation="true">
         <Icon Name="Icons.ArrowUUpLeft" Size="1.3em"/>
     </button>
     <button class="btn" @onclick:stopPropagation="true">
@@ -45,5 +45,10 @@
     private void Like()
     {
         NoteComponent.Like();
+    }
+
+    private void Reply()
+    {
+        NoteComponent.Reply();
     }
 }

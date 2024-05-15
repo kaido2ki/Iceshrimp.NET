@@ -1,8 +1,11 @@
+@using FParsec
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
+@using Iceshrimp.Frontend.Components.Note
 @inject IJSRuntime Js
 @inject ApiService ApiService
+@inject ComposeService ComposeService
 <dialog class="compose" @ref="Dialog">
     <div class="header">
         <button @onclick="CloseDialog">
@@ -12,6 +15,12 @@
         </Dropdown>
         <button @onclick="SendNote" class="post-btn">Post<Icon Name="Icons.PaperPlaneRight"/></button>
     </div>
+    @if (ReplyTo != null)
+    {
+    <div class="reply-to">
+        <NoteComponent Note="ReplyTo" AsQuote="true" />
+    </div>
+    }
     @if (NoteDraft.Cw != null)
     {
         <input @bind="NoteDraft.Cw" class="input cw-field" placeholder="Content Warning"/>
@@ -36,6 +45,7 @@
     private IJSObjectReference?      _module;
     private IList<DriveFileResponse> Attachments { get; set; } = [];
     private InputFile                UploadInput { get; set; }
+    private NoteBase?            ReplyTo     { get; set; }
 
     private NoteCreateRequest NoteDraft { get; set; } = new NoteCreateRequest
     {
@@ -83,8 +93,15 @@
         await _module.InvokeVoidAsync("openUpload", UploadInput.Element);
     }
 
-    public async Task OpenDialog()
+    public async Task OpenDialog(NoteBase? replyTo = null)
     {
+        if (replyTo != null)
+        {
+            ReplyTo           = replyTo;
+            NoteDraft.ReplyId = replyTo.Id;
+            StateHasChanged();
+        }
+
         await _module.InvokeVoidAsync("openDialog", Dialog);
     }
 
@@ -124,6 +141,7 @@
         {
             _module = await Js.InvokeAsync<IJSObjectReference>("import",
                                                                "./Components/Compose.razor.js");
+            ComposeService.ComposeDialog = this;
         }
     }
 

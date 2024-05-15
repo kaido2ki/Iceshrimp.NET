@@ -17,6 +17,7 @@ builder.Services.AddIntersectionObserver();
 builder.Services.AddSingleton<SessionService>();
 builder.Services.AddSingleton<StreamingService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddSingleton<ComposeService>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddBlazoredLocalStorageAsSingleton();
