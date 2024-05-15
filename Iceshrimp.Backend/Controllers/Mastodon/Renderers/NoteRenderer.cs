@@ -125,7 +125,7 @@ public class NoteRenderer(
 			ContentWarning   = note.Cw ?? "",
 			Visibility       = StatusEntity.EncodeVisibility(note.Visibility),
 			Content          = content,
-			Text             = data?.Source == true ? text : null,
+			Text             = text,
 			Mentions         = mentions,
 			IsPinned         = pinned,
 			Attachments      = attachments,

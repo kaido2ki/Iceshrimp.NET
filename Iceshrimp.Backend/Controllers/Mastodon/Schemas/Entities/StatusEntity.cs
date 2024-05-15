@@ -9,6 +9,8 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 public class StatusEntity : IEntity, ICloneable
 {
+	[J("id")]                     public required string        Id             { get; set; }
+	[J("text")]                   public required string?       Text           { get; set; }
 	[J("content")]                public required string?       Content        { get; set; }
 	[J("uri")]                    public required string        Uri            { get; set; }
 	[J("url")]                    public required string        Url            { get; set; }
@@ -32,10 +34,6 @@ public class StatusEntity : IEntity, ICloneable
 	[J("spoiler_text")]           public required string        ContentWarning { get; set; }
 	[J("visibility")]             public required string        Visibility     { get; set; }
 
-	[J("text")]
-	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public required string? Text { get; set; }
-
 	[J("pinned")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public required bool? IsPinned { get; set; }
@@ -52,8 +50,7 @@ public class StatusEntity : IEntity, ICloneable
 	[J("card")]        public object?  Card        => null; //FIXME
 	[J("application")] public object?  Application => null; //FIXME
 
-	[J("language")] public          string? Language => null; //FIXME
-	[J("id")]       public required string  Id       { get; set; }
+	[J("language")] public string? Language => null; //FIXME
 
 	[JI] public string? MastoReplyUserId;
 
