@@ -1,0 +1,26 @@
+@using Iceshrimp.Shared.Schemas
+@using Iceshrimp.Frontend.Components.Note
+@inject NavigationManager NavigationManager
+<div class="note">
+    <div class="note-container">
+        <div class="note-indent">
+            <img class="user-avatar" src="@Note.User.AvatarUrl"/>
+            <Line></Line>
+        </div>
+        <div class="note" @onclick="OpenNote">
+            <Note Indented="true" NoteResponse="Note"/>
+            <div class="pad"></div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter] [EditorRequired] public required NoteResponse Note { get; set; }
+
+    private void OpenNote()
+    {
+        NavigationManager.NavigateTo($"/notes/{Note.Id}");
+    }
+
+}

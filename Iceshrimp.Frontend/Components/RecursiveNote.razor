@@ -22,7 +22,7 @@
     {
         <div class="@(Note.Descendants?.Count > 1 ? "replies" : "reply")">
            
-            @* @foreach (var note in Note.Descendants!) // We are checking for null 3 lines up. *@
+             @* We are checking for null 3 lines up. *@
             @for (int i = 0; i < Note.Descendants!.Count; i++)
             {
                 var note = Note.Descendants[i];

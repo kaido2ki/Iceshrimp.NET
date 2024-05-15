@@ -8,6 +8,16 @@
 @if (_init)
 {
     <div class="scroller">
+        <div class="wrapper">
+        @if (Ascendants != null)
+        {
+            <div class="ascendants">
+                @foreach (var note in Ascendants)
+                {
+                    <AscendedNote Note="note"/>
+                }
+            </div>
+        }
         <div class="root-note">
             <Note NoteResponse="RootNote"></Note>
         </div>
@@ -20,6 +30,7 @@
                 }
             </div>
         }
+        </div>
     </div>
 }
 else
@@ -30,17 +41,16 @@ else
 {
     <div>This note does not exist!</div>
 }
+
 @code {
     [Parameter] public string?              NoteId      { get; set; }
     public             NoteResponse?        RootNote    { get; set; }
     private            IList<NoteResponse>? Descendants { get; set; }
+    private            IList<NoteResponse>? Ascendants  { get; set; }
     private            bool                 _init  = false;
     private            bool                 _error = false;
 
-    protected override async Task OnInitializedAsync()
-    {
-       
-    }
+    protected override async Task OnInitializedAsync() { }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -49,15 +59,18 @@ else
             _error = true;
             return;
         }
-        RootNote    = await ApiService.Notes.GetNote(NoteId);
+
+        RootNote = await ApiService.Notes.GetNote(NoteId);
         if (RootNote == null)
         {
             _error = true;
             return;
         }
+
         Descendants = await ApiService.Notes.GetNoteDescendants(NoteId, default);
+        Ascendants  = await ApiService.Notes.GetNoteAscendants(NoteId, default);
         _init       = true;
-        
+
         StateHasChanged();
     }
 
