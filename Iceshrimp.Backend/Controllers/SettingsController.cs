@@ -45,6 +45,7 @@ public class SettingsController(DatabaseContext db) : ControllerBase
 		settings.DefaultNoteVisibility   = (Note.NoteVisibility)newSettings.DefaultNoteVisibility;
 		settings.DefaultRenoteVisibility = (Note.NoteVisibility)newSettings.DefaultRenoteVisibility;
 
+		await db.SaveChangesAsync();
 		return Ok(new object());
 	}
 
