@@ -91,4 +91,19 @@
     {
         ComposeService.ComposeDialog?.OpenDialog(Note);
     }
+
+    public void Renote()
+    {
+        var renote = new NoteCreateRequest
+        {
+            Text           = "",
+            Cw             = null,
+            ReplyId        = null,
+            RenoteId       = Note.Id,
+            MediaIds       = null,
+            Visibility     = Note.Visibility,
+            IdempotencyKey = null
+        };
+        ApiService.Notes.CreateNote(renote);
+    }
 }
