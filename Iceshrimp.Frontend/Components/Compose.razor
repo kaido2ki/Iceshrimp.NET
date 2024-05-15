@@ -11,8 +11,7 @@
         <button @onclick="CloseDialog">
             <Icon Name="Icons.X"/>
         </button>
-        <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility">
-        </Dropdown>
+        <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility" />
         <button @onclick="SendNote" class="post-btn">Post<Icon Name="Icons.PaperPlaneRight"/></button>
     </div>
     @if (ReplyTo != null)
@@ -50,7 +49,7 @@
     private NoteCreateRequest NoteDraft { get; set; } = new NoteCreateRequest
     {
         Text       = "",
-        Visibility = NoteVisibility.Public, // FIXME: Default to visibilty in settings
+        Visibility = NoteVisibility.Followers, // FIXME: Default to visibilty in settings
         Cw         = null
     };
 
@@ -97,8 +96,15 @@
     {
         if (replyTo != null)
         {
-            ReplyTo           = replyTo;
-            NoteDraft.ReplyId = replyTo.Id;
+            ReplyTo              = replyTo;
+            NoteDraft.ReplyId    = replyTo.Id;
+            NoteDraft.Visibility = replyTo.Visibility;
+            StateHasChanged();
+        }
+        else
+        {
+            ReplyTo           = null;
+            NoteDraft.ReplyId = null;
             StateHasChanged();
         }
 
