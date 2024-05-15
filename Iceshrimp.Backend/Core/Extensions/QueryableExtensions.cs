@@ -47,7 +47,7 @@ public static class QueryableExtensions
 			_                   => query.OrderByDescending(p => p.Id)
 		};
 
-		return query.Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
+		return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
 	}
 
 	public static IQueryable<T> Paginate<T>(
@@ -83,7 +83,7 @@ public static class QueryableExtensions
 			_ => query.OrderByDescending(predicate)
 		};
 
-		return query.Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
+		return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
 	}
 
 	public static IQueryable<T> Paginate<T>(
@@ -137,7 +137,7 @@ public static class QueryableExtensions
 			_                     => query.OrderByDescending(predicate)
 		};
 
-		return query.Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
+		return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
 	}
 
 	public static IQueryable<T> Paginate<T>(

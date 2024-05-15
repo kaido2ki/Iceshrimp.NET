@@ -133,7 +133,6 @@ public class SearchController(
 		               .Where(p => p.DisplayNameOrUsernameOrFqnContainsCaseInsensitive(search.Query!,
 			                      config.Value.AccountDomain))
 		               .Where(p => !search.Following || p.IsFollowedBy(user))
-		               .Skip(pagination.Offset ?? 0)
 		               .Paginate(pagination, ControllerContext) //TODO: this will mess up our sorting
 		               .OrderByDescending(p => p.NotesCount)
 		               .RenderAllForMastodonAsync(userRenderer);
@@ -185,7 +184,6 @@ public class SearchController(
 		               .FilterByUser(search.UserId)
 		               .EnsureVisibleFor(user)
 		               .FilterHidden(user, db)
-		               .Skip(pagination.Offset ?? 0)
 		               .Paginate(pagination, ControllerContext)
 		               .PrecomputeVisibilities(user)
 		               .RenderAllForMastodonAsync(noteRenderer, user);
@@ -200,7 +198,6 @@ public class SearchController(
 	{
 		return await db.Hashtags
 		               .Where(p => EF.Functions.ILike(p.Name, "%" + EfHelpers.EscapeLikeQuery(search.Query!) + "%"))
-		               .Skip(pagination.Offset ?? 0)
 		               .Paginate(pagination, ControllerContext)
 		               .OrderByDescending(p => p.Id)
 		               .Select(p => new TagEntity
