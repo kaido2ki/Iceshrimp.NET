@@ -102,3 +102,6 @@ Iceshrimp.Frontend/.pnp.*
 .vs/
 
 TestResults/
+
+# macOS specific
+.DS_Store
