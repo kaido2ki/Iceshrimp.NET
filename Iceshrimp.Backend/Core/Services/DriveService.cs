@@ -109,10 +109,40 @@ public class DriveService(
 		if (user.Host == null && input.Length > storageConfig.Value.MaxUploadSizeBytes)
 			throw GracefulException.UnprocessableEntity("Attachment is too large.");
 
-		await using var data   = new BufferedStream(input);
-		var             digest = await DigestHelpers.Sha256DigestAsync(data);
+		DriveFile? file;
+
+		if (user.Host != null && input.Length > storageConfig.Value.MaxCacheSizeBytes)
+		{
+			file = new DriveFile
+			{
+				Id                 = IdHelpers.GenerateSlowflakeId(),
+				CreatedAt          = DateTime.UtcNow,
+				User               = user,
+				UserHost           = user.Host,
+				Size               = (int)input.Length,
+				IsLink             = true,
+				IsSensitive        = request.IsSensitive,
+				StoredInternal     = false,
+				Src                = request.Source,
+				Uri                = request.Uri,
+				Url                = request.Uri ?? throw new Exception("Cannot store remote attachment without URI"),
+				Name               = request.Filename,
+				Comment            = request.Comment,
+				Type               = CleanMimeType(request.MimeType),
+				RequestHeaders     = request.RequestHeaders,
+				RequestIp          = request.RequestIp
+			};
+
+			db.Add(file);
+			await db.SaveChangesAsync();
+			return file;
+		}
+		
+		await using var data = new BufferedStream(input);
+
+		var digest = await DigestHelpers.Sha256DigestAsync(data);
 		logger.LogDebug("Storing file {digest} for user {userId}", digest, user.Id);
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest);
+		file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest);
 		if (file is { IsLink: false })
 		{
 			if (file.UserId == user.Id)
