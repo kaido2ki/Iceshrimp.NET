@@ -84,18 +84,45 @@ public class DriveService(
 			if (!logExisting)
 				logger.LogDebug("Storing file {uri} for user {userId}", uri, user.Id);
 
-			var res = await httpClient.GetAsync(uri);
-
-			var request = new DriveFileCreationRequest
+			try
 			{
-				Uri         = uri,
-				Filename    = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
-				IsSensitive = sensitive,
-				Comment     = description,
-				MimeType    = CleanMimeType(mimeType ?? res.Content.Headers.ContentType?.MediaType)
-			};
+				var res = await httpClient.GetAsync(uri);
 
-			return await StoreFile(await res.Content.ReadAsStreamAsync(), user, request);
+				var request = new DriveFileCreationRequest
+				{
+					Uri         = uri,
+					Filename    = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
+					IsSensitive = sensitive,
+					Comment     = description,
+					MimeType    = CleanMimeType(mimeType ?? res.Content.Headers.ContentType?.MediaType)
+				};
+
+				return await StoreFile(await res.Content.ReadAsStreamAsync(), user, request);
+			}
+			catch (Exception e)
+			{
+				logger.LogDebug("Failed to download file from {uri}: {error}, storing as link", uri, e.Message);
+				file = new DriveFile
+				{
+					Id             = IdHelpers.GenerateSlowflakeId(),
+					CreatedAt      = DateTime.UtcNow,
+					User           = user,
+					UserHost       = user.Host,
+					Size           = 0,
+					IsLink         = true,
+					IsSensitive    = sensitive,
+					StoredInternal = false,
+					Uri            = uri,
+					Url            = uri,
+					Name           = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
+					Comment        = description,
+					Type           = CleanMimeType(mimeType ?? "application/octet-stream")
+				};
+
+				db.Add(file);
+				await db.SaveChangesAsync();
+				return file;
+			}
 		}
 		catch (Exception e)
 		{
@@ -115,29 +142,29 @@ public class DriveService(
 		{
 			file = new DriveFile
 			{
-				Id                 = IdHelpers.GenerateSlowflakeId(),
-				CreatedAt          = DateTime.UtcNow,
-				User               = user,
-				UserHost           = user.Host,
-				Size               = (int)input.Length,
-				IsLink             = true,
-				IsSensitive        = request.IsSensitive,
-				StoredInternal     = false,
-				Src                = request.Source,
-				Uri                = request.Uri,
-				Url                = request.Uri ?? throw new Exception("Cannot store remote attachment without URI"),
-				Name               = request.Filename,
-				Comment            = request.Comment,
-				Type               = CleanMimeType(request.MimeType),
-				RequestHeaders     = request.RequestHeaders,
-				RequestIp          = request.RequestIp
+				Id             = IdHelpers.GenerateSlowflakeId(),
+				CreatedAt      = DateTime.UtcNow,
+				User           = user,
+				UserHost       = user.Host,
+				Size           = (int)input.Length,
+				IsLink         = true,
+				IsSensitive    = request.IsSensitive,
+				StoredInternal = false,
+				Src            = request.Source,
+				Uri            = request.Uri,
+				Url            = request.Uri ?? throw new Exception("Cannot store remote attachment without URI"),
+				Name           = request.Filename,
+				Comment        = request.Comment,
+				Type           = CleanMimeType(request.MimeType),
+				RequestHeaders = request.RequestHeaders,
+				RequestIp      = request.RequestIp
 			};
 
 			db.Add(file);
 			await db.SaveChangesAsync();
 			return file;
 		}
-		
+
 		await using var data = new BufferedStream(input);
 
 		var digest = await DigestHelpers.Sha256DigestAsync(data);
