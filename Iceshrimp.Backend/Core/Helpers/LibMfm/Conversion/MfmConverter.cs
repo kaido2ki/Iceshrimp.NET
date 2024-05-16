@@ -28,6 +28,9 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 		var regex = new Regex(@"<br\s?\/?>\r?\n", RegexOptions.IgnoreCase);
 		html = regex.Replace(html, "\n");
 
+		// Ensure compatibility with AP servers that send non-breaking space characters instead of regular spaces
+		html = html.Replace("\u00A0", " ");
+
 		var dom = await new HtmlParser().ParseDocumentAsync(html);
 		if (dom.Body == null) return "";
 
