@@ -678,8 +678,6 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Note.Id schema is invalid");
 		if (note.Url?.Link != null && !note.Url.Link.StartsWith("https://"))
 			throw GracefulException.UnprocessableEntity("Note.Url schema is invalid");
-		if (note.PublishedAt is null or { Year: < 2007 } || note.PublishedAt > DateTime.Now + TimeSpan.FromDays(3))
-			throw GracefulException.UnprocessableEntity("Note.PublishedAt is nonsensical");
 		if (actor.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
 		if (await fedCtrlSvc.ShouldBlockAsync(note.Id, actor.Host))
@@ -720,6 +718,9 @@ public class NoteService(
 
 			return null;
 		}
+		
+		if (note.PublishedAt is null or { Year: < 2007 } || note.PublishedAt > DateTime.Now + TimeSpan.FromDays(3))
+			throw GracefulException.UnprocessableEntity("Note.PublishedAt is nonsensical");
 
 		if (replyUri != null)
 		{
