@@ -466,7 +466,7 @@ public class NoteService(
 					await db.PollVotes.Where(p => p.Note == note).ExecuteDeleteAsync();
 					note.Poll.Choices  = poll.Choices;
 					note.Poll.Multiple = poll.Multiple;
-					note.Poll.Votes = poll.Votes.Count != poll.Choices.Count
+					note.Poll.Votes = poll.Votes == null! || poll.Votes.Count != poll.Choices.Count
 						? poll.Choices.Select(_ => 0).ToList()
 						: poll.Votes;
 				}
@@ -483,7 +483,7 @@ public class NoteService(
 				poll.UserId         = note.User.Id;
 				poll.UserHost       = note.UserHost;
 				poll.NoteVisibility = note.Visibility;
-				if (poll.Votes.Count != poll.Choices.Count)
+				if (poll.Votes == null! || poll.Votes.Count != poll.Choices.Count)
 					poll.Votes = poll.Choices.Select(_ => 0).ToList();
 
 				await db.AddAsync(poll);
@@ -718,7 +718,7 @@ public class NoteService(
 
 			return null;
 		}
-		
+
 		if (note.PublishedAt is null or { Year: < 2007 } || note.PublishedAt > DateTime.Now + TimeSpan.FromDays(3))
 			throw GracefulException.UnprocessableEntity("Note.PublishedAt is nonsensical");
 
