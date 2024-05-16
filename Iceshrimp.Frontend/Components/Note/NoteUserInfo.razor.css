@@ -10,5 +10,19 @@
     padding-left: 0.75em;
     .identifier {
         font-size: 0.9em;
+        text-overflow: ellipsis;
+        overflow: clip;
     }
+    flex-shrink: 1;
+    min-width: 2rem;
+    overflow: clip;
+    margin-right: 1rem;
+}
+.display-name {
+    white-space: wrap;
+    text-overflow: ellipsis;
+    overflow: clip;
+}
+.identifier {
+    white-space: wrap;
 }

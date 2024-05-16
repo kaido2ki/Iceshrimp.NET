@@ -1,6 +1,6 @@
 .root-note {
     max-width: 45rem;
-    min-width: 25rem;
+    /*min-width: 25rem;*/
     background-color: var(--foreground-color);
     width: 100%;
     padding-bottom: 1rem;
@@ -10,10 +10,8 @@
 }
 .scroller {
     height: 100vh;
-    overflow: scroll; 
-    display: flex;
-    align-items: center;
-    flex-direction: column;
+    overflow-y: scroll;
+    overflow-x: clip;
 }
 .descendants {
     display: flex;
@@ -29,6 +27,10 @@
     margin-bottom: 1rem;
     padding-top: 1.5rem;
     padding-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    margin-left: 1rem;
+    margin-right: 1rem;
 }
 .ascendants {
     padding-left: 1.5rem;

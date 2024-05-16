@@ -22,6 +22,7 @@
     --hover-color: #544f6f;
     --accent-color: linear-gradient(to right, #9A92FF, #8372F5);
     --notice-color: #ffc684
+    
 }
 
 
@@ -30,6 +31,14 @@ html {
     -moz-text-size-adjust: none;
     -webkit-text-size-adjust: none;
     text-size-adjust: none;
+}
+
+/*Set box sizing to border box*/
+html {
+    box-sizing: border-box;
+}
+*, *:before, *:after {
+    box-sizing: inherit;
 }
 
 /* Remove default margin in favour of better control in authored CSS */
