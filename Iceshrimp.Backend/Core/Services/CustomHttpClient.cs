@@ -9,25 +9,43 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class CustomHttpClient : HttpClient
 {
+	private static readonly FastFallback FastFallbackHandler = new();
+
 	private static readonly HttpMessageHandler InnerHandler = new SocketsHttpHandler
 	{
 		AutomaticDecompression      = DecompressionMethods.All,
-		ConnectCallback             = new FastFallback().ConnectCallback,
+		ConnectCallback             = FastFallbackHandler.ConnectCallback,
 		PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
 		PooledConnectionLifetime    = TimeSpan.FromMinutes(60)
 	};
 
 	private static readonly HttpMessageHandler Handler = new RedirectHandler(InnerHandler);
 
-	public CustomHttpClient(IOptions<Config.InstanceSection> options) : base(Handler)
+	public CustomHttpClient(
+		IOptions<Config.InstanceSection> options,
+		IOptionsMonitor<Config.SecuritySection> security,
+		ILoggerFactory loggerFactory
+	) : base(Handler)
 	{
+		// Configure HTTP client options
 		DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", options.Value.UserAgent);
 		Timeout = TimeSpan.FromSeconds(30);
+
+		// Configure FastFallback
+		FastFallbackHandler.Logger   = loggerFactory.CreateLogger<FastFallback>();
+		FastFallbackHandler.Security = security;
 	}
 
 	// Adapted from https://github.com/KazWolfe/Dalamud/blob/767cc49ecb80e29dbdda2fa8329d3c3341c964fe/Dalamud/Networking/Http/HappyEyeballsCallback.cs
 	private class FastFallback(int connectionBackoff = 75)
 	{
+		public ILogger<FastFallback>?                   Logger   { private get; set; }
+		public IOptionsMonitor<Config.SecuritySection>? Security { private get; set; }
+
+		private bool AllowLoopback  => Security?.CurrentValue.AllowLoopback ?? false;
+		private bool AllowLocalIPv4 => Security?.CurrentValue.AllowLocalIPv4 ?? false;
+		private bool AllowLocalIPv6 => Security?.CurrentValue.AllowLocalIPv6 ?? false;
+
 		public async ValueTask<Stream> ConnectCallback(SocketsHttpConnectionContext context, CancellationToken token)
 		{
 			var sortedRecords = await GetSortedAddresses(context.DnsEndPoint.Host, token);
@@ -40,6 +58,30 @@ public class CustomHttpClient : HttpClient
 			{
 				var record = sortedRecords[i];
 
+				if (record.IsIPv4MappedToIPv6)
+					record = record.MapToIPv4();
+
+				if (!AllowLoopback && record.IsLoopback())
+				{
+					Logger?.LogWarning("Refusing to connect to loopback address {address} due to possible SSRF",
+					                   record.ToString());
+					continue;
+				}
+
+				if (!AllowLocalIPv6 && record.IsLocalIPv6())
+				{
+					Logger?.LogWarning("Refusing to connect to local IPv6 address {address} due to possible SSRF",
+					                   record.ToString());
+					continue;
+				}
+
+				if (!AllowLocalIPv4 && record.IsLocalIPv4())
+				{
+					Logger?.LogWarning("Refusing to connect to local IPv4 address {address} due to possible SSRF",
+					                   record.ToString());
+					continue;
+				}
+
 				delayCts.CancelAfter(connectionBackoff * i);
 
 				var task = AttemptConnection(record, context.DnsEndPoint.Port, linkedToken.Token, delayCts.Token);
@@ -49,6 +91,9 @@ public class CustomHttpClient : HttpClient
 				_        = task.ContinueWith(_ => { nextDelayCts.Cancel(); }, TaskContinuationOptions.OnlyOnFaulted);
 				delayCts = nextDelayCts;
 			}
+
+			if (tasks.Count == 0)
+				throw new Exception($"Can't connect to {context.DnsEndPoint.Host}: no candidate addresses remaining");
 
 			NetworkStream? stream        = null;
 			Exception?     lastException = null;
