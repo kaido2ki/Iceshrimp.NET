@@ -219,7 +219,7 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 				                                           p.Host.EqualsIgnoreCase(finalHost));
 				if (mention == null)
 				{
-					el.TextContent = mentionNode.Acct;
+					el.TextContent = $"@{mentionNode.Acct}";
 				}
 				else
 				{
