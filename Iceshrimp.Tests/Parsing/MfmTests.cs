@@ -66,10 +66,13 @@ public class MfmTests
 	[TestMethod]
 	public void TestMention()
 	{
-		const string input = "test @test test";
+		const string input = "test @test test @test@instance.tld";
 		List<MfmNode> expected =
 		[
-			new MfmTextNode("test "), new MfmMentionNode("test", "test", null), new MfmTextNode(" test")
+			new MfmTextNode("test "),
+			new MfmMentionNode("test", "test", null),
+			new MfmTextNode(" test "),
+			new MfmMentionNode("test@instance.tld", "test", "instance.tld")
 		];
 		var res = Mfm.parse(input);
 
@@ -83,6 +86,30 @@ public class MfmTests
 	{
 		const string  input    = "test @test@ test";
 		List<MfmNode> expected = [new MfmTextNode("test @test@ test")];
+		var           res      = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
+
+	[TestMethod]
+	public void TestMentionTrailingDot()
+	{
+		const string  input    = "@test@asdf.com.";
+		List<MfmNode> expected = [new MfmMentionNode("test@asdf.com", "test", "asdf.com"), new MfmTextNode(".")];
+		var           res      = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
+
+	[TestMethod]
+	public void TestMentionTrailingDotLocal()
+	{
+		const string  input    = "@test.";
+		List<MfmNode> expected = [new MfmMentionNode("test", "test", null), new MfmTextNode(".")];
 		var           res      = Mfm.parse(input);
 
 		AssertionOptions.FormattingOptions.MaxDepth = 100;

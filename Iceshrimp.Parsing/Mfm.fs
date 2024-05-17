@@ -134,24 +134,20 @@ module private MfmParser =
     let aggregateTextInline nodes =
         nodes |> aggregateText |> List.map (fun x -> x :?> MfmInlineNode)
 
-    let domainFirstComponent =
-        many1Chars (satisfy isAsciiLetter <|> satisfy isDigit <|> anyOf "_-")
-
     let domainComponent =
-        many1Chars (satisfy isAsciiLetter <|> satisfy isDigit <|> anyOf "._-")
+        many1Chars (
+            satisfy isAsciiLetterOrNumber
+            <|> pchar '_'
+            <|> attempt (
+                pchar '-'
+                .>> (previousCharSatisfies isAsciiLetterOrNumber
+                     <|> nextCharSatisfies isAsciiLetterOrNumber)
+            )
+        )
 
-    let domainStart = (satisfy isAsciiLetter <|> satisfy isDigit)
-
-    let domainFull =
-        domainStart .>>. domainFirstComponent .>>. pchar '.' .>>. many1 domainComponent
-
-    let domainAggregate1 (a: char, b: string) = string a + b
-    let domainAggregate2 (a: char * string, b: char) = (domainAggregate1 a) + string b
-
-    let domainAggregate (x: (char * string) * char, y: string list) =
-        domainAggregate2 x + (String.concat "" y)
-
-    let domain = domainFull |>> domainAggregate
+    let domain =
+        domainComponent .>>. (many <| attempt (skipChar '.' >>. domainComponent))
+        |>> fun (a, b) -> String.concat "." <| Seq.append [ a ] b
 
     let acct (user: string, host: string option) =
         match host with
@@ -230,7 +226,10 @@ module private MfmParser =
     let mentionNode =
         previousCharSatisfiesNot isNotWhitespace
         >>. skipString "@"
-        >>. many1Chars (satisfy isAsciiLetter <|> satisfy isDigit <|> anyOf "._-")
+        >>. many1Chars (
+            satisfy isAsciiLetterOrNumber
+            <|> attempt (anyOf "._-" .>> nextCharSatisfies isAsciiLetterOrNumber)
+        )
         .>>. opt (skipChar '@' >>. domain)
         .>> (lookAhead
              <| choice
