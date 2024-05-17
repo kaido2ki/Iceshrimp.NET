@@ -29,6 +29,7 @@ public sealed class WebSocketConnection(
 	public readonly  IServiceScope            Scope        = scopeFactory.CreateScope();
 	public readonly  IServiceScopeFactory     ScopeFactory = scopeFactory;
 	public readonly  OauthToken               Token        = token;
+	public readonly  WriteLockingList<Filter> Filters      = [];
 	public readonly  WriteLockingList<string> Following    = [];
 	private readonly WriteLockingList<string> _blocking    = [];
 	private readonly WriteLockingList<string> _blockedBy   = [];
@@ -39,10 +40,15 @@ public sealed class WebSocketConnection(
 		foreach (var channel in Channels)
 			channel.Dispose();
 
-		EventService.UserBlocked   -= OnUserUnblock;
-		EventService.UserUnblocked -= OnUserBlock;
-		EventService.UserMuted     -= OnUserMute;
-		EventService.UserUnmuted   -= OnUserUnmute;
+		EventService.UserBlocked    -= OnUserUnblock;
+		EventService.UserUnblocked  -= OnUserBlock;
+		EventService.UserMuted      -= OnUserMute;
+		EventService.UserUnmuted    -= OnUserUnmute;
+		EventService.UserFollowed   -= OnUserFollow;
+		EventService.UserUnfollowed -= OnUserUnfollow;
+		EventService.FilterAdded    -= OnFilterAdded;
+		EventService.FilterRemoved  -= OnFilterRemoved;
+		EventService.FilterUpdated  -= OnFilterUpdated;
 
 		Scope.Dispose();
 	}
@@ -64,8 +70,11 @@ public sealed class WebSocketConnection(
 		EventService.UserUnblocked  += OnUserBlock;
 		EventService.UserMuted      += OnUserMute;
 		EventService.UserUnmuted    += OnUserUnmute;
-		EventService.UserFollowed   -= OnUserFollow;
-		EventService.UserUnfollowed -= OnUserUnfollow;
+		EventService.UserFollowed   += OnUserFollow;
+		EventService.UserUnfollowed += OnUserUnfollow;
+		EventService.FilterAdded    += OnFilterAdded;
+		EventService.FilterRemoved  += OnFilterRemoved;
+		EventService.FilterUpdated  += OnFilterUpdated;
 
 		_ = InitializeRelationships();
 	}
@@ -84,6 +93,19 @@ public sealed class WebSocketConnection(
 		                            .ToListAsync());
 		_muting.AddRange(await db.Mutings.Where(p => p.Muter == Token.User)
 		                         .Select(p => p.MuteeId)
+		                         .ToListAsync());
+
+		Filters.AddRange(await db.Filters.Where(p => p.User == Token.User)
+		                         .Select(p => new Filter
+		                         {
+			                         Name     = p.Name,
+			                         Action   = p.Action,
+			                         Contexts = p.Contexts,
+			                         Expiry   = p.Expiry,
+			                         Id       = p.Id,
+			                         Keywords = p.Keywords
+		                         })
+		                         .AsNoTracking()
 		                         .ToListAsync());
 	}
 
@@ -237,6 +259,57 @@ public sealed class WebSocketConnection(
 		{
 			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
 			logger.LogError("Event handler OnUserUnfollow threw exception: {e}", e);
+		}
+	}
+
+	private void OnFilterAdded(object? _, Filter filter)
+	{
+		try
+		{
+			if (filter.User.Id != Token.User.Id) return;
+			Filters.Add(filter.Clone(Token.User));
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnFilterAdded threw exception: {e}", e);
+		}
+	}
+
+	private void OnFilterRemoved(object? _, Filter filter)
+	{
+		try
+		{
+			if (filter.User.Id != Token.User.Id) return;
+			var match = Filters.FirstOrDefault(p => p.Id == filter.Id);
+			if (match != null) Filters.Remove(match);
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnFilterRemoved threw exception: {e}", e);
+		}
+	}
+
+	private void OnFilterUpdated(object? _, Filter filter)
+	{
+		try
+		{
+			if (filter.User.Id != Token.User.Id) return;
+			var match = Filters.FirstOrDefault(p => p.Id == filter.Id);
+			if (match == null) Filters.Add(filter.Clone(Token.User));
+			else
+			{
+				match.Contexts = filter.Contexts;
+				match.Action   = filter.Action;
+				match.Keywords = filter.Keywords;
+				match.Name     = filter.Name;
+			}
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnFilterUpdated threw exception: {e}", e);
 		}
 	}
 

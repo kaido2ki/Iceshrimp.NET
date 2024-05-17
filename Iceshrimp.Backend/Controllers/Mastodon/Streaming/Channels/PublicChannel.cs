@@ -96,7 +96,8 @@ public class PublicChannel(
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
-			var intermediate = await renderer.RenderAsync(note, connection.Token.User);
+			var data         = new NoteRenderer.NoteRendererDto { Filters = connection.Filters.ToList() };
+			var intermediate = await renderer.RenderAsync(note, connection.Token.User, data: data);
 			var rendered     = EnforceRenoteReplyVisibility(intermediate, wrapped);
 			var message = new StreamingUpdateMessage
 			{
@@ -122,7 +123,8 @@ public class PublicChannel(
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
-			var intermediate = await renderer.RenderAsync(note, connection.Token.User);
+			var data         = new NoteRenderer.NoteRendererDto { Filters = connection.Filters.ToList() };
+			var intermediate = await renderer.RenderAsync(note, connection.Token.User, data: data);
 			var rendered     = EnforceRenoteReplyVisibility(intermediate, wrapped);
 			var message = new StreamingUpdateMessage
 			{

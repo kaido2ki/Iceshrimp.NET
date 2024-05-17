@@ -92,9 +92,19 @@ public class NoteRenderer(
 			? (data?.Polls ?? await GetPolls([note], user)).FirstOrDefault(p => p.Id == note.Id)
 			: null;
 
-		var filters      = data?.Filters ?? await GetFilters(user, filterContext);
-		var filtered     = FilterHelper.IsFiltered([note, note.Reply, note.Renote, note.Renote?.Renote], filters);
-		var filterResult = GetFilterResult(filtered);
+		var filters = data?.Filters ?? await GetFilters(user, filterContext);
+
+		List<FilterResultEntity> filterResult;
+		if (filters.Count > 0 && filterContext == null)
+		{
+			var filtered = FilterHelper.CheckFilters([note, note.Reply, note.Renote, note.Renote?.Renote], filters);
+			filterResult = GetFilterResult(filtered);
+		}
+		else
+		{
+			var filtered = FilterHelper.IsFiltered([note, note.Reply, note.Renote, note.Renote?.Renote], filters);
+			filterResult = GetFilterResult(filtered.HasValue ? [filtered.Value] : []);
+		}
 
 		if ((user?.UserSettings?.FilterInaccessible ?? false) && (replyInaccessible || quoteInaccessible))
 			filterResult.Insert(0, InaccessibleFilter);
@@ -204,12 +214,19 @@ public class NoteRenderer(
 		};
 	}
 
-	private static List<FilterResultEntity> GetFilterResult((Filter filter, string keyword)? filtered)
+	private static List<FilterResultEntity> GetFilterResult(
+		IReadOnlyCollection<(Filter filter, string keyword)> filtered
+	)
 	{
-		if (filtered == null) return [];
-		var (filter, keyword) = filtered.Value;
+		var res = new List<FilterResultEntity>();
 
-		return [new FilterResultEntity { Filter = FilterRenderer.RenderOne(filter), KeywordMatches = [keyword] }];
+		foreach (var entry in filtered)
+		{
+			var (filter, keyword) = entry;
+			res.Add(new FilterResultEntity { Filter = FilterRenderer.RenderOne(filter), KeywordMatches = [keyword] });
+		}
+
+		return res;
 	}
 
 	private async Task<List<MentionEntity>> GetMentions(List<Note> notes)
@@ -368,8 +385,9 @@ public class NoteRenderer(
 
 	private async Task<List<Filter>> GetFilters(User? user, Filter.FilterContext? filterContext)
 	{
-		if (filterContext == null) return [];
-		return await db.Filters.Where(p => p.User == user && p.Contexts.Contains(filterContext.Value)).ToListAsync();
+		return filterContext == null
+			? await db.Filters.Where(p => p.User == user).ToListAsync()
+			: await db.Filters.Where(p => p.User == user && p.Contexts.Contains(filterContext.Value)).ToListAsync();
 	}
 
 	public async Task<IEnumerable<StatusEntity>> RenderManyAsync(

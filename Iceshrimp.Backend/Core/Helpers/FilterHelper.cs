@@ -32,6 +32,36 @@ public static class FilterHelper
 		return null;
 	}
 
+	public static List<(Filter filter, string keyword)> CheckFilters(IEnumerable<Note?> notes, List<Filter> filters)
+	{
+		if (filters.Count == 0) return [];
+
+		var res = new List<(Filter filter, string keyword)>();
+
+		foreach (var note in notes.OfType<Note>())
+		{
+			var match = CheckFilters(note, filters);
+			if (match.Count != 0) res.AddRange(match);
+		}
+
+		return res;
+	}
+
+	private static List<(Filter filter, string keyword)> CheckFilters(Note note, List<Filter> filters)
+	{
+		if (filters.Count == 0) return [];
+
+		var res = new List<(Filter filter, string keyword)>();
+
+		foreach (var filter in filters)
+		{
+			var match = IsFiltered(note, filter);
+			if (match != null) res.Add((filter, match));
+		}
+
+		return res;
+	}
+
 	private static string? IsFiltered(Note note, Filter filter)
 	{
 		foreach (var keyword in filter.Keywords)

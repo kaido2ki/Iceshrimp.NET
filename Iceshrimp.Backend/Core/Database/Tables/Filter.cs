@@ -40,6 +40,20 @@ public class Filter
 	[Column("keywords")] public List<string>        Keywords { get; set; } = [];
 	[Column("contexts")] public List<FilterContext> Contexts { get; set; } = [];
 	[Column("action")]   public FilterAction        Action   { get; set; }
+
+	public Filter Clone(User? user = null)
+	{
+		return new Filter
+		{
+			Name     = Name,
+			Action   = Action,
+			Contexts = Contexts,
+			Expiry   = Expiry,
+			Keywords = Keywords,
+			Id       = Id,
+			User     = user!
+		};
+	}
 }
 
 public class FilterEntityTypeConfiguration : IEntityTypeConfiguration<Filter>

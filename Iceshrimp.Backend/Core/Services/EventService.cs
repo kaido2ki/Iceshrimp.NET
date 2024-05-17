@@ -19,6 +19,9 @@ public class EventService
 	public event EventHandler<UserInteraction>? UserMuted;
 	public event EventHandler<UserInteraction>? UserUnmuted;
 	public event EventHandler<Notification>?    Notification;
+	public event EventHandler<Filter>?          FilterAdded;
+	public event EventHandler<Filter>?          FilterRemoved;
+	public event EventHandler<Filter>?          FilterUpdated;
 
 	public void RaiseNotePublished(object? sender, Note note) => NotePublished?.Invoke(sender, note);
 	public void RaiseNoteUpdated(object? sender, Note note)   => NoteUpdated?.Invoke(sender, note);
@@ -61,4 +64,8 @@ public class EventService
 
 	public void RaiseUserUnmuted(object? sender, User actor, User obj) =>
 		UserUnmuted?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+
+	public void RaiseFilterAdded(object? sender, Filter filter)   => FilterAdded?.Invoke(sender, filter);
+	public void RaiseFilterRemoved(object? sender, Filter filter) => FilterRemoved?.Invoke(sender, filter);
+	public void RaiseFilterUpdated(object? sender, Filter filter) => FilterUpdated?.Invoke(sender, filter);
 }

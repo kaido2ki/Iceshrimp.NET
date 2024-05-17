@@ -22,7 +22,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableRateLimiting("sliding")]
 [EnableCors("mastodon")]
 [Produces(MediaTypeNames.Application.Json)]
-public class FilterController(DatabaseContext db, QueueService queueSvc) : ControllerBase
+public class FilterController(DatabaseContext db, QueueService queueSvc, EventService eventSvc) : ControllerBase
 {
 	[HttpGet]
 	[Authorize("read:filters")]
@@ -94,6 +94,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc) : Contr
 
 		db.Add(filter);
 		await db.SaveChangesAsync();
+		eventSvc.RaiseFilterAdded(this, filter);
 
 		if (expiry.HasValue)
 		{
@@ -157,6 +158,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc) : Contr
 
 		db.Update(filter);
 		await db.SaveChangesAsync();
+		eventSvc.RaiseFilterUpdated(this, filter);
 
 		if (expiry.HasValue)
 		{
@@ -179,6 +181,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc) : Contr
 
 		db.Remove(filter);
 		await db.SaveChangesAsync();
+		eventSvc.RaiseFilterRemoved(this, filter);
 
 		return Ok(new object());
 	}
@@ -213,6 +216,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc) : Contr
 
 		db.Update(keyword);
 		await db.SaveChangesAsync();
+		eventSvc.RaiseFilterUpdated(this, filter);
 
 		return Ok(new FilterKeyword(keyword, filter.Id, filter.Keywords.Count - 1));
 	}
@@ -251,6 +255,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc) : Contr
 		filter.Keywords[keywordId] = request.WholeWord ? $"\"{request.Keyword}\"" : request.Keyword;
 		db.Update(filter);
 		await db.SaveChangesAsync();
+		eventSvc.RaiseFilterUpdated(this, filter);
 
 		return Ok(new FilterKeyword(filter.Keywords[keywordId], filter.Id, keywordId));
 	}
@@ -271,6 +276,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc) : Contr
 		filter.Keywords.RemoveAt(keywordId);
 		db.Update(filter);
 		await db.SaveChangesAsync();
+		eventSvc.RaiseFilterUpdated(this, filter);
 
 		return Ok(new object());
 	}
