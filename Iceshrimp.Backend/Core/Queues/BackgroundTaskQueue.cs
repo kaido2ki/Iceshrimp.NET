@@ -53,7 +53,7 @@ public class BackgroundTaskQueue()
 	{
 		var db     = scope.GetRequiredService<DatabaseContext>();
 		var logger = scope.GetRequiredService<ILogger<BackgroundTaskQueue>>();
-		logger.LogDebug("Expiring file {id}...", jobData.DriveFileId);
+		logger.LogDebug("Deleting file {id}...", jobData.DriveFileId);
 
 		var usedAsAvatarOrBanner = await db.Users.AnyAsync(p => p.AvatarId == jobData.DriveFileId ||
 		                                                        p.BannerId == jobData.DriveFileId, token);
@@ -63,7 +63,13 @@ public class BackgroundTaskQueue()
 		if (!usedAsAvatarOrBanner && !usedInNote)
 		{
 			var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == jobData.DriveFileId, token);
-			if (file != null)
+			if (file == null) return;
+
+			var deduplicated = file.AccessKey != null &&
+			                   await db.DriveFiles.AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey,
+			                                                token);
+
+			if (!deduplicated)
 			{
 				string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.WebpublicAccessKey];
 
@@ -83,10 +89,10 @@ public class BackgroundTaskQueue()
 					var storageSvc = scope.GetRequiredService<ObjectStorageService>();
 					await storageSvc.RemoveFilesAsync(paths.Where(p => p != null).Select(p => p!).ToArray());
 				}
-
-				db.Remove(file);
-				await db.SaveChangesAsync(token);
 			}
+
+			db.Remove(file);
+			await db.SaveChangesAsync(token);
 		}
 	}
 
@@ -118,27 +124,27 @@ public class BackgroundTaskQueue()
 		await db.SaveChangesAsync(token);
 
 		if (file.AccessKey == null) return;
+		var deduplicated = await db.DriveFiles.AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey,
+		                                                cancellationToken: token);
+		if (deduplicated)
+			return;
 
 		string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.WebpublicAccessKey];
-		if (!await db.DriveFiles.AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey,
-		                                  token))
+		if (file.StoredInternal)
 		{
-			if (file.StoredInternal)
-			{
-				var pathBase = scope.GetRequiredService<IOptions<Config.StorageSection>>().Value.Local?.Path ??
-				               throw new Exception("Cannot delete locally stored file: pathBase is null");
+			var pathBase = scope.GetRequiredService<IOptions<Config.StorageSection>>().Value.Local?.Path ??
+			               throw new Exception("Cannot delete locally stored file: pathBase is null");
 
-				paths.Where(p => p != null)
-				     .Select(p => Path.Combine(pathBase, p!))
-				     .Where(File.Exists)
-				     .ToList()
-				     .ForEach(File.Delete);
-			}
-			else
-			{
-				var storageSvc = scope.GetRequiredService<ObjectStorageService>();
-				await storageSvc.RemoveFilesAsync(paths.Where(p => p != null).Select(p => p!).ToArray());
-			}
+			paths.Where(p => p != null)
+			     .Select(p => Path.Combine(pathBase, p!))
+			     .Where(File.Exists)
+			     .ToList()
+			     .ForEach(File.Delete);
+		}
+		else
+		{
+			var storageSvc = scope.GetRequiredService<ObjectStorageService>();
+			await storageSvc.RemoveFilesAsync(paths.Where(p => p != null).Select(p => p!).ToArray());
 		}
 	}
 
