@@ -225,23 +225,25 @@ public class UserResolver(
 		}
 	}
 
-	public async Task<User?> ResolveAsyncOrNull(string uri)
+	public async Task<User?> ResolveAsyncOrNull(string query)
 	{
 		try
 		{
+			query = NormalizeQuery(query);
+
 			// First, let's see if we already know the user
-			var user = await userSvc.GetUserFromQueryAsync(uri);
+			var user = await userSvc.GetUserFromQueryAsync(query);
 			if (user != null)
 				return await GetUpdatedUser(user);
 
-			if (uri.StartsWith($"https://{config.Value.WebDomain}/")) return null;
+			if (query.StartsWith($"https://{config.Value.WebDomain}/")) return null;
 
 			// We don't, so we need to run WebFinger
-			var (acct, resolvedUri) = await WebFingerAsync(uri);
+			var (acct, resolvedUri) = await WebFingerAsync(query);
 
 			// Check the database again with the new data
-			if (resolvedUri != uri) user = await userSvc.GetUserFromQueryAsync(resolvedUri);
-			if (user == null && acct != uri) await userSvc.GetUserFromQueryAsync(acct);
+			if (resolvedUri != query) user = await userSvc.GetUserFromQueryAsync(resolvedUri);
+			if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
 			if (user != null)
 				return await GetUpdatedUser(user);
 
