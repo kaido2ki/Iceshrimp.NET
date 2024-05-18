@@ -228,7 +228,8 @@ module private MfmParser =
         >>. skipString "@"
         >>. many1Chars (
             satisfy isAsciiLetterOrNumber
-            <|> attempt (anyOf "._-" .>> nextCharSatisfies isAsciiLetterOrNumber)
+            <|> pchar '_'
+            <|> attempt (anyOf ".-" .>> nextCharSatisfies isAsciiLetterOrNumber)
         )
         .>>. opt (skipChar '@' >>. domain)
         .>> (lookAhead
