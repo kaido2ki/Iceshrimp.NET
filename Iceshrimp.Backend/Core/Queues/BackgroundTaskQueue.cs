@@ -66,8 +66,10 @@ public class BackgroundTaskQueue()
 			if (file == null) return;
 
 			var deduplicated = file.AccessKey != null &&
-			                   await db.DriveFiles.AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey,
-			                                                token);
+			                   await db.DriveFiles.AnyAsync(p => p.Id != file.Id &&
+			                                                     p.AccessKey == file.AccessKey &&
+			                                                     !p.IsLink,
+			                                                cancellationToken: token);
 
 			if (!deduplicated)
 			{
@@ -124,8 +126,10 @@ public class BackgroundTaskQueue()
 		await db.SaveChangesAsync(token);
 
 		if (file.AccessKey == null) return;
-		var deduplicated = await db.DriveFiles.AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey,
-		                                                cancellationToken: token);
+		var deduplicated =
+			await db.DriveFiles.AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey && !p.IsLink,
+			                             cancellationToken: token);
+
 		if (deduplicated)
 			return;
 
