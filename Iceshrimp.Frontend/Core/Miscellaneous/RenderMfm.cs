@@ -19,6 +19,7 @@ public class MfmRenderer
     public static INode RenderMultipleNodes(IEnumerable<MfmNodeTypes.MfmNode> nodes, IDocument document)
     {
         var el = document.CreateElement("p");
+        el.SetAttribute("mfm", "mfm");
         foreach (var node in nodes)
         {
             try
@@ -46,7 +47,7 @@ public class MfmRenderer
                  MfmNodeTypes.MfmSearchNode mfmSearchNode         => throw new NotImplementedException(),
                  MfmNodeTypes.MfmBlockNode mfmBlockNode           => throw new NotImplementedException(),
                  MfmNodeTypes.MfmBoldNode mfmBoldNode             => MfmBoldNode(mfmBoldNode, document),
-                 MfmNodeTypes.MfmEmojiCodeNode mfmEmojiCodeNode   => throw new NotImplementedException(),
+                 MfmNodeTypes.MfmEmojiCodeNode mfmEmojiCodeNode   => MfmEmojiCodeNode(mfmEmojiCodeNode, document),
                  MfmNodeTypes.MfmFnNode mfmFnNode                 => throw new NotImplementedException(),
                  MfmNodeTypes.MfmHashtagNode mfmHashtagNode       => throw new NotImplementedException(),
                  MfmNodeTypes.MfmInlineCodeNode mfmInlineCodeNode => throw new NotImplementedException(),
@@ -81,6 +82,13 @@ public class MfmRenderer
         return rendered;
     }
 
+    private static INode MfmEmojiCodeNode(MfmNodeTypes.MfmEmojiCodeNode node, IDocument document)
+    {
+        var el = document.CreateElement("span");
+        el.TextContent = node.Name;
+        el.ClassName   = "emoji";
+        return el;
+    }
     private static INode MfmUrlNode(MfmNodeTypes.MfmUrlNode node, IDocument document)
     {
         var el = document.CreateElement("a");

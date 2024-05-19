@@ -9,6 +9,10 @@
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
     </PropertyGroup>
 
+    <ItemGroup>
+        <None Update="Components/MfmText.razor.css" CssScope="mfm" />
+    </ItemGroup>
+
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <DebugType>embedded</DebugType>
     </PropertyGroup>
