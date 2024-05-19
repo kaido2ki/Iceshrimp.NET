@@ -16,9 +16,11 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 	{
 		var res = await RenderBaseInternal(note, user, data);
 
-		var renote = note.Renote is { IsPureRenote: true } ? await RenderRenote(note.Renote, user, data) : null;
-		var quote  = note.Renote is { IsPureRenote: false } ? await RenderBase(note.Renote, user, data) : null;
-		var reply  = note.Reply != null ? await RenderBase(note.Reply, user, data) : null;
+		var renote = note is { Renote: not null, IsPureRenote: true }
+			? await RenderRenote(note.Renote, user, data)
+			: null;
+		var quote = note is { Renote: not null, IsQuote: true } ? await RenderBase(note.Renote, user, data) : null;
+		var reply = note.Reply != null ? await RenderBase(note.Reply, user, data) : null;
 
 		var filters  = data?.Filters ?? await GetFilters(user, filterContext);
 		var filtered = FilterHelper.IsFiltered([note, note.Reply, note.Renote, note.Renote?.Renote], filters);
@@ -34,9 +36,9 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 		}
 
 		res.Renote            = renote;
-		res.RenoteId          = note.RenoteId;
+		res.RenoteId          = note.IsPureRenote ? note.RenoteId : null;
 		res.Quote             = quote;
-		res.QuoteId           = note.RenoteId;
+		res.QuoteId           = note.IsQuote ? note.RenoteId : null;
 		res.QuoteInaccessible = note.RenoteUri != null;
 		res.Reply             = reply;
 		res.ReplyId           = note.ReplyId;
