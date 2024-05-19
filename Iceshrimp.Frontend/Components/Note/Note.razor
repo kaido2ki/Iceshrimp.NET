@@ -1,9 +1,34 @@
 @using Iceshrimp.Shared.Schemas
+@if (NoteResponse.Renote != null)
+{
+    <div class="renote">
+        <div class="renote-info">
+            <span class="user">
+                Boosted by
+                @if (NoteResponse.User.DisplayName != null)
+                {
+                    @NoteResponse.User.DisplayName
+                }
+                else
+                {
+                    @NoteResponse.User.Username
+                }
+            </span>
+            <span class="metadata">
+                <NoteMetadata Visibility="NoteResponse.Visibility" InstanceName="@null" CreatedAt="DateTime.Parse(NoteResponse.CreatedAt)"/>
+            </span>
+        </div>
+        <NoteComponent Note="NoteResponse.Renote" Quote="NoteResponse.Quote" Indented="Indented"/>
+    </div>
+}
+else
+{
+    <NoteComponent Note="NoteResponse" Quote="NoteResponse.Quote" Indented="Indented"/>
+}
 
-<NoteComponent Note="NoteResponse" Quote="NoteResponse.Quote" Indented="Indented"></NoteComponent>
 
 @code {
-    [Parameter][EditorRequired] public required NoteResponse NoteResponse { get; set; }
-    [Parameter]                 public          bool         Indented     { get; set; }
+    [Parameter] [EditorRequired] public required NoteResponse NoteResponse { get; set; }
+    [Parameter]                  public          bool         Indented     { get; set; }
 
 }
