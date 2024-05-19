@@ -1,0 +1,16 @@
+@using Iceshrimp.Frontend.Core.Miscellaneous
+
+@TextBody
+
+@code {
+    [Parameter][EditorRequired] public required string?      Text     { get; set; }
+    private                                     MarkupString TextBody { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Text != null)
+        {
+            TextBody = await MfmRenderer.RenderString(Text);
+        }
+    }
+}
