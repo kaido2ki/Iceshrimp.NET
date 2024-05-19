@@ -51,7 +51,7 @@ public class MfmRenderer
                  MfmNodeTypes.MfmFnNode mfmFnNode                 => throw new NotImplementedException(),
                  MfmNodeTypes.MfmHashtagNode mfmHashtagNode       => throw new NotImplementedException(),
                  MfmNodeTypes.MfmInlineCodeNode mfmInlineCodeNode => throw new NotImplementedException(),
-                 MfmNodeTypes.MfmItalicNode mfmItalicNode         => throw new NotImplementedException(),
+                 MfmNodeTypes.MfmItalicNode mfmItalicNode         => MfmItalicNode(mfmItalicNode, document),
                  MfmNodeTypes.MfmLinkNode mfmLinkNode             => throw new NotImplementedException(),
                  MfmNodeTypes.MfmMathInlineNode mfmMathInlineNode => throw new NotImplementedException(),
                  MfmNodeTypes.MfmMentionNode mfmMentionNode       => MfmMentionNode(mfmMentionNode, document),
@@ -80,6 +80,13 @@ public class MfmRenderer
             }
         }
         return rendered;
+    }
+
+    private static INode MfmItalicNode(MfmNodeTypes.MfmItalicNode node, IDocument document)
+    {
+        var el = document.CreateElement("span");
+        el.SetAttribute("style", "font-style: italic");
+        return el;
     }
 
     private static INode MfmEmojiCodeNode(MfmNodeTypes.MfmEmojiCodeNode node, IDocument document)
