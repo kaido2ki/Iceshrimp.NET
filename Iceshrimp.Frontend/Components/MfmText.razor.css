@@ -2,6 +2,15 @@
 ::deep {
     .mention {
         text-decoration: none;
-        
+        background-color: var(--highlight-color);
+        border-radius: 1em;
+        padding: 0.2em 0.5em;
+
+        > .host {
+            opacity: 0.5;
+        }
+        > .user {
+            
+        }
     }
 }
