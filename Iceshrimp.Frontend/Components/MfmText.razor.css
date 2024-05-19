@@ -1,0 +1,7 @@
+/*These must apply to all child attributes*/
+::deep {
+    .mention {
+        text-decoration: none;
+        
+    }
+}
