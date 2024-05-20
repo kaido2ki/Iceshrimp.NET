@@ -89,7 +89,7 @@
 
     public void Reply()
     {
-        ComposeService.ComposeDialog?.OpenDialog(Note);
+        ComposeService.ComposeDialog?.OpenDialog(Note, null);
     }
 
     public void Renote()
@@ -105,5 +105,10 @@
             IdempotencyKey = null
         };
         ApiService.Notes.CreateNote(renote);
+    }
+
+    public void DoQuote()
+    {
+        ComposeService.ComposeDialog?.OpenDialog(null, Note);
     }
 }

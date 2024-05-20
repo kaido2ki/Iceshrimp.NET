@@ -31,7 +31,7 @@
     <button class="btn" @onclick:stopPropagation="true">
         <Icon Name="Icons.Smiley" Size="1.3em"/>
     </button>
-    <button class="btn" @onclick:stopPropagation="true">
+    <button class="btn" @onclick="Quote" @onclick:stopPropagation="true">
         <Icon Name="Icons.Quotes" Size="1.3em"/>
     </button>
     <button class="btn" @onclick:stopPropagation="true">
@@ -58,5 +58,10 @@
     private void Renote()
     {
         NoteComponent.Renote(); 
+    }
+
+    private void Quote()
+    {
+        NoteComponent.DoQuote();
     }
 }

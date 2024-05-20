@@ -3,29 +3,29 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
 @using Iceshrimp.Frontend.Components.Note
-@inject IJSRuntime Js
-@inject ApiService ApiService
+@inject IJSRuntime     Js
+@inject ApiService     ApiService
 @inject ComposeService ComposeService
 <dialog class="compose" @ref="Dialog">
     <div class="header">
         <button @onclick="CloseDialog">
             <Icon Name="Icons.X"/>
         </button>
-        <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility" />
+        <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
         <button @onclick="SendNote" class="post-btn">Post<Icon Name="Icons.PaperPlaneRight"/></button>
     </div>
-    @if (ReplyTo != null)
+    @if (ReplyOrQuote != null)
     {
-    <div class="reply-to">
-        <NoteComponent Note="ReplyTo" AsQuote="true" />
-    </div>
+        <div class="reply-or-quote">
+            <NoteComponent Note="ReplyOrQuote" AsQuote="true"/>
+        </div>
     }
     @if (NoteDraft.Cw != null)
     {
         <input @bind="NoteDraft.Cw" class="input cw-field" placeholder="Content Warning"/>
         <hr class="separator"/>
     }
-    <textarea @bind="NoteDraft.Text" class="textarea" placeholder="What's on your mind?" rows="5" cols="35"></textarea>
+    <textarea @bind="NoteDraft.Text" class="textarea" placeholder="@TextPlaceholder" rows="5" cols="35"></textarea>
     <div class="footer">
         <button class="footer-btn" @onclick="OpenUpload">
             <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
@@ -42,15 +42,22 @@
 @code {
     private ElementReference         Dialog { get; set; }
     private IJSObjectReference?      _module;
-    private IList<DriveFileResponse> Attachments { get; set; } = [];
-    private InputFile                UploadInput { get; set; }
-    private NoteBase?            ReplyTo     { get; set; }
-
+    private IList<DriveFileResponse> Attachments     { get; set; } = [];
+    private InputFile                UploadInput     { get; set; }
+    private NoteBase?                ReplyOrQuote    { get; set; }
+    private string?                  TextPlaceholder { get; set; }
     private NoteCreateRequest NoteDraft { get; set; } = new NoteCreateRequest
     {
         Text       = "",
         Visibility = NoteVisibility.Followers, // FIXME: Default to visibilty in settings
         Cw         = null
+    };
+    private Dictionary<string, string> AvailablePlaceholders { get; set; } = new()
+    {
+        { "default", "What's on your mind?" },
+        { "reply", "Reply goes here!" },
+        { "quote", "Quote this post!" } 
+        
     };
 
     RenderFragment DropdownIcon(NoteVisibility vis)
@@ -92,23 +99,41 @@
         await _module.InvokeVoidAsync("openUpload", UploadInput.Element);
     }
 
-    public async Task OpenDialog(NoteBase? replyTo = null)
+    public async Task OpenDialog(NoteBase? replyTo = null, NoteBase? quote = null)
     {
         if (replyTo != null)
         {
-            ReplyTo              = replyTo;
+            ResetState();
+            ReplyOrQuote         = replyTo;
             NoteDraft.ReplyId    = replyTo.Id;
             NoteDraft.Visibility = replyTo.Visibility;
+            TextPlaceholder      = AvailablePlaceholders["reply"];
+            StateHasChanged();
+        }
+        else if (quote != null)
+        {
+            ResetState();
+            ReplyOrQuote         = quote;
+            NoteDraft.RenoteId   = quote.Id;
+            NoteDraft.Visibility = quote.Visibility;
+            TextPlaceholder      = AvailablePlaceholders["quote"];
             StateHasChanged();
         }
         else
         {
-            ReplyTo           = null;
-            NoteDraft.ReplyId = null;
+            ResetState();
             StateHasChanged();
         }
 
         await _module.InvokeVoidAsync("openDialog", Dialog);
+    }
+
+    private void ResetState()
+    {
+        ReplyOrQuote    = null;
+        Attachments     = new List<DriveFileResponse>();
+        NoteDraft       = new NoteCreateRequest { Text = "", Visibility = NoteVisibility.Followers, Cw = null };
+        TextPlaceholder = AvailablePlaceholders["default"];
     }
 
     private async Task CloseDialog()
@@ -149,6 +174,11 @@
                                                                "./Components/Compose.razor.js");
             ComposeService.ComposeDialog = this;
         }
+    }
+
+    protected override void OnInitialized()
+    {
+        TextPlaceholder = AvailablePlaceholders["default"];
     }
 
 }
