@@ -9,27 +9,29 @@
 {
     <div class="scroller">
         <div class="wrapper">
-        @if (Ascendants != null)
-        {
-            <div class="ascendants">
-                @foreach (var note in Ascendants)
+            <div class="container">
+                @if (Ascendants != null)
                 {
-                    <AscendedNote Note="note"/>
+                    <div class="ascendants">
+                        @foreach (var note in Ascendants)
+                        {
+                            <AscendedNote Note="note"/>
+                        }
+                    </div>
+                }
+                <div class="root-note">
+                    <Note NoteResponse="RootNote"></Note>
+                </div>
+                @if (Descendants != null)
+                {
+                    <div class="descendants">
+                        @foreach (var element in Descendants)
+                        {
+                            <RecursiveNote Note="element" Depth="0"/>
+                        }
+                    </div>
                 }
             </div>
-        }
-        <div class="root-note">
-            <Note NoteResponse="RootNote"></Note>
-        </div>
-        @if (Descendants != null)
-        {
-            <div class="descendants">
-                @foreach (var element in Descendants)
-                {
-                    <RecursiveNote Note="element" Depth="0"/>
-                }
-            </div>
-        }
         </div>
     </div>
 }

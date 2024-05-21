@@ -15,7 +15,6 @@
 .note-container {
     display: flex;
     max-width: 45rem;
-    min-width: 25rem;
     width: 100%;
 }
 .pad {
