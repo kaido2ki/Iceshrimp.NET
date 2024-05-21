@@ -9,6 +9,6 @@
 
     private void OpenNote()
     {
-        Navigation.NavigateTo($"/notes/{Note.Id}");
+        Navigation.NavigateTo(Note.RenoteId != null ? $"/notes/{Note.RenoteId}" : $"/notes/{Note.Id}");
     }
 }
