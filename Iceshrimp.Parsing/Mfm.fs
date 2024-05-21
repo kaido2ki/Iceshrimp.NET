@@ -167,7 +167,11 @@ module private MfmParser =
     // Patterns
     let italicPattern = (notFollowedBy <| str "**") >>. skipChar '*'
     let codePattern = (notFollowedBy <| str "```") >>. skipChar '`'
-
+    
+    // Matchers
+    let hashtagMatcher = letter <|> anyOf "-_"
+    let hashtagSatisfier = attempt hashtagMatcher
+    
     // Node parsers
 
     let italicNode =
@@ -243,7 +247,7 @@ module private MfmParser =
     let hashtagNode =
         previousCharSatisfiesNot isNotWhitespace
         >>. skipChar '#'
-        >>. many1CharsTill letter (nextCharSatisfiesNot isLetter)
+        >>. many1CharsTill hashtagMatcher (notFollowedBy hashtagSatisfier)
         |>> fun h -> MfmHashtagNode(h) :> MfmNode
 
     let urlNodePlain =

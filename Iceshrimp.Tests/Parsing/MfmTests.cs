@@ -169,7 +169,7 @@ public class MfmTests
 	[TestMethod]
 	public void TestHashtag()
 	{
-		const string input = "test #test #test's #test. test";
+		const string input = "test #test #test's #t-e_s-t. test";
 
 		List<MfmNode> expected =
 		[
@@ -178,7 +178,7 @@ public class MfmTests
 			new MfmTextNode(" "),
 			new MfmHashtagNode("test"),
 			new MfmTextNode("'s "),
-			new MfmHashtagNode("test"),
+			new MfmHashtagNode("t-e_s-t"),
 			new MfmTextNode(". test"),
 		];
 		var res = Mfm.parse(input);
