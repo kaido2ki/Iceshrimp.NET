@@ -26,10 +26,10 @@ public class MfmRenderer
             {
                 el.AppendNodes(RenderNode(node, document));
             }
-            catch (NotImplementedException)
+            catch (NotImplementedException e)
             {
                 var fallback = document.CreateElement("span");
-                fallback.TextContent = "Node type not implemented";
+                fallback.TextContent = $"[Node type <{e.Message}> not implemented]";
                 el.AppendNodes(fallback);
             }
         }
@@ -40,27 +40,27 @@ public class MfmRenderer
     {
         var rendered = node switch
              {
-                 MfmNodeTypes.MfmCenterNode mfmCenterNode         => throw new NotImplementedException(),
-                 MfmNodeTypes.MfmCodeBlockNode mfmCodeBlockNode   => throw new NotImplementedException(),
-                 MfmNodeTypes.MfmMathBlockNode mfmMathBlockNode   => throw new NotImplementedException(),
-                 MfmNodeTypes.MfmQuoteNode mfmQuoteNode           => throw new NotImplementedException(),
-                 MfmNodeTypes.MfmSearchNode mfmSearchNode         => throw new NotImplementedException(),
-                 MfmNodeTypes.MfmBlockNode mfmBlockNode           => throw new NotImplementedException(),
+                 MfmNodeTypes.MfmCenterNode mfmCenterNode         => throw new NotImplementedException($"{mfmCenterNode.GetType()}"),
+                 MfmNodeTypes.MfmCodeBlockNode mfmCodeBlockNode   => throw new NotImplementedException($"{mfmCodeBlockNode.GetType()}"),
+                 MfmNodeTypes.MfmMathBlockNode mfmMathBlockNode   => throw new NotImplementedException($"{mfmMathBlockNode.GetType()}"),
+                 MfmNodeTypes.MfmQuoteNode mfmQuoteNode           => throw new NotImplementedException($"{mfmQuoteNode.GetType()}"),
+                 MfmNodeTypes.MfmSearchNode mfmSearchNode         => throw new NotImplementedException($"{mfmSearchNode.GetType()}"),
+                 MfmNodeTypes.MfmBlockNode mfmBlockNode           => throw new NotImplementedException($"{mfmBlockNode.GetType()}"),
                  MfmNodeTypes.MfmBoldNode mfmBoldNode             => MfmBoldNode(mfmBoldNode, document),
                  MfmNodeTypes.MfmEmojiCodeNode mfmEmojiCodeNode   => MfmEmojiCodeNode(mfmEmojiCodeNode, document),
-                 MfmNodeTypes.MfmFnNode mfmFnNode                 => throw new NotImplementedException(),
-                 MfmNodeTypes.MfmHashtagNode mfmHashtagNode       => throw new NotImplementedException(),
-                 MfmNodeTypes.MfmInlineCodeNode mfmInlineCodeNode => throw new NotImplementedException(),
+                 MfmNodeTypes.MfmFnNode mfmFnNode                 => throw new NotImplementedException($"{mfmFnNode.GetType()}"),
+                 MfmNodeTypes.MfmHashtagNode mfmHashtagNode       => throw new NotImplementedException($"{mfmHashtagNode.GetType()}"),
+                 MfmNodeTypes.MfmInlineCodeNode mfmInlineCodeNode => throw new NotImplementedException($"{mfmInlineCodeNode.GetType()}"),
                  MfmNodeTypes.MfmItalicNode mfmItalicNode         => MfmItalicNode(mfmItalicNode, document),
-                 MfmNodeTypes.MfmLinkNode mfmLinkNode             => throw new NotImplementedException(),
-                 MfmNodeTypes.MfmMathInlineNode mfmMathInlineNode => throw new NotImplementedException(),
+                 MfmNodeTypes.MfmLinkNode mfmLinkNode             => throw new NotImplementedException($"{mfmLinkNode.GetType()}"),
+                 MfmNodeTypes.MfmMathInlineNode mfmMathInlineNode => throw new NotImplementedException($"{mfmMathInlineNode.GetType()}"),
                  MfmNodeTypes.MfmMentionNode mfmMentionNode       => MfmMentionNode(mfmMentionNode, document),
-                 MfmNodeTypes.MfmPlainNode mfmPlainNode           => throw new NotImplementedException(),
-                 MfmNodeTypes.MfmSmallNode mfmSmallNode           => throw new NotImplementedException(),
-                 MfmNodeTypes.MfmStrikeNode mfmStrikeNode         => throw new NotImplementedException(),
+                 MfmNodeTypes.MfmPlainNode mfmPlainNode           => throw new NotImplementedException($"{mfmPlainNode.GetType()}"),
+                 MfmNodeTypes.MfmSmallNode mfmSmallNode           => throw new NotImplementedException($"{mfmSmallNode.GetType()}"),
+                 MfmNodeTypes.MfmStrikeNode mfmStrikeNode         => throw new NotImplementedException($"{mfmStrikeNode.GetType()}"),
                  MfmNodeTypes.MfmTextNode mfmTextNode             => MfmTextNode(mfmTextNode, document),
                  MfmNodeTypes.MfmUrlNode mfmUrlNode               => MfmUrlNode(mfmUrlNode, document),
-                 MfmNodeTypes.MfmInlineNode mfmInlineNode         => throw new NotImplementedException(),
+                 MfmNodeTypes.MfmInlineNode mfmInlineNode         => throw new NotImplementedException($"{mfmInlineNode.GetType()}"),
                  _                                                => throw new ArgumentOutOfRangeException(nameof(node))
              };
         if (node.Children.Length > 0)
@@ -71,10 +71,10 @@ public class MfmRenderer
                 {
                     rendered.AppendNodes(RenderNode(childNode, document));
                 }
-                catch (NotImplementedException)
+                catch (NotImplementedException e)
                 {
                     var fallback = document.CreateElement("span");
-                    fallback.TextContent = "Node type not implemented";
+                    fallback.TextContent = $"[Node type <{e.Message}> not implemented]";
                     rendered.AppendNodes(fallback);
                 }
             }
