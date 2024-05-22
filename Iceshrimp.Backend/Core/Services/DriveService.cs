@@ -87,6 +87,7 @@ public class DriveService(
 			try
 			{
 				var res = await httpClient.GetAsync(uri);
+				res.EnsureSuccessStatusCode();
 
 				var request = new DriveFileCreationRequest
 				{
