@@ -2,6 +2,7 @@ using AngleSharp;
 using AngleSharp.Dom;
 using Iceshrimp.Parsing;
 using Microsoft.AspNetCore.Components;
+using Microsoft.FSharp.Core;
 
 namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
@@ -41,7 +42,7 @@ public class MfmRenderer
         var rendered = node switch
              {
                  MfmNodeTypes.MfmCenterNode mfmCenterNode         => throw new NotImplementedException($"{mfmCenterNode.GetType()}"),
-                 MfmNodeTypes.MfmCodeBlockNode mfmCodeBlockNode   => throw new NotImplementedException($"{mfmCodeBlockNode.GetType()}"),
+                 MfmNodeTypes.MfmCodeBlockNode mfmCodeBlockNode   => MfmCodeBlockNode(mfmCodeBlockNode, document),
                  MfmNodeTypes.MfmMathBlockNode mfmMathBlockNode   => throw new NotImplementedException($"{mfmMathBlockNode.GetType()}"),
                  MfmNodeTypes.MfmQuoteNode mfmQuoteNode           => throw new NotImplementedException($"{mfmQuoteNode.GetType()}"),
                  MfmNodeTypes.MfmSearchNode mfmSearchNode         => throw new NotImplementedException($"{mfmSearchNode.GetType()}"),
@@ -50,9 +51,9 @@ public class MfmRenderer
                  MfmNodeTypes.MfmEmojiCodeNode mfmEmojiCodeNode   => MfmEmojiCodeNode(mfmEmojiCodeNode, document),
                  MfmNodeTypes.MfmFnNode mfmFnNode                 => throw new NotImplementedException($"{mfmFnNode.GetType()}"),
                  MfmNodeTypes.MfmHashtagNode mfmHashtagNode       => throw new NotImplementedException($"{mfmHashtagNode.GetType()}"),
-                 MfmNodeTypes.MfmInlineCodeNode mfmInlineCodeNode => throw new NotImplementedException($"{mfmInlineCodeNode.GetType()}"),
+                 MfmNodeTypes.MfmInlineCodeNode mfmInlineCodeNode => MfmInlineCodeNode(mfmInlineCodeNode, document),
                  MfmNodeTypes.MfmItalicNode mfmItalicNode         => MfmItalicNode(mfmItalicNode, document),
-                 MfmNodeTypes.MfmLinkNode mfmLinkNode             => throw new NotImplementedException($"{mfmLinkNode.GetType()}"),
+                 MfmNodeTypes.MfmLinkNode mfmLinkNode             => MfmLinkNode(mfmLinkNode, document),
                  MfmNodeTypes.MfmMathInlineNode mfmMathInlineNode => throw new NotImplementedException($"{mfmMathInlineNode.GetType()}"),
                  MfmNodeTypes.MfmMentionNode mfmMentionNode       => MfmMentionNode(mfmMentionNode, document),
                  MfmNodeTypes.MfmPlainNode mfmPlainNode           => throw new NotImplementedException($"{mfmPlainNode.GetType()}"),
@@ -80,6 +81,30 @@ public class MfmRenderer
             }
         }
         return rendered;
+    }
+
+    private static INode MfmCodeBlockNode(MfmNodeTypes.MfmCodeBlockNode node, IDocument document)
+    {
+        var el      = document.CreateElement("pre");
+        var childEl = document.CreateElement("code");
+        childEl.TextContent = node.Code;
+        el.AppendChild(childEl);
+        return el;
+    }
+
+    private static INode MfmInlineCodeNode(MfmNodeTypes.MfmInlineCodeNode node, IDocument document)
+    {
+        var el = document.CreateElement("code");
+        el.TextContent = node.Code;
+        return el;
+    }
+
+    private static INode MfmLinkNode(MfmNodeTypes.MfmLinkNode node, IDocument document)
+    {
+        var el = document.CreateElement("a");
+        el.SetAttribute("href", node.Url);
+        el.TextContent = node.Url;
+        return el;
     }
 
     private static INode MfmItalicNode(MfmNodeTypes.MfmItalicNode node, IDocument document)
