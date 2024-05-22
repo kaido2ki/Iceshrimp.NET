@@ -254,7 +254,7 @@ public class PostgresJobQueue<T>(
 						                   token);
 
 				var actualParallelism = Math.Min(parallelism - runningCount, queuedCount);
-				if (actualParallelism == 0)
+				if (actualParallelism <= 0)
 				{
 					await _queuedChannel.WaitAsync(token).SafeWaitAsync(queueToken);
 					continue;
