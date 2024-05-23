@@ -57,8 +57,12 @@ public sealed class WebSocketConnection(
 
 	public void InitializeStreamingWorker()
 	{
+		Channels.Add(new ListChannel(this));
+		Channels.Add(new DirectChannel(this));
 		Channels.Add(new UserChannel(this, true));
 		Channels.Add(new UserChannel(this, false));
+		Channels.Add(new HashtagChannel(this, true));
+		Channels.Add(new HashtagChannel(this, false));
 		Channels.Add(new PublicChannel(this, "public", true, true, false));
 		Channels.Add(new PublicChannel(this, "public:media", true, true, true));
 		Channels.Add(new PublicChannel(this, "public:allow_local_only", true, true, false));
@@ -67,9 +71,6 @@ public sealed class WebSocketConnection(
 		Channels.Add(new PublicChannel(this, "public:local:media", true, false, true));
 		Channels.Add(new PublicChannel(this, "public:remote", false, true, false));
 		Channels.Add(new PublicChannel(this, "public:remote:media", false, true, true));
-		Channels.Add(new HashtagChannel(this, true));
-		Channels.Add(new HashtagChannel(this, false));
-		Channels.Add(new ListChannel(this));
 
 		EventService.UserBlocked        += OnUserUnblock;
 		EventService.UserUnblocked      += OnUserBlock;
