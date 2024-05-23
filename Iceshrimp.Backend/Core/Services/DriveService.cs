@@ -442,7 +442,7 @@ file static class DriveFileExtensions
 			Uri                = request.Uri,
 			Url                = file.Url,
 			AccessKey          = file.AccessKey,
-			ThumbnailUrl       = file.ThumbnailAccessKey,
+			ThumbnailUrl       = file.ThumbnailUrl,
 			IsSensitive        = request.IsSensitive,
 			WebpublicType      = file.WebpublicType,
 			WebpublicUrl       = file.WebpublicUrl,
