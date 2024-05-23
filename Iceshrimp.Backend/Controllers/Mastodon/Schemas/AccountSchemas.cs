@@ -43,8 +43,8 @@ public abstract class AccountSchemas
 
 		[J("source")] [B(Name = "source")] public AccountUpdateSource? Source { get; set; }
 
-		[FromForm(Name = "avatar")] public IFormFile? Avatar { get; set; }
-		[FromForm(Name = "header")] public IFormFile? Banner { get; set; }
+		[B(Name = "avatar")] public IFormFile? Avatar { get; set; }
+		[B(Name = "header")] public IFormFile? Banner { get; set; }
 	}
 
 	public class AccountUpdateField

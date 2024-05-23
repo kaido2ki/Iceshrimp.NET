@@ -77,7 +77,7 @@ public class DriveController(
 	[Authenticate]
 	[Authorize]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriveFileResponse))]
-	public async Task<IActionResult> UploadFile([FromForm] IFormFile file)
+	public async Task<IActionResult> UploadFile(IFormFile file)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var request = new DriveFileCreationRequest
