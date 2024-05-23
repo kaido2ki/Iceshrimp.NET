@@ -1105,6 +1105,31 @@ public class NoteService(
 		return true;
 	}
 
+	public async Task<Note?> RenoteNoteAsync(Note note, User user, Note.NoteVisibility? visibility = null)
+	{
+		visibility ??= user.UserSettings?.DefaultRenoteVisibility ?? Note.NoteVisibility.Public;
+		if (visibility == Note.NoteVisibility.Specified)
+			throw GracefulException.BadRequest("Renote visibility must be one of: public, unlisted, private");
+		if (note.IsPureRenote)
+			throw GracefulException.BadRequest("Cannot renote a pure renote");
+
+		if (!await db.Notes.AnyAsync(p => p.Renote == note && p.IsPureRenote && p.User == user))
+			return await CreateNoteAsync(user, visibility.Value, renote: note);
+
+		return null;
+	}
+
+	public async Task<int> UnrenoteNoteAsync(Note note, User user)
+	{
+		var renotes = await db.Notes.Where(p => p.Renote == note && p.IsPureRenote && p.User == user).ToListAsync();
+		if (renotes.Count == 0) return 0;
+
+		foreach (var renote in renotes)
+			await DeleteNoteAsync(renote);
+
+		return renotes.Count;
+	}
+
 	public async Task LikeNoteAsync(ASNote note, User actor)
 	{
 		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot register like for unknown note");

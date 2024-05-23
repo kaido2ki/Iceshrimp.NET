@@ -170,6 +170,40 @@ public class NoteController(
 		return Ok(new ValueResponse(success ? --note.LikeCount : note.LikeCount));
 	}
 
+	[HttpPost("{id}/renote")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ValueResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> RenoteNote(string id, [FromQuery] NoteVisibility? visibility = null)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
+
+		var success = await noteSvc.RenoteNoteAsync(note, user, (Note.NoteVisibility?)visibility);
+		return Ok(new ValueResponse(success != null ? ++note.RenoteCount : note.RenoteCount));
+	}
+
+	[HttpPost("{id}/unrenote")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ValueResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> UnrenoteNote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
+
+		var count = await noteSvc.UnrenoteNoteAsync(note, user);
+		return Ok(new ValueResponse(note.RenoteCount - count));
+	}
+
 	[HttpPost("{id}/react/{name}")]
 	[Authenticate]
 	[Authorize]

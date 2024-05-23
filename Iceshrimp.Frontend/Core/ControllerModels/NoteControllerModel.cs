@@ -34,6 +34,16 @@ internal class NoteControllerModel(ApiClient api)
 	public Task<ValueResponse?> UnlikeNote(string id) =>
 		api.CallNullable<ValueResponse>(HttpMethod.Post, $"/notes/{id}/unlike");
 
+	public Task<ValueResponse?> RenoteNote(string id, NoteVisibility? visibility = null)
+	{
+		var query = new QueryString();
+		if (visibility.HasValue) query.Add("visibility", ((int)visibility.Value).ToString().ToLowerInvariant());
+		return api.CallNullable<ValueResponse>(HttpMethod.Post, $"/notes/{id}/renote", query);
+	}
+
+	public Task<ValueResponse?> UnrenoteNote(string id) =>
+		api.CallNullable<ValueResponse>(HttpMethod.Post, $"/notes/{id}/unrenote");
+
 	public Task<ValueResponse?> ReactToNote(string id, string name) =>
 		api.CallNullable<ValueResponse>(HttpMethod.Post, $"/notes/{id}/react/{name}");
 

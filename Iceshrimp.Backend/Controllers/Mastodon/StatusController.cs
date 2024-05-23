@@ -294,7 +294,6 @@ public class StatusController(
 			var note = await db.Notes.Where(p => p.Id == id)
 			                   .IncludeCommonProperties()
 			                   .EnsureVisibleFor(user)
-			                   .FilterHidden(user, db, filterMutes: false)
 			                   .FirstOrDefaultAsync() ??
 			           throw GracefulException.RecordNotFound();
 
@@ -302,10 +301,8 @@ public class StatusController(
 				? StatusEntity.DecodeVisibility(request.Visibility)
 				: user.UserSettings?.DefaultRenoteVisibility ?? Note.NoteVisibility.Public;
 
-			if (renoteVisibility == Note.NoteVisibility.Specified)
-				throw GracefulException.BadRequest("Renote visibility must be one of: public, unlisted, private");
-
-			renote = await noteSvc.CreateNoteAsync(user, renoteVisibility, renote: note);
+			renote = await noteSvc.RenoteNoteAsync(note, user, renoteVisibility) ??
+			         throw new Exception("Created renote was null");
 			note.RenoteCount++; // we do not want to call save changes after this point
 		}
 
@@ -319,17 +316,14 @@ public class StatusController(
 	public async Task<IActionResult> UndoRenote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		if (!await db.Notes.Where(p => p.Id == id).EnsureVisibleFor(user).AnyAsync())
-			throw GracefulException.RecordNotFound();
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
 
-		var renotes = await db.Notes.Where(p => p.RenoteId == id && p.IsPureRenote && p.User == user)
-		                      .IncludeCommonProperties()
-		                      .ToListAsync();
-
-		foreach (var renote in renotes) await noteSvc.DeleteNoteAsync(renote);
-
-		renotes[0].Renote!.RenoteCount--; // we do not want to call save changes after this point
-
+		var count = await noteSvc.UnrenoteNoteAsync(note, user);
+		note.RenoteCount -= (short)count; // we do not want to call save changes after this point
 		return await GetNote(id);
 	}
 
