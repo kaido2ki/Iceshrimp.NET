@@ -5,9 +5,9 @@ namespace Iceshrimp.Backend.Core.Helpers;
 
 [SuppressMessage("ReSharper", "InconsistentlySynchronizedField",
                  Justification = "This is intentional (it's a *write* locking list, after all)")]
-public class WriteLockingList<T> : ICollection<T>
+public class WriteLockingList<T>(IEnumerable<T>? sourceCollection = null) : ICollection<T>
 {
-	private readonly List<T> _list = [];
+	private readonly List<T> _list = sourceCollection?.ToList() ?? [];
 
 	public IEnumerator<T>   GetEnumerator() => _list.GetEnumerator();
 	IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
@@ -17,11 +17,14 @@ public class WriteLockingList<T> : ICollection<T>
 		lock (_list) _list.Add(item);
 	}
 
-	public void AddIfMissing(T item)
+	public bool AddIfMissing(T item)
 	{
 		lock (_list)
-			if (!_list.Contains(item))
-				_list.Add(item);
+		{
+			if (_list.Contains(item)) return false;
+			_list.Add(item);
+			return true;
+		}
 	}
 
 	public void AddRange(IEnumerable<T> item)

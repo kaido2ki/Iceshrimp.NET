@@ -67,6 +67,7 @@ public sealed class WebSocketConnection(
 		Channels.Add(new PublicChannel(this, "public:remote:media", false, true, true));
 		Channels.Add(new HashtagChannel(this, true));
 		Channels.Add(new HashtagChannel(this, false));
+		Channels.Add(new ListChannel(this));
 
 		EventService.UserBlocked    += OnUserUnblock;
 		EventService.UserUnblocked  += OnUserBlock;

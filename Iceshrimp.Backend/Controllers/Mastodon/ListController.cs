@@ -10,6 +10,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -23,7 +24,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableRateLimiting("sliding")]
 [EnableCors("mastodon")]
 [Produces(MediaTypeNames.Application.Json)]
-public class ListController(DatabaseContext db, UserRenderer userRenderer) : ControllerBase
+public class ListController(DatabaseContext db, UserRenderer userRenderer, EventService eventSvc) : ControllerBase
 {
 	[HttpGet]
 	[Authorize("read:lists")]
@@ -143,6 +144,7 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer) : Con
 
 		db.Remove(list);
 		await db.SaveChangesAsync();
+		eventSvc.RaiseListMembersUpdated(this, list);
 		return Ok(new object());
 	}
 
@@ -210,6 +212,8 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer) : Con
 		await db.AddRangeAsync(memberships);
 		await db.SaveChangesAsync();
 
+		eventSvc.RaiseListMembersUpdated(this, list);
+
 		return Ok(new object());
 	}
 
@@ -230,6 +234,8 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer) : Con
 		await db.UserListMembers
 		        .Where(p => p.UserList == list && request.AccountIds.Contains(p.UserId))
 		        .ExecuteDeleteAsync();
+
+		eventSvc.RaiseListMembersUpdated(this, list);
 
 		return Ok(new object());
 	}
