@@ -14,6 +14,7 @@ public class UserResolver(
 	UserService userSvc,
 	WebFingerService webFingerSvc,
 	FollowupTaskService followupTaskSvc,
+	ActivityFetcherService fetchSvc,
 	IOptions<Config.InstanceSection> config,
 	DatabaseContext db
 )
@@ -35,13 +36,35 @@ public class UserResolver(
 	 * Avoid repeating WebFinger's with same URI for performance, optimize away validation checks when the domain matches
 	 */
 
-	private async Task<(string Acct, string Uri)> WebFingerAsync(string query)
+	private async Task<(string Acct, string Uri)> WebFingerAsync(string query, bool recurse = true)
 	{
 		logger.LogDebug("Running WebFinger for query '{query}'", query);
 
 		var responses = new Dictionary<string, WebFingerResponse>();
 		var fingerRes = await webFingerSvc.ResolveAsync(query);
-		if (fingerRes == null) throw new GracefulException($"Failed to WebFinger '{query}'");
+		if (fingerRes == null)
+		{
+			if (recurse && query.StartsWith("https://"))
+			{
+				logger.LogDebug("WebFinger returned null, fetching actor as fallback");
+				try
+				{
+					var actor = await fetchSvc.FetchActorAsync(query);
+					if (query != actor.Id)
+					{
+						logger.LogDebug("Actor ID differs from query, retrying...");
+						return await WebFingerAsync(actor.Id, false);
+					}
+				}
+				catch (Exception e)
+				{
+					logger.LogDebug("Failed to fetch actor {uri}: {e}", query, e.Message);
+				}
+			}
+
+			throw new GracefulException($"Failed to WebFinger '{query}'");
+		}
+
 		responses.Add(query, fingerRes);
 
 		var apUri = fingerRes.Links.FirstOrDefault(p => p is { Rel: "self", Type: "application/activity+json" })?.Href;
