@@ -296,7 +296,7 @@ public class Note : IEntity
 	[Projectable]
 	[SuppressMessage("ReSharper", "MergeIntoPattern", Justification = "Projectable chain must not contain patterns")]
 	public bool IsVisibleFor(User? user) =>
-		VisibilityIsPublicOrHome && (!LocalOnly || (user != null && user.Host == null)) ||
+		(VisibilityIsPublicOrHome && (!LocalOnly || (user != null && user.Host == null))) ||
 		(user != null && CheckComplexVisibility(user));
 
 	[Projectable]
