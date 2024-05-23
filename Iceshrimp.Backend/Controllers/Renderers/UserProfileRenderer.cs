@@ -10,12 +10,24 @@ public class UserProfileRenderer(DatabaseContext db)
 {
 	public async Task<UserProfileResponse> RenderOne(User user, User? localUser, UserRendererDto? data = null)
 	{
-		var isFollowing  = (data?.Following ?? await GetFollowing([user], localUser)).Contains(user.Id);
+		(data?.Relations ?? await GetRelations([user], localUser)).TryGetValue(user.Id, out var relations);
+		relations ??= new RelationData
+		{
+			UserId        = user.Id,
+			IsSelf        = user.Id == localUser?.Id,
+			IsFollowing   = false,
+			IsFollowedBy  = false,
+			IsBlocking    = false,
+			IsMuting      = false,
+			IsRequested   = false,
+			IsRequestedBy = false
+		};
+
 		var ffVisibility = user.UserProfile?.FFVisibility ?? UserProfile.UserProfileFFVisibility.Public;
 		var followers = ffVisibility switch
 		{
 			UserProfile.UserProfileFFVisibility.Public    => user.FollowersCount,
-			UserProfile.UserProfileFFVisibility.Followers => isFollowing ? user.FollowersCount : null,
+			UserProfile.UserProfileFFVisibility.Followers => relations.IsFollowing ? user.FollowersCount : null,
 			UserProfile.UserProfileFFVisibility.Private   => (int?)null,
 			_                                             => throw new ArgumentOutOfRangeException()
 		};
@@ -23,15 +35,15 @@ public class UserProfileRenderer(DatabaseContext db)
 		var following = ffVisibility switch
 		{
 			UserProfile.UserProfileFFVisibility.Public    => user.FollowingCount,
-			UserProfile.UserProfileFFVisibility.Followers => isFollowing ? user.FollowingCount : null,
+			UserProfile.UserProfileFFVisibility.Followers => relations.IsFollowing ? user.FollowingCount : null,
 			UserProfile.UserProfileFFVisibility.Private   => (int?)null,
 			_                                             => throw new ArgumentOutOfRangeException()
 		};
 
 		var fields = user.UserProfile?.Fields.Select(p => new UserProfileField
 		{
-			Name       = p.Name,
-			Value      = p.Value,
+			Name     = p.Name,
+			Value    = p.Value,
 			Verified = p.IsVerified
 		});
 
@@ -43,27 +55,42 @@ public class UserProfileRenderer(DatabaseContext db)
 			Fields    = fields?.ToList(),
 			Location  = user.UserProfile?.Location,
 			Followers = followers,
-			Following = following
+			Following = following,
+			Relations = relations
 		};
 	}
 
-	private async Task<List<string>> GetFollowing(IEnumerable<User> users, User? localUser)
+	private async Task<Dictionary<string, RelationData>> GetRelations(IEnumerable<User> users, User? localUser)
 	{
+		var ids = users.Select(p => p.Id).ToList();
+		if (ids.Count == 0) return [];
 		if (localUser == null) return [];
-		return await db.Followings.Where(p => p.Follower == localUser && users.Contains(p.Followee))
-		               .Select(p => p.FolloweeId)
-		               .ToListAsync();
+
+		return await db.Users
+		               .Where(p => ids.Contains(p.Id))
+		               .Select(p => new RelationData
+		               {
+			               UserId        = p.Id,
+			               IsSelf        = p.Id == localUser.Id,
+			               IsFollowing   = localUser.IsFollowing(p),
+			               IsFollowedBy  = localUser.IsFollowedBy(p),
+			               IsBlocking    = localUser.IsBlocking(p),
+			               IsMuting      = localUser.IsMuting(p),
+			               IsRequested   = localUser.IsRequested(p),
+			               IsRequestedBy = localUser.IsRequestedBy(p)
+		               })
+		               .ToDictionaryAsync(p => p.UserId, p => p);
 	}
 
 	public async Task<IEnumerable<UserProfileResponse>> RenderMany(IEnumerable<User> users, User? localUser)
 	{
 		var userList = users.ToList();
-		var data     = new UserRendererDto { Following = await GetFollowing(userList, localUser) };
+		var data     = new UserRendererDto { Relations = await GetRelations(userList, localUser) };
 		return await userList.Select(p => RenderOne(p, localUser, data)).AwaitAllAsync();
 	}
 
 	public class UserRendererDto
 	{
-		public List<string>? Following;
+		public Dictionary<string, RelationData>? Relations;
 	}
 }

@@ -14,6 +14,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Controllers;
 
 [ApiController]
+[Authenticate]
+[Authorize]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/users/{id}")]
 [Produces(MediaTypeNames.Application.Json)]
@@ -51,7 +53,6 @@ public class UserController(
 	}
 
 	[HttpGet("notes")]
-	[Authenticate]
 	[LinkPagination(20, 80)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NoteResponse>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
