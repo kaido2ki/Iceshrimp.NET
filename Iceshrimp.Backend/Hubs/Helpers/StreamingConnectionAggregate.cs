@@ -30,10 +30,11 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	private readonly StreamingService     _streamingService;
 	private readonly ILogger              _logger;
 
-	private readonly WriteLockingList<string> _following = [];
-	private readonly WriteLockingList<string> _muting    = [];
-	private readonly WriteLockingList<string> _blocking  = [];
-	private readonly WriteLockingList<string> _blockedBy = [];
+	private readonly WriteLockingList<string> _following      = [];
+	private readonly WriteLockingList<string> _muting         = [];
+	private readonly WriteLockingList<string> _blocking       = [];
+	private readonly WriteLockingList<string> _blockedBy      = [];
+	private          List<string>             _hiddenFromHome = [];
 
 	private readonly ConcurrentDictionary<string, WriteLockingList<StreamingTimeline>> _subscriptions = [];
 
@@ -98,6 +99,12 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		_muting.AddRange(await db.Mutings.Where(p => p.Muter == _user)
 		                         .Select(p => p.MuteeId)
 		                         .ToListAsync());
+
+		_hiddenFromHome = await db.UserListMembers
+		                          .Where(p => p.UserList.User == _user && p.UserList.HideFromHomeTl)
+		                          .Select(p => p.UserId)
+		                          .Distinct()
+		                          .ToListAsync();
 	}
 
 	#endregion
@@ -239,9 +246,10 @@ public sealed class StreamingConnectionAggregate : IDisposable
 				timelines.Add(StreamingTimeline.Local);
 
 			if (IsFollowingOrSelf(note.User) && note.CreatedAt > DateTime.UtcNow - TimeSpan.FromMinutes(5))
-				timelines.Add(StreamingTimeline.Home);
+				if (!_hiddenFromHome.Contains(note.UserId))
+					timelines.Add(StreamingTimeline.Home);
 		}
-		else if (note.CreatedAt > DateTime.UtcNow - TimeSpan.FromMinutes(5))
+		else if (note.CreatedAt > DateTime.UtcNow - TimeSpan.FromMinutes(5) && !_hiddenFromHome.Contains(note.UserId))
 		{
 			// We already enumerated _following in IsApplicable()
 			timelines.Add(StreamingTimeline.Home);

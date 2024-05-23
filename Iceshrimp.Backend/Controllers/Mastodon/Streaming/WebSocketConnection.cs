@@ -23,32 +23,34 @@ public sealed class WebSocketConnection(
 	CancellationToken ct
 ) : IDisposable
 {
-	private readonly SemaphoreSlim            _lock        = new(1);
-	public readonly  List<IChannel>           Channels     = [];
-	public readonly  EventService             EventService = eventSvc;
-	public readonly  IServiceScope            Scope        = scopeFactory.CreateScope();
-	public readonly  IServiceScopeFactory     ScopeFactory = scopeFactory;
-	public readonly  OauthToken               Token        = token;
-	public readonly  WriteLockingList<Filter> Filters      = [];
-	public readonly  WriteLockingList<string> Following    = [];
-	private readonly WriteLockingList<string> _blocking    = [];
-	private readonly WriteLockingList<string> _blockedBy   = [];
-	private readonly WriteLockingList<string> _muting      = [];
+	private readonly SemaphoreSlim            _lock          = new(1);
+	public readonly  List<IChannel>           Channels       = [];
+	public readonly  EventService             EventService   = eventSvc;
+	public readonly  IServiceScope            Scope          = scopeFactory.CreateScope();
+	public readonly  IServiceScopeFactory     ScopeFactory   = scopeFactory;
+	public readonly  OauthToken               Token          = token;
+	public           List<string>             HiddenFromHome = [];
+	public readonly  WriteLockingList<Filter> Filters        = [];
+	public readonly  WriteLockingList<string> Following      = [];
+	private readonly WriteLockingList<string> _blocking      = [];
+	private readonly WriteLockingList<string> _blockedBy     = [];
+	private readonly WriteLockingList<string> _muting        = [];
 
 	public void Dispose()
 	{
 		foreach (var channel in Channels)
 			channel.Dispose();
 
-		EventService.UserBlocked    -= OnUserUnblock;
-		EventService.UserUnblocked  -= OnUserBlock;
-		EventService.UserMuted      -= OnUserMute;
-		EventService.UserUnmuted    -= OnUserUnmute;
-		EventService.UserFollowed   -= OnUserFollow;
-		EventService.UserUnfollowed -= OnUserUnfollow;
-		EventService.FilterAdded    -= OnFilterAdded;
-		EventService.FilterRemoved  -= OnFilterRemoved;
-		EventService.FilterUpdated  -= OnFilterUpdated;
+		EventService.UserBlocked        -= OnUserUnblock;
+		EventService.UserUnblocked      -= OnUserBlock;
+		EventService.UserMuted          -= OnUserMute;
+		EventService.UserUnmuted        -= OnUserUnmute;
+		EventService.UserFollowed       -= OnUserFollow;
+		EventService.UserUnfollowed     -= OnUserUnfollow;
+		EventService.FilterAdded        -= OnFilterAdded;
+		EventService.FilterRemoved      -= OnFilterRemoved;
+		EventService.FilterUpdated      -= OnFilterUpdated;
+		EventService.ListMembersUpdated -= OnListMembersUpdated;
 
 		Scope.Dispose();
 	}
@@ -69,15 +71,16 @@ public sealed class WebSocketConnection(
 		Channels.Add(new HashtagChannel(this, false));
 		Channels.Add(new ListChannel(this));
 
-		EventService.UserBlocked    += OnUserUnblock;
-		EventService.UserUnblocked  += OnUserBlock;
-		EventService.UserMuted      += OnUserMute;
-		EventService.UserUnmuted    += OnUserUnmute;
-		EventService.UserFollowed   += OnUserFollow;
-		EventService.UserUnfollowed += OnUserUnfollow;
-		EventService.FilterAdded    += OnFilterAdded;
-		EventService.FilterRemoved  += OnFilterRemoved;
-		EventService.FilterUpdated  += OnFilterUpdated;
+		EventService.UserBlocked        += OnUserUnblock;
+		EventService.UserUnblocked      += OnUserBlock;
+		EventService.UserMuted          += OnUserMute;
+		EventService.UserUnmuted        += OnUserUnmute;
+		EventService.UserFollowed       += OnUserFollow;
+		EventService.UserUnfollowed     += OnUserUnfollow;
+		EventService.FilterAdded        += OnFilterAdded;
+		EventService.FilterRemoved      += OnFilterRemoved;
+		EventService.FilterUpdated      += OnFilterUpdated;
+		EventService.ListMembersUpdated += OnListMembersUpdated;
 
 		_ = InitializeRelationships();
 	}
@@ -110,6 +113,12 @@ public sealed class WebSocketConnection(
 		                         })
 		                         .AsNoTracking()
 		                         .ToListAsync());
+
+		HiddenFromHome = await db.UserListMembers
+		                         .Where(p => p.UserList.UserId == Token.User.Id && p.UserList.HideFromHomeTl)
+		                         .Select(p => p.UserId)
+		                         .Distinct()
+		                         .ToListAsync();
 	}
 
 	public async Task HandleSocketMessageAsync(string payload)
@@ -315,6 +324,28 @@ public sealed class WebSocketConnection(
 		{
 			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
 			logger.LogError("Event handler OnFilterUpdated threw exception: {e}", e);
+		}
+	}
+
+	private async void OnListMembersUpdated(object? _, UserList list)
+	{
+		try
+		{
+			if (list.UserId != Token.User.Id) return;
+			if (!list.HideFromHomeTl) return;
+
+			await using var scope = ScopeFactory.CreateAsyncScope();
+
+			var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+			HiddenFromHome = await db.UserListMembers
+			                         .Where(p => p.UserList.UserId == Token.User.Id && p.UserList.HideFromHomeTl)
+			                         .Select(p => p.UserId)
+			                         .ToListAsync();
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnListMembersUpdated threw exception: {e}", e);
 		}
 	}
 
