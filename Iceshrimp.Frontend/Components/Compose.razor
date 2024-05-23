@@ -1,18 +1,20 @@
-@using FParsec
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
 @using Iceshrimp.Frontend.Components.Note
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
 @inject IJSRuntime     Js
 @inject ApiService     ApiService
 @inject ComposeService ComposeService
+@inject IStringLocalizer<Localization> Loc;
 <dialog class="compose" @ref="Dialog">
     <div class="header">
         <button @onclick="CloseDialog">
             <Icon Name="Icons.X"/>
         </button>
         <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
-        <button @onclick="SendNote" class="post-btn">Post<Icon Name="Icons.PaperPlaneRight"/></button>
+        <button @onclick="SendNote" class="post-btn">@Loc["ComposePost"]<Icon Name="Icons.PaperPlaneRight"/></button>
     </div>
     @if (ReplyOrQuote != null)
     {

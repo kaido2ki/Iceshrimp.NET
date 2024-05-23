@@ -5,12 +5,15 @@ using Iceshrimp.Frontend;
 using Iceshrimp.Frontend.Core.Services;
 using Ljbc1994.Blazor.IntersectionObserver;
 using Microsoft.AspNetCore.Components.Authorization;
+using System.Globalization;
+using Iceshrimp.Frontend.Core.Miscellaneous;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddSingleton(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+builder.Services.AddLocalization();
 builder.Services.AddSingleton<ApiClient>();
 builder.Services.AddSingleton<ApiService>();
 builder.Services.AddIntersectionObserver();
@@ -22,4 +25,10 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddBlazoredLocalStorageAsSingleton();
 
-await builder.Build().RunAsync(); 
+// Culture information (locale) has to be set before run.
+var host    = builder.Build();
+var helper  = new LocaleHelper(host.Services.GetRequiredService<ISyncLocalStorageService>());
+var culture = helper.LoadCulture();
+CultureInfo.DefaultThreadCurrentCulture   = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
+await host.RunAsync();

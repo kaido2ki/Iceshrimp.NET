@@ -1,5 +1,9 @@
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Localization> Loc;
+
 <div class="metadata">
     <span class="info">
         <span class="time">@RenderDate(CreatedAt)</span>
@@ -29,22 +33,22 @@
     }
 </div>
 @code {
-    [Parameter] [EditorRequired] public required DateTime CreatedAt    { get; set; }
-    [Parameter] [EditorRequired] public required NoteVisibility   Visibility   { get; set; }
-    [Parameter] [EditorRequired] public required string?  InstanceName { get; set; }
+    [Parameter] [EditorRequired] public required DateTime       CreatedAt    { get; set; }
+    [Parameter] [EditorRequired] public required NoteVisibility Visibility   { get; set; }
+    [Parameter] [EditorRequired] public required string?        InstanceName { get; set; }
 
     private string RenderDate(DateTime date)
     {
         var diff = DateTime.Now - date;
         return diff switch
         {
-            { Days: >= 365 }    => $"{diff.Days / 365}yr",
-            { Days: >= 30 }     => $"{diff.Days / 30}mo",
-            { Days: >= 7 }      => $"{diff.Days / 7}w",
-            { Days: >= 1 }      => $"{diff.Days}d",
-            { Hours: >= 1 }     => $"{diff.Hours}h",
-            { Minutes: >= 1 }   => $"{diff.Minutes}m",
-            _                   => "Just now."
+            { Days: >= 365 }  => Loc["{0}y", diff.Days / 365],
+            { Days: >= 30 }   => Loc["{0}mo" ,diff.Days / 30],
+            { Days: >= 7 }    => Loc["{0}d", diff.Days / 7],
+            { Days: >= 1 }    => Loc["{0}d", diff.Days],
+            { Hours: >= 1 }   => Loc["{0}h", diff.Hours],
+            { Minutes: >= 1 } => Loc["{0}m", diff.Minutes],
+            _                 => Loc["Just now"]
         };
     }
 
