@@ -63,11 +63,11 @@ public class UserController(
 
 		var notes = await db.Notes
 		                    .IncludeCommonProperties()
-		                    .Where(p => p.User == user)
+		                    .FilterByUser(user)
 		                    .EnsureVisibleFor(localUser)
 		                    .FilterHidden(localUser, db, filterMutes: false)
-		                    .PrecomputeVisibilities(localUser)
 		                    .Paginate(pq, ControllerContext)
+		                    .PrecomputeVisibilities(localUser)
 		                    .ToListAsync();
 
 		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), localUser,
