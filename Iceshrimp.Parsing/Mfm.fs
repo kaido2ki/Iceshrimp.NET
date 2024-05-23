@@ -240,7 +240,7 @@ module private MfmParser =
              <| choice
                  [ spaces1
                    eof
-                   skipAnyOf "()[].,\'"
+                   skipAnyOf "()[].,;\'"
                    skipChar ':' .>> nextCharSatisfiesNot isAsciiLetterOrNumber ])
         |>> fun (user: string, host: string option) -> MfmMentionNode(acct (user, host), user, host) :> MfmNode
 
