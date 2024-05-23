@@ -1,7 +1,10 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Iceshrimp.Backend.Core.Helpers;
 
+[SuppressMessage("ReSharper", "InconsistentlySynchronizedField",
+                 Justification = "This is intentional (it's a *write* locking list, after all)")]
 public class WriteLockingList<T> : ICollection<T>
 {
 	private readonly List<T> _list = [];
@@ -13,7 +16,14 @@ public class WriteLockingList<T> : ICollection<T>
 	{
 		lock (_list) _list.Add(item);
 	}
-	
+
+	public void AddIfMissing(T item)
+	{
+		lock (_list)
+			if (!_list.Contains(item))
+				_list.Add(item);
+	}
+
 	public void AddRange(IEnumerable<T> item)
 	{
 		lock (_list) _list.AddRange(item);
@@ -31,6 +41,11 @@ public class WriteLockingList<T> : ICollection<T>
 	public bool Remove(T item)
 	{
 		lock (_list) return _list.Remove(item);
+	}
+
+	public int RemoveAll(Predicate<T> predicate)
+	{
+		lock (_list) return _list.RemoveAll(predicate);
 	}
 
 	public int  Count      => _list.Count;

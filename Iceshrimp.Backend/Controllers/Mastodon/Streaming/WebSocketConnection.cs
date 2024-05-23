@@ -65,6 +65,8 @@ public sealed class WebSocketConnection(
 		Channels.Add(new PublicChannel(this, "public:local:media", true, false, true));
 		Channels.Add(new PublicChannel(this, "public:remote", false, true, false));
 		Channels.Add(new PublicChannel(this, "public:remote:media", false, true, true));
+		Channels.Add(new HashtagChannel(this, true));
+		Channels.Add(new HashtagChannel(this, false));
 
 		EventService.UserBlocked    += OnUserUnblock;
 		EventService.UserUnblocked  += OnUserBlock;
@@ -136,7 +138,8 @@ public sealed class WebSocketConnection(
 		{
 			case "subscribe":
 			{
-				var channel = Channels.FirstOrDefault(p => p.Name == message.Stream && !p.IsSubscribed);
+				var channel =
+					Channels.FirstOrDefault(p => p.Name == message.Stream && (!p.IsSubscribed || p.IsAggregate));
 				if (channel == null) return;
 				if (channel.Scopes.Except(MastodonOauthHelpers.ExpandScopes(Token.Scopes)).Any())
 					await CloseAsync(WebSocketCloseStatus.PolicyViolation);
@@ -146,7 +149,8 @@ public sealed class WebSocketConnection(
 			}
 			case "unsubscribe":
 			{
-				var channel = Channels.FirstOrDefault(p => p.Name == message.Stream && p.IsSubscribed);
+				var channel =
+					Channels.FirstOrDefault(p => p.Name == message.Stream && (p.IsSubscribed || p.IsAggregate));
 				if (channel != null) await channel.Unsubscribe(message);
 				break;
 			}
@@ -341,6 +345,7 @@ public interface IChannel
 	public string       Name         { get; }
 	public List<string> Scopes       { get; }
 	public bool         IsSubscribed { get; }
+	public bool         IsAggregate  { get; }
 	public Task         Subscribe(StreamingRequestMessage message);
 	public Task         Unsubscribe(StreamingRequestMessage message);
 	public void         Dispose();

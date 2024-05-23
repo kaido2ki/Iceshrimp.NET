@@ -15,6 +15,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 	public string       Name         => notificationsOnly ? "user:notification" : "user";
 	public List<string> Scopes       => ["read:statuses", "read:notifications"];
 	public bool         IsSubscribed { get; private set; }
+	public bool         IsAggregate  => false;
 
 	public async Task Subscribe(StreamingRequestMessage _)
 	{

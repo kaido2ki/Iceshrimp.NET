@@ -1,43 +1,54 @@
+using System.Net.WebSockets;
 using System.Text.Json;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
 
-public class PublicChannel(
-	WebSocketConnection connection,
-	string name,
-	bool local,
-	bool remote,
-	bool onlyMedia
-) : IChannel
+public class HashtagChannel(WebSocketConnection connection, bool local) : IChannel
 {
-	private readonly ILogger<PublicChannel> _logger =
-		connection.Scope.ServiceProvider.GetRequiredService<ILogger<PublicChannel>>();
+	private readonly ILogger<HashtagChannel> _logger =
+		connection.Scope.ServiceProvider.GetRequiredService<ILogger<HashtagChannel>>();
 
-	public string       Name         => name;
+	public string       Name         => local ? "hashtag:local" : "hashtag";
 	public List<string> Scopes       => ["read:statuses"];
-	public bool         IsSubscribed { get; private set; }
-	public bool         IsAggregate  => false;
+	public bool         IsSubscribed => _tags.Count != 0;
+	public bool         IsAggregate  => true;
 
-	public Task Subscribe(StreamingRequestMessage _)
+	private readonly WriteLockingList<string> _tags = [];
+
+	public async Task Subscribe(StreamingRequestMessage msg)
 	{
-		if (IsSubscribed) return Task.CompletedTask;
-		IsSubscribed = true;
+		if (msg.Tag == null)
+		{
+			await connection.CloseAsync(WebSocketCloseStatus.InvalidPayloadData);
+			return;
+		}
 
-		connection.EventService.NotePublished += OnNotePublished;
-		connection.EventService.NoteUpdated   += OnNoteUpdated;
-		connection.EventService.NoteDeleted   += OnNoteDeleted;
-		return Task.CompletedTask;
+		if (!IsSubscribed)
+		{
+			connection.EventService.NotePublished += OnNotePublished;
+			connection.EventService.NoteUpdated   += OnNoteUpdated;
+			connection.EventService.NoteDeleted   += OnNoteDeleted;
+		}
+
+		_tags.AddIfMissing(msg.Tag);
 	}
 
-	public Task Unsubscribe(StreamingRequestMessage _)
+	public async Task Unsubscribe(StreamingRequestMessage msg)
 	{
-		if (!IsSubscribed) return Task.CompletedTask;
-		IsSubscribed = false;
-		Dispose();
-		return Task.CompletedTask;
+		if (msg.Tag == null)
+		{
+			await connection.CloseAsync(WebSocketCloseStatus.InvalidPayloadData);
+			return;
+		}
+
+		_tags.RemoveAll(p => p == msg.Tag);
+
+		if (!IsSubscribed) Dispose();
 	}
 
 	public void Dispose()
@@ -54,13 +65,10 @@ public class PublicChannel(
 		return res is not { Note.IsPureRenote: true, Renote: null } ? res : null;
 	}
 
-	private bool IsApplicableBool(Note note)
-	{
-		if (note.Visibility != Note.NoteVisibility.Public) return false;
-		if (!local && note.UserHost == null) return false;
-		if (!remote && note.UserHost != null) return false;
-		return !onlyMedia || note.FileIds.Count != 0;
-	}
+	private bool IsApplicableBool(Note note) =>
+		(!local || note.User.Host == null) &&
+		note.Tags.Intersects(_tags) &&
+		note.IsVisibleFor(connection.Token.User, connection.Following);
 
 	private NoteWithVisibilities EnforceRenoteReplyVisibility(Note note)
 	{
@@ -87,6 +95,15 @@ public class PublicChannel(
 		return rendered;
 	}
 
+	private IEnumerable<StreamingUpdateMessage> RenderMessage(
+		IEnumerable<string> tags, string eventType, string payload
+	) => tags.Select(tag => new StreamingUpdateMessage
+	{
+		Stream  = [Name, tag],
+		Event   = eventType,
+		Payload = payload
+	});
+
 	private async void OnNotePublished(object? _, Note note)
 	{
 		try
@@ -100,13 +117,10 @@ public class PublicChannel(
 			var data         = new NoteRenderer.NoteRendererDto { Filters = connection.Filters.ToList() };
 			var intermediate = await renderer.RenderAsync(note, connection.Token.User, data: data);
 			var rendered     = EnforceRenoteReplyVisibility(intermediate, wrapped);
-			var message = new StreamingUpdateMessage
-			{
-				Stream  = [Name],
-				Event   = "update",
-				Payload = JsonSerializer.Serialize(rendered)
-			};
-			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+
+			var messages = RenderMessage(_tags.Intersect(note.Tags), "update", JsonSerializer.Serialize(rendered));
+			foreach (var message in messages)
+				await connection.SendMessageAsync(JsonSerializer.Serialize(message));
 		}
 		catch (Exception e)
 		{
@@ -127,13 +141,11 @@ public class PublicChannel(
 			var data         = new NoteRenderer.NoteRendererDto { Filters = connection.Filters.ToList() };
 			var intermediate = await renderer.RenderAsync(note, connection.Token.User, data: data);
 			var rendered     = EnforceRenoteReplyVisibility(intermediate, wrapped);
-			var message = new StreamingUpdateMessage
-			{
-				Stream  = [Name],
-				Event   = "status.update",
-				Payload = JsonSerializer.Serialize(rendered)
-			};
-			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+
+			var messages = RenderMessage(_tags.Intersect(note.Tags), "status.update",
+			                             JsonSerializer.Serialize(rendered));
+			foreach (var message in messages)
+				await connection.SendMessageAsync(JsonSerializer.Serialize(message));
 		}
 		catch (Exception e)
 		{
@@ -147,13 +159,10 @@ public class PublicChannel(
 		{
 			if (!IsApplicableBool(note)) return;
 			if (connection.IsFiltered(note)) return;
-			var message = new StreamingUpdateMessage
-			{
-				Stream  = [Name],
-				Event   = "delete",
-				Payload = note.Id
-			};
-			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+
+			var messages = RenderMessage(_tags.Intersect(note.Tags), "delete", note.Id);
+			foreach (var message in messages)
+				await connection.SendMessageAsync(JsonSerializer.Serialize(message));
 		}
 		catch (Exception e)
 		{
