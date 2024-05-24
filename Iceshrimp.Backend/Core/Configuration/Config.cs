@@ -16,15 +16,25 @@ public sealed class Config
 	public sealed class InstanceSection
 	{
 		public readonly string Version;
+		public readonly string Codename;
 
 		public InstanceSection()
 		{
+			var attributes = Assembly.GetEntryAssembly()!
+			                         .GetCustomAttributes()
+			                         .ToList();
+
+			// Get codename from assembly
+			Codename = attributes
+			           .OfType<AssemblyMetadataAttribute>()
+			           .FirstOrDefault(p => p.Key == "codename")
+			           ?.Value ??
+			           "unknown";
+
 			// Get version information from assembly
-			var version = Assembly.GetEntryAssembly()!
-			                      .GetCustomAttributes()
-			                      .OfType<AssemblyInformationalVersionAttribute>()
-			                      .First()
-			                      .InformationalVersion;
+			var version = attributes.OfType<AssemblyInformationalVersionAttribute>()
+			                        .First()
+			                        .InformationalVersion;
 
 			// If we have a git revision, limit it to 10 characters
 			if (version.Split('+') is { Length: 2 } split)
