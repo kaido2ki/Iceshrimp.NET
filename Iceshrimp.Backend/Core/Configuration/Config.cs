@@ -15,8 +15,9 @@ public sealed class Config
 
 	public sealed class InstanceSection
 	{
-		public readonly string Version;
-		public readonly string Codename;
+		public readonly string  Version;
+		public readonly string  Codename;
+		public readonly string? CommitHash;
 
 		public InstanceSection()
 		{
@@ -39,8 +40,9 @@ public sealed class Config
 			// If we have a git revision, limit it to 10 characters
 			if (version.Split('+') is { Length: 2 } split)
 			{
-				split[1] = split[1][..Math.Min(split[1].Length, 10)];
-				Version  = string.Join('+', split);
+				split[1]   = split[1][..Math.Min(split[1].Length, 10)];
+				Version    = string.Join('+', split);
+				CommitHash = split[1];
 			}
 			else
 			{
