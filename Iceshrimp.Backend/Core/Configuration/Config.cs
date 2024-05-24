@@ -18,6 +18,7 @@ public sealed class Config
 		public readonly string  Version;
 		public readonly string  Codename;
 		public readonly string? CommitHash;
+		public readonly string  RawVersion;
 
 		public InstanceSection()
 		{
@@ -40,13 +41,15 @@ public sealed class Config
 			// If we have a git revision, limit it to 10 characters
 			if (version.Split('+') is { Length: 2 } split)
 			{
+				CommitHash = split[1];
 				split[1]   = split[1][..Math.Min(split[1].Length, 10)];
 				Version    = string.Join('+', split);
-				CommitHash = split[1];
+				RawVersion = split[0];
 			}
 			else
 			{
-				Version = version;
+				Version    = version;
+				RawVersion = version;
 			}
 		}
 
