@@ -203,8 +203,8 @@ public class PostgresJobQueue<T>(
 	int parallelism
 ) : IPostgresJobQueue where T : class
 {
-	private readonly AsyncAutoResetEvent  _delayedChannel = new(false);
-	private readonly AsyncAutoResetEvent  _queuedChannel  = new(false);
+	private readonly AsyncAutoResetEvent  _delayedChannel = new();
+	private readonly AsyncAutoResetEvent  _queuedChannel  = new();
 	private          IServiceScopeFactory _scopeFactory   = null!;
 	public           string               Name => name;
 	private          string?              _workerId;

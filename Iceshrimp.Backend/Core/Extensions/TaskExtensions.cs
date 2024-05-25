@@ -13,7 +13,7 @@ public static class TaskExtensions
 			// ignored
 		}
 	}
-	
+
 	public static async Task SafeWaitAsync(this Task task, CancellationToken token)
 	{
 		try
@@ -25,7 +25,7 @@ public static class TaskExtensions
 			// ignored
 		}
 	}
-	
+
 	public static async Task SafeWaitAsync(this Task task, CancellationToken token, Action action)
 	{
 		try
@@ -37,7 +37,7 @@ public static class TaskExtensions
 			action();
 		}
 	}
-	
+
 	public static async Task SafeWaitAsync(this Task task, CancellationToken token, Func<Task> action)
 	{
 		try

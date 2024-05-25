@@ -1,57 +1,50 @@
 namespace Iceshrimp.Backend.Core.Helpers;
 
-public sealed class AsyncAutoResetEvent(bool signaled)
+public sealed class AsyncAutoResetEvent(bool signaled = false)
 {
-	private readonly Queue<TaskCompletionSource> _queue = new();
+	private readonly List<TaskCompletionSource<bool>> _taskCompletionSources = [];
 
-	public Task WaitAsync(CancellationToken cancellationToken = default)
+	public Task<bool> WaitAsync(CancellationToken cancellationToken = default)
 	{
-		lock (_queue)
+		lock (_taskCompletionSources)
 		{
 			if (signaled)
 			{
 				signaled = false;
-				return Task.CompletedTask;
+				return Task.FromResult(true);
 			}
 
-			var tcs = new TaskCompletionSource();
-			if (cancellationToken.CanBeCanceled)
-			{
-				// If the token is cancelled, cancel the waiter.
-				var registration =
-					cancellationToken.Register(() => tcs.TrySetCanceled(), false);
-
-				// If the waiter completes or faults, unregister our interest in cancellation.
-				tcs.Task.ContinueWith(
-				                      _ => registration.Unregister(),
-				                      cancellationToken,
-				                      TaskContinuationOptions.OnlyOnRanToCompletion |
-				                      TaskContinuationOptions.NotOnFaulted,
-				                      TaskScheduler.Default);
-			}
-
-			_queue.Enqueue(tcs);
+			var tcs = new TaskCompletionSource<bool>();
+			cancellationToken.Register(Callback, (this, tcs));
+			_taskCompletionSources.Add(tcs);
 			return tcs.Task;
 		}
 	}
 
 	public void Set()
 	{
-		TaskCompletionSource? toRelease = null;
-
-		lock (_queue)
+		lock (_taskCompletionSources)
 		{
-			if (_queue.Count > 0)
+			if (_taskCompletionSources.Count > 0)
 			{
-				toRelease = _queue.Dequeue();
+				var tcs = _taskCompletionSources[0];
+				_taskCompletionSources.RemoveAt(0);
+				tcs.TrySetResult(true);
+				return;
 			}
-			else if (!signaled)
-			{
-				signaled = true;
-			}
-		}
 
-		// It's possible that the TCS has already been cancelled.
-		toRelease?.TrySetResult();
+			signaled = true;
+		}
+	}
+
+	private static void Callback(object? state)
+	{
+		var (ev, tcs) = ((AsyncAutoResetEvent, TaskCompletionSource<bool>))state!;
+		lock (ev._taskCompletionSources)
+		{
+			if (tcs.Task.IsCompleted) return;
+			tcs.TrySetCanceled();
+			ev._taskCompletionSources.Remove(tcs);
+		}
 	}
 }
