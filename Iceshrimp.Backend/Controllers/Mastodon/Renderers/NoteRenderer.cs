@@ -81,7 +81,7 @@ public class NoteRenderer(
 		var quoteInaccessible =
 			note.Renote == null && ((note.RenoteId != null && recurse > 0) || note.RenoteUri != null);
 
-		var lang = CultureInfo.CreateSpecificCulture(note.Lang).TwoLetterISOLanguageName;
+		var lang = note.Lang != null ? CultureInfo.CreateSpecificCulture(note.Lang).TwoLetterISOLanguageName : null;
 		var content = data?.Source != true
 			? text != null
 				? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost, quoteUri, quoteInaccessible,

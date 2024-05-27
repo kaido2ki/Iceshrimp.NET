@@ -1,3 +1,4 @@
+using System.Globalization;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
 using Newtonsoft.Json;
@@ -27,7 +28,12 @@ public class LDLocalizedString
 		Values.Add("", value);
 
 		if (language != null)
-			Values.Add(language, value);
+		{
+			language = NormalizeLanguageCode(language);
+
+			if (language != null)
+				Values.Add(language, value);
+		}
 	}
 
 	/// <summary>
@@ -48,7 +54,7 @@ public class LDLocalizedString
 				var preferred = Values.FirstOrDefault(i => !IsUnknownLanguage(i.Key) && i.Value == unknownValue);
 				if (preferred.Value != null)
 				{
-					language = preferred.Key;
+					language = NormalizeLanguageCode(preferred.Key);
 					return preferred.Value;
 				}
 			}
@@ -70,8 +76,21 @@ public class LDLocalizedString
 			}
 		}
 
-		language = IsUnknownLanguage(first.Key) ? null : first.Key;
+		language = IsUnknownLanguage(first.Key) ? null : NormalizeLanguageCode(first.Key);
 		return first.Value;
+	}
+
+	public static string? NormalizeLanguageCode(string lang)
+	{
+		try
+		{
+			return CultureInfo.CreateSpecificCulture(lang).ToString();
+		}
+		catch (CultureNotFoundException)
+		{
+			// invalid language code
+			return null;
+		}
 	}
 
 	// Akkoma forces all non-localized text to be in the "und" language by adding { "@language":"und" } to it's context

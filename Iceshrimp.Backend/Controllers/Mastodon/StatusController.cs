@@ -372,6 +372,17 @@ public class StatusController(
 		if (string.IsNullOrWhiteSpace(request.Text) && request.MediaIds is not { Count: > 0 } && request.Poll == null)
 			throw GracefulException.BadRequest("Posts must have text, media or poll");
 
+		CultureInfo? lang = null;
+
+		try
+		{
+			lang = request.Language != null ? CultureInfo.CreateSpecificCulture(request.Language) : null;
+		}
+		catch (CultureNotFoundException)
+		{
+			throw GracefulException.BadRequest("Invalid language");
+		}
+
 		var poll = request.Poll != null
 			? new Poll
 			{
@@ -449,8 +460,7 @@ public class StatusController(
 		if (quote != null && request.Text != null && newText != null && urls.OfType<string>().Contains(quoteUri))
 			request.Text = newText;
 
-		var lang = request.Language != null ? CultureInfo.CreateSpecificCulture(request.Language) : null;
-		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, lang?.Name, reply, quote, attachments,
+		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, lang?.ToString(), reply, quote, attachments,
 		                                         poll, request.LocalOnly);
 
 		if (idempotencyKey != null)
@@ -478,6 +488,17 @@ public class StatusController(
 		if (request.Text == null && request.MediaIds is not { Count: > 0 } && request.Poll == null)
 			throw GracefulException.BadRequest("Posts must have text, media or poll");
 
+		CultureInfo? lang = null;
+
+		try
+		{
+			lang = request.Language != null ? CultureInfo.CreateSpecificCulture(request.Language) : null;
+		}
+		catch (CultureNotFoundException)
+		{
+			throw GracefulException.BadRequest("Invalid language");
+		}
+
 		var poll = request.Poll != null
 			? new Poll
 			{
@@ -503,8 +524,7 @@ public class StatusController(
 			await db.SaveChangesAsync();
 		}
 
-		var lang = request.Language != null ? CultureInfo.CreateSpecificCulture(request.Language) : null;
-		note = await noteSvc.UpdateNoteAsync(note, request.Text, request.Cw, lang?.Name, attachments, poll);
+		note = await noteSvc.UpdateNoteAsync(note, request.Text, request.Cw, lang?.ToString(), attachments, poll);
 		var res = await noteRenderer.RenderAsync(note, user);
 
 		return Ok(res);
