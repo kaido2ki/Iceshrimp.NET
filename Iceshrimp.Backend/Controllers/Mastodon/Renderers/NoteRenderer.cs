@@ -81,7 +81,12 @@ public class NoteRenderer(
 		var quoteInaccessible =
 			note.Renote == null && ((note.RenoteId != null && recurse > 0) || note.RenoteUri != null);
 
-		var lang = note.Lang != null ? CultureInfo.GetCultureInfo(note.Lang).TwoLetterISOLanguageName : null;
+		// HACK: The correct thing to do is to use .TwoLetterISOLanguageName, however with invariant globalization this
+		// does not work and always returns "iv".
+		var lang = note.Lang != null ? CultureInfo.GetCultureInfo(note.Lang).ToString().Split("-").First() : null;
+		if (lang == "")
+			lang = null;
+
 		var content = data?.Source != true
 			? text != null
 				? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost, quoteUri, quoteInaccessible,
