@@ -1,5 +1,4 @@
 using Iceshrimp.Backend.Core.Extensions;
-using Visus.Cuid;
 
 namespace Iceshrimp.Backend.Core.Helpers;
 
@@ -14,10 +13,11 @@ public static class IdHelpers
 
 		createdAt ??= DateTime.UtcNow;
 
-		var cuid      = new Cuid2(8);
+		// We want to use a charset with a power-of-two amount of possible characters for optimal CSPRNG performance.
+		var random    = CryptographyHelpers.GenerateRandomString(8, CryptographyHelpers.Charset.CrockfordBase32Lower);
 		var now       = (long)createdAt.Value.Subtract(DateTime.UnixEpoch).TotalMilliseconds;
 		var time      = Math.Max(now - Time2000, 0);
 		var timestamp = time.ToBase36().PadLeft(8, '0');
-		return timestamp + cuid;
+		return timestamp + random;
 	}
 }
