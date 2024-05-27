@@ -31,7 +31,7 @@ public class LDLocalizedString
 		{
 			language = NormalizeLanguageCode(language);
 
-			if (language != null)
+			if (language != null && language != "")
 				Values.Add(language, value);
 		}
 	}
@@ -84,7 +84,7 @@ public class LDLocalizedString
 	{
 		try
 		{
-			return CultureInfo.CreateSpecificCulture(lang).ToString();
+			return CultureInfo.GetCultureInfo(lang).ToString();
 		}
 		catch (CultureNotFoundException)
 		{

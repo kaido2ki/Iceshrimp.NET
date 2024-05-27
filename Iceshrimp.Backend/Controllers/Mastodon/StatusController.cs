@@ -376,11 +376,11 @@ public class StatusController(
 
 		try
 		{
-			lang = request.Language != null ? CultureInfo.CreateSpecificCulture(request.Language) : null;
+			lang = request.Language != null ? CultureInfo.GetCultureInfo(request.Language) : null;
 		}
-		catch (CultureNotFoundException)
+		catch (CultureNotFoundException e)
 		{
-			throw GracefulException.BadRequest("Invalid language");
+			throw GracefulException.BadRequest(e.Message);
 		}
 
 		var poll = request.Poll != null
@@ -492,11 +492,11 @@ public class StatusController(
 
 		try
 		{
-			lang = request.Language != null ? CultureInfo.CreateSpecificCulture(request.Language) : null;
+			lang = request.Language != null ? CultureInfo.GetCultureInfo(request.Language) : null;
 		}
-		catch (CultureNotFoundException)
+		catch (CultureNotFoundException e)
 		{
-			throw GracefulException.BadRequest("Invalid language");
+			throw GracefulException.BadRequest(e.Message);
 		}
 
 		var poll = request.Poll != null
