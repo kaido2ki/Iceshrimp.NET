@@ -174,9 +174,10 @@ public static class ServiceExtensions
 		{
 			options.SupportNonNullableReferenceTypes();
 
-			options.SwaggerDoc("iceshrimp", new OpenApiInfo { Title  = "Iceshrimp.NET" });
-			options.SwaggerDoc("federation", new OpenApiInfo { Title = "Federation" });
-			options.SwaggerDoc("mastodon", new OpenApiInfo { Title   = "Mastodon" });
+			var version = new Config.InstanceSection().Version;
+			options.SwaggerDoc("iceshrimp", new OpenApiInfo { Title  = "Iceshrimp.NET", Version = version });
+			options.SwaggerDoc("federation", new OpenApiInfo { Title = "Federation", Version    = version });
+			options.SwaggerDoc("mastodon", new OpenApiInfo { Title   = "Mastodon", Version      = version });
 
 			options.AddSecurityDefinition("iceshrimp",
 			                              new OpenApiSecurityScheme
