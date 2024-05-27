@@ -33,6 +33,7 @@ public class StatusEntity : IEntity, ICloneable
 	[J("sensitive")]              public required bool          IsSensitive    { get; set; }
 	[J("spoiler_text")]           public required string        ContentWarning { get; set; }
 	[J("visibility")]             public required string        Visibility     { get; set; }
+	[J("language")] 		      public required string?       Language       { get; set; }
 
 	[J("pinned")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -50,7 +51,6 @@ public class StatusEntity : IEntity, ICloneable
 	[J("card")]        public object?  Card        => null; //FIXME
 	[J("application")] public object?  Application => null; //FIXME
 
-	[J("language")] public string? Language => null; //FIXME
 
 	[JI] public string? MastoReplyUserId;
 

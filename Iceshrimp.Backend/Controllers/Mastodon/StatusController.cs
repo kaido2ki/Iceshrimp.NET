@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Mime;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Controllers.Attributes;
@@ -448,8 +449,8 @@ public class StatusController(
 		if (quote != null && request.Text != null && newText != null && urls.OfType<string>().Contains(quoteUri))
 			request.Text = newText;
 
-		// TODO: hook up request.Language. requires conversion of ISO 639 language codes to BCP 47
-		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, null, reply, quote, attachments,
+		var lang = request.Language != null ? CultureInfo.CreateSpecificCulture(request.Language) : null;
+		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, lang?.Name, reply, quote, attachments,
 		                                         poll, request.LocalOnly);
 
 		if (idempotencyKey != null)
@@ -502,8 +503,8 @@ public class StatusController(
 			await db.SaveChangesAsync();
 		}
 
-		// TODO: hook up request.Language. requires conversion of ISO 639 language codes to BCP 47
-		note = await noteSvc.UpdateNoteAsync(note, request.Text, request.Cw, null, attachments, poll);
+		var lang = request.Language != null ? CultureInfo.CreateSpecificCulture(request.Language) : null;
+		note = await noteSvc.UpdateNoteAsync(note, request.Text, request.Cw, lang?.Name, attachments, poll);
 		var res = await noteRenderer.RenderAsync(note, user);
 
 		return Ok(res);

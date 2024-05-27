@@ -1,3 +1,4 @@
+using System.Globalization;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -80,6 +81,7 @@ public class NoteRenderer(
 		var quoteInaccessible =
 			note.Renote == null && ((note.RenoteId != null && recurse > 0) || note.RenoteUri != null);
 
+		var lang = CultureInfo.CreateSpecificCulture(note.Lang).TwoLetterISOLanguageName;
 		var content = data?.Source != true
 			? text != null
 				? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost, quoteUri, quoteInaccessible,
@@ -137,6 +139,7 @@ public class NoteRenderer(
 			ContentWarning   = note.Cw ?? "",
 			Visibility       = StatusEntity.EncodeVisibility(note.Visibility),
 			Content          = content,
+			Language         = lang,
 			Text             = text,
 			Mentions         = mentions,
 			IsPinned         = pinned,
