@@ -33,6 +33,13 @@ public class NoteEdit
 	[Column("updatedAt")]
 	public DateTime UpdatedAt { get; set; }
 
+	/// <summary>
+	///     The note language at this time in the edit history, as a BCP 47 identifier.
+	/// </summary>
+	[Column("lang")]
+	[StringLength(10)]
+	public string? Lang { get; set; }
+
 	[ForeignKey(nameof(NoteId))]
 	[InverseProperty(nameof(Tables.Note.NoteEdits))]
 	public virtual Note Note { get; set; } = null!;

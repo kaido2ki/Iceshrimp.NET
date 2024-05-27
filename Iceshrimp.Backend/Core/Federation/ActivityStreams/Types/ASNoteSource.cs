@@ -9,7 +9,7 @@ public class ASNoteSource
 {
 	[J($"{Constants.ActivityStreamsNs}#content")]
 	[JC(typeof(VC))]
-	public string? Content { get; set; }
+	public LDLocalizedString? Content { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#mediaType")]
 	[JC(typeof(VC))]

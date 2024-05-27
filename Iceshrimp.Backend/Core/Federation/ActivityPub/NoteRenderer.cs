@@ -151,10 +151,10 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 					To           = to,
 					Tags         = tags,
 					Attachments  = attachments,
-					Content      = text != null ? await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost) : null,
+					Content      = new LDLocalizedString(note.Lang, text != null ? await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost) : null),
 					Summary      = note.Cw,
 					Source = note.Text != null
-						? new ASNoteSource { Content = note.Text, MediaType = "text/x.misskeymarkdown" }
+						? new ASNoteSource { Content = new LDLocalizedString(note.Lang, note.Text), MediaType = "text/x.misskeymarkdown" }
 						: null,
 					MkQuote     = quoteUri,
 					QuoteUri    = quoteUri,
@@ -181,10 +181,10 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			To           = to,
 			Tags         = tags,
 			Attachments  = attachments,
-			Content      = text != null ? await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost) : null,
+			Content      = new LDLocalizedString(note.Lang, text != null ? await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost) : null),
 			Summary      = note.Cw,
 			Source = note.Text != null
-				? new ASNoteSource { Content = note.Text, MediaType = "text/x.misskeymarkdown" }
+				? new ASNoteSource { Content = new LDLocalizedString(note.Lang, note.Text), MediaType = "text/x.misskeymarkdown" }
 				: null,
 			MkQuote  = quoteUri,
 			QuoteUri = quoteUri,

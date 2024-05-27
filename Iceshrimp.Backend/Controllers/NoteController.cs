@@ -307,7 +307,7 @@ public class NoteController(
 			: null;
 
 		var note = await noteSvc.CreateNoteAsync(user, (Note.NoteVisibility)request.Visibility, request.Text,
-		                                         request.Cw, reply, renote, attachments);
+		                                         request.Cw, request.Language, reply, renote, attachments);
 
 		if (request.IdempotencyKey != null)
 			await cache.SetAsync($"idempotency:{user.Id}:{request.IdempotencyKey}", note.Id, TimeSpan.FromHours(24));

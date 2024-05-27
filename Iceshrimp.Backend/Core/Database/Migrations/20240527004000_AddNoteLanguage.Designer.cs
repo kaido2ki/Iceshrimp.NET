@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -13,13 +14,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20240527004000_AddNoteLanguage")]
+    partial class AddNoteLanguage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("ProductVersion", "8.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "antenna_src_enum", new[] { "home", "all", "users", "list", "group", "instances" });
@@ -1158,10 +1161,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("followerSharedInbox")
                         .HasComment("[Denormalized]");
 
-                    b.Property<Guid?>("RelationshipId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("relationshipId");
-
                     b.Property<string>("RequestId")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
@@ -1241,10 +1240,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("followerSharedInbox")
                         .HasComment("[Denormalized]");
-
-                    b.Property<Guid?>("RelationshipId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("relationshipId");
 
                     b.HasKey("Id");
 
@@ -1547,6 +1542,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Job", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -1558,10 +1554,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Property<DateTime?>("DelayedUntil")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("delayed_until");
-
-                    b.Property<string>("Exception")
-                        .HasColumnType("text")
-                        .HasColumnName("exception");
 
                     b.Property<string>("ExceptionMessage")
                         .HasColumnType("text")
@@ -1589,10 +1581,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Property<int>("RetryCount")
                         .HasColumnType("integer")
                         .HasColumnName("retry_count");
-
-                    b.Property<string>("StackTrace")
-                        .HasColumnType("text")
-                        .HasColumnName("stack_trace");
 
                     b.Property<DateTime?>("StartedAt")
                         .HasColumnType("timestamp with time zone")
@@ -3420,10 +3408,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("userId")
                         .HasComment("[Denormalized]");
-
-                    b.Property<int?>("VotersCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("votersCount");
 
                     b.Property<List<int>>("Votes")
                         .IsRequired()

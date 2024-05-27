@@ -59,8 +59,8 @@ public class NoteService(
 	});
 
 	public async Task<Note> CreateNoteAsync(
-		User user, Note.NoteVisibility visibility, string? text = null, string? cw = null, Note? reply = null,
-		Note? renote = null, IReadOnlyCollection<DriveFile>? attachments = null, Poll? poll = null,
+		User user, Note.NoteVisibility visibility, string? text = null, string? cw = null, string? language = null,
+		Note? reply = null, Note? renote = null, IReadOnlyCollection<DriveFile>? attachments = null, Poll? poll = null,
 		bool localOnly = false, string? uri = null, string? url = null, List<string>? emoji = null,
 		MentionQuintuple? resolvedMentions = null, DateTime? createdAt = null, ASNote? asNote = null,
 		string? replyUri = null, string? renoteUri = null
@@ -184,6 +184,7 @@ public class NoteService(
 			Url                  = url,
 			Text                 = text?.Trim(),
 			Cw                   = cw?.Trim(),
+			Lang				 = language,
 			Reply                = reply,
 			ReplyUserId          = reply?.UserId,
 			MastoReplyUserId     = mastoReplyUserId,
@@ -371,7 +372,7 @@ public class NoteService(
 	}
 
 	public async Task<Note> UpdateNoteAsync(
-		Note note, string? text = null, string? cw = null, IReadOnlyCollection<DriveFile>? attachments = null,
+		Note note, string? text = null, string? cw = null, string? language = null, IReadOnlyCollection<DriveFile>? attachments = null,
 		Poll? poll = null, DateTime? updatedAt = null, MentionQuintuple? resolvedMentions = null, ASNote? asNote = null,
 		List<string>? emoji = null
 	)
@@ -385,6 +386,7 @@ public class NoteService(
 			Note      = note,
 			Text      = note.Text,
 			Cw        = note.Cw,
+			Lang	  = note.Lang,
 			FileIds   = note.FileIds
 		};
 
@@ -441,6 +443,7 @@ public class NoteService(
 		mentionedLocalUserIds = mentionedLocalUserIds.Except(previousMentionedLocalUserIds).ToList();
 		note.Text             = text?.Trim();
 		note.Cw               = cw?.Trim();
+		note.Lang             = language;
 		note.Tags             = ResolveHashtags(text, asNote);
 
 		if (note.User.IsLocalUser && nodes != null)
@@ -789,7 +792,9 @@ public class NoteService(
 		var renote     = quoteUrl != null ? await ResolveNoteAsync(quoteUrl, user: user) : null;
 		var renoteUri  = renote == null ? quoteUrl : null;
 		var visibility = note.GetVisibility(actor);
-		var text       = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content, mentionQuintuple.mentions);
+		string? language = null;
+		var mfmText    = note.Source?.MediaType == "text/x.misskeymarkdown" ? note.Source?.Content?.GuessPreferredValue(out language) : note.MkContent;
+		var text       = mfmText ?? await MfmConverter.FromHtmlAsync(note.Content?.GuessPreferredValue(out language), mentionQuintuple.mentions);
 		var cw         = note.Summary;
 		var url        = note.Url?.Link;
 		var uri        = note.Id;
@@ -821,7 +826,7 @@ public class NoteService(
 		            .Select(p => p.Id)
 		            .ToList();
 
-		return await CreateNoteAsync(actor, visibility, text, cw, reply, renote, files, poll, false, uri, url, emoji,
+		return await CreateNoteAsync(actor, visibility, text, cw, language, reply, renote, files, poll, false, uri, url, emoji,
 		                             mentionQuintuple, createdAt, note, replyUri, renoteUri);
 	}
 
@@ -851,7 +856,9 @@ public class NoteService(
 
 		var mentionQuintuple = await ResolveNoteMentionsAsync(note);
 
-		var text = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content, mentionQuintuple.mentions);
+		string? language = null;
+		var mfmText = note.Source?.MediaType == "text/x.misskeymarkdown" ? note.Source?.Content?.GuessPreferredValue(out language) : note.MkContent;
+		var text = mfmText ?? await MfmConverter.FromHtmlAsync(note.Content?.GuessPreferredValue(out language), mentionQuintuple.mentions);
 		var cw   = note.Summary;
 
 		Poll? poll = null;
@@ -883,7 +890,7 @@ public class NoteService(
 		            .Select(p => p.Id)
 		            .ToList();
 
-		return await UpdateNoteAsync(dbNote, text, cw, files, poll, updatedAt, mentionQuintuple, note, emoji);
+		return await UpdateNoteAsync(dbNote, text, cw, language, files, poll, updatedAt, mentionQuintuple, note, emoji);
 	}
 
 	private async Task<MentionQuintuple> ResolveNoteMentionsAsync(ASNote note)

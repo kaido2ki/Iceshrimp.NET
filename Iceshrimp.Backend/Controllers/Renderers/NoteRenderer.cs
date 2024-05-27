@@ -85,6 +85,7 @@ public class NoteRenderer(
 			Url         = note.Url ?? note.Uri ?? note.GetPublicUri(config.Value),
 			Text        = note.Text,
 			Cw          = note.Cw,
+			Language    = note.Lang,
 			Visibility  = (NoteVisibility)note.Visibility,
 			User        = noteUser,
 			Attachments = attachments.ToList(),

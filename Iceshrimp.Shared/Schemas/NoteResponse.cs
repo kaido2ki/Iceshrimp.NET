@@ -36,6 +36,7 @@ public class NoteBase
 	public required string                   Url         { get; set; }
 	public required string?                  Text        { get; set; }
 	public required string?                  Cw          { get; set; }
+	public required string?                  Language    { get; set; }
 	public required NoteVisibility           Visibility  { get; set; }
 	public required bool                     Liked       { get; set; }
 	public required int                      Likes       { get; set; }

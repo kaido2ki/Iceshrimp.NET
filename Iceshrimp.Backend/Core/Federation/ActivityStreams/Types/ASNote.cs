@@ -37,7 +37,7 @@ public class ASNote : ASObject
 
 	[J($"{Constants.ActivityStreamsNs}#content")]
 	[JC(typeof(VC))]
-	public string? Content { get; set; }
+	public LDLocalizedString? Content { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#url")]
 	[JC(typeof(ASLinkConverter))]

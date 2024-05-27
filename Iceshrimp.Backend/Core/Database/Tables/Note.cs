@@ -206,6 +206,13 @@ public class Note : IEntity
 	[Column("updatedAt")]
 	public DateTime? UpdatedAt { get; set; }
 
+	/// <summary>
+	///     The note language, as a BCP 47 identifier.
+	/// </summary>
+	[Column("lang")]
+	[StringLength(10)]
+	public string? Lang { get; set; }
+
 	[ForeignKey(nameof(ChannelId))]
 	[InverseProperty(nameof(Tables.Channel.Notes))]
 	public virtual Channel? Channel { get; set; }
