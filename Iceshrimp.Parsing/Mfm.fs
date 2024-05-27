@@ -110,6 +110,7 @@ module private MfmParser =
     let isNotWhitespace c = Char.IsWhiteSpace c = false
 
     let isAsciiLetterOrNumber c = Char.IsAsciiLetter c || Char.IsDigit c
+    let isLetterOrNumber c = Char.IsLetterOrDigit c
 
     let (|CharNode|MfmNode|) (x: MfmNode) =
         if x :? MfmCharNode then
@@ -231,9 +232,9 @@ module private MfmParser =
         previousCharSatisfiesNot isNotWhitespace
         >>. skipString "@"
         >>. many1Chars (
-            satisfy isAsciiLetterOrNumber
+            satisfy isLetterOrNumber
             <|> pchar '_'
-            <|> attempt (anyOf ".-" .>> nextCharSatisfies isAsciiLetterOrNumber)
+            <|> attempt (anyOf ".-" .>> nextCharSatisfies isLetterOrNumber)
         )
         .>>. opt (skipChar '@' >>. domain)
         .>> (lookAhead
