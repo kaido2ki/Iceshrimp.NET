@@ -502,7 +502,12 @@ public class PostgresJobQueue<T>(
 		await using var scope = GetScope();
 		await using var db    = GetDbContext(scope);
 
-		var job = new Job { Queue = name, Data = JsonSerializer.Serialize(jobData) };
+		var job = new Job
+		{
+			Id    = Ulid.NewUlid().ToGuid(),
+			Queue = name,
+			Data  = JsonSerializer.Serialize(jobData)
+		};
 		db.Add(job);
 		await db.SaveChangesAsync();
 		await RaiseJobQueuedEvent(db);
@@ -515,6 +520,7 @@ public class PostgresJobQueue<T>(
 
 		var job = new Job
 		{
+			Id           = Ulid.NewUlid().ToGuid(),
 			Queue        = name,
 			Data         = JsonSerializer.Serialize(jobData),
 			Status       = Job.JobStatus.Delayed,

@@ -1181,6 +1181,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 
 		modelBuilder.Entity<Job>(entity =>
 		{
+			entity.Property(e => e.Id).ValueGeneratedNever();
 			entity.Property(e => e.Status).HasDefaultValue(Job.JobStatus.Queued);
 			entity.Property(e => e.QueuedAt).HasDefaultValueSql("now()");
 			entity.HasOne<Worker>().WithMany().HasForeignKey(d => d.WorkerId).OnDelete(DeleteBehavior.SetNull);
