@@ -31,6 +31,7 @@ public class StorageMaintenanceService(
 			                   .Where(p => p.StoredInternal && !p.IsLink)
 			                   .GroupBy(p => p.AccessKey)
 			                   .Select(p => p.Key)
+			                   .OrderBy(p => p)
 			                   .Take(100)
 			                   .ToListAsync();
 			
