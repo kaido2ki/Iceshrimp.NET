@@ -72,12 +72,12 @@ public class UserProfileRenderer(DatabaseContext db)
 		               {
 			               UserId        = p.Id,
 			               IsSelf        = p.Id == localUser.Id,
-			               IsFollowing   = localUser.IsFollowing(p),
-			               IsFollowedBy  = localUser.IsFollowedBy(p),
-			               IsBlocking    = localUser.IsBlocking(p),
-			               IsMuting      = localUser.IsMuting(p),
-			               IsRequested   = localUser.IsRequested(p),
-			               IsRequestedBy = localUser.IsRequestedBy(p)
+			               IsFollowing   = p.IsFollowedBy(localUser),
+			               IsFollowedBy  = p.IsFollowing(localUser),
+			               IsBlocking    = p.IsBlockedBy(localUser),
+			               IsMuting      = p.IsMutedBy(localUser),
+			               IsRequested   = p.IsRequestedBy(localUser),
+			               IsRequestedBy = p.IsRequested(localUser)
 		               })
 		               .ToDictionaryAsync(p => p.UserId, p => p);
 	}
