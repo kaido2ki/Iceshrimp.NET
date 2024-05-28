@@ -138,7 +138,7 @@ public static class WebApplicationExtensions
 		{
 			app.Logger.LogInformation("Migrating files to object storage, this will take a while...");
 			db.Database.SetCommandTimeout(0);
-			await provider.GetRequiredService<StorageMaintenanceService>().MigrateLocalFiles();
+			await provider.GetRequiredService<StorageMaintenanceService>().MigrateLocalFiles(args.Contains("--purge"));
 			Environment.Exit(0);
 		}
 

@@ -16,10 +16,11 @@ public class StorageMaintenanceService(
 	ILogger<StorageMaintenanceService> logger
 )
 {
-	public async Task MigrateLocalFiles()
+	public async Task MigrateLocalFiles(bool purge)
 	{
 		var pathBase      = options.Value.Local?.Path;
 		var pathsToDelete = new ConcurrentBag<string>();
+		var failed        = new ConcurrentBag<string>();
 
 		logger.LogInformation("Migrating all files to object storage...");
 		var total     = await db.DriveFiles.CountAsync(p => p.StoredInternal && !p.IsLink);
@@ -34,7 +35,7 @@ public class StorageMaintenanceService(
 			                   .OrderBy(p => p)
 			                   .Take(100)
 			                   .ToListAsync();
-			
+
 			var hits = await db.DriveFiles
 			                   .Where(p => p.StoredInternal && !p.IsLink && keys.Contains(p.AccessKey))
 			                   .GroupBy(p => p.AccessKey)
@@ -42,7 +43,7 @@ public class StorageMaintenanceService(
 
 			if (hits.Count == 0) break;
 
-			await Parallel.ForEachAsync(hits, new ParallelOptions { MaxDegreeOfParallelism = 8 }, MigrateFile);
+			await Parallel.ForEachAsync(hits, new ParallelOptions { MaxDegreeOfParallelism = 8 }, TryMigrateFile);
 			await db.SaveChangesAsync();
 			foreach (var path in pathsToDelete)
 				File.Delete(path);
@@ -53,15 +54,40 @@ public class StorageMaintenanceService(
 			logger.LogInformation("Migrating files to object storage... {completed}/{total}", completed, total);
 		}
 
-		logger.LogInformation("Done! All files have been migrated.");
+		if (failed.IsEmpty)
+			logger.LogInformation("Done! All files have been migrated.");
+		else if (!purge)
+			logger.LogInformation("Done. Some files could not be migrated successfully. You may retry this process or clean them up by adding --purge to the CLI arguments.");
+		else
+			await PurgeFiles();
 
 		return;
 
 		[SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-		async ValueTask MigrateFile(IEnumerable<DriveFile> files, CancellationToken token)
+		async ValueTask TryMigrateFile(IEnumerable<DriveFile> files, CancellationToken token)
+		{
+			try
+			{
+				await MigrateFile(files).WaitAsync(token);
+			}
+			catch (Exception e)
+			{
+				foreach (var file in files)
+				{
+					logger.LogWarning("Failed to migrate file {id}: {error}", file.Id, e.Message);
+					failed.Add(file.Id);
+				}
+			}
+		}
+
+		[SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
+		async Task MigrateFile(IEnumerable<DriveFile> files)
 		{
 			var file = files.FirstOrDefault();
 			if (file == null) return;
+
+			// defer deletions in case an error occurs
+			List<string> deletionQueue = [];
 
 			if (file.AccessKey != null)
 			{
@@ -70,7 +96,7 @@ public class StorageMaintenanceService(
 
 				await objectStorageSvc.UploadFileAsync(file.AccessKey, file.Type, stream);
 				file.Url = objectStorageSvc.GetFilePublicUrl(file.AccessKey).AbsoluteUri;
-				pathsToDelete.Add(path);
+				deletionQueue.Add(path);
 			}
 
 			if (file.ThumbnailAccessKey != null)
@@ -80,7 +106,7 @@ public class StorageMaintenanceService(
 
 				await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, "image/webp", stream);
 				file.ThumbnailUrl = objectStorageSvc.GetFilePublicUrl(file.ThumbnailAccessKey).AbsoluteUri;
-				pathsToDelete.Add(path);
+				deletionQueue.Add(path);
 			}
 
 			if (file.WebpublicAccessKey != null)
@@ -90,7 +116,7 @@ public class StorageMaintenanceService(
 
 				await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, "image/webp", stream);
 				file.WebpublicUrl = objectStorageSvc.GetFilePublicUrl(file.WebpublicAccessKey).AbsoluteUri;
-				pathsToDelete.Add(path);
+				deletionQueue.Add(path);
 			}
 
 			foreach (var item in files)
@@ -100,6 +126,16 @@ public class StorageMaintenanceService(
 				item.ThumbnailUrl   = file.ThumbnailUrl;
 				item.WebpublicUrl   = file.WebpublicUrl;
 			}
+
+			foreach (var item in deletionQueue) pathsToDelete.Add(item);
+		}
+
+		async Task PurgeFiles()
+		{
+			logger.LogInformation("Done. Purging {count} failed files...", failed.Count);
+			foreach (var chunk in failed.Chunk(100))
+				await db.DriveFiles.Where(p => chunk.Contains(p.Id)).ExecuteDeleteAsync();
+			logger.LogInformation("All done.");
 		}
 	}
 }
