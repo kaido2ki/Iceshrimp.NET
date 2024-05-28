@@ -233,16 +233,13 @@ public class PostgresJobQueue<T>(
 				await using var db    = GetDbContext(scope);
 
 				var runningCount = _workerId == null
-					? await db.Jobs.CountAsync(p => p.Queue == name && p.Status == Job.JobStatus.Running,
-					                           token)
+					? await db.Jobs.CountAsync(p => p.Queue == name && p.Status == Job.JobStatus.Running, token)
 					: await db.Jobs.CountAsync(p => p.Queue == name &&
 					                                p.Status == Job.JobStatus.Running &&
 					                                p.WorkerId != null &&
-					                                p.WorkerId == _workerId,
-					                           token);
+					                                p.WorkerId == _workerId, token);
 				var queuedCount = _workerId == null
-					? await db.Jobs.CountAsync(p => p.Queue == name && p.Status == Job.JobStatus.Queued,
-					                           token)
+					? await db.Jobs.CountAsync(p => p.Queue == name && p.Status == Job.JobStatus.Queued, token)
 					: await
 						db.Jobs.CountAsync(p => p.Queue == name &&
 						                        (p.Status == Job.JobStatus.Queued ||
@@ -443,8 +440,8 @@ public class PostgresJobQueue<T>(
 			}
 			else
 			{
-				logger.LogError(e, "Failed to process job {id} in {queue} queue:", job.Id.ToStringLower(),
-				                queueName);
+				logger.LogError(e, "Failed to process job {id} in {queue} queue: {error}", job.Id.ToStringLower(),
+				                queueName, e);
 			}
 		}
 

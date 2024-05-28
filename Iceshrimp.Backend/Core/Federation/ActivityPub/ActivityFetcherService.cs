@@ -202,9 +202,7 @@ public class ActivityFetcherService(
 	public async Task<ASActor> FetchActorAsync(string uri)
 	{
 		var (actor, keypair) = await systemUserSvc.GetInstanceActorWithKeypairAsync();
-		var activity = await FetchActivityAsync(uri, actor, keypair);
-		return activity.OfType<ASActor>().FirstOrDefault() ??
-		       throw new GracefulException($"Failed to fetch actor: {uri}");
+		return await FetchActorAsync(uri, actor, keypair);
 	}
 
 	private async Task<ASNote?> FetchNoteAsync(string uri, User actor, UserKeypair keypair)
