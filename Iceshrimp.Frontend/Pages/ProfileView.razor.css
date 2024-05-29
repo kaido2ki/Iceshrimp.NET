@@ -1,0 +1,59 @@
+.scroller {
+    height: 100vh;
+    overflow-y: scroll;
+    overflow-x: clip;
+}
+
+.header {
+    display: flex;
+}
+
+.name-section {
+    margin-left: 1rem;
+}
+
+.name {
+    font-size: 2rem;
+}
+.identifier {
+    font-size: 1.5rem;
+}
+
+.profile-card {
+    margin: auto;
+    padding: 1rem;
+    border-radius: 1rem;
+    background-color: var(--foreground-color);
+    max-width: 45rem;
+}
+
+.avatar {
+    border-radius: 8px;
+    object-fit: cover;
+    width: 5em;
+    height: 5em;
+}
+
+.notes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.note-container {
+    max-width: 45rem;
+    background-color: var(--foreground-color);
+    padding: 1.5rem 1.5rem 1rem; /* top, left-right, bottom*/
+    @media (max-width: 1000px) {
+        padding: 1.5rem 1rem 1rem;
+    }
+    border-radius: 0.75rem;
+    margin-top: 1rem;
+    margin-right: 0.5rem;
+    margin-left: 0.5rem;
+    width: 100%;
+}
+
+::deep .end {
+    margin: auto;
+}

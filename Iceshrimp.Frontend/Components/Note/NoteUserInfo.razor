@@ -1,6 +1,8 @@
+@inject NavigationManager Nav
+
 @if (Indented == false)
 {
-    <img class="user-avatar" src="@AvatarUrl"/>
+    <img @onclick="OpenProfile" class="user-avatar" src="@AvatarUrl"/>
 }
 <div class="name-section">
     <span class="display-name">@(DisplayName ?? Username)</span>
@@ -12,4 +14,15 @@
     [Parameter][EditorRequired] public required string  Username    { get; set; }
     [Parameter][EditorRequired] public required bool    Indented    { get; set; }
     [Parameter][EditorRequired] public required string  Host        { get; set; }
+
+    private void OpenProfile()
+    {
+        string path = $"@{Username}";
+        if (Host.Length > 0)
+        {
+            path += $"@{Host}";
+        }
+
+        Nav.NavigateTo($"/{path}");
+    }
 }

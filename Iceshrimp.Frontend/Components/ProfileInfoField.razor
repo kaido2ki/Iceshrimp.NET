@@ -1,0 +1,8 @@
+@using Iceshrimp.Shared.Schemas
+<div class="field">
+    <span class="field-name">@Field.Name</span>
+    <span class="field-value">@Field.Value</span>
+</div>
+@code {
+    [Parameter][EditorRequired] public required UserProfileField Field { get; set; }
+}

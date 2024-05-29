@@ -1,0 +1,56 @@
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Localization> Loc;
+<div class="profile-info">
+    <div class="bio">
+        <MfmText Text="@UserProfile.Bio" />
+    </div>
+    <div class="data">
+        @if (UserProfile.Location != null)
+        {
+            <div class="location">
+                <span class="location-field">@Loc["Location"]</span>
+                <span class="location-data">@UserProfile.Location</span>
+            </div>
+        }
+        @if (UserProfile.Birthday != null)
+        {
+            <div class="joined">
+                <span class="joined-field">@Loc["Joined on"]</span>
+                <span class="joined-data">@UserProfile.Birthday</span>
+            </div>
+        }
+    </div>
+    @if (UserProfile.Fields != null)
+    {
+        <div class="fields">
+            @foreach (var field in UserProfile.Fields)
+            {
+                <ProfileInfoField Field="field" />
+            }
+        </div>
+    }
+    <div class="metadata">
+        <div class="field">
+            <div class="field-data">
+                @UserProfile.Followers
+            </div>
+            <div class="field-text">
+                @Loc["Followers"]
+            </div>
+        </div>
+        <div class="field">
+            <div class="field-data">
+                @UserProfile.Following
+            </div>
+            <div class="field-text">
+                @Loc["Following"]
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter][EditorRequired] public required UserProfileResponse UserProfile { get; set; }
+}

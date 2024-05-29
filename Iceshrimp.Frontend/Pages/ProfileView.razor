@@ -1,0 +1,144 @@
+@page "/{User}"
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Components.Note
+@using System.Text.RegularExpressions
+@inject ApiService Api
+
+@if (_init)
+{
+    <div class="scroller">
+        <div class="profile-card">
+            <div class="header">
+                <div>
+                    <img class="avatar" src="@UserResponse.AvatarUrl"/>
+                </div>
+                <div class="name-section">
+                    <div class="name">@UserResponse.DisplayName</div>
+                    <div class="identifier">
+                        @UserResponse.Username
+                        @if (UserResponse.Host != null)
+                        {
+                            @UserResponse.Host
+                        }
+                    </div>
+                </div>
+            </div>
+            <ProfileInfo UserProfile="Profile"/>
+        </div>
+        @if (UserNotes.Count > 0)
+        {
+            <div class="notes">
+                @foreach (var note in UserNotes)
+                {
+                    <div class="note-container">
+                        <Note NoteResponse="note"/>
+                    </div>
+                }
+            </div>
+            <ScrollEnd IntersectionChange="AddNotes" ManualLoad="AddNotes" Class="end"/>
+        }
+    </div>
+}
+@if (_loading)
+{
+    <div>loading</div>
+}
+@if (_notFound)
+{
+    <div>User does not exist!</div>
+}
+@if (_error)
+{
+    <div>Failure</div>
+}
+
+@code {
+
+    [Parameter] public string?              User         { get; set; }
+    [Parameter] public string?              Host         { get; set; }
+    private            UserResponse         UserResponse { get; set; } = null!;
+    private            UserProfileResponse? Profile      { get; set; }
+    private            string?              MinId        { get; set; }
+    private            List<NoteResponse>   UserNotes    { get; set; } = [];
+    private            bool                 _loading   = true;
+    private            bool                 _init      = false;
+    private            bool                 _notFound  = false;
+    private            bool                 _error     = false;
+    private            bool                 _fetchLock = false;
+
+    private async Task GetNotes(string? _minId)
+    {
+        var pq    = new PaginationQuery() { Limit = 10, MaxId = _minId };
+        var notes = await Api.Users.GetUserNotes(UserResponse.Id, pq);
+        if (notes is not null && notes.Count > 0)
+        {
+            MinId = notes.Last().Id;
+            UserNotes.AddRange(notes);
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddNotes()
+    {
+        if (_fetchLock == false)
+        {
+            _fetchLock = true;
+            await GetNotes(MinId);
+            _fetchLock = false;
+        }
+    }
+
+    private async Task LoadProfile()
+    {
+        try
+        {
+            if (User is null)
+            {
+                _notFound = true;
+            }
+            else
+            {
+                var pattern      = "^@(.[^@]+)@?(.+)?$";
+                var matches      = Regex.Match(User, pattern);
+                var userResponse = await Api.Users.LookupUser(matches.Groups[1].Value, matches.Groups[2].Value);
+                if (userResponse is null)
+                {
+                    _notFound = true;
+                }
+                else
+                {
+                    UserResponse = userResponse;
+                    Profile      = await Api.Users.GetUserProfile(UserResponse.Id);
+                    GetNotes(null);
+                    _init    = true;
+                    _loading = false;
+                }
+            }
+        }
+        catch (ApiException e)
+        {
+            _loading = false;
+            _error   = true;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProfile();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _init     = false;
+        _loading  = true;
+        UserNotes = [];
+        MinId     = null;
+        Profile   = null;
+        StateHasChanged();
+        await LoadProfile();
+    }
+
+}

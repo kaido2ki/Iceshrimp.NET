@@ -1,0 +1,12 @@
+.bio {
+    margin-bottom: 1rem;
+    border-bottom: 0.1rem solid var(--highlight-color);
+}
+
+.metadata {
+    display: flex;
+    justify-content: space-evenly;
+}
+.field {
+    text-align: center;
+}
