@@ -13,12 +13,12 @@
     [Parameter][EditorRequired] public required string? DisplayName { get; set; }
     [Parameter][EditorRequired] public required string  Username    { get; set; }
     [Parameter][EditorRequired] public required bool    Indented    { get; set; }
-    [Parameter][EditorRequired] public required string  Host        { get; set; }
+    [Parameter][EditorRequired] public required string? Host        { get; set; }
 
     private void OpenProfile()
     {
         string path = $"@{Username}";
-        if (Host.Length > 0)
+        if (Host?.Length > 0)
         {
             path += $"@{Host}";
         }
