@@ -69,7 +69,7 @@ app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback");
 app.MapHub<ExampleHub>("/hubs/example");
 app.MapHub<StreamingHub>("/hubs/streaming");
 app.MapRazorPages();
-app.MapFallbackToPage("/Shared/FrontendSPA");
+app.MapFallbackToPage("{**slug}", "/Shared/FrontendSPA");
 
 app.Urls.Clear();
 if (config.ListenSocket == null)
