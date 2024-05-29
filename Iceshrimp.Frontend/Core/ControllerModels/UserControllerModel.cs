@@ -20,8 +20,8 @@ internal class UserControllerModel(ApiClient api)
 	public Task<UserResponse?> LookupUser(string username, string? host)
 	{
 		var query = new QueryString();
-		query.Add("username", username);
-		if (host != null) query.Add("host", host);
+		query = query.Add("username", username);
+		if (host != null) query = query.Add("host", host);
 		return api.CallNullable<UserResponse>(HttpMethod.Get, "/users/lookup", query);
 	}
 }
