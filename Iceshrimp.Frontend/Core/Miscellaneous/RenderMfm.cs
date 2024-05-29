@@ -103,7 +103,7 @@ public class MfmRenderer
     {
         var el = document.CreateElement("a");
         el.SetAttribute("href", node.Url);
-        el.TextContent = node.Url;
+        el.ClassName   = "link-node";
         return el;
     }
 
@@ -125,6 +125,7 @@ public class MfmRenderer
     {
         var el = document.CreateElement("a");
         el.SetAttribute("href", node.Url);
+        el.ClassName   = "url-node";
         el.TextContent = node.Url;
         return el;
     }
