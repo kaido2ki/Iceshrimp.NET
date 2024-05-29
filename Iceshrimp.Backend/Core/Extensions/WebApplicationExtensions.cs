@@ -46,6 +46,13 @@ public static class WebApplicationExtensions
 		return app;
 	}
 
+	public static void MapFrontendRoutes(this WebApplication app, string page)
+	{
+		app.MapFallbackToPage(page).WithOrder(int.MaxValue - 2);
+		app.MapFallbackToPage("/@{user}", page).WithOrder(int.MaxValue - 1);
+		app.MapFallbackToPage("/@{user}@{host}", page);
+	}
+
 	public static async Task<Config.InstanceSection> Initialize(this WebApplication app, string[] args)
 	{
 		var instanceConfig = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
@@ -193,7 +200,7 @@ public static class WebApplicationExtensions
 
 		app.Logger.LogInformation("Warming up meta cache...");
 		await meta.WarmupCache();
-		
+
 		// Initialize image processing
 		provider.GetRequiredService<ImageProcessor>();
 
