@@ -233,25 +233,58 @@ public class NoteService(
 		{
 			_ = followupTaskSvc.ExecuteTask("ResolvePendingReplyRenoteTargets", async provider =>
 			{
-				var bgDb = provider.GetRequiredService<DatabaseContext>();
+				var bgDb  = provider.GetRequiredService<DatabaseContext>();
+				var count = 0;
+
 				if (uri != null)
 				{
-					await bgDb.Notes.Where(p => p.ReplyUri == uri)
-					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.ReplyId, _ => note.Id)
-					                                    .SetProperty(i => i.ReplyUri, _ => null));
-					await bgDb.Notes.Where(p => p.RenoteUri == uri)
-					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RenoteId, _ => note.Id)
-					                                    .SetProperty(i => i.RenoteUri, _ => null));
+					count +=
+						await bgDb.Notes.Where(p => p.ReplyUri == uri)
+						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.ReplyUri, _ => null)
+						                                    .SetProperty(i => i.ReplyId, _ => note.Id)
+						                                    .SetProperty(i => i.ReplyUserId, _ => note.UserId)
+						                                    .SetProperty(i => i.ReplyUserHost, _ => note.UserHost)
+						                                    .SetProperty(i => i.MastoReplyUserId,
+						                                                 i => i.UserId != user.Id
+							                                                 ? i.UserId
+							                                                 : mastoReplyUserId));
+
+					count +=
+						await bgDb.Notes.Where(p => p.RenoteUri == uri)
+						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RenoteUri, _ => null)
+						                                    .SetProperty(i => i.RenoteId, _ => note.Id)
+						                                    .SetProperty(i => i.RenoteUserId, _ => note.UserId)
+						                                    .SetProperty(i => i.RenoteUserHost, _ => note.UserHost));
 				}
 
 				if (url != null)
 				{
-					await bgDb.Notes.Where(p => p.ReplyUri == url)
-					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.ReplyId, _ => note.Id)
-					                                    .SetProperty(i => i.ReplyUri, _ => null));
-					await bgDb.Notes.Where(p => p.RenoteUri == url)
-					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RenoteId, _ => note.Id)
-					                                    .SetProperty(i => i.RenoteUri, _ => null));
+					count +=
+						await bgDb.Notes.Where(p => p.ReplyUri == url)
+						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.ReplyUri, _ => null)
+						                                    .SetProperty(i => i.ReplyId, _ => note.Id)
+						                                    .SetProperty(i => i.ReplyUserId, _ => note.UserId)
+						                                    .SetProperty(i => i.ReplyUserHost, _ => note.UserHost)
+						                                    .SetProperty(i => i.MastoReplyUserId,
+						                                                 i => i.UserId != user.Id
+							                                                 ? i.UserId
+							                                                 : mastoReplyUserId));
+					count +=
+						await bgDb.Notes.Where(p => p.RenoteUri == url)
+						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RenoteUri, _ => null)
+						                                    .SetProperty(i => i.RenoteId, _ => note.Id)
+						                                    .SetProperty(i => i.RenoteUserId, _ => note.UserId)
+						                                    .SetProperty(i => i.RenoteUserHost, _ => note.UserHost));
+				}
+
+				if (count > 0)
+				{
+					await bgDb.Notes.Where(p => p.Id == note.Id)
+					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RepliesCount,
+					                                                 i => db.Notes.Count(n => n.ReplyId == i.Id))
+					                                    .SetProperty(i => i.RenoteCount,
+					                                                 i => db.Notes.Count(n => n.RenoteId == i.Id &&
+						                                                 n.IsPureRenote)));
 				}
 			});
 		}
