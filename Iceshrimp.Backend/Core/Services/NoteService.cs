@@ -281,9 +281,9 @@ public class NoteService(
 				{
 					await bgDb.Notes.Where(p => p.Id == note.Id)
 					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RepliesCount,
-					                                                 i => db.Notes.Count(n => n.ReplyId == i.Id))
+					                                                 i => bgDb.Notes.Count(n => n.ReplyId == i.Id))
 					                                    .SetProperty(i => i.RenoteCount,
-					                                                 i => db.Notes.Count(n => n.RenoteId == i.Id &&
+					                                                 i => bgDb.Notes.Count(n => n.RenoteId == i.Id &&
 						                                                 n.IsPureRenote)));
 				}
 			});
