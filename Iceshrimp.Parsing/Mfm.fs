@@ -170,7 +170,7 @@ module private MfmParser =
     let codePattern = (notFollowedBy <| str "```") >>. skipChar '`'
     
     // Matchers
-    let hashtagMatcher = letter <|> anyOf "-_"
+    let hashtagMatcher = letter <|> digit <|> anyOf "-_"
     let hashtagSatisfier = attempt hashtagMatcher
     
     // Node parsers
