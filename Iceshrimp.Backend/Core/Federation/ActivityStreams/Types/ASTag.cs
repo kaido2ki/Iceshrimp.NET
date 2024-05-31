@@ -78,9 +78,9 @@ public sealed class ASTagConverter : JsonConverter
 			var result = new List<ASTag>();
 			foreach (var token in array)
 			{
-				if (token is not JObject obj) return null;
+				if (token is not JObject obj) continue;
 				var item = HandleObject(obj);
-				if (item == null) return null;
+				if (item == null) continue;
 				result.Add(item);
 			}
 
