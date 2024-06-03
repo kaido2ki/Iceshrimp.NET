@@ -38,7 +38,7 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 
 		var result = new NodeInfoResponse
 		{
-			Version = instance.Version,
+			Version = Request.Path.Value?.EndsWith("2.1") ?? false ? "2.1" : "2.0",
 			Software = new NodeInfoResponse.NodeInfoSoftware
 			{
 				Version  = instance.Version,
