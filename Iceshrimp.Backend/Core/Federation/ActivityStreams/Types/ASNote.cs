@@ -4,6 +4,7 @@ using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using JI = Newtonsoft.Json.JsonIgnoreAttribute;
 using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
+using LVC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.LocalizedValueObjectConverter;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
@@ -36,7 +37,7 @@ public class ASNote : ASObject
 	public string? QuoteUri { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#content")]
-	[JC(typeof(VC))]
+	[JC(typeof(LVC))]
 	public LDLocalizedString? Content { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#url")]

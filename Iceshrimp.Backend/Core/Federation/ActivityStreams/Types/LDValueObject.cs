@@ -130,24 +130,6 @@ public class ValueObjectConverter : JsonConverter
 		JsonSerializer serializer
 	)
 	{
-		// TODO: this feels wrong
-		if (reader.TokenType == JsonToken.StartArray && objectType == typeof(LDLocalizedString))
-		{
-			var obj  = JArray.Load(reader);
-			var list = obj.ToObject<List<LDValueObject<string?>>>();
-			if (list == null || list.Count == 0)
-				return null;
-
-			var localized = new LDLocalizedString();
-
-			foreach (var item in list)
-			{
-				localized.Values.Add(item.Language ?? "", item.Value);
-			}
-
-			return localized;
-		}
-
 		if (reader.TokenType == JsonToken.StartArray)
 		{
 			var obj  = JArray.Load(reader);
@@ -212,31 +194,6 @@ public class ValueObjectConverter : JsonConverter
 
 	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
 	{
-
-		// TODO: this also feels wrong
-		if (value is LDLocalizedString lstr) {
-			writer.WriteStartArray();
-
-			foreach (var item in lstr.Values)
-			{
-				writer.WriteStartObject();
-
-				if (!LDLocalizedString.IsUnknownLanguage(item.Key))
-				{
-					writer.WritePropertyName("@language");
-					writer.WriteValue(item.Key);
-				}
-
-				writer.WritePropertyName("@value");
-				writer.WriteValue(item.Value);
-
-				writer.WriteEndObject();
-			}
-
-			writer.WriteEndArray();
-			return;
-		}
-
 		writer.WriteStartObject();
 
 		switch (value)
@@ -279,4 +236,54 @@ public class ValueObjectConverter : JsonConverter
 
 		writer.WriteEndObject();
 	}
+}
+
+
+public class LocalizedValueObjectConverter : JsonConverter<LDLocalizedString>
+{
+    public override LDLocalizedString? ReadJson(JsonReader reader, Type objectType, LDLocalizedString? existingValue, bool hasExistingValue, JsonSerializer serializer)
+    {
+		var obj  = JArray.Load(reader);
+		var list = obj.ToObject<List<LDValueObject<string?>>>();
+		if (list == null || list.Count == 0)
+			return null;
+
+		var localized = new LDLocalizedString();
+
+		foreach (var item in list)
+		{
+			localized.Values.Add(item.Language ?? "", item.Value);
+		}
+
+		return localized;
+    }
+
+    public override void WriteJson(JsonWriter writer, LDLocalizedString? value, JsonSerializer serializer)
+    {
+		if (value == null)
+		{
+			writer.WriteNull();
+			return;
+		}
+
+		writer.WriteStartArray();
+
+		foreach (var item in value.Values)
+		{
+			writer.WriteStartObject();
+
+			if (!LDLocalizedString.IsUnknownLanguage(item.Key))
+			{
+				writer.WritePropertyName("@language");
+				writer.WriteValue(item.Key);
+			}
+
+			writer.WritePropertyName("@value");
+			writer.WriteValue(item.Value);
+
+			writer.WriteEndObject();
+		}
+
+		writer.WriteEndArray();
+    }
 }
