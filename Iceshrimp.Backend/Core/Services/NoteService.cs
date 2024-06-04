@@ -123,7 +123,11 @@ public class NoteService(
 		// ReSharper restore EntityFramework.UnsupportedServerSideFunctionCall
 
 		List<MfmNode>? nodes = null;
-		if (text != null)
+		if (text != null && string.IsNullOrWhiteSpace(text))
+		{
+			text = null;
+		}
+		else if (text != null)
 		{
 			nodes = MfmParser.Parse(text).ToList();
 			nodes = mentionsResolver.ResolveMentions(nodes, user.Host, mentions, splitDomainMapping).ToList();
@@ -402,7 +406,11 @@ public class NoteService(
 
 
 		List<MfmNode>? nodes = null;
-		if (text != null)
+		if (text != null && string.IsNullOrWhiteSpace(text))
+		{
+			text = null;
+		}
+		else if (text != null)
 		{
 			nodes = MfmParser.Parse(text).ToList();
 			nodes = mentionsResolver.ResolveMentions(nodes, note.User.Host, mentions, splitDomainMapping).ToList();
