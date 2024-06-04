@@ -80,9 +80,11 @@ public class NoteRenderer(
 		var quoteInaccessible =
 			note.Renote == null && ((note.RenoteId != null && recurse > 0) || note.RenoteUri != null);
 
-		var content = text != null && data?.Source != true
-			? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost, quoteUri, quoteInaccessible,
-			                                 replyInaccessible)
+		var content = data?.Source != true
+			? text != null
+				? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost, quoteUri, quoteInaccessible,
+				                                 replyInaccessible)
+				: ""
 			: null;
 
 		var account = data?.Accounts?.FirstOrDefault(p => p.Id == note.UserId) ??
