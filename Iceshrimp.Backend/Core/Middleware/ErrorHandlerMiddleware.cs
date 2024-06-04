@@ -201,6 +201,12 @@ public class AuthFetchException(HttpStatusCode statusCode, string message, strin
 		new(HttpStatusCode.NotFound, HttpStatusCode.NotFound.ToString(), message);
 }
 
+public class LocalFetchException(string uri)
+	: GracefulException(HttpStatusCode.UnprocessableEntity, "Refusing to fetch activity from local domain")
+{
+	public string Uri => uri;
+}
+
 public enum ExceptionVerbosity
 {
 	[SuppressMessage("ReSharper", "UnusedMember.Global")]

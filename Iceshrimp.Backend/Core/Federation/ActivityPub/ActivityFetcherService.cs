@@ -87,7 +87,7 @@ public class ActivityFetcherService(
 	{
 		var requestHost = new Uri(url).Host;
 		if (requestHost == config.Value.WebDomain || requestHost == config.Value.AccountDomain)
-			throw GracefulException.UnprocessableEntity("Refusing to fetch activity from local domain");
+			throw new LocalFetchException(url);
 
 		if (await fedCtrlSvc.ShouldBlockAsync(requestHost))
 		{

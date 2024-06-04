@@ -1029,19 +1029,29 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Refusing to resolve circular threads");
 		_resolverHistory.Add(uri);
 
-		var note = uri.StartsWith($"https://{config.Value.WebDomain}/notes/")
-			? await db.Notes.IncludeCommonProperties()
-			          .FirstOrDefaultAsync(p => p.Id ==
-			                                    uri.Substring($"https://{config.Value.WebDomain}/notes/".Length))
-			: await db.Notes.IncludeCommonProperties()
-			          .FirstOrDefaultAsync(p => p.Uri == uri);
+		if (uri.StartsWith($"https://{config.Value.WebDomain}/notes/"))
+		{
+			var id = uri[$"https://{config.Value.WebDomain}/notes/".Length..];
+			return await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
+		}
+
+		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == uri);
 
 		if (note != null) return note;
 
 		if (!fetchedNote?.VerifiedFetch ?? false)
 			fetchedNote = null;
 
-		fetchedNote ??= user != null ? await fetchSvc.FetchNoteAsync(uri, user) : await fetchSvc.FetchNoteAsync(uri);
+		try
+		{
+			fetchedNote ??=
+				user != null ? await fetchSvc.FetchNoteAsync(uri, user) : await fetchSvc.FetchNoteAsync(uri);
+		}
+		catch (LocalFetchException e) when (e.Uri.StartsWith($"https://{config.Value.WebDomain}/notes/"))
+		{
+			var id = e.Uri[$"https://{config.Value.WebDomain}/notes/".Length..];
+			return await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
+		}
 
 		if (fetchedNote == null)
 		{
