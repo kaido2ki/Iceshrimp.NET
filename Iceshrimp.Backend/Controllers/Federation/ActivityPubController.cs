@@ -41,7 +41,7 @@ public class ActivityPubController(
 		                   .EnsureVisibleFor(actor)
 		                   .FirstOrDefaultAsync(p => p.Id == id);
 		if (note == null) return NotFound();
-		if (note.User.Host == null)
+		if (note.User.Host != null)
 			return RedirectPermanent(note.Uri ?? throw new Exception("Refusing to render remote note without uri"));
 		var rendered  = await noteRenderer.RenderAsync(note);
 		var compacted = rendered.Compact();
