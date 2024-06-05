@@ -13,7 +13,7 @@ public class StatusEntity : IEntity, ICloneable
 	[J("text")]                   public required string?       Text           { get; set; }
 	[J("content")]                public required string?       Content        { get; set; }
 	[J("uri")]                    public required string        Uri            { get; set; }
-	[J("url")]                    public required string        Url            { get; set; }
+	[J("url")]                    public required string?       Url            { get; set; }
 	[J("account")]                public required AccountEntity Account        { get; set; }
 	[J("in_reply_to_id")]         public required string?       ReplyId        { get; set; }
 	[J("in_reply_to_account_id")] public required string?       ReplyUserId    { get; set; }

@@ -55,6 +55,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			StatusesCount      = user.NotesCount,
 			Note               = await mfmConverter.ToHtmlAsync(profile?.Description ?? "", mentions, user.Host),
 			Url                = profile?.Url ?? user.Uri ?? user.GetPublicUrl(config.Value),
+			Uri                = user.Uri ?? user.GetPublicUri(config.Value),
 			AvatarStaticUrl    = user.AvatarUrl ?? user.GetIdenticonUrlPng(config.Value), //TODO
 			HeaderUrl          = user.BannerUrl ?? _transparent,
 			HeaderStaticUrl    = user.BannerUrl ?? _transparent, //TODO
