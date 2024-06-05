@@ -132,7 +132,7 @@ public class NoteRenderer(
 			IsFavorited      = liked,
 			IsRenoted        = renoted,
 			IsBookmarked     = bookmarked,
-			IsMuted          = null, //FIXME
+			IsMuted          = false, //FIXME
 			IsSensitive      = note.Cw != null || attachments.Any(p => p.Sensitive),
 			ContentWarning   = note.Cw ?? "",
 			Visibility       = StatusEntity.EncodeVisibility(note.Visibility),
