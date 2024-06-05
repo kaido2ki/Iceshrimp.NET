@@ -20,7 +20,7 @@ public class PollService(
 		{
 			if (!updateVotersCount) return;
 			await db.Database
-			        .ExecuteSqlAsync($"""UPDATE "poll" SET "votersCount" = (SELECT COUNT(*) FROM (SELECT DISTINCT "userId" FROM "poll_vote" WHERE "noteId" = {poll.NoteId}));""");
+			        .ExecuteSqlAsync($"""UPDATE "poll" SET "votersCount" = (SELECT COUNT(*) FROM (SELECT DISTINCT "userId" FROM "poll_vote" WHERE "noteId" = {poll.NoteId})) WHERE "noteId" = {poll.NoteId};""");
 			return;
 		}
 
