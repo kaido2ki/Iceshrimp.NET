@@ -16,7 +16,7 @@ public class AccountEntity : IEntity
 	[J("statuses_count")]  public required long              StatusesCount      { get; set; }
 	[J("note")]            public required string            Note               { get; set; }
 	[J("url")]             public required string            Url                { get; set; }
-	[J("url")]             public required string            Uri                { get; set; }
+	[J("uri")]             public required string            Uri                { get; set; }
 	[J("avatar")]          public required string            AvatarUrl          { get; set; }
 	[J("avatar_static")]   public required string            AvatarStaticUrl    { get; set; }
 	[J("header")]          public required string            HeaderUrl          { get; set; }
