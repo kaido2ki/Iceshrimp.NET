@@ -217,9 +217,13 @@ public class ActivityHandlerService(
 		if (follow is not { Actor: not null })
 			throw GracefulException.UnprocessableEntity("Refusing to reject object with invalid follow object");
 
-		var resolvedFollower = await userResolver.ResolveAsync(activity.Actor.Id);
-		if (resolvedFollower is not { Host: null })
+		var resolvedFollower = await userResolver.ResolveAsync(follow.Actor.Id);
+		if (resolvedFollower is not { IsLocalUser: true })
 			throw GracefulException.UnprocessableEntity("Refusing to reject remote follow");
+		if (resolvedActor.Uri == null)
+			throw GracefulException.UnprocessableEntity("Refusing to process reject for actor without uri");
+		if (resolvedActor.Uri != follow.Object?.Id)
+			throw GracefulException.UnprocessableEntity("Refusing to process reject: actor doesn't match object");
 
 		await db.FollowRequests.Where(p => p.Followee == resolvedActor && p.Follower == resolvedFollower)
 		        .ExecuteDeleteAsync();
