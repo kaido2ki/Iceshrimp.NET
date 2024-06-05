@@ -3395,6 +3395,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("userId")
                         .HasComment("[Denormalized]");
 
+                    b.Property<int?>("VotersCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("votersCount");
+
                     b.Property<List<int>>("Votes")
                         .IsRequired()
                         .HasColumnType("integer[]")

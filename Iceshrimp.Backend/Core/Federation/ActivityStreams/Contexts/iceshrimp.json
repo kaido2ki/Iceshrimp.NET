@@ -32,7 +32,8 @@
       "isCat": "misskey:isCat",
       "vcard": "http://www.w3.org/2006/vcard/ns#",
       "Bite": "https://ns.mia.jetzt/as#Bite",
-      "EmojiReact": "http://litepub.social/ns#EmojiReact"
+      "EmojiReact": "http://litepub.social/ns#EmojiReact",
+      "votersCount": "toot:votersCount"
     }
   ]
 }

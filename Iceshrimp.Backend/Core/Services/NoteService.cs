@@ -208,10 +208,11 @@ public class NoteService(
 
 		if (poll != null)
 		{
-			poll.Note           = note;
-			poll.UserId         = note.User.Id;
-			poll.UserHost       = note.UserHost;
-			poll.NoteVisibility = note.Visibility;
+			poll.Note           =   note;
+			poll.UserId         =   note.User.Id;
+			poll.UserHost       =   note.UserHost;
+			poll.NoteVisibility =   note.Visibility;
+			poll.VotersCount    ??= note.UserHost == null ? 0 : null;
 
 			if (poll.Votes == null! || poll.Votes.Count != poll.Choices.Count)
 				poll.Votes = poll.Choices.Select(_ => 0).ToList();
@@ -510,10 +511,12 @@ public class NoteService(
 					note.Poll.Votes = poll.Votes == null! || poll.Votes.Count != poll.Choices.Count
 						? poll.Choices.Select(_ => 0).ToList()
 						: poll.Votes;
+					note.Poll.VotersCount = poll.VotersCount ?? note.Poll.VotersCount;
 				}
 				else if (poll.Votes.Count == poll.Choices.Count)
 				{
-					note.Poll.Votes = poll.Votes;
+					note.Poll.Votes       = poll.Votes;
+					note.Poll.VotersCount = poll.VotersCount ?? note.Poll.VotersCount;
 				}
 			}
 			else
@@ -797,10 +800,11 @@ public class NoteService(
 
 			poll = new Poll
 			{
-				ExpiresAt = question.EndTime ?? question.Closed,
-				Multiple  = question.AnyOf != null,
-				Choices   = choices.Select(p => p.Name).Cast<string>().ToList(),
-				Votes     = choices.Select(p => (int?)p.Replies?.TotalItems ?? 0).ToList()
+				ExpiresAt   = question.EndTime ?? question.Closed,
+				Multiple    = question.AnyOf != null,
+				Choices     = choices.Select(p => p.Name).Cast<string>().ToList(),
+				Votes       = choices.Select(p => (int?)p.Replies?.TotalItems ?? 0).ToList(),
+				VotersCount = question.VotersCount
 			};
 		}
 
@@ -858,10 +862,11 @@ public class NoteService(
 
 			poll = new Poll
 			{
-				ExpiresAt = question.EndTime ?? question.Closed,
-				Multiple  = question.AnyOf != null,
-				Choices   = choices.Select(p => p.Name).Cast<string>().ToList(),
-				Votes     = choices.Select(p => (int?)p.Replies?.TotalItems ?? 0).ToList()
+				ExpiresAt   = question.EndTime ?? question.Closed,
+				Multiple    = question.AnyOf != null,
+				Choices     = choices.Select(p => p.Name).Cast<string>().ToList(),
+				Votes       = choices.Select(p => (int?)p.Replies?.TotalItems ?? 0).ToList(),
+				VotersCount = question.VotersCount
 			};
 		}
 

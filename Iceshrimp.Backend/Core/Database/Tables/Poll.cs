@@ -23,6 +23,8 @@ public class Poll
 
 	[Column("votes")] public List<int> Votes { get; set; } = null!;
 
+	[Column("votersCount")] public int? VotersCount { get; set; }
+
 	/// <summary>
 	///     [Denormalized]
 	/// </summary>

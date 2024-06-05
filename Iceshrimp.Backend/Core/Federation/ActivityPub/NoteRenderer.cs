@@ -139,13 +139,14 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 					Source = note.Text != null
 						? new ASNoteSource { Content = note.Text, MediaType = "text/x.misskeymarkdown" }
 						: null,
-					MkQuote  = quoteUri,
-					QuoteUri = quoteUri,
-					QuoteUrl = quoteUri,
-					EndTime  = endTime,
-					Closed   = closed,
-					AnyOf    = anyOf,
-					OneOf    = oneOf
+					MkQuote     = quoteUri,
+					QuoteUri    = quoteUri,
+					QuoteUrl    = quoteUri,
+					EndTime     = endTime,
+					Closed      = closed,
+					AnyOf       = anyOf,
+					OneOf       = oneOf,
+					VotersCount = poll.VotersCount
 				};
 			}
 		}

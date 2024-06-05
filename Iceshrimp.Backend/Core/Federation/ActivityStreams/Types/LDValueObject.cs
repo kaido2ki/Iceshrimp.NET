@@ -64,6 +64,18 @@ public class ValueObjectConverter : JsonConverter
 			var val = obj?.Value;
 			return val != null ? Convert.ToUInt64(val) : null;
 		}
+		
+		if (objectType == typeof(int?))
+		{
+			var val = obj?.Value;
+			return val != null ? Convert.ToInt32(val) : null;
+		}
+
+		if (objectType == typeof(long?))
+		{
+			var val = obj?.Value;
+			return val != null ? Convert.ToInt64(val) : null;
+		}
 
 		if (obj?.Value is string id)
 		{

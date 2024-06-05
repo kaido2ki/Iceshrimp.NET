@@ -24,7 +24,7 @@ public class PollRenderer(DatabaseContext db)
 			Multiple    = poll.Multiple,
 			ExpiresAt   = poll.ExpiresAt?.ToStringIso8601Like(),
 			VotesCount  = poll.Votes.Sum(),
-			VotersCount = poll.Votes.Sum(), // We don't store this data
+			VotersCount = poll.VotersCount ?? poll.Votes.Sum(),
 			Voted       = voted,
 			OwnVotes    = ownVotes,
 			Options = poll.Choices
