@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <AssemblyMetadata Include="codename" Value="alpha" />
+        <AssemblyMetadata Include="edition" Value="enterprise" />
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
