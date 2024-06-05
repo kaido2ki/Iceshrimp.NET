@@ -84,6 +84,7 @@ module SearchQueryFilters =
         | Video
         | Audio
         | File
+        | Poll
 
     type AttachmentFilter(neg: bool, value: string) =
         inherit Filter()
@@ -96,6 +97,7 @@ module SearchQueryFilters =
             | "video" -> Video
             | "audio" -> Audio
             | "file" -> File
+            | "poll" -> Poll
             | _ -> failwith $"Invalid type: {value}"
 
     type AfterFilter(d: DateOnly) =
@@ -206,7 +208,7 @@ module private SearchQueryParser =
         <| fun n v -> InFilter(n.IsSome, v) :> Filter
 
     let attachmentFilter =
-        negKeyFilter [ "has"; "attachment"; "attached" ] [ "any"; "image"; "video"; "audio"; "file" ]
+        negKeyFilter [ "has"; "attachment"; "attached" ] [ "any"; "image"; "video"; "audio"; "file"; "poll" ]
         <| fun n v -> AttachmentFilter(n.IsSome, v) :> Filter
 
     let afterFilter =

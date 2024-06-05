@@ -173,7 +173,9 @@ public static class QueryableFtsExtensions
 	[Projectable]
 	internal static IQueryable<Note> ApplyRegularAttachmentFilter(this IQueryable<Note> query, AttachmentFilter filter)
 		=> AttachmentQuery(filter.Value)
-			? query.Where(p => EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)))
+			? filter.Value.Equals(AttachmentFilterType.Poll)
+				? query.Where(p => p.HasPoll)
+				: query.Where(p => EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)))
 			: filter.Value.Equals(AttachmentFilterType.Any)
 				? query.Where(p => p.AttachedFileTypes.Count != 0)
 				: query.Where(p => p.AttachedFileTypes.Count != 0 &&
@@ -187,7 +189,9 @@ public static class QueryableFtsExtensions
 	[Projectable]
 	internal static IQueryable<Note> ApplyNegatedAttachmentFilter(this IQueryable<Note> query, AttachmentFilter filter)
 		=> AttachmentQuery(filter.Value)
-			? query.Where(p => !EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)))
+			? filter.Value.Equals(AttachmentFilterType.Poll)
+				? query.Where(p => !p.HasPoll)
+				: query.Where(p => !EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)))
 			: filter.Value.Equals(AttachmentFilterType.Any)
 				? query.Where(p => p.AttachedFileTypes.Count == 0)
 				: query.Where(p => EF.Functions
@@ -204,6 +208,8 @@ public static class QueryableFtsExtensions
 		if (filter.Equals(AttachmentFilterType.Video))
 			return true;
 		if (filter.Equals(AttachmentFilterType.Audio))
+			return true;
+		if (filter.Equals(AttachmentFilterType.Poll))
 			return true;
 		return false;
 	}
