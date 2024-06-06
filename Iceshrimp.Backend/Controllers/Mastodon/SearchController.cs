@@ -179,7 +179,7 @@ public class SearchController(
 
 		return await db.Notes
 		               .IncludeCommonProperties()
-		               .FilterByFtsQuery(search.Query!, user, db)
+		               .FilterByFtsQuery(search.Query!, user, config.Value, db)
 		               .Where(p => !search.Following || p.User.IsFollowedBy(user))
 		               .FilterByUser(search.UserId)
 		               .EnsureVisibleFor(user)

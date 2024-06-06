@@ -41,7 +41,7 @@ public class SearchController(
 		var user = HttpContext.GetUserOrFail();
 		var notes = await db.Notes
 		                    .IncludeCommonProperties()
-		                    .FilterByFtsQuery(query, user, db)
+		                    .FilterByFtsQuery(query, user, config.Value, db)
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db)
 		                    .Paginate(pagination, ControllerContext)
