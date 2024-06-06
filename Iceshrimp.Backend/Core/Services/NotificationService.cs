@@ -219,6 +219,7 @@ public class NotificationService(
 		                            .Where(p => p.Note == note)
 		                            .Where(p => p.User.Host == null)
 		                            .Select(p => p.User)
+		                            .Concat(db.Users.Where(p => p == note.User))
 		                            .Distinct()
 		                            .Select(p => new Notification
 		                            {
