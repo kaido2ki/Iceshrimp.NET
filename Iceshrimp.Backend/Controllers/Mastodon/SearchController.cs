@@ -84,6 +84,7 @@ public class SearchController(
 		{
 			if (search.Query!.StartsWith("https://") || search.Query.StartsWith("http://"))
 			{
+				if (pagination.Offset is not null and not 0) return [];
 				try
 				{
 					var result = await userResolver.ResolveAsync(search.Query);
@@ -100,6 +101,7 @@ public class SearchController(
 			var match = regex.Match(search.Query);
 			if (match.Success)
 			{
+				if (pagination.Offset is not null and not 0) return [];
 				if (match.Groups["localuser"].Success)
 				{
 					var username = match.Groups["localuser"].Value.ToLowerInvariant();
@@ -149,6 +151,8 @@ public class SearchController(
 
 		if (search.Resolve && (search.Query!.StartsWith("https://") || search.Query.StartsWith("http://")))
 		{
+			if (pagination.Offset is not null and not 0) return [];
+
 			var note = await db.Notes
 			                   .IncludeCommonProperties()
 			                   .Where(p => p.Uri == search.Query || p.Url == search.Query)
