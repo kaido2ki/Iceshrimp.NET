@@ -226,7 +226,7 @@ module private MfmParser =
 
     let centerNode =
         skipString "<center>" >>. manyTill inlineNode (skipString "</center>")
-        |>> fun c -> MfmSmallNode(aggregateTextInline c) :> MfmNode
+        |>> fun c -> MfmCenterNode(aggregateTextInline c) :> MfmNode
 
     let mentionNode =
         previousCharSatisfiesNot isNotWhitespace
