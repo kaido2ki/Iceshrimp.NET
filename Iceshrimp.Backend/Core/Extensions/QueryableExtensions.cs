@@ -178,6 +178,34 @@ public static class QueryableExtensions
 
 		return Paginate(query, pq, filter.DefaultLimit, filter.MaxLimit);
 	}
+	
+	public static IQueryable<T> PaginateByOffset<T>(
+		this IQueryable<T> query,
+		MastodonPaginationQuery pq,
+		int defaultLimit,
+		int maxLimit
+	) where T : IEntity
+	{
+		if (pq.Limit is < 1)
+			throw GracefulException.BadRequest("Limit cannot be less than 1");
+
+		return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
+	}
+	
+	public static IQueryable<T> PaginateByOffset<T>(
+		this IQueryable<T> query,
+		MastodonPaginationQuery pq,
+		ControllerContext context
+	) where T : IEntity
+	{
+		var filter = context.ActionDescriptor.FilterDescriptors.Select(p => p.Filter)
+		                    .OfType<LinkPaginationAttribute>()
+		                    .FirstOrDefault();
+		if (filter == null)
+			throw new GracefulException("Route doesn't have a LinkPaginationAttribute");
+
+		return PaginateByOffset(query, pq, filter.DefaultLimit, filter.MaxLimit);
+	}
 
 	public static IQueryable<T> Paginate<T>(
 		this IQueryable<T> query,

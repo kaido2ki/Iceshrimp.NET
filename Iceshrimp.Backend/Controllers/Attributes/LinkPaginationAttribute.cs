@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -5,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Iceshrimp.Backend.Controllers.Attributes;
 
-public class LinkPaginationAttribute(int defaultLimit, int maxLimit) : ActionFilterAttribute
+public class LinkPaginationAttribute(int defaultLimit, int maxLimit, bool offset = false) : ActionFilterAttribute
 {
 	public int DefaultLimit => defaultLimit;
 	public int MaxLimit     => maxLimit;
@@ -39,14 +40,23 @@ public class LinkPaginationAttribute(int defaultLimit, int maxLimit) : ActionFil
 		var limit   = Math.Min(query.Limit ?? defaultLimit, maxLimit);
 		var request = context.HttpContext.Request;
 
+		var mpq      = query as MastodonPaginationQuery;
+		var offsetPg = offset || mpq is { Offset: not null, MaxId: null, MinId: null, SinceId: null };
 		if (ids.Count >= limit)
 		{
-			var next = new QueryBuilder { { "limit", limit.ToString() }, { "max_id", ids.Last() } };
+			var next = offsetPg
+				? new QueryBuilder { { "offset", ((mpq?.Offset ?? 0) + limit).ToString() } }
+				: new QueryBuilder { { "limit", limit.ToString() }, { "max_id", ids.Last() } };
+
 			links.Add($"<{GetUrl(request, next.ToQueryString())}>; rel=\"next\"");
 		}
 
-		var prev = new QueryBuilder { { "limit", limit.ToString() }, { "min_id", ids.First() } };
-		links.Add($"<{GetUrl(request, prev.ToQueryString())}>; rel=\"prev\"");
+		var prev = offsetPg
+			? new QueryBuilder { { "offset", Math.Max(0, (mpq?.Offset ?? 0) - limit).ToString() } }
+			: new QueryBuilder { { "limit", limit.ToString() }, { "min_id", ids.First() } };
+
+		if (!offsetPg || (mpq?.Offset ?? 0) != 0)
+			links.Add($"<{GetUrl(request, prev.ToQueryString())}>; rel=\"prev\"");
 
 		context.HttpContext.Response.Headers.Link = string.Join(", ", links);
 	}

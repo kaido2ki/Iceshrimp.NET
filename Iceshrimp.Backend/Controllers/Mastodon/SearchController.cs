@@ -56,7 +56,7 @@ public class SearchController(
 
 	[HttpGet("/api/v1/accounts/search")]
 	[Authorize("read:accounts")]
-	[LinkPagination(20, 40)]
+	[LinkPagination(20, 40, true)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<AccountEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> SearchAccounts(
@@ -133,8 +133,8 @@ public class SearchController(
 		               .Where(p => p.DisplayNameOrUsernameOrFqnContainsCaseInsensitive(search.Query!,
 			                      config.Value.AccountDomain))
 		               .Where(p => !search.Following || p.IsFollowedBy(user))
-		               .Paginate(pagination, ControllerContext) //TODO: this will mess up our sorting
 		               .OrderByDescending(p => p.NotesCount)
+		               .PaginateByOffset(pagination, ControllerContext)
 		               .RenderAllForMastodonAsync(userRenderer);
 	}
 
