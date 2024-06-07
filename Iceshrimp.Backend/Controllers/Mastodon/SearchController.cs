@@ -97,7 +97,7 @@ public class SearchController(
 			}
 
 			var regex = new Regex
-				("^(?:@?(?<user>[a-zA-Z0-9_]+)@(?<host>[a-zA-Z0-9-.]+\\.[a-zA-Z0-9-]+))|(?:@(?<localuser>[a-zA-Z0-9_]+))$");
+				("(?:^@?(?<user>[a-zA-Z0-9_]+)@(?<host>[a-zA-Z0-9-.]+\\.[a-zA-Z0-9-]+)$)|(?:^@(?<localuser>[a-zA-Z0-9_]+)$)");
 			var match = regex.Match(search.Query);
 			if (match.Success)
 			{
