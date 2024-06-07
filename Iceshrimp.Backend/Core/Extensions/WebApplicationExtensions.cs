@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Options;
 using WebPush;
 
@@ -73,6 +74,10 @@ public static class WebApplicationExtensions
 		await using var scope    = app.Services.CreateAsyncScope();
 		var             provider = scope.ServiceProvider;
 
+		var config = (ConfigurationManager)app.Configuration;
+		var files  = config.Sources.OfType<IniConfigurationSource>().Select(p => p.Path);
+		app.Logger.LogDebug("Loaded configuration files: \n* {files}", string.Join("\n* ", files));
+
 		try
 		{
 			app.Logger.LogInformation("Validating configuration...");
@@ -101,7 +106,7 @@ public static class WebApplicationExtensions
 		app.Logger.LogInformation("Verifying database connection...");
 		if (!await db.Database.CanConnectAsync())
 		{
-			app.Logger.LogCritical("Failed to connect to database");
+			app.Logger.LogCritical("Failed to connect to database. Please make sure your configuration is correct.");
 			Environment.Exit(1);
 		}
 

@@ -4,9 +4,14 @@ public static class ConfigurationBuilderExtensions
 {
 	public static IConfigurationBuilder AddCustomConfiguration(this IConfigurationBuilder configuration)
 	{
-		return configuration.AddIniFile(Environment.GetEnvironmentVariable("ICESHRIMP_CONFIG") ?? "configuration.ini",
-		                                false, true)
-		                    .AddIniFile(Environment.GetEnvironmentVariable("ICESHRIMP_CONFIG_OVERRIDES") ?? "configuration.overrides.ini",
-		                                true, true);
+		var main = Environment.GetEnvironmentVariable("ICESHRIMP_CONFIG") ?? "configuration.ini";
+		var overrides = Environment.GetEnvironmentVariable("ICESHRIMP_CONFIG_OVERRIDES") ??
+		                "configuration.overrides.ini";
+
+		configuration.AddIniFile(main, false, true)
+		             .AddIniFile(overrides, true, true)
+		             .AddEnvironmentVariables();
+
+		return configuration;
 	}
 }
