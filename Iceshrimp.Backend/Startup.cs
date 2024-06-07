@@ -65,7 +65,7 @@ app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSecond
 app.UseCustomMiddleware();
 
 app.MapControllers();
-app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback");
+app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback").WithOrder(int.MaxValue - 3);
 app.MapHub<ExampleHub>("/hubs/example");
 app.MapHub<StreamingHub>("/hubs/streaming");
 app.MapRazorPages();
