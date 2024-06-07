@@ -8,12 +8,18 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASNote : ASObject
 {
-	public bool VerifiedFetch = false;
 	public ASNote(bool withType = true) => Type = withType ? Types.Note : null;
+
+	public  bool    VerifiedFetch = false;
+	private string? _mkContent;
 
 	[J("https://misskey-hub.net/ns#_misskey_content")]
 	[JC(typeof(VC))]
-	public string? MkContent { get; set; }
+	public string? MkContent
+	{
+		get => _mkContent ?? (Source?.MediaType == "text/x.misskeymarkdown" ? Source?.Content : null);
+		set => _mkContent = value;
+	}
 
 	[J("https://misskey-hub.net/ns#_misskey_quote")]
 	[JC(typeof(VC))]
@@ -50,7 +56,7 @@ public class ASNote : ASObject
 	[J($"{Constants.ActivityStreamsNs}#published")]
 	[JC(typeof(VC))]
 	public DateTime? PublishedAt { get; set; }
-	
+
 	[J($"{Constants.ActivityStreamsNs}#updated")]
 	[JC(typeof(VC))]
 	public DateTime? UpdatedAt { get; set; }
