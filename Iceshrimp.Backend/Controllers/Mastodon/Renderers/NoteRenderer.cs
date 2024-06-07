@@ -115,7 +115,7 @@ public class NoteRenderer(
 		{
 			Id               = note.Id,
 			Uri              = uri,
-			Url              = note.Url,
+			Url              = note.Url ?? uri,
 			Account          = account,
 			ReplyId          = note.ReplyId,
 			ReplyUserId      = note.MastoReplyUserId ?? note.ReplyUserId,
