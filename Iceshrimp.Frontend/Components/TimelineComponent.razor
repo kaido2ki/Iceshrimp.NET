@@ -7,23 +7,14 @@
 @inject ApiService ApiService
 
 
-<div @ref="Scroller" class="scroller">
     @if (_init)
     {
-        @foreach (var note in Timeline)
-        {
-            <LazyNote Scroller="Scroller" Note="note"/>
-        }
-
-        <IntersectionObserve Options="new IntersectionObserverOptions() { Root = Scroller, RootMargin = _rootMagin }" OnChange="entry => OnEnd(entry)">
-            <div @ref="context.Ref.Current" class="end">END!</div>
-        </IntersectionObserve>
+        <VirtualScroller NoteResponseList="Timeline" ReachedEnd="FetchOlder" ReachedStart="FetchOlder" />
     }
     else
     {
         <div>Loading</div>
     }
-</div>
 
 @code {
     private List<NoteResponse> Timeline { get; set; } = [];
@@ -31,12 +22,10 @@
     private string?            MaxId     { get; set; }
     private string?            MinId     { get; set; }
     private bool               LockFetch { get; set; }
-    public  ElementReference   Scroller  { get; set; }
-    private string             _rootMagin = "100%";
 
     private async Task Initialize()
     {
-        var pq  = new PaginationQuery() { Limit = 10 };
+        var pq  = new PaginationQuery() { Limit = 30 };
         var res = await ApiService.Timelines.GetHomeTimeline(pq);
         MaxId    = res[0].Id;
         MinId    = res.Last().Id;
@@ -47,21 +36,15 @@
     {
         if (LockFetch) return;
         LockFetch = true;
-        var pq  = new PaginationQuery() { Limit = 5, MaxId = MinId };
+        var pq  = new PaginationQuery() { Limit = 10, MaxId = MinId };
         var res = await ApiService.Timelines.GetHomeTimeline(pq);
         if (res.Count > 0)
         {
             MinId = res.Last().Id;
             Timeline.AddRange(res);
-            StateHasChanged(); 
         }
         LockFetch = false;
     }
-
-     private void OnEnd(IntersectionObserverEntry entry)
-     {
-         FetchOlder();
-     }
 
      protected override async Task OnAfterRenderAsync(bool firstRender)
      {

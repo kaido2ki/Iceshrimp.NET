@@ -1,0 +1,235 @@
+@using System.Collections.Specialized
+@using System.Runtime.InteropServices.JavaScript
+@using Iceshrimp.Shared.Schemas
+@using Ljbc1994.Blazor.IntersectionObserver
+@using Ljbc1994.Blazor.IntersectionObserver.API
+@inject IIntersectionObserverService ObserverService
+@inject IJSRuntime                   Js
+
+<div @ref="@Scroller" class="scroller">
+    <div @ref="@padTopRef" class="padding top" style="height: @(PadTop + "px")"></div>
+    @foreach (var el in RenderedList)
+    {
+        <div class="target" @ref="@Ref">
+            <TimelineNote @key="el.Id" Note="el"></TimelineNote>
+        </div>
+    }
+    <div @ref="@padBotRef" class="padding bottom" style="height: @(PadBottom + "px")"></div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required List<NoteResponse>      NoteResponseList { get; set; }
+    [Parameter, EditorRequired] public required EventCallback           ReachedEnd       { get; set; }
+    [Parameter, EditorRequired] public required EventCallback           ReachedStart     { get; set; }
+    private                                     List<NoteResponse>      RenderedList     { get; set; } = new();
+    private                                     Dictionary<string, int> Height           { get; set; } = new();
+    private                                     string                  MaxId            { get; set; }
+    private                                     string                  MinId            { get; set; }
+    private                                     int                     RenderIndex      { get; set; }
+    private                                     int                     PadTop           { get; set; } = 0;
+    private                                     int                     PadBottom        { get; set; } = 0;
+    private                                     int                     UpdateCount      { get; set; } = 5;
+    private                                     int                     _count = 15;
+    private                                     List<ElementReference>  _refs  = [];
+    private                                     IntersectionObserver?   ObserverTop       { get; set; }
+    private                                     IntersectionObserver?   ObserverBottom    { get; set; }
+    private                                     IntersectionObserver?   OvrscrlObsvTop    { get; set; }
+    private                                     IntersectionObserver?   OvrscrlObsvBottom { get; set; }
+    private                                     bool                    _overscrollTop    = false;
+    private                                     bool                    _overscrollBottom = false;
+    private                                     ElementReference        padTopRef;
+    private                                     ElementReference        padBotRef;
+    private                                     ElementReference        Scroller;
+
+    private ElementReference Ref
+    {
+        set => _refs.Add(value);
+    }
+
+    private bool               interlock = false;
+    private IJSObjectReference Module { get; set; }
+
+    private void InitialRender(string? id)
+    {
+        var a = new List<NoteResponse>();
+        if (id != null)
+        {
+            RenderIndex = NoteResponseList.IndexOf(NoteResponseList.First(el => el.Id == id));
+            a           = NoteResponseList.GetRange(RenderIndex, RenderIndex + _count);
+        }
+        else
+        {
+            a = NoteResponseList.GetRange(0, _count);
+        }
+
+
+        RenderedList = a;
+    }
+
+    private async Task LoadMore()
+    {
+        await ReachedEnd.InvokeAsync();
+    }
+
+    private async Task RemoveAbove(int amount)
+    {
+        for (int i = 0; i < amount; i++)
+        {
+            var height = await Module.InvokeAsync<int>("GetHeight", _refs[i]);
+            PadTop                     += height;
+            Height[RenderedList[i].Id] =  height;
+        }
+
+        RenderedList.RemoveRange(0, amount);
+
+    }
+
+    private async Task Down()
+    {
+        if (OvrscrlObsvBottom is null) throw new Exception("Tried to use observer that does not exist");
+        await OvrscrlObsvBottom.Disconnect();
+
+        var index = NoteResponseList.IndexOf(RenderedList.Last());
+        Console.WriteLine($"Index: {index}");
+        if (index >= NoteResponseList.Count - 1)
+        {
+            Console.WriteLine("end of data, requesting more");
+            await LoadMore();
+        }
+        else
+        {
+            var a            = NoteResponseList.GetRange(index + 1, 5);
+            var heightChange = 0;
+            foreach (var el in a)
+            {
+                if (Height.ContainsKey(el.Id))
+                {
+                    heightChange += Height[el.Id];
+                    Console.WriteLine("found height");
+                }
+                else
+                {
+                    Console.WriteLine("Did not find height");
+                }
+            }
+
+            if (PadBottom > 0) PadBottom -= heightChange;
+            Console.WriteLine($"Pad bottom height: {PadBottom}");
+
+            RenderedList.AddRange(a);
+            await RemoveAbove(UpdateCount);
+            interlock = false;
+            StateHasChanged();
+        }
+
+        await OvrscrlObsvBottom.Observe(padBotRef);
+    }
+
+    private async Task Up()
+    {
+        if (OvrscrlObsvTop is null) throw new Exception("Tried to use observer that does not exist");
+        await OvrscrlObsvTop.Disconnect();
+        for (int i = 0; i < UpdateCount; i++)
+        {
+            var height = await Module.InvokeAsync<int>("GetHeight", _refs[i]);
+            PadBottom                  += height;
+            Height[RenderedList[i].Id] =  height;
+        }
+
+        var index        = NoteResponseList.IndexOf(RenderedList.First());
+        var a            = NoteResponseList.GetRange(index - UpdateCount, UpdateCount);
+        var heightChange = 0;
+        foreach (var el in a)
+        {
+            heightChange += Height[el.Id];
+        }
+
+        PadTop -= heightChange;
+        RenderedList.InsertRange(0, a);
+        RenderedList.RemoveRange(RenderedList.Count - UpdateCount, UpdateCount);
+        StateHasChanged();
+        interlock = false;
+        await OvrscrlObsvTop.Observe(padTopRef);
+    }
+
+    private async Task SetupObservers()
+    {
+        var options = new IntersectionObserverOptions
+        {
+            RootMargin = "100%"
+        };
+        OvrscrlObsvTop    = await ObserverService.Create(OverscrollCallbackTop);
+        OvrscrlObsvBottom = await ObserverService.Create(OverscrollCallbackBottom);
+
+        await OvrscrlObsvTop.Observe(padTopRef);
+        await OvrscrlObsvBottom.Observe(padBotRef);
+    }
+
+
+    private async void OverscrollCallbackTop(IList<IntersectionObserverEntry> list)
+    {
+        Console.WriteLine("Top callback fired");
+        var entry = list.First();
+        _overscrollTop = entry.IsIntersecting;
+
+        if (interlock == false)
+        {
+            var index = NoteResponseList.IndexOf(RenderedList.First());
+            if (index == 0)
+            {
+                Console.WriteLine("Can't go up further");
+                return;
+            }
+
+            interlock = true;
+            Console.WriteLine("first observed");
+            if (list.First().IsIntersecting)
+
+            {
+                Console.WriteLine("Shifting up");
+                await Up();
+            }
+
+            interlock = false;
+        }
+    }
+
+    private async void OverscrollCallbackBottom(IList<IntersectionObserverEntry> list)
+    {
+        Console.WriteLine("Bottom callback fired");
+        var entry = list.First();
+        _overscrollBottom = entry.IsIntersecting;
+        if (interlock == false)
+        {
+            interlock = true;
+            Console.WriteLine("last observerd");
+            if (list.First().IsIntersecting)
+            {
+                Console.WriteLine("Shifting down");
+                await Down();
+            }
+
+            interlock = false;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        InitialRender(null);
+    }
+
+    // protected override Task OnParametersSetAsync()
+    // {
+    //     return;
+    // }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Module = await Js.InvokeAsync<IJSObjectReference>("import", "./Components/VirtualScroller.razor.js");
+            await SetupObservers();
+        }
+    }
+
+}
