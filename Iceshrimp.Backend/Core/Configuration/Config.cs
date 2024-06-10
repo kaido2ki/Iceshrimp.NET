@@ -269,6 +269,16 @@ public sealed class Config
 
 	public sealed class PerformanceSection
 	{
-		[Range(0, int.MaxValue)] public int FederationRequestHandlerConcurrency     { get; init; } = 0;
+		public QueueConcurrencySection QueueConcurrency { get; init; } = new();
+
+		[Range(0, int.MaxValue)] public int FederationRequestHandlerConcurrency { get; init; } = 0;
+	}
+
+	public sealed class QueueConcurrencySection
+	{
+		[Range(1, int.MaxValue)] public int Inbox          { get; init; } = 4;
+		[Range(1, int.MaxValue)] public int Deliver        { get; init; } = 20;
+		[Range(1, int.MaxValue)] public int PreDeliver     { get; init; } = 4;
+		[Range(1, int.MaxValue)] public int BackgroundTask { get; init; } = 4;
 	}
 }

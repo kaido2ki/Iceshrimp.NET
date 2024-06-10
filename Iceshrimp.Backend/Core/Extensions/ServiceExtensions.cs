@@ -105,6 +105,7 @@ public static class ServiceExtensions
 		        .ConfigureWithValidation<Config.WorkerSection>(configuration, "Worker")
 		        .ConfigureWithValidation<Config.SecuritySection>(configuration, "Security")
 		        .ConfigureWithValidation<Config.PerformanceSection>(configuration, "Performance")
+		        .ConfigureWithValidation<Config.QueueConcurrencySection>(configuration, "Performance:QueueConcurrency")
 		        .ConfigureWithValidation<Config.DatabaseSection>(configuration, "Database")
 		        .ConfigureWithValidation<Config.StorageSection>(configuration, "Storage")
 		        .ConfigureWithValidation<Config.LocalStorageSection>(configuration, "Storage:Local")

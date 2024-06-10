@@ -10,7 +10,8 @@ using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 
 namespace Iceshrimp.Backend.Core.Queues;
 
-public class InboxQueue() : PostgresJobQueue<InboxJobData>("inbox", InboxQueueProcessorDelegateAsync, 4)
+public class InboxQueue(int parallelism)
+	: PostgresJobQueue<InboxJobData>("inbox", InboxQueueProcessorDelegateAsync, parallelism)
 {
 	private static async Task InboxQueueProcessorDelegateAsync(
 		Job job,

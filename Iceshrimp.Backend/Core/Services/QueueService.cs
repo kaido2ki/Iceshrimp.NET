@@ -17,17 +17,18 @@ namespace Iceshrimp.Backend.Core.Services;
 public class QueueService(
 	IServiceScopeFactory scopeFactory,
 	ILogger<QueueService> logger,
-	IOptions<Config.WorkerSection> config
+	IOptions<Config.WorkerSection> config,
+	IOptions<Config.QueueConcurrencySection> queueConcurrency
 ) : BackgroundService
 {
 	private readonly List<IPostgresJobQueue> _queues = [];
 
 	public IEnumerable<string> QueueNames => _queues.Select(p => p.Name);
 
-	public readonly BackgroundTaskQueue BackgroundTaskQueue = new();
-	public readonly DeliverQueue        DeliverQueue        = new();
-	public readonly InboxQueue          InboxQueue          = new();
-	public readonly PreDeliverQueue     PreDeliverQueue     = new();
+	public readonly InboxQueue          InboxQueue          = new(queueConcurrency.Value.Inbox);
+	public readonly DeliverQueue        DeliverQueue        = new(queueConcurrency.Value.Deliver);
+	public readonly PreDeliverQueue     PreDeliverQueue     = new(queueConcurrency.Value.PreDeliver);
+	public readonly BackgroundTaskQueue BackgroundTaskQueue = new(queueConcurrency.Value.BackgroundTask);
 
 	private static async Task<NpgsqlConnection> GetNpgsqlConnection(IServiceScope scope)
 	{
