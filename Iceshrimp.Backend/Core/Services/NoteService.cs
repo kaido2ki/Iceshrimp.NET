@@ -347,7 +347,9 @@ public class NoteService(
 
 		if (note is { Renote.Id: not null, IsPureRenote: true })
 		{
-			if (!db.Notes.Any(p => p.UserId == note.User.Id && p.RenoteId == note.Renote.Id && p.IsPureRenote))
+			if (!await db.Notes.AnyAsync(p => p.UserId == note.User.Id &&
+			                                  p.RenoteId == note.Renote.Id &&
+			                                  p.IsPureRenote))
 			{
 				await db.Notes.Where(p => p.Id == note.Renote.Id)
 				        .ExecuteUpdateAsync(p => p.SetProperty(n => n.RenoteCount, n => n.RenoteCount + diff));
