@@ -93,6 +93,7 @@ public sealed class Config
 		[Required]        public string  Username       { get; init; } = null!;
 		public                   string? Password       { get; init; }
 		[Range(1, 1000)] public  int     MaxConnections { get; init; } = 100;
+		public                   bool    Multiplexing   { get; init; } = true;
 	}
 
 	public sealed class StorageSection

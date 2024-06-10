@@ -1,4 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.RateLimiting;
+using System.Xml.Linq;
 using Iceshrimp.Backend.Controllers.Federation;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Renderers;
@@ -15,8 +17,13 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using AuthenticationMiddleware = Iceshrimp.Backend.Core.Middleware.AuthenticationMiddleware;
 using AuthorizationMiddleware = Iceshrimp.Backend.Core.Middleware.AuthorizationMiddleware;
@@ -155,7 +162,7 @@ public static class ServiceExtensions
 		services.AddDbContext<DatabaseContext>(options => { DatabaseContext.Configure(options, dataSource); });
 		services.AddKeyedDatabaseContext<DatabaseContext>("cache");
 		services.AddDataProtection()
-		        .PersistKeysToDbContext<DatabaseContext>()
+		        .PersistKeysToDbContextAsync<DatabaseContext>()
 		        .UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration
 		        {
 			        EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
@@ -308,3 +315,72 @@ public static class HttpContextExtensions
 		ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault() ??
 		ctx.Connection.RemoteIpAddress?.ToString();
 }
+
+#region AsyncDataProtection handlers
+
+/// <summary>
+/// Async equivalent of EntityFrameworkCoreDataProtectionExtensions.PersistKeysToDbContext.
+/// Required because Npgsql doesn't support the non-async APIs when using connection multiplexing, and the stock version EFCore API calls their blocking equivalents.
+/// </summary>
+file static class DataProtectionExtensions
+{
+	public static IDataProtectionBuilder PersistKeysToDbContextAsync<TContext>(this IDataProtectionBuilder builder)
+		where TContext : DbContext, IDataProtectionKeyContext
+	{
+		builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
+		{
+			var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+			return new ConfigureOptions<KeyManagementOptions>(options => options.XmlRepository =
+				                                                  new EntityFrameworkCoreXmlRepositoryAsync<
+					                                                  TContext>(services, loggerFactory));
+		});
+		return builder;
+	}
+}
+
+file sealed class EntityFrameworkCoreXmlRepositoryAsync<TContext> : IXmlRepository
+	where TContext : DbContext, IDataProtectionKeyContext
+{
+	private readonly IServiceProvider _services;
+
+	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(DataProtectionKey))]
+	public EntityFrameworkCoreXmlRepositoryAsync(IServiceProvider services, ILoggerFactory loggerFactory)
+	{
+		ArgumentNullException.ThrowIfNull(loggerFactory, nameof(loggerFactory));
+		_services = services ?? throw new ArgumentNullException(nameof(services));
+	}
+
+	public IReadOnlyCollection<XElement> GetAllElements()
+	{
+		return GetAllElementsCore().ToBlockingEnumerable().ToList().AsReadOnly();
+
+		async IAsyncEnumerable<XElement> GetAllElementsCore()
+		{
+			using var scope = _services.CreateScope();
+			var @enum = scope.ServiceProvider.GetRequiredService<TContext>()
+			                 .DataProtectionKeys
+			                 .AsNoTracking()
+			                 .AsAsyncEnumerable();
+
+			await foreach (var dataProtectionKey in @enum)
+			{
+				if (!string.IsNullOrEmpty(dataProtectionKey.Xml))
+					yield return XElement.Parse(dataProtectionKey.Xml);
+			}
+		}
+	}
+
+	public void StoreElement(XElement element, string friendlyName)
+	{
+		using var scope           = _services.CreateScope();
+		var       requiredService = scope.ServiceProvider.GetRequiredService<TContext>();
+		requiredService.DataProtectionKeys.Add(new DataProtectionKey
+		{
+			FriendlyName = friendlyName,
+			Xml          = element.ToString(SaveOptions.DisableFormatting)
+		});
+		requiredService.SaveChangesAsync();
+	}
+}
+
+#endregion
