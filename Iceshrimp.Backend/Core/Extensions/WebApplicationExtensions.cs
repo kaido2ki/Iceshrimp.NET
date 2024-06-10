@@ -24,6 +24,7 @@ public static class WebApplicationExtensions
 		          .UseMiddleware<AuthenticationMiddleware>()
 		          .UseRateLimiter()
 		          .UseMiddleware<AuthorizationMiddleware>()
+		          .UseMiddleware<FederationSemaphoreMiddleware>()
 		          .UseMiddleware<AuthorizedFetchMiddleware>()
 		          .UseMiddleware<InboxValidationMiddleware>();
 	}

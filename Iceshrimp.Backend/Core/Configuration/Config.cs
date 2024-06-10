@@ -7,11 +7,12 @@ namespace Iceshrimp.Backend.Core.Configuration;
 
 public sealed class Config
 {
-	public required InstanceSection Instance { get; init; } = new();
-	public required WorkerSection   Worker   { get; init; } = new();
-	public required DatabaseSection Database { get; init; } = new();
-	public required SecuritySection Security { get; init; } = new();
-	public required StorageSection  Storage  { get; init; } = new();
+	public required InstanceSection    Instance    { get; init; } = new();
+	public required WorkerSection      Worker      { get; init; } = new();
+	public required DatabaseSection    Database    { get; init; } = new();
+	public required SecuritySection    Security    { get; init; } = new();
+	public required StorageSection     Storage     { get; init; } = new();
+	public required PerformanceSection Performance { get; init; } = new();
 
 	public sealed class InstanceSection
 	{
@@ -264,5 +265,10 @@ public sealed class Config
 				};
 			}
 		}
+	}
+
+	public sealed class PerformanceSection
+	{
+		[Range(0, int.MaxValue)] public int FederationRequestHandlerConcurrency     { get; init; } = 0;
 	}
 }

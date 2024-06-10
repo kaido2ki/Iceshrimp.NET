@@ -86,6 +86,7 @@ public static class ServiceExtensions
 			.AddSingleton<AuthorizationMiddleware>()
 			.AddSingleton<RequestVerificationMiddleware>()
 			.AddSingleton<RequestDurationMiddleware>()
+			.AddSingleton<FederationSemaphoreMiddleware>()
 			.AddSingleton<PushService>()
 			.AddSingleton<StreamingService>()
 			.AddSingleton<ImageProcessor>();
@@ -103,6 +104,7 @@ public static class ServiceExtensions
 		        .ConfigureWithValidation<Config.InstanceSection>(configuration, "Instance")
 		        .ConfigureWithValidation<Config.WorkerSection>(configuration, "Worker")
 		        .ConfigureWithValidation<Config.SecuritySection>(configuration, "Security")
+		        .ConfigureWithValidation<Config.PerformanceSection>(configuration, "Performance")
 		        .ConfigureWithValidation<Config.DatabaseSection>(configuration, "Database")
 		        .ConfigureWithValidation<Config.StorageSection>(configuration, "Storage")
 		        .ConfigureWithValidation<Config.LocalStorageSection>(configuration, "Storage:Local")

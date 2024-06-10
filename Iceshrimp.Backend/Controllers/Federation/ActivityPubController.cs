@@ -17,6 +17,7 @@ using Microsoft.Extensions.Options;
 namespace Iceshrimp.Backend.Controllers.Federation;
 
 [FederationApiController]
+[FederationSemaphore]
 [UseNewtonsoftJson]
 [Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 public class ActivityPubController(
