@@ -58,7 +58,6 @@ app.UseRouting();
 app.UseSwaggerWithOptions();
 app.UseBlazorFrameworkFilesWithTransparentDecompression();
 app.UseStaticFiles();
-app.UseRateLimiter();
 app.UseCors();
 app.UseAuthorization();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
