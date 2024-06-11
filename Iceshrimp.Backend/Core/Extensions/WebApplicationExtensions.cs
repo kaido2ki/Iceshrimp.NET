@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Options;
-using WebPush;
+using Iceshrimp.WebPush;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
