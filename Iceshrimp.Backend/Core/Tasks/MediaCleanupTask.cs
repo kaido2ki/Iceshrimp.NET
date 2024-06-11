@@ -32,7 +32,7 @@ public class MediaCleanupTask : ICronTask
 		var fileIds = query.Select(p => p.Id);
 
 		logger.LogInformation("Expiring {count} files...", await fileIds.CountAsync());
-		foreach (var fileId in fileIds)
+		await foreach (var fileId in fileIds.AsAsyncEnumerable())
 		{
 			await queueService.BackgroundTaskQueue.EnqueueAsync(new DriveFileDeleteJobData
 			{
