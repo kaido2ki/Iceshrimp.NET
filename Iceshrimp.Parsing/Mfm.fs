@@ -168,11 +168,11 @@ module private MfmParser =
     // Patterns
     let italicPattern = (notFollowedBy <| str "**") >>. skipChar '*'
     let codePattern = (notFollowedBy <| str "```") >>. skipChar '`'
-    
+
     // Matchers
     let hashtagMatcher = letter <|> digit <|> anyOf "-_"
     let hashtagSatisfier = attempt hashtagMatcher
-    
+
     // Node parsers
 
     let italicNode =
@@ -239,9 +239,8 @@ module private MfmParser =
         .>>. opt (skipChar '@' >>. domain)
         .>> (lookAhead
              <| choice
-                 [ spaces1
-                   eof
-                   skipAnyOf "()[].,;?*~\'"
+                 [ eof
+                   skipNoneOf ":"
                    skipChar ':' .>> nextCharSatisfiesNot isAsciiLetterOrNumber ])
         |>> fun (user: string, host: string option) -> MfmMentionNode(acct (user, host), user, host) :> MfmNode
 
