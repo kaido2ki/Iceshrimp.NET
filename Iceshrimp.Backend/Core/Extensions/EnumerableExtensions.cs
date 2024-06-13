@@ -43,4 +43,6 @@ public static class EnumerableExtensions
 		var yArray = y as T[] ?? y.ToArray();
 		return xArray.Length == yArray.Length && xArray.All(yArray.Contains);
 	}
+
+	public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> @enum) => @enum.OfType<T>();
 }

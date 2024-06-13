@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,14 +43,18 @@ public class NotificationService(
 
 	public async Task GenerateReplyNotifications(Note note, IReadOnlyCollection<string> mentionedLocalUserIds)
 	{
-		if (note.Visibility != Note.NoteVisibility.Specified) return;
-		if (note.VisibleUserIds.Count == 0) return;
+		var users = mentionedLocalUserIds
+		            .Concat(note.VisibleUserIds)
+		            .Append(note.ReplyUserId)
+		            .NotNull()
+		            .Distinct()
+		            .Except(mentionedLocalUserIds)
+		            .ToList();
 
-		var users = mentionedLocalUserIds.Concat(note.VisibleUserIds).Distinct().Except(mentionedLocalUserIds).ToList();
 		if (users.Count == 0) return;
 
 		var blocks = await db.Blockings
-		                     .Where(p => p.BlockeeId == note.UserId && mentionedLocalUserIds.Contains(p.BlockerId))
+		                     .Where(p => p.BlockeeId == note.UserId && users.Contains(p.BlockerId))
 		                     .Select(p => p.BlockerId)
 		                     .ToListAsync();
 
@@ -182,11 +187,11 @@ public class NotificationService(
 
 		var notification = new Notification
 		{
-			Id            = IdHelpers.GenerateSlowflakeId(),
-			CreatedAt     = DateTime.UtcNow,
-			Notifier      = followRequest.Followee,
-			Notifiee      = followRequest.Follower,
-			Type          = Notification.NotificationType.FollowRequestAccepted
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			Notifier  = followRequest.Followee,
+			Notifiee  = followRequest.Follower,
+			Type      = Notification.NotificationType.FollowRequestAccepted
 		};
 
 		await db.AddAsync(notification);
