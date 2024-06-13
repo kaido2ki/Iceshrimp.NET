@@ -14,7 +14,8 @@ using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 namespace Iceshrimp.Backend.Core.Queues;
 
 public class PreDeliverQueue(int parallelism)
-	: PostgresJobQueue<PreDeliverJobData>("pre-deliver", PreDeliverQueueProcessorDelegateAsync, parallelism)
+	: PostgresJobQueue<PreDeliverJobData>("pre-deliver", PreDeliverQueueProcessorDelegateAsync,
+	                                      parallelism, TimeSpan.FromSeconds(60))
 {
 	private static async Task PreDeliverQueueProcessorDelegateAsync(
 		Job job, PreDeliverJobData jobData, IServiceProvider scope, CancellationToken token

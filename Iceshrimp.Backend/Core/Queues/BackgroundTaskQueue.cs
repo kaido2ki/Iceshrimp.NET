@@ -13,7 +13,8 @@ using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 namespace Iceshrimp.Backend.Core.Queues;
 
 public class BackgroundTaskQueue(int parallelism)
-	: PostgresJobQueue<BackgroundTaskJobData>("background-task", BackgroundTaskQueueProcessorDelegateAsync, parallelism)
+	: PostgresJobQueue<BackgroundTaskJobData>("background-task", BackgroundTaskQueueProcessorDelegateAsync,
+	                                          parallelism, TimeSpan.FromSeconds(60))
 {
 	private static async Task BackgroundTaskQueueProcessorDelegateAsync(
 		Job job,

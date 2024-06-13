@@ -8,7 +8,8 @@ using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 namespace Iceshrimp.Backend.Core.Queues;
 
 public class DeliverQueue(int parallelism)
-	: PostgresJobQueue<DeliverJobData>("deliver", DeliverQueueProcessorDelegateAsync, parallelism)
+	: PostgresJobQueue<DeliverJobData>("deliver", DeliverQueueProcessorDelegateAsync,
+	                                   parallelism, TimeSpan.FromSeconds(60))
 {
 	private static async Task DeliverQueueProcessorDelegateAsync(
 		Job job, DeliverJobData jobData, IServiceProvider scope, CancellationToken token

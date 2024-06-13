@@ -201,7 +201,8 @@ public interface IPostgresJobQueue
 public class PostgresJobQueue<T>(
 	string name,
 	Func<Job, T, IServiceProvider, CancellationToken, Task> handler,
-	int parallelism
+	int parallelism,
+	TimeSpan timeout
 ) : IPostgresJobQueue where T : class
 {
 	private readonly AsyncAutoResetEvent  _delayedChannel = new();
@@ -424,7 +425,7 @@ public class PostgresJobQueue<T>(
 
 		try
 		{
-			await handler(job, data, scope.ServiceProvider, token);
+			await handler(job, data, scope.ServiceProvider, token).WaitAsync(timeout, token);
 		}
 		catch (Exception e)
 		{
@@ -436,13 +437,18 @@ public class PostgresJobQueue<T>(
 			var queueName = data is BackgroundTaskJobData ? name + $" ({data.GetType().Name})" : name;
 			if (e is GracefulException { Details: not null } ce)
 			{
-				logger.LogError("Failed to process job {id} in {queue} queue: {error} - {details}",
-				                queueName, job.Id.ToStringLower(), ce.Message, ce.Details);
+				logger.LogError("Failed to process job {id} in queue {queue}: {error} - {details}",
+				                job.Id.ToStringLower(), queueName, ce.Message, ce.Details);
+			}
+			else if (e is TimeoutException)
+			{
+				logger.LogError("Job {id} in queue {queue} didn't complete within the configured timeout ({timeout} seconds)",
+				                job.Id.ToStringLower(), queueName, (int)timeout.TotalSeconds);
 			}
 			else
 			{
-				logger.LogError(e, "Failed to process job {id} in {queue} queue: {error}", job.Id.ToStringLower(),
-				                queueName, e);
+				logger.LogError(e, "Failed to process job {id} in queue {queue}: {error}",
+				                job.Id.ToStringLower(), queueName, e);
 			}
 		}
 

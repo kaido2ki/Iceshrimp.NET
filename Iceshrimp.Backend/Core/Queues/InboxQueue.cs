@@ -11,7 +11,7 @@ using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 namespace Iceshrimp.Backend.Core.Queues;
 
 public class InboxQueue(int parallelism)
-	: PostgresJobQueue<InboxJobData>("inbox", InboxQueueProcessorDelegateAsync, parallelism)
+	: PostgresJobQueue<InboxJobData>("inbox", InboxQueueProcessorDelegateAsync, parallelism, TimeSpan.FromSeconds(60))
 {
 	private static async Task InboxQueueProcessorDelegateAsync(
 		Job job,
