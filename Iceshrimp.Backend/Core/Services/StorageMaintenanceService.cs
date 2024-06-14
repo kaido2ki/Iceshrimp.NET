@@ -30,6 +30,7 @@ public class StorageMaintenanceService(
 		{
 			var keys = await db.DriveFiles
 			                   .Where(p => p.StoredInternal && !p.IsLink)
+			                   .Where(p => !failed.Contains(p.Id))
 			                   .GroupBy(p => p.AccessKey)
 			                   .Select(p => p.Key)
 			                   .OrderBy(p => p)
