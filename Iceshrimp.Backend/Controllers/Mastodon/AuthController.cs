@@ -53,10 +53,10 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 		if (!MastodonOauthHelpers.ValidateScopes(request.Scopes))
 			throw GracefulException.BadRequest("Invalid scopes parameter");
 
-		if (request.Website != null)
+		if (!string.IsNullOrWhiteSpace(request.Website))
 			try
 			{
-				var uri = new Uri(request.Website);
+				var uri = new Uri(request.Website.Trim());
 				if (!uri.IsAbsoluteUri || uri.Scheme is not "http" and not "https") throw new Exception();
 			}
 			catch
