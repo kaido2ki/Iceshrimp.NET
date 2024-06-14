@@ -79,10 +79,12 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Cannot renote or quote a pure renote");
 		if (reply?.IsPureRenote ?? false)
 			throw GracefulException.UnprocessableEntity("Cannot reply to a pure renote");
-		if (poll is { Choices.Count: < 2 })
-			throw GracefulException.UnprocessableEntity("Polls must have at least two options");
 		if (user.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
+
+		poll?.Choices.RemoveAll(string.IsNullOrWhiteSpace);
+		if (poll is { Choices.Count: < 2 })
+			throw GracefulException.UnprocessableEntity("Polls must have at least two options");
 
 		if (renote != null)
 		{
@@ -495,6 +497,10 @@ public class NoteService(
 
 		if (poll != null)
 		{
+			poll.Choices.RemoveAll(string.IsNullOrWhiteSpace);
+			if (poll.Choices.Count < 2)
+				throw GracefulException.UnprocessableEntity("Polls must have at least two options");
+
 			if (note.Poll != null)
 			{
 				if (note.Poll.ExpiresAt != poll.ExpiresAt)
