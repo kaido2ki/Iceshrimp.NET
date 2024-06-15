@@ -504,13 +504,18 @@ public class AccountController(
 	public async Task<IActionResult> GetLikedNotes(MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var res = await db.Notes
-		                  .Where(p => db.Users.First(u => u == user).HasLiked(p))
-		                  .IncludeCommonProperties()
-		                  .Paginate(query, ControllerContext)
-		                  .PrecomputeVisibilities(user)
-		                  .RenderAllForMastodonAsync(noteRenderer, user);
+		var likes = await db.NoteLikes
+		                    .Where(p => p.User == user)
+		                    .IncludeCommonProperties()
+		                    .Select(p => new EntityWrapper<Note>
+		                    {
+			                    Id = p.Id, Entity = p.Note.WithPrecomputedVisibilities(user)
+		                    })
+		                    .Paginate(query, ControllerContext)
+		                    .ToListAsync();
 
+		HttpContext.SetPaginationData(likes);
+		var res = await noteRenderer.RenderManyAsync(likes.Select(p => p.Entity).EnforceRenoteReplyVisibility(), user);
 		return Ok(res);
 	}
 
@@ -522,13 +527,19 @@ public class AccountController(
 	public async Task<IActionResult> GetBookmarkedNotes(MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var res = await db.Notes
-		                  .Where(p => db.Users.First(u => u == user).HasBookmarked(p))
-		                  .IncludeCommonProperties()
-		                  .Paginate(query, ControllerContext)
-		                  .PrecomputeVisibilities(user)
-		                  .RenderAllForMastodonAsync(noteRenderer, user);
+		var bookmarks = await db.NoteBookmarks
+		                        .Where(p => p.User == user)
+		                        .IncludeCommonProperties()
+		                        .Select(p => new EntityWrapper<Note>
+		                        {
+			                        Id = p.Id, Entity = p.Note.WithPrecomputedVisibilities(user)
+		                        })
+		                        .Paginate(query, ControllerContext)
+		                        .ToListAsync();
 
+		HttpContext.SetPaginationData(bookmarks);
+		var res =
+			await noteRenderer.RenderManyAsync(bookmarks.Select(p => p.Entity).EnforceRenoteReplyVisibility(), user);
 		return Ok(res);
 	}
 

@@ -61,14 +61,14 @@ public class Note : IEntity
 	[Column("renoteId")]
 	[StringLength(32)]
 	public string? RenoteId { get; set; }
-	
+
 	/// <summary>
 	///		The URI of the reply target, if it couldn't be resolved at time of ingestion.
 	/// </summary>
 	[Column("replyUri")]
 	[StringLength(512)]
 	public string? ReplyUri { get; set; }
-	
+
 	/// <summary>
 	///		The URI of the renote target, if it couldn't be resolved at time of ingestion.
 	/// </summary>
@@ -328,6 +328,14 @@ public class Note : IEntity
 
 		return this;
 	}
+
+	[Projectable]
+	[SuppressMessage("ReSharper", "MergeIntoPattern", Justification = "Projectables")]
+	[SuppressMessage("ReSharper", "MergeSequentialChecks", Justification = "Projectables")]
+	public Note WithPrecomputedVisibilities(User user)
+		=> WithPrecomputedVisibilities(Reply != null && Reply.IsVisibleFor(user),
+		                               Renote != null && Renote.IsVisibleFor(user),
+		                               Renote != null && Renote.Renote != null && Renote.Renote.IsVisibleFor(user));
 
 	public string GetPublicUri(Config.InstanceSection config) => UserHost == null
 		? $"https://{config.WebDomain}/notes/{Id}"

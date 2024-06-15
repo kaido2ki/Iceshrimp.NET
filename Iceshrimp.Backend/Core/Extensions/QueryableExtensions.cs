@@ -643,6 +643,22 @@ public static class QueryableExtensions
 		            .Include(p => p.Followee.UserProfile);
 	}
 
+	public static IQueryable<NoteLike> IncludeCommonProperties(this IQueryable<NoteLike> query)
+	{
+			return query.Include(p => p.Note.User.UserProfile)
+			            .Include(p => p.Note.Renote.User.UserProfile)
+			            .Include(p => p.Note.Renote.Renote.User.UserProfile)
+			            .Include(p => p.Note.Reply.User.UserProfile);
+	}
+	
+	public static IQueryable<NoteBookmark> IncludeCommonProperties(this IQueryable<NoteBookmark> query)
+	{
+		return query.Include(p => p.Note.User.UserProfile)
+		            .Include(p => p.Note.Renote.User.UserProfile)
+		            .Include(p => p.Note.Renote.Renote.User.UserProfile)
+		            .Include(p => p.Note.Reply.User.UserProfile);
+	}
+
 	public static IQueryable<Notification> IncludeCommonProperties(this IQueryable<Notification> query)
 	{
 		return query.Include(p => p.Notifiee.UserProfile)
