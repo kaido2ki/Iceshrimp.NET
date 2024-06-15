@@ -1,5 +1,6 @@
 using System.Net.Mime;
 using AsyncKeyedLock;
+using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
@@ -544,9 +545,10 @@ public class StatusController(
 
 	[HttpGet("{id}/favourited_by")]
 	[Authenticate("read:statuses")]
+	[LinkPagination(40, 80)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetNoteLikes(string id)
+	public async Task<IActionResult> GetNoteLikes(string id, MastodonPaginationQuery pq)
 	{
 		var user = HttpContext.GetUser();
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
@@ -561,19 +563,23 @@ public class StatusController(
 		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		var res = await db.NoteLikes.Where(p => p.Note == note)
-		                  .Include(p => p.User.UserProfile)
-		                  .Select(p => p.User)
-		                  .RenderAllForMastodonAsync(userRenderer);
+		var likes = await db.NoteLikes.Where(p => p.Note == note)
+		                    .Include(p => p.User.UserProfile)
+		                    .Select(p => new EntityWrapper<User> { Id = p.Id, Entity = p.User })
+		                    .Paginate(pq, ControllerContext)
+		                    .ToListAsync();
 
+		HttpContext.SetPaginationData(likes);
+		var res = await userRenderer.RenderManyAsync(likes.Select(p => p.Entity));
 		return Ok(res);
 	}
 
 	[HttpGet("{id}/reblogged_by")]
 	[Authenticate("read:statuses")]
+	[LinkPagination(40, 80)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetNoteRenotes(string id)
+	public async Task<IActionResult> GetNoteRenotes(string id, MastodonPaginationQuery pq)
 	{
 		var user = HttpContext.GetUser();
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
@@ -589,13 +595,16 @@ public class StatusController(
 		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		var res = await db.Notes
-		                  .Where(p => p.Renote == note && p.IsPureRenote)
-		                  .EnsureVisibleFor(user)
-		                  .Include(p => p.User.UserProfile)
-		                  .Select(p => p.User)
-		                  .RenderAllForMastodonAsync(userRenderer);
+		var renotes = await db.Notes
+		                      .Where(p => p.Renote == note && p.IsPureRenote)
+		                      .EnsureVisibleFor(user)
+		                      .Include(p => p.User.UserProfile)
+		                      .Select(p => new EntityWrapper<User> { Id = p.Id, Entity = p.User })
+		                      .Paginate(pq, ControllerContext)
+		                      .ToListAsync();
 
+		HttpContext.SetPaginationData(renotes);
+		var res = await userRenderer.RenderManyAsync(renotes.Select(p => p.Entity));
 		return Ok(res);
 	}
 
