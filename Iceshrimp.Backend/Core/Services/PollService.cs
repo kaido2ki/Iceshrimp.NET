@@ -24,6 +24,10 @@ public class PollService(
 			return;
 		}
 
+		if (updateVotersCount)
+			await db.Database
+			        .ExecuteSqlAsync($"""UPDATE "poll" SET "votersCount" = GREATEST("votersCount", (SELECT COUNT(*) FROM (SELECT DISTINCT "userId" FROM "poll_vote" WHERE "noteId" = {poll.NoteId}) AS sq)::integer) WHERE "noteId" = {poll.NoteId};""");
+
 		var vote     = activityRenderer.RenderVote(pollVote, poll, note);
 		var actor    = userRenderer.RenderLite(pollVote.User);
 		var activity = ActivityPub.ActivityRenderer.RenderCreate(vote, actor);
