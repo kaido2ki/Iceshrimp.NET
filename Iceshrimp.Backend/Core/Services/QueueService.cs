@@ -162,7 +162,6 @@ public class QueueService(
 				{
 					if (!first) await Task.Delay(TimeSpan.FromMinutes(5), token);
 					else first = false;
-					logger.LogTrace("Checking for stalled jobs...");
 					await using var scope = scopeFactory.CreateAsyncScope();
 					await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 					foreach (var queue in _queues)
@@ -179,11 +178,7 @@ public class QueueService(
 							                                               _ => "HealthchecksWorker"),
 							                            token);
 
-						if (cnt <= 0)
-						{
-							logger.LogTrace("Healthchecks worker found no stalled jobs in queue {name}", queue.Name);
-							continue;
-						}
+						if (cnt <= 0) continue;
 
 						var jobs = await db.Jobs
 						                   .Where(p => p.Status == Job.JobStatus.Failed &&
