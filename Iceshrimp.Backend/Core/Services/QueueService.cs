@@ -320,7 +320,7 @@ public class PostgresJobQueue<T>(
 
 				// ReSharper disable MethodSupportsCancellation
 				var queuedChannelCts = new CancellationTokenSource();
-				if (actualParallelism < parallelism)
+				if (runningCount + queuedCount < parallelism)
 				{
 					_ = _queuedChannel.WaitWithoutResetAsync()
 					                  .ContinueWith(_ => { queuedChannelCts.Cancel(); })
