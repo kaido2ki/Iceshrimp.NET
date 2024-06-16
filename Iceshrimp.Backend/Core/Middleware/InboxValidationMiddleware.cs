@@ -60,7 +60,29 @@ public class InboxValidationMiddleware(
 
 			var body = await new StreamReader(request.Body).ReadToEndAsync(ct);
 			request.Body.Seek(0, SeekOrigin.Begin);
-			var expanded = LdHelpers.Expand(JToken.Parse(body));
+
+			JToken parsed;
+			try
+			{
+				parsed = JToken.Parse(body);
+			}
+			catch (Exception e)
+			{
+				logger.LogDebug("Failed to parse ASObject ({error}), skipping", e.Message);
+				return;
+			}
+
+			JArray? expanded;
+			try
+			{
+				expanded = LdHelpers.Expand(parsed);
+			}
+			catch (Exception e)
+			{
+				logger.LogDebug("Failed to expand ASObject ({error}), skipping", e.Message);
+				return;
+			}
+
 			if (expanded == null)
 				throw new Exception("Failed to expand ASObject");
 			var obj = ASObject.Deserialize(expanded);
