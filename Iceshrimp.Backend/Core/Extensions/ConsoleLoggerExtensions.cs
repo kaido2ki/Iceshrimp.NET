@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Console;
 
@@ -86,20 +85,6 @@ file static class ConsoleUtils
 {
 	private static volatile int _sEmitAnsiColorCodes = -1;
 
-	// Adapted from https://github.com/jwalton/go-supportscolor/blob/master/supportscolor.go under MIT
-	private static bool ShouldEmitColor()
-	{
-		if (Environment.GetEnvironmentVariable("NO_COLOR") is not null) return false;
-		if (Environment.GetEnvironmentVariable("DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION").IsTrue())
-			return true;
-		if (Environment.GetEnvironmentVariable("COLORTERM") is not null) return true;
-		var term = Environment.GetEnvironmentVariable("TERM");
-		return term != null &&
-		       new Regex("(?i)-256(color)?$|^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux").IsMatch(term);
-	}
-
-	private static bool IsTrue(this string? env) => env == "1" || (env?.EqualsIgnoreCase("true") ?? false);
-
 	public static bool EmitAnsiColorCodes
 	{
 		get
@@ -110,7 +95,20 @@ file static class ConsoleUtils
 				return Convert.ToBoolean(emitAnsiColorCodes);
 			}
 
-			var enabled = ShouldEmitColor();
+			var enabled = !Console.IsOutputRedirected;
+
+			if (enabled)
+			{
+				enabled = Environment.GetEnvironmentVariable("NO_COLOR") is null;
+			}
+			else
+			{
+				var envVar =
+					Environment.GetEnvironmentVariable("DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION");
+				enabled = envVar is not null &&
+				          (envVar == "1" || envVar.Equals("true", StringComparison.OrdinalIgnoreCase));
+			}
+
 			_sEmitAnsiColorCodes = Convert.ToInt32(enabled);
 			return enabled;
 		}
