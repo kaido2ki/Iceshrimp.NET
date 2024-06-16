@@ -5,9 +5,21 @@ namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class ConsoleLoggerExtensions
 {
-	public static ILoggingBuilder AddCustomConsoleFormatter(this ILoggingBuilder builder) =>
-		builder.AddConsole(options => options.FormatterName = "custom")
-		       .AddConsoleFormatter<CustomFormatter, ConsoleFormatterOptions>();
+	public static ILoggingBuilder AddCustomConsoleFormatter(this ILoggingBuilder builder)
+	{
+		if (Environment.GetEnvironmentVariable("INVOCATION_ID") is null)
+		{
+			builder.AddConsole(options => options.FormatterName = "systemd-custom")
+			       .AddConsoleFormatter<CustomSystemdConsoleFormatter, ConsoleFormatterOptions>();
+		}
+		else
+		{
+			builder.AddConsole(options => options.FormatterName = "custom")
+			       .AddConsoleFormatter<CustomFormatter, ConsoleFormatterOptions>();
+		}
+
+		return builder;
+	}
 }
 
 /*
@@ -246,6 +258,64 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom")
 	{
 		public ConsoleColor? Foreground { get; } = foreground;
 		public ConsoleColor? Background { get; } = background;
+	}
+}
+
+file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-custom")
+{
+	public override void Write<TState>(
+		in LogEntry<TState> logEntry,
+		IExternalScopeProvider? scopeProvider,
+		TextWriter textWriter
+	)
+	{
+		var message = logEntry.Formatter(logEntry.State, logEntry.Exception);
+		// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+		if (logEntry.Exception == null && message == null) return;
+		var logLevel             = logEntry.LogLevel;
+		var category             = logEntry.Category;
+		var id                   = logEntry.EventId.Id;
+		var exception            = logEntry.Exception;
+		var syslogSeverityString = GetSyslogSeverityString(logLevel);
+		textWriter.Write(syslogSeverityString);
+
+		textWriter.Write(category);
+		textWriter.Write('[');
+		textWriter.Write(id);
+		textWriter.Write(']');
+		if (!string.IsNullOrEmpty(message))
+		{
+			textWriter.Write(' ');
+			WriteReplacingNewLine(textWriter, message);
+		}
+
+		if (exception != null)
+		{
+			textWriter.Write(' ');
+			WriteReplacingNewLine(textWriter, exception.ToString());
+		}
+
+		textWriter.Write(Environment.NewLine);
+
+		static void WriteReplacingNewLine(TextWriter writer, string message)
+		{
+			var str = message.Replace(Environment.NewLine, " ");
+			writer.Write(str);
+		}
+	}
+
+	private static string GetSyslogSeverityString(LogLevel logLevel)
+	{
+		return logLevel switch
+		{
+			LogLevel.Trace       => "<7>trce: ",
+			LogLevel.Debug       => "<7>dbug: ",
+			LogLevel.Information => "<6>info: ",
+			LogLevel.Warning     => "<4>warn: ",
+			LogLevel.Error       => "<3>fail: ",
+			LogLevel.Critical    => "<2>crit: ",
+			_                    => throw new ArgumentOutOfRangeException(nameof(logLevel))
+		};
 	}
 }
 

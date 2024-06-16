@@ -177,17 +177,6 @@ public static class ServiceExtensions
 		services.TryAdd(new ServiceDescriptor(typeof(T), key, typeof(T), contextLifetime));
 	}
 
-	public static void AddLoggingWithOptions(this IServiceCollection services)
-	{
-		services.AddLogging(logging =>
-		{
-			if (Environment.GetEnvironmentVariable("INVOCATION_ID") is not null)
-				logging.AddSystemdConsole();
-			else
-				logging.AddCustomConsoleFormatter();
-		});
-	}
-
 	public static void AddSwaggerGenWithOptions(this IServiceCollection services)
 	{
 		services.AddEndpointsApiExplorer();
