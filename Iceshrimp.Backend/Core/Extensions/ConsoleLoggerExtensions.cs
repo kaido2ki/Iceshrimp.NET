@@ -103,8 +103,8 @@ file static class ConsoleUtils
 			}
 			else
 			{
-				var envVar =
-					Environment.GetEnvironmentVariable("DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION");
+				var envVar = Environment.GetEnvironmentVariable("FORCE_COLOR") ??
+				             Environment.GetEnvironmentVariable("DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION");
 				enabled = envVar is not null &&
 				          (envVar == "1" || envVar.Equals("true", StringComparison.OrdinalIgnoreCase));
 			}
