@@ -1,5 +1,4 @@
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Middleware;
@@ -20,13 +19,10 @@ public class InboxQueue(int parallelism)
 		CancellationToken token
 	)
 	{
-		var logger = scope.GetRequiredService<ILogger<InboxQueue>>();
-		logger.LogDebug("Processing inbox job {id}", job.Id.ToStringLower());
 		var expanded = LdHelpers.Expand(JToken.Parse(jobData.Body)) ?? throw new Exception("Failed to expand ASObject");
 		var obj      = ASObject.Deserialize(expanded) ?? throw new Exception("Failed to deserialize ASObject");
 		if (obj is not ASActivity activity)
 			throw new GracefulException("Job data is not an ASActivity", $"Type: {obj.Type}");
-		logger.LogTrace("Preparation took {ms} ms", job.Duration);
 
 		var apHandler = scope.GetRequiredService<ActivityPub.ActivityHandlerService>();
 		await apHandler.PerformActivityAsync(activity, jobData.InboxUserId, jobData.AuthenticatedUserId);

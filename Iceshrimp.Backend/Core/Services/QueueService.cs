@@ -264,10 +264,11 @@ public class PostgresJobQueue<T>(
 	public string   Name    => name;
 	public TimeSpan Timeout => timeout;
 
-	private readonly AsyncAutoResetEvent  _delayedChannel = new();
-	private readonly AsyncAutoResetEvent  _queuedChannel  = new();
-	private          IServiceScopeFactory _scopeFactory   = null!;
-	private          string?              _workerId;
+	private readonly AsyncAutoResetEvent   _delayedChannel = new();
+	private readonly AsyncAutoResetEvent   _queuedChannel  = new();
+	private          IServiceScopeFactory  _scopeFactory   = null!;
+	private          ILogger<QueueService> _logger         = null!;
+	private          string?               _workerId;
 
 	public void RaiseJobQueuedEvent()  => QueuedChannelEvent?.Invoke(null, EventArgs.Empty);
 	public void RaiseJobDelayedEvent() => DelayedChannelEvent?.Invoke(null, EventArgs.Empty);
@@ -277,13 +278,13 @@ public class PostgresJobQueue<T>(
 	)
 	{
 		_scopeFactory = scopeFactory;
+		_logger       = scopeFactory.CreateScope().ServiceProvider.GetRequiredService<ILogger<QueueService>>();
 		await RecoverOrPrepareForExitAsync();
 
 		QueuedChannelEvent  += (_, _) => _queuedChannel.Set();
 		DelayedChannelEvent += (_, _) => _delayedChannel.Set();
 
 		using var loggerScope = _scopeFactory.CreateScope();
-		var       logger      = loggerScope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
 		_ = Task.Run(() => DelayedJobHandlerAsync(token), token);
 		while (!token.IsCancellationRequested && !queueToken.IsCancellationRequested)
 		{
@@ -336,9 +337,9 @@ public class PostgresJobQueue<T>(
 			{
 				if (!token.IsCancellationRequested)
 				{
-					logger.LogError("ExecuteAsync for queue {queue} failed with: {error}", name, e);
+					_logger.LogError("ExecuteAsync for queue {queue} failed with: {error}", name, e);
 					await Task.Delay(1000, token);
-					logger.LogDebug("Restarting ExecuteAsync worker for queue {queue}", name);
+					_logger.LogDebug("Restarting ExecuteAsync worker for queue {queue}", name);
 				}
 			}
 		}
@@ -389,7 +390,6 @@ public class PostgresJobQueue<T>(
 	private async Task DelayedJobHandlerAsync(CancellationToken token)
 	{
 		using var loggerScope = _scopeFactory.CreateScope();
-		var       logger      = loggerScope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
 		while (!token.IsCancellationRequested)
 		{
 			try
@@ -419,9 +419,9 @@ public class PostgresJobQueue<T>(
 			{
 				if (!token.IsCancellationRequested)
 				{
-					logger.LogError("DelayedJobHandlerAsync for queue {queue} failed with: {error}", name, e);
+					_logger.LogError("DelayedJobHandlerAsync for queue {queue} failed with: {error}", name, e);
 					await Task.Delay(1000, token);
-					logger.LogDebug("Restarting DelayedJobHandlerAsync worker for queue {queue}", name);
+					_logger.LogDebug("Restarting DelayedJobHandlerAsync worker for queue {queue}", name);
 				}
 			}
 		}
@@ -461,26 +461,28 @@ public class PostgresJobQueue<T>(
 
 	private async Task AttemptProcessJobAsync(CancellationToken token)
 	{
-		await using var scope = GetScope();
+		await using var processorScope = GetScope();
+		await using var jobScope       = GetScope();
 		try
 		{
-			await ProcessJobAsync(scope, token);
+			await ProcessJobAsync(processorScope, jobScope, token);
 		}
 		catch (Exception e)
 		{
-			var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
-			logger.LogError("ProcessJobAsync for queue {queue} failed with: {error}", name, e);
-			logger.LogError("Queue worker(s) for queue {queue} might be degraded or stalled. Please report this bug to the developers.",
-			                name);
+			_logger.LogError("ProcessJobAsync for queue {queue} failed with: {error}", name, e);
+			_logger.LogError("Queue worker(s) for queue {queue} might be degraded or stalled. Please report this bug to the developers.",
+			                 name);
 		}
 	}
 
-	private async Task ProcessJobAsync(IServiceScope scope, CancellationToken token)
+	private async Task ProcessJobAsync(IServiceScope processorScope, IServiceScope jobScope, CancellationToken token)
 	{
-		await using var db = GetDbContext(scope);
+		await using var db = GetDbContext(processorScope);
 
 		if (await db.GetJobs(name, _workerId).ToListAsync(token) is not [{ } job])
 			return;
+
+		_logger.LogTrace("Processing {queue} job {id}", name, job.Id);
 
 		var data = JsonSerializer.Deserialize<T>(job.Data);
 		if (data == null)
@@ -495,7 +497,7 @@ public class PostgresJobQueue<T>(
 
 		try
 		{
-			await handler(job, data, scope.ServiceProvider, token).WaitAsync(timeout, token);
+			await handler(job, data, jobScope.ServiceProvider, token).WaitAsync(timeout, token);
 		}
 		catch (Exception e)
 		{
@@ -503,22 +505,21 @@ public class PostgresJobQueue<T>(
 			job.ExceptionMessage = e.Message;
 			job.ExceptionSource  = e.TargetSite?.DeclaringType?.FullName ?? "Unknown";
 
-			var logger    = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
 			var queueName = data is BackgroundTaskJobData ? name + $" ({data.GetType().Name})" : name;
 			if (e is GracefulException { Details: not null } ce)
 			{
-				logger.LogError("Failed to process job {id} in queue {queue}: {error} - {details}",
-				                job.Id.ToStringLower(), queueName, ce.Message, ce.Details);
+				_logger.LogError("Failed to process job {id} in queue {queue}: {error} - {details}",
+				                 job.Id.ToStringLower(), queueName, ce.Message, ce.Details);
 			}
 			else if (e is TimeoutException)
 			{
-				logger.LogError("Job {id} in queue {queue} didn't complete within the configured timeout ({timeout} seconds)",
-				                job.Id.ToStringLower(), queueName, (int)timeout.TotalSeconds);
+				_logger.LogError("Job {id} in queue {queue} didn't complete within the configured timeout ({timeout} seconds)",
+				                 job.Id.ToStringLower(), queueName, (int)timeout.TotalSeconds);
 			}
 			else
 			{
-				logger.LogError(e, "Failed to process job {id} in queue {queue}: {error}",
-				                job.Id.ToStringLower(), queueName, e);
+				_logger.LogError(e, "Failed to process job {id} in queue {queue}: {error}",
+				                 job.Id.ToStringLower(), queueName, e);
 			}
 		}
 
@@ -537,10 +538,9 @@ public class PostgresJobQueue<T>(
 			}
 			else
 			{
-				var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
-				logger.LogTrace("Job in queue {queue} was delayed to {time} after {duration} ms, has been queued since {time}",
-				                name, job.DelayedUntil.Value.ToLocalTime().ToStringIso8601Like(), job.Duration,
-				                job.QueuedAt.ToLocalTime().ToStringIso8601Like());
+				_logger.LogTrace("Job {id} in queue {queue} was delayed to {time} after {duration} ms, has been queued since {time}",
+				                 job.Id, name, job.DelayedUntil.Value.ToLocalTime().ToStringIso8601Like(), job.Duration,
+				                 job.QueuedAt.ToLocalTime().ToStringIso8601Like());
 				db.ChangeTracker.Clear();
 				db.Update(job);
 				await db.SaveChangesAsync(token);
@@ -553,16 +553,15 @@ public class PostgresJobQueue<T>(
 			job.Status     = Job.JobStatus.Completed;
 			job.FinishedAt = DateTime.UtcNow;
 
-			var logger = scope.ServiceProvider.GetRequiredService<ILogger<QueueService>>();
 			if (job.RetryCount == 0)
 			{
-				logger.LogTrace("Job in queue {queue} completed after {duration} ms, was queued for {queueDuration} ms",
-				                name, job.Duration, job.QueueDuration);
+				_logger.LogTrace("Job {id} in queue {queue} completed after {duration} ms, was queued for {queueDuration} ms",
+				                 job.Id, name, job.Duration, job.QueueDuration);
 			}
 			else
 			{
-				logger.LogTrace("Job in queue {queue} completed after {duration} ms, has been queued since {time}",
-				                name, job.Duration, job.QueuedAt.ToStringIso8601Like());
+				_logger.LogTrace("Job {id} in queue {queue} completed after {duration} ms, has been queued since {time}",
+				                 job.Id, name, job.Duration, job.QueuedAt.ToStringIso8601Like());
 			}
 		}
 
