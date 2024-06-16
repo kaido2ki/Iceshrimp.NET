@@ -58,6 +58,7 @@ public class QueueService(
 
 		_ = Task.Run(RegisterNotificationChannels, token);
 		_ = Task.Run(ExecuteHeartbeatWorker, token);
+		_ = Task.Run(ExecuteHealthchecksWorker, token);
 		await Task.Run(ExecuteBackgroundWorkers, cts.Token);
 		return;
 
@@ -151,6 +152,59 @@ public class QueueService(
 				}
 			}
 		}
+
+		async Task ExecuteHealthchecksWorker()
+		{
+			var first = true;
+			while (!token.IsCancellationRequested)
+			{
+				try
+				{
+					if (!first) await Task.Delay(TimeSpan.FromMinutes(5), token);
+					else first = false;
+					logger.LogTrace("Checking for stalled jobs...");
+					await using var scope = scopeFactory.CreateAsyncScope();
+					await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+					foreach (var queue in _queues)
+					{
+						var cnt =
+							await db.Jobs.Where(p => p.Status == Job.JobStatus.Running &&
+							                         p.Queue == queue.Name &&
+							                         p.StartedAt < DateTime.UtcNow - queue.Timeout * 2)
+							        .ExecuteUpdateAsync(p => p.SetProperty(i => i.Status, _ => Job.JobStatus.Failed)
+							                                  .SetProperty(i => i.FinishedAt, _ => DateTime.UtcNow)
+							                                  .SetProperty(i => i.ExceptionMessage,
+							                                               _ => "Worker stalled")
+							                                  .SetProperty(i => i.ExceptionSource,
+							                                               _ => "HealthchecksWorker"),
+							                            token);
+
+						if (cnt <= 0)
+						{
+							logger.LogTrace("Healthchecks worker found no stalled jobs in queue {name}", queue.Name);
+							continue;
+						}
+
+						var jobs = await db.Jobs
+						                   .Where(p => p.Status == Job.JobStatus.Failed &&
+						                               p.Queue == queue.Name &&
+						                               p.FinishedAt > DateTime.UtcNow - TimeSpan.FromSeconds(30) &&
+						                               p.ExceptionMessage == "Worker stalled" &&
+						                               p.ExceptionSource == "HealthchecksWorker")
+						                   .Select(p => p.Id)
+						                   .ToListAsync(token);
+
+						logger.LogWarning("Healthchecks worker cleaned up {count} stalled jobs in queue {name}:\n- {jobs}",
+						                  cnt, queue.Name, string.Join("\n- ", jobs));
+					}
+				}
+				catch (Exception e)
+				{
+					if (!token.IsCancellationRequested)
+						logger.LogWarning("Healthchecks worker failed with {error}, restarting...", e.Message);
+				}
+			}
+		}
 	}
 
 	private async Task RemoveWorkerEntry()
@@ -196,6 +250,8 @@ public interface IPostgresJobQueue
 
 	public void RaiseJobQueuedEvent();
 	public void RaiseJobDelayedEvent();
+
+	public TimeSpan Timeout { get; }
 }
 
 public class PostgresJobQueue<T>(
@@ -205,10 +261,12 @@ public class PostgresJobQueue<T>(
 	TimeSpan timeout
 ) : IPostgresJobQueue where T : class
 {
+	public string   Name    => name;
+	public TimeSpan Timeout => timeout;
+
 	private readonly AsyncAutoResetEvent  _delayedChannel = new();
 	private readonly AsyncAutoResetEvent  _queuedChannel  = new();
 	private          IServiceScopeFactory _scopeFactory   = null!;
-	public           string               Name => name;
 	private          string?              _workerId;
 
 	public void RaiseJobQueuedEvent()  => QueuedChannelEvent?.Invoke(null, EventArgs.Empty);
