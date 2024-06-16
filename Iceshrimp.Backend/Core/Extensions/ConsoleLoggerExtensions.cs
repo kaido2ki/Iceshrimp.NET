@@ -284,7 +284,6 @@ file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-cu
 		textWriter.Write('[');
 		textWriter.Write(id);
 		textWriter.Write(']');
-		if (!singleLine) textWriter.Write(Environment.NewLine);
 
 		if (!string.IsNullOrEmpty(message))
 			WriteMessage(textWriter, message, logLevel, singleLine);
@@ -303,9 +302,10 @@ file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-cu
 		}
 		else
 		{
-			textWriter.Write(MessagePadding);
-			WriteReplacing(textWriter, Environment.NewLine,
-			               Environment.NewLine + GetSyslogSeverityIndicatorString(logLevel) + MessagePadding, message);
+			var sev    = GetSyslogSeverityIndicatorString(logLevel);
+			var prefix = Environment.NewLine + sev + MessagePadding;
+			textWriter.Write(prefix);
+			WriteReplacing(textWriter, Environment.NewLine, prefix, message);
 		}
 
 		textWriter.Write(Environment.NewLine);
