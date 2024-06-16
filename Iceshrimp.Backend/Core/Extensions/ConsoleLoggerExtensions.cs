@@ -1,4 +1,3 @@
-using IsATeletypewriter;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Console;
 
@@ -86,15 +85,6 @@ file static class ConsoleUtils
 {
 	private static volatile int _sEmitAnsiColorCodes = -1;
 
-	private static bool EmitColor = ShouldEmitColor();
-
-	private static bool ShouldEmitColor()
-	{
-		var stdout = Console.OpenStandardOutput();
-		var fd     = stdout.GetFileDescriptor();
-		return SystemIsATeletypewriter.Instance.IsTerminal(fd);
-	}
-
 	public static bool EmitAnsiColorCodes
 	{
 		get
@@ -105,7 +95,7 @@ file static class ConsoleUtils
 				return Convert.ToBoolean(emitAnsiColorCodes);
 			}
 
-			var enabled = EmitColor;
+			var enabled = !Console.IsOutputRedirected;
 
 			if (enabled)
 			{
