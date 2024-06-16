@@ -176,6 +176,7 @@
 
     private async Task SetupObservers()
     {
+        // Enabling root margin causes erratic virtual scroller behavior, i've not figured out why
         var options = new IntersectionObserverOptions
         {
             RootMargin = "100%"
