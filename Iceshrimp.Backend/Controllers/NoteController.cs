@@ -120,7 +120,8 @@ public class NoteController(
 	public async Task<IActionResult> GetNoteReactions(string id, string name)
 	{
 		var user = HttpContext.GetUser();
-		var note = await db.Notes.Where(p => p.Id == id)
+		var note = await db.Notes
+		                   .Where(p => p.Id == id)
 		                   .EnsureVisibleFor(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
@@ -142,7 +143,9 @@ public class NoteController(
 	public async Task<IActionResult> LikeNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var note = await db.Notes.Where(p => p.Id == id)
+		var note = await db.Notes
+		                   .Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
@@ -160,7 +163,9 @@ public class NoteController(
 	public async Task<IActionResult> UnlikeNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var note = await db.Notes.Where(p => p.Id == id)
+		var note = await db.Notes
+		                   .Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
@@ -178,7 +183,9 @@ public class NoteController(
 	public async Task<IActionResult> RenoteNote(string id, [FromQuery] NoteVisibility? visibility = null)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var note = await db.Notes.Where(p => p.Id == id)
+		var note = await db.Notes
+		                   .Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
@@ -195,7 +202,9 @@ public class NoteController(
 	public async Task<IActionResult> UnrenoteNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var note = await db.Notes.Where(p => p.Id == id)
+		var note = await db.Notes
+		                   .Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
@@ -212,7 +221,8 @@ public class NoteController(
 	public async Task<IActionResult> ReactToNote(string id, string name)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var note = await db.Notes.Where(p => p.Id == id)
+		var note = await db.Notes
+		                   .Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
 		                   .FirstOrDefaultAsync() ??
