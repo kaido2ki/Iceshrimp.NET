@@ -305,7 +305,7 @@ file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-cu
 		{
 			textWriter.Write(MessagePadding);
 			WriteReplacing(textWriter, Environment.NewLine,
-			               GetSyslogSeverityIndicatorString(logLevel) + NewLineWithMessagePadding, message);
+			               Environment.NewLine + GetSyslogSeverityIndicatorString(logLevel) + MessagePadding, message);
 		}
 
 		textWriter.Write(Environment.NewLine);
