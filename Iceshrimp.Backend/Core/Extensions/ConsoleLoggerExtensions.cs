@@ -287,13 +287,13 @@ file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-cu
 		if (!singleLine) textWriter.Write(Environment.NewLine);
 
 		if (!string.IsNullOrEmpty(message))
-			WriteMessage(textWriter, message, singleLine);
+			WriteMessage(textWriter, message, logLevel, singleLine);
 
 		if (exception != null)
-			WriteMessage(textWriter, exception.ToString(), singleLine);
+			WriteMessage(textWriter, exception.ToString(), logLevel, singleLine);
 	}
 
-	private static void WriteMessage(TextWriter textWriter, string message, bool singleLine)
+	private static void WriteMessage(TextWriter textWriter, string message, LogLevel logLevel, bool singleLine)
 	{
 		if (string.IsNullOrEmpty(message)) return;
 		if (singleLine)
@@ -304,7 +304,8 @@ file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-cu
 		else
 		{
 			textWriter.Write(MessagePadding);
-			WriteReplacing(textWriter, Environment.NewLine, NewLineWithMessagePadding, message);
+			WriteReplacing(textWriter, Environment.NewLine,
+			               GetSyslogSeverityIndicatorString(logLevel) + NewLineWithMessagePadding, message);
 		}
 
 		textWriter.Write(Environment.NewLine);
@@ -327,6 +328,20 @@ file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-cu
 			LogLevel.Warning     => "<4>warn: ",
 			LogLevel.Error       => "<3>fail: ",
 			LogLevel.Critical    => "<2>crit: ",
+			_                    => throw new ArgumentOutOfRangeException(nameof(logLevel))
+		};
+	}
+
+	private static string GetSyslogSeverityIndicatorString(LogLevel logLevel)
+	{
+		return logLevel switch
+		{
+			LogLevel.Trace       => "<7>",
+			LogLevel.Debug       => "<7>",
+			LogLevel.Information => "<6>",
+			LogLevel.Warning     => "<4>",
+			LogLevel.Error       => "<3>",
+			LogLevel.Critical    => "<2>",
 			_                    => throw new ArgumentOutOfRangeException(nameof(logLevel))
 		};
 	}
