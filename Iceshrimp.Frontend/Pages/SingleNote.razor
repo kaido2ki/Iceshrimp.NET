@@ -3,7 +3,8 @@
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Components.Note
-@inject ApiService ApiService
+@inject ApiService            ApiService
+@inject IJSRuntime            Js
 
 @if (_init)
 {
@@ -19,7 +20,7 @@
                         }
                     </div>
                 }
-                <div class="root-note">
+                <div @ref="RootNoteRef" class="root-note">
                     <Note NoteResponse="RootNote"></Note>
                 </div>
                 @if (Descendants != null)
@@ -49,6 +50,8 @@ else
     public             NoteResponse?        RootNote    { get; set; }
     private            IList<NoteResponse>? Descendants { get; set; }
     private            IList<NoteResponse>? Ascendants  { get; set; }
+    private            IJSObjectReference?  Module      { get; set; }
+    private            ElementReference     RootNoteRef        { get; set; }
     private            bool                 _init  = false;
     private            bool                 _error = false;
 
@@ -75,6 +78,19 @@ else
         _init       = true;
 
         StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Module = await Js.InvokeAsync<IJSObjectReference>("import", "/Pages/SingleNote.razor.js");
+        }
+
+        if (_init)
+        {
+            await Module.InvokeVoidAsync("ScrollIntoView", RootNoteRef);
+        }
     }
 
 }
