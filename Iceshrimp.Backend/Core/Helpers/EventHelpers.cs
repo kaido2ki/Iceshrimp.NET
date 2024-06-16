@@ -2,7 +2,9 @@ namespace Iceshrimp.Backend.Core.Helpers;
 
 public sealed class AsyncAutoResetEvent(bool signaled = false)
 {
-	private readonly List<TaskCompletionSource<bool>> _taskCompletionSources = [];
+	private readonly List<TaskCompletionSource<bool>> _taskCompletionSources        = [];
+	private readonly List<TaskCompletionSource<bool>> _noResetTaskCompletionSources = [];
+	public           bool                             Signaled => signaled;
 
 	public Task<bool> WaitAsync(CancellationToken cancellationToken = default)
 	{
@@ -21,19 +23,39 @@ public sealed class AsyncAutoResetEvent(bool signaled = false)
 		}
 	}
 
+	public Task<bool> WaitWithoutResetAsync(CancellationToken cancellationToken = default)
+	{
+		lock (_taskCompletionSources)
+		{
+			if (signaled)
+				return Task.FromResult(true);
+
+			var tcs = new TaskCompletionSource<bool>();
+			cancellationToken.Register(Callback, (this, tcs));
+			_noResetTaskCompletionSources.Add(tcs);
+			return tcs.Task;
+		}
+	}
+
 	public void Set()
 	{
 		lock (_taskCompletionSources)
 		{
-			if (_taskCompletionSources.Count > 0)
+			signaled = true;
+			foreach (var tcs in _noResetTaskCompletionSources.ToList())
 			{
-				var tcs = _taskCompletionSources[0];
-				_taskCompletionSources.RemoveAt(0);
+				_noResetTaskCompletionSources.Remove(tcs);
 				tcs.TrySetResult(true);
-				return;
 			}
 
-			signaled = true;
+			if (_taskCompletionSources.Count == 0) return;
+			
+			signaled = false;
+			foreach (var tcs in _taskCompletionSources.ToList())
+			{
+				_taskCompletionSources.Remove(tcs);
+				tcs.TrySetResult(true);
+			}
 		}
 	}
 
@@ -45,6 +67,7 @@ public sealed class AsyncAutoResetEvent(bool signaled = false)
 			if (tcs.Task.IsCompleted) return;
 			tcs.TrySetCanceled();
 			ev._taskCompletionSources.Remove(tcs);
+			ev._noResetTaskCompletionSources.Remove(tcs);
 		}
 	}
 }

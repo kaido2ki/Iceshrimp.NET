@@ -259,8 +259,20 @@ public class PostgresJobQueue<T>(
 					continue;
 				}
 
+				// ReSharper disable MethodSupportsCancellation
+				var queuedChannelCts = new CancellationTokenSource();
+				if (actualParallelism < parallelism)
+				{
+					_ = _queuedChannel.WaitWithoutResetAsync()
+					                  .ContinueWith(_ => { queuedChannelCts.Cancel(); })
+					                  .SafeWaitAsync(queueToken);
+				}
+				// ReSharper restore MethodSupportsCancellation
+
 				var tasks = TaskExtensions.QueueMany(() => AttemptProcessJobAsync(token), actualParallelism);
-				await Task.WhenAny(tasks).SafeWaitAsync(queueToken, () => Task.WhenAll(tasks).WaitAsync(token));
+				await Task.WhenAny(tasks)
+				          .SafeWaitAsync(queuedChannelCts.Token)
+				          .SafeWaitAsync(queueToken, () => Task.WhenAll(tasks).WaitAsync(token));
 			}
 			catch (Exception e)
 			{
