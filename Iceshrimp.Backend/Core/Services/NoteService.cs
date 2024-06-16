@@ -573,7 +573,6 @@ public class NoteService(
 		if (!isEdit) return note;
 
 		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
-		await notificationSvc.GenerateReplyNotifications(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateEditNotifications(note);
 
 		if (note.LocalOnly || note.User.Host != null) return note;
