@@ -2,6 +2,7 @@ namespace Iceshrimp.Parsing
 
 open System
 open System.Collections.Generic
+open System.Runtime.Serialization
 open FParsec
 
 module MfmNodeTypes =
@@ -140,9 +141,13 @@ module private MfmParser =
             satisfy isAsciiLetterOrNumber
             <|> pchar '_'
             <|> attempt (
-                pchar '-'
-                .>> (previousCharSatisfies isAsciiLetterOrNumber
-                     <|> nextCharSatisfies isAsciiLetterOrNumber)
+                previousCharSatisfies isAsciiLetterOrNumber >>. pchar '-'
+                .>> lookAhead (satisfy isAsciiLetterOrNumber)
+            )
+            <|> attempt (
+                (previousCharSatisfies '-'.Equals <|> previousCharSatisfies isAsciiLetterOrNumber)
+                >>. pchar '-'
+                .>> lookAhead (satisfy '-'.Equals <|> satisfy isAsciiLetterOrNumber)
             )
         )
 

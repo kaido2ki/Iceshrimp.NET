@@ -66,7 +66,7 @@ public class MfmTests
 	[TestMethod]
 	public void TestMention()
 	{
-		const string input = "test @test test @test@instance.tld @test_ @_test @test_@instance.tld @_test@instance.tld";
+		const string input = "test @test test @test@instance.tld @test_ @_test @test_@ins-tance.tld @_test@xn--mastodn-f1a.de @_test@-xn--mastodn-f1a.de";
 		List<MfmNode> expected =
 		[
 			new MfmTextNode("test "),
@@ -78,9 +78,10 @@ public class MfmTests
 			new MfmTextNode(" "),
 			new MfmMentionNode("_test", "_test", null),
 			new MfmTextNode(" "),
-			new MfmMentionNode("test_@instance.tld", "test_", "instance.tld"),
+			new MfmMentionNode("test_@ins-tance.tld", "test_", "ins-tance.tld"),
 			new MfmTextNode(" "),
-			new MfmMentionNode("_test@instance.tld", "_test", "instance.tld"),
+			new MfmMentionNode("_test@xn--mastodn-f1a.de", "_test", "xn--mastodn-f1a.de"),
+			new MfmTextNode(" @_test@-xn--mastodn-f1a.de"),
 		];
 		var res = Mfm.parse(input);
 
