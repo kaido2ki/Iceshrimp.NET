@@ -25,7 +25,18 @@ public class InboxQueue(int parallelism)
 			throw new GracefulException("Job data is not an ASActivity", $"Type: {obj.Type}");
 
 		var apHandler = scope.GetRequiredService<ActivityPub.ActivityHandlerService>();
-		await apHandler.PerformActivityAsync(activity, jobData.InboxUserId, jobData.AuthenticatedUserId);
+		try
+		{
+			await apHandler.PerformActivityAsync(activity, jobData.InboxUserId, jobData.AuthenticatedUserId);
+		}
+		catch (InstanceBlockedException e)
+		{
+			var logger = scope.GetRequiredService<ILogger<InboxQueue>>();
+			if (e.Host != null)
+				logger.LogDebug("Refusing to process activity {id}: Instance {host} is blocked", job.Id, e.Host);
+			else
+				logger.LogDebug("Refusing to process activity {id}: Instance is blocked ({uri})", job.Id, e.Uri);
+		}
 	}
 }
 

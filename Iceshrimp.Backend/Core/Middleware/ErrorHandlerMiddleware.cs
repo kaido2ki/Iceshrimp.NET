@@ -207,6 +207,21 @@ public class LocalFetchException(string uri)
 	public string Uri => uri;
 }
 
+public class InstanceBlockedException(string uri, string? host = null)
+	: GracefulException(HttpStatusCode.UnprocessableEntity, "Instance is blocked")
+{
+	public string? Host
+	{
+		get
+		{
+			if (host != null) return host;
+			return System.Uri.TryCreate(uri, UriKind.Absolute, out var res) ? res.Host : null;
+		}
+	}
+
+	public string Uri => uri;
+}
+
 public enum ExceptionVerbosity
 {
 	[SuppressMessage("ReSharper", "UnusedMember.Global")]

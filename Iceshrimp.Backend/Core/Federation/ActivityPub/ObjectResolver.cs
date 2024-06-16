@@ -54,7 +54,7 @@ public class ObjectResolver(
 
 		if (await federationCtrl.ShouldBlockAsync(baseObj.Id))
 		{
-			logger.LogDebug("Instance is blocked");
+			logger.LogDebug("Instance is blocked ({uri})", baseObj.Id);
 			return null;
 		}
 

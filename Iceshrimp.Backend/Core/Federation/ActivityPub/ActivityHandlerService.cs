@@ -34,7 +34,7 @@ public class ActivityHandlerService(
 		if (activity.Actor == null)
 			throw GracefulException.UnprocessableEntity("Cannot perform activity as actor 'null'");
 		if (await federationCtrl.ShouldBlockAsync(activity.Actor.Id))
-			throw GracefulException.UnprocessableEntity("Instance is blocked");
+			throw new InstanceBlockedException(activity.Actor.Id);
 		if (activity.Object == null && activity is not ASBite)
 			throw GracefulException.UnprocessableEntity("Activity object is null");
 
