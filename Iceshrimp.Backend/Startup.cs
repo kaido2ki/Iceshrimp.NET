@@ -18,7 +18,7 @@ builder.Services.AddControllers()
        .AddApiBehaviorOptions();
 
 builder.Services.AddSwaggerGenWithOptions();
-builder.Services.AddLoggingWithOptions()
+builder.Services.AddLoggingWithOptions();
 builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
 builder.Services.AddCorsPolicies();
