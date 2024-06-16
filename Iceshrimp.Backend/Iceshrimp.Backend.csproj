@@ -60,6 +60,7 @@
         <PackageReference Include="System.Text.Json" Version="8.0.3" />
         <PackageReference Include="Ulid" Version="1.3.3" />
         <PackageReference Include="Iceshrimp.WebPush" Version="2.0.0" />
+        <PackageReference Include="IsATeletypewriter" Version="0.4.2" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
