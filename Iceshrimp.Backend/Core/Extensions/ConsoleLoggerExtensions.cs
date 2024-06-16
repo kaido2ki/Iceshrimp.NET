@@ -7,7 +7,7 @@ public static class ConsoleLoggerExtensions
 {
 	public static ILoggingBuilder AddCustomConsoleFormatter(this ILoggingBuilder builder)
 	{
-		if (Environment.GetEnvironmentVariable("INVOCATION_ID") is null)
+		if (Environment.GetEnvironmentVariable("INVOCATION_ID") is not null)
 		{
 			builder.AddConsole(options => options.FormatterName = "systemd-custom")
 			       .AddConsoleFormatter<CustomSystemdConsoleFormatter, ConsoleFormatterOptions>();
