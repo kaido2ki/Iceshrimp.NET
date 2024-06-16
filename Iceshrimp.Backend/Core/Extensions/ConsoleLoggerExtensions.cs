@@ -7,7 +7,7 @@ public static class ConsoleLoggerExtensions
 {
 	public static ILoggingBuilder AddCustomConsoleFormatter(this ILoggingBuilder builder)
 	{
-		if (Environment.GetEnvironmentVariable("INVOCATION_ID") is not null)
+		if (Environment.GetEnvironmentVariable("INVOCATION_ID") is null)
 		{
 			builder.AddConsole(options => options.FormatterName = "systemd-custom")
 			       .AddConsoleFormatter<CustomSystemdConsoleFormatter, ConsoleFormatterOptions>();
@@ -178,10 +178,7 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom")
 			textWriter.Write(eventId.ToString());
 
 		textWriter.Write(']');
-		if (!singleLine)
-		{
-			textWriter.Write(Environment.NewLine);
-		}
+		if (!singleLine) textWriter.Write(Environment.NewLine);
 
 		WriteMessage(textWriter, message, singleLine);
 
@@ -263,6 +260,9 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom")
 
 file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-custom")
 {
+	private static readonly string MessagePadding            = new(' ', 6);
+	private static readonly string NewLineWithMessagePadding = Environment.NewLine + MessagePadding;
+
 	public override void Write<TState>(
 		in LogEntry<TState> logEntry,
 		IExternalScopeProvider? scopeProvider,
@@ -276,6 +276,7 @@ file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-cu
 		var category             = logEntry.Category;
 		var id                   = logEntry.EventId.Id;
 		var exception            = logEntry.Exception;
+		var singleLine           = !message.Contains('\n') && exception == null;
 		var syslogSeverityString = GetSyslogSeverityString(logLevel);
 		textWriter.Write(syslogSeverityString);
 
@@ -283,24 +284,36 @@ file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-cu
 		textWriter.Write('[');
 		textWriter.Write(id);
 		textWriter.Write(']');
+		if (!singleLine) textWriter.Write(Environment.NewLine);
+
 		if (!string.IsNullOrEmpty(message))
-		{
-			textWriter.Write(' ');
-			WriteReplacingNewLine(textWriter, message);
-		}
+			WriteMessage(textWriter, message, singleLine);
 
 		if (exception != null)
+			WriteMessage(textWriter, exception.ToString(), singleLine);
+	}
+
+	private static void WriteMessage(TextWriter textWriter, string message, bool singleLine)
+	{
+		if (string.IsNullOrEmpty(message)) return;
+		if (singleLine)
 		{
 			textWriter.Write(' ');
-			WriteReplacingNewLine(textWriter, exception.ToString());
+			WriteReplacing(textWriter, Environment.NewLine, " ", message);
+		}
+		else
+		{
+			textWriter.Write(MessagePadding);
+			WriteReplacing(textWriter, Environment.NewLine, NewLineWithMessagePadding, message);
 		}
 
 		textWriter.Write(Environment.NewLine);
+		return;
 
-		static void WriteReplacingNewLine(TextWriter writer, string message)
+		static void WriteReplacing(TextWriter writer, string oldValue, string newValue, string message)
 		{
-			var str = message.Replace(Environment.NewLine, " ");
-			writer.Write(str);
+			var newMessage = message.Replace(oldValue, newValue);
+			writer.Write(newMessage);
 		}
 	}
 
