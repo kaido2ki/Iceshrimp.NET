@@ -68,7 +68,7 @@ public class NoteService(
 	{
 		logger.LogDebug("Creating note for user {id}", user.Id);
 
-		if (user.Host == null && (text?.Length ?? 0) + (cw?.Length ?? 0) > config.Value.CharacterLimit)
+		if (user.IsLocalUser && (text?.Length ?? 0) + (cw?.Length ?? 0) > config.Value.CharacterLimit)
 			throw GracefulException
 				.UnprocessableEntity($"Text & content warning cannot exceed {config.Value.CharacterLimit} characters in total");
 		if (text is { Length: > 100000 })
@@ -151,7 +151,7 @@ public class NoteService(
 			? reply?.UserId
 			: reply.MastoReplyUserId ?? reply.ReplyUserId ?? reply.UserId;
 
-		if (emoji == null && user.Host == null && nodes != null)
+		if (emoji == null && user.IsLocalUser && nodes != null)
 		{
 			emoji = (await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList();
 		}
@@ -296,7 +296,7 @@ public class NoteService(
 			});
 		}
 
-		if (user.Host != null)
+		if (user.IsRemoteUser)
 		{
 			_ = followupTaskSvc.ExecuteTask("UpdateInstanceNoteCounter", async provider =>
 			{
@@ -388,7 +388,7 @@ public class NoteService(
 			FileIds   = note.FileIds
 		};
 
-		if (note.User.Host == null && (text?.Length ?? 0) + (cw?.Length ?? 0) > config.Value.CharacterLimit)
+		if (note.User.IsLocalUser && (text?.Length ?? 0) + (cw?.Length ?? 0) > config.Value.CharacterLimit)
 			throw GracefulException
 				.UnprocessableEntity($"Text & content warning cannot exceed {config.Value.CharacterLimit} characters in total");
 		if (text is { Length: > 100000 })
@@ -398,7 +398,7 @@ public class NoteService(
 		if (attachments != null && attachments.Any(p => p.UserId != note.User.Id))
 			throw GracefulException.UnprocessableEntity("Refusing to create note with files belonging to someone else");
 
-		var previousMentionedLocalUserIds = await db.Users.Where(p => note.Mentions.Contains(p.Id) && p.Host == null)
+		var previousMentionedLocalUserIds = await db.Users.Where(p => note.Mentions.Contains(p.Id) && p.IsLocalUser)
 		                                            .Select(p => p.Id)
 		                                            .ToListAsync();
 
@@ -443,7 +443,7 @@ public class NoteService(
 		note.Cw               = cw?.Trim();
 		note.Tags             = ResolveHashtags(text, asNote);
 
-		if (note.User.Host == null && nodes != null)
+		if (note.User.IsLocalUser && nodes != null)
 		{
 			emoji = (await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList();
 		}
@@ -575,7 +575,7 @@ public class NoteService(
 		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateEditNotifications(note);
 
-		if (note.LocalOnly || note.User.Host != null) return note;
+		if (note.LocalOnly || note.User.IsRemoteUser) return note;
 
 		var actor    = userRenderer.RenderLite(note.User);
 		var obj      = await noteRenderer.RenderAsync(note, mentions);
@@ -602,7 +602,7 @@ public class NoteService(
 		await db.SaveChangesAsync();
 		await UpdateNoteCountersAsync(note, false);
 
-		if (note.User.Host != null)
+		if (note.User.IsRemoteUser)
 		{
 			if (note.User.Uri != null)
 			{
@@ -975,12 +975,12 @@ public class NoteService(
 	private MentionQuintuple ResolveNoteMentions(IReadOnlyCollection<User> users)
 	{
 		var userIds      = users.Select(p => p.Id).Distinct().ToList();
-		var localUserIds = users.Where(p => p.Host == null).Select(p => p.Id).Distinct().ToList();
+		var localUserIds = users.Where(p => p.IsLocalUser).Select(p => p.Id).Distinct().ToList();
 
-		var remoteUsers = users.Where(p => p is { Host: not null, Uri: not null })
+		var remoteUsers = users.Where(p => p is { IsRemoteUser: true, Uri: not null })
 		                       .ToList();
 
-		var localUsers = users.Where(p => p.Host is null)
+		var localUsers = users.Where(p => p.IsLocalUser)
 		                      .ToList();
 
 		var splitDomainMapping = remoteUsers.Where(p => new Uri(p.Uri!).Host != p.Host)
@@ -1127,7 +1127,7 @@ public class NoteService(
 			await db.Notes.Where(p => p.Id == note.Id)
 			        .ExecuteUpdateAsync(p => p.SetProperty(n => n.LikeCount, n => n.LikeCount + 1));
 
-			if (user.Host == null && note.UserHost != null)
+			if (user.IsLocalUser && note.UserHost != null)
 			{
 				var activity = activityRenderer.RenderLike(like);
 				await deliverSvc.DeliverToConditionalAsync(activity, user, note);
@@ -1151,7 +1151,7 @@ public class NoteService(
 		await db.Notes.Where(p => p.Id == note.Id)
 		        .ExecuteUpdateAsync(p => p.SetProperty(n => n.LikeCount, n => n.LikeCount - 1));
 
-		if (user.Host == null && note.UserHost != null)
+		if (user.IsLocalUser && note.UserHost != null)
 		{
 			var activity =
 				activityRenderer.RenderUndo(userRenderer.RenderLite(user), activityRenderer.RenderLike(like));
@@ -1207,7 +1207,7 @@ public class NoteService(
 
 	public async Task BookmarkNoteAsync(Note note, User user)
 	{
-		if (user.Host != null) throw new Exception("This method is only valid for local users");
+		if (user.IsRemoteUser) throw new Exception("This method is only valid for local users");
 
 		if (note.IsPureRenote)
 			throw GracefulException.BadRequest("Cannot bookmark a pure renote");
@@ -1229,14 +1229,14 @@ public class NoteService(
 
 	public async Task UnbookmarkNoteAsync(Note note, User user)
 	{
-		if (user.Host != null) throw new Exception("This method is only valid for local users");
+		if (user.IsRemoteUser) throw new Exception("This method is only valid for local users");
 
 		await db.NoteBookmarks.Where(p => p.Note == note && p.User == user).ExecuteDeleteAsync();
 	}
 
 	public async Task PinNoteAsync(Note note, User user)
 	{
-		if (user.Host != null) throw new Exception("This method is only valid for local users");
+		if (user.IsRemoteUser) throw new Exception("This method is only valid for local users");
 
 		if (note.IsPureRenote)
 			throw GracefulException.BadRequest("Cannot pin a pure renote");
@@ -1266,7 +1266,7 @@ public class NoteService(
 
 	public async Task UnpinNoteAsync(Note note, User user)
 	{
-		if (user.Host != null) throw new Exception("This method is only valid for local users");
+		if (user.IsRemoteUser) throw new Exception("This method is only valid for local users");
 
 		var count = await db.UserNotePins.Where(p => p.Note == note && p.User == user).ExecuteDeleteAsync();
 		if (count == 0) return;
@@ -1350,7 +1350,7 @@ public class NoteService(
 		await db.Database
 		        .ExecuteSqlAsync($"""UPDATE "note" SET "reactions" = jsonb_set("reactions", ARRAY[{name}], (COALESCE("reactions"->>{name}, '0')::int + 1)::text::jsonb) WHERE "id" = {note.Id}""");
 
-		if (user.Host == null)
+		if (user.IsLocalUser)
 		{
 			var emoji    = await emojiSvc.ResolveEmoji(reaction.Reaction);
 			var activity = activityRenderer.RenderReact(reaction, emoji);
@@ -1384,7 +1384,7 @@ public class NoteService(
 		await db.Database
 		        .ExecuteSqlAsync($"""UPDATE "note" SET "reactions" = jsonb_set("reactions", ARRAY[{name}], (COALESCE("reactions"->>{name}, '1')::int - 1)::text::jsonb) WHERE "id" = {note.Id}""");
 
-		if (user.Host == null)
+		if (user.IsLocalUser)
 		{
 			var actor    = userRenderer.RenderLite(user);
 			var emoji    = await emojiSvc.ResolveEmoji(reaction.Reaction);
@@ -1392,7 +1392,7 @@ public class NoteService(
 			await deliverSvc.DeliverToConditionalAsync(activity, user, note);
 		}
 
-		if (note.User.Host == null && note.User != user)
+		if (note.User.IsLocalUser && note.User != user)
 		{
 			await db.Notifications
 			        .Where(p => p.Note == note &&

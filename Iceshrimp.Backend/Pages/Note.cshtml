@@ -16,7 +16,7 @@ else
     async Task RenderNote(string name, Note note)
     {
         Model.TextContent.TryGetValue(note.Id, out var textContent);
-        var acct        = "@" + note.User.Username + (note.User.Host == null ? "" : "@" + note.User.Host);
+        var acct        = "@" + note.User.Username + (note.User.IsLocalUser ? "" : "@" + note.User.Host);
         var displayName = note.User.DisplayName;
         var username    = note.User.Username;
 

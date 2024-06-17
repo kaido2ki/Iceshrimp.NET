@@ -12,13 +12,13 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 {
 	public async Task<UserResponse> RenderOne(User user, UserRendererDto? data = null)
 	{
-		var instance = user.Host == null
+		var instance = user.IsLocalUser
 			? null
 			: (data?.InstanceData ?? await GetInstanceData([user])).FirstOrDefault(p => p.Host == user.Host);
 
 		//TODO: populate the below two lines for local users
-		var instanceName = user.Host == null ? config.Value.AccountDomain : instance?.Name;
-		var instanceIcon = user.Host == null ? null : instance?.FaviconUrl;
+		var instanceName = user.IsLocalUser ? config.Value.AccountDomain : instance?.Name;
+		var instanceIcon = user.IsLocalUser ? null : instance?.FaviconUrl;
 
 		return new UserResponse
 		{

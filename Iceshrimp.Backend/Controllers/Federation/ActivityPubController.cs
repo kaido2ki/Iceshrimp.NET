@@ -42,7 +42,7 @@ public class ActivityPubController(
 		                   .EnsureVisibleFor(actor)
 		                   .FirstOrDefaultAsync(p => p.Id == id);
 		if (note == null) return NotFound();
-		if (note.User.Host != null)
+		if (note.User.IsRemoteUser)
 			return RedirectPermanent(note.Uri ?? throw new Exception("Refusing to render remote note without uri"));
 		var rendered  = await noteRenderer.RenderAsync(note);
 		var compacted = rendered.Compact();
@@ -82,7 +82,7 @@ public class ActivityPubController(
 	{
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
 		if (user == null) return NotFound();
-		if (user.Host != null) return user.Uri != null ? RedirectPermanent(user.Uri) : NotFound();
+		if (user.IsRemoteUser) return user.Uri != null ? RedirectPermanent(user.Uri) : NotFound();
 		var rendered  = await userRenderer.RenderAsync(user);
 		var compacted = LdHelpers.Compact(rendered);
 		return Ok(compacted);
@@ -94,7 +94,7 @@ public class ActivityPubController(
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> GetUserFeatured(string id)
 	{
-		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && p.Host == null);
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser);
 		if (user == null) return NotFound();
 
 		var pins = await db.UserNotePins.Where(p => p.User == user)
@@ -136,7 +136,7 @@ public class ActivityPubController(
 		}
 
 		var user = await db.Users.IncludeCommonProperties()
-		                   .FirstOrDefaultAsync(p => p.UsernameLower == acct.ToLowerInvariant() && p.Host == null);
+		                   .FirstOrDefaultAsync(p => p.UsernameLower == acct.ToLowerInvariant() && p.IsLocalUser);
 		if (user == null) return NotFound();
 		var rendered  = await userRenderer.RenderAsync(user);
 		var compacted = LdHelpers.Compact(rendered);

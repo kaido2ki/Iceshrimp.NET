@@ -48,7 +48,7 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 		// Validate query parameters first
 		await OnGet();
 
-		var user = await db.Users.FirstOrDefaultAsync(p => p.Host == null &&
+		var user = await db.Users.FirstOrDefaultAsync(p => p.IsLocalUser &&
 		                                                   p.UsernameLower == username.ToLowerInvariant());
 		if (user == null)
 			throw GracefulException.Forbidden("Invalid username or password");

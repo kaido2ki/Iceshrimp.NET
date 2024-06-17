@@ -172,9 +172,9 @@ public class BackgroundTaskQueue(int parallelism)
 
 		var notificationSvc = scope.GetRequiredService<NotificationService>();
 		await notificationSvc.GeneratePollEndedNotifications(note);
-		if (note.User.Host == null)
+		if (note.User.IsLocalUser)
 		{
-			var voters = await db.PollVotes.Where(p => p.Note == note && p.User.Host != null)
+			var voters = await db.PollVotes.Where(p => p.Note == note && p.User.IsRemoteUser)
 			                     .Select(p => p.User)
 			                     .ToListAsync(token);
 

@@ -134,12 +134,12 @@ public class DriveService(
 
 	public async Task<DriveFile> StoreFile(Stream input, User user, DriveFileCreationRequest request)
 	{
-		if (user.Host == null && input.Length > storageConfig.Value.MaxUploadSizeBytes)
+		if (user.IsLocalUser && input.Length > storageConfig.Value.MaxUploadSizeBytes)
 			throw GracefulException.UnprocessableEntity("Attachment is too large.");
 
 		DriveFile? file;
 
-		if (user.Host != null && input.Length > storageConfig.Value.MaxCacheSizeBytes)
+		if (user.IsRemoteUser && input.Length > storageConfig.Value.MaxCacheSizeBytes)
 		{
 			file = new DriveFile
 			{
@@ -198,9 +198,9 @@ public class DriveService(
 			storageConfig.Value is { MediaRetentionTimeSpan: not null, MediaProcessing.LocalOnly: false } &&
 			data.Length <= storageConfig.Value.MaxCacheSizeBytes;
 
-		var shouldStore = user.Host == null || shouldCache;
+		var shouldStore = user.IsLocalUser || shouldCache;
 
-		if (request.Uri == null && user.Host != null)
+		if (request.Uri == null && user.IsRemoteUser)
 			throw GracefulException.UnprocessableEntity("Refusing to store file without uri for remote user");
 
 		string? blurhash = null;
@@ -222,7 +222,7 @@ public class DriveService(
 		{
 			if (isImage && isReasonableSize)
 			{
-				var genWebp = user.Host == null;
+				var genWebp = user.IsLocalUser;
 				var res     = await imageProcessor.ProcessImage(data, request, true, genWebp);
 				properties = res?.Properties ?? properties;
 

@@ -18,7 +18,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 	)
 	{
 		var acct = user.Username;
-		if (user.Host != null)
+		if (user.IsRemoteUser)
 			acct += $"@{user.Host}";
 
 		var profileEmoji = emoji?.Where(p => user.Emojis.Contains(p.Id)).ToList() ?? await GetEmoji([user]);

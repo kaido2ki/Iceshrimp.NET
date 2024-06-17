@@ -59,7 +59,7 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 		                    })
 		                    .ToList();
 
-		var splitDomainMapping = users.Where(p => p is { Host: not null, Uri: not null })
+		var splitDomainMapping = users.Where(p => p is { IsRemoteUser: true, Uri: not null })
 		                              .Cast<User>()
 		                              .Where(p => new Uri(p.Uri!).Host != p.Host)
 		                              .DistinctBy(p => p.Host)

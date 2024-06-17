@@ -82,7 +82,7 @@ public class NotificationService(
 	public async Task GenerateEditNotifications(Note note)
 	{
 		var notifications = await db.Users
-		                            .Where(p => p.Host == null && p != note.User && p.HasInteractedWith(note))
+		                            .Where(p => p.IsLocalUser && p != note.User && p.HasInteractedWith(note))
 		                            .Select(p => new Notification
 		                            {
 			                            Id         = IdHelpers.GenerateSlowflakeId(DateTime.UtcNow),
@@ -124,7 +124,7 @@ public class NotificationService(
 
 	public async Task GenerateReactionNotification(NoteReaction reaction)
 	{
-		if (reaction.Note.User.Host != null) return;
+		if (reaction.Note.User.IsRemoteUser) return;
 		if (reaction.Note.User == reaction.User) return;
 
 		var notification = new Notification
@@ -144,7 +144,7 @@ public class NotificationService(
 
 	public async Task GenerateFollowNotification(User follower, User followee)
 	{
-		if (followee.Host != null) return;
+		if (followee.IsRemoteUser) return;
 
 		var notification = new Notification
 		{
@@ -222,9 +222,9 @@ public class NotificationService(
 	{
 		var notifications = await db.PollVotes
 		                            .Where(p => p.Note == note)
-		                            .Where(p => p.User.Host == null)
+		                            .Where(p => p.User.IsLocalUser)
 		                            .Select(p => p.User)
-		                            .Concat(db.Users.Where(p => p == note.User && p.Host == null))
+		                            .Concat(db.Users.Where(p => p == note.User && p.IsLocalUser))
 		                            .Distinct()
 		                            .Select(p => new Notification
 		                            {

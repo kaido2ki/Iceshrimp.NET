@@ -141,7 +141,7 @@ public class AdminController(
 	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 	public async Task<IActionResult> FetchActivityAsync([FromQuery] string uri, [FromQuery] string? userId)
 	{
-		var user = userId != null ? await db.Users.FirstOrDefaultAsync(p => p.Id == userId && p.Host == null) : null;
+		var user = userId != null ? await db.Users.FirstOrDefaultAsync(p => p.Id == userId && p.IsLocalUser) : null;
 		var activity = await fetchSvc.FetchActivityAsync(uri, user);
 		if (!activity.Any()) throw GracefulException.UnprocessableEntity("Failed to fetch activity");
 		return Ok(LdHelpers.Compact(activity));
@@ -154,7 +154,7 @@ public class AdminController(
 	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 	public async Task FetchRawActivityAsync([FromQuery] string uri, [FromQuery] string? userId)
 	{
-		var user = userId != null ? await db.Users.FirstOrDefaultAsync(p => p.Id == userId && p.Host == null) : null;
+		var user = userId != null ? await db.Users.FirstOrDefaultAsync(p => p.Id == userId && p.IsLocalUser) : null;
 		var activity = await fetchSvc.FetchRawActivityAsync(uri, user);
 		if (activity == null) throw GracefulException.UnprocessableEntity("Failed to fetch activity");
 

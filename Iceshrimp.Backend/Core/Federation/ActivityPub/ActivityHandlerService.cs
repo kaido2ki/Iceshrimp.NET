@@ -152,7 +152,7 @@ public class ActivityHandlerService(
 			throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
 
 		var followee = await userResolver.ResolveAsync(obj.Id);
-		if (followee.Host != null)
+		if (followee.IsRemoteUser)
 			throw GracefulException.UnprocessableEntity("Cannot process follow for remote followee");
 
 		await userSvc.FollowUserAsync(resolvedActor, followee, activity.Id);
@@ -386,9 +386,9 @@ public class ActivityHandlerService(
 			//TODO: more fallback
 		};
 
-		if (dbBite.TargetUser?.Host != null ||
-		    dbBite.TargetNote?.User.Host != null ||
-		    dbBite.TargetBite?.User.Host != null)
+		if ((dbBite.TargetUser?.IsRemoteUser ?? false) ||
+		    (dbBite.TargetNote?.User.IsRemoteUser ?? false) ||
+		    (dbBite.TargetBite?.User.IsRemoteUser ?? false))
 			throw GracefulException.Accepted("Ignoring bite for remote user");
 
 		var finalTarget = dbBite.TargetUser ?? dbBite.TargetNote?.User ?? dbBite.TargetBite?.User;
@@ -459,7 +459,7 @@ public class ActivityHandlerService(
 		var resolvedBlockee = await userResolver.ResolveAsync(blockee.Id, true);
 		if (resolvedBlockee == null)
 			throw GracefulException.UnprocessableEntity("Unknown block target");
-		if (resolvedBlockee.Host != null)
+		if (resolvedBlockee.IsRemoteUser)
 			throw GracefulException.UnprocessableEntity("Refusing to process block between two remote users");
 		await userSvc.BlockUserAsync(resolvedActor, resolvedBlockee);
 	}
@@ -508,7 +508,7 @@ public class ActivityHandlerService(
 		var resolvedBlockee = await userResolver.ResolveAsync(blockee.Id, true);
 		if (resolvedBlockee == null)
 			throw GracefulException.UnprocessableEntity("Unknown block target");
-		if (resolvedBlockee.Host != null)
+		if (resolvedBlockee.IsRemoteUser)
 			throw GracefulException
 				.UnprocessableEntity("Refusing to process unblock between two remote users");
 		await userSvc.UnblockUserAsync(blocker, resolvedBlockee);

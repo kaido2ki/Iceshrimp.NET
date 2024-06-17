@@ -25,13 +25,13 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 		var cutoffHalfYear = DateTime.UtcNow - TimeSpan.FromDays(180);
 		var instance       = config.Value;
 		var totalUsers =
-			await db.Users.LongCountAsync(p => p.Host == null && !Constants.SystemUsers.Contains(p.UsernameLower));
+			await db.Users.LongCountAsync(p => p.IsLocalUser && !Constants.SystemUsers.Contains(p.UsernameLower));
 		var activeMonth =
-			await db.Users.LongCountAsync(p => p.Host == null &&
+			await db.Users.LongCountAsync(p => p.IsLocalUser &&
 			                                   !Constants.SystemUsers.Contains(p.UsernameLower) &&
 			                                   p.LastActiveDate > cutoffMonth);
 		var activeHalfYear =
-			await db.Users.LongCountAsync(p => p.Host == null &&
+			await db.Users.LongCountAsync(p => p.IsLocalUser &&
 			                                   !Constants.SystemUsers.Contains(p.UsernameLower) &&
 			                                   p.LastActiveDate > cutoffHalfYear);
 		var localPosts = await db.Notes.LongCountAsync(p => p.UserHost == null);

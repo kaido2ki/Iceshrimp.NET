@@ -66,7 +66,7 @@ public class HashtagChannel(WebSocketConnection connection, bool local) : IChann
 	}
 
 	private bool IsApplicableBool(Note note) =>
-		(!local || note.User.Host == null) &&
+		(!local || note.User.IsLocalUser) &&
 		note.Tags.Intersects(_tags) &&
 		note.IsVisibleFor(connection.Token.User, connection.Following);
 

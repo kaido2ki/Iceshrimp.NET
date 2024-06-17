@@ -54,7 +54,7 @@ public class Bite
 
 	public string GetPublicUri(Config.InstanceSection config) => GetPublicUri(config.WebDomain);
 
-	public string GetPublicUri(string webDomain) => User.Host == null
+	public string GetPublicUri(string webDomain) => User.IsLocalUser
 		? $"https://{webDomain}/bites/{Id}"
 		: throw new Exception("Cannot access PublicUri for remote user");
 }

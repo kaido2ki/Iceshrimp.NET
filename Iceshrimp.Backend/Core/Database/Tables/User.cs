@@ -501,8 +501,8 @@ public class User : IEntity
 	[NotMapped] public bool? PrecomputedIsRequested   { get; set; }
 	[NotMapped] public bool? PrecomputedIsRequestedBy { get; set; }
 
-	public bool IsLocalUser  => Host == null;
-	public bool IsRemoteUser => Host != null;
+	[Projectable] public bool IsLocalUser  => Host == null;
+	[Projectable] public bool IsRemoteUser => Host != null;
 
 	[Key]
 	[Column("id")]

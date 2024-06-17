@@ -88,7 +88,7 @@ public class ASNote : ASObject
 
 	public Note.NoteVisibility GetVisibility(User actor)
 	{
-		if (actor.Host == null) throw new Exception("Can't get recipients for local actor");
+		if (actor.IsLocalUser) throw new Exception("Can't get recipients for local actor");
 
 		if (To?.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public") ?? false)
 			return Note.NoteVisibility.Public;
@@ -102,7 +102,7 @@ public class ASNote : ASObject
 
 	public List<string> GetRecipients(User actor)
 	{
-		if (actor.Host == null) throw new Exception("Can't get recipients for local actor");
+		if (actor.IsLocalUser) throw new Exception("Can't get recipients for local actor");
 		return (To ?? []).Concat(Cc ?? [])
 		                 .Select(p => p.Id)
 		                 .Distinct()

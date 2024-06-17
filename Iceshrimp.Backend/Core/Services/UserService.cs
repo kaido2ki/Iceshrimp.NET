@@ -314,7 +314,7 @@ public class UserService(
 
 	public async Task<User> UpdateLocalUserAsync(User user, string? prevAvatarId, string? prevBannerId)
 	{
-		if (user.Host != null) throw new Exception("This method is only valid for local users");
+		if (user.IsRemoteUser) throw new Exception("This method is only valid for local users");
 		if (user.UserProfile == null) throw new Exception("user.UserProfile must not be null at this stage");
 
 		user.Tags = ResolveHashtags(user.UserProfile.Description);
@@ -375,7 +375,7 @@ public class UserService(
 			throw new GracefulException(HttpStatusCode.BadRequest, "Username must not contain the dot character");
 		if (Constants.SystemUsers.Contains(username.ToLowerInvariant()))
 			throw new GracefulException(HttpStatusCode.BadRequest, "Username must not be a system user");
-		if (await db.Users.AnyAsync(p => p.Host == null && p.UsernameLower == username.ToLowerInvariant()))
+		if (await db.Users.AnyAsync(p => p.IsLocalUser && p.UsernameLower == username.ToLowerInvariant()))
 			throw new GracefulException(HttpStatusCode.BadRequest, "User already exists");
 		if (await db.UsedUsernames.AnyAsync(p => p.Username.ToLower() == username.ToLowerInvariant()))
 			throw new GracefulException(HttpStatusCode.BadRequest, "Username was already used");
@@ -487,7 +487,7 @@ public class UserService(
 
 	public async Task DeleteUserAsync(ASActor actor)
 	{
-		var user = await db.Users.FirstOrDefaultAsync(p => p.Uri == actor.Id && p.Host != null);
+		var user = await db.Users.FirstOrDefaultAsync(p => p.Uri == actor.Id && p.IsRemoteUser);
 
 		if (user == null)
 		{
@@ -547,8 +547,8 @@ public class UserService(
 
 	public async Task AcceptFollowRequestAsync(FollowRequest request)
 	{
-		if (request is { Follower.Host: not null, RequestId: null })
-			throw GracefulException.UnprocessableEntity("Cannot accept request without request id");
+		if (request is { Follower.IsRemoteUser: true, RequestId: null })
+			throw GracefulException.UnprocessableEntity("Cannot accept remote request without request id");
 
 		var following = new Following
 		{
@@ -574,7 +574,7 @@ public class UserService(
 		await db.AddAsync(following);
 		await db.SaveChangesAsync();
 
-		if (request.Follower is { Host: not null })
+		if (request.Follower is { IsRemoteUser: true })
 		{
 			_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
 			{
@@ -588,7 +588,7 @@ public class UserService(
 			var activity = activityRenderer.RenderAccept(request.Followee, request.Follower, request.RequestId!);
 			await deliverSvc.DeliverToAsync(activity, request.Followee, request.Follower);
 		}
-		else if (request.Followee is { Host: not null })
+		else if (request.Followee is { IsRemoteUser: true })
 		{
 			_ = followupTaskSvc.ExecuteTask("IncrementInstanceOutgoingFollowsCounter", async provider =>
 			{
@@ -643,7 +643,7 @@ public class UserService(
 	{
 		if (follower.Id == followee.Id)
 			throw GracefulException.UnprocessableEntity("You cannot follow yourself");
-		if (follower.Host != null && followee.Host != null)
+		if (follower.IsRemoteUser && followee.IsRemoteUser)
 			throw GracefulException.UnprocessableEntity("Cannot process follow between two remote users");
 
 		Guid? relationshipId = null;
@@ -674,7 +674,7 @@ public class UserService(
 				throw GracefulException.UnprocessableEntity("You are not allowed to follow this user");
 		}
 
-		if (followee.IsLocked || followee.Host != null)
+		if (followee.IsLocked || followee.IsRemoteUser)
 		{
 			if (!await db.FollowRequests.AnyAsync(p => p.Follower == follower && p.Followee == followee))
 			{
@@ -753,7 +753,7 @@ public class UserService(
 				});
 			}
 
-			if (follower.Host != null)
+			if (follower.IsRemoteUser)
 			{
 				if (requestId == null)
 					throw new Exception("requestId must not be null at this stage");
@@ -1106,7 +1106,7 @@ public class UserService(
 
 	private async Task<string?> UpdateUserHostAsync(User user)
 	{
-		if (user.Host == null || user.Uri == null || user.SplitDomainResolved)
+		if (user.IsLocalUser || user.Uri == null || user.SplitDomainResolved)
 			return user.Host;
 
 		var res   = await webFingerSvc.ResolveAsync(user.Uri);

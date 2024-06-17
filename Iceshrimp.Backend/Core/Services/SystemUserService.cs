@@ -43,14 +43,14 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 		{
 			logger.LogTrace("GetOrCreateSystemUser delegate method called for user {username}", username);
 			return await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username &&
-			                                               p.Host == null) ??
+			                                               p.IsLocalUser) ??
 			       await CreateSystemUserAsync(username);
 		});
 	}
 
 	private async Task<User> CreateSystemUserAsync(string username)
 	{
-		if (await db.Users.AnyAsync(p => p.UsernameLower == username.ToLowerInvariant() && p.Host == null))
+		if (await db.Users.AnyAsync(p => p.UsernameLower == username.ToLowerInvariant() && p.IsLocalUser))
 			throw new GracefulException($"System user {username} already exists");
 
 		var keypair = RSA.Create(4096);

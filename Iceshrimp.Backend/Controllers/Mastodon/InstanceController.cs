@@ -25,7 +25,7 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 	public async Task<IActionResult> GetInstanceInfoV1([FromServices] IOptionsSnapshot<Config> config)
 	{
 		var userCount =
-			await db.Users.LongCountAsync(p => p.Host == null && !Constants.SystemUsers.Contains(p.UsernameLower));
+			await db.Users.LongCountAsync(p => p.IsLocalUser && !Constants.SystemUsers.Contains(p.UsernameLower));
 		var noteCount     = await db.Notes.LongCountAsync(p => p.UserHost == null);
 		var instanceCount = await db.Instances.LongCountAsync();
 
@@ -45,7 +45,7 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 	public async Task<IActionResult> GetInstanceInfoV2([FromServices] IOptionsSnapshot<Config> config)
 	{
 		var cutoff = DateTime.UtcNow - TimeSpan.FromDays(30);
-		var activeMonth = await db.Users.LongCountAsync(p => p.Host == null &&
+		var activeMonth = await db.Users.LongCountAsync(p => p.IsLocalUser &&
 		                                                     !Constants.SystemUsers.Contains(p.UsernameLower) &&
 		                                                     p.LastActiveDate > cutoff);
 

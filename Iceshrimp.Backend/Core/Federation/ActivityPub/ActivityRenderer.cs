@@ -68,7 +68,7 @@ public class ActivityRenderer(
 	{
 		if (like.Note.UserHost == null)
 			throw GracefulException.BadRequest("Refusing to render like activity: note user must be remote");
-		if (like.User.Host != null)
+		if (like.User.IsRemoteUser)
 			throw GracefulException.BadRequest("Refusing to render like activity: actor must be local");
 
 		return new ASLike
@@ -81,7 +81,7 @@ public class ActivityRenderer(
 
 	public ASEmojiReact RenderReact(NoteReaction reaction, Emoji? emoji)
 	{
-		if (reaction.User.Host != null)
+		if (reaction.User.IsRemoteUser)
 			throw GracefulException.BadRequest("Refusing to render like activity: actor must be local");
 
 		var res = new ASEmojiReact
@@ -111,9 +111,9 @@ public class ActivityRenderer(
 
 	public ASFollow RenderFollow(User follower, User followee, Guid? relationshipId)
 	{
-		if (follower.Host == null && followee.Host == null)
+		if (follower.IsLocalUser && followee.IsLocalUser)
 			throw GracefulException.BadRequest("Refusing to render follow activity between two remote users");
-		if (follower.Host != null && followee.Host != null)
+		if (follower.IsRemoteUser && followee.IsRemoteUser)
 			throw GracefulException.BadRequest("Refusing to render follow activity between two local users");
 
 		return RenderFollow(userRenderer.RenderLite(follower),
@@ -123,12 +123,12 @@ public class ActivityRenderer(
 
 	public ASActivity RenderUnfollow(User follower, User followee, Guid? relationshipId)
 	{
-		if (follower.Host == null && followee.Host == null)
+		if (follower.IsLocalUser && followee.IsLocalUser)
 			throw GracefulException.BadRequest("Refusing to render unfollow activity between two remote users");
-		if (follower.Host != null && followee.Host != null)
+		if (follower.IsRemoteUser && followee.IsRemoteUser)
 			throw GracefulException.BadRequest("Refusing to render unfollow activity between two local users");
 
-		if (follower.Host == null)
+		if (follower.IsLocalUser)
 		{
 			var actor = userRenderer.RenderLite(follower);
 			var obj   = userRenderer.RenderLite(followee);

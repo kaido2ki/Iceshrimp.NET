@@ -49,7 +49,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 	                 Justification = "Argon2 is execution time-heavy by design")]
 	public async Task<IActionResult> Login([FromBody] AuthRequest request)
 	{
-		var user = await db.Users.FirstOrDefaultAsync(p => p.Host == null &&
+		var user = await db.Users.FirstOrDefaultAsync(p => p.IsLocalUser &&
 		                                                   p.UsernameLower == request.Username.ToLowerInvariant());
 		if (user == null)
 			throw GracefulException.Forbidden("Invalid username or password");

@@ -31,7 +31,7 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 		if (resource.StartsWith($"https://{config.Value.WebDomain}/users/"))
 		{
 			var id = resource[$"https://{config.Value.WebDomain}/users/".Length..];
-			user = await db.Users.FirstOrDefaultAsync(p => p.Id == id && p.Host == null);
+			user = await db.Users.FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser);
 		}
 		else
 		{
@@ -47,7 +47,7 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 			}
 
 			user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == split[0].ToLowerInvariant() &&
-			                                               p.Host == null);
+			                                               p.IsLocalUser);
 		}
 
 		if (user == null) return NotFound();
