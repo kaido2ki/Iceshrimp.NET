@@ -69,6 +69,35 @@ public class AdminController(
 		return Ok();
 	}
 
+	[HttpPost("instances/{host}/force-state/{state}")]
+	[Produces(MediaTypeNames.Application.Json)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public async Task<IActionResult> ForceInstanceState(string host, AdminSchemas.InstanceState state)
+	{
+		var instance = await db.Instances.FirstOrDefaultAsync(p => p.Host == host.ToLowerInvariant()) ??
+		               throw GracefulException.NotFound("Instance not found");
+
+		if (state == AdminSchemas.InstanceState.Active)
+		{
+			instance.IsNotResponding         = false;
+			instance.LastCommunicatedAt      = DateTime.UtcNow;
+			instance.LatestRequestReceivedAt = DateTime.UtcNow;
+			instance.LatestRequestSentAt     = DateTime.UtcNow;
+		}
+		else
+		{
+			instance.IsNotResponding         = true;
+			instance.LastCommunicatedAt      = DateTime.UnixEpoch;
+			instance.LatestRequestReceivedAt = DateTime.UnixEpoch;
+			instance.LatestRequestSentAt     = DateTime.UnixEpoch;
+		}
+
+		await db.SaveChangesAsync();
+		return Ok();
+	}
+
 	[UseNewtonsoftJson]
 	[HttpGet("activities/notes/{id}")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASNote))]
@@ -141,7 +170,7 @@ public class AdminController(
 	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 	public async Task<IActionResult> FetchActivityAsync([FromQuery] string uri, [FromQuery] string? userId)
 	{
-		var user = userId != null ? await db.Users.FirstOrDefaultAsync(p => p.Id == userId && p.IsLocalUser) : null;
+		var user     = userId != null ? await db.Users.FirstOrDefaultAsync(p => p.Id == userId && p.IsLocalUser) : null;
 		var activity = await fetchSvc.FetchActivityAsync(uri, user);
 		if (!activity.Any()) throw GracefulException.UnprocessableEntity("Failed to fetch activity");
 		return Ok(LdHelpers.Compact(activity));
@@ -154,7 +183,7 @@ public class AdminController(
 	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
 	public async Task FetchRawActivityAsync([FromQuery] string uri, [FromQuery] string? userId)
 	{
-		var user = userId != null ? await db.Users.FirstOrDefaultAsync(p => p.Id == userId && p.IsLocalUser) : null;
+		var user     = userId != null ? await db.Users.FirstOrDefaultAsync(p => p.Id == userId && p.IsLocalUser) : null;
 		var activity = await fetchSvc.FetchRawActivityAsync(uri, user);
 		if (activity == null) throw GracefulException.UnprocessableEntity("Failed to fetch activity");
 
