@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace Iceshrimp.Shared.Schemas;
 
 public class UserProfileResponse
@@ -11,33 +9,20 @@ public class UserProfileResponse
 	public required string?                 Bio       { get; set; }
 	public required int?                    Followers { get; set; }
 	public required int?                    Following { get; set; }
-	public required RelationData            Relations { get; set; }
+	public required Relations               Relations { get; set; }
 }
 
-public class RelationData
+[Flags]
+public enum Relations
 {
-	[JsonIgnore] public required string UserId;
-
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-	public required bool IsSelf { get; set; }
-
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-	public required bool IsFollowing { get; set; }
-
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-	public required bool IsFollowedBy { get; set; }
-
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-	public required bool IsRequested { get; set; }
-
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-	public required bool IsRequestedBy { get; set; }
-
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-	public required bool IsBlocking { get; set; }
-
-	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-	public required bool IsMuting { get; set; }
+	None        = 0,
+	Self        = 1,
+	Following   = 2,
+	FollowedBy  = 4,
+	Requested   = 8,
+	RequestedBy = 16,
+	Blocking    = 32,
+	Muting      = 64
 }
 
 public class UserProfileField

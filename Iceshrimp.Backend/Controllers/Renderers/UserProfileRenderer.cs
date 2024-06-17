@@ -89,6 +89,31 @@ public class UserProfileRenderer(DatabaseContext db)
 		return await userList.Select(p => RenderOne(p, localUser, data)).AwaitAllAsync();
 	}
 
+	public class RelationData
+	{
+		public required string UserId;
+		public required bool   IsSelf;
+		public required bool   IsFollowing;
+		public required bool   IsFollowedBy;
+		public required bool   IsRequested;
+		public required bool   IsRequestedBy;
+		public required bool   IsBlocking;
+		public required bool   IsMuting;
+
+		public static implicit operator Relations(RelationData data)
+		{
+			var res                     = Relations.None;
+			if (data.IsSelf) res        |= Relations.Self;
+			if (data.IsFollowing) res   |= Relations.Following;
+			if (data.IsFollowedBy) res  |= Relations.FollowedBy;
+			if (data.IsRequested) res   |= Relations.Requested;
+			if (data.IsRequestedBy) res |= Relations.RequestedBy;
+			if (data.IsBlocking) res    |= Relations.Blocking;
+			if (data.IsMuting) res      |= Relations.Muting;
+			return res;
+		}
+	}
+
 	public class UserRendererDto
 	{
 		public Dictionary<string, RelationData>? Relations;
