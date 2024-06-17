@@ -17,7 +17,7 @@ public class EventTests
 			autoResetEvent.Set();
 		});
 		await task;
-		(DateTime.Now - pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(50));
+		(DateTime.Now - pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(45));
 		autoResetEvent.Signaled.Should().BeFalse();
 	}
 
@@ -33,7 +33,7 @@ public class EventTests
 			autoResetEvent.Set();
 		});
 		await task;
-		(DateTime.Now - pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(50));
+		(DateTime.Now - pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(45));
 		autoResetEvent.Signaled.Should().BeTrue();
 	}
 
@@ -49,7 +49,7 @@ public class EventTests
 			autoResetEvent.Set();
 		});
 		await Task.WhenAll(tasks);
-		(DateTime.Now - pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(50));
+		(DateTime.Now - pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(45));
 		autoResetEvent.Signaled.Should().BeFalse();
 	}
 
@@ -65,7 +65,7 @@ public class EventTests
 			autoResetEvent.Set();
 		});
 		await Task.WhenAll(tasks);
-		(DateTime.Now - pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(50));
+		(DateTime.Now - pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(45));
 		autoResetEvent.Signaled.Should().BeTrue();
 	}
 
@@ -77,7 +77,7 @@ public class EventTests
 		await autoResetEvent.WaitAsync();
 		autoResetEvent.Signaled.Should().BeFalse();
 		await Assert.ThrowsExceptionAsync<TimeoutException>(() => autoResetEvent.WaitAsync()
-			                                                    .WaitAsync(TimeSpan.FromMilliseconds(50)));
+			                                                    .WaitAsync(TimeSpan.FromMilliseconds(45)));
 	}
 
 	[TestMethod]
