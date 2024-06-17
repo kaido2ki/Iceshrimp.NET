@@ -1158,6 +1158,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("followerSharedInbox")
                         .HasComment("[Denormalized]");
 
+                    b.Property<Guid?>("RelationshipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("relationshipId");
+
                     b.Property<string>("RequestId")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
@@ -1237,6 +1241,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("followerSharedInbox")
                         .HasComment("[Denormalized]");
+
+                    b.Property<Guid?>("RelationshipId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("relationshipId");
 
                     b.HasKey("Id");
 

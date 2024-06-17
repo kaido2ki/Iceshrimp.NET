@@ -561,7 +561,8 @@ public class UserService(
 			FollowerInbox       = request.FollowerInbox,
 			FolloweeInbox       = request.FolloweeInbox,
 			FollowerSharedInbox = request.FollowerSharedInbox,
-			FolloweeSharedInbox = request.FolloweeSharedInbox
+			FolloweeSharedInbox = request.FolloweeSharedInbox,
+			RelationshipId      = request.RelationshipId
 		};
 
 		await db.Users.Where(p => p.Id == request.Follower.Id)
@@ -645,13 +646,16 @@ public class UserService(
 		if (follower.Host != null && followee.Host != null)
 			throw GracefulException.UnprocessableEntity("Cannot process follow between two remote users");
 
-		if (followee.Host != null)
+		Guid? relationshipId = null;
+
+		if (followee.IsRemoteUser)
 		{
-			var activity = activityRenderer.RenderFollow(follower, followee);
+			relationshipId = Guid.NewGuid();
+			var activity = activityRenderer.RenderFollow(follower, followee, relationshipId);
 			await deliverSvc.DeliverToAsync(activity, follower, followee);
 		}
 
-		if (follower.Host != null)
+		if (follower.IsRemoteUser)
 		{
 			if (requestId == null)
 				throw GracefulException.UnprocessableEntity("Cannot process remote follow without requestId");
@@ -688,7 +692,8 @@ public class UserService(
 						FolloweeInbox       = followee.Inbox,
 						FollowerInbox       = follower.Inbox,
 						FolloweeSharedInbox = followee.SharedInbox,
-						FollowerSharedInbox = follower.SharedInbox
+						FollowerSharedInbox = follower.SharedInbox,
+						RelationshipId      = relationshipId
 					};
 
 					await db.AddAsync(request);
@@ -764,13 +769,18 @@ public class UserService(
 	/// </remarks>
 	public async Task UnfollowUserAsync(User user, User followee)
 	{
-		if ((followee.PrecomputedIsFollowedBy ?? false) || (followee.PrecomputedIsRequestedBy ?? false))
+		if (((followee.PrecomputedIsFollowedBy ?? false) || (followee.PrecomputedIsRequestedBy ?? false)) &&
+		    followee.IsRemoteUser)
 		{
-			if (followee.Host != null)
-			{
-				var activity = activityRenderer.RenderUnfollow(user, followee);
-				await deliverSvc.DeliverToAsync(activity, user, followee);
-			}
+			var relationshipId = await db.Followings.Where(p => p.Follower == user && p.Followee == followee)
+			                             .Select(p => p.RelationshipId)
+			                             .FirstOrDefaultAsync() ??
+			                     await db.FollowRequests.Where(p => p.Follower == user && p.Followee == followee)
+			                             .Select(p => p.RelationshipId)
+			                             .FirstOrDefaultAsync();
+
+			var activity = activityRenderer.RenderUnfollow(user, followee, relationshipId);
+			await deliverSvc.DeliverToAsync(activity, user, followee);
 		}
 
 		if (followee.PrecomputedIsFollowedBy ?? false)
@@ -787,7 +797,7 @@ public class UserService(
 			db.RemoveRange(followings);
 			await db.SaveChangesAsync();
 
-			if (followee.Host != null)
+			if (followee.IsRemoteUser)
 			{
 				_ = followupTaskSvc.ExecuteTask("DecrementInstanceOutgoingFollowsCounter", async provider =>
 				{

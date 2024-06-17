@@ -36,6 +36,9 @@ public class FollowRequest : IEntity
 	[Column("requestId")]
 	[StringLength(128)]
 	public string? RequestId { get; set; }
+	
+	[Column("relationshipId")]
+	public Guid? RelationshipId { get; set; }
 
 	/// <summary>
 	///     [Denormalized]

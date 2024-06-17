@@ -109,7 +109,7 @@ public class ActivityRenderer(
 		return res;
 	}
 
-	public ASFollow RenderFollow(User follower, User followee)
+	public ASFollow RenderFollow(User follower, User followee, Guid? relationshipId)
 	{
 		if (follower.Host == null && followee.Host == null)
 			throw GracefulException.BadRequest("Refusing to render follow activity between two remote users");
@@ -118,10 +118,10 @@ public class ActivityRenderer(
 
 		return RenderFollow(userRenderer.RenderLite(follower),
 		                    userRenderer.RenderLite(followee),
-		                    RenderFollowId(follower, followee));
+		                    RenderFollowId(follower, followee, relationshipId));
 	}
 
-	public ASActivity RenderUnfollow(User follower, User followee)
+	public ASActivity RenderUnfollow(User follower, User followee, Guid? relationshipId)
 	{
 		if (follower.Host == null && followee.Host == null)
 			throw GracefulException.BadRequest("Refusing to render unfollow activity between two remote users");
@@ -132,13 +132,13 @@ public class ActivityRenderer(
 		{
 			var actor = userRenderer.RenderLite(follower);
 			var obj   = userRenderer.RenderLite(followee);
-			return RenderUndo(actor, RenderFollow(actor, obj, RenderFollowId(follower, followee)));
+			return RenderUndo(actor, RenderFollow(actor, obj, RenderFollowId(follower, followee, relationshipId)));
 		}
 		else
 		{
 			var actor = userRenderer.RenderLite(followee);
 			var obj   = userRenderer.RenderLite(follower);
-			return RenderReject(actor, RenderFollow(actor, obj, RenderFollowId(follower, followee)));
+			return RenderReject(actor, RenderFollow(actor, obj, RenderFollowId(follower, followee, relationshipId)));
 		}
 	}
 
@@ -178,8 +178,8 @@ public class ActivityRenderer(
 	};
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "This only makes sense for users")]
-	private string RenderFollowId(User follower, User followee) =>
-		$"https://{config.Value.WebDomain}/follows/{follower.Id}/{followee.Id}/{Guid.NewGuid().ToStringLower()}";
+	private string RenderFollowId(User follower, User followee, Guid? relationshipId) =>
+		$"https://{config.Value.WebDomain}/follows/{follower.Id}/{followee.Id}/{(relationshipId ?? Guid.NewGuid()).ToStringLower()}";
 
 	public static ASAnnounce RenderAnnounce(
 		ASNote note, ASActor actor, List<ASObjectBase> to, List<ASObjectBase> cc, string uri
