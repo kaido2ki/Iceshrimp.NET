@@ -43,6 +43,8 @@ public static class QueryableFtsExtensions
 		});
 	}
 
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
+	                 Justification = "Projectable chain must have consistent visibility")]
 	internal static (string username, string? host) UserToTuple(string filter, Config.InstanceSection config)
 	{
 		filter = filter.TrimStart('@');
@@ -55,24 +57,22 @@ public static class QueryableFtsExtensions
 	/// <returns>
 	/// The input variable host, or null if it matches the configured web or account domain.
 	/// </returns>
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
+	                 Justification = "Projectable chain must have consistent visibility")]
 	internal static string? LocalDomainCheck(string? host, Config.InstanceSection config) =>
 		host == null || host == config.WebDomain || host == config.AccountDomain ? null : host;
 
-	[Projectable]
 	private static IQueryable<Note> ApplyAfterFilter(this IQueryable<Note> query, AfterFilter filter)
 		=> query.Where(p => p.CreatedAt >= filter.Value.ToDateTime(TimeOnly.MinValue).ToUniversalTime());
 
-	[Projectable]
 	private static IQueryable<Note> ApplyBeforeFilter(this IQueryable<Note> query, BeforeFilter filter)
 		=> query.Where(p => p.CreatedAt < filter.Value.ToDateTime(TimeOnly.MinValue).ToUniversalTime());
 
-	[Projectable]
 	private static IQueryable<Note> ApplyWordFilter(
 		this IQueryable<Note> query, WordFilter filter, CaseFilterType caseSensitivity, MatchFilterType matchType
 	) => query.Where(p => p.FtsQueryPreEscaped(PreEscapeFtsQuery(filter.Value, matchType), filter.Negated,
 	                                           caseSensitivity, matchType));
 
-	[Projectable]
 	private static IQueryable<Note> ApplyMultiWordFilter(
 		this IQueryable<Note> query, MultiWordFilter filter, CaseFilterType caseSensitivity, MatchFilterType matchType
 	) => query.Where(p => p.FtsQueryOneOf(filter.Values, caseSensitivity, matchType));
@@ -88,170 +88,157 @@ public static class QueryableFtsExtensions
 		return query.Where(expr);
 	}
 
-	[Projectable]
 	private static IQueryable<Note> ApplyInstanceFilter(
 		this IQueryable<Note> query, InstanceFilter filter, Config.InstanceSection config
 	) => query.Where(p => filter.Negated
 		                 ? p.UserHost != LocalDomainCheck(filter.Value, config)
 		                 : p.UserHost == LocalDomainCheck(filter.Value, config));
 
-	[Projectable]
 	private static IQueryable<Note> ApplyMentionFilter(
 		this IQueryable<Note> query, MentionFilter filter, Config.InstanceSection config, DatabaseContext db
 	) => query.Where(p => p.Mentions.UserSubqueryContains(filter.Value, filter.Negated, config, db));
 
-	[Projectable]
 	private static IQueryable<Note> ApplyReplyFilter(
 		this IQueryable<Note> query, ReplyFilter filter, Config.InstanceSection config, DatabaseContext db
 	) => query.Where(p => p.Reply != null &&
 	                      p.Reply.User.UserSubqueryMatches(filter.Value, filter.Negated, config, db));
 
-	[Projectable]
 	private static IQueryable<Note> ApplyInFilter(
 		this IQueryable<Note> query, InFilter filter, User user, DatabaseContext db
-	) => filter.Value.Equals(InFilterType.Bookmarks)
-		? query.ApplyInBookmarksFilter(user, filter.Negated, db)
-		: filter.Value.Equals(InFilterType.Likes)
-			? query.ApplyInLikesFilter(user, filter.Negated, db)
-			: filter.Value.Equals(InFilterType.Reactions)
-				? query.ApplyInReactionsFilter(user, filter.Negated, db)
-				: query.ApplyInInteractionsFilter(user, filter.Negated, db);
+	)
+	{
+		return filter.Value switch
+		{
+			{ IsLikes: true }        => query.ApplyInLikesFilter(user, filter.Negated, db),
+			{ IsBookmarks: true }    => query.ApplyInBookmarksFilter(user, filter.Negated, db),
+			{ IsReactions: true }    => query.ApplyInReactionsFilter(user, filter.Negated, db),
+			{ IsInteractions: true } => query.ApplyInInteractionsFilter(user, filter.Negated, db),
+			_                        => throw new ArgumentOutOfRangeException(nameof(filter), filter.Value, null)
+		};
+	}
 
-	[Projectable]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	internal static IQueryable<Note> ApplyInBookmarksFilter(
+	private static IQueryable<Note> ApplyInBookmarksFilter(
 		this IQueryable<Note> query, User user, bool negated, DatabaseContext db
 	) => query.Where(p => negated
 		                 ? !db.Users.First(u => u == user).HasBookmarked(p)
 		                 : db.Users.First(u => u == user).HasBookmarked(p));
 
-	[Projectable]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	internal static IQueryable<Note> ApplyInLikesFilter(
+	private static IQueryable<Note> ApplyInLikesFilter(
 		this IQueryable<Note> query, User user, bool negated, DatabaseContext db
 	) => query.Where(p => negated
 		                 ? !db.Users.First(u => u == user).HasLiked(p)
 		                 : db.Users.First(u => u == user).HasLiked(p));
 
-	[Projectable]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	internal static IQueryable<Note> ApplyInReactionsFilter(
+	private static IQueryable<Note> ApplyInReactionsFilter(
 		this IQueryable<Note> query, User user, bool negated, DatabaseContext db
 	) => query.Where(p => negated
 		                 ? !db.Users.First(u => u == user).HasReacted(p)
 		                 : db.Users.First(u => u == user).HasReacted(p));
 
-	[Projectable]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	internal static IQueryable<Note> ApplyInInteractionsFilter(
+	private static IQueryable<Note> ApplyInInteractionsFilter(
 		this IQueryable<Note> query, User user, bool negated, DatabaseContext db
 	) => query.Where(p => negated
 		                 ? !db.Users.First(u => u == user).HasInteractedWith(p)
 		                 : db.Users.First(u => u == user).HasInteractedWith(p));
 
-	[Projectable]
-	private static IQueryable<Note> ApplyMiscFilter(
-		this IQueryable<Note> query, MiscFilter filter, User user
-	) => filter.Value.Equals(MiscFilterType.Followers)
-		? query.ApplyFollowersFilter(user, filter.Negated)
-		: filter.Value.Equals(MiscFilterType.Following)
-			? query.ApplyFollowingFilter(user, filter.Negated)
-			: filter.Value.Equals(MiscFilterType.Replies)
-				? query.ApplyRepliesFilter(filter.Negated)
-				: query.ApplyBoostsFilter(filter.Negated);
+	private static IQueryable<Note> ApplyMiscFilter(this IQueryable<Note> query, MiscFilter filter, User user)
+	{
+		return filter.Value switch
+		{
+			{ IsFollowers: true } => query.ApplyFollowersFilter(user, filter.Negated),
+			{ IsFollowing: true } => query.ApplyFollowingFilter(user, filter.Negated),
+			{ IsRenotes: true }   => query.ApplyRepliesFilter(filter.Negated),
+			{ IsReplies: true }   => query.ApplyBoostsFilter(filter.Negated),
+			_                     => throw new ArgumentOutOfRangeException(nameof(filter))
+		};
+	}
 
-	[Projectable]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	internal static IQueryable<Note> ApplyFollowersFilter(
-		this IQueryable<Note> query, User user, bool negated
-	) => query.Where(p => negated
-		                 ? !p.User.IsFollowing(user)
-		                 : p.User.IsFollowing(user));
+	private static IQueryable<Note> ApplyFollowersFilter(this IQueryable<Note> query, User user, bool negated)
+		=> query.Where(p => negated ? !p.User.IsFollowing(user) : p.User.IsFollowing(user));
 
-	[Projectable]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	internal static IQueryable<Note> ApplyFollowingFilter(
-		this IQueryable<Note> query, User user, bool negated
-	) => query.Where(p => negated
-		                 ? !p.User.IsFollowedBy(user)
-		                 : p.User.IsFollowedBy(user));
+	private static IQueryable<Note> ApplyFollowingFilter(this IQueryable<Note> query, User user, bool negated)
+		=> query.Where(p => negated ? !p.User.IsFollowedBy(user) : p.User.IsFollowedBy(user));
 
-	[Projectable]
-	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	internal static IQueryable<Note> ApplyRepliesFilter(
-		this IQueryable<Note> query, bool negated
-	) => query.Where(p => negated
-		                 ? p.Reply == null
-		                 : p.Reply != null);
+	private static IQueryable<Note> ApplyRepliesFilter(this IQueryable<Note> query, bool negated)
+		=> query.Where(p => negated ? p.Reply == null : p.Reply != null);
 
-	[Projectable]
-	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	internal static IQueryable<Note> ApplyBoostsFilter(
-		this IQueryable<Note> query, bool negated
-	) => query.Where(p => negated
-		                 ? !p.IsPureRenote
-		                 : p.IsPureRenote);
+	private static IQueryable<Note> ApplyBoostsFilter(this IQueryable<Note> query, bool negated)
+		=> query.Where(p => negated ? !p.IsPureRenote : p.IsPureRenote);
 
-	[Projectable]
 	private static IQueryable<Note> ApplyAttachmentFilter(this IQueryable<Note> query, AttachmentFilter filter)
 		=> filter.Negated ? query.ApplyNegatedAttachmentFilter(filter) : query.ApplyRegularAttachmentFilter(filter);
 
-	[Projectable]
-	internal static IQueryable<Note> ApplyRegularAttachmentFilter(this IQueryable<Note> query, AttachmentFilter filter)
-		=> AttachmentQuery(filter.Value)
-			? filter.Value.Equals(AttachmentFilterType.Poll)
-				? query.Where(p => p.HasPoll)
-				: query.Where(p => EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)))
-			: filter.Value.Equals(AttachmentFilterType.Any)
-				? query.Where(p => p.AttachedFileTypes.Count != 0)
-				: query.Where(p => p.AttachedFileTypes.Count != 0 &&
-				                   (!EF.Functions.ILike(p.RawAttachments,
-				                                        GetAttachmentILikeQuery(AttachmentFilterType.Image)) ||
-				                    !EF.Functions.ILike(p.RawAttachments,
-				                                        GetAttachmentILikeQuery(AttachmentFilterType.Video)) ||
-				                    !EF.Functions.ILike(p.RawAttachments,
-				                                        GetAttachmentILikeQuery(AttachmentFilterType.Audio))));
-
-	[Projectable]
-	internal static IQueryable<Note> ApplyNegatedAttachmentFilter(this IQueryable<Note> query, AttachmentFilter filter)
-		=> AttachmentQuery(filter.Value)
-			? filter.Value.Equals(AttachmentFilterType.Poll)
-				? query.Where(p => !p.HasPoll)
-				: query.Where(p => !EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)))
-			: filter.Value.Equals(AttachmentFilterType.Any)
-				? query.Where(p => p.AttachedFileTypes.Count == 0)
-				: query.Where(p => EF.Functions
-				                     .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Image)) ||
-				                   EF.Functions
-				                     .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Video)) ||
-				                   EF.Functions
-				                     .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Audio)));
-
-	internal static bool AttachmentQuery(AttachmentFilterType filter)
+	private static IQueryable<Note> ApplyRegularAttachmentFilter(this IQueryable<Note> query, AttachmentFilter filter)
 	{
-		if (filter.Equals(AttachmentFilterType.Image))
-			return true;
-		if (filter.Equals(AttachmentFilterType.Video))
-			return true;
-		if (filter.Equals(AttachmentFilterType.Audio))
-			return true;
-		if (filter.Equals(AttachmentFilterType.Poll))
-			return true;
-		return false;
+		if (filter.Value.IsAny)
+			return query.Where(p => p.AttachedFileTypes.Count != 0);
+		if (filter.Value.IsPoll)
+			return query.Where(p => p.HasPoll);
+
+		if (filter.Value.IsImage || filter.Value.IsVideo || filter.Value.IsAudio)
+		{
+			return query.Where(p => p.AttachedFileTypes.Count != 0 &&
+			                        EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)));
+		}
+
+		if (filter.Value.IsFile)
+		{
+			return query.Where(p => p.AttachedFileTypes.Count != 0 &&
+			                        (!EF.Functions.ILike(p.RawAttachments,
+			                                             GetAttachmentILikeQuery(AttachmentFilterType.Image)) ||
+			                         !EF.Functions.ILike(p.RawAttachments,
+			                                             GetAttachmentILikeQuery(AttachmentFilterType.Video)) ||
+			                         !EF.Functions.ILike(p.RawAttachments,
+			                                             GetAttachmentILikeQuery(AttachmentFilterType.Audio))));
+		}
+
+		throw new ArgumentOutOfRangeException(nameof(filter), filter.Value, null);
 	}
 
+	private static IQueryable<Note> ApplyNegatedAttachmentFilter(this IQueryable<Note> query, AttachmentFilter filter)
+	{
+		if (filter.Value.IsAny)
+			return query.Where(p => p.AttachedFileTypes.Count == 0);
+		if (filter.Value.IsPoll)
+			return query.Where(p => !p.HasPoll);
+		if (filter.Value.IsImage || filter.Value.IsVideo || filter.Value.IsAudio)
+			return query.Where(p => !EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)));
+
+		if (filter.Value.IsFile)
+		{
+			return query.Where(p => EF.Functions
+			                          .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Image)) ||
+			                        EF.Functions
+			                          .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Video)) ||
+			                        EF.Functions
+			                          .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Audio)));
+		}
+
+		throw new ArgumentOutOfRangeException(nameof(filter), filter.Value, null);
+	}
+
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
+	                 Justification = "Projectable chain must have consistent visibility")]
 	internal static string GetAttachmentILikeQuery(AttachmentFilterType filter)
 	{
-		if (filter.Equals(AttachmentFilterType.Image))
-			return "%image/%";
-		if (filter.Equals(AttachmentFilterType.Video))
-			return "%video/%";
-		if (filter.Equals(AttachmentFilterType.Audio))
-			return "%audio/%";
-		throw new ArgumentOutOfRangeException(nameof(filter));
+		return filter switch
+		{
+			{ IsImage: true } => "%image/%",
+			{ IsVideo: true } => "%video/%",
+			{ IsAudio: true } => "%audio/%",
+			_                 => throw new ArgumentOutOfRangeException(nameof(filter), filter, null)
+		};
 	}
 
 	[Projectable]
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
+	                 Justification = "Projectable chain must have consistent visibility")]
 	internal static bool UserSubqueryMatches(
 		this User user, string filter, bool negated, Config.InstanceSection config, DatabaseContext db
 	) => negated
@@ -259,6 +246,8 @@ public static class QueryableFtsExtensions
 		: UserSubquery(UserToTuple(filter, config), db).Contains(user);
 
 	[Projectable]
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
+	                 Justification = "Projectable chain must have consistent visibility")]
 	internal static bool UserSubqueryContains(
 		this IEnumerable<string> userIds, string filter, bool negated, Config.InstanceSection config, DatabaseContext db
 	) => negated
@@ -266,10 +255,14 @@ public static class QueryableFtsExtensions
 		: userIds.Any(p => p == UserSubquery(UserToTuple(filter, config), db).Select(i => i.Id).FirstOrDefault());
 
 	[Projectable]
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
+	                 Justification = "Projectable chain must have consistent visibility")]
 	internal static IQueryable<User> UserSubquery((string username, string? host) filter, DatabaseContext db) =>
 		db.Users.Where(p => p.UsernameLower == filter.username && p.Host == filter.host);
 
 	[Projectable]
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
+	                 Justification = "Projectable chain must have consistent visibility")]
 	internal static bool FtsQueryPreEscaped(
 		this Note note, string query, bool negated, CaseFilterType caseSensitivity, MatchFilterType matchType
 	) => matchType.Equals(MatchFilterType.Substring)
@@ -302,6 +295,8 @@ public static class QueryableFtsExtensions
 			: EfHelpers.EscapeRegexQuery(query);
 
 	[Projectable]
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
+	                 Justification = "Projectable chain must have consistent visibility")]
 	internal static bool FtsQueryOneOf(
 		this Note note, IEnumerable<string> words, CaseFilterType caseSensitivity, MatchFilterType matchType
 	) => words.Select(p => PreEscapeFtsQuery(p, matchType))
