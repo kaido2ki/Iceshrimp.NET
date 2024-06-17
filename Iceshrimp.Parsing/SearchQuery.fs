@@ -63,6 +63,7 @@ module SearchQueryFilters =
         | Bookmarks
         | Likes
         | Reactions
+        | Interactions
 
     type InFilter(neg: bool, value: string) =
         inherit Filter()
@@ -75,6 +76,7 @@ module SearchQueryFilters =
             | "favorites" -> Likes
             | "favourites" -> Likes
             | "reactions" -> Reactions
+            | "interactions" -> Interactions
             | _ -> failwith $"Invalid type: {value}"
 
 
@@ -204,7 +206,7 @@ module private SearchQueryParser =
         <| fun n v -> MiscFilter(n.IsSome, v) :> Filter
 
     let inFilter =
-        negKeyFilter [ "in" ] [ "bookmarks"; "favorites"; "favourites"; "reactions"; "likes" ]
+        negKeyFilter [ "in" ] [ "bookmarks"; "favorites"; "favourites"; "reactions"; "likes"; "interactions" ]
         <| fun n v -> InFilter(n.IsSome, v) :> Filter
 
     let attachmentFilter =

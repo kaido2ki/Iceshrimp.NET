@@ -138,7 +138,7 @@ public class SearchQueryTests
 	public void TestParseIn(bool negated)
 	{
 		var          key        = negated ? "-in" : "in";
-		List<string> candidates = ["bookmarks", "likes", "favorites", "favourites", "reactions"];
+		List<string> candidates = ["bookmarks", "likes", "favorites", "favourites", "reactions", "interactions"];
 		var          results    = candidates.Select(v => $"{key}:{v}").SelectMany(SearchQuery.parse).ToList();
 		List<Filter> expectedResults =
 		[
@@ -146,7 +146,8 @@ public class SearchQueryTests
 			new InFilter(negated, "likes"),
 			new InFilter(negated, "likes"),
 			new InFilter(negated, "likes"),
-			new InFilter(negated, "reactions")
+			new InFilter(negated, "reactions"),
+			new InFilter(negated, "interactions")
 		];
 		results.Should()
 		       .HaveCount(expectedResults.Count)

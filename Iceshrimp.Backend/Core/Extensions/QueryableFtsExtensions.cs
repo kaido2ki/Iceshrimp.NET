@@ -21,14 +21,16 @@ public static class QueryableFtsExtensions
 		var caseSensitivity = parsed.OfType<CaseFilter>().LastOrDefault()?.Value ?? CaseFilterType.Insensitive;
 		var matchType       = parsed.OfType<MatchFilter>().LastOrDefault()?.Value ?? MatchFilterType.Substring;
 
+		query = query.ApplyFromFilters(parsed.OfType<FromFilter>().ToList(), config, db);
+
 		return parsed.Aggregate(query, (current, filter) => filter switch
 		{
 			CaseFilter                        => current,
 			MatchFilter                       => current,
+			FromFilter                        => current,
 			AfterFilter afterFilter           => current.ApplyAfterFilter(afterFilter),
 			AttachmentFilter attachmentFilter => current.ApplyAttachmentFilter(attachmentFilter),
 			BeforeFilter beforeFilter         => current.ApplyBeforeFilter(beforeFilter),
-			FromFilter fromFilter             => current.ApplyFromFilter(fromFilter, config, db),
 			InFilter inFilter                 => current.ApplyInFilter(inFilter, user, db),
 			InstanceFilter instanceFilter     => current.ApplyInstanceFilter(instanceFilter, config),
 			MentionFilter mentionFilter       => current.ApplyMentionFilter(mentionFilter, config, db),
@@ -75,10 +77,16 @@ public static class QueryableFtsExtensions
 		this IQueryable<Note> query, MultiWordFilter filter, CaseFilterType caseSensitivity, MatchFilterType matchType
 	) => query.Where(p => p.FtsQueryOneOf(filter.Values, caseSensitivity, matchType));
 
-	[Projectable]
-	private static IQueryable<Note> ApplyFromFilter(
-		this IQueryable<Note> query, FromFilter filter, Config.InstanceSection config, DatabaseContext db
-	) => query.Where(p => p.User.UserSubqueryMatches(filter.Value, filter.Negated, config, db));
+	private static IQueryable<Note> ApplyFromFilters(
+		this IQueryable<Note> query, List<FromFilter> filters, Config.InstanceSection config, DatabaseContext db
+	)
+	{
+		if (filters.Count == 0) return query;
+		var expr = ExpressionExtensions.False<Note>();
+		expr = filters.Aggregate(expr, (current, filter) => current
+			                         .Or(p => p.User.UserSubqueryMatches(filter.Value, filter.Negated, config, db)));
+		return query.Where(expr);
+	}
 
 	[Projectable]
 	private static IQueryable<Note> ApplyInstanceFilter(
@@ -105,7 +113,9 @@ public static class QueryableFtsExtensions
 		? query.ApplyInBookmarksFilter(user, filter.Negated, db)
 		: filter.Value.Equals(InFilterType.Likes)
 			? query.ApplyInLikesFilter(user, filter.Negated, db)
-			: query.ApplyInReactionsFilter(user, filter.Negated, db);
+			: filter.Value.Equals(InFilterType.Reactions)
+				? query.ApplyInReactionsFilter(user, filter.Negated, db)
+				: query.ApplyInInteractionsFilter(user, filter.Negated, db);
 
 	[Projectable]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
@@ -130,6 +140,14 @@ public static class QueryableFtsExtensions
 	) => query.Where(p => negated
 		                 ? !db.Users.First(u => u == user).HasReacted(p)
 		                 : db.Users.First(u => u == user).HasReacted(p));
+
+	[Projectable]
+	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
+	internal static IQueryable<Note> ApplyInInteractionsFilter(
+		this IQueryable<Note> query, User user, bool negated, DatabaseContext db
+	) => query.Where(p => negated
+		                 ? !db.Users.First(u => u == user).HasInteractedWith(p)
+		                 : db.Users.First(u => u == user).HasInteractedWith(p));
 
 	[Projectable]
 	private static IQueryable<Note> ApplyMiscFilter(
