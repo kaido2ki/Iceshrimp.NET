@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
@@ -56,16 +57,15 @@ public class ActivityHandlerService(
 			throw new Exception("resolvedActor.Host and resolvedActor.Uri must not be null at this stage");
 
 		UpdateInstanceMetadataInBackground(resolvedActor.Host, new Uri(resolvedActor.Uri).Host);
-
-		//TODO: validate inboxUserId
+		var inboxUser = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == inboxUserId);
 
 		var task = activity switch
 		{
 			ASAccept accept     => HandleAccept(accept, resolvedActor),
 			ASAnnounce announce => HandleAnnounce(announce, resolvedActor),
-			ASBite bite         => HandleBite(bite, resolvedActor),
+			ASBite bite         => HandleBite(bite, resolvedActor, inboxUser),
 			ASBlock block       => HandleBlock(block, resolvedActor),
-			ASCreate create     => HandleCreate(create, resolvedActor),
+			ASCreate create     => HandleCreate(create, resolvedActor, inboxUser),
 			ASDelete delete     => HandleDelete(delete, resolvedActor),
 			ASEmojiReact react  => HandleReact(react, resolvedActor),
 			ASFollow follow     => HandleFollow(follow, resolvedActor),
@@ -91,7 +91,7 @@ public class ActivityHandlerService(
 		});
 	}
 
-	private async Task HandleCreate(ASCreate activity, User actor)
+	private async Task HandleCreate(ASCreate activity, User actor, User? inboxUser)
 	{
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Create activity object was null");
@@ -99,7 +99,7 @@ public class ActivityHandlerService(
 		activity.Object = await objectResolver.ResolveObject(activity.Object, actor.Uri) as ASNote ??
 		                  throw GracefulException.UnprocessableEntity("Failed to resolve create object");
 
-		await noteSvc.ProcessNoteAsync(activity.Object, actor);
+		await noteSvc.ProcessNoteAsync(activity.Object, actor, inboxUser);
 	}
 
 	private async Task HandleDelete(ASDelete activity, User resolvedActor)
@@ -337,7 +337,7 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task HandleBite(ASBite activity, User resolvedActor)
+	private async Task HandleBite(ASBite activity, User resolvedActor, User? inboxUser)
 	{
 		var target = await objectResolver.ResolveObject(activity.Target, resolvedActor.Uri);
 		var dbBite = target switch
@@ -358,7 +358,7 @@ public class ActivityHandlerService(
 				Uri        = activity.Id,
 				User       = resolvedActor,
 				UserHost   = resolvedActor.Host,
-				TargetNote = await noteSvc.ResolveNoteAsync(targetNote.Id)
+				TargetNote = await noteSvc.ResolveNoteAsync(targetNote.Id, user: inboxUser)
 			},
 			ASBite targetBite => new Bite
 			{
