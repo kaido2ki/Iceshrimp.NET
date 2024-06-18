@@ -11,8 +11,8 @@
 @inject StateService StateService
 
 <div @ref="@Scroller" class="scroller">
-    <div @ref="@padTopRef" class="padding top" style="height: @(State.PadTop + "px")"></div>
-    @if(loadingTop){
+    <div @ref="@_padTopRef" class="padding top" style="height: @(State.PadTop + "px")"></div>
+    @if(_loadingTop){
     <div class="target">
         Loading!
     </div>
@@ -29,7 +29,7 @@
         Loading!
     </div>
     }
-    <div @ref="@padBotRef" class="padding bottom" style="height: @(State.PadBottom + "px")"></div>
+    <div @ref="@_padBotRef" class="padding bottom" style="height: @(State.PadBottom + "px")"></div>
 </div>
 
 @code {
@@ -46,25 +46,26 @@
     private                                     IntersectionObserver?  OvrscrlObsvBottom { get; set; }
     private                                     bool                   _overscrollTop    = false;
     private                                     bool                   _overscrollBottom = false;
-    private                                     ElementReference       padTopRef;
-    private                                     ElementReference       padBotRef;
+    private                                     ElementReference       _padTopRef;
+    private                                     ElementReference       _padBotRef;
     private                                     ElementReference       Scroller;
-    private                                     bool                   loadingTop    = false;
+    private                                     bool                   _loadingTop   = false;
     private                                     bool                   loadingBottom = false;
-    private                                     bool                   setScroll     = false;
+    public                                      bool                   setScroll     = false;
 
     private ElementReference Ref
     {
         set => _refs.Add(value);
     }
 
-    private bool               interlock = false;
+    private bool               _interlock = false;
     private IJSObjectReference Module { get; set; }
 
     private void InitialRender(string? id)
     {
         var a = new List<NoteResponse>();
-        a = NoteResponseList.GetRange(0, _count);
+        a = NoteResponseList.Count < _count ? NoteResponseList : NoteResponseList.GetRange(0, _count);
+
         State.RenderedList = a;
     }
 
@@ -79,10 +80,10 @@
     
     private async Task LoadNewer()
     {
-        loadingTop = true;
+        _loadingTop = true;
         StateHasChanged();
         await ReachedStart.InvokeAsync();
-        loadingTop = false;
+        _loadingTop = false;
         StateHasChanged();
     }
 
@@ -140,11 +141,11 @@
 
             State.RenderedList.AddRange(a);
             await RemoveAbove(UpdateCount);
-            interlock = false;
+            _interlock = false;
             StateHasChanged();
         }
 
-        await OvrscrlObsvBottom.Observe(padBotRef);
+        await OvrscrlObsvBottom.Observe(_padBotRef);
     }
 
     private async Task Up()
@@ -170,8 +171,8 @@
         State.RenderedList.InsertRange(0, a);
         State.RenderedList.RemoveRange(State.RenderedList.Count - UpdateCount, UpdateCount);
         StateHasChanged();
-        interlock = false;
-        await OvrscrlObsvTop.Observe(padTopRef);
+        _interlock = false;
+        await OvrscrlObsvTop.Observe(_padTopRef);
     }
 
     private async Task SetupObservers()
@@ -184,8 +185,8 @@
         OvrscrlObsvTop    = await ObserverService.Create(OverscrollCallbackTop);
         OvrscrlObsvBottom = await ObserverService.Create(OverscrollCallbackBottom);
 
-        await OvrscrlObsvTop.Observe(padTopRef);
-        await OvrscrlObsvBottom.Observe(padBotRef);
+        await OvrscrlObsvTop.Observe(_padTopRef);
+        await OvrscrlObsvBottom.Observe(_padBotRef);
     }
 
 
@@ -195,7 +196,7 @@
         var entry = list.First();
         _overscrollTop = entry.IsIntersecting;
 
-        if (interlock == false)
+        if (_interlock == false)
         {
             var index = NoteResponseList.IndexOf(State.RenderedList.First());
             if (index == 0)
@@ -205,7 +206,7 @@
                 return;
             }
 
-            interlock = true;
+            _interlock = true;
             Console.WriteLine("first observed");
             if (list.First().IsIntersecting)
 
@@ -214,7 +215,7 @@
                 await Up();
             }
 
-            interlock = false;
+            _interlock = false;
         }
     }
 
@@ -223,9 +224,9 @@
         Console.WriteLine("Bottom callback fired");
         var entry = list.First();
         _overscrollBottom = entry.IsIntersecting;
-        if (interlock == false)
+        if (_interlock == false)
         {
-            interlock = true;
+            _interlock = true;
             Console.WriteLine("last observerd");
             if (list.First().IsIntersecting)
             {
@@ -233,7 +234,7 @@
                 await Down();
             }
 
-            interlock = false;
+            _interlock = false;
         }
     }
 
