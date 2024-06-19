@@ -156,10 +156,6 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			                                                 [typeof(string), typeof(int)])!)
 			.HasName("note_ancestors");
 		modelBuilder
-			.HasDbFunction(typeof(DatabaseContext).GetMethod(nameof(NoteDescendants),
-			                                                 [typeof(string), typeof(int), typeof(int)])!)
-			.HasName("note_descendants");
-		modelBuilder
 			.HasDbFunction(typeof(DatabaseContext).GetMethod(nameof(Conversations),
 			                                                 [typeof(string)])!)
 			.HasName("conversations");
