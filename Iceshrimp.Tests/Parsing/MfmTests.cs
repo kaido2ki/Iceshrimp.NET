@@ -221,7 +221,7 @@ public class MfmTests
 			Mfm.parse(mfm);
 			var post = DateTime.Now;
 			var ms   = (post - pre).TotalMilliseconds;
-			Console.WriteLine($"Took {ms} ms");
+			Console.WriteLine($@"Took {ms} ms");
 			return ms;
 		}
 	}
