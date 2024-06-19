@@ -1,3 +1,4 @@
+@using AngleSharp.Dom
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
 @inject ApiService        ApiService;
@@ -26,7 +27,14 @@
     }
     @if (!AsQuote)
     {
-        <NoteFooter Reactions="Note.Reactions" Likes="Note.Likes" IsLiked="Note.Liked"/>
+        @* FIXME: Allow renotes when the post is from the current user *@
+        <NoteFooter 
+            Reactions="Note.Reactions" 
+            Likes="Note.Likes" 
+            IsLiked="Note.Liked" 
+            Renotes="Note.Renotes" 
+            RenotePossible="@(Note.Visibility == NoteVisibility.Public || Note.Visibility == NoteVisibility.Home)"
+            />
     }
 </CascadingValue>
 @code {
@@ -94,17 +102,9 @@
 
     public void Renote()
     {
-        var renote = new NoteCreateRequest
-        {
-            Text           = "",
-            Cw             = null,
-            ReplyId        = null,
-            RenoteId       = Note.Id,
-            MediaIds       = null,
-            Visibility     = Note.Visibility,
-            IdempotencyKey = null
-        };
-        ApiService.Notes.CreateNote(renote);
+        ApiService.Notes.RenoteNote(Note.Id);
+        Note.Renotes++;
+        StateHasChanged();
     }
 
     public void DoQuote()

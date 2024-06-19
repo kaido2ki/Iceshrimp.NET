@@ -14,13 +14,26 @@
         <Icon Name="Icons.ArrowUUpLeft" Size="1.3em"/>
     </button>
     <button class="btn" @onclick="Renote" @onclick:stopPropagation="true">
-        <Icon Name="Icons.Repeat" Size="1.3em"/>
+        @if (RenotePossible)
+        {
+            <Icon Name="Icons.Repeat" Size="1.3em"/>
+        }
+        else
+        {
+            <Icon Name="Icons.Lock" Size="1.3em"/>
+        }
+        @if (Renotes > 0)
+        {
+            <span class="renote-count">@Renotes</span>
+        }
     </button>
     <button @onclick="Like" @onclick:stopPropagation="true" class="btn">
         @if (IsLiked)
         {
             <Icon Name="Icons.Heart" Pack="IconStyle.Fill" Size="1.3em"/>
-        }else {
+        }
+        else
+        {
             <Icon Name="Icons.Heart" Size="1.3em"/>
         }
         @if (Likes > 0)
@@ -38,11 +51,14 @@
         <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
     </button>
 </div>
+
 @code {
-    [Parameter] [EditorRequired] public required  List<NoteReactionSchema> Reactions { get; set; }
-    [Parameter] [EditorRequired] public required  int                      Likes     { get; set; }
-    [Parameter] [EditorRequired] public required bool                      IsLiked   { get; set; }
-    
+    [Parameter] [EditorRequired] public required List<NoteReactionSchema> Reactions      { get; set; }
+    [Parameter] [EditorRequired] public required int                      Likes          { get; set; }
+    [Parameter] [EditorRequired] public required bool                     IsLiked        { get; set; }
+    [Parameter] [EditorRequired] public required int                      Renotes        { get; set; }
+    [Parameter]                  public          bool                     RenotePossible { get; set; }
+
     [CascadingParameter] NoteComponent NoteComponent { get; set; }
 
     private void Like()
@@ -57,11 +73,12 @@
 
     private void Renote()
     {
-        NoteComponent.Renote(); 
+        if (RenotePossible) NoteComponent.Renote();
     }
 
     private void Quote()
     {
         NoteComponent.DoQuote();
     }
+
 }
