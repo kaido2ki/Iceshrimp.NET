@@ -75,23 +75,7 @@
     </ItemGroup>
 
     <ItemGroup Condition=" '$(EnableLibVips)' == 'true' And '$(BundleNativeDeps)' == 'true' ">
-        <PackageReference Include="NetVips.Native.linux-x64" Version="8.15.2" />
-        <PackageReference Include="NetVips.Native.linux-arm64" Version="8.15.2" />
-    </ItemGroup>
-
-    <ItemGroup Condition=" '$(EnableLibVips)' == 'true' And '$(BundleNativeDepsMusl)' == 'true' ">
-        <PackageReference Include="NetVips.Native.linux-musl-x64" Version="8.15.2" />
-        <PackageReference Include="NetVips.Native.linux-musl-arm64" Version="8.15.2" />
-    </ItemGroup>
-    
-    <ItemGroup Condition=" '$(EnableLibVips)' == 'true' And ($([MSBuild]::IsOSPlatform('macOS')) Or '$(BundleNativeDepsMacOS)' == 'true') ">
-        <PackageReference Include="NetVips.Native.osx-x64" Version="8.15.2" />
-        <PackageReference Include="NetVips.Native.osx-arm64" Version="8.15.2" />
-    </ItemGroup>
-
-    <ItemGroup Condition=" '$(EnableLibVips)' == 'true' And ($([MSBuild]::IsOSPlatform('Windows')) Or '$(BundleNativeDepsWindows)' == 'true') ">
-        <PackageReference Include="NetVips.Native.win-x64" Version="8.15.2" />
-        <PackageReference Include="NetVips.Native.win-arm64" Version="8.15.2" />
+        <PackageReference Include="NetVips.Native" Version="8.15.2-iceshrimp" />
     </ItemGroup>
 
     <ItemGroup>
