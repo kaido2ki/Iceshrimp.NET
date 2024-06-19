@@ -269,7 +269,8 @@ public class Note : IEntity
 
 	[NotMapped]
 	[Projectable]
-	public bool IsQuote => (RenoteId != null || Renote != null) && (Text != null || HasPoll || FileIds.Count > 0);
+	public bool IsQuote => (RenoteId != null || Renote != null) &&
+	                       (Text != null || Cw != null || HasPoll || FileIds.Count > 0);
 
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.Notes))]
