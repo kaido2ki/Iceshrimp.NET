@@ -113,10 +113,8 @@
         await OvrscrlObsvBottom.Disconnect();
 
         var index = NoteResponseList.IndexOf(State.RenderedList.Last());
-        Console.WriteLine($"Index: {index}");
         if (index >= NoteResponseList.Count - (1 + UpdateCount))
         {
-            Console.WriteLine("end of data, requesting more");
             await LoadOlder();
         }
         else
@@ -128,16 +126,13 @@
                 if (State.Height.ContainsKey(el.Id))
                 {
                     heightChange += State.Height[el.Id];
-                    Console.WriteLine("found height");
                 }
                 else
                 {
-                    Console.WriteLine("Did not find height");
                 }
             }
 
             if (State.PadBottom > 0) State.PadBottom -= heightChange;
-            Console.WriteLine($"Pad bottom height: {State.PadBottom}");
 
             State.RenderedList.AddRange(a);
             await RemoveAbove(UpdateCount);
@@ -192,7 +187,6 @@
 
     private async void OverscrollCallbackTop(IList<IntersectionObserverEntry> list)
     {
-        Console.WriteLine("Top callback fired");
         var entry = list.First();
         _overscrollTop = entry.IsIntersecting;
 
@@ -201,17 +195,14 @@
             var index = NoteResponseList.IndexOf(State.RenderedList.First());
             if (index == 0)
             {
-                Console.WriteLine("Can't go up further");
                 await LoadNewer();
                 return;
             }
 
             _interlock = true;
-            Console.WriteLine("first observed");
             if (list.First().IsIntersecting)
 
             {
-                Console.WriteLine("Shifting up");
                 await Up();
             }
 
@@ -221,16 +212,13 @@
 
     private async void OverscrollCallbackBottom(IList<IntersectionObserverEntry> list)
     {
-        Console.WriteLine("Bottom callback fired");
         var entry = list.First();
         _overscrollBottom = entry.IsIntersecting;
         if (_interlock == false)
         {
             _interlock = true;
-            Console.WriteLine("last observerd");
             if (list.First().IsIntersecting)
             {
-                Console.WriteLine("Shifting down");
                 await Down();
             }
 

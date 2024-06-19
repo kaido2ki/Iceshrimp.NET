@@ -162,9 +162,7 @@
 
     private async Task Upload(InputFileChangeEventArgs e)
     {
-        Console.WriteLine(e.File.Size);
         var res = await ApiService.Drive.UploadFile(e.File);
-        Console.WriteLine(res.Id);
         Attachments.Add(res);
     }
 
