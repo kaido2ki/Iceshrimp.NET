@@ -13,4 +13,12 @@
             TextBody = await MfmRenderer.RenderString(Text);
         }
     }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Text != null)
+        {
+            TextBody = await MfmRenderer.RenderString(Text);
+        }    
+    }
 }
