@@ -29,12 +29,6 @@ public class DeliverQueue(int parallelism)
 			return;
 		}
 
-		if (await fedCtrl.ShouldSkipAsync(jobData.RecipientHost))
-		{
-			logger.LogDebug("fedCtrl.ShouldSkipAsync returned true, skipping");
-			return;
-		}
-
 		logger.LogDebug("Delivering activity to: {uri}", jobData.InboxUrl);
 
 		var key = await cache.FetchAsync($"userPrivateKey:{jobData.UserId}", TimeSpan.FromMinutes(60), async () =>

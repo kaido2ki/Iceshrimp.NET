@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -61,6 +62,8 @@ public class PreDeliverQueue(int parallelism)
 
 		var inboxQueryResults = await query.Where(p => p.InboxUrl != null && p.Host != null)
 		                                   .Distinct()
+		                                   .SkipDeadInstances(activity, db)
+		                                   .SkipBlockedInstances(config.Value.FederationMode, db)
 		                                   .ToListAsync(token);
 
 		if (inboxQueryResults.Count == 0) return;
@@ -91,43 +94,74 @@ public class PreDeliverQueue(int parallelism)
 				UserId      = jobData.ActorId
 			});
 	}
+}
 
-	private class InboxQueryResult : IEquatable<InboxQueryResult>
+file class InboxQueryResult : IEquatable<InboxQueryResult>
+{
+	public required string? Host;
+	public required string? InboxUrl;
+
+	public bool Equals(InboxQueryResult? other)
 	{
-		public required string? Host;
-		public required string? InboxUrl;
+		if (ReferenceEquals(null, other)) return false;
+		if (ReferenceEquals(this, other)) return true;
+		return InboxUrl == other.InboxUrl && Host == other.Host;
+	}
 
-		public bool Equals(InboxQueryResult? other)
-		{
-			if (ReferenceEquals(null, other)) return false;
-			if (ReferenceEquals(this, other)) return true;
-			return InboxUrl == other.InboxUrl && Host == other.Host;
-		}
+	public override bool Equals(object? obj)
+	{
+		if (ReferenceEquals(null, obj)) return false;
+		if (ReferenceEquals(this, obj)) return true;
+		if (obj.GetType() != GetType()) return false;
+		return Equals((InboxQueryResult)obj);
+	}
 
-		public override bool Equals(object? obj)
-		{
-			if (ReferenceEquals(null, obj)) return false;
-			if (ReferenceEquals(this, obj)) return true;
-			if (obj.GetType() != GetType()) return false;
-			return Equals((InboxQueryResult)obj);
-		}
+	[SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode", Justification =
+		                 "We are using this as a Tuple that works with LINQ on our IQueryable iterator. This is therefore intended behavior.")]
+	public override int GetHashCode()
+	{
+		return HashCode.Combine(InboxUrl, Host);
+	}
 
-		[SuppressMessage("ReSharper", "NonReadonlyMemberInGetHashCode", Justification =
-			                 "We are using this as a Tuple that works with LINQ on our IQueryable iterator. This is therefore intended behavior.")]
-		public override int GetHashCode()
-		{
-			return HashCode.Combine(InboxUrl, Host);
-		}
+	public static bool operator ==(InboxQueryResult? left, InboxQueryResult? right)
+	{
+		return Equals(left, right);
+	}
 
-		public static bool operator ==(InboxQueryResult? left, InboxQueryResult? right)
-		{
-			return Equals(left, right);
-		}
+	public static bool operator !=(InboxQueryResult? left, InboxQueryResult? right)
+	{
+		return !Equals(left, right);
+	}
+}
 
-		public static bool operator !=(InboxQueryResult? left, InboxQueryResult? right)
+file static class QueryableExtensions
+{
+	public static IQueryable<InboxQueryResult> SkipDeadInstances(
+		this IQueryable<InboxQueryResult> query, ASActivity activity, DatabaseContext db
+	)
+	{
+		if (activity is ASFollow) return query;
+		return query.Where(user => !db.Instances.Any(p => p.Host == user.Host &&
+		                                                  ((p.IsNotResponding &&
+		                                                    p.LastCommunicatedAt <
+		                                                    DateTime.UtcNow - TimeSpan.FromDays(7)) ||
+		                                                   p.IsSuspended)));
+	}
+
+	public static IQueryable<InboxQueryResult> SkipBlockedInstances(
+		this IQueryable<InboxQueryResult> query, Enums.FederationMode mode, DatabaseContext db
+	)
+	{
+		Expression<Func<InboxQueryResult, bool>> expr = mode switch
 		{
-			return !Equals(left, right);
-		}
+			Enums.FederationMode.BlockList => u =>
+				u.Host == null || !db.BlockedInstances.Any(p => u.Host == p.Host || u.Host.EndsWith("." + p.Host)),
+			Enums.FederationMode.AllowList => u =>
+				u.Host == null || db.AllowedInstances.Any(p => u.Host == p.Host || u.Host.EndsWith("." + p.Host)),
+			_ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+		};
+
+		return query.Where(expr);
 	}
 }
 
