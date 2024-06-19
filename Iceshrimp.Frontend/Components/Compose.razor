@@ -1,13 +1,16 @@
+@using AngleSharp.Dom
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Parsing
 @using Microsoft.Extensions.Localization
-@inject IJSRuntime     Js
-@inject ApiService     ApiService
-@inject ComposeService ComposeService
+@inject IJSRuntime                     Js
+@inject ApiService                     ApiService
+@inject ComposeService                 ComposeService
 @inject IStringLocalizer<Localization> Loc;
+@inject SessionService SessionService
 <dialog class="compose" @ref="Dialog">
     <div class="header">
         <button @onclick="CloseDialog">
@@ -105,11 +108,16 @@
     {
         if (replyTo != null)
         {
+            var mentions = EnumerateMentions(replyTo);
             ResetState();
             ReplyOrQuote         = replyTo;
             NoteDraft.ReplyId    = replyTo.Id;
             NoteDraft.Visibility = replyTo.Visibility;
             TextPlaceholder      = AvailablePlaceholders["reply"];
+            foreach (var el in mentions)
+            {
+                NoteDraft.Text += $"@{el} ";
+            }
             StateHasChanged();
         }
         else if (quote != null)
@@ -128,6 +136,33 @@
         }
 
         await _module.InvokeVoidAsync("openDialog", Dialog);
+    }
+
+    private List<string> EnumerateMentions(NoteBase noteBase)
+    {
+        List<string> mentions = [];
+        if (noteBase.User.Id != SessionService.Current!.Id)
+        {
+
+            var userMention = noteBase.User.Username;
+            if (noteBase.User.Host != null)
+            {
+                userMention += $"@{noteBase.User.Host}";
+            }
+            mentions.Add(userMention);
+        }
+        var current  = $"@{SessionService.Current.Username}@{SessionService.Current.Host}";
+        var mfmNodes = Mfm.parse(noteBase.Text);
+        foreach (var node in mfmNodes)
+        {
+            if (node is MfmNodeTypes.MfmMentionNode mentionNode)
+            {
+                mentions.Add(mentionNode.Acct);
+            }
+        }
+        mentions = mentions.Distinct().ToList();
+        mentions.Remove(current);
+        return mentions;
     }
 
     private void ResetState()
