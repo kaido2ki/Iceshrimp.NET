@@ -140,12 +140,13 @@ file static class QueryableExtensions
 		this IQueryable<InboxQueryResult> query, ASActivity activity, DatabaseContext db
 	)
 	{
-		if (activity is ASFollow) return query;
-		return query.Where(user => !db.Instances.Any(p => p.Host == user.Host &&
-		                                                  ((p.IsNotResponding &&
-		                                                    p.LastCommunicatedAt <
-		                                                    DateTime.UtcNow - TimeSpan.FromDays(7)) ||
-		                                                   p.IsSuspended)));
+		return activity is ASFollow
+			? query.Where(user => !db.Instances.Any(p => p.Host == user.Host && p.IsSuspended))
+			: query.Where(user => !db.Instances.Any(p => p.Host == user.Host &&
+			                                             ((p.IsNotResponding &&
+			                                               p.LastCommunicatedAt <
+			                                               DateTime.UtcNow - TimeSpan.FromDays(7)) ||
+			                                              p.IsSuspended)));
 	}
 
 	public static IQueryable<InboxQueryResult> SkipBlockedInstances(
