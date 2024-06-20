@@ -9,7 +9,9 @@ public enum AuthStatusEnum
 
 public class AuthResponse
 {
-	public required AuthStatusEnum Status { get; set; }
-	public          UserResponse?  User   { get; set; }
-	public          string?        Token  { get; set; }
+	public required AuthStatusEnum Status      { get; set; }
+	public          bool?          IsAdmin     { get; set; }
+	public          bool?          IsModerator { get; set; }
+	public          string?        Token       { get; set; }
+	public          UserResponse?  User        { get; set; }
 }

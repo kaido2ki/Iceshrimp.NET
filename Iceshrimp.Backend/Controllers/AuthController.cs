@@ -32,9 +32,11 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 
 		return Ok(new AuthResponse
 		{
-			Status = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
-			Token  = session.Token,
-			User   = await userRenderer.RenderOne(session.User)
+			Status      = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
+			Token       = session.Token,
+			IsAdmin     = session.User.IsAdmin,
+			IsModerator = session.User.IsModerator,
+			User        = await userRenderer.RenderOne(session.User)
 		});
 	}
 
@@ -76,9 +78,11 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 
 		return Ok(new AuthResponse
 		{
-			Status = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
-			Token  = session.Token,
-			User   = await userRenderer.RenderOne(user)
+			Status      = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
+			Token       = session.Token,
+			IsAdmin     = session.User.IsAdmin,
+			IsModerator = session.User.IsModerator,
+			User        = await userRenderer.RenderOne(user)
 		});
 	}
 
