@@ -10,9 +10,6 @@
     height: 100vh;
     overflow-y: scroll;
     overflow-x: clip;
-    @media (max-width: 1000px) {
-        padding-bottom: 5rem;
-    }
 }
 .descendants {
     display: flex;
@@ -22,17 +19,19 @@
 }
 
 .wrapper {
-    
     display: flex;
     flex-direction: column;
     align-items: center;
+    @media (max-width: 1000px) {
+        padding-bottom: 5rem;
+    }
 
 }
 .container {
     background-color: var(--foreground-color);
     border-radius: 0.75rem;
     padding: 1.5rem 1.5rem 1rem;
-    margin: 1.5rem 1rem 2rem;
+    margin: 1.5rem 1rem 1rem;
 
 }
 .ascendants {
