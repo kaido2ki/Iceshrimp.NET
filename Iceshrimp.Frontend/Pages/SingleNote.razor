@@ -51,12 +51,10 @@ else
     private            IList<NoteResponse>? Descendants { get; set; }
     private            IList<NoteResponse>? Ascendants  { get; set; }
     private            IJSObjectReference?  Module      { get; set; }
-    private            ElementReference     RootNoteRef        { get; set; }
+    private            ElementReference     RootNoteRef { get; set; }
     private            bool                 _init  = false;
     private            bool                 _error = false;
-
-    protected override async Task OnInitializedAsync() { }
-
+    
     protected override async Task OnParametersSetAsync()
     {
         _init = false;
@@ -89,7 +87,8 @@ else
 
         if (_init)
         {
-            await Module.InvokeVoidAsync("ScrollIntoView", RootNoteRef);
+            await (Module ?? throw new InvalidOperationException("JS interop not initialized"))
+                .InvokeVoidAsync("ScrollIntoView", RootNoteRef);
         }
     }
 

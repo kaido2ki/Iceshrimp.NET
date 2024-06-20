@@ -54,11 +54,11 @@
 
 <Compose @ref="_compose"/>
 @code {
-    private Compose _compose;
+    private Compose _compose = null!;
 
-    private void Open()
+    private async void Open()
     {
-        _compose.OpenDialog();
+        await _compose.OpenDialog();
     }
 
 }

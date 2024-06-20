@@ -59,7 +59,7 @@
     [Parameter] [EditorRequired] public required int                      Renotes        { get; set; }
     [Parameter]                  public          bool                     RenotePossible { get; set; }
 
-    [CascadingParameter] NoteComponent NoteComponent { get; set; }
+    [CascadingParameter] NoteComponent NoteComponent { get; set; } = null!;
 
     private void Like()
     {

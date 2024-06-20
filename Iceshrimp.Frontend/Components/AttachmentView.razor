@@ -23,15 +23,15 @@
 </dialog>
 
 @code {
-    [Parameter][EditorRequired] public IList<NoteAttachment>  Attachments { get; set; }
-    private                            ElementReference       Dialog      { get; set; }
-    private                            IJSObjectReference?    Module      { get; set; }
-    private                            int                    Focused     { get; set; }
-    private                            List<ElementReference> _refs = [];
-    public                             ElementReference       Ref         { set => _refs.Add(value); }
-    private                            ElementReference       Scroller    { get; set; }
-    private                            int                    ScrollWidth { get; set; }
-    private                            int                    ScrollLeft  { get; set; }
+    [Parameter][EditorRequired] public required IList<NoteAttachment>  Attachments { get; set; }
+    private                                     ElementReference       Dialog      { get; set; }
+    private                                     IJSObjectReference     Module      { get; set; } = null!;
+    private                                     int                    Focused     { get; set; }
+    private                                     List<ElementReference> _refs = [];
+    public                                      ElementReference       Ref         { set => _refs.Add(value); }
+    private                                     ElementReference       Scroller    { get; set; }
+    private                                     int                    ScrollWidth { get; set; }
+    private                                     int                    ScrollLeft  { get; set; }
 
     protected override void OnParametersSet()
     {

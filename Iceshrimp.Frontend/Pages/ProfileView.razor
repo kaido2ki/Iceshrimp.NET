@@ -69,9 +69,9 @@
     private            bool                 _error     = false;
     private            bool                 _fetchLock = false;
 
-    private async Task GetNotes(string? _minId)
+    private async Task GetNotes(string? minId)
     {
-        var pq    = new PaginationQuery() { Limit = 10, MaxId = _minId };
+        var pq    = new PaginationQuery() { Limit = 10, MaxId = minId };
         var notes = await Api.Users.GetUserNotes(UserResponse.Id, pq);
         if (notes is not null && notes.Count > 0)
         {
@@ -112,13 +112,13 @@
                 {
                     UserResponse = userResponse;
                     Profile      = await Api.Users.GetUserProfile(UserResponse.Id);
-                    GetNotes(null);
+                    await GetNotes(null);
                     _init    = true;
                     _loading = false;
                 }
             }
         }
-        catch (ApiException e)
+        catch (ApiException)
         {
             _loading = false;
             _error   = true;

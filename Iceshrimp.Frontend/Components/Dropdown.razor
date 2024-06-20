@@ -15,7 +15,7 @@
 }
 
 @code {
-    private                                      TBind                               _value;
+    private                                      TBind                               _value = default!;
     [Parameter] [EditorRequired] public required IEnumerable<DropdownElement<TBind>> Elements         { get; set; }
 
     [Parameter]

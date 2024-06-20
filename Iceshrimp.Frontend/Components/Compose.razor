@@ -46,12 +46,12 @@
 
 @code {
     private ElementReference         Dialog { get; set; }
-    private IJSObjectReference?      _module;
+    private IJSObjectReference       _module = null!;
     private IList<DriveFileResponse> Attachments     { get; set; } = [];
-    private InputFile                UploadInput     { get; set; }
+    private InputFile                UploadInput     { get; set; } = null!;
     private NoteBase?                ReplyOrQuote    { get; set; }
     private string?                  TextPlaceholder { get; set; }
-    private NoteCreateRequest NoteDraft { get; set; } = new NoteCreateRequest
+    private NoteCreateRequest NoteDraft { get;              set; } = new NoteCreateRequest
     {
         Text       = "",
         Visibility = NoteVisibility.Followers, // FIXME: Default to visibilty in settings

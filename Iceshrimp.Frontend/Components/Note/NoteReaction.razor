@@ -16,7 +16,7 @@
 </button>
 @code {
     [Parameter][EditorRequired] public required NoteReactionSchema Reaction      { get; set; }
-    [CascadingParameter]                        NoteComponent      NoteComponent { get; set; }
+    [CascadingParameter]                        NoteComponent      NoteComponent { get; set; } = null!;
 
     private void React()
     {

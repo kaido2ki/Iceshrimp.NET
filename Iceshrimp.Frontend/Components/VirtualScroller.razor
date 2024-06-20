@@ -59,7 +59,7 @@
     }
 
     private bool               _interlock = false;
-    private IJSObjectReference Module { get; set; }
+    private IJSObjectReference Module { get; set; } = null!;
 
     private void InitialRender(string? id)
     {
@@ -126,9 +126,6 @@
                 if (State.Height.ContainsKey(el.Id))
                 {
                     heightChange += State.Height[el.Id];
-                }
-                else
-                {
                 }
             }
 
@@ -237,7 +234,7 @@
         await Module.InvokeVoidAsync("SetScrollTop", State.ScrollTop, Scroller);
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         try 
         {
