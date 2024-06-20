@@ -3,9 +3,7 @@
 <div class="attachment-container">
     @foreach (var element in Attachments)
     {
-        <div class="wrapper" @onclick="Open" @onclick:stopPropagation="true">
-            <img class="attachment" src="@element.Url" alt="@element.AltText"/>
-        </div>
+        <AttachmentComponent Attachment="element" OnOpen="Open" />
     }
     <AttachmentView @ref="View" Attachments="Attachments"></AttachmentView>
 </div>
@@ -17,4 +15,5 @@
     {
         await View.OpenDialog();
     }
+
 }
