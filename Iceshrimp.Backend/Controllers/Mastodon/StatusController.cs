@@ -35,7 +35,7 @@ public class StatusController(
 	NoteService noteSvc,
 	CacheService cache,
 	IOptions<Config.InstanceSection> config,
-	IOptions<Config.SecuritySection> security,
+	IOptionsSnapshot<Config.SecuritySection> security,
 	UserRenderer userRenderer
 ) : ControllerBase
 {

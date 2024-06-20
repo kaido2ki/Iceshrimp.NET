@@ -3,6 +3,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -13,24 +14,32 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
 [MastodonApiController]
 [Route("/api/v1/polls/{id}")]
-[Authenticate]
+[Authenticate("read:statuses")]
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
-public class PollController(DatabaseContext db, PollRenderer pollRenderer, PollService pollSvc) : ControllerBase
+public class PollController(
+	DatabaseContext db,
+	PollRenderer pollRenderer,
+	PollService pollSvc,
+	IOptionsSnapshot<Config.SecuritySection> security
+) : ControllerBase
 {
-	[HttpGet("")]
-	[Authenticate("read:statuses")]
+	[HttpGet]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PollEntity))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
 	public async Task<IActionResult> GetPoll(string id)
 	{
-		var user = HttpContext.GetUserOrFail();
+		var user = HttpContext.GetUser();
+		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
 		var note = await db.Notes.Where(p => p.Id == id).EnsureVisibleFor(user).FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 		var poll = await db.Polls.Where(p => p.Note == note).FirstOrDefaultAsync() ??
@@ -40,7 +49,7 @@ public class PollController(DatabaseContext db, PollRenderer pollRenderer, PollS
 	}
 
 	[HttpPost("votes")]
-	[Authenticate("read:statuses")]
+	[Authorize("read:statuses")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PollEntity))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
