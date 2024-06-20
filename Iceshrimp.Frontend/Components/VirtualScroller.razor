@@ -29,7 +29,12 @@
         Loading!
     </div>
     }
-    <div @ref="@_padBotRef" class="padding bottom" style="height: @(State.PadBottom + "px")"></div>
+    else
+    {
+        <div class="target"><span>The end!<button @onclick="Down">Load more!</button></span></div>
+    }
+    <div @ref="@_padBotRef" class="padding bottom" style="height: @(State.PadBottom + "px")">
+    </div>
 </div>
 
 @code {
@@ -77,7 +82,7 @@
         loadingBottom = false;
         StateHasChanged();
     }
-    
+
     private async Task LoadNewer()
     {
         _loadingTop = true;
@@ -99,7 +104,7 @@
         for (int i = 0; i < amount; i++)
         {
             var height = await Module.InvokeAsync<int>("GetHeight", _refs[i]);
-            State.PadTop                     += height;
+            State.PadTop                           += height;
             State.Height[State.RenderedList[i].Id] =  height;
         }
 
@@ -147,7 +152,7 @@
         for (int i = 0; i < UpdateCount; i++)
         {
             var height = await Module.InvokeAsync<int>("GetHeight", _refs[i]);
-            State.PadBottom                  += height;
+            State.PadBottom                        += height;
             State.Height[State.RenderedList[i].Id] =  height;
         }
 
@@ -170,10 +175,7 @@
     private async Task SetupObservers()
     {
         // Enabling root margin causes erratic virtual scroller behavior, i've not figured out why
-        var options = new IntersectionObserverOptions
-        {
-            RootMargin = "100%"
-        };
+        var options = new IntersectionObserverOptions { RootMargin = "100%" };
         OvrscrlObsvTop    = await ObserverService.Create(OverscrollCallbackTop);
         OvrscrlObsvBottom = await ObserverService.Create(OverscrollCallbackBottom);
 
@@ -236,7 +238,7 @@
 
     protected override void OnInitialized()
     {
-        try 
+        try
         {
             var virtualScrollerState = StateService.VirtualScroller.GetState("home");
             State     = virtualScrollerState;

@@ -1,10 +1,16 @@
 .padding {
     width: 1px;
+    min-height: 1px;
+}
+.bottom {
+    min-height: 1rem;
+    @media (max-width: 1000px){
+        min-height: 5rem;
+    }
 }
 .scroller {
     display: flex;
     flex-direction: column;
-    overflow-y: scroll;
     overflow-x: clip;
     width: 100%;
     align-items: center;
