@@ -400,10 +400,9 @@ public class NoteRenderer(
 		var noteList = notes.ToList();
 		if (noteList.Count == 0) return [];
 
-		var allNotes = noteList.SelectMany<Note, Note?>(p => [p, p.Renote])
-		                       .Where(p => p != null)
-		                       .Cast<Note>()
-		                       .DistinctBy(p => p.Id)
+		var allNotes = noteList.SelectMany<Note, Note?>(p => [p, p.Renote, p.Renote?.Renote])
+		                       .OfType<Note>()
+		                       .Distinct()
 		                       .ToList();
 
 		var data = new NoteRendererDto
