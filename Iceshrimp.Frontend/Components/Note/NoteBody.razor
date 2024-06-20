@@ -6,6 +6,10 @@
     </div>
     <div hidden="@CwToggle" class="note-body @(CwToggle ? "hidden" : "") @(Indented ? "indent" : "")">
         <MfmText Text="@NoteBase.Text" />
+        @if (NoteBase.Attachments.Count > 0)
+        {
+        <NoteAttachments Attachments="NoteBase.Attachments"/>
+        }
     </div>
 }
 @if (NoteBase.Cw == null && OverLength)
@@ -15,6 +19,10 @@
         style="max-height: @(Truncate ? MaxHeight + "px" : "initial")" 
     >
         <MfmText Text="@NoteBase.Text" />
+        @if (NoteBase.Attachments.Count > 0)
+        {
+        <NoteAttachments Attachments="NoteBase.Attachments"/>
+        }
     </div>
     <button class="truncate-btn" @onclick="ToggleTruncate" @onclick:stopPropagation="true">
         @if (Truncate)
@@ -27,12 +35,13 @@
 {
     <div class="note-body @(Indented ? "indent" : "")">
         <MfmText Text="@NoteBase.Text" />
+        @if (NoteBase.Attachments.Count > 0)
+        {
+        <NoteAttachments Attachments="NoteBase.Attachments"/>
+        }
     </div>
 }
-@if (NoteBase.Attachments.Count > 0)
-{
-    <NoteAttachments Attachments="NoteBase.Attachments"/>
-}
+
 
 
 @code {
