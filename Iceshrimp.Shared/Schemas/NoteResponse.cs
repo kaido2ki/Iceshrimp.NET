@@ -49,6 +49,7 @@ public class NoteAttachment
 	[JI] public required string  Id;
 	public required      string  Url          { get; set; }
 	public required      string  ThumbnailUrl { get; set; }
+	public required      bool    IsSensitive  { get; set; }
 	public required      string? Blurhash     { get; set; }
 	public required      string? AltText      { get; set; }
 }

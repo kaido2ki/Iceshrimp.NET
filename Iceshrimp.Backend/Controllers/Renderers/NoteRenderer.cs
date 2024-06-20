@@ -105,7 +105,8 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 			            Url          = p.PublicUrl,
 			            ThumbnailUrl = p.PublicThumbnailUrl,
 			            Blurhash     = p.Blurhash,
-			            AltText      = p.Comment
+			            AltText      = p.Comment,
+			            IsSensitive  = p.IsSensitive
 		            })
 		            .ToList();
 	}
