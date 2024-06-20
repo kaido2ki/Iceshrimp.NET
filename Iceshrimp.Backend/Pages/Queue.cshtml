@@ -1,0 +1,147 @@
+@page "/queue/{queue?}/{pagination:int?}/{status?}"
+@using Iceshrimp.Backend.Core.Database.Tables
+@using Iceshrimp.Backend.Core.Extensions
+@using Iceshrimp.Backend.Core.Services
+@inject QueueService                         QueueSvc
+@model QueueModel
+
+@{
+    ViewData["title"] = "Queue dashboard - Iceshrimp.NET";
+}
+
+@section head {
+    <link rel="stylesheet" href="~/css/queue.css"/>
+}
+
+@section scripts {
+    <script src="~/js/queue.js"></script>
+}
+
+<h1>Queue Dashboard</h1>
+@foreach (var queue in QueueSvc.QueueNames)
+{
+    <button role="link" onclick="navigate('/queue/@queue')">@queue</button>
+}
+<br/>
+
+@if (Model.Queue == null)
+{
+    <p>Please pick a queue.</p>
+
+    <form onsubmit="return lookupJob(event)">
+        <input type="text" id="lookup" placeholder="Lookup job by id" minlength="36" maxlength="36" class="inline"/>
+        <button type="submit">Submit</button>
+    </form>
+}
+
+else
+{
+    if (Model.Filter == null)
+    {
+        <p>Listing @Model.TotalCount <b>@Model.Queue</b> jobs, out of which <span class="status-running">@Model.RunningCount</span> are <span class="status-running">running</span>, <span class="status-queued">@Model.QueuedCount</span> are <span class="status-queued">queued</span> and <span class="status-delayed">@Model.DelayedCount</span> are <span class="status-delayed">delayed</span>.</p>
+    }
+    else
+    {
+        <p>Listing @Model.TotalCount <span class="status-@Model.Filter.Value.ToString().ToLowerInvariant()">@Model.Filter.Value.ToString().ToLowerInvariant()</span> <b>@Model.Queue</b> jobs.</p>
+    }
+
+    <table class="auto-table">
+        <thead>
+        <th class="width0">ID</th>
+        <th>Status</th>
+        <th>Actions</th>
+        </thead>
+        <tbody>
+        @foreach (var job in Model.Jobs)
+        {
+            await RenderJob(job);
+        }
+        </tbody>
+    </table>
+
+    <div class="flex">
+        @if (Model.PrevPage != null)
+        {
+            if (Model.Filter.HasValue)
+            {
+                <button role="link" onclick="navigate('/queue/@Model.Queue/@Model.PrevPage/@Model.Filter.Value.ToString().ToLowerInvariant()')">❮ Previous page</button>
+            }
+            else
+            {
+                <button role="link" onclick="navigate('/queue/@Model.Queue/@Model.PrevPage')">❮ Previous page</button>
+            }
+        }
+        else
+        {
+            <button disabled>❮ Previous page</button>
+        }
+
+        @if (Model.NextPage != null)
+        {
+            if (Model.Filter.HasValue)
+            {
+                <button role="link" onclick="navigate('/queue/@Model.Queue/@Model.NextPage/@Model.Filter.Value.ToString().ToLowerInvariant()')">Next page ❯</button>
+            }
+            else
+            {
+                <button role="link" onclick="navigate('/queue/@Model.Queue/@Model.NextPage')">Next page ❯</button>
+            }
+        }
+        else
+        {
+            <button disabled>Next page ❯</button>
+        }
+
+        <select onchange="filter('@Model.Queue')" id="filter" class="inline-flex">
+            @if (Model.Filter == null)
+            {
+                <option value="all" selected>All</option>
+            }
+            else
+            {
+                <option value="all">All</option>
+            }
+            @foreach (var status in Enum.GetValues<Job.JobStatus>())
+            {
+                if (Model.Filter.Equals(status))
+                {
+                    <option value="@status.ToString().ToLowerInvariant()" selected>@status.ToString()</option>
+                }
+                else
+                {
+                    <option value="@status.ToString().ToLowerInvariant()">@status.ToString()</option>
+                }
+            }
+        </select>
+
+        <form onsubmit="return lookupJob(event)" class="inline-flex flex-grow">
+            <input type="text" id="lookup" placeholder="Lookup job by id" minlength="36" maxlength="36" class="flex-grow"/>
+        </form>
+    </div>
+}
+
+
+@{
+    async Task RenderJob(Job job)
+    {
+        var id = job.Id.ToStringLower();
+        var additional = job.Status switch
+        {
+            Job.JobStatus.Queued    => $"for {job.QueueDuration} ms",
+            Job.JobStatus.Delayed   => $"until {job.DelayedUntil?.ToStringIso8601Like() ?? "<unknown>"}",
+            Job.JobStatus.Running   => $"for {job.Duration} ms",
+            Job.JobStatus.Completed => $"at {job.FinishedAt?.ToStringIso8601Like() ?? "<unknown>"}",
+            Job.JobStatus.Failed    => $"at {job.FinishedAt?.ToStringIso8601Like() ?? "<unknown>"}",
+            _                       => throw new ArgumentOutOfRangeException()
+        };
+
+        <tr>
+            <td class="monospace">@id</td>
+            <td class="status-@job.Status.ToString().ToLowerInvariant()">
+            <b>@job.Status</b> <small>@additional</small>
+            <td>
+                <a href="/queue/job/@id">View details</a>
+            </td>
+        </tr>
+    }
+}

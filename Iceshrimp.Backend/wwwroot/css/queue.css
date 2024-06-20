@@ -1,0 +1,56 @@
+:root {
+    --queued-color: #9958FC;
+    --delayed-color: #FFCD59;
+    --running-color: #59D5FF;
+    --completed-color: #92EF5F;
+    --failed-color: #FF5151;
+}
+
+.status-queued {
+    color: var(--queued-color);
+}
+
+.status-delayed {
+    color: var(--delayed-color);
+}
+
+.status-running {
+    color: var(--running-color);
+}
+
+.status-completed {
+    color: var(--completed-color);
+}
+
+.status-failed {
+    color: var(--failed-color);
+}
+
+.monospace {
+    font-family: monospace;
+}
+
+.inline {
+    display: inline;
+}
+
+.auto-table {
+    table-layout: auto;
+    width: 100%;
+}
+
+.width0 {
+    width: 0;
+}
+
+.flex {
+    display: flex;
+}
+
+.inline-flex {
+    display: inline-flex;
+}
+
+.flex-grow {
+    flex-grow: 1;
+}

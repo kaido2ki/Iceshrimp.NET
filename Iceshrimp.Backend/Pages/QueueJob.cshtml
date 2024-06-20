@@ -1,0 +1,207 @@
+@page "/queue/job/{id::guid:required}"
+@using System.Text.Json
+@using Iceshrimp.Backend.Core.Database.Tables
+@using Iceshrimp.Backend.Core.Extensions
+@using Iceshrimp.Backend.Core.Queues
+@model QueueJobModel
+
+@{
+    ViewData["title"] = "Job details - Iceshrimp.NET";
+}
+
+@section head {
+    <link rel="stylesheet" href="~/css/queue.css"/>
+}
+
+@section scripts {
+    <script src="~/js/queue.js"></script>
+}
+
+<h1>Queue Dashboard</h1>
+
+<button role="link" onclick="navigate('/queue/@Model.Job.Queue')">Return to job list</button>
+
+<h2>Job details</h2>
+
+<table>
+    <tbody>
+    <tr>
+        <td>ID</td>
+        <td>@Model.Job.Id.ToStringLower()</td>
+    </tr>
+    <tr>
+        <td>Queue</td>
+        <td>@Model.Job.Queue</td>
+    </tr>
+    <tr>
+        <td>Status</td>
+        <td class="status-@Model.Job.Status.ToString().ToLowerInvariant()">@Model.Job.Status</td>
+    </tr>
+    <tr>
+        <td>Queued at</td>
+        <td>@Model.Job.QueuedAt.ToStringIso8601Like()</td>
+    </tr>
+    @if (Model.Job.Status is not Job.JobStatus.Queued and not Job.JobStatus.Delayed)
+    {
+        <tr>
+            <td>Started at</td>
+            <td>@(Model.Job.StartedAt?.ToStringIso8601Like() ?? "<unknown>")</td>
+        </tr>
+        if (Model.Job.WorkerId != null)
+        {
+            <tr>
+                <td>Worker ID</td>
+                <td>@(Model.Job.WorkerId)</td>
+            </tr>
+        }
+    }
+    @if (Model.Job.Status is Job.JobStatus.Completed or Job.JobStatus.Failed)
+    {
+        <tr>
+            <td>Finished at</td>
+            <td>@(Model.Job.FinishedAt?.ToStringIso8601Like() ?? "<unknown>")</td>
+        </tr>
+    }
+    @if (Model.Job.Status == Job.JobStatus.Delayed)
+    {
+        <tr>
+            <td>Delayed until</td>
+            <td>@(Model.Job.DelayedUntil?.ToStringIso8601Like() ?? "<unknown>")</td>
+        </tr>
+    }
+    @if (Model.Job.Duration < 10000)
+    {
+        <tr>
+            <td>Duration</td>
+            <td>@Model.Job.Duration ms</td>
+        </tr>
+    }
+    @if (Model.Job.QueueDuration < 10000)
+    {
+        <tr>
+            <td>Queue duration</td>
+            <td>@Model.Job.QueueDuration ms</td>
+        </tr>
+    }
+    @if (Model.Job.RetryCount > 0)
+    {
+        <tr>
+            <td>Retry count</td>
+            <td>@Model.Job.RetryCount</td>
+        </tr>
+    }
+    @if (Model.Job.ExceptionMessage != null)
+    {
+        <tr>
+            <td>Exception message</td>
+            <td>@Model.Job.ExceptionMessage</td>
+        </tr>
+    }
+    @if (Model.Job.ExceptionSource != null)
+    {
+        <tr>
+            <td>Exception source</td>
+            <td>@Model.Job.ExceptionSource</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<h3>Job data</h3>
+
+@{
+    if (Model.Job.Queue == "inbox")
+    {
+        var data = JsonSerializer.Deserialize<InboxJobData>(Model.Job.Data) ??
+                   throw new Exception("Failed to deserialize inbox job data");
+
+        @if (data.InboxUserId != null || data.AuthenticatedUserId != null)
+        {
+            <table>
+                <tbody>
+                @if (data.InboxUserId != null)
+                {
+                    <tr>
+                        <td>Inbox user id</td>
+                        <td>@data.InboxUserId</td>
+                    </tr>
+                }
+                @if (data.AuthenticatedUserId != null)
+                {
+                    <tr>
+                        <td>Authenticated user id</td>
+                        <td>@data.AuthenticatedUserId</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+
+        <h3>Body</h3>
+        var json = JsonSerializer.Serialize(JsonDocument.Parse(data.Body), new JsonSerializerOptions { WriteIndented = true });
+        <pre><code id="data">@json</code></pre>
+    }
+    else if (Model.Job.Queue == "deliver")
+    {
+        var data = JsonSerializer.Deserialize<DeliverJobData>(Model.Job.Data) ??
+                   throw new Exception("Failed to deserialize deliver job data");
+
+        <table>
+            <tbody>
+            <tr>
+                <td>Inbox URL</td>
+                <td>@data.InboxUrl</td>
+            </tr>
+            <tr>
+                <td>Content type</td>
+                <td>@data.ContentType</td>
+            </tr>
+            <tr>
+                <td>User ID</td>
+                <td>@data.UserId</td>
+            </tr>
+            <tr>
+                <td>Recipient host</td>
+                <td>@data.RecipientHost</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3>Payload</h3>
+        var json = JsonSerializer.Serialize(JsonDocument.Parse(data.Payload), new JsonSerializerOptions { WriteIndented = true });
+        <pre><code id="data">@json</code></pre>
+    }
+    else if (Model.Job.Queue == "pre-deliver")
+    {
+        var data = JsonSerializer.Deserialize<PreDeliverJobData>(Model.Job.Data) ??
+                   throw new Exception("Failed to deserialize pre-deliver job data");
+
+        <table>
+            <tbody>
+            <tr>
+                <td>Actor ID</td>
+                <td>@data.ActorId</td>
+            </tr>
+            <tr>
+                <td>Recipient IDs</td>
+                <td>[@string.Join(", ", data.RecipientIds)]</td>
+            </tr>
+            <tr>
+                <td>Deliver to followers</td>
+                <td>@data.DeliverToFollowers</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h3>Serialized activity</h3>
+        var json = JsonSerializer.Serialize(JsonDocument.Parse(data.SerializedActivity), new JsonSerializerOptions { WriteIndented = true });
+        <pre><code id="data">@json</code></pre>
+    }
+    else
+    {
+        var json = JsonSerializer.Serialize(JsonDocument.Parse(Model.Job.Data), new JsonSerializerOptions { WriteIndented = true });
+        <pre><code id="data">@json</code></pre>
+    }
+}
+
+<button onclick="copyToClipboard(document.getElementById('data').textContent);">Copy to clipboard</button>
