@@ -47,7 +47,23 @@ public class ErrorHandlerMiddleware(
 						                ctx.TraceIdentifier, (int)earlyCe.StatusCode, earlyCe.Error, earlyCe.Message);
 					}
 				}
-				else if (e is not GracefulException)
+
+				if (e is GracefulException { SuppressLog: true } earlyCeSuppressed)
+				{
+					if (earlyCeSuppressed.Details != null)
+					{
+						logger.LogTrace("Request {id} was rejected with {statusCode} {error}: {message} - {details} (log suppressed)",
+						                ctx.TraceIdentifier, (int)earlyCeSuppressed.StatusCode, earlyCeSuppressed.Error,
+						                earlyCeSuppressed.Message, earlyCeSuppressed.Details);
+					}
+					else
+					{
+						logger.LogTrace("Request {id} was rejected with {statusCode} {error}: {message} (log suppressed)",
+						                ctx.TraceIdentifier, (int)earlyCeSuppressed.StatusCode, earlyCeSuppressed.Error,
+						                earlyCeSuppressed.Message);
+					}
+				}
+				else
 				{
 					logger.LogError("Request {id} encountered an unexpected error: {exception}", ctx.TraceIdentifier,
 					                e.ToString());
