@@ -35,32 +35,17 @@ public class ErrorHandlerMiddleware(
 			{
 				if (e is GracefulException { SuppressLog: false } earlyCe)
 				{
+					var level = earlyCe.SuppressLog ? LogLevel.Trace : LogLevel.Debug;
 					if (earlyCe.Details != null)
 					{
-						logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message} - {details}",
-						                ctx.TraceIdentifier, (int)earlyCe.StatusCode, earlyCe.Error, earlyCe.Message,
-						                earlyCe.Details);
+						logger.Log(level, "Request {id} was rejected with {statusCode} {error}: {message} - {details}",
+						           ctx.TraceIdentifier, (int)earlyCe.StatusCode, earlyCe.Error, earlyCe.Message,
+						           earlyCe.Details);
 					}
 					else
 					{
-						logger.LogDebug("Request {id} was rejected with {statusCode} {error}: {message}",
-						                ctx.TraceIdentifier, (int)earlyCe.StatusCode, earlyCe.Error, earlyCe.Message);
-					}
-				}
-
-				if (e is GracefulException { SuppressLog: true } earlyCeSuppressed)
-				{
-					if (earlyCeSuppressed.Details != null)
-					{
-						logger.LogTrace("Request {id} was rejected with {statusCode} {error}: {message} - {details} (log suppressed)",
-						                ctx.TraceIdentifier, (int)earlyCeSuppressed.StatusCode, earlyCeSuppressed.Error,
-						                earlyCeSuppressed.Message, earlyCeSuppressed.Details);
-					}
-					else
-					{
-						logger.LogTrace("Request {id} was rejected with {statusCode} {error}: {message} (log suppressed)",
-						                ctx.TraceIdentifier, (int)earlyCeSuppressed.StatusCode, earlyCeSuppressed.Error,
-						                earlyCeSuppressed.Message);
+						logger.Log(level, "Request {id} was rejected with {statusCode} {error}: {message}",
+						           ctx.TraceIdentifier, (int)earlyCe.StatusCode, earlyCe.Error, earlyCe.Message);
 					}
 				}
 				else
@@ -123,16 +108,15 @@ public class ErrorHandlerMiddleware(
 						RequestId = ctx.TraceIdentifier
 					});
 
-				if (!ce.SuppressLog)
-				{
-					if (ce.Details != null)
-						logger.LogDebug("Request {id} was rejected by {source} with {statusCode} {error}: {message} - {details}",
-						                ctx.TraceIdentifier, type, (int)ce.StatusCode, ce.Error, ce.Message,
-						                ce.Details);
-					else
-						logger.LogDebug("Request {id} was rejected by {source} with {statusCode} {error}: {message}",
-						                ctx.TraceIdentifier, type, (int)ce.StatusCode, ce.Error, ce.Message);
-				}
+				var level = ce.SuppressLog ? LogLevel.Trace : LogLevel.Debug;
+
+				if (ce.Details != null)
+					logger.Log(level,
+					           "Request {id} was rejected by {source} with {statusCode} {error}: {message} - {details}",
+					           ctx.TraceIdentifier, type, (int)ce.StatusCode, ce.Error, ce.Message, ce.Details);
+				else
+					logger.Log(level, "Request {id} was rejected by {source} with {statusCode} {error}: {message}",
+					           ctx.TraceIdentifier, type, (int)ce.StatusCode, ce.Error, ce.Message);
 			}
 			else
 			{
