@@ -33,7 +33,7 @@ public class ErrorHandlerMiddleware(
 
 			if (ctx.Response.HasStarted)
 			{
-				if (e is GracefulException { SuppressLog: false } earlyCe)
+				if (e is GracefulException earlyCe)
 				{
 					var level = earlyCe.SuppressLog ? LogLevel.Trace : LogLevel.Debug;
 					if (earlyCe.Details != null)
