@@ -25,8 +25,14 @@ public class PollService(
 		}
 
 		if (updateVotersCount)
-			await db.Database
-			        .ExecuteSqlAsync($"""UPDATE "poll" SET "votersCount" = GREATEST("votersCount", (SELECT COUNT(*) FROM (SELECT DISTINCT "userId" FROM "poll_vote" WHERE "noteId" = {poll.NoteId}) AS sq)::integer) WHERE "noteId" = {poll.NoteId};""");
+		{
+			if (poll.Multiple)
+				await db.Database
+				        .ExecuteSqlAsync($"""UPDATE "poll" SET "votersCount" = GREATEST("votersCount", (SELECT MAX("total") FROM UNNEST("votes") AS "total")::integer, (SELECT COUNT(*) FROM (SELECT DISTINCT "userId" FROM "poll_vote" WHERE "noteId" = "poll"."noteId") AS sq)::integer) WHERE "noteId" = {poll.NoteId};""");
+			else
+				await db.Database
+				        .ExecuteSqlAsync($"""UPDATE "poll" SET "votersCount" = GREATEST("votersCount", (SELECT SUM("total") FROM UNNEST("votes") AS "total")::integer, (SELECT COUNT(*) FROM (SELECT DISTINCT "userId" FROM "poll_vote" WHERE "noteId" = "poll"."noteId") AS sq)::integer) WHERE "noteId" = {poll.NoteId};""");
+		}
 
 		var vote     = activityRenderer.RenderVote(pollVote, poll, note);
 		var actor    = userRenderer.RenderLite(pollVote.User);
