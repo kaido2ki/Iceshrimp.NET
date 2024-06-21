@@ -32,6 +32,7 @@ public class Job
 	[Column("exception_message")] public string?   ExceptionMessage { get; set; }
 	[Column("exception_source")]  public string?   ExceptionSource  { get; set; }
 	[Column("stack_trace")]       public string?   StackTrace       { get; set; }
+	[Column("exception")]         public string?   Exception        { get; set; }
 	[Column("data")]              public string    Data             { get; set; } = null!;
 
 	[Column("worker_id")]

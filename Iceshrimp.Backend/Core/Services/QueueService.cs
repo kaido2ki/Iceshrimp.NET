@@ -500,6 +500,7 @@ public class PostgresJobQueue<T>(
 			job.ExceptionMessage = e.Message;
 			job.ExceptionSource  = e.TargetSite?.DeclaringType?.FullName ?? "Unknown";
 			job.StackTrace       = e.StackTrace;
+			job.Exception        = e.ToString();
 
 			var queueName = data is BackgroundTaskJobData ? name + $" ({data.GetType().Name})" : name;
 			if (e is GracefulException { Details: not null } ce)

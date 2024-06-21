@@ -1559,6 +1559,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("delayed_until");
 
+                    b.Property<string>("Exception")
+                        .HasColumnType("text")
+                        .HasColumnName("exception");
+
                     b.Property<string>("ExceptionMessage")
                         .HasColumnType("text")
                         .HasColumnName("exception_message");

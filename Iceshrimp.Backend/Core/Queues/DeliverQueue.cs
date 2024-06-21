@@ -70,6 +70,7 @@ public class DeliverQueue(int parallelism)
 				job.ExceptionMessage = e.Message;
 				job.ExceptionSource  = e.Source;
 				job.StackTrace       = e.StackTrace;
+				job.Exception        = e.ToString();
 				job.DelayedUntil     = DateTime.UtcNow + backoff;
 				job.Status           = Job.JobStatus.Delayed;
 			}

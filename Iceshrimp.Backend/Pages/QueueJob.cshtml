@@ -84,21 +84,21 @@
             <td>@Model.Job.RetryCount</td>
         </tr>
     }
-    @if (Model.Job.ExceptionMessage != null)
+    @if (Model.Job is { ExceptionMessage: not null, Exception: null })
     {
         <tr>
             <td>Exception message</td>
             <td>@Model.Job.ExceptionMessage</td>
         </tr>
     }
-    @if (Model.Job.ExceptionSource != null)
+    @if (Model.Job is { ExceptionSource: not null, Exception: null })
     {
         <tr>
             <td>Exception source</td>
             <td>@Model.Job.ExceptionSource</td>
         </tr>
     }
-    @if (Model.Job.StackTrace != null)
+    @if (Model.Job is { StackTrace: not null, Exception: null })
     {
         <tr>
             <td>Exception stack trace</td>
