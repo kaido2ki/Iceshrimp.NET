@@ -1,6 +1,7 @@
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Queues;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -22,4 +23,13 @@ public class QueueJobModel(DatabaseContext db) : PageModel
 		      throw GracefulException.NotFound($"Job {id} not found");
 		return Page();
 	}
+
+	private static Dictionary<string, string> _lookup = new()
+	{
+		{ "inbox", "body" },
+		{ "deliver", "payload" },
+		{ "pre-deliver", "serializedActivity" }
+	};
+
+	public Dictionary<string, string> Lookup => _lookup;
 }

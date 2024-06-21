@@ -1,8 +1,9 @@
 @page "/queue/job/{id::guid:required}"
 @using System.Text.Json
+@using System.Text.Json.Nodes
+@using System.Text.Json.Serialization
 @using Iceshrimp.Backend.Core.Database.Tables
 @using Iceshrimp.Backend.Core.Extensions
-@using Iceshrimp.Backend.Core.Queues
 @model QueueJobModel
 
 @{
@@ -117,98 +118,34 @@
 <h3>Job data</h3>
 
 @{
-    if (Model.Job.Queue == "inbox")
+    var dataOpts    = new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+    var payloadOpts = new JsonSerializerOptions { WriteIndented = true };
+
+    if (Model.Lookup.TryGetValue(Model.Job.Queue, out var payloadKey))
     {
-        var data = JsonSerializer.Deserialize<InboxJobData>(Model.Job.Data) ??
-                   throw new Exception("Failed to deserialize inbox job data");
+        var data = JsonNode.Parse(Model.Job.Data)?.AsObject() ??
+                   throw new Exception($"Failed to deserialize {Model.Job.Queue} job data");
+        var payloadElem = data[payloadKey];
+        var payload = payloadElem?.GetValue<string>() ??
+                      throw new Exception($"Failed to deserialize {Model.Job.Queue} job data");
+        var payloadJson = JsonNode.Parse(payload)?.ToJsonString(payloadOpts) ??
+                          throw new Exception($"Failed to serialize {Model.Job.Queue} job data");
 
-        @if (data.InboxUserId != null || data.AuthenticatedUserId != null)
-        {
-            <table>
-                <tbody>
-                @if (data.InboxUserId != null)
-                {
-                    <tr>
-                        <td>Inbox user id</td>
-                        <td>@data.InboxUserId</td>
-                    </tr>
-                }
-                @if (data.AuthenticatedUserId != null)
-                {
-                    <tr>
-                        <td>Authenticated user id</td>
-                        <td>@data.AuthenticatedUserId</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        }
+        data.Remove(payloadKey);
+        foreach (var item in data.Where(p => p.Value?.GetValueKind() is null or JsonValueKind.Null).ToList())
+            data.Remove(item.Key);
 
-        <h3>Body</h3>
-        var json = JsonSerializer.Serialize(JsonDocument.Parse(data.Body), new JsonSerializerOptions { WriteIndented = true });
-        <pre><code id="data">@json</code></pre>
-    }
-    else if (Model.Job.Queue == "deliver")
-    {
-        var data = JsonSerializer.Deserialize<DeliverJobData>(Model.Job.Data) ??
-                   throw new Exception("Failed to deserialize deliver job data");
-
-        <table>
-            <tbody>
-            <tr>
-                <td>Inbox URL</td>
-                <td>@data.InboxUrl</td>
-            </tr>
-            <tr>
-                <td>Content type</td>
-                <td>@data.ContentType</td>
-            </tr>
-            <tr>
-                <td>User ID</td>
-                <td>@data.UserId</td>
-            </tr>
-            <tr>
-                <td>Recipient host</td>
-                <td>@data.RecipientHost</td>
-            </tr>
-            </tbody>
-        </table>
-
-        <h3>Payload</h3>
-        var json = JsonSerializer.Serialize(JsonDocument.Parse(data.Payload), new JsonSerializerOptions { WriteIndented = true });
-        <pre><code id="data">@json</code></pre>
-    }
-    else if (Model.Job.Queue == "pre-deliver")
-    {
-        var data = JsonSerializer.Deserialize<PreDeliverJobData>(Model.Job.Data) ??
-                   throw new Exception("Failed to deserialize pre-deliver job data");
-
-        <table>
-            <tbody>
-            <tr>
-                <td>Actor ID</td>
-                <td>@data.ActorId</td>
-            </tr>
-            <tr>
-                <td>Recipient IDs</td>
-                <td>[@string.Join(", ", data.RecipientIds)]</td>
-            </tr>
-            <tr>
-                <td>Deliver to followers</td>
-                <td>@data.DeliverToFollowers</td>
-            </tr>
-            </tbody>
-        </table>
-
-        <h3>Serialized activity</h3>
-        var json = JsonSerializer.Serialize(JsonDocument.Parse(data.SerializedActivity), new JsonSerializerOptions { WriteIndented = true });
-        <pre><code id="data">@json</code></pre>
+        var dataJson = data.ToJsonString(dataOpts);
+        <pre><code>@dataJson</code></pre>
+        <h3>Job payload</h3>
+        <pre><code id="payload">@payloadJson</code></pre>
     }
     else
     {
-        var json = JsonSerializer.Serialize(JsonDocument.Parse(Model.Job.Data), new JsonSerializerOptions { WriteIndented = true });
-        <pre><code id="data">@json</code></pre>
+        var json = JsonNode.Parse(Model.Job.Data)?.ToJsonString(payloadOpts) ??
+                   throw new Exception($"Failed to serialize {Model.Job.Queue} job data");
+        <pre><code id="payload">@json</code></pre>
     }
 }
 
-<button onclick="copyElementToClipboard('data');">Copy to clipboard</button>
+<button onclick="copyElementToClipboard('payload');">Copy to clipboard</button>
