@@ -63,24 +63,24 @@ internal class SessionService
         Current = null;
         LocalStorage.RemoveItem("last_user");
         ((IJSInProcessRuntime)Js).InvokeVoid("eval",
-                                             $"document.cookie = \"admin_session=; Fri, 31 Dec 1000 23:59:59 GMT SameSite=Strict\"");
+                                             $"document.cookie = \"admin_session= ; Fri, 31 Dec 1000 23:59:59 GMT SameSite=Lax\"");
     }
 
     public void SetSession(string id)
     {
         ((IJSInProcessRuntime)Js).InvokeVoid("eval",
-                                             $"document.cookie = \"admin_session=; expires=Fri, 31 Dec 1000 23:59:59 GMT SameSite=Strict\"");
+                                             $"document.cookie = \"admin_session= ; expires=Fri, 31 Dec 1000 23:59:59 GMT SameSite=Lax\"");
         var user = GetUserById(id);
         if (user == null) throw new Exception("Did not find User in Local Storage");
         ApiService.SetBearerToken(user.Token);
         Current = user;
         LocalStorage.SetItem("last_user", user.Id);
         ((IJSInProcessRuntime)Js).InvokeVoid("eval",
-                                             $"document.cookie = \"session={user.Id}; expires=Fri, 31 Dec 9999 23:59:59 GMT; SameSite=Strict\"");
+                                             $"document.cookie = \"session={user.Id}; expires=Fri, 31 Dec 9999 23:59:59 GMT; SameSite=Lax\"");
         if (user.IsAdmin)
         {
             ((IJSInProcessRuntime)Js).InvokeVoid("eval",
-                                                 $"document.cookie = \"admin_session={user.Token}; expires=Fri, 31 Dec 9999 23:59:59 GMT; SameSite=Strict\"");
+                                                 $"document.cookie = \"admin_session={user.Token}; expires=Fri, 31 Dec 9999 23:59:59 GMT; SameSite=Lax\"");
         }
         // Security implications of this need a second pass? user.Id should never be user controllable, but still.
     }
