@@ -127,9 +127,9 @@ else
         var id = job.Id.ToStringLower();
         var additional = job.Status switch
         {
-            Job.JobStatus.Queued    => $"for {job.QueueDuration} ms",
+            Job.JobStatus.Queued    => $"for {job.QueueDuration.ToDurationDisplayString()}",
+            Job.JobStatus.Running   => $"for {job.Duration.ToDurationDisplayString()}",
             Job.JobStatus.Delayed   => $"until {job.DelayedUntil?.ToDisplayStringTz() ?? "<unknown>"}",
-            Job.JobStatus.Running   => $"for {job.Duration} ms",
             Job.JobStatus.Completed => $"at {job.FinishedAt?.ToDisplayStringTz() ?? "<unknown>"}",
             Job.JobStatus.Failed    => $"at {job.FinishedAt?.ToDisplayStringTz() ?? "<unknown>"}",
             _                       => throw new ArgumentOutOfRangeException()

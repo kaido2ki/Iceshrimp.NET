@@ -69,20 +69,14 @@
             <td>@(Model.Job.DelayedUntil?.ToDisplayStringTz() ?? "<unknown>")</td>
         </tr>
     }
-    @if (Model.Job.Duration < 10000)
-    {
-        <tr>
-            <td>Duration</td>
-            <td>@Model.Job.Duration ms</td>
-        </tr>
-    }
-    @if (Model.Job.QueueDuration < 10000)
-    {
-        <tr>
-            <td>Queue duration</td>
-            <td>@Model.Job.QueueDuration ms</td>
-        </tr>
-    }
+    <tr>
+        <td>Duration</td>
+        <td>@Model.Job.Duration.ToDurationDisplayString()</td>
+    </tr>
+    <tr>
+        <td>Queue duration</td>
+        <td>@Model.Job.QueueDuration.ToDurationDisplayString()</td>
+    </tr>
     @if (Model.Job.RetryCount > 0)
     {
         <tr>

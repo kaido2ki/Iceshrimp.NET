@@ -33,4 +33,26 @@ public static class NumberExtensions
 
 		return result.ToString();
 	}
+
+	public static string ToDurationDisplayString(this long input)
+	{
+		return input switch
+		{
+			< 1000           => $"{input} ms",
+			< 1000 * 60      => $"{Math.Round(input / 1000d / 60d, 2)} s",
+			< 1000 * 60 * 60 => $"{Math.Round(input / 60000d / 60d, 2)} m",
+			_                => $"{Math.Round(input / 60000d / 60d / 60d, 2)} h"
+		};
+	}
+	
+	public static string ToDurationDisplayString(this int input)
+	{
+		return input switch
+		{
+			< 1000           => $"{input} ms",
+			< 1000 * 60      => $"{Math.Round(input / 1000d / 60d, 2)} s",
+			< 1000 * 60 * 60 => $"{Math.Round(input / 60000d / 60d, 2)} m",
+			_                => $"{Math.Round(input / 60000d / 60d / 60d, 2)} h"
+		};
+	}
 }
