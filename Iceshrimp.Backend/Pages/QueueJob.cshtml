@@ -101,9 +101,26 @@
     @if (Model.Job is { StackTrace: not null, Exception: null })
     {
         <tr>
-            <td>Exception stack trace</td>
             <td>
-                <pre><code>@Model.Job.StackTrace</code></pre>
+                Exception stack trace
+                <br/>
+                <button onclick="copyElementToClipboard('exceptionStackTrace')">Copy to clipboard</button>
+            </td>
+            <td>
+                <pre><code id="exceptionStackTrace">@Model.Job.StackTrace</code></pre>
+            </td>
+        </tr>
+    }
+    @if (Model.Job.Exception != null)
+    {
+        <tr>
+            <td>
+                Exception details
+                <br/>
+                <button onclick="copyElementToClipboard('exceptionDetails')">Copy to clipboard</button>
+            </td>
+            <td>
+                <pre><code id="exceptionDetails">@Model.Job.Exception</code></pre>
             </td>
         </tr>
     }

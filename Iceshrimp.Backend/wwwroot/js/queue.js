@@ -21,3 +21,7 @@ function navigate(target) {
 async function copyToClipboard(text) {
     await navigator.clipboard.writeText(text);
 }
+
+async function copyElementToClipboard(id) {
+    await copyToClipboard(document.getElementById(id).textContent);
+}
