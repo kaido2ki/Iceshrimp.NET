@@ -159,9 +159,11 @@ public static class ServiceExtensions
 
 	public static void AddDatabaseContext(this IServiceCollection services, IConfiguration configuration)
 	{
-		var config     = configuration.GetSection("Database").Get<Config.DatabaseSection>();
+		var config = configuration.GetSection("Database").Get<Config.DatabaseSection>() ??
+		             throw new Exception("Failed to initialize database: Failed to load configuration");
+		
 		var dataSource = DatabaseContext.GetDataSource(config);
-		services.AddDbContext<DatabaseContext>(options => { DatabaseContext.Configure(options, dataSource); });
+		services.AddDbContext<DatabaseContext>(options => { DatabaseContext.Configure(options, dataSource, config); });
 		services.AddKeyedDatabaseContext<DatabaseContext>("cache");
 		services.AddDataProtection()
 		        .PersistKeysToDbContextAsync<DatabaseContext>()

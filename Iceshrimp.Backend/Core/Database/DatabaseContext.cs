@@ -91,25 +91,28 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<Filter>               Filters               { get; init; } = null!;
 	public virtual DbSet<DataProtectionKey>    DataProtectionKeys    { get; init; } = null!;
 
-	public static NpgsqlDataSource GetDataSource(Config.DatabaseSection? config)
+	public static NpgsqlDataSource GetDataSource(Config.DatabaseSection config)
 	{
-		var dataSourceBuilder = new NpgsqlDataSourceBuilder();
+		var dataSourceBuilder = new NpgsqlDataSourceBuilder
+		{
+			ConnectionStringBuilder =
+			{
+				Host         = config.Host,
+				Port         = config.Port,
+				Username     = config.Username,
+				Password     = config.Password,
+				Database     = config.Database,
+				MaxPoolSize  = config.MaxConnections,
+				Multiplexing = config.Multiplexing
+			}
+		};
 
-		if (config == null)
-			throw new Exception("Failed to initialize database: Failed to load configuration");
-
-		dataSourceBuilder.ConnectionStringBuilder.Host         = config.Host;
-		dataSourceBuilder.ConnectionStringBuilder.Port         = config.Port;
-		dataSourceBuilder.ConnectionStringBuilder.Username     = config.Username;
-		dataSourceBuilder.ConnectionStringBuilder.Password     = config.Password;
-		dataSourceBuilder.ConnectionStringBuilder.Database     = config.Database;
-		dataSourceBuilder.ConnectionStringBuilder.MaxPoolSize  = config.MaxConnections;
-		dataSourceBuilder.ConnectionStringBuilder.Multiplexing = config.Multiplexing;
-
-		return ConfigureDataSource(dataSourceBuilder);
+		return ConfigureDataSource(dataSourceBuilder, config);
 	}
 
-	public static NpgsqlDataSource ConfigureDataSource(NpgsqlDataSourceBuilder dataSourceBuilder)
+	private static NpgsqlDataSource ConfigureDataSource(
+		NpgsqlDataSourceBuilder dataSourceBuilder, Config.DatabaseSection config
+	)
 	{
 		dataSourceBuilder.MapEnum<Antenna.AntennaSource>();
 		dataSourceBuilder.MapEnum<Note.NoteVisibility>();
@@ -125,14 +128,22 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 
 		dataSourceBuilder.EnableDynamicJson();
 
+		if (config.ParameterLogging)
+			dataSourceBuilder.EnableParameterLogging();
+
 		return dataSourceBuilder.Build();
 	}
 
-	public static void Configure(DbContextOptionsBuilder optionsBuilder, NpgsqlDataSource dataSource)
+	public static void Configure(
+		DbContextOptionsBuilder optionsBuilder, NpgsqlDataSource dataSource, Config.DatabaseSection config
+	)
 	{
 		optionsBuilder.UseNpgsql(dataSource);
 		optionsBuilder.UseProjectables(options => { options.CompatibilityMode(CompatibilityMode.Full); });
 		optionsBuilder.UseExceptionProcessor();
+
+		if (config.ParameterLogging)
+			optionsBuilder.EnableSensitiveDataLogging();
 	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -1292,10 +1303,12 @@ public class DesignTimeDatabaseContextFactory : IDesignTimeDbContextFactory<Data
 		                    .AddCustomConfiguration()
 		                    .Build();
 
-		var config     = configuration.GetSection("Database").Get<Config.DatabaseSection>();
+		var config = configuration.GetSection("Database").Get<Config.DatabaseSection>() ??
+		             throw new Exception("Failed to initialize database: Failed to load configuration");
+
 		var dataSource = DatabaseContext.GetDataSource(config);
 		var builder    = new DbContextOptionsBuilder<DatabaseContext>();
-		DatabaseContext.Configure(builder, dataSource);
+		DatabaseContext.Configure(builder, dataSource, config);
 		return new DatabaseContext(builder.Options);
 	}
 }

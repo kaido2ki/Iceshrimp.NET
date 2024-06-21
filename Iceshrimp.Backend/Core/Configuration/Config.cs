@@ -88,13 +88,14 @@ public sealed class Config
 
 	public sealed class DatabaseSection
 	{
-		[Required]        public string  Host           { get; init; } = "localhost";
-		[Range(1, 65535)] public int     Port           { get; init; } = 5432;
-		[Required]        public string  Database       { get; init; } = null!;
-		[Required]        public string  Username       { get; init; } = null!;
-		public                   string? Password       { get; init; }
-		[Range(1, 1000)] public  int     MaxConnections { get; init; } = 100;
-		public                   bool    Multiplexing   { get; init; } = false;
+		[Required]        public string  Host             { get; init; } = "localhost";
+		[Range(1, 65535)] public int     Port             { get; init; } = 5432;
+		[Required]        public string  Database         { get; init; } = null!;
+		[Required]        public string  Username         { get; init; } = null!;
+		public                   string? Password         { get; init; }
+		[Range(1, 1000)] public  int     MaxConnections   { get; init; } = 100;
+		public                   bool    Multiplexing     { get; init; } = false;
+		public                   bool    ParameterLogging { get; init; } = false;
 	}
 
 	public sealed class StorageSection
