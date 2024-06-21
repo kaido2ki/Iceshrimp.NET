@@ -58,3 +58,8 @@
 .flex-grow {
     flex-grow: 1;
 }
+
+.uuid {
+    font-family: monospace;
+    width: 36ch;
+}
