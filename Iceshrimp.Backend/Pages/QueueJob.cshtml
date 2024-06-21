@@ -98,34 +98,21 @@
             <td>@Model.Job.ExceptionSource</td>
         </tr>
     }
-    @if (Model.Job is { StackTrace: not null, Exception: null })
-    {
-        <tr>
-            <td>
-                Exception stack trace
-                <br/>
-                <button onclick="copyElementToClipboard('exceptionStackTrace')">Copy to clipboard</button>
-            </td>
-            <td>
-                <pre><code id="exceptionStackTrace">@Model.Job.StackTrace</code></pre>
-            </td>
-        </tr>
-    }
-    @if (Model.Job.Exception != null)
-    {
-        <tr>
-            <td>
-                Exception details
-                <br/>
-                <button onclick="copyElementToClipboard('exceptionDetails')">Copy to clipboard</button>
-            </td>
-            <td>
-                <pre><code id="exceptionDetails">@Model.Job.Exception</code></pre>
-            </td>
-        </tr>
-    }
     </tbody>
 </table>
+
+@if (Model.Job is { StackTrace: not null, Exception: null })
+{
+    <h3>Exception stack trace</h3>
+    <pre><code id="exceptionStackTrace">@Model.Job.StackTrace</code></pre>
+    <button onclick="copyElementToClipboard('exceptionStackTrace')">Copy to clipboard</button>
+}
+@if (Model.Job.Exception != null)
+{
+    <h3>Exception details</h3>
+    <pre><code id="exceptionDetails">@Model.Job.Exception</code></pre>
+    <button onclick="copyElementToClipboard('exceptionDetails')">Copy to clipboard</button>
+}
 
 <h3>Job data</h3>
 
@@ -224,4 +211,4 @@
     }
 }
 
-<button onclick="copyToClipboard(document.getElementById('data').textContent);">Copy to clipboard</button>
+<button onclick="copyElementToClipboard('data');">Copy to clipboard</button>
