@@ -45,22 +45,39 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		                     })
 		                     .ToListAsync();
 
+		var visible = await db.Users
+		                      .Where(p => note.VisibleUserIds.Contains(id) && !note.Mentions.Contains(id))
+		                      .IncludeCommonProperties()
+		                      .Select(p => new Note.MentionedUser
+		                      {
+			                      Host     = p.Host ?? config.Value.AccountDomain,
+			                      Username = p.Username,
+			                      Url      = p.UserProfile != null ? p.UserProfile.Url : null,
+			                      Uri      = p.Uri ?? p.GetPublicUri(config.Value)
+		                      })
+		                      .ToListAsync();
+
 		var emoji = note.Emojis.Count != 0
 			? await db.Emojis.Where(p => note.Emojis.Contains(p.Id) && p.Host == null).ToListAsync()
 			: [];
 
+		var recipients = mentions.Concat(visible).Select(p => new ASObjectBase(p.Uri)).ToList();
+
 		var to = note.Visibility switch
 		{
 			Note.NoteVisibility.Public    => [new ASLink($"{Constants.ActivityStreamsNs}#Public")],
+			Note.NoteVisibility.Home      => [new ASLink($"{userId}/followers")],
 			Note.NoteVisibility.Followers => [new ASLink($"{userId}/followers")],
-			Note.NoteVisibility.Specified => mentions.Select(p => new ASObjectBase(p.Uri)).ToList(),
+			Note.NoteVisibility.Specified => recipients,
 			_                             => []
 		};
 
-		List<ASObjectBase> cc = note.Visibility switch
+		var cc = note.Visibility switch
 		{
-			Note.NoteVisibility.Home => [new ASLink($"{Constants.ActivityStreamsNs}#Public")],
-			_                        => []
+			Note.NoteVisibility.Public    => [new ASLink($"{userId}/followers"), ..recipients],
+			Note.NoteVisibility.Home      => [new ASLink($"{Constants.ActivityStreamsNs}#Public"), ..recipients],
+			Note.NoteVisibility.Followers => recipients,
+			_                             => []
 		};
 
 		var tags = note.Tags.Select(tag => new ASHashtag
