@@ -70,27 +70,25 @@ public class UserResolver(
 		var apUri = fingerRes.Links.FirstOrDefault(p => p is { Rel: "self", Type: "application/activity+json" })?.Href;
 		if (apUri == null)
 			throw new GracefulException($"WebFinger response for '{query}' didn't contain a candidate link");
+		var subjectUri = GetAcctUri(fingerRes) ??
+		                 throw new Exception($"WebFinger response for '{apUri}' didn't contain any acct uris");
 
 		var queryHost   = WebFingerService.ParseQuery(query).domain;
-		var subjectHost = WebFingerService.ParseQuery(fingerRes.Subject).domain;
+		var subjectHost = WebFingerService.ParseQuery(subjectUri).domain;
 		var apUriHost   = new Uri(apUri).Host;
 		if (subjectHost == apUriHost && subjectHost == queryHost)
-			return (fingerRes.Subject, apUri);
+			return (subjectUri, apUri);
 
 		fingerRes = responses.GetValueOrDefault(apUri);
 		if (fingerRes == null)
 		{
 			logger.LogDebug("AP uri didn't match query, re-running WebFinger for '{apUri}'", apUri);
-
-			fingerRes = await webFingerSvc.ResolveAsync(apUri);
-
-			if (fingerRes == null) throw new GracefulException($"Failed to WebFinger '{apUri}'");
+			fingerRes = await webFingerSvc.ResolveAsync(apUri) ?? throw new Exception($"Failed to WebFinger '{apUri}'");
 			responses.Add(apUri, fingerRes);
 		}
 
-		var acctUri = (fingerRes.Aliases ?? []).Prepend(fingerRes.Subject).FirstOrDefault(p => p.StartsWith("acct:"));
-		if (acctUri == null)
-			throw new GracefulException($"WebFinger response for '{apUri}' didn't contain any acct uris");
+		var acctUri = GetAcctUri(fingerRes) ??
+		              throw new Exception($"WebFinger response for '{apUri}' didn't contain any acct uris");
 
 		if (WebFingerService.ParseQuery(acctUri).domain == apUriHost)
 			return (acctUri, apUri);
@@ -106,7 +104,8 @@ public class UserResolver(
 			responses.Add(acctUri, fingerRes);
 		}
 
-		var finalAcct = fingerRes.Subject;
+		var finalAcct = GetAcctUri(fingerRes) ??
+		                throw new Exception($"WebFinger response for '{acctUri}' didn't contain any acct uris");
 		var finalUri = fingerRes.Links.FirstOrDefault(p => p is { Rel: "self", Type: "application/activity+json" })
 		                        ?.Href ??
 		               throw new GracefulException("Final AP URI was null");
@@ -123,6 +122,10 @@ public class UserResolver(
 
 		return (finalAcct, finalUri);
 	}
+
+	private static string? GetAcctUri(WebFingerResponse fingerRes) => (fingerRes.Aliases ?? [])
+	                                                                  .Prepend(fingerRes.Subject)
+	                                                                  .FirstOrDefault(p => p.StartsWith("acct:"));
 
 	public static string NormalizeQuery(string query)
 	{
