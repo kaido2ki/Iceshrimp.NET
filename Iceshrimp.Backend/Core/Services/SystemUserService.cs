@@ -51,19 +51,16 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 		             .FirstOrDefault(p => p.Entity.UsernameLower == username.ToLowerInvariant())
 		             ?.Entity;
 
-		user ??= await cache.FetchAsync($"systemUser:{username}", TimeSpan.FromHours(24), async () =>
-		{
-			using (await KeyedLocker.LockAsync(username.ToLowerInvariant()))
-			{
-				logger.LogTrace("GetOrCreateSystemUser delegate method called for user {username}", username);
-				return await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant() &&
-				                                               p.IsLocalUser) ??
-				       await CreateSystemUserAsync(username);
-			}
-		});
+		user ??= await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant() &&
+		                                                 p.IsLocalUser);
 
-		db.Attach(user);
-		return user;
+		if (user != null) return user;
+
+		using (await KeyedLocker.LockAsync(username.ToLowerInvariant()))
+		{
+			logger.LogTrace("GetOrCreateSystemUser delegate method called for user {username}", username);
+			return await CreateSystemUserAsync(username);
+		}
 	}
 
 	private async Task<User> CreateSystemUserAsync(string username)
