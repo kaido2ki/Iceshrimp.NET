@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using JR = Newtonsoft.Json.JsonRequiredAttribute;
+using JI = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
@@ -21,7 +22,7 @@ public class ASObject : ASObjectBase
 	[JC(typeof(StringListSingleConverter))]
 	public string? Type { get; set; }
 
-	[JsonIgnore] public bool IsUnresolved => GetType() == typeof(ASObject) && Type == null;
+	[JI] public bool IsUnresolved => GetType() == typeof(ASObject) && Type == null;
 
 	//FIXME: don't recurse creates and co
 	public static ASObject? Deserialize(JToken token)

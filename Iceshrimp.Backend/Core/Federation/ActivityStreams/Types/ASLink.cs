@@ -1,6 +1,7 @@
 using Iceshrimp.Backend.Core.Configuration;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
+using JI = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
@@ -14,7 +15,7 @@ public class ASLink(string url) : ASObjectBase(url)
 	[JC(typeof(ValueObjectConverter))]
 	public string? Name { get; set; }
 
-	public          string? Link       => Id ?? Href?.Id;
+	[JI] public     string? Link       => Id ?? Href?.Id;
 	public override string? ToString() => Link;
 }
 

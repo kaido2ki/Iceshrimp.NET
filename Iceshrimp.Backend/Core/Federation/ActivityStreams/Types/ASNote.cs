@@ -2,6 +2,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
+using JI = Newtonsoft.Json.JsonIgnoreAttribute;
 using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
@@ -10,7 +11,8 @@ public class ASNote : ASObject
 {
 	public ASNote(bool withType = true) => Type = withType ? Types.Note : null;
 
-	public  bool    VerifiedFetch = false;
+	[JI] public bool VerifiedFetch = false;
+
 	private string? _mkContent;
 
 	[J("https://misskey-hub.net/ns#_misskey_content")]
