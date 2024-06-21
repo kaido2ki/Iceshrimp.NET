@@ -632,7 +632,7 @@ public class NoteService(
 			                                                         note.Visibility,
 			                                                         note.User.GetPublicUri(config.Value) +
 			                                                         "/followers"))
-			: activityRenderer.RenderDelete(actor, new ASTombstone { Id = note.GetPublicUri(config.Value) });
+			: ActivityPub.ActivityRenderer.RenderDelete(actor, new ASTombstone { Id = note.GetPublicUri(config.Value) });
 
 		if (note.Visibility == Note.NoteVisibility.Specified)
 			await deliverSvc.DeliverToAsync(activity, note.User, recipients.ToArray());

@@ -43,7 +43,7 @@ public class ActivityRenderer(
 		To     = [new ASObjectBase($"{Constants.ActivityStreamsNs}#Public")]
 	};
 
-	public ASDelete RenderDelete(ASActor actor, ASObject obj) => new()
+	public static ASDelete RenderDelete(ASActor actor, ASObject obj) => new()
 	{
 		Id     = $"{obj.Id}#Delete",
 		Actor  = actor.Compact(),
@@ -55,13 +55,6 @@ public class ActivityRenderer(
 		Id     = GenerateActivityId(),
 		Actor  = userRenderer.RenderLite(followee),
 		Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
-	};
-
-	public ASAccept RenderAccept(ASActor actor, ASObject obj) => new()
-	{
-		Id     = GenerateActivityId(),
-		Actor  = actor.Compact(),
-		Object = obj
 	};
 
 	public ASLike RenderLike(NoteLike like)
@@ -92,19 +85,17 @@ public class ActivityRenderer(
 			Content = reaction.Reaction
 		};
 
-		if (emoji != null)
+		if (emoji == null) return res;
+		var name = emoji.Host == null ? emoji.Name : $"{emoji.Name}@{emoji.Host}";
+
+		var e = new ASEmoji
 		{
-			var name = emoji.Host == null ? emoji.Name : $"{emoji.Name}@{emoji.Host}";
+			Id    = emoji.GetPublicUriOrNull(config.Value),
+			Name  = name,
+			Image = new ASImage { Url = new ASLink(emoji.PublicUrl) }
+		};
 
-			var e = new ASEmoji
-			{
-				Id    = emoji.GetPublicUriOrNull(config.Value),
-				Name  = name,
-				Image = new ASImage { Url = new ASLink(emoji.PublicUrl) }
-			};
-
-			res.Tags = [e];
-		}
+		res.Tags = [e];
 
 		return res;
 	}
@@ -142,7 +133,7 @@ public class ActivityRenderer(
 		}
 	}
 
-	public static ASFollow RenderFollow(ASObject followerActor, ASObject followeeActor, string requestId) => new()
+	private static ASFollow RenderFollow(ASObject followerActor, ASObject followeeActor, string requestId) => new()
 	{
 		Id     = requestId,
 		Actor  = ASActor.FromObject(followerActor),
@@ -156,7 +147,7 @@ public class ActivityRenderer(
 		Object = obj
 	};
 
-	public ASReject RenderReject(ASActor actor, ASObject obj) => new()
+	private ASReject RenderReject(ASActor actor, ASObject obj) => new()
 	{
 		Id     = GenerateActivityId(),
 		Actor  = actor.Compact(),
@@ -181,7 +172,7 @@ public class ActivityRenderer(
 	private string RenderFollowId(User follower, User followee, Guid? relationshipId) =>
 		$"https://{config.Value.WebDomain}/follows/{follower.Id}/{followee.Id}/{(relationshipId ?? Guid.NewGuid()).ToStringLower()}";
 
-	public static ASAnnounce RenderAnnounce(
+	private static ASAnnounce RenderAnnounce(
 		ASNote note, ASActor actor, List<ASObjectBase> to, List<ASObjectBase> cc, string uri
 	) => new()
 	{
