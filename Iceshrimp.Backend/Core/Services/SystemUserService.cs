@@ -42,7 +42,7 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 		return await cache.FetchAsync($"systemUser:{username}", TimeSpan.FromHours(24), async () =>
 		{
 			logger.LogTrace("GetOrCreateSystemUser delegate method called for user {username}", username);
-			return await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username &&
+			return await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant() &&
 			                                               p.IsLocalUser) ??
 			       await CreateSystemUserAsync(username);
 		});
