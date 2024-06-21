@@ -46,7 +46,12 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 
 	private async Task<User> GetOrCreateSystemUserAsync(string username)
 	{
-		var user = await cache.FetchAsync($"systemUser:{username}", TimeSpan.FromHours(24), async () =>
+		var user = db.ChangeTracker
+		             .Entries<User>()
+		             .FirstOrDefault(p => p.Entity.UsernameLower == username.ToLowerInvariant())
+		             ?.Entity;
+
+		user ??= await cache.FetchAsync($"systemUser:{username}", TimeSpan.FromHours(24), async () =>
 		{
 			using (await KeyedLocker.LockAsync(username.ToLowerInvariant()))
 			{
