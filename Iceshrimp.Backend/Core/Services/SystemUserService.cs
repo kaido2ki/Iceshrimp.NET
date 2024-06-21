@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContext db, CacheService cache)
+public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContext db)
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{
