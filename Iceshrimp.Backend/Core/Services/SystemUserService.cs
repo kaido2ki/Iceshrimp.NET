@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
@@ -9,6 +10,12 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContext db, CacheService cache)
 {
+	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
+	{
+		o.PoolSize        = 10;
+		o.PoolInitialFill = 2;
+	});
+
 	public async Task<User> GetInstanceActorAsync()
 	{
 		return await GetOrCreateSystemUserAsync("instance.actor");
@@ -41,10 +48,13 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 	{
 		return await cache.FetchAsync($"systemUser:{username}", TimeSpan.FromHours(24), async () =>
 		{
-			logger.LogTrace("GetOrCreateSystemUser delegate method called for user {username}", username);
-			return await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant() &&
-			                                               p.IsLocalUser) ??
-			       await CreateSystemUserAsync(username);
+			using (await KeyedLocker.LockAsync(username.ToLowerInvariant()))
+			{
+				logger.LogTrace("GetOrCreateSystemUser delegate method called for user {username}", username);
+				return await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant() &&
+				                                               p.IsLocalUser) ??
+				       await CreateSystemUserAsync(username);
+			}
 		});
 	}
 
