@@ -31,6 +31,7 @@ public class Job
 	[Column("retry_count")]       public int       RetryCount       { get; set; }
 	[Column("exception_message")] public string?   ExceptionMessage { get; set; }
 	[Column("exception_source")]  public string?   ExceptionSource  { get; set; }
+	[Column("stack_trace")]       public string?   StackTrace       { get; set; }
 	[Column("data")]              public string    Data             { get; set; } = null!;
 
 	[Column("worker_id")]

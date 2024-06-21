@@ -98,6 +98,15 @@
             <td>@Model.Job.ExceptionSource</td>
         </tr>
     }
+    @if (Model.Job.StackTrace != null)
+    {
+        <tr>
+            <td>Exception stack trace</td>
+            <td>
+                <pre><code>@Model.Job.StackTrace</code></pre>
+            </td>
+        </tr>
+    }
     </tbody>
 </table>
 
