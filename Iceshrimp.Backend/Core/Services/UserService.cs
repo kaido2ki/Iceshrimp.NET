@@ -49,7 +49,7 @@ public class UserService(
 
 	private (string Username, string? Host) AcctToTuple(string acct)
 	{
-		if (!acct.StartsWith("acct:")) throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
+		if (!acct.StartsWith("acct:")) throw new GracefulException(HttpStatusCode.BadRequest, $"Invalid query: {acct}");
 
 		var split = acct[5..].Split('@');
 		if (split.Length != 2)

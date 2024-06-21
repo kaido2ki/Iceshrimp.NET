@@ -70,14 +70,15 @@ public class WebFingerService(
 			var split = query.Split('@');
 			domain = split.Length switch
 			{
-				< 2 or > 3 => throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query"),
-				2 => throw new GracefulException(HttpStatusCode.BadRequest, "Can't run WebFinger for local user"),
+				< 2 or > 3 => throw new GracefulException(HttpStatusCode.BadRequest, $"Invalid query: {query}"),
+				2 => throw new GracefulException(HttpStatusCode.BadRequest,
+				                                 $"Can't run WebFinger for local user: {query}"),
 				_ => split[2]
 			};
 		}
 		else
 		{
-			throw new GracefulException(HttpStatusCode.BadRequest, "Invalid query");
+			throw new GracefulException(HttpStatusCode.BadRequest, $"Invalid query: {query}");
 		}
 
 		return (query, proto, domain);
