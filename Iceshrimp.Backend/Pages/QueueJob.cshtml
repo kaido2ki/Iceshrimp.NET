@@ -39,13 +39,13 @@
     </tr>
     <tr>
         <td>Queued at</td>
-        <td>@Model.Job.QueuedAt.ToStringIso8601Like()</td>
+        <td>@Model.Job.QueuedAt.ToDisplayStringTz()</td>
     </tr>
     @if (Model.Job.Status is not Job.JobStatus.Queued and not Job.JobStatus.Delayed)
     {
         <tr>
             <td>Started at</td>
-            <td>@(Model.Job.StartedAt?.ToStringIso8601Like() ?? "<unknown>")</td>
+            <td>@(Model.Job.StartedAt?.ToDisplayStringTz() ?? "<unknown>")</td>
         </tr>
         if (Model.Job.WorkerId != null)
         {
@@ -59,14 +59,14 @@
     {
         <tr>
             <td>Finished at</td>
-            <td>@(Model.Job.FinishedAt?.ToStringIso8601Like() ?? "<unknown>")</td>
+            <td>@(Model.Job.FinishedAt?.ToDisplayStringTz() ?? "<unknown>")</td>
         </tr>
     }
     @if (Model.Job.Status == Job.JobStatus.Delayed)
     {
         <tr>
             <td>Delayed until</td>
-            <td>@(Model.Job.DelayedUntil?.ToStringIso8601Like() ?? "<unknown>")</td>
+            <td>@(Model.Job.DelayedUntil?.ToDisplayStringTz() ?? "<unknown>")</td>
         </tr>
     }
     @if (Model.Job.Duration < 10000)

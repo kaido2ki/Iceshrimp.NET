@@ -11,4 +11,9 @@ public static class DateTimeExtensions
 	{
 		return dateTime.ToString("yyyy'-'MM'-'dd' 'HH':'mm");
 	}
+	
+	public static string ToDisplayStringTz(this DateTime dateTime)
+	{
+		return dateTime.ToString("yyyy'-'MM'-'dd' 'HH':'mm':'sszz");
+	}
 }
