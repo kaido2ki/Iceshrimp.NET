@@ -13,6 +13,7 @@ public sealed class Config
 	public required SecuritySection    Security    { get; init; } = new();
 	public required StorageSection     Storage     { get; init; } = new();
 	public required PerformanceSection Performance { get; init; } = new();
+	public required QueueSection       Queue       { get; init; } = new();
 
 	public sealed class InstanceSection
 	{
@@ -281,5 +282,16 @@ public sealed class Config
 		[Range(1, int.MaxValue)] public int Deliver        { get; init; } = 20;
 		[Range(1, int.MaxValue)] public int PreDeliver     { get; init; } = 4;
 		[Range(1, int.MaxValue)] public int BackgroundTask { get; init; } = 4;
+	}
+
+	public sealed class QueueSection
+	{
+		public JobRetentionSection JobRetention { get; init; } = new();
+	}
+
+	public sealed class JobRetentionSection
+	{
+		[Range(0, int.MaxValue)] public int Completed = 10;
+		[Range(0, int.MaxValue)] public int Failed    = 10;
 	}
 }
