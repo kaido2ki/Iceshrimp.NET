@@ -291,7 +291,7 @@ public sealed class Config
 
 	public sealed class JobRetentionSection
 	{
-		[Range(0, int.MaxValue)] public int Completed = 10;
-		[Range(0, int.MaxValue)] public int Failed    = 10;
+		[Range(0, int.MaxValue)] public int Completed { get; init; } = 100;
+		[Range(0, int.MaxValue)] public int Failed    { get; init; } = 10;
 	}
 }
