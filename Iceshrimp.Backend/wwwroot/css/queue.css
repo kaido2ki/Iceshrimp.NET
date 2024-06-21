@@ -43,6 +43,10 @@
     width: 0;
 }
 
+.width20 {
+    width: 20%;
+}
+
 .flex {
     display: flex;
 }
