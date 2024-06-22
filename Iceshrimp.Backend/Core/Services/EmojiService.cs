@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using AsyncKeyedLock;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -113,6 +114,32 @@ public partial class EmojiService(DatabaseContext db)
 			list.AddRange(node.Children.OfType<MfmNodeTypes.MfmEmojiCodeNode>());
 			ResolveChildren(node.Children, ref list);
 		}
+	}
+
+	public async Task<Emoji?> UpdateLocalEmoji(string id, string? name, List<string>? aliases, string? category, string? license, Config.InstanceSection config)
+	{
+		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id);
+		if (emoji == null) return null;
+		if (emoji.Host != null) return null;
+
+		emoji.UpdatedAt = DateTime.UtcNow;
+
+		if (name != null && name.Length <= 128 && CustomEmojiRegex.IsMatch(name))
+		{
+			emoji.Name = name[..128];
+			emoji.Uri  = emoji.GetPublicUri(config);
+		}
+
+		if (aliases != null) emoji.Aliases = aliases.Select(a => a[..128]).ToList();
+		
+		// If category is provided but empty reset to null
+		if (category != null) emoji.Category = string.IsNullOrEmpty(category) ? null : category[..128];
+
+		if (license != null) emoji.License = license[..1024];
+
+		await db.SaveChangesAsync();
+
+		return emoji;
 	}
 
 	// Generated for Unicode 15.1 by https://iceshrimp.dev/iceshrimp/UnicodeEmojiRegex
