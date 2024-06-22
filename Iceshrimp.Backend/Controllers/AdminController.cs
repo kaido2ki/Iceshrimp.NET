@@ -214,8 +214,8 @@ public class AdminController(
 	
 	[HttpPost("emoji")]
 	[Produces(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Emoji))]
-	public async Task<IActionResult> UploadEmoji(IFormFile file)
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
+	public async Task<IActionResult> UploadEmoji(IFormFile file, [FromServices] IOptions<Config.InstanceSection> config)
 	{
 		var user = await sysUserSvc.GetInstanceActorAsync();
 		var request = new DriveFileCreationRequest
@@ -224,20 +224,35 @@ public class AdminController(
 			MimeType    = file.ContentType,
 			IsSensitive = false
 		};
-		var res = await driveSvc.StoreFile(file.OpenReadStream(), user, request);
+		var driveFile = await driveSvc.StoreFile(file.OpenReadStream(), user, request);
 
+		var id = IdHelpers.GenerateSlowflakeId();
 		var emoji = new Emoji
 		{
-			Id = IdHelpers.GenerateSlowflakeId(), 
-			Name = res.Name, 
-			UpdatedAt = DateTime.UtcNow, 
-			OriginalUrl = res.Url, 
-			PublicUrl = res.PublicUrl
+			Id          = id,
+			Name        = id,
+			UpdatedAt   = DateTime.UtcNow,
+			OriginalUrl = driveFile.Url,
+			PublicUrl   = driveFile.PublicUrl,
+			Width       = driveFile.Properties.Width,
+			Height      = driveFile.Properties.Height
 		};
+		emoji.Uri = emoji.GetPublicUri(config.Value);
 
 		await db.AddAsync(emoji);
 		await db.SaveChangesAsync();
 
-		return Ok(emoji);
+		var res = new EmojiResponse
+		{
+			Id = emoji.Id,
+			Name = emoji.Name,
+			Uri = emoji.Uri,
+			Aliases = [],
+			Category = null,
+			PublicUrl = emoji.PublicUrl,
+			License = null
+		};
+
+		return Ok(res);
 	}
 }
