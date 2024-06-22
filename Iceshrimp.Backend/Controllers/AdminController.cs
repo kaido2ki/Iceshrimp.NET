@@ -11,6 +11,7 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -26,7 +27,8 @@ namespace Iceshrimp.Backend.Controllers;
 public class AdminController(
 	DatabaseContext db,
 	ActivityPubController apController,
-	ActivityPub.ActivityFetcherService fetchSvc
+	ActivityPub.ActivityFetcherService fetchSvc,
+	QueueService queueSvc
 ) : ControllerBase
 {
 	[HttpPost("invites/generate")]
@@ -95,6 +97,20 @@ public class AdminController(
 		}
 
 		await db.SaveChangesAsync();
+		return Ok();
+	}
+
+	[HttpPost("queue/jobs/{id::guid}/retry")]
+	[Produces(MediaTypeNames.Application.Json)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	public async Task<IActionResult> RetryQueueJob(Guid id)
+	{
+		var job = await db.Jobs.FirstOrDefaultAsync(p => p.Id == id) ??
+		          throw GracefulException.NotFound($"Job {id} was not found.");
+
+		await queueSvc.RetryJobAsync(job);
 		return Ok();
 	}
 

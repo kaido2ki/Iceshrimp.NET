@@ -63,3 +63,7 @@
     font-family: monospace;
     width: 36ch;
 }
+
+.fake-link {
+    cursor: pointer;
+}

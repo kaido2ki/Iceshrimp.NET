@@ -234,6 +234,30 @@ public class QueueService(
 	{
 		PrepareForExitAsync().Wait();
 	}
+
+	public async Task RetryJobAsync(Job job)
+	{
+		await using var scope = scopeFactory.CreateAsyncScope();
+		await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+		if (job.Status == Job.JobStatus.Failed)
+		{
+			var cnt = await db.Jobs.Where(p => p.Id == job.Id && p.Status == Job.JobStatus.Failed)
+			                  .ExecuteUpdateAsync(p => p.SetProperty(i => i.Status, _ => Job.JobStatus.Queued)
+			                                            .SetProperty(i => i.QueuedAt, _ => DateTime.UtcNow)
+			                                            .SetProperty(i => i.RetryCount, _ => 0)
+			                                            .SetProperty(i => i.WorkerId, _ => null)
+			                                            .SetProperty(i => i.DelayedUntil, _ => null)
+			                                            .SetProperty(i => i.StartedAt, _ => null)
+			                                            .SetProperty(i => i.FinishedAt, _ => null)
+			                                            .SetProperty(i => i.Exception, _ => null)
+			                                            .SetProperty(i => i.ExceptionMessage, _ => null)
+			                                            .SetProperty(i => i.ExceptionSource, _ => null)
+			                                            .SetProperty(i => i.StackTrace, _ => null));
+			if (cnt <= 0) return;
+			foreach (var queue in _queues.Where(p => p.Name == job.Queue))
+				queue.RaiseJobQueuedEvent();
+		}
+	}
 }
 
 public interface IPostgresJobQueue

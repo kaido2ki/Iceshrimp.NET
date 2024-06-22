@@ -38,6 +38,13 @@
         <td>Status</td>
         <td class="status-@Model.Job.Status.ToString().ToLowerInvariant()">@Model.Job.Status</td>
     </tr>
+    @if (Model.Job.Status.Equals(Job.JobStatus.Failed))
+    {
+        <tr>
+            <td>Actions</td>
+            <td><a class="fake-link" onclick="retry('@Model.Job.Id.ToStringLower()')">Retry</a></td>
+        </tr>
+    }
     <tr>
         <td>Queued at</td>
         <td>@Model.Job.QueuedAt.ToDisplayStringTz()</td>
@@ -70,14 +77,20 @@
             <td>@(Model.Job.DelayedUntil?.ToDisplayStringTz() ?? "<unknown>")</td>
         </tr>
     }
-    <tr>
-        <td>Duration</td>
-        <td>@Model.Job.Duration.ToDurationDisplayString()</td>
-    </tr>
-    <tr>
-        <td>Queue duration</td>
-        <td>@Model.Job.QueueDuration.ToDurationDisplayString()</td>
-    </tr>
+    @if (TimeSpan.FromMilliseconds(Model.Job.Duration).TotalHours <= 72)
+    {
+        <tr>
+            <td>Duration</td>
+            <td>@Model.Job.Duration.ToDurationDisplayString()</td>
+        </tr>
+    }
+    @if (TimeSpan.FromMilliseconds(Model.Job.QueueDuration).TotalHours <= 72)
+    {
+        <tr>
+            <td>Queue duration</td>
+            <td>@Model.Job.QueueDuration.ToDurationDisplayString()</td>
+        </tr>
+    }
     @if (Model.Job.RetryCount > 0)
     {
         <tr>

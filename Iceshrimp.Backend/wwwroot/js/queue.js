@@ -2,8 +2,7 @@ function filter(queue) {
     const f = document.getElementById('filter').value;
     if (f === 'all') {
         window.location.href = `/queue/${queue}`;
-    }
-    else {
+    } else {
         window.location.href = `/queue/${queue}/1/${f}`;
     }
 }
@@ -24,4 +23,25 @@ async function copyToClipboard(text) {
 
 async function copyElementToClipboard(id) {
     await copyToClipboard(document.getElementById(id).textContent);
+}
+
+function getCookie(key) {
+    let result;
+    return (result = new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)').exec(document.cookie)) ? (result[1]) : null;
+}
+
+async function callApiMethod(route) {
+    const cookie = getCookie('admin_session');
+    if (cookie == null) throw new Error('Failed to get admin_session cookie');
+    return await fetch(route, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${cookie}`
+        }
+    });
+}
+
+async function retry(id) {
+    await callApiMethod(`/api/iceshrimp/admin/queue/jobs/${id}/retry`);
+    window.location.reload();
 }

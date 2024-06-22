@@ -9,4 +9,5 @@ internal class AdminControllerModel(ApiClient api)
 		api.Call<InviteResponse>(HttpMethod.Post, "/invites/generate");
 	
 	//TODO: ActivityStreams debug endpoints
+	//TODO: other endpoints
 }
