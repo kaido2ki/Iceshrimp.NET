@@ -278,4 +278,42 @@ public class AdminController(
 
 		return Ok(res);
 	}
+
+	[HttpPatch("emoji/{id}")]
+	[Consumes(MediaTypeNames.Application.Json)]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> UpdateEmoji(string id, UpdateEmojiRequest request, [FromServices] IOptions<Config.InstanceSection> config)
+	{
+		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id);
+
+		if (emoji == null) return NotFound();
+
+		emoji.UpdatedAt = DateTime.UtcNow;
+		emoji.Name      = request.Name ?? emoji.Name;
+		emoji.Aliases   = request.Aliases ?? emoji.Aliases;
+		emoji.Uri       = emoji.GetPublicUri(config.Value);
+		emoji.License   = request.License ?? emoji.License;
+
+		if (request.Category != null)
+		{
+			// Updating Category to an empty string will reset it to null
+			emoji.Category = string.IsNullOrWhiteSpace(request.Category) ? null : request.Category;
+		}
+		
+		await db.SaveChangesAsync();
+		
+		var res = new EmojiResponse
+		{
+			Id        = emoji.Id,
+			Name      = emoji.Name,
+			Uri       = emoji.Uri,
+			Aliases   = emoji.Aliases,
+			Category  = emoji.Category,
+			PublicUrl = emoji.PublicUrl,
+			License   = emoji.License
+		};
+
+		return Ok(res);
+	}
 }
