@@ -161,7 +161,7 @@ public static class ServiceExtensions
 	{
 		var config = configuration.GetSection("Database").Get<Config.DatabaseSection>() ??
 		             throw new Exception("Failed to initialize database: Failed to load configuration");
-		
+
 		var dataSource = DatabaseContext.GetDataSource(config);
 		services.AddDbContext<DatabaseContext>(options => { DatabaseContext.Configure(options, dataSource, config); });
 		services.AddKeyedDatabaseContext<DatabaseContext>("cache");
@@ -376,14 +376,14 @@ file sealed class EntityFrameworkCoreXmlRepositoryAsync<TContext> : IXmlReposito
 
 	public void StoreElement(XElement element, string friendlyName)
 	{
-		using var scope           = _services.CreateScope();
-		var       requiredService = scope.ServiceProvider.GetRequiredService<TContext>();
+		using var scope           = _services.CreateAsyncScope();
+		using var requiredService = scope.ServiceProvider.GetRequiredService<TContext>();
 		requiredService.DataProtectionKeys.Add(new DataProtectionKey
 		{
 			FriendlyName = friendlyName,
 			Xml          = element.ToString(SaveOptions.DisableFormatting)
 		});
-		requiredService.SaveChangesAsync();
+		requiredService.SaveChangesAsync().Wait();
 	}
 }
 
