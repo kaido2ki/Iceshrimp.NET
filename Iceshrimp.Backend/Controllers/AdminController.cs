@@ -255,4 +255,27 @@ public class AdminController(
 
 		return Ok(res);
 	}
+
+	[HttpGet("emoji/{id}")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> GetEmoji(string id)
+	{
+		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id);
+
+		if (emoji == null) return NotFound();
+		
+		var res = new EmojiResponse
+		{
+			Id        = emoji.Id,
+			Name      = emoji.Name,
+			Uri       = emoji.Uri,
+			Aliases   = emoji.Aliases,
+			Category  = emoji.Category,
+			PublicUrl = emoji.PublicUrl,
+			License   = emoji.License
+		};
+
+		return Ok(res);
+	}
 }
