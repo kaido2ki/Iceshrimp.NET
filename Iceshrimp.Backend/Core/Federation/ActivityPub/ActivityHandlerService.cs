@@ -422,6 +422,12 @@ public class ActivityHandlerService(
 			return;
 		}
 
+		if (await db.Notes.AnyAsync(p => p.Uri == activity.Id))
+		{
+			logger.LogDebug("Renote '{id}' already exists, skipping", activity.Id);
+			return;
+		}
+
 		await noteSvc.CreateNoteAsync(resolvedActor, activity.GetVisibility(activity.Actor), renote: dbNote,
 		                              uri: activity.Id);
 	}
