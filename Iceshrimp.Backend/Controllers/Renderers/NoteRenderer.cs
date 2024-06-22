@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -5,10 +6,16 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Renderers;
 
-public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiService emojiSvc)
+public class NoteRenderer(
+	UserRenderer userRenderer,
+	DatabaseContext db,
+	EmojiService emojiSvc,
+	IOptions<Config.InstanceSection> config
+)
 {
 	public async Task<NoteResponse> RenderOne(
 		Note note, User? user, Filter.FilterContext? filterContext = null, NoteRendererDto? data = null
@@ -74,6 +81,8 @@ public class NoteRenderer(UserRenderer userRenderer, DatabaseContext db, EmojiSe
 		{
 			Id          = note.Id,
 			CreatedAt   = note.CreatedAt.ToStringIso8601Like(),
+			Uri         = note.Uri ?? note.GetPublicUri(config.Value),
+			Url         = note.Url ?? note.Uri ?? note.GetPublicUri(config.Value),
 			Text        = note.Text,
 			Cw          = note.Cw,
 			Visibility  = (NoteVisibility)note.Visibility,

@@ -32,6 +32,8 @@ public class NoteBase
 {
 	public required string                   Id          { get; set; }
 	public required string                   CreatedAt   { get; set; }
+	public required string                   Uri         { get; set; }
+	public required string                   Url         { get; set; }
 	public required string?                  Text        { get; set; }
 	public required string?                  Cw          { get; set; }
 	public required NoteVisibility           Visibility  { get; set; }
