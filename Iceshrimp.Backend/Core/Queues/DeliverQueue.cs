@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
@@ -53,7 +54,7 @@ public class DeliverQueue(int parallelism)
 				                                            (int)response.StatusCode, !response.IsSuccessStatusCode);
 			});
 
-			response.EnsureSuccessStatusCode();
+			response.EnsureSuccessStatusCode(true);
 		}
 		catch (Exception e)
 		{
