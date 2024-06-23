@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public partial class EmojiService(DatabaseContext db)
+public partial class EmojiService(DatabaseContext db, DriveService driveSvc, SystemUserService sysUserSvc)
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{
@@ -24,6 +24,40 @@ public partial class EmojiService(DatabaseContext db)
 
 	private static readonly Regex RemoteCustomEmojiRegex =
 		new(@"^:?([\w+-]+)@([a-zA-Z0-9._\-]+\.[a-zA-Z0-9._\-]+):?$", RegexOptions.Compiled);
+
+	public async Task<Emoji> CreateEmojiFromStream(Stream input, string fileName, string mimeType, Config.InstanceSection config)
+	{
+		var user = await sysUserSvc.GetInstanceActorAsync();
+		var request = new DriveFileCreationRequest
+		{
+			Filename    = fileName,
+			MimeType    = mimeType,
+			IsSensitive = false
+		};
+		var driveFile = await driveSvc.StoreFile(input, user, request);
+
+		var name = fileName.Split(".")[0];
+		
+		var existing = await db.Emojis.FirstOrDefaultAsync(p => p.Host == null && p.Name == name);
+
+		var id = IdHelpers.GenerateSlowflakeId();
+		var emoji = new Emoji
+		{
+			Id          = id,
+			Name        = existing == null && CustomEmojiRegex.IsMatch(name) ? name : id,
+			UpdatedAt   = DateTime.UtcNow,
+			OriginalUrl = driveFile.Url,
+			PublicUrl   = driveFile.PublicUrl,
+			Width       = driveFile.Properties.Width,
+			Height      = driveFile.Properties.Height
+		};
+		emoji.Uri = emoji.GetPublicUri(config);
+
+		await db.AddAsync(emoji);
+		await db.SaveChangesAsync();
+
+		return emoji;
+	}
 
 	public async Task<List<Emoji>> ProcessEmojiAsync(List<ASEmoji>? emoji, string host)
 	{
