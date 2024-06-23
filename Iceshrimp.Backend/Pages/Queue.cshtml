@@ -20,7 +20,7 @@
 <h1>Queue Dashboard</h1>
 @foreach (var queue in QueueSvc.QueueNames)
 {
-    <button role="link" onclick="navigate('/queue/@queue')">@queue</button>
+    <button role="link" data-target="/queue/@queue" onclick="navigate(event)">@queue</button>
 }
 <br/>
 
@@ -64,11 +64,11 @@ else
         {
             if (Model.Filter.HasValue)
             {
-                <button role="link" onclick="navigate('/queue/@Model.Queue/@Model.PrevPage/@Model.Filter.Value.ToString().ToLowerInvariant()')">❮ Previous page</button>
+                <button role="link" data-target="/queue/@Model.Queue/@Model.PrevPage/@Model.Filter.Value.ToString().ToLowerInvariant()" onclick="navigate">❮ Previous page</button>
             }
             else
             {
-                <button role="link" onclick="navigate('/queue/@Model.Queue/@Model.PrevPage')">❮ Previous page</button>
+                <button role="link" data-target="/queue/@Model.Queue/@Model.PrevPage" onclick="navigate(event)">❮ Previous page</button>
             }
         }
         else
@@ -80,11 +80,11 @@ else
         {
             if (Model.Filter.HasValue)
             {
-                <button role="link" onclick="navigate('/queue/@Model.Queue/@Model.NextPage/@Model.Filter.Value.ToString().ToLowerInvariant()')">Next page ❯</button>
+                <button role="link" data-target="/queue/@Model.Queue/@Model.NextPage/@Model.Filter.Value.ToString().ToLowerInvariant()" onclick="navigate(event)">Next page ❯</button>
             }
             else
             {
-                <button role="link" onclick="navigate('/queue/@Model.Queue/@Model.NextPage')">Next page ❯</button>
+                <button role="link" data-target="/queue/@Model.Queue/@Model.NextPage" onclick="navigate(event)">Next page ❯</button>
             }
         }
         else
