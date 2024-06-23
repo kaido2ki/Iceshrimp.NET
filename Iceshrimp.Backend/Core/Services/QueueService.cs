@@ -244,7 +244,7 @@ public class QueueService(
 			var cnt = await db.Jobs.Where(p => p.Id == job.Id && p.Status == Job.JobStatus.Failed)
 			                  .ExecuteUpdateAsync(p => p.SetProperty(i => i.Status, _ => Job.JobStatus.Queued)
 			                                            .SetProperty(i => i.QueuedAt, _ => DateTime.UtcNow)
-			                                            .SetProperty(i => i.RetryCount, _ => 0)
+			                                            .SetProperty(i => i.RetryCount, i => i.RetryCount + 1)
 			                                            .SetProperty(i => i.WorkerId, _ => null)
 			                                            .SetProperty(i => i.DelayedUntil, _ => null)
 			                                            .SetProperty(i => i.StartedAt, _ => null)
