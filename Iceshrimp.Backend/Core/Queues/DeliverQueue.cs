@@ -1,3 +1,4 @@
+using System.Net;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -54,9 +55,9 @@ public class DeliverQueue(int parallelism)
 				                                            (int)response.StatusCode, !response.IsSuccessStatusCode);
 			});
 
-			response.EnsureSuccessStatusCode(true);
+			response.EnsureSuccessStatusCode(true, () => new ClientError(response.StatusCode));
 		}
-		catch (Exception e)
+		catch (Exception e) when (e is not ClientError)
 		{
 			if (job.RetryCount++ < 10)
 			{
@@ -80,6 +81,11 @@ public class DeliverQueue(int parallelism)
 				throw;
 			}
 		}
+	}
+
+	public class ClientError(HttpStatusCode statusCode) : Exception
+	{
+		public HttpStatusCode StatusCode => statusCode;
 	}
 }
 
