@@ -158,18 +158,20 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 
 		emoji.UpdatedAt = DateTime.UtcNow;
 
-		if (name != null && name.Length <= 128 && CustomEmojiRegex.IsMatch(name))
+		var existing = await db.Emojis.FirstOrDefaultAsync(p => p.Host == null && p.Name == name);
+
+		if (name != null && existing == null && CustomEmojiRegex.IsMatch(name))
 		{
-			emoji.Name = name[..128];
+			emoji.Name = name;
 			emoji.Uri  = emoji.GetPublicUri(config);
 		}
 
-		if (aliases != null) emoji.Aliases = aliases.Select(a => a[..128]).ToList();
+		if (aliases != null) emoji.Aliases = aliases;
 		
 		// If category is provided but empty reset to null
-		if (category != null) emoji.Category = string.IsNullOrEmpty(category) ? null : category[..128];
+		if (category != null) emoji.Category = string.IsNullOrEmpty(category) ? null : category;
 
-		if (license != null) emoji.License = license[..1024];
+		if (license != null) emoji.License = license;
 
 		await db.SaveChangesAsync();
 
