@@ -29,8 +29,6 @@ public class AdminController(
 	ActivityPubController apController,
 	ActivityPub.ActivityFetcherService fetchSvc,
 	QueueService queueSvc,
-	DriveService driveSvc,
-	SystemUserService sysUserSvc,
 	EmojiService emojiSvc
 ) : ControllerBase
 {
@@ -218,30 +216,7 @@ public class AdminController(
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
 	public async Task<IActionResult> UploadEmoji(IFormFile file, [FromServices] IOptions<Config.InstanceSection> config)
 	{
-		var user = await sysUserSvc.GetInstanceActorAsync();
-		var request = new DriveFileCreationRequest
-		{
-			Filename    = file.FileName,
-			MimeType    = file.ContentType,
-			IsSensitive = false
-		};
-		var driveFile = await driveSvc.StoreFile(file.OpenReadStream(), user, request);
-
-		var id = IdHelpers.GenerateSlowflakeId();
-		var emoji = new Emoji
-		{
-			Id          = id,
-			Name        = id,
-			UpdatedAt   = DateTime.UtcNow,
-			OriginalUrl = driveFile.Url,
-			PublicUrl   = driveFile.PublicUrl,
-			Width       = driveFile.Properties.Width,
-			Height      = driveFile.Properties.Height
-		};
-		emoji.Uri = emoji.GetPublicUri(config.Value);
-
-		await db.AddAsync(emoji);
-		await db.SaveChangesAsync();
+		var emoji = await emojiSvc.CreateEmojiFromStream(file.OpenReadStream(), file.FileName, file.ContentType, config.Value);
 
 		var res = new EmojiResponse
 		{
