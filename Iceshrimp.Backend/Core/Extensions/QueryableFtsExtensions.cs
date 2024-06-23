@@ -151,8 +151,8 @@ public static class QueryableFtsExtensions
 		{
 			{ IsFollowers: true } => query.ApplyFollowersFilter(user, filter.Negated),
 			{ IsFollowing: true } => query.ApplyFollowingFilter(user, filter.Negated),
-			{ IsRenotes: true }   => query.ApplyRepliesFilter(filter.Negated),
-			{ IsReplies: true }   => query.ApplyBoostsFilter(filter.Negated),
+			{ IsRenotes: true }   => query.ApplyBoostsFilter(filter.Negated),
+			{ IsReplies: true }   => query.ApplyRepliesFilter(filter.Negated),
 			_                     => throw new ArgumentOutOfRangeException(nameof(filter))
 		};
 	}
