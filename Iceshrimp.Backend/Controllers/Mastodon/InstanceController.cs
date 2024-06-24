@@ -71,7 +71,8 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 			                  Shortcode       = p.Name,
 			                  Url             = p.PublicUrl,
 			                  StaticUrl       = p.PublicUrl, //TODO
-			                  VisibleInPicker = true
+			                  VisibleInPicker = true,
+			                  Category        = p.Category
 		                  })
 		                  .ToListAsync();
 

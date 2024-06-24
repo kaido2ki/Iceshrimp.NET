@@ -380,7 +380,8 @@ public class NoteRenderer(
 			               Shortcode       = p.Name,
 			               Url             = p.PublicUrl,
 			               StaticUrl       = p.PublicUrl, //TODO
-			               VisibleInPicker = true
+			               VisibleInPicker = true,
+			               Category        = p.Category
 		               })
 		               .ToListAsync();
 	}
