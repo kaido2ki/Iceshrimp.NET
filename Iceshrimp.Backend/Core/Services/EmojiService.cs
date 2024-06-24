@@ -59,6 +59,19 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 		return emoji;
 	}
 
+	public async Task<string?> DeleteEmoji(string id)
+	{
+		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id);
+		if (emoji == null) return null;
+
+		var emojiId = emoji.Id;
+
+		db.Remove(emoji);
+		await db.SaveChangesAsync();
+
+		return emojiId;
+	}
+
 	public async Task<List<Emoji>> ProcessEmojiAsync(List<ASEmoji>? emoji, string host)
 	{
 		emoji?.RemoveAll(p => p.Name == null);

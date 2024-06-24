@@ -278,4 +278,15 @@ public class AdminController(
 
 		return Ok(res);
 	}
+	
+	[HttpDelete("emoji/{id}")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> DeleteEmoji(string id)
+	{
+		var emojiId = await emojiSvc.DeleteEmoji(id);
+		if (emojiId == null) return NotFound();
+		
+		return Ok(emojiId);
+	}
 }
