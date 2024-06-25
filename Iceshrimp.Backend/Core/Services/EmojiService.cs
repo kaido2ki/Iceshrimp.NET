@@ -66,6 +66,12 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 
 		var emojiId = emoji.Id;
 
+		var driveFile = await db.DriveFiles.FirstOrDefaultAsync(p => p.Url == emoji.OriginalUrl);
+		if (driveFile != null)
+		{
+			await driveSvc.RemoveFile(driveFile.Id);
+		}
+
 		db.Remove(emoji);
 		await db.SaveChangesAsync();
 
