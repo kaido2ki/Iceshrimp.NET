@@ -61,7 +61,7 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 
 	public async Task<string?> DeleteEmoji(string id)
 	{
-		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id);
+		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Host == null && p.Id == id);
 		if (emoji == null) return null;
 
 		var emojiId = emoji.Id;
