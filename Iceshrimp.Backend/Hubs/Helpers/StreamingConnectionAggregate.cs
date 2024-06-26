@@ -212,7 +212,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
 	private bool IsFiltered(User user) =>
-		!_blockedBy.Contains(user.Id) && !_blocking.Contains(user.Id) && !_muting.Contains(user.Id);
+		_blockedBy.Contains(user.Id) || _blocking.Contains(user.Id) || _muting.Contains(user.Id);
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
 	private bool IsFollowingOrSelf(User user) => user.Id == _userId || _following.Contains(user.Id);
