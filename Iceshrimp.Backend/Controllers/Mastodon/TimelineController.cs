@@ -31,11 +31,10 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 	public async Task<IActionResult> GetHomeTimeline(MastodonPaginationQuery query)
 	{
 		var user      = HttpContext.GetUserOrFail();
-		var heuristic = await QueryableTimelineExtensions.GetHeuristic(user, db, cache);
 
 		var res = await db.Notes
 		                  .IncludeCommonProperties()
-		                  .FilterByFollowingAndOwn(user, db, heuristic)
+		                  .FilterByFollowingAndOwn(user, db)
 		                  .EnsureVisibleFor(user)
 		                  .FilterHidden(user, db, filterHiddenListMembers: true)
 		                  .Paginate(query, ControllerContext)

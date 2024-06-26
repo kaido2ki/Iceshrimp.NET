@@ -29,9 +29,8 @@ public class TimelineController(DatabaseContext db, CacheService cache, NoteRend
 	public async Task<IActionResult> GetHomeTimeline(PaginationQuery pq)
 	{
 		var user      = HttpContext.GetUserOrFail();
-		var heuristic = await QueryableTimelineExtensions.GetHeuristic(user, db, cache);
 		var notes = await db.Notes.IncludeCommonProperties()
-		                    .FilterByFollowingAndOwn(user, db, heuristic)
+		                    .FilterByFollowingAndOwn(user, db)
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db, filterHiddenListMembers: true)
 		                    .Paginate(pq, ControllerContext)

@@ -12,12 +12,14 @@ public static class QueryableTimelineExtensions
 	private const int Cutoff = 250;
 
 	public static IQueryable<Note> FilterByFollowingAndOwn(
-		this IQueryable<Note> query, User user, DatabaseContext db, int heuristic
+		this IQueryable<Note> query, User user, DatabaseContext db
 	)
 	{
-		return heuristic < Cutoff
-			? query.FollowingAndOwnLowFreq(user, db)
-			: query.Where(note => note.User == user || note.User.IsFollowedBy(user));
+		return query.Where(note => db.Followings
+		                             .Where(p => p.Follower == user)
+		                             .Select(p => p.FolloweeId)
+		                             .Concat(new[] { user.Id })
+		                             .Contains(note.UserId));
 	}
 
 	private static IQueryable<Note> FollowingAndOwnLowFreq(this IQueryable<Note> query, User user, DatabaseContext db)
@@ -26,27 +28,4 @@ public static class QueryableTimelineExtensions
 		                         .Select(p => p.FolloweeId)
 		                         .Concat(new[] { user.Id })
 		                         .Contains(note.UserId));
-
-	public static async Task<int> GetHeuristic(User user, DatabaseContext db, CacheService cache)
-	{
-		return await cache.FetchValueAsync($"following-query-heuristic:{user.Id}",
-		                                   TimeSpan.FromHours(24), FetchHeuristic);
-
-		[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall")]
-		async Task<int> FetchHeuristic()
-		{
-			var latestNote = await db.Notes.OrderByDescending(p => p.Id)
-			                         .Select(p => new { p.CreatedAt })
-			                         .FirstOrDefaultAsync() ??
-			                 new { CreatedAt = DateTime.UtcNow };
-
-			//TODO: maybe we should express this as a ratio between matching and non-matching posts
-			return await db.Notes
-			               .Where(p => p.CreatedAt > latestNote.CreatedAt - TimeSpan.FromDays(7))
-			               .FollowingAndOwnLowFreq(user, db)
-			               //.Select(p => new { })
-			               .Take(Cutoff + 1)
-			               .CountAsync();
-		}
-	}
 }
