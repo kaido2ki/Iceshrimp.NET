@@ -103,7 +103,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 				Password     = config.Password,
 				Database     = config.Database,
 				MaxPoolSize  = config.MaxConnections,
-				Multiplexing = config.Multiplexing
+				Multiplexing = config.Multiplexing,
+				Options      = "-c jit=off"
 			}
 		};
 
