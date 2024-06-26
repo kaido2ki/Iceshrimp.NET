@@ -1,92 +1,11 @@
-@using Iceshrimp.Frontend.Core.Miscellaneous
-@using Iceshrimp.Frontend.Core.Services
-@using Iceshrimp.Frontend.Core.Services.StateServicePatterns
-@using Iceshrimp.Shared.Schemas
-@using Ljbc1994.Blazor.IntersectionObserver
-@using Ljbc1994.Blazor.IntersectionObserver.API
-@using Ljbc1994.Blazor.IntersectionObserver.Components
-@inject ApiService ApiService
-@inject StateService StateService
+@if (_init)
+{
+    <VirtualScroller @ref=VirtualScroller NoteResponseList = "State.Timeline" ReachedEnd="FetchOlder" ReachedStart="FetchNewer"/>
+}
+else
+{
+    <div>Loading</div>
+}
 
-
-    @if (_init)
-    {
-        <VirtualScroller NoteResponseList="State.Timeline" ReachedEnd="FetchOlder" ReachedStart="FetchNewer" />
-    }
-    else
-    {
-        <div>Loading</div>
-    }
-
-    @code {
-        private TimelineState      State    { get; set; } = new()
-        {
-            Timeline = [],
-            MaxId    = null,
-            MinId    = null
-        };
-    private     bool               _init           = false;
-    private     bool               LockFetch { get; set; }
-
-    private async Task Initialize()
-    {
-        var pq  = new PaginationQuery() { Limit = 30 };
-        var res = await ApiService.Timelines.GetHomeTimeline(pq);
-        State.MaxId    = res[0].Id;
-        State.MinId    = res.Last().Id;
-        State.Timeline = res;
-    }
-
-    private async Task FetchOlder()
-    {
-        if (LockFetch) return;
-        LockFetch = true;
-        var pq  = new PaginationQuery() { Limit = 15, MaxId = State.MinId };
-        var res = await ApiService.Timelines.GetHomeTimeline(pq);
-        if (res.Count > 0)
-        {
-            State.MinId = res.Last().Id;
-            State.Timeline.AddRange(res);
-        }
-        LockFetch = false;
-    }
-
-    private async Task FetchNewer()
-    {
-        if (LockFetch) return;
-        LockFetch = true;
-        var pq  = new PaginationQuery() { Limit = 15, MinId = State.MaxId };
-        var res = await ApiService.Timelines.GetHomeTimeline(pq);
-        if (res.Count > 0)
-        {
-            State.MinId = res.Last().Id;
-            State.Timeline.InsertRange(0, res);
-        }
-        LockFetch = false;
-    }
-
-     protected override async Task OnAfterRenderAsync(bool firstRender)
-     {
-         if (firstRender)
-         {
-             try
-             {
-                 var timeline = StateService.Timeline.GetState("home");
-                 State = timeline;
-                 _init = true;
-                 StateHasChanged();
-             }
-             catch (ArgumentException)
-             {
-                 await Initialize();
-                 _init = true;
-                 StateHasChanged();
-             }
-             
-             
-         }
-
-         StateService.Timeline.SetState("home", State);
-     }
-
+@code {
 }

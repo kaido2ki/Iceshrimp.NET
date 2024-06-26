@@ -145,28 +145,28 @@
         await OvrscrlObsvBottom.Observe(_padBotRef);
     }
 
-    private async Task Up()
+    private async Task Up(int updateCount)
     {
         if (OvrscrlObsvTop is null) throw new Exception("Tried to use observer that does not exist");
         await OvrscrlObsvTop.Disconnect();
-        for (int i = 0; i < UpdateCount; i++)
+        for (int i = 0; i < updateCount; i++)
         {
             var height = await Module.InvokeAsync<int>("GetHeight", _refs[i]);
             State.PadBottom                        += height;
             State.Height[State.RenderedList[i].Id] =  height;
         }
-
         var index        = NoteResponseList.IndexOf(State.RenderedList.First());
-        var a            = NoteResponseList.GetRange(index - UpdateCount, UpdateCount);
+        var a            = NoteResponseList.GetRange(index - updateCount, updateCount);
         var heightChange = 0;
         foreach (var el in a)
         {
-            heightChange += State.Height[el.Id];
+            State.Height.TryGetValue(el.Id, out var height);
+            heightChange += height;
         }
 
         State.PadTop -= heightChange;
         State.RenderedList.InsertRange(0, a);
-        State.RenderedList.RemoveRange(State.RenderedList.Count - UpdateCount, UpdateCount);
+        State.RenderedList.RemoveRange(State.RenderedList.Count - updateCount, updateCount);
         StateHasChanged();
         _interlock = false;
         await OvrscrlObsvTop.Observe(_padTopRef);
@@ -181,6 +181,15 @@
 
         await OvrscrlObsvTop.Observe(_padTopRef);
         await OvrscrlObsvBottom.Observe(_padBotRef);
+    }
+
+    public async Task OnNewNote()
+    {
+        if (_overscrollTop && _interlock == false)
+        {
+            _interlock = true;
+            await Up(1);
+        }
     }
 
 
@@ -198,11 +207,17 @@
                 return;
             }
 
+            var updateCount = UpdateCount;
+            if (index < UpdateCount)
+            {
+                updateCount = index;
+            }
+
             _interlock = true;
             if (list.First().IsIntersecting)
 
             {
-                await Up();
+                await Up(updateCount);
             }
 
             _interlock = false;
