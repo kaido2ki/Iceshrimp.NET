@@ -259,45 +259,6 @@ public static class QueryableExtensions
 		return query.Where(note => note.Visibility == visibility);
 	}
 
-	/// <summary>
-	/// Runs the most efficient following query for the user in question.
-	/// The different queries are identical but nudge the query planner towards the smartest query plan available.
-	/// </summary>
-	public static IQueryable<Note> FilterByFollowingAndOwn(
-		this IQueryable<Note> query, User user, DatabaseContext db, int heuristic
-	)
-	{
-		// Determined empirically in 2023. Ask zotan for the spreadsheet if you're curious.
-		const int cutoff = 250;
-
-		return heuristic < cutoff
-			? query.Where(note => db.Users
-			                        .First(p => p == user)
-			                        .Following
-			                        .Select(p => p.Id)
-			                        .Concat(new[] { user.Id })
-			                        .Contains(note.UserId))
-			: query.Where(note => note.User == user || note.User.IsFollowedBy(user));
-	}
-
-	//TODO: move this into another class where it makes more sense
-	public static async Task<int> GetHeuristic(User user, DatabaseContext db, CacheService cache)
-	{
-		return await cache.FetchValueAsync($"following-query-heuristic:{user.Id}",
-		                                   TimeSpan.FromHours(24), FetchHeuristic);
-
-		[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall")]
-		async Task<int> FetchHeuristic()
-		{
-			var lastDate = await db.Notes.AnyAsync()
-				? await db.Notes.OrderByDescending(p => p.Id).Select(p => p.CreatedAt).FirstOrDefaultAsync()
-				: DateTime.UtcNow;
-
-			return await db.Notes.CountAsync(p => p.CreatedAt > lastDate - TimeSpan.FromDays(7) &&
-			                                      (p.User.IsFollowedBy(user) || p.User == user));
-		}
-	}
-
 	public static IQueryable<Note> FilterByUser(this IQueryable<Note> query, User user)
 	{
 		return query.Where(note => note.User == user);
