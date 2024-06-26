@@ -56,12 +56,12 @@ public static class LdHelpers
 
 	public static readonly JsonSerializerSettings JsonSerializerSettings = new()
 	{
-		NullValueHandling = NullValueHandling.Ignore, DateTimeZoneHandling = DateTimeZoneHandling.Local
+		NullValueHandling = NullValueHandling.Ignore, DateTimeZoneHandling = DateTimeZoneHandling.Utc
 	};
 
 	private static readonly JsonSerializer JsonSerializer = new()
 	{
-		NullValueHandling = NullValueHandling.Ignore, DateTimeZoneHandling = DateTimeZoneHandling.Local
+		NullValueHandling = NullValueHandling.Ignore, DateTimeZoneHandling = DateTimeZoneHandling.Utc
 	};
 
 	private static IEnumerable<string> ASForceArray => ["tag", "attachment", "to", "cc", "bcc", "bto"];

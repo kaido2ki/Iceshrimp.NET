@@ -12,6 +12,7 @@ builder.Configuration.AddCustomConfiguration();
 
 builder.Services.AddControllers()
        .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json (or we switch to LinkedData.NET)
+       .ConfigureNewtonsoftJson()
        .AddMultiFormatter()
        .AddModelBindingProviders()
        .AddValueProviderFactories()

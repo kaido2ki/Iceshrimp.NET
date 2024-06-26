@@ -40,6 +40,16 @@ public static class MvcBuilderExtensions
 		return builder;
 	}
 
+	public static IMvcBuilder ConfigureNewtonsoftJson(this IMvcBuilder builder)
+	{
+		Newtonsoft.Json.JsonConvert.DefaultSettings = () => new Newtonsoft.Json.JsonSerializerSettings
+		{
+			DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc
+		};
+
+		return builder;
+	}
+
 	public static IMvcBuilder AddModelBindingProviders(this IMvcBuilder builder)
 	{
 		builder.Services.AddOptions<MvcOptions>()
