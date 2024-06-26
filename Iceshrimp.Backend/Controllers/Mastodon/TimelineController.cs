@@ -8,6 +8,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -22,18 +23,19 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableRateLimiting("sliding")]
 [EnableCors("mastodon")]
 [Produces(MediaTypeNames.Application.Json)]
-public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer) : ControllerBase
+public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, CacheService cache) : ControllerBase
 {
 	[Authorize("read:statuses")]
 	[HttpGet("home")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
 	public async Task<IActionResult> GetHomeTimeline(MastodonPaginationQuery query)
 	{
-		var user = HttpContext.GetUserOrFail();
+		var user      = HttpContext.GetUserOrFail();
+		var heuristic = await QueryableTimelineExtensions.GetHeuristic(user, db, cache);
 
 		var res = await db.Notes
 		                  .IncludeCommonProperties()
-		                  .FilterByFollowingAndOwn(user, db)
+		                  .FilterByFollowingAndOwn(user, db, heuristic)
 		                  .EnsureVisibleFor(user)
 		                  .FilterHidden(user, db, filterHiddenListMembers: true)
 		                  .Paginate(query, ControllerContext)

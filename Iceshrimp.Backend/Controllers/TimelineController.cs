@@ -7,6 +7,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,7 @@ namespace Iceshrimp.Backend.Controllers;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/timelines")]
 [Produces(MediaTypeNames.Application.Json)]
-public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer) : ControllerBase
+public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, CacheService cache) : ControllerBase
 {
 	[HttpGet("home")]
 	[Authenticate]
@@ -28,8 +29,9 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer) :
 	public async Task<IActionResult> GetHomeTimeline(PaginationQuery pq)
 	{
 		var user      = HttpContext.GetUserOrFail();
+		var heuristic = await QueryableTimelineExtensions.GetHeuristic(user, db, cache);
 		var notes = await db.Notes.IncludeCommonProperties()
-		                    .FilterByFollowingAndOwn(user, db)
+		                    .FilterByFollowingAndOwn(user, db, heuristic)
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db, filterHiddenListMembers: true)
 		                    .Paginate(pq, ControllerContext)
