@@ -1,0 +1,28 @@
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas
+
+@if (_state == State.Init)
+{
+    <div class="scroller">
+        @foreach (var el in Notifications)
+        {
+            <NotificationComponent NotificationResponse="el" @key="el.Id"/>
+        }
+    </div>
+}
+
+@if (_state == State.Loading)
+{
+    <div>Loading!</div>
+}
+
+@if (_state == State.Error)
+{
+    <div>Something went wrong!</div>
+}
+
+@code {
+    
+}
+

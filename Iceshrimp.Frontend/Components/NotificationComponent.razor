@@ -1,0 +1,67 @@
+@using Iceshrimp.Shared.Schemas
+@using Iceshrimp.Frontend.Components.Note
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Localization> Loc;
+@inject NavigationManager              NavigationManager
+
+
+<div class="notification">
+    @if (NotificationResponse is { User: not null, Type: "like" or "follow" })
+    {
+        <img class="user-avatar" src="@NotificationResponse.User.AvatarUrl"/>
+        <div class="notification-body">
+            <span class="display-name">@(NotificationResponse.User.DisplayName ?? NotificationResponse.User.Username)</span>
+
+            @if (NotificationResponse is { Note: not null, Type: "like", User: not null })
+            {
+                <span @onclick="OpenNote" class="notification-text">
+                    @Loc["liked your post: \"{0}\"", NotificationResponse.Note.Text ?? NotificationResponse.Note.Cw ?? "This one!"]
+                </span>
+            }
+
+            @if (NotificationResponse is { Type: "follow", User: not null })
+            {
+                <span class="notification-text">@Loc["Followed you."]</span>
+            }
+        </div>
+    }
+    @if (NotificationResponse is { Type: "mention" })
+    {
+        <div class="notification-note">
+            <Note NoteResponse="NotificationResponse.Note"/>
+        </div>
+    }
+    @if (NotificationResponse is { Type: "reply" })
+    {
+        <div class="notification-note">
+            <Note NoteResponse="NotificationResponse.Note"/>
+        </div>
+    }
+    @if (NotificationResponse is { Type: "renote" })
+    {
+        <div class="notification-body">
+            <div class="renote-info">@Loc["{0} boosted your post.", NotificationResponse.User!.DisplayName ?? NotificationResponse.User.Username]</div>
+            <div class="notification-note">
+                <Note NoteResponse="NotificationResponse.Note"/>
+            </div>
+        </div>
+    }
+    @if (NotificationResponse is { Type: "quote" })
+    {
+        <div class="notification-note">
+            <Note NoteResponse="NotificationResponse.Note"/>
+        </div>
+    }
+
+</div>
+
+@code {
+    [Parameter] public required NotificationResponse NotificationResponse { get; set; }
+
+    private void OpenNote()
+    {
+        NavigationManager.NavigateTo($"/notes/{NotificationResponse.Note!.Id}");
+    }
+
+}
