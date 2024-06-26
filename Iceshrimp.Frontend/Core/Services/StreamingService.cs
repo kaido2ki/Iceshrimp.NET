@@ -19,11 +19,10 @@ internal class StreamingService(
 	private HubConnection?       _hubConnection;
 	private IStreamingHubServer? _hub;
 
-	public event EventHandler<string>?               Message;
 	public event EventHandler<NotificationResponse>? Notification;
 	public event EventHandler<NoteEvent>?            NotePublished;
 	public event EventHandler<NoteEvent>?            NoteUpdated;
-	public event EventHandler?                       OnConnectionChange;
+	public event EventHandler<HubConnectionState>?   OnConnectionChange;
 
 	public async Task Connect(StoredUser? user = null)
 	{
@@ -40,6 +39,8 @@ internal class StreamingService(
 
 		_hubConnection = new HubConnectionBuilder()
 		                 .WithUrl(navigation.ToAbsoluteUri("/hubs/streaming"), Auth)
+		                 .WithAutomaticReconnect()
+		                 .WithStatefulReconnect()
 		                 .AddMessagePackProtocol()
 		                 .Build();
 
@@ -53,22 +54,26 @@ internal class StreamingService(
 		}
 		catch (Exception e)
 		{
-			Message?.Invoke(this, $"System: Connection failed - {e.Message}");
+			OnConnectionChange?.Invoke(this, HubConnectionState.Disconnected);
 			logger.LogError("Connection failed: {error}", e.Message);
 		}
 
 		return;
 
-		void Auth(HttpConnectionOptions options)
-		{
+		void Auth(HttpConnectionOptions options) =>
 			options.AccessTokenProvider = () => Task.FromResult<string?>(user.Token);
-		}
 	}
 
-	public async Task Send(string userInput, string messageInput)
+	public async Task Reconnect(StoredUser? user = null)
 	{
-		if (_hub is not null)
-			await _hub.SendMessage(userInput, messageInput);
+		if (_hubConnection is null)
+		{
+			await Connect(user);
+			return;
+		}
+
+		if (_hubConnection.State is not HubConnectionState.Disconnected) return;
+		await _hubConnection.StartAsync();
 	}
 
 	public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
@@ -83,13 +88,6 @@ internal class StreamingService(
 
 	private class StreamingHubClient(StreamingService streaming) : IStreamingHubClient, IHubConnectionObserver
 	{
-		public Task ReceiveMessage(string user, string message)
-		{
-			var encodedMsg = $"{user}: {message}";
-			streaming.Message?.Invoke(this, encodedMsg);
-			return Task.CompletedTask;
-		}
-
 		public Task Notification(NotificationResponse notification)
 		{
 			streaming.Notification?.Invoke(this, notification);
@@ -112,19 +110,20 @@ internal class StreamingService(
 
 		public Task OnClosed(Exception? exception)
 		{
-			streaming.OnConnectionChange?.Invoke(this, EventArgs.Empty);
-			return ReceiveMessage("System", "Connection closed.");
+			streaming.OnConnectionChange?.Invoke(this, HubConnectionState.Disconnected);
+			return Task.CompletedTask;
 		}
 
 		public Task OnReconnected(string? connectionId)
 		{
-			streaming.OnConnectionChange?.Invoke(this, EventArgs.Empty);
-			return ReceiveMessage("System", "Reconnected.");
+			streaming.OnConnectionChange?.Invoke(this, HubConnectionState.Connected);
+			return Task.CompletedTask;
 		}
 
 		public Task OnReconnecting(Exception? exception)
 		{
-			return ReceiveMessage("System", "Reconnecting...");
+			streaming.OnConnectionChange?.Invoke(this, HubConnectionState.Reconnecting);
+			return Task.CompletedTask;
 		}
 	}
 }
