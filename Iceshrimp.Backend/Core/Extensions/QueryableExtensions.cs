@@ -9,7 +9,6 @@ using Iceshrimp.Backend.Controllers.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
-using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -178,7 +177,7 @@ public static class QueryableExtensions
 
 		return Paginate(query, pq, filter.DefaultLimit, filter.MaxLimit);
 	}
-	
+
 	public static IQueryable<T> PaginateByOffset<T>(
 		this IQueryable<T> query,
 		MastodonPaginationQuery pq,
@@ -191,7 +190,7 @@ public static class QueryableExtensions
 
 		return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
 	}
-	
+
 	public static IQueryable<T> PaginateByOffset<T>(
 		this IQueryable<T> query,
 		MastodonPaginationQuery pq,
@@ -592,7 +591,7 @@ public static class QueryableExtensions
 		return query.FilterByPublicTimelineRequest(request);
 	}
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
+	#pragma warning disable CS8602 // Dereference of a possibly null reference.
 // Justification: in the context of nullable EF navigation properties, null values are ignored and therefore irrelevant.
 // Source: https://learn.microsoft.com/en-us/ef/core/miscellaneous/nullable-reference-types#navigating-and-including-nullable-relationships
 
@@ -617,12 +616,12 @@ public static class QueryableExtensions
 
 	public static IQueryable<NoteLike> IncludeCommonProperties(this IQueryable<NoteLike> query)
 	{
-			return query.Include(p => p.Note.User.UserProfile)
-			            .Include(p => p.Note.Renote.User.UserProfile)
-			            .Include(p => p.Note.Renote.Renote.User.UserProfile)
-			            .Include(p => p.Note.Reply.User.UserProfile);
+		return query.Include(p => p.Note.User.UserProfile)
+		            .Include(p => p.Note.Renote.User.UserProfile)
+		            .Include(p => p.Note.Renote.Renote.User.UserProfile)
+		            .Include(p => p.Note.Reply.User.UserProfile);
 	}
-	
+
 	public static IQueryable<NoteBookmark> IncludeCommonProperties(this IQueryable<NoteBookmark> query)
 	{
 		return query.Include(p => p.Note.User.UserProfile)
@@ -643,5 +642,5 @@ public static class QueryableExtensions
 		            .Include(p => p.FollowRequest.Followee.UserProfile);
 	}
 
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+	#pragma warning restore CS8602 // Dereference of a possibly null reference.
 }
