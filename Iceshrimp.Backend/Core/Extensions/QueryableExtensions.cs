@@ -259,6 +259,17 @@ public static class QueryableExtensions
 		return query.Where(note => note.Visibility == visibility);
 	}
 
+	public static IQueryable<Note> FilterByFollowingAndOwn(
+		this IQueryable<Note> query, User user, DatabaseContext db
+	)
+	{
+		return query.Where(note => db.Followings
+		                             .Where(p => p.Follower == user)
+		                             .Select(p => p.FolloweeId)
+		                             .Concat(new[] { user.Id })
+		                             .Contains(note.UserId));
+	}
+
 	public static IQueryable<Note> FilterByUser(this IQueryable<Note> query, User user)
 	{
 		return query.Where(note => note.User == user);
