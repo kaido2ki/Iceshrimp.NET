@@ -5,7 +5,7 @@
         <span class="cw-field">@NoteBase.Cw</span><button class="cw-button" @onclick="ToggleCw" @onclick:stopPropagation="true">Toggle CW</button>
     </div>
     <div hidden="@CwToggle" class="note-body @(CwToggle ? "hidden" : "") @(Indented ? "indent" : "")">
-        <MfmText Text="@NoteBase.Text" />
+        <MfmText Text="@NoteBase.Text" Emoji="@NoteBase.Emoji" />
         @if (NoteBase.Attachments.Count > 0)
         {
         <NoteAttachments Attachments="NoteBase.Attachments"/>
@@ -18,7 +18,7 @@
         class="note-body @(Truncate ? "truncated" : "") @(Indented ? "indent" : "")" 
         style="max-height: @(Truncate ? MaxHeight + "px" : "initial")" 
     >
-        <MfmText Text="@NoteBase.Text" />
+        <MfmText Text="@NoteBase.Text" Emoji="@NoteBase.Emoji" />
         @if (NoteBase.Attachments.Count > 0)
         {
         <NoteAttachments Attachments="NoteBase.Attachments"/>
@@ -34,7 +34,7 @@
 @if (NoteBase.Cw == null && OverLength == false)
 {
     <div class="note-body @(Indented ? "indent" : "")">
-        <MfmText Text="@NoteBase.Text" />
+        <MfmText Text="@NoteBase.Text"  Emoji="@NoteBase.Emoji"/>
         @if (NoteBase.Attachments.Count > 0)
         {
         <NoteAttachments Attachments="NoteBase.Attachments"/>
