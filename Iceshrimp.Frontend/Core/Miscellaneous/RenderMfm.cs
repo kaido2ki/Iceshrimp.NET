@@ -19,8 +19,9 @@ public class MfmRenderer
     }
     public static INode RenderMultipleNodes(IEnumerable<MfmNodeTypes.MfmNode> nodes, IDocument document)
     {
-        var el = document.CreateElement("p");
+        var el = document.CreateElement("span");
         el.SetAttribute("mfm", "mfm");
+        el.ClassName = "mfm";
         foreach (var node in nodes)
         {
             try
