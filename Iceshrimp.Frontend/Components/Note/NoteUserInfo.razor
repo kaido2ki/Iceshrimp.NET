@@ -6,7 +6,7 @@
 }
 <div class="name-section">
     <span class="display-name">@(DisplayName ?? Username)</span>
-    <span class="identifier">@Username@@@Host</span>
+    <span class="identifier">@@@Username@(Host != null ? $"@{Host}" : "")</span>
 </div>
 @code {
     [Parameter][EditorRequired] public required string  AvatarUrl   { get; set; }
