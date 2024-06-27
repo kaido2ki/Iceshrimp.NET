@@ -17,3 +17,8 @@
 .renote-count {
     margin-left: 0.3em;
 }
+
+.positioned {
+    position: relative;
+    top: 0;
+}

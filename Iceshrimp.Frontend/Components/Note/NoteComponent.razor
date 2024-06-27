@@ -3,20 +3,20 @@
 @using Iceshrimp.Shared.Schemas
 @inject ApiService        ApiService;
 @inject NavigationManager NavigationManager
-@inject ComposeService ComposeService
+@inject ComposeService    ComposeService
 <CascadingValue Value="this">
     <div class="note-header">
         <NoteUserInfo
             AvatarUrl="@Note.User.AvatarUrl"
             DisplayName="@Note.User.DisplayName"
-            Username="@Note.User.Username" 
+            Username="@Note.User.Username"
             Host="@Note.User.Host"
-            Indented="Indented"
-        />
-        <NoteMetadata 
+            Indented="Indented"/>
+        <NoteMetadata
             Visibility="@Note.Visibility"
             InstanceName="@Note.User.InstanceName"
-            CreatedAt="DateTime.Parse(Note.CreatedAt)"></NoteMetadata>
+            CreatedAt="DateTime.Parse(Note.CreatedAt)">
+        </NoteMetadata>
     </div>
     <NoteBody NoteBase="Note" OverLength="@CheckLen()" Indented="Indented"/>
     @if (Quote != null)
@@ -28,20 +28,21 @@
     @if (!AsQuote)
     {
         @* FIXME: Allow renotes when the post is from the current user *@
-        <NoteFooter 
-            Reactions="Note.Reactions" 
-            Likes="Note.Likes" 
-            IsLiked="Note.Liked" 
-            Renotes="Note.Renotes" 
-            RenotePossible="@(Note.Visibility == NoteVisibility.Public || Note.Visibility == NoteVisibility.Home)"
-            />
+        <NoteFooter
+            Reactions="Note.Reactions"
+            Likes="Note.Likes"
+            IsLiked="Note.Liked"
+            Renotes="Note.Renotes"
+            RenotePossible="@(Note.Visibility == NoteVisibility.Public || Note.Visibility == NoteVisibility.Home)"/>
     }
 </CascadingValue>
+
 @code {
-    [Parameter][EditorRequired] public required NoteBase  Note     { get; set; }
-    [Parameter]                 public          bool      Indented { get; set; }
-    [Parameter]                 public          NoteBase? Quote    { get; set; }
-    [Parameter]                 public          bool      AsQuote  { get; set; }
+    [Parameter] [EditorRequired] public required NoteBase  Note     { get; set; }
+    [Parameter]                  public          bool      Indented { get; set; }
+    [Parameter]                  public          NoteBase? Quote    { get; set; }
+    [Parameter]                  public          bool      AsQuote  { get; set; }
+
     private bool CheckLen()
     {
         return Note.Text?.Length > 500;
@@ -52,14 +53,36 @@
         NavigationManager.NavigateTo($"/notes/{Quote!.Id}");
     }
 
-    public void React(string name, bool target)
+    //FIXME: This needs to be rewritten.
+    public void React(string name, bool target, string? url = null)
     {
         var index = Note.Reactions.FindIndex(x => x.Name == name);
         switch (target)
         {
             case true:
                 ApiService.Notes.ReactToNote(Note.Id, name);
-                Note.Reactions[index].Count++;
+                if (index == -1 && url != null)
+                {
+                    Note.Reactions.Add(new NoteReactionSchema
+                    {
+                        NoteId  = Note.Id,
+                        Name    = name,
+                        Count   = 1,
+                        Reacted = true,
+                        Url     = url
+                    });
+                }
+                else
+                {
+                    if (Note.Reactions[index].Reacted != true)
+                    {
+                        Note.Reactions[index].Count++;
+                    }
+
+
+                    break;
+                }
+
                 StateHasChanged();
                 break;
             case false:
@@ -72,6 +95,7 @@
                 {
                     Note.Reactions[index].Count--;
                 }
+
                 StateHasChanged();
                 break;
         }
@@ -111,4 +135,5 @@
     {
         ComposeService.ComposeDialog?.OpenDialog(null, Note);
     }
+
 }

@@ -1,0 +1,23 @@
+.emoji-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr));
+    grid-template-rows: repeat(auto-fill, minmax(2.5rem, 1fr));
+    position: absolute;
+    background-color: var(--foreground-color);
+    border: var(--highlight-color) solid 0.1rem;
+    padding: 1rem;
+    border-radius: 1rem;
+    min-width: 15rem;
+    min-height: 10rem;
+    top: 3rem;
+    left: -210%;
+    overflow: scroll;
+}
+
+.emoji {
+    > img {
+        object-fit: cover;
+        height: 2rem;
+        width: 2rem;
+    }
+}
