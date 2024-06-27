@@ -1,6 +1,7 @@
 using AngleSharp;
 using AngleSharp.Dom;
 using Iceshrimp.Parsing;
+using Iceshrimp.Shared.Schemas;
 using Microsoft.AspNetCore.Components;
 using Microsoft.FSharp.Core;
 
@@ -8,16 +9,16 @@ namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
 public class MfmRenderer
 {
-    public static async Task<MarkupString> RenderString(string text)
+    public static async Task<MarkupString> RenderString(string text, List<EmojiResponse> emoji)
     {
         var res         = Mfm.parse(text);
         var context     = BrowsingContext.New();
         var document    = await context.OpenNewAsync();
-        var renderedMfm = MfmRenderer.RenderMultipleNodes(res, document);
+        var renderedMfm = MfmRenderer.RenderMultipleNodes(res, document, emoji);
         var html        = renderedMfm.ToHtml();
         return new MarkupString(html);
     }
-    public static INode RenderMultipleNodes(IEnumerable<MfmNodeTypes.MfmNode> nodes, IDocument document)
+    public static INode RenderMultipleNodes(IEnumerable<MfmNodeTypes.MfmNode> nodes, IDocument document, List<EmojiResponse> emoji)
     {
         var el = document.CreateElement("span");
         el.SetAttribute("mfm", "mfm");
@@ -26,7 +27,7 @@ public class MfmRenderer
         {
             try
             {
-                el.AppendNodes(RenderNode(node, document));
+                el.AppendNodes(RenderNode(node, document, emoji));
             }
             catch (NotImplementedException e)
             {
@@ -38,7 +39,7 @@ public class MfmRenderer
 
         return el;
     }
-    private static INode RenderNode(MfmNodeTypes.MfmNode node, IDocument document)
+    private static INode RenderNode(MfmNodeTypes.MfmNode node, IDocument document, List<EmojiResponse> emoji)
     {
         var rendered = node switch
              {
@@ -49,7 +50,7 @@ public class MfmRenderer
                  MfmNodeTypes.MfmSearchNode mfmSearchNode         => throw new NotImplementedException($"{mfmSearchNode.GetType()}"),
                  MfmNodeTypes.MfmBlockNode mfmBlockNode           => throw new NotImplementedException($"{mfmBlockNode.GetType()}"),
                  MfmNodeTypes.MfmBoldNode mfmBoldNode             => MfmBoldNode(mfmBoldNode, document),
-                 MfmNodeTypes.MfmEmojiCodeNode mfmEmojiCodeNode   => MfmEmojiCodeNode(mfmEmojiCodeNode, document),
+                 MfmNodeTypes.MfmEmojiCodeNode mfmEmojiCodeNode   => MfmEmojiCodeNode(mfmEmojiCodeNode, document, emoji),
                  MfmNodeTypes.MfmFnNode mfmFnNode                 => throw new NotImplementedException($"{mfmFnNode.GetType()}"),
                  MfmNodeTypes.MfmHashtagNode mfmHashtagNode       => throw new NotImplementedException($"{mfmHashtagNode.GetType()}"),
                  MfmNodeTypes.MfmInlineCodeNode mfmInlineCodeNode => MfmInlineCodeNode(mfmInlineCodeNode, document),
@@ -71,7 +72,7 @@ public class MfmRenderer
             {
                 try
                 {
-                    rendered.AppendNodes(RenderNode(childNode, document));
+                    rendered.AppendNodes(RenderNode(childNode, document, emoji));
                 }
                 catch (NotImplementedException e)
                 {
@@ -115,11 +116,24 @@ public class MfmRenderer
         return el;
     }
 
-    private static INode MfmEmojiCodeNode(MfmNodeTypes.MfmEmojiCodeNode node, IDocument document)
+    private static INode MfmEmojiCodeNode(MfmNodeTypes.MfmEmojiCodeNode node, IDocument document, List<EmojiResponse> emojiList)
     {
-        var el = document.CreateElement("span");
-        el.TextContent = node.Name;
+        var el    = document.CreateElement("span");
         el.ClassName   = "emoji";
+        
+        var emoji = emojiList.Find(p => p.Name == node.Name);
+        if (emoji is null)
+        {
+            el.TextContent = node.Name;
+        }
+        else
+        {
+            var image = document.CreateElement("img");
+            image.SetAttribute("src", emoji.PublicUrl);
+            image.SetAttribute("alt", node.Name);
+            el.AppendChild(image);
+        }
+
         return el;
     }
     private static INode MfmUrlNode(MfmNodeTypes.MfmUrlNode node, IDocument document)

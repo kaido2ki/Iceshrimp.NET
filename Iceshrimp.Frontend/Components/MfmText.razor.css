@@ -13,7 +13,27 @@
             
         }
     }
-    .mfm {
-        margin: 0;
+}
+
+::deep {
+    .emoji {
+        display: inline;
+        position: relative;
+        top: 0;
+        > img {
+            height: 2em;
+            width: 2em;
+            object-fit: cover;
+            vertical-align: middle;
+            transition-duration: 250ms;
+        }
+    }
+}
+::deep {
+    .emoji {
+        > img:hover {
+            transform: scale(1.5);
+            transition-duration: 250ms;
+        }
     }
 }
