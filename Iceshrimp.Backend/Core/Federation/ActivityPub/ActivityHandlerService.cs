@@ -57,7 +57,10 @@ public class ActivityHandlerService(
 			throw new Exception("resolvedActor.Host and resolvedActor.Uri must not be null at this stage");
 
 		UpdateInstanceMetadataInBackground(resolvedActor.Host, new Uri(resolvedActor.Uri).Host);
-		var inboxUser = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == inboxUserId);
+
+		var inboxUser = inboxUserId != null
+			? await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == inboxUserId)
+			: null;
 
 		var task = activity switch
 		{
