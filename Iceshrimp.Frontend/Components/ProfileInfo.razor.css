@@ -1,6 +1,7 @@
 .bio {
     margin-bottom: 1rem;
     border-bottom: 0.1rem solid var(--highlight-color);
+    white-space: pre-wrap;
 }
 
 .metadata {
