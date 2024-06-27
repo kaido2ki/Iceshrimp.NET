@@ -18,10 +18,11 @@
                 <div class="name-section">
                     <div class="name">@UserResponse.DisplayName</div>
                     <div class="identifier">
-                        @UserResponse.Username
+                        @@@UserResponse.Username
                         @if (UserResponse.Host != null)
                         {
-                            @UserResponse.Host
+                            var host = $"@{UserResponse.Host}";
+                            @host
                         }
                     </div>
                 </div>
