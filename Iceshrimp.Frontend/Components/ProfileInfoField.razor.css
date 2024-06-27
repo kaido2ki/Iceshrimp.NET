@@ -1,0 +1,6 @@
+.field {
+    display: flex;
+}
+.field-name {
+    width: 10rem;
+}
