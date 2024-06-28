@@ -311,23 +311,8 @@ public class PostgresJobQueue<T>(
 				await using var scope = GetScope();
 				await using var db    = GetDbContext(scope);
 
-				var runningCount = _workerId == null
-					? await db.Jobs.CountAsync(p => p.Queue == name && p.Status == Job.JobStatus.Running, token)
-					: await db.Jobs.CountAsync(p => p.Queue == name &&
-					                                p.Status == Job.JobStatus.Running &&
-					                                p.WorkerId != null &&
-					                                p.WorkerId == _workerId, token);
-				var queuedCount = _workerId == null
-					? await db.Jobs.CountAsync(p => p.Queue == name && p.Status == Job.JobStatus.Queued, token)
-					: await
-						db.Jobs.CountAsync(p => p.Queue == name &&
-						                        (p.Status == Job.JobStatus.Queued ||
-						                         (p.Status == Job.JobStatus.Running &&
-						                          p.WorkerId != null &&
-						                          !db.Workers.Any(w => w.Id == p.WorkerId &&
-						                                               w.Heartbeat >
-						                                               DateTime.UtcNow - TimeSpan.FromSeconds(90)))),
-						                   token);
+				var runningCount = await db.GetJobRunningCount(name, _workerId, token);
+				var queuedCount  = await db.GetJobQueuedCount(name, _workerId, token);
 
 				var actualParallelism = Math.Min(parallelism - runningCount, queuedCount);
 				if (actualParallelism <= 0)
@@ -497,7 +482,7 @@ public class PostgresJobQueue<T>(
 	{
 		await using var db = GetDbContext(processorScope);
 
-		if (await db.GetJobs(name, _workerId).ToListAsync(token) is not [{ } job])
+		if (await db.GetJob(name, _workerId).ToListAsync(token) is not [{ } job])
 			return;
 
 		_logger.LogTrace("Processing {queue} job {id}", name, job.Id);
