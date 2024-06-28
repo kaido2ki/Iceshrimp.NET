@@ -5,19 +5,19 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
     </PropertyGroup>
-    
+
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <DebugType>embedded</DebugType>
     </PropertyGroup>
 
     <ItemGroup>
         <Compile Include="SearchQuery.fs"/>
-        <Compile Include="Mfm.fs" />
+        <Compile Include="Mfm.fs"/>
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="FParsec" Version="1.1.1"/>
-        <PackageReference Update="FSharp.Core" Version="8.0.300" />
+        <PackageReference Update="FSharp.Core" Version="8.0.300"/>
     </ItemGroup>
 
 </Project>

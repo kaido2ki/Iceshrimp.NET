@@ -2,7 +2,6 @@ namespace Iceshrimp.Parsing
 
 open System
 open System.Collections.Generic
-open System.Runtime.Serialization
 open FParsec
 
 module MfmNodeTypes =
