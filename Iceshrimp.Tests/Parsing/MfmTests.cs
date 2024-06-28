@@ -66,7 +66,8 @@ public class MfmTests
 	[TestMethod]
 	public void TestMention()
 	{
-		const string input = "test @test test @test@instance.tld @test_ @_test @test_@ins-tance.tld @_test@xn--mastodn-f1a.de @_test@-xn--mastodn-f1a.de";
+		const string input =
+			"test @test test @test@instance.tld @test_ @_test @test_@ins-tance.tld @_test@xn--mastodn-f1a.de @_test@-xn--mastodn-f1a.de";
 		List<MfmNode> expected =
 		[
 			new MfmTextNode("test "),
@@ -81,7 +82,7 @@ public class MfmTests
 			new MfmMentionNode("test_@ins-tance.tld", "test_", "ins-tance.tld"),
 			new MfmTextNode(" "),
 			new MfmMentionNode("_test@xn--mastodn-f1a.de", "_test", "xn--mastodn-f1a.de"),
-			new MfmTextNode(" @_test@-xn--mastodn-f1a.de"),
+			new MfmTextNode(" @_test@-xn--mastodn-f1a.de")
 		];
 		var res = Mfm.parse(input);
 
@@ -180,7 +181,7 @@ public class MfmTests
 			new MfmHashtagNode("test"),
 			new MfmTextNode("'s "),
 			new MfmHashtagNode("t-e_s-t"),
-			new MfmTextNode(". test"),
+			new MfmTextNode(". test")
 		];
 		var res = Mfm.parse(input);
 
@@ -226,30 +227,13 @@ public class MfmTests
 		}
 	}
 
-	private class MfmNodeEquality : IEqualityComparer<MfmNode>
-	{
-		public bool Equals(MfmNode? x, MfmNode? y)
-		{
-			if (x == null && y == null) return true;
-			if (x == null && y != null) return false;
-			if (x != null && y == null) return false;
-
-			return MfmNodeEqual(x!, y!);
-		}
-
-		public int GetHashCode(MfmNode obj)
-		{
-			return obj.GetHashCode();
-		}
-	}
-
 	private static bool MfmNodeEqual(MfmNode a, MfmNode b)
 	{
 		if (a.GetType() != b.GetType()) return false;
 
 		if (!a.Children.IsEmpty || !b.Children.IsEmpty)
 		{
-			if (!a.Children.IsEmpty && b.Children.IsEmpty || a.Children.IsEmpty && !b.Children.IsEmpty)
+			if ((!a.Children.IsEmpty && b.Children.IsEmpty) || (a.Children.IsEmpty && !b.Children.IsEmpty))
 				return false;
 			if (!a.Children.SequenceEqual(b.Children, new MfmNodeEquality()))
 				return false;
@@ -337,5 +321,22 @@ public class MfmTests
 		}
 
 		return true;
+	}
+
+	private class MfmNodeEquality : IEqualityComparer<MfmNode>
+	{
+		public bool Equals(MfmNode? x, MfmNode? y)
+		{
+			if (x == null && y == null) return true;
+			if (x == null && y != null) return false;
+			if (x != null && y == null) return false;
+
+			return MfmNodeEqual(x!, y!);
+		}
+
+		public int GetHashCode(MfmNode obj)
+		{
+			return obj.GetHashCode();
+		}
 	}
 }
