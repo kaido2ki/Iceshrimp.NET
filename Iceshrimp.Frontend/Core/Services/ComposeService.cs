@@ -1,5 +1,4 @@
 using Iceshrimp.Frontend.Components;
-using Microsoft.AspNetCore.Components;
 
 namespace Iceshrimp.Frontend.Core.Services;
 

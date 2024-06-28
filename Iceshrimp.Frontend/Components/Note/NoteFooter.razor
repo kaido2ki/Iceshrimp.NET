@@ -1,5 +1,4 @@
 @using Iceshrimp.Assets.PhosphorIcons
-@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
 <div class="note-footer">
     @if (Reactions.Count > 0)
@@ -44,7 +43,7 @@
     </button>
     <button class="btn positioned" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true">
         <Icon Name="Icons.Smiley" Size="1.3em"/>
-        <EmojiPicker @ref="EmojiPicker" OnEmojiSelect="React" />
+        <EmojiPicker @ref="EmojiPicker" OnEmojiSelect="React"/>
     </button>
     <button class="btn" @onclick="Quote" @onclick:stopPropagation="true">
         <Icon Name="Icons.Quotes" Size="1.3em"/>
@@ -60,7 +59,7 @@
     [Parameter] [EditorRequired] public required bool                     IsLiked        { get; set; }
     [Parameter] [EditorRequired] public required int                      Renotes        { get; set; }
     [Parameter]                  public          bool                     RenotePossible { get; set; }
-    private                                      EmojiPicker              EmojiPicker    { get; set; }
+    private                                      EmojiPicker?             EmojiPicker    { get; set; }
 
     [CascadingParameter] NoteComponent NoteComponent { get; set; } = null!;
 
@@ -86,12 +85,11 @@
 
     private void ToggleEmojiPicker()
     {
-        EmojiPicker.Toggle();
+        EmojiPicker?.Toggle();
     }
 
     private void React(EmojiResponse emoji)
     {
         NoteComponent.React(emoji.Name, true, url: emoji.PublicUrl);
     }
-
 }

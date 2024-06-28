@@ -3,38 +3,41 @@
 @using Ljbc1994.Blazor.IntersectionObserver.API
 @using Ljbc1994.Blazor.IntersectionObserver.Components
 @inject IJSRuntime Js
-@if(_init) // FIXME: We need to wait for the Component to render once before initializing the Intersection Observer.
-           // With the <IntersectionObserver> Component this is AFAIK only possible by not rendering it until then.
-           // The proper fix for this is to change to the Service Pattern.
-           // But that requires the IntersectionObserver Library to be modified to return what element an observation update is for.
-{ 
-<IntersectionObserve Options="new IntersectionObserverOptions(){ Root = Scroller, RootMargin = margin}" OnChange="@(entry => Change(entry))">
-    <div class="tgt" @ref="context.Ref.Current">
-        @if (_isIntersecting)
-        {
-            <TimelineNote Note="Note" />
-        }else {
-            <div class="placeholder" style="height: @(Height ?? 150)px"></div>
-        }
-    </div>
-</IntersectionObserve>
+@if (_init) // FIXME: We need to wait for the Component to render once before initializing the Intersection Observer.
+    // With the <IntersectionObserver> Component this is AFAIK only possible by not rendering it until then.
+    // The proper fix for this is to change to the Service Pattern.
+    // But that requires the IntersectionObserver Library to be modified to return what element an observation update is for.
+{
+    <IntersectionObserve Options="new IntersectionObserverOptions() { Root = Scroller, RootMargin = Margin }" OnChange="@(entry => Change(entry))">
+        <div class="tgt" @ref="context.Ref.Current">
+            @if (_isIntersecting)
+            {
+                <TimelineNote Note="Note"/>
+            }
+            else
+            {
+                <div class="placeholder" style="height: @(Height ?? 150)px"></div>
+            }
+        </div>
+    </IntersectionObserve>
 }
+
 @code {
-    [Parameter][EditorRequired] public required NoteResponse        Note     { get; set; }
-    [Parameter][EditorRequired] public          ElementReference    Scroller { get; set; }
-    private                                     IJSObjectReference? _module;
-    private                                     int?                Height { get; set; } = null;
-    private                                     bool                _isIntersecting = true;
-    private                                     string              margin          = "200%";
-    private bool                                                     _init           = false;
+    [Parameter] [EditorRequired] public required NoteResponse     Note     { get; set; }
+    [Parameter] [EditorRequired] public          ElementReference Scroller { get; set; }
+
+    private const string              Margin = "200%";
+    private       IJSObjectReference? _module;
+    private       int?                Height { get; set; }
+    private       bool                _isIntersecting = true;
+    private       bool                _init;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             _module = await Js.InvokeAsync<IJSObjectReference>("import",
-                                                              "./Components/LazyNote.razor.js");
-
+                                                               "./Components/LazyNote.razor.js");
         }
     }
 
@@ -44,10 +47,9 @@
         {
             _init = true;
         }
-
     }
 
-    private async Task Change (IntersectionObserverEntry entry)
+    private async Task Change(IntersectionObserverEntry entry)
     {
         if (entry.IsIntersecting == false)
         {

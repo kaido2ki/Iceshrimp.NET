@@ -1,6 +1,3 @@
-@using System.Collections.Specialized
-@using System.Runtime.InteropServices.JavaScript
-@using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Core.Services.StateServicePatterns
 @using Iceshrimp.Shared.Schemas
@@ -8,30 +5,33 @@
 @using Ljbc1994.Blazor.IntersectionObserver.API
 @inject IIntersectionObserverService ObserverService
 @inject IJSRuntime                   Js
-@inject StateService StateService
+@inject StateService                 StateService
 
-<div @ref="@Scroller" class="scroller">
+<div @ref="@_scroller" class="scroller">
     <div @ref="@_padTopRef" class="padding top" style="height: @(State.PadTop + "px")"></div>
-    @if(_loadingTop){
-    <div class="target">
-        Loading!
-    </div>
+    @if (_loadingTop)
+    {
+        <div class="target">
+            Loading!
+        </div>
     }
     @foreach (var el in State.RenderedList)
     {
-        
         <div class="target" @ref="@Ref">
             <TimelineNote @key="el.Id" Note="el"></TimelineNote>
         </div>
     }
-    @if(loadingBottom){
-    <div class="target">
-        Loading!
-    </div>
+    @if (_loadingBottom)
+    {
+        <div class="target">
+            Loading!
+        </div>
     }
     else
     {
-        <div class="target"><span>The end!<button @onclick="Down">Load more!</button></span></div>
+        <div class="target">
+            <span>The end!<button @onclick="Down">Load more!</button></span>
+        </div>
     }
     <div @ref="@_padBotRef" class="padding bottom" style="height: @(State.PadBottom + "px")">
     </div>
@@ -53,10 +53,10 @@
     private                                     bool                   _overscrollBottom = false;
     private                                     ElementReference       _padTopRef;
     private                                     ElementReference       _padBotRef;
-    private                                     ElementReference       Scroller;
-    private                                     bool                   _loadingTop   = false;
-    private                                     bool                   loadingBottom = false;
-    public                                      bool                   setScroll     = false;
+    private                                     ElementReference       _scroller;
+    private                                     bool                   _loadingTop    = false;
+    private                                     bool                   _loadingBottom = false;
+    private                                     bool                   _setScroll     = false;
 
     private ElementReference Ref
     {
@@ -68,18 +68,15 @@
 
     private void InitialRender(string? id)
     {
-        var a = new List<NoteResponse>();
-        a = NoteResponseList.Count < _count ? NoteResponseList : NoteResponseList.GetRange(0, _count);
-
-        State.RenderedList = a;
+        State.RenderedList = NoteResponseList.Count < _count ? NoteResponseList : NoteResponseList.GetRange(0, _count);
     }
 
     private async Task LoadOlder()
     {
-        loadingBottom = true;
+        _loadingBottom = true;
         StateHasChanged();
         await ReachedEnd.InvokeAsync();
-        loadingBottom = false;
+        _loadingBottom = false;
         StateHasChanged();
     }
 
@@ -98,7 +95,6 @@
         StateService.VirtualScroller.SetState("home", State);
     }
 
-
     private async Task RemoveAbove(int amount)
     {
         for (int i = 0; i < amount; i++)
@@ -109,7 +105,6 @@
         }
 
         State.RenderedList.RemoveRange(0, amount);
-
     }
 
     private async Task Down()
@@ -128,10 +123,8 @@
             var heightChange = 0;
             foreach (var el in a)
             {
-                if (State.Height.ContainsKey(el.Id))
-                {
-                    heightChange += State.Height[el.Id];
-                }
+                if (State.Height.TryGetValue(el.Id, out var value))
+                    heightChange += value;
             }
 
             if (State.PadBottom > 0) State.PadBottom -= heightChange;
@@ -155,6 +148,7 @@
             State.PadBottom                        += height;
             State.Height[State.RenderedList[i].Id] =  height;
         }
+
         var index        = NoteResponseList.IndexOf(State.RenderedList.First());
         var a            = NoteResponseList.GetRange(index - updateCount, updateCount);
         var heightChange = 0;
@@ -174,8 +168,6 @@
 
     private async Task SetupObservers()
     {
-        // Enabling root margin causes erratic virtual scroller behavior, i've not figured out why
-        var options = new IntersectionObserverOptions { RootMargin = "100%" };
         OvrscrlObsvTop    = await ObserverService.Create(OverscrollCallbackTop);
         OvrscrlObsvBottom = await ObserverService.Create(OverscrollCallbackBottom);
 
@@ -191,7 +183,6 @@
             await Up(1);
         }
     }
-
 
     private async void OverscrollCallbackTop(IList<IntersectionObserverEntry> list)
     {
@@ -242,13 +233,13 @@
 
     private async Task GetScrollTop()
     {
-        var scrollTop = await Module.InvokeAsync<float>("GetScrollTop", Scroller);
+        var scrollTop = await Module.InvokeAsync<float>("GetScrollTop", _scroller);
         State.ScrollTop = scrollTop;
     }
 
     private async Task SetScrollTop()
     {
-        await Module.InvokeVoidAsync("SetScrollTop", State.ScrollTop, Scroller);
+        await Module.InvokeVoidAsync("SetScrollTop", State.ScrollTop, _scroller);
     }
 
     protected override void OnInitialized()
@@ -256,9 +247,8 @@
         try
         {
             var virtualScrollerState = StateService.VirtualScroller.GetState("home");
-            State     = virtualScrollerState;
-            setScroll = true;
-
+            State      = virtualScrollerState;
+            _setScroll = true;
         }
         catch (ArgumentException)
         {
@@ -279,13 +269,12 @@
             await SetupObservers();
         }
 
-        if (setScroll)
+        if (_setScroll)
         {
             await SetScrollTop();
-            setScroll = false;
+            _setScroll = false;
         }
 
         await SaveState();
     }
-
 }

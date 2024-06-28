@@ -5,7 +5,7 @@
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Components.Note
 @using System.Text.RegularExpressions
-@inject ApiService Api
+@inject ApiService            Api
 
 @if (_init)
 {
@@ -64,11 +64,12 @@
     private            UserProfileResponse? Profile      { get; set; }
     private            string?              MinId        { get; set; }
     private            List<NoteResponse>   UserNotes    { get; set; } = [];
-    private            bool                 _loading   = true;
-    private            bool                 _init      = false;
-    private            bool                 _notFound  = false;
-    private            bool                 _error     = false;
-    private            bool                 _fetchLock = false;
+
+    private bool _loading = true;
+    private bool _init;
+    private bool _notFound;
+    private bool _error;
+    private bool _fetchLock;
 
     private async Task GetNotes(string? minId)
     {

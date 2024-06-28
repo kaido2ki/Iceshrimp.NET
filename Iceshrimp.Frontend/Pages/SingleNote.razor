@@ -52,9 +52,9 @@ else
     private            IList<NoteResponse>? Ascendants  { get; set; }
     private            IJSObjectReference?  Module      { get; set; }
     private            ElementReference     RootNoteRef { get; set; }
-    private            bool                 _init  = false;
-    private            bool                 _error = false;
-    
+    private            bool                 _init;
+    private            bool                 _error;
+
     protected override async Task OnParametersSetAsync()
     {
         _init = false;
