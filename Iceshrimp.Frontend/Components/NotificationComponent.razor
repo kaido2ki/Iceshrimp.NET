@@ -5,9 +5,8 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              NavigationManager
 
-
 <div class="notification">
-    @if (NotificationResponse is { User: not null, Type: "like" or "follow" })
+    @if (NotificationResponse is { User: not null, Type: "like" or "follow" or "reaction" })
     {
         <img class="user-avatar" src="@NotificationResponse.User.AvatarUrl"/>
         <div class="notification-body">
@@ -16,7 +15,13 @@
             @if (NotificationResponse is { Note: not null, Type: "like", User: not null })
             {
                 <span @onclick="OpenNote" class="notification-text">
-                    @Loc["liked your post: \"{0}\"", NotificationResponse.Note.Text ?? NotificationResponse.Note.Cw ?? "This one!"]
+                    @Loc["liked your post: "]<MfmText Text="@NotificationResponse.Note.Text"></MfmText>
+                </span>
+            }
+            @if (NotificationResponse is { Note: not null, Type: "reaction" })
+            {
+                <span @onclick="OpenNote" class="notification-text">
+                    @Loc["reacted to your post: "] <MfmText Text="@NotificationResponse.Note.Text"></MfmText>
                 </span>
             }
 
