@@ -63,13 +63,14 @@ public static class WebApplicationExtensions
 
 		if (workerId == null)
 		{
-			app.Logger.LogInformation("Iceshrimp.NET v{version} ({domain})", instanceConfig.Version,
-			                          instanceConfig.AccountDomain);
+			app.Logger.LogInformation("Iceshrimp.NET v{version}, codename \"{codename}\" ({domain})",
+			                          instanceConfig.Version, instanceConfig.Codename, instanceConfig.AccountDomain);
 		}
 		else
 		{
-			app.Logger.LogInformation("Iceshrimp.NET v{version} ({domain}) - worker {id}", instanceConfig.Version,
-			                          instanceConfig.AccountDomain, workerId);
+			app.Logger.LogInformation("Iceshrimp.NET v{version}, codename \"{codename}\" ({domain}) - worker {id}",
+			                          instanceConfig.Version, instanceConfig.Codename, instanceConfig.AccountDomain,
+			                          workerId);
 		}
 
 		await using var scope    = app.Services.CreateAsyncScope();

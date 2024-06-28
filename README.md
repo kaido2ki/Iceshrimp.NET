@@ -12,9 +12,9 @@ Want to donate to the project?
 ---
 
 > **Note**
-> This is alpha ([soon](https://issues.iceshrimp.dev/agiles/157-4/current) to be beta!) software. While the Mastodon client API is relatively complete, the frontend is not. It is therefore not advisable to upgrade existing Iceshrimp instances at present. Setting up staging instances to help us with testing is very appreciated, however, and will help us ensure eventual upgrades go as smoothly as possible.
+> This is beta software. While the Mastodon client API is relatively complete, the frontend is not. It is therefore not advisable to upgrade existing Iceshrimp instances at present. Setting up staging instances to help us with testing is very appreciated, however, and will help us ensure eventual upgrades go as smoothly as possible.
 >
-> We estimate there'll be a beta release sometime in June, and, if everything goes well, a stable release by the end of 2024.
+> If everything goes well, we estimate that there'll be a stable release by the end of 2024.
 
 ---
 
