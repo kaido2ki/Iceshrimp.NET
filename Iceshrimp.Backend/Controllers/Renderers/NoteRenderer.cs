@@ -76,6 +76,7 @@ public class NoteRenderer(
 		var reactions   = (data?.Reactions ?? await GetReactions([note], user)).Where(p => p.NoteId == note.Id);
 		var liked = data?.LikedNotes?.Contains(note.Id) ??
 		            await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
+		var emoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmoji([note]);
 
 		return new NoteResponse
 		{
@@ -92,7 +93,8 @@ public class NoteRenderer(
 			Likes       = note.LikeCount,
 			Renotes     = note.RenoteCount,
 			Replies     = note.RepliesCount,
-			Liked       = liked
+			Liked       = liked,
+			Emoji       = emoji
 		};
 	}
 
@@ -174,6 +176,26 @@ public class NoteRenderer(
 		return await db.Filters.Where(p => p.User == user && p.Contexts.Contains(filterContext.Value)).ToListAsync();
 	}
 
+	private async Task<List<EmojiResponse>> GetEmoji(IEnumerable<Note> notes)
+	{
+		var ids = notes.SelectMany(p => p.Emojis).ToList();
+		if (ids.Count == 0) return [];
+
+		return await db.Emojis
+		               .Where(p => ids.Contains(p.Id))
+		               .Select(p => new EmojiResponse
+		               {
+			               Id        = p.Id,
+			               Name      = p.Name,
+			               Uri       = p.Uri,
+			               Aliases   = p.Aliases,
+			               Category  = p.Category,
+			               PublicUrl = p.PublicUrl,
+			               License   = p.License
+		               })
+		               .ToListAsync();
+	}
+
 	public async Task<IEnumerable<NoteResponse>> RenderMany(
 		IEnumerable<Note> notes, User? user, Filter.FilterContext? filterContext = null
 	)
@@ -187,7 +209,8 @@ public class NoteRenderer(
 			Attachments = await GetAttachments(allNotes),
 			Reactions   = await GetReactions(allNotes, user),
 			Filters     = await GetFilters(user, filterContext),
-			LikedNotes  = await GetLikedNotes(allNotes, user)
+			LikedNotes  = await GetLikedNotes(allNotes, user),
+			Emoji       = await GetEmoji(allNotes)
 		};
 
 		return await notesList.Select(p => RenderOne(p, user, filterContext, data)).AwaitAllAsync();
@@ -200,5 +223,6 @@ public class NoteRenderer(
 		public List<UserResponse>?       Users;
 		public List<Filter>?             Filters;
 		public List<string>?             LikedNotes;
+		public List<EmojiResponse>?      Emoji;
 	}
 }
