@@ -94,8 +94,7 @@ public class BackgroundTaskQueue(int parallelism)
 				}
 			}
 
-			db.Remove(file);
-			await db.SaveChangesAsync(token);
+			await db.DriveFiles.Where(p => p == file).ExecuteDeleteAsync(token);
 		}
 	}
 
