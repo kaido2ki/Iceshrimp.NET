@@ -311,8 +311,8 @@ public class PostgresJobQueue<T>(
 				await using var scope = GetScope();
 				await using var db    = GetDbContext(scope);
 
-				var runningCount = await db.GetJobRunningCount(name, _workerId, token);
 				var queuedCount  = await db.GetJobQueuedCount(name, _workerId, token);
+				var runningCount = await db.GetJobRunningCount(name, _workerId, token);
 
 				var actualParallelism = Math.Min(parallelism - runningCount, queuedCount);
 				if (actualParallelism <= 0)
@@ -326,7 +326,7 @@ public class PostgresJobQueue<T>(
 				if (runningCount + queuedCount < parallelism)
 				{
 					_ = _queuedChannel.WaitWithoutResetAsync()
-					                  .ContinueWith(_ => { queuedChannelCts.Cancel(); })
+					                  .ContinueWith(_ => queuedChannelCts.Cancel())
 					                  .SafeWaitAsync(queueToken);
 				}
 				// ReSharper restore MethodSupportsCancellation
