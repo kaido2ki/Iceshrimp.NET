@@ -28,8 +28,7 @@ public class AdminController(
 	DatabaseContext db,
 	ActivityPubController apController,
 	ActivityPub.ActivityFetcherService fetchSvc,
-	QueueService queueSvc,
-	EmojiService emojiSvc
+	QueueService queueSvc
 ) : ControllerBase
 {
 	[HttpPost("invites/generate")]
@@ -209,82 +208,5 @@ public class AdminController(
 			: "application/activity+json";
 
 		await Response.WriteAsync(activity);
-	}
-	
-	[HttpPost("emoji")]
-	[Produces(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
-	public async Task<IActionResult> UploadEmoji(IFormFile file, [FromServices] IOptions<Config.InstanceSection> config)
-	{
-		var emoji = await emojiSvc.CreateEmojiFromStream(file.OpenReadStream(), file.FileName, file.ContentType, config.Value);
-
-		var res = new EmojiResponse
-		{
-			Id = emoji.Id,
-			Name = emoji.Name,
-			Uri = emoji.Uri,
-			Aliases = [],
-			Category = null,
-			PublicUrl = emoji.PublicUrl,
-			License = null
-		};
-
-		return Ok(res);
-	}
-
-	[HttpGet("emoji/{id}")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetEmoji(string id)
-	{
-		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id);
-
-		if (emoji == null) return NotFound();
-		
-		var res = new EmojiResponse
-		{
-			Id        = emoji.Id,
-			Name      = emoji.Name,
-			Uri       = emoji.Uri,
-			Aliases   = emoji.Aliases,
-			Category  = emoji.Category,
-			PublicUrl = emoji.PublicUrl,
-			License   = emoji.License
-		};
-
-		return Ok(res);
-	}
-
-	[HttpPatch("emoji/{id}")]
-	[Consumes(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> UpdateEmoji(string id, UpdateEmojiRequest request, [FromServices] IOptions<Config.InstanceSection> config)
-	{
-		var emoji = await emojiSvc.UpdateLocalEmoji(id, request.Name, request.Aliases, request.Category,
-		                                            request.License, config.Value);
-		if (emoji == null) return NotFound();
-		
-		var res = new EmojiResponse
-		{
-			Id        = emoji.Id,
-			Name      = emoji.Name,
-			Uri       = emoji.Uri,
-			Aliases   = emoji.Aliases,
-			Category  = emoji.Category,
-			PublicUrl = emoji.PublicUrl,
-			License   = emoji.License
-		};
-
-		return Ok(res);
-	}
-	
-	[HttpDelete("emoji/{id}")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> DeleteEmoji(string id)
-	{
-		await emojiSvc.DeleteEmoji(id);
-		return Ok();
 	}
 }
