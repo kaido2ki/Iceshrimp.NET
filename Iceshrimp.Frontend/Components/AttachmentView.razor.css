@@ -14,12 +14,14 @@
     align-content: center;
     background-color: transparent;
 }
+
 .attachment {
     max-width: 85%;
     max-height: 85%;
     object-fit: contain;
     margin: auto;
 }
+
 .wrap {
     background-color: transparent;
     scroll-snap-type: x mandatory;
@@ -30,12 +32,12 @@
     flex-wrap: nowrap;
 }
 
-::backdrop{
+::backdrop {
     opacity: 50%;
     background-color: black;
 }
 
-.close{
+.close {
     position: absolute;
     top: 0%;
     right: 0%;

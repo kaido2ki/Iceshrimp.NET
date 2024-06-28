@@ -1,9 +1,11 @@
 .reaction {
     margin-right: 0.5em;
 }
-.custom-reaction{
+
+.custom-reaction {
     width: 1em;
 }
+
 .icon {
     font-size: 1.5em;
     vertical-align: middle;

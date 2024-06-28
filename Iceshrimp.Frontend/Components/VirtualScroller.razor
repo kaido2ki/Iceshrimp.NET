@@ -38,25 +38,25 @@
 </div>
 
 @code {
-    [Parameter, EditorRequired] public required List<NoteResponse>     NoteResponseList { get; set; }
-    [Parameter, EditorRequired] public required EventCallback          ReachedEnd       { get; set; }
-    [Parameter, EditorRequired] public required EventCallback          ReachedStart     { get; set; }
-    private                                     VirtualScrollerState   State            { get; set; } = new();
-    private                                     int                    UpdateCount      { get; set; } = 15;
-    private                                     int                    _count = 30;
-    private                                     List<ElementReference> _refs  = [];
-    private                                     IntersectionObserver?  ObserverTop       { get; set; }
-    private                                     IntersectionObserver?  ObserverBottom    { get; set; }
-    private                                     IntersectionObserver?  OvrscrlObsvTop    { get; set; }
-    private                                     IntersectionObserver?  OvrscrlObsvBottom { get; set; }
-    private                                     bool                   _overscrollTop    = false;
-    private                                     bool                   _overscrollBottom = false;
-    private                                     ElementReference       _padTopRef;
-    private                                     ElementReference       _padBotRef;
-    private                                     ElementReference       _scroller;
-    private                                     bool                   _loadingTop    = false;
-    private                                     bool                   _loadingBottom = false;
-    private                                     bool                   _setScroll     = false;
+    [Parameter] [EditorRequired] public required List<NoteResponse>     NoteResponseList { get; set; }
+    [Parameter] [EditorRequired] public required EventCallback          ReachedEnd       { get; set; }
+    [Parameter] [EditorRequired] public required EventCallback          ReachedStart     { get; set; }
+    private                                      VirtualScrollerState   State            { get; set; } = new();
+    private                                      int                    UpdateCount      { get; set; } = 15;
+    private                                      int                    _count = 30;
+    private                                      List<ElementReference> _refs  = [];
+    private                                      IntersectionObserver?  ObserverTop       { get; set; }
+    private                                      IntersectionObserver?  ObserverBottom    { get; set; }
+    private                                      IntersectionObserver?  OvrscrlObsvTop    { get; set; }
+    private                                      IntersectionObserver?  OvrscrlObsvBottom { get; set; }
+    private                                      bool                   _overscrollTop    = false;
+    private                                      bool                   _overscrollBottom = false;
+    private                                      ElementReference       _padTopRef;
+    private                                      ElementReference       _padBotRef;
+    private                                      ElementReference       _scroller;
+    private                                      bool                   _loadingTop    = false;
+    private                                      bool                   _loadingBottom = false;
+    private                                      bool                   _setScroll     = false;
 
     private ElementReference Ref
     {
@@ -97,7 +97,7 @@
 
     private async Task RemoveAbove(int amount)
     {
-        for (int i = 0; i < amount; i++)
+        for (var i = 0; i < amount; i++)
         {
             var height = await Module.InvokeAsync<int>("GetHeight", _refs[i]);
             State.PadTop                           += height;
@@ -142,7 +142,7 @@
     {
         if (OvrscrlObsvTop is null) throw new Exception("Tried to use observer that does not exist");
         await OvrscrlObsvTop.Disconnect();
-        for (int i = 0; i < updateCount; i++)
+        for (var i = 0; i < updateCount; i++)
         {
             var height = await Module.InvokeAsync<int>("GetHeight", _refs[i]);
             State.PadBottom                        += height;

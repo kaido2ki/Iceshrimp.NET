@@ -1,4 +1,4 @@
-export function GetHeight(ref){
+export function GetHeight(ref) {
     if (ref != null) {
         console.log(ref.scrollHeight)
         return ref.scrollHeight;

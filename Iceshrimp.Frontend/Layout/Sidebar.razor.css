@@ -48,6 +48,7 @@
     .sidebar {
         display: none;
     }
+
     .bottom-bar {
         width: 100vw;
         position: fixed;
@@ -55,12 +56,12 @@
         left: 0;
         background-color: var(--foreground-color);
     }
-    
+
     .nav {
         display: flex;
         justify-content: space-around;
     }
-    
+
     .sidebar-btn {
         display: inline-flex;
         height: 3rem;
@@ -74,6 +75,7 @@
         margin-top: 0.5rem;
         color: black;
         background: var(--accent-color);
+
         .text {
             display: none;
         }

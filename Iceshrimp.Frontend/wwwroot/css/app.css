@@ -22,7 +22,7 @@
     --hover-color: #544f6f;
     --accent-color: linear-gradient(to right, #9A92FF, #8372F5);
     --notice-color: #ffc684
-    
+
 }
 
 
@@ -37,6 +37,7 @@ html {
 html {
     box-sizing: border-box;
 }
+
 *, *:before, *:after {
     box-sizing: inherit;
 }

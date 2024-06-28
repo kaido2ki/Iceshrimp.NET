@@ -1,12 +1,11 @@
 @using Iceshrimp.Shared.Schemas
-
 <div class="wrapper" @onclick="Open" @onclick:stopPropagation="true">
     <img class="attachment @(BlurImage ? "blur-image" : "")" src="@Attachment.Url" alt="@Attachment.AltText"/>
 </div>
 
 @code {
     [Parameter] [EditorRequired] public required NoteAttachment Attachment { get; set; }
-    [Parameter] [EditorRequired] public required EventCallback  OnOpen       { get; set; }
+    [Parameter] [EditorRequired] public required EventCallback  OnOpen     { get; set; }
 
     private bool BlurImage { get; set; }
 
@@ -21,7 +20,6 @@
         {
             OnOpen.InvokeAsync();
         }
-        
     }
 
     protected override void OnParametersSet()

@@ -29,9 +29,10 @@
     </span>
     @if (InstanceName != null)
     {
-    <span class="instance">@InstanceName</span>
+        <span class="instance">@InstanceName</span>
     }
 </div>
+
 @code {
     [Parameter] [EditorRequired] public required DateTime       CreatedAt    { get; set; }
     [Parameter] [EditorRequired] public required NoteVisibility Visibility   { get; set; }
@@ -43,7 +44,7 @@
         return diff switch
         {
             { Days: >= 365 }  => Loc["{0}y", diff.Days / 365],
-            { Days: >= 30 }   => Loc["{0}mo" ,diff.Days / 30],
+            { Days: >= 30 }   => Loc["{0}mo", diff.Days / 30],
             { Days: >= 7 }    => Loc["{0}d", diff.Days / 7],
             { Days: >= 1 }    => Loc["{0}d", diff.Days],
             { Hours: >= 1 }   => Loc["{0}h", diff.Hours],
@@ -51,5 +52,4 @@
             _                 => Loc["Just now"]
         };
     }
-
 }

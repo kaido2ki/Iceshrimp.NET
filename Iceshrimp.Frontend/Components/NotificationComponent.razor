@@ -1,7 +1,7 @@
-@using Iceshrimp.Shared.Schemas
 @* ReSharper disable once RedundantUsingDirective *@
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              NavigationManager
@@ -69,5 +69,4 @@
     {
         NavigationManager.NavigateTo($"/notes/{NotificationResponse.Note!.Id}");
     }
-
 }

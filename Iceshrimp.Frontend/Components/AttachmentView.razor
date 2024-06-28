@@ -1,16 +1,22 @@
-@using Iceshrimp.Shared.Schemas
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Shared.Schemas
 @inject IJSRuntime Js
 
 <dialog class="attachment-view" @ref="Dialog">
-    <button @onclick="CloseDialog" @onclick:stopPropagation="true" class="close"><Icon Name="Icons.X" Size="5rem"></Icon></button>
-    @if (Focused < _refs.Count -1 )
+    <button @onclick="CloseDialog" @onclick:stopPropagation="true" class="close">
+        <Icon Name="Icons.X" Size="5rem"></Icon>
+    </button>
+    @if (Focused < _refs.Count - 1)
     {
-        <button @onclick="Next" @onclick:stopPropagation="true" class="next"><Icon Name="Icons.ArrowRight" Size="5rem"></Icon></button>
+        <button @onclick="Next" @onclick:stopPropagation="true" class="next">
+            <Icon Name="Icons.ArrowRight" Size="5rem"></Icon>
+        </button>
     }
     @if (Focused > 0)
     {
-        <button @onclick="Prev" @onclick:stopPropagation="true" class="prev"><Icon Name="Icons.ArrowLeft" Size="5rem"></Icon></button>
+        <button @onclick="Prev" @onclick:stopPropagation="true" class="prev">
+            <Icon Name="Icons.ArrowLeft" Size="5rem"></Icon>
+        </button>
     }
     <div class="wrap" @ref="Scroller" @onscroll="Scroll">
         @foreach (var element in Attachments)
@@ -23,21 +29,26 @@
 </dialog>
 
 @code {
-    [Parameter][EditorRequired] public required IList<NoteAttachment>  Attachments { get; set; }
-    private                                     ElementReference       Dialog      { get; set; }
-    private                                     IJSObjectReference     Module      { get; set; } = null!;
-    private                                     int                    Focused     { get; set; }
-    private                                     List<ElementReference> _refs = [];
-    public                                      ElementReference       Ref         { set => _refs.Add(value); }
-    private                                     ElementReference       Scroller    { get; set; }
-    private                                     int                    ScrollWidth { get; set; }
-    private                                     int                    ScrollLeft  { get; set; }
+    [Parameter] [EditorRequired] public required IList<NoteAttachment>  Attachments { get; set; }
+    private                                      ElementReference       Dialog      { get; set; }
+    private                                      IJSObjectReference     Module      { get; set; } = null!;
+    private                                      int                    Focused     { get; set; }
+    private                                      List<ElementReference> _refs = [];
+
+    public ElementReference Ref
+    {
+        set => _refs.Add(value);
+    }
+
+    private ElementReference Scroller    { get; set; }
+    private int              ScrollWidth { get; set; }
+    private int              ScrollLeft  { get; set; }
 
     protected override void OnParametersSet()
     {
         Focused = 0;
     }
-    
+
     private async Task Scroll()
     {
         // This should probably be moved to floating point.
@@ -54,6 +65,7 @@
         {
             return;
         }
+
         Focused += 1;
         await Module.InvokeVoidAsync("scrollTo", _refs[Focused]);
     }
@@ -64,9 +76,9 @@
         {
             return;
         }
+
         Focused -= 1;
         await Module.InvokeVoidAsync("scrollTo", _refs[Focused]);
-
     }
 
     public async Task OpenDialog()
@@ -79,13 +91,13 @@
     {
         await Module.InvokeVoidAsync("closeDialog", Dialog);
     }
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             Module = await Js.InvokeAsync<IJSObjectReference>("import",
-                                                               "./Components/AttachmentView.razor.js");
+                                                              "./Components/AttachmentView.razor.js");
         }
     }
 }

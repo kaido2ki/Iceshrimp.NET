@@ -7,7 +7,7 @@ namespace Iceshrimp.Frontend.Core.ControllerModels;
 internal class DriveControllerModel(ApiClient api)
 {
 	public Task<DriveFileResponse> UploadFile(IBrowserFile file) =>
-		api.Call<DriveFileResponse>(HttpMethod.Post, $"/drive", data: file);
+		api.Call<DriveFileResponse>(HttpMethod.Post, "/drive", data: file);
 
 	public Task<DriveFileResponse?> GetFile(string id) =>
 		api.CallNullable<DriveFileResponse>(HttpMethod.Get, $"/drive/{id}");

@@ -1,12 +1,12 @@
+using System.Globalization;
 using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Iceshrimp.Frontend;
+using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services;
 using Ljbc1994.Blazor.IntersectionObserver;
 using Microsoft.AspNetCore.Components.Authorization;
-using System.Globalization;
-using Iceshrimp.Frontend.Core.Miscellaneous;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");

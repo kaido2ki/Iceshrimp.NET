@@ -8,16 +8,17 @@
     <span class="display-name">@(DisplayName ?? Username)</span>
     <span class="identifier">@@@Username@(Host != null ? $"@{Host}" : "")</span>
 </div>
+
 @code {
-    [Parameter][EditorRequired] public required string  AvatarUrl   { get; set; }
-    [Parameter][EditorRequired] public required string? DisplayName { get; set; }
-    [Parameter][EditorRequired] public required string  Username    { get; set; }
-    [Parameter][EditorRequired] public required bool    Indented    { get; set; }
-    [Parameter][EditorRequired] public required string? Host        { get; set; }
+    [Parameter] [EditorRequired] public required string  AvatarUrl   { get; set; }
+    [Parameter] [EditorRequired] public required string? DisplayName { get; set; }
+    [Parameter] [EditorRequired] public required string  Username    { get; set; }
+    [Parameter] [EditorRequired] public required bool    Indented    { get; set; }
+    [Parameter] [EditorRequired] public required string? Host        { get; set; }
 
     private void OpenProfile()
     {
-        string path = $"@{Username}";
+        var path = $"@{Username}";
         if (Host?.Length > 0)
         {
             path += $"@{Host}";

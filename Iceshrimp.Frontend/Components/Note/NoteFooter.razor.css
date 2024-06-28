@@ -1,7 +1,8 @@
-.note-footer{
+.note-footer {
     margin-top: 0.5em;
 }
-.btn{
+
+.btn {
     display: inline-flex;
     align-items: center;
     min-width: 2.5em;
@@ -11,9 +12,11 @@
     background-color: var(--foreground-color);
     width: fit-content;
 }
-.like-count{
+
+.like-count {
     margin-left: 0.3em;
 }
+
 .renote-count {
     margin-left: 0.3em;
 }

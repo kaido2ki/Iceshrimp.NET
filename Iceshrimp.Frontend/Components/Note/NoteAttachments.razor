@@ -1,12 +1,12 @@
 @using Iceshrimp.Shared.Schemas
-
 <div class="attachment-container">
     @foreach (var element in Attachments)
     {
-        <AttachmentComponent Attachment="element" OnOpen="Open" />
+        <AttachmentComponent Attachment="element" OnOpen="Open"/>
     }
     <AttachmentView @ref="View" Attachments="Attachments"></AttachmentView>
 </div>
+
 @code {
     [Parameter] [EditorRequired] public required IList<NoteAttachment> Attachments { get; set; }
     private                                      AttachmentView        View        { get; set; } = null!;
@@ -15,5 +15,4 @@
     {
         await View.OpenDialog();
     }
-
 }

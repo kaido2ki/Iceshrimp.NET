@@ -9,8 +9,9 @@
         > .host {
             opacity: 0.5;
         }
+
         > .user {
-            
+
         }
     }
 }
@@ -20,6 +21,7 @@
         display: inline;
         position: relative;
         top: 0;
+
         > img {
             height: 2em;
             width: 2em;
@@ -29,6 +31,7 @@
         }
     }
 }
+
 ::deep {
     .emoji {
         > img:hover {

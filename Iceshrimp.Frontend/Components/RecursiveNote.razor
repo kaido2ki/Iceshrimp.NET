@@ -1,6 +1,6 @@
-@using Iceshrimp.Shared.Schemas
 @* ReSharper disable once RedundantUsingDirective *@
 @using Iceshrimp.Frontend.Components.Note
+@using Iceshrimp.Shared.Schemas
 @inject NavigationManager NavigationManager
 
 <div class="@(Depth > 0 ? "descendant" : "root-note")">
@@ -22,9 +22,9 @@
     @if (Note.Descendants != null)
     {
         <div class="@(Note.Descendants?.Count > 1 ? "replies" : "reply")">
-           
-             @* We are checking for null 3 lines up. *@
-            @for (int i = 0; i < Note.Descendants!.Count; i++)
+
+            @* We are checking for null 3 lines up. *@
+            @for (var i = 0; i < Note.Descendants!.Count; i++)
             {
                 var note = Note.Descendants[i];
                 @if (Note.Descendants?.Count > 1)
@@ -33,11 +33,12 @@
                         <div class="reply-indent">
                             @if (i == Note.Descendants.Count - 1)
                             {
-                                <EndIcon />
+                                <EndIcon/>
                                 <div class="line-container"></div>
-                            }else 
+                            }
+                            else
                             {
-                                <BranchIcon />
+                                <BranchIcon/>
                                 <div class="line-container">
                                     <Line/>
                                 </div>
@@ -46,7 +47,8 @@
                         <RecursiveNote Note="note" Depth="Depth + 1"/>
 
                     </div>
-                } else
+                }
+                else
                 {
                     <RecursiveNote Note="note" Depth="Depth + 1"/>
                 }
@@ -67,10 +69,9 @@
             _indented = true;
         }
     }
-    
+
     private void OpenNote()
     {
         NavigationManager.NavigateTo($"/notes/{Note.Id}");
     }
-
 }

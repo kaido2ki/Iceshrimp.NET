@@ -2,12 +2,14 @@
     width: 1px;
     min-height: 1px;
 }
+
 .bottom {
     min-height: 1rem;
-    @media (max-width: 1000px){
+    @media (max-width: 1000px) {
         min-height: 5rem;
     }
 }
+
 .scroller {
     display: flex;
     flex-direction: column;
@@ -17,8 +19,9 @@
     overflow-anchor: none;
     overscroll-behavior: contain;
 }
+
 .target {
-    display: flex;  
+    display: flex;
     flex-direction: column;
     width: 100%;
     align-items: center;

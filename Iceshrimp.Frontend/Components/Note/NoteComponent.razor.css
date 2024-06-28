@@ -1,10 +1,12 @@
-.note-header{
+.note-header {
     display: flex;
     padding-bottom: 0.5em;
 }
-.note-container{
+
+.note-container {
     width: 100%
 }
+
 .user-avatar {
     border-radius: 8px;
     object-fit: cover;

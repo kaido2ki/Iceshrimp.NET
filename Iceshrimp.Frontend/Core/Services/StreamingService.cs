@@ -16,8 +16,18 @@ internal class StreamingService(
 	ILogger<StreamingService> logger
 ) : IAsyncDisposable
 {
-	private HubConnection?       _hubConnection;
 	private IStreamingHubServer? _hub;
+	private HubConnection?       _hubConnection;
+
+	public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
+
+	public async ValueTask DisposeAsync()
+	{
+		if (_hubConnection is not null)
+		{
+			await _hubConnection.DisposeAsync();
+		}
+	}
 
 	public event EventHandler<NotificationResponse>? Notification;
 	public event EventHandler<NoteEvent>?            NotePublished;
@@ -76,18 +86,26 @@ internal class StreamingService(
 		await _hubConnection.StartAsync();
 	}
 
-	public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
-
-	public async ValueTask DisposeAsync()
-	{
-		if (_hubConnection is not null)
-		{
-			await _hubConnection.DisposeAsync();
-		}
-	}
-
 	private class StreamingHubClient(StreamingService streaming) : IStreamingHubClient, IHubConnectionObserver
 	{
+		public Task OnClosed(Exception? exception)
+		{
+			streaming.OnConnectionChange?.Invoke(this, HubConnectionState.Disconnected);
+			return Task.CompletedTask;
+		}
+
+		public Task OnReconnected(string? connectionId)
+		{
+			streaming.OnConnectionChange?.Invoke(this, HubConnectionState.Connected);
+			return Task.CompletedTask;
+		}
+
+		public Task OnReconnecting(Exception? exception)
+		{
+			streaming.OnConnectionChange?.Invoke(this, HubConnectionState.Reconnecting);
+			return Task.CompletedTask;
+		}
+
 		public Task Notification(NotificationResponse notification)
 		{
 			streaming.Notification?.Invoke(this, notification);
@@ -105,24 +123,6 @@ internal class StreamingService(
 		{
 			foreach (var timeline in timelines)
 				streaming.NoteUpdated?.Invoke(this, (timeline, note));
-			return Task.CompletedTask;
-		}
-
-		public Task OnClosed(Exception? exception)
-		{
-			streaming.OnConnectionChange?.Invoke(this, HubConnectionState.Disconnected);
-			return Task.CompletedTask;
-		}
-
-		public Task OnReconnected(string? connectionId)
-		{
-			streaming.OnConnectionChange?.Invoke(this, HubConnectionState.Connected);
-			return Task.CompletedTask;
-		}
-
-		public Task OnReconnecting(Exception? exception)
-		{
-			streaming.OnConnectionChange?.Invoke(this, HubConnectionState.Reconnecting);
 			return Task.CompletedTask;
 		}
 	}

@@ -8,7 +8,7 @@
     // The proper fix for this is to change to the Service Pattern.
     // But that requires the IntersectionObserver Library to be modified to return what element an observation update is for.
 {
-    <IntersectionObserve Options="new IntersectionObserverOptions() { Root = Scroller, RootMargin = Margin }" OnChange="@(entry => Change(entry))">
+    <IntersectionObserve Options="new IntersectionObserverOptions { Root = Scroller, RootMargin = Margin }" OnChange="@(entry => Change(entry))">
         <div class="tgt" @ref="context.Ref.Current">
             @if (_isIntersecting)
             {
@@ -71,5 +71,4 @@
             .InvokeAsync<int?>("getScrollHeight", Note.Id);
         return height;
     }
-
 }

@@ -5,12 +5,15 @@
     font-size: 0.9em;
     white-space: nowrap;
     margin-left: auto;
+
     .info {
         display: block;
+
         .time {
             display: inline-block;
             margin-right: 0.5em;
         }
+
         .visibility {
             display: inline-block;
             vertical-align: middle;

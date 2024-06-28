@@ -4,7 +4,7 @@
 @inject IStringLocalizer<Localization> Loc;
 <div class="profile-info">
     <div class="bio">
-        <MfmText Text="@UserProfile.Bio" />
+        <MfmText Text="@UserProfile.Bio"/>
     </div>
     <div class="data">
         @if (UserProfile.Location != null)
@@ -27,7 +27,7 @@
         <div class="fields">
             @foreach (var field in UserProfile.Fields)
             {
-                <ProfileInfoField Field="field" />
+                <ProfileInfoField Field="field"/>
             }
         </div>
     }
@@ -52,5 +52,5 @@
 </div>
 
 @code {
-    [Parameter][EditorRequired] public required UserProfileResponse UserProfile { get; set; }
+    [Parameter] [EditorRequired] public required UserProfileResponse UserProfile { get; set; }
 }

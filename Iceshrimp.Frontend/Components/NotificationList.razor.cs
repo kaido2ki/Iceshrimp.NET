@@ -7,17 +7,18 @@ namespace Iceshrimp.Frontend.Components;
 
 public partial class NotificationList : IAsyncDisposable
 {
+	private          string?                    _minId;
+	private          State                      _state = State.Loading;
 	[Inject] private StreamingService           StreamingService { get; set; } = null!;
 	[Inject] private ApiService                 Api              { get; set; } = null!;
 	private          List<NotificationResponse> Notifications    { get; set; } = [];
-	private          State                      _state = State.Loading;
-	private          string?                    _minId;
 
-	private enum State
+	public async ValueTask DisposeAsync()
 	{
-		Loading,
-		Error,
-		Init
+		StreamingService.Notification -= OnNotification;
+
+		await StreamingService.DisposeAsync();
+		GC.SuppressFinalize(this);
 	}
 
 	private async Task GetNotifications()
@@ -70,11 +71,10 @@ public partial class NotificationList : IAsyncDisposable
 		StateHasChanged();
 	}
 
-	public async ValueTask DisposeAsync()
+	private enum State
 	{
-		StreamingService.Notification -= OnNotification;
-
-		await StreamingService.DisposeAsync();
-		GC.SuppressFinalize(this);
+		Loading,
+		Error,
+		Init
 	}
 }

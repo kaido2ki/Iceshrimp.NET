@@ -7,8 +7,10 @@
     max-width: 45rem;
     width: 100%;
 }
+
 .notification-text {
 }
+
 .notification-note {
     display: flex;
     flex-direction: column;
@@ -22,11 +24,13 @@
     height: 3em;
     margin-right: 0.5em;
 }
+
 .display-name {
     white-space: wrap;
     text-overflow: ellipsis;
     overflow: clip;
 }
+
 .notification-body {
     display: flex;
     flex-direction: column;

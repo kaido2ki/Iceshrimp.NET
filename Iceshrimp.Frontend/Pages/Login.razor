@@ -3,9 +3,9 @@
 @using Iceshrimp.Frontend.Core.Schemas
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
-@inject ApiService        Api
-@inject SessionService    SessionService
-@inject NavigationManager Navigation
+@inject ApiService            Api
+@inject SessionService        SessionService
+@inject NavigationManager     Navigation
 @layout LoginLayout
 <h3>Login</h3>
 <div>
@@ -60,7 +60,7 @@
                         InstanceIconUrl = res.User.InstanceIconUrl,
                         Token           = res.Token!,
                         Host            = res.User.Host,
-                        IsAdmin = res.IsAdmin ?? false
+                        IsAdmin         = res.IsAdmin ?? false
                     });
                     SessionService.SetSession(res.User.Id);
                     Navigation.NavigateTo("/");
@@ -81,5 +81,4 @@
             StateHasChanged(); // Manually triggering a state update, else component will not re-render.
         }
     }
-
 }

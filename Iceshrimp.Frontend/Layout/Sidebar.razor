@@ -1,16 +1,17 @@
-@using Iceshrimp.Frontend.Components
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
-@inject IStringLocalizer<Localization.Localization> Loc;
+@inject IStringLocalizer<Localization> Loc;
 
 <div class="sidebar">
     <div class="header">
-        <account-dropdown />
+        <account-dropdown/>
     </div>
     <div class="nav">
         <div class="sidebar-btn">
             <NavLink href="/">
-                <Icon Name="Icons.House" />
+                <Icon Name="Icons.House"/>
                 <span class="text">@Loc["Timeline"]</span>
             </NavLink>
         </div>
@@ -28,7 +29,7 @@
 <div class="bottom-bar">
     <div class="nav">
         <button class="sidebar-btn">
-            <Icon Name="Icons.List" /> 
+            <Icon Name="Icons.List"/>
         </button>
         <div class="sidebar-btn">
             <NavLink href="/">
@@ -49,10 +50,11 @@
             </button>
         </div>
     </div>
-    
+
 </div>
 
 <Compose @ref="_compose"/>
+
 @code {
     private Compose _compose = null!;
 
@@ -60,5 +62,4 @@
     {
         await _compose.OpenDialog();
     }
-
 }

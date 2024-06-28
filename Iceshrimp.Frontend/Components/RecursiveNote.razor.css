@@ -1,12 +1,13 @@
 
-
 .replies {
     width: 100%;
 }
+
 .indented-reply {
     display: flex;
     width: 100%;
 }
+
 .reply-indent {
     display: flex;
     flex-direction: column;
@@ -15,9 +16,11 @@
     justify-content: center;
 
 }
+
 .note {
     width: 100%;
 }
+
 .root-note {
     max-width: 45rem;
     background-color: var(--foreground-color);
@@ -44,18 +47,22 @@
     width: 3em;
     height: 3em;
 }
+
 .note-container {
     display: flex;
 }
+
 .line-container {
     height: 100%;
     text-align: center;
 }
+
 .note-indent {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+
 .replies {
     width: 100%
 }

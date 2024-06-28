@@ -1,6 +1,6 @@
-@using Iceshrimp.Shared.Schemas
 @* ReSharper disable once RedundantUsingDirective *@
 @using Iceshrimp.Frontend.Components.Note
+@using Iceshrimp.Shared.Schemas
 @inject NavigationManager NavigationManager
 <div class="note">
     <div class="note-container">
@@ -23,5 +23,4 @@
     {
         NavigationManager.NavigateTo($"/notes/{Note.Id}");
     }
-
 }

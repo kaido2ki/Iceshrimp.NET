@@ -7,8 +7,18 @@ namespace Iceshrimp.Frontend.Pages;
 
 public partial class Streaming : IAsyncDisposable
 {
-	[Inject] private StreamingService StreamingService { get; init; } = null!;
 	private readonly List<string>     _messages = [];
+	[Inject] private StreamingService StreamingService { get; init; } = null!;
+
+	public async ValueTask DisposeAsync()
+	{
+		StreamingService.Notification  -= OnNotification;
+		StreamingService.NotePublished -= OnNotePublished;
+		StreamingService.NoteUpdated   -= OnNoteUpdated;
+
+		await StreamingService.DisposeAsync();
+		GC.SuppressFinalize(this);
+	}
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -35,15 +45,5 @@ public partial class Streaming : IAsyncDisposable
 	{
 		_messages.Add($"Note updated: {data.note.Id} ({data.timeline.ToString()})");
 		await InvokeAsync(StateHasChanged);
-	}
-
-	public async ValueTask DisposeAsync()
-	{
-		StreamingService.Notification  -= OnNotification;
-		StreamingService.NotePublished -= OnNotePublished;
-		StreamingService.NoteUpdated   -= OnNoteUpdated;
-
-		await StreamingService.DisposeAsync();
-		GC.SuppressFinalize(this);
 	}
 }
