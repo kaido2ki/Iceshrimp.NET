@@ -9,9 +9,9 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <DebugType>embedded</DebugType>
     </PropertyGroup>
-    
+
     <ItemGroup>
-        <PackageReference Include="System.Text.Json" Version="8.0.3" />
+        <PackageReference Include="System.Text.Json" Version="8.0.3"/>
     </ItemGroup>
 
 </Project>

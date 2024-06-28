@@ -5,15 +5,14 @@ namespace Iceshrimp.Shared.Schemas;
 
 public class NoteResponse : NoteWithQuote, ICloneable
 {
-	public NoteBase?           Reply             { get; set; }
-	public string?             ReplyId           { get; set; }
-	public bool                ReplyInaccessible { get; set; }
-	public NoteWithQuote?      Renote            { get; set; }
-	public string?             RenoteId          { get; set; }
-	public NoteFilteredSchema? Filtered          { get; set; }
-
 	// The properties below are only necessary for building a descendants tree
-	[JI] public NoteResponse? Parent;
+	[JI] public NoteResponse?       Parent;
+	public      NoteBase?           Reply             { get; set; }
+	public      string?             ReplyId           { get; set; }
+	public      bool                ReplyInaccessible { get; set; }
+	public      NoteWithQuote?      Renote            { get; set; }
+	public      string?             RenoteId          { get; set; }
+	public      NoteFilteredSchema? Filtered          { get; set; }
 
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public List<NoteResponse>? Descendants { get; set; }
