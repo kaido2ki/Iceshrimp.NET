@@ -254,8 +254,7 @@ public class QueueService(
 			                                            .SetProperty(i => i.ExceptionSource, _ => null)
 			                                            .SetProperty(i => i.StackTrace, _ => null));
 			if (cnt <= 0) return;
-			foreach (var queue in _queues.Where(p => p.Name == job.Queue))
-				queue.RaiseJobQueuedEvent();
+			_queues.FirstOrDefault(p => p.Name == job.Queue)?.RaiseJobQueuedEvent();
 		}
 	}
 }
