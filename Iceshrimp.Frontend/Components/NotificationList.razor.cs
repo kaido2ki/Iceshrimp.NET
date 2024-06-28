@@ -11,6 +11,7 @@ public partial class NotificationList : IAsyncDisposable
     [Inject] private ApiService                 Api              { get; set; } = null!;
     private          List<NotificationResponse> Notifications    { get; set; } = [];
     private          State                      _state = State.Loading;
+    private          string?                    _minId;
 
     private enum State
     {
@@ -24,17 +25,34 @@ public partial class NotificationList : IAsyncDisposable
         try
         {
             var res = await Api.Notifications.GetNotifications(new PaginationQuery());
-            Notifications = res;
-            foreach (var el in res)
+            if (res.Count > 0)
             {
-                Console.WriteLine(el.Type);
+                Notifications = res;
+                _minId        = res.Last().Id;
+                foreach (var el in res)
+                {
+                    Console.WriteLine(el.Type);
+                }
             }
+            
 
             _state = State.Init;
         }
         catch (ApiException)
         {
             _state = State.Error;
+        }
+    }
+
+    private async Task LoadMore()
+    {
+        var pq  = new PaginationQuery { MaxId = _minId, Limit = 20 };
+        var res = await Api.Notifications.GetNotifications(pq);
+        if (res.Count > 0)
+        {
+            Notifications.AddRange(res);
+            _minId = res.Last().Id;
+            StateHasChanged();
         }
     }
 

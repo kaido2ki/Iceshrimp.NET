@@ -1,7 +1,9 @@
 .widget-panel{
     display: flex;
-    max-width: 20rem;
-    min-width: 20rem;
+    max-width: 23rem;
+    min-width: 23rem;
     position: sticky;
     top: 0;
+    max-height: 100vh;
+    padding-left: 1rem;
 }
