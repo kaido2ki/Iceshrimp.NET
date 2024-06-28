@@ -30,13 +30,17 @@
         <input @bind="NoteDraft.Cw" class="input cw-field" placeholder="Content Warning"/>
         <hr class="separator"/>
     }
-    <textarea @bind="NoteDraft.Text" class="textarea" placeholder="@TextPlaceholder" rows="5" cols="35"></textarea>
+    <textarea @ref="Textarea" @bind="NoteDraft.Text" class="textarea" placeholder="@TextPlaceholder" rows="5" cols="35"></textarea>
     <div class="footer">
         <button class="footer-btn" @onclick="OpenUpload">
             <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
         </button>
         <button class="footer-btn" @onclick="ToggleCw">
             <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
+        </button>
+        <button class="footer-btn positioned" @onclick="ToggleEmojiPicker">
+            <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
+            <EmojiPicker @ref="EmojiPicker" OnEmojiSelect="AddEmoji" Fixed="true"></EmojiPicker>
         </button>
         <div class="file-input">
             <InputFile @ref="UploadInput" OnChange="Upload">Upload!</InputFile>
@@ -51,6 +55,8 @@
     private InputFile                UploadInput     { get; set; } = null!;
     private NoteBase?                ReplyOrQuote    { get; set; }
     private string?                  TextPlaceholder { get; set; }
+    private EmojiPicker              EmojiPicker     { get; set; } = null!;
+    private ElementReference         Textarea        { get; set; }
     private NoteCreateRequest NoteDraft { get;              set; } = new NoteCreateRequest
     {
         Text       = "",
@@ -209,6 +215,23 @@
                                                                "./Components/Compose.razor.js");
             ComposeService.ComposeDialog = this;
         }
+    }
+
+    private void ToggleEmojiPicker()
+    {
+        EmojiPicker.Toggle();
+        Console.WriteLine("showing picker");
+        StateHasChanged();
+    }
+
+
+    private async Task AddEmoji(EmojiResponse emoji)
+    {
+        var pos   = await _module.InvokeAsync<int>("getSelectionStart");
+        var text  = NoteDraft.Text;
+        var emojiString = $":{emoji.Name}";
+        NoteDraft.Text = text.Insert(pos, emojiString);
+        StateHasChanged();
     }
 
     protected override void OnInitialized()

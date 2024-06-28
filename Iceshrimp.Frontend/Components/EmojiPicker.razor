@@ -2,21 +2,24 @@
 @using Iceshrimp.Shared.Schemas
 @inject ApiService Api
 
-@if (_display){
-<div class="emoji-picker">
-    @foreach (var el in EmojiList)
-    {
-        <div class="emoji">
-            <img @onclick="() => Select(el)" src="@el.PublicUrl" alt="@el.Name"/>
-        </div>
-    }
-</div>
+@if (_display)
+{
+    <div class="emoji-picker @(Fixed ? "fixed" : "")">
+        @foreach (var el in EmojiList)
+        {
+            <div class="emoji">
+                <img @onclick="() => Select(el)" src="@el.PublicUrl" alt="@el.Name"/>
+            </div>
+        }
+    </div>
 }
 
 @code {
     [Parameter] [EditorRequired] public required EventCallback<EmojiResponse> OnEmojiSelect { get; set; }
-    private                      List<EmojiResponse>          EmojiList     { get; set; } = [];
-    private                      bool                         _display = false;
+    [Parameter]                  public          bool                         Fixed        { get; set; } = false;
+
+    private List<EmojiResponse> EmojiList { get; set; } = [];
+    private bool                _display = false;
 
     protected override async Task OnInitializedAsync()
     {

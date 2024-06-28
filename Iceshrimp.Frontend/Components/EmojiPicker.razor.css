@@ -21,3 +21,8 @@
         width: 2rem;
     }
 }
+
+.fixed {
+    position: fixed;
+    bottom: 10%;
+}
