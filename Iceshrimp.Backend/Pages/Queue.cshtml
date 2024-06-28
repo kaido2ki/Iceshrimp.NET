@@ -1,8 +1,8 @@
 @page "/queue/{queue?}/{pagination:int?}/{status?}"
+@inject QueueService                         QueueSvc
 @using Iceshrimp.Backend.Core.Database.Tables
 @using Iceshrimp.Backend.Core.Extensions
 @using Iceshrimp.Backend.Core.Services
-@inject QueueService                         QueueSvc
 @model QueueModel
 
 @{

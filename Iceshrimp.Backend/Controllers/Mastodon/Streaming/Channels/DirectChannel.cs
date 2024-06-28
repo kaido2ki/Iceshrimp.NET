@@ -63,12 +63,6 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 		return wrapped;
 	}
 
-	private class NoteWithVisibilities(Note note)
-	{
-		public readonly Note  Note   = note;
-		public          Note? Renote = note.Renote;
-	}
-
 	private static StatusEntity EnforceRenoteReplyVisibility(StatusEntity rendered, NoteWithVisibilities note)
 	{
 		var renote = note.Renote == null && rendered.Renote != null;
@@ -148,5 +142,11 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 		{
 			_logger.LogError("Event handler OnNoteUpdated threw exception: {e}", e);
 		}
+	}
+
+	private class NoteWithVisibilities(Note note)
+	{
+		public readonly Note  Note   = note;
+		public          Note? Renote = note.Renote;
 	}
 }

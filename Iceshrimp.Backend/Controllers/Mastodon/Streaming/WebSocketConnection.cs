@@ -23,18 +23,18 @@ public sealed class WebSocketConnection(
 	CancellationToken ct
 ) : IDisposable
 {
+	private readonly WriteLockingList<string> _blockedBy     = [];
+	private readonly WriteLockingList<string> _blocking      = [];
 	private readonly SemaphoreSlim            _lock          = new(1);
+	private readonly WriteLockingList<string> _muting        = [];
 	public readonly  List<IChannel>           Channels       = [];
 	public readonly  EventService             EventService   = eventSvc;
+	public readonly  WriteLockingList<Filter> Filters        = [];
+	public readonly  WriteLockingList<string> Following      = [];
 	public readonly  IServiceScope            Scope          = scopeFactory.CreateScope();
 	public readonly  IServiceScopeFactory     ScopeFactory   = scopeFactory;
 	public readonly  OauthToken               Token          = token;
 	public           List<string>             HiddenFromHome = [];
-	public readonly  WriteLockingList<Filter> Filters        = [];
-	public readonly  WriteLockingList<string> Following      = [];
-	private readonly WriteLockingList<string> _blocking      = [];
-	private readonly WriteLockingList<string> _blockedBy     = [];
-	private readonly WriteLockingList<string> _muting        = [];
 
 	public void Dispose()
 	{
@@ -362,9 +362,9 @@ public sealed class WebSocketConnection(
 	                                     (note.Renote?.User != null &&
 	                                      (IsFiltered(note.Renote.User) ||
 	                                       IsFilteredMentions(note.Renote.Mentions))) ||
-	                                     note.Renote?.Renote?.User != null &&
-	                                     (IsFiltered(note.Renote.Renote.User) ||
-	                                      IsFilteredMentions(note.Renote.Renote.Mentions));
+	                                     (note.Renote?.Renote?.User != null &&
+	                                      (IsFiltered(note.Renote.Renote.User) ||
+	                                       IsFilteredMentions(note.Renote.Renote.Mentions)));
 
 	public async Task CloseAsync(WebSocketCloseStatus status)
 	{

@@ -208,14 +208,14 @@ public class CustomHttpClient : HttpClient
 
 	private class RedirectHandler : DelegatingHandler
 	{
-		private int  MaxAutomaticRedirections { get; set; }
-		private bool InitialAutoRedirect      { get; set; }
-
 		public RedirectHandler(HttpMessageHandler innerHandler) : base(innerHandler)
 		{
 			var mostInnerHandler = innerHandler.GetMostInnerHandler();
 			SetupCustomAutoRedirect(mostInnerHandler);
 		}
+
+		private int  MaxAutomaticRedirections { get; set; }
+		private bool InitialAutoRedirect      { get; set; }
 
 		private void SetupCustomAutoRedirect(HttpMessageHandler? mostInnerHandler)
 		{

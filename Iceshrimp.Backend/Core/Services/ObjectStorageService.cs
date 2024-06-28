@@ -14,13 +14,13 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 {
 	private readonly string? _accessUrl = config.Value.ObjectStorage?.AccessUrl;
 
-	private readonly S3Bucket? _bucket = GetBucketSafely(config);
-
-	private readonly string? _prefix = config.Value.ObjectStorage?.Prefix?.Trim('/');
-
 	private readonly IReadOnlyDictionary<string, string>? _acl = config.Value.ObjectStorage?.SetAcl != null
 		? new Dictionary<string, string> { { "x-amz-acl", config.Value.ObjectStorage.SetAcl } }.AsReadOnly()
 		: null;
+
+	private readonly S3Bucket? _bucket = GetBucketSafely(config);
+
+	private readonly string? _prefix = config.Value.ObjectStorage?.Prefix?.Trim('/');
 
 	private static S3Bucket? GetBucketSafely(IOptions<Config.StorageSection> config)
 	{

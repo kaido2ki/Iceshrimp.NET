@@ -79,9 +79,8 @@ public class Following
 	[Column("followeeSharedInbox")]
 	[StringLength(512)]
 	public string? FolloweeSharedInbox { get; set; }
-	
-	[Column("relationshipId")]
-	public Guid? RelationshipId { get; set; }
+
+	[Column("relationshipId")] public Guid? RelationshipId { get; set; }
 
 	[ForeignKey(nameof(FolloweeId))]
 	[InverseProperty(nameof(User.IncomingFollowRelationships))]

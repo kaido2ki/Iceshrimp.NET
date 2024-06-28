@@ -7,6 +7,6 @@ public interface IEntity
 
 public class EntityWrapper<T> : IEntity
 {
-	public required string Id     { get; init; }
 	public required T      Entity { get; init; }
+	public required string Id     { get; init; }
 }

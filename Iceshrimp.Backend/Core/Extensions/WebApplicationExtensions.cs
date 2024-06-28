@@ -4,11 +4,11 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Migrations;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.WebPush;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Options;
-using Iceshrimp.WebPush;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 

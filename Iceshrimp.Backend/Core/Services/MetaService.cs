@@ -65,7 +65,7 @@ public class MetaService([FromKeyedServices("cache")] DatabaseContext db)
 		{
 			await db.MetaStore.Upsert(new MetaStoreEntry { Key = key, Value = value })
 			        .On(p => p.Key)
-			        .WhenMatched((_, orig) => new MetaStoreEntry { Value = orig.Value, })
+			        .WhenMatched((_, orig) => new MetaStoreEntry { Value = orig.Value })
 			        .RunAsync();
 		}
 	}

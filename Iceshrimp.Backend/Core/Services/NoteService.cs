@@ -9,11 +9,11 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
-using static Iceshrimp.Parsing.MfmNodeTypes;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Core.Services;
 
@@ -48,15 +48,16 @@ public class NoteService(
 	ActivityPub.FederationControlService fedCtrlSvc
 )
 {
-	private const    int          DefaultRecursionLimit = 100;
-	private readonly List<string> _resolverHistory      = [];
-	private          int          _recursionLimit       = DefaultRecursionLimit;
+	private const int DefaultRecursionLimit = 100;
 
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{
 		o.PoolSize        = 100;
 		o.PoolInitialFill = 5;
 	});
+
+	private readonly List<string> _resolverHistory = [];
+	private          int          _recursionLimit  = DefaultRecursionLimit;
 
 	public async Task<Note> CreateNoteAsync(
 		User user, Note.NoteVisibility visibility, string? text = null, string? cw = null, Note? reply = null,
@@ -632,7 +633,8 @@ public class NoteService(
 			                                                         note.Visibility,
 			                                                         note.User.GetPublicUri(config.Value) +
 			                                                         "/followers"))
-			: ActivityPub.ActivityRenderer.RenderDelete(actor, new ASTombstone { Id = note.GetPublicUri(config.Value) });
+			: ActivityPub.ActivityRenderer.RenderDelete(actor,
+			                                            new ASTombstone { Id = note.GetPublicUri(config.Value) });
 
 		if (note.Visibility == Note.NoteVisibility.Specified)
 			await deliverSvc.DeliverToAsync(activity, note.User, recipients.ToArray());

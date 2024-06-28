@@ -23,22 +23,6 @@ public static class SwaggerGenOptionsExtensions
 		options.DocInclusionPredicate(DocInclusionPredicate);
 	}
 
-	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
-	                 Justification = "SwaggerGenOptions.SchemaFilter<T> instantiates this class at runtime")]
-	private class RequireNonNullablePropertiesSchemaFilter : ISchemaFilter
-	{
-		public void Apply(OpenApiSchema model, SchemaFilterContext context)
-		{
-			var additionalRequiredProps = model.Properties
-			                                   .Where(x => !x.Value.Nullable && !model.Required.Contains(x.Key))
-			                                   .Select(x => x.Key);
-			foreach (var propKey in additionalRequiredProps)
-			{
-				model.Required.Add(propKey);
-			}
-		}
-	}
-
 	private static bool DocInclusionPredicate(string docName, ApiDescription apiDesc)
 	{
 		if (!apiDesc.TryGetMethodInfo(out var methodInfo)) return false;
@@ -59,6 +43,22 @@ public static class SwaggerGenOptionsExtensions
 			"iceshrimp" when !isMastodonController && !isFederationController => true,
 			_                                                                 => false
 		};
+	}
+
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
+	                 Justification = "SwaggerGenOptions.SchemaFilter<T> instantiates this class at runtime")]
+	private class RequireNonNullablePropertiesSchemaFilter : ISchemaFilter
+	{
+		public void Apply(OpenApiSchema model, SchemaFilterContext context)
+		{
+			var additionalRequiredProps = model.Properties
+			                                   .Where(x => !x.Value.Nullable && !model.Required.Contains(x.Key))
+			                                   .Select(x => x.Key);
+			foreach (var propKey in additionalRequiredProps)
+			{
+				model.Required.Add(propKey);
+			}
+		}
 	}
 
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",

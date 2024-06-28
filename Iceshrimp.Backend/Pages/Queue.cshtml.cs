@@ -10,15 +10,15 @@ namespace Iceshrimp.Backend.Pages;
 
 public class QueueModel(DatabaseContext db, QueueService queueSvc) : PageModel
 {
-	public List<Job>      Jobs = [];
-	public string?        Queue;
+	public int?           DelayedCount;
 	public Job.JobStatus? Filter;
-	public int?           TotalCount;
+	public List<Job>      Jobs = [];
+	public int?           NextPage;
+	public int?           PrevPage;
+	public string?        Queue;
 	public int?           QueuedCount;
 	public int?           RunningCount;
-	public int?           DelayedCount;
-	public int?           PrevPage;
-	public int?           NextPage;
+	public int?           TotalCount;
 
 	public async Task<IActionResult> OnGet(
 		[FromRoute] string? queue, [FromRoute(Name = "pagination")] int? page, [FromRoute] string? status
@@ -51,7 +51,7 @@ public class QueueModel(DatabaseContext db, QueueService queueSvc) : PageModel
 		                  .Skip((page.Value - 1) * 50)
 		                  .Take(50)
 		                  .ToListAsync();
-		
+
 		if (Filter == null)
 		{
 			TotalCount   = await db.Jobs.CountAsync(p => p.Queue == queue);

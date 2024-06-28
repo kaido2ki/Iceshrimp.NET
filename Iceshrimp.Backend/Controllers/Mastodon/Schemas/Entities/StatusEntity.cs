@@ -9,7 +9,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 public class StatusEntity : IEntity, ICloneable
 {
-	[J("id")]                     public required string        Id             { get; set; }
+	[JI]                          public          string?       MastoReplyUserId;
 	[J("text")]                   public required string?       Text           { get; set; }
 	[J("content")]                public required string?       Content        { get; set; }
 	[J("uri")]                    public required string        Uri            { get; set; }
@@ -52,7 +52,8 @@ public class StatusEntity : IEntity, ICloneable
 
 	[J("language")] public string? Language => null; //FIXME
 
-	[JI] public string? MastoReplyUserId;
+	public                    object Clone() => MemberwiseClone();
+	[J("id")] public required string Id      { get; set; }
 
 	public static string EncodeVisibility(Note.NoteVisibility visibility)
 	{
@@ -77,8 +78,6 @@ public class StatusEntity : IEntity, ICloneable
 			_          => throw GracefulException.BadRequest($"Unknown visibility: {visibility}")
 		};
 	}
-
-	public object Clone() => MemberwiseClone();
 }
 
 public class StatusContext

@@ -9,11 +9,10 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASNote : ASObject
 {
-	public ASNote(bool withType = true) => Type = withType ? Types.Note : null;
+	private string? _mkContent;
 
 	[JI] public bool VerifiedFetch = false;
-
-	private string? _mkContent;
+	public ASNote(bool withType = true) => Type = withType ? Types.Note : null;
 
 	[J("https://misskey-hub.net/ns#_misskey_content")]
 	[JC(typeof(VC))]

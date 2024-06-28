@@ -97,6 +97,8 @@ public abstract class StatusSchemas
 
 	public class ReblogRequest
 	{
-		[B(Name = "visibility")] [J("visibility")] public string? Visibility { get; set; }
+		[B(Name = "visibility")]
+		[J("visibility")]
+		public string? Visibility { get; set; }
 	}
 }

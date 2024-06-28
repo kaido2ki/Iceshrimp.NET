@@ -260,7 +260,7 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom")
 
 file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-custom")
 {
-	private static readonly string MessagePadding            = new(' ', 6);
+	private static readonly string MessagePadding = new(' ', 6);
 
 	public override void Write<TState>(
 		in LogEntry<TState> logEntry,

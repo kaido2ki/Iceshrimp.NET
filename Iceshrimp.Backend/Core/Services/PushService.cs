@@ -8,9 +8,9 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.WebPush;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Iceshrimp.WebPush;
 using PushSubscription = Iceshrimp.Backend.Core.Database.Tables.PushSubscription;
 using WebPushSubscription = Iceshrimp.WebPush.PushSubscription;
 

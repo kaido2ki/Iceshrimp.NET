@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Mime;
-using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Shared.Schemas;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 

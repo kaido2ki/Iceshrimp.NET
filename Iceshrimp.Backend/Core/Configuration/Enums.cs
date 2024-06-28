@@ -14,6 +14,13 @@ public static class Enums
 		ObjectStorage = 1
 	}
 
+	public enum ImageProcessor
+	{
+		ImageSharp,
+		LibVips,
+		None
+	}
+
 	public enum ItemVisibility
 	{
 		Hide       = 0,
@@ -21,25 +28,18 @@ public static class Enums
 		Public     = 2
 	}
 
+	public enum PublicPreview
+	{
+		Lockdown          = 0,
+		RestrictedNoMedia = 1,
+		Restricted        = 2,
+		Public            = 3
+	}
+
 	public enum Registrations
 	{
 		Closed = 0,
 		Invite = 1,
 		Open   = 2
-	}
-
-	public enum PublicPreview
-	{
-		Lockdown = 0,
-		RestrictedNoMedia = 1,
-		Restricted = 2,
-		Public = 3
-	}
-
-	public enum ImageProcessor
-	{
-		ImageSharp,
-		LibVips,
-		None
 	}
 }

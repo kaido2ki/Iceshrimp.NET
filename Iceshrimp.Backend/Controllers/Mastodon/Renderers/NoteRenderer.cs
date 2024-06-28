@@ -20,6 +20,20 @@ public class NoteRenderer(
 	EmojiService emojiSvc
 )
 {
+	private static readonly FilterResultEntity InaccessibleFilter = new()
+	{
+		Filter = new FilterEntity
+		{
+			Title        = "HideInaccessible",
+			FilterAction = "hide",
+			Id           = "0",
+			Context      = ["home", "thread", "notifications", "account", "public"],
+			Keywords     = [new FilterKeyword("RE: \ud83d\udd12", 0, 0)],
+			ExpiresAt    = null
+		},
+		KeywordMatches = ["RE: \ud83d\udd12"] // lock emoji
+	};
+
 	public async Task<StatusEntity> RenderAsync(
 		Note note, User? user, Filter.FilterContext? filterContext = null, NoteRendererDto? data = null, int recurse = 2
 	)
@@ -149,20 +163,6 @@ public class NoteRenderer(
 
 		return res;
 	}
-
-	private static readonly FilterResultEntity InaccessibleFilter = new()
-	{
-		Filter = new FilterEntity
-		{
-			Title        = "HideInaccessible",
-			FilterAction = "hide",
-			Id           = "0",
-			Context      = ["home", "thread", "notifications", "account", "public"],
-			Keywords     = [new FilterKeyword("RE: \ud83d\udd12", 0, 0)],
-			ExpiresAt    = null
-		},
-		KeywordMatches = ["RE: \ud83d\udd12"] // lock emoji
-	};
 
 	public async Task<List<StatusEdit>> RenderHistoryAsync(Note note)
 	{
@@ -430,13 +430,13 @@ public class NoteRenderer(
 		public List<AttachmentEntity>? Attachments;
 		public List<string>?           BookmarkedNotes;
 		public List<EmojiEntity>?      Emoji;
+		public List<Filter>?           Filters;
 		public List<string>?           LikedNotes;
 		public List<MentionEntity>?    Mentions;
 		public List<string>?           PinnedNotes;
 		public List<PollEntity>?       Polls;
 		public List<ReactionEntity>?   Reactions;
 		public List<string>?           Renotes;
-		public List<Filter>?           Filters;
 
 		public bool Source;
 	}

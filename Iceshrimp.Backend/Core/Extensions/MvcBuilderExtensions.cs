@@ -1,7 +1,6 @@
 using System.Buffers;
 using System.Net;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +8,8 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -42,9 +43,9 @@ public static class MvcBuilderExtensions
 
 	public static IMvcBuilder ConfigureNewtonsoftJson(this IMvcBuilder builder)
 	{
-		Newtonsoft.Json.JsonConvert.DefaultSettings = () => new Newtonsoft.Json.JsonSerializerSettings
+		JsonConvert.DefaultSettings = () => new JsonSerializerSettings
 		{
-			DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc
+			DateTimeZoneHandling = DateTimeZoneHandling.Utc
 		};
 
 		return builder;

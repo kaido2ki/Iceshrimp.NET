@@ -18,113 +18,48 @@ namespace Iceshrimp.Backend.Hubs.Helpers;
 [MustDisposeResource]
 public sealed class StreamingConnectionAggregate : IDisposable
 {
-	private readonly User                     _user;
-	private readonly string                   _userId;
+	private readonly WriteLockingList<string> _blockedBy     = [];
+	private readonly WriteLockingList<string> _blocking      = [];
 	private readonly WriteLockingList<string> _connectionIds = [];
 
+	private readonly EventService _eventService;
+
+	private readonly WriteLockingList<string> _following = [];
+
 	private readonly IHubContext<StreamingHub, IStreamingHubClient> _hub;
-
-	private readonly EventService         _eventService;
-	private readonly IServiceScope        _scope;
-	private readonly IServiceScopeFactory _scopeFactory;
-	private readonly StreamingService     _streamingService;
-	private readonly ILogger              _logger;
-
-	private readonly WriteLockingList<string> _following      = [];
-	private readonly WriteLockingList<string> _muting         = [];
-	private readonly WriteLockingList<string> _blocking       = [];
-	private readonly WriteLockingList<string> _blockedBy      = [];
-	private          List<string>             _hiddenFromHome = [];
+	private readonly ILogger                                        _logger;
+	private readonly WriteLockingList<string>                       _muting = [];
+	private readonly IServiceScope                                  _scope;
+	private readonly IServiceScopeFactory                           _scopeFactory;
+	private readonly StreamingService                               _streamingService;
 
 	private readonly ConcurrentDictionary<string, WriteLockingList<StreamingTimeline>> _subscriptions = [];
+	private readonly User                                                              _user;
+	private readonly string                                                            _userId;
+	private          List<string>                                                      _hiddenFromHome = [];
 
 	public bool HasSubscribers => _connectionIds.Count != 0;
 
+	#region Destruction
+
+	public void Dispose()
+	{
+		DisconnectAll();
+		_streamingService.NotePublished -= OnNotePublished;
+		_streamingService.NoteUpdated   -= OnNoteUpdated;
+		_eventService.Notification      -= OnNotification;
+		_eventService.UserBlocked       -= OnUserBlock;
+		_eventService.UserUnblocked     -= OnUserUnblock;
+		_eventService.UserMuted         -= OnUserMute;
+		_eventService.UserUnmuted       -= OnUserUnmute;
+		_eventService.UserFollowed      -= OnUserFollow;
+		_eventService.UserUnfollowed    -= OnUserUnfollow;
+		_scope.Dispose();
+	}
+
+	#endregion
+
 	private AsyncServiceScope GetTempScope() => _scopeFactory.CreateAsyncScope();
-
-	#region Initialization
-
-	public StreamingConnectionAggregate(
-		string userId,
-		User user,
-		IHubContext<StreamingHub, IStreamingHubClient> hub,
-		EventService eventSvc,
-		IServiceScopeFactory scopeFactory, StreamingService streamingService
-	)
-	{
-		if (userId != user.Id)
-			throw new Exception("userId doesn't match user.Id");
-
-		_userId           = userId;
-		_user             = user;
-		_hub              = hub;
-		_eventService     = eventSvc;
-		_scope            = scopeFactory.CreateScope();
-		_scopeFactory     = scopeFactory;
-		_streamingService = streamingService;
-		_logger           = _scope.ServiceProvider.GetRequiredService<ILogger<StreamingConnectionAggregate>>();
-
-		_ = InitializeAsync();
-	}
-
-	private async Task InitializeAsync()
-	{
-		_eventService.UserBlocked    += OnUserBlock;
-		_eventService.UserUnblocked  += OnUserUnblock;
-		_eventService.UserMuted      += OnUserMute;
-		_eventService.UserUnmuted    += OnUserUnmute;
-		_eventService.UserFollowed   += OnUserFollow;
-		_eventService.UserUnfollowed += OnUserUnfollow;
-
-		await InitializeRelationships();
-
-		_eventService.Notification      += OnNotification;
-		_streamingService.NotePublished += OnNotePublished;
-		_streamingService.NoteUpdated   += OnNoteUpdated;
-	}
-
-	private async Task InitializeRelationships()
-	{
-		await using var scope = GetTempScope();
-		await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-		_following.AddRange(await db.Followings.Where(p => p.Follower == _user)
-		                            .Select(p => p.FolloweeId)
-		                            .ToListAsync());
-		_blocking.AddRange(await db.Blockings.Where(p => p.Blocker == _user)
-		                           .Select(p => p.BlockeeId)
-		                           .ToListAsync());
-		_blockedBy.AddRange(await db.Blockings.Where(p => p.Blockee == _user)
-		                            .Select(p => p.BlockerId)
-		                            .ToListAsync());
-		_muting.AddRange(await db.Mutings.Where(p => p.Muter == _user)
-		                         .Select(p => p.MuteeId)
-		                         .ToListAsync());
-
-		_hiddenFromHome = await db.UserListMembers
-		                          .Where(p => p.UserList.User == _user && p.UserList.HideFromHomeTl)
-		                          .Select(p => p.UserId)
-		                          .Distinct()
-		                          .ToListAsync();
-	}
-
-	#endregion
-
-	#region Channel subscription handlers
-
-	public void Subscribe(string connectionId, StreamingTimeline timeline)
-	{
-		if (!_connectionIds.Contains(connectionId)) return;
-		_subscriptions.GetOrAdd(connectionId, []).Add(timeline);
-	}
-
-	public void Unsubscribe(string connectionId, StreamingTimeline timeline)
-	{
-		if (!_connectionIds.Contains(connectionId)) return;
-		_subscriptions.TryGetValue(connectionId, out var collection);
-		collection?.Remove(timeline);
-	}
-
-	#endregion
 
 	private async void OnNotification(object? _, Notification notification)
 	{
@@ -228,13 +163,6 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		return wrapped;
 	}
 
-	private class NoteWithVisibilities(Note note)
-	{
-		public readonly Note  Note   = note;
-		public          Note? Reply  = note.Reply;
-		public          Note? Renote = note.Renote;
-	}
-
 	private (List<string> connectionIds, List<StreamingTimeline> timelines) FindRecipients(Note note)
 	{
 		List<StreamingTimeline> timelines = [];
@@ -259,6 +187,97 @@ public sealed class StreamingConnectionAggregate : IDisposable
 
 		return (connectionIds, timelines);
 	}
+
+	private class NoteWithVisibilities(Note note)
+	{
+		public readonly Note  Note   = note;
+		public          Note? Renote = note.Renote;
+		public          Note? Reply  = note.Reply;
+	}
+
+	#region Initialization
+
+	public StreamingConnectionAggregate(
+		string userId,
+		User user,
+		IHubContext<StreamingHub, IStreamingHubClient> hub,
+		EventService eventSvc,
+		IServiceScopeFactory scopeFactory, StreamingService streamingService
+	)
+	{
+		if (userId != user.Id)
+			throw new Exception("userId doesn't match user.Id");
+
+		_userId           = userId;
+		_user             = user;
+		_hub              = hub;
+		_eventService     = eventSvc;
+		_scope            = scopeFactory.CreateScope();
+		_scopeFactory     = scopeFactory;
+		_streamingService = streamingService;
+		_logger           = _scope.ServiceProvider.GetRequiredService<ILogger<StreamingConnectionAggregate>>();
+
+		_ = InitializeAsync();
+	}
+
+	private async Task InitializeAsync()
+	{
+		_eventService.UserBlocked    += OnUserBlock;
+		_eventService.UserUnblocked  += OnUserUnblock;
+		_eventService.UserMuted      += OnUserMute;
+		_eventService.UserUnmuted    += OnUserUnmute;
+		_eventService.UserFollowed   += OnUserFollow;
+		_eventService.UserUnfollowed += OnUserUnfollow;
+
+		await InitializeRelationships();
+
+		_eventService.Notification      += OnNotification;
+		_streamingService.NotePublished += OnNotePublished;
+		_streamingService.NoteUpdated   += OnNoteUpdated;
+	}
+
+	private async Task InitializeRelationships()
+	{
+		await using var scope = GetTempScope();
+		await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+		_following.AddRange(await db.Followings.Where(p => p.Follower == _user)
+		                            .Select(p => p.FolloweeId)
+		                            .ToListAsync());
+		_blocking.AddRange(await db.Blockings.Where(p => p.Blocker == _user)
+		                           .Select(p => p.BlockeeId)
+		                           .ToListAsync());
+		_blockedBy.AddRange(await db.Blockings.Where(p => p.Blockee == _user)
+		                            .Select(p => p.BlockerId)
+		                            .ToListAsync());
+		_muting.AddRange(await db.Mutings.Where(p => p.Muter == _user)
+		                         .Select(p => p.MuteeId)
+		                         .ToListAsync());
+
+		_hiddenFromHome = await db.UserListMembers
+		                          .Where(p => p.UserList.User == _user && p.UserList.HideFromHomeTl)
+		                          .Select(p => p.UserId)
+		                          .Distinct()
+		                          .ToListAsync();
+	}
+
+	#endregion
+
+	#region Channel subscription handlers
+
+	public void Subscribe(string connectionId, StreamingTimeline timeline)
+	{
+		if (!_connectionIds.Contains(connectionId)) return;
+		_subscriptions.GetOrAdd(connectionId, []).Add(timeline);
+	}
+
+	public void Unsubscribe(string connectionId, StreamingTimeline timeline)
+	{
+		if (!_connectionIds.Contains(connectionId)) return;
+		_subscriptions.TryGetValue(connectionId, out var collection);
+		collection?.Remove(timeline);
+	}
+
+	#endregion
 
 	#region Relationship change event handlers
 
@@ -370,25 +389,6 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	{
 		_connectionIds.Clear();
 		_subscriptions.Clear();
-	}
-
-	#endregion
-
-	#region Destruction
-
-	public void Dispose()
-	{
-		DisconnectAll();
-		_streamingService.NotePublished -= OnNotePublished;
-		_streamingService.NoteUpdated   -= OnNoteUpdated;
-		_eventService.Notification      -= OnNotification;
-		_eventService.UserBlocked       -= OnUserBlock;
-		_eventService.UserUnblocked     -= OnUserUnblock;
-		_eventService.UserMuted         -= OnUserMute;
-		_eventService.UserUnmuted       -= OnUserUnmute;
-		_eventService.UserFollowed      -= OnUserFollow;
-		_eventService.UserUnfollowed    -= OnUserUnfollow;
-		_scope.Dispose();
 	}
 
 	#endregion

@@ -7,9 +7,9 @@ namespace Iceshrimp.Backend.Pages;
 
 public class IndexModel(MetaService meta) : PageModel
 {
-	public string  InstanceName        = null!;
-	public string  InstanceDescription = null!;
 	public string? ContactEmail;
+	public string  InstanceDescription = null!;
+	public string  InstanceName        = null!;
 
 	public async Task<IActionResult> OnGet()
 	{

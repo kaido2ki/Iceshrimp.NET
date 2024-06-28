@@ -12,17 +12,18 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
 
 public class ListChannel(WebSocketConnection connection) : IChannel
 {
+	private readonly WriteLockingList<string> _lists = [];
+
 	private readonly ILogger<ListChannel> _logger =
 		connection.Scope.ServiceProvider.GetRequiredService<ILogger<ListChannel>>();
+
+	private readonly ConcurrentDictionary<string, WriteLockingList<string>> _members           = [];
+	private          IEnumerable<string>                                    _applicableUserIds = [];
 
 	public string       Name         => "list";
 	public List<string> Scopes       => ["read:statuses"];
 	public bool         IsSubscribed => _lists.Count != 0;
 	public bool         IsAggregate  => true;
-
-	private readonly WriteLockingList<string>                               _lists             = [];
-	private readonly ConcurrentDictionary<string, WriteLockingList<string>> _members           = [];
-	private          IEnumerable<string>                                    _applicableUserIds = [];
 
 	public async Task Subscribe(StreamingRequestMessage msg)
 	{
@@ -99,12 +100,6 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 			wrapped.Renote = null;
 
 		return wrapped;
-	}
-
-	private class NoteWithVisibilities(Note note)
-	{
-		public readonly Note  Note   = note;
-		public          Note? Renote = note.Renote;
 	}
 
 	private static StatusEntity EnforceRenoteReplyVisibility(StatusEntity rendered, NoteWithVisibilities note)
@@ -217,5 +212,11 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 		{
 			_logger.LogError("Event handler OnListUpdated threw exception: {e}", e);
 		}
+	}
+
+	private class NoteWithVisibilities(Note note)
+	{
+		public readonly Note  Note   = note;
+		public          Note? Renote = note.Renote;
 	}
 }

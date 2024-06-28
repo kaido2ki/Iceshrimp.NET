@@ -166,7 +166,7 @@ public class UserService(
 			//TODO: FollowersCount
 			//TODO: FollowingCount
 			Emojis = emoji.Select(p => p.Id).ToList(),
-			Tags   = tags,
+			Tags   = tags
 		};
 
 		var profile = new UserProfile

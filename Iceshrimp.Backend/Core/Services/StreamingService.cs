@@ -12,20 +12,17 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public sealed class StreamingService
 {
-	private readonly ConcurrentDictionary<string, StreamingConnectionAggregate> _connections = [];
-	private readonly IHubContext<StreamingHub, IStreamingHubClient>             _hub;
-	private readonly EventService                                               _eventSvc;
-	private readonly IServiceScopeFactory                                       _scopeFactory;
-	private readonly ILogger<StreamingService>                                  _logger;
-
 	private static readonly AsyncKeyedLocker<string> Locker = new(o =>
 	{
 		o.PoolSize        = 100;
 		o.PoolInitialFill = 5;
 	});
 
-	public event EventHandler<(Note note, Func<Task<NoteResponse>> rendered)>? NotePublished;
-	public event EventHandler<(Note note, Func<Task<NoteResponse>> rendered)>? NoteUpdated;
+	private readonly ConcurrentDictionary<string, StreamingConnectionAggregate> _connections = [];
+	private readonly EventService                                               _eventSvc;
+	private readonly IHubContext<StreamingHub, IStreamingHubClient>             _hub;
+	private readonly ILogger<StreamingService>                                  _logger;
+	private readonly IServiceScopeFactory                                       _scopeFactory;
 
 	public StreamingService(
 		IHubContext<StreamingHub, IStreamingHubClient> hub,
@@ -42,6 +39,9 @@ public sealed class StreamingService
 		eventSvc.NotePublished += OnNotePublished;
 		eventSvc.NoteUpdated   += OnNoteUpdated;
 	}
+
+	public event EventHandler<(Note note, Func<Task<NoteResponse>> rendered)>? NotePublished;
+	public event EventHandler<(Note note, Func<Task<NoteResponse>> rendered)>? NoteUpdated;
 
 	public void Connect(string userId, User user, string connectionId)
 	{

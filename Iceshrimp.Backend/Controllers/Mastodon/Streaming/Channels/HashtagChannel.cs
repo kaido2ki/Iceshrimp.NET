@@ -13,12 +13,12 @@ public class HashtagChannel(WebSocketConnection connection, bool local) : IChann
 	private readonly ILogger<HashtagChannel> _logger =
 		connection.Scope.ServiceProvider.GetRequiredService<ILogger<HashtagChannel>>();
 
+	private readonly WriteLockingList<string> _tags = [];
+
 	public string       Name         => local ? "hashtag:local" : "hashtag";
 	public List<string> Scopes       => ["read:statuses"];
 	public bool         IsSubscribed => _tags.Count != 0;
 	public bool         IsAggregate  => true;
-
-	private readonly WriteLockingList<string> _tags = [];
 
 	public async Task Subscribe(StreamingRequestMessage msg)
 	{
@@ -77,12 +77,6 @@ public class HashtagChannel(WebSocketConnection connection, bool local) : IChann
 			wrapped.Renote = null;
 
 		return wrapped;
-	}
-
-	private class NoteWithVisibilities(Note note)
-	{
-		public readonly Note  Note   = note;
-		public          Note? Renote = note.Renote;
 	}
 
 	private static StatusEntity EnforceRenoteReplyVisibility(StatusEntity rendered, NoteWithVisibilities note)
@@ -168,5 +162,11 @@ public class HashtagChannel(WebSocketConnection connection, bool local) : IChann
 		{
 			_logger.LogError("Event handler OnNoteDeleted threw exception: {e}", e);
 		}
+	}
+
+	private class NoteWithVisibilities(Note note)
+	{
+		public readonly Note  Note   = note;
+		public          Note? Renote = note.Renote;
 	}
 }

@@ -70,7 +70,7 @@ public class BackgroundTaskQueue(int parallelism)
 			                   await db.DriveFiles.AnyAsync(p => p.Id != file.Id &&
 			                                                     p.AccessKey == file.AccessKey &&
 			                                                     !p.IsLink,
-			                                                cancellationToken: token);
+			                                                token);
 
 			if (!deduplicated)
 			{
@@ -128,7 +128,7 @@ public class BackgroundTaskQueue(int parallelism)
 		if (file.AccessKey == null) return;
 		var deduplicated =
 			await db.DriveFiles.AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey && !p.IsLink,
-			                             cancellationToken: token);
+			                             token);
 
 		if (deduplicated)
 			return;
@@ -267,7 +267,7 @@ public class BackgroundTaskQueue(int parallelism)
 			var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user);
 			await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 			          .ExecuteUpdateAsync(p => p.SetProperty(i => i.UsersCount, i => i.UsersCount - 1),
-			                              cancellationToken: token);
+			                              token);
 		});
 
 		logger.LogDebug("User {id} deleted successfully", jobData.UserId);

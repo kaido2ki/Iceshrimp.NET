@@ -77,7 +77,7 @@ public static class FilterHelper
 					return keyword;
 			}
 			else if ((note.Text != null && note.Text.Contains(keyword, StringComparison.InvariantCultureIgnoreCase)) ||
-			         note.Cw != null && note.Cw.Contains(keyword, StringComparison.InvariantCultureIgnoreCase))
+			         (note.Cw != null && note.Cw.Contains(keyword, StringComparison.InvariantCultureIgnoreCase)))
 			{
 				return keyword;
 			}

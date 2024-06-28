@@ -3,9 +3,9 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
-using static Iceshrimp.Parsing.MfmNodeTypes;
 using Microsoft.Extensions.Options;
 using Microsoft.FSharp.Collections;
+using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 

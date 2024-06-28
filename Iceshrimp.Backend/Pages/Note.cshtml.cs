@@ -19,13 +19,13 @@ public class NoteModel(
 	MfmConverter mfmConverter
 ) : PageModel
 {
+	public Dictionary<string, List<DriveFile>> MediaAttachments = new();
 	public Note?                               Note;
 	public string?                             QuoteUrl;
-	public Dictionary<string, string>          TextContent      = new();
-	public Dictionary<string, List<DriveFile>> MediaAttachments = new();
 
-	public bool ShowMedia         = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
-	public bool ShowRemoteReplies = security.Value.PublicPreview > Enums.PublicPreview.Restricted;
+	public bool                       ShowMedia = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
+	public bool                       ShowRemoteReplies = security.Value.PublicPreview > Enums.PublicPreview.Restricted;
+	public Dictionary<string, string> TextContent = new();
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery",
 	                 Justification = "IncludeCommonProperties")]

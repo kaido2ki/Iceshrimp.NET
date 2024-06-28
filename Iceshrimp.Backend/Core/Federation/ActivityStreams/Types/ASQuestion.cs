@@ -32,7 +32,7 @@ public class ASQuestion : ASNote
 	[J($"{Constants.ActivityStreamsNs}#closed")]
 	[JC(typeof(VC))]
 	public DateTime? Closed { get; set; }
-	
+
 	[J($"{Constants.MastodonNs}#votersCount")]
 	[JC(typeof(VC))]
 	public int? VotersCount { get; set; }

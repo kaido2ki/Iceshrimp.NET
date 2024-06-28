@@ -18,14 +18,6 @@ public static class LdHelpers
 
 	private static readonly string Prefix = Path.Combine(AssemblyLocation, "contexts");
 
-	private static JToken GetPreloadedDocument(string filename) =>
-		JToken.Parse(File.ReadAllText(Path.Combine(Prefix, filename)));
-
-	private static RemoteDocument GetPreloadedContext(string filename) => new()
-	{
-		Document = GetPreloadedDocument(filename)
-	};
-
 	private static readonly Dictionary<string, RemoteDocument> PreloadedContexts = new()
 	{
 		{ "https://www.w3.org/ns/activitystreams", GetPreloadedContext("as.json") },
@@ -65,6 +57,14 @@ public static class LdHelpers
 	};
 
 	private static IEnumerable<string> ASForceArray => ["tag", "attachment", "to", "cc", "bcc", "bto"];
+
+	private static JToken GetPreloadedDocument(string filename) =>
+		JToken.Parse(File.ReadAllText(Path.Combine(Prefix, filename)));
+
+	private static RemoteDocument GetPreloadedContext(string filename) => new()
+	{
+		Document = GetPreloadedDocument(filename)
+	};
 
 	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions)
 	{

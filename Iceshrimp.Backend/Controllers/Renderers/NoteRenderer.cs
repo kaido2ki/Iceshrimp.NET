@@ -1,10 +1,10 @@
 using Iceshrimp.Backend.Core.Configuration;
-using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Shared.Schemas;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -219,10 +219,10 @@ public class NoteRenderer(
 	public class NoteRendererDto
 	{
 		public List<NoteAttachment>?     Attachments;
-		public List<NoteReactionSchema>? Reactions;
-		public List<UserResponse>?       Users;
+		public List<EmojiResponse>?      Emoji;
 		public List<Filter>?             Filters;
 		public List<string>?             LikedNotes;
-		public List<EmojiResponse>?      Emoji;
+		public List<NoteReactionSchema>? Reactions;
+		public List<UserResponse>?       Users;
 	}
 }

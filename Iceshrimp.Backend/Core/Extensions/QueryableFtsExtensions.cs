@@ -55,7 +55,7 @@ public static class QueryableFtsExtensions
 	}
 
 	/// <returns>
-	/// The input variable host, or null if it matches the configured web or account domain.
+	///     The input variable host, or null if it matches the configured web or account domain.
 	/// </returns>
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
 	                 Justification = "Projectable chain must have consistent visibility")]

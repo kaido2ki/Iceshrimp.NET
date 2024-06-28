@@ -9,7 +9,16 @@ namespace Iceshrimp.Backend.Pages;
 
 public class QueueJobModel(DatabaseContext db) : PageModel
 {
+	private static Dictionary<string, string> _lookup = new()
+	{
+		{ "inbox", "body" },
+		{ "deliver", "payload" },
+		{ "pre-deliver", "serializedActivity" }
+	};
+
 	public Job Job = null!;
+
+	public Dictionary<string, string> Lookup => _lookup;
 
 	public async Task<IActionResult> OnGet([FromRoute] Guid id)
 	{
@@ -22,13 +31,4 @@ public class QueueJobModel(DatabaseContext db) : PageModel
 		      throw GracefulException.NotFound($"Job {id} not found");
 		return Page();
 	}
-
-	private static Dictionary<string, string> _lookup = new()
-	{
-		{ "inbox", "body" },
-		{ "deliver", "payload" },
-		{ "pre-deliver", "serializedActivity" }
-	};
-
-	public Dictionary<string, string> Lookup => _lookup;
 }

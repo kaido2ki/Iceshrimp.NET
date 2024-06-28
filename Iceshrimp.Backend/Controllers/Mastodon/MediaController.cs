@@ -88,7 +88,7 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 			Description = file.Comment,
 			PreviewUrl  = file.PublicThumbnailUrl,
 			RemoteUrl   = file.Uri,
-			Sensitive   = file.IsSensitive,
+			Sensitive   = file.IsSensitive
 			//Metadata    = TODO,
 		};
 	}

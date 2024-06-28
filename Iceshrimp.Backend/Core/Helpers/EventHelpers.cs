@@ -2,8 +2,8 @@ namespace Iceshrimp.Backend.Core.Helpers;
 
 public sealed class AsyncAutoResetEvent(bool signaled = false)
 {
-	private readonly List<TaskCompletionSource<bool>> _taskCompletionSources        = [];
 	private readonly List<TaskCompletionSource<bool>> _noResetTaskCompletionSources = [];
+	private readonly List<TaskCompletionSource<bool>> _taskCompletionSources        = [];
 	public           bool                             Signaled => signaled;
 
 	public Task<bool> WaitAsync(CancellationToken cancellationToken = default)
@@ -49,7 +49,7 @@ public sealed class AsyncAutoResetEvent(bool signaled = false)
 			}
 
 			if (_taskCompletionSources.Count == 0) return;
-			
+
 			signaled = false;
 			foreach (var tcs in _taskCompletionSources.ToList())
 			{

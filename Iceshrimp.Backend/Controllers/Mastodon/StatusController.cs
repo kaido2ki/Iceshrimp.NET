@@ -12,7 +12,6 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
-using static Iceshrimp.Parsing.MfmNodeTypes;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
@@ -20,6 +19,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -58,7 +58,7 @@ public class StatusController(
 		var note = await db.Notes
 		                   .Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
-		                   .FilterHidden(user, db, filterOutgoingBlocks: false, filterMutes: false,
+		                   .FilterHidden(user, db, false, false,
 		                                 filterMentions: false)
 		                   .EnsureVisibleFor(user)
 		                   .PrecomputeVisibilities(user)
@@ -89,7 +89,7 @@ public class StatusController(
 		var note = await db.Notes
 		                   .Where(p => p.Id == id)
 		                   .EnsureVisibleFor(user)
-		                   .FilterHidden(user, db, filterOutgoingBlocks: false, filterMutes: false)
+		                   .FilterHidden(user, db, false, false)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 

@@ -93,7 +93,7 @@ public class AuthorizedFetchMiddleware(
 					                            suppressLog: true);
 
 				List<string> headers = ["(request-target)", "host"];
-				
+
 				if (sig.Created != null && !sig.Headers.Contains("date"))
 					headers.Add("(created)");
 				else

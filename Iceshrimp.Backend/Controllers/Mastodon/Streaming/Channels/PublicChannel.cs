@@ -71,12 +71,6 @@ public class PublicChannel(
 		return wrapped;
 	}
 
-	private class NoteWithVisibilities(Note note)
-	{
-		public readonly Note  Note   = note;
-		public          Note? Renote = note.Renote;
-	}
-
 	private static StatusEntity EnforceRenoteReplyVisibility(StatusEntity rendered, NoteWithVisibilities note)
 	{
 		var renote = note.Renote == null && rendered.Renote != null;
@@ -159,5 +153,11 @@ public class PublicChannel(
 		{
 			_logger.LogError("Event handler OnNoteDeleted threw exception: {e}", e);
 		}
+	}
+
+	private class NoteWithVisibilities(Note note)
+	{
+		public readonly Note  Note   = note;
+		public          Note? Renote = note.Renote;
 	}
 }

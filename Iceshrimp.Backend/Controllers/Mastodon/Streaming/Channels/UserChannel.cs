@@ -83,12 +83,6 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		return wrapped;
 	}
 
-	private class NoteWithVisibilities(Note note)
-	{
-		public readonly Note  Note   = note;
-		public          Note? Renote = note.Renote;
-	}
-
 	private static StatusEntity EnforceRenoteReplyVisibility(StatusEntity rendered, NoteWithVisibilities note)
 	{
 		var renote = note.Renote == null && rendered.Renote != null;
@@ -205,5 +199,11 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		{
 			_logger.LogError("Event handler OnNotification threw exception: {e}", e);
 		}
+	}
+
+	private class NoteWithVisibilities(Note note)
+	{
+		public readonly Note  Note   = note;
+		public          Note? Renote = note.Renote;
 	}
 }

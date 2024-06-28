@@ -2,8 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
-using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Shared.Schemas;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Middleware;

@@ -21,7 +21,7 @@ public class InstanceService(DatabaseContext db, HttpClient httpClient, ILogger<
 			logger.LogDebug("Updating instance metadata for {host}", host);
 		else
 			logger.LogDebug("Updating instance metadata for {host} ({domain})", host, webDomain);
-		
+
 		host = host.ToLowerInvariant();
 		var instance = await db.Instances.FirstOrDefaultAsync(p => p.Host == host);
 		if (instance == null)

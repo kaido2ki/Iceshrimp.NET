@@ -265,9 +265,8 @@ public class User : IEntity
 	[Column("bannerBlurhash")]
 	[StringLength(128)]
 	public string? BannerBlurhash { get; set; }
-	
-	[Column("splitDomainResolved")]
-	public bool SplitDomainResolved { get; set; }
+
+	[Column("splitDomainResolved")] public bool SplitDomainResolved { get; set; }
 
 	[InverseProperty(nameof(AbuseUserReport.Assignee))]
 	public virtual ICollection<AbuseUserReport> AbuseUserReportAssignees { get; set; } = new List<AbuseUserReport>();
@@ -485,7 +484,7 @@ public class User : IEntity
 
 	[InverseProperty(nameof(Webhook.User))]
 	public virtual ICollection<Webhook> Webhooks { get; set; } = new List<Webhook>();
-	
+
 	[InverseProperty(nameof(Filter.User))]
 	public virtual ICollection<Filter> Filters { get; set; } = new List<Filter>();
 
@@ -577,7 +576,7 @@ public class User : IEntity
 
 	[Projectable]
 	public bool HasReplied(Note note) => Notes.Any(p => p.Reply == note && p.User == this);
-	
+
 	[Projectable]
 	public bool HasVoted(Note note) => PollVotes.Any(p => p.Note == note && p.User == this);
 

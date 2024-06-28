@@ -3,7 +3,6 @@ using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Federation;
 using Iceshrimp.Backend.Core.Configuration;
-using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -12,6 +11,7 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Shared.Schemas;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -125,7 +125,7 @@ public class AdminController(
 		                   .FirstOrDefaultAsync(p => p.Id == id && p.UserHost == null);
 		if (note == null) return NotFound();
 		var rendered  = await noteRenderer.RenderAsync(note);
-		var compacted = LdHelpers.Compact(rendered);
+		var compacted = rendered.Compact();
 		return Ok(compacted);
 	}
 

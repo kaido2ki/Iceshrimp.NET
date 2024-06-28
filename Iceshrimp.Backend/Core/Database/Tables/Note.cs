@@ -63,14 +63,14 @@ public class Note : IEntity
 	public string? RenoteId { get; set; }
 
 	/// <summary>
-	///		The URI of the reply target, if it couldn't be resolved at time of ingestion.
+	///     The URI of the reply target, if it couldn't be resolved at time of ingestion.
 	/// </summary>
 	[Column("replyUri")]
 	[StringLength(512)]
 	public string? ReplyUri { get; set; }
 
 	/// <summary>
-	///		The URI of the renote target, if it couldn't be resolved at time of ingestion.
+	///     The URI of the renote target, if it couldn't be resolved at time of ingestion.
 	/// </summary>
 	[Column("renoteUri")]
 	[StringLength(512)]
@@ -155,7 +155,8 @@ public class Note : IEntity
 	public string? ReplyUserId { get; set; }
 
 	/// <summary>
-	///     Mastodon requires a slightly differently computed replyUserId field. To save processing time, we do this ahead of time.
+	///     Mastodon requires a slightly differently computed replyUserId field. To save processing time, we do this ahead of
+	///     time.
 	/// </summary>
 	[Column("mastoReplyUserId")]
 	[StringLength(32)]

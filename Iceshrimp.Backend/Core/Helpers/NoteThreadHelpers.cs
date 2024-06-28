@@ -6,13 +6,6 @@ namespace Iceshrimp.Backend.Core.Helpers;
 
 public static class NoteThreadHelpers
 {
-	public class TreeNode<T>(T self)
-	{
-		public readonly T                 Self        = self;
-		public          List<TreeNode<T>> Descendants = [];
-		public          TreeNode<T>?      Parent;
-	}
-
 	public static List<NoteResponse> OrderAncestors(this List<NoteResponse> notes)
 	{
 		var final = new List<NoteResponse>();
@@ -138,5 +131,12 @@ public static class NoteThreadHelpers
 		}
 
 		return nodes;
+	}
+
+	public class TreeNode<T>(T self)
+	{
+		public readonly T                 Self        = self;
+		public          List<TreeNode<T>> Descendants = [];
+		public          TreeNode<T>?      Parent;
 	}
 }

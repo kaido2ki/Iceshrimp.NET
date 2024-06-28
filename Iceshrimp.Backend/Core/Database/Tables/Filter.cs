@@ -10,6 +10,13 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index("user_id")]
 public class Filter
 {
+	[PgName("filter_action_enum")]
+	public enum FilterAction
+	{
+		[PgName("warn")] Warn,
+		[PgName("hide")] Hide
+	}
+
 	[PgName("filter_context_enum")]
 	public enum FilterContext
 	{
@@ -18,17 +25,11 @@ public class Filter
 		[PgName("threads")]       Threads,
 		[PgName("notifications")] Notifications,
 		[PgName("accounts")]      Accounts,
-		[PgName("public")]        Public,
+		[PgName("public")]        Public
 	}
 
-	[PgName("filter_action_enum")]
-	public enum FilterAction
-	{
-		[PgName("warn")] Warn,
-		[PgName("hide")] Hide,
-	}
-
-	[Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+	[Key]
+	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	[Column("id")]
 	public long Id { get; set; }
 

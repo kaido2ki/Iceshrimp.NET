@@ -21,14 +21,14 @@ public class QueueService(
 	IOptions<Config.QueueConcurrencySection> queueConcurrency
 ) : BackgroundService
 {
-	private readonly List<IPostgresJobQueue> _queues = [];
+	private readonly List<IPostgresJobQueue> _queues             = [];
+	public readonly  BackgroundTaskQueue     BackgroundTaskQueue = new(queueConcurrency.Value.BackgroundTask);
+	public readonly  DeliverQueue            DeliverQueue        = new(queueConcurrency.Value.Deliver);
+
+	public readonly InboxQueue      InboxQueue      = new(queueConcurrency.Value.Inbox);
+	public readonly PreDeliverQueue PreDeliverQueue = new(queueConcurrency.Value.PreDeliver);
 
 	public IEnumerable<string> QueueNames => _queues.Select(p => p.Name);
-
-	public readonly InboxQueue          InboxQueue          = new(queueConcurrency.Value.Inbox);
-	public readonly DeliverQueue        DeliverQueue        = new(queueConcurrency.Value.Deliver);
-	public readonly PreDeliverQueue     PreDeliverQueue     = new(queueConcurrency.Value.PreDeliver);
-	public readonly BackgroundTaskQueue BackgroundTaskQueue = new(queueConcurrency.Value.BackgroundTask);
 
 	private static async Task<NpgsqlConnection> GetNpgsqlConnection(IServiceScope scope)
 	{
@@ -263,13 +263,13 @@ public interface IPostgresJobQueue
 {
 	public string Name { get; }
 
+	public TimeSpan Timeout { get; }
+
 	public Task ExecuteAsync(IServiceScopeFactory scopeFactory, CancellationToken token, CancellationToken queueToken);
 	public Task RecoverOrPrepareForExitAsync();
 
 	public void RaiseJobQueuedEvent();
 	public void RaiseJobDelayedEvent();
-
-	public TimeSpan Timeout { get; }
 }
 
 public class PostgresJobQueue<T>(
@@ -279,14 +279,13 @@ public class PostgresJobQueue<T>(
 	TimeSpan timeout
 ) : IPostgresJobQueue where T : class
 {
-	public string   Name    => name;
-	public TimeSpan Timeout => timeout;
-
 	private readonly AsyncAutoResetEvent   _delayedChannel = new();
 	private readonly AsyncAutoResetEvent   _queuedChannel  = new();
-	private          IServiceScopeFactory  _scopeFactory   = null!;
 	private          ILogger<QueueService> _logger         = null!;
+	private          IServiceScopeFactory  _scopeFactory   = null!;
 	private          string?               _workerId;
+	public           string                Name    => name;
+	public           TimeSpan              Timeout => timeout;
 
 	public void RaiseJobQueuedEvent()  => QueuedChannelEvent?.Invoke(null, EventArgs.Empty);
 	public void RaiseJobDelayedEvent() => DelayedChannelEvent?.Invoke(null, EventArgs.Empty);

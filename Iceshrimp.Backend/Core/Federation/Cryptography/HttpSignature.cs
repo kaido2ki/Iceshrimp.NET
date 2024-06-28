@@ -184,11 +184,11 @@ public static class HttpSignature
 	)
 	{
 		public readonly string              Algo      = algo;
-		public readonly IEnumerable<string> Headers   = headers;
-		public readonly string              KeyId     = keyId;
-		public readonly byte[]              Signature = signature;
 		public readonly string?             Created   = created;
 		public readonly string?             Expires   = expires;
+		public readonly IEnumerable<string> Headers   = headers;
+		public readonly string              KeyId     = keyId;
 		public readonly string?             Opaque    = opaque;
+		public readonly byte[]              Signature = signature;
 	}
 }

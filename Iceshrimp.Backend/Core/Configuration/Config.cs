@@ -17,10 +17,10 @@ public sealed class Config
 
 	public sealed class InstanceSection
 	{
-		public readonly string  Version;
 		public readonly string  Codename;
 		public readonly string? CommitHash;
 		public readonly string  RawVersion;
+		public readonly string  Version;
 
 		public InstanceSection()
 		{
@@ -100,9 +100,9 @@ public sealed class Config
 
 	public sealed class StorageSection
 	{
-		public readonly TimeSpan? MediaRetentionTimeSpan;
 		public readonly int?      MaxCacheSizeBytes;
 		public readonly int?      MaxUploadSizeBytes;
+		public readonly TimeSpan? MediaRetentionTimeSpan;
 
 		public bool              CleanAvatars = false;
 		public bool              CleanBanners = false;

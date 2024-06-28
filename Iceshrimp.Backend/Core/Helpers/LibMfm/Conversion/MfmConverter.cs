@@ -8,9 +8,9 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
-using static Iceshrimp.Parsing.MfmNodeTypes;
 using Microsoft.Extensions.Options;
 using Microsoft.FSharp.Collections;
+using static Iceshrimp.Parsing.MfmNodeTypes;
 using MfmHtmlParser = Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing.HtmlParser;
 using HtmlParser = AngleSharp.Html.Parser.HtmlParser;
 

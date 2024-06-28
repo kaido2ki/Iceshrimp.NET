@@ -1,7 +1,7 @@
-using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Shared.Schemas;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Renderers;
@@ -91,14 +91,14 @@ public class UserProfileRenderer(DatabaseContext db)
 
 	public class RelationData
 	{
-		public required string UserId;
-		public required bool   IsSelf;
-		public required bool   IsFollowing;
+		public required bool   IsBlocking;
 		public required bool   IsFollowedBy;
+		public required bool   IsFollowing;
+		public required bool   IsMuting;
 		public required bool   IsRequested;
 		public required bool   IsRequestedBy;
-		public required bool   IsBlocking;
-		public required bool   IsMuting;
+		public required bool   IsSelf;
+		public required string UserId;
 
 		public static implicit operator Relations(RelationData data)
 		{

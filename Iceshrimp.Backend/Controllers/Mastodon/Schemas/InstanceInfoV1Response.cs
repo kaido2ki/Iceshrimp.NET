@@ -44,7 +44,7 @@ public class InstanceUrls(Config.InstanceSection config)
 
 public class InstanceStats(long userCount, long noteCount, long instanceCount)
 {
-	[J("user_count")]  public long UserCount     => userCount;
+	[J("user_count")]   public long UserCount     => userCount;
 	[J("status_count")] public long NoteCount     => noteCount;
 	[J("domain_count")] public long InstanceCount => instanceCount;
 }

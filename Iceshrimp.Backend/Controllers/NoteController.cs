@@ -4,13 +4,13 @@ using System.Net.Mime;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Renderers;
-using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Shared.Schemas;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -45,7 +45,7 @@ public class NoteController(
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(user)
-		                   .FilterHidden(user, db, filterOutgoingBlocks: false, filterMutes: false)
+		                   .FilterHidden(user, db, false, false)
 		                   .PrecomputeVisibilities(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
@@ -65,7 +65,7 @@ public class NoteController(
 
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .EnsureVisibleFor(user)
-		                   .FilterHidden(user, db, filterOutgoingBlocks: false, filterMutes: false)
+		                   .FilterHidden(user, db, false, false)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 
@@ -94,7 +94,7 @@ public class NoteController(
 
 		var note = await db.Notes.Where(p => p.Id == id)
 		                   .EnsureVisibleFor(user)
-		                   .FilterHidden(user, db, filterOutgoingBlocks: false, filterMutes: false)
+		                   .FilterHidden(user, db, false, false)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 

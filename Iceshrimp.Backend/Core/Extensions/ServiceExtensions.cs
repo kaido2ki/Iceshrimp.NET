@@ -4,7 +4,6 @@ using System.Xml.Linq;
 using Iceshrimp.Backend.Controllers.Federation;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Renderers;
-using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
@@ -13,6 +12,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Backend.Hubs.Authentication;
 using Iceshrimp.Shared.Configuration;
+using Iceshrimp.Shared.Schemas;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationM
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.Repositories;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -120,7 +121,7 @@ public static class ServiceExtensions
 		        .ConfigureWithValidation<Config.LocalStorageSection>(configuration, "Storage:Local")
 		        .ConfigureWithValidation<Config.ObjectStorageSection>(configuration, "Storage:ObjectStorage");
 
-		services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+		services.Configure<JsonOptions>(options =>
 		{
 			options.SerializerOptions.PropertyNamingPolicy = JsonSerialization.Options.PropertyNamingPolicy;
 			foreach (var converter in JsonSerialization.Options.Converters)
@@ -323,8 +324,9 @@ public static class HttpContextExtensions
 #region AsyncDataProtection handlers
 
 /// <summary>
-/// Async equivalent of EntityFrameworkCoreDataProtectionExtensions.PersistKeysToDbContext.
-/// Required because Npgsql doesn't support the non-async APIs when using connection multiplexing, and the stock version EFCore API calls their blocking equivalents.
+///     Async equivalent of EntityFrameworkCoreDataProtectionExtensions.PersistKeysToDbContext.
+///     Required because Npgsql doesn't support the non-async APIs when using connection multiplexing, and the stock
+///     version EFCore API calls their blocking equivalents.
 /// </summary>
 file static class DataProtectionExtensions
 {

@@ -73,11 +73,11 @@ public class ImageProcessor
 
 	public class Result
 	{
-		public string?             Blurhash;
-		public Func<Stream, Task>? RenderThumbnail;
-		public Func<Stream, Task>? RenderWebpublic;
+		public string? Blurhash;
 
 		public required DriveFile.FileProperties Properties;
+		public          Func<Stream, Task>?      RenderThumbnail;
+		public          Func<Stream, Task>?      RenderWebpublic;
 	}
 
 	public async Task<Result?> ProcessImage(Stream data, DriveFileCreationRequest request, bool genThumb, bool genWebp)
@@ -218,7 +218,7 @@ public class ImageProcessor
 	)
 	{
 		var properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
-		var res        = new Result { Properties              = properties };
+		var res = new Result { Properties = properties };
 
 		// Calculate blurhash using a x200px image for improved performance
 		using var blurhashImageSource =
@@ -229,7 +229,7 @@ public class ImageProcessor
 		var blurBuf = blurhashImage.WriteToMemory();
 		var blurArr = new Pixel[blurhashImage.Width, blurhashImage.Height];
 
-		var idx  = 0;
+		var idx = 0;
 		var incr = blurhashImage.Bands - 3;
 		for (var i = 0; i < blurhashImage.Height; i++)
 		{
