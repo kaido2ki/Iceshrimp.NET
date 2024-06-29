@@ -46,18 +46,17 @@ public static class MfmRenderer
 	{
 		var rendered = node switch
 		{
-			MfmNodeTypes.MfmCenterNode mfmCenterNode => throw new NotImplementedException($"{mfmCenterNode.GetType()}"),
+			MfmNodeTypes.MfmCenterNode mfmCenterNode       => MfmCenterNode(mfmCenterNode, document),
 			MfmNodeTypes.MfmCodeBlockNode mfmCodeBlockNode => MfmCodeBlockNode(mfmCodeBlockNode, document),
 			MfmNodeTypes.MfmMathBlockNode mfmMathBlockNode =>
 				throw new NotImplementedException($"{mfmMathBlockNode.GetType()}"),
-			MfmNodeTypes.MfmQuoteNode mfmQuoteNode => throw new NotImplementedException($"{mfmQuoteNode.GetType()}"),
+			MfmNodeTypes.MfmQuoteNode mfmQuoteNode         => MfmQuoteNode(mfmQuoteNode, document),
 			MfmNodeTypes.MfmSearchNode mfmSearchNode => throw new NotImplementedException($"{mfmSearchNode.GetType()}"),
 			MfmNodeTypes.MfmBlockNode mfmBlockNode => throw new NotImplementedException($"{mfmBlockNode.GetType()}"),
 			MfmNodeTypes.MfmBoldNode mfmBoldNode => MfmBoldNode(mfmBoldNode, document),
 			MfmNodeTypes.MfmEmojiCodeNode mfmEmojiCodeNode => MfmEmojiCodeNode(mfmEmojiCodeNode, document, emoji),
 			MfmNodeTypes.MfmFnNode mfmFnNode => throw new NotImplementedException($"{mfmFnNode.GetType()}"),
-			MfmNodeTypes.MfmHashtagNode mfmHashtagNode =>
-				throw new NotImplementedException($"{mfmHashtagNode.GetType()}"),
+			MfmNodeTypes.MfmHashtagNode mfmHashtagNode       => MfmHashtagNode(mfmHashtagNode, document),
 			MfmNodeTypes.MfmInlineCodeNode mfmInlineCodeNode => MfmInlineCodeNode(mfmInlineCodeNode, document),
 			MfmNodeTypes.MfmItalicNode mfmItalicNode         => MfmItalicNode(mfmItalicNode, document),
 			MfmNodeTypes.MfmLinkNode mfmLinkNode             => MfmLinkNode(mfmLinkNode, document),
@@ -65,8 +64,8 @@ public static class MfmRenderer
 				throw new NotImplementedException($"{mfmMathInlineNode.GetType()}"),
 			MfmNodeTypes.MfmMentionNode mfmMentionNode => MfmMentionNode(mfmMentionNode, document),
 			MfmNodeTypes.MfmPlainNode mfmPlainNode => throw new NotImplementedException($"{mfmPlainNode.GetType()}"),
-			MfmNodeTypes.MfmSmallNode mfmSmallNode => throw new NotImplementedException($"{mfmSmallNode.GetType()}"),
-			MfmNodeTypes.MfmStrikeNode mfmStrikeNode => throw new NotImplementedException($"{mfmStrikeNode.GetType()}"),
+			MfmNodeTypes.MfmSmallNode mfmSmallNode => MfmSmallNode(mfmSmallNode, document),
+			MfmNodeTypes.MfmStrikeNode mfmStrikeNode => MfmStrikeNode(mfmStrikeNode, document),
 			MfmNodeTypes.MfmTextNode mfmTextNode => MfmTextNode(mfmTextNode, document),
 			MfmNodeTypes.MfmUrlNode mfmUrlNode => MfmUrlNode(mfmUrlNode, document),
 			MfmNodeTypes.MfmInlineNode mfmInlineNode => throw new NotImplementedException($"{mfmInlineNode.GetType()}"),
@@ -91,6 +90,13 @@ public static class MfmRenderer
 
 		return rendered;
 	}
+	
+	private static INode MfmCenterNode(MfmNodeTypes.MfmCenterNode _, IDocument document)
+	{
+		var el = document.CreateElement("div");
+		el.SetAttribute("style", "text-align: center");
+		return el;
+	}
 
 	private static INode MfmCodeBlockNode(MfmNodeTypes.MfmCodeBlockNode node, IDocument document)
 	{
@@ -100,11 +106,27 @@ public static class MfmRenderer
 		el.AppendChild(childEl);
 		return el;
 	}
+	
+	private static INode MfmQuoteNode(MfmNodeTypes.MfmQuoteNode _, IDocument document)
+	{
+		var el = document.CreateElement("blockquote");
+		el.ClassName = "quote-node";
+		return el;
+	}
 
 	private static INode MfmInlineCodeNode(MfmNodeTypes.MfmInlineCodeNode node, IDocument document)
 	{
 		var el = document.CreateElement("code");
 		el.TextContent = node.Code;
+		return el;
+	}
+	
+	private static INode MfmHashtagNode(MfmNodeTypes.MfmHashtagNode node, IDocument document)
+	{
+		var el = document.CreateElement("a");
+		el.SetAttribute("href", $"/tags/{node.Hashtag}");
+		el.ClassName   = "hashtag-node";
+		el.TextContent = "#" + node.Hashtag;
 		return el;
 	}
 
@@ -158,6 +180,19 @@ public static class MfmRenderer
 	private static INode MfmBoldNode(MfmNodeTypes.MfmBoldNode _, IDocument document)
 	{
 		var el = document.CreateElement("strong");
+		return el;
+	}
+	
+	private static INode MfmSmallNode(MfmNodeTypes.MfmSmallNode _, IDocument document)
+	{
+		var el = document.CreateElement("small");
+		el.SetAttribute("style", "opacity: 0.7;");
+		return el;
+	}
+	
+	private static INode MfmStrikeNode(MfmNodeTypes.MfmStrikeNode _, IDocument document)
+	{
+		var el = document.CreateElement("del");
 		return el;
 	}
 
