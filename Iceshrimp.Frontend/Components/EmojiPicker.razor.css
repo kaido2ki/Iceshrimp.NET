@@ -12,6 +12,7 @@
     top: 3rem;
     left: -210%;
     overflow: scroll;
+    z-index: 100;
 }
 
 .emoji {

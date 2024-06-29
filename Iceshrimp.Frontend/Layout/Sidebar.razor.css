@@ -55,6 +55,7 @@
         bottom: 0;
         left: 0;
         background-color: var(--foreground-color);
+        z-index: 999;
     }
 
     .nav {
