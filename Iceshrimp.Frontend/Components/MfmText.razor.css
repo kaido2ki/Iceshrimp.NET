@@ -24,8 +24,6 @@
 
         > img {
             height: 2em;
-            width: 2em;
-            object-fit: cover;
             vertical-align: middle;
             transition-duration: 250ms;
         }
