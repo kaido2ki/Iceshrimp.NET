@@ -88,6 +88,22 @@ public class EmojiController(
 		return Ok(res);
 	}
 
+	[HttpPost("clone/{name}@{host}")]
+	[Authorize("role:admin")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	[ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> CloneEmoji(string name, string host)
+	{
+		var localEmojo = await db.Emojis.FirstOrDefaultAsync(e => e.Name == name && e.Host == null);
+		if (localEmojo != null) return Conflict();
+
+		var emojo = await db.Emojis.FirstOrDefaultAsync(e => e.Name == name && e.Host == host);
+		if (emojo == null) return NotFound();
+
+		return Ok(await emojiSvc.CloneEmoji(emojo));
+	}
+
 	[HttpPatch("{id}")]
 	[Authorize("role:admin")]
 	[Consumes(MediaTypeNames.Application.Json)]

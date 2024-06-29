@@ -25,7 +25,7 @@ public class DriveService(
 {
 	public async Task<DriveFile?> StoreFile(
 		string? uri, User user, bool sensitive, string? description = null, string? mimeType = null,
-		bool logExisting = true
+		bool logExisting = true, bool forceStore = false
 	)
 	{
 		if (uri == null) return null;
@@ -36,7 +36,10 @@ public class DriveService(
 		try
 		{
 			// Do we already have the file?
-			var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Uri == uri);
+			DriveFile? file = null;
+			if (!forceStore)
+				file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Uri == uri);
+
 			if (file != null)
 			{
 				// If the user matches, return the existing file

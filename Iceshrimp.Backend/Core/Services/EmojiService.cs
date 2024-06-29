@@ -61,6 +61,29 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 		return emoji;
 	}
 
+	public async Task<Emoji> CloneEmoji(Emoji existing)
+	{
+		var user = await sysUserSvc.GetInstanceActorAsync();
+		var driveFile = await driveSvc.StoreFile(existing.OriginalUrl, user, sensitive: false, forceStore: true) ??
+						throw new Exception("Error storing emoji file");
+
+		var emoji = new Emoji
+		{
+			Id          = IdHelpers.GenerateSlowflakeId(),
+			Name        = existing.Name,
+			UpdatedAt   = DateTime.UtcNow,
+			OriginalUrl = driveFile.Url,
+			PublicUrl   = driveFile.PublicUrl,
+			Width       = driveFile.Properties.Width,
+			Height      = driveFile.Properties.Height
+		};
+
+		await db.AddAsync(emoji);
+		await db.SaveChangesAsync();
+
+		return emoji;
+	}
+
 	public async Task DeleteEmoji(string id)
 	{
 		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Host == null && p.Id == id);
