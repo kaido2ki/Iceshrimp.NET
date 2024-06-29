@@ -30,12 +30,7 @@ public partial class NotificationList : IAsyncDisposable
 			{
 				Notifications = res;
 				_minId        = res.Last().Id;
-				foreach (var el in res)
-				{
-					Console.WriteLine(el.Type);
-				}
 			}
-
 
 			_state = State.Init;
 		}
