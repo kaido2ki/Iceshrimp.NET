@@ -25,6 +25,8 @@ jobs:
     permissions:
       packages: write
     steps:
+      - name: Clone repository
+        run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 /iceshrimp
       - name: Install Docker Cli
         run: |-
           install -m 0755 -d /etc/apt/keyrings
@@ -50,6 +52,7 @@ jobs:
       - name: Build and push
         uses: https://code.forgejo.org/docker/build-push-action@v5
         with:
+          context: /iceshrimp
           push: true
           tags: iceshrimp.dev/${{ env.REPO }}:${{ github.ref_name }}
           target: image-jit
