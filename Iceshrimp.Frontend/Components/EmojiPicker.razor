@@ -1,6 +1,6 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
-@inject ApiService Api
+@inject EmojiService EmojiService
 
 @if (_display)
 {
@@ -15,15 +15,15 @@
 }
 
 @code {
+    [Parameter]                  public          bool                         Fixed    { get; set; }
     [Parameter] [EditorRequired] public required EventCallback<EmojiResponse> OnEmojiSelect { get; set; }
-    [Parameter]                  public          bool                         Fixed         { get; set; } = false;
 
     private List<EmojiResponse> EmojiList { get; set; } = [];
     private bool                _display = false;
 
     protected override async Task OnInitializedAsync()
     {
-        EmojiList = await Api.Emoji.GetAllEmoji();
+        EmojiList = await EmojiService.GetEmoji();
     }
 
     private async void Select(EmojiResponse emoji)
@@ -33,8 +33,9 @@
         StateHasChanged();
     }
 
-    public void Toggle()
+    public async Task Toggle()
     {
         _display = !_display;
+        await InvokeAsync(StateHasChanged);
     }
 }

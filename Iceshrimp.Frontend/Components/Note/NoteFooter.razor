@@ -59,7 +59,7 @@
     [Parameter] [EditorRequired] public required bool                     IsLiked        { get; set; }
     [Parameter] [EditorRequired] public required int                      Renotes        { get; set; }
     [Parameter]                  public          bool                     RenotePossible { get; set; }
-    private                                      EmojiPicker?             EmojiPicker    { get; set; }
+    private                                      EmojiPicker              EmojiPicker    { get; set; } = null!;
 
     [CascadingParameter] NoteComponent NoteComponent { get; set; } = null!;
 
@@ -82,10 +82,11 @@
     {
         NoteComponent.DoQuote();
     }
+    
 
-    private void ToggleEmojiPicker()
+    private async Task ToggleEmojiPicker()
     {
-        EmojiPicker?.Toggle();
+        await EmojiPicker.Toggle();
     }
 
     private void React(EmojiResponse emoji)

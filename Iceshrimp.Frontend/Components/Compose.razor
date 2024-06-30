@@ -39,9 +39,9 @@
         <button class="footer-btn" @onclick="ToggleCw">
             <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
         </button>
-        <button class="footer-btn positioned" @onclick="ToggleEmojiPicker">
+        <button class="footer-btn" @onclick="ToggleEmojiPicker">
             <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
-            <EmojiPicker @ref="EmojiPicker" OnEmojiSelect="AddEmoji" Fixed="true"></EmojiPicker>
+            <EmojiPicker OnEmojiSelect="AddEmoji" />
         </button>
         <div class="file-input">
             <InputFile @ref="UploadInput" OnChange="Upload">Upload!</InputFile>
@@ -56,8 +56,8 @@
     private InputFile                UploadInput     { get; set; } = null!;
     private NoteBase?                ReplyOrQuote    { get; set; }
     private string?                  TextPlaceholder { get; set; }
-    private EmojiPicker              EmojiPicker     { get; set; } = null!;
     private ElementReference         Textarea        { get; set; }
+    private EmojiPicker              EmojiPicker     { get; set; } = null!;
 
     private NoteCreateRequest NoteDraft { get; set; } = new()
     {
