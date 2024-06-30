@@ -1,7 +1,41 @@
+@using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Shared.Schemas
-<div class="wrapper" @onclick="Open" @onclick:stopPropagation="true">
-    <img class="attachment @(BlurImage ? "blur-image" : "")" src="@Attachment.Url" alt="@Attachment.AltText"/>
-</div>
+
+@if (Attachment.ContentType.StartsWith("image"))
+{
+    <div class="wrapper" @onclick="Open" @onclick:stopPropagation="true">
+        <img class="attachment @(BlurImage ? "blur-image" : "")" src="@Attachment.Url" alt="@Attachment.AltText"/>
+    </div>
+}
+// else if (Attachment.ContentType == "audio/x-mod")
+// {
+//     TODO: Module player
+// }                
+else if (Attachment.ContentType.StartsWith("audio"))
+{
+    <div class="wrapper">
+        <audio controls class="attachment @(BlurImage ? "blur-image" : "")" src="@Attachment.Url"></audio>
+    </div>
+}                   
+else if (Attachment.ContentType.StartsWith("video"))
+{
+    <div class="wrapper">
+        <video controls class="attachment @(BlurImage ? "blur-image" : "")">
+            <source src="@Attachment.Url"/>
+        </video>
+    </div>
+}
+else
+{
+    <div class="wrapper">
+        <span class="attachment file @(BlurImage ? "blur-image" : "")">
+            <Icon Name="Icons.DownloadSimple" Size="1.3em"/>
+            <a href="@Attachment.Url" target="_blank">
+                @Attachment.Url.Split("/").Last()
+            </a>
+        </span>
+    </div>
+}
 
 @code {
     [Parameter] [EditorRequired] public required NoteAttachment Attachment { get; set; }

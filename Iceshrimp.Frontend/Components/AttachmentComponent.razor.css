@@ -4,6 +4,22 @@
     max-height: 25rem;
     border-radius: 0.5rem;
 }
+    
+audio.attachment {
+    width: 100%;
+}
+
+.file {
+    display: inline-block;
+    white-space: normal;
+}
+
+::deep {
+    .attachment.file .ph {
+        display: inline-block;
+        vertical-align: middle;
+    }
+}
 
 .wrapper {
     flex: 1 1 48%;
