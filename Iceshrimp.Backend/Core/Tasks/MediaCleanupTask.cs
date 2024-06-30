@@ -30,8 +30,9 @@ public class MediaCleanupTask : ICronTask
 		if (!config.CleanBanners) query = query.Where(p => !db.Users.Any(u => u.BannerId == p.Id));
 
 		var fileIds = query.Select(p => p.Id);
+		var cnt     = await fileIds.CountAsync();
 
-		logger.LogInformation("Expiring {count} files...", await fileIds.CountAsync());
+		logger.LogInformation("Expiring {count} files...", cnt);
 		await foreach (var fileId in fileIds.AsAsyncEnumerable())
 		{
 			await queueService.BackgroundTaskQueue.EnqueueAsync(new DriveFileDeleteJobData
@@ -39,6 +40,8 @@ public class MediaCleanupTask : ICronTask
 				DriveFileId = fileId, Expire = true
 			});
 		}
+
+		logger.LogInformation("Successfully cleaned up {count} expired media files.", cnt);
 	}
 
 	// Midnight
