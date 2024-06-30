@@ -34,12 +34,28 @@ jobs:
       - name: Set environment variables
         shell: bash
         run: |
-          echo "REPO=${GITHUB_REPOSITORY@L}" >> "${GITHUB_ENV}"
+          # First, we set the docker repository we want to push to
+          REPO="iceshrimp.dev/${GITHUB_REPOSITORY@L}"
+          
+          # We always want to tag :{version} and :pre, but only tag :latest for stable releases, and (temporarily) v2024.1-beta releases
+          TAGS="$REPO:$GITHUB_REF_NAME,$REPO:pre"
+          
+          # The first section below can be safely removed once v2024.1 hits stable
+          if [[ "$GITHUB_REF_NAME" == "v2024.1-beta"* ]]; then
+            TAGS="$TAGS,$REPO:latest"
+          elif [[ "$GITHUB_REF_NAME" == *"-beta"* ]] || [[ "$GITHUB_REF_NAME" == *"-pre"* ]]; then
+            :
+          else
+            TAGS="$TAGS,$REPO:latest"
+          fi
+
+          # Finally, we pass the computed tags back to the actions environment
+          echo "TAGS=$TAGS" >> "${GITHUB_ENV}"
       - name: Build and push
         uses: https://code.forgejo.org/docker/build-push-action@v5
         with:
           push: true
-          tags: iceshrimp.dev/${{ env.REPO }}:${{ github.ref_name }}
+          tags: ${{ env.TAGS }}
           target: image-aot
           platforms: linux/amd64,linux/arm64
           provenance: false
