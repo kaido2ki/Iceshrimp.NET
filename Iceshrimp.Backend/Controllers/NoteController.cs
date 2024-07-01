@@ -60,9 +60,8 @@ public class NoteController(
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> DeleteNote(string id)
 	{
-		var user = HttpContext.GetUser();
-		var note = await db.Notes.Where(p => p.Id == id && p.User == user)
-		                   .FirstOrDefaultAsync() ??
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
 		           throw GracefulException.NotFound("Note not found");
 
 		await noteSvc.DeleteNoteAsync(note);
