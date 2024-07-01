@@ -1,0 +1,11 @@
+.menu {
+    background-color: var(--foreground-color);
+    position: absolute;
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+    border: var(--highlight-color) solid 0.1rem;
+    width: 13rem;
+    top: 2.5rem;
+    left: -5rem;
+
+}
