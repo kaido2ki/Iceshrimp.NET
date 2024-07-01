@@ -53,6 +53,22 @@ public class NoteController(
 		return Ok(await noteRenderer.RenderOne(note.EnforceRenoteReplyVisibility(), user));
 	}
 
+	[HttpDelete("{id}")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> DeleteNote(string id)
+	{
+		var user = HttpContext.GetUser();
+		var note = await db.Notes.Where(p => p.Id == id && p.User == user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
+
+		await noteSvc.DeleteNoteAsync(note);
+		return Ok();
+	}
+
 	[HttpGet("{id}/ascendants")]
 	[Authenticate]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NoteResponse>))]
