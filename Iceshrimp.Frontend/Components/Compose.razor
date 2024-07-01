@@ -126,6 +126,7 @@
             ReplyOrQuote         = replyTo;
             NoteDraft.ReplyId    = replyTo.Id;
             NoteDraft.Visibility = replyTo.Visibility;
+            NoteDraft.Cw         = replyTo.Cw;
             TextPlaceholder      = AvailablePlaceholders["reply"];
             foreach (var el in mentions)
             {
