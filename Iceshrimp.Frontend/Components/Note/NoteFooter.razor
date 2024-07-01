@@ -1,5 +1,12 @@
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Localization> Loc;
+@inject IJSRuntime                     Js;
+@inject SessionService                 Session;
+
 <div class="note-footer">
     @if (Reactions.Count > 0)
     {
@@ -48,8 +55,19 @@
     <button class="btn" @onclick="Quote" @onclick:stopPropagation="true">
         <Icon Name="Icons.Quotes" Size="1.3em"/>
     </button>
-    <button class="btn" @onclick:stopPropagation="true">
+    <button class="btn positioned" @onclick="ToggleMenu" @onclick:stopPropagation="true">
         <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
+        <Menu @ref="Menu">
+            @if (NoteComponent.Note.User.Id == Session.Current?.Id)
+            {
+                <MenuElement Icon="Icons.Trash" OnSelect="NoteComponent.Delete">
+                    <Text>@Loc["Delete"]</Text>
+                </MenuElement>
+            }
+            <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
+                <Text>@Loc["Open original page"]</Text>
+            </MenuElement>
+        </Menu>
     </button>
 </div>
 
@@ -60,8 +78,15 @@
     [Parameter] [EditorRequired] public required int                      Renotes        { get; set; }
     [Parameter]                  public          bool                     RenotePossible { get; set; }
     private                                      EmojiPicker              EmojiPicker    { get; set; } = null!;
+    private                                      Menu                     Menu           { get; set; } = null!;
 
     [CascadingParameter] NoteComponent NoteComponent { get; set; } = null!;
+
+    private void ToggleMenu() => Menu.Toggle();
+
+    private void Delete() => NoteComponent.Delete();
+
+    private void OpenOriginal() => Js.InvokeVoidAsync("open", NoteComponent.Note.Url, "_blank");
 
     private void Like()
     {
@@ -82,7 +107,6 @@
     {
         NoteComponent.DoQuote();
     }
-    
 
     private async Task ToggleEmojiPicker()
     {

@@ -133,4 +133,9 @@
     {
         ComposeService.ComposeDialog?.OpenDialog(null, Note);
     }
+
+    public void Delete()
+    {
+        ApiService.Notes.DeleteNote(Note.Id);
+    }
 }
