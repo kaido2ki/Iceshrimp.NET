@@ -72,7 +72,7 @@ public class BackgroundTaskQueue(int parallelism)
 			                                                     !p.IsLink,
 			                                                token);
 
-			if (!deduplicated)
+			if (!file.IsLink && !deduplicated)
 			{
 				string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.WebpublicAccessKey];
 
@@ -109,7 +109,7 @@ public class BackgroundTaskQueue(int parallelism)
 		logger.LogDebug("Expiring file {id}...", jobData.DriveFileId);
 
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == jobData.DriveFileId, token);
-		if (file is not { UserHost: not null, Uri: not null }) return;
+		if (file is not { UserHost: not null, Uri: not null, IsLink: false }) return;
 
 		file.IsLink             = true;
 		file.Url                = file.Uri;
