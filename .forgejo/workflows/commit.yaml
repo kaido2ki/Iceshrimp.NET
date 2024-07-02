@@ -3,7 +3,7 @@ on:
     branches:
       - 'dev'
 jobs:
-  build-and-push:
+  test-build-and-push:
     runs-on: docker
     container:
       image: iceshrimp.dev/iceshrimp/iceshrimp.net:ci-env
