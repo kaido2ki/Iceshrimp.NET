@@ -1,6 +1,5 @@
 using System.IO.Compression;
 using System.Text.Json;
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
