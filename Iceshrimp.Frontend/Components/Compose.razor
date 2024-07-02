@@ -117,6 +117,19 @@
         await _module.InvokeVoidAsync("openUpload", UploadInput.Element);
     }
 
+    public async Task OpenDialogRedraft(NoteResponse note)
+    {
+        ResetState();
+        NoteDraft.Text       = note.Text ?? "";
+        NoteDraft.Cw         = note.Cw;
+        NoteDraft.Visibility = note.Visibility;
+        NoteDraft.MediaIds   = note.Attachments.Select(p => p.Id).ToList();
+        NoteDraft.RenoteId   = note.RenoteId;
+        NoteDraft.ReplyId    = note.ReplyId;
+        StateHasChanged();
+        await _module.InvokeVoidAsync("openDialog", Dialog);
+    }
+
     public async Task OpenDialog(NoteBase? replyTo = null, NoteBase? quote = null)
     {
         if (replyTo != null)
