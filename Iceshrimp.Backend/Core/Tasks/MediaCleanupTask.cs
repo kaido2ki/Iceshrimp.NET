@@ -41,7 +41,7 @@ public class MediaCleanupTask : ICronTask
 			});
 		}
 
-		logger.LogInformation("Successfully cleaned up {count} expired media files.", cnt);
+		logger.LogInformation("Successfully queued {count} media cleanup jobs.", cnt);
 	}
 
 	// Midnight
