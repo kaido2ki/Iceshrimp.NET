@@ -3,7 +3,7 @@ This release contains various features & bugfixes, including a security issue. U
 
 ### Frontend
 - Various leftover debug logging has been removed
-- The MFM nodes `center`, `quote`, `hashtag`, `small` and `strike` are now rendered correctly
+- The MFM node types `center`, `quote`, `hashtag`, `small` and `strike` are now rendered correctly
 - Custom emoji are now rendered in a visually consistent way when compared to iceshrimp-js
 - Non-image attachments are now rendered correctly
 - Stacking issues with positioned elements have been fixed
