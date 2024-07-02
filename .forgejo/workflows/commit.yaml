@@ -1,0 +1,39 @@
+on:
+  push:
+    branches:
+      - 'dev'
+jobs:
+  build-and-push:
+    runs-on: docker
+    container:
+      image: iceshrimp.dev/iceshrimp/iceshrimp.net:ci-env
+      options: |
+        --volume /opt/iceshrimp-cache/nuget:/root/.nuget
+        --volume /root/.docker:/root/.docker
+    steps:
+      - name: Clone repository
+        run: |
+          git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} /iceshrimp
+          cd /iceshrimp
+      - name: Run unit tests
+        run: |
+          cd /iceshrimp
+          dotnet test
+      - name: Clean repo
+        run: |
+          cd /iceshrimp
+          git clean -xfd
+      - name: Authenticate against the docker registry
+        run: docker login iceshrimp.dev -u ${{ github.actor }} -p ${{ secrets.REGISTRY_TOKEN }}
+      - name: Initialize builder
+        run: docker buildx use iceshrimp-ci || docker buildx create --name iceshrimp-ci --use
+      - name: Patch Dockerfile
+        run: |
+          sed -i 's^mcr.microsoft.com/dotnet/sdk:8.0-alpine^iceshrimp.dev/iceshrimp/iceshrimp.net:ci-env^g' /iceshrimp/Dockerfile
+          sed -i 's^mcr.microsoft.com/dotnet/sdk:8.0^iceshrimp.dev/iceshrimp/iceshrimp.net:ci-env-wasm^g' /iceshrimp/Dockerfile
+          sed -i 's^dotnet workload install wasm-tools^echo^g' /iceshrimp/Dockerfile
+      - name: Build the image
+        shell: bash
+        run: docker buildx build --target image-jit -t iceshrimp.dev/${GITHUB_REPOSITORY@L}:$GITHUB_REF_NAME --provenance=false --platform=linux/amd64,linux/arm64 --push /iceshrimp
+      - name: Purge cache
+        run: docker buildx prune --keep-storage 10G
