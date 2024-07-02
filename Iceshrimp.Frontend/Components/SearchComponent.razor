@@ -1,0 +1,216 @@
+@using System.Diagnostics.CodeAnalysis
+@using System.Numerics
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas
+@using Microsoft.Extensions.Localization
+@using Iceshrimp.Frontend.Components.Note
+@inject IStringLocalizer<Localization> Loc;
+@inject ApiService                     Api;
+@inject NavigationManager              Navigation;
+
+<div class="search">
+    <input @bind="SearchString" class="input"/>
+    <InputSelect @bind-Value="@SearchType">
+        @foreach (var type in Enum.GetValues(typeof(SearchTypeEnum)))
+        {
+            <option value="@type">@type</option>
+        }
+    </InputSelect>
+    <button @onclick="Search">@Loc["Search"]</button>
+</div>
+
+@if (_resultType == ResultType.Notes)
+{
+    <div class="note-results">
+        @if (_NoteSearch?.NoteResponses != null)
+        {
+            foreach (var note in _NoteSearch?.NoteResponses!)
+            {
+                <div class="wrapper">
+                    <div @onclick="() => OpenNote(note.Id)" class="note-container">
+                        <Note NoteResponse="note"/>
+                    </div>
+                </div>
+            }
+
+            <div class="end">
+                <ScrollEnd ManualLoad="_NoteSearch.FetchOlder" IntersectionChange="async () => { if (!_NoteSearch.SearchComplete) { await _NoteSearch.FetchOlder(); } }"/>
+            </div>
+        }
+    </div>
+}
+@if (_resultType == ResultType.Users)
+{
+    <div class="user-results">
+        @if (_userSearch?.UserResponses != null)
+        {
+            foreach (var user in _userSearch?.UserResponses!)
+            {
+                <div @onclick="() => OpenProfile(user)" class="wrapper">
+                    <UserProfileCard User="user"/>
+                </div>
+            }
+
+            <div class="end">
+                <ScrollEnd ManualLoad="_userSearch.FetchOlder" IntersectionChange="async () => { if (!_userSearch.SearchComplete) { await _userSearch.FetchOlder(); } }"/>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private string         SearchString { get; set; } = "";
+    private SearchTypeEnum SearchType   { get; set; } = SearchTypeEnum.Note;
+    private NoteSearch?    _NoteSearch  { get; set; }
+    private UserSearch?    _userSearch  { get; set; }
+    private ResultType     _resultType;
+
+    private async Task Search()
+    {
+        _NoteSearch = null;
+        _resultType = ResultType.None;
+        StateHasChanged();
+        try
+        {
+            var lookup = await Api.Search.Lookup(SearchString);
+            if (lookup is not null && lookup.TargetUrl.Contains("user"))
+            {
+                var user = await Api.Users.GetUser(lookup.TargetUrl.Split("users/")[1]);
+                if (user is not null)
+                {
+                    var username                    = $"@{user.Username}";
+                    if (user.Host != null) username += $"@{user.Host}";
+                    Navigation.NavigateTo($"/{username}");
+                }
+            }
+            else if (lookup is not null && lookup.TargetUrl.Contains("notes"))
+            {
+                Navigation.NavigateTo(lookup.TargetUrl);
+            }
+        }
+        catch (ApiException)
+        {
+            if (SearchType == SearchTypeEnum.Note)
+            {
+                var searchRes = await Api.Search.SearchNotes(SearchString, new PaginationQuery { Limit = 20 });
+                if (searchRes.Count > 0)
+                {
+                    _NoteSearch = new NoteSearch(searchString: SearchString, api: Api, noteResponses: searchRes);
+                    _resultType = ResultType.Notes;
+                    StateHasChanged();
+                }
+            }
+
+            if (SearchType == SearchTypeEnum.User)
+            {
+                var searchRes = await Api.Search.SearchUsers(SearchString, new PaginationQuery() { Limit = 20 });
+                if (searchRes.Count > 0)
+                {
+                    _userSearch = new UserSearch(searchString: SearchString, api: Api, userResponses: searchRes);
+                    _resultType = ResultType.Users;
+                    StateHasChanged();
+                }
+            }
+        }
+    }
+
+    private void OpenNote(string id)
+    {
+         Navigation.NavigateTo($"/notes/{id}");
+    }
+
+    private void OpenProfile(UserResponse user)
+    {
+        var username                    = $"@{user.Username}";
+        if (user.Host != null) username += $"@{user.Host}";
+        Navigation.NavigateTo($"/{username}");
+    }
+
+    private enum ResultType
+    {
+        Default,
+        Notes,
+        Users,
+        None
+    }
+
+    private enum SearchTypeEnum
+    {
+        Note,
+        User
+    }
+
+    private class UserSearch
+    {
+        internal required string             MinID;
+        internal required string             MaxID;
+        internal required string             SearchString;
+        internal required ApiService         Api;
+        public required   List<UserResponse> UserResponses { get; init; }
+        public            bool               SearchComplete = false;
+
+        [SetsRequiredMembers]
+        public UserSearch(string searchString, ApiService api, List<UserResponse> userResponses)
+        {
+            MinID         = userResponses.Last().Id;
+            MaxID         = userResponses.First().Id;
+            SearchString  = searchString;
+            Api           = api;
+            UserResponses = userResponses;
+        }
+
+        public async Task FetchOlder()
+        {
+            var pq  = new PaginationQuery { Limit = 15, MaxId = MinID };
+            var res = await Api.Search.SearchUsers(SearchString, pq);
+            switch (res.Count)
+            {
+                case > 0:
+                    MinID = res.Last().Id;
+                    UserResponses.AddRange(res);
+                    break;
+                case 0:
+                    SearchComplete = true;
+                    break;
+            }
+        }
+    }
+
+    private class NoteSearch
+    {
+        internal required string             MinID;
+        internal required string             MaxID;
+        internal required string             SearchString;
+        internal required ApiService         Api;
+        public required   List<NoteResponse> NoteResponses { get; init; }
+        public            bool               SearchComplete = false;
+
+        [SetsRequiredMembers]
+        public NoteSearch(string searchString, ApiService api, List<NoteResponse> noteResponses)
+        {
+            MinID         = noteResponses.Last().Id;
+            MaxID         = noteResponses.First().Id;
+            SearchString  = searchString;
+            Api           = api;
+            NoteResponses = noteResponses;
+        }
+
+        public async Task FetchOlder()
+        {
+            var pq  = new PaginationQuery { Limit = 15, MaxId = MinID };
+            var res = await Api.Search.SearchNotes(SearchString, pq);
+            switch (res.Count)
+            {
+                case > 0:
+                    MinID = res.Last().Id;
+                    NoteResponses.AddRange(res);
+                    break;
+                case 0:
+                    SearchComplete = true;
+                    break;
+            }
+        }
+    }
+}

@@ -1,0 +1,37 @@
+@inject ApiService Api;
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas
+@if (UserProfile != null)
+{
+    <div class="profile-card">
+        <div class="header">
+            <div>
+                <img class="avatar" src="@User.AvatarUrl"/>
+            </div>
+            <div class="name-section">
+                <div class="name">@User.DisplayName</div>
+                <div class="identifier">
+                    @@@User.Username
+                    @if (User.Host != null)
+                    {
+                        var host = $"@{User.Host}";
+                        @host
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="bio">
+            <MfmText Text="@UserProfile.Bio"/>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] [EditorRequired] public required UserResponse         User        { get; set; }
+    private                                      UserProfileResponse? UserProfile { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        UserProfile = await Api.Users.GetUserProfile(User.Id);
+    }
+}

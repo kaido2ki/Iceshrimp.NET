@@ -21,6 +21,12 @@
                 <span class="text">@Loc["Notifications"]</span>
             </NavLink>
         </div>
+        <div class="sidebar-btn">
+            <NavLink href="/search">
+                <Icon Name="Icons.MagnifyingGlass" />
+                <span class="text">@Loc["Search"]</span>
+            </NavLink>
+        </div>
     </div>
     <hr/>
     <button class="sidebar-btn" @onclick="Open">@Loc["Post"]</button>
@@ -28,9 +34,12 @@
 
 <div class="bottom-bar">
     <div class="nav">
-        <button class="sidebar-btn">
-            <Icon Name="Icons.List"/>
-        </button>
+        <div class="sidebar-btn">
+            <NavLink href="/search">
+                <Icon Name="Icons.MagnifyingGlass" />
+                <span class="text">@Loc["Search"]</span>
+            </NavLink>
+        </div>
         <div class="sidebar-btn">
             <NavLink href="/">
                 <Icon Name="Icons.House"/>
