@@ -180,6 +180,9 @@ public class GracefulException(
 	public static GracefulException RequestTimeout(string message, string? details = null) =>
 		new(HttpStatusCode.RequestTimeout, message, details);
 
+	public static GracefulException Conflict(string message, string? details = null) =>
+		new(HttpStatusCode.Conflict, message, details);
+
 	public static GracefulException RecordNotFound() => new(HttpStatusCode.NotFound, "Record not found");
 
 	public static GracefulException MisdirectedRequest() =>

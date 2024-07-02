@@ -26,9 +26,15 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 		new(@"^:?([\w+-]+)@([a-zA-Z0-9._\-]+\.[a-zA-Z0-9._\-]+):?$", RegexOptions.Compiled);
 
 	public async Task<Emoji> CreateEmojiFromStream(
-		Stream input, string fileName, string mimeType, Config.InstanceSection config
+		Stream input, string fileName, string mimeType, Config.InstanceSection config, List<string>? aliases = null,
+		string? category = null
 	)
 	{
+		var name = fileName.Split(".")[0];
+		var existing = await db.Emojis.AnyAsync(p => p.Host == null && p.Name == name);
+		if (existing)
+			throw GracefulException.Conflict("An emoji with that name already exists.");
+
 		var user = await sysUserSvc.GetInstanceActorAsync();
 		var request = new DriveFileCreationRequest
 		{
@@ -38,15 +44,13 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 		};
 		var driveFile = await driveSvc.StoreFile(input, user, request);
 
-		var name = fileName.Split(".")[0];
-
-		var existing = await db.Emojis.FirstOrDefaultAsync(p => p.Host == null && p.Name == name);
-
 		var id = IdHelpers.GenerateSlowflakeId();
 		var emoji = new Emoji
 		{
 			Id          = id,
-			Name        = existing == null && CustomEmojiRegex.IsMatch(name) ? name : id,
+			Name        = name,
+			Aliases     = aliases ?? [],
+			Category    = category,
 			UpdatedAt   = DateTime.UtcNow,
 			OriginalUrl = driveFile.Url,
 			PublicUrl   = driveFile.PublicUrl,

@@ -69,6 +69,7 @@ public class EmojiController(
 	[HttpPost]
 	[Authorize("role:admin")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
+	[ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ErrorResponse))]
 	public async Task<IActionResult> UploadEmoji(IFormFile file, [FromServices] IOptions<Config.InstanceSection> config)
 	{
 		var emoji = await emojiSvc.CreateEmojiFromStream(file.OpenReadStream(), file.FileName, file.ContentType,
@@ -103,6 +104,17 @@ public class EmojiController(
 
 		return Ok(await emojiSvc.CloneEmoji(emojo));
 	}
+
+ 	[HttpPost("import")]
+ 	[Authorize("role:admin")]
+ 	[ProducesResponseType(StatusCodes.Status202Accepted)]
+ 	public async Task<IActionResult> ImportEmoji(IFormFile file, [FromServices] EmojiImportService emojiImportSvc)
+ 	{
+ 		var zip = await emojiImportSvc.Parse(file.OpenReadStream());
+ 		await emojiImportSvc.Import(zip); // TODO: run in background. this will take a while
+ 
+ 		return Accepted();
+ 	}
 
 	[HttpPatch("{id}")]
 	[Authorize("role:admin")]
