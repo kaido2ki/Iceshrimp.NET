@@ -39,9 +39,10 @@ public class Field
 
 public class AccountSource
 {
-	[J("language")]  public required string      Language  { get; set; }
-	[J("note")]      public required string      Note      { get; set; }
-	[J("privacy")]   public required string      Privacy   { get; set; }
-	[J("sensitive")] public required bool        Sensitive { get; set; }
-	[J("fields")]    public required List<Field> Fields    { get; set; }
+	[J("language")]              public required string      Language           { get; set; }
+	[J("note")]                  public required string      Note               { get; set; }
+	[J("privacy")]               public required string      Privacy            { get; set; }
+	[J("sensitive")]             public required bool        Sensitive          { get; set; }
+	[J("fields")]                public required List<Field> Fields             { get; set; }
+	[J("follow_requests_count")] public required int         FollowRequestCount { get; set; }
 }

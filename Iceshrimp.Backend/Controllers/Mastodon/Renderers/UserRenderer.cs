@@ -76,7 +76,8 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 				Note     = profile?.Description ?? "",
 				Privacy = StatusEntity.EncodeVisibility(user.UserSettings?.DefaultNoteVisibility ??
 				                                        Note.NoteVisibility.Public),
-				Sensitive = false
+				Sensitive          = false,
+				FollowRequestCount = await db.FollowRequests.CountAsync(p => p.Followee == user)
 			};
 		}
 
