@@ -1,10 +1,10 @@
 @using System.Diagnostics.CodeAnalysis
-@using System.Numerics
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas
 @using Microsoft.Extensions.Localization
+@* ReSharper disable once RedundantUsingDirective *@
 @using Iceshrimp.Frontend.Components.Note
 @inject IStringLocalizer<Localization> Loc;
 @inject ApiService                     Api;
@@ -24,9 +24,9 @@
 @if (_resultType == ResultType.Notes)
 {
     <div class="note-results">
-        @if (_NoteSearch?.NoteResponses != null)
+        @if (NoteSearchInstance?.NoteResponses != null)
         {
-            foreach (var note in _NoteSearch?.NoteResponses!)
+            foreach (var note in NoteSearchInstance?.NoteResponses!)
             {
                 <div class="wrapper">
                     <div @onclick="() => OpenNote(note.Id)" class="note-container">
@@ -36,7 +36,7 @@
             }
 
             <div class="end">
-                <ScrollEnd ManualLoad="_NoteSearch.FetchOlder" IntersectionChange="async () => { if (!_NoteSearch.SearchComplete) { await _NoteSearch.FetchOlder(); } }"/>
+                <ScrollEnd ManualLoad="NoteSearchInstance.FetchOlder" IntersectionChange="async () => { if (!NoteSearchInstance.SearchComplete) { await NoteSearchInstance.FetchOlder(); } }"/>
             </div>
         }
     </div>
@@ -44,9 +44,9 @@
 @if (_resultType == ResultType.Users)
 {
     <div class="user-results">
-        @if (_userSearch?.UserResponses != null)
+        @if (UserSearchInstance?.UserResponses != null)
         {
-            foreach (var user in _userSearch?.UserResponses!)
+            foreach (var user in UserSearchInstance?.UserResponses!)
             {
                 <div @onclick="() => OpenProfile(user)" class="wrapper">
                     <UserProfileCard User="user"/>
@@ -54,23 +54,23 @@
             }
 
             <div class="end">
-                <ScrollEnd ManualLoad="_userSearch.FetchOlder" IntersectionChange="async () => { if (!_userSearch.SearchComplete) { await _userSearch.FetchOlder(); } }"/>
+                <ScrollEnd ManualLoad="UserSearchInstance.FetchOlder" IntersectionChange="async () => { if (!UserSearchInstance.SearchComplete) { await UserSearchInstance.FetchOlder(); } }"/>
             </div>
         }
     </div>
 }
 
 @code {
-    private string         SearchString { get; set; } = "";
-    private SearchTypeEnum SearchType   { get; set; } = SearchTypeEnum.Note;
-    private NoteSearch?    _NoteSearch  { get; set; }
-    private UserSearch?    _userSearch  { get; set; }
+    private string         SearchString       { get; set; } = "";
+    private SearchTypeEnum SearchType         { get; set; } = SearchTypeEnum.Note;
+    private NoteSearch?    NoteSearchInstance { get; set; }
+    private UserSearch?    UserSearchInstance { get; set; }
     private ResultType     _resultType;
 
     private async Task Search()
     {
-        _NoteSearch = null;
-        _resultType = ResultType.None;
+        NoteSearchInstance = null;
+        _resultType        = ResultType.None;
         StateHasChanged();
         try
         {
@@ -97,8 +97,8 @@
                 var searchRes = await Api.Search.SearchNotes(SearchString, new PaginationQuery { Limit = 20 });
                 if (searchRes.Count > 0)
                 {
-                    _NoteSearch = new NoteSearch(searchString: SearchString, api: Api, noteResponses: searchRes);
-                    _resultType = ResultType.Notes;
+                    NoteSearchInstance = new NoteSearch(searchString: SearchString, api: Api, noteResponses: searchRes);
+                    _resultType        = ResultType.Notes;
                     StateHasChanged();
                 }
             }
@@ -108,8 +108,8 @@
                 var searchRes = await Api.Search.SearchUsers(SearchString, new PaginationQuery() { Limit = 20 });
                 if (searchRes.Count > 0)
                 {
-                    _userSearch = new UserSearch(searchString: SearchString, api: Api, userResponses: searchRes);
-                    _resultType = ResultType.Users;
+                    UserSearchInstance = new UserSearch(searchString: SearchString, api: Api, userResponses: searchRes);
+                    _resultType        = ResultType.Users;
                     StateHasChanged();
                 }
             }
@@ -118,7 +118,7 @@
 
     private void OpenNote(string id)
     {
-         Navigation.NavigateTo($"/notes/{id}");
+        Navigation.NavigateTo($"/notes/{id}");
     }
 
     private void OpenProfile(UserResponse user)
@@ -142,33 +142,24 @@
         User
     }
 
-    private class UserSearch
+    [method: SetsRequiredMembers]
+    private class UserSearch(string searchString, ApiService api, List<UserResponse> userResponses)
     {
-        internal required string             MinID;
-        internal required string             MaxID;
-        internal required string             SearchString;
-        internal required ApiService         Api;
-        public required   List<UserResponse> UserResponses { get; init; }
+        internal required string             MinId        = userResponses.Last().Id;
+        internal required string             MaxId        = userResponses.First().Id;
+        internal required string             SearchString = searchString;
+        internal required ApiService         Api          = api;
+        public required   List<UserResponse> UserResponses { get; init; } = userResponses;
         public            bool               SearchComplete = false;
-
-        [SetsRequiredMembers]
-        public UserSearch(string searchString, ApiService api, List<UserResponse> userResponses)
-        {
-            MinID         = userResponses.Last().Id;
-            MaxID         = userResponses.First().Id;
-            SearchString  = searchString;
-            Api           = api;
-            UserResponses = userResponses;
-        }
 
         public async Task FetchOlder()
         {
-            var pq  = new PaginationQuery { Limit = 15, MaxId = MinID };
+            var pq  = new PaginationQuery { Limit = 15, MaxId = MinId };
             var res = await Api.Search.SearchUsers(SearchString, pq);
             switch (res.Count)
             {
                 case > 0:
-                    MinID = res.Last().Id;
+                    MinId = res.Last().Id;
                     UserResponses.AddRange(res);
                     break;
                 case 0:
@@ -178,33 +169,24 @@
         }
     }
 
-    private class NoteSearch
+    [method: SetsRequiredMembers]
+    private class NoteSearch(string searchString, ApiService api, List<NoteResponse> noteResponses)
     {
-        internal required string             MinID;
-        internal required string             MaxID;
-        internal required string             SearchString;
-        internal required ApiService         Api;
-        public required   List<NoteResponse> NoteResponses { get; init; }
+        internal required string             MinId        = noteResponses.Last().Id;
+        internal required string             MaxId        = noteResponses.First().Id;
+        internal required string             SearchString = searchString;
+        internal required ApiService         Api          = api;
+        public required   List<NoteResponse> NoteResponses { get; init; } = noteResponses;
         public            bool               SearchComplete = false;
-
-        [SetsRequiredMembers]
-        public NoteSearch(string searchString, ApiService api, List<NoteResponse> noteResponses)
-        {
-            MinID         = noteResponses.Last().Id;
-            MaxID         = noteResponses.First().Id;
-            SearchString  = searchString;
-            Api           = api;
-            NoteResponses = noteResponses;
-        }
 
         public async Task FetchOlder()
         {
-            var pq  = new PaginationQuery { Limit = 15, MaxId = MinID };
+            var pq  = new PaginationQuery { Limit = 15, MaxId = MinId };
             var res = await Api.Search.SearchNotes(SearchString, pq);
             switch (res.Count)
             {
                 case > 0:
-                    MinID = res.Last().Id;
+                    MinId = res.Last().Id;
                     NoteResponses.AddRange(res);
                     break;
                 case 0:
