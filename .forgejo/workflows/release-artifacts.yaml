@@ -6,7 +6,7 @@ jobs:
   build-artifacts:
     runs-on: docker
     container:
-      image: iceshrimp.dev/iceshrimp/iceshrimp.net:ci-env-wasm
+      image: iceshrimp.dev/iceshrimp/ci-env:dotnet-wasm
       options: --volume /opt/iceshrimp-cache/nuget:/root/.nuget
     steps:
       - name: Clone repository
@@ -62,7 +62,7 @@ jobs:
       - name: Build the image
         shell: bash
         run: |
-          cp /src/.forgejo/ci-release/Dockerfile /out
+          cp /src/.docker/dotnet-runner-8.0.Dockerfile /out/Dockerfile
           docker buildx build ${{ env.TAGS }} --provenance=false --platform=linux/amd64,linux/arm64 --push /out
       - name: Purge cache
         run: docker buildx prune --keep-storage 20G

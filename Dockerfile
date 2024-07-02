@@ -3,7 +3,7 @@
 
 # We have to build & run AOT images on linux-glibc, at least until .NET 9.0 (See https://github.com/dotnet/sdk/issues/32327 for details)
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS builder-jit
+FROM --platform=$BUILDPLATFORM iceshrimp.dev/iceshrimp/dotnet-sdk:8.0-alpine AS builder-jit
 ARG BUILDPLATFORM
 WORKDIR /src
 
@@ -40,13 +40,9 @@ RUN --mount=type=cache,target=/root/.nuget \
         mv /app-$TARGETARCH /app; else mv /build /app; \
     fi
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS builder-aot
+FROM --platform=$BUILDPLATFORM iceshrimp.dev/iceshrimp/dotnet-sdk:8.0-wasm AS builder-aot
 ARG BUILDPLATFORM
 WORKDIR /src
-
-RUN --mount=type=cache,target=/root/.nuget \
-    dotnet workload install wasm-tools
-RUN apt-get update && apt-get install python3 -y
 
 # copy csproj/fsproj & nuget config, then restore as distinct layers
 COPY NuGet.Config /src

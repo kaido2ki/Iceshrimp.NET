@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled AS image-aot
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled
 ARG TARGETARCH
 WORKDIR /app
 COPY linux-$TARGETARCH/ .
