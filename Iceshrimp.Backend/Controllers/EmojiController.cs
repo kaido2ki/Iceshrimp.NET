@@ -88,6 +88,17 @@ public class EmojiController(
 		return Ok(res);
 	}
 
+ 	[HttpPost("import")]
+ 	[Authorize("role:admin")]
+ 	[ProducesResponseType(StatusCodes.Status202Accepted)]
+ 	public async Task<IActionResult> ImportEmoji(IFormFile file, [FromServices] EmojiImportService emojiImportSvc)
+ 	{
+ 		var zip = await emojiImportSvc.Parse(file.OpenReadStream());
+ 		await emojiImportSvc.Import(zip); // TODO: run in background. this will take a while
+ 
+ 		return Accepted();
+ 	}
+ 
 	[HttpPatch("{id}")]
 	[Authorize("role:admin")]
 	[Consumes(MediaTypeNames.Application.Json)]

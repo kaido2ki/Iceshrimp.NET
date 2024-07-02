@@ -55,6 +55,7 @@ public static class ServiceExtensions
 			.AddScoped<UserService>()
 			.AddScoped<NoteService>()
 			.AddScoped<EmojiService>()
+			.AddScoped<EmojiImportService>()
 			.AddScoped<WebFingerService>()
 			.AddScoped<SystemUserService>()
 			.AddScoped<DriveService>()

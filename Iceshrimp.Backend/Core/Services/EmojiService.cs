@@ -26,7 +26,8 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 		new(@"^:?([\w+-]+)@([a-zA-Z0-9._\-]+\.[a-zA-Z0-9._\-]+):?$", RegexOptions.Compiled);
 
 	public async Task<Emoji> CreateEmojiFromStream(
-		Stream input, string fileName, string mimeType, Config.InstanceSection config
+		Stream input, string fileName, string mimeType, Config.InstanceSection config, List<string>? aliases = null,
+		string? category = null
 	)
 	{
 		var user = await sysUserSvc.GetInstanceActorAsync();
@@ -47,6 +48,8 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 		{
 			Id          = id,
 			Name        = existing == null && CustomEmojiRegex.IsMatch(name) ? name : id,
+			Aliases     = aliases ?? [],
+			Category    = category,
 			UpdatedAt   = DateTime.UtcNow,
 			OriginalUrl = driveFile.Url,
 			PublicUrl   = driveFile.PublicUrl,
