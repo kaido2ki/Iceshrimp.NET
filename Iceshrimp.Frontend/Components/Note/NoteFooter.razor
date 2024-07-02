@@ -58,10 +58,13 @@
     <button class="btn positioned" @onclick="ToggleMenu" @onclick:stopPropagation="true">
         <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
         <Menu @ref="Menu">
-            @if (NoteComponent.Note.User.Id == Session.Current?.Id)
+            @if (Note.NoteResponse.User.Id == Session.Current?.Id)
             {
-                <MenuElement Icon="Icons.Trash" OnSelect="NoteComponent.Delete">
+                <MenuElement Icon="Icons.Trash" OnSelect="Note.Delete">
                     <Text>@Loc["Delete"]</Text>
+                </MenuElement>
+                <MenuElement Icon="Icons.Eraser" OnSelect="Note.Redraft">
+                    <Text>@Loc["Redraft"]</Text>
                 </MenuElement>
             }
             <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
@@ -80,32 +83,32 @@
     private                                      EmojiPicker              EmojiPicker    { get; set; } = null!;
     private                                      Menu                     Menu           { get; set; } = null!;
 
-    [CascadingParameter] NoteComponent NoteComponent { get; set; } = null!;
+    [CascadingParameter] Note Note { get; set; } = null!;
 
     private void ToggleMenu() => Menu.Toggle();
 
-    private void Delete() => NoteComponent.Delete();
+    private void Delete() => Note.Delete();
 
-    private void OpenOriginal() => Js.InvokeVoidAsync("open", NoteComponent.Note.Url, "_blank");
+    private void OpenOriginal() => Js.InvokeVoidAsync("open", Note.NoteResponse.Url, "_blank");
 
     private void Like()
     {
-        NoteComponent.Like();
+        Note.Like();
     }
 
     private void Reply()
     {
-        NoteComponent.Reply();
+        Note.Reply();
     }
 
     private void Renote()
     {
-        if (RenotePossible) NoteComponent.Renote();
+        if (RenotePossible) Note.Renote();
     }
 
     private void Quote()
     {
-        NoteComponent.DoQuote();
+        Note.DoQuote();
     }
 
     private async Task ToggleEmojiPicker()
@@ -115,6 +118,6 @@
 
     private void React(EmojiResponse emoji)
     {
-        NoteComponent.React(emoji.Name, true, emoji.PublicUrl);
+        Note.React(emoji.Name, true, emoji.PublicUrl);
     }
 }

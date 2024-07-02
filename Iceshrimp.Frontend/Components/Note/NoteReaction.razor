@@ -17,10 +17,10 @@
 
 @code {
     [Parameter] [EditorRequired] public required NoteReactionSchema Reaction      { get; set; }
-    [CascadingParameter]                         NoteComponent      NoteComponent { get; set; } = null!;
+    [CascadingParameter]                         Note      Note { get; set; } = null!;
 
     private void React()
     {
-        NoteComponent.React(Reaction.Name, !Reaction.Reacted);
+        Note.React(Reaction.Name, !Reaction.Reacted);
     }
 }

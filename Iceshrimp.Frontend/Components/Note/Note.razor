@@ -1,4 +1,10 @@
+@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas
+@inject ApiService ApiService
+@inject NavigationManager NavigationManager
+@inject ComposeService    ComposeService
+<CascadingValue Value="this">
+
 @if (NoteResponse.Renote != null)
 {
     <div class="renote">
@@ -25,9 +31,103 @@ else
 {
     <NoteComponent Note="NoteResponse" Quote="NoteResponse.Quote" Indented="Indented"/>
 }
+</CascadingValue>
 
 
 @code {
     [Parameter] [EditorRequired] public required NoteResponse NoteResponse { get; set; }
     [Parameter]                  public          bool         Indented     { get; set; }
+
+    //FIXME: This needs to be rewritten.
+    public void React(string name, bool target, string? url = null)
+    {
+        var index = NoteResponse.Reactions.FindIndex(x => x.Name == name);
+        switch (target)
+        {
+            case true:
+                ApiService.Notes.ReactToNote(NoteResponse.Id, name);
+                if (index == -1 && url != null)
+                {
+                    NoteResponse.Reactions.Add(new NoteReactionSchema
+                    {
+                        NoteId  = NoteResponse.Id,
+                        Name    = name,
+                        Count   = 1,
+                        Reacted = true,
+                        Url     = url
+                    });
+                }
+                else
+                {
+                    if (NoteResponse.Reactions[index].Reacted != true)
+                    {
+                        NoteResponse.Reactions[index].Count++;
+                    }
+
+                    break;
+                }
+
+                StateHasChanged();
+                break;
+            case false:
+                ApiService.Notes.RemoveReactionFromNote(NoteResponse.Id, name);
+                if (NoteResponse.Reactions[index].Count <= 1)
+                {
+                    NoteResponse.Reactions.RemoveAt(index);
+                }
+                else
+                {
+                    NoteResponse.Reactions[index].Count--;
+                }
+
+                StateHasChanged();
+                break;
+        }
+    }
+
+    public void Like()
+    {
+        if (NoteResponse.Liked)
+        {
+            ApiService.Notes.UnlikeNote(NoteResponse.Id);
+            NoteResponse.Liked = false;
+            NoteResponse.Likes--;
+            StateHasChanged();
+        }
+        else
+        {
+            ApiService.Notes.LikeNote(NoteResponse.Id);
+            NoteResponse.Liked = true;
+            NoteResponse.Likes++;
+            StateHasChanged();
+        }
+    }
+
+    public void Reply()
+    {
+        ComposeService.ComposeDialog?.OpenDialog(NoteResponse);
+    }
+
+    public void Renote()
+    {
+        ApiService.Notes.RenoteNote(NoteResponse.Id);
+        NoteResponse.Renotes++;
+        StateHasChanged();
+    }
+
+    public void DoQuote()
+    {
+        ComposeService.ComposeDialog?.OpenDialog(null, NoteResponse);
+    }
+
+    public async Task Redraft()
+    {        
+        await ApiService.Notes.DeleteNote(NoteResponse.Id);
+        ComposeService.ComposeDialog?.OpenDialogRedraft(NoteResponse);
+    }
+
+    public void Delete()
+    {
+        ApiService.Notes.DeleteNote(NoteResponse.Id);
+    }
 }
