@@ -17,7 +17,7 @@ COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 WORKDIR /src/Iceshrimp.Backend
 ARG VIPS=true
 RUN --mount=type=cache,target=/root/.nuget \
-    dotnet restore -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS
+    dotnet restore -p:Configuration=Release -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS
 
 # copy build files
 COPY Iceshrimp.Backend/ /src/Iceshrimp.Backend/
@@ -35,7 +35,7 @@ ARG TARGETARCH
 
 RUN --mount=type=cache,target=/root/.nuget \
     if [[ "$BUILDPLATFORM" != "$TARGETPLATFORM" ]]; then \
-        dotnet restore -a $TARGETARCH -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS; \
+        dotnet restore -a $TARGETARCH -p:Configuration=Release -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS; \
         dotnet publish --no-restore -c Release -a $TARGETARCH -o /app-$TARGETARCH -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS; \
         mv /app-$TARGETARCH /app; else mv /build /app; \
     fi
@@ -58,7 +58,7 @@ COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 WORKDIR /src/Iceshrimp.Backend
 ARG VIPS=true
 RUN --mount=type=cache,target=/root/.nuget \
-    dotnet restore -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS
+    dotnet restore -p:Configuration=Release -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS
 
 # copy build files
 COPY Iceshrimp.Backend/ /src/Iceshrimp.Backend/
@@ -76,7 +76,7 @@ ARG TARGETARCH
 
 RUN --mount=type=cache,target=/root/.nuget \
     if [[ "$BUILDPLATFORM" != "$TARGETPLATFORM" ]]; then \
-        dotnet restore -a $TARGETARCH -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS; \
+        dotnet restore -a $TARGETARCH -p:Configuration=Release -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS; \
         dotnet publish --no-restore -c Release -a $TARGETARCH -o /app-$TARGETARCH -p:EnableAOT=true -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS; \
         mv /app-$TARGETARCH /app; else mv /build /app; \
     fi
