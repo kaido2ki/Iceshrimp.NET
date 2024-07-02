@@ -39,7 +39,7 @@
 
 @code {
     [Parameter] [EditorRequired] public required List<NoteResponse>     NoteResponseList { get; set; }
-    [Parameter] [EditorRequired] public required EventCallback          ReachedEnd       { get; set; }
+    [Parameter] [EditorRequired] public required Func<Task<bool>>       ReachedEnd       { get; set; }
     [Parameter] [EditorRequired] public required EventCallback          ReachedStart     { get; set; }
     private                                      VirtualScrollerState   State            { get; set; } = new();
     private                                      int                    UpdateCount      { get; set; } = 15;
@@ -54,9 +54,9 @@
     private                                      ElementReference       _padTopRef;
     private                                      ElementReference       _padBotRef;
     private                                      ElementReference       _scroller;
-    private                                      bool                   _loadingTop    = false;
-    private                                      bool                   _loadingBottom = false;
-    private                                      bool                   _setScroll     = false;
+    private                                      bool                   _loadingTop     = false;
+    private                                      bool                   _loadingBottom  = false;
+    private                                      bool                   _setScroll      = false;
 
     private ElementReference Ref
     {
@@ -75,7 +75,13 @@
     {
         _loadingBottom = true;
         StateHasChanged();
-        await ReachedEnd.InvokeAsync();
+        var moreAvailable = await ReachedEnd();
+        if (moreAvailable == false)
+        {
+            if (OvrscrlObsvBottom is null) throw new Exception("Tried to use observer that does not exist");
+            await OvrscrlObsvBottom.Disconnect();
+        }
+
         _loadingBottom = false;
         StateHasChanged();
     }

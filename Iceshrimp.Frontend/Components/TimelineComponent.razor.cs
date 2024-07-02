@@ -39,19 +39,25 @@ public partial class TimelineComponent : IAsyncDisposable
 		State.Timeline = res;
 	}
 
-	private async Task FetchOlder()
+	// Returning false means the API has no more content.
+	private async Task<bool> FetchOlder()
 	{
-		if (LockFetch) return;
+		if (LockFetch) return true;
 		LockFetch = true;
 		var pq  = new PaginationQuery { Limit = 15, MaxId = State.MinId };
 		var res = await ApiService.Timelines.GetHomeTimeline(pq);
-		if (res.Count > 0)
+		switch (res.Count)
 		{
-			State.MinId = res.Last().Id;
-			State.Timeline.AddRange(res);
+			case > 0:
+				State.MinId = res.Last().Id;
+				State.Timeline.AddRange(res);
+				break;
+			case 0:
+				return false;
 		}
 
 		LockFetch = false;
+		return true;
 	}
 
 	private async Task FetchNewer()
