@@ -36,4 +36,4 @@ jobs:
         shell: bash
         run: docker buildx build --target image-jit -t iceshrimp.dev/${GITHUB_REPOSITORY@L}:$GITHUB_REF_NAME --provenance=false --platform=linux/amd64,linux/arm64 --push /iceshrimp
       - name: Purge cache
-        run: docker buildx prune --keep-storage 10G
+        run: docker buildx prune --keep-storage 20G

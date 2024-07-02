@@ -65,4 +65,4 @@ jobs:
           cp /src/.forgejo/ci-release/Dockerfile /out
           docker buildx build ${{ env.TAGS }} --provenance=false --platform=linux/amd64,linux/arm64 --push /out
       - name: Purge cache
-        run: docker buildx prune --keep-storage 10G
+        run: docker buildx prune --keep-storage 20G
