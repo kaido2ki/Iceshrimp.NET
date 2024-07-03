@@ -95,9 +95,9 @@ public class NoteRenderer(
 			note.Renote == null && ((note.RenoteId != null && recurse > 0) || note.RenoteUri != null);
 
 		var content = data?.Source != true
-			? text != null
-				? await mfmConverter.ToHtmlAsync(text, mentionedUsers, note.UserHost, quoteUri, quoteInaccessible,
-				                                 replyInaccessible)
+			? text != null || quoteUri != null || quoteInaccessible || replyInaccessible
+				? await mfmConverter.ToHtmlAsync(text ?? "", mentionedUsers, note.UserHost, quoteUri,
+				                                 quoteInaccessible, replyInaccessible)
 				: ""
 			: null;
 
