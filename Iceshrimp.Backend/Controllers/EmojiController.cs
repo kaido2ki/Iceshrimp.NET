@@ -105,16 +105,16 @@ public class EmojiController(
 		return Ok(await emojiSvc.CloneEmoji(emojo));
 	}
 
- 	[HttpPost("import")]
- 	[Authorize("role:admin")]
- 	[ProducesResponseType(StatusCodes.Status202Accepted)]
- 	public async Task<IActionResult> ImportEmoji(IFormFile file, [FromServices] EmojiImportService emojiImportSvc)
- 	{
- 		var zip = await emojiImportSvc.Parse(file.OpenReadStream());
- 		await emojiImportSvc.Import(zip); // TODO: run in background. this will take a while
- 
- 		return Accepted();
- 	}
+	[HttpPost("import")]
+	[Authorize("role:admin")]
+	[ProducesResponseType(StatusCodes.Status202Accepted)]
+	public async Task<IActionResult> ImportEmoji(IFormFile file, [FromServices] EmojiImportService emojiImportSvc)
+	{
+		var zip = await emojiImportSvc.Parse(file.OpenReadStream());
+		await emojiImportSvc.Import(zip); // TODO: run in background. this will take a while
+
+		return Accepted();
+	}
 
 	[HttpPatch("{id}")]
 	[Authorize("role:admin")]
@@ -143,7 +143,7 @@ public class EmojiController(
 		return Ok(res);
 	}
 
-	[HttpDelete("emoji/{id}")]
+	[HttpDelete("{id}")]
 	[Authorize("role:admin")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
