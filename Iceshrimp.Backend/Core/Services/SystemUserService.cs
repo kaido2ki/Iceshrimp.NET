@@ -38,8 +38,9 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 
 	private async Task<(User user, UserKeypair keypair)> GetOrCreateSystemUserAndKeypairAsync(string username)
 	{
-		var user    = await GetOrCreateSystemUserAsync(username);
-		var keypair = await db.UserKeypairs.FirstAsync(p => p.User == user); //TODO: cache this in postgres as well
+		var user = await GetOrCreateSystemUserAsync(username);
+		var keypair = await db.UserKeypairs.FirstOrDefaultAsync(p => p.User == user) ??
+		              throw new Exception($"Failed to get keypair for system user {user.Id} ({username})");
 
 		return (user, keypair);
 	}
@@ -48,8 +49,7 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 	{
 		var user = db.ChangeTracker
 		             .Entries<User>()
-		             .FirstOrDefault(p => p.Entity.Host == null &&
-		                                  p.Entity.UsernameLower == username.ToLowerInvariant())
+		             .FirstOrDefault(p => p.Entity.UsernameLower == username.ToLowerInvariant() && p.Entity.IsLocalUser)
 		             ?.Entity;
 
 		user ??= await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant() &&
