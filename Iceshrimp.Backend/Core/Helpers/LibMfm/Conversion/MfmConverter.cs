@@ -63,9 +63,11 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 		string? quoteUri = null, bool quoteInaccessible = false, bool replyInaccessible = false
 	)
 	{
-		var context  = BrowsingContext.New();
-		var document = await context.OpenNewAsync();
-		var element  = document.CreateElement("p");
+		var context    = BrowsingContext.New();
+		var document   = await context.OpenNewAsync();
+		var element    = document.CreateElement("p");
+		var nodeList   = nodes.ToList();
+		var hasContent = nodeList.Count > 0;
 
 		if (replyInaccessible)
 		{
@@ -73,12 +75,17 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 			var re      = document.CreateElement("span");
 			re.TextContent = "RE: \ud83d\udd12"; // lock emoji
 			wrapper.AppendChild(re);
-			wrapper.AppendChild(document.CreateElement("br"));
-			wrapper.AppendChild(document.CreateElement("br"));
+
+			if (hasContent)
+			{
+				wrapper.AppendChild(document.CreateElement("br"));
+				wrapper.AppendChild(document.CreateElement("br"));
+			}
+
 			element.AppendChild(wrapper);
 		}
 
-		foreach (var node in nodes) element.AppendNodes(FromMfmNode(document, node, mentions, host));
+		foreach (var node in nodeList) element.AppendNodes(FromMfmNode(document, node, mentions, host));
 
 		if (quoteUri != null)
 		{
@@ -87,8 +94,13 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 			a.TextContent = quoteUri.StartsWith("https://") ? quoteUri[8..] : quoteUri[7..];
 			var quote = document.CreateElement("span");
 			quote.ClassList.Add("quote-inline");
-			quote.AppendChild(document.CreateElement("br"));
-			quote.AppendChild(document.CreateElement("br"));
+
+			if (hasContent)
+			{
+				quote.AppendChild(document.CreateElement("br"));
+				quote.AppendChild(document.CreateElement("br"));
+			}
+
 			var re = document.CreateElement("span");
 			re.TextContent = "RE: ";
 			quote.AppendChild(re);
@@ -100,8 +112,13 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 			var wrapper = document.CreateElement("span");
 			var re      = document.CreateElement("span");
 			re.TextContent = "RE: \ud83d\udd12"; // lock emoji
-			wrapper.AppendChild(document.CreateElement("br"));
-			wrapper.AppendChild(document.CreateElement("br"));
+
+			if (hasContent)
+			{
+				wrapper.AppendChild(document.CreateElement("br"));
+				wrapper.AppendChild(document.CreateElement("br"));
+			}
+
 			wrapper.AppendChild(re);
 			element.AppendChild(wrapper);
 		}

@@ -48,12 +48,13 @@ public class NoteRenderer(
 		var     text     = note.Text;
 		string? quoteUri = null;
 
-		if (note is { Renote: not null, IsQuote: true } && text != null)
+		if (note is { Renote: not null, IsQuote: true })
 		{
 			var qUri = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value);
 			var alt  = note.Renote?.Uri;
+			var t    = text ?? "";
 
-			if (qUri != null && !text.Contains(qUri) && (alt == null || qUri == alt || !text.Contains(alt)))
+			if (qUri != null && !t.Contains(qUri) && (alt == null || qUri == alt || !t.Contains(alt)))
 				quoteUri = qUri;
 		}
 
