@@ -11,24 +11,38 @@ jobs:
     steps:
       - name: Clone repository
         run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} /src
-      - name: Build project (amd64)
+      - name: Build project (amd64-glibc)
         shell: bash
         run: |-
           cd /src/Iceshrimp.Backend
           mkdir -p /out/linux-amd64
           dotnet publish -c Release -p:EnableAOT=true -p:EnableLibVips=true -p:BundleNativeDeps=true -r linux-amd64 -o /out/linux-amd64
-      - name: Build project (arm64)
+      - name: Build project (arm64-glibc)
         shell: bash
         run: |-
           cd /src/Iceshrimp.Backend
           mkdir -p /out/linux-arm64
           dotnet publish -c Release -p:EnableAOT=true -p:EnableLibVips=true -p:BundleNativeDeps=true -r linux-arm64 -o /out/linux-arm64
+      - name: Build project (amd64-musl)
+        shell: bash
+        run: |-
+          cd /src/Iceshrimp.Backend
+          mkdir -p /out/linux-musl-amd64
+          dotnet publish -c Release -p:EnableAOT=true -p:EnableLibVips=true -p:BundleNativeDeps=true -r linux-musl-amd64 -o /out/linux-musl-amd64
+      - name: Build project (arm64-musl)
+        shell: bash
+        run: |-
+          cd /src/Iceshrimp.Backend
+          mkdir -p /out/linux-musl-arm64
+          dotnet publish -c Release -p:EnableAOT=true -p:EnableLibVips=true -p:BundleNativeDeps=true -r linux-musl-arm64 -o /out/linux-musl-arm64
       - name: Generate artifacts
         shell: bash
         run: |-
           mkdir artifacts
-          tar cavf artifacts/${{ github.event.repository.name }}-${{ github.ref_name }}-linux-amd64.tar.zst --transform 's,^out/linux-amd64,${{ github.event.repository.name }}-${{ github.ref_name }},' /out/linux-amd64
-          tar cavf artifacts/${{ github.event.repository.name }}-${{ github.ref_name }}-linux-arm64.tar.zst --transform 's,^out/linux-arm64,${{ github.event.repository.name }}-${{ github.ref_name }},' /out/linux-arm64
+          tar cavf artifacts/${{ github.event.repository.name }}-${{ github.ref_name }}-linux-amd64-glibc.tar.zst --transform 's,^out/linux-amd64,${{ github.event.repository.name }}-${{ github.ref_name }},' /out/linux-amd64
+          tar cavf artifacts/${{ github.event.repository.name }}-${{ github.ref_name }}-linux-arm64-glibc.tar.zst --transform 's,^out/linux-arm64,${{ github.event.repository.name }}-${{ github.ref_name }},' /out/linux-arm64
+          tar cavf artifacts/${{ github.event.repository.name }}-${{ github.ref_name }}-linux-amd64-musl.tar.zst --transform 's,^out/linux-musl-amd64,${{ github.event.repository.name }}-${{ github.ref_name }},' /out/linux-musl-amd64
+          tar cavf artifacts/${{ github.event.repository.name }}-${{ github.ref_name }}-linux-arm64-musl.tar.zst --transform 's,^out/linux-musl-arm64,${{ github.event.repository.name }}-${{ github.ref_name }},' /out/linux-musl-arm64
       - name: Upload artifacts
         uses: actions/release-action@main
         with:
