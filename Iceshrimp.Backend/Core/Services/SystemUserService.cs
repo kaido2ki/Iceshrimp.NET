@@ -48,7 +48,8 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 	{
 		var user = db.ChangeTracker
 		             .Entries<User>()
-		             .FirstOrDefault(p => p.Entity.UsernameLower == username.ToLowerInvariant())
+		             .FirstOrDefault(p => p.Entity.Host == null &&
+		                                  p.Entity.UsernameLower == username.ToLowerInvariant())
 		             ?.Entity;
 
 		user ??= await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant() &&
