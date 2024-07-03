@@ -2,6 +2,7 @@ using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Attributes;
 using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Controllers.Schemas;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -11,6 +12,7 @@ using Iceshrimp.Shared.Schemas;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers;
 
@@ -26,7 +28,8 @@ public class UserController(
 	NoteRenderer noteRenderer,
 	UserProfileRenderer userProfileRenderer,
 	ActivityPub.UserResolver userResolver,
-	UserService userSvc
+	UserService userSvc,
+	IOptions<Config.InstanceSection> config
 ) : ControllerBase
 {
 	[HttpGet("{id}")]
@@ -48,6 +51,9 @@ public class UserController(
 	{
 		username = username.ToLowerInvariant();
 		host     = host?.ToLowerInvariant();
+
+		if (host == config.Value.WebDomain || host == config.Value.AccountDomain)
+			host = null;
 
 		var user = await db.Users.IncludeCommonProperties()
 		                   .FirstOrDefaultAsync(p => p.UsernameLower == username && p.Host == host) ??
