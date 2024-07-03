@@ -39,7 +39,6 @@ RUN --mount=type=cache,target=/root/.nuget \
 ARG TARGETPLATFORM
 ARG TARGETARCH
 
-RUN ln -sf /bin/bash /bin/sh
 RUN --mount=type=cache,target=/root/.nuget \
     if [[ "$BUILDPLATFORM" != "$TARGETPLATFORM" ]]; then \
         dotnet restore -a $TARGETARCH -p:Configuration=Release -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS; \
