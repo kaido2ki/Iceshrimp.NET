@@ -43,13 +43,22 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 				? ASActor.Types.Service
 				: ASActor.Types.Person;
 
+		var emoji = user.Emojis.Count != 0
+			? await db.Emojis.Where(p => user.Emojis.Contains(p.Id) && p.Host == null).ToListAsync()
+			: [];
+
 		var tags = user.Tags
 		               .Select(tag => new ASHashtag
 		               {
 			               Name = $"#{tag}",
 			               Href = new ASObjectBase($"https://{config.Value.WebDomain}/tags/{tag}")
 		               })
-		               .Cast<ASTag>()
+		               .Concat<ASTag>(emoji.Select(e => new ASEmoji
+		               {
+			               Id    = e.GetPublicUri(config.Value),
+			               Name  = e.Name,
+			               Image = new ASImage { Url = new ASLink(e.PublicUrl) }
+		               }))
 		               .ToList();
 
 		var attachments = profile?.Fields
