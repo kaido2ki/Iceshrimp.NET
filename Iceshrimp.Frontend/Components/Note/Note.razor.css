@@ -6,3 +6,8 @@
 .metadata {
     margin-left: auto;
 }
+
+
+.user {
+    color: var(--notice-color);
+}

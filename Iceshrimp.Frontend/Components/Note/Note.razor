@@ -1,5 +1,6 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
+@using Iceshrimp.Assets.PhosphorIcons
 @inject ApiService ApiService
 @inject NavigationManager NavigationManager
 @inject ComposeService    ComposeService
@@ -10,7 +11,7 @@
     <div class="renote">
         <div class="renote-info">
             <span class="user">
-                Boosted by
+                <Icon Name="Icons.Repeat" /> Boosted by
                 @if (NoteResponse.User.DisplayName != null)
                 {
                     @NoteResponse.User.DisplayName
