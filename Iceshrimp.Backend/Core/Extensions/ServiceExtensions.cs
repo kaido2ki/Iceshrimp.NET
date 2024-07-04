@@ -231,9 +231,18 @@ public static class ServiceExtensions
 				QueueLimit           = 0
 			};
 
-			var strict = new SlidingWindowRateLimiterOptions
+			var auth = new SlidingWindowRateLimiterOptions
 			{
 				PermitLimit          = 10,
+				SegmentsPerWindow    = 60,
+				Window               = TimeSpan.FromSeconds(60),
+				QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+				QueueLimit           = 0
+			};
+			
+			var strict = new SlidingWindowRateLimiterOptions
+			{
+				PermitLimit          = 3,
 				SegmentsPerWindow    = 60,
 				Window               = TimeSpan.FromSeconds(60),
 				QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
@@ -246,7 +255,7 @@ public static class ServiceExtensions
 
 			options.AddPolicy("auth", ctx =>
 				                  RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(false),
-				                                                             _ => strict));
+				                                                             _ => auth));
 
 			options.AddPolicy("strict", ctx =>
 				                  RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(true),
