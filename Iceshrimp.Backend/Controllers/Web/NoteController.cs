@@ -267,6 +267,76 @@ public class NoteController(
 		return Ok(new ValueResponse(res.success ? --count : count));
 	}
 
+	[HttpPost("{id}/refetch")]
+	[Authenticate]
+	[Authorize]
+	[EnableRateLimiting("strict")]
+	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteRefetchResponse))]
+	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
+	public async Task<IActionResult> RefetchNote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Where(p => p.Id == id && p.User.Host != null && p.Uri != null)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FilterHidden(user, db, false, false)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
+
+		if (note.Uri == null)
+			throw new Exception("note.Uri must not be null at this point");
+
+		var errors = new List<string>();
+
+		try
+		{
+			await noteSvc.ResolveNoteAsync(note.Uri, null, user, clearHistory: true, forceRefresh: true);
+		}
+		catch (Exception e)
+		{
+			errors.Add($"Failed to refetch note: {e.Message}");
+		}
+
+		if (note.ReplyUri != null)
+		{
+			try
+			{
+				await noteSvc.ResolveNoteAsync(note.ReplyUri, null, user, clearHistory: true, forceRefresh: true);
+			}
+			catch (Exception e)
+			{
+				errors.Add($"Failed to fetch reply target: {e.Message}");
+			}
+		}
+
+		if (note.RenoteUri != null)
+		{
+			try
+			{
+				await noteSvc.ResolveNoteAsync(note.RenoteUri, null, user, clearHistory: true, forceRefresh: true);
+			}
+			catch (Exception e)
+			{
+				errors.Add($"Failed to fetch renote target: {e.Message}");
+			}
+		}
+
+		db.ChangeTracker.Clear();
+		note = await db.Notes.Where(p => p.Id == id && p.User.Host != null && p.Uri != null)
+		               .IncludeCommonProperties()
+		               .EnsureVisibleFor(user)
+		               .FilterHidden(user, db, false, false)
+		               .PrecomputeVisibilities(user)
+		               .FirstOrDefaultAsync() ??
+		       throw new Exception("Note disappeared during refetch");
+
+		var res = new NoteRefetchResponse
+		{
+			Note = await noteRenderer.RenderOne(note.EnforceRenoteReplyVisibility(), user), Errors = errors
+		};
+		return Ok(res);
+	}
+
 	[HttpPost]
 	[Authenticate]
 	[Authorize]

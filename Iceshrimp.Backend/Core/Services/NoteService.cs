@@ -410,7 +410,6 @@ public class NoteService(
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			resolvedMentions ?? await ResolveNoteMentionsAsync(text);
 
-
 		List<MfmNode>? nodes = null;
 		if (text != null && string.IsNullOrWhiteSpace(text))
 		{
@@ -830,13 +829,13 @@ public class NoteService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage",
 	                 Justification = "Inspection doesn't understand IncludeCommonProperties()")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "See above")]
-	public async Task<Note?> ProcessNoteUpdateAsync(ASNote note, User actor)
+	public async Task<Note?> ProcessNoteUpdateAsync(ASNote note, User actor, User? user = null)
 	{
 		var dbNote = await db.Notes.IncludeCommonProperties()
 		                     .Include(p => p.Poll)
 		                     .FirstOrDefaultAsync(p => p.Uri == note.Id);
 
-		if (dbNote == null) return await ProcessNoteAsync(note, actor);
+		if (dbNote == null) return await ProcessNoteAsync(note, actor, user);
 
 		logger.LogDebug("Processing note update {id} for note {noteId}", note.Id, dbNote.Id);
 
@@ -1027,7 +1026,7 @@ public class NoteService(
 	}
 
 	public async Task<Note?> ResolveNoteAsync(
-		string uri, ASNote? fetchedNote = null, User? user = null, bool clearHistory = false
+		string uri, ASNote? fetchedNote = null, User? user = null, bool clearHistory = false, bool forceRefresh = false
 	)
 	{
 		if (clearHistory)
@@ -1051,7 +1050,7 @@ public class NoteService(
 
 		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == uri);
 
-		if (note != null) return note;
+		if (note != null && !forceRefresh) return note;
 
 		if (!fetchedNote?.VerifiedFetch ?? false)
 			fetchedNote = null;
@@ -1082,7 +1081,7 @@ public class NoteService(
 		if (fetchedNote.Id != uri)
 		{
 			var res = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == fetchedNote.Id);
-			if (res != null) return res;
+			if (res != null && !forceRefresh) return res;
 		}
 
 		var actor = await userResolver.ResolveAsync(attrTo.Id);
@@ -1091,7 +1090,9 @@ public class NoteService(
 		{
 			try
 			{
-				return await ProcessNoteAsync(fetchedNote, actor, user);
+				return forceRefresh
+					? await ProcessNoteUpdateAsync(fetchedNote, actor, user)
+					: await ProcessNoteAsync(fetchedNote, actor, user);
 			}
 			catch (Exception e)
 			{

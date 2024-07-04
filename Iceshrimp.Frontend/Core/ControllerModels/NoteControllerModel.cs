@@ -55,4 +55,7 @@ internal class NoteControllerModel(ApiClient api)
 
 	public Task<NoteResponse> CreateNote(NoteCreateRequest request) =>
 		api.Call<NoteResponse>(HttpMethod.Post, "/notes", data: request);
+
+	public Task<NoteRefetchResponse?> RefetchNote(string id) =>
+		api.CallNullable<NoteRefetchResponse>(HttpMethod.Get, $"/notes/{id}/refetch");
 }

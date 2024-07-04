@@ -42,7 +42,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 
 	[HttpPost("login")]
 	[HideRequestDuration]
-	[EnableRateLimiting("strict")]
+	[EnableRateLimiting("auth")]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
@@ -87,7 +87,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 	}
 
 	[HttpPost("register")]
-	[EnableRateLimiting("strict")]
+	[EnableRateLimiting("auth")]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
@@ -104,7 +104,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 	[HttpPost("change-password")]
 	[Authenticate]
 	[Authorize]
-	[EnableRateLimiting("strict")]
+	[EnableRateLimiting("auth")]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]

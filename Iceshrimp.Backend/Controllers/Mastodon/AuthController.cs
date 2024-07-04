@@ -38,7 +38,7 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 	}
 
 	[HttpPost("/api/v1/apps")]
-	[EnableRateLimiting("strict")]
+	[EnableRateLimiting("auth")]
 	[ConsumesHybrid]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.RegisterAppResponse))]
 	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]

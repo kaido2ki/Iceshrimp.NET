@@ -240,11 +240,17 @@ public static class ServiceExtensions
 				QueueLimit           = 0
 			};
 
-			options.AddPolicy("sliding", ctx => RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(),
-				                  _ => sliding));
+			options.AddPolicy("sliding", ctx =>
+				                  RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(false),
+				                                                             _ => sliding));
 
-			options.AddPolicy("strict", ctx => RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(),
-				                  _ => strict));
+			options.AddPolicy("auth", ctx =>
+				                  RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(false),
+				                                                             _ => strict));
+
+			options.AddPolicy("strict", ctx =>
+				                  RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(true),
+				                                                             _ => strict));
 
 			options.OnRejected = async (context, token) =>
 			{
@@ -316,7 +322,10 @@ public static class ServiceExtensions
 
 public static class HttpContextExtensions
 {
-	public static string? GetRateLimitPartition(this HttpContext ctx) =>
+	public static string GetRateLimitPartition(this HttpContext ctx, bool includeRoute) =>
+		(includeRoute ? ctx.Request.Path.ToString() + "#" : "") + (GetRateLimitPartitionInternal(ctx) ?? "");
+
+	private static string? GetRateLimitPartitionInternal(this HttpContext ctx) =>
 		ctx.GetUser()?.Id ??
 		ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault() ??
 		ctx.Connection.RemoteIpAddress?.ToString();
