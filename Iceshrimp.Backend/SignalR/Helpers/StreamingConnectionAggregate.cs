@@ -13,7 +13,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Iceshrimp.Backend.Hubs.Helpers;
+namespace Iceshrimp.Backend.SignalR.Helpers;
 
 [MustDisposeResource]
 public sealed class StreamingConnectionAggregate : IDisposable

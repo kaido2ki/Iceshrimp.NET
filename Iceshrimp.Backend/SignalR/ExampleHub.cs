@@ -1,7 +1,7 @@
 using Iceshrimp.Shared.Schemas.SignalR;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Iceshrimp.Backend.Hubs;
+namespace Iceshrimp.Backend.SignalR;
 
 public class ExampleHub : Hub<IExampleHubClient>, IExampleHubServer
 {

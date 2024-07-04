@@ -3,7 +3,7 @@ using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.SignalR;
 using Microsoft.AspNetCore.SignalR;
 
-namespace Iceshrimp.Backend.Hubs;
+namespace Iceshrimp.Backend.SignalR;
 
 [Microsoft.AspNetCore.Authorization.Authorize(Policy = "HubAuthorization")]
 public class StreamingHub(StreamingService streamingService) : Hub<IStreamingHubClient>, IStreamingHubServer

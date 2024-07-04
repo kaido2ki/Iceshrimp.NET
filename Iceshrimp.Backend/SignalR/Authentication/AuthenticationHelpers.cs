@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Iceshrimp.Backend.Hubs.Authentication;
+namespace Iceshrimp.Backend.SignalR.Authentication;
 
 public class HubAuthorizationRequirement : IAuthorizationRequirement;
 

@@ -1,7 +1,7 @@
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
-using Iceshrimp.Backend.Hubs;
-using Iceshrimp.Backend.Hubs.Authentication;
+using Iceshrimp.Backend.SignalR;
+using Iceshrimp.Backend.SignalR.Authentication;
 
 StartupHelpers.ParseCliArguments(args);
 

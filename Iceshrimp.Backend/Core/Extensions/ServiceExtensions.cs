@@ -10,7 +10,7 @@ using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
-using Iceshrimp.Backend.Hubs.Authentication;
+using Iceshrimp.Backend.SignalR.Authentication;
 using Iceshrimp.Shared.Configuration;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Authentication;
