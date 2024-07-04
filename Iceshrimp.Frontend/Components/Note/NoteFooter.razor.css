@@ -8,7 +8,6 @@
     min-width: 2.5em;
     height: 2em;
     padding: 0.75em;
-    /*margin-right: 0.5em;*/
     background-color: var(--foreground-color);
     width: fit-content;
 }
@@ -24,4 +23,15 @@
 .positioned {
     position: relative;
     top: 0;
+}
+
+.disabled {
+    cursor: not-allowed;
+}
+
+::deep {
+    .faded {
+        cursor: not-allowed;
+        opacity: 50%;
+    }
 }

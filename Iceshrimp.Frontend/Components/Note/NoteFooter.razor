@@ -20,17 +20,17 @@
     <button class="btn" @onclick="Reply" @onclick:stopPropagation="true">
         <Icon Name="Icons.ArrowUUpLeft" Size="1.3em"/>
     </button>
-    <button class="btn" @onclick="Renote" @onclick:stopPropagation="true">
+    <button class="btn @(RenotePossible ? "" : "disabled")" @onclick="Renote" @onclick:stopPropagation="true">
         @if (RenotePossible)
         {
             <Icon Name="Icons.Repeat" Size="1.3em"/>
         }
         else
         {
-            <Icon Name="Icons.Lock" Size="1.3em"/>
+            <Icon ExtraClasses="faded" Name="Icons.Lock" Size="1.3em"/>
         }
         @if (Renotes > 0)
-        {
+        {   
             <span class="renote-count">@Renotes</span>
         }
     </button>
