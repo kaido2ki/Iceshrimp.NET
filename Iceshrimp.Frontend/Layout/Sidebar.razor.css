@@ -1,3 +1,19 @@
+::deep {
+    a {
+        text-decoration: none;
+        color: white;
+    }
+}
+
+::deep {
+    .active {
+        > .sidebar-btn {
+            background: var(--highlight-color);
+        }
+    }
+}
+
+
 @media (min-width: 1001px) {
     .sidebar {
         display: flex;
@@ -23,12 +39,12 @@
         padding-inline: 0.5rem;
         margin-bottom: 0.5rem;
         margin-inline: 1rem;
-        color: black;
+        color: white;
         font-size: 0.9em;
-        background: var(--accent-color)
+        background: var(--foreground-color);
     }
 
-    .btn:hover {
+    .sidebar-btn:hover {
         background-color: var(--hover-color);
     }
 
@@ -41,6 +57,10 @@
 
     .bottom-bar {
         display: none;
+    }
+    
+    .post-btn {
+        background: var(--accent-color);
     }
 }
 

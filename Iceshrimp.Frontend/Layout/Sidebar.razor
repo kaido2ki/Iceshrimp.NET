@@ -9,49 +9,49 @@
         <account-dropdown/>
     </div>
     <div class="nav">
-        <div class="sidebar-btn">
-            <NavLink href="/">
+        <NavLink href="/" Match="NavLinkMatch.All">
+            <div class="sidebar-btn">
                 <Icon Name="Icons.House"/>
                 <span class="text">@Loc["Timeline"]</span>
-            </NavLink>
-        </div>
-        <div class="sidebar-btn">
-            <NavLink href="/notifications">
+            </div>
+        </NavLink>
+        <NavLink href="/notifications">
+            <div class="sidebar-btn">
                 <Icon Name="Icons.Bell"/>
                 <span class="text">@Loc["Notifications"]</span>
-            </NavLink>
-        </div>
-        <div class="sidebar-btn">
-            <NavLink href="/search">
-                <Icon Name="Icons.MagnifyingGlass" />
+            </div>
+        </NavLink>
+        <NavLink href="/search">
+            <div class="sidebar-btn">
+                <Icon Name="Icons.MagnifyingGlass"/>
                 <span class="text">@Loc["Search"]</span>
-            </NavLink>
-        </div>
+            </div>
+        </NavLink>
     </div>
     <hr/>
-    <button class="sidebar-btn" @onclick="Open">@Loc["Post"]</button>
+    <button class="sidebar-btn post-btn" @onclick="Open"><Icon Name="Icons.Pencil"></Icon>@Loc["Post"]</button>
 </div>
 
 <div class="bottom-bar">
     <div class="nav">
-        <div class="sidebar-btn">
-            <NavLink href="/search">
-                <Icon Name="Icons.MagnifyingGlass" />
+        <NavLink href="/search">
+            <div class="sidebar-btn">
+                <Icon Name="Icons.MagnifyingGlass"/>
                 <span class="text">@Loc["Search"]</span>
-            </NavLink>
-        </div>
-        <div class="sidebar-btn">
-            <NavLink href="/">
+            </div>
+        </NavLink>
+        <NavLink href="/">
+            <div class="sidebar-btn">
                 <Icon Name="Icons.House"/>
                 <span class="text">@Loc["Timeline"]</span>
-            </NavLink>
-        </div>
-        <div class="sidebar-btn">
-            <NavLink href="/notifications">
+            </div>
+        </NavLink>
+        <NavLink href="/notifications">
+            <div class="sidebar-btn">
                 <Icon Name="Icons.Bell"/>
                 <span class="text">@Loc["Notifications"]</span>
-            </NavLink>
-        </div>
+            </div>
+        </NavLink>
         <div>
             <button @onclick="Open" class="sidebar-btn">
                 <Icon Name="Icons.Pencil"/>
