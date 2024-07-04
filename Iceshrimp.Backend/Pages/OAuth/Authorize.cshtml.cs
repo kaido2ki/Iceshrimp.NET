@@ -43,7 +43,10 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 			throw GracefulException.BadRequest("Cannot request redirect_uri not sent during app registration");
 	}
 
-	public async Task OnPost([FromForm] string username, [FromForm] string password)
+	public async Task OnPost(
+		[FromForm] string username, [FromForm] string password, [FromForm] bool supportsHtmlFormatting,
+		[FromForm] bool autoDetectQuotes
+	)
 	{
 		// Validate query parameters first
 		await OnGet();
@@ -60,15 +63,17 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 
 		var token = new OauthToken
 		{
-			Id          = IdHelpers.GenerateSlowflakeId(),
-			Active      = false,
-			Code        = CryptographyHelpers.GenerateRandomString(32),
-			Token       = CryptographyHelpers.GenerateRandomString(32),
-			App         = App,
-			User        = user,
-			CreatedAt   = DateTime.UtcNow,
-			Scopes      = Scopes,
-			RedirectUri = RedirectUri
+			Id                     = IdHelpers.GenerateSlowflakeId(),
+			Active                 = false,
+			Code                   = CryptographyHelpers.GenerateRandomString(32),
+			Token                  = CryptographyHelpers.GenerateRandomString(32),
+			App                    = App,
+			User                   = user,
+			CreatedAt              = DateTime.UtcNow,
+			Scopes                 = Scopes,
+			RedirectUri            = RedirectUri,
+			AutoDetectQuotes       = autoDetectQuotes,
+			SupportsHtmlFormatting = supportsHtmlFormatting
 		};
 
 		await db.AddAsync(token);

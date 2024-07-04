@@ -17,15 +17,25 @@
             }
         </ul>
 
-        Log in below to confirm this:
-
-        <div class="form-wrapper">
-            <form method="post">
-                <input type="text" placeholder="Username" name="username"/>
-                <input type="password" placeholder="Password" name="password"/>
-                <button type="submit">Submit</button>
-            </form>
-        </div>
+        <form method="post">
+            <div class="margin-bottom-5px">
+                Feature flags:
+            </div>
+            <div>
+                <input type="checkbox" name="supportsHtmlFormatting" id="supportsHtmlFormatting" value="1"/>
+                <label for="supportsHtmlFormatting">This app supports HTML formatting</label>
+            </div>
+            <div>
+                <input type="checkbox" name="autoDetectQuotes" id="autoDetectQuotes" value="1"/>
+                <label for="autoDetectQuotes">Automatically detect quotes</label>
+            </div>
+            <div class="margin-bottom-5px margin-top-10px">
+                Log in below to confirm this:
+            </div>
+            <input type="text" placeholder="Username" name="username"/>
+            <input type="password" placeholder="Password" name="password"/>
+            <button type="submit">Submit</button>
+        </form>
     </div>
 }
 else if (Model.Token.RedirectUri == "urn:ietf:wg:oauth:2.0:oob")
