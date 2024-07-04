@@ -6,7 +6,7 @@ using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace Iceshrimp.Backend.Controllers;
+namespace Iceshrimp.Backend.Controllers.Web;
 
 [ApiController]
 [Authenticate]

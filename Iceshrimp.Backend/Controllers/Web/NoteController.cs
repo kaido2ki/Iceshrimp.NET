@@ -2,8 +2,8 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Mime;
 using AsyncKeyedLock;
-using Iceshrimp.Backend.Controllers.Attributes;
-using Iceshrimp.Backend.Controllers.Renderers;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
+using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
-namespace Iceshrimp.Backend.Controllers;
+namespace Iceshrimp.Backend.Controllers.Web;
 
 [ApiController]
 [EnableRateLimiting("sliding")]

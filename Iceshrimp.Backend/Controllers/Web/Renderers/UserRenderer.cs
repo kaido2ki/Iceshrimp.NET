@@ -6,7 +6,7 @@ using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Iceshrimp.Backend.Controllers.Renderers;
+namespace Iceshrimp.Backend.Controllers.Web.Renderers;
 
 public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db)
 {

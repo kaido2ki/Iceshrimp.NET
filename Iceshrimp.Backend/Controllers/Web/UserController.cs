@@ -1,7 +1,7 @@
 using System.Net.Mime;
-using Iceshrimp.Backend.Controllers.Attributes;
-using Iceshrimp.Backend.Controllers.Renderers;
-using Iceshrimp.Backend.Controllers.Schemas;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
+using Iceshrimp.Backend.Controllers.Shared.Schemas;
+using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Iceshrimp.Backend.Controllers;
+namespace Iceshrimp.Backend.Controllers.Web;
 
 [ApiController]
 [Authenticate]

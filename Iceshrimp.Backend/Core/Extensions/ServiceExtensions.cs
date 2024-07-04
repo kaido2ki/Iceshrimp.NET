@@ -3,7 +3,7 @@ using System.Threading.RateLimiting;
 using System.Xml.Linq;
 using Iceshrimp.Backend.Controllers.Federation;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
-using Iceshrimp.Backend.Controllers.Renderers;
+using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
@@ -28,9 +28,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using AuthenticationMiddleware = Iceshrimp.Backend.Core.Middleware.AuthenticationMiddleware;
 using AuthorizationMiddleware = Iceshrimp.Backend.Core.Middleware.AuthorizationMiddleware;
-using NoteRenderer = Iceshrimp.Backend.Controllers.Renderers.NoteRenderer;
-using NotificationRenderer = Iceshrimp.Backend.Controllers.Renderers.NotificationRenderer;
-using UserRenderer = Iceshrimp.Backend.Controllers.Renderers.UserRenderer;
+using NoteRenderer = Iceshrimp.Backend.Controllers.Web.Renderers.NoteRenderer;
+using NotificationRenderer = Iceshrimp.Backend.Controllers.Web.Renderers.NotificationRenderer;
+using UserRenderer = Iceshrimp.Backend.Controllers.Web.Renderers.UserRenderer;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 

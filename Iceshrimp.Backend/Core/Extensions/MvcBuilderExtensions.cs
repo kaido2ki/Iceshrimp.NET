@@ -1,7 +1,7 @@
 using System.Buffers;
 using System.Net;
 using System.Text.Encodings.Web;
-using Iceshrimp.Backend.Controllers.Attributes;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;

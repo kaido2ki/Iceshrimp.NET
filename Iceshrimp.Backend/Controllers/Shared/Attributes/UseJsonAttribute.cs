@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Options;
 
-namespace Iceshrimp.Backend.Controllers.Attributes;
+namespace Iceshrimp.Backend.Controllers.Shared.Attributes;
 
 public abstract class UseJsonAttribute : Attribute, IAsyncActionFilter
 {

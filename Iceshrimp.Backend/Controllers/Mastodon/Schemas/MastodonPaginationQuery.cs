@@ -1,4 +1,4 @@
-using Iceshrimp.Backend.Controllers.Attributes;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;

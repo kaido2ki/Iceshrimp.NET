@@ -5,7 +5,7 @@ using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Iceshrimp.Backend.Controllers;
+namespace Iceshrimp.Backend.Controllers.Web;
 
 [Produces(MediaTypeNames.Application.Json)]
 public class FallbackController : ControllerBase

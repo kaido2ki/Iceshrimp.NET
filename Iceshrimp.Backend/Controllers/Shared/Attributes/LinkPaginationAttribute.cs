@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Iceshrimp.Backend.Controllers.Attributes;
+namespace Iceshrimp.Backend.Controllers.Shared.Attributes;
 
 public class LinkPaginationAttribute(int defaultLimit, int maxLimit, bool offset = false) : ActionFilterAttribute
 {

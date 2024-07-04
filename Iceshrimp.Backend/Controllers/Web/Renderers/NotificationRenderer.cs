@@ -2,7 +2,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Shared.Schemas.Web;
 
-namespace Iceshrimp.Backend.Controllers.Renderers;
+namespace Iceshrimp.Backend.Controllers.Web.Renderers;
 
 public class NotificationRenderer(
 	UserRenderer userRenderer,

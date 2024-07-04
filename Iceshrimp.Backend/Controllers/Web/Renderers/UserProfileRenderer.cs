@@ -4,7 +4,7 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.EntityFrameworkCore;
 
-namespace Iceshrimp.Backend.Controllers.Renderers;
+namespace Iceshrimp.Backend.Controllers.Web.Renderers;
 
 public class UserProfileRenderer(DatabaseContext db)
 {

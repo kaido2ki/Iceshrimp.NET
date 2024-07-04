@@ -2,7 +2,7 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.Net.Http.Headers;
 
-namespace Iceshrimp.Backend.Controllers.Attributes;
+namespace Iceshrimp.Backend.Controllers.Federation.Attributes;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class MediaTypeRouteFilterAttribute(params string[] mediaTypes) : Attribute, IActionConstraint
