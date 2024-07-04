@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Shared.Schemas.Web;
 
 namespace Iceshrimp.Frontend.Core.Schemas;

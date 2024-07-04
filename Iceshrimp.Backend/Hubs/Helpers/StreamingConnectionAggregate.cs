@@ -7,7 +7,6 @@ using Iceshrimp.Backend.Core.Events;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
-using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Shared.Schemas.SignalR;
 using Iceshrimp.Shared.Schemas.Web;
 using JetBrains.Annotations;

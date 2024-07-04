@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
-using Iceshrimp.Shared.Schemas;
 using Iceshrimp.Shared.Schemas.Web;
 
 namespace Iceshrimp.Backend.Core.Helpers;
