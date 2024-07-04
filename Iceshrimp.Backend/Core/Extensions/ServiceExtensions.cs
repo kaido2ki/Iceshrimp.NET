@@ -239,7 +239,7 @@ public static class ServiceExtensions
 				QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
 				QueueLimit           = 0
 			};
-			
+
 			var strict = new SlidingWindowRateLimiterOptions
 			{
 				PermitLimit          = 3,
