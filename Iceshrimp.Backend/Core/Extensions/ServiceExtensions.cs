@@ -249,17 +249,11 @@ public static class ServiceExtensions
 				QueueLimit           = 0
 			};
 
-			options.AddPolicy("sliding", ctx =>
-				                  RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(false),
-				                                                             _ => sliding));
-
-			options.AddPolicy("auth", ctx =>
-				                  RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(false),
-				                                                             _ => auth));
-
-			options.AddPolicy("strict", ctx =>
-				                  RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(true),
-				                                                             _ => strict));
+			// @formatter:off
+			options.AddPolicy("sliding", ctx => RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(false),_ => sliding));
+			options.AddPolicy("auth", ctx => RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(false), _ => auth));
+			options.AddPolicy("strict", ctx => RateLimitPartition.GetSlidingWindowLimiter(ctx.GetRateLimitPartition(true), _ => strict));
+			// @formatter:on
 
 			options.OnRejected = async (context, token) =>
 			{

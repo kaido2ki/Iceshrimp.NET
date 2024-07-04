@@ -624,16 +624,14 @@ public class NoteService(
 		                         .ToListAsync();
 
 		var actor = userRenderer.RenderLite(note.User);
+		// @formatter:off
 		ASActivity activity = note.IsPureRenote
-			? activityRenderer.RenderUndo(actor,
-			                              ActivityPub.ActivityRenderer
-			                                         .RenderAnnounce(noteRenderer.RenderLite(note.Renote ?? throw new Exception("Refusing to undo renote without renote")),
-			                                                         note.GetPublicUri(config.Value), actor,
-			                                                         note.Visibility,
-			                                                         note.User.GetPublicUri(config.Value) +
-			                                                         "/followers"))
-			: ActivityPub.ActivityRenderer.RenderDelete(actor,
-			                                            new ASTombstone { Id = note.GetPublicUri(config.Value) });
+			? activityRenderer.RenderUndo(actor, ActivityPub.ActivityRenderer.RenderAnnounce(
+			                               noteRenderer.RenderLite(note.Renote ?? throw new Exception("Refusing to undo renote without renote")),
+			                               note.GetPublicUri(config.Value), actor, note.Visibility,
+			                               note.User.GetPublicUri(config.Value) + "/followers"))
+			: ActivityPub.ActivityRenderer.RenderDelete(actor, new ASTombstone { Id = note.GetPublicUri(config.Value) });
+		// @formatter:on
 
 		if (note.Visibility == Note.NoteVisibility.Specified)
 			await deliverSvc.DeliverToAsync(activity, note.User, recipients.ToArray());
@@ -1350,8 +1348,9 @@ public class NoteService(
 		eventSvc.RaiseNoteReacted(this, reaction);
 		await notificationSvc.GenerateReactionNotification(reaction);
 
-		await db.Database
-		        .ExecuteSqlAsync($"""UPDATE "note" SET "reactions" = jsonb_set("reactions", ARRAY[{name}], (COALESCE("reactions"->>{name}, '0')::int + 1)::text::jsonb) WHERE "id" = {note.Id}""");
+		// @formatter:off
+		await db.Database.ExecuteSqlAsync($"""UPDATE "note" SET "reactions" = jsonb_set("reactions", ARRAY[{name}], (COALESCE("reactions"->>{name}, '0')::int + 1)::text::jsonb) WHERE "id" = {note.Id}""");
+		// @formatter:on
 
 		if (user.IsLocalUser)
 		{
