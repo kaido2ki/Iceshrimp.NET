@@ -59,3 +59,9 @@
         text-decoration-line: underline;
     }
 }
+
+::deep {
+    .plain {
+        text-decoration: none;
+    }
+}
