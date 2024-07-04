@@ -5,5 +5,5 @@
     position: sticky;
     top: 0;
     max-height: 100vh;
-    padding-left: 1rem;
+    border-left: 0.1rem var(--highlight-color) solid;
 }

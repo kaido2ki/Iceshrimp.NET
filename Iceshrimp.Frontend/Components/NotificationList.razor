@@ -3,7 +3,9 @@
     <div class="scroller">
         @foreach (var el in Notifications)
         {
-            <NotificationComponent NotificationResponse="el" @key="el.Id"/>
+            <div class="wrapper">
+                <NotificationComponent NotificationResponse="el" @key="el.Id"/>
+            </div>
         }
         <ScrollEnd ManualLoad="LoadMore" IntersectionChange="LoadMore"></ScrollEnd>
     </div>

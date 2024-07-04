@@ -17,6 +17,13 @@
 }
 
 ::deep {
+    .mention {
+        text-decoration: none;
+        color: var(--notice-color);
+    }
+}
+
+::deep {
     .emoji {
         display: inline;
         position: relative;
