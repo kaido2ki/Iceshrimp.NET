@@ -4,8 +4,9 @@ using Iceshrimp.Backend.Controllers.Renderers;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Hubs;
 using Iceshrimp.Backend.Hubs.Helpers;
-using Iceshrimp.Shared.HubSchemas;
 using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.SignalR;
+using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Iceshrimp.Backend.Core.Services;

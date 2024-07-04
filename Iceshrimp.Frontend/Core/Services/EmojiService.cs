@@ -1,5 +1,6 @@
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components;
 
 namespace Iceshrimp.Frontend.Core.Services;

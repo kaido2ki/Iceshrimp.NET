@@ -1,4 +1,5 @@
 using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.Web;
 
 namespace Iceshrimp.Frontend.Core.Miscellaneous;
 

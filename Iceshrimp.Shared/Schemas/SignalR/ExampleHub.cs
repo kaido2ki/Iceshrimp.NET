@@ -1,4 +1,4 @@
-namespace Iceshrimp.Shared.HubSchemas;
+namespace Iceshrimp.Shared.Schemas.SignalR;
 
 public interface IExampleHubServer
 {

@@ -1,6 +1,7 @@
 using Iceshrimp.Frontend.Core.Services;
-using Iceshrimp.Shared.HubSchemas;
 using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.SignalR;
+using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components;
 
 namespace Iceshrimp.Frontend.Pages;

@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Middleware;

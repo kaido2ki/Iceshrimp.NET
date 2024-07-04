@@ -1,6 +1,6 @@
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
-using Iceshrimp.Shared.HubSchemas;
+using Iceshrimp.Shared.Schemas.SignalR;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Iceshrimp.Backend.Hubs;

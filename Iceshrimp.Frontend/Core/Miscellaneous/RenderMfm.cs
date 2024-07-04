@@ -2,6 +2,7 @@ using AngleSharp;
 using AngleSharp.Dom;
 using Iceshrimp.Parsing;
 using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components;
 
 namespace Iceshrimp.Frontend.Core.Miscellaneous;

@@ -1,4 +1,4 @@
-using Iceshrimp.Shared.HubSchemas;
+using Iceshrimp.Shared.Schemas.SignalR;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Iceshrimp.Backend.Hubs;

@@ -1,6 +1,6 @@
-using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.Web;
 
-namespace Iceshrimp.Shared.HubSchemas;
+namespace Iceshrimp.Shared.Schemas.SignalR;
 
 public interface IStreamingHubServer
 {

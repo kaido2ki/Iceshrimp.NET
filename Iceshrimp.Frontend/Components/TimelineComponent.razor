@@ -1,3 +1,4 @@
+@using Iceshrimp.Shared.Schemas.Web
 @if (_init)
 {
     <VirtualScroller @ref=VirtualScroller NoteResponseList="State.Timeline" ReachedEnd="FetchOlder" ReachedStart="FetchNewer"/>

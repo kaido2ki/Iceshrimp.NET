@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 

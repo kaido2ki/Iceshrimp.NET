@@ -1,4 +1,4 @@
-namespace Iceshrimp.Shared.Schemas;
+namespace Iceshrimp.Shared.Schemas.Web;
 
 public class UserProfileResponse
 {

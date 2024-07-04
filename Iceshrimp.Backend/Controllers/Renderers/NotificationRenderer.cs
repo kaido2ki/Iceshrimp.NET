@@ -1,6 +1,7 @@
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.Web;
 
 namespace Iceshrimp.Backend.Controllers.Renderers;
 

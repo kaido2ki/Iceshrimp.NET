@@ -13,6 +13,7 @@ using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Backend.Hubs.Authentication;
 using Iceshrimp.Shared.Configuration;
 using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;

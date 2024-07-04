@@ -1,6 +1,7 @@
 using Iceshrimp.Frontend.Core.Schemas;
-using Iceshrimp.Shared.HubSchemas;
 using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.SignalR;
+using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Client;

@@ -6,6 +6,7 @@ using System.Text.Json;
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Shared.Configuration;
 using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
 

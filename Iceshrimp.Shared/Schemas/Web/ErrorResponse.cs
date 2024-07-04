@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
-namespace Iceshrimp.Shared.Schemas;
+namespace Iceshrimp.Shared.Schemas.Web;
 
 public class ErrorResponse
 {

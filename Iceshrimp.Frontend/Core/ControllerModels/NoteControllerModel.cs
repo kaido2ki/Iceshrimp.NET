@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Shared.Schemas;
+using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Http;
 
 namespace Iceshrimp.Frontend.Core.ControllerModels;
