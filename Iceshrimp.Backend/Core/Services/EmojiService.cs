@@ -60,7 +60,7 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 		return emoji;
 	}
 
-	public async Task<Emoji> CloneEmoji(Emoji existing)
+	public async Task<Emoji> CloneEmoji(Emoji existing, Config.InstanceSection config)
 	{
 		var user = await sysUserSvc.GetInstanceActorAsync();
 		var driveFile = await driveSvc.StoreFile(existing.OriginalUrl, user, sensitive: false, forceStore: true) ??
@@ -76,6 +76,7 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 			Width       = driveFile.Properties.Width,
 			Height      = driveFile.Properties.Height
 		};
+		emoji.Uri = emoji.GetPublicUri(config);
 
 		await db.AddAsync(emoji);
 		await db.SaveChangesAsync();

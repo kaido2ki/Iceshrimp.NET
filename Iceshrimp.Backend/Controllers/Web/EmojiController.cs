@@ -94,7 +94,7 @@ public class EmojiController(
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> CloneEmoji(string name, string host)
+	public async Task<IActionResult> CloneEmoji(string name, string host, [FromServices] IOptions<Config.InstanceSection> config)
 	{
 		var localEmojo = await db.Emojis.FirstOrDefaultAsync(e => e.Name == name && e.Host == null);
 		if (localEmojo != null) return Conflict();
@@ -102,7 +102,19 @@ public class EmojiController(
 		var emojo = await db.Emojis.FirstOrDefaultAsync(e => e.Name == name && e.Host == host);
 		if (emojo == null) return NotFound();
 
-		return Ok(await emojiSvc.CloneEmoji(emojo));
+		var cloned   = await emojiSvc.CloneEmoji(emojo, config.Value);
+		var response = new EmojiResponse
+		{
+			Id        = cloned.Id,
+			Name      = cloned.Name,
+			Uri       = cloned.Uri,
+			Aliases   = [],
+			Category  = null,
+			PublicUrl = cloned.PublicUrl,
+			License   = null
+		};
+	
+		return Ok(response);
 	}
 
 	[HttpPost("import")]
