@@ -15,7 +15,7 @@ jobs:
         run: |
           mkdir /iceshrimp
           cd /iceshrimp
-          git init
+          git init -b test-build
           git remote add origin ${{ github.event.repository.clone_url }}
           git fetch origin ${{ github.ref }} --depth=1
           git checkout --detach FETCH_HEAD
