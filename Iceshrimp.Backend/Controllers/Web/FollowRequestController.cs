@@ -40,7 +40,7 @@ public class FollowRequestController(
 		var users = await userRenderer.RenderMany(requests.Select(p => p.Follower));
 		var res = requests.Select(p => new FollowRequestResponse
 		{
-			Id = p.Id, Entity = users.First(u => u.Id == p.Follower.Id)
+			Id = p.Id, User = users.First(u => u.Id == p.Follower.Id)
 		});
 		return Ok(res.ToList());
 	}
