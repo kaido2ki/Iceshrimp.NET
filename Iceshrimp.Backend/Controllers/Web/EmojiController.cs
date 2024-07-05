@@ -1,5 +1,4 @@
 using System.Net.Mime;
-using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
@@ -7,7 +6,6 @@ using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
@@ -19,7 +17,8 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Produces(MediaTypeNames.Application.Json)]
 public class EmojiController(
 	DatabaseContext db,
-	EmojiService emojiSvc
+	EmojiService emojiSvc,
+	EmojiImportService emojiImportSvc
 ) : ControllerBase
 {
 	[HttpGet]
@@ -70,10 +69,9 @@ public class EmojiController(
 	[Authorize("role:admin")]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
 	[ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> UploadEmoji(IFormFile file, [FromServices] IOptions<Config.InstanceSection> config)
+	public async Task<IActionResult> UploadEmoji(IFormFile file)
 	{
-		var emoji = await emojiSvc.CreateEmojiFromStream(file.OpenReadStream(), file.FileName, file.ContentType,
-		                                                 config.Value);
+		var emoji = await emojiSvc.CreateEmojiFromStream(file.OpenReadStream(), file.FileName, file.ContentType);
 
 		var res = new EmojiResponse
 		{
@@ -94,7 +92,7 @@ public class EmojiController(
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
 	[ProducesResponseType(StatusCodes.Status409Conflict, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> CloneEmoji(string name, string host, [FromServices] IOptions<Config.InstanceSection> config)
+	public async Task<IActionResult> CloneEmoji(string name, string host)
 	{
 		var localEmojo = await db.Emojis.FirstOrDefaultAsync(e => e.Name == name && e.Host == null);
 		if (localEmojo != null) return Conflict();
@@ -102,7 +100,7 @@ public class EmojiController(
 		var emojo = await db.Emojis.FirstOrDefaultAsync(e => e.Name == name && e.Host == host);
 		if (emojo == null) return NotFound();
 
-		var cloned   = await emojiSvc.CloneEmoji(emojo, config.Value);
+		var cloned   = await emojiSvc.CloneEmoji(emojo);
 		var response = new EmojiResponse
 		{
 			Id        = cloned.Id,
@@ -120,7 +118,7 @@ public class EmojiController(
 	[HttpPost("import")]
 	[Authorize("role:admin")]
 	[ProducesResponseType(StatusCodes.Status202Accepted)]
-	public async Task<IActionResult> ImportEmoji(IFormFile file, [FromServices] EmojiImportService emojiImportSvc)
+	public async Task<IActionResult> ImportEmoji(IFormFile file)
 	{
 		var zip = await emojiImportSvc.Parse(file.OpenReadStream());
 		await emojiImportSvc.Import(zip); // TODO: run in background. this will take a while
@@ -133,12 +131,10 @@ public class EmojiController(
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmojiResponse))]
 	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> UpdateEmoji(
-		string id, UpdateEmojiRequest request, [FromServices] IOptions<Config.InstanceSection> config
-	)
+	public async Task<IActionResult> UpdateEmoji(string id, UpdateEmojiRequest request)
 	{
 		var emoji = await emojiSvc.UpdateLocalEmoji(id, request.Name, request.Aliases, request.Category,
-		                                            request.License, config.Value);
+		                                            request.License);
 		if (emoji == null) return NotFound();
 
 		var res = new EmojiResponse

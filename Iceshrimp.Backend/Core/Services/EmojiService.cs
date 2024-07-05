@@ -9,10 +9,11 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Parsing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public partial class EmojiService(DatabaseContext db, DriveService driveSvc, SystemUserService sysUserSvc)
+public partial class EmojiService(DatabaseContext db, DriveService driveSvc, SystemUserService sysUserSvc, IOptions<Config.InstanceSection> config)
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{
@@ -21,7 +22,7 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 	});
 
 	public async Task<Emoji> CreateEmojiFromStream(
-		Stream input, string fileName, string mimeType, Config.InstanceSection config, List<string>? aliases = null,
+		Stream input, string fileName, string mimeType, List<string>? aliases = null,
 		string? category = null
 	)
 	{
@@ -52,7 +53,7 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 			Width       = driveFile.Properties.Width,
 			Height      = driveFile.Properties.Height
 		};
-		emoji.Uri = emoji.GetPublicUri(config);
+		emoji.Uri = emoji.GetPublicUri(config.Value);
 
 		await db.AddAsync(emoji);
 		await db.SaveChangesAsync();
@@ -60,7 +61,7 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 		return emoji;
 	}
 
-	public async Task<Emoji> CloneEmoji(Emoji existing, Config.InstanceSection config)
+	public async Task<Emoji> CloneEmoji(Emoji existing)
 	{
 		var user = await sysUserSvc.GetInstanceActorAsync();
 		var driveFile = await driveSvc.StoreFile(existing.OriginalUrl, user, sensitive: false, forceStore: true) ??
@@ -76,7 +77,7 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 			Width       = driveFile.Properties.Width,
 			Height      = driveFile.Properties.Height
 		};
-		emoji.Uri = emoji.GetPublicUri(config);
+		emoji.Uri = emoji.GetPublicUri(config.Value);
 
 		await db.AddAsync(emoji);
 		await db.SaveChangesAsync();
@@ -188,7 +189,7 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 	}
 
 	public async Task<Emoji?> UpdateLocalEmoji(
-		string id, string? name, List<string>? aliases, string? category, string? license, Config.InstanceSection config
+		string id, string? name, List<string>? aliases, string? category, string? license
 	)
 	{
 		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id);
@@ -202,7 +203,7 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 		if (name != null && existing == null && CustomEmojiRegex().IsMatch(name))
 		{
 			emoji.Name = name;
-			emoji.Uri  = emoji.GetPublicUri(config);
+			emoji.Uri  = emoji.GetPublicUri(config.Value);
 		}
 
 		if (aliases != null) emoji.Aliases = aliases;
