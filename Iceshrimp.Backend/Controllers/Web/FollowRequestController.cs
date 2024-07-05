@@ -32,6 +32,7 @@ public class FollowRequestController(
 	{
 		var user = HttpContext.GetUserOrFail();
 		var requests = await db.FollowRequests
+		                       .IncludeCommonProperties()
 		                       .Where(p => p.Followee == user)
 		                       .Paginate(pq, ControllerContext)
 		                       .Select(p => new { p.Id, p.Follower })
@@ -51,7 +52,9 @@ public class FollowRequestController(
 	public async Task<IActionResult> AcceptFollowRequest(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var request = await db.FollowRequests.FirstOrDefaultAsync(p => p.Followee == user && p.Id == id) ??
+		var request = await db.FollowRequests
+		                      .IncludeCommonProperties()
+		                      .FirstOrDefaultAsync(p => p.Followee == user && p.Id == id) ??
 		              throw GracefulException.NotFound("Follow request not found");
 
 		await userSvc.AcceptFollowRequestAsync(request);
@@ -64,7 +67,9 @@ public class FollowRequestController(
 	public async Task<IActionResult> RejectFollowRequest(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var request = await db.FollowRequests.FirstOrDefaultAsync(p => p.Followee == user && p.Id == id) ??
+		var request = await db.FollowRequests
+		                      .IncludeCommonProperties()
+		                      .FirstOrDefaultAsync(p => p.Followee == user && p.Id == id) ??
 		              throw GracefulException.NotFound("Follow request not found");
 
 		await userSvc.RejectFollowRequestAsync(request);
