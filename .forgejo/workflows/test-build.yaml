@@ -11,7 +11,14 @@ jobs:
       options: --volume /opt/iceshrimp-cache/nuget:/root/.nuget
     steps:
       - name: Clone repository
-        run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 /iceshrimp
+        shell: bash
+        run: |
+          mkdir /iceshrimp
+          cd /iceshrimp
+          git init
+          git remote add origin ${{ github.event.repository.clone_url }}
+          git fetch origin ${{ github.ref }} --depth=1
+          git checkout --detach FETCH_HEAD
       - name: Run tests
         run: |
           cd /iceshrimp
