@@ -10,7 +10,7 @@ jobs:
       options: --volume /opt/iceshrimp-cache/nuget:/root/.nuget
     steps:
       - name: Clone repository
-        run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} /src
+        run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 /src
       - name: Build project (amd64-glibc)
         shell: bash
         run: |-

@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Clone repository
         run: |
-          git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} /iceshrimp
+          git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 /iceshrimp
           cd /iceshrimp
       - name: Run unit tests
         run: |
