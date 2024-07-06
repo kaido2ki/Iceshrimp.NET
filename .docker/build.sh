@@ -9,4 +9,4 @@ docker buildx build . --builder build-cluster --platform=linux/amd64,linux/arm64
 docker buildx build . --builder build-cluster --platform=linux/amd64,linux/arm64 --provenance=false -f ci-env.Dockerfile -t iceshrimp.dev/iceshrimp/ci-env:dotnet --push
 docker buildx build . --builder build-cluster --platform=linux/amd64,linux/arm64 --provenance=false -f ci-env-wasm.Dockerfile -t iceshrimp.dev/iceshrimp/ci-env:dotnet-wasm --push
 
-docker buildx prune -a --builder build-cluster
+docker buildx prune -a -f --builder build-cluster
