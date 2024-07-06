@@ -1,6 +1,7 @@
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
-using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using static Iceshrimp.Backend.Controllers.Mastodon.Schemas.AuthSchemas;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -22,27 +24,24 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 {
 	[HttpGet("/api/v1/apps/verify_credentials")]
 	[Authenticate]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.VerifyAppCredentialsResponse))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> VerifyAppCredentials()
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Unauthorized)]
+	public async Task<VerifyAppCredentialsResponse> VerifyAppCredentials()
 	{
-		var token = HttpContext.GetOauthToken();
-		if (token == null) throw GracefulException.Unauthorized("The access token is invalid");
+		var token = HttpContext.GetOauthToken() ?? throw GracefulException.Unauthorized("The access token is invalid");
 
-		var res = new AuthSchemas.VerifyAppCredentialsResponse
+		return new VerifyAppCredentialsResponse
 		{
 			App = token.App, VapidKey = await meta.Get(MetaEntity.VapidPublicKey)
 		};
-
-		return Ok(res);
 	}
 
 	[HttpPost("/api/v1/apps")]
 	[EnableRateLimiting("auth")]
 	[ConsumesHybrid]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.RegisterAppResponse))]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> RegisterApp([FromHybrid] AuthSchemas.RegisterAppRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<RegisterAppResponse> RegisterApp([FromHybrid] RegisterAppRequest request)
 	{
 		if (request.RedirectUris.Count == 0)
 			throw GracefulException.BadRequest("Invalid redirect_uris parameter");
@@ -79,19 +78,14 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 		await db.AddAsync(app);
 		await db.SaveChangesAsync();
 
-		var res = new AuthSchemas.RegisterAppResponse
-		{
-			App = app, VapidKey = await meta.Get(MetaEntity.VapidPublicKey)
-		};
-
-		return Ok(res);
+		return new RegisterAppResponse { App = app, VapidKey = await meta.Get(MetaEntity.VapidPublicKey) };
 	}
 
 	[HttpPost("/oauth/token")]
 	[ConsumesHybrid]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthSchemas.OauthTokenResponse))]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetOauthToken([FromHybrid] AuthSchemas.OauthTokenRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<OauthTokenResponse> GetOauthToken([FromHybrid] OauthTokenRequest request)
 	{
 		//TODO: app-level access (grant_type = "client_credentials")
 		if (request.GrantType != "authorization_code")
@@ -99,49 +93,46 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 		var token = await db.OauthTokens.FirstOrDefaultAsync(p => p.Code == request.Code &&
 		                                                          p.App.ClientId == request.ClientId &&
 		                                                          p.App.ClientSecret == request.ClientSecret);
+		// @formatter:off
 		if (token == null)
-			throw GracefulException
-				.Unauthorized("Client authentication failed due to unknown client, no client authentication included, or unsupported authentication method.");
-
+			throw GracefulException.Unauthorized("Client authentication failed due to unknown client, no client authentication included, or unsupported authentication method.");
 		if (token.Active)
-			throw GracefulException
-				.BadRequest("The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.");
+			throw GracefulException.BadRequest("The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.");
+		// @formatter:on
 
-		if (MastodonOauthHelpers.ExpandScopes(request.Scopes ?? [])
-		                        .Except(MastodonOauthHelpers.ExpandScopes(token.Scopes))
-		                        .Any())
+		var invalidScope = MastodonOauthHelpers.ExpandScopes(request.Scopes ?? [])
+		                                       .Except(MastodonOauthHelpers.ExpandScopes(token.Scopes))
+		                                       .Any();
+		if (invalidScope)
 			throw GracefulException.BadRequest("The requested scope is invalid, unknown, or malformed.");
 
 		token.Scopes = request.Scopes ?? token.Scopes;
 		token.Active = true;
 		await db.SaveChangesAsync();
 
-		var res = new AuthSchemas.OauthTokenResponse
+		return new OauthTokenResponse
 		{
 			CreatedAt   = token.CreatedAt,
 			Scopes      = token.Scopes,
 			AccessToken = token.Token
 		};
-
-		return Ok(res);
 	}
 
 	[HttpPost("/oauth/revoke")]
 	[ConsumesHybrid]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> RevokeOauthToken([FromHybrid] AuthSchemas.OauthTokenRevocationRequest request)
+	[OverrideResultType<object>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.Forbidden)]
+	public async Task<object> RevokeOauthToken([FromHybrid] OauthTokenRevocationRequest request)
 	{
 		var token = await db.OauthTokens.FirstOrDefaultAsync(p => p.Token == request.Token &&
 		                                                          p.App.ClientId == request.ClientId &&
-		                                                          p.App.ClientSecret == request.ClientSecret);
-		if (token == null)
-			throw GracefulException.Forbidden("You are not authorized to revoke this token");
+		                                                          p.App.ClientSecret == request.ClientSecret) ??
+		            throw GracefulException.Forbidden("You are not authorized to revoke this token");
 
 		db.Remove(token);
 		await db.SaveChangesAsync();
 
-		return Ok(new object());
+		return new object();
 	}
 }

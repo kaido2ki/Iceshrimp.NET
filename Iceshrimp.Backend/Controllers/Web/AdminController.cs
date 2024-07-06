@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Federation;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
@@ -15,6 +16,7 @@ using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
@@ -28,13 +30,16 @@ public class AdminController(
 	DatabaseContext db,
 	ActivityPubController apController,
 	ActivityPub.ActivityFetcherService fetchSvc,
+	ActivityPub.NoteRenderer noteRenderer,
+	ActivityPub.UserRenderer userRenderer,
+	IOptions<Config.InstanceSection> config,
 	QueueService queueSvc
 ) : ControllerBase
 {
 	[HttpPost("invites/generate")]
 	[Produces(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(InviteResponse))]
-	public async Task<IActionResult> GenerateInvite()
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<InviteResponse> GenerateInvite()
 	{
 		var invite = new RegistrationInvite
 		{
@@ -46,18 +51,15 @@ public class AdminController(
 		await db.AddAsync(invite);
 		await db.SaveChangesAsync();
 
-		var res = new InviteResponse { Code = invite.Code };
-
-		return Ok(res);
+		return new InviteResponse { Code = invite.Code };
 	}
 
 	[HttpPost("users/{id}/reset-password")]
 	[Produces(MediaTypeNames.Application.Json)]
 	[Consumes(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<IActionResult> ResetPassword(string id, [FromBody] ResetPasswordRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task ResetPassword(string id, [FromBody] ResetPasswordRequest request)
 	{
 		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == id && p.UserHost == null) ??
 		              throw GracefulException.RecordNotFound();
@@ -67,16 +69,12 @@ public class AdminController(
 
 		profile.Password = AuthHelpers.HashPassword(request.Password);
 		await db.SaveChangesAsync();
-
-		return Ok();
 	}
 
 	[HttpPost("instances/{host}/force-state/{state}")]
-	[Produces(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<IActionResult> ForceInstanceState(string host, AdminSchemas.InstanceState state)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task ForceInstanceState(string host, AdminSchemas.InstanceState state)
 	{
 		var instance = await db.Instances.FirstOrDefaultAsync(p => p.Host == host.ToLowerInvariant()) ??
 		               throw GracefulException.NotFound("Instance not found");
@@ -97,93 +95,97 @@ public class AdminController(
 		}
 
 		await db.SaveChangesAsync();
-		return Ok();
 	}
 
 	[HttpPost("queue/jobs/{id::guid}/retry")]
 	[Produces(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<IActionResult> RetryQueueJob(Guid id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task RetryQueueJob(Guid id)
 	{
 		var job = await db.Jobs.FirstOrDefaultAsync(p => p.Id == id) ??
 		          throw GracefulException.NotFound($"Job {id} was not found.");
 
 		await queueSvc.RetryJobAsync(job);
-		return Ok();
 	}
 
 	[UseNewtonsoftJson]
 	[HttpGet("activities/notes/{id}")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASNote))]
+	[OverrideResultType<ASNote>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
 	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-	public async Task<IActionResult> GetNoteActivity(string id, [FromServices] ActivityPub.NoteRenderer noteRenderer)
+	public async Task<JObject> GetNoteActivity(string id)
 	{
 		var note = await db.Notes
 		                   .IncludeCommonProperties()
 		                   .FirstOrDefaultAsync(p => p.Id == id && p.UserHost == null);
-		if (note == null) return NotFound();
-		var rendered  = await noteRenderer.RenderAsync(note);
-		var compacted = rendered.Compact();
-		return Ok(compacted);
+		if (note == null) throw GracefulException.NotFound("Note not found");
+		var rendered = await noteRenderer.RenderAsync(note);
+		return rendered.Compact() ?? throw new Exception("Failed to compact JSON-LD payload");
 	}
 
 	[UseNewtonsoftJson]
 	[HttpGet("activities/notes/{id}/activity")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASAnnounce))]
-	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
+	[OverrideResultType<ASAnnounce>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	[ProducesActivityStreamsPayload]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery")]
-	public async Task<IActionResult> GetRenoteActivity(
-		string id, [FromServices] ActivityPub.NoteRenderer noteRenderer,
-		[FromServices] ActivityPub.UserRenderer userRenderer, [FromServices] IOptions<Config.InstanceSection> config
-	)
+	public async Task<JObject> GetRenoteActivity(string id)
 	{
 		var note = await db.Notes
 		                   .IncludeCommonProperties()
-		                   .FirstOrDefaultAsync(p => p.Id == id && p.UserHost == null);
-		if (note is not { IsPureRenote: true, Renote: not null }) return NotFound();
-		var rendered = ActivityPub.ActivityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
-		                                                           note.GetPublicUri(config.Value),
-		                                                           userRenderer.RenderLite(note.User),
-		                                                           note.Visibility,
-		                                                           note.User.GetPublicUri(config.Value) + "/followers");
-		var compacted = rendered.Compact();
-		return Ok(compacted);
+		                   .Where(p => p.Id == id && p.UserHost == null && p.IsPureRenote && p.Renote != null)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
+
+		return ActivityPub.ActivityRenderer
+		                  .RenderAnnounce(noteRenderer.RenderLite(note.Renote!),
+		                                  note.GetPublicUri(config.Value),
+		                                  userRenderer.RenderLite(note.User),
+		                                  note.Visibility,
+		                                  note.User.GetPublicUri(config.Value) + "/followers")
+		                  .Compact();
 	}
 
 	[UseNewtonsoftJson]
 	[HttpGet("activities/users/{id}")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
-	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-	public async Task<IActionResult> GetUserActivity(string id)
+	[OverrideResultType<ASActor>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	[ProducesActivityStreamsPayload]
+	public async Task<ActionResult<JObject>> GetUserActivity(string id)
 	{
 		return await apController.GetUser(id);
 	}
 
 	[UseNewtonsoftJson]
 	[HttpGet("activities/users/{id}/collections/featured")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
-	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-	public async Task<IActionResult> GetUserFeaturedActivity(string id)
+	[OverrideResultType<ASOrderedCollection>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesActivityStreamsPayload]
+	public async Task<JObject> GetUserFeaturedActivity(string id)
 	{
 		return await apController.GetUserFeatured(id);
 	}
 
 	[UseNewtonsoftJson]
 	[HttpGet("activities/users/@{acct}")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
-	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-	public async Task<IActionResult> GetUserActivityByUsername(string acct)
+	[OverrideResultType<ASActor>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesActivityStreamsPayload]
+	public async Task<ActionResult<JObject>> GetUserActivityByUsername(string acct)
 	{
 		return await apController.GetUserByUsername(acct);
 	}
 
 	[UseNewtonsoftJson]
 	[HttpGet("activities/fetch")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASObject))]
-	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
+	[OverrideResultType<ASObject>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesActivityStreamsPayload]
 	public async Task<IActionResult> FetchActivityAsync([FromQuery] string uri, [FromQuery] string? userId)
 	{
 		var user     = userId != null ? await db.Users.FirstOrDefaultAsync(p => p.Id == userId && p.IsLocalUser) : null;
@@ -194,9 +196,10 @@ public class AdminController(
 
 	[UseNewtonsoftJson]
 	[HttpGet("activities/fetch-raw")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASObject))]
-	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(ErrorResponse))]
-	[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
+	[OverrideResultType<ASObject>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.UnprocessableEntity)]
+	[ProducesActivityStreamsPayload]
 	public async Task FetchRawActivityAsync([FromQuery] string uri, [FromQuery] string? userId)
 	{
 		var user     = userId != null ? await db.Users.FirstOrDefaultAsync(p => p.Id == userId && p.IsLocalUser) : null;

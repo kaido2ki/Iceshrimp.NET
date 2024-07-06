@@ -1,14 +1,16 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using System.Xml.Serialization;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Federation.Schemas;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
-using Iceshrimp.Shared.Schemas.Web;
+using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,9 +25,9 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 {
 	[HttpGet("webfinger")]
 	[Produces(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WebFingerResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> WebFinger([FromQuery] string resource)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<WebFingerResponse> WebFinger([FromQuery] string resource)
 	{
 		User? user;
 		if (resource.StartsWith($"https://{config.Value.WebDomain}/users/"))
@@ -39,20 +41,20 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 				resource = resource[5..];
 
 			var split = resource.TrimStart('@').Split('@');
-			if (split.Length > 2) return NotFound();
+			if (split.Length > 2) throw GracefulException.NotFound("User not found");
 			if (split.Length == 2)
 			{
 				List<string> domains = [config.Value.AccountDomain, config.Value.WebDomain];
-				if (!domains.Contains(split[1])) return NotFound();
+				if (!domains.Contains(split[1])) throw GracefulException.NotFound("User not found");
 			}
 
 			user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == split[0].ToLowerInvariant() &&
 			                                               p.IsLocalUser);
 		}
 
-		if (user == null) return NotFound();
+		if (user == null) throw GracefulException.NotFound("User not found");
 
-		var response = new WebFingerResponse
+		return new WebFingerResponse
 		{
 			Subject = $"acct:{user.Username}@{config.Value.AccountDomain}",
 			Links =
@@ -76,16 +78,14 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 				}
 			]
 		};
-
-		return Ok(response);
 	}
 
 	[HttpGet("nodeinfo")]
 	[Produces(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NodeInfoIndexResponse))]
-	public IActionResult NodeInfo()
+	[ProducesResults(HttpStatusCode.OK)]
+	public NodeInfoIndexResponse NodeInfo()
 	{
-		var response = new NodeInfoIndexResponse
+		return new NodeInfoIndexResponse
 		{
 			Links =
 			[
@@ -101,14 +101,12 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 				}
 			]
 		};
-
-		return Ok(response);
 	}
 
 	[HttpGet("host-meta")]
 	[Produces("application/xrd+xml", "application/jrd+json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(HostMetaJsonResponse))]
-	public IActionResult HostMeta()
+	[ProducesResults(HttpStatusCode.OK)]
+	public ActionResult<HostMetaJsonResponse> HostMeta()
 	{
 		var accept = Request.Headers.Accept.OfType<string>()
 		                    .SelectMany(p => p.Split(","))
@@ -117,7 +115,7 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 		                    .ToList();
 
 		if (accept.Contains("application/jrd+json") || accept.Contains("application/json"))
-			return HostMetaJson();
+			return Ok(HostMetaJson());
 
 		var obj        = new HostMetaXmlResponse(config.Value.WebDomain);
 		var serializer = new XmlSerializer(obj.GetType());
@@ -129,10 +127,10 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 
 	[HttpGet("host-meta.json")]
 	[Produces("application/jrd+json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(HostMetaJsonResponse))]
-	public IActionResult HostMetaJson()
+	[ProducesResults(HttpStatusCode.OK)]
+	public HostMetaJsonResponse HostMetaJson()
 	{
-		return Ok(new HostMetaJsonResponse(config.Value.WebDomain));
+		return new HostMetaJsonResponse(config.Value.WebDomain);
 	}
 
 	private class Utf8StringWriter : StringWriter

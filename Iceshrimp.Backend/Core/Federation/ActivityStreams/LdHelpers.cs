@@ -114,27 +114,29 @@ public static class LdHelpers
 		return payload;
 	}
 
-	public static JObject? Compact(this ASObject obj)
+	public static JObject Compact(this ASObject obj)
 	{
-		return Compact((object)obj);
+		return Compact((object)obj) ?? throw new Exception("Failed to compact JSON-LD paylaod");
 	}
 
-	public static JObject? Compact(object obj)
+	public static JObject Compact(object obj)
 	{
-		return Compact(JToken.FromObject(obj, JsonSerializer));
+		return Compact(JToken.FromObject(obj, JsonSerializer)) ??
+		       throw new Exception("Failed to compact JSON-LD paylaod");
 	}
 
-	public static JArray? Expand(object obj)
+	public static JArray Expand(object obj)
 	{
-		return Expand(JToken.FromObject(obj, JsonSerializer));
+		return Expand(JToken.FromObject(obj, JsonSerializer)) ??
+		       throw new Exception("Failed to expand JSON-LD paylaod");
 	}
 
-	public static JObject? Compact(JToken? json)
+	public static JObject Compact(JToken? json)
 	{
 		return JsonLdProcessor.Compact(json, FederationContext, Options);
 	}
 
-	public static JArray? Expand(JToken? json)
+	public static JArray Expand(JToken? json)
 	{
 		return JsonLdProcessor.Expand(json, Options);
 	}

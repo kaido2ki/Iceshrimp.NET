@@ -1,8 +1,9 @@
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
-using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
@@ -11,6 +12,8 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using static Iceshrimp.Backend.Controllers.Mastodon.Schemas.PushSchemas;
+using PushSubscription = Iceshrimp.Backend.Core.Database.Tables.PushSubscription;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -24,11 +27,13 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 public class PushController(DatabaseContext db, MetaService meta) : ControllerBase
 {
 	[HttpPost]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PushSchemas.PushSubscription))]
-	public async Task<IActionResult> RegisterSubscription([FromHybrid] PushSchemas.RegisterPushRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Unauthorized)]
+	public async Task<PushSchemas.PushSubscription> RegisterSubscription(
+		[FromHybrid] RegisterPushRequest request
+	)
 	{
-		var token = HttpContext.GetOauthToken();
-		if (token == null) throw GracefulException.Unauthorized("The access token is invalid");
+		var token = HttpContext.GetOauthToken() ?? throw GracefulException.Unauthorized("The access token is invalid");
 		var pushSubscription = await db.PushSubscriptions.FirstOrDefaultAsync(p => p.OauthToken == token);
 		if (pushSubscription == null)
 		{
@@ -49,54 +54,46 @@ public class PushController(DatabaseContext db, MetaService meta) : ControllerBa
 			await db.SaveChangesAsync();
 		}
 
-		var res = await RenderSubscription(pushSubscription);
-
-		return Ok(res);
+		return await RenderSubscription(pushSubscription);
 	}
 
 	[HttpPut]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PushSchemas.PushSubscription))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> EditSubscription([FromHybrid] PushSchemas.EditPushRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Unauthorized, HttpStatusCode.NotFound)]
+	public async Task<PushSchemas.PushSubscription> EditSubscription([FromHybrid] EditPushRequest request)
 	{
-		var token = HttpContext.GetOauthToken();
-		if (token == null) throw GracefulException.Unauthorized("The access token is invalid");
+		var token = HttpContext.GetOauthToken() ?? throw GracefulException.Unauthorized("The access token is invalid");
 		var pushSubscription = await db.PushSubscriptions.FirstOrDefaultAsync(p => p.OauthToken == token) ??
-		                       throw GracefulException.RecordNotFound();
+		                       throw GracefulException.NotFound("Push subscription not found");
 
 		pushSubscription.Types  = GetTypes(request.Data.Alerts);
 		pushSubscription.Policy = GetPolicy(request.Data.Policy);
 		await db.SaveChangesAsync();
 
-		var res = await RenderSubscription(pushSubscription);
-
-		return Ok(res);
+		return await RenderSubscription(pushSubscription);
 	}
 
 	[HttpGet]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PushSchemas.PushSubscription))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetSubscription()
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Unauthorized, HttpStatusCode.NotFound)]
+	public async Task<PushSchemas.PushSubscription> GetSubscription()
 	{
-		var token = HttpContext.GetOauthToken();
-		if (token == null) throw GracefulException.Unauthorized("The access token is invalid");
+		var token = HttpContext.GetOauthToken() ?? throw GracefulException.Unauthorized("The access token is invalid");
 		var pushSubscription = await db.PushSubscriptions.FirstOrDefaultAsync(p => p.OauthToken == token) ??
-		                       throw GracefulException.RecordNotFound();
+		                       throw GracefulException.NotFound("Push subscription not found");
 
-		var res = await RenderSubscription(pushSubscription);
-
-		return Ok(res);
+		return await RenderSubscription(pushSubscription);
 	}
 
 	[HttpDelete]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-	public async Task<IActionResult> DeleteSubscription()
+	[OverrideResultType<object>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Unauthorized)]
+	public async Task<object> DeleteSubscription()
 	{
-		var token = HttpContext.GetOauthToken();
-		if (token == null) throw GracefulException.Unauthorized("The access token is invalid");
+		var token = HttpContext.GetOauthToken() ?? throw GracefulException.Unauthorized("The access token is invalid");
 		await db.PushSubscriptions.Where(p => p.OauthToken == token).ExecuteDeleteAsync();
-
-		return Ok(new object());
+		return new object();
 	}
 
 	private static PushSubscription.PushPolicy GetPolicy(string policy)
@@ -123,7 +120,7 @@ public class PushController(DatabaseContext db, MetaService meta) : ControllerBa
 		};
 	}
 
-	private static List<string> GetTypes(PushSchemas.Alerts alerts)
+	private static List<string> GetTypes(Alerts alerts)
 	{
 		List<string> types = [];
 
@@ -155,7 +152,7 @@ public class PushController(DatabaseContext db, MetaService meta) : ControllerBa
 			Endpoint  = sub.Endpoint,
 			ServerKey = await meta.Get(MetaEntity.VapidPublicKey),
 			Policy    = GetPolicyString(sub.Policy),
-			Alerts = new PushSchemas.Alerts
+			Alerts = new Alerts
 			{
 				Favourite     = sub.Types.Contains("favourite"),
 				Follow        = sub.Types.Contains("follow"),

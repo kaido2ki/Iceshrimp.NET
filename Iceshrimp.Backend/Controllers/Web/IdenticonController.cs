@@ -1,6 +1,8 @@
 using System.IO.Hashing;
+using System.Net;
 using System.Net.Mime;
 using System.Text;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using SixLabors.ImageSharp;
@@ -15,10 +17,10 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Route("/identicon/{id}")]
 [Route("/identicon/{id}.png")]
 [Produces(MediaTypeNames.Image.Png)]
-[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
 public class IdenticonController : ControllerBase
 {
 	[HttpGet]
+	[ProducesResults(HttpStatusCode.OK)]
 	public async Task GetIdenticon(string id)
 	{
 		using var image = new Image<Rgb24>(Size, Size);

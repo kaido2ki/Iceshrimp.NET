@@ -1,8 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -21,13 +23,12 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
-[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AttachmentEntity))]
 public class MediaController(DriveService driveSvc, DatabaseContext db) : ControllerBase
 {
 	[HttpPost("/api/v1/media")]
 	[HttpPost("/api/v2/media")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AttachmentEntity))]
-	public async Task<IActionResult> UploadAttachment(MediaSchemas.UploadMediaRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<AttachmentEntity> UploadAttachment(MediaSchemas.UploadMediaRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var rq = new DriveFileCreationRequest
@@ -38,15 +39,15 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 			MimeType    = request.File.ContentType
 		};
 		var file = await driveSvc.StoreFile(request.File.OpenReadStream(), user, rq);
-		var res  = RenderAttachment(file);
-
-		return Ok(res);
+		return RenderAttachment(file);
 	}
 
 	[HttpPut("/api/v1/media/{id}")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AttachmentEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> UpdateAttachment(string id, [FromHybrid] MediaSchemas.UpdateMediaRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<AttachmentEntity> UpdateAttachment(
+		string id, [FromHybrid] MediaSchemas.UpdateMediaRequest request
+	)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
@@ -54,26 +55,24 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 		file.Comment = request.Description;
 		await db.SaveChangesAsync();
 
-		var res = RenderAttachment(file);
-		return Ok(res);
+		return RenderAttachment(file);
 	}
 
 	[HttpGet("/api/v1/media/{id}")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AttachmentEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetAttachment(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<AttachmentEntity> GetAttachment(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
 		           throw GracefulException.RecordNotFound();
 
-		var res = RenderAttachment(file);
-		return Ok(res);
+		return RenderAttachment(file);
 	}
 
 	[HttpPut("/api/v2/media/{id}")]
 	[HttpGet("/api/v2/media/{id}")]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	[ProducesErrors(HttpStatusCode.NotFound)]
 	public IActionResult FallbackMediaRoute([SuppressMessage("ReSharper", "UnusedParameter.Global")] string id) =>
 		throw GracefulException.NotFound("This endpoint is not implemented, but some clients expect a 404 here.");
 

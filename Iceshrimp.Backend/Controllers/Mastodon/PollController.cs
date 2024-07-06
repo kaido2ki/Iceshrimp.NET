@@ -1,8 +1,10 @@
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -32,9 +34,9 @@ public class PollController(
 ) : ControllerBase
 {
 	[HttpGet]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PollEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetPoll(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<PollEntity> GetPoll(string id)
 	{
 		var user = HttpContext.GetUser();
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
@@ -44,16 +46,14 @@ public class PollController(
 		           throw GracefulException.RecordNotFound();
 		var poll = await db.Polls.Where(p => p.Note == note).FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
-		var res = await pollRenderer.RenderAsync(poll, user);
-		return Ok(res);
+		return await pollRenderer.RenderAsync(poll, user);
 	}
 
 	[HttpPost("votes")]
 	[Authorize("read:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PollEntity))]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> VotePoll(string id, [FromHybrid] PollSchemas.PollVoteRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task<PollEntity> VotePoll(string id, [FromHybrid] PollSchemas.PollVoteRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.Where(p => p.Id == id)
@@ -118,7 +118,6 @@ public class PollController(
 			await pollSvc.RegisterPollVote(vote, poll, note, votes.IndexOf(vote) == 0);
 
 		await db.ReloadEntityAsync(poll);
-		var res = await pollRenderer.RenderAsync(poll, user);
-		return Ok(res);
+		return await pollRenderer.RenderAsync(poll, user);
 	}
 }

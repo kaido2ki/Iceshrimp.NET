@@ -21,7 +21,7 @@ public class HttpSignatureTests
 	[TestInitialize]
 	public void Initialize()
 	{
-		_expanded = LdHelpers.Expand(_actor)!;
+		_expanded = LdHelpers.Expand(_actor);
 		_expanded.Should().NotBeNull();
 	}
 

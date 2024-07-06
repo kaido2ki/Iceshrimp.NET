@@ -1,5 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Mime;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
@@ -17,7 +18,6 @@ namespace Iceshrimp.Backend.Controllers.Web;
 public class DriveController(
 	DatabaseContext db,
 	ObjectStorageService objectStorage,
-	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	IOptionsSnapshot<Config.StorageSection> options,
 	ILogger<DriveController> logger,
 	DriveService driveSvc
@@ -25,6 +25,8 @@ public class DriveController(
 {
 	[EnableCors("drive")]
 	[HttpGet("/files/{accessKey}")]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.NoContent)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<IActionResult> GetFileByAccessKey(string accessKey)
 	{
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.AccessKey == accessKey ||
@@ -33,7 +35,7 @@ public class DriveController(
 		if (file == null)
 		{
 			Response.Headers.CacheControl = "max-age=86400";
-			return NotFound();
+			throw GracefulException.NotFound("File not found");
 		}
 
 		if (file.StoredInternal)
@@ -42,7 +44,7 @@ public class DriveController(
 			if (string.IsNullOrWhiteSpace(pathBase))
 			{
 				logger.LogError("Failed to get file {accessKey} from local storage: path does not exist", accessKey);
-				return NotFound();
+				throw GracefulException.NotFound("File not found");
 			}
 
 			var path   = Path.Join(pathBase, accessKey);
@@ -64,7 +66,7 @@ public class DriveController(
 			if (stream == null)
 			{
 				logger.LogError("Failed to get file {accessKey} from object storage", accessKey);
-				return NotFound();
+				throw GracefulException.NotFound("File not found");
 			}
 
 			Response.Headers.CacheControl        = "max-age=31536000, immutable";
@@ -76,8 +78,9 @@ public class DriveController(
 	[HttpPost]
 	[Authenticate]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriveFileResponse))]
-	public async Task<IActionResult> UploadFile(IFormFile file)
+	[Produces(MediaTypeNames.Application.Json)]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<DriveFileResponse> UploadFile(IFormFile file)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var request = new DriveFileCreationRequest
@@ -93,15 +96,16 @@ public class DriveController(
 	[HttpGet("{id}")]
 	[Authenticate]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriveFileResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetFileById(string id)
+	[Produces(MediaTypeNames.Application.Json)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<DriveFileResponse> GetFileById(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Id == id);
-		if (file == null) return NotFound();
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Id == id) ??
+		           throw GracefulException.NotFound("File not found");
 
-		var res = new DriveFileResponse
+		return new DriveFileResponse
 		{
 			Id           = file.Id,
 			Url          = file.PublicUrl,
@@ -111,21 +115,20 @@ public class DriveController(
 			Description  = file.Comment,
 			Sensitive    = file.IsSensitive
 		};
-
-		return Ok(res);
 	}
 
 	[HttpPatch("{id}")]
 	[Authenticate]
 	[Authorize]
 	[Consumes(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriveFileResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> UpdateFile(string id, UpdateDriveFileRequest request)
+	[Produces(MediaTypeNames.Application.Json)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<DriveFileResponse> UpdateFile(string id, UpdateDriveFileRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Id == id);
-		if (file == null) return NotFound();
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Id == id) ??
+		           throw GracefulException.NotFound("File not found");
 
 		file.Name        = request.Filename ?? file.Name;
 		file.IsSensitive = request.Sensitive ?? file.IsSensitive;

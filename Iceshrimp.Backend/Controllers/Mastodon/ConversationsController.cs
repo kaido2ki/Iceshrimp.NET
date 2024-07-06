@@ -31,8 +31,8 @@ public class ConversationsController(
 	[HttpGet]
 	[Authorize("read:statuses")]
 	[LinkPagination(20, 40)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ConversationEntity>))]
-	public async Task<IActionResult> GetConversations(MastodonPaginationQuery pq)
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<ConversationEntity>> GetConversations(MastodonPaginationQuery pq)
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -69,7 +69,7 @@ public class ConversationsController(
 
 		var notes = await noteRenderer.RenderManyAsync(conversations.Select(p => p.LastNote), user, accounts: accounts);
 
-		var res = conversations.Select(p => new ConversationEntity
+		return conversations.Select(p => new ConversationEntity
 		{
 			Id         = p.Id,
 			Unread     = p.Unread,
@@ -78,21 +78,19 @@ public class ConversationsController(
 			                   .DefaultIfEmpty(accounts.First(a => a.Id == user.Id))
 			                   .ToList()
 		});
-
-		return Ok(res);
 	}
 
 	[HttpDelete("{id}")]
 	[Authorize("write:conversations")]
-	[ProducesResponseType(StatusCodes.Status501NotImplemented, Type = typeof(MastodonErrorResponse))]
+	[ProducesErrors(HttpStatusCode.NotImplemented)]
 	public IActionResult RemoveConversation(string id) => throw new GracefulException(HttpStatusCode.NotImplemented,
 		"Iceshrimp.NET does not support this endpoint due to database schema differences to Mastodon");
 
 	[HttpPost("{id}/read")]
 	[Authorize("write:conversations")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ConversationEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> MarkRead(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ConversationEntity> MarkRead(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var conversation = await db.Conversations(user)
@@ -137,15 +135,13 @@ public class ConversationsController(
 
 		var noteRendererDto = new NoteRenderer.NoteRendererDto { Accounts = accounts };
 
-		var res = new ConversationEntity
+		return new ConversationEntity
 		{
 			Id         = conversation.Id,
 			Unread     = conversation.Unread,
 			LastStatus = await noteRenderer.RenderAsync(conversation.LastNote, user, data: noteRendererDto),
 			Accounts   = accounts
 		};
-
-		return Ok(res);
 	}
 
 	private class Conversation

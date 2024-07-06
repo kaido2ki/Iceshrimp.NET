@@ -3,6 +3,7 @@ using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -24,28 +25,29 @@ public class MarkerController(DatabaseContext db) : ControllerBase
 {
 	[HttpGet]
 	[Authorize("read:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Dictionary<string, MarkerEntity>))]
-	public async Task<IActionResult> GetMarkers([FromQuery(Name = "timeline")] List<string> types)
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<Dictionary<string, MarkerEntity>> GetMarkers([FromQuery(Name = "timeline")] List<string> types)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var markers = await db.Markers.Where(p => p.User == user && types.Select(DecodeType).Contains(p.Type))
 		                      .ToListAsync();
 
-		var res = markers.ToDictionary(p => EncodeType(p.Type),
-		                               p => new MarkerEntity
-		                               {
-			                               Position  = p.Position,
-			                               Version   = p.Version,
-			                               UpdatedAt = p.LastUpdatedAt.ToStringIso8601Like()
-		                               });
-
-		return Ok(res);
+		return markers.ToDictionary(p => EncodeType(p.Type),
+		                            p => new MarkerEntity
+		                            {
+			                            Position  = p.Position,
+			                            Version   = p.Version,
+			                            UpdatedAt = p.LastUpdatedAt.ToStringIso8601Like()
+		                            });
 	}
 
 	[HttpPost]
 	[Authorize("write:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Dictionary<string, MarkerEntity>))]
-	public async Task<IActionResult> SetMarkers([FromHybrid] Dictionary<string, MarkerSchemas.MarkerPosition> request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Conflict)]
+	public async Task<Dictionary<string, MarkerEntity>> SetMarkers(
+		[FromHybrid] Dictionary<string, MarkerSchemas.MarkerPosition> request
+	)
 	{
 		var user = HttpContext.GetUserOrFail();
 		try

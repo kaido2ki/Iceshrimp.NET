@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
@@ -9,17 +10,17 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
-using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 
 namespace Iceshrimp.Backend.Controllers.Federation;
 
 [FederationApiController]
 [FederationSemaphore]
 [UseNewtonsoftJson]
-[Produces("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
+[ProducesActivityStreamsPayload]
 public class ActivityPubController(
 	DatabaseContext db,
 	QueueService queues,
@@ -31,71 +32,78 @@ public class ActivityPubController(
 	[HttpGet("/notes/{id}")]
 	[AuthorizedFetch]
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASNote))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetNote(string id)
+	[OverrideResultType<ASNote>]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.MovedPermanently)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ActionResult<JObject>> GetNote(string id)
 	{
 		var actor = HttpContext.GetActor();
 		var note = await db.Notes
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(actor)
 		                   .FirstOrDefaultAsync(p => p.Id == id);
-		if (note == null) return NotFound();
+		if (note == null) throw GracefulException.NotFound("Note not found");
 		if (note.User.IsRemoteUser)
 			return RedirectPermanent(note.Uri ?? throw new Exception("Refusing to render remote note without uri"));
-		var rendered  = await noteRenderer.RenderAsync(note);
-		var compacted = rendered.Compact();
-		return Ok(compacted);
+		var rendered = await noteRenderer.RenderAsync(note);
+		return rendered.Compact();
 	}
 
 	[HttpGet("/notes/{id}/activity")]
 	[AuthorizedFetch]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActivity))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetRenote(string id)
+	[OverrideResultType<ASAnnounce>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<JObject> GetRenote(string id)
 	{
 		var actor = HttpContext.GetActor();
+
 		var note = await db.Notes
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(actor)
-		                   .FirstOrDefaultAsync(p => p.Id == id && p.UserHost == null);
+		                   .Where(p => p.Id == id && p.UserHost == null && p.IsPureRenote && p.Renote != null)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
 
-		if (note is not { IsPureRenote: true, Renote: not null }) return NotFound();
-
-		var rendered = ActivityPub.ActivityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
-		                                                           note.GetPublicUri(config.Value),
-		                                                           userRenderer.RenderLite(note.User),
-		                                                           note.Visibility,
-		                                                           note.User.GetPublicUri(config.Value) + "/followers");
-		var compacted = rendered.Compact();
-		return Ok(compacted);
+		return ActivityPub.ActivityRenderer
+		                  .RenderAnnounce(noteRenderer.RenderLite(note.Renote!),
+		                                  note.GetPublicUri(config.Value),
+		                                  userRenderer.RenderLite(note.User),
+		                                  note.Visibility,
+		                                  note.User.GetPublicUri(config.Value) + "/followers")
+		                  .Compact();
 	}
 
 	[HttpGet("/users/{id}")]
 	[AuthorizedFetch]
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUser(string id)
+	[OverrideResultType<ASActor>]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.MovedPermanently)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ActionResult<JObject>> GetUser(string id)
 	{
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
-		if (user == null) return NotFound();
-		if (user.IsRemoteUser) return user.Uri != null ? RedirectPermanent(user.Uri) : NotFound();
-		var rendered  = await userRenderer.RenderAsync(user);
-		var compacted = LdHelpers.Compact(rendered);
-		return Ok(compacted);
+		if (user == null) throw GracefulException.NotFound("User not found");
+		if (user.IsRemoteUser)
+		{
+			if (user.Uri != null)
+				return RedirectPermanent(user.Uri);
+			throw GracefulException.NotFound("User not found");
+		}
+
+		var rendered = await userRenderer.RenderAsync(user);
+		return ((ASObject)rendered).Compact();
 	}
 
 	[HttpGet("/users/{id}/collections/featured")]
 	[AuthorizedFetch]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUserFeatured(string id)
+	[OverrideResultType<ASOrderedCollection>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<JObject> GetUserFeatured(string id)
 	{
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser);
-		if (user == null) return NotFound();
+		if (user == null) throw GracefulException.NotFound("User not found");
 
 		var pins = await db.UserNotePins.Where(p => p.User == user)
 		                   .OrderByDescending(p => p.Id)
@@ -114,65 +122,72 @@ public class ActivityPubController(
 			Items      = rendered.Cast<ASObject>().ToList()
 		};
 
-		var compacted = res.Compact();
-		return Ok(compacted);
+		return res.Compact();
 	}
 
 	[HttpGet("/@{acct}")]
 	[AuthorizedFetch]
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASActor))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetUserByUsername(string acct)
+	[OverrideResultType<ASActor>]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.MovedPermanently)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ActionResult<JObject>> GetUserByUsername(string acct)
 	{
 		var split = acct.Split('@');
-		if (acct.Split('@').Length > 2) return NotFound();
+		if (acct.Split('@').Length > 2) throw GracefulException.NotFound("User not found");
 		if (split.Length == 2)
 		{
-			var remoteUser = await db.Users.IncludeCommonProperties()
+			var remoteUser = await db.Users
+			                         .IncludeCommonProperties()
 			                         .FirstOrDefaultAsync(p => p.UsernameLower == split[0].ToLowerInvariant() &&
 			                                                   p.Host == split[1].ToLowerInvariant().ToPunycode());
-			return remoteUser?.Uri != null ? RedirectPermanent(remoteUser.Uri) : NotFound();
+
+			if (remoteUser?.Uri != null)
+				return RedirectPermanent(remoteUser.Uri);
+			throw GracefulException.NotFound("User not found");
 		}
 
-		var user = await db.Users.IncludeCommonProperties()
+		var user = await db.Users
+		                   .IncludeCommonProperties()
 		                   .FirstOrDefaultAsync(p => p.UsernameLower == acct.ToLowerInvariant() && p.IsLocalUser);
-		if (user == null) return NotFound();
-		var rendered  = await userRenderer.RenderAsync(user);
-		var compacted = LdHelpers.Compact(rendered);
-		return Ok(compacted);
+
+		if (user == null) throw GracefulException.NotFound("User not found");
+		var rendered = await userRenderer.RenderAsync(user);
+		return ((ASObject)rendered).Compact();
 	}
 
 	[HttpPost("/inbox")]
 	[HttpPost("/users/{id}/inbox")]
 	[InboxValidation]
 	[EnableRequestBuffering(1024 * 1024)]
-	[Produces("text/plain")]
-	[Consumes("application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")]
-	public async Task<IActionResult> Inbox(string? id)
+	[ConsumesActivityStreamsPayload]
+	[ProducesResults(HttpStatusCode.Accepted)]
+	public async Task<AcceptedResult> Inbox(string? id)
 	{
 		using var reader = new StreamReader(Request.Body, Encoding.UTF8, true, 1024, true);
 		var       body   = await reader.ReadToEndAsync();
 		Request.Body.Position = 0;
+
 		await queues.InboxQueue.EnqueueAsync(new InboxJobData
 		{
 			Body                = body,
 			InboxUserId         = id,
 			AuthenticatedUserId = HttpContext.GetActor()?.Id
 		});
+
 		return Accepted();
 	}
 
 	[HttpGet("/emoji/{name}")]
 	[AuthorizedFetch]
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ASEmoji))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetEmoji(string name)
+	[OverrideResultType<ASEmoji>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ActionResult<JObject>> GetEmoji(string name)
 	{
 		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Name == name && p.Host == null);
-		if (emoji == null) return NotFound();
+		if (emoji == null) throw GracefulException.NotFound("Emoji not found");
 
 		var rendered = new ASEmoji
 		{
@@ -181,7 +196,6 @@ public class ActivityPubController(
 			Image = new ASImage { Url = new ASLink(emoji.PublicUrl) }
 		};
 
-		var compacted = LdHelpers.Compact(rendered);
-		return Ok(compacted);
+		return LdHelpers.Compact(rendered);
 	}
 }

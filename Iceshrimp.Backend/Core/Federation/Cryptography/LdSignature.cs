@@ -77,13 +77,13 @@ public static class LdSignature
 
 		activity.Add($"{Constants.W3IdSecurityNs}#signature", JToken.FromObject(options));
 
-		return LdHelpers.Expand(activity)?[0] as JObject ??
+		return LdHelpers.Expand(activity)[0] as JObject ??
 		       throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Failed to expand signed activity");
 	}
 
 	private static Task<byte[]?> GetSignatureDataAsync(JToken data, SignatureOptions options)
 	{
-		return GetSignatureDataAsync(data, LdHelpers.Expand(JObject.FromObject(options))!);
+		return GetSignatureDataAsync(data, LdHelpers.Expand(JObject.FromObject(options)));
 	}
 
 	private static async Task<byte[]?> GetSignatureDataAsync(JToken data, JToken options)

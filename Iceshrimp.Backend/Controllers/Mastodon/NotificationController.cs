@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
@@ -26,41 +27,39 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 	[HttpGet]
 	[Authorize("read:notifications")]
 	[LinkPagination(40, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<NotificationEntity>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetNotifications(
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<List<NotificationEntity>> GetNotifications(
 		MastodonPaginationQuery query, NotificationSchemas.GetNotificationsRequest request
 	)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var res = await db.Notifications
-		                  .IncludeCommonProperties()
-		                  .Where(p => p.Notifiee == user)
-		                  .Where(p => p.Notifier != null)
-		                  .Where(p => p.Type == NotificationType.Follow ||
-		                              p.Type == NotificationType.Mention ||
-		                              p.Type == NotificationType.Reply ||
-		                              p.Type == NotificationType.Renote ||
-		                              p.Type == NotificationType.Quote ||
-		                              p.Type == NotificationType.Like ||
-		                              p.Type == NotificationType.PollEnded ||
-		                              p.Type == NotificationType.FollowRequestReceived ||
-		                              p.Type == NotificationType.Edit)
-		                  .FilterByGetNotificationsRequest(request)
-		                  .EnsureNoteVisibilityFor(p => p.Note, user)
-		                  .FilterHiddenNotifications(user, db)
-		                  .Paginate(p => p.MastoId, query, ControllerContext)
-		                  .PrecomputeNoteVisibilities(user)
-		                  .RenderAllForMastodonAsync(notificationRenderer, user);
-
-		return Ok(res);
+		return await db.Notifications
+		               .IncludeCommonProperties()
+		               .Where(p => p.Notifiee == user)
+		               .Where(p => p.Notifier != null)
+		               .Where(p => p.Type == NotificationType.Follow ||
+		                           p.Type == NotificationType.Mention ||
+		                           p.Type == NotificationType.Reply ||
+		                           p.Type == NotificationType.Renote ||
+		                           p.Type == NotificationType.Quote ||
+		                           p.Type == NotificationType.Like ||
+		                           p.Type == NotificationType.PollEnded ||
+		                           p.Type == NotificationType.FollowRequestReceived ||
+		                           p.Type == NotificationType.Edit)
+		               .FilterByGetNotificationsRequest(request)
+		               .EnsureNoteVisibilityFor(p => p.Note, user)
+		               .FilterHiddenNotifications(user, db)
+		               .Paginate(p => p.MastoId, query, ControllerContext)
+		               .PrecomputeNoteVisibilities(user)
+		               .RenderAllForMastodonAsync(notificationRenderer, user);
 	}
 
 	[HttpGet("{id:long}")]
 	[Authorize("read:notifications")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<NotificationEntity>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetNotification(long id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<NotificationEntity> GetNotification(long id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var notification = await db.Notifications
@@ -72,7 +71,6 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                   throw GracefulException.RecordNotFound();
 
 		var res = await notificationRenderer.RenderAsync(notification.EnforceRenoteReplyVisibility(p => p.Note), user);
-
-		return Ok(res);
+		return res;
 	}
 }

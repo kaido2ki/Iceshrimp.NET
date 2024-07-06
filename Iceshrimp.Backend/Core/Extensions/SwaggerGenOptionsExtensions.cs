@@ -2,8 +2,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -18,8 +22,11 @@ public static class SwaggerGenOptionsExtensions
 		options.SupportNonNullableReferenceTypes(); // Sets Nullable flags appropriately.              
 		options.UseAllOfToExtendReferenceSchemas(); // Allows $ref enums to be nullable
 		options.UseAllOfForInheritance();           // Allows $ref objects to be nullable
-		options.OperationFilter<AuthorizeCheckOperationFilter>();
+		options.OperationFilter<AuthorizeCheckOperationDocumentFilter>();
 		options.OperationFilter<HybridRequestOperationFilter>();
+		options.OperationFilter<PossibleErrorsOperationFilter>();
+		options.OperationFilter<PossibleResultsOperationFilter>();
+		options.DocumentFilter<AuthorizeCheckOperationDocumentFilter>();
 		options.DocInclusionPredicate(DocInclusionPredicate);
 	}
 
@@ -63,8 +70,91 @@ public static class SwaggerGenOptionsExtensions
 
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
 	                 Justification = "SwaggerGenOptions.OperationFilter<T> instantiates this class at runtime")]
-	private class AuthorizeCheckOperationFilter : IOperationFilter
+	private class AuthorizeCheckOperationDocumentFilter : IOperationFilter, IDocumentFilter
 	{
+		private const string Web401 =
+			"""
+			{
+			  "statusCode": 401,
+			  "error": "Unauthorized",
+			  "message": "This method requires an authenticated user"
+			}
+			""";
+
+		private const string Web403 =
+			"""
+			{
+			  "statusCode": 403,
+			  "error": "Forbidden",
+			  "message": "This action is outside the authorized scopes"
+			}
+			""";
+
+		private const string Masto401 =
+			"""
+			{
+			  "error": "This method requires an authenticated user"
+			}
+			""";
+
+		private const string Masto403 =
+			"""
+			{
+			  "message": "This action is outside the authorized scopes"
+			}
+			""";
+
+		private static readonly OpenApiString MastoExample401 = new(Masto401);
+		private static readonly OpenApiString MastoExample403 = new(Masto403);
+		private static readonly OpenApiString WebExample401   = new(Web401);
+		private static readonly OpenApiString WebExample403   = new(Web403);
+
+		private static readonly OpenApiReference Ref401 =
+			new() { Type = ReferenceType.Response, Id = "error-401" };
+
+		private static readonly OpenApiReference Ref403 =
+			new() { Type = ReferenceType.Response, Id = "error-403" };
+
+		private static readonly OpenApiResponse MastoRes401 = new()
+		{
+			Reference   = Ref401,
+			Description = "Unauthorized",
+			Content = new Dictionary<string, OpenApiMediaType>
+			{
+				{ "application/json", new OpenApiMediaType { Example = MastoExample401 } }
+			}
+		};
+
+		private static readonly OpenApiResponse MastoRes403 = new()
+		{
+			Reference   = Ref403,
+			Description = "Forbidden",
+			Content = new Dictionary<string, OpenApiMediaType>
+			{
+				{ "application/json", new OpenApiMediaType { Example = MastoExample403 } }
+			}
+		};
+
+		private static readonly OpenApiResponse WebRes401 = new()
+		{
+			Reference   = Ref401,
+			Description = "Unauthorized",
+			Content = new Dictionary<string, OpenApiMediaType>
+			{
+				{ "application/json", new OpenApiMediaType { Example = WebExample401 } }
+			}
+		};
+
+		private static readonly OpenApiResponse WebRes403 = new()
+		{
+			Reference   = Ref403,
+			Description = "Forbidden",
+			Content = new Dictionary<string, OpenApiMediaType>
+			{
+				{ "application/json", new OpenApiMediaType { Example = WebExample403 } }
+			}
+		};
+
 		public void Apply(OpenApiOperation operation, OperationFilterContext context)
 		{
 			if (context.MethodInfo.DeclaringType is null)
@@ -102,69 +192,125 @@ public static class SwaggerGenOptionsExtensions
 
 			if (authorizeAttribute == null) return;
 
-			const string web401 =
-				"""
-				{
-				  "statusCode": 401,
-				  "error": "Unauthorized",
-				  "message": "This method requires an authenticated user"
-				}
-				""";
-
-			const string web403 =
-				"""
-				{
-				  "statusCode": 403,
-				  "error": "Forbidden",
-				  "message": "This action is outside the authorized scopes"
-				}
-				""";
-
-			const string masto401 =
-				"""
-				{
-				  "error": "This method requires an authenticated user"
-				}
-				""";
-
-			const string masto403 =
-				"""
-				{
-				  "message": "This action is outside the authorized scopes"
-				}
-				""";
-
-			var example401 = new OpenApiString(isMastodonController ? masto401 : web401);
-
-			var res401 = new OpenApiResponse
-			{
-				Description = "Unauthorized",
-				Content = new Dictionary<string, OpenApiMediaType>
-				{
-					{ "application/json", new OpenApiMediaType { Example = example401 } }
-				}
-			};
-
 			operation.Responses.Remove("401");
-			operation.Responses.Add("401", res401);
+			operation.Responses.Add("401", new OpenApiResponse { Reference = Ref401 });
 
 			if (authorizeAttribute is { AdminRole: false, ModeratorRole: false, Scopes.Length: 0 } &&
 			    authenticateAttribute is { AdminRole: false, ModeratorRole: false, Scopes.Length: 0 })
 				return;
 
 			operation.Responses.Remove("403");
+			operation.Responses.Add("403", new OpenApiResponse { Reference = Ref403 });
+		}
 
-			var example403 = new OpenApiString(isMastodonController ? masto403 : web403);
-
-			var res403 = new OpenApiResponse
+		public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
+		{
+			if (swaggerDoc.Info.Title == "Mastodon")
 			{
-				Description = "Forbidden",
-				Content = new Dictionary<string, OpenApiMediaType>
+				swaggerDoc.Components.Responses.Add(Ref401.Id, MastoRes401);
+				swaggerDoc.Components.Responses.Add(Ref403.Id, MastoRes403);
+			}
+			else
+			{
+				swaggerDoc.Components.Responses.Add(Ref401.Id, WebRes401);
+				swaggerDoc.Components.Responses.Add(Ref403.Id, WebRes403);
+			}
+		}
+	}
+
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
+	                 Justification = "SwaggerGenOptions.OperationFilter<T> instantiates this class at runtime")]
+	private class PossibleErrorsOperationFilter : IOperationFilter
+	{
+		public void Apply(OpenApiOperation operation, OperationFilterContext context)
+		{
+			if (context.MethodInfo.DeclaringType is null)
+				return;
+
+			var attribute = context.MethodInfo.GetCustomAttributes(true)
+			                       .OfType<ProducesErrorsAttribute>()
+			                       .FirstOrDefault() ??
+			                context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+			                       .OfType<ProducesErrorsAttribute>()
+			                       .FirstOrDefault();
+
+			if (attribute == null) return;
+
+			var isMastodonController = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+			                                  .OfType<MastodonApiControllerAttribute>()
+			                                  .Any();
+
+			var type   = isMastodonController ? typeof(MastodonErrorResponse) : typeof(ErrorResponse);
+			var schema = context.SchemaGenerator.GenerateSchema(type, context.SchemaRepository);
+
+			foreach (var status in attribute.StatusCodes.Distinct())
+			{
+				var res = new OpenApiResponse
 				{
-					{ "application/json", new OpenApiMediaType { Example = example403 } }
-				}
-			};
-			operation.Responses.Add("403", res403);
+					Description = ReasonPhrases.GetReasonPhrase((int)status),
+					Content = new Dictionary<string, OpenApiMediaType>
+					{
+						{ "application/json", new OpenApiMediaType { Schema = schema } }
+					}
+				};
+
+				operation.Responses.Remove(((int)status).ToString());
+				operation.Responses.Add(((int)status).ToString(), res);
+			}
+		}
+	}
+
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
+	                 Justification = "SwaggerGenOptions.OperationFilter<T> instantiates this class at runtime")]
+	private class PossibleResultsOperationFilter : IOperationFilter
+	{
+		public void Apply(OpenApiOperation operation, OperationFilterContext context)
+		{
+			if (context.MethodInfo.DeclaringType is null)
+				return;
+
+			var attribute = context.MethodInfo.GetCustomAttributes(true)
+			                       .OfType<ProducesResultsAttribute>()
+			                       .FirstOrDefault() ??
+			                context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+			                       .OfType<ProducesResultsAttribute>()
+			                       .FirstOrDefault();
+
+			if (attribute == null) return;
+
+			var overrideType = context.MethodInfo.GetCustomAttributes(true)
+			                          .OfType<OverrideResultTypeAttribute>()
+			                          .FirstOrDefault() ??
+			                   context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+			                          .OfType<OverrideResultTypeAttribute>()
+			                          .FirstOrDefault();
+
+			var type = overrideType?.Type ??
+			           context.ApiDescription.SupportedResponseTypes.FirstOrDefault(p => p.Type != typeof(void))?.Type;
+
+			var schema = type != null
+				? context.SchemaGenerator.GenerateSchema(type, context.SchemaRepository)
+				: null;
+
+			var openApiMediaType = new OpenApiMediaType { Schema = schema };
+			foreach (var status in attribute.StatusCodes.Distinct())
+			{
+				var content = schema != null
+					? context.ApiDescription.SupportedResponseTypes
+					         .Where(p => p.StatusCode == (int)status)
+					         .SelectMany(p => p.ApiResponseFormats.Select(i => i.MediaType))
+					         .Distinct()
+					         .ToDictionary(contentType => contentType, _ => openApiMediaType)
+					: null;
+
+				var res = new OpenApiResponse
+				{
+					Description = ReasonPhrases.GetReasonPhrase((int)status), Content = content
+				};
+
+				operation.Responses.Remove(((int)status).ToString());
+				operation.Responses.Add(((int)status).ToString(), res);
+			}
 		}
 	}
 

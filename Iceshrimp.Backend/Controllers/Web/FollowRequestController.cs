@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Schemas;
@@ -27,8 +28,8 @@ public class FollowRequestController(
 {
 	[HttpGet]
 	[LinkPagination(20, 40)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FollowRequestResponse>))]
-	public async Task<IActionResult> GetFollowRequests(PaginationQuery pq)
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<FollowRequestResponse>> GetFollowRequests(PaginationQuery pq)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var requests = await db.FollowRequests
@@ -39,17 +40,16 @@ public class FollowRequestController(
 		                       .ToListAsync();
 
 		var users = await userRenderer.RenderMany(requests.Select(p => p.Follower));
-		var res = requests.Select(p => new FollowRequestResponse
+		return requests.Select(p => new FollowRequestResponse
 		{
 			Id = p.Id, User = users.First(u => u.Id == p.Follower.Id)
 		});
-		return Ok(res.ToList());
 	}
 
 	[HttpPost("{id}/accept")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> AcceptFollowRequest(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task AcceptFollowRequest(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var request = await db.FollowRequests
@@ -58,13 +58,12 @@ public class FollowRequestController(
 		              throw GracefulException.NotFound("Follow request not found");
 
 		await userSvc.AcceptFollowRequestAsync(request);
-		return Ok();
 	}
 
 	[HttpPost("{id}/reject")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> RejectFollowRequest(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task RejectFollowRequest(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var request = await db.FollowRequests
@@ -73,6 +72,5 @@ public class FollowRequestController(
 		              throw GracefulException.NotFound("Follow request not found");
 
 		await userSvc.RejectFollowRequestAsync(request);
-		return Ok();
 	}
 }

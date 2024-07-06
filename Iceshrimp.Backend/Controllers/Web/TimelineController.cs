@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Schemas;
@@ -24,9 +25,8 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 	[HttpGet("home")]
 	[Authenticate]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NoteResponse>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetHomeTimeline(PaginationQuery pq)
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<NoteResponse>> GetHomeTimeline(PaginationQuery pq)
 	{
 		var user      = HttpContext.GetUserOrFail();
 		var heuristic = await QueryableTimelineExtensions.GetHeuristic(user, db, cache);
@@ -38,6 +38,6 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
 
-		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user, Filter.FilterContext.Home));
+		return await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user, Filter.FilterContext.Home);
 	}
 }

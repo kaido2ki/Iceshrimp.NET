@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Mime;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Middleware;
-using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +11,10 @@ namespace Iceshrimp.Backend.Controllers.Web;
 public class FallbackController : ControllerBase
 {
 	[EnableCors("fallback")]
-	[ProducesResponseType(StatusCodes.Status501NotImplemented, Type = typeof(ErrorResponse))]
+	[ProducesErrors(HttpStatusCode.NotImplemented)]
 	public IActionResult FallbackAction()
 	{
-		throw new GracefulException(HttpStatusCode.NotImplemented,
-		                            "This API method has not been implemented", Request.Path);
+		throw new GracefulException(HttpStatusCode.NotImplemented, "This API method has not been implemented",
+		                            Request.Path);
 	}
 }

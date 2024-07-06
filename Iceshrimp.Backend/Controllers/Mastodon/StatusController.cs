@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Mime;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
@@ -47,9 +48,9 @@ public class StatusController(
 
 	[HttpGet("{id}")]
 	[Authenticate("read:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> GetNote(string id)
 	{
 		var user = HttpContext.GetUser();
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
@@ -68,15 +69,14 @@ public class StatusController(
 		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.User.IsRemoteUser && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		var res = await noteRenderer.RenderAsync(note.EnforceRenoteReplyVisibility(), user);
-		return Ok(res);
+		return await noteRenderer.RenderAsync(note.EnforceRenoteReplyVisibility(), user);
 	}
 
 	[HttpGet("{id}/context")]
 	[Authenticate("read:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusContext))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetStatusContext(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
+	public async Task<StatusContext> GetStatusContext(string id)
 	{
 		var user = HttpContext.GetUser();
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
@@ -102,7 +102,7 @@ public class StatusController(
 		                                .AnyAsync();
 
 		if (!shouldShowContext)
-			return Ok(new StatusContext { Ancestors = [], Descendants = [] });
+			return new StatusContext { Ancestors = [], Descendants = [] };
 
 		var ancestors = await db.NoteAncestors(id, maxAncestors)
 		                        .IncludeCommonProperties()
@@ -119,19 +119,17 @@ public class StatusController(
 		                          .PrecomputeVisibilities(user)
 		                          .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Threads);
 
-		var res = new StatusContext
+		return new StatusContext
 		{
 			Ancestors = ancestors.OrderAncestors(), Descendants = descendants.OrderDescendants()
 		};
-
-		return Ok(res);
 	}
 
 	[HttpPost("{id}/favourite")]
 	[Authorize("write:favourites")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> LikeNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> LikeNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.Where(p => p.Id == id)
@@ -150,9 +148,9 @@ public class StatusController(
 
 	[HttpPost("{id}/unfavourite")]
 	[Authorize("write:favourites")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> UnlikeNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> UnlikeNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.Where(p => p.Id == id)
@@ -171,9 +169,9 @@ public class StatusController(
 
 	[HttpPost("{id}/react/{reaction}")]
 	[Authorize("write:favourites")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> ReactNote(string id, string reaction)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> ReactNote(string id, string reaction)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.Where(p => p.Id == id)
@@ -192,9 +190,9 @@ public class StatusController(
 
 	[HttpPost("{id}/unreact/{reaction}")]
 	[Authorize("write:favourites")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> UnreactNote(string id, string reaction)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> UnreactNote(string id, string reaction)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.Where(p => p.Id == id)
@@ -213,9 +211,9 @@ public class StatusController(
 
 	[HttpPost("{id}/bookmark")]
 	[Authorize("write:bookmarks")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> BookmarkNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> BookmarkNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.Where(p => p.Id == id)
@@ -231,9 +229,9 @@ public class StatusController(
 
 	[HttpPost("{id}/unbookmark")]
 	[Authorize("write:bookmarks")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> UnbookmarkNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> UnbookmarkNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.Where(p => p.Id == id)
@@ -249,10 +247,9 @@ public class StatusController(
 
 	[HttpPost("{id}/pin")]
 	[Authorize("write:accounts")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> PinNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.UnprocessableEntity)]
+	public async Task<StatusEntity> PinNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.Where(p => p.Id == id)
@@ -267,10 +264,9 @@ public class StatusController(
 
 	[HttpPost("{id}/unpin")]
 	[Authorize("write:accounts")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> UnpinNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> UnpinNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.Where(p => p.Id == id).FirstOrDefaultAsync() ??
@@ -282,9 +278,9 @@ public class StatusController(
 
 	[HttpPost("{id}/reblog")]
 	[Authorize("write:favourites")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> Renote(string id, [FromHybrid] StatusSchemas.ReblogRequest? request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> Renote(string id, [FromHybrid] StatusSchemas.ReblogRequest? request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var renote = await db.Notes.IncludeCommonProperties()
@@ -312,9 +308,9 @@ public class StatusController(
 
 	[HttpPost("{id}/unreblog")]
 	[Authorize("write:favourites")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> UndoRenote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> UndoRenote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.Where(p => p.Id == id)
@@ -330,9 +326,9 @@ public class StatusController(
 
 	[HttpPost]
 	[Authorize("write:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> PostNote([FromHybrid] StatusSchemas.PostStatusRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity)]
+	public async Task<StatusEntity> PostNote([FromHybrid] StatusSchemas.PostStatusRequest request)
 	{
 		var token = HttpContext.GetOauthToken() ?? throw new Exception("Token must not be null at this stage");
 		var user  = token.User;
@@ -454,17 +450,14 @@ public class StatusController(
 		if (idempotencyKey != null)
 			await cache.SetAsync($"idempotency:{user.Id}:{idempotencyKey}", note.Id, TimeSpan.FromHours(24));
 
-		var res = await noteRenderer.RenderAsync(note, user);
-
-		return Ok(res);
+		return await noteRenderer.RenderAsync(note, user);
 	}
 
 	[HttpPut("{id}")]
 	[Authorize("write:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> EditNote(string id, [FromHybrid] StatusSchemas.EditStatusRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> EditNote(string id, [FromHybrid] StatusSchemas.EditStatusRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes
@@ -502,16 +495,14 @@ public class StatusController(
 		}
 
 		note = await noteSvc.UpdateNoteAsync(note, request.Text, request.Cw, attachments, poll);
-		var res = await noteRenderer.RenderAsync(note, user);
-
-		return Ok(res);
+		return await noteRenderer.RenderAsync(note, user);
 	}
 
 	[HttpDelete("{id}")]
 	[Authorize("write:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> DeleteNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> DeleteNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
@@ -519,36 +510,33 @@ public class StatusController(
 
 		var res = await noteRenderer.RenderAsync(note, user, data: new NoteRenderer.NoteRendererDto { Source = true });
 		await noteSvc.DeleteNoteAsync(note);
-
-		return Ok(res);
+		return res;
 	}
 
 	[HttpGet("{id}/source")]
 	[Authorize("read:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(StatusSource))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetNoteSource(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusSource> GetNoteSource(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var res = await db.Notes.Where(p => p.Id == id && p.User == user)
-		                  .Select(p => new StatusSource
-		                  {
-			                  Id             = p.Id,
-			                  ContentWarning = p.Cw ?? "",
-			                  Text           = p.Text ?? ""
-		                  })
-		                  .FirstOrDefaultAsync() ??
-		          throw GracefulException.RecordNotFound();
-
-		return Ok(res);
+		return await db.Notes.Where(p => p.Id == id && p.User == user)
+		               .Select(p => new StatusSource
+		               {
+			               Id             = p.Id,
+			               ContentWarning = p.Cw ?? "",
+			               Text           = p.Text ?? ""
+		               })
+		               .FirstOrDefaultAsync() ??
+		       throw GracefulException.RecordNotFound();
 	}
 
 	[HttpGet("{id}/favourited_by")]
 	[Authenticate("read:statuses")]
 	[LinkPagination(40, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetNoteLikes(string id, MastodonPaginationQuery pq)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<AccountEntity>> GetNoteLikes(string id, MastodonPaginationQuery pq)
 	{
 		var user = HttpContext.GetUser();
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
@@ -570,16 +558,15 @@ public class StatusController(
 		                    .ToListAsync();
 
 		HttpContext.SetPaginationData(likes);
-		var res = await userRenderer.RenderManyAsync(likes.Select(p => p.Entity));
-		return Ok(res);
+		return await userRenderer.RenderManyAsync(likes.Select(p => p.Entity));
 	}
 
 	[HttpGet("{id}/reblogged_by")]
 	[Authenticate("read:statuses")]
 	[LinkPagination(40, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetNoteRenotes(string id, MastodonPaginationQuery pq)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<AccountEntity>> GetNoteRenotes(string id, MastodonPaginationQuery pq)
 	{
 		var user = HttpContext.GetUser();
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
@@ -604,15 +591,14 @@ public class StatusController(
 		                      .ToListAsync();
 
 		HttpContext.SetPaginationData(renotes);
-		var res = await userRenderer.RenderManyAsync(renotes.Select(p => p.Entity));
-		return Ok(res);
+		return await userRenderer.RenderManyAsync(renotes.Select(p => p.Entity));
 	}
 
 	[HttpGet("{id}/history")]
 	[Authenticate("read:statuses")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetNoteEditHistory(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
+	public async Task<List<StatusEdit>> GetNoteEditHistory(string id)
 	{
 		var user = HttpContext.GetUser();
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
@@ -629,7 +615,6 @@ public class StatusController(
 		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.User.IsRemoteUser && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		var res = await noteRenderer.RenderHistoryAsync(note);
-		return Ok(res);
+		return await noteRenderer.RenderHistoryAsync(note);
 	}
 }

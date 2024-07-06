@@ -1,4 +1,6 @@
+using System.Net;
 using System.Net.Mime;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
@@ -17,26 +19,23 @@ namespace Iceshrimp.Backend.Controllers.Web;
 public class SettingsController(DatabaseContext db) : ControllerBase
 {
 	[HttpGet]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UserSettingsEntity))]
-	public async Task<IActionResult> GetSettings()
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<UserSettingsEntity> GetSettings()
 	{
 		var settings = await GetOrInitUserSettings();
-
-		var res = new UserSettingsEntity
+		return new UserSettingsEntity
 		{
 			FilterInaccessible      = settings.FilterInaccessible,
 			PrivateMode             = settings.PrivateMode,
 			DefaultNoteVisibility   = (NoteVisibility)settings.DefaultNoteVisibility,
 			DefaultRenoteVisibility = (NoteVisibility)settings.DefaultNoteVisibility
 		};
-
-		return Ok(res);
 	}
 
 	[HttpPut]
 	[Consumes(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-	public async Task<IActionResult> UpdateSettings(UserSettingsEntity newSettings)
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task UpdateSettings(UserSettingsEntity newSettings)
 	{
 		var settings = await GetOrInitUserSettings();
 
@@ -46,21 +45,18 @@ public class SettingsController(DatabaseContext db) : ControllerBase
 		settings.DefaultRenoteVisibility = (Note.NoteVisibility)newSettings.DefaultRenoteVisibility;
 
 		await db.SaveChangesAsync();
-		return Ok(new object());
 	}
 
 	private async Task<UserSettings> GetOrInitUserSettings()
 	{
 		var user     = HttpContext.GetUserOrFail();
 		var settings = user.UserSettings;
-		if (settings == null)
-		{
-			settings = new UserSettings { User = user };
-			db.Add(settings);
-			await db.SaveChangesAsync();
-			await db.ReloadEntityAsync(settings);
-		}
+		if (settings != null) return settings;
 
+		settings = new UserSettings { User = user };
+		db.Add(settings);
+		await db.SaveChangesAsync();
+		await db.ReloadEntityAsync(settings);
 		return settings;
 	}
 }

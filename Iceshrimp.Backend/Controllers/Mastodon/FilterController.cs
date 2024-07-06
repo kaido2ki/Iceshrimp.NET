@@ -1,8 +1,10 @@
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -26,33 +28,32 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 {
 	[HttpGet]
 	[Authorize("read:filters")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FilterEntity>))]
-	public async Task<IActionResult> GetFilters()
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<FilterEntity>> GetFilters()
 	{
 		var user    = HttpContext.GetUserOrFail();
 		var filters = await db.Filters.Where(p => p.User == user).ToListAsync();
-		var res     = filters.Select(FilterRenderer.RenderOne);
-
-		return Ok(res);
+		return filters.Select(FilterRenderer.RenderOne);
 	}
 
 	[HttpGet("{id:long}")]
 	[Authorize("read:filters")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FilterEntity>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetFilter(long id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<FilterEntity> GetFilter(long id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var filter = await db.Filters.Where(p => p.User == user && p.Id == id).FirstOrDefaultAsync() ??
 		             throw GracefulException.RecordNotFound();
 
-		return Ok(FilterRenderer.RenderOne(filter));
+		return FilterRenderer.RenderOne(filter);
 	}
 
 	[HttpPost]
 	[Authorize("write:filters")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FilterEntity>))]
-	public async Task<IActionResult> CreateFilter([FromHybrid] FilterSchemas.CreateFilterRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<FilterEntity> CreateFilter([FromHybrid] FilterSchemas.CreateFilterRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var action = request.Action switch
@@ -102,14 +103,14 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 			await queueSvc.BackgroundTaskQueue.ScheduleAsync(data, expiry.Value);
 		}
 
-		return Ok(FilterRenderer.RenderOne(filter));
+		return FilterRenderer.RenderOne(filter);
 	}
 
 	[HttpPut("{id:long}")]
 	[Authorize("write:filters")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FilterEntity>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> UpdateFilter(long id, [FromHybrid] FilterSchemas.UpdateFilterRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<FilterEntity> UpdateFilter(long id, [FromHybrid] FilterSchemas.UpdateFilterRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var filter = await db.Filters.FirstOrDefaultAsync(p => p.User == user && p.Id == id) ??
@@ -166,14 +167,15 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 			await queueSvc.BackgroundTaskQueue.ScheduleAsync(data, expiry.Value);
 		}
 
-		return Ok(FilterRenderer.RenderOne(filter));
+		return FilterRenderer.RenderOne(filter);
 	}
 
 	[HttpDelete("{id:long}")]
 	[Authorize("write:filters")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> DeleteFilter(long id)
+	[OverrideResultType<object>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<object> DeleteFilter(long id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var filter = await db.Filters.Where(p => p.User == user && p.Id == id).FirstOrDefaultAsync() ??
@@ -183,27 +185,27 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 		await db.SaveChangesAsync();
 		eventSvc.RaiseFilterRemoved(this, filter);
 
-		return Ok(new object());
+		return new object();
 	}
 
 	[HttpGet("{id:long}/keywords")]
 	[Authorize("read:filters")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FilterKeyword>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetFilterKeywords(long id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<FilterKeyword>> GetFilterKeywords(long id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var filter = await db.Filters.Where(p => p.User == user && p.Id == id).FirstOrDefaultAsync() ??
 		             throw GracefulException.RecordNotFound();
 
-		return Ok(filter.Keywords.Select((p, i) => new FilterKeyword(p, filter.Id, i)));
+		return filter.Keywords.Select((p, i) => new FilterKeyword(p, filter.Id, i));
 	}
 
 	[HttpPost("{id:long}/keywords")]
 	[Authorize("write:filters")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FilterKeyword))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> AddFilterKeyword(
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<FilterKeyword> AddFilterKeyword(
 		long id, [FromHybrid] FilterSchemas.FilterKeywordsAttributes request
 	)
 	{
@@ -218,14 +220,14 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 		await db.SaveChangesAsync();
 		eventSvc.RaiseFilterUpdated(this, filter);
 
-		return Ok(new FilterKeyword(keyword, filter.Id, filter.Keywords.Count - 1));
+		return new FilterKeyword(keyword, filter.Id, filter.Keywords.Count - 1);
 	}
 
 	[HttpGet("keywords/{filterId:long}-{keywordId:int}")]
 	[Authorize("read:filters")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FilterKeyword))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetFilterKeyword(long filterId, int keywordId)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<FilterKeyword> GetFilterKeyword(long filterId, int keywordId)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var filter = await db.Filters.Where(p => p.User == user && p.Id == filterId).FirstOrDefaultAsync() ??
@@ -234,14 +236,14 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 		if (filter.Keywords.Count < keywordId)
 			throw GracefulException.RecordNotFound();
 
-		return Ok(new FilterKeyword(filter.Keywords[keywordId], filter.Id, keywordId));
+		return new FilterKeyword(filter.Keywords[keywordId], filter.Id, keywordId);
 	}
 
 	[HttpPut("keywords/{filterId:long}-{keywordId:int}")]
 	[Authorize("write:filters")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FilterKeyword))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> UpdateFilterKeyword(
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<FilterKeyword> UpdateFilterKeyword(
 		long filterId, int keywordId, [FromHybrid] FilterSchemas.FilterKeywordsAttributes request
 	)
 	{
@@ -257,14 +259,15 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 		await db.SaveChangesAsync();
 		eventSvc.RaiseFilterUpdated(this, filter);
 
-		return Ok(new FilterKeyword(filter.Keywords[keywordId], filter.Id, keywordId));
+		return new FilterKeyword(filter.Keywords[keywordId], filter.Id, keywordId);
 	}
 
 	[HttpDelete("keywords/{filterId:long}-{keywordId:int}")]
 	[Authorize("write:filters")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> DeleteFilterKeyword(long filterId, int keywordId)
+	[OverrideResultType<object>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<object> DeleteFilterKeyword(long filterId, int keywordId)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var filter = await db.Filters.Where(p => p.User == user && p.Id == filterId).FirstOrDefaultAsync() ??
@@ -278,7 +281,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 		await db.SaveChangesAsync();
 		eventSvc.RaiseFilterUpdated(this, filter);
 
-		return Ok(new object());
+		return new object();
 	}
 
 	//TODO: status filters (first: what are they even for?)

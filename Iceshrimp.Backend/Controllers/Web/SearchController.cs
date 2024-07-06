@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Schemas;
@@ -30,13 +31,14 @@ public class SearchController(
 	UserRenderer userRenderer,
 	ActivityPub.UserResolver userResolver,
 	IOptions<Config.InstanceSection> config
-)
-	: ControllerBase
+) : ControllerBase
 {
 	[HttpGet("notes")]
 	[LinkPagination(20, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<NoteResponse>))]
-	public async Task<IActionResult> SearchNotes([FromQuery(Name = "q")] string query, PaginationQuery pagination)
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<NoteResponse>> SearchNotes(
+		[FromQuery(Name = "q")] string query, PaginationQuery pagination
+	)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var notes = await db.Notes
@@ -48,15 +50,17 @@ public class SearchController(
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
 
-		return Ok(await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user));
+		return await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user);
 	}
 
 	[HttpGet("users")]
 	[LinkPagination(20, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<UserResponse>))]
+	[ProducesResults(HttpStatusCode.OK)]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
 	                 Justification = "Inspection doesn't know about the Projectable attribute")]
-	public async Task<IActionResult> SearchUsers([FromQuery(Name = "q")] string query, PaginationQuery pagination)
+	public async Task<IEnumerable<UserResponse>> SearchUsers(
+		[FromQuery(Name = "q")] string query, PaginationQuery pagination
+	)
 	{
 		var users = await db.Users
 		                    .IncludeCommonProperties()
@@ -66,14 +70,13 @@ public class SearchController(
 		                    .OrderByDescending(p => p.NotesCount)
 		                    .ToListAsync();
 
-		return Ok(await userRenderer.RenderMany(users));
+		return await userRenderer.RenderMany(users);
 	}
 
 	[HttpGet("lookup")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RedirectResponse))]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> Lookup([FromQuery(Name = "target")] string target)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task<RedirectResponse> Lookup([FromQuery(Name = "target")] string target)
 	{
 		target = target.Trim();
 
@@ -85,7 +88,7 @@ public class SearchController(
 		if (target.StartsWith('@') || target.StartsWith(userPrefixAlt))
 		{
 			var hit = await userResolver.ResolveAsyncOrNull(target);
-			if (hit != null) return Ok(new RedirectResponse { TargetUrl = $"/users/{hit.Id}" });
+			if (hit != null) return new RedirectResponse { TargetUrl = $"/users/{hit.Id}" };
 			throw GracefulException.NotFound("No result found");
 		}
 
@@ -112,18 +115,18 @@ public class SearchController(
 			}
 
 			noteHit ??= await db.Notes.FirstOrDefaultAsync(p => p.Uri == target || p.Url == target);
-			if (noteHit != null) return Ok(new RedirectResponse { TargetUrl = $"/notes/{noteHit.Id}" });
+			if (noteHit != null) return new RedirectResponse { TargetUrl = $"/notes/{noteHit.Id}" };
 
 			userHit ??= await db.Users.FirstOrDefaultAsync(p => p.Uri == target ||
 			                                                    (p.UserProfile != null &&
 			                                                     p.UserProfile.Url == target));
-			if (userHit != null) return Ok(new RedirectResponse { TargetUrl = $"/users/{userHit.Id}" });
+			if (userHit != null) return new RedirectResponse { TargetUrl = $"/users/{userHit.Id}" };
 
 			noteHit = await noteSvc.ResolveNoteAsync(target);
-			if (noteHit != null) return Ok(new RedirectResponse { TargetUrl = $"/notes/{noteHit.Id}" });
+			if (noteHit != null) return new RedirectResponse { TargetUrl = $"/notes/{noteHit.Id}" };
 
 			userHit = await userResolver.ResolveAsyncOrNull(target);
-			if (userHit != null) return Ok(new RedirectResponse { TargetUrl = $"/users/{userHit.Id}" });
+			if (userHit != null) return new RedirectResponse { TargetUrl = $"/users/{userHit.Id}" };
 
 			throw GracefulException.NotFound("No result found");
 		}

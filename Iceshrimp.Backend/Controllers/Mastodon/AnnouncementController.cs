@@ -2,8 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
-using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -27,17 +27,17 @@ public class AnnouncementController(DatabaseContext db, MfmConverter mfmConverte
 {
 	[HttpGet]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AnnouncementEntity>))]
+	[ProducesResults(HttpStatusCode.OK)]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	public async Task<IActionResult> GetAnnouncements([FromQuery(Name = "with_dismissed")] bool withDismissed)
+	public async Task<IEnumerable<AnnouncementEntity>> GetAnnouncements(
+		[FromQuery(Name = "with_dismissed")] bool withDismissed
+	)
 	{
 		var user          = HttpContext.GetUserOrFail();
 		var announcements = db.Announcements.AsQueryable();
 
 		if (!withDismissed)
-		{
 			announcements = announcements.Where(p => p.IsReadBy(user));
-		}
 
 		var res = await announcements.OrderByDescending(p => p.UpdatedAt ?? p.CreatedAt)
 		                             .Select(p => new AnnouncementEntity
@@ -56,20 +56,20 @@ public class AnnouncementController(DatabaseContext db, MfmConverter mfmConverte
 		                             .ToListAsync();
 
 		await res.Select(async p => p.Content = await mfmConverter.ToHtmlAsync(p.Content, [], null)).AwaitAllAsync();
-
-		return Ok(res);
+		return res;
 	}
 
 	[HttpPost("{id}/dismiss")]
 	[Authorize("write:accounts")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
+	[OverrideResultType<object>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	public async Task<IActionResult> DismissAnnouncement(string id)
+	public async Task<object> DismissAnnouncement(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var announcement = await db.Announcements.FirstOrDefaultAsync(p => p.Id == id) ??
-		                   throw GracefulException.RecordNotFound();
+		                   throw GracefulException.NotFound("Announcement not found");
 
 		if (await db.Announcements.AnyAsync(p => p == announcement && !p.IsReadBy(user)))
 		{
@@ -84,19 +84,19 @@ public class AnnouncementController(DatabaseContext db, MfmConverter mfmConverte
 			await db.SaveChangesAsync();
 		}
 
-		return Ok(new object());
+		return new object();
 	}
 
 	[HttpPut("{id}/reactions/{name}")]
 	[Authorize("write:favourites")]
-	[ProducesResponseType(StatusCodes.Status501NotImplemented, Type = typeof(MastodonErrorResponse))]
+	[ProducesErrors(HttpStatusCode.NotImplemented)]
 	public IActionResult ReactToAnnouncement(string id, string name) =>
 		throw new GracefulException(HttpStatusCode.NotImplemented,
 		                            "Iceshrimp.NET does not support this endpoint due to database schema differences to Mastodon");
 
 	[HttpDelete("{id}/reactions/{name}")]
 	[Authorize("write:favourites")]
-	[ProducesResponseType(StatusCodes.Status501NotImplemented, Type = typeof(MastodonErrorResponse))]
+	[ProducesErrors(HttpStatusCode.NotImplemented)]
 	public IActionResult RemoveAnnouncementReaction(string id, string name) =>
 		throw new GracefulException(HttpStatusCode.NotImplemented,
 		                            "Iceshrimp.NET does not support this endpoint due to database schema differences to Mastodon");

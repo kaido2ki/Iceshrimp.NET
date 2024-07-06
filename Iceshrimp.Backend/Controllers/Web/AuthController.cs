@@ -1,5 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Mime;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -22,34 +24,31 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 {
 	[HttpGet]
 	[Authenticate]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
-	public async Task<IActionResult> GetAuthStatus()
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<AuthResponse> GetAuthStatus()
 	{
 		var session = HttpContext.GetSession();
+		if (session == null) return new AuthResponse { Status = AuthStatusEnum.Guest };
 
-		if (session == null)
-			return Ok(new AuthResponse { Status = AuthStatusEnum.Guest });
-
-		return Ok(new AuthResponse
+		return new AuthResponse
 		{
 			Status      = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
 			Token       = session.Token,
 			IsAdmin     = session.User.IsAdmin,
 			IsModerator = session.User.IsModerator,
 			User        = await userRenderer.RenderOne(session.User)
-		});
+		};
 	}
 
 	[HttpPost("login")]
 	[HideRequestDuration]
 	[EnableRateLimiting("auth")]
 	[Consumes(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.Forbidden)]
 	[SuppressMessage("ReSharper.DPA", "DPA0011: High execution time of MVC action",
 	                 Justification = "Argon2 is execution time-heavy by design")]
-	public async Task<IActionResult> Login([FromBody] AuthRequest request)
+	public async Task<AuthResponse> Login([FromBody] AuthRequest request)
 	{
 		var user = await db.Users.FirstOrDefaultAsync(p => p.IsLocalUser &&
 		                                                   p.UsernameLower == request.Username.ToLowerInvariant());
@@ -76,24 +75,22 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 			await db.SaveChangesAsync();
 		}
 
-		return Ok(new AuthResponse
+		return new AuthResponse
 		{
 			Status      = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
 			Token       = session.Token,
 			IsAdmin     = session.User.IsAdmin,
 			IsModerator = session.User.IsModerator,
 			User        = await userRenderer.RenderOne(user)
-		});
+		};
 	}
 
 	[HttpPost("register")]
 	[EnableRateLimiting("auth")]
 	[Consumes(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status403Forbidden, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> Register([FromBody] RegistrationRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden)]
+	public async Task<AuthResponse> Register([FromBody] RegistrationRequest request)
 	{
 		//TODO: captcha support
 
@@ -106,11 +103,11 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 	[Authorize]
 	[EnableRateLimiting("auth")]
 	[Consumes(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
-	[ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ErrorResponse))]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
 	[SuppressMessage("ReSharper.DPA", "DPA0011: High execution time of MVC action",
 	                 Justification = "Argon2 is execution time-heavy by design")]
-	public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+	public async Task<AuthResponse> ChangePassword([FromBody] ChangePasswordRequest request)
 	{
 		var user        = HttpContext.GetUser() ?? throw new GracefulException("HttpContext.GetUser() was null");
 		var userProfile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);

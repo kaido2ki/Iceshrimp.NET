@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 using System.Net.Mime;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
@@ -37,9 +38,9 @@ public class NoteController(
 
 	[HttpGet("{id}")]
 	[Authenticate]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<NoteResponse> GetNote(string id)
 	{
 		var user = HttpContext.GetUser();
 		var note = await db.Notes.Where(p => p.Id == id)
@@ -50,29 +51,28 @@ public class NoteController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 
-		return Ok(await noteRenderer.RenderOne(note.EnforceRenoteReplyVisibility(), user));
+		return await noteRenderer.RenderOne(note.EnforceRenoteReplyVisibility(), user);
 	}
 
 	[HttpDelete("{id}")]
 	[Authenticate]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> DeleteNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task DeleteNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
 		           throw GracefulException.NotFound("Note not found");
 
 		await noteSvc.DeleteNoteAsync(note);
-		return Ok();
 	}
 
 	[HttpGet("{id}/ascendants")]
 	[Authenticate]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NoteResponse>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetNoteAscendants(
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<NoteResponse>> GetNoteAscendants(
 		string id, [FromQuery] [DefaultValue(20)] [Range(1, 100)] int? limit
 	)
 	{
@@ -94,14 +94,14 @@ public class NoteController(
 		var res = await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user,
 		                                        Filter.FilterContext.Threads);
 
-		return Ok(res.ToList().OrderAncestors());
+		return res.ToList().OrderAncestors();
 	}
 
 	[HttpGet("{id}/descendants")]
 	[Authenticate]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<NoteResponse>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetNoteDescendants(
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<NoteResponse>> GetNoteDescendants(
 		string id, [FromQuery] [DefaultValue(20)] [Range(1, 100)] int? depth
 	)
 	{
@@ -123,16 +123,16 @@ public class NoteController(
 
 		var notes = hits.EnforceRenoteReplyVisibility();
 		var res   = await noteRenderer.RenderMany(notes, user, Filter.FilterContext.Threads);
-		return Ok(res.ToList().OrderDescendants());
+		return res.ToList().OrderDescendants();
 	}
 
 	[HttpGet("{id}/reactions/{name}")]
 	[Authenticate]
 	[Authorize]
 	[LinkPagination(20, 40)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<UserResponse>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> GetNoteReactions(string id, string name)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<UserResponse>> GetNoteReactions(string id, string name)
 	{
 		var user = HttpContext.GetUser();
 		var note = await db.Notes
@@ -147,15 +147,15 @@ public class NoteController(
 		                    .Select(p => p.User)
 		                    .ToListAsync();
 
-		return Ok(await userRenderer.RenderMany(users));
+		return await userRenderer.RenderMany(users);
 	}
 
 	[HttpPost("{id}/like")]
 	[Authenticate]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ValueResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> LikeNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ValueResponse> LikeNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes
@@ -167,15 +167,15 @@ public class NoteController(
 
 		var success = await noteSvc.LikeNoteAsync(note, user);
 
-		return Ok(new ValueResponse(success ? ++note.LikeCount : note.LikeCount));
+		return new ValueResponse(success ? ++note.LikeCount : note.LikeCount);
 	}
 
 	[HttpPost("{id}/unlike")]
 	[Authenticate]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ValueResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> UnlikeNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ValueResponse> UnlikeNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes
@@ -187,15 +187,15 @@ public class NoteController(
 
 		var success = await noteSvc.UnlikeNoteAsync(note, user);
 
-		return Ok(new ValueResponse(success ? --note.LikeCount : note.LikeCount));
+		return new ValueResponse(success ? --note.LikeCount : note.LikeCount);
 	}
 
 	[HttpPost("{id}/renote")]
 	[Authenticate]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ValueResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> RenoteNote(string id, [FromQuery] NoteVisibility? visibility = null)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ValueResponse> RenoteNote(string id, [FromQuery] NoteVisibility? visibility = null)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes
@@ -206,15 +206,15 @@ public class NoteController(
 		           throw GracefulException.NotFound("Note not found");
 
 		var success = await noteSvc.RenoteNoteAsync(note, user, (Note.NoteVisibility?)visibility);
-		return Ok(new ValueResponse(success != null ? ++note.RenoteCount : note.RenoteCount));
+		return new ValueResponse(success != null ? ++note.RenoteCount : note.RenoteCount);
 	}
 
 	[HttpPost("{id}/unrenote")]
 	[Authenticate]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ValueResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> UnrenoteNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ValueResponse> UnrenoteNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes
@@ -225,15 +225,15 @@ public class NoteController(
 		           throw GracefulException.NotFound("Note not found");
 
 		var count = await noteSvc.UnrenoteNoteAsync(note, user);
-		return Ok(new ValueResponse(note.RenoteCount - count));
+		return new ValueResponse(note.RenoteCount - count);
 	}
 
 	[HttpPost("{id}/react/{name}")]
 	[Authenticate]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ValueResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> ReactToNote(string id, string name)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ValueResponse> ReactToNote(string id, string name)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes
@@ -245,15 +245,15 @@ public class NoteController(
 
 		var res = await noteSvc.ReactToNoteAsync(note, user, name);
 		note.Reactions.TryGetValue(res.name, out var count);
-		return Ok(new ValueResponse(res.success ? ++count : count));
+		return new ValueResponse(res.success ? ++count : count);
 	}
 
 	[HttpPost("{id}/unreact/{name}")]
 	[Authenticate]
 	[Authorize]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ValueResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> RemoveReactionFromNote(string id, string name)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ValueResponse> RemoveReactionFromNote(string id, string name)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.Where(p => p.Id == id)
@@ -264,16 +264,16 @@ public class NoteController(
 
 		var res = await noteSvc.RemoveReactionFromNoteAsync(note, user, name);
 		note.Reactions.TryGetValue(res.name, out var count);
-		return Ok(new ValueResponse(res.success ? --count : count));
+		return new ValueResponse(res.success ? --count : count);
 	}
 
 	[HttpPost("{id}/refetch")]
 	[Authenticate]
 	[Authorize]
 	[EnableRateLimiting("strict")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteRefetchResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(ErrorResponse))]
-	public async Task<IActionResult> RefetchNote(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<NoteRefetchResponse> RefetchNote(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes.Where(p => p.Id == id && p.User.Host != null && p.Uri != null)
@@ -330,19 +330,19 @@ public class NoteController(
 		               .FirstOrDefaultAsync() ??
 		       throw new Exception("Note disappeared during refetch");
 
-		var res = new NoteRefetchResponse
+		return new NoteRefetchResponse
 		{
 			Note = await noteRenderer.RenderOne(note.EnforceRenoteReplyVisibility(), user), Errors = errors
 		};
-		return Ok(res);
 	}
 
 	[HttpPost]
 	[Authenticate]
 	[Authorize]
 	[Consumes(MediaTypeNames.Application.Json)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(NoteResponse))]
-	public async Task<IActionResult> CreateNote(NoteCreateRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<NoteResponse> CreateNote(NoteCreateRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -397,6 +397,6 @@ public class NoteController(
 		if (request.IdempotencyKey != null)
 			await cache.SetAsync($"idempotency:{user.Id}:{request.IdempotencyKey}", note.Id, TimeSpan.FromHours(24));
 
-		return Ok(await noteRenderer.RenderOne(note, user));
+		return await noteRenderer.RenderOne(note, user);
 	}
 }

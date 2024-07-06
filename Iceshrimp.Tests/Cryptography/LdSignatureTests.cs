@@ -18,7 +18,7 @@ public class LdSignatureTests
 	[TestInitialize]
 	public async Task Initialize()
 	{
-		_expanded = LdHelpers.Expand(_actor)!;
+		_expanded = LdHelpers.Expand(_actor);
 		_signed   = await LdSignature.SignAsync(_expanded, _keypair.ExportRSAPrivateKeyPem(), _actor.Id + "#main-key");
 
 		_expanded.Should().NotBeNull();
@@ -47,7 +47,7 @@ public class LdSignatureTests
 		data.Should().NotBeNull();
 
 		data.Add("https://example.org/ns#test", JToken.FromObject("value"));
-		var expanded = LdHelpers.Expand(data)!;
+		var expanded = LdHelpers.Expand(data);
 		expanded.Should().NotBeNull();
 
 		var verify = await LdSignature.VerifyAsync(expanded, expanded, _keypair.ExportRSAPublicKeyPem());

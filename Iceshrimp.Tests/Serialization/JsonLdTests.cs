@@ -11,7 +11,7 @@ public class JsonLdTests
 	[TestMethod]
 	public void RoundtripTest()
 	{
-		var expanded = LdHelpers.Expand(_actor)!;
+		var expanded = LdHelpers.Expand(_actor);
 		expanded.Should().NotBeNull();
 
 		var canonicalized = LdHelpers.Canonicalize(expanded);
@@ -20,11 +20,11 @@ public class JsonLdTests
 		var compacted = LdHelpers.Compact(expanded);
 		compacted.Should().NotBeNull();
 
-		var expanded2 = LdHelpers.Expand(compacted)!;
+		var expanded2 = LdHelpers.Expand(compacted);
 		expanded2.Should().NotBeNull();
 		expanded2.Should().BeEquivalentTo(expanded);
 
-		var compacted2 = LdHelpers.Compact(expanded2)!;
+		var compacted2 = LdHelpers.Compact(expanded2);
 		compacted2.Should().NotBeNull();
 		compacted2.Should().BeEquivalentTo(compacted);
 

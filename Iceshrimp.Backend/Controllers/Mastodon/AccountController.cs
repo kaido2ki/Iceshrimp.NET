@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
@@ -37,18 +38,17 @@ public class AccountController(
 {
 	[HttpGet("verify_credentials")]
 	[Authorize("read:accounts")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
-	public async Task<IActionResult> VerifyUserCredentials()
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<AccountEntity> VerifyUserCredentials()
 	{
 		var user = HttpContext.GetUserOrFail();
-		var res  = await userRenderer.RenderAsync(user, user.UserProfile, source: true);
-		return Ok(res);
+		return await userRenderer.RenderAsync(user, user.UserProfile, source: true);
 	}
 
 	[HttpPatch("update_credentials")]
 	[Authorize("write:accounts")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
-	public async Task<IActionResult> UpdateUserCredentials([FromHybrid] AccountSchemas.AccountUpdateRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<AccountEntity> UpdateUserCredentials([FromHybrid] AccountSchemas.AccountUpdateRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.UserProfile == null)
@@ -124,15 +124,13 @@ public class AccountController(
 		}
 
 		user = await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
-
-		var res = await userRenderer.RenderAsync(user, user.UserProfile, source: true);
-		return Ok(res);
+		return await userRenderer.RenderAsync(user, user.UserProfile, source: true);
 	}
 
 	[HttpDelete("/api/v1/profile/avatar")]
 	[Authorize("write:accounts")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
-	public async Task<IActionResult> DeleteUserAvatar()
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<AccountEntity> DeleteUserAvatar()
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.AvatarId != null)
@@ -153,8 +151,8 @@ public class AccountController(
 
 	[HttpDelete("/api/v1/profile/header")]
 	[Authorize("write:accounts")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
-	public async Task<IActionResult> DeleteUserBanner()
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<AccountEntity> DeleteUserBanner()
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.BannerId != null)
@@ -174,9 +172,9 @@ public class AccountController(
 	}
 
 	[HttpGet("{id}")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetUser(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<AccountEntity> GetUser(string id)
 	{
 		var localUser = HttpContext.GetUser();
 		if (config.Value.PublicPreview == Enums.PublicPreview.Lockdown && localUser == null)
@@ -188,16 +186,15 @@ public class AccountController(
 		if (config.Value.PublicPreview <= Enums.PublicPreview.Restricted && user.IsRemoteUser && localUser == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		var res = await userRenderer.RenderAsync(await userResolver.GetUpdatedUser(user));
-
-		return Ok(res);
+		return await userRenderer.RenderAsync(await userResolver.GetUpdatedUser(user));
 	}
 
 	[HttpPost("{id}/follow")]
 	[Authorize("write:follows")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
 	//TODO: [FromHybrid] request (bool reblogs, bool notify, bool languages)
-	public async Task<IActionResult> FollowUser(string id)
+	public async Task<RelationshipEntity> FollowUser(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
@@ -222,15 +219,14 @@ public class AccountController(
 				followee.PrecomputedIsFollowedBy = true;
 		}
 
-		var res = RenderRelationship(followee);
-
-		return Ok(res);
+		return RenderRelationship(followee);
 	}
 
 	[HttpPost("{id}/unfollow")]
 	[Authorize("write:follows")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
-	public async Task<IActionResult> UnfollowUser(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<RelationshipEntity> UnfollowUser(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
@@ -244,16 +240,14 @@ public class AccountController(
 		               throw GracefulException.RecordNotFound();
 
 		await userSvc.UnfollowUserAsync(user, followee);
-
-		var res = RenderRelationship(followee);
-
-		return Ok(res);
+		return RenderRelationship(followee);
 	}
 
 	[HttpPost("{id}/mute")]
 	[Authorize("write:mutes")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
-	public async Task<IActionResult> MuteUser(string id, [FromHybrid] AccountSchemas.AccountMuteRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<RelationshipEntity> MuteUser(string id, [FromHybrid] AccountSchemas.AccountMuteRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
@@ -269,16 +263,14 @@ public class AccountController(
 		//TODO: handle notifications parameter
 		DateTime? expiration = request.Duration == 0 ? null : DateTime.UtcNow + TimeSpan.FromSeconds(request.Duration);
 		await userSvc.MuteUserAsync(user, mutee, expiration);
-
-		var res = RenderRelationship(mutee);
-
-		return Ok(res);
+		return RenderRelationship(mutee);
 	}
 
 	[HttpPost("{id}/unmute")]
 	[Authorize("write:mutes")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
-	public async Task<IActionResult> UnmuteUser(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<RelationshipEntity> UnmuteUser(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
@@ -292,16 +284,14 @@ public class AccountController(
 		            throw GracefulException.RecordNotFound();
 
 		await userSvc.UnmuteUserAsync(user, mutee);
-
-		var res = RenderRelationship(mutee);
-
-		return Ok(res);
+		return RenderRelationship(mutee);
 	}
 
 	[HttpPost("{id}/block")]
 	[Authorize("write:blocks")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
-	public async Task<IActionResult> BlockUser(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<RelationshipEntity> BlockUser(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
@@ -315,16 +305,14 @@ public class AccountController(
 		              throw GracefulException.RecordNotFound();
 
 		await userSvc.BlockUserAsync(user, blockee);
-
-		var res = RenderRelationship(blockee);
-
-		return Ok(res);
+		return RenderRelationship(blockee);
 	}
 
 	[HttpPost("{id}/unblock")]
 	[Authorize("write:blocks")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
-	public async Task<IActionResult> UnblockUser(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<RelationshipEntity> UnblockUser(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
@@ -338,16 +326,13 @@ public class AccountController(
 		              throw GracefulException.RecordNotFound();
 
 		await userSvc.UnblockUserAsync(user, blockee);
-
-		var res = RenderRelationship(blockee);
-
-		return Ok(res);
+		return RenderRelationship(blockee);
 	}
 
 	[HttpGet("relationships")]
 	[Authorize("read:follows")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity[]))]
-	public async Task<IActionResult> GetRelationships([FromQuery(Name = "id")] List<string> ids)
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<RelationshipEntity>> GetRelationships([FromQuery(Name = "id")] List<string> ids)
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -357,41 +342,38 @@ public class AccountController(
 		                    .PrecomputeRelationshipData(user)
 		                    .ToListAsync();
 
-		var res = users.Select(RenderRelationship);
-
-		return Ok(res);
+		return users.Select(RenderRelationship);
 	}
 
 	[HttpGet("{id}/statuses")]
 	[Authorize("read:statuses")]
 	[LinkPagination(20, 40)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
-	public async Task<IActionResult> GetUserStatuses(
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<StatusEntity>> GetUserStatuses(
 		string id, AccountSchemas.AccountStatusesRequest request, MastodonPaginationQuery query
 	)
 	{
 		var user    = HttpContext.GetUserOrFail();
 		var account = await db.Users.FirstOrDefaultAsync(p => p.Id == id) ?? throw GracefulException.RecordNotFound();
 
-		var res = await db.Notes
-		                  .IncludeCommonProperties()
-		                  .FilterByUser(account)
-		                  .FilterByAccountStatusesRequest(request)
-		                  .EnsureVisibleFor(user)
-		                  .FilterHidden(user, db, except: id)
-		                  .Paginate(query, ControllerContext)
-		                  .PrecomputeVisibilities(user)
-		                  .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Accounts);
-
-		return Ok(res);
+		return await db.Notes
+		               .IncludeCommonProperties()
+		               .FilterByUser(account)
+		               .FilterByAccountStatusesRequest(request)
+		               .EnsureVisibleFor(user)
+		               .FilterHidden(user, db, except: id)
+		               .Paginate(query, ControllerContext)
+		               .PrecomputeVisibilities(user)
+		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Accounts);
 	}
 
 	[HttpGet("{id}/followers")]
 	[Authenticate("read:accounts")]
 	[LinkPagination(40, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetUserFollowers(string id, MastodonPaginationQuery query)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<AccountEntity>> GetUserFollowers(string id, MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUser();
 		if (config.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
@@ -408,28 +390,26 @@ public class AccountController(
 		if (user == null || user.Id != account.Id)
 		{
 			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Private)
-				return Ok((List<AccountEntity>) []);
+				return [];
 			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Followers)
 				if (user == null || !await db.Users.AnyAsync(p => p == account && p.Followers.Contains(user)))
-					return Ok((List<AccountEntity>) []);
+					return [];
 		}
 
-		var res = await db.Users
-		                  .Where(p => p == account)
-		                  .SelectMany(p => p.Followers)
-		                  .IncludeCommonProperties()
-		                  .Paginate(query, ControllerContext)
-		                  .RenderAllForMastodonAsync(userRenderer);
-
-		return Ok(res);
+		return await db.Users
+		               .Where(p => p == account)
+		               .SelectMany(p => p.Followers)
+		               .IncludeCommonProperties()
+		               .Paginate(query, ControllerContext)
+		               .RenderAllForMastodonAsync(userRenderer);
 	}
 
 	[HttpGet("{id}/following")]
 	[Authenticate("read:accounts")]
 	[LinkPagination(40, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetUserFollowing(string id, MastodonPaginationQuery query)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<AccountEntity>> GetUserFollowing(string id, MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUser();
 		if (config.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
@@ -446,41 +426,38 @@ public class AccountController(
 		if (user == null || user.Id != account.Id)
 		{
 			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Private)
-				return Ok((List<AccountEntity>) []);
+				return [];
 			if (account.UserProfile?.FFVisibility == UserProfile.UserProfileFFVisibility.Followers)
 				if (user == null || !await db.Users.AnyAsync(p => p == account && p.Followers.Contains(user)))
-					return Ok((List<AccountEntity>) []);
+					return [];
 		}
 
-		var res = await db.Users
-		                  .Where(p => p == account)
-		                  .SelectMany(p => p.Following)
-		                  .IncludeCommonProperties()
-		                  .Paginate(query, ControllerContext)
-		                  .RenderAllForMastodonAsync(userRenderer);
-
-		return Ok(res);
+		return await db.Users
+		               .Where(p => p == account)
+		               .SelectMany(p => p.Following)
+		               .IncludeCommonProperties()
+		               .Paginate(query, ControllerContext)
+		               .RenderAllForMastodonAsync(userRenderer);
 	}
 
 	[HttpGet("{id}/featured_tags")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<object>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetUserFeaturedTags(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<object>> GetUserFeaturedTags(string id)
 	{
 		_ = await db.Users
 		            .Include(p => p.UserProfile)
 		            .FirstOrDefaultAsync(p => p.Id == id) ??
 		    throw GracefulException.RecordNotFound();
 
-		var res = Array.Empty<object>();
-		return Ok(res);
+		return [];
 	}
 
 	[HttpGet("/api/v1/follow_requests")]
 	[Authorize("read:follows")]
 	[LinkPagination(40, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
-	public async Task<IActionResult> GetFollowRequests(MastodonPaginationQuery query)
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<AccountEntity>> GetFollowRequests(MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var requests = await db.FollowRequests
@@ -491,17 +468,15 @@ public class AccountController(
 		                       .ToListAsync();
 
 		HttpContext.SetPaginationData(requests);
-		var res = await userRenderer.RenderManyAsync(requests.Select(p => p.Entity));
-
-		return Ok(res);
+		return await userRenderer.RenderManyAsync(requests.Select(p => p.Entity));
 	}
 
 	[HttpGet("/api/v1/favourites")]
 	[Authorize("read:favourites")]
 	[LinkPagination(20, 40)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
+	[ProducesResults(HttpStatusCode.OK)]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	public async Task<IActionResult> GetLikedNotes(MastodonPaginationQuery query)
+	public async Task<IEnumerable<StatusEntity>> GetLikedNotes(MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var likes = await db.NoteLikes
@@ -515,16 +490,15 @@ public class AccountController(
 		                    .ToListAsync();
 
 		HttpContext.SetPaginationData(likes);
-		var res = await noteRenderer.RenderManyAsync(likes.Select(p => p.Entity).EnforceRenoteReplyVisibility(), user);
-		return Ok(res);
+		return await noteRenderer.RenderManyAsync(likes.Select(p => p.Entity).EnforceRenoteReplyVisibility(), user);
 	}
 
 	[HttpGet("/api/v1/bookmarks")]
 	[Authorize("read:bookmarks")]
 	[LinkPagination(20, 40)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
+	[ProducesResults(HttpStatusCode.OK)]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	public async Task<IActionResult> GetBookmarkedNotes(MastodonPaginationQuery query)
+	public async Task<IEnumerable<StatusEntity>> GetBookmarkedNotes(MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var bookmarks = await db.NoteBookmarks
@@ -538,17 +512,15 @@ public class AccountController(
 		                        .ToListAsync();
 
 		HttpContext.SetPaginationData(bookmarks);
-		var res =
-			await noteRenderer.RenderManyAsync(bookmarks.Select(p => p.Entity).EnforceRenoteReplyVisibility(), user);
-		return Ok(res);
+		return await noteRenderer.RenderManyAsync(bookmarks.Select(p => p.Entity).EnforceRenoteReplyVisibility(), user);
 	}
 
 	[HttpGet("/api/v1/blocks")]
 	[Authorize("read:blocks")]
 	[LinkPagination(40, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
+	[ProducesResults(HttpStatusCode.OK)]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	public async Task<IActionResult> GetBlockedUsers(MastodonPaginationQuery pq)
+	public async Task<IEnumerable<AccountEntity>> GetBlockedUsers(MastodonPaginationQuery pq)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var blocks = await db.Blockings
@@ -559,17 +531,15 @@ public class AccountController(
 		                     .ToListAsync();
 
 		HttpContext.SetPaginationData(blocks);
-		var res = await userRenderer.RenderManyAsync(blocks.Select(p => p.Entity));
-
-		return Ok(res);
+		return await userRenderer.RenderManyAsync(blocks.Select(p => p.Entity));
 	}
 
 	[HttpGet("/api/v1/mutes")]
 	[Authorize("read:mutes")]
 	[LinkPagination(40, 80)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<AccountEntity>))]
+	[ProducesResults(HttpStatusCode.OK)]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	public async Task<IActionResult> GetMutedUsers(MastodonPaginationQuery pq)
+	public async Task<IEnumerable<AccountEntity>> GetMutedUsers(MastodonPaginationQuery pq)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var mutes = await db.Mutings
@@ -580,16 +550,14 @@ public class AccountController(
 		                    .ToListAsync();
 
 		HttpContext.SetPaginationData(mutes);
-		var res = await userRenderer.RenderManyAsync(mutes.Select(p => p.Entity));
-
-		return Ok(res);
+		return await userRenderer.RenderManyAsync(mutes.Select(p => p.Entity));
 	}
 
 	[HttpPost("/api/v1/follow_requests/{id}/authorize")]
 	[Authorize("write:follows")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> AcceptFollowRequest(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<RelationshipEntity> AcceptFollowRequest(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var request = await db.FollowRequests.Where(p => p.Followee == user && p.FollowerId == id)
@@ -600,23 +568,19 @@ public class AccountController(
 		if (request != null)
 			await userSvc.AcceptFollowRequestAsync(request);
 
-		var relationship = await db.Users.Where(p => id == p.Id)
-		                           .IncludeCommonProperties()
-		                           .PrecomputeRelationshipData(user)
-		                           .Select(u => RenderRelationship(u))
-		                           .FirstOrDefaultAsync();
-
-		if (relationship == null)
-			throw GracefulException.RecordNotFound();
-
-		return Ok(relationship);
+		return await db.Users.Where(p => id == p.Id)
+		               .IncludeCommonProperties()
+		               .PrecomputeRelationshipData(user)
+		               .Select(u => RenderRelationship(u))
+		               .FirstOrDefaultAsync() ??
+		       throw GracefulException.RecordNotFound();
 	}
 
 	[HttpPost("/api/v1/follow_requests/{id}/reject")]
 	[Authorize("write:follows")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RelationshipEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> RejectFollowRequest(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<RelationshipEntity> RejectFollowRequest(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var request = await db.FollowRequests.Where(p => p.Followee == user && p.FollowerId == id)
@@ -627,26 +591,21 @@ public class AccountController(
 		if (request != null)
 			await userSvc.RejectFollowRequestAsync(request);
 
-		var relationship = await db.Users.Where(p => id == p.Id)
-		                           .IncludeCommonProperties()
-		                           .PrecomputeRelationshipData(user)
-		                           .Select(u => RenderRelationship(u))
-		                           .FirstOrDefaultAsync();
-
-		if (relationship == null)
-			throw GracefulException.RecordNotFound();
-
-		return Ok(relationship);
+		return await db.Users.Where(p => id == p.Id)
+		               .IncludeCommonProperties()
+		               .PrecomputeRelationshipData(user)
+		               .Select(u => RenderRelationship(u))
+		               .FirstOrDefaultAsync() ??
+		       throw GracefulException.RecordNotFound();
 	}
 
 	[HttpGet("lookup")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AccountEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> LookupUser([FromQuery] string acct)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<AccountEntity> LookupUser([FromQuery] string acct)
 	{
 		var user = await userResolver.LookupAsync(acct) ?? throw GracefulException.RecordNotFound();
-		var res  = await userRenderer.RenderAsync(user);
-		return Ok(res);
+		return await userRenderer.RenderAsync(user);
 	}
 
 	private static RelationshipEntity RenderRelationship(User u)

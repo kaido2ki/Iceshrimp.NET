@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
@@ -28,51 +29,47 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 {
 	[HttpGet]
 	[Authorize("read:lists")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<ListEntity>))]
-	public async Task<IActionResult> GetLists()
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<ListEntity>> GetLists()
 	{
 		var user = HttpContext.GetUserOrFail();
 
-		var res = await db.UserLists
-		                  .Where(p => p.User == user)
-		                  .Select(p => new ListEntity
-		                  {
-			                  Id        = p.Id,
-			                  Title     = p.Name,
-			                  Exclusive = p.HideFromHomeTl
-		                  })
-		                  .ToListAsync();
-
-		return Ok(res);
+		return await db.UserLists
+		               .Where(p => p.User == user)
+		               .Select(p => new ListEntity
+		               {
+			               Id        = p.Id,
+			               Title     = p.Name,
+			               Exclusive = p.HideFromHomeTl
+		               })
+		               .ToListAsync();
 	}
 
 	[HttpGet("{id}")]
 	[Authorize("read:lists")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ListEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetList(string id)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ListEntity> GetList(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 
-		var res = await db.UserLists
-		                  .Where(p => p.User == user && p.Id == id)
-		                  .Select(p => new ListEntity
-		                  {
-			                  Id        = p.Id,
-			                  Title     = p.Name,
-			                  Exclusive = p.HideFromHomeTl
-		                  })
-		                  .FirstOrDefaultAsync() ??
-		          throw GracefulException.RecordNotFound();
-
-		return Ok(res);
+		return await db.UserLists
+		               .Where(p => p.User == user && p.Id == id)
+		               .Select(p => new ListEntity
+		               {
+			               Id        = p.Id,
+			               Title     = p.Name,
+			               Exclusive = p.HideFromHomeTl
+		               })
+		               .FirstOrDefaultAsync() ??
+		       throw GracefulException.RecordNotFound();
 	}
 
 	[HttpPost]
 	[Authorize("write:lists")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ListEntity))]
-	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> CreateList([FromHybrid] ListSchemas.ListCreationRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.UnprocessableEntity)]
+	public async Task<ListEntity> CreateList([FromHybrid] ListSchemas.ListCreationRequest request)
 	{
 		if (string.IsNullOrWhiteSpace(request.Title))
 			throw GracefulException.UnprocessableEntity("Validation failed: Title can't be blank");
@@ -90,21 +87,19 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 		await db.AddAsync(list);
 		await db.SaveChangesAsync();
 
-		var res = new ListEntity
+		return new ListEntity
 		{
 			Id        = list.Id,
 			Title     = list.Name,
 			Exclusive = list.HideFromHomeTl
 		};
-		return Ok(res);
 	}
 
 	[HttpPut("{id}")]
 	[Authorize("write:lists")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ListEntity))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> UpdateList(string id, [FromHybrid] ListSchemas.ListUpdateRequest request)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound, HttpStatusCode.UnprocessableEntity)]
+	public async Task<ListEntity> UpdateList(string id, [FromHybrid] ListSchemas.ListUpdateRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var list = await db.UserLists
@@ -121,20 +116,20 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 		db.Update(list);
 		await db.SaveChangesAsync();
 
-		var res = new ListEntity
+		return new ListEntity
 		{
 			Id        = list.Id,
 			Title     = list.Name,
 			Exclusive = list.HideFromHomeTl
 		};
-		return Ok(res);
 	}
 
 	[HttpDelete("{id}")]
 	[Authorize("write:lists")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> DeleteList(string id)
+	[OverrideResultType<object>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<object> DeleteList(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var list = await db.UserLists
@@ -145,15 +140,15 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 		db.Remove(list);
 		await db.SaveChangesAsync();
 		eventSvc.RaiseListMembersUpdated(this, list);
-		return Ok(new object());
+		return new object();
 	}
 
 	[LinkPagination(40, 80)]
 	[HttpGet("{id}/accounts")]
 	[Authorize("read:lists")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<AccountEntity>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> GetListMembers(string id, MastodonPaginationQuery pq)
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<List<AccountEntity>> GetListMembers(string id, MastodonPaginationQuery pq)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var list = await db.UserLists
@@ -161,7 +156,7 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
-		var res = pq.Limit == 0
+		return pq.Limit == 0
 			? await db.UserListMembers
 			          .Where(p => p.UserList == list)
 			          .Include(p => p.User.UserProfile)
@@ -173,17 +168,15 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 			          .Include(p => p.User.UserProfile)
 			          .Select(p => p.User)
 			          .RenderAllForMastodonAsync(userRenderer);
-
-		return Ok(res);
 	}
 
 	[HttpPost("{id}/accounts")]
 	[Authorize("write:lists")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	[ProducesResponseType(StatusCodes.Status422UnprocessableEntity, Type = typeof(MastodonErrorResponse))]
+	[OverrideResultType<object>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound, HttpStatusCode.UnprocessableEntity)]
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	public async Task<IActionResult> AddListMember(string id, [FromHybrid] ListSchemas.ListUpdateMembersRequest request)
+	public async Task<object> AddListMember(string id, [FromHybrid] ListSchemas.ListUpdateMembersRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var list = await db.UserLists
@@ -214,14 +207,15 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 
 		eventSvc.RaiseListMembersUpdated(this, list);
 
-		return Ok(new object());
+		return new object();
 	}
 
 	[HttpDelete("{id}/accounts")]
 	[Authorize("write:lists")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(object))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> RemoveListMember(
+	[OverrideResultType<object>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<object> RemoveListMember(
 		string id, [FromHybrid] ListSchemas.ListUpdateMembersRequest request
 	)
 	{
@@ -237,6 +231,6 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 
 		eventSvc.RaiseListMembersUpdated(this, list);
 
-		return Ok(new object());
+		return new object();
 	}
 }

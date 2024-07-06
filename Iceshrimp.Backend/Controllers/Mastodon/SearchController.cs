@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
@@ -37,38 +38,36 @@ public class SearchController(
 	[HttpGet("/api/v2/search")]
 	[Authorize("read:search")]
 	[LinkPagination(20, 40)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SearchSchemas.SearchResponse))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> Search(SearchSchemas.SearchRequest search, MastodonPaginationQuery pagination)
-	{
-		if (search.Query == null)
-			throw GracefulException.BadRequest("Query is missing or invalid");
-
-		var result = new SearchSchemas.SearchResponse
-		{
-			Accounts = search.Type is null or "accounts" ? await SearchUsersAsync(search, pagination) : [],
-			Statuses = search.Type is null or "statuses" ? await SearchNotesAsync(search, pagination) : [],
-			Hashtags = search.Type is null or "hashtags" ? await SearchTagsAsync(search, pagination) : []
-		};
-
-		return Ok(result);
-	}
-
-	[HttpGet("/api/v1/accounts/search")]
-	[Authorize("read:accounts")]
-	[LinkPagination(20, 40, true)]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<AccountEntity>))]
-	[ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(MastodonErrorResponse))]
-	public async Task<IActionResult> SearchAccounts(
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<SearchSchemas.SearchResponse> Search(
 		SearchSchemas.SearchRequest search, MastodonPaginationQuery pagination
 	)
 	{
 		if (search.Query == null)
 			throw GracefulException.BadRequest("Query is missing or invalid");
 
-		var result = await SearchUsersAsync(search, pagination);
+		return new SearchSchemas.SearchResponse
+		{
+			Accounts = search.Type is null or "accounts" ? await SearchUsersAsync(search, pagination) : [],
+			Statuses = search.Type is null or "statuses" ? await SearchNotesAsync(search, pagination) : [],
+			Hashtags = search.Type is null or "hashtags" ? await SearchTagsAsync(search, pagination) : []
+		};
+	}
 
-		return Ok(result);
+	[HttpGet("/api/v1/accounts/search")]
+	[Authorize("read:accounts")]
+	[LinkPagination(20, 40, true)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<List<AccountEntity>> SearchAccounts(
+		SearchSchemas.SearchRequest search, MastodonPaginationQuery pagination
+	)
+	{
+		if (search.Query == null)
+			throw GracefulException.BadRequest("Query is missing or invalid");
+
+		return await SearchUsersAsync(search, pagination);
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",

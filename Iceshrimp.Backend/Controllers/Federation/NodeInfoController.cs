@@ -1,5 +1,7 @@
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
+using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
@@ -18,8 +20,8 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 {
 	[HttpGet("2.1")]
 	[HttpGet("2.0")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WebFingerResponse))]
-	public async Task<IActionResult> GetNodeInfo()
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<NodeInfoResponse> GetNodeInfo()
 	{
 		var cutoffMonth    = DateTime.UtcNow - TimeSpan.FromDays(30);
 		var cutoffHalfYear = DateTime.UtcNow - TimeSpan.FromDays(180);
@@ -36,7 +38,7 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 			                                   p.LastActiveDate > cutoffHalfYear);
 		var localPosts = await db.Notes.LongCountAsync(p => p.UserHost == null);
 
-		var result = new NodeInfoResponse
+		return new NodeInfoResponse
 		{
 			Version = Request.Path.Value?.EndsWith("2.1") ?? false ? "2.1" : "2.0",
 			Software = new NodeInfoResponse.NodeInfoSoftware
@@ -90,7 +92,5 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 			},
 			OpenRegistrations = false
 		};
-
-		return Ok(result);
 	}
 }

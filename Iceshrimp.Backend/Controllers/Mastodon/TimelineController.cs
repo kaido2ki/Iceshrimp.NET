@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
@@ -27,84 +28,73 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 {
 	[Authorize("read:statuses")]
 	[HttpGet("home")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
-	public async Task<IActionResult> GetHomeTimeline(MastodonPaginationQuery query)
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<StatusEntity>> GetHomeTimeline(MastodonPaginationQuery query)
 	{
 		var user      = HttpContext.GetUserOrFail();
 		var heuristic = await QueryableTimelineExtensions.GetHeuristic(user, db, cache);
-
-		var res = await db.Notes
-		                  .IncludeCommonProperties()
-		                  .FilterByFollowingAndOwn(user, db, heuristic)
-		                  .EnsureVisibleFor(user)
-		                  .FilterHidden(user, db, filterHiddenListMembers: true)
-		                  .Paginate(query, ControllerContext)
-		                  .PrecomputeVisibilities(user)
-		                  .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Home);
-
-		return Ok(res);
+		return await db.Notes
+		               .IncludeCommonProperties()
+		               .FilterByFollowingAndOwn(user, db, heuristic)
+		               .EnsureVisibleFor(user)
+		               .FilterHidden(user, db, filterHiddenListMembers: true)
+		               .Paginate(query, ControllerContext)
+		               .PrecomputeVisibilities(user)
+		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Home);
 	}
 
 	[Authorize("read:statuses")]
 	[HttpGet("public")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
-	public async Task<IActionResult> GetPublicTimeline(
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<StatusEntity>> GetPublicTimeline(
 		MastodonPaginationQuery query, TimelineSchemas.PublicTimelineRequest request
 	)
 	{
 		var user = HttpContext.GetUserOrFail();
-
-		var res = await db.Notes
-		                  .IncludeCommonProperties()
-		                  .HasVisibility(Note.NoteVisibility.Public)
-		                  .FilterByPublicTimelineRequest(request)
-		                  .FilterHidden(user, db)
-		                  .Paginate(query, ControllerContext)
-		                  .PrecomputeVisibilities(user)
-		                  .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Public);
-
-		return Ok(res);
+		return await db.Notes
+		               .IncludeCommonProperties()
+		               .HasVisibility(Note.NoteVisibility.Public)
+		               .FilterByPublicTimelineRequest(request)
+		               .FilterHidden(user, db)
+		               .Paginate(query, ControllerContext)
+		               .PrecomputeVisibilities(user)
+		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Public);
 	}
 
 	[Authorize("read:statuses")]
 	[HttpGet("tag/{hashtag}")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
-	public async Task<IActionResult> GetHashtagTimeline(
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<StatusEntity>> GetHashtagTimeline(
 		string hashtag, MastodonPaginationQuery query, TimelineSchemas.HashtagTimelineRequest request
 	)
 	{
 		var user = HttpContext.GetUserOrFail();
-
-		var res = await db.Notes
-		                  .IncludeCommonProperties()
-		                  .Where(p => p.Tags.Contains(hashtag.ToLowerInvariant()))
-		                  .FilterByHashtagTimelineRequest(request)
-		                  .FilterHidden(user, db)
-		                  .Paginate(query, ControllerContext)
-		                  .PrecomputeVisibilities(user)
-		                  .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Public);
-
-		return Ok(res);
+		return await db.Notes
+		               .IncludeCommonProperties()
+		               .Where(p => p.Tags.Contains(hashtag.ToLowerInvariant()))
+		               .FilterByHashtagTimelineRequest(request)
+		               .FilterHidden(user, db)
+		               .Paginate(query, ControllerContext)
+		               .PrecomputeVisibilities(user)
+		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Public);
 	}
 
 	[Authorize("read:lists")]
 	[HttpGet("list/{id}")]
-	[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<StatusEntity>))]
-	public async Task<IActionResult> GetListTimeline(string id, MastodonPaginationQuery query)
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<StatusEntity>> GetListTimeline(string id, MastodonPaginationQuery query)
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (!await db.UserLists.AnyAsync(p => p.Id == id && p.User == user))
 			throw GracefulException.RecordNotFound();
 
-		var res = await db.Notes
-		                  .IncludeCommonProperties()
-		                  .Where(p => db.UserListMembers.Any(l => l.UserListId == id && l.UserId == p.UserId))
-		                  .EnsureVisibleFor(user)
-		                  .FilterHidden(user, db)
-		                  .Paginate(query, ControllerContext)
-		                  .PrecomputeVisibilities(user)
-		                  .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Lists);
-
-		return Ok(res);
+		return await db.Notes
+		               .IncludeCommonProperties()
+		               .Where(p => db.UserListMembers.Any(l => l.UserListId == id && l.UserId == p.UserId))
+		               .EnsureVisibleFor(user)
+		               .FilterHidden(user, db)
+		               .Paginate(query, ControllerContext)
+		               .PrecomputeVisibilities(user)
+		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Lists);
 	}
 }
