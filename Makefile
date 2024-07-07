@@ -74,6 +74,12 @@ test: build
 	@echo
 	@${TEST_CMD}
 
+clean:
+	@git clean -xfd -e '*.DotSettings.user' -e '/.idea/**' -e 'configuration*.ini' -e '.gitignore' -e '/.vs/**'
+
+cleanall:
+	@git clean -xfd
+
 publish-aot: AOT=true
 publish-aot: --workload-restore publish
 
@@ -87,6 +93,8 @@ help:
 	@echo 'Targets:'
 	@echo '  test               - runs all available unit tests'
 	@echo '  build              - compiles the application (framework- & architecture-dependent)'
+	@echo '  clean              - removes all build-related files from the working tree'
+	@echo '  cleanall           - removes all untracked files from the working tree'
 	@echo '  publish            - compiles the application (self-contained)'
 	@echo '  publish-aot        - equivalent to `make AOT=true publish`'
 	@echo '  release-artifacts  - generates release artifacts for all supported architectures'
