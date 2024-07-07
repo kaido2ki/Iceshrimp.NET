@@ -7,19 +7,14 @@ jobs:
   test-build:
     runs-on: docker
     container:
-      image: iceshrimp.dev/iceshrimp/dotnet-sdk:8.0-alpine
+      image: iceshrimp.dev/iceshrimp/ci-env:dotnet
       options: --volume /opt/iceshrimp-cache/nuget:/root/.nuget
     steps:
       - name: Clone repository
-        shell: bash
         run: |
-          mkdir /iceshrimp
-          cd /iceshrimp
           git init -b test-build
           git remote add origin ${{ github.event.repository.clone_url }}
           git fetch origin ${{ github.ref }} --depth=1
           git checkout --detach FETCH_HEAD
-      - name: Run tests
-        run: |
-          cd /iceshrimp
-          dotnet test
+      - name: Run unit tests
+        run: make test

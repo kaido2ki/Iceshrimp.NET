@@ -12,25 +12,14 @@ jobs:
         --volume /root/.docker:/root/.docker
     steps:
       - name: Clone repository
-        run: |
-          git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 /iceshrimp
-          cd /iceshrimp
+        run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 .
       - name: Run unit tests
-        run: |
-          cd /iceshrimp
-          dotnet test
-      - name: Clean repo
-        run: |
-          cd /iceshrimp
-          git clean -xfd
-      - name: Authenticate against the docker registry
-        run: docker login iceshrimp.dev -u ${{ github.actor }} -p ${{ secrets.REGISTRY_TOKEN }}
-      - name: Initialize builder
-        run: docker buildx use iceshrimp-ci || docker buildx create --name iceshrimp-ci --use
-      - name: Patch Dockerfile
-        run: sed -i 's^mcr.microsoft.com/dotnet/sdk:8.0-alpine^iceshrimp.dev/iceshrimp/dotnet-sdk:8.0-alpine^g' /iceshrimp/Dockerfile
-      - name: Build the image
+        run: make test
+      - name: Build docker image
         shell: bash
-        run: docker buildx build -t iceshrimp.dev/${GITHUB_REPOSITORY@L}:$GITHUB_REF_NAME --provenance=false --platform=linux/amd64,linux/arm64 --push /iceshrimp
-      - name: Purge cache
-        run: docker buildx prune --keep-storage 20G
+        run: |
+          git clean -xfdq
+          docker login iceshrimp.dev -u ${{ github.actor }} -p ${{ secrets.REGISTRY_TOKEN }}
+          docker buildx create --name iceshrimp-ci 2>&1 &>/dev/null || true
+          docker buildx build -t iceshrimp.dev/${GITHUB_REPOSITORY@L}:$GITHUB_REF_NAME --provenance=false --platform=linux/amd64,linux/arm64 --push --builder iceshrimp-ci .
+          docker buildx prune --keep-storage 20G

@@ -10,49 +10,14 @@ jobs:
       options: --volume /opt/iceshrimp-cache/nuget:/root/.nuget
     steps:
       - name: Clone repository
-        run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 /src
-      - name: Build project (amd64-glibc)
-        shell: bash
-        run: |-
-          cd /src/Iceshrimp.Backend
-          mkdir -p /out/linux-amd64
-          dotnet publish -c Release -p:EnableAOT=true -p:EnableLibVips=true -p:BundleNativeDeps=true -r linux-amd64 -o /out/linux-amd64
-      - name: Build project (arm64-glibc)
-        shell: bash
-        run: |-
-          cd /src/Iceshrimp.Backend
-          mkdir -p /out/linux-arm64
-          dotnet publish -c Release -p:EnableAOT=true -p:EnableLibVips=true -p:BundleNativeDeps=true -r linux-arm64 -o /out/linux-arm64
-      - name: Build project (amd64-musl)
-        shell: bash
-        run: |-
-          cd /src/Iceshrimp.Backend
-          mkdir -p /out/linux-musl-amd64
-          dotnet publish -c Release -p:EnableAOT=true -p:EnableLibVips=true -p:BundleNativeDeps=true -r linux-musl-amd64 -o /out/linux-musl-amd64
-      - name: Build project (arm64-musl)
-        shell: bash
-        run: |-
-          cd /src/Iceshrimp.Backend
-          mkdir -p /out/linux-musl-arm64
-          dotnet publish -c Release -p:EnableAOT=true -p:EnableLibVips=true -p:BundleNativeDeps=true -r linux-musl-arm64 -o /out/linux-musl-arm64
-      - name: Generate artifacts
-        shell: bash
-        run: |-
-          mkdir artifacts
-          tar cavf artifacts/${{ github.event.repository.name }}-${{ github.ref_name }}-linux-amd64-glibc.tar.zst --transform 's,^out/linux-amd64,${{ github.event.repository.name }}-${{ github.ref_name }},' /out/linux-amd64
-          tar cavf artifacts/${{ github.event.repository.name }}-${{ github.ref_name }}-linux-arm64-glibc.tar.zst --transform 's,^out/linux-arm64,${{ github.event.repository.name }}-${{ github.ref_name }},' /out/linux-arm64
-          tar cavf artifacts/${{ github.event.repository.name }}-${{ github.ref_name }}-linux-amd64-musl.tar.zst --transform 's,^out/linux-musl-amd64,${{ github.event.repository.name }}-${{ github.ref_name }},' /out/linux-musl-amd64
-          tar cavf artifacts/${{ github.event.repository.name }}-${{ github.ref_name }}-linux-arm64-musl.tar.zst --transform 's,^out/linux-musl-arm64,${{ github.event.repository.name }}-${{ github.ref_name }},' /out/linux-musl-arm64
+        run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 .
+      - name: Build release artifacts
+        run: make ARCHIVE_BASENAME=${{ github.event.repository.name }} ARCHIVE_VERSION=${{ github.ref_name }} release-artifacts
       - name: Upload artifacts
         uses: actions/release-action@main
         with:
-          files: |-
-            artifacts/**
+          files: artifacts/**
           api_key: '${{secrets.RELEASE_TOKEN}}'
-      - name: Authenticate against the docker registry
-        run: docker login iceshrimp.dev -u ${{ github.actor }} -p ${{ secrets.REGISTRY_TOKEN }}
-      - name: Initialize builder
-        run: docker buildx use iceshrimp-ci || docker buildx create --name iceshrimp-ci --use
       - name: Set environment variables
         shell: bash
         run: |
@@ -73,10 +38,9 @@ jobs:
 
           # Finally, we pass the computed tags back to the actions environment
           echo "TAGS=$TAGS" >> "${GITHUB_ENV}"
-      - name: Build the image
-        shell: bash
+      - name: Build docker image
         run: |
-          cp /src/.docker/dotnet-runner-8.0.Dockerfile /out/Dockerfile
-          docker buildx build ${{ env.TAGS }} --provenance=false --platform=linux/amd64,linux/arm64 --push /out
-      - name: Purge cache
-        run: docker buildx prune --keep-storage 20G
+          docker login iceshrimp.dev -u ${{ github.actor }} -p ${{ secrets.REGISTRY_TOKEN }}
+          docker buildx create --name iceshrimp-ci 2>&1 &>/dev/null || true
+          docker buildx build ${{ env.TAGS }} --provenance=false --platform=linux/amd64,linux/arm64 --push --builder iceshrimp-ci -f ./.docker/dotnet-runner-8.0.Dockerfile ./release
+          docker buildx prune --keep-storage 20G
