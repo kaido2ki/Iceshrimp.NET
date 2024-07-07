@@ -1,12 +1,15 @@
 #!/bin/bash
 set -e
-docker buildx build . --builder build-cluster --platform=linux/amd64,linux/arm64 --provenance=false -f dotnet-sdk-8.0-alpine.Dockerfile -t iceshrimp.dev/iceshrimp/dotnet-sdk:8.0-alpine --push
-docker buildx build . --builder build-cluster --platform=linux/amd64,linux/arm64 --provenance=false -f dotnet-sdk-8.0-wasm.Dockerfile -t iceshrimp.dev/iceshrimp/dotnet-sdk:8.0-wasm --push
+build() {
+  docker buildx build . --platform=linux/amd64,linux/arm64 --provenance=false -f $1.Dockerfile -t iceshrimp.dev/iceshrimp/$2 --push --pull
+}
 
-docker buildx build . --builder build-cluster --platform=linux/amd64,linux/arm64 --provenance=false -f dotnet-sdk-9.0-alpine.Dockerfile -t iceshrimp.dev/iceshrimp/dotnet-sdk:9.0-alpine --push
-docker buildx build . --builder build-cluster --platform=linux/amd64,linux/arm64 --provenance=false -f dotnet-sdk-9.0-alpine-wasm.Dockerfile -t iceshrimp.dev/iceshrimp/dotnet-sdk:9.0-alpine-wasm --push
+build dotnet-sdk-8.0-alpine      dotnet-sdk:8.0-alpine
+build dotnet-sdk-8.0-wasm        dotnet-sdk:8.0-wasm
+build dotnet-sdk-9.0-alpine      dotnet-sdk:9.0-alpine
+build dotnet-sdk-9.0-alpine-wasm dotnet-sdk:9.0-alpine-wasm
 
-docker buildx build . --builder build-cluster --platform=linux/amd64,linux/arm64 --provenance=false -f ci-env.Dockerfile -t iceshrimp.dev/iceshrimp/ci-env:dotnet --push
-docker buildx build . --builder build-cluster --platform=linux/amd64,linux/arm64 --provenance=false -f ci-env-wasm.Dockerfile -t iceshrimp.dev/iceshrimp/ci-env:dotnet-wasm --push
+build ci-env       ci-env:dotnet
+build ci-env-wasm  ci-env:dotnet-wasm
 
-docker buildx prune -a -f --builder build-cluster
+docker buildx prune -a -f --keep-storage 10G
