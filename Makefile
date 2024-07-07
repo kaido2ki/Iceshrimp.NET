@@ -1,5 +1,4 @@
 .DEFAULT_GOAL    = help
-.PHONY           = --release-pre --release-post --workload-restore --release-% artifact-% publish build test publish-aot release-artifacts help
 
 WORKLOAD_PROJECT = Iceshrimp.Frontend
 BUILD_PROJECT    = Iceshrimp.Backend
@@ -24,10 +23,11 @@ BUILD_CMD        = ${DOTNET_CMD} build ${TL_ARG} -noLogo
 TEST_CMD         = ${DOTNET_CMD} test --no-build --nologo
 
 BUILD_FLAGS      = -p:EnableLibVips=${VIPS} -p:BundleNativeDeps=${BUNDLE_NATIVE}
-PUBLISH_FLAGS    = -p:EnableAOT=${AOT} ${BUILD_FLAGS}
+PUBLISH_FLAGS    = ${PUBLISH_RIDARG} -o publish/${TARGETRID} -p:EnableAOT=${AOT} ${BUILD_FLAGS}
 RELEASE_FLAGS    = -r ${TARGETRID} -o release/${TARGETPLATFORM} ${PUBLISH_FLAGS}
 
 TARGETRID        = $(TARGETPLATFORM:linux-glibc-%=linux-%)
+PUBLISH_RIDARG   = $(if $(TARGETRID),-r $(TARGETRID),)
 ARCHIVE_TGTNAME  = $(patsubst linux-glibc-%,linux-%-glibc,$(patsubst linux-musl-%,linux-%-musl,$(TARGETPLATFORM)))
 ARCHIVE_BASENAME = iceshrimp.net
 ARCHIVE_VERSION  = unknown
@@ -35,6 +35,8 @@ ARCHIVE_DIRNAME  = ${ARCHIVE_BASENAME}-${ARCHIVE_VERSION}-${ARCHIVE_TGTNAME}
 ARCHIVE_FILENAME = ${ARCHIVE_DIRNAME}.tar.zst
 ARTIFACT_DIR     = artifacts
 ARTIFACT_CMD     = tar caf ${ARTIFACT_DIR}/${ARCHIVE_FILENAME} --transform 's,^release/${TARGETPLATFORM},${ARCHIVE_DIRNAME},' release/${TARGETPLATFORM}
+
+.PHONY           : --release-pre --release-post --workload-restore --release-% artifact-% publish build test publish-aot release-artifacts help
 
 --release-pre:
 	@echo 'Building release artifacts for targets: ${RELEASE_TARGETS}'
@@ -63,7 +65,7 @@ ARTIFACT_CMD     = tar caf ${ARTIFACT_DIR}/${ARCHIVE_FILENAME} --transform 's,^r
 	@echo
 
 publish:
-	@echo 'Building for publish with flags: ${PUBLISH_FLAGS}'
+	@echo 'Building for publish with flags: ${strip ${PUBLISH_FLAGS}}'
 	@${PUBLISH_CMD} ${PUBLISH_FLAGS}
 
 build:
@@ -100,21 +102,22 @@ help:
 	@echo '  release-artifacts  - generates release artifacts for all supported architectures'
 	@echo
 	@echo 'Common build arguments:'
-	@echo '  AOT:'
+	@echo '  AOT=<boolean>'
 	@echo '    Enables AOT compilation for the WASM frontend, trading increased compile time'
 	@echo '    for increased frontend performance. This option is only effective during publish.'
-	@echo '  VIPS:'
+	@echo '  VIPS=<boolean>'
 	@echo '    Enables LibVips support, either requires the system to have libvips installed,'
 	@echo '    or BUNDLE_NATIVE to be set.'
-	@echo '  BUNDLE_NATIVE'
+	@echo '  BUNDLE_NATIVE=<boolean>'
 	@echo '    Bundles native dependencies in the output directory'
-	@echo
+	@echo '  TARGETRID=<rid>'
+	@echo '    Sets the target runtime identifier. This option is only effective during publish.'
 	@echo 'Miscellaneous build arguments:'
-	@echo '  VERBOSE'
+	@echo '  VERBOSE=<boolean>'
 	@echo '    Disables beautified build output'
-	@echo '  DOTNET_CMD'
+	@echo '  DOTNET_CMD=<path>'
 	@echo '    Path to the `dotnet` binary to call'
-	@echo '  CONFIGURATION'
+	@echo '  CONFIGURATION=<Release|Debug>'
 	@echo '    Configuration to build in, defaults to `Release`.'
 	@echo
 	@echo 'For example, if you want to run target `build` with VIPS enabled: `make VIPS=true build`'
