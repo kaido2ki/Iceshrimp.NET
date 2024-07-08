@@ -9,7 +9,7 @@ jobs:
       image: iceshrimp.dev/iceshrimp/ci-env:dotnet-wasm
       options: |
         --volume /opt/iceshrimp-cache/nuget:/root/.nuget
-        --volume /home/zotan/.docker:/root/.docker
+        --volume /root/.docker:/root/.docker
     steps:
       - name: Clone repository
         run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 .
