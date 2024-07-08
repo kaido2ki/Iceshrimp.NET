@@ -31,6 +31,12 @@ COPY Iceshrimp.Parsing/ /src/Iceshrimp.Parsing/
 COPY Iceshrimp.Frontend/ /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/ /src/Iceshrimp.Shared/
 
+# copy files required for sourcelink
+COPY .git/HEAD /src/.git/HEAD
+COPY .git/config /src/.git/config
+COPY .git/refs/heads/ /src/.git/refs/heads/
+RUN mkdir -p /src/.git/objects
+
 # build without architecture set, allowing for reuse of the majority of the compiled IL between architectures
 RUN --mount=type=cache,target=/root/.nuget \
     dotnet publish --no-restore -c Release -o /build -p:EnableAOT=$AOT -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS
