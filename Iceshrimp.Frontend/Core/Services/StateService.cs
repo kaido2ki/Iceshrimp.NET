@@ -2,8 +2,8 @@ using Iceshrimp.Frontend.Core.Services.StateServicePatterns;
 
 namespace Iceshrimp.Frontend.Core.Services;
 
-public class StateService
+internal class StateService(MessageService messageService)
 {
 	public VirtualScroller VirtualScroller { get; } = new();
-	public Timeline        Timeline        { get; } = new();
+	public Timeline        Timeline        { get; } = new(messageService);
 }

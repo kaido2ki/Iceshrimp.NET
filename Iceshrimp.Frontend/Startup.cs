@@ -24,6 +24,7 @@ builder.Services.AddSingleton<ComposeService>();
 builder.Services.AddSingleton<StateService>();
 builder.Services.AddSingleton<EmojiService>();
 builder.Services.AddSingleton<VersionService>();
+builder.Services.AddSingleton<MessageService>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddBlazoredLocalStorageAsSingleton();
