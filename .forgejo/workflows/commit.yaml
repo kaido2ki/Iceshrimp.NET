@@ -22,4 +22,4 @@ jobs:
           docker login iceshrimp.dev -u ${{ github.actor }} -p ${{ secrets.REGISTRY_TOKEN }}
           docker buildx create --name iceshrimp-ci 2>&1 &>/dev/null || true
           docker buildx build -t iceshrimp.dev/${GITHUB_REPOSITORY@L}:$GITHUB_REF_NAME --provenance=false --platform=linux/amd64,linux/arm64 --push --builder iceshrimp-ci .
-          docker buildx prune --keep-storage 20G
+          docker buildx prune --keep-storage 20G --builder iceshrimp-ci
