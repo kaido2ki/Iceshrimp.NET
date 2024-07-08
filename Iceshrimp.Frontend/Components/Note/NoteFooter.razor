@@ -87,13 +87,13 @@
 
     private void ToggleMenu() => Menu.Toggle();
 
-    private void Delete() => Note.Delete();
+    private void Delete() => _ = Note.Delete();
 
     private void OpenOriginal() => Js.InvokeVoidAsync("open", Note.NoteResponse.Url, "_blank");
 
     private void Like()
-    {
-        Note.Like();
+    { 
+        _ = Note.ToggleLike();
     }
 
     private void Reply()
@@ -103,7 +103,7 @@
 
     private void Renote()
     {
-        if (RenotePossible) Note.Renote();
+        if (RenotePossible) _ = Note.Renote();
     }
 
     private void Quote()
@@ -118,6 +118,6 @@
 
     private void React(EmojiResponse emoji)
     {
-        Note.React(emoji.Name, true, emoji.PublicUrl);
+        Note.React(emoji);
     }
 }

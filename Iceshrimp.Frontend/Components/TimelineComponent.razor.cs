@@ -14,12 +14,7 @@ public partial class TimelineComponent : IAsyncDisposable
 	[Inject] private StreamingService StreamingService { get; set; } = null!;
 	[Inject] private StateService     StateService     { get; set; } = null!;
 
-	private TimelineState State { get; set; } = new()
-	{
-		Timeline = [],
-		MaxId    = null,
-		MinId    = null
-	};
+	private TimelineState State { get; set; } = null!;
 
 	private VirtualScroller VirtualScroller { get; set; } = null!;
 	private bool            LockFetch       { get; set; }
@@ -28,6 +23,7 @@ public partial class TimelineComponent : IAsyncDisposable
 	{
 		StreamingService.NotePublished -= OnNotePublished;
 		await StreamingService.DisposeAsync();
+		StateService.Timeline.SetState("home", State);
 	}
 
 	private async Task Initialize()
@@ -42,18 +38,27 @@ public partial class TimelineComponent : IAsyncDisposable
 	// Returning false means the API has no more content.
 	private async Task<bool> FetchOlder()
 	{
-		if (LockFetch) return true;
-		LockFetch = true;
-		var pq  = new PaginationQuery { Limit = 15, MaxId = State.MinId };
-		var res = await ApiService.Timelines.GetHomeTimeline(pq);
-		switch (res.Count)
+		try
 		{
-			case > 0:
-				State.MinId = res.Last().Id;
-				State.Timeline.AddRange(res);
-				break;
-			case 0:
-				return false;
+			if (LockFetch) return true;
+			LockFetch = true;
+			Console.WriteLine("Fetching older");
+			var pq  = new PaginationQuery { Limit = 15, MaxId = State.MinId };
+			var res = await ApiService.Timelines.GetHomeTimeline(pq);
+			switch (res.Count)
+			{
+				case > 0:
+					State.MinId = res.Last().Id;
+					State.Timeline.AddRange(res);
+					break;
+				case 0:
+					return false;
+			}
+		}
+		catch (HttpRequestException)
+		{
+			Console.WriteLine("Network Error");
+			return false;
 		}
 
 		LockFetch = false;
@@ -62,16 +67,22 @@ public partial class TimelineComponent : IAsyncDisposable
 
 	private async Task FetchNewer()
 	{
-		if (LockFetch) return;
-		LockFetch = true;
-		var pq  = new PaginationQuery { Limit = 15, MinId = State.MaxId };
-		var res = await ApiService.Timelines.GetHomeTimeline(pq);
-		if (res.Count > 0)
+		try
 		{
-			State.MaxId = res.Last().Id;
-			State.Timeline.InsertRange(0, res);
+			if (LockFetch) return;
+			LockFetch = true;
+			var pq  = new PaginationQuery { Limit = 15, MinId = State.MaxId };
+			var res = await ApiService.Timelines.GetHomeTimeline(pq);
+			if (res.Count > 0)
+			{
+				State.MaxId = res.Last().Id;
+				State.Timeline.InsertRange(0, res);
+			}
 		}
-
+		catch (HttpRequestException)
+		{
+			Console.WriteLine("Network Error");
+		}
 		LockFetch = false;
 	}
 
@@ -93,21 +104,14 @@ public partial class TimelineComponent : IAsyncDisposable
 	{
 		if (firstRender)
 		{
-			try
+			State = StateService.Timeline.GetState("home");
+			if (State.Timeline.Count == 0)
 			{
-				var timeline = StateService.Timeline.GetState("home");
-				State = timeline;
-				_init = true;
-				StateHasChanged();
-			}
-			catch (ArgumentException)
-			{
+				Console.WriteLine("initializing");
 				await Initialize();
-				_init = true;
-				StateHasChanged();
 			}
+			_init = true;
+			StateHasChanged();
 		}
-
-		StateService.Timeline.SetState("home", State);
 	}
 }

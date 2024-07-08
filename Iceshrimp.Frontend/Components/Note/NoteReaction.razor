@@ -21,6 +21,7 @@
 
     private void React()
     {
-        Note.React(Reaction.Name, !Reaction.Reacted);
+        if (Reaction.Reacted) _ = Note.RemoveReact(Reaction.Name);
+        else _ = Note.AddReact(Reaction.Name, Reaction.Url);
     }
 }
