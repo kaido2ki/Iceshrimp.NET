@@ -39,7 +39,7 @@ RUN mkdir -p /src/.git/objects
 
 # build without architecture set, allowing for reuse of the majority of the compiled IL between architectures
 RUN --mount=type=cache,target=/root/.nuget \
-    dotnet publish --no-restore -c Release -o /build -p:EnableAOT=$AOT -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS
+    dotnet publish --no-restore -c Release -o /build -p:EnableAOT=$AOT -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS -p:DeterministicSourcePaths=true -p:ContinuousIntegrationBuild=true
 
 # if architecture doesn't match, build with architecture set, otherwise use existing compile output
 ARG TARGETPLATFORM
@@ -48,7 +48,7 @@ ARG TARGETARCH
 RUN --mount=type=cache,target=/root/.nuget \
     if [[ "$BUILDPLATFORM" != "$TARGETPLATFORM" ]]; then \
         dotnet restore -a $TARGETARCH -p:Configuration=Release -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS; \
-        dotnet publish --no-restore -c Release -a $TARGETARCH -o /app-$TARGETARCH -p:EnableAOT=$AOT -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS; \
+        dotnet publish --no-restore -c Release -a $TARGETARCH -o /app-$TARGETARCH -p:EnableAOT=$AOT -p:BundleNativeDeps=$VIPS -p:EnableLibVips=$VIPS -p:DeterministicSourcePaths=true -p:ContinuousIntegrationBuild=true; \
         mv /app-$TARGETARCH /app; else mv /build /app; \
     fi
 
