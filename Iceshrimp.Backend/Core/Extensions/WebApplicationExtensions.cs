@@ -31,20 +31,25 @@ public static class WebApplicationExtensions
 
 	public static IApplicationBuilder UseSwaggerWithOptions(this WebApplication app)
 	{
-		app.UseSwagger();
+		app.UseSwagger(options =>
+		{
+			options.RouteTemplate = "/openapi/{documentName}.{extension:regex(^(json|ya?ml)$)}";
+		});
+
 		app.UseSwaggerUI(options =>
 		{
 			options.DocumentTitle = "Iceshrimp API documentation";
-			options.SwaggerEndpoint("iceshrimp/swagger.json", "Iceshrimp.NET");
-			options.SwaggerEndpoint("federation/swagger.json", "Federation");
-			options.SwaggerEndpoint("mastodon/swagger.json", "Mastodon");
-			options.InjectStylesheet("/swagger/styles.css");
+			options.SwaggerEndpoint("/openapi/iceshrimp.json", "Iceshrimp.NET");
+			options.SwaggerEndpoint("/openapi/federation.json", "Federation");
+			options.SwaggerEndpoint("/openapi/mastodon.json", "Mastodon");
+			options.InjectStylesheet("/css/swagger.css");
 			options.EnablePersistAuthorization();
 			options.EnableTryItOutByDefault();
 			options.DisplayRequestDuration();
 			options.DefaultModelsExpandDepth(-1);                            // Hide "Schemas" section
 			options.ConfigObject.AdditionalItems.Add("tagsSorter", "alpha"); // Sort tags alphabetically
 		});
+
 		return app;
 	}
 
