@@ -23,7 +23,7 @@ BUILD_CMD        = ${DOTNET_CMD} build ${TL_ARG} -noLogo
 TEST_CMD         = ${DOTNET_CMD} test --no-build --nologo
 
 BUILD_FLAGS      = -p:EnableLibVips=${VIPS} -p:BundleNativeDeps=${BUNDLE_NATIVE}
-PUBLISH_FLAGS    = ${PUBLISH_RIDARG} -o publish/${TARGETRID} -p:EnableAOT=${AOT} ${BUILD_FLAGS}
+PUBLISH_FLAGS    = ${PUBLISH_RIDARG} -o publish/${TARGETRID} -p:EnableAOT=${AOT} ${BUILD_FLAGS} -p:DeterministicSourcePaths=true -p:ContinuousIntegrationBuild=true
 RELEASE_FLAGS    = -r ${TARGETRID} -o release/${TARGETPLATFORM} ${PUBLISH_FLAGS}
 
 TARGETRID        = $(TARGETPLATFORM:linux-glibc-%=linux-%)
