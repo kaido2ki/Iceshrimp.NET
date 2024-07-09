@@ -94,7 +94,7 @@ public class UserController(
 		                    .Paginate(pq, ControllerContext)
 		                    .PrecomputeVisibilities(localUser)
 		                    .ToListAsync()
-		                    .ContinueWith(n => n.Result.EnforceRenoteReplyVisibility());
+		                    .ContinueWithResult(res => res.EnforceRenoteReplyVisibility());
 
 		return await noteRenderer.RenderMany(notes, localUser, Filter.FilterContext.Accounts);
 	}

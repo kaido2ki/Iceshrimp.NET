@@ -62,4 +62,54 @@ public static class TaskExtensions
 	{
 		return (await task).ToList();
 	}
+
+	public static async Task ContinueWithResult(this Task task, Action continuation)
+	{
+		await task;
+		continuation();
+	}
+
+	public static async Task<TNewResult> ContinueWithResult<TNewResult>(this Task task, Func<TNewResult> continuation)
+	{
+		await task;
+		return continuation();
+	}
+
+	public static async Task ContinueWithResult<TResult>(this Task<TResult> task, Action<TResult> continuation)
+	{
+		continuation(await task);
+	}
+
+	public static async Task<TNewResult> ContinueWithResult<TResult, TNewResult>(
+		this Task<TResult> task, Func<TResult, TNewResult> continuation
+	)
+	{
+		return continuation(await task);
+	}
+
+	public static async Task ContinueWithResult(this Task task, Func<Task> continuation)
+	{
+		await task;
+		await continuation();
+	}
+
+	public static async Task<TNewResult> ContinueWithResult<TNewResult>(
+		this Task task, Func<Task<TNewResult>> continuation
+	)
+	{
+		await task;
+		return await continuation();
+	}
+
+	public static async Task ContinueWithResult<TResult>(this Task<TResult> task, Func<TResult, Task> continuation)
+	{
+		await continuation(await task);
+	}
+
+	public static async Task<TNewResult> ContinueWithResult<TResult, TNewResult>(
+		this Task<TResult> task, Func<TResult, Task<TNewResult>> continuation
+	)
+	{
+		return await continuation(await task);
+	}
 }
