@@ -19,6 +19,7 @@ COPY Iceshrimp.Backend/*.csproj /src/Iceshrimp.Backend/
 COPY Iceshrimp.Parsing/*.fsproj /src/Iceshrimp.Parsing/
 COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
+COPY Directory.Build.props /src/Directory.Build.props
 
 WORKDIR /src/Iceshrimp.Backend
 ARG VIPS=true
