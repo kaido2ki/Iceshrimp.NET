@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace Iceshrimp.Backend.Core.Helpers;
 
 public static class StartupHelpers
@@ -27,8 +25,7 @@ public static class StartupHelpers
 
 		if (args.Contains("--printconfig"))
 		{
-			var assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			var config      = File.ReadAllText(Path.Join(assemblyDir, "configuration.ini"));
+			var config = AssemblyHelpers.GetEmbeddedResource("configuration.ini");
 			Console.WriteLine(config);
 			Environment.Exit(0);
 		}

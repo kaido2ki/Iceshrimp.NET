@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
-using System.Reflection;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
+using Iceshrimp.Backend.Core.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using VDS.RDF.JsonLd;
@@ -13,11 +13,6 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams;
 
 public static class LdHelpers
 {
-	private static readonly string? AssemblyLocation =
-		Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
-
-	private static readonly string Prefix = Path.Combine(AssemblyLocation, "contexts");
-
 	private static readonly Dictionary<string, RemoteDocument> PreloadedContexts = new()
 	{
 		{ "https://www.w3.org/ns/activitystreams", GetPreloadedContext("as.json") },
@@ -59,7 +54,7 @@ public static class LdHelpers
 	private static IEnumerable<string> ASForceArray => ["tag", "attachment", "to", "cc", "bcc", "bto"];
 
 	private static JToken GetPreloadedDocument(string filename) =>
-		JToken.Parse(File.ReadAllText(Path.Combine(Prefix, filename)));
+		JToken.Parse(AssemblyHelpers.GetEmbeddedResource($"contexts.{filename}"));
 
 	private static RemoteDocument GetPreloadedContext(string filename) => new()
 	{

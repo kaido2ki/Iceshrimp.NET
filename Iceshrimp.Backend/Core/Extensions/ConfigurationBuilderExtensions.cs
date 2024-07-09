@@ -1,3 +1,5 @@
+using Iceshrimp.Backend.Core.Helpers;
+
 namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class ConfigurationBuilderExtensions
@@ -8,7 +10,8 @@ public static class ConfigurationBuilderExtensions
 		var overrides = Environment.GetEnvironmentVariable("ICESHRIMP_CONFIG_OVERRIDES") ??
 		                "configuration.overrides.ini";
 
-		configuration.AddIniFile(main, false, true)
+		configuration.AddIniStream(AssemblyHelpers.GetEmbeddedResourceStream("configuration.ini"))
+		             .AddIniFile(main, false, true)
 		             .AddIniFile(overrides, true, true)
 		             .AddEnvironmentVariables();
 

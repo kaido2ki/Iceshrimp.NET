@@ -79,7 +79,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="configuration.ini" CopyToOutputDirectory="Always"/>
+        <EmbeddedResource Include="configuration.ini" CopyToOutputDirectory="Always"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -87,11 +87,9 @@
             <CopyToOutputDirectory>Never</CopyToOutputDirectory>
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
-        <ContentWithTargetPath Include="Core\Federation\ActivityStreams\Contexts\*.json">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+        <EmbeddedResource Include="Core\Federation\ActivityStreams\Contexts\*.json">
             <TargetPath>contexts\%(Filename)%(Extension)</TargetPath>
-        </ContentWithTargetPath>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
@@ -99,7 +97,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\Shared\" />
+        <Folder Include="Controllers\Shared\"/>
     </ItemGroup>
 
     <Target Name="KeepOnlyBrotliCompressedStaticAssets" AfterTargets="Publish">
