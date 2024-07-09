@@ -23,6 +23,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>
 builder.Services.AddSingleton<ComposeService>();
 builder.Services.AddSingleton<StateService>();
 builder.Services.AddSingleton<EmojiService>();
+builder.Services.AddSingleton<VersionService>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddBlazoredLocalStorageAsSingleton();

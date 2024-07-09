@@ -1,7 +1,4 @@
 @page
-@using Iceshrimp.Backend.Core.Configuration
-@using Microsoft.Extensions.Options
-@inject IOptions<Config.InstanceSection>        Config
 @{
     Layout = null;
 }
@@ -12,9 +9,6 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-    <meta name="version" content="@Config.Value.RawVersion"/>
-    <meta name="codename" content="@Config.Value.Codename"/>
-    <meta name="commit" content="@Config.Value.CommitHash"/>
     <title>Iceshrimp.Frontend</title>
     <base href="/"/>
     <link rel="stylesheet" href="~/css/app.css"/>

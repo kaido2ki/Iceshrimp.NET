@@ -43,8 +43,9 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 			Version = Request.Path.Value?.EndsWith("2.1") ?? false ? "2.1" : "2.0",
 			Software = new NodeInfoResponse.NodeInfoSoftware
 			{
-				Version  = instance.Version,
 				Name     = "Iceshrimp.NET",
+				Version  = instance.Version,
+				Codename = instance.Codename,
 				Homepage = new Uri(Constants.ProjectHomepageUrl),
 				Repository = Request.Path.Value?.EndsWith("2.1") ?? false
 					? new Uri(Constants.RepositoryUrl)

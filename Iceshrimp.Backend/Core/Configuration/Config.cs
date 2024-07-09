@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Shared.Helpers;
 
 namespace Iceshrimp.Backend.Core.Configuration;
 
@@ -17,45 +17,13 @@ public sealed class Config
 
 	public sealed class InstanceSection
 	{
-		public readonly string  Codename;
-		public readonly string? CommitHash;
-		public readonly string  RawVersion;
-		public readonly string  Version;
+		private readonly VersionInfo _versionInfo = VersionHelpers.GetVersionInfo();
 
-		public InstanceSection()
-		{
-			var attributes = Assembly.GetEntryAssembly()!
-			                         .GetCustomAttributes()
-			                         .ToList();
-
-			// Get codename from assembly
-			Codename = attributes
-			           .OfType<AssemblyMetadataAttribute>()
-			           .FirstOrDefault(p => p.Key == "codename")
-			           ?.Value ??
-			           "unknown";
-
-			// Get version information from assembly
-			var version = attributes.OfType<AssemblyInformationalVersionAttribute>()
-			                        .First()
-			                        .InformationalVersion;
-
-			// If we have a git revision, limit it to 10 characters
-			if (version.Split('+') is { Length: 2 } split)
-			{
-				CommitHash = split[1];
-				split[1]   = split[1][..Math.Min(split[1].Length, 10)];
-				Version    = string.Join('+', split);
-				RawVersion = split[0];
-			}
-			else
-			{
-				Version    = version;
-				RawVersion = version;
-			}
-		}
-
-		public string UserAgent => $"Iceshrimp.NET/{Version} (+https://{WebDomain}/)";
+		public string  Codename   => _versionInfo.Codename;
+		public string? CommitHash => _versionInfo.CommitHash;
+		public string  RawVersion => _versionInfo.RawVersion;
+		public string  Version    => _versionInfo.Version;
+		public string  UserAgent  => $"Iceshrimp.NET/{Version} (+https://{WebDomain}/)";
 
 		[Range(1, 65535)] public  int     ListenPort     { get; init; } = 3000;
 		[Required]        public  string  ListenHost     { get; init; } = "localhost";
