@@ -19,7 +19,7 @@
     border-radius: 1rem;
     background-color: var(--foreground-color);
     max-width: 45rem;
-    margin: 1rem auto auto;
+    margin-top: 1rem;
     width: 100%;
 }
 

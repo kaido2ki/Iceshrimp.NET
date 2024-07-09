@@ -1,9 +1,10 @@
 @inject ApiService Api;
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
+@inject NavigationManager NavigationManager;
 @if (UserProfile != null)
 {
-    <div class="profile-card">
+    <div @onclick="Open" class="profile-card">
         <div class="header">
             <div>
                 <img class="avatar" src="@User.AvatarUrl"/>
@@ -33,5 +34,12 @@
     protected override async Task OnInitializedAsync()
     {
         UserProfile = await Api.Users.GetUserProfile(User.Id);
+    }
+
+    private void Open()
+    {
+        var username                    = $"@{User.Username}";
+        if (User.Host != null) username += $"@{User.Host}";
+        NavigationManager.NavigateTo($"/{username}");
     }
 }
