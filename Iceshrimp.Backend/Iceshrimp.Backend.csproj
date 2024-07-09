@@ -96,10 +96,6 @@
         <None Remove="Core\Database\prune-designer-cs-files.sh"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Controllers\Shared\"/>
-    </ItemGroup>
-
     <Target Name="KeepOnlyBrotliCompressedStaticAssets" AfterTargets="Publish">
         <ItemGroup>
             <CompressedFiles Include="$(PublishDir)\wwwroot\_framework\*.br"/>
