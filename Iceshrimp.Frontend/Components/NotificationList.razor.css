@@ -3,10 +3,12 @@
     align-items: center;
     flex-direction: column;
     width: 100%;
-    overflow-x: scroll;;
+    overflow-x: scroll;
 }
 
 .wrapper {
+    display: flex;
+    justify-content: center;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     width: 100%;
