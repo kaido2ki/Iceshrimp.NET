@@ -1,0 +1,44 @@
+<Project>
+    <!-- Target framework & language version -->
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <!-- Common build options -->
+    <PropertyGroup>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+        <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
+    </PropertyGroup>
+
+    <!-- Version metadata -->
+    <PropertyGroup>
+        <VersionPrefix>2024.1</VersionPrefix>
+        <VersionSuffix>beta2</VersionSuffix>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AssemblyMetadata Include="codename" Value="phenidate"/>
+        <AssemblyMetadata Include="edition" Value="enterprise"/>
+    </ItemGroup>
+
+    <!-- Embed debug info instead of generating PDBs in release configuration -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <!-- Don't copy blazor debug files to output directory in release configuration -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <BlazorWebAssemblyOmitDebugProxyOutput>true</BlazorWebAssemblyOmitDebugProxyOutput>
+        <PreserveCompilationContext>false</PreserveCompilationContext>
+    </PropertyGroup>
+
+    <!-- Enable Blazor AOT compilation when EnableAOT build flag is set -->
+    <PropertyGroup Condition="'$(EnableAOT)' == 'true'">
+        <RunAOTCompilation>true</RunAOTCompilation>
+    </PropertyGroup>
+</Project>

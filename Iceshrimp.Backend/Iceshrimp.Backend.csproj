@@ -1,27 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <InvariantGlobalization>true</InvariantGlobalization>
-        <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-        <VersionPrefix>2024.1</VersionPrefix>
-        <VersionSuffix>beta2</VersionSuffix>
-        <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
+        <!-- ASP.NET MVC & Razor Pages don't support trimming yet (and everything else might also break) -->
         <PublishTrimmed>false</PublishTrimmed>
+        <!-- Enables DATAS - https://www.thinktecture.com/en/net/optimize-asp-net-core-memory-with-datas -->
         <GarbageCollectionAdaptationMode>1</GarbageCollectionAdaptationMode>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <AssemblyMetadata Include="codename" Value="phenidate"/>
-        <AssemblyMetadata Include="edition" Value="enterprise"/>
-    </ItemGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <BlazorWebAssemblyOmitDebugProxyOutput>true</BlazorWebAssemblyOmitDebugProxyOutput>
-        <PreserveCompilationContext>false</PreserveCompilationContext>
-        <DebugType>embedded</DebugType>
     </PropertyGroup>
 
     <ItemGroup>
@@ -62,40 +45,45 @@
         <PackageReference Include="Iceshrimp.WebPush" Version="2.0.0"/>
     </ItemGroup>
 
+    <!-- We want Razor runtime compilation support, but only during development -->
     <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.5"/>
     </ItemGroup>
 
+    <!-- If the build flag EnableLibVips is set, switch the ImageProcessor to LibVips (with ImageSharp as fallback) -->
     <PropertyGroup Condition=" '$(EnableLibVips)' == 'true' ">
         <DefineConstants>$(DefineConstants);EnableLibVips</DefineConstants>
     </PropertyGroup>
 
+    <!-- If the build flag EnableLibVips is set, reference the .NET bindings for LibVips -->
     <ItemGroup Condition=" '$(EnableLibVips)' == 'true' ">
         <PackageReference Include="NetVips" Version="2.4.1"/>
     </ItemGroup>
 
+    <!-- If the build flags EnableLibVips and BundleNativeDeps are set, reference the LibVips native dependecy -->
     <ItemGroup Condition=" '$(EnableLibVips)' == 'true' And '$(BundleNativeDeps)' == 'true' ">
         <PackageReference Include="NetVips.Native" Version="8.15.2-iceshrimp"/>
     </ItemGroup>
 
+    <!-- This makes sure configuration.ini & the preloaded AS contexts are added to the assembly as embedded resources -->
     <ItemGroup>
         <EmbeddedResource Include="configuration.ini" CopyToOutputDirectory="Always"/>
-    </ItemGroup>
-
-    <ItemGroup>
+        <EmbeddedResource Include="Core\Federation\ActivityStreams\Contexts\*.json">
+            <TargetPath>contexts\%(Filename)%(Extension)</TargetPath>
+        </EmbeddedResource>
         <Content Update="Core\Federation\ActivityStreams\Contexts\*.json">
             <CopyToOutputDirectory>Never</CopyToOutputDirectory>
             <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
-        <EmbeddedResource Include="Core\Federation\ActivityStreams\Contexts\*.json">
-            <TargetPath>contexts\%(Filename)%(Extension)</TargetPath>
-        </EmbeddedResource>
     </ItemGroup>
 
+    <!-- This is a script used during development, and not needed in the final output -->
     <ItemGroup>
         <None Remove="Core\Database\prune-designer-cs-files.sh"/>
     </ItemGroup>
 
+    <!-- This saves a bunch of disk space by discarding the original and gzip-compressed static assets. -->
+    <!-- For clients that don't support brotli, they will be transparently decompressed by the server. -->
     <Target Name="KeepOnlyBrotliCompressedStaticAssets" AfterTargets="Publish">
         <ItemGroup>
             <CompressedFiles Include="$(PublishDir)\wwwroot\_framework\*.br"/>

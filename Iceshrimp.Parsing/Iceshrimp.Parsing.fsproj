@@ -1,18 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-    </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <DebugType>embedded</DebugType>
-    </PropertyGroup>
-
     <ItemGroup>
-        <Compile Include="SearchQuery.fs"/>
-        <Compile Include="Mfm.fs"/>
+        <Compile Include="*.fs"/>
     </ItemGroup>
 
     <ItemGroup>

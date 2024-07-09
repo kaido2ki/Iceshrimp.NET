@@ -1,29 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
         <PublishTrimmed>true</PublishTrimmed>
-        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
-        <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+        <InvariantGlobalization>false</InvariantGlobalization>
+        <UseCurrentRuntimeIdentifier>false</UseCurrentRuntimeIdentifier>
+        <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+    </PropertyGroup>
+    
+    <!-- Remove me before beta3 -->
+    <PropertyGroup>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
         <None Update="Components/MfmText.razor.css" CssScope="mfm"/>
     </ItemGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <DebugType>embedded</DebugType>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(EnableAOT)' == 'true'">
-        <RunAOTCompilation>true</RunAOTCompilation>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
-    </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj"/>
