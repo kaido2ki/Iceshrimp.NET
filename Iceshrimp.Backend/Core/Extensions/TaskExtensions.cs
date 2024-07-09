@@ -50,13 +50,8 @@ public static class TaskExtensions
 		}
 	}
 
-	public static List<Task> QueueMany(this Func<Task> task, int n)
-	{
-		var tasks = new List<Task>();
-		for (var i = 0; i < n; i++)
-			tasks.Add(task());
-		return tasks;
-	}
+	public static List<Task> QueueMany(this Func<Task> factory, int n) =>
+		Enumerable.Range(0, n).Select(_ => factory()).ToList();
 
 	public static async Task<List<T>> ToListAsync<T>(this Task<IEnumerable<T>> task)
 	{
