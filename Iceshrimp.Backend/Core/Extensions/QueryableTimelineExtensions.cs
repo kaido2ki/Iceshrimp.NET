@@ -44,7 +44,7 @@ public static class QueryableTimelineExtensions
 			return await db.Notes
 			               .Where(p => p.CreatedAt > latestNote.CreatedAt - TimeSpan.FromDays(7))
 			               .FollowingAndOwnLowFreq(user, db)
-			               //.Select(p => new { })
+			               .OrderByDescending(p => p.Id)
 			               .Take(Cutoff + 1)
 			               .CountAsync();
 		}
