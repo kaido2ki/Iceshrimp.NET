@@ -1,0 +1,25 @@
+.follow-request-card {
+    display: flex;
+    align-items: center;
+    background-color: var(--foreground-color);
+    border-radius: 1rem;
+    justify-content: space-between;
+    max-width: 50rem;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.buttons {
+    display: flex;
+}
+
+.btn {
+    width: 4rem;
+    height: 4rem;
+}
+
+::deep {
+    .profile-card {
+        margin-top: 0 !important; 
+    }
+}

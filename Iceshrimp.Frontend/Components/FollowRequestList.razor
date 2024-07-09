@@ -1,0 +1,93 @@
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@inject ApiService                     Api;
+@inject IStringLocalizer<Localization> Loc;
+
+@if (_init == LoadState.Ready)
+{
+    <div class="scroller">
+        @foreach (var el in FollowRequests)
+        {
+            <FollowRequestEntry FollowRequest="el"/>
+        }
+        <ScrollEnd IntersectionChange="LoadMore" ManualLoad="LoadMore"/>
+
+    </div>
+}
+@if (_init == LoadState.Loading)
+{
+    <div>Loading!</div>
+}
+@if (_init == LoadState.Emtpy)
+{
+    @Loc["All done!"]
+}
+
+@code {
+    private List<FollowRequestResponse> FollowRequests { get; set; } = [];
+    private LoadState                   _init;
+    private string?                     _minId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Init();
+    }
+
+    private async Task Init()
+    {
+        try
+        {
+            var pq = new PaginationQuery { Limit = 20 };
+            FollowRequests = await Api.FollowRequests.GetFollowRequests(pq);
+            if (FollowRequests.Count == 0)
+            {
+                _init = LoadState.Emtpy;
+                return;
+            }
+            _minId         = FollowRequests.Last().Id;
+            _init          = LoadState.Ready;
+        }
+        catch (ApiException)
+        {
+            _init = LoadState.Error;
+        }
+        catch (HttpRequestException)
+        {
+            _init = LoadState.Error;
+            Console.WriteLine("Network error");
+        }
+    }
+
+    private async Task LoadMore()
+    {
+        var pq  = new PaginationQuery { MaxId = _minId, Limit = 20 };
+        var res = await Api.FollowRequests.GetFollowRequests(pq);
+        if (res.Count > 0)
+        {
+            FollowRequests.AddRange(res);
+            _minId = res.Last().Id;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _init          = LoadState.Loading;
+        _minId         = null;
+        FollowRequests = [];
+        StateHasChanged();
+        await Init();
+        StateHasChanged();
+    }
+
+    private enum LoadState
+    {
+        Loading,
+        Ready,
+        Emtpy,
+        Error
+    }
+}
