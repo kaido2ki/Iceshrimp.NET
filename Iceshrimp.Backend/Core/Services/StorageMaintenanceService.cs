@@ -95,27 +95,29 @@ public class StorageMaintenanceService(
 				var path   = Path.Join(pathBase, file.AccessKey);
 				var stream = File.OpenRead(path);
 
-				await objectStorageSvc.UploadFileAsync(file.AccessKey, file.Type, stream);
+				await objectStorageSvc.UploadFileAsync(file.AccessKey, file.Type, file.Name, stream);
 				file.Url = objectStorageSvc.GetFilePublicUrl(file.AccessKey).AbsoluteUri;
 				deletionQueue.Add(path);
 			}
 
 			if (file.ThumbnailAccessKey != null)
 			{
-				var path   = Path.Join(pathBase, file.ThumbnailAccessKey);
-				var stream = File.OpenRead(path);
+				var path     = Path.Join(pathBase, file.ThumbnailAccessKey);
+				var stream   = File.OpenRead(path);
+				var filename = file.Name.EndsWith(".webp") ? file.Name : $"{file.Name}.webp";
 
-				await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, "image/webp", stream);
+				await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, "image/webp", filename, stream);
 				file.ThumbnailUrl = objectStorageSvc.GetFilePublicUrl(file.ThumbnailAccessKey).AbsoluteUri;
 				deletionQueue.Add(path);
 			}
 
 			if (file.WebpublicAccessKey != null)
 			{
-				var path   = Path.Join(pathBase, file.WebpublicAccessKey);
-				var stream = File.OpenRead(path);
+				var path     = Path.Join(pathBase, file.WebpublicAccessKey);
+				var stream   = File.OpenRead(path);
+				var filename = file.Name.EndsWith(".webp") ? file.Name : $"{file.Name}.webp";
 
-				await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, "image/webp", stream);
+				await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, "image/webp", filename, stream);
 				file.WebpublicUrl = objectStorageSvc.GetFilePublicUrl(file.WebpublicAccessKey).AbsoluteUri;
 				deletionQueue.Add(path);
 			}

@@ -70,7 +70,7 @@ public class DriveService(
 					Uri         = uri,
 					IsSensitive = sensitive,
 					Comment     = description,
-					Filename    = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
+					Filename    = file.Name,
 					MimeType    = null! // Not needed in .Clone
 				};
 
@@ -92,10 +92,13 @@ public class DriveService(
 				var res = await httpClient.GetAsync(uri);
 				res.EnsureSuccessStatusCode();
 
+				var filename = res.Content.Headers.ContentDisposition?.FileName ??
+				               new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "";
+
 				var request = new DriveFileCreationRequest
 				{
 					Uri         = uri,
-					Filename    = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
+					Filename    = filename,
 					IsSensitive = sensitive,
 					Comment     = description,
 					MimeType    = CleanMimeType(mimeType ?? res.Content.Headers.ContentType?.MediaType)
@@ -141,6 +144,7 @@ public class DriveService(
 			throw GracefulException.UnprocessableEntity("Attachment is too large.");
 
 		DriveFile? file;
+		request.Filename = request.Filename.Trim('"');
 
 		if (user.IsRemoteUser && input.Length > storageConfig.Value.MaxCacheSizeBytes)
 		{
@@ -218,8 +222,8 @@ public class DriveService(
 		var isImage          = request.MimeType.StartsWith("image/") || request.MimeType == "image";
 		var filename         = GenerateFilenameKeepingExtension(request.Filename);
 
-		string? thumbnailFilename = null;
-		string? webpublicFilename = null;
+		string? thumbnailKey = null;
+		string? webpublicKey = null;
 
 		if (shouldStore)
 		{
@@ -229,9 +233,10 @@ public class DriveService(
 				var res     = await imageProcessor.ProcessImage(data, request, true, genWebp);
 				properties = res?.Properties ?? properties;
 
-				blurhash          = res?.Blurhash;
-				thumbnailFilename = res?.RenderThumbnail != null ? GenerateWebpFilename("thumbnail-") : null;
-				webpublicFilename = res?.RenderThumbnail != null ? GenerateWebpFilename("webpublic-") : null;
+				blurhash     = res?.Blurhash;
+				thumbnailKey = res?.RenderThumbnail != null ? GenerateWebpKey("thumbnail-") : null;
+				webpublicKey = res?.RenderWebpublic != null ? GenerateWebpKey("webpublic-") : null;
+				var webpFilename = request.Filename.EndsWith(".webp") ? request.Filename : $"{request.Filename}.webp";
 
 				if (storedInternal)
 				{
@@ -244,75 +249,75 @@ public class DriveService(
 					await data.CopyToAsync(writer);
 					url = $"https://{instanceConfig.Value.WebDomain}/files/{filename}";
 
-					if (thumbnailFilename != null && res?.RenderThumbnail != null)
+					if (thumbnailKey != null && res?.RenderThumbnail != null)
 					{
-						var             thumbPath   = Path.Combine(pathBase, thumbnailFilename);
+						var             thumbPath   = Path.Combine(pathBase, thumbnailKey);
 						await using var thumbWriter = File.OpenWrite(thumbPath);
 						try
 						{
 							await res.RenderThumbnail(thumbWriter);
-							thumbnailUrl = $"https://{instanceConfig.Value.WebDomain}/files/{thumbnailFilename}";
+							thumbnailUrl = $"https://{instanceConfig.Value.WebDomain}/files/{thumbnailKey}";
 						}
 						catch (Exception e)
 						{
 							logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
-							thumbnailFilename = null;
+							thumbnailKey = null;
 						}
 					}
 
-					if (webpublicFilename != null && res?.RenderWebpublic != null)
+					if (webpublicKey != null && res?.RenderWebpublic != null)
 					{
-						var             webpPath   = Path.Combine(pathBase, webpublicFilename);
+						var             webpPath   = Path.Combine(pathBase, webpublicKey);
 						await using var webpWriter = File.OpenWrite(webpPath);
 						try
 						{
 							await res.RenderWebpublic(webpWriter);
-							webpublicUrl = $"https://{instanceConfig.Value.WebDomain}/files/{webpublicFilename}";
+							webpublicUrl = $"https://{instanceConfig.Value.WebDomain}/files/{webpublicKey}";
 						}
 						catch (Exception e)
 						{
 							logger.LogDebug("Failed to generate/write webp: {e}", e.Message);
-							webpublicFilename = null;
+							webpublicKey = null;
 						}
 					}
 				}
 				else
 				{
 					data.Seek(0, SeekOrigin.Begin);
-					await storageSvc.UploadFileAsync(filename, request.MimeType, data);
+					await storageSvc.UploadFileAsync(filename, request.MimeType, request.Filename, data);
 					url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
 
-					if (thumbnailFilename != null && res?.RenderThumbnail != null)
+					if (thumbnailKey != null && res?.RenderThumbnail != null)
 					{
 						try
 						{
 							await using var stream = new MemoryStream();
 							await res.RenderThumbnail(stream);
 							stream.Seek(0, SeekOrigin.Begin);
-							await storageSvc.UploadFileAsync(thumbnailFilename, "image/webp", stream);
-							thumbnailUrl = storageSvc.GetFilePublicUrl(thumbnailFilename).AbsoluteUri;
+							await storageSvc.UploadFileAsync(thumbnailKey, "image/webp", webpFilename, stream);
+							thumbnailUrl = storageSvc.GetFilePublicUrl(thumbnailKey).AbsoluteUri;
 						}
 						catch (Exception e)
 						{
 							logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
-							thumbnailFilename = null;
+							thumbnailKey = null;
 						}
 					}
 
-					if (webpublicFilename != null && res?.RenderWebpublic != null)
+					if (webpublicKey != null && res?.RenderWebpublic != null)
 					{
 						try
 						{
 							await using var stream = new MemoryStream();
 							await res.RenderWebpublic(stream);
 							stream.Seek(0, SeekOrigin.Begin);
-							await storageSvc.UploadFileAsync(webpublicFilename, "image/webp", stream);
-							webpublicUrl = storageSvc.GetFilePublicUrl(webpublicFilename).AbsoluteUri;
+							await storageSvc.UploadFileAsync(webpublicKey, "image/webp", webpFilename, stream);
+							webpublicUrl = storageSvc.GetFilePublicUrl(webpublicKey).AbsoluteUri;
 						}
 						catch (Exception e)
 						{
 							logger.LogDebug("Failed to generate/write webp: {e}", e.Message);
-							webpublicFilename = null;
+							webpublicKey = null;
 						}
 					}
 				}
@@ -332,7 +337,7 @@ public class DriveService(
 				else
 				{
 					data.Seek(0, SeekOrigin.Begin);
-					await storageSvc.UploadFileAsync(filename, request.MimeType, data);
+					await storageSvc.UploadFileAsync(filename, request.MimeType, request.Filename, data);
 					url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
 				}
 			}
@@ -365,10 +370,10 @@ public class DriveService(
 			Blurhash           = blurhash,
 			Properties         = properties,
 			ThumbnailUrl       = thumbnailUrl,
-			ThumbnailAccessKey = thumbnailFilename,
+			ThumbnailAccessKey = thumbnailKey,
 			WebpublicType      = webpublicUrl != null ? "image/webp" : null,
 			WebpublicUrl       = webpublicUrl,
-			WebpublicAccessKey = webpublicFilename
+			WebpublicAccessKey = webpublicKey
 		};
 
 		await db.AddAsync(file);
@@ -395,7 +400,7 @@ public class DriveService(
 		return guid + ext;
 	}
 
-	private static string GenerateWebpFilename(string prefix = "")
+	private static string GenerateWebpKey(string prefix = "")
 	{
 		var guid = Guid.NewGuid().ToStringLower();
 		return $"{prefix}{guid}.webp";

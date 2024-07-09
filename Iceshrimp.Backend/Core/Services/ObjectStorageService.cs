@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Net.Mime;
 using System.Text;
 using Carbon.Storage;
 using Iceshrimp.Backend.Core.Configuration;
@@ -61,7 +62,7 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 		const string filename = ".iceshrimp-test";
 		var          content  = CryptographyHelpers.GenerateRandomString(16);
 
-		await UploadFileAsync(filename, "text/plain", Encoding.UTF8.GetBytes(content));
+		await UploadFileAsync(filename, "text/plain", filename, Encoding.UTF8.GetBytes(content));
 
 		string result;
 		try
@@ -78,17 +79,18 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 		throw new Exception("Failed to verify access url (content mismatch)");
 	}
 
-	private Task UploadFileAsync(string filename, string contentType, byte[] data) =>
-		UploadFileAsync(filename, contentType, new MemoryStream(data));
+	private Task UploadFileAsync(string key, string contentType, string filename, byte[] data) =>
+		UploadFileAsync(key, contentType, filename, new MemoryStream(data));
 
-	public async Task UploadFileAsync(string filename, string contentType, Stream data)
+	public async Task UploadFileAsync(string key, string contentType, string filename, Stream data)
 	{
 		if (_bucket == null) throw new Exception("Refusing to upload to object storage with invalid configuration");
 		var properties = (_acl ?? BlobProperties.Empty).ToDictionary();
 		properties.Add("Content-Type", contentType);
+		properties.Add("Content-Disposition", new ContentDisposition("inline") { FileName = filename }.ToString());
 		IBlob blob = data.Length > 0
-			? new Blob(GetFilenameWithPrefix(filename), data, properties)
-			: new EmptyBlob(GetFilenameWithPrefix(filename), data, properties);
+			? new Blob(GetKeyWithPrefix(key), data, properties)
+			: new EmptyBlob(GetKeyWithPrefix(key), data, properties);
 
 		await _bucket.PutAsync(blob);
 	}
@@ -96,7 +98,7 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 	public Uri GetFilePublicUrl(string filename)
 	{
 		var baseUri = new Uri(_accessUrl ?? throw new Exception("Invalid object storage access url"));
-		return new Uri(baseUri, GetFilenameWithPrefix(filename));
+		return new Uri(baseUri, GetKeyWithPrefix(filename));
 	}
 
 	public async ValueTask<Stream?> GetFileAsync(string filename)
@@ -105,7 +107,7 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 
 		try
 		{
-			var res = await _bucket.GetAsync(GetFilenameWithPrefix(filename));
+			var res = await _bucket.GetAsync(GetKeyWithPrefix(filename));
 			return await res.OpenAsync();
 		}
 		catch
@@ -118,10 +120,10 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 	{
 		if (_bucket == null)
 			throw new Exception("Refusing to remove file from object storage with invalid configuration");
-		await _bucket.DeleteAsync(filenames.Select(GetFilenameWithPrefix).ToImmutableList());
+		await _bucket.DeleteAsync(filenames.Select(GetKeyWithPrefix).ToImmutableList());
 	}
 
-	private string GetFilenameWithPrefix(string filename)
+	private string GetKeyWithPrefix(string filename)
 	{
 		return !string.IsNullOrWhiteSpace(_prefix) ? _prefix + "/" + filename : filename;
 	}

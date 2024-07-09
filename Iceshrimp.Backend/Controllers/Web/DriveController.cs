@@ -38,6 +38,8 @@ public class DriveController(
 			throw GracefulException.NotFound("File not found");
 		}
 
+		var filename = file.AccessKey == accessKey || file.Name.EndsWith(".webp") ? file.Name : $"{file.Name}.webp";
+
 		if (file.StoredInternal)
 		{
 			var pathBase = options.Value.Local?.Path;
@@ -52,7 +54,7 @@ public class DriveController(
 
 			Response.Headers.CacheControl        = "max-age=31536000, immutable";
 			Response.Headers.XContentTypeOptions = "nosniff";
-			return File(stream, file.Type, true);
+			return File(stream, file.Type, filename, true);
 		}
 		else
 		{
@@ -71,7 +73,7 @@ public class DriveController(
 
 			Response.Headers.CacheControl        = "max-age=31536000, immutable";
 			Response.Headers.XContentTypeOptions = "nosniff";
-			return File(stream, file.Type, true);
+			return File(stream, file.Type, filename, true);
 		}
 	}
 
