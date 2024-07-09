@@ -21,15 +21,19 @@
                 </div>
             </div>
         </div>
-        <div class="bio">
-            <MfmText Text="@UserProfile.Bio"/>
-        </div>
+        @if (ShowBio)
+        {
+            <div class="bio">
+                <MfmText Text="@UserProfile.Bio"/>
+            </div>
+        }
     </div>
 }
 
 @code {
     [Parameter] [EditorRequired] public required UserResponse         User        { get; set; }
     private                                      UserProfileResponse? UserProfile { get; set; }
+    [Parameter] public                           bool                 ShowBio     { get; set; } = true;
 
     protected override async Task OnInitializedAsync()
     {
