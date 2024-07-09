@@ -29,8 +29,11 @@ public class LinkPaginationAttribute(int defaultLimit, int maxLimit, bool offset
 		var query = actionArguments.Values.OfType<IPaginationQuery>().FirstOrDefault();
 		if (query == null) return;
 
-		if (context.Result is not OkObjectResult result) return;
-		if ((context.HttpContext.GetPaginationData() ?? result.Value) is not IEnumerable<IEntity> entities) return;
+		var entities = context.HttpContext.GetPaginationData();
+		if (entities == null && context.Result is ObjectResult { StatusCode: null or >= 200 and <= 299 } result)
+			entities = result.Value as IEnumerable<IEntity>;
+
+		if (entities is null) return;
 		var ids = entities.Select(p => p.Id).ToList();
 		if (ids.Count == 0) return;
 		if (query.MinId != null) ids.Reverse();
