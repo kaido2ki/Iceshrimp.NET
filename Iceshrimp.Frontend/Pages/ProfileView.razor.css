@@ -6,6 +6,11 @@
 
 .header {
     display: flex;
+    justify-content: space-between;
+}
+
+.subheader {
+    display: flex;
 }
 
 .name-section {

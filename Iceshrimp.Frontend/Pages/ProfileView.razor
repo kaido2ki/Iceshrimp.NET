@@ -12,20 +12,23 @@
     <div class="scroller">
         <div class="profile-card">
             <div class="header">
-                <div>
-                    <img class="avatar" src="@UserResponse.AvatarUrl"/>
-                </div>
-                <div class="name-section">
-                    <div class="name">@UserResponse.DisplayName</div>
-                    <div class="identifier">
-                        @@@UserResponse.Username
-                        @if (UserResponse.Host != null)
-                        {
-                            var host = $"@{UserResponse.Host}";
-                            @host
-                        }
+                <div class="subheader">
+                    <div>
+                        <img class="avatar" src="@UserResponse.AvatarUrl"/>
+                    </div>
+                    <div class="name-section">
+                        <div class="name">@UserResponse.DisplayName</div>
+                        <div class="identifier">
+                            @@@UserResponse.Username
+                            @if (UserResponse.Host != null)
+                            {
+                                var host = $"@{UserResponse.Host}";
+                                @host
+                            }
+                        </div>
                     </div>
                 </div>
+                <FollowButton User="UserResponse" UserProfile="Profile"/>
             </div>
             <ProfileInfo UserProfile="Profile"/>
         </div>

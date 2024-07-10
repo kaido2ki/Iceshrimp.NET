@@ -1,0 +1,111 @@
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
+@inject IStringLocalizer<Localization> Loc;
+@inject ApiService                     Api;
+<span class="follow-button">
+    <button @onclick="Action" class="btn">
+        @switch (_buttonType)
+        {
+            case ButtonType.Follow:
+                <span class="text">@Loc["Follow"]</span>
+                <Icon ExtraClasses="icon" Name="Icons.Plus"/>
+                break;
+            case ButtonType.Unfollow:
+                <span class="text">@Loc["Unfollow"]</span>
+                <Icon ExtraClasses="icon" Name="Icons.Minus"/>
+                break;
+            case ButtonType.FollowBack:
+                <span class="text">@Loc["Follow back"]</span>
+                <Icon ExtraClasses="icon" Name="Icons.Plus"/>
+                break;
+            case ButtonType.CancelRequest:
+                <span class="text">@Loc["Cancel request"]</span>
+                <Icon ExtraClasses="icon" Name="Icons.X"/>
+                break;
+        }
+    </button>
+</span>
+
+@code {
+    [Parameter] [EditorRequired] public required UserResponse        User        { get; set; }
+    [Parameter] [EditorRequired] public required UserProfileResponse UserProfile { get; set; }
+    private                                      ButtonType          _buttonType;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ChooseButton();
+        Console.WriteLine(UserProfile.Relations);
+    }
+
+    private enum ButtonType
+    {
+        Follow,
+        Unfollow,
+        FollowBack,
+        FollowLocked,
+        CancelRequest
+    }
+
+    private void Action()
+    {
+        switch (_buttonType)
+        {
+            case ButtonType.Follow:
+                Follow();
+                break;
+            case ButtonType.FollowBack:
+                Follow();
+                break;
+            case ButtonType.Unfollow or ButtonType.CancelRequest:
+                Unfollow();
+                break;
+        }
+    }
+
+    private async void Unfollow()
+    {
+        Console.WriteLine("Unfollowing");
+        await Api.Users.UnfollowUser(User.Id);
+        UserProfile.Relations -= (int)Relations.Following;
+        ChooseButton();
+        StateHasChanged();
+    }
+
+    private async void Follow()
+    {
+        Console.WriteLine("Following");
+        await Api.Users.FollowUser(User.Id);
+        UserProfile.Relations += (int)Relations.Requested;
+        ChooseButton();
+        StateHasChanged();
+        UserProfile = await Api.Users.GetUserProfile(UserProfile.Id) ?? throw new Exception("How did it stop existing");
+        ChooseButton();
+        StateHasChanged();
+    }
+
+    private void ChooseButton()
+    {
+        if (UserProfile.Relations == Relations.None)
+        {
+            _buttonType = ButtonType.Follow;
+        }
+
+        if (UserProfile.Relations.HasFlag(Relations.FollowedBy))
+        {
+            _buttonType = ButtonType.FollowBack;
+        }
+
+        if (UserProfile.Relations.HasFlag(Relations.Following))
+        {
+            _buttonType = ButtonType.Unfollow;
+        }
+
+        if (UserProfile.Relations.HasFlag(Relations.Requested))
+        {
+            _buttonType = ButtonType.CancelRequest;
+        }
+    }
+}

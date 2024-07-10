@@ -1,0 +1,17 @@
+.btn {
+    border-radius: 1rem;
+    border: var(--notice-color) solid 0.1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+.text {
+    margin-right: 0.5rem;
+}
+
+.follow-button {
+    display: flex;
+    align-items: center;
+}
+::deep {.icon {
+    vertical-align: text-bottom;
+}}
