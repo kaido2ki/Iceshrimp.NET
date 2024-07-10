@@ -4,7 +4,7 @@
 
 @if (_display)
 {
-    <div class="emoji-picker @(Fixed ? "fixed" : "")">
+    <div @ref="EmojiPickerRef" @onfocusout="Close" class="emoji-picker @(Fixed ? "fixed" : "")" tabindex="0">
         @foreach (var el in EmojiList)
         {
             <div class="emoji">
@@ -20,6 +20,7 @@
 
     private List<EmojiResponse> EmojiList { get; set; } = [];
     private bool                _display = false;
+    private ElementReference    EmojiPickerRef { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -31,6 +32,20 @@
         await OnEmojiSelect.InvokeAsync(emoji);
         _display = false;
         StateHasChanged();
+    }
+
+    private void Close()
+    {
+        _display = false;
+        StateHasChanged();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_display)
+        {
+            EmojiPickerRef.FocusAsync();
+        }
     }
 
     public async Task Toggle()
