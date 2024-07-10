@@ -23,7 +23,15 @@ internal class MessageService
 
 	public void Unregister(string id, EventHandler<NoteResponse> func)
 	{
-		NoteChangedHandlers[id] -= func;
+		if (NoteChangedHandlers.ContainsKey(id))
+		{
+			#pragma warning disable CS8601 
+			NoteChangedHandlers[id] -= func;
+		}
+		else
+		{
+			throw new ArgumentException("Tried to unregister from callback that doesn't exist");
+		}
 	}
 
 	public Task UpdateNote(NoteResponse note)

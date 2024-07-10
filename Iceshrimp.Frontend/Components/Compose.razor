@@ -103,6 +103,7 @@
                    .Select(vis =>
                                new DropdownElement<NoteVisibility>
                                {
+                                   #pragma warning disable BL0005 // Setting this outside the component is fine until this is reworked
                                    Icon      = DropdownIcon(vis),
                                    Content   = DropdownContent(vis),
                                    Selection = vis

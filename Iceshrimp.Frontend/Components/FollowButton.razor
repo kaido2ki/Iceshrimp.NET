@@ -34,10 +34,9 @@
     [Parameter] [EditorRequired] public required UserProfileResponse UserProfile { get; set; }
     private                                      ButtonType          _buttonType;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         ChooseButton();
-        Console.WriteLine(UserProfile.Relations);
     }
 
     private enum ButtonType

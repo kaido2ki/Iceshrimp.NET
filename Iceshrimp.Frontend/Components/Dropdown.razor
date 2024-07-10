@@ -20,6 +20,7 @@
 
     [Parameter]
     [EditorRequired]
+    #pragma warning disable BL0007 // While this implementation is suboptimal, this is technically fine. Should be reworked.
     public required TBind Value
     {
         get => _value;
