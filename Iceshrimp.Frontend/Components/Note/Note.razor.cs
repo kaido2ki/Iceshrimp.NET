@@ -115,7 +115,6 @@ public partial class Note : IDisposable
 
 	private void OnNoteChanged(object? _, NoteResponse note)
 	{
-		Console.WriteLine($"Received callback for ID: {NoteResponse.Id}");
 		NoteResponse = note;
 		StateHasChanged();
 	}

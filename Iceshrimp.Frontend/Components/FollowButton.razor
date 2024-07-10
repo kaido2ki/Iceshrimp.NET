@@ -66,7 +66,6 @@
 
     private async void Unfollow()
     {
-        Console.WriteLine("Unfollowing");
         await Api.Users.UnfollowUser(User.Id);
         UserProfile.Relations -= (int)Relations.Following;
         ChooseButton();
@@ -75,7 +74,6 @@
 
     private async void Follow()
     {
-        Console.WriteLine("Following");
         await Api.Users.FollowUser(User.Id);
         UserProfile.Relations += (int)Relations.Requested;
         ChooseButton();

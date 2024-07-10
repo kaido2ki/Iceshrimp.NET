@@ -42,7 +42,6 @@ public partial class TimelineComponent : IAsyncDisposable
 		{
 			if (LockFetch) return true;
 			LockFetch = true;
-			Console.WriteLine("Fetching older");
 			var pq  = new PaginationQuery { Limit = 15, MaxId = State.MinId };
 			var res = await ApiService.Timelines.GetHomeTimeline(pq);
 			switch (res.Count)
@@ -107,7 +106,6 @@ public partial class TimelineComponent : IAsyncDisposable
 			State = StateService.Timeline.GetState("home");
 			if (State.Timeline.Count == 0)
 			{
-				Console.WriteLine("initializing");
 				await Initialize();
 			}
 			_init = true;
