@@ -24,4 +24,8 @@ internal class UserControllerModel(ApiClient api)
 		if (host != null) query = query.Add("host", host);
 		return api.CallNullable<UserResponse>(HttpMethod.Get, "/users/lookup", query);
 	}
+
+	public Task FollowUser(string id) => api.Call(HttpMethod.Post, $"/users/{id}/follow");
+
+	public Task UnfollowUser(string id) => api.Call(HttpMethod.Post, $"/users/{id}/unfollow");
 }
