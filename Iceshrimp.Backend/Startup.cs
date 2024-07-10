@@ -71,9 +71,13 @@ app.MapHub<StreamingHub>("/hubs/streaming");
 app.MapRazorPages();
 app.MapFrontendRoutes("/Shared/FrontendSPA");
 
-app.Urls.Clear();
-if (config.ListenSocket == null)
-	app.Urls.Add($"{(args.Contains("--https") ? "https" : "http")}://{config.ListenHost}:{config.ListenPort}");
+// If running under IIS, this collection is read only
+if (!app.Urls.IsReadOnly)
+{
+	app.Urls.Clear();
+	if (config.ListenSocket == null)
+		app.Urls.Add($"{(args.Contains("--https") ? "https" : "http")}://{config.ListenHost}:{config.ListenPort}");
+}
 
 await app.StartAsync();
 app.SetKestrelUnixSocketPermissions();
