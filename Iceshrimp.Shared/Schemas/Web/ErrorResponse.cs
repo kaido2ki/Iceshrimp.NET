@@ -15,6 +15,9 @@ public class ErrorResponse
 	public string? Details { get; set; }
 
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public IDictionary<string, string[]>? Errors { get; set; }
+
+	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Source { get; set; }
 
 	public required string RequestId { get; set; }

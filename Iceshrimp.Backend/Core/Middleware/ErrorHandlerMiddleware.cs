@@ -76,37 +76,25 @@ public class ErrorHandlerMiddleware(
 				ctx.Response.StatusCode        = (int)ce.StatusCode;
 				ctx.Response.Headers.RequestId = ctx.TraceIdentifier;
 
+				// @formatter:off
 				if (isMastodon)
 					await ctx.Response.WriteAsJsonAsync(new MastodonErrorResponse
 					{
-						Error = verbosity >= ExceptionVerbosity.Basic
-							? ce.Message
-							: ce.StatusCode.ToString(),
-						Description = verbosity >= ExceptionVerbosity.Basic
-							? ce.Details
-							: null
+						Error       = verbosity >= ExceptionVerbosity.Basic ? ce.Message : ce.StatusCode.ToString(),
+						Description = verbosity >= ExceptionVerbosity.Basic ? ce.Details : null
 					});
 				else
 					await ctx.Response.WriteAsJsonAsync(new ErrorResponse
 					{
 						StatusCode = ctx.Response.StatusCode,
-						Error =
-							verbosity >= ExceptionVerbosity.Basic
-								? ce.Error
-								: ce.StatusCode.ToString(),
-						Message =
-							verbosity >= ExceptionVerbosity.Basic
-								? ce.Message
-								: null,
-						Details =
-							verbosity == ExceptionVerbosity.Full
-								? ce.Details
-								: null,
-						Source = verbosity == ExceptionVerbosity.Full
-							? type
-							: null,
-						RequestId = ctx.TraceIdentifier
+						Error      = verbosity >= ExceptionVerbosity.Basic ? ce.Error : ce.StatusCode.ToString(),
+						Message    = verbosity >= ExceptionVerbosity.Basic ? ce.Message : null,
+						Details    = verbosity == ExceptionVerbosity.Full  ? ce.Details : null,
+						Errors     = verbosity == ExceptionVerbosity.Full  ? (ce as ValidationException)?.Errors : null,
+						Source     = verbosity == ExceptionVerbosity.Full  ? type : null,
+						RequestId  = ctx.TraceIdentifier
 					});
+				// @formatter:on
 
 				var level = ce.SuppressLog ? LogLevel.Trace : LogLevel.Debug;
 
@@ -223,6 +211,16 @@ public class InstanceBlockedException(string uri, string? host = null)
 	}
 
 	public string Uri => uri;
+}
+
+public class ValidationException(
+	HttpStatusCode statusCode,
+	string error,
+	string message,
+	IDictionary<string, string[]> errors
+) : GracefulException(statusCode, error, message)
+{
+	public IDictionary<string, string[]> Errors => errors;
 }
 
 public enum ExceptionVerbosity

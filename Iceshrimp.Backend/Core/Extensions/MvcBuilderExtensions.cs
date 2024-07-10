@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -82,9 +81,8 @@ public static class MvcBuilderExtensions
 				var message = details.Title ?? "One or more validation errors occurred.";
 				if (details.Detail != null)
 					message += $" - {details.Detail}";
-				var errors = JsonSerializer.Serialize(details.Errors);
 
-				throw new GracefulException(status, status.ToString(), message, errors);
+				throw new ValidationException(status, status.ToString(), message, details.Errors);
 			};
 		});
 
