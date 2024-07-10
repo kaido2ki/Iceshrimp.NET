@@ -94,6 +94,7 @@ public class NodeInfoResponse
 		[J("name")]     public string? Name     { get; set; }
 		[J("version")]  public string? Version  { get; set; }
 		[J("codename")] public string? Codename { get; set; }
+		[J("edition")]  public string? Edition  { get; set; }
 		[J("homepage")] public Uri?    Homepage { get; set; }
 
 		/// <remarks>

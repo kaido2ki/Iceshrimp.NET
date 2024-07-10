@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace Iceshrimp.Shared.Helpers;
 
-public record VersionInfo(string Version, string RawVersion, string Codename, string? CommitHash);
+public record VersionInfo(string Version, string RawVersion, string Codename, string Edition, string? CommitHash);
 
 public static class VersionHelpers
 {
@@ -18,6 +18,13 @@ public static class VersionHelpers
 		               .FirstOrDefault(p => p.Key == "codename")
 		               ?.Value ??
 		               "unknown";
+
+		// Get edition from assembly
+		var edition = attributes
+		              .OfType<AssemblyMetadataAttribute>()
+		              .FirstOrDefault(p => p.Key == "edition")
+		              ?.Value ??
+		              "unknown";
 
 		string  version;
 		string  rawVersion;
@@ -42,6 +49,6 @@ public static class VersionHelpers
 			rawVersion = fullVersion;
 		}
 
-		return new VersionInfo(version, rawVersion, codename, commitHash);
+		return new VersionInfo(version, rawVersion, codename, edition, commitHash);
 	}
 }
