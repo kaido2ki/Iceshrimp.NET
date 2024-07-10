@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.Extensions.Primitives;
 
@@ -108,7 +109,6 @@ public static class HttpSignature
 		                       keyId="{keyId}",headers="{string.Join(' ', requiredHeadersEnum)}",algorithm="hs2019",signature="{signatureBase64}"
 		                       """;
 
-
 		request.Headers.Add("Signature", signatureHeader);
 		return request;
 	}
@@ -123,7 +123,7 @@ public static class HttpSignature
 		foreach (var header in headers)
 		{
 			sb.Append($"{header}: ");
-			sb.AppendLine(header switch
+			sb.AppendLineLf(header switch
 			{
 				"(request-target)" => $"{requestMethod.ToLowerInvariant()} {requestPath}",
 				"(created)"        => signature?.Created ?? throw new Exception("Signature is missing created param"),

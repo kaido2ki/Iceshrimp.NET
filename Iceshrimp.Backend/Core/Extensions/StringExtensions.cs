@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Text;
 using EntityFrameworkCore.Projectables;
 
 namespace Iceshrimp.Backend.Core.Extensions;
@@ -49,4 +50,18 @@ public static class ProjectableStringExtensions
 
 	[Projectable]
 	public static bool IsGreaterOrEqualTo(this string a, string b) => a.CompareTo(b) >= 0;
+}
+
+public static class StringBuilderExtensions
+{
+	private const char NewLineLf = '\n';
+
+	/// <summary>
+	/// Equivalent to .AppendLine, but always uses \n instead of Environment.NewLine 
+	/// </summary>
+	public static StringBuilder AppendLineLf(this StringBuilder sb, string? value)
+	{
+		sb.Append(value);
+		return sb.Append(NewLineLf);
+	}
 }
