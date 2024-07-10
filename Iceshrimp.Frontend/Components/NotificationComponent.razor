@@ -7,7 +7,7 @@
 @inject NavigationManager              NavigationManager
 
 <div class="notification">
-    @if (NotificationResponse is { User: not null, Type: "like" or "follow" or "reaction" or "followRequestReceived" })
+    @if (NotificationResponse is { User: not null, Type: "like" or "follow" or "reaction" or "followRequestReceived" or "followRequestAccepted"})
     {
         <img class="user-avatar" src="@NotificationResponse.User.AvatarUrl"/>
         <div class="notification-body">
@@ -33,6 +33,10 @@
             @if (NotificationResponse is { Type: "followRequestReceived" })
             {
                 <div @onclick="OpenFollowRequests" class="notification-text">@Loc["Requested to follow you."]</div>
+            }
+            @if (NotificationResponse is { Type: "followRequestAccepted" })
+            {
+                <span @onclick="OpenProfile" class="notification-text">@Loc["Accepted your follow request."]</span>
             }
         </div>
     }
