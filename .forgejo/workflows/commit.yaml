@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Clone repository
         run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 .
+      - name: Print environment info
+        run: dotnet --info
       - name: Run unit tests
         run: make test
       - name: Build docker image

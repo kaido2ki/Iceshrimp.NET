@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Clone repository
         run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 .
+      - name: Print environment info
+        run: dotnet --info
       - name: Build release artifacts
         run: make ARCHIVE_BASENAME=${{ github.event.repository.name }} ARCHIVE_VERSION=${{ github.ref_name }} release-artifacts
       - name: Upload artifacts

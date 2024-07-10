@@ -16,5 +16,7 @@ jobs:
           git remote add origin ${{ github.event.repository.clone_url }}
           git fetch origin ${{ github.ref }} --depth=1
           git checkout --detach FETCH_HEAD
+      - name: Print environment info
+        run: dotnet --info
       - name: Run unit tests
         run: make test
