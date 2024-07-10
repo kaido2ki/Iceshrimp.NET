@@ -83,10 +83,8 @@ public class DeliverQueue(int parallelism)
 		}
 	}
 
-	public class ClientError(HttpStatusCode statusCode) : Exception
-	{
-		public HttpStatusCode StatusCode => statusCode;
-	}
+	private class ClientError(HttpStatusCode statusCode)
+		: Exception($"Received HTTP status indicating a client error: {statusCode}");
 }
 
 public class DeliverJobData
