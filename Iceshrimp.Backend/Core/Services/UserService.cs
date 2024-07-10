@@ -399,7 +399,8 @@ public class UserService(
 			PublicKey  = keypair.ExportSubjectPublicKeyInfoPem()
 		};
 
-		var userProfile = new UserProfile { UserId = user.Id, Password = AuthHelpers.HashPassword(password) };
+		var userProfile  = new UserProfile { UserId  = user.Id };
+		var userSettings = new UserSettings { UserId = user.Id, Password = AuthHelpers.HashPassword(password) };
 
 		var usedUsername = new UsedUsername { CreatedAt = DateTime.UtcNow, Username = username.ToLowerInvariant() };
 
@@ -411,7 +412,7 @@ public class UserService(
 			db.Remove(ticket);
 		}
 
-		await db.AddRangeAsync(user, userKeypair, userProfile, usedUsername);
+		await db.AddRangeAsync(user, userKeypair, userProfile, userSettings, usedUsername);
 		await db.SaveChangesAsync();
 
 		return user;

@@ -1089,49 +1089,16 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 
 		modelBuilder.Entity<UserProfile>(entity =>
 		{
-			entity.Property(e => e.AlwaysMarkNsfw).HasDefaultValue(false);
-			entity.Property(e => e.AutoAcceptFollowed).HasDefaultValue(false);
 			entity.Property(e => e.Birthday)
 			      .IsFixedLength()
 			      .HasComment("The birthday (YYYY-MM-DD) of the User.");
-			entity.Property(e => e.CarefulBot).HasDefaultValue(false);
-			entity.Property(e => e.ClientData)
-			      .HasDefaultValueSql("'{}'::jsonb")
-			      .HasComment("The client-specific data of the User.");
 			entity.Property(e => e.Description).HasComment("The description (bio) of the User.");
-			entity.Property(e => e.Email).HasComment("The email address of the User.");
-			entity.Property(e => e.EmailNotificationTypes)
-			      .HasDefaultValueSql("'[\"follow\", \"receiveFollowRequest\", \"groupInvited\"]'::jsonb");
-			entity.Property(e => e.EmailVerified).HasDefaultValue(false);
-			entity.Property(e => e.EnableWordMute).HasDefaultValue(false);
 			entity.Property(e => e.Fields).HasDefaultValueSql("'[]'::jsonb");
-			entity.Property(e => e.InjectFeaturedNote).HasDefaultValue(true);
-			entity.Property(e => e.Integrations).HasDefaultValueSql("'{}'::jsonb");
 			entity.Property(e => e.Location).HasComment("The location of the User.");
 			entity.Property(e => e.Mentions).HasDefaultValueSql("'[]'::jsonb");
 			entity.Property(e => e.ModerationNote).HasDefaultValueSql("''::character varying");
-			entity.Property(e => e.MutedInstances)
-			      .HasDefaultValueSql("'[]'::jsonb")
-			      .HasComment("List of instances muted by the user.");
-			entity.Property(e => e.MutedWords).HasDefaultValueSql("'[]'::jsonb");
-			entity.Property(e => e.NoCrawle)
-			      .HasDefaultValue(false)
-			      .HasComment("Whether reject index by crawler.");
-			entity.Property(e => e.Password)
-			      .HasComment("The password hash of the User. It will be null if the origin of the user is local.");
-			entity.Property(e => e.PreventAiLearning).HasDefaultValue(true);
-			entity.Property(e => e.PublicReactions).HasDefaultValue(false);
-			entity.Property(e => e.ReceiveAnnouncementEmail).HasDefaultValue(true);
-			entity.Property(e => e.Room)
-			      .HasDefaultValueSql("'{}'::jsonb")
-			      .HasComment("The room data of the User.");
-			entity.Property(e => e.SecurityKeysAvailable).HasDefaultValue(false);
-			entity.Property(e => e.TwoFactorEnabled).HasDefaultValue(false);
 			entity.Property(e => e.Url).HasComment("Remote URL of the user.");
-			entity.Property(e => e.UsePasswordLessLogin).HasDefaultValue(false);
 			entity.Property(e => e.UserHost).HasComment("[Denormalized]");
-			entity.Property(e => e.MutingNotificationTypes)
-			      .HasDefaultValueSql("'{}'::public.notification_type_enum[]");
 			entity.Property(e => e.FFVisibility)
 			      .HasDefaultValue(UserProfile.UserProfileFFVisibility.Public);
 			entity.Property(e => e.MentionsResolved).HasDefaultValue(false);
@@ -1172,6 +1139,12 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.FilterInaccessible).HasDefaultValue(false);
 			entity.Property(e => e.DefaultNoteVisibility).HasDefaultValue(Note.NoteVisibility.Public);
 			entity.Property(e => e.DefaultRenoteVisibility).HasDefaultValue(Note.NoteVisibility.Public);
+			entity.Property(e => e.AlwaysMarkNsfw).HasDefaultValue(false);
+			entity.Property(e => e.AutoAcceptFollowed).HasDefaultValue(false);
+			entity.Property(e => e.Email);
+			entity.Property(e => e.EmailVerified).HasDefaultValue(false);
+			entity.Property(e => e.Password);
+			entity.Property(e => e.TwoFactorEnabled).HasDefaultValue(false);
 			entity.HasOne(e => e.User).WithOne(e => e.UserSettings);
 		});
 

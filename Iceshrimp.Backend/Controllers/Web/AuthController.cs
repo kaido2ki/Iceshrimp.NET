@@ -54,10 +54,10 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		                                                   p.UsernameLower == request.Username.ToLowerInvariant());
 		if (user == null)
 			throw GracefulException.Forbidden("Invalid username or password");
-		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
-		if (profile?.Password == null)
+		var settings = await db.UserSettings.FirstOrDefaultAsync(p => p.User == user);
+		if (settings?.Password == null)
 			throw GracefulException.Forbidden("Invalid username or password");
-		if (!AuthHelpers.ComparePassword(request.Password, profile.Password))
+		if (!AuthHelpers.ComparePassword(request.Password, settings.Password))
 			throw GracefulException.Forbidden("Invalid username or password");
 
 		var session = HttpContext.GetSession();
@@ -67,7 +67,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 			{
 				Id        = IdHelpers.GenerateSlowflakeId(),
 				UserId    = user.Id,
-				Active    = !profile.TwoFactorEnabled,
+				Active    = !settings.TwoFactorEnabled,
 				CreatedAt = DateTime.UtcNow,
 				Token     = CryptographyHelpers.GenerateRandomString(32)
 			};
@@ -109,15 +109,15 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 	                 Justification = "Argon2 is execution time-heavy by design")]
 	public async Task<AuthResponse> ChangePassword([FromBody] ChangePasswordRequest request)
 	{
-		var user        = HttpContext.GetUser() ?? throw new GracefulException("HttpContext.GetUser() was null");
-		var userProfile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
-		if (userProfile is not { Password: not null }) throw new GracefulException("userProfile?.Password was null");
-		if (!AuthHelpers.ComparePassword(request.OldPassword, userProfile.Password))
+		var user     = HttpContext.GetUser() ?? throw new GracefulException("HttpContext.GetUser() was null");
+		var settings = await db.UserSettings.FirstOrDefaultAsync(p => p.User == user);
+		if (settings is not { Password: not null }) throw new GracefulException("settings?.Password was null");
+		if (!AuthHelpers.ComparePassword(request.OldPassword, settings.Password))
 			throw GracefulException.BadRequest("old_password is invalid");
 		if (request.NewPassword.Length < 8)
 			throw GracefulException.BadRequest("Password must be at least 8 characters long");
 
-		userProfile.Password = AuthHelpers.HashPassword(request.NewPassword);
+		settings.Password = AuthHelpers.HashPassword(request.NewPassword);
 		await db.SaveChangesAsync();
 
 		return await Login(new AuthRequest { Username = user.Username, Password = request.NewPassword });

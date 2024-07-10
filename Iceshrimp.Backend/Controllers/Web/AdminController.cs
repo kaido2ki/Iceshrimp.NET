@@ -61,13 +61,13 @@ public class AdminController(
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
 	public async Task ResetPassword(string id, [FromBody] ResetPasswordRequest request)
 	{
-		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.UserId == id && p.UserHost == null) ??
+		var settings = await db.UserSettings.FirstOrDefaultAsync(p => p.UserId == id) ??
 		              throw GracefulException.RecordNotFound();
 
 		if (request.Password.Length < 8)
 			throw GracefulException.BadRequest("Password must be at least 8 characters long");
 
-		profile.Password = AuthHelpers.HashPassword(request.Password);
+		settings.Password = AuthHelpers.HashPassword(request.Password);
 		await db.SaveChangesAsync();
 	}
 

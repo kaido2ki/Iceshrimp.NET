@@ -55,10 +55,10 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 		                                                   p.UsernameLower == username.ToLowerInvariant());
 		if (user == null)
 			throw GracefulException.Forbidden("Invalid username or password");
-		var userProfile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
-		if (userProfile?.Password == null)
+		var userSettings = await db.UserSettings.FirstOrDefaultAsync(p => p.User == user);
+		if (userSettings?.Password == null)
 			throw GracefulException.Forbidden("Invalid username or password");
-		if (AuthHelpers.ComparePassword(password, userProfile.Password) == false)
+		if (AuthHelpers.ComparePassword(password, userSettings.Password) == false)
 			throw GracefulException.Forbidden("Invalid username or password");
 
 		var token = new OauthToken

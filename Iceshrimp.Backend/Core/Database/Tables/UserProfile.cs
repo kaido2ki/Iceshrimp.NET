@@ -7,19 +7,10 @@ using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("user_profile")]
-[Index(nameof(EnableWordMute))]
 [Index(nameof(UserHost))]
 [Index(nameof(PinnedPageId), IsUnique = true)]
 public class UserProfile
 {
-	[PgName("user_profile_ffvisibility_enum")]
-	public enum UserProfileFFVisibility
-	{
-		[PgName("public")]    Public,
-		[PgName("followers")] Followers,
-		[PgName("private")]   Private
-	}
-
 	[Column("mentionsResolved")] public bool MentionsResolved;
 
 	[Key]
@@ -59,52 +50,6 @@ public class UserProfile
 
 	[Column("ffVisibility")] public UserProfileFFVisibility FFVisibility { get; set; }
 
-	[Column("mutingNotificationTypes")]
-	public List<Notification.NotificationType> MutingNotificationTypes { get; set; } = [];
-
-	/// <summary>
-	///     The email address of the User.
-	/// </summary>
-	[Column("email")]
-	[StringLength(128)]
-	public string? Email { get; set; }
-
-	[Column("emailVerifyCode")]
-	[StringLength(128)]
-	public string? EmailVerifyCode { get; set; }
-
-	[Column("emailVerified")] public bool EmailVerified { get; set; }
-
-	[Column("twoFactorTempSecret")]
-	[StringLength(128)]
-	public string? TwoFactorTempSecret { get; set; }
-
-	[Column("twoFactorSecret")]
-	[StringLength(128)]
-	public string? TwoFactorSecret { get; set; }
-
-	[Column("twoFactorEnabled")] public bool TwoFactorEnabled { get; set; }
-
-	/// <summary>
-	///     The password hash of the User. It will be null if the origin of the user is local.
-	/// </summary>
-	[Column("password")]
-	[StringLength(128)]
-	public string? Password { get; set; }
-
-	/// <summary>
-	///     The client-specific data of the User.
-	/// </summary>
-	//TODO: refactor this column (it's currently a Dictionary<string, any>, which is terrible) 
-	[Column("clientData", TypeName = "jsonb")]
-	public string ClientData { get; set; } = null!;
-
-	[Column("autoAcceptFollowed")] public bool AutoAcceptFollowed { get; set; }
-
-	[Column("alwaysMarkNsfw")] public bool AlwaysMarkNsfw { get; set; }
-
-	[Column("carefulBot")] public bool CarefulBot { get; set; }
-
 	/// <summary>
 	///     [Denormalized]
 	/// </summary>
@@ -112,61 +57,15 @@ public class UserProfile
 	[StringLength(512)]
 	public string? UserHost { get; set; }
 
-	[Column("securityKeysAvailable")] public bool SecurityKeysAvailable { get; set; }
-
-	[Column("usePasswordLessLogin")] public bool UsePasswordLessLogin { get; set; }
-
 	[Column("pinnedPageId")]
 	[StringLength(32)]
 	public string? PinnedPageId { get; set; }
 
-	/// <summary>
-	///     The room data of the User.
-	/// </summary>
-	//TODO: refactor this column (it's currently a Dictionary<string, any>, which is terrible) 
-	[Column("room", TypeName = "jsonb")]
-	public string Room { get; set; } = null!;
-
-	//TODO: refactor this column (it's currently a Dictionary<string, any>, which is terrible) 
-	[Column("integrations", TypeName = "jsonb")]
-	public string Integrations { get; set; } = null!;
-
-	[Column("injectFeaturedNote")] public bool InjectFeaturedNote { get; set; }
-
-	[Column("enableWordMute")] public bool EnableWordMute { get; set; }
-
-	//TODO: refactor this column (it's currently a List<string | string[]>, which is terrible) 
-	[Column("mutedWords", TypeName = "jsonb")]
-	public string MutedWords { get; set; } = null!;
-
-	/// <summary>
-	///     Whether reject index by crawler.
-	/// </summary>
-	[Column("noCrawle")]
-	public bool NoCrawle { get; set; }
-
-	[Column("receiveAnnouncementEmail")] public bool ReceiveAnnouncementEmail { get; set; }
-
-	//TODO: refactor this column (this should have been NotificationTypeEnum[])
-	[Column("emailNotificationTypes", TypeName = "jsonb")]
-	public List<string> EmailNotificationTypes { get; set; } = null!;
-
 	[Column("lang")] [StringLength(32)] public string? Lang { get; set; }
-
-	/// <summary>
-	///     List of instances muted by the user.
-	/// </summary>
-	//TODO: refactor this column (this should have been a varchar[]) 
-	[Column("mutedInstances", TypeName = "jsonb")]
-	public List<string> MutedInstances { get; set; } = null!;
-
-	[Column("publicReactions")] public bool PublicReactions { get; set; }
 
 	[Column("moderationNote")]
 	[StringLength(8192)]
 	public string ModerationNote { get; set; } = null!;
-
-	[Column("preventAiLearning")] public bool PreventAiLearning { get; set; }
 
 	[Column("mentions", TypeName = "jsonb")]
 	public List<Note.MentionedUser> Mentions { get; set; } = null!;
@@ -184,5 +83,13 @@ public class UserProfile
 		[J("name")]     public required string Name       { get; set; }
 		[J("value")]    public required string Value      { get; set; }
 		[J("verified")] public          bool?  IsVerified { get; set; }
+	}
+	
+	[PgName("user_profile_ffvisibility_enum")]
+	public enum UserProfileFFVisibility
+	{
+		[PgName("public")]    Public    = 0,
+		[PgName("followers")] Followers = 1,
+		[PgName("private")]   Private   = 2
 	}
 }

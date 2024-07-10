@@ -4452,18 +4452,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("userId");
 
-                    b.Property<bool>("AlwaysMarkNsfw")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("alwaysMarkNsfw");
-
-                    b.Property<bool>("AutoAcceptFollowed")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("autoAcceptFollowed");
-
                     b.Property<string>("Birthday")
                         .HasMaxLength(10)
                         .HasColumnType("character(10)")
@@ -4471,55 +4459,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .IsFixedLength()
                         .HasComment("The birthday (YYYY-MM-DD) of the User.");
 
-                    b.Property<bool>("CarefulBot")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("carefulBot");
-
-                    b.Property<string>("ClientData")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("clientData")
-                        .HasDefaultValueSql("'{}'::jsonb")
-                        .HasComment("The client-specific data of the User.");
-
                     b.Property<string>("Description")
                         .HasMaxLength(2048)
                         .HasColumnType("character varying(2048)")
                         .HasColumnName("description")
                         .HasComment("The description (bio) of the User.");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("email")
-                        .HasComment("The email address of the User.");
-
-                    b.Property<List<string>>("EmailNotificationTypes")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("emailNotificationTypes")
-                        .HasDefaultValueSql("'[\"follow\", \"receiveFollowRequest\", \"groupInvited\"]'::jsonb");
-
-                    b.Property<bool>("EmailVerified")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("emailVerified");
-
-                    b.Property<string>("EmailVerifyCode")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("emailVerifyCode");
-
-                    b.Property<bool>("EnableWordMute")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("enableWordMute");
 
                     b.Property<UserProfile.UserProfileFFVisibility>("FFVisibility")
                         .ValueGeneratedOnAdd()
@@ -4533,19 +4477,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("fields")
                         .HasDefaultValueSql("'[]'::jsonb");
-
-                    b.Property<bool>("InjectFeaturedNote")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("injectFeaturedNote");
-
-                    b.Property<string>("Integrations")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("integrations")
-                        .HasDefaultValueSql("'{}'::jsonb");
 
                     b.Property<string>("Lang")
                         .HasMaxLength(32)
@@ -4579,105 +4510,16 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("moderationNote")
                         .HasDefaultValueSql("''::character varying");
 
-                    b.Property<List<string>>("MutedInstances")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("mutedInstances")
-                        .HasDefaultValueSql("'[]'::jsonb")
-                        .HasComment("List of instances muted by the user.");
-
-                    b.Property<string>("MutedWords")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("mutedWords")
-                        .HasDefaultValueSql("'[]'::jsonb");
-
-                    b.Property<List<Notification.NotificationType>>("MutingNotificationTypes")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("notification_type_enum[]")
-                        .HasColumnName("mutingNotificationTypes")
-                        .HasDefaultValueSql("'{}'::public.notification_type_enum[]");
-
-                    b.Property<bool>("NoCrawle")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("noCrawle")
-                        .HasComment("Whether reject index by crawler.");
-
-                    b.Property<string>("Password")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("password")
-                        .HasComment("The password hash of the User. It will be null if the origin of the user is local.");
-
                     b.Property<string>("PinnedPageId")
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
                         .HasColumnName("pinnedPageId");
-
-                    b.Property<bool>("PreventAiLearning")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("preventAiLearning");
-
-                    b.Property<bool>("PublicReactions")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("publicReactions");
-
-                    b.Property<bool>("ReceiveAnnouncementEmail")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("receiveAnnouncementEmail");
-
-                    b.Property<string>("Room")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("room")
-                        .HasDefaultValueSql("'{}'::jsonb")
-                        .HasComment("The room data of the User.");
-
-                    b.Property<bool>("SecurityKeysAvailable")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("securityKeysAvailable");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("twoFactorEnabled");
-
-                    b.Property<string>("TwoFactorSecret")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("twoFactorSecret");
-
-                    b.Property<string>("TwoFactorTempSecret")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("twoFactorTempSecret");
 
                     b.Property<string>("Url")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
                         .HasColumnName("url")
                         .HasComment("Remote URL of the user.");
-
-                    b.Property<bool>("UsePasswordLessLogin")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("usePasswordLessLogin");
 
                     b.Property<string>("UserHost")
                         .HasMaxLength(512)
@@ -4686,8 +4528,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasComment("[Denormalized]");
 
                     b.HasKey("UserId");
-
-                    b.HasIndex("EnableWordMute");
 
                     b.HasIndex("PinnedPageId")
                         .IsUnique();
@@ -4771,6 +4611,18 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("userId");
 
+                    b.Property<bool>("AlwaysMarkNsfw")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("alwaysMarkNsfw");
+
+                    b.Property<bool>("AutoAcceptFollowed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("autoAcceptFollowed");
+
                     b.Property<Note.NoteVisibility>("DefaultNoteVisibility")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("note_visibility_enum")
@@ -4783,17 +4635,49 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(Note.NoteVisibility.Public)
                         .HasColumnName("defaultRenoteVisibility");
 
+                    b.Property<string>("Email")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("email");
+
+                    b.Property<bool>("EmailVerified")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("emailVerified");
+
                     b.Property<bool>("FilterInaccessible")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("filterInaccessible");
 
+                    b.Property<string>("Password")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("password");
+
                     b.Property<bool>("PrivateMode")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("privateMode");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("twoFactorEnabled");
+
+                    b.Property<string>("TwoFactorSecret")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("twoFactorSecret");
+
+                    b.Property<string>("TwoFactorTempSecret")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("twoFactorTempSecret");
 
                     b.HasKey("UserId");
 

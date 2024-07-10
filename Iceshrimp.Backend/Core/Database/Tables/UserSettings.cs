@@ -19,4 +19,32 @@ public class UserSettings
 	[Column("defaultRenoteVisibility")] public Note.NoteVisibility DefaultRenoteVisibility { get; set; }
 	[Column("privateMode")]             public bool                PrivateMode             { get; set; }
 	[Column("filterInaccessible")]      public bool                FilterInaccessible      { get; set; }
+	[Column("autoAcceptFollowed")]      public bool                AutoAcceptFollowed      { get; set; }
+	[Column("alwaysMarkNsfw")]          public bool                AlwaysMarkNsfw          { get; set; }
+
+	// @formatter:off
+
+	[Column("email")]
+	[StringLength(128)]
+	public string? Email { get; set; }
+
+	[Column("emailVerified")]
+	public bool EmailVerified { get; set; }
+
+	[Column("twoFactorTempSecret")]
+	[StringLength(128)]
+	public string? TwoFactorTempSecret { get; set; }
+
+	[Column("twoFactorSecret")]
+	[StringLength(128)]
+	public string? TwoFactorSecret { get; set; }
+
+	[Column("twoFactorEnabled")]
+	public bool TwoFactorEnabled { get; set; }
+
+	[Column("password")]
+	[StringLength(128)]
+	public string? Password { get; set; }
+
+	// @formatter:on
 }

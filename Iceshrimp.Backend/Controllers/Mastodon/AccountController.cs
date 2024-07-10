@@ -64,8 +64,6 @@ public class AccountController(
 			user.IsBot = request.IsBot.Value;
 		if (request.IsExplorable.HasValue)
 			user.IsExplorable = request.IsExplorable.Value;
-		if (request.Source?.Sensitive.HasValue ?? false)
-			user.UserProfile.AlwaysMarkNsfw = request.Source.Sensitive.Value;
 		if (request.HideCollections.HasValue)
 			user.UserProfile.FFVisibility = request.HideCollections.Value
 				? UserProfile.UserProfileFFVisibility.Private
@@ -79,6 +77,8 @@ public class AccountController(
 
 		if (request.Source?.Privacy != null)
 			user.UserSettings.DefaultNoteVisibility = StatusEntity.DecodeVisibility(request.Source.Privacy);
+		if (request.Source?.Sensitive.HasValue ?? false)
+			user.UserSettings.AlwaysMarkNsfw = request.Source.Sensitive.Value;
 
 		if (request.Fields?.Where(p => p is { Name: not null, Value: not null }).ToList() is { Count: > 0 } fields)
 		{
