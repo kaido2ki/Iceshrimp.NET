@@ -6,11 +6,6 @@
         <UseCurrentRuntimeIdentifier>false</UseCurrentRuntimeIdentifier>
         <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
-    
-    <!-- Remove me before beta3 -->
-    <PropertyGroup>
-        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    </PropertyGroup>
 
     <ItemGroup>
         <None Update="Components/MfmText.razor.css" CssScope="mfm"/>
