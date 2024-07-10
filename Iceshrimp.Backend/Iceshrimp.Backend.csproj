@@ -7,7 +7,7 @@
         <InvariantGlobalization>true</InvariantGlobalization>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
         <VersionPrefix>2024.1</VersionPrefix>
-        <VersionSuffix>beta2</VersionSuffix>
+        <VersionSuffix>beta2.security1</VersionSuffix>
         <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
         <PublishTrimmed>false</PublishTrimmed>
         <GarbageCollectionAdaptationMode>1</GarbageCollectionAdaptationMode>

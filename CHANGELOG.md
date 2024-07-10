@@ -1,3 +1,12 @@
+## v2024.1-beta2.security1
+This is a security hotfix release. It's identical to v2024.1-beta2, except for referencing an updated version of the `System.Text.Json` dependency, fixing a Denial of Service vulnerability ([GHSA-hh2w-p6rv-4g7w](https://github.com/advisories/GHSA-hh2w-p6rv-4g7w)). Upgrading is strongly recommended for all server operators.
+
+### Backend
+- Updated System.Text.Json to 8.0.4 (addressing [GHSA-hh2w-p6rv-4g7w](https://github.com/advisories/GHSA-hh2w-p6rv-4g7w))
+
+### Attribution
+This release was made possible by project contributors: Laura Hausmann
+
 ## v2024.1-beta2
 This release contains various features & bugfixes, including a security issue. Upgrading is strongly recommended for all server operators.
 
