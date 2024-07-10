@@ -3,8 +3,10 @@
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
+@implements IDisposable
+@inject NavigationManager              Navigation;
 
-<div class="sidebar">
+<div @ref="a" @onfocusout="Close" class="sidebar @(_open ? "open" : "")" tabindex=0>
     <div class="header">
         <account-dropdown/>
     </div>
@@ -29,39 +31,35 @@
         </NavLink>
         <NavLink href="/follow-requests">
             <div class="sidebar-btn">
-                <Icon Name="Icons.HandWaving" />
+                <Icon Name="Icons.HandWaving"/>
                 <span class="text">@Loc["Follow requests"]</span>
             </div>
         </NavLink>
     </div>
     <hr class="rule"/>
-    <button class="sidebar-btn post-btn" @onclick="Open"><Icon Name="Icons.Pencil"></Icon>@Loc["Post"]</button>
+    <button class="sidebar-btn post-btn" @onclick="Open">
+        <Icon Name="Icons.Pencil"></Icon>@Loc["Post"]
+    </button>
 </div>
 
 <div class="bottom-bar">
-    <div class="nav">
-        <NavLink href="/search">
-            <div class="sidebar-btn">
-                <Icon Name="Icons.MagnifyingGlass"/>
-                <span class="text">@Loc["Search"]</span>
-            </div>
-        </NavLink>
+    <div class="bottom-nav">
+        <button @onclick="ToggleSidebar" class="bottom-bar-btn">
+            <Icon Name="Icons.List"/>
+        </button>
         <NavLink href="/">
-            <div class="sidebar-btn">
+            <div class="bottom-bar-btn">
                 <Icon Name="Icons.House"/>
-                <span class="text">@Loc["Timeline"]</span>
             </div>
         </NavLink>
         <NavLink href="/notifications">
-            <div class="sidebar-btn">
+            <div class="bottom-bar-btn">
                 <Icon Name="Icons.Bell"/>
-                <span class="text">@Loc["Notifications"]</span>
             </div>
         </NavLink>
         <div>
-            <button @onclick="Open" class="sidebar-btn">
+            <button @onclick="Open" class="bottom-bar-btn">
                 <Icon Name="Icons.Pencil"/>
-                <span class="text">@Loc["Post"]</span>
             </button>
         </div>
     </div>
@@ -71,10 +69,46 @@
 <Compose @ref="_compose"/>
 
 @code {
-    private Compose _compose = null!;
+    private Compose          _compose = null!;
+    private bool             _open    = false;
+    private ElementReference a { get; set; }
 
     private async void Open()
     {
         await _compose.OpenDialog();
+    }
+
+    private void ToggleSidebar()
+    {
+        if (_open) _open = false;
+        else _open       = true;
+        StateHasChanged();
+    }
+
+    private void Close()
+    {
+        _open = false;
+        StateHasChanged();
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _open = false;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_open) await a.FocusAsync();
+    }
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += HandleLocationChanged;
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= HandleLocationChanged;
     }
 }
