@@ -27,8 +27,10 @@ public class SettingsController(DatabaseContext db) : ControllerBase
 		{
 			FilterInaccessible      = settings.FilterInaccessible,
 			PrivateMode             = settings.PrivateMode,
+			AlwaysMarkSensitive     = settings.AlwaysMarkSensitive,
+			AutoAcceptFollowed      = settings.AutoAcceptFollowed,
 			DefaultNoteVisibility   = (NoteVisibility)settings.DefaultNoteVisibility,
-			DefaultRenoteVisibility = (NoteVisibility)settings.DefaultNoteVisibility
+			DefaultRenoteVisibility = (NoteVisibility)settings.DefaultNoteVisibility,
 		};
 	}
 
@@ -41,6 +43,8 @@ public class SettingsController(DatabaseContext db) : ControllerBase
 
 		settings.FilterInaccessible      = newSettings.FilterInaccessible;
 		settings.PrivateMode             = newSettings.PrivateMode;
+		settings.AlwaysMarkSensitive     = newSettings.AlwaysMarkSensitive;
+		settings.AutoAcceptFollowed      = newSettings.AutoAcceptFollowed;
 		settings.DefaultNoteVisibility   = (Note.NoteVisibility)newSettings.DefaultNoteVisibility;
 		settings.DefaultRenoteVisibility = (Note.NoteVisibility)newSettings.DefaultRenoteVisibility;
 

@@ -1139,7 +1139,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.FilterInaccessible).HasDefaultValue(false);
 			entity.Property(e => e.DefaultNoteVisibility).HasDefaultValue(Note.NoteVisibility.Public);
 			entity.Property(e => e.DefaultRenoteVisibility).HasDefaultValue(Note.NoteVisibility.Public);
-			entity.Property(e => e.AlwaysMarkNsfw).HasDefaultValue(false);
+			entity.Property(e => e.AlwaysMarkSensitive).HasDefaultValue(false);
 			entity.Property(e => e.AutoAcceptFollowed).HasDefaultValue(false);
 			entity.Property(e => e.Email);
 			entity.Property(e => e.EmailVerified).HasDefaultValue(false);

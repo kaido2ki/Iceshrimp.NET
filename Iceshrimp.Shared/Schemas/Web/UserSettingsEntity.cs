@@ -6,4 +6,6 @@ public class UserSettingsEntity
 	public NoteVisibility DefaultRenoteVisibility { get; set; }
 	public bool           PrivateMode             { get; set; }
 	public bool           FilterInaccessible      { get; set; }
+	public bool           AutoAcceptFollowed      { get; set; }
+	public bool           AlwaysMarkSensitive     { get; set; }
 }

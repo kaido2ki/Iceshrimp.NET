@@ -20,7 +20,7 @@ public class UserSettings
 	[Column("privateMode")]             public bool                PrivateMode             { get; set; }
 	[Column("filterInaccessible")]      public bool                FilterInaccessible      { get; set; }
 	[Column("autoAcceptFollowed")]      public bool                AutoAcceptFollowed      { get; set; }
-	[Column("alwaysMarkNsfw")]          public bool                AlwaysMarkNsfw          { get; set; }
+	[Column("alwaysMarkNsfw")]          public bool                AlwaysMarkSensitive     { get; set; }
 
 	// @formatter:off
 

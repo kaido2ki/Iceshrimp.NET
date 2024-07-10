@@ -78,7 +78,7 @@ public class AccountController(
 		if (request.Source?.Privacy != null)
 			user.UserSettings.DefaultNoteVisibility = StatusEntity.DecodeVisibility(request.Source.Privacy);
 		if (request.Source?.Sensitive.HasValue ?? false)
-			user.UserSettings.AlwaysMarkNsfw = request.Source.Sensitive.Value;
+			user.UserSettings.AlwaysMarkSensitive = request.Source.Sensitive.Value;
 
 		if (request.Fields?.Where(p => p is { Name: not null, Value: not null }).ToList() is { Count: > 0 } fields)
 		{
