@@ -9,10 +9,11 @@ namespace Iceshrimp.Frontend.Components;
 
 public partial class TimelineComponent : IAsyncDisposable
 {
-	private          bool             _init = false;
-	[Inject] private ApiService       ApiService       { get; set; } = null!;
-	[Inject] private StreamingService StreamingService { get; set; } = null!;
-	[Inject] private StateService     StateService     { get; set; } = null!;
+	private          bool                       _init = false;
+	[Inject] private ApiService                 ApiService       { get; set; } = null!;
+	[Inject] private StreamingService           StreamingService { get; set; } = null!;
+	[Inject] private StateService               StateService     { get; set; } = null!;
+	[Inject] private ILogger<TimelineComponent> Logger           { get; set; } = null!;
 
 	private TimelineState State { get; set; } = null!;
 
@@ -56,7 +57,7 @@ public partial class TimelineComponent : IAsyncDisposable
 		}
 		catch (HttpRequestException)
 		{
-			Console.WriteLine("Network Error");
+			Logger.LogError("Network Error");
 			return false;
 		}
 
@@ -80,8 +81,9 @@ public partial class TimelineComponent : IAsyncDisposable
 		}
 		catch (HttpRequestException)
 		{
-			Console.WriteLine("Network Error");
+			Logger.LogError("Network Error");
 		}
+
 		LockFetch = false;
 	}
 
@@ -108,6 +110,7 @@ public partial class TimelineComponent : IAsyncDisposable
 			{
 				await Initialize();
 			}
+
 			_init = true;
 			StateHasChanged();
 		}

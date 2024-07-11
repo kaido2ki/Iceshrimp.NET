@@ -5,6 +5,7 @@
 @using Microsoft.Extensions.Localization
 @inject ApiService                     Api;
 @inject IStringLocalizer<Localization> Loc;
+@inject ILogger<FollowRequestList>     Logger;
 
 @if (_init == LoadState.Ready)
 {
@@ -47,8 +48,9 @@
                 _init = LoadState.Emtpy;
                 return;
             }
-            _minId         = FollowRequests.Last().Id;
-            _init          = LoadState.Ready;
+
+            _minId = FollowRequests.Last().Id;
+            _init  = LoadState.Ready;
         }
         catch (ApiException)
         {
@@ -57,7 +59,7 @@
         catch (HttpRequestException)
         {
             _init = LoadState.Error;
-            Console.WriteLine("Network error");
+            Logger.LogError("Network error");
         }
     }
 
