@@ -26,6 +26,7 @@ internal class MessageService
 		{
 			#pragma warning disable CS8601 
 			NoteChangedHandlers[id] -= func;
+			#pragma warning restore CS8601 
 		}
 		else
 		{
