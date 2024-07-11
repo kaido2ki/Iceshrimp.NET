@@ -22,7 +22,6 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(Tags))]
 [Index(nameof(AvatarId), IsUnique = true)]
 [Index(nameof(BannerId), IsUnique = true)]
-[Index(nameof(Token), IsUnique = true)]
 public class User : IEntity
 {
 	/// <summary>
@@ -184,13 +183,6 @@ public class User : IEntity
 	public string? Uri { get; set; }
 
 	/// <summary>
-	///     The native access token of the User. It will be null if the origin of the user is local.
-	/// </summary>
-	[Column("token")]
-	[StringLength(16)]
-	public string? Token { get; set; }
-
-	/// <summary>
 	///     Whether the User is explorable.
 	/// </summary>
 	[Column("isExplorable")]
@@ -204,8 +196,6 @@ public class User : IEntity
 	public string? FollowersUri { get; set; }
 
 	[Column("lastActiveDate")] public DateTime? LastActiveDate { get; set; }
-
-	[Column("hideOnlineStatus")] public bool HideOnlineStatus { get; set; }
 
 	/// <summary>
 	///     Whether the User is deleted.
@@ -658,7 +648,6 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
 		entity.Property(e => e.FollowingCount)
 		      .HasDefaultValue(0)
 		      .HasComment("The count of following.");
-		entity.Property(e => e.HideOnlineStatus).HasDefaultValue(false);
 		entity.Property(e => e.Host)
 		      .HasComment("The host of the User. It will be null if the origin of the user is local.");
 		entity.Property(e => e.Inbox)
@@ -701,9 +690,6 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
 		      .HasDefaultValue(true)
 		      .HasComment("Whether to speak as a cat if isCat.");
 		entity.Property(e => e.Tags).HasDefaultValueSql("'{}'::character varying[]");
-		entity.Property(e => e.Token)
-		      .IsFixedLength()
-		      .HasComment("The native access token of the User. It will be null if the origin of the user is local.");
 		entity.Property(e => e.UpdatedAt).HasComment("The updated date of the User.");
 		entity.Property(e => e.Uri)
 		      .HasComment("The URI of the User. It will be null if the origin of the user is local.");

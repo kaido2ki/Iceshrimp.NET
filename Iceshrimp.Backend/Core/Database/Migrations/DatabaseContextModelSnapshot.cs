@@ -3951,12 +3951,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("followingCount")
                         .HasComment("The count of following.");
 
-                    b.Property<bool>("HideOnlineStatus")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("hideOnlineStatus");
-
                     b.Property<string>("Host")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
@@ -4079,13 +4073,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("tags")
                         .HasDefaultValueSql("'{}'::character varying[]");
 
-                    b.Property<string>("Token")
-                        .HasMaxLength(16)
-                        .HasColumnType("character(16)")
-                        .HasColumnName("token")
-                        .IsFixedLength()
-                        .HasComment("The native access token of the User. It will be null if the origin of the user is local.");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updatedAt")
@@ -4132,9 +4119,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.HasIndex("LastActiveDate");
 
                     b.HasIndex("Tags");
-
-                    b.HasIndex("Token")
-                        .IsUnique();
 
                     b.HasIndex("UpdatedAt");
 
@@ -4611,7 +4595,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("userId");
 
-                    b.Property<bool>("AlwaysMarkNsfw")
+                    b.Property<bool>("AlwaysMarkSensitive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
