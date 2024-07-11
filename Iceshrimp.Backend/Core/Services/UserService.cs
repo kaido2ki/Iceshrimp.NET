@@ -649,6 +649,7 @@ public class UserService(
 
 		Guid? relationshipId = null;
 
+		// If followee is remote, send a follow activity immediately
 		if (followee.IsRemoteUser)
 		{
 			relationshipId = Guid.NewGuid();
@@ -656,12 +657,12 @@ public class UserService(
 			await deliverSvc.DeliverToAsync(activity, follower, followee);
 		}
 
+		// Check blocks separately for local/remote follower
 		if (follower.IsRemoteUser)
 		{
 			if (requestId == null)
 				throw GracefulException.UnprocessableEntity("Cannot process remote follow without requestId");
 
-			// Check blocks first
 			if (await db.Users.AnyAsync(p => p == followee && p.IsBlocking(follower)))
 			{
 				var activity = activityRenderer.RenderReject(followee, follower, requestId);
@@ -675,12 +676,86 @@ public class UserService(
 				throw GracefulException.UnprocessableEntity("You are not allowed to follow this user");
 		}
 
+		// We have to create a request instead of a follow relationship in these cases
 		if (followee.IsLocked || followee.IsRemoteUser)
 		{
-			if (!await db.FollowRequests.AnyAsync(p => p.Follower == follower && p.Followee == followee))
+			// We already have a pending follow request, so we want to update the request id in case it changed
+			if (await db.FollowRequests.AnyAsync(p => p.Follower == follower && p.Followee == followee))
 			{
-				if (!await db.Followings.AnyAsync(p => p.Follower == follower && p.Followee == followee))
+				await db.FollowRequests.Where(p => p.Follower == follower && p.Followee == followee)
+				        .ExecuteUpdateAsync(p => p.SetProperty(i => i.RequestId, _ => requestId));
+			}
+			else
+			{
+				// There already is an established follow relationship
+				if (await db.Followings.AnyAsync(p => p.Follower == follower && p.Followee == followee))
 				{
+					// If the follower is remote, immediately send an accept activity, otherwise do nothing
+					if (follower.IsRemoteUser)
+					{
+						if (requestId == null)
+							throw new Exception("requestId must not be null at this stage");
+
+						var activity = activityRenderer.RenderAccept(followee, follower, requestId);
+						await deliverSvc.DeliverToAsync(activity, followee, follower);
+					}
+				}
+				// Otherwise, create a new request and insert it into the database
+				else
+				{
+					var autoAccept = followee.IsLocalUser &&
+					                 await db.Followings.AnyAsync(p => p.Follower == followee &&
+					                                                   p.Followee == follower &&
+					                                                   p.Follower.UserSettings != null &&
+					                                                   p.Follower.UserSettings.AutoAcceptFollowed);
+
+					// Followee has auto accept enabled & is already following the follower user
+					if (autoAccept)
+					{
+						if (requestId == null)
+							throw new Exception("requestId must not be null at this stage");
+
+						var activity = activityRenderer.RenderAccept(followee, follower, requestId);
+						await deliverSvc.DeliverToAsync(activity, followee, follower);
+
+						var following = new Following
+						{
+							Id                  = IdHelpers.GenerateSlowflakeId(),
+							CreatedAt           = DateTime.UtcNow,
+							Followee            = followee,
+							Follower            = follower,
+							FolloweeHost        = followee.Host,
+							FollowerHost        = follower.Host,
+							FolloweeInbox       = followee.Inbox,
+							FollowerInbox       = follower.Inbox,
+							FolloweeSharedInbox = followee.SharedInbox,
+							FollowerSharedInbox = follower.SharedInbox
+						};
+
+						await db.AddAsync(following);
+						await db.SaveChangesAsync();
+						await notificationSvc.GenerateFollowNotification(follower, followee);
+
+						await db.Users.Where(p => p.Id == follower.Id)
+						        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount,
+						                                               i => i.FollowingCount + 1));
+						await db.Users.Where(p => p.Id == followee.Id)
+						        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount,
+						                                               i => i.FollowersCount + 1));
+
+						_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
+						{
+							var bgDb          = provider.GetRequiredService<DatabaseContext>();
+							var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+							var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower);
+							await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+							          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows,
+							                                                 i => i.IncomingFollows + 1));
+						});
+
+						return;
+					}
+
 					var request = new FollowRequest
 					{
 						Id                  = IdHelpers.GenerateSlowflakeId(),
@@ -701,23 +776,12 @@ public class UserService(
 					await db.SaveChangesAsync();
 					await notificationSvc.GenerateFollowRequestReceivedNotification(request);
 				}
-				else
-				{
-					if (requestId == null)
-						throw new Exception("requestId must not be null at this stage");
-
-					var activity = activityRenderer.RenderAccept(followee, follower, requestId);
-					await deliverSvc.DeliverToAsync(activity, followee, follower);
-				}
-			}
-			else
-			{
-				await db.FollowRequests.Where(p => p.Follower == follower && p.Followee == followee)
-				        .ExecuteUpdateAsync(p => p.SetProperty(i => i.RequestId, _ => requestId));
 			}
 		}
+		// Followee is local and not locked
 		else
 		{
+			// If there isn't an established follow relationship already, create one
 			if (!await db.Followings.AnyAsync(p => p.Follower == follower && p.Followee == followee))
 			{
 				var following = new Following
@@ -754,6 +818,7 @@ public class UserService(
 				});
 			}
 
+			// If follower is remote, send an accept activity
 			if (follower.IsRemoteUser)
 			{
 				if (requestId == null)
