@@ -589,6 +589,9 @@ public class User : IEntity
 		HasRenoted(note) ||
 		HasVoted(note);
 
+	[Projectable]
+	public bool ProhibitInteractionWith(User user) => IsBlocking(user) || IsBlockedBy(user);
+
 	public User WithPrecomputedBlockStatus(bool blocking, bool blockedBy)
 	{
 		PrecomputedIsBlocking  = blocking;

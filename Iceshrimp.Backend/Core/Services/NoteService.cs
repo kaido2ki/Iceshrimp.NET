@@ -112,18 +112,16 @@ public class NoteService(
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			resolvedMentions ?? await ResolveNoteMentionsAsync(text);
 
-		// ReSharper disable EntityFramework.UnsupportedServerSideFunctionCall
+		// ReSharper disable once EntityFramework.UnsupportedServerSideFunctionCall
 		if (mentionedUserIds.Count > 0)
 		{
 			var blockAcct = await db.Users
-			                        .Where(p => mentionedUserIds.Contains(p.Id) &&
-			                                    (p.IsBlocking(user) || p.IsBlockedBy(user)))
+			                        .Where(p => mentionedUserIds.Contains(p.Id) && p.ProhibitInteractionWith(user))
 			                        .Select(p => p.Acct)
 			                        .FirstOrDefaultAsync();
 			if (blockAcct != null)
 				throw GracefulException.Forbidden($"You're not allowed to interact with @{blockAcct}");
 		}
-		// ReSharper restore EntityFramework.UnsupportedServerSideFunctionCall
 
 		List<MfmNode>? nodes = null;
 		if (text != null && string.IsNullOrWhiteSpace(text))
@@ -145,6 +143,14 @@ public class NoteService(
 
 		if ((user.UserSettings?.PrivateMode ?? false) && visibility < Note.NoteVisibility.Followers)
 			visibility = Note.NoteVisibility.Followers;
+
+		// Enforce UserSettings.AlwaysMarkSensitive, if configured
+		if ((user.UserSettings?.AlwaysMarkSensitive ?? false) && (attachments?.Any(p => !p.IsSensitive) ?? false))
+		{
+			foreach (var driveFile in attachments.Where(p => !p.IsSensitive)) driveFile.IsSensitive = true;
+			await db.DriveFiles.Where(p => attachments.Select(a => a.Id).Contains(p.Id) && !p.IsSensitive)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.IsSensitive, _ => true));
+		}
 
 		var tags = ResolveHashtags(text, asNote);
 
