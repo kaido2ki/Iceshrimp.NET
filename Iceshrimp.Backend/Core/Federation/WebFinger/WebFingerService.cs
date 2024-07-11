@@ -103,7 +103,7 @@ public class WebFingerService(
 			var hostMetaUrl = $"{proto}://{domain}/.well-known/host-meta";
 			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/xrd+xml"]),
 			                                       HttpCompletionOption.ResponseHeadersRead);
-			using var stream = await res.Content.ReadAsStreamAsync();
+			await using var stream = await res.Content.ReadAsStreamAsync();
 
 			var xml = new XmlDocument();
 			xml.Load(stream);
