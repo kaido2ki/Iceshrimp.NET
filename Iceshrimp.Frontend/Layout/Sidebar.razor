@@ -6,7 +6,7 @@
 @implements IDisposable
 @inject NavigationManager              Navigation;
 
-<div @ref="a" @onfocusout="Close" class="sidebar @(_open ? "open" : "")" tabindex=0>
+<div @ref="SidebarElementRef" @onfocusout="Close" class="sidebar @(_open ? "open" : "")" tabindex=0>
     <div class="header">
         <account-dropdown/>
     </div>
@@ -71,7 +71,7 @@
 @code {
     private Compose          _compose = null!;
     private bool             _open    = false;
-    private ElementReference a { get; set; }
+    private ElementReference SidebarElementRef { get; set; }
 
     private async void Open()
     {
@@ -80,8 +80,7 @@
 
     private void ToggleSidebar()
     {
-        if (_open) _open = false;
-        else _open       = true;
+        _open = !_open;
         StateHasChanged();
     }
 
@@ -99,7 +98,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_open) await a.FocusAsync();
+        if (_open) await SidebarElementRef.FocusAsync();
     }
 
     protected override void OnInitialized()

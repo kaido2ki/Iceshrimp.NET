@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Iceshrimp.Shared.Schemas.Web;
 
 namespace Iceshrimp.Frontend.Core.Services;

@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Shared.Schemas.Web;
-using Microsoft.AspNetCore.Components;
 
 namespace Iceshrimp.Frontend.Core.Services.StateServicePatterns;
 
