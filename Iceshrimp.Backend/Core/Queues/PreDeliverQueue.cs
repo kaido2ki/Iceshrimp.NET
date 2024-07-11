@@ -153,14 +153,15 @@ file static class QueryableExtensions
 		this IQueryable<InboxQueryResult> query, Enums.FederationMode mode, DatabaseContext db
 	)
 	{
+		// @formatter:off
 		Expression<Func<InboxQueryResult, bool>> expr = mode switch
 		{
-			Enums.FederationMode.BlockList => u =>
-				u.Host == null || !db.BlockedInstances.Any(p => u.Host == p.Host || u.Host.EndsWith("." + p.Host)),
-			Enums.FederationMode.AllowList => u =>
-				u.Host == null || db.AllowedInstances.Any(p => u.Host == p.Host || u.Host.EndsWith("." + p.Host)),
+			Enums.FederationMode.BlockList => u => u.Host == null || !db.BlockedInstances.Any(p => u.Host == p.Host || u.Host.EndsWith("." + p.Host)),
+			Enums.FederationMode.AllowList => u => u.Host == null ||  db.AllowedInstances.Any(p => u.Host == p.Host || u.Host.EndsWith("." + p.Host)),
+
 			_ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
 		};
+		// @formatter:on
 
 		return query.Where(expr);
 	}

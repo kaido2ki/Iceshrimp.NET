@@ -66,15 +66,16 @@ public class WebFingerService(
 		else if (query.StartsWith('@'))
 		{
 			proto = "https";
-
 			var split = query.Split('@');
+
+			// @formatter:off
 			domain = split.Length switch
 			{
 				< 2 or > 3 => throw new GracefulException(HttpStatusCode.BadRequest, $"Invalid query: {query}"),
-				2 => throw new GracefulException(HttpStatusCode.BadRequest,
-				                                 $"Can't run WebFinger for local user: {query}"),
-				_ => split[2]
+				2          => throw new GracefulException(HttpStatusCode.BadRequest, $"Can't run WebFinger for local user: {query}"),
+				_          => split[2]
 			};
+			// @formatter:on
 		}
 		else
 		{

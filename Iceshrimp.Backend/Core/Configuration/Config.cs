@@ -139,10 +139,11 @@ public sealed class Config
 
 				MaxUploadSizeBytes = suffix switch
 				{
-					null => num,
+					null       => num,
 					'k' or 'K' => num * 1024,
 					'm' or 'M' => num * 1024 * 1024,
 					'g' or 'G' => num * 1024 * 1024 * 1024,
+
 					_ => throw new Exception("Unsupported suffix, use one of: [K]ilobytes, [M]egabytes, [G]igabytes")
 				};
 			}
@@ -169,10 +170,11 @@ public sealed class Config
 
 				MaxCacheSizeBytes = suffix switch
 				{
-					null => num,
+					null       => num,
 					'k' or 'K' => num * 1024,
 					'm' or 'M' => num * 1024 * 1024,
 					'g' or 'G' => num * 1024 * 1024 * 1024,
+
 					_ => throw new Exception("Unsupported suffix, use one of: [K]ilobytes, [M]egabytes, [G]igabytes")
 				};
 			}
@@ -229,10 +231,11 @@ public sealed class Config
 
 				MaxFileSizeBytes = suffix switch
 				{
-					null => num,
+					null       => num,
 					'k' or 'K' => num * 1024,
 					'm' or 'M' => num * 1024 * 1024,
 					'g' or 'G' => num * 1024 * 1024 * 1024,
+
 					_ => throw new Exception("Unsupported suffix, use one of: [K]ilobytes, [M]egabytes, [G]igabytes")
 				};
 			}
