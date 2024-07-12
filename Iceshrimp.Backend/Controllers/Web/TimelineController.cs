@@ -16,6 +16,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Controllers.Web;
 
 [ApiController]
+[Authenticate]
+[Authorize]
 [LinkPagination(20, 80)]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/timelines")]
@@ -23,8 +25,6 @@ namespace Iceshrimp.Backend.Controllers.Web;
 public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, CacheService cache) : ControllerBase
 {
 	[HttpGet("home")]
-	[Authenticate]
-	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IEnumerable<NoteResponse>> GetHomeTimeline(PaginationQuery pq)
 	{
