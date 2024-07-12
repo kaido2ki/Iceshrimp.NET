@@ -13,9 +13,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_user_token",
-                table: "user");
+	        migrationBuilder.Sql("""
+	                             ALTER TABLE "user" DROP CONSTRAINT IF EXISTS "IX_user_token";
+	                             DROP INDEX IF EXISTS "IX_user_token";
+	                             """);
 
             migrationBuilder.DropColumn(
                 name: "hideOnlineStatus",
