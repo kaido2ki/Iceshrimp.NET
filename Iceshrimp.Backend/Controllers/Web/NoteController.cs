@@ -336,6 +336,50 @@ public class NoteController(
 		};
 	}
 
+	[HttpPost("{id}/mute")]
+	[Authenticate]
+	[Authorize]
+	[EnableRateLimiting("strict")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task MuteNoteThread(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var target = await db.Notes.Where(p => p.Id == id)
+		                     .EnsureVisibleFor(user)
+		                     .Select(p => p.ThreadId ?? p.Id)
+		                     .FirstOrDefaultAsync() ??
+		             throw GracefulException.NotFound("Note not found");
+
+		var mute = new NoteThreadMuting
+		{
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			ThreadId  = target,
+			UserId    = user.Id
+		};
+
+		await db.NoteThreadMutings.Upsert(mute).On(p => new { p.UserId, p.ThreadId }).NoUpdate().RunAsync();
+	}
+
+	[HttpPost("{id}/unmute")]
+	[Authenticate]
+	[Authorize]
+	[EnableRateLimiting("strict")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task UnmuteNoteThread(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var target = await db.Notes.Where(p => p.Id == id)
+		                     .EnsureVisibleFor(user)
+		                     .Select(p => p.ThreadId ?? p.Id)
+		                     .FirstOrDefaultAsync() ??
+		             throw GracefulException.NotFound("Note not found");
+
+		await db.NoteThreadMutings.Where(p => p.User == user && p.ThreadId == target).ExecuteDeleteAsync();
+	}
+
 	[HttpPost]
 	[Authenticate]
 	[Authorize]

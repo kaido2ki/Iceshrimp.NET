@@ -351,6 +351,19 @@ public static class QueryableExtensions
 		return query.Where(p => p.VisibleUserIds.IsDisjoint(hidden));
 	}
 
+	public static IQueryable<Note> FilterMutedThreads(this IQueryable<Note> query, User user, DatabaseContext db)
+	{
+		return query.Where(p => !db.NoteThreadMutings.Any(m => m.User == user && m.ThreadId == (p.ThreadId ?? p.Id)));
+	}
+
+	public static IQueryable<Notification> FilterMutedThreads(
+		this IQueryable<Notification> query, User user, DatabaseContext db
+	)
+	{
+		return query.Where(p => p.Note == null ||
+		                        !db.NoteThreadMutings.Any(m => m.User == user && m.ThreadId == (p.Note.ThreadId ?? p.Note.Id)));
+	}
+
 	private static (IQueryable<string> hidden, IQueryable<string>? mentionsHidden) FilterHiddenInternal(
 		User? user,
 		DatabaseContext db,
@@ -388,8 +401,8 @@ public static class QueryableExtensions
 
 		if (except != null)
 		{
-			hidden         = hidden.Except(new[] { except });
-			mentionsHidden = mentionsHidden?.Except(new[] { except });
+			hidden         = hidden.Except([except]);
+			mentionsHidden = mentionsHidden?.Except([except]);
 		}
 
 		return (hidden, mentionsHidden);
@@ -404,16 +417,14 @@ public static class QueryableExtensions
 			return note => !hidden.Contains(note.UserId) &&
 			               !hidden.Contains(note.RenoteUserId) &&
 			               !hidden.Contains(note.ReplyUserId) &&
-			               (note.Renote == null ||
-			                !hidden.Contains(note.Renote.RenoteUserId)) &&
+			               (note.Renote == null || !hidden.Contains(note.Renote.RenoteUserId)) &&
 			               note.Mentions.IsDisjoint(mentionsHidden);
 		}
 
 		return note => !hidden.Contains(note.UserId) &&
 		               !hidden.Contains(note.RenoteUserId) &&
 		               !hidden.Contains(note.ReplyUserId) &&
-		               (note.Renote == null ||
-		                !hidden.Contains(note.Renote.RenoteUserId));
+		               (note.Renote == null || !hidden.Contains(note.Renote.RenoteUserId));
 	}
 
 	public static IQueryable<TSource> FilterHidden<TSource>(

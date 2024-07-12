@@ -73,10 +73,10 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 		return rendered;
 	}
 
-	private async Task<ConversationEntity> RenderConversation(Note note, NoteWithVisibilities wrapped)
+	private async Task<ConversationEntity> RenderConversation(
+		Note note, NoteWithVisibilities wrapped, AsyncServiceScope scope
+	)
 	{
-		await using var scope = connection.ScopeFactory.CreateAsyncScope();
-
 		var db           = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 		var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
 		var userRenderer = scope.ServiceProvider.GetRequiredService<UserRenderer>();
@@ -106,11 +106,14 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 			if (connection.IsFiltered(note)) return;
 			if (note.CreatedAt < DateTime.UtcNow - TimeSpan.FromMinutes(5)) return;
 
+			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			if (await connection.IsMutedThread(note, scope)) return;
+
 			var message = new StreamingUpdateMessage
 			{
 				Stream  = [Name],
 				Event   = "conversation",
-				Payload = JsonSerializer.Serialize(await RenderConversation(note, wrapped))
+				Payload = JsonSerializer.Serialize(await RenderConversation(note, wrapped, scope))
 			};
 
 			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
@@ -129,11 +132,12 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 			if (wrapped == null) return;
 			if (connection.IsFiltered(note)) return;
 
+			await using var scope = connection.ScopeFactory.CreateAsyncScope();
 			var message = new StreamingUpdateMessage
 			{
 				Stream  = [Name],
 				Event   = "conversation",
-				Payload = JsonSerializer.Serialize(await RenderConversation(note, wrapped))
+				Payload = JsonSerializer.Serialize(await RenderConversation(note, wrapped, scope))
 			};
 
 			await connection.SendMessageAsync(JsonSerializer.Serialize(message));

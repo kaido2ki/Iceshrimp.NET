@@ -89,6 +89,7 @@ public class PublicChannel(
 			if (wrapped == null) return;
 			if (connection.IsFiltered(note)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			if (await connection.IsMutedThread(note, scope)) return;
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
 			var data         = new NoteRenderer.NoteRendererDto { Filters = connection.Filters.ToList() };

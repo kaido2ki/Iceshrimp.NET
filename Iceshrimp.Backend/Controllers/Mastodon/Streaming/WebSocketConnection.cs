@@ -366,6 +366,14 @@ public sealed class WebSocketConnection(
 	                                      (IsFiltered(note.Renote.Renote.User) ||
 	                                       IsFilteredMentions(note.Renote.Renote.Mentions)));
 
+	public async Task<bool> IsMutedThread(Note note, AsyncServiceScope scope)
+	{
+		if (note.Reply == null) return false;
+		if (note.User.Id == Token.UserId) return false;
+		await using var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+		return await db.NoteThreadMutings.AnyAsync(p => p.UserId == Token.UserId && p.ThreadId == note.ThreadId);
+	}
+
 	public async Task CloseAsync(WebSocketCloseStatus status)
 	{
 		Dispose();

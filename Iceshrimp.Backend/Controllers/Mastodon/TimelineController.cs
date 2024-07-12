@@ -38,6 +38,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		               .FilterByFollowingAndOwn(user, db, heuristic)
 		               .EnsureVisibleFor(user)
 		               .FilterHidden(user, db, filterHiddenListMembers: true)
+		               .FilterMutedThreads(user, db)
 		               .Paginate(query, ControllerContext)
 		               .PrecomputeVisibilities(user)
 		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Home);
@@ -56,6 +57,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		               .HasVisibility(Note.NoteVisibility.Public)
 		               .FilterByPublicTimelineRequest(request)
 		               .FilterHidden(user, db)
+		               .FilterMutedThreads(user, db)
 		               .Paginate(query, ControllerContext)
 		               .PrecomputeVisibilities(user)
 		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Public);
@@ -74,6 +76,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		               .Where(p => p.Tags.Contains(hashtag.ToLowerInvariant()))
 		               .FilterByHashtagTimelineRequest(request)
 		               .FilterHidden(user, db)
+		               .FilterMutedThreads(user, db)
 		               .Paginate(query, ControllerContext)
 		               .PrecomputeVisibilities(user)
 		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Public);
@@ -93,6 +96,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		               .Where(p => db.UserListMembers.Any(l => l.UserListId == id && l.UserId == p.UserId))
 		               .EnsureVisibleFor(user)
 		               .FilterHidden(user, db)
+		               .FilterMutedThreads(user, db)
 		               .Paginate(query, ControllerContext)
 		               .PrecomputeVisibilities(user)
 		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Lists);

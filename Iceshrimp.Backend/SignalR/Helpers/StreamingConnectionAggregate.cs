@@ -70,7 +70,9 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		{
 			if (notification.NotifieeId != _userId) return;
 			if (notification.Notifier != null && IsFiltered(notification.Notifier)) return;
+
 			await using var scope = GetTempScope();
+			if (notification.Note != null && await IsMutedThread(notification.Note, scope)) return;
 
 			var renderer = scope.ServiceProvider.GetRequiredService<NotificationRenderer>();
 			var rendered = await renderer.RenderOne(notification, _user);
@@ -90,6 +92,13 @@ public sealed class StreamingConnectionAggregate : IDisposable
 			if (wrapped == null) return;
 			var recipients = FindRecipients(data.note);
 			if (recipients.connectionIds.Count == 0) return;
+
+			if (data.note.Reply != null)
+			{
+				await using var scope = _scopeFactory.CreateAsyncScope();
+				if (await IsMutedThread(data.note, scope))
+					return;
+			}
 
 			var rendered = EnforceRenoteReplyVisibility(await data.rendered(), wrapped);
 			await _hub.Clients.Clients(recipients.connectionIds).NotePublished(recipients.timelines, rendered);
@@ -142,6 +151,14 @@ public sealed class StreamingConnectionAggregate : IDisposable
 
 		var res = EnforceRenoteReplyVisibility(note);
 		return res is not { Note.IsPureRenote: true, Renote: null } ? res : null;
+	}
+
+	private async Task<bool> IsMutedThread(Note note, AsyncServiceScope scope)
+	{
+		if (note.Reply == null) return false;
+		if (note.User.Id == _userId) return false;
+		await using var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+		return await db.NoteThreadMutings.AnyAsync(p => p.UserId == _userId && p.ThreadId == note.ThreadId);
 	}
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]

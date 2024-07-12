@@ -34,6 +34,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .FilterByFollowingAndOwn(user, db, heuristic)
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db, filterHiddenListMembers: true)
+		                    .FilterMutedThreads(user, db)
 		                    .Paginate(pq, ControllerContext)
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();

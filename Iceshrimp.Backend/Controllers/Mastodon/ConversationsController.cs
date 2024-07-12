@@ -41,6 +41,7 @@ public class ConversationsController(
 		var conversations = await db.Conversations(user)
 		                            .IncludeCommonProperties()
 		                            .FilterHiddenConversations(user, db)
+		                            .FilterMutedThreads(user, db)
 		                            .Paginate(p => p.ThreadId ?? p.Id, pq, ControllerContext)
 		                            .Select(p => new Conversation
 		                            {

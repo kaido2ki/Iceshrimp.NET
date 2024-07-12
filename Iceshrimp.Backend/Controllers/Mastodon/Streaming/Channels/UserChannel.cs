@@ -102,6 +102,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			if (connection.IsFiltered(note)) return;
 			if (note.CreatedAt < DateTime.UtcNow - TimeSpan.FromMinutes(5)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			if (await connection.IsMutedThread(note, scope)) return;
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
 			var intermediate = await renderer.RenderAsync(note, connection.Token.User);
@@ -172,7 +173,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		{
 			if (!IsApplicable(notification)) return;
 			if (IsFiltered(notification)) return;
+
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			if (notification.Note != null && await connection.IsMutedThread(notification.Note, scope)) return;
 
 			var renderer = scope.ServiceProvider.GetRequiredService<NotificationRenderer>();
 
