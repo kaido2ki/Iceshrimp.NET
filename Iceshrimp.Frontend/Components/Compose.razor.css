@@ -4,11 +4,24 @@
     margin: 0 auto;
     top: 10%;
     padding: 1rem;
+    position: relative;
+    width: 45rem;
 }
 
-.compose::backdrop {
-    background-color: black;
+.dialog {
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    position: fixed;
+    margin: auto;
+    background-color: unset;
+    z-index: +1;
+}
+
+.backdrop {
     opacity: 50%;
+    background-color: black;
 }
 
 .header {
@@ -20,6 +33,7 @@
     background-color: var(--background-color);
     border: none;
     outline: none;
+    width: 100%;
 }
 
 .input {
@@ -61,11 +75,16 @@
     padding: 0.5rem;
 }
 
+.positioned {
+    position: relative;
+    top: 0;
+}
+
 .backdrop {
     position: fixed;
     width: 100vw;
     height: 100vh;
     top: 0;
     left: 0;
-    z-index: -1
+    z-index: -2
 }

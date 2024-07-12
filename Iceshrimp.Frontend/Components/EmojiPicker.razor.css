@@ -1,4 +1,6 @@
 .emoji-picker {
+    --top: 0px;
+    --left: 0px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr));
     grid-template-rows: repeat(auto-fill, minmax(2.5rem, 1fr));
@@ -10,9 +12,12 @@
     min-width: 15rem;
     min-height: 10rem;
     overflow: scroll;
-    z-index: 100;
-    top: 2.5rem;
-    left: -6rem;
+    top: calc(var(--top) + 2.5rem);
+    left: calc(var(--left) - 5.5rem);
+}
+
+.dialog {
+    z-index: +2;
 }
 
 .emoji {
@@ -22,4 +27,3 @@
         width: 2rem;
     }
 }
-

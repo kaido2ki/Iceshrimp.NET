@@ -6,6 +6,7 @@
 @implements IDisposable
 @inject NavigationManager              Navigation;
 
+<GlobalComponents></GlobalComponents>
 <div @ref="SidebarElementRef" @onfocusout="Close" class="sidebar @(_open ? "open" : "")" tabindex=0>
     <div class="header">
         <account-dropdown/>

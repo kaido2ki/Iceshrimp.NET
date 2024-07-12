@@ -1,10 +1,11 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
-@inject EmojiService EmojiService
+@inject EmojiService       EmojiService
+@inject GlobalComponentSvc GlobalComponentSvc
+@inject IJSRuntime         Js
 
-@if (_display)
-{
-    <div @ref="EmojiPickerRef" @onfocusout="Close" class="emoji-picker @(Fixed ? "fixed" : "")" tabindex="0">
+<dialog class="dialog" @ref="EmojiPickerRef">
+    <div class="emoji-picker" style="--top: @(_top)px; --left: @(_left)px">
         @foreach (var el in EmojiList)
         {
             <div class="emoji">
@@ -12,45 +13,43 @@
             </div>
         }
     </div>
-}
+    <ClosingBackdrop OnClose="Close"></ClosingBackdrop>
+</dialog>
+
 
 @code {
-    [Parameter]                  public          bool                         Fixed    { get; set; }
-    [Parameter] [EditorRequired] public required EventCallback<EmojiResponse> OnEmojiSelect { get; set; }
-
-    private List<EmojiResponse> EmojiList { get; set; } = [];
-    private bool                _display = false;
-    private ElementReference    EmojiPickerRef { get; set; }
+    private EventCallback<EmojiResponse> OnEmojiSelect { get; set; }
+    private List<EmojiResponse>          EmojiList     { get; set; } = [];
+    private ElementReference             EmojiPickerRef { get; set; }
+    private float                        _top;
+    private float                        _left;
+    private IJSInProcessObjectReference  _module = null!;
 
     protected override async Task OnInitializedAsync()
     {
-        EmojiList = await EmojiService.GetEmoji();
+        GlobalComponentSvc.EmojiPicker = this;
+        EmojiList                      = await EmojiService.GetEmoji();
+        _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import",
+                                                                                        "./Components/EmojiPicker.razor.js");
     }
 
     private async void Select(EmojiResponse emoji)
     {
         await OnEmojiSelect.InvokeAsync(emoji);
-        _display = false;
-        StateHasChanged();
     }
 
     private void Close()
     {
-        _display = false;
+        _module.InvokeVoid("closeDialog", EmojiPickerRef);
+    }
+
+    public void Open(ElementReference root, EventCallback<EmojiResponse> func)
+    {
+        OnEmojiSelect = func;
+        var pos = _module.Invoke<List<float>>("getPosition", root);
+        _left = pos[0];
+        _top  = pos[1];
         StateHasChanged();
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (_display)
-        {
-            EmojiPickerRef.FocusAsync();
-        }
-    }
-
-    public async Task Toggle()
-    {
-        _display = !_display;
-        await InvokeAsync(StateHasChanged);
+        _module.InvokeVoid("openDialog", EmojiPickerRef);
     }
 }

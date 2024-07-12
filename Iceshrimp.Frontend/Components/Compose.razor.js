@@ -1,5 +1,5 @@
 export function openDialog(element) {
-    element.showModal()
+    element.show()
 }
 
 export function closeDialog(element) {

@@ -10,7 +10,9 @@
 @inject ComposeService                 ComposeService
 @inject SessionService                 SessionService
 @inject IStringLocalizer<Localization> Loc;
-<dialog class="compose" @ref="Dialog">
+@inject GlobalComponentSvc GlobalComponentSvc
+<dialog class="dialog" @ref="Dialog">
+    <div class="compose">
     <div class="header">
         <button @onclick="CloseDialog">
             <Icon Name="Icons.X"/>
@@ -31,7 +33,7 @@
         <input @bind="NoteDraft.Cw" class="input cw-field" placeholder="Content Warning"/>
         <hr class="separator"/>
     }
-    <textarea @ref="Textarea" @bind="NoteDraft.Text" class="textarea" placeholder="@TextPlaceholder" rows="5" cols="35"></textarea>
+    <textarea @ref="Textarea" @bind="NoteDraft.Text" class="textarea" placeholder="@TextPlaceholder" rows="5" cols="35" autofocus="autofocus"></textarea>
     <div class="footer">
         <button class="footer-btn" @onclick="OpenUpload">
             <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
@@ -39,16 +41,17 @@
         <button class="footer-btn" @onclick="ToggleCw">
             <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
         </button>
-        <button class="footer-btn" @onclick="ToggleEmojiPicker">
+        <button @ref="EmojiButton" class="footer-btn positioned" @onclick="ToggleEmojiPicker">
             <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
-            <EmojiPicker OnEmojiSelect="AddEmoji" />
         </button>
         <div class="file-input">
             <InputFile @ref="UploadInput" OnChange="Upload">Upload!</InputFile>
         </div>
     </div>
     <div @onclick="CloseDialog" class="backdrop"></div>
+    </div>
 </dialog>
+
 
 @code {
     private ElementReference         Dialog { get; set; }
@@ -58,7 +61,7 @@
     private NoteBase?                ReplyOrQuote    { get; set; }
     private string?                  TextPlaceholder { get; set; }
     private ElementReference         Textarea        { get; set; }
-    private EmojiPicker              EmojiPicker     { get; set; } = null!;
+    private ElementReference         EmojiButton     { get; set; }
 
     private NoteCreateRequest NoteDraft { get; set; } = new()
     {
@@ -250,9 +253,8 @@
     }
 
     private void ToggleEmojiPicker()
-    {
-        _ = EmojiPicker.Toggle();
-        StateHasChanged();
+    {  
+        GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji));
     }
 
     private async Task AddEmoji(EmojiResponse emoji)

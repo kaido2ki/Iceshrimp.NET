@@ -6,6 +6,7 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject IJSRuntime                     Js;
 @inject SessionService                 Session;
+@inject GlobalComponentSvc GlobalComponentSvc
 
 <div class="note-footer">
     @if (Reactions.Count > 0)
@@ -48,9 +49,8 @@
             <span class="like-count">@Likes</span>
         }
     </button>
-    <button class="btn positioned" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true">
+    <button @ref="EmojiButton" class="btn" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true">
         <Icon Name="Icons.Smiley" Size="1.3em"/>
-        <EmojiPicker @ref="EmojiPicker" OnEmojiSelect="React"/>
     </button>
     <button class="btn" @onclick="Quote" @onclick:stopPropagation="true">
         <Icon Name="Icons.Quotes" Size="1.3em"/>
@@ -80,8 +80,8 @@
     [Parameter] [EditorRequired] public required bool                     IsLiked        { get; set; }
     [Parameter] [EditorRequired] public required int                      Renotes        { get; set; }
     [Parameter]                  public          bool                     RenotePossible { get; set; }
-    private                                      EmojiPicker              EmojiPicker    { get; set; } = null!;
     private                                      Menu                     Menu           { get; set; } = null!;
+    private                                      ElementReference         EmojiButton    { get; set; }
 
     [CascadingParameter] Note Note { get; set; } = null!;
 
@@ -111,9 +111,9 @@
         Note.DoQuote();
     }
 
-    private async Task ToggleEmojiPicker()
-    {
-        await EmojiPicker.Toggle();
+    private void ToggleEmojiPicker()
+    { 
+        GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, React));
     }
 
     private void React(EmojiResponse emoji)
