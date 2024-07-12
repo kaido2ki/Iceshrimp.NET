@@ -31,7 +31,8 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 	}
 
 	[HttpPost]
-	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.BadRequest)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
 	public async Task<FilterResponse> CreateFilter(FilterRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -53,7 +54,8 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 	}
 
 	[HttpPut("{id:long}")]
-	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
 	public async Task UpdateFilter(long id, FilterRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -71,7 +73,8 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 	}
 
 	[HttpDelete("{id:long}")]
-	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
 	public async Task DeleteFilter(long id)
 	{
 		var user = HttpContext.GetUserOrFail();
