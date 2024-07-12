@@ -32,6 +32,9 @@ internal class StreamingService(
 	public event EventHandler<NotificationResponse>? Notification;
 	public event EventHandler<NoteEvent>?            NotePublished;
 	public event EventHandler<NoteEvent>?            NoteUpdated;
+	public event EventHandler<FilterResponse>?       FilterAdded;
+	public event EventHandler<FilterResponse>?       FilterUpdated;
+	public event EventHandler<long>?                 FilterRemoved;
 	public event EventHandler<HubConnectionState>?   OnConnectionChange;
 
 	public async Task Connect(StoredUser? user = null)
@@ -123,6 +126,24 @@ internal class StreamingService(
 		{
 			foreach (var timeline in timelines)
 				streaming.NoteUpdated?.Invoke(this, (timeline, note));
+			return Task.CompletedTask;
+		}
+
+		public Task FilterAdded(FilterResponse filter)
+		{
+			streaming.FilterAdded?.Invoke(this, filter);
+			return Task.CompletedTask;
+		}
+
+		public Task FilterUpdated(FilterResponse filter)
+		{
+			streaming.FilterUpdated?.Invoke(this, filter);
+			return Task.CompletedTask;
+		}
+
+		public Task FilterRemoved(long filterId)
+		{
+			streaming.FilterRemoved?.Invoke(this, filterId);
 			return Task.CompletedTask;
 		}
 	}

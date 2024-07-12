@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
@@ -8,7 +9,11 @@ public class FilterSchemas
 {
 	public class CreateFilterRequest
 	{
-		[B(Name = "title")] [J("title")] [JR] public required string Title { get; set; }
+		[MinLength(1)]
+		[B(Name = "title")]
+		[J("title")]
+		[JR]
+		public required string Title { get; set; }
 
 		[B(Name = "context")]
 		[J("context")]

@@ -13,19 +13,19 @@ public class Filter
 	[PgName("filter_action_enum")]
 	public enum FilterAction
 	{
-		[PgName("warn")] Warn,
-		[PgName("hide")] Hide
+		[PgName("warn")] Warn = 0,
+		[PgName("hide")] Hide = 1
 	}
 
 	[PgName("filter_context_enum")]
 	public enum FilterContext
 	{
-		[PgName("home")]          Home,
-		[PgName("lists")]         Lists,
-		[PgName("threads")]       Threads,
-		[PgName("notifications")] Notifications,
-		[PgName("accounts")]      Accounts,
-		[PgName("public")]        Public
+		[PgName("home")]          Home          = 0,
+		[PgName("lists")]         Lists         = 1,
+		[PgName("threads")]       Threads       = 2,
+		[PgName("notifications")] Notifications = 3,
+		[PgName("accounts")]      Accounts      = 4,
+		[PgName("public")]        Public        = 5
 	}
 
 	[Key]

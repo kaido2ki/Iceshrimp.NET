@@ -54,6 +54,9 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		_eventService.UserUnmuted       -= OnUserUnmute;
 		_eventService.UserFollowed      -= OnUserFollow;
 		_eventService.UserUnfollowed    -= OnUserUnfollow;
+		_eventService.FilterAdded       -= OnFilterAdded;
+		_eventService.FilterUpdated     -= OnFilterUpdated;
+		_eventService.FilterRemoved     -= OnFilterRemoved;
 		_scope.Dispose();
 	}
 
@@ -234,6 +237,10 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		_eventService.Notification      += OnNotification;
 		_streamingService.NotePublished += OnNotePublished;
 		_streamingService.NoteUpdated   += OnNoteUpdated;
+
+		_eventService.FilterAdded   += OnFilterAdded;
+		_eventService.FilterUpdated += OnFilterUpdated;
+		_eventService.FilterRemoved += OnFilterRemoved;
 	}
 
 	private async Task InitializeRelationships()
@@ -368,6 +375,28 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		{
 			_logger.LogError("Event handler OnUserUnfollow threw exception: {e}", e);
 		}
+	}
+
+	#endregion
+
+	#region Filter event handlers
+
+	private async void OnFilterAdded(object? _, Filter filter)
+	{
+		if (filter.User.Id != _userId) return;
+		await _hub.Clients.User(_userId).FilterAdded(FilterRenderer.RenderOne(filter));
+	}
+
+	private async void OnFilterUpdated(object? _, Filter filter)
+	{
+		if (filter.User.Id != _userId) return;
+		await _hub.Clients.User(_userId).FilterUpdated(FilterRenderer.RenderOne(filter));
+	}
+
+	private async void OnFilterRemoved(object? _, Filter filter)
+	{
+		if (filter.User.Id != _userId) return;
+		await _hub.Clients.User(_userId).FilterRemoved(filter.Id);
 	}
 
 	#endregion
