@@ -89,7 +89,7 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 	{
 		//TODO: app-level access (grant_type = "client_credentials")
 		if (request.GrantType != "authorization_code")
-			throw GracefulException.BadRequest("Invalid grant_type");
+			throw GracefulException.BadRequest($"Invalid grant_type, only authorization_code is supported.");
 		var token = await db.OauthTokens.FirstOrDefaultAsync(p => p.Code == request.Code &&
 		                                                          p.App.ClientId == request.ClientId &&
 		                                                          p.App.ClientSecret == request.ClientSecret);
