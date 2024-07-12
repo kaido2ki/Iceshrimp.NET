@@ -66,7 +66,6 @@ app.UseCustomMiddleware();
 
 app.MapControllers();
 app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback").WithOrder(int.MaxValue - 3);
-app.MapHub<ExampleHub>("/hubs/example");
 app.MapHub<StreamingHub>("/hubs/streaming");
 app.MapRazorPages();
 app.MapFrontendRoutes("/Shared/FrontendSPA");
