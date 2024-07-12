@@ -4116,6 +4116,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex("IsModerator");
 
+                    b.HasIndex("IsSuspended");
+
                     b.HasIndex("LastActiveDate");
 
                     b.HasIndex("Tags");

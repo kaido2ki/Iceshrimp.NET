@@ -22,6 +22,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(Tags))]
 [Index(nameof(AvatarId), IsUnique = true)]
 [Index(nameof(BannerId), IsUnique = true)]
+[Index(nameof(IsSuspended))]
 public class User : IEntity
 {
 	/// <summary>
