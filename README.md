@@ -2,8 +2,9 @@
 <p><strong>Iceshrimp</strong> is a decentralized and federated social networking service, implementing the <strong>ActivityPub</strong> standard.</p>
 
 - Highlighted features:
-  - All-new, blazingly fast & resource-efficient backend (written in .NET)
-  - All-new frontend (written in Blazor)
+  - All-new, blazingly fast & resource-efficient backend, powered by .NET
+  - All-new frontend, powered by Blazor WASM
+  - All-new, configurable, HTML-only public preview
   - Well-supported migration path from Iceshrimp-JS
   - So much more - Read the [changelog](CHANGELOG.md) and join the [chat room](https://chat.iceshrimp.dev) to follow the development!
 - Don't like the Web UI? We test our Mastodon-compatible API against the following clients:
