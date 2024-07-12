@@ -115,6 +115,8 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		var quoteUri = note.IsQuote ? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value) : null;
 		var text     = quoteUri != null ? note.Text + $"\n\nRE: {quoteUri}" : note.Text;
 
+		var sensitive = note.Cw != null || (attachments?.OfType<ASDocument>().Any(p => p.Sensitive == true) ?? false);
+
 		if (note.HasPoll)
 		{
 			var poll = await db.Polls.FirstOrDefaultAsync(p => p.Note == note);
@@ -145,7 +147,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 					MkContent    = note.Text,
 					PublishedAt  = note.CreatedAt,
 					UpdatedAt    = note.UpdatedAt,
-					Sensitive    = note.Cw != null,
+					Sensitive    = sensitive,
 					InReplyTo    = replyId,
 					Cc           = cc,
 					To           = to,
@@ -175,7 +177,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			MkContent    = note.Text,
 			PublishedAt  = note.CreatedAt,
 			UpdatedAt    = note.UpdatedAt,
-			Sensitive    = note.Cw != null,
+			Sensitive    = sensitive,
 			InReplyTo    = replyId,
 			Cc           = cc,
 			To           = to,
