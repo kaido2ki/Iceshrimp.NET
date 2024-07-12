@@ -61,4 +61,10 @@ public class OauthApp
 
 	[InverseProperty(nameof(OauthToken.App))]
 	public virtual ICollection<OauthToken> OauthTokens { get; set; } = new List<OauthToken>();
+
+	/// <summary>
+	/// The app token, returned by /oauth/token when grant_type client_credentials is requested
+	/// </summary>
+	[Column("appToken")] [StringLength(64)]
+	public string? Token;
 }

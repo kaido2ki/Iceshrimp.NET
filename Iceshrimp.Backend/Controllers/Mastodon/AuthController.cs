@@ -87,9 +87,34 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 	[ProducesErrors(HttpStatusCode.BadRequest)]
 	public async Task<OauthTokenResponse> GetOauthToken([FromHybrid] OauthTokenRequest request)
 	{
-		//TODO: app-level access (grant_type = "client_credentials")
+		if (request.GrantType == "client_credentials")
+		{
+			// @formatter:off
+			var app = await db.OauthApps.FirstOrDefaultAsync(p => p.ClientId == request.ClientId &&
+			                                                      p.ClientSecret == request.ClientSecret) ??
+			          throw GracefulException.Unauthorized("Client authentication failed due to unknown client, no client authentication included, or unsupported authentication method.");
+			// @formatter:on
+
+			var invalidAppScope = MastodonOauthHelpers.ExpandScopes(request.Scopes ?? [])
+			                                          .Except(MastodonOauthHelpers.ExpandScopes(app.Scopes))
+			                                          .Any();
+			if (invalidAppScope)
+				throw GracefulException.BadRequest("The requested scope is invalid, unknown, or malformed.");
+
+			app.Token ??= CryptographyHelpers.GenerateRandomString(32);
+			await db.SaveChangesAsync();
+
+			return new OauthTokenResponse
+			{
+				CreatedAt   = app.CreatedAt,
+				Scopes      = request.Scopes ?? app.Scopes,
+				AccessToken = app.Token
+			};
+		}
+
 		if (request.GrantType != "authorization_code")
-			throw GracefulException.BadRequest($"Invalid grant_type, only authorization_code is supported.");
+			throw GracefulException.BadRequest("Invalid grant_type");
+
 		var token = await db.OauthTokens.FirstOrDefaultAsync(p => p.Code == request.Code &&
 		                                                          p.App.ClientId == request.ClientId &&
 		                                                          p.App.ClientSecret == request.ClientSecret);
