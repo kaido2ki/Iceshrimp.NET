@@ -28,6 +28,20 @@ internal class ApiClient(HttpClient client)
 			throw new Exception("Deserialized API error was null");
 		throw new ApiException(error);
 	}
+	
+	public async Task<bool> CallNullable(
+		HttpMethod method, string path, QueryString? query = null, object? data = null
+	)
+	{
+		var res = await MakeRequest(method, path, query, data);
+		if (res.IsSuccessStatusCode)
+			return true;
+
+		var error = await res.Content.ReadFromJsonAsync<ErrorResponse>(JsonSerialization.Options);
+		if (error == null)
+			throw new Exception("Deserialized API error was null");
+		throw new ApiException(error);
+	}
 
 	public async Task<T> Call<T>(
 		HttpMethod method, string path, QueryString? query = null, object? data = null

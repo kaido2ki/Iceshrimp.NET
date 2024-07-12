@@ -11,8 +11,8 @@ internal class FilterControllerModel(ApiClient api)
 	public Task<FilterResponse> CreateFilter(FilterRequest request) =>
 		api.Call<FilterResponse>(HttpMethod.Post, "/filters", data: request);
 
-	public Task UpdateFilter(long id, FilterRequest request) =>
-		api.Call(HttpMethod.Put, $"/filters/{id}", data: request);
+	public Task<bool> UpdateFilter(long id, FilterRequest request) =>
+		api.CallNullable(HttpMethod.Put, $"/filters/{id}", data: request);
 
-	public Task DeleteFilter(long id) => api.Call(HttpMethod.Delete, $"/filters/{id}");
+	public Task<bool> DeleteFilter(long id) => api.CallNullable(HttpMethod.Delete, $"/filters/{id}");
 }

@@ -11,8 +11,8 @@ internal class NoteControllerModel(ApiClient api)
 	public Task<NoteResponse?> GetNote(string id) =>
 		api.CallNullable<NoteResponse>(HttpMethod.Get, $"/notes/{id}");
 
-	public Task DeleteNote(string id) =>
-		api.Call(HttpMethod.Delete, $"/notes/{id}");
+	public Task<bool> DeleteNote(string id) =>
+		api.CallNullable(HttpMethod.Delete, $"/notes/{id}");
 
 	public Task<List<NoteResponse>?> GetNoteAscendants(string id, [DefaultValue(20)] [Range(1, 100)] int? limit)
 	{

@@ -10,14 +10,14 @@ internal class NotificationControllerModel(ApiClient api)
 	public Task<List<NotificationResponse>> GetNotifications(PaginationQuery pq) =>
 		api.Call<List<NotificationResponse>>(HttpMethod.Get, "/notifications", pq);
 
-	public Task MarkNotificationAsRead(string id) =>
-		api.Call(HttpMethod.Post, $"/notifications/{id}/read");
+	public Task<bool> MarkNotificationAsRead(string id) =>
+		api.CallNullable(HttpMethod.Post, $"/notifications/{id}/read");
 
 	public Task MarkAllNotificationsAsRead() =>
 		api.Call(HttpMethod.Post, "/notifications/read");
 
-	public Task DeleteNotification(string id) =>
-		api.Call(HttpMethod.Delete, $"/notifications/{id}");
+	public Task<bool> DeleteNotification(string id) =>
+		api.CallNullable(HttpMethod.Delete, $"/notifications/{id}");
 
 	public Task DeleteAllNotifications() =>
 		api.Call(HttpMethod.Delete, "/notifications");
