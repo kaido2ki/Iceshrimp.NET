@@ -78,6 +78,7 @@ public static class MvcBuilderExtensions
 
 public interface IPlugin
 {
+	public Guid   Id      { get; }
 	public string Name    { get; }
 	public string Version { get; }
 
