@@ -206,9 +206,9 @@ public class UserService(
 			});
 			return user;
 		}
-		catch (UniqueConstraintException)
+		catch (UniqueConstraintException e) when (e.ConstraintProperties is [nameof(User.Uri)])
 		{
-			logger.LogDebug("Encountered UniqueConstraintException while creating user {uri}, attempting to refetch...",
+			logger.LogError("Encountered UniqueConstraintException while creating user {uri}, attempting to refetch...",
 			                user.Uri);
 			// another thread got there first, so we need to return the existing user
 			var res = await db.Users
@@ -225,6 +225,12 @@ public class UserService(
 			logger.LogDebug("Successfully fetched user {uri}", user.Uri);
 
 			return res;
+		}
+		catch (UniqueConstraintException e)
+		{
+			logger.LogError("Failed to insert user: Unable to satisfy unique constraint: {constraint}",
+			                e.ConstraintName);
+			throw;
 		}
 	}
 
