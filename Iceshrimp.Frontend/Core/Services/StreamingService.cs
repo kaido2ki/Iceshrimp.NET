@@ -31,7 +31,8 @@ internal class StreamingService(
 
 	public event EventHandler<NotificationResponse>? Notification;
 	public event EventHandler<NoteEvent>?            NotePublished;
-	public event EventHandler<NoteEvent>?            NoteUpdated;
+	public event EventHandler<NoteResponse>?         NoteUpdated;
+	public event EventHandler<string>?               NoteDeleted;
 	public event EventHandler<FilterResponse>?       FilterAdded;
 	public event EventHandler<FilterResponse>?       FilterUpdated;
 	public event EventHandler<long>?                 FilterRemoved;
@@ -122,10 +123,15 @@ internal class StreamingService(
 			return Task.CompletedTask;
 		}
 
-		public Task NoteUpdated(List<StreamingTimeline> timelines, NoteResponse note)
+		public Task NoteUpdated(NoteResponse note)
 		{
-			foreach (var timeline in timelines)
-				streaming.NoteUpdated?.Invoke(this, (timeline, note));
+			streaming.NoteUpdated?.Invoke(this, note);
+			return Task.CompletedTask;
+		}
+
+		public Task NoteDeleted(string noteId)
+		{
+			streaming.NoteDeleted?.Invoke(this, noteId);
 			return Task.CompletedTask;
 		}
 

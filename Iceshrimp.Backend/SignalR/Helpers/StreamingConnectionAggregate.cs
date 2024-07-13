@@ -47,6 +47,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		DisconnectAll();
 		_streamingService.NotePublished -= OnNotePublished;
 		_streamingService.NoteUpdated   -= OnNoteUpdated;
+		_eventService.NoteDeleted       -= OnNoteDeleted;
 		_eventService.Notification      -= OnNotification;
 		_eventService.UserBlocked       -= OnUserBlock;
 		_eventService.UserUnblocked     -= OnUserUnblock;
@@ -115,11 +116,28 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		{
 			var wrapped = IsApplicable(data.note);
 			if (wrapped == null) return;
-			var recipients = FindRecipients(data.note);
-			if (recipients.connectionIds.Count == 0) return;
+			var (connectionIds, _) = FindRecipients(data.note);
+			if (connectionIds.Count == 0) return;
 
 			var rendered = EnforceRenoteReplyVisibility(await data.rendered(), wrapped);
-			await _hub.Clients.Clients(recipients.connectionIds).NoteUpdated(recipients.timelines, rendered);
+			await _hub.Clients.Clients(connectionIds).NoteUpdated(rendered);
+		}
+		catch (Exception e)
+		{
+			_logger.LogError("Event handler {name} threw exception: {e}", nameof(OnNoteUpdated), e);
+		}
+	}
+
+	private async void OnNoteDeleted(object? _, Note note)
+	{
+		try
+		{
+			var wrapped = IsApplicable(note);
+			if (wrapped == null) return;
+			var (connectionIds, _) = FindRecipients(note);
+			if (connectionIds.Count == 0) return;
+
+			await _hub.Clients.Clients(connectionIds).NoteDeleted(note.Id);
 		}
 		catch (Exception e)
 		{
@@ -254,6 +272,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		_eventService.Notification      += OnNotification;
 		_streamingService.NotePublished += OnNotePublished;
 		_streamingService.NoteUpdated   += OnNoteUpdated;
+		_eventService.NoteDeleted       += OnNoteDeleted;
 
 		_eventService.FilterAdded   += OnFilterAdded;
 		_eventService.FilterUpdated += OnFilterUpdated;

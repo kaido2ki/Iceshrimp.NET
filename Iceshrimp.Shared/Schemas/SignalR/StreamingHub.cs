@@ -12,7 +12,8 @@ public interface IStreamingHubClient
 {
 	public Task Notification(NotificationResponse notification);
 	public Task NotePublished(List<StreamingTimeline> timelines, NoteResponse note);
-	public Task NoteUpdated(List<StreamingTimeline> timelines, NoteResponse note);
+	public Task NoteUpdated(NoteResponse note);
+	public Task NoteDeleted(string noteId);
 
 	public Task FilterAdded(FilterResponse filter);
 	public Task FilterUpdated(FilterResponse filter);
