@@ -3371,6 +3371,33 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.ToTable("password_reset_request");
                 });
 
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.PluginStoreEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("data")
+                        .HasDefaultValueSql("'{}'::jsonb")
+                        .HasComment("The plugin-specific data object");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id");
+
+                    b.ToTable("plugin_store");
+                });
+
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Poll", b =>
                 {
                     b.Property<string>("NoteId")

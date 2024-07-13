@@ -90,6 +90,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<Worker>               Workers               { get; init; } = null!;
 	public virtual DbSet<Filter>               Filters               { get; init; } = null!;
 	public virtual DbSet<DataProtectionKey>    DataProtectionKeys    { get; init; } = null!;
+	public virtual DbSet<PluginStoreEntry>     PluginStore           { get; init; } = null!;
 
 	public static NpgsqlDataSource GetDataSource(Config.DatabaseSection config)
 	{
