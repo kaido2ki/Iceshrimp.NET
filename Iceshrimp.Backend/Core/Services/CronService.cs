@@ -54,7 +54,7 @@ public enum CronTaskType
 	Interval
 }
 
-public interface ICronTrigger
+file interface ICronTrigger
 {
 	public event Action? OnTrigger;
 }
