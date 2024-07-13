@@ -10,8 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.Sources.Clear();
 builder.Configuration.AddCustomConfiguration();
 
-var pluginLoader = new PluginLoader();
-await pluginLoader.LoadPlugins();
+await PluginLoader.LoadPlugins();
 
 builder.Services.AddControllers()
        .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json (or we switch to LinkedData.NET)
@@ -20,7 +19,7 @@ builder.Services.AddControllers()
        .AddModelBindingProviders()
        .AddValueProviderFactories()
        .AddApiBehaviorOptions()
-       .AddPlugins(pluginLoader.Assemblies);
+       .AddPlugins(PluginLoader.Assemblies);
 
 builder.Services.AddSwaggerGenWithOptions();
 builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
@@ -46,7 +45,7 @@ builder.Services.ConfigureServices(builder.Configuration);
 builder.WebHost.ConfigureKestrel(builder.Configuration);
 builder.WebHost.UseStaticWebAssets();
 
-pluginLoader.RunBuilderHooks(builder);
+PluginLoader.RunBuilderHooks(builder);
 
 var app    = builder.Build();
 var config = await app.Initialize(args);
@@ -76,8 +75,8 @@ app.MapHub<StreamingHub>("/hubs/streaming");
 app.MapRazorPages();
 app.MapFrontendRoutes("/Shared/FrontendSPA");
 
-pluginLoader.RunAppHooks(app);
-pluginLoader.PrintPluginInformation(app);
+PluginLoader.RunAppHooks(app);
+PluginLoader.PrintPluginInformation(app);
 
 // If running under IIS, this collection is read only
 if (!app.Urls.IsReadOnly)

@@ -7,27 +7,25 @@ namespace Iceshrimp.Backend.Core.Helpers;
 
 using LoadedPlugin = (Plugin descriptor, IPlugin instance);
 
-public class PluginLoader
+public abstract class PluginLoader
 {
 	// Increment whenever a breaking plugin API change is made
 	private const int ApiVersion = 1;
 
-	public PluginLoader()
-	{
-		var path = Environment.GetEnvironmentVariable("ICESHRIMP_PLUGIN_DIR");
-		path  ??= Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "plugins");
-		_path =   Path.Combine(path, $"v{ApiVersion}");
-	}
+	private static readonly string PathRoot = Environment.GetEnvironmentVariable("ICESHRIMP_PLUGIN_DIR") ??
+	                                          Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
+	                                                       "plugins");
 
-	private readonly string                _path;
-	private          List<LoadedPlugin>    _loaded = [];
-	private          IEnumerable<IPlugin>  Plugins    => _loaded.Select(p => p.instance);
-	public           IEnumerable<Assembly> Assemblies => _loaded.Select(p => p.descriptor.Assembly);
+	private static readonly string DllPath = Path.Combine(PathRoot, $"v{ApiVersion}");
 
-	public async Task LoadPlugins()
+	private static List<LoadedPlugin>    _loaded = [];
+	private static IEnumerable<IPlugin>  Plugins    => _loaded.Select(p => p.instance);
+	public static  IEnumerable<Assembly> Assemblies => _loaded.Select(p => p.descriptor.Assembly);
+
+	public static async Task LoadPlugins()
 	{
-		if (!Directory.Exists(_path)) return;
-		var dlls = Directory.EnumerateFiles(_path, "*.dll").ToList();
+		if (!Directory.Exists(DllPath)) return;
+		var dlls = Directory.EnumerateFiles(DllPath, "*.dll").ToList();
 		var catalogs = dlls
 		               .Select(p => new AssemblyPluginCatalog(p, type => type.Implements<IPlugin>()))
 		               .Cast<IPluginCatalog>()
@@ -44,28 +42,28 @@ public class PluginLoader
 		await Plugins.Select(i => i.Initialize()).AwaitAllNoConcurrencyAsync();
 	}
 
-	public void RunBuilderHooks(WebApplicationBuilder builder)
+	public static void RunBuilderHooks(WebApplicationBuilder builder)
 	{
 		foreach (var plugin in Plugins) plugin.BuilderHook(builder);
 	}
 
-	public void RunAppHooks(WebApplication app)
+	public static void RunAppHooks(WebApplication app)
 	{
 		foreach (var plugin in Plugins) plugin.AppHook(app);
 	}
 
-	public void PrintPluginInformation(WebApplication app)
+	public static void PrintPluginInformation(WebApplication app)
 	{
 		var logger = app.Services.GetRequiredService<ILogger<PluginLoader>>();
 		if (_loaded.Count == 0)
 		{
-			logger.LogInformation("Found {count} plugins in {dllPath}.", _loaded.Count, _path);
+			logger.LogInformation("Found {count} plugins in {dllPath}.", _loaded.Count, DllPath);
 			return;
 		}
 
 		var plugins = _loaded.Select(plugin => $"{plugin.instance.Name} v{plugin.instance.Version} " +
 		                                       $"({Path.GetFileName(plugin.descriptor.Assembly.Location)})");
-		logger.LogInformation("Loaded {count} plugins from {dllPath}: \n* {files}", _loaded.Count, _path,
+		logger.LogInformation("Loaded {count} plugins from {dllPath}: \n* {files}", _loaded.Count, DllPath,
 		                      string.Join("\n* ", plugins));
 	}
 }

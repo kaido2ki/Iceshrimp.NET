@@ -1,3 +1,4 @@
+using System.Reflection;
 using Iceshrimp.Backend.Core.Helpers;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -6,10 +7,12 @@ public class CronService(IServiceScopeFactory serviceScopeFactory) : BackgroundS
 {
 	protected override Task ExecuteAsync(CancellationToken token)
 	{
-		var tasks = AssemblyHelpers.GetImplementationsOfInterface(typeof(ICronTask))
-		                           .Select(p => Activator.CreateInstance(p) as ICronTask)
-		                           .Where(p => p != null)
-		                           .Cast<ICronTask>();
+		var tasks = PluginLoader
+		            .Assemblies.Prepend(Assembly.GetExecutingAssembly())
+		            .SelectMany(assembly => AssemblyHelpers.GetImplementationsOfInterface(typeof(ICronTask), assembly))
+		            .Select(p => Activator.CreateInstance(p) as ICronTask)
+		            .Where(p => p != null)
+		            .Cast<ICronTask>();
 
 		foreach (var task in tasks)
 		{
