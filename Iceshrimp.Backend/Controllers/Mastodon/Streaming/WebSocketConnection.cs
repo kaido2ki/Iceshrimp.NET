@@ -370,7 +370,7 @@ public sealed class WebSocketConnection(
 	{
 		if (note.Reply == null) return false;
 		if (note.User.Id == Token.UserId) return false;
-		await using var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+		var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 		return await db.NoteThreadMutings.AnyAsync(p => p.UserId == Token.UserId && p.ThreadId == note.ThreadId);
 	}
 

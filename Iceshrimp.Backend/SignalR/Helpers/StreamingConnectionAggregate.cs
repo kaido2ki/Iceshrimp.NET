@@ -157,7 +157,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	{
 		if (note.Reply == null) return false;
 		if (note.User.Id == _userId) return false;
-		await using var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+		var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 		return await db.NoteThreadMutings.AnyAsync(p => p.UserId == _userId && p.ThreadId == note.ThreadId);
 	}
 
