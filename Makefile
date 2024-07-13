@@ -17,7 +17,6 @@ ifeq (${VERBOSE},false)
 	TL_ARG       = --tl
 endif
 
-WORKLOAD_CMD     = ${DOTNET_CMD} workload restore ${WORKLOAD_PROJECT}/${WORKLOAD_PROJECT}.csproj > /dev/null
 PUBLISH_CMD      = ${DOTNET_CMD} publish ${BUILD_PROJECT} -c ${CONFIGURATION} ${TL_ARG} -noLogo
 BUILD_CMD        = ${DOTNET_CMD} build ${TL_ARG} -noLogo
 TEST_CMD         = ${DOTNET_CMD} test --no-build --nologo
@@ -48,8 +47,7 @@ ARTIFACT_CMD     = tar caf ${ARTIFACT_DIR}/${ARCHIVE_FILENAME} --transform 's,^r
 	@echo 'Finished building release artifacts.'
 
 --workload-restore:
-	@echo Restoring wasm-tools workload...
-	@${WORKLOAD_CMD}
+	@if ! dotnet workload list | grep -q '^wasm-tools\s'; then echo "Missing wasm-tools workload. Please run \`dotnet workload install wasm-tools\` before running this target."; exit 1; fi
 
 --release-%: TARGETPLATFORM=$*
 --release-%:
