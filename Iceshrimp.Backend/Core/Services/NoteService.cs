@@ -82,6 +82,8 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Cannot reply to a pure renote");
 		if (user.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
+		if (attachments != null && attachments.Any(p => p.UserId != user.Id))
+			throw GracefulException.UnprocessableEntity("Refusing to create note with files belonging to someone else");
 
 		poll?.Choices.RemoveAll(string.IsNullOrWhiteSpace);
 		if (poll is { Choices.Count: < 2 })
@@ -135,9 +137,6 @@ public class NoteService(
 			text  = MfmSerializer.Serialize(nodes);
 		}
 
-		if (attachments != null && attachments.Any(p => p.UserId != user.Id))
-			throw GracefulException.UnprocessableEntity("Refusing to create note with files belonging to someone else");
-
 		if (cw != null && string.IsNullOrWhiteSpace(cw))
 			cw = null;
 
@@ -153,6 +152,14 @@ public class NoteService(
 		}
 
 		var tags = ResolveHashtags(text, asNote);
+		if (tags.Count > 0 && text != null && asNote != null)
+		{
+			// @formatter:off
+			var match = asNote.Tags?.OfType<ASHashtag>().Where(p => p.Name != null && p.Href != null) ?? [];
+			//TODO: refactor this to use the nodes object instead of matching on text
+			text = match.Aggregate(text, (current, tag) => current.Replace($"[#{tag.Name!.TrimStart('#')}]({tag.Href})", $"#{tag.Name!.TrimStart('#')}"));
+			// @formatter:on
+		}
 
 		var mastoReplyUserId = reply?.UserId != user.Id
 			? reply?.UserId
