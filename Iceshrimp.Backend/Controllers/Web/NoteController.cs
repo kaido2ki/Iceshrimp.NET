@@ -347,7 +347,7 @@ public class NoteController(
 		var user = HttpContext.GetUserOrFail();
 		var target = await db.Notes.Where(p => p.Id == id)
 		                     .EnsureVisibleFor(user)
-		                     .Select(p => p.ThreadId ?? p.Id)
+		                     .Select(p => p.ThreadIdOrId)
 		                     .FirstOrDefaultAsync() ??
 		             throw GracefulException.NotFound("Note not found");
 
@@ -373,7 +373,7 @@ public class NoteController(
 		var user = HttpContext.GetUserOrFail();
 		var target = await db.Notes.Where(p => p.Id == id)
 		                     .EnsureVisibleFor(user)
-		                     .Select(p => p.ThreadId ?? p.Id)
+		                     .Select(p => p.ThreadIdOrId)
 		                     .FirstOrDefaultAsync() ??
 		             throw GracefulException.NotFound("Note not found");
 

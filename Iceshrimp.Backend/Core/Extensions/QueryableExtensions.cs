@@ -353,7 +353,7 @@ public static class QueryableExtensions
 
 	public static IQueryable<Note> FilterMutedThreads(this IQueryable<Note> query, User user, DatabaseContext db)
 	{
-		return query.Where(p => !db.NoteThreadMutings.Any(m => m.User == user && m.ThreadId == (p.ThreadId ?? p.Id)));
+		return query.Where(p => !db.NoteThreadMutings.Any(m => m.User == user && m.ThreadId == p.ThreadIdOrId));
 	}
 
 	public static IQueryable<Notification> FilterMutedThreads(
@@ -361,7 +361,7 @@ public static class QueryableExtensions
 	)
 	{
 		return query.Where(p => p.Note == null ||
-		                        !db.NoteThreadMutings.Any(m => m.User == user && m.ThreadId == (p.Note.ThreadId ?? p.Note.Id)));
+		                        !db.NoteThreadMutings.Any(m => m.User == user && m.ThreadId == p.Note.ThreadIdOrId));
 	}
 
 	private static (IQueryable<string> hidden, IQueryable<string>? mentionsHidden) FilterHiddenInternal(

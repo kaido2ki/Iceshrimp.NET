@@ -627,7 +627,7 @@ public class StatusController(
 		var user = HttpContext.GetUserOrFail();
 		var target = await db.Notes.Where(p => p.Id == id)
 		                     .EnsureVisibleFor(user)
-		                     .Select(p => p.ThreadId ?? p.Id)
+		                     .Select(p => p.ThreadIdOrId)
 		                     .FirstOrDefaultAsync() ??
 		             throw GracefulException.RecordNotFound();
 
@@ -652,7 +652,7 @@ public class StatusController(
 		var user = HttpContext.GetUserOrFail();
 		var target = await db.Notes.Where(p => p.Id == id)
 		                     .EnsureVisibleFor(user)
-		                     .Select(p => p.ThreadId ?? p.Id)
+		                     .Select(p => p.ThreadIdOrId)
 		                     .FirstOrDefaultAsync() ??
 		             throw GracefulException.RecordNotFound();
 

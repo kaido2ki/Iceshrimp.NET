@@ -201,7 +201,7 @@ public class Note : IEntity
 	[StringLength(256)]
 	public string? ThreadId { get; set; }
 
-	[NotMapped] public string ThreadIdOrId => ThreadId ?? Id;
+	[Projectable] [NotMapped] public string ThreadIdOrId => ThreadId ?? Id;
 
 	/// <summary>
 	///     The updated date of the Note.

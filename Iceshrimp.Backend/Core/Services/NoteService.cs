@@ -214,7 +214,7 @@ public class NoteService(
 			Mentions             = mentionedUserIds,
 			VisibleUserIds       = visibleUserIds,
 			MentionedRemoteUsers = remoteMentions,
-			ThreadId             = reply?.ThreadId ?? reply?.Id,
+			ThreadId             = reply?.ThreadIdOrId,
 			Tags                 = tags,
 			LocalOnly            = localOnly,
 			Emojis               = emoji ?? [],

@@ -28,7 +28,7 @@ public class MiscController(DatabaseContext db, NoteRenderer noteRenderer) : Con
 	{
 		var user = HttpContext.GetUserOrFail();
 		var notes = await db.Notes.IncludeCommonProperties()
-		                    .Where(p => db.NoteThreadMutings.Any(m => m.ThreadId == (p.ThreadId ?? p.Id)))
+		                    .Where(p => db.NoteThreadMutings.Any(m => m.ThreadId == p.ThreadIdOrId))
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db, false, false)
 		                    .Paginate(pq, ControllerContext)
