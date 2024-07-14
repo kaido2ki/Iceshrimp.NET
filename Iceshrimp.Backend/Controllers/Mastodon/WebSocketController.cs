@@ -54,8 +54,8 @@ public class WebSocketController(
 	private async Task<OauthToken> Authenticate(string token)
 	{
 		return await db.OauthTokens
-		               .Include(p => p.User)
-		               .ThenInclude(p => p.UserProfile)
+		               .Include(p => p.User.UserProfile)
+		               .Include(p => p.User.UserSettings)
 		               .Include(p => p.App)
 		               .FirstOrDefaultAsync(p => p.Token == token && p.Active) ??
 		       throw GracefulException.Unauthorized("This method requires an authenticated user");
