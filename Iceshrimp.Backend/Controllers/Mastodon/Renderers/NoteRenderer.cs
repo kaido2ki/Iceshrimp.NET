@@ -326,6 +326,7 @@ public class NoteRenderer(
 			if (hit == null) continue;
 			item.Url       = hit.PublicUrl;
 			item.StaticUrl = hit.PublicUrl;
+			item.Name      = item.Name.Trim(':');
 		}
 
 		return res;
@@ -390,7 +391,7 @@ public class NoteRenderer(
 		               .Select(p => new EmojiEntity
 		               {
 			               Id              = p.Id,
-			               Shortcode       = p.Name,
+			               Shortcode       = p.Name.Trim(':'),
 			               Url             = p.PublicUrl,
 			               StaticUrl       = p.PublicUrl, //TODO
 			               VisibleInPicker = true,
