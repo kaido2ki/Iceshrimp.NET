@@ -617,4 +617,46 @@ public class StatusController(
 
 		return await noteRenderer.RenderHistoryAsync(note);
 	}
+
+	[HttpPost("{id}/mute")]
+	[Authorize("write:mutes")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> MuteNoteThread(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var target = await db.Notes.Where(p => p.Id == id)
+		                     .EnsureVisibleFor(user)
+		                     .Select(p => p.ThreadId ?? p.Id)
+		                     .FirstOrDefaultAsync() ??
+		             throw GracefulException.RecordNotFound();
+
+		var mute = new NoteThreadMuting
+		{
+			Id        = IdHelpers.GenerateSlowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			ThreadId  = target,
+			UserId    = user.Id
+		};
+
+		await db.NoteThreadMutings.Upsert(mute).On(p => new { p.UserId, p.ThreadId }).NoUpdate().RunAsync();
+		return await GetNote(id);
+	}
+
+	[HttpPost("{id}/unmute")]
+	[Authorize("write:mutes")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<StatusEntity> UnmuteNoteThread(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var target = await db.Notes.Where(p => p.Id == id)
+		                     .EnsureVisibleFor(user)
+		                     .Select(p => p.ThreadId ?? p.Id)
+		                     .FirstOrDefaultAsync() ??
+		             throw GracefulException.RecordNotFound();
+
+		await db.NoteThreadMutings.Where(p => p.User == user && p.ThreadId == target).ExecuteDeleteAsync();
+		return await GetNote(id);
+	}
 }

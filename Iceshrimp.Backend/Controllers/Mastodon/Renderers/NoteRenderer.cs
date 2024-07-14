@@ -62,6 +62,8 @@ public class NoteRenderer(
 		            await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 		var bookmarked = data?.BookmarkedNotes?.Contains(note.Id) ??
 		                 await db.NoteBookmarks.AnyAsync(p => p.Note == note && p.User == user);
+		var muted = data?.MutedNotes?.Contains(note.ThreadIdOrId) ??
+		            await db.NoteThreadMutings.AnyAsync(p => p.ThreadId == note.ThreadIdOrId && p.User == user);
 		var pinned = data?.PinnedNotes?.Contains(note.Id) ??
 		             await db.UserNotePins.AnyAsync(p => p.Note == note && p.User == user);
 		var renoted = data?.Renotes?.Contains(note.Id) ??
@@ -147,7 +149,7 @@ public class NoteRenderer(
 			IsFavorited      = liked,
 			IsRenoted        = renoted,
 			IsBookmarked     = bookmarked,
-			IsMuted          = false, //FIXME
+			IsMuted          = muted,
 			IsSensitive      = note.Cw != null || attachments.Any(p => p.Sensitive),
 			ContentWarning   = note.Cw ?? "",
 			Visibility       = StatusEntity.EncodeVisibility(note.Visibility),
@@ -338,6 +340,16 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
+	private async Task<List<string>> GetMutedNotes(List<Note> notes, User? user)
+	{
+		if (user == null) return [];
+		if (notes.Count == 0) return [];
+		var ids = notes.Select(p => p.ThreadIdOrId).Distinct();
+		return await db.NoteThreadMutings.Where(p => p.User == user && ids.Contains(p.ThreadId))
+		               .Select(p => p.ThreadId)
+		               .ToListAsync();
+	}
+
 	private async Task<List<string>> GetPinnedNotes(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
@@ -415,6 +427,7 @@ public class NoteRenderer(
 			Polls           = await GetPolls(allNotes, user),
 			LikedNotes      = await GetLikedNotes(allNotes, user),
 			BookmarkedNotes = await GetBookmarkedNotes(allNotes, user),
+			MutedNotes      = await GetMutedNotes(allNotes, user),
 			PinnedNotes     = await GetPinnedNotes(allNotes, user),
 			Renotes         = await GetRenotes(allNotes, user),
 			Emoji           = await GetEmoji(allNotes),
@@ -430,6 +443,7 @@ public class NoteRenderer(
 		public List<AccountEntity>?    Accounts;
 		public List<AttachmentEntity>? Attachments;
 		public List<string>?           BookmarkedNotes;
+		public List<string>?           MutedNotes;
 		public List<EmojiEntity>?      Emoji;
 		public List<Filter>?           Filters;
 		public List<string>?           LikedNotes;
