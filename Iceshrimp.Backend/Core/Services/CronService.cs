@@ -1,4 +1,5 @@
 using System.Reflection;
+using Iceshrimp.AssemblyUtils;
 using Iceshrimp.Backend.Core.Helpers;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -9,7 +10,7 @@ public class CronService(IServiceScopeFactory serviceScopeFactory) : BackgroundS
 	{
 		var tasks = PluginLoader
 		            .Assemblies.Prepend(Assembly.GetExecutingAssembly())
-		            .SelectMany(assembly => AssemblyHelpers.GetImplementationsOfInterface(typeof(ICronTask), assembly))
+		            .SelectMany(AssemblyLoader.GetImplementationsOfInterface<ICronTask>)
 		            .Select(p => Activator.CreateInstance(p) as ICronTask)
 		            .Where(p => p != null)
 		            .Cast<ICronTask>();

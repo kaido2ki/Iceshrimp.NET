@@ -1,11 +1,10 @@
 using System.Reflection;
+using Iceshrimp.AssemblyUtils;
 using Iceshrimp.Backend.Core.Extensions;
-using Weikio.PluginFramework.Abstractions;
-using Weikio.PluginFramework.Catalogs;
 
 namespace Iceshrimp.Backend.Core.Helpers;
 
-using LoadedPlugin = (Plugin descriptor, IPlugin instance);
+using LoadedPlugin = (Assembly assembly, IPlugin instance);
 
 public abstract class PluginLoader
 {
@@ -20,24 +19,18 @@ public abstract class PluginLoader
 
 	private static List<LoadedPlugin>    _loaded = [];
 	private static IEnumerable<IPlugin>  Plugins    => _loaded.Select(p => p.instance);
-	public static  IEnumerable<Assembly> Assemblies => _loaded.Select(p => p.descriptor.Assembly);
+	public static  IEnumerable<Assembly> Assemblies => _loaded.Select(p => p.assembly);
 
 	public static async Task LoadPlugins()
 	{
 		if (!Directory.Exists(DllPath)) return;
 		var dlls = Directory.EnumerateFiles(DllPath, "*.dll").ToList();
-		var catalogs = dlls
-		               .Select(p => new AssemblyPluginCatalog(p, type => type.Implements<IPlugin>()))
-		               .Cast<IPluginCatalog>()
-		               .ToArray();
-
-		var combined = new CompositePluginCatalog(catalogs);
-		await combined.Initialize();
-		_loaded = combined.GetPlugins()
-		                  .Select(p => (descriptor: p, instance: Activator.CreateInstance(p) as IPlugin))
-		                  .Where(p => p.instance is not null)
-		                  .Cast<LoadedPlugin>()
-		                  .ToList();
+		_loaded = dlls.Select(Path.GetFullPath)
+		              .Select(AssemblyLoader.LoadAssemblyFromPath)
+		              .Select(p => (assembly: p, impls: AssemblyLoader.GetImplementationsOfInterface<IPlugin>(p)))
+		              .SelectMany(p => p.impls.Select(impl => (p.assembly, Activator.CreateInstance(impl) as IPlugin)))
+		              .Cast<LoadedPlugin>()
+		              .ToList();
 
 		await Plugins.Select(i => i.Initialize()).AwaitAllNoConcurrencyAsync();
 	}
@@ -62,7 +55,7 @@ public abstract class PluginLoader
 		}
 
 		var plugins = _loaded.Select(plugin => $"{plugin.instance.Name} v{plugin.instance.Version} " +
-		                                       $"({Path.GetFileName(plugin.descriptor.Assembly.Location)})");
+		                                       $"({Path.GetFileName(plugin.assembly.Location)})");
 		logger.LogInformation("Loaded {count} plugins from {dllPath}: \n* {files}", _loaded.Count, DllPath,
 		                      string.Join("\n* ", plugins));
 	}
