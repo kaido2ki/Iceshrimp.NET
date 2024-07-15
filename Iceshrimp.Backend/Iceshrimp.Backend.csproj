@@ -46,6 +46,12 @@
         <PackageReference Include="Iceshrimp.AssemblyUtils" Version="1.0.0"/>
     </ItemGroup>
 
+    <!-- Transitive dependency version overrides to patch security vulnerabilities -->
+    <ItemGroup>
+        <PackageReference Include="System.Private.Uri" Version="4.3.2"/>
+        <PackageReference Include="System.Formats.Asn1" Version="8.0.1"/>
+    </ItemGroup>
+
     <!-- We want Razor runtime compilation support, but only during development -->
     <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.7" />
