@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <Compile Include="*.fs"/>
+        <Compile Include="*.fs" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="FParsec" Version="1.1.1"/>
+        <PackageReference Include="FParsec" Version="1.1.1" />
         <PackageReference Update="FSharp.Core" Version="8.0.301" />
     </ItemGroup>
 

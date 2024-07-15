@@ -14,7 +14,7 @@
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
         <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
     </PropertyGroup>
-    
+
     <!-- Analyze dependencies for all dependencies, not just direct ones. Remove when upgrading to net90-->
     <PropertyGroup>
         <NuGetAuditMode>all</NuGetAuditMode>
@@ -32,8 +32,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AssemblyMetadata Include="codename" Value="phenidate"/>
-        <AssemblyMetadata Include="edition" Value="enterprise"/>
+        <AssemblyMetadata Include="codename" Value="phenidate" />
+        <AssemblyMetadata Include="edition" Value="enterprise" />
     </ItemGroup>
 
     <!-- Embed debug info instead of generating PDBs in release configuration -->

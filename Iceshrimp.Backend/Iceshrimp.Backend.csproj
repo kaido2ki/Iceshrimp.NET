@@ -8,21 +8,21 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Iceshrimp.Frontend\Iceshrimp.Frontend.csproj"/>
-        <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj"/>
-        <ProjectReference Include="..\Iceshrimp.Shared\Iceshrimp.Shared.csproj"/>
+        <ProjectReference Include="..\Iceshrimp.Frontend\Iceshrimp.Frontend.csproj" />
+        <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj" />
+        <ProjectReference Include="..\Iceshrimp.Shared\Iceshrimp.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AngleSharp" Version="1.1.2"/>
-        <PackageReference Include="AsyncKeyedLock" Version="6.4.2"/>
-        <PackageReference Include="Blurhash.ImageSharp" Version="3.0.0"/>
-        <PackageReference Include="dotNetRdf.Core" Version="3.2.7-iceshrimp"/>
-        <PackageReference Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="8.1.2"/>
-        <PackageReference Include="EntityFrameworkCore.Projectables" Version="3.0.4"/>
-        <PackageReference Include="FlexLabs.EntityFrameworkCore.Upsert" Version="8.0.0"/>
-        <PackageReference Include="Iceshrimp.ObjectStorage.S3" Version="0.34.2"/>
-        <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0"/>
+        <PackageReference Include="AngleSharp" Version="1.1.2" />
+        <PackageReference Include="AsyncKeyedLock" Version="6.4.2" />
+        <PackageReference Include="Blurhash.ImageSharp" Version="3.0.0" />
+        <PackageReference Include="dotNetRdf.Core" Version="3.2.7-iceshrimp" />
+        <PackageReference Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="8.1.2" />
+        <PackageReference Include="EntityFrameworkCore.Projectables" Version="3.0.4" />
+        <PackageReference Include="FlexLabs.EntityFrameworkCore.Upsert" Version="8.0.0" />
+        <PackageReference Include="Iceshrimp.ObjectStorage.S3" Version="0.34.2" />
+        <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2024.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.7" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="8.0.7" />
@@ -34,22 +34,22 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.7" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="8.0.0"/>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4"/>
-        <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.3"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
-        <PackageReference Include="System.IO.Hashing" Version="8.0.0"/>
-        <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1"/>
-        <PackageReference Include="System.Text.Json" Version="8.0.4"/>
-        <PackageReference Include="Ulid" Version="1.3.3"/>
-        <PackageReference Include="Iceshrimp.WebPush" Version="2.0.0"/>
-        <PackageReference Include="Iceshrimp.AssemblyUtils" Version="1.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="8.0.0" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
+        <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.3" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
+        <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+        <PackageReference Include="System.Text.Json" Version="8.0.4" />
+        <PackageReference Include="Ulid" Version="1.3.3" />
+        <PackageReference Include="Iceshrimp.WebPush" Version="2.0.0" />
+        <PackageReference Include="Iceshrimp.AssemblyUtils" Version="1.0.0" />
     </ItemGroup>
 
     <!-- Transitive dependency version overrides to patch security vulnerabilities -->
     <ItemGroup>
-        <PackageReference Include="System.Private.Uri" Version="4.3.2"/>
-        <PackageReference Include="System.Formats.Asn1" Version="8.0.1"/>
+        <PackageReference Include="System.Private.Uri" Version="4.3.2" />
+        <PackageReference Include="System.Formats.Asn1" Version="8.0.1" />
     </ItemGroup>
 
     <!-- We want Razor runtime compilation support, but only during development -->
@@ -64,17 +64,17 @@
 
     <!-- If the build flag EnableLibVips is set, reference the .NET bindings for LibVips -->
     <ItemGroup Condition=" '$(EnableLibVips)' == 'true' ">
-        <PackageReference Include="NetVips" Version="2.4.1"/>
+        <PackageReference Include="NetVips" Version="2.4.1" />
     </ItemGroup>
 
     <!-- If the build flags EnableLibVips and BundleNativeDeps are set, reference the LibVips native dependecy -->
     <ItemGroup Condition=" '$(EnableLibVips)' == 'true' And '$(BundleNativeDeps)' == 'true' ">
-        <PackageReference Include="NetVips.Native" Version="8.15.2-iceshrimp"/>
+        <PackageReference Include="NetVips.Native" Version="8.15.2-iceshrimp" />
     </ItemGroup>
 
     <!-- This makes sure configuration.ini & the preloaded AS contexts are added to the assembly as embedded resources -->
     <ItemGroup>
-        <EmbeddedResource Include="configuration.ini" CopyToOutputDirectory="Always"/>
+        <EmbeddedResource Include="configuration.ini" CopyToOutputDirectory="Always" />
         <EmbeddedResource Include="Core\Federation\ActivityStreams\Contexts\*.json">
             <TargetPath>contexts\%(Filename)%(Extension)</TargetPath>
         </EmbeddedResource>
@@ -86,19 +86,19 @@
 
     <!-- This is a script used during development, and not needed in the final output -->
     <ItemGroup>
-        <None Remove="Core\Database\prune-designer-cs-files.sh"/>
+        <None Remove="Core\Database\prune-designer-cs-files.sh" />
     </ItemGroup>
 
     <!-- This saves a bunch of disk space by discarding the original and gzip-compressed static assets. -->
     <!-- For clients that don't support brotli, they will be transparently decompressed by the server. -->
     <Target Name="KeepOnlyBrotliCompressedStaticAssets" AfterTargets="Publish">
         <ItemGroup>
-            <CompressedFiles Include="$(PublishDir)\wwwroot\_framework\*.br"/>
-            <FilesToClean Include="@(CompressedFiles->'%(RootDir)%(Directory)%(Filename)')"/>
-            <FilesToClean Include="@(CompressedFiles->'%(RootDir)%(Directory)%(Filename).gz')"/>
+            <CompressedFiles Include="$(PublishDir)\wwwroot\_framework\*.br" />
+            <FilesToClean Include="@(CompressedFiles->'%(RootDir)%(Directory)%(Filename)')" />
+            <FilesToClean Include="@(CompressedFiles->'%(RootDir)%(Directory)%(Filename).gz')" />
         </ItemGroup>
 
-        <Delete Files="@(FilesToClean->Exists())"/>
+        <Delete Files="@(FilesToClean->Exists())" />
     </Target>
 
 </Project>
