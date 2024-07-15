@@ -25,12 +25,12 @@
         <PackageReference Include="AngleSharp" Version="1.1.2"/>
         <PackageReference Include="Blazored.LocalStorage" Version="4.5.0"/>
         <PackageReference Include="BlazorIntersectionObserver" Version="3.1.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.6"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.6"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.7" />
         <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.6"/>
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="8.0.6"/>
-        <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.6"/>
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.7" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="8.0.7" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.7" />
         <PackageReference Include="TypedSignalR.Client" Version="3.5.2" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
         <PackageReference Include="Iceshrimp.Assets.PhosphorIcons" Version="2.0.3"/>
     </ItemGroup>
