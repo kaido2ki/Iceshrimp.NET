@@ -158,8 +158,8 @@ public partial class EmojiService(
 			return name;
 
 		host = host?.ToPunycodeLower();
-		var match             = CustomEmojiRegex().Match(name);
-		var remoteMatch       = RemoteCustomEmojiRegex().Match(name);
+		var match             = CustomEmojiRegex.Match(name);
+		var remoteMatch       = RemoteCustomEmojiRegex.Match(name);
 		var localMatchSuccess = !match.Success || match.Groups.Count != 2;
 		if (localMatchSuccess && !remoteMatch.Success)
 			throw GracefulException.BadRequest("Invalid emoji name");
@@ -218,7 +218,7 @@ public partial class EmojiService(
 
 		var existing = await db.Emojis.FirstOrDefaultAsync(p => p.Host == null && p.Name == name);
 
-		if (name != null && existing == null && CustomEmojiRegex().IsMatch(name))
+		if (name != null && existing == null && CustomEmojiRegex.IsMatch(name))
 		{
 			emoji.Name = name;
 			emoji.Uri  = emoji.GetPublicUri(config.Value);
@@ -238,11 +238,11 @@ public partial class EmojiService(
 		return emoji;
 	}
 
-	public static bool IsCustomEmoji(string s) => CustomEmojiRegex().IsMatch(s) || RemoteCustomEmojiRegex().IsMatch(s);
+	public static bool IsCustomEmoji(string s) => CustomEmojiRegex.IsMatch(s) || RemoteCustomEmojiRegex.IsMatch(s);
 
 	[GeneratedRegex(@"^:?([\w+-]+)(?:@\.)?:?$", RegexOptions.Compiled)]
-	private static partial Regex CustomEmojiRegex();
+	private static partial Regex CustomEmojiRegex { get; }
 
 	[GeneratedRegex(@"^:?([\w+-]+)@([a-zA-Z0-9._\-]+\.[a-zA-Z0-9._\-]+):?$", RegexOptions.Compiled)]
-	private static partial Regex RemoteCustomEmojiRegex();
+	private static partial Regex RemoteCustomEmojiRegex { get; }
 }
