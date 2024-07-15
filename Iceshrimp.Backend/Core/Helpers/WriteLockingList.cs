@@ -8,18 +8,19 @@ namespace Iceshrimp.Backend.Core.Helpers;
 public class WriteLockingList<T>(IEnumerable<T>? sourceCollection = null) : ICollection<T>
 {
 	private readonly List<T> _list = sourceCollection?.ToList() ?? [];
+	private readonly Lock    _lock = new();
 
 	public IEnumerator<T>   GetEnumerator() => _list.GetEnumerator();
 	IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
 
 	public void Add(T item)
 	{
-		lock (_list) _list.Add(item);
+		lock (_lock) _list.Add(item);
 	}
 
 	public void Clear()
 	{
-		lock (_list) _list.Clear();
+		lock (_lock) _list.Clear();
 	}
 
 	public bool Contains(T item) => _list.Contains(item);
@@ -28,7 +29,7 @@ public class WriteLockingList<T>(IEnumerable<T>? sourceCollection = null) : ICol
 
 	public bool Remove(T item)
 	{
-		lock (_list) return _list.Remove(item);
+		lock (_lock) return _list.Remove(item);
 	}
 
 	public int  Count      => _list.Count;
@@ -36,7 +37,7 @@ public class WriteLockingList<T>(IEnumerable<T>? sourceCollection = null) : ICol
 
 	public bool AddIfMissing(T item)
 	{
-		lock (_list)
+		lock (_lock)
 		{
 			if (_list.Contains(item)) return false;
 			_list.Add(item);
@@ -46,11 +47,11 @@ public class WriteLockingList<T>(IEnumerable<T>? sourceCollection = null) : ICol
 
 	public void AddRange(IEnumerable<T> item)
 	{
-		lock (_list) _list.AddRange(item);
+		lock (_lock) _list.AddRange(item);
 	}
 
 	public int RemoveAll(Predicate<T> predicate)
 	{
-		lock (_list) return _list.RemoveAll(predicate);
+		lock (_lock) return _list.RemoveAll(predicate);
 	}
 }

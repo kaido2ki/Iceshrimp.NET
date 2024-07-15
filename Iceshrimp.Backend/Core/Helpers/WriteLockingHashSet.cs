@@ -7,19 +7,20 @@ namespace Iceshrimp.Backend.Core.Helpers;
                  Justification = "This is intentional (it's a *write* locking hash set, after all)")]
 public class WriteLockingHashSet<T>(IEnumerable<T>? sourceCollection = null) : ICollection<T>
 {
-	private readonly HashSet<T> _set = sourceCollection?.ToHashSet() ?? [];
+	private readonly HashSet<T> _set  = sourceCollection?.ToHashSet() ?? [];
+	private readonly Lock       _lock = new();
 
 	public IEnumerator<T>   GetEnumerator() => _set.GetEnumerator();
 	IEnumerator IEnumerable.GetEnumerator() => _set.GetEnumerator();
 
 	public void Add(T item)
 	{
-		lock (_set) _set.Add(item);
+		lock (_lock) _set.Add(item);
 	}
 
 	public void Clear()
 	{
-		lock (_set) _set.Clear();
+		lock (_lock) _set.Clear();
 	}
 
 	public bool Contains(T item) => _set.Contains(item);
@@ -28,7 +29,7 @@ public class WriteLockingHashSet<T>(IEnumerable<T>? sourceCollection = null) : I
 
 	public bool Remove(T item)
 	{
-		lock (_set) return _set.Remove(item);
+		lock (_lock) return _set.Remove(item);
 	}
 
 	public int  Count      => _set.Count;
@@ -36,18 +37,18 @@ public class WriteLockingHashSet<T>(IEnumerable<T>? sourceCollection = null) : I
 
 	public bool AddIfMissing(T item)
 	{
-		lock (_set) return _set.Add(item);
+		lock (_lock) return _set.Add(item);
 	}
 
 	public void AddRange(IEnumerable<T> items)
 	{
-		lock (_set)
+		lock (_lock)
 			foreach (var item in items)
 				_set.Add(item);
 	}
 
 	public int RemoveWhere(Predicate<T> predicate)
 	{
-		lock (_set) return _set.RemoveWhere(predicate);
+		lock (_lock) return _set.RemoveWhere(predicate);
 	}
 }

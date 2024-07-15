@@ -6,10 +6,11 @@ public sealed class AsyncAutoResetEvent(bool signaled = false)
 
 	private readonly List<TaskCompletionSource<bool>> _noResetTaskCompletionSources = [];
 	private readonly List<TaskCompletionSource<bool>> _taskCompletionSources        = [];
+	private readonly Lock                             _lock                         = new();
 
 	public Task<bool> WaitAsync(CancellationToken cancellationToken = default)
 	{
-		lock (_taskCompletionSources)
+		lock (_lock)
 		{
 			if (Signaled)
 			{
@@ -26,7 +27,7 @@ public sealed class AsyncAutoResetEvent(bool signaled = false)
 
 	public Task<bool> WaitWithoutResetAsync(CancellationToken cancellationToken = default)
 	{
-		lock (_taskCompletionSources)
+		lock (_lock)
 		{
 			if (Signaled)
 				return Task.FromResult(true);
@@ -40,7 +41,7 @@ public sealed class AsyncAutoResetEvent(bool signaled = false)
 
 	public void Set()
 	{
-		lock (_taskCompletionSources)
+		lock (_lock)
 		{
 			Signaled = true;
 			foreach (var tcs in _noResetTaskCompletionSources.ToList())
@@ -63,7 +64,7 @@ public sealed class AsyncAutoResetEvent(bool signaled = false)
 	private static void Callback(object? state)
 	{
 		var (ev, tcs) = ((AsyncAutoResetEvent, TaskCompletionSource<bool>))state!;
-		lock (ev._taskCompletionSources)
+		lock (ev._lock)
 		{
 			if (tcs.Task.IsCompleted) return;
 			tcs.TrySetCanceled();
