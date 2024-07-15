@@ -14,6 +14,16 @@
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
         <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
     </PropertyGroup>
+    
+    <!-- Analyze dependencies for all dependencies, not just direct ones. Remove when upgrading to net90-->
+    <PropertyGroup>
+        <NuGetAuditMode>all</NuGetAuditMode>
+    </PropertyGroup>
+
+    <!-- Except low and medium severity vulnerable dependency warnings from TreatWarningsAsErrors, leaving high and critical severity ones intact -->
+    <PropertyGroup>
+        <WarningsNotAsErrors>NU1901,NU1902</WarningsNotAsErrors>
+    </PropertyGroup>
 
     <!-- Version metadata -->
     <PropertyGroup>
