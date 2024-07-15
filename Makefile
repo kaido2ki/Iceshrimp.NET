@@ -14,12 +14,14 @@ BUNDLE_NATIVE    = false
 RELEASE_TARGETS  = linux-glibc-amd64 linux-glibc-arm64 linux-musl-amd64 linux-musl-arm64
 
 ifeq (${VERBOSE},false)
-	TL_ARG       = --tl
+	TL_ENV       = MSBUILDTERMINALLOGGER=true
+else
+	TL_ENV       = MSBUILDTERMINALLOGGER=false
 endif
 
-PUBLISH_CMD      = ${DOTNET_CMD} publish ${BUILD_PROJECT} -c ${CONFIGURATION} ${TL_ARG} -noLogo
-BUILD_CMD        = ${DOTNET_CMD} build ${TL_ARG} -noLogo
-TEST_CMD         = ${DOTNET_CMD} test --no-build --nologo
+PUBLISH_CMD      = ${TL_ENV} ${DOTNET_CMD} publish ${BUILD_PROJECT} -c ${CONFIGURATION} -noLogo
+BUILD_CMD        = ${TL_ENV} ${DOTNET_CMD} build -noLogo
+TEST_CMD         = ${TL_ENV} ${DOTNET_CMD} test --no-build --nologo
 
 BUILD_FLAGS      = -p:EnableLibVips=${VIPS} -p:BundleNativeDeps=${BUNDLE_NATIVE}
 PUBLISH_FLAGS    = ${PUBLISH_RIDARG} -o publish/${TARGETRID} -p:EnableAOT=${AOT} ${BUILD_FLAGS} -p:DeterministicSourcePaths=true -p:ContinuousIntegrationBuild=true
