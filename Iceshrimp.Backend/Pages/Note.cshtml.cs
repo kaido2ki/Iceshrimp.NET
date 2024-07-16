@@ -32,7 +32,7 @@ public class NoteModel(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
 	public async Task<IActionResult> OnGet(string id)
 	{
-		if (Request.Cookies.ContainsKey("session"))
+		if (Request.Cookies.ContainsKey("session") || Request.Cookies.ContainsKey("sessions"))
 			return Partial("Shared/FrontendSPA");
 
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown)

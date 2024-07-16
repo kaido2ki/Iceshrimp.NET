@@ -13,7 +13,7 @@ public class IndexModel(MetaService meta) : PageModel
 
 	public async Task<IActionResult> OnGet()
 	{
-		if (Request.Cookies.ContainsKey("session"))
+		if (Request.Cookies.ContainsKey("session") || Request.Cookies.ContainsKey("sessions"))
 			return Partial("Shared/FrontendSPA");
 
 		var (instanceName, instanceDescription, contactEmail) =
