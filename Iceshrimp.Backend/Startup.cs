@@ -30,15 +30,7 @@ builder.Services.AddAuthorizationPolicies();
 builder.Services.AddAuthenticationServices();
 builder.Services.AddSignalR().AddMessagePackProtocol();
 builder.Services.AddResponseCompression();
-
-#if DEBUG
-if (builder.Environment.IsDevelopment())
-	builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
-else
-	builder.Services.AddRazorPages();
-#else
 builder.Services.AddRazorPages();
-#endif
 
 builder.Services.AddServices();
 builder.Services.ConfigureServices(builder.Configuration);

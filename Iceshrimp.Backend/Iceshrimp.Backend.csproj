@@ -52,11 +52,6 @@
         <PackageReference Include="System.Formats.Asn1" Version="8.0.1" />
     </ItemGroup>
 
-    <!-- We want Razor runtime compilation support, but only during development -->
-    <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.7" />
-    </ItemGroup>
-
     <!-- If the build flag EnableLibVips is set, switch the ImageProcessor to LibVips (with ImageSharp as fallback) -->
     <PropertyGroup Condition=" '$(EnableLibVips)' == 'true' ">
         <DefineConstants>$(DefineConstants);EnableLibVips</DefineConstants>
