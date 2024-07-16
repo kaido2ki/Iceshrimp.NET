@@ -16,11 +16,12 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 
 	public                                     List<string> Scopes = [];
 	public                                     OauthToken?  Token;
-	[FromQuery(Name = "response_type")] public string       ResponseType { get; set; } = null!;
-	[FromQuery(Name = "client_id")]     public string       ClientId     { get; set; } = null!;
-	[FromQuery(Name = "redirect_uri")]  public string       RedirectUri  { get; set; } = null!;
-	[FromQuery(Name = "force_login")]   public bool         ForceLogin   { get; set; } = false;
-	[FromQuery(Name = "lang")]          public string?      Language     { get; set; }
+	public                                     List<User>   AuthenticatedUsers = [];
+	[FromQuery(Name = "response_type")] public string       ResponseType  { get; set; } = null!;
+	[FromQuery(Name = "client_id")]     public string       ClientId      { get; set; } = null!;
+	[FromQuery(Name = "redirect_uri")]  public string       RedirectUri   { get; set; } = null!;
+	[FromQuery(Name = "force_login")]   public bool         ForceLogin    { get; set; } = false;
+	[FromQuery(Name = "lang")]          public string?      Language      { get; set; }
 
 	[FromQuery(Name = "scope")]
 	public string Scope
@@ -41,25 +42,41 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 			throw GracefulException.BadRequest("Invalid response_type");
 		if (!App.RedirectUris.Contains(RedirectUri))
 			throw GracefulException.BadRequest("Cannot request redirect_uri not sent during app registration");
+		if (Request.Cookies.TryGetValue("sessions", out var sessions))
+		{
+			var tokens = sessions.Split(',');
+			AuthenticatedUsers = await db.Sessions
+			                             .Where(p => tokens.Contains(p.Token) && p.Active)
+			                             .Select(p => p.User)
+			                             .ToListAsync();
+		}
 	}
 
 	public async Task OnPost(
-		[FromForm] string username, [FromForm] string password, [FromForm] bool supportsHtmlFormatting,
-		[FromForm] bool autoDetectQuotes
+		[FromForm] string? username, [FromForm] string? password, [FromForm] string? userId,
+		[FromForm] bool supportsHtmlFormatting, [FromForm] bool autoDetectQuotes
 	)
 	{
-		// Validate query parameters first
+		// Validate query parameters & populate model first
 		await OnGet();
 
-		var user = await db.Users.FirstOrDefaultAsync(p => p.IsLocalUser &&
-		                                                   p.UsernameLower == username.ToLowerInvariant());
+		var user = AuthenticatedUsers.FirstOrDefault(p => p.Id == userId);
+
 		if (user == null)
-			throw GracefulException.Forbidden("Invalid username or password");
-		var userSettings = await db.UserSettings.FirstOrDefaultAsync(p => p.User == user);
-		if (userSettings?.Password == null)
-			throw GracefulException.Forbidden("Invalid username or password");
-		if (AuthHelpers.ComparePassword(password, userSettings.Password) == false)
-			throw GracefulException.Forbidden("Invalid username or password");
+		{
+			Exception Forbidden() => GracefulException.Forbidden("Invalid username or password");
+			if (username == null || password == null)
+				throw Forbidden();
+
+			user = await db.Users.FirstOrDefaultAsync(p => p.IsLocalUser &&
+			                                               p.UsernameLower == username.ToLowerInvariant()) ??
+			       throw Forbidden();
+			var userSettings = await db.UserSettings.FirstOrDefaultAsync(p => p.User == user);
+			if (userSettings?.Password == null)
+				throw Forbidden();
+			if (AuthHelpers.ComparePassword(password, userSettings.Password) == false)
+				throw Forbidden();
+		}
 
 		var token = new OauthToken
 		{

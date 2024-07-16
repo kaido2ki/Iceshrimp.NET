@@ -29,11 +29,28 @@
                 <input type="checkbox" name="autoDetectQuotes" id="autoDetectQuotes" value="1"/>
                 <label for="autoDetectQuotes">Automatically detect quotes</label>
             </div>
-            <div class="margin-bottom-5px margin-top-10px">
-                Log in below to confirm this:
-            </div>
-            <input type="text" placeholder="Username" name="username"/>
-            <input type="password" placeholder="Password" name="password"/>
+            @if (Model.AuthenticatedUsers.Count > 0)
+            {
+                <div class="margin-top-5px">
+                    @foreach (var user in Model.AuthenticatedUsers)
+                    {
+                        <button type="submit" name="userId" value="@user.Id">Log in as @@@user.Username</button>
+                    }
+                </div>
+                <div class="margin-bottom-5px margin-top-5px">
+                    Alternatively, sign in with to a different account below:
+                </div>
+                <input type="text" placeholder="Username" name="username"/>
+                <input type="password" placeholder="Password" name="password"/>
+            }
+            else
+            {
+                <div class="margin-bottom-5px margin-top-10px">
+                    Log in below to confirm this:
+                </div>
+                <input type="text" placeholder="Username" name="username" required/>
+                <input type="password" placeholder="Password" name="password" required/>
+            }
             <button type="submit">Submit</button>
         </form>
     </div>
