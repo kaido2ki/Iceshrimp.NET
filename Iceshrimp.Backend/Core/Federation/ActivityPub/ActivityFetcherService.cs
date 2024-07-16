@@ -55,7 +55,7 @@ public class ActivityFetcherService(
 	private async Task<IEnumerable<ASObject>> FetchActivityAsync(string url, User actor, UserKeypair keypair)
 	{
 		logger.LogDebug("Fetching activity {url} as user {id}", url, actor.Id);
-		var (activity, finalUri) = await FetchActivityInternal(url, actor, keypair);
+		var (activity, finalUri) = await FetchActivityInternalWrapper(url, actor, keypair);
 		if (activity == null) return [];
 
 		var activityUri = new Uri(activity.Id);
@@ -69,7 +69,7 @@ public class ActivityFetcherService(
 			throw GracefulException.UnprocessableEntity("Activity identifier doesn't match final host");
 
 		logger.LogDebug("Fetching activity {url} as user {id} (attempt 2)", activityIdUri.AbsoluteUri, actor.Id);
-		(activity, finalUri) = await FetchActivityInternal(activityIdUri.AbsoluteUri, actor, keypair);
+		(activity, finalUri) = await FetchActivityInternalWrapper(activityIdUri.AbsoluteUri, actor, keypair);
 		if (activity == null) return [];
 
 		activityUri = new Uri(activity.Id);
@@ -79,6 +79,24 @@ public class ActivityFetcherService(
 
 		throw GracefulException
 			.UnprocessableEntity("Activity identifier still doesn't match final URL after second fetch attempt");
+	}
+
+	/// <summary>
+	/// This abstracts FetchActivityInternal to keep stack traces short in case of HTTP timeouts.
+	/// </summary>
+	/// <exception cref="TimeoutException"></exception>
+	private async Task<(ASObject? obj, Uri finalUri)> FetchActivityInternalWrapper(
+		string url, User actor, UserKeypair keypair, int recurse = 3
+	)
+	{
+		try
+		{
+			return await FetchActivityInternal(url, actor, keypair, recurse);
+		}
+		catch (TaskCanceledException e) when (e.Message.Contains("HttpClient.Timeout"))
+		{
+			throw new TimeoutException(e.Message);
+		}
 	}
 
 	private async Task<(ASObject? obj, Uri finalUri)> FetchActivityInternal(
