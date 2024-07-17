@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Memory;
 using SixLabors.ImageSharp.PixelFormats;
@@ -93,7 +94,7 @@ public class ImageProcessor
 			// Correct mime type
 			if (request.MimeType == "image" && ident.Metadata.DecodedImageFormat?.DefaultMimeType != null)
 				request.MimeType = ident.Metadata.DecodedImageFormat.DefaultMimeType;
-			if (ident.Metadata.TryGetPngMetadata(out var pngMetadata) && pngMetadata.AnimateRootFrame)
+			if (ident.Metadata.DecodedImageFormat is PngFormat && ident.IsAnimated)
 				request.MimeType = "image/apng";
 
 			if (_config.CurrentValue.MediaProcessing.ImageProcessor == Enums.ImageProcessor.None)
@@ -103,7 +104,7 @@ public class ImageProcessor
 			}
 
 			// Don't generate thumb/webp for animated images
-			if (ident.FrameMetadataCollection.Count != 0 || pngMetadata?.AnimateRootFrame == true)
+			if (ident.FrameMetadataCollection.Count != 0 || ident.IsAnimated)
 			{
 				genThumb = false;
 				genWebp  = false;
