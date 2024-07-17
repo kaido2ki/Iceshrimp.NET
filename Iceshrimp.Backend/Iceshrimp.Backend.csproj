@@ -17,7 +17,7 @@
         <PackageReference Include="AngleSharp" Version="1.1.2" />
         <PackageReference Include="AsyncKeyedLock" Version="6.4.2" />
         <PackageReference Include="Blurhash.ImageSharp" Version="3.0.0" />
-        <PackageReference Include="dotNetRdf.Core" Version="3.2.7-iceshrimp" />
+        <PackageReference Include="dotNetRdf.Core" Version="3.2.8-iceshrimp" />
         <PackageReference Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="8.1.2" />
         <PackageReference Include="EntityFrameworkCore.Projectables" Version="3.0.4" />
         <PackageReference Include="FlexLabs.EntityFrameworkCore.Upsert" Version="8.0.0" />
