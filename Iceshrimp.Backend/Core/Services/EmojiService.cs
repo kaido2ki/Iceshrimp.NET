@@ -13,7 +13,12 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public partial class EmojiService(DatabaseContext db, DriveService driveSvc, SystemUserService sysUserSvc, IOptions<Config.InstanceSection> config)
+public partial class EmojiService(
+	DatabaseContext db,
+	DriveService driveSvc,
+	SystemUserService sysUserSvc,
+	IOptions<Config.InstanceSection> config
+)
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{
@@ -38,7 +43,7 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 			MimeType    = mimeType,
 			IsSensitive = false
 		};
-		var driveFile = await driveSvc.StoreFile(input, user, request);
+		var driveFile = await driveSvc.StoreFile(input, user, request, skipImageProcessing: true);
 
 		var id = IdHelpers.GenerateSlowflakeId();
 		var emoji = new Emoji
@@ -64,7 +69,8 @@ public partial class EmojiService(DatabaseContext db, DriveService driveSvc, Sys
 	public async Task<Emoji> CloneEmoji(Emoji existing)
 	{
 		var user = await sysUserSvc.GetInstanceActorAsync();
-		var driveFile = await driveSvc.StoreFile(existing.OriginalUrl, user, sensitive: false, forceStore: true) ??
+		var driveFile = await driveSvc.StoreFile(existing.OriginalUrl, user, sensitive: false, forceStore: true,
+		                                         skipImageProcessing: false) ??
 		                throw new Exception("Error storing emoji file");
 
 		var emoji = new Emoji

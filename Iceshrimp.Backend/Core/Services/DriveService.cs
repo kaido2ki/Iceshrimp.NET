@@ -25,7 +25,7 @@ public class DriveService(
 {
 	public async Task<DriveFile?> StoreFile(
 		string? uri, User user, bool sensitive, string? description = null, string? mimeType = null,
-		bool logExisting = true, bool forceStore = false
+		bool logExisting = true, bool forceStore = false, bool skipImageProcessing = false
 	)
 	{
 		if (uri == null) return null;
@@ -104,7 +104,7 @@ public class DriveService(
 					MimeType    = CleanMimeType(mimeType ?? res.Content.Headers.ContentType?.MediaType)
 				};
 
-				return await StoreFile(await res.Content.ReadAsStreamAsync(), user, request);
+				return await StoreFile(await res.Content.ReadAsStreamAsync(), user, request, skipImageProcessing);
 			}
 			catch (Exception e)
 			{
@@ -138,7 +138,9 @@ public class DriveService(
 		}
 	}
 
-	public async Task<DriveFile> StoreFile(Stream input, User user, DriveFileCreationRequest request)
+	public async Task<DriveFile> StoreFile(
+		Stream input, User user, DriveFileCreationRequest request, bool skipImageProcessing = false
+	)
 	{
 		if (user.IsLocalUser && input.Length > storageConfig.Value.MaxUploadSizeBytes)
 			throw GracefulException.UnprocessableEntity("Attachment is too large.");
@@ -229,8 +231,9 @@ public class DriveService(
 		{
 			if (isImage && isReasonableSize)
 			{
-				var genWebp = user.IsLocalUser;
-				var res     = await imageProcessor.ProcessImage(data, request, true, genWebp);
+				var genThumb = !skipImageProcessing;
+				var genWebp  = user.IsLocalUser && !skipImageProcessing;
+				var res      = await imageProcessor.ProcessImage(data, request, genThumb, genWebp);
 				properties = res?.Properties ?? properties;
 
 				blurhash     = res?.Blurhash;
