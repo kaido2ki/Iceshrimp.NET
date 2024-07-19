@@ -14,6 +14,7 @@ public partial class Note : IDisposable
 
 	[Parameter] [EditorRequired] public required NoteResponse NoteResponse { get; set; }
 	[Parameter]                  public          bool         Indented     { get; set; }
+	private                                      bool         _shouldRender = false;
 
 	public void React(EmojiResponse emoji)
 	{
@@ -116,7 +117,7 @@ public partial class Note : IDisposable
 	private void OnNoteChanged(object? _, NoteResponse note)
 	{
 		NoteResponse = note;
-		StateHasChanged();
+		Rerender();
 	}
 
 	protected override void OnInitialized()
@@ -145,7 +146,7 @@ public partial class Note : IDisposable
 			Broadcast();
 		}
 
-		StateHasChanged();
+		Rerender();
 	}
 
 	public void DoQuote()
@@ -158,6 +159,18 @@ public partial class Note : IDisposable
 	{
 		await ApiService.Notes.DeleteNote(NoteResponse.Id);
 		ComposeService.ComposeDialog?.OpenDialogRedraft(NoteResponse);
+	}
+
+	private void Rerender()
+	{
+		_shouldRender = true;
+		StateHasChanged();
+		_shouldRender = false;
+	}
+
+	protected override bool ShouldRender()
+	{
+		return _shouldRender;
 	}
 
 	public async Task Delete()
