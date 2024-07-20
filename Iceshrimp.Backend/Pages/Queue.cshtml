@@ -15,9 +15,14 @@
 
 @section scripts {
     <script src="~/js/queue.js"></script>
+    @if (Model.Queue == null)
+    {
+        <script src="~/js/queue-index.js"></script>
+    }
 }
 
 <h1>Queue Dashboard</h1>
+<button role="link" data-target="/queue" onclick="navigate(event)">overview</button>
 @foreach (var queue in QueueSvc.QueueNames)
 {
     <button role="link" data-target="/queue/@queue" onclick="navigate(event)">@queue</button>
@@ -32,6 +37,50 @@
         <input type="text" id="lookup" placeholder="Lookup job by id" minlength="36" maxlength="36" class="inline"/>
         <button type="submit">Submit</button>
     </form>
+
+    <h3>Queue status</h3>
+    <table class="auto-table" id="queue-status">
+        <thead>
+        <th>Name</th>
+        @foreach (var status in Enum.GetValues<Job.JobStatus>())
+        {
+            <th class="justify-right">@Enum.GetName(status)</th>
+        }
+        </thead>
+        <tbody>
+        @foreach (var queue in Model.QueueStatuses ?? throw new Exception("Model.QueueStatuses must not be null here"))
+        {
+            <tr>
+                <td>@queue.Name</td>
+                @foreach (var status in Enum.GetValues<Job.JobStatus>())
+                {
+                    <td class="status-@Enum.GetName(status)!.ToLowerInvariant() justify-right">@queue.JobCounts[status]</td>
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <h3>Recent jobs</h3>
+    <table class="auto-table" id="recent-jobs">
+        <thead>
+        <th class="width0">ID</th>
+        <th>Queue</th>
+        <th>Status</th>
+        <th>Actions</th>
+        </thead>
+        <tbody>
+        @foreach (var job in Model.Jobs)
+        {
+            await RenderJob(job, true);
+        }
+        </tbody>
+    </table>
+
+    var last        = Model.Jobs.FirstOrDefault();
+    var lastUpdated = last != null ? new DateTimeOffset(last.LastUpdatedAt).ToUnixTimeMilliseconds() : 0;
+
+    <div class="display-none" id="last-updated">@lastUpdated</div>
 }
 
 else
@@ -120,9 +169,8 @@ else
     </div>
 }
 
-
 @{
-    async Task RenderJob(Job job)
+    async Task RenderJob(Job job, bool withQueue = false)
     {
         var id = job.Id.ToStringLower();
         var additional = job.Status switch
@@ -135,8 +183,20 @@ else
             _                       => throw new ArgumentOutOfRangeException()
         };
 
-        <tr>
-            <td class="uuid">@id</td>
+        var classes = Model.Last != null && new DateTimeOffset(job.LastUpdatedAt).ToUnixTimeMilliseconds() > Model.Last
+            ? "new-item"
+            : "";
+
+        <tr class="@classes">
+            @if (withQueue)
+            {
+                <td class="uuid-abbrev">@id[..8]...@id[24..]</td>
+                <td>@job.Queue</td>
+            }
+            else
+            {
+                <td class="uuid">@id</td>
+            }
             <td class="status-@job.Status.ToString().ToLowerInvariant()">
             <b>@job.Status</b> <small>@additional</small>
             <td>

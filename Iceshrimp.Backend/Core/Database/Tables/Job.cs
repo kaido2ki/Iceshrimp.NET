@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EntityFrameworkCore.Projectables;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
@@ -43,4 +44,6 @@ public class Job
 	public long Duration => (long)((FinishedAt ?? DateTime.UtcNow) - (StartedAt ?? QueuedAt)).TotalMilliseconds;
 
 	[NotMapped] public long QueueDuration => (long)((StartedAt ?? DateTime.UtcNow) - QueuedAt).TotalMilliseconds;
+
+	[NotMapped] [Projectable] public DateTime LastUpdatedAt => FinishedAt ?? StartedAt ?? QueuedAt;
 }

@@ -64,6 +64,29 @@
     width: 36ch;
 }
 
+.uuid-abbrev {
+    font-family: monospace;
+    width: 23ch;
+}
+
 .fake-link {
     cursor: pointer;
+}
+
+.justify-right {
+    text-align: right;
+}
+
+@keyframes newItem {
+    0% {
+        background-color: var(--text-main);
+    }
+}
+
+.new-item {
+    animation: newItem 500ms;
+}
+
+.display-none {
+    display: none;
 }
