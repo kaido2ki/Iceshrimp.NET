@@ -10,45 +10,46 @@
 @inject ComposeService                 ComposeService
 @inject SessionService                 SessionService
 @inject IStringLocalizer<Localization> Loc;
-@inject GlobalComponentSvc GlobalComponentSvc
+@inject GlobalComponentSvc             GlobalComponentSvc
+@inject MessageService                 MessageService
 <dialog class="dialog" @ref="Dialog">
     <div class="compose">
-    <div class="header">
-        <button @onclick="CloseDialog">
-            <Icon Name="Icons.X"/>
-        </button>
-        <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
-        <button @onclick="SendNote" class="post-btn">
-            @Loc["ComposePost"]<Icon Name="Icons.PaperPlaneRight"/>
-        </button>
-    </div>
-    @if (ReplyOrQuote != null)
-    {
-        <div class="reply-or-quote">
-            <NoteComponent Note="ReplyOrQuote" AsQuote="true"/>
+        <div class="header">
+            <button @onclick="CloseDialog">
+                <Icon Name="Icons.X"/>
+            </button>
+            <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
+            <button @onclick="SendNote" class="post-btn">
+                @Loc["ComposePost"]<Icon Name="Icons.PaperPlaneRight"/>
+            </button>
         </div>
-    }
-    @if (NoteDraft.Cw != null)
-    {
-        <input @bind="NoteDraft.Cw" class="input cw-field" placeholder="Content Warning"/>
-        <hr class="separator"/>
-    }
-    <textarea @ref="Textarea" @bind="NoteDraft.Text" class="textarea" placeholder="@TextPlaceholder" rows="5" cols="35" autofocus="autofocus"></textarea>
-    <div class="footer">
-        <button class="footer-btn" @onclick="OpenUpload">
-            <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
-        </button>
-        <button class="footer-btn" @onclick="ToggleCw">
-            <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
-        </button>
-        <button @ref="EmojiButton" class="footer-btn positioned" @onclick="ToggleEmojiPicker">
-            <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
-        </button>
-        <div class="file-input">
-            <InputFile @ref="UploadInput" OnChange="Upload">Upload!</InputFile>
+        @if (ReplyOrQuote != null)
+        {
+            <div class="reply-or-quote">
+                <NoteComponent Note="ReplyOrQuote" AsQuote="true"/>
+            </div>
+        }
+        @if (NoteDraft.Cw != null)
+        {
+            <input @bind="NoteDraft.Cw" class="input cw-field" placeholder="Content Warning"/>
+            <hr class="separator"/>
+        }
+        <textarea @ref="Textarea" @bind="NoteDraft.Text" class="textarea" placeholder="@TextPlaceholder" rows="5" cols="35" autofocus="autofocus"></textarea>
+        <div class="footer">
+            <button class="footer-btn" @onclick="OpenUpload">
+                <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
+            </button>
+            <button class="footer-btn" @onclick="ToggleCw">
+                <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
+            </button>
+            <button @ref="EmojiButton" class="footer-btn positioned" @onclick="ToggleEmojiPicker">
+                <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
+            </button>
+            <div class="file-input">
+                <InputFile @ref="UploadInput" OnChange="Upload">Upload!</InputFile>
+            </div>
         </div>
-    </div>
-    <div @onclick="CloseDialog" class="backdrop"></div>
+        <div @onclick="CloseDialog" class="backdrop"></div>
     </div>
 </dialog>
 
@@ -70,12 +71,7 @@
         Cw         = null
     };
 
-    private Dictionary<string, string> AvailablePlaceholders { get; set; } = new()
-    {
-        { "default", "What's on your mind?" },
-        { "reply", "Reply goes here!" },
-        { "quote", "Quote this post!" }
-    };
+    private Dictionary<string, string> AvailablePlaceholders { get; set; } = new() { { "default", "What's on your mind?" }, { "reply", "Reply goes here!" }, { "quote", "Quote this post!" } };
 
     RenderFragment DropdownIcon(NoteVisibility vis)
     {
@@ -108,9 +104,7 @@
                                new DropdownElement<NoteVisibility>
                                {
                                    #pragma warning disable BL0005 // Setting this outside the component is fine until this is reworked
-                                   Icon      = DropdownIcon(vis),
-                                   Content   = DropdownContent(vis),
-                                   Selection = vis
+                                   Icon = DropdownIcon(vis), Content = DropdownContent(vis), Selection = vis
                                    #pragma warning restore BL0005
                                })
                    .ToList();
@@ -203,14 +197,9 @@
 
     private void ResetState()
     {
-        ReplyOrQuote = null;
-        Attachments  = new List<DriveFileResponse>();
-        NoteDraft = new NoteCreateRequest
-        {
-            Text       = "",
-            Visibility = NoteVisibility.Followers,
-            Cw         = null
-        };
+        ReplyOrQuote    = null;
+        Attachments     = new List<DriveFileResponse>();
+        NoteDraft       = new NoteCreateRequest { Text = "", Visibility = NoteVisibility.Followers, Cw = null };
         TextPlaceholder = AvailablePlaceholders["default"];
     }
 
@@ -227,7 +216,14 @@
         }
 
         await ApiService.Notes.CreateNote(NoteDraft);
+        if (ReplyOrQuote != null)
+        {
+            var res            = await ApiService.Notes.GetNote(ReplyOrQuote.Id);
+            if (res != null) _ = MessageService.UpdateNote(res);
+        }
+
         await CloseDialog();
+
         // FIXME: Implement timeline refresh and call it here.
     }
 
@@ -253,7 +249,7 @@
     }
 
     private void ToggleEmojiPicker()
-    {  
+    {
         GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji));
     }
 

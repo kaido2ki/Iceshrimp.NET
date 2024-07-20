@@ -5,6 +5,8 @@
 @using Iceshrimp.Shared.Schemas.Web
 @inject ApiService            ApiService
 @inject IJSRuntime            Js
+@inject MessageService MessageService
+@implements IDisposable
 
 @if (_init)
 {
@@ -28,7 +30,7 @@
                     <div class="descendants">
                         @foreach (var element in Descendants)
                         {
-                            <RecursiveNote Note="element" Depth="0"/>
+                            <RecursiveNote Note="element" Depth="0" MaxDepth="_depth"/>
                         }
                     </div>
                 }
@@ -54,6 +56,7 @@ else
     private            ElementReference     RootNoteRef { get; set; }
     private            bool                 _init;
     private            bool                 _error;
+    private            int                  _depth = 20;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -71,10 +74,28 @@ else
             return;
         }
 
-        Descendants = await ApiService.Notes.GetNoteDescendants(NoteId, default);
+        Descendants = await ApiService.Notes.GetNoteDescendants(NoteId, _depth);
         Ascendants  = await ApiService.Notes.GetNoteAscendants(NoteId, default);
         _init       = true;
 
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        if (NoteId != null) MessageService.Register(NoteId, OnNoteChanged);
+    }
+
+    private void OnNoteChanged(object? _, NoteResponse note)
+    {
+        var __ = Refresh();
+    }
+
+    private async Task Refresh()
+    {
+        if (NoteId == null) throw new InvalidOperationException("RefreshNote called under impossible circumstances");
+        Descendants = await ApiService.Notes.GetNoteDescendants(NoteId, default);
+        Ascendants  = await ApiService.Notes.GetNoteAscendants(NoteId, default);
         StateHasChanged();
     }
 
@@ -90,5 +111,10 @@ else
             await (Module ?? throw new InvalidOperationException("JS interop not initialized"))
                 .InvokeVoidAsync("ScrollIntoView", RootNoteRef);
         }
+    }
+
+    public void Dispose()
+    {
+        if (NoteId != null) MessageService.Unregister(NoteId, OnNoteChanged);
     }
 }

@@ -1,7 +1,11 @@
 @* ReSharper disable once RedundantUsingDirective *@
 @using Iceshrimp.Frontend.Components.Note
+@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @inject NavigationManager NavigationManager
+@inject MessageService    MessageService
+@inject ApiService Api
+@implements IDisposable
 
 <div class="@(Depth > 0 ? "descendant" : "root-note")">
     <div class="note-container">
@@ -44,13 +48,13 @@
                                 </div>
                             }
                         </div>
-                        <RecursiveNote Note="note" Depth="Depth + 1"/>
+                        <RecursiveNote Note="note" Depth="Depth + 1" MaxDepth="MaxDepth"/>
 
                     </div>
                 }
                 else
                 {
-                    <RecursiveNote Note="note" Depth="Depth + 1"/>
+                    <RecursiveNote Note="note" Depth="Depth + 1" MaxDepth="MaxDepth"/>
                 }
             }
         </div>
@@ -58,20 +62,43 @@
 </div>
 
 @code {
-    [Parameter] [EditorRequired] public required NoteResponse Note  { get; set; }
-    [Parameter] [EditorRequired] public required int          Depth { get; set; }
+    [Parameter] [EditorRequired] public required NoteResponse Note     { get; set; }
+    [Parameter] [EditorRequired] public required int          Depth    { get; set; }
+    [Parameter] [EditorRequired] public required int          MaxDepth { get; set; }
     private                                      bool         _indented = false;
 
     protected override void OnInitialized()
     {
+        MessageService.Register(Note.Id, OnNoteChanged);
         if (Depth > 0 || Note.Descendants?.Count > 0)
         {
             _indented = true;
         }
     }
+    
+    private void OnNoteChanged(object? _, NoteResponse note)
+    {
+        var __ = Refresh();
+    }
+
+    private async Task Refresh()
+    {
+        if (Depth < MaxDepth)
+        {
+            var res = await Api.Notes.GetNoteDescendants(Note.Id, MaxDepth - Depth);
+            Note.Descendants = res;
+            StateHasChanged();
+        }
+
+    }
 
     private void OpenNote()
     {
         NavigationManager.NavigateTo($"/notes/{Note.Id}");
+    }
+
+    public void Dispose()
+    {
+        MessageService.Unregister(Note.Id, OnNoteChanged);
     }
 }
