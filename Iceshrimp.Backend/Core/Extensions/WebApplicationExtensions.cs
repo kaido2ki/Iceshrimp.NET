@@ -116,8 +116,46 @@ public static class WebApplicationExtensions
 			app.Logger.LogCritical("Failed to connect to database. Please make sure your configuration is correct.");
 			Environment.Exit(1);
 		}
-
+		
+		// @formatter:off
 		var pendingMigration = (await db.Database.GetPendingMigrationsAsync()).FirstOrDefault();
+		if (args.Contains("--migrate-from-js"))
+		{
+			app.Logger.LogInformation("Initializing migration assistant...");
+			var initialMigration = typeof(Initial).GetCustomAttribute<MigrationAttribute>()?.Id;
+			if (pendingMigration != initialMigration || await db.IsDatabaseEmpty())
+			{
+				app.Logger.LogCritical("Database does not appear to be an iceshrimp-js database.");
+				Environment.Exit(1);
+			}
+			else if (!args.Contains("--i-reverted-any-extra-migrations") ||
+			         !args.Contains("--i-made-a-database-backup") ||
+			         !args.Contains("--i-understand-that-this-is-a-one-way-operation"))
+			{
+				app.Logger.LogCritical("Missing confirmation argument(s), please follow the instructions in the wiki exactly.");
+				Environment.Exit(1);
+			}
+			else
+			{
+				app.Logger.LogInformation("Applying initial migration...");
+				try
+				{
+					await db.Database.ExecuteSqlAsync(new MigrationAssistant().InitialMigration);
+				}
+				catch (Exception e)
+				{
+					app.Logger.LogCritical("Failed to apply initial migration: {error}", e);
+					app.Logger.LogCritical("Manual intervention required, please follow the instructions in the wiki for more information.");
+					Environment.Exit(1);
+				}
+
+				app.Logger.LogInformation("Successfully applied the initial migration.");
+				app.Logger.LogInformation("Please follow the instructions on the wiki to validate the database schema.");
+				Environment.Exit(0);
+			}
+		}
+		// @formatter:on
+
 		if (pendingMigration != null)
 		{
 			var initialMigration = typeof(Initial).GetCustomAttribute<MigrationAttribute>()?.Id;
