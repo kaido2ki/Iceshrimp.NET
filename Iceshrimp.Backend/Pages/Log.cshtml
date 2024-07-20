@@ -1,0 +1,25 @@
+@page "/logs"
+@using Iceshrimp.Backend.Core.Extensions
+@model LogModel
+
+<table>
+    <thead>
+    <th>Timestamp</th>
+    <th>Level</th>
+    <th>Category</th>
+    <th>Message</th>
+    <th>Template</th>
+    </thead>
+    <tbody>
+    @foreach (var message in Model.Messages)
+    {
+        <tr>
+            <td>@message.Timestamp.ToDisplayStringTz()</td>
+            <td>@message.Level</td>
+            <td>@message.Category</td>
+            <td>@message.Message</td>
+            <td>@message.Template</td>
+        </tr>
+    }
+    </tbody>
+</table>

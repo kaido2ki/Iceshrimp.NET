@@ -1,11 +1,13 @@
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Console;
+using Serilog;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
-public static class ConsoleLoggerExtensions
+public static class LoggingExtensions
 {
-	public static ILoggingBuilder AddCustomConsoleFormatter(this ILoggingBuilder builder)
+	public static ILoggingBuilder AddCustomConsoleLogger(this ILoggingBuilder builder)
 	{
 		if (Environment.GetEnvironmentVariable("INVOCATION_ID") is not null)
 		{
@@ -19,6 +21,22 @@ public static class ConsoleLoggerExtensions
 		}
 
 		return builder;
+	}
+
+	public static IServiceCollection AddLoggingProviders(this IServiceCollection services)
+	{
+		var logStorageProvider = new InMemoryLogStorageProvider();
+		var logService         = new LogService(logStorageProvider);
+
+		services.AddSingleton<LogService>(_ => logService);
+
+		var logger = new LoggerConfiguration()
+		             .WriteTo.Sink(logService)
+		             .CreateLogger();
+
+		services.AddLogging(logging => logging.AddCustomConsoleLogger().AddSerilog(logger));
+
+		return services;
 	}
 }
 

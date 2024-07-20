@@ -22,7 +22,7 @@ builder.Services.AddControllers()
        .AddPlugins(PluginLoader.Assemblies);
 
 builder.Services.AddSwaggerGenWithOptions();
-builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
+builder.Services.AddLoggingProviders();
 builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
 builder.Services.AddCorsPolicies();

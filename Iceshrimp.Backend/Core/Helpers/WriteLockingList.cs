@@ -53,4 +53,11 @@ public class WriteLockingList<T>(IEnumerable<T>? sourceCollection = null) : ICol
 	{
 		lock (_list) return _list.RemoveAll(predicate);
 	}
+
+	public void Trim(int maxEntries)
+	{
+		var count = _list.Count - maxEntries;
+		if (count <= 0) return;
+		lock (_list) _list.RemoveRange(0, count);
+	}
 }
