@@ -2,15 +2,18 @@
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Core.Services.StateServicePatterns
 @using Iceshrimp.Shared.Schemas.Web
-@inject ApiService            ApiService
-@inject IJSRuntime            Js
-@inject MessageService MessageService
+@inject ApiService        ApiService
+@inject IJSRuntime        Js
+@inject MessageService    MessageService
+@inject StateService      State
+@inject NavigationManager Navigation
 @implements IDisposable
 
 @if (_init)
 {
-    <div class="scroller">
+    <div @ref="Scroller" class="scroller">
         <div class="wrapper">
             <div class="container">
                 @if (Ascendants != null)
@@ -48,15 +51,17 @@ else
 }
 
 @code {
-    [Parameter] public string?              NoteId      { get; set; }
-    public             NoteResponse?        RootNote    { get; set; }
-    private            IList<NoteResponse>? Descendants { get; set; }
-    private            IList<NoteResponse>? Ascendants  { get; set; }
-    private            IJSObjectReference?  Module      { get; set; }
-    private            ElementReference     RootNoteRef { get; set; }
-    private            bool                 _init;
-    private            bool                 _error;
-    private            int                  _depth = 20;
+    [Parameter] public string?                     NoteId      { get; set; }
+    public             NoteResponse?               RootNote    { get; set; }
+    private            IList<NoteResponse>?        Descendants { get; set; }
+    private            IList<NoteResponse>?        Ascendants  { get; set; }
+    private            IJSInProcessObjectReference Module      { get; set; } = null!;
+    private            ElementReference            RootNoteRef { get; set; }
+    private            bool                        _init;
+    private            bool                        _error;
+    private            int                         _depth = 20;
+    private            ElementReference            Scroller { get; set; }
+    private            IDisposable?                _locationChangingHandlerDisposable;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -84,6 +89,7 @@ else
     protected override void OnInitialized()
     {
         if (NoteId != null) MessageService.Register(NoteId, OnNoteChanged);
+        _locationChangingHandlerDisposable = Navigation.RegisterLocationChangingHandler(LocationChangeHandler);
     }
 
     private void OnNoteChanged(object? _, NoteResponse note)
@@ -99,22 +105,45 @@ else
         StateHasChanged();
     }
 
+    private ValueTask LocationChangeHandler(LocationChangingContext arg)
+    {
+        SaveState();
+        return ValueTask.CompletedTask;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            Module = await Js.InvokeAsync<IJSObjectReference>("import", "/Pages/SingleNote.razor.js");
+            Module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "/Pages/SingleNote.razor.js");
         }
 
         if (_init)
         {
-            await (Module ?? throw new InvalidOperationException("JS interop not initialized"))
-                .InvokeVoidAsync("ScrollIntoView", RootNoteRef);
+            var state = State.SingleNote.GetState(NoteId!);
+            if (state != null)
+            {
+                Module.InvokeVoid("SetScrollTop", Scroller, state.ScrollTop);
+            }
+            else
+            {
+                Module.InvokeVoid("ScrollIntoView", RootNoteRef);
+            }
         }
+    }
+
+    private void SaveState()
+    {
+        if (NoteId == null) return;
+        var scrollTop = Module.Invoke<float>("GetScrollTop", Scroller);
+        var state     = new SingleNoteState { ScrollTop = scrollTop };
+        State.SingleNote.SetState(NoteId, state);
     }
 
     public void Dispose()
     {
         if (NoteId != null) MessageService.Unregister(NoteId, OnNoteChanged);
+        SaveState();
+        _locationChangingHandlerDisposable?.Dispose();
     }
 }

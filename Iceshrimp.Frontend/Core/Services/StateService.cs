@@ -6,4 +6,5 @@ internal class StateService(MessageService messageService)
 {
 	public VirtualScroller VirtualScroller { get; } = new();
 	public Timeline        Timeline        { get; } = new(messageService);
+	public SingleNote      SingleNote      { get; } = new();
 }
