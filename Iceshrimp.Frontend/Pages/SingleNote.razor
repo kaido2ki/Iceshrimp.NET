@@ -3,15 +3,19 @@
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Core.Services.StateServicePatterns
+@using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
-@inject ApiService        ApiService
-@inject IJSRuntime        Js
-@inject MessageService    MessageService
-@inject StateService      State
-@inject NavigationManager Navigation
+@using Microsoft.Extensions.Localization
+@inject ApiService                     ApiService
+@inject IJSRuntime                     Js
+@inject MessageService                 MessageService
+@inject StateService                   State
+@inject NavigationManager              Navigation
+@inject IStringLocalizer<Localization> Loc;
+
 @implements IDisposable
 
-@if (_init)
+@if (_componentState == LoadState.Init)
 {
     <div @ref="Scroller" class="scroller">
         <div class="wrapper">
@@ -41,13 +45,17 @@
         </div>
     </div>
 }
-else
+@if (_componentState == LoadState.Loading)
 {
     <div>Loading</div>
 }
-@if (_error)
+@if (_componentState == LoadState.Error)
 {
     <div>This note does not exist!</div>
+}
+@if (_componentState == LoadState.Deleted)
+{
+    <div>@Loc["This post has been deleted"]</div>
 }
 
 @code {
@@ -57,32 +65,39 @@ else
     private            IList<NoteResponse>?        Ascendants  { get; set; }
     private            IJSInProcessObjectReference Module      { get; set; } = null!;
     private            ElementReference            RootNoteRef { get; set; }
-    private            bool                        _init;
-    private            bool                        _error;
     private            int                         _depth = 20;
     private            ElementReference            Scroller { get; set; }
     private            IDisposable?                _locationChangingHandlerDisposable;
     private            IDisposable?                _noteChangedHandler;
+    private            LoadState                   _componentState;
+
+    private enum LoadState
+    {
+        Loading,
+        Init,
+        Error,
+        Deleted
+    }
 
     protected override async Task OnParametersSetAsync()
     {
-        _init = false;
+        _componentState = LoadState.Loading;
         if (NoteId == null)
         {
-            _error = true;
+            _componentState = LoadState.Error;
             return;
         }
 
         RootNote = await ApiService.Notes.GetNote(NoteId);
         if (RootNote == null)
         {
-            _error = true;
+            _componentState = LoadState.Error;
             return;
         }
 
-        Descendants = await ApiService.Notes.GetNoteDescendants(NoteId, _depth);
-        Ascendants  = await ApiService.Notes.GetNoteAscendants(NoteId, default);
-        _init       = true;
+        Descendants    = await ApiService.Notes.GetNoteDescendants(NoteId, _depth);
+        Ascendants     = await ApiService.Notes.GetNoteAscendants(NoteId, default);
+        _componentState = LoadState.Init;
 
         StateHasChanged();
     }
@@ -90,12 +105,28 @@ else
     protected override void OnInitialized()
     {
         if (NoteId != null) _noteChangedHandler = MessageService.Register(NoteId, OnNoteChanged, MessageService.Type.Updated);
-        _locationChangingHandlerDisposable = Navigation.RegisterLocationChangingHandler(LocationChangeHandler);
+        _locationChangingHandlerDisposable =  Navigation.RegisterLocationChangingHandler(LocationChangeHandler);
+        MessageService.AnyNoteDeleted      += OnNoteDeleted;
     }
 
     private void OnNoteChanged(object? _, NoteResponse note)
     {
         var __ = Refresh();
+    }
+
+    private void OnNoteDeleted(object? _, NoteResponse note)
+    {
+        if (NoteId == note.Id)
+        {
+            _componentState = LoadState.Deleted;
+        }
+        else
+        {
+            Ascendants?.Remove(note);
+            Descendants?.Remove(note);
+        }
+
+        StateHasChanged();
     }
 
     private async Task Refresh()
@@ -119,7 +150,7 @@ else
             Module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "/Pages/SingleNote.razor.js");
         }
 
-        if (_init)
+        if (_componentState == LoadState.Init)
         {
             var state = State.SingleNote.GetState(NoteId!);
             if (state != null)
@@ -135,7 +166,7 @@ else
 
     private void SaveState()
     {
-        if (NoteId == null) return;
+        if (NoteId == null || _componentState != LoadState.Init) return;
         var scrollTop = Module.Invoke<float>("GetScrollTop", Scroller);
         var state     = new SingleNoteState { ScrollTop = scrollTop };
         State.SingleNote.SetState(NoteId, state);
@@ -146,5 +177,6 @@ else
         if (_noteChangedHandler != null) _noteChangedHandler.Dispose();
         SaveState();
         _locationChangingHandlerDisposable?.Dispose();
+        MessageService.AnyNoteDeleted -= OnNoteDeleted;
     }
 }

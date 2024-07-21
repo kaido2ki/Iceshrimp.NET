@@ -6,7 +6,7 @@ namespace Iceshrimp.Frontend.Core.Services.StateServicePatterns;
 internal class Timeline(MessageService messageService)
 {
 	private MessageService                    MessageService { get; set; } = messageService;
-	private          Dictionary<string, TimelineState> States         { get; }      = new();
+	private Dictionary<string, TimelineState> States         { get; }      = new();
 
 	public void SetState(string id, TimelineState state)
 	{
@@ -27,13 +27,13 @@ internal class Timeline(MessageService messageService)
 
 internal class TimelineState : IDisposable
 {
-	private MessageService     MessageService { get; set; }
-	public required  string?            MaxId;
-	public required  string?            MinId;
-	public required  List<NoteResponse> Timeline;
+	private         MessageService     MessageService { get; set; }
+	public required string?            MaxId;
+	public required string?            MinId;
+	public required List<NoteResponse> Timeline;
 
 	[SetsRequiredMembers]
-	public TimelineState(List<NoteResponse> timeline, string? maxId, string? minId, MessageService messageService)
+	internal TimelineState(List<NoteResponse> timeline, string? maxId, string? minId, MessageService messageService)
 	{
 		MaxId                         =  maxId;
 		MinId                         =  minId;
@@ -54,7 +54,10 @@ internal class TimelineState : IDisposable
 
 	private void OnNoteDeleted(object? _, NoteResponse note)
 	{
-		Timeline.Remove(note);
+		var i                           = Timeline.FindIndex(p => p.Id == note.Id);
+		if (i == 0) MaxId                  = Timeline[1].Id;
+		if (i == Timeline.Count - 1) MinId = Timeline[^2].Id;
+		Timeline.RemoveAt(i);
 	}
 
 	public void Dispose()

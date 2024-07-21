@@ -11,12 +11,13 @@ namespace Iceshrimp.Frontend.Components;
 public partial class VirtualScroller : IAsyncDisposable
 {
 	[Inject]                     private         IIntersectionObserverService ObserverService  { get; set; } = null!;
-	[Inject]                     private         IJSRuntime                   Js               { get; set; }      = null!;
-	[Inject]                     private         StateService                 StateService     { get; set; }      = null!;
+	[Inject]                     private         IJSRuntime                   Js               { get; set; } = null!;
+	[Inject]                     private         StateService                 StateService     { get; set; } = null!;
+	[Inject]                     private         MessageService               MessageService   { get; set; } = null!;
 	[Parameter] [EditorRequired] public required List<NoteResponse>           NoteResponseList { get; set; }
 	[Parameter] [EditorRequired] public required Func<Task<bool>>             ReachedEnd       { get; set; }
 	[Parameter] [EditorRequired] public required EventCallback                ReachedStart     { get; set; }
-	private                                      VirtualScrollerState         State            { get; set; } = new();
+	private                                      VirtualScrollerState         State            { get; set; } = null!;
 	private                                      int                          UpdateCount      { get; set; } = 15;
 	private                                      int                          _count = 30;
 	private                                      List<ElementReference>       _refs  = [];
@@ -47,6 +48,7 @@ public partial class VirtualScroller : IAsyncDisposable
 	public async ValueTask DisposeAsync()
 	{
 		await SaveState();
+		MessageService.AnyNoteDeleted -= OnNoteDeleted;
 	}
 
 	private async Task LoadOlder()
@@ -225,8 +227,17 @@ public partial class VirtualScroller : IAsyncDisposable
 	{
 		await Module.InvokeVoidAsync("SetScrollTop", State.ScrollTop, _scroller);
 	}
+	
+	private void OnNoteDeleted(object? _, NoteResponse note)
+	{
+		State.RenderedList.Remove(note);
+		StateHasChanged();
+	}
+
 	protected override void OnInitialized()
 	{
+		State                         =  StateService.VirtualScroller.CreateStateObject();
+		MessageService.AnyNoteDeleted += OnNoteDeleted;
 		try
 		{
 			var virtualScrollerState = StateService.VirtualScroller.GetState("home");
@@ -257,6 +268,5 @@ public partial class VirtualScroller : IAsyncDisposable
 			await SetScrollTop();
 			_setScroll = false;
 		}
-
 	}
 }

@@ -4,7 +4,7 @@ namespace Iceshrimp.Frontend.Core.Services;
 
 internal class StateService(MessageService messageService)
 {
-	public VirtualScroller VirtualScroller { get; } = new();
+	public VirtualScroller VirtualScroller { get; } = new(messageService);
 	public Timeline        Timeline        { get; } = new(messageService);
 	public SingleNote      SingleNote      { get; } = new();
 }
