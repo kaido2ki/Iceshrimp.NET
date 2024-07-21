@@ -65,11 +65,12 @@
     [Parameter] [EditorRequired] public required NoteResponse Note     { get; set; }
     [Parameter] [EditorRequired] public required int          Depth    { get; set; }
     [Parameter] [EditorRequired] public required int          MaxDepth { get; set; }
-    private                                      bool         _indented = false;
+    private                                      bool         _indented           = false;
+    private                                      IDisposable  _noteChangedHandler = null!;
 
     protected override void OnInitialized()
     {
-        MessageService.Register(Note.Id, OnNoteChanged);
+        _noteChangedHandler = MessageService.Register(Note.Id, OnNoteChanged, MessageService.Type.Updated);
         if (Depth > 0 || Note.Descendants?.Count > 0)
         {
             _indented = true;
@@ -99,6 +100,6 @@
 
     public void Dispose()
     {
-        MessageService.Unregister(Note.Id, OnNoteChanged);
+        _noteChangedHandler.Dispose();
     }
 }

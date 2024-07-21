@@ -14,7 +14,8 @@ public partial class Note : IDisposable
 
 	[Parameter] [EditorRequired] public required NoteResponse NoteResponse { get; set; }
 	[Parameter]                  public          bool         Indented     { get; set; }
-	private                                      bool         _shouldRender = false;
+	private                                      bool         _shouldRender       = false;
+	private                                      IDisposable  _noteChangedHandler = null!;
 
 	public void React(EmojiResponse emoji)
 	{
@@ -122,7 +123,7 @@ public partial class Note : IDisposable
 
 	protected override void OnInitialized()
 	{
-		MessageSvc.Register(NoteResponse.Id, OnNoteChanged);
+		_noteChangedHandler = MessageSvc.Register(NoteResponse.Id, OnNoteChanged, MessageService.Type.Updated);
 	}
 
 	public void Reply()
@@ -176,10 +177,11 @@ public partial class Note : IDisposable
 	public async Task Delete()
 	{
 		await ApiService.Notes.DeleteNote(NoteResponse.Id);
+		await MessageSvc.DeleteNote(NoteResponse);
 	}
 
 	public void Dispose()
 	{
-		MessageSvc.Unregister(NoteResponse.Id, OnNoteChanged);
+		_noteChangedHandler.Dispose();
 	}
 }

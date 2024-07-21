@@ -35,12 +35,12 @@ internal class TimelineState : IDisposable
 	[SetsRequiredMembers]
 	public TimelineState(List<NoteResponse> timeline, string? maxId, string? minId, MessageService messageService)
 	{
-		MaxId                      =  maxId;
-		MinId                      =  minId;
-		Timeline                   =  timeline;
-		MessageService             =  messageService;
+		MaxId                         =  maxId;
+		MinId                         =  minId;
+		Timeline                      =  timeline;
+		MessageService                =  messageService;
 		MessageService.AnyNoteChanged += OnNoteChanged;
-
+		MessageService.AnyNoteDeleted += OnNoteDeleted;
 	}
 
 	private void OnNoteChanged(object? _, NoteResponse note)
@@ -48,12 +48,18 @@ internal class TimelineState : IDisposable
 		var i = Timeline.FindIndex(p => p.Id == note.Id);
 		if (i >= 0)
 		{
-			Timeline[i].Liked = note.Liked;
+			Timeline[i] = note;
 		}
+	}
+
+	private void OnNoteDeleted(object? _, NoteResponse note)
+	{
+		Timeline.Remove(note);
 	}
 
 	public void Dispose()
 	{
 		MessageService.AnyNoteChanged -= OnNoteChanged;
+		MessageService.AnyNoteDeleted -= OnNoteDeleted;
 	}
 }
