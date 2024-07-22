@@ -1,28 +1,44 @@
 let interval = null;
 const timeout = 1000;
+let initial = true;
 
 async function reloadTables() {
     if (document.hidden) {
+        setStatus("Disconnected.", "status-failed");
         if (interval == null) return;
         clearInterval(interval);
         interval = null;
         return;
     }
 
+    if (interval == null && !initial) setStatus("Reconnecting...", "status-delayed");
+    if (initial) initial = false;
     interval ??= setInterval(reloadTables, timeout);
 
-    const last = document.getElementById('last-updated').innerText;
-    const res = await fetch(`/queue?last=${last}`);
-    const text = await res.text();
+    try {
+        const last = document.getElementById('last-updated').innerText;
+        const res = await fetch(`/queue?last=${last}`);
+        const text = await res.text();
 
-    const newDocument = new DOMParser().parseFromString(text, "text/html");
-    const newLast = newDocument.getElementById('last-updated').innerText;
+        const newDocument = new DOMParser().parseFromString(text, "text/html");
+        const newLast = newDocument.getElementById('last-updated').innerText;
 
-    if (last !== newLast) {
-        document.getElementById('last-updated').innerText = newLast;
-        document.getElementById('recent-jobs').innerHTML = newDocument.getElementById('recent-jobs').innerHTML;
+        if (last !== newLast) {
+            document.getElementById('last-updated').innerText = newLast;
+            document.getElementById('recent-jobs').innerHTML = newDocument.getElementById('recent-jobs').innerHTML;
+        }
+        document.getElementById('queue-status').innerHTML = newDocument.getElementById('queue-status').innerHTML;
+        setStatus("Updating in real time", "status-completed");
     }
-    document.getElementById('queue-status').innerHTML = newDocument.getElementById('queue-status').innerHTML;
+    catch {
+        setStatus("Reconnecting...", "status-delayed");
+    }
+}
+
+function setStatus(text, classname) {
+    const el = document.getElementById('update-status');
+    el.innerText = text;
+    el.className = classname;
 }
 
 function docReady(fn) {
