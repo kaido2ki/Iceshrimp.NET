@@ -24,9 +24,8 @@ public class QueueService(
 	private readonly List<IPostgresJobQueue> _queues             = [];
 	public readonly  BackgroundTaskQueue     BackgroundTaskQueue = new(queueConcurrency.Value.BackgroundTask);
 	public readonly  DeliverQueue            DeliverQueue        = new(queueConcurrency.Value.Deliver);
-
-	public readonly InboxQueue      InboxQueue      = new(queueConcurrency.Value.Inbox);
-	public readonly PreDeliverQueue PreDeliverQueue = new(queueConcurrency.Value.PreDeliver);
+	public readonly  InboxQueue              InboxQueue          = new(queueConcurrency.Value.Inbox);
+	public readonly  PreDeliverQueue         PreDeliverQueue     = new(queueConcurrency.Value.PreDeliver);
 
 	public IEnumerable<string> QueueNames => _queues.Select(p => p.Name);
 
@@ -279,6 +278,7 @@ public class PostgresJobQueue<T>(
 	TimeSpan timeout
 ) : IPostgresJobQueue where T : class
 {
+	private readonly SemaphorePlus         _semaphore      = new(parallelism);
 	private readonly AsyncAutoResetEvent   _delayedChannel = new();
 	private readonly AsyncAutoResetEvent   _queuedChannel  = new();
 	private          ILogger<QueueService> _logger         = null!;
@@ -310,10 +310,9 @@ public class PostgresJobQueue<T>(
 				await using var scope = GetScope();
 				await using var db    = GetDbContext(scope);
 
-				var queuedCount  = await db.GetJobQueuedCount(name, _workerId, token);
-				var runningCount = await db.GetJobRunningCount(name, _workerId, token);
+				var queuedCount       = await db.GetJobQueuedCount(name, _workerId, token);
+				var actualParallelism = Math.Min(parallelism - _semaphore.ActiveCount, queuedCount);
 
-				var actualParallelism = Math.Min(parallelism - runningCount, queuedCount);
 				if (actualParallelism <= 0)
 				{
 					await _queuedChannel.WaitAsync(token).SafeWaitAsync(queueToken);
@@ -322,10 +321,14 @@ public class PostgresJobQueue<T>(
 
 				// ReSharper disable MethodSupportsCancellation
 				var queuedChannelCts = new CancellationTokenSource();
-				if (runningCount + queuedCount < parallelism)
+				if (_semaphore.ActiveCount + queuedCount < parallelism)
 				{
 					_ = _queuedChannel.WaitWithoutResetAsync()
-					                  .ContinueWith(_ => queuedChannelCts.Cancel())
+					                  .ContinueWith(_ =>
+					                  {
+						                  if (_semaphore.ActiveCount < parallelism)
+							                  queuedChannelCts.Cancel();
+					                  })
 					                  .SafeWaitAsync(queueToken);
 				}
 				// ReSharper restore MethodSupportsCancellation
@@ -467,6 +470,7 @@ public class PostgresJobQueue<T>(
 		await using var jobScope       = GetScope();
 		try
 		{
+			await _semaphore.WaitAsync(CancellationToken.None).SafeWaitAsync(token);
 			await ProcessJobAsync(processorScope, jobScope, token);
 		}
 		catch (Exception e)
@@ -474,6 +478,10 @@ public class PostgresJobQueue<T>(
 			_logger.LogError("ProcessJobAsync for queue {queue} failed with: {error}", name, e);
 			_logger.LogError("Queue worker(s) for queue {queue} might be degraded or stalled. Please report this bug to the developers.",
 			                 name);
+		}
+		finally
+		{
+			_semaphore.Release();
 		}
 	}
 
