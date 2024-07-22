@@ -43,6 +43,19 @@ internal sealed class ASOrderedCollectionItemsConverter : ASCollectionItemsConve
 		serializer.Serialize(writer, value);
 		writer.WriteEndObject();
 	}
+	
+	public override object? ReadJson(
+		JsonReader reader, Type objectType, object? existingValue,
+		JsonSerializer serializer
+	)
+	{
+		if (reader.TokenType != JsonToken.StartArray) throw new Exception("this shouldn't happen");
+
+		var obj = JArray.Load(reader);
+		return obj.Count == 0
+			? null
+			: obj.SelectToken("$.[*].@list")?.Children().Select(ASObject.Deserialize).OfType<ASObject>().ToList();
+	}
 }
 
 public sealed class ASOrderedCollectionConverter : JsonConverter

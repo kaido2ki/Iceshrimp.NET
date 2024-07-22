@@ -119,7 +119,7 @@ internal class ASCollectionItemsConverter : JsonConverter
 		var obj = JArray.Load(reader);
 		return obj.Count == 0
 			? null
-			: obj.SelectToken("$.[*].@list")?.Children().Select(ASObject.Deserialize).OfType<ASObject>().ToList();
+			: obj.Select(ASObject.Deserialize).OfType<ASObject>().ToList();
 	}
 
 	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
