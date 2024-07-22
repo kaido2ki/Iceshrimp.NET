@@ -38,7 +38,9 @@ public class QueueModel(DatabaseContext db, QueueService queueSvc) : PageModel
 				Last = parsed;
 
 			//TODO: write an expression generator for the job count calculation
-			QueueStatuses = await db.Jobs.GroupBy(job => job.Queue)
+			QueueStatuses = await db.Jobs
+			                        .GroupBy(job => job.Queue)
+			                        .OrderBy(p => p.Key)
 			                        .Select(p => p.Key)
 			                        .Select(queueName => new QueueStatus
 			                        {
