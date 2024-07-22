@@ -79,7 +79,7 @@
 
 @keyframes newItem {
     0% {
-        background-color: var(--text-main);
+        background-color: #4c7599;
     }
 }
 
