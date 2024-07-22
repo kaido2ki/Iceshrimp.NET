@@ -12,17 +12,17 @@ async function reloadTables() {
     interval ??= setInterval(reloadTables, timeout);
 
     const last = document.getElementById('last-updated').innerText;
-    fetch(`/queue?last=${last}`).then(res => {
-        res.text().then(text => {
-            const newDocument = new DOMParser().parseFromString(text, "text/html");
-            const newLast = newDocument.getElementById('last-updated').innerText;
-            if (last !== newLast) {
-                document.getElementById('last-updated').innerText = newLast;
-                document.getElementById('recent-jobs').innerHTML = newDocument.getElementById('recent-jobs').innerHTML;
-            }
-            document.getElementById('queue-status').innerHTML = newDocument.getElementById('queue-status').innerHTML;
-        })
-    });
+    const res = await fetch(`/queue?last=${last}`);
+    const text = await res.text();
+
+    const newDocument = new DOMParser().parseFromString(text, "text/html");
+    const newLast = newDocument.getElementById('last-updated').innerText;
+
+    if (last !== newLast) {
+        document.getElementById('last-updated').innerText = newLast;
+        document.getElementById('recent-jobs').innerHTML = newDocument.getElementById('recent-jobs').innerHTML;
+    }
+    document.getElementById('queue-status').innerHTML = newDocument.getElementById('queue-status').innerHTML;
 }
 
 function docReady(fn) {
