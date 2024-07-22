@@ -7,9 +7,9 @@ async function reloadTables() {
             const newLast = newDocument.getElementById('last-updated').innerText;
             if (last !== newLast) {
                 document.getElementById('last-updated').innerText = newLast;
-                document.getElementById('queue-status').innerHTML = newDocument.getElementById('queue-status').innerHTML;
                 document.getElementById('recent-jobs').innerHTML = newDocument.getElementById('recent-jobs').innerHTML;
             }
+            document.getElementById('queue-status').innerHTML = newDocument.getElementById('queue-status').innerHTML;
         })
     });
 }
