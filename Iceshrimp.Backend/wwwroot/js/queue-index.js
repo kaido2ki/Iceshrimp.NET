@@ -1,5 +1,15 @@
+let interval = null;
+const timeout = 1000;
+
 async function reloadTables() {
-    if (document.hidden) return;
+    if (document.hidden) {
+        if (interval == null) return;
+        clearInterval(interval);
+        interval = null;
+        return;
+    }
+
+    interval ??= setInterval(reloadTables, timeout);
 
     const last = document.getElementById('last-updated').innerText;
     fetch(`/queue?last=${last}`).then(res => {
@@ -25,4 +35,7 @@ function docReady(fn) {
     }
 }
 
-docReady(() => setInterval(reloadTables, 2000));
+docReady(async () => {
+    document.addEventListener("visibilitychange", reloadTables, false);
+    await reloadTables();
+});
