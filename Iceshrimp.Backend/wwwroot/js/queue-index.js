@@ -1,10 +1,11 @@
 async function reloadTables() {
-    const last = document.getElementById('last-updated').innerText;
+    if (document.hidden) return;
 
     fetch(`/queue?last=${last}`).then(res => {
         res.text().then(text => {
             const newDocument = new DOMParser().parseFromString(text, "text/html");
             const newLast = newDocument.getElementById('last-updated').innerText;
+            const last = document.getElementById('last-updated').innerText;
             if (last !== newLast) {
                 document.getElementById('last-updated').innerText = newLast;
                 document.getElementById('recent-jobs').innerHTML = newDocument.getElementById('recent-jobs').innerHTML;
