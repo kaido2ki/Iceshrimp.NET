@@ -49,13 +49,13 @@
     }
     <tr>
         <td>Queued at</td>
-        <td>@Model.Job.QueuedAt.ToDisplayStringTz()</td>
+        <td>@Model.Job.QueuedAt.ToLocalTime().ToDisplayStringTz()</td>
     </tr>
     @if (Model.Job.Status is not Job.JobStatus.Queued and not Job.JobStatus.Delayed)
     {
         <tr>
             <td>Started at</td>
-            <td>@(Model.Job.StartedAt?.ToDisplayStringTz() ?? "<unknown>")</td>
+            <td>@(Model.Job.StartedAt?.ToLocalTime().ToDisplayStringTz() ?? "<unknown>")</td>
         </tr>
         if (Model.Job.WorkerId != null)
         {
@@ -69,14 +69,14 @@
     {
         <tr>
             <td>Finished at</td>
-            <td>@(Model.Job.FinishedAt?.ToDisplayStringTz() ?? "<unknown>")</td>
+            <td>@(Model.Job.FinishedAt?.ToLocalTime().ToDisplayStringTz() ?? "<unknown>")</td>
         </tr>
     }
     @if (Model.Job.Status == Job.JobStatus.Delayed)
     {
         <tr>
             <td>Delayed until</td>
-            <td>@(Model.Job.DelayedUntil?.ToDisplayStringTz() ?? "<unknown>")</td>
+            <td>@(Model.Job.DelayedUntil?.ToLocalTime().ToDisplayStringTz() ?? "<unknown>")</td>
         </tr>
     }
     @if (TimeSpan.FromMilliseconds(Model.Job.Duration).TotalHours <= 72)

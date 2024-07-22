@@ -177,9 +177,9 @@ else
         {
             Job.JobStatus.Queued    => $"for {job.QueueDuration.ToDurationDisplayString()}",
             Job.JobStatus.Running   => $"for {job.Duration.ToDurationDisplayString()}",
-            Job.JobStatus.Delayed   => $"until {job.DelayedUntil?.ToDisplayStringTz() ?? "<unknown>"}",
-            Job.JobStatus.Completed => $"at {job.FinishedAt?.ToDisplayStringTz() ?? "<unknown>"}",
-            Job.JobStatus.Failed    => $"at {job.FinishedAt?.ToDisplayStringTz() ?? "<unknown>"}",
+            Job.JobStatus.Delayed   => $"until {job.DelayedUntil?.ToLocalTime().ToDisplayStringTz() ?? "<unknown>"}",
+            Job.JobStatus.Completed => $"at {job.FinishedAt?.ToLocalTime().ToDisplayStringTz() ?? "<unknown>"}",
+            Job.JobStatus.Failed    => $"at {job.FinishedAt?.ToLocalTime().ToDisplayStringTz() ?? "<unknown>"}",
             _                       => throw new ArgumentOutOfRangeException()
         };
 
