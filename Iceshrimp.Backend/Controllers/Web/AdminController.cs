@@ -62,7 +62,7 @@ public class AdminController(
 	public async Task ResetPassword(string id, [FromBody] ResetPasswordRequest request)
 	{
 		var settings = await db.UserSettings.FirstOrDefaultAsync(p => p.UserId == id) ??
-		              throw GracefulException.RecordNotFound();
+		               throw GracefulException.RecordNotFound();
 
 		if (request.Password.Length < 8)
 			throw GracefulException.BadRequest("Password must be at least 8 characters long");
