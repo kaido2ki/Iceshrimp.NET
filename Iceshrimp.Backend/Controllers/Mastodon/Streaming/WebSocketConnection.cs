@@ -25,7 +25,7 @@ public sealed class WebSocketConnection(
 {
 	private readonly WriteLockingList<string> _blockedBy     = [];
 	private readonly WriteLockingList<string> _blocking      = [];
-	private readonly SemaphoreSlim            _lock          = new(1);
+	private readonly SemaphorePlus            _lock          = new(1);
 	private readonly WriteLockingList<string> _muting        = [];
 	public readonly  List<IChannel>           Channels       = [];
 	public readonly  EventService             EventService   = eventSvc;

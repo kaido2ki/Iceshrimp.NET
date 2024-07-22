@@ -1,5 +1,6 @@
 using System.Net;
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Middleware;
@@ -9,7 +10,7 @@ public class FederationSemaphoreMiddleware(
 	IHostApplicationLifetime appLifetime
 ) : IMiddleware
 {
-	private readonly SemaphoreSlim _semaphore = new(config.Value.FederationRequestHandlerConcurrency);
+	private readonly SemaphorePlus _semaphore = new(Math.Max(config.Value.FederationRequestHandlerConcurrency, 1));
 
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
 	{
