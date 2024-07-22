@@ -4,7 +4,7 @@ let initial = true;
 
 async function reloadTables() {
     if (document.hidden) {
-        setStatus("Disconnected.", "status-failed");
+        setStatus("Disconnected", "status-failed");
         if (interval == null) return;
         clearInterval(interval);
         interval = null;
