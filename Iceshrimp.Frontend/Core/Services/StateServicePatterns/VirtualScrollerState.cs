@@ -32,12 +32,12 @@ internal class VirtualScrollerState : IDisposable
 		_messageService.AnyNoteDeleted += OnNoteDeleted;
 	}
 
-	public  Dictionary<string, int> Height       = new();
-	public  int                     PadBottom    = 0;
-	public  int                     PadTop       = 0;
-	public  List<NoteResponse>      RenderedList = [];
-	public  float                   ScrollTop    = 0;
-	private MessageService          _messageService;
+	public           Dictionary<string, int> Height       = new();
+	public           int                     PadBottom    = 0;
+	public           int                     PadTop       = 0;
+	public           List<NoteResponse>      RenderedList = [];
+	public           float                   ScrollTop    = 0;
+	private readonly MessageService          _messageService;
 
 	private void OnNoteChanged(object? _, NoteResponse note)
 	{

@@ -4,6 +4,7 @@ using Iceshrimp.Shared.Schemas.Web;
 using Ljbc1994.Blazor.IntersectionObserver;
 using Ljbc1994.Blazor.IntersectionObserver.API;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
 
 namespace Iceshrimp.Frontend.Components;
@@ -14,6 +15,7 @@ public partial class VirtualScroller : IAsyncDisposable
 	[Inject]                     private         IJSRuntime                   Js               { get; set; } = null!;
 	[Inject]                     private         StateService                 StateService     { get; set; } = null!;
 	[Inject]                     private         MessageService               MessageService   { get; set; } = null!;
+	[Inject]                     private         NavigationManager            Navigation       { get; set; } = null!;
 	[Parameter] [EditorRequired] public required List<NoteResponse>           NoteResponseList { get; set; }
 	[Parameter] [EditorRequired] public required Func<Task<bool>>             ReachedEnd       { get; set; }
 	[Parameter] [EditorRequired] public required EventCallback                ReachedStart     { get; set; }
@@ -31,6 +33,7 @@ public partial class VirtualScroller : IAsyncDisposable
 	private                                      bool                         _loadingTop    = false;
 	private                                      bool                         _loadingBottom = false;
 	private                                      bool                         _setScroll     = false;
+	private                                      IDisposable?                 _locationChangeHandlerDisposable;
 
 	private ElementReference Ref
 	{
@@ -38,17 +41,20 @@ public partial class VirtualScroller : IAsyncDisposable
 	}
 
 	private bool               _interlock = false;
-	private IJSObjectReference Module { get; set; } = null!;
+	private IJSInProcessObjectReference Module { get; set; } = null!;
 
 	private void InitialRender(string? id)
 	{
 		State.RenderedList = NoteResponseList.Count < _count ? NoteResponseList : NoteResponseList.GetRange(0, _count);
 	}
 
-	public async ValueTask DisposeAsync()
+	public ValueTask DisposeAsync()
 	{
-		await SaveState();
+		// SaveState();
+		State.Dispose();
+		_locationChangeHandlerDisposable?.Dispose();
 		MessageService.AnyNoteDeleted -= OnNoteDeleted;
+		return ValueTask.CompletedTask;
 	}
 
 	private async Task LoadOlder()
@@ -75,17 +81,17 @@ public partial class VirtualScroller : IAsyncDisposable
 		StateHasChanged();
 	}
 
-	private async Task SaveState()
+	private void SaveState()
 	{
-		await GetScrollTop();
+		GetScrollY();  // ^-^ grblll mrrp
 		StateService.VirtualScroller.SetState("home", State);
 	}
 
-	private async Task RemoveAbove(int amount)
+	private void RemoveAbove(int amount)
 	{
 		for (var i = 0; i < amount; i++)
 		{
-			var height = await Module.InvokeAsync<int>("GetHeight", _refs[i]);
+			var height = Module.Invoke<int>("GetHeight", _refs[i]);
 			State.PadTop                           += height;
 			State.Height[State.RenderedList[i].Id] =  height;
 		}
@@ -116,7 +122,7 @@ public partial class VirtualScroller : IAsyncDisposable
 			if (State.PadBottom > 0) State.PadBottom -= heightChange;
 
 			State.RenderedList.AddRange(a);
-			await RemoveAbove(UpdateCount);
+			RemoveAbove(UpdateCount);
 			_interlock = false;
 			StateHasChanged();
 		}
@@ -124,13 +130,13 @@ public partial class VirtualScroller : IAsyncDisposable
 		await OvrscrlObsvBottom.Observe(_padBotRef);
 	}
 
-	private async Task Up(int updateCount)
+	private async ValueTask Up(int updateCount)
 	{
 		if (OvrscrlObsvTop is null) throw new Exception("Tried to use observer that does not exist");
 		await OvrscrlObsvTop.Disconnect();
 		for (var i = 0; i < updateCount; i++)
 		{
-			var height = await Module.InvokeAsync<int>("GetHeight", _refs[i]);
+			var height = Module.Invoke<int>("GetHeight", _refs[i]);
 			State.PadBottom                        += height;
 			State.Height[State.RenderedList[i].Id] =  height;
 		}
@@ -217,27 +223,34 @@ public partial class VirtualScroller : IAsyncDisposable
 		}
 	}
 
-	private async Task GetScrollTop()
+	private void GetScrollY()
 	{
-		var scrollTop = await Module.InvokeAsync<float>("GetScrollTop", _scroller);
+		var scrollTop = Module.Invoke<float>("GetScrollY");
 		State.ScrollTop = scrollTop;
 	}
 
-	private async Task SetScrollTop()
+	private void SetScrollY()
 	{
-		await Module.InvokeVoidAsync("SetScrollTop", State.ScrollTop, _scroller);
+		Module.InvokeVoid("SetScrollY", State.ScrollTop);
 	}
-	
+
 	private void OnNoteDeleted(object? _, NoteResponse note)
 	{
 		State.RenderedList.Remove(note);
 		StateHasChanged();
 	}
 
+	private ValueTask LocationChangeHandler(LocationChangingContext arg)
+	{
+		SaveState();
+		return ValueTask.CompletedTask;
+	}
+
 	protected override void OnInitialized()
 	{
-		State                         =  StateService.VirtualScroller.CreateStateObject();
-		MessageService.AnyNoteDeleted += OnNoteDeleted;
+		State                            =  StateService.VirtualScroller.CreateStateObject();
+		MessageService.AnyNoteDeleted    += OnNoteDeleted;
+		_locationChangeHandlerDisposable =  Navigation.RegisterLocationChangingHandler(LocationChangeHandler);
 		try
 		{
 			var virtualScrollerState = StateService.VirtualScroller.GetState("home");
@@ -259,13 +272,13 @@ public partial class VirtualScroller : IAsyncDisposable
 	{
 		if (firstRender)
 		{
-			Module = await Js.InvokeAsync<IJSObjectReference>("import", "./Components/VirtualScroller.razor.js");
+			Module = (IJSInProcessObjectReference) await Js.InvokeAsync<IJSObjectReference>("import", "./Components/VirtualScroller.razor.js");
 			await SetupObservers();
 		}
 
 		if (_setScroll)
 		{
-			await SetScrollTop();
+			SetScrollY();
 			_setScroll = false;
 		}
 	}
