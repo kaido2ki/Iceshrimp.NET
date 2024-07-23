@@ -22,17 +22,16 @@
 
 @code {
     [Parameter] [EditorRequired] public required FollowRequestResponse FollowRequest { get; set; }
+    [Parameter] [EditorRequired] public required EventCallback<string> OnDelete      { get; set; }
     private async void Accept()
     {
-        // FIXME: This should be a fancy animation instead of a reload
         await Api.FollowRequests.AcceptFollowRequest(FollowRequest.Id);
-        NavigationManager.NavigateTo("/follow-requests");
+        await OnDelete.InvokeAsync(FollowRequest.Id);
     }
 
     private async void Reject()
     {
-        // FIXME: This should be a fancy animation instead of a reloady
         await Api.FollowRequests.RejectFollowRequest(FollowRequest.Id);
-        NavigationManager.NavigateTo("/follow-requests");
+        await OnDelete.InvokeAsync(FollowRequest.Id);
     }
 }

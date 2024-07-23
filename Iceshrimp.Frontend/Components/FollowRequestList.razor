@@ -12,7 +12,7 @@
     <div class="scroller">
         @foreach (var el in FollowRequests)
         {
-            <FollowRequestEntry FollowRequest="el"/>
+            <FollowRequestEntry FollowRequest="el" OnDelete="Delete"/>
         }
         <ScrollEnd IntersectionChange="LoadMore" ManualLoad="LoadMore"/>
 
@@ -60,6 +60,24 @@
         {
             _init = LoadState.Error;
             Logger.LogError("Network error");
+        }
+    }
+
+    private void Delete(string id)
+    {
+        var i = FollowRequests.FindIndex(p => p.Id == id);
+        if (FollowRequests.Count == 1)
+        {
+            _init = LoadState.Emtpy;
+            StateHasChanged();
+            FollowRequests.RemoveAt(i);
+            _minId = null;
+        }
+        else
+        {
+            if (i == FollowRequests.Count - 1) _minId = FollowRequests[^2].Id;
+            if (i >= 0) FollowRequests.RemoveAt(i);
+            StateHasChanged();
         }
     }
 
