@@ -1,3 +1,12 @@
+## v2024.1-beta2.security2
+This is a security hotfix release. It's identical to v2024.1-beta2.security1, except for referencing an updated version of the `SixLabors.ImageSharp` dependency, fixing a Denial of Service vulnerability ([GHSA-63p8-c4ww-9cg7](https://github.com/advisories/GHSA-63p8-c4ww-9cg7)). Upgrading is strongly recommended for all server operators.
+
+### Backend
+- Updated SixLabors.ImageSharp to 3.1.5 (addressing [GHSA-63p8-c4ww-9cg7](https://github.com/advisories/GHSA-63p8-c4ww-9cg7))
+
+### Attribution
+This release was made possible by project contributors: Laura Hausmann
+
 ## v2024.1-beta2.security1
 This is a security hotfix release. It's identical to v2024.1-beta2, except for referencing an updated version of the `System.Text.Json` dependency, fixing a Denial of Service vulnerability ([GHSA-hh2w-p6rv-4g7w](https://github.com/advisories/GHSA-hh2w-p6rv-4g7w)). Upgrading is strongly recommended for all server operators.
 
