@@ -1330,7 +1330,11 @@ public class NoteService(
 
 	private async Task EnqueuePollExpiryTask(Poll poll)
 	{
+		// Skip polls without expiry date
 		if (!poll.ExpiresAt.HasValue) return;
+		// Skip polls with expiry date more than 1 year in the future (to prevent excessive accumulation of delayed jobs)
+		if (poll.ExpiresAt > DateTime.UtcNow + TimeSpan.FromDays(367)) return;
+
 		var job = new PollExpiryJobData { NoteId = poll.Note.Id };
 		await queueSvc.BackgroundTaskQueue.ScheduleAsync(job, poll.ExpiresAt.Value);
 	}
