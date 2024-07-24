@@ -57,13 +57,6 @@
             <td>Started at</td>
             <td>@(Model.Job.StartedAt?.ToLocalTime().ToDisplayStringTz() ?? "<unknown>")</td>
         </tr>
-        if (Model.Job.WorkerId != null)
-        {
-            <tr>
-                <td>Worker ID</td>
-                <td>@(Model.Job.WorkerId)</td>
-            </tr>
-        }
     }
     @if (Model.Job.Status is Job.JobStatus.Completed or Job.JobStatus.Failed)
     {

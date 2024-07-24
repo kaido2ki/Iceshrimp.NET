@@ -64,19 +64,9 @@ public static class WebApplicationExtensions
 	{
 		var instanceConfig = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
 		                     throw new Exception("Failed to read Instance config section");
-		var workerId = app.Configuration.GetSection("Worker").Get<Config.WorkerSection>()?.WorkerId;
 
-		if (workerId == null)
-		{
-			app.Logger.LogInformation("Iceshrimp.NET v{version}, codename \"{codename}\" ({domain})",
-			                          instanceConfig.Version, instanceConfig.Codename, instanceConfig.AccountDomain);
-		}
-		else
-		{
-			app.Logger.LogInformation("Iceshrimp.NET v{version}, codename \"{codename}\" ({domain}) - worker {id}",
-			                          instanceConfig.Version, instanceConfig.Codename, instanceConfig.AccountDomain,
-			                          workerId);
-		}
+		app.Logger.LogInformation("Iceshrimp.NET v{version}, codename \"{codename}\" ({domain})",
+		                          instanceConfig.Version, instanceConfig.Codename, instanceConfig.AccountDomain);
 
 		await using var scope    = app.Services.CreateAsyncScope();
 		var             provider = scope.ServiceProvider;

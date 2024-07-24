@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using System.Text.Json;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -9,7 +8,6 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using TaskExtensions = Iceshrimp.Backend.Core.Extensions.TaskExtensions;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -17,7 +15,6 @@ namespace Iceshrimp.Backend.Core.Services;
 public class QueueService(
 	IServiceScopeFactory scopeFactory,
 	ILogger<QueueService> logger,
-	IOptions<Config.WorkerSection> config,
 	IOptions<Config.QueueConcurrencySection> queueConcurrency
 ) : BackgroundService
 {
@@ -29,43 +26,27 @@ public class QueueService(
 
 	public IEnumerable<string> QueueNames => _queues.Select(p => p.Name);
 
-	private static async Task<NpgsqlConnection> GetNpgsqlConnection(IServiceScope scope)
-	{
-		var config     = scope.ServiceProvider.GetRequiredService<IOptions<Config.DatabaseSection>>();
-		var dataSource = DatabaseContext.GetDataSource(config.Value);
-		return await dataSource.OpenConnectionAsync();
-	}
-
 	protected override async Task ExecuteAsync(CancellationToken token)
 	{
 		_queues.AddRange([InboxQueue, PreDeliverQueue, DeliverQueue, BackgroundTaskQueue]);
 
 		var cts = new CancellationTokenSource();
 
-		if (config.Value.WorkerType != Enums.WorkerType.WebOnly)
+		token.Register(() =>
 		{
-			token.Register(() =>
-			{
-				if (cts.Token.IsCancellationRequested) return;
-				logger.LogInformation("Shutting down queue processors...");
-				cts.CancelAfter(TimeSpan.FromSeconds(10));
-			});
+			if (cts.Token.IsCancellationRequested) return;
+			logger.LogInformation("Shutting down queue processors...");
+			cts.CancelAfter(TimeSpan.FromSeconds(10));
+		});
 
-			cts.Token.Register(() =>
-			{
-				PrepareForExit();
-				logger.LogInformation("Queue shutdown complete.");
-			});
-
-			_ = Task.Run(RegisterNotificationChannels, token);
-			_ = Task.Run(ExecuteHeartbeatWorker, token);
-			_ = Task.Run(ExecuteHealthchecksWorker, token);
-			await Task.Run(ExecuteBackgroundWorkers, cts.Token);
-		}
-		else
+		cts.Token.Register(() =>
 		{
-			logger.LogInformation("WorkerType is set to WebOnly, skipping queue system init");
-		}
+			PrepareForExit();
+			logger.LogInformation("Queue shutdown complete.");
+		});
+
+		_ = Task.Run(ExecuteHealthchecksWorker, token);
+		await Task.Run(ExecuteBackgroundWorkers, cts.Token);
 
 		return;
 
@@ -74,90 +55,6 @@ public class QueueService(
 			var tasks = _queues.Select(queue => queue.ExecuteAsync(scopeFactory, cts.Token, token));
 			await Task.WhenAll(tasks);
 			await cts.CancelAsync();
-		}
-
-		async Task RegisterNotificationChannels()
-		{
-			if (config.Value.WorkerId == null) return;
-
-			while (!token.IsCancellationRequested)
-			{
-				try
-				{
-					await using var scope = scopeFactory.CreateAsyncScope();
-					await using var conn  = await GetNpgsqlConnection(scope);
-
-					conn.Notification += (_, args) =>
-					{
-						try
-						{
-							if (args.Channel is not "queued" and not "delayed") return;
-							var queue = _queues.FirstOrDefault(p => p.Name == args.Payload);
-							if (queue == null) return;
-
-							if (args.Channel == "queued")
-								queue.RaiseLocalJobQueuedEvent();
-							else
-								queue.RaiseLocalJobDelayedEvent();
-						}
-						catch
-						{
-							// ignored (errors will crash the host process)
-						}
-					};
-
-					await using (var cmd = new NpgsqlCommand("LISTEN queued", conn))
-					{
-						await cmd.ExecuteNonQueryAsync(token);
-					}
-
-					await using (var cmd = new NpgsqlCommand("LISTEN delayed", conn))
-					{
-						await cmd.ExecuteNonQueryAsync(token);
-					}
-
-					while (!token.IsCancellationRequested)
-					{
-						await conn.WaitAsync(token);
-					}
-				}
-				catch
-				{
-					// ignored (logging this would spam logs on postgres restart)
-				}
-			}
-		}
-
-		async Task ExecuteHeartbeatWorker()
-		{
-			if (config.Value.WorkerId == null) return;
-
-			while (!token.IsCancellationRequested)
-			{
-				try
-				{
-					await using var scope = scopeFactory.CreateAsyncScope();
-					await using var conn  = await GetNpgsqlConnection(scope);
-
-					var sql = $"""
-					           INSERT INTO "worker" ("id", "heartbeat")
-					           VALUES ({config.Value.WorkerId}, now())
-					           ON CONFLICT ("id")
-					               DO UPDATE
-					               SET "heartbeat" = now();
-					           """;
-					while (!token.IsCancellationRequested)
-					{
-						await using var cmd = new NpgsqlCommand(sql, conn);
-						await cmd.ExecuteNonQueryAsync(token);
-						await Task.Delay(TimeSpan.FromSeconds(30), token);
-					}
-				}
-				catch
-				{
-					// ignored (logging this would spam logs on postgres restart)
-				}
-			}
 		}
 
 		async Task ExecuteHealthchecksWorker()
@@ -209,32 +106,10 @@ public class QueueService(
 		}
 	}
 
-	private async Task RemoveWorkerEntry()
-	{
-		if (config.Value.WorkerId == null) return;
-
-		try
-		{
-			await using var scope = scopeFactory.CreateAsyncScope();
-			await using var conn  = await GetNpgsqlConnection(scope);
-
-			var sql = $"""
-			           DELETE FROM "worker" WHERE "id" = {config.Value.WorkerId}::varchar;
-			           """;
-			await using var cmd = new NpgsqlCommand(sql, conn);
-			await cmd.ExecuteNonQueryAsync();
-		}
-		catch (Exception e)
-		{
-			logger.LogWarning("Failed to remove worker entry from database: {e}", e.Message);
-		}
-	}
-
 	private async Task PrepareForExitAsync()
 	{
 		// Move running tasks to the front of the queue
-		foreach (var queue in _queues) await queue.RecoverOrPrepareForExitAsync();
-		await RemoveWorkerEntry();
+		await _queues.Select(queue => queue.RecoverOrPrepareForExitAsync()).AwaitAllAsync();
 	}
 
 	private void PrepareForExit()
@@ -252,7 +127,6 @@ public class QueueService(
 			                  .ExecuteUpdateAsync(p => p.SetProperty(i => i.Status, _ => Job.JobStatus.Queued)
 			                                            .SetProperty(i => i.QueuedAt, _ => DateTime.UtcNow)
 			                                            .SetProperty(i => i.RetryCount, i => i.RetryCount + 1)
-			                                            .SetProperty(i => i.WorkerId, _ => null)
 			                                            .SetProperty(i => i.DelayedUntil, _ => null)
 			                                            .SetProperty(i => i.StartedAt, _ => null)
 			                                            .SetProperty(i => i.FinishedAt, _ => null)
@@ -261,8 +135,7 @@ public class QueueService(
 			                                            .SetProperty(i => i.ExceptionSource, _ => null)
 			                                            .SetProperty(i => i.StackTrace, _ => null));
 			if (cnt <= 0) return;
-			var queue = _queues.FirstOrDefault(p => p.Name == job.Queue);
-			if (queue != null) await queue.RaiseJobQueuedEvent(db);
+			_queues.FirstOrDefault(p => p.Name == job.Queue)?.RaiseJobQueuedEvent(db);
 		}
 	}
 }
@@ -275,11 +148,8 @@ public interface IPostgresJobQueue
 
 	public Task ExecuteAsync(IServiceScopeFactory scopeFactory, CancellationToken token, CancellationToken queueToken);
 	public Task RecoverOrPrepareForExitAsync();
-	public Task RaiseJobQueuedEvent(DatabaseContext db);
-	public Task RaiseJobDelayedEvent(DatabaseContext db);
-
-	public void RaiseLocalJobQueuedEvent();
-	public void RaiseLocalJobDelayedEvent();
+	public void RaiseJobQueuedEvent(DatabaseContext db);
+	public void RaiseJobDelayedEvent(DatabaseContext db);
 }
 
 public class PostgresJobQueue<T>(
@@ -294,7 +164,6 @@ public class PostgresJobQueue<T>(
 	private readonly AsyncAutoResetEvent   _queuedChannel  = new();
 	private          ILogger<QueueService> _logger         = null!;
 	private          IServiceScopeFactory  _scopeFactory   = null!;
-	private          string?               _workerId;
 	public           string                Name    => name;
 	public           TimeSpan              Timeout => timeout;
 
@@ -321,7 +190,7 @@ public class PostgresJobQueue<T>(
 				await using var scope = GetScope();
 				await using var db    = GetDbContext(scope);
 
-				var queuedCount       = await db.GetJobQueuedCount(name, _workerId, token);
+				var queuedCount       = await db.GetJobQueuedCount(name, token);
 				var actualParallelism = Math.Min(parallelism - _semaphore.ActiveCount, queuedCount);
 
 				if (actualParallelism <= 0)
@@ -365,38 +234,21 @@ public class PostgresJobQueue<T>(
 	{
 		await using var scope = GetScope();
 		await using var db    = GetDbContext(scope);
-		_workerId = scope.ServiceProvider.GetRequiredService<IOptions<Config.WorkerSection>>().Value.WorkerId;
 
-		Expression<Func<Job, bool>> predicate = _workerId == null
-			? p => p.Status == Job.JobStatus.Running
-			: p => p.Status == Job.JobStatus.Running && p.WorkerId != null && p.WorkerId == _workerId;
-
-		var cnt = await db.Jobs.Where(predicate)
+		var cnt = await db.Jobs.Where(p => p.Status == Job.JobStatus.Running)
 		                  .ExecuteUpdateAsync(p => p.SetProperty(i => i.Status, i => Job.JobStatus.Queued));
 
-		if (cnt > 0) await RaiseJobQueuedEvent(db);
+		if (cnt > 0) RaiseJobQueuedEvent(db);
 	}
 
 	private event EventHandler? QueuedChannelEvent;
 	private event EventHandler? DelayedChannelEvent;
 
 	// ReSharper disable once SuggestBaseTypeForParameter
-	public async Task RaiseJobQueuedEvent(DatabaseContext db)
-	{
-		if (_workerId == null)
-			QueuedChannelEvent?.Invoke(null, EventArgs.Empty);
-		else
-			await db.Database.ExecuteSqlAsync($"SELECT pg_notify('queued', {name});");
-	}
+	public void RaiseJobQueuedEvent(DatabaseContext db) => QueuedChannelEvent?.Invoke(null, EventArgs.Empty);
 
 	// ReSharper disable once SuggestBaseTypeForParameter
-	public async Task RaiseJobDelayedEvent(DatabaseContext db)
-	{
-		if (_workerId == null)
-			DelayedChannelEvent?.Invoke(null, EventArgs.Empty);
-		else
-			await db.Database.ExecuteSqlAsync($"SELECT pg_notify('delayed', {name});");
-	}
+	public void RaiseJobDelayedEvent(DatabaseContext db) => DelayedChannelEvent?.Invoke(null, EventArgs.Empty);
 
 	private AsyncServiceScope GetScope() => _scopeFactory.CreateAsyncScope();
 
@@ -422,7 +274,7 @@ public class PostgresJobQueue<T>(
 
 				if (count > 0)
 				{
-					await RaiseJobQueuedEvent(db);
+					RaiseJobQueuedEvent(db);
 					continue;
 				}
 
@@ -460,7 +312,7 @@ public class PostgresJobQueue<T>(
 
 		if (ts.Value < DateTime.UtcNow)
 		{
-			await RaiseJobDelayedEvent(db);
+			RaiseJobDelayedEvent(db);
 		}
 		else
 		{
@@ -470,7 +322,7 @@ public class PostgresJobQueue<T>(
 				await using var bgScope = GetScope();
 				await using var bgDb    = GetDbContext(bgScope);
 				await Task.Delay(trigger - DateTime.UtcNow, token);
-				await RaiseJobDelayedEvent(bgDb);
+				RaiseJobDelayedEvent(bgDb);
 			}, token);
 		}
 	}
@@ -500,7 +352,7 @@ public class PostgresJobQueue<T>(
 	{
 		await using var db = GetDbContext(processorScope);
 
-		if (await db.GetJob(name, _workerId).ToListAsync(token) is not [{ } job])
+		if (await db.GetJob(name).ToListAsync(token) is not [{ } job])
 			return;
 
 		_logger.LogTrace("Processing {queue} job {id}", name, job.Id);
@@ -567,7 +419,7 @@ public class PostgresJobQueue<T>(
 				db.ChangeTracker.Clear();
 				db.Update(job);
 				await db.SaveChangesAsync(token);
-				await RaiseJobDelayedEvent(db);
+				RaiseJobDelayedEvent(db);
 				return;
 			}
 		}
@@ -606,7 +458,7 @@ public class PostgresJobQueue<T>(
 		};
 		db.Add(job);
 		await db.SaveChangesAsync();
-		await RaiseJobQueuedEvent(db);
+		RaiseJobQueuedEvent(db);
 	}
 
 	public async Task ScheduleAsync(T jobData, DateTime triggerAt)
@@ -624,7 +476,6 @@ public class PostgresJobQueue<T>(
 		};
 		db.Add(job);
 		await db.SaveChangesAsync();
-
-		await RaiseJobDelayedEvent(db);
+		RaiseJobDelayedEvent(db);
 	}
 }

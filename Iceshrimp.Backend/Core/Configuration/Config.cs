@@ -8,7 +8,6 @@ namespace Iceshrimp.Backend.Core.Configuration;
 public sealed class Config
 {
 	public required InstanceSection    Instance    { get; init; } = new();
-	public required WorkerSection      Worker      { get; init; } = new();
 	public required DatabaseSection    Database    { get; init; } = new();
 	public required SecuritySection    Security    { get; init; } = new();
 	public required StorageSection     Storage     { get; init; } = new();
@@ -32,12 +31,6 @@ public sealed class Config
 		[Required]         public string  WebDomain      { get; init; } = null!;
 		[Required]         public string  AccountDomain  { get; init; } = null!;
 		[Range(1, 100000)] public int     CharacterLimit { get; init; } = 8192;
-	}
-
-	public sealed class WorkerSection
-	{
-		[MaxLength(64)] public string?          WorkerId   { get; init; }
-		public                 Enums.WorkerType WorkerType { get; init; } = Enums.WorkerType.Full;
 	}
 
 	public sealed class SecuritySection

@@ -42,11 +42,4 @@ public static class Enums
 		Invite = 1,
 		Open   = 2
 	}
-
-	public enum WorkerType
-	{
-		Full          = 0,
-		QueueOnly     = 1,
-		WebOnly       = 2
-	}
 }

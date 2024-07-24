@@ -36,10 +36,6 @@ public class Job
 	[Column("exception")]         public string?   Exception        { get; set; }
 	[Column("data")]              public string    Data             { get; set; } = null!;
 
-	[Column("worker_id")]
-	[StringLength(64)]
-	public string? WorkerId { get; set; }
-
 	[NotMapped]
 	public long Duration => (long)((FinishedAt ?? DateTime.UtcNow) - (StartedAt ?? QueuedAt)).TotalMilliseconds;
 

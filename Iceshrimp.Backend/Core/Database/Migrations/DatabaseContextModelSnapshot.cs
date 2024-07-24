@@ -19,7 +19,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("ProductVersion", "8.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "antenna_src_enum", new[] { "home", "all", "users", "list", "group", "instances" });
@@ -1604,11 +1604,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(Job.JobStatus.Queued)
                         .HasColumnName("status");
 
-                    b.Property<string>("WorkerId")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("worker_id");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DelayedUntil");
@@ -1618,8 +1613,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.HasIndex("Queue");
 
                     b.HasIndex("Status");
-
-                    b.HasIndex("WorkerId");
 
                     b.ToTable("jobs");
                 });
@@ -4767,26 +4760,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.ToTable("webhook");
                 });
 
-            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Worker", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("Heartbeat")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("heartbeat");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Heartbeat");
-
-                    b.HasIndex("Id");
-
-                    b.ToTable("worker");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
                 {
                     b.Property<int>("Id")
@@ -5133,14 +5106,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Job", b =>
-                {
-                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Worker", null)
-                        .WithMany()
-                        .HasForeignKey("WorkerId")
-                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Marker", b =>
