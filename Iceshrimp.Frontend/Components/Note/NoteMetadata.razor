@@ -43,13 +43,13 @@
         var diff = DateTime.Now - date;
         return diff switch
         {
-            { Days: >= 365 }  => Loc["{0}y", diff.Days / 365],
-            { Days: >= 30 }   => Loc["{0}mo", diff.Days / 30],
-            { Days: >= 7 }    => Loc["{0}d", diff.Days / 7],
-            { Days: >= 1 }    => Loc["{0}d", diff.Days],
-            { Hours: >= 1 }   => Loc["{0}h", diff.Hours],
-            { Minutes: >= 1 } => Loc["{0}m", diff.Minutes],
-            _                 => Loc["Just now"]
+            { TotalDays: >= 365 }  => Loc["{0}y", Math.Round(diff.TotalDays / 365)],
+            { TotalDays: >= 30 }   => Loc["{0}mo",Math.Round(diff.TotalDays / 30)],
+            { TotalDays: >= 7 }    => Loc["{0}d", Math.Round(diff.TotalDays / 7)],
+            { TotalDays: >= 1 }    => Loc["{0}d", Math.Round(diff.TotalDays)],
+            { TotalHours: >= 1 }   => Loc["{0}h", Math.Round(diff.TotalHours)],
+            { TotalMinutes: >= 1 } => Loc["{0}m", Math.Round(diff.TotalMinutes)],
+            _                      => Loc["Just now"]
         };
     }
 }
