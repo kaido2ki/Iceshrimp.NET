@@ -36,7 +36,8 @@ public sealed class Config
 
 	public sealed class WorkerSection
 	{
-		[MaxLength(64)] public string? WorkerId { get; init; }
+		[MaxLength(64)] public string?          WorkerId   { get; init; }
+		public                 Enums.WorkerType WorkerType { get; init; } = Enums.WorkerType.Full;
 	}
 
 	public sealed class SecuritySection

@@ -42,23 +42,31 @@ public class QueueService(
 
 		var cts = new CancellationTokenSource();
 
-		token.Register(() =>
+		if (config.Value.WorkerType != Enums.WorkerType.WebOnly)
 		{
-			if (cts.Token.IsCancellationRequested) return;
-			logger.LogInformation("Shutting down queue processors...");
-			cts.CancelAfter(TimeSpan.FromSeconds(10));
-		});
+			token.Register(() =>
+			{
+				if (cts.Token.IsCancellationRequested) return;
+				logger.LogInformation("Shutting down queue processors...");
+				cts.CancelAfter(TimeSpan.FromSeconds(10));
+			});
 
-		cts.Token.Register(() =>
+			cts.Token.Register(() =>
+			{
+				PrepareForExit();
+				logger.LogInformation("Queue shutdown complete.");
+			});
+
+			_ = Task.Run(RegisterNotificationChannels, token);
+			_ = Task.Run(ExecuteHeartbeatWorker, token);
+			_ = Task.Run(ExecuteHealthchecksWorker, token);
+			await Task.Run(ExecuteBackgroundWorkers, cts.Token);
+		}
+		else
 		{
-			PrepareForExit();
-			logger.LogInformation("Queue shutdown complete.");
-		});
+			logger.LogInformation("WorkerType is set to WebOnly, skipping queue system init");
+		}
 
-		_ = Task.Run(RegisterNotificationChannels, token);
-		_ = Task.Run(ExecuteHeartbeatWorker, token);
-		_ = Task.Run(ExecuteHealthchecksWorker, token);
-		await Task.Run(ExecuteBackgroundWorkers, cts.Token);
 		return;
 
 		async Task? ExecuteBackgroundWorkers()
