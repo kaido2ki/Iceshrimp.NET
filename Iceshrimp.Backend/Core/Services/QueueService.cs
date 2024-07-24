@@ -188,24 +188,23 @@ public class PostgresJobQueue<T>(
 				await using var db    = GetDbContext(scope);
 
 				var queuedCount       = await db.GetJobQueuedCount(name, token);
-				var actualParallelism = Math.Min(parallelism - _semaphore.ActiveCount, queuedCount);
+				var actualParallelism = Math.Min(_semaphore.CurrentCount, queuedCount);
 
-				if (actualParallelism <= 0)
+				if (actualParallelism == 0)
 				{
-					await _queuedChannel.WaitAsync(token).SafeWaitAsync(queueToken);
+					if (_semaphore.CurrentCount == 0 && queuedCount > 0)
+						await _semaphore.WaitAndReleaseAsync(token).SafeWaitAsync(queueToken);
+					else
+						await _queuedChannel.WaitAsync(token).SafeWaitAsync(queueToken);
 					continue;
 				}
 
 				// ReSharper disable MethodSupportsCancellation
 				var queuedChannelCts = new CancellationTokenSource();
-				if (_semaphore.ActiveCount + queuedCount < parallelism)
+				if (_semaphore.CurrentCount - queuedCount > 0)
 				{
 					_ = _queuedChannel.WaitWithoutResetAsync()
-					                  .ContinueWith(_ =>
-					                  {
-						                  if (_semaphore.ActiveCount < parallelism)
-							                  queuedChannelCts.Cancel();
-					                  })
+					                  .ContinueWith(_ => queuedChannelCts.Cancel())
 					                  .SafeWaitAsync(queueToken);
 				}
 				// ReSharper restore MethodSupportsCancellation
