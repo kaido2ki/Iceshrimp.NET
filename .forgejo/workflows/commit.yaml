@@ -16,7 +16,7 @@ jobs:
       - name: Print environment info
         run: dotnet --info
       - name: Run unit tests
-        run: make test
+        run: make test VERBOSE=true
       - name: Build docker image
         shell: bash
         run: |

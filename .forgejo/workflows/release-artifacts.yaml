@@ -16,7 +16,7 @@ jobs:
       - name: Print environment info
         run: dotnet --info
       - name: Build release artifacts
-        run: make ARCHIVE_BASENAME=${{ github.event.repository.name }} ARCHIVE_VERSION=${{ github.ref_name }} release-artifacts
+        run: make release-artifacts ARCHIVE_BASENAME=${{ github.event.repository.name }} ARCHIVE_VERSION=${{ github.ref_name }} VERBOSE=true
       - name: Upload artifacts
         uses: actions/release-action@main
         with:
