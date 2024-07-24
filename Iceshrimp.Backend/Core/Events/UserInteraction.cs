@@ -4,6 +4,6 @@ namespace Iceshrimp.Backend.Core.Events;
 
 public class UserInteraction
 {
-	public required User Actor;
-	public required User Object;
+	public required User Actor  { get; init; }
+	public required User Object { get; init; }
 }

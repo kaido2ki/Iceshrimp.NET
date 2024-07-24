@@ -26,7 +26,7 @@ public class ActivityHandlerService(
 	ObjectResolver objectResolver,
 	FollowupTaskService followupTaskSvc,
 	EmojiService emojiSvc,
-	EventService eventSvc
+	IEventService eventSvc
 )
 {
 	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId, string? authenticatedUserId)
@@ -508,7 +508,7 @@ public class ActivityHandlerService(
 			                    p.Notifier == follower)
 			        .ExecuteDeleteAsync();
 
-			eventSvc.RaiseUserUnfollowed(this, follower, followee);
+			await eventSvc.RaiseUserUnfollowed(this, follower, followee);
 		}
 	}
 

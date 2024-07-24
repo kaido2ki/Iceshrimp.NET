@@ -36,8 +36,10 @@ namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class ServiceExtensions
 {
-	public static void AddServices(this IServiceCollection services)
+	public static void AddServices(this IServiceCollection services, IConfigurationManager configuration)
 	{
+		var config = configuration.GetSection("Worker").Get<Config.WorkerSection>();
+
 		// Transient = instantiated per request and class
 
 		// Scoped = instantiated per request
@@ -90,7 +92,6 @@ public static class ServiceExtensions
 			.AddSingleton<CronService>()
 			.AddSingleton<QueueService>()
 			.AddSingleton<ObjectStorageService>()
-			.AddSingleton<EventService>()
 			.AddSingleton<RequestBufferingMiddleware>()
 			.AddSingleton<AuthorizationMiddleware>()
 			.AddSingleton<RequestVerificationMiddleware>()
@@ -105,6 +106,17 @@ public static class ServiceExtensions
 		services.AddHostedService<CronService>(provider => provider.GetRequiredService<CronService>());
 		services.AddHostedService<QueueService>(provider => provider.GetRequiredService<QueueService>());
 		services.AddHostedService<PushService>(provider => provider.GetRequiredService<PushService>());
+
+		// Add service implementations for clustered and non-clustered configurations
+		if (config?.WorkerId != null)
+		{
+			services.AddSingleton<IEventService, ClusteredEventService>()
+			        .AddHostedService(p => (ClusteredEventService)p.GetRequiredService<IEventService>());
+		}
+		else
+		{
+			services.AddSingleton<IEventService, EventService>();
+		}
 	}
 
 	public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration)

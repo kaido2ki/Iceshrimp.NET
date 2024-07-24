@@ -14,7 +14,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 public class WebSocketController(
 	IHostApplicationLifetime appLifetime,
 	DatabaseContext db,
-	EventService eventSvc,
+	IEventService eventSvc,
 	IServiceScopeFactory scopeFactory,
 	ILogger<WebSocketController> logger
 ) : ControllerBase

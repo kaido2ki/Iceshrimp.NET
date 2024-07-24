@@ -8,7 +8,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming;
 public static class WebSocketHandler
 {
 	public static async Task HandleConnectionAsync(
-		WebSocket socket, OauthToken token, EventService eventSvc, IServiceScopeFactory scopeFactory,
+		WebSocket socket, OauthToken token, IEventService eventSvc, IServiceScopeFactory scopeFactory,
 		string? stream, string? list, string? tag, CancellationToken ct
 	)
 	{

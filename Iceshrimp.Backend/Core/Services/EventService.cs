@@ -3,7 +3,7 @@ using Iceshrimp.Backend.Core.Events;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class EventService
+public class EventService : IEventService
 {
 	public event EventHandler<Note>?            NotePublished;
 	public event EventHandler<Note>?            NoteUpdated;
@@ -24,50 +24,117 @@ public class EventService
 	public event EventHandler<Filter>?          FilterUpdated;
 	public event EventHandler<UserList>?        ListMembersUpdated;
 
-	public void RaiseNotePublished(object? sender, Note note) => NotePublished?.Invoke(sender, note);
-	public void RaiseNoteUpdated(object? sender, Note note)   => NoteUpdated?.Invoke(sender, note);
-	public void RaiseNoteDeleted(object? sender, Note note)   => NoteDeleted?.Invoke(sender, note);
-
-	public void RaiseNotification(object? sender, Notification notification) =>
-		Notification?.Invoke(sender, notification);
-
-	public void RaiseNotifications(object? sender, IEnumerable<Notification> notifications)
+	public Task RaiseNotePublished(object? sender, Note note)
 	{
-		foreach (var notification in notifications) Notification?.Invoke(sender, notification);
+		NotePublished?.Invoke(sender, note);
+		return Task.CompletedTask;
 	}
 
-	public void RaiseNoteLiked(object? sender, Note note, User user) =>
+	public Task RaiseNoteUpdated(object? sender, Note note)
+	{
+		NoteUpdated?.Invoke(sender, note);
+		return Task.CompletedTask;
+	}
+
+	public Task RaiseNoteDeleted(object? sender, Note note)
+	{
+		NoteDeleted?.Invoke(sender, note);
+		return Task.CompletedTask;
+	}
+
+	public Task RaiseNotification(object? sender, Notification notification)
+	{
+		Notification?.Invoke(sender, notification);
+		return Task.CompletedTask;
+	}
+
+	public Task RaiseNotifications(object? sender, IEnumerable<Notification> notifications)
+	{
+		foreach (var notification in notifications) Notification?.Invoke(sender, notification);
+		return Task.CompletedTask;
+	}
+
+	public Task RaiseNoteLiked(object? sender, Note note, User user)
+	{
 		NoteLiked?.Invoke(sender, new NoteInteraction { Note = note, User = user });
+		return Task.CompletedTask;
+	}
 
-	public void RaiseNoteUnliked(object? sender, Note note, User user) =>
+	public Task RaiseNoteUnliked(object? sender, Note note, User user)
+	{
 		NoteUnliked?.Invoke(sender, new NoteInteraction { Note = note, User = user });
+		return Task.CompletedTask;
+	}
 
-	public void RaiseNoteReacted(object? sender, NoteReaction reaction) =>
+	public Task RaiseNoteReacted(object? sender, NoteReaction reaction)
+	{
 		NoteReacted?.Invoke(sender, reaction);
+		return Task.CompletedTask;
+	}
 
-	public void RaiseNoteUnreacted(object? sender, NoteReaction reaction) =>
+	public Task RaiseNoteUnreacted(object? sender, NoteReaction reaction)
+	{
 		NoteUnreacted?.Invoke(sender, reaction);
+		return Task.CompletedTask;
+	}
 
-	public void RaiseUserFollowed(object? sender, User actor, User obj) =>
+	public Task RaiseUserFollowed(object? sender, User actor, User obj)
+	{
 		UserFollowed?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+		return Task.CompletedTask;
+	}
 
-	public void RaiseUserUnfollowed(object? sender, User actor, User obj) =>
+	public Task RaiseUserUnfollowed(object? sender, User actor, User obj)
+	{
 		UserUnfollowed?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+		return Task.CompletedTask;
+	}
 
-	public void RaiseUserBlocked(object? sender, User actor, User obj) =>
+	public Task RaiseUserBlocked(object? sender, User actor, User obj)
+	{
 		UserBlocked?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+		return Task.CompletedTask;
+	}
 
-	public void RaiseUserUnblocked(object? sender, User actor, User obj) =>
+	public Task RaiseUserUnblocked(object? sender, User actor, User obj)
+	{
 		UserUnblocked?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+		return Task.CompletedTask;
+	}
 
-	public void RaiseUserMuted(object? sender, User actor, User obj) =>
+	public Task RaiseUserMuted(object? sender, User actor, User obj)
+	{
 		UserMuted?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+		return Task.CompletedTask;
+	}
 
-	public void RaiseUserUnmuted(object? sender, User actor, User obj) =>
+	public Task RaiseUserUnmuted(object? sender, User actor, User obj)
+	{
 		UserUnmuted?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+		return Task.CompletedTask;
+	}
 
-	public void RaiseFilterAdded(object? sender, Filter filter)        => FilterAdded?.Invoke(sender, filter);
-	public void RaiseFilterRemoved(object? sender, Filter filter)      => FilterRemoved?.Invoke(sender, filter);
-	public void RaiseFilterUpdated(object? sender, Filter filter)      => FilterUpdated?.Invoke(sender, filter);
-	public void RaiseListMembersUpdated(object? sender, UserList list) => ListMembersUpdated?.Invoke(sender, list);
+	public Task RaiseFilterAdded(object? sender, Filter filter)
+	{
+		FilterAdded?.Invoke(sender, filter);
+		return Task.CompletedTask;
+	}
+
+	public Task RaiseFilterRemoved(object? sender, Filter filter)
+	{
+		FilterRemoved?.Invoke(sender, filter);
+		return Task.CompletedTask;
+	}
+
+	public Task RaiseFilterUpdated(object? sender, Filter filter)
+	{
+		FilterUpdated?.Invoke(sender, filter);
+		return Task.CompletedTask;
+	}
+
+	public Task RaiseListMembersUpdated(object? sender, UserList list)
+	{
+		ListMembersUpdated?.Invoke(sender, list);
+		return Task.CompletedTask;
+	}
 }

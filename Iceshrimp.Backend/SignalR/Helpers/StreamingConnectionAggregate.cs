@@ -22,7 +22,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	private readonly WriteLockingList<string> _blocking      = [];
 	private readonly WriteLockingList<string> _connectionIds = [];
 
-	private readonly EventService _eventService;
+	private readonly IEventService _eventService;
 
 	private readonly WriteLockingList<string> _following = [];
 
@@ -239,7 +239,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		string userId,
 		User user,
 		IHubContext<StreamingHub, IStreamingHubClient> hub,
-		EventService eventSvc,
+		IEventService eventSvc,
 		IServiceScopeFactory scopeFactory, StreamingService streamingService
 	)
 	{

@@ -19,14 +19,14 @@ public sealed class StreamingService
 	});
 
 	private readonly ConcurrentDictionary<string, StreamingConnectionAggregate> _connections = [];
-	private readonly EventService                                               _eventSvc;
+	private readonly IEventService                                               _eventSvc;
 	private readonly IHubContext<StreamingHub, IStreamingHubClient>             _hub;
 	private readonly ILogger<StreamingService>                                  _logger;
 	private readonly IServiceScopeFactory                                       _scopeFactory;
 
 	public StreamingService(
 		IHubContext<StreamingHub, IStreamingHubClient> hub,
-		EventService eventSvc,
+		IEventService eventSvc,
 		IServiceScopeFactory scopeFactory,
 		ILogger<StreamingService> logger
 	)

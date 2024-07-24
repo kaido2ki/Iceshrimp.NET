@@ -18,7 +18,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming;
 public sealed class WebSocketConnection(
 	WebSocket socket,
 	OauthToken token,
-	EventService eventSvc,
+	IEventService eventSvc,
 	IServiceScopeFactory scopeFactory,
 	CancellationToken ct
 ) : IDisposable
@@ -28,7 +28,7 @@ public sealed class WebSocketConnection(
 	private readonly SemaphorePlus            _lock          = new(1);
 	private readonly WriteLockingList<string> _muting        = [];
 	public readonly  List<IChannel>           Channels       = [];
-	public readonly  EventService             EventService   = eventSvc;
+	public readonly  IEventService             EventService   = eventSvc;
 	public readonly  WriteLockingList<Filter> Filters        = [];
 	public readonly  WriteLockingList<string> Following      = [];
 	public readonly  IServiceScope            Scope          = scopeFactory.CreateScope();

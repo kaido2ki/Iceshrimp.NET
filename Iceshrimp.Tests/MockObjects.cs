@@ -39,10 +39,10 @@ public static class MockObjects
 	private static ServiceProvider GetServiceProvider()
 	{
 		var config = new ConfigurationManager();
-		config.AddIniFile("configuration.ini", false);
+		config.AddIniStream(AssemblyHelpers.GetEmbeddedResourceStream("configuration.ini"));
 
 		var collection = new ServiceCollection();
-		collection.AddServices();
+		collection.AddServices(config);
 		collection.ConfigureServices(config);
 
 		return collection.BuildServiceProvider();

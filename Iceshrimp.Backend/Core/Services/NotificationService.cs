@@ -10,7 +10,7 @@ namespace Iceshrimp.Backend.Core.Services;
 public class NotificationService(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	DatabaseContext db,
-	EventService eventSvc
+	IEventService eventSvc
 )
 {
 	public async Task GenerateMentionNotifications(Note note, IReadOnlyCollection<string> mentionedLocalUserIds)
@@ -38,7 +38,7 @@ public class NotificationService(
 
 		await db.AddRangeAsync(notifications);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotifications(this, notifications);
+		await eventSvc.RaiseNotifications(this, notifications);
 	}
 
 	public async Task GenerateReplyNotifications(Note note, IReadOnlyCollection<string> mentionedLocalUserIds)
@@ -74,7 +74,7 @@ public class NotificationService(
 
 		await db.AddRangeAsync(notifications);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotifications(this, notifications);
+		await eventSvc.RaiseNotifications(this, notifications);
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
@@ -99,7 +99,7 @@ public class NotificationService(
 
 		await db.AddRangeAsync(notifications);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotifications(this, notifications);
+		await eventSvc.RaiseNotifications(this, notifications);
 	}
 
 	public async Task GenerateLikeNotification(Note note, User user)
@@ -119,7 +119,7 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
+		await eventSvc.RaiseNotification(this, notification);
 	}
 
 	public async Task GenerateReactionNotification(NoteReaction reaction)
@@ -139,7 +139,7 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
+		await eventSvc.RaiseNotification(this, notification);
 	}
 
 	public async Task GenerateFollowNotification(User follower, User followee)
@@ -157,8 +157,8 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
-		eventSvc.RaiseUserFollowed(this, follower, followee);
+		await eventSvc.RaiseNotification(this, notification);
+		await eventSvc.RaiseUserFollowed(this, follower, followee);
 	}
 
 	public async Task GenerateFollowRequestReceivedNotification(FollowRequest followRequest)
@@ -177,7 +177,7 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
+		await eventSvc.RaiseNotification(this, notification);
 	}
 
 	public async Task GenerateFollowRequestAcceptedNotification(FollowRequest followRequest)
@@ -196,8 +196,8 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
-		eventSvc.RaiseUserFollowed(this, followRequest.Follower, followRequest.Followee);
+		await eventSvc.RaiseNotification(this, notification);
+		await eventSvc.RaiseUserFollowed(this, followRequest.Follower, followRequest.Followee);
 	}
 
 	public async Task GenerateBiteNotification(Bite bite)
@@ -215,7 +215,7 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
+		await eventSvc.RaiseNotification(this, notification);
 	}
 
 	public async Task GeneratePollEndedNotifications(Note note)
@@ -252,8 +252,10 @@ public class NotificationService(
 		await db.AddRangeAsync(notifications);
 		await db.SaveChangesAsync();
 
-		foreach (var notification in notifications)
-			eventSvc.RaiseNotification(this, notification);
+		await notifications.Select(notification => eventSvc.RaiseNotification(this, notification))
+		                   .Chunk(20)
+		                   .Select(async chunk => await chunk.AwaitAllAsync())
+		                   .AwaitAllNoConcurrencyAsync();
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
@@ -277,6 +279,6 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
+		await eventSvc.RaiseNotification(this, notification);
 	}
 }

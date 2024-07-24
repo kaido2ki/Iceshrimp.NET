@@ -36,7 +36,7 @@ public class UserService(
 	ActivityPub.MentionsResolver mentionsResolver,
 	ActivityPub.UserRenderer userRenderer,
 	QueueService queueSvc,
-	EventService eventSvc,
+	IEventService eventSvc,
 	WebFingerService webFingerSvc,
 	ActivityPub.FederationControlService fedCtrlSvc
 )
@@ -884,7 +884,7 @@ public class UserService(
 			}
 
 			followee.PrecomputedIsFollowedBy = false;
-			eventSvc.RaiseUserUnfollowed(this, user, followee);
+			await eventSvc.RaiseUserUnfollowed(this, user, followee);
 		}
 
 		if (followee.PrecomputedIsRequestedBy ?? false)
@@ -1080,8 +1080,7 @@ public class UserService(
 		};
 		await db.AddAsync(muting);
 		await db.SaveChangesAsync();
-
-		eventSvc.RaiseUserMuted(this, muter, mutee);
+		await eventSvc.RaiseUserMuted(this, muter, mutee);
 
 		if (expiration != null)
 		{
@@ -1096,7 +1095,7 @@ public class UserService(
 			return;
 
 		await db.Mutings.Where(p => p.Muter == muter && p.Mutee == mutee).ExecuteDeleteAsync();
-		eventSvc.RaiseUserUnmuted(this, muter, mutee);
+		await eventSvc.RaiseUserUnmuted(this, muter, mutee);
 
 		mutee.PrecomputedIsMutedBy = false;
 	}
@@ -1139,8 +1138,7 @@ public class UserService(
 
 		await db.AddAsync(blocking);
 		await db.SaveChangesAsync();
-
-		eventSvc.RaiseUserBlocked(this, blocker, blockee);
+		await eventSvc.RaiseUserBlocked(this, blocker, blockee);
 
 		if (blocker.IsLocalUser && blockee.IsRemoteUser)
 		{
@@ -1163,8 +1161,7 @@ public class UserService(
 
 		db.Remove(blocking);
 		await db.SaveChangesAsync();
-
-		eventSvc.RaiseUserUnblocked(this, blocker, blockee);
+		await eventSvc.RaiseUserUnblocked(this, blocker, blockee);
 
 		if (blocker.IsLocalUser && blockee.IsRemoteUser)
 		{

@@ -38,7 +38,7 @@ public class NoteService(
 	ActivityPub.MentionsResolver mentionsResolver,
 	DriveService driveSvc,
 	NotificationService notificationSvc,
-	EventService eventSvc,
+	IEventService eventSvc,
 	ActivityPub.ActivityRenderer activityRenderer,
 	EmojiService emojiSvc,
 	FollowupTaskService followupTaskSvc,
@@ -243,7 +243,7 @@ public class NoteService(
 		await UpdateNoteCountersAsync(note, true);
 		await db.AddAsync(note);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotePublished(this, note);
+		await eventSvc.RaiseNotePublished(this, note);
 		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateReplyNotifications(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateRenoteNotification(note);
@@ -581,7 +581,7 @@ public class NoteService(
 		}
 
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNoteUpdated(this, note);
+		await eventSvc.RaiseNoteUpdated(this, note);
 
 		if (!isEdit) return note;
 
@@ -611,7 +611,7 @@ public class NoteService(
 		logger.LogDebug("Deleting note '{id}' owned by {userId}", note.Id, note.User.Id);
 
 		db.Remove(note);
-		eventSvc.RaiseNoteDeleted(this, note);
+		await eventSvc.RaiseNoteDeleted(this, note);
 		await db.SaveChangesAsync();
 		await UpdateNoteCountersAsync(note, false);
 
@@ -710,8 +710,7 @@ public class NoteService(
 		await db.Notes.Where(p => p.Id == note.Id)
 		        .ExecuteUpdateAsync(p => p.SetProperty(n => n.RenoteCount, n => n.RenoteCount - 1));
 
-		foreach (var hit in notes)
-			eventSvc.RaiseNoteDeleted(this, hit);
+		await notes.Select(hit => eventSvc.RaiseNoteDeleted(this, hit)).AwaitAllAsync();
 	}
 
 	public async Task<Note?> ProcessNoteAsync(ASNote note, User actor, User? user = null)
@@ -1147,7 +1146,7 @@ public class NoteService(
 				await deliverSvc.DeliverToConditionalAsync(activity, user, note);
 			}
 
-			eventSvc.RaiseNoteLiked(this, note, user);
+			await eventSvc.RaiseNoteLiked(this, note, user);
 			await notificationSvc.GenerateLikeNotification(note, user);
 			return true;
 		}
@@ -1172,7 +1171,7 @@ public class NoteService(
 			await deliverSvc.DeliverToConditionalAsync(activity, user, note);
 		}
 
-		eventSvc.RaiseNoteUnliked(this, note, user);
+		await eventSvc.RaiseNoteUnliked(this, note, user);
 		await db.Notifications
 		        .Where(p => p.Type == Notification.NotificationType.Like &&
 		                    p.Notifiee == note.User &&
@@ -1362,7 +1361,7 @@ public class NoteService(
 
 		await db.AddAsync(reaction);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNoteReacted(this, reaction);
+		await eventSvc.RaiseNoteReacted(this, reaction);
 		await notificationSvc.GenerateReactionNotification(reaction);
 
 		// @formatter:off
@@ -1398,7 +1397,7 @@ public class NoteService(
 		if (reaction == null) return (name, false);
 		db.Remove(reaction);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNoteUnreacted(this, reaction);
+		await eventSvc.RaiseNoteUnreacted(this, reaction);
 
 		await db.Database
 		        .ExecuteSqlAsync($"""UPDATE "note" SET "reactions" = jsonb_set("reactions", ARRAY[{name}], (COALESCE("reactions"->>{name}, '1')::int - 1)::text::jsonb) WHERE "id" = {note.Id}""");

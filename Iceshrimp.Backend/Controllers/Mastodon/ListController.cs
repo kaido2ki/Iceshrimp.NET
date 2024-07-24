@@ -25,7 +25,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableRateLimiting("sliding")]
 [EnableCors("mastodon")]
 [Produces(MediaTypeNames.Application.Json)]
-public class ListController(DatabaseContext db, UserRenderer userRenderer, EventService eventSvc) : ControllerBase
+public class ListController(DatabaseContext db, UserRenderer userRenderer, IEventService eventSvc) : ControllerBase
 {
 	[HttpGet]
 	[Authorize("read:lists")]
@@ -139,7 +139,7 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 
 		db.Remove(list);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseListMembersUpdated(this, list);
+		await eventSvc.RaiseListMembersUpdated(this, list);
 		return new object();
 	}
 
@@ -204,8 +204,7 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 
 		await db.AddRangeAsync(memberships);
 		await db.SaveChangesAsync();
-
-		eventSvc.RaiseListMembersUpdated(this, list);
+		await eventSvc.RaiseListMembersUpdated(this, list);
 
 		return new object();
 	}
@@ -229,7 +228,7 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 		        .Where(p => p.UserList == list && request.AccountIds.Contains(p.UserId))
 		        .ExecuteDeleteAsync();
 
-		eventSvc.RaiseListMembersUpdated(this, list);
+		await eventSvc.RaiseListMembersUpdated(this, list);
 
 		return new object();
 	}

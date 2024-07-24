@@ -19,7 +19,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/filters")]
 [Produces(MediaTypeNames.Application.Json)]
-public class FilterController(DatabaseContext db, EventService eventSvc) : ControllerBase
+public class FilterController(DatabaseContext db, IEventService eventSvc) : ControllerBase
 {
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -49,7 +49,7 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 
 		db.Add(filter);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseFilterAdded(this, filter);
+		await eventSvc.RaiseFilterAdded(this, filter);
 		return FilterRenderer.RenderOne(filter);
 	}
 
@@ -69,7 +69,7 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 		filter.Contexts = request.Contexts.Cast<Filter.FilterContext>().ToList();
 
 		await db.SaveChangesAsync();
-		eventSvc.RaiseFilterUpdated(this, filter);
+		await eventSvc.RaiseFilterUpdated(this, filter);
 	}
 
 	[HttpDelete("{id:long}")]
@@ -83,6 +83,6 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 
 		db.Remove(filter);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseFilterRemoved(this, filter);
+		await eventSvc.RaiseFilterRemoved(this, filter);
 	}
 }

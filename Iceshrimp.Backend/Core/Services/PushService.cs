@@ -17,7 +17,7 @@ using WebPushSubscription = Iceshrimp.WebPush.PushSubscription;
 namespace Iceshrimp.Backend.Core.Services;
 
 public class PushService(
-	EventService eventSvc,
+	IEventService eventSvc,
 	ILogger<PushService> logger,
 	IServiceScopeFactory scopeFactory,
 	HttpClient httpClient,
