@@ -88,9 +88,9 @@ public class QueueService(
 							if (queue == null) return;
 
 							if (args.Channel == "queued")
-								queue.RaiseJobQueuedEvent();
+								queue.RaiseLocalJobQueuedEvent();
 							else
-								queue.RaiseJobDelayedEvent();
+								queue.RaiseLocalJobDelayedEvent();
 						}
 						catch
 						{
@@ -253,7 +253,8 @@ public class QueueService(
 			                                            .SetProperty(i => i.ExceptionSource, _ => null)
 			                                            .SetProperty(i => i.StackTrace, _ => null));
 			if (cnt <= 0) return;
-			_queues.FirstOrDefault(p => p.Name == job.Queue)?.RaiseJobQueuedEvent();
+			var queue = _queues.FirstOrDefault(p => p.Name == job.Queue);
+			if (queue != null) await queue.RaiseJobQueuedEvent(db);
 		}
 	}
 }
@@ -266,9 +267,11 @@ public interface IPostgresJobQueue
 
 	public Task ExecuteAsync(IServiceScopeFactory scopeFactory, CancellationToken token, CancellationToken queueToken);
 	public Task RecoverOrPrepareForExitAsync();
+	public Task RaiseJobQueuedEvent(DatabaseContext db);
+	public Task RaiseJobDelayedEvent(DatabaseContext db);
 
-	public void RaiseJobQueuedEvent();
-	public void RaiseJobDelayedEvent();
+	public void RaiseLocalJobQueuedEvent();
+	public void RaiseLocalJobDelayedEvent();
 }
 
 public class PostgresJobQueue<T>(
@@ -287,8 +290,8 @@ public class PostgresJobQueue<T>(
 	public           string                Name    => name;
 	public           TimeSpan              Timeout => timeout;
 
-	public void RaiseJobQueuedEvent()  => QueuedChannelEvent?.Invoke(null, EventArgs.Empty);
-	public void RaiseJobDelayedEvent() => DelayedChannelEvent?.Invoke(null, EventArgs.Empty);
+	public void RaiseLocalJobQueuedEvent()  => QueuedChannelEvent?.Invoke(null, EventArgs.Empty);
+	public void RaiseLocalJobDelayedEvent() => DelayedChannelEvent?.Invoke(null, EventArgs.Empty);
 
 	public async Task ExecuteAsync(
 		IServiceScopeFactory scopeFactory, CancellationToken token, CancellationToken queueToken
@@ -370,7 +373,7 @@ public class PostgresJobQueue<T>(
 	private event EventHandler? DelayedChannelEvent;
 
 	// ReSharper disable once SuggestBaseTypeForParameter
-	private async Task RaiseJobQueuedEvent(DatabaseContext db)
+	public async Task RaiseJobQueuedEvent(DatabaseContext db)
 	{
 		if (_workerId == null)
 			QueuedChannelEvent?.Invoke(null, EventArgs.Empty);
@@ -379,7 +382,7 @@ public class PostgresJobQueue<T>(
 	}
 
 	// ReSharper disable once SuggestBaseTypeForParameter
-	private async Task RaiseJobDelayedEvent(DatabaseContext db)
+	public async Task RaiseJobDelayedEvent(DatabaseContext db)
 	{
 		if (_workerId == null)
 			DelayedChannelEvent?.Invoke(null, EventArgs.Empty);
