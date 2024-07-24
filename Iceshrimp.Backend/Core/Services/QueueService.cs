@@ -15,7 +15,8 @@ namespace Iceshrimp.Backend.Core.Services;
 public class QueueService(
 	IServiceScopeFactory scopeFactory,
 	ILogger<QueueService> logger,
-	IOptions<Config.QueueConcurrencySection> queueConcurrency
+	IOptions<Config.QueueConcurrencySection> queueConcurrency,
+	IHostApplicationLifetime lifetime
 ) : BackgroundService
 {
 	private readonly List<IPostgresJobQueue> _queues             = [];
@@ -30,31 +31,33 @@ public class QueueService(
 	{
 		_queues.AddRange([InboxQueue, PreDeliverQueue, DeliverQueue, BackgroundTaskQueue]);
 
-		var cts = new CancellationTokenSource();
+		var tokenSource      = new CancellationTokenSource();
+		var queueTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token, lifetime.ApplicationStopping);
+		var queueToken       = queueTokenSource.Token;
 
-		token.Register(() =>
+		queueToken.Register(() =>
 		{
-			if (cts.Token.IsCancellationRequested) return;
+			if (tokenSource.Token.IsCancellationRequested) return;
 			logger.LogInformation("Shutting down queue processors...");
-			cts.CancelAfter(TimeSpan.FromSeconds(10));
+			tokenSource.CancelAfter(TimeSpan.FromSeconds(10));
 		});
 
-		cts.Token.Register(() =>
+		tokenSource.Token.Register(() =>
 		{
 			PrepareForExit();
 			logger.LogInformation("Queue shutdown complete.");
 		});
 
 		_ = Task.Run(ExecuteHealthchecksWorker, token);
-		await Task.Run(ExecuteBackgroundWorkers, cts.Token);
+		await Task.Run(ExecuteBackgroundWorkers, tokenSource.Token);
 
 		return;
 
 		async Task? ExecuteBackgroundWorkers()
 		{
-			var tasks = _queues.Select(queue => queue.ExecuteAsync(scopeFactory, cts.Token, token));
+			var tasks = _queues.Select(queue => queue.ExecuteAsync(scopeFactory, tokenSource.Token, queueToken));
 			await Task.WhenAll(tasks);
-			await cts.CancelAsync();
+			await tokenSource.CancelAsync();
 		}
 
 		async Task ExecuteHealthchecksWorker()
@@ -196,6 +199,7 @@ public class PostgresJobQueue<T>(
 						await _semaphore.WaitAndReleaseAsync(token).SafeWaitAsync(queueToken);
 					else
 						await _queuedChannel.WaitAsync(token).SafeWaitAsync(queueToken);
+
 					continue;
 				}
 
@@ -224,6 +228,9 @@ public class PostgresJobQueue<T>(
 				}
 			}
 		}
+
+		while (!token.IsCancellationRequested && _semaphore.ActiveCount > 0)
+			await _semaphore.WaitAndReleaseAsync(CancellationToken.None).SafeWaitAsync(token);
 	}
 
 	public async Task RecoverOrPrepareForExitAsync()
