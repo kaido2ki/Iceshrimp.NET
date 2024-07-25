@@ -1,6 +1,7 @@
 @page "/notes/{NoteId}"
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Components.Note
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Core.Services.StateServicePatterns
 @using Iceshrimp.Frontend.Localization
@@ -88,15 +89,25 @@
             return;
         }
 
-        RootNote = await ApiService.Notes.GetNote(NoteId);
+        try
+        {
+            var rootNoteTask    = ApiService.Notes.GetNote(NoteId);
+            var descendantsTask = ApiService.Notes.GetNoteDescendants(NoteId, _depth);
+            var ascendantsTask  = ApiService.Notes.GetNoteAscendants(NoteId, default);
+            RootNote    = await rootNoteTask;
+            Descendants = await descendantsTask;
+            Ascendants  = await ascendantsTask;
+        }
+        catch (ApiException)
+        {
+            _componentState = LoadState.Error;
+            return;
+        }
         if (RootNote == null)
         {
             _componentState = LoadState.Error;
             return;
         }
-
-        Descendants    = await ApiService.Notes.GetNoteDescendants(NoteId, _depth);
-        Ascendants     = await ApiService.Notes.GetNoteAscendants(NoteId, default);
         _componentState = LoadState.Init;
 
         StateHasChanged();
