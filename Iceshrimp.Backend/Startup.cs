@@ -27,7 +27,8 @@ builder.Services.AddControllers()
        .AddPlugins(PluginLoader.Assemblies);
 
 builder.Services.AddSwaggerGenWithOptions();
-builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter()
+builder.Services.AddLogging(logging => logging//.AddCustomConsoleFormatter()
+                                              .ClearProviders()
                                               .AddOpenTelemetry(p =>
                                               {
 	                                              p.IncludeScopes           = true;
