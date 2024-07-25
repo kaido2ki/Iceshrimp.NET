@@ -2,6 +2,11 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.SignalR;
 using Iceshrimp.Backend.SignalR.Authentication;
+using OpenTelemetry;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 StartupHelpers.ParseCliArguments(args);
 
@@ -31,9 +36,20 @@ builder.Services.AddAuthenticationServices();
 builder.Services.AddSignalR().AddMessagePackProtocol();
 builder.Services.AddResponseCompression();
 builder.Services.AddRazorPages();
-
 builder.Services.AddServices();
 builder.Services.ConfigureServices(builder.Configuration);
+
+builder.Services.AddOpenTelemetry()
+       .WithTracing(p => p.AddAspNetCoreInstrumentation())
+       .WithMetrics(p => p.AddAspNetCoreInstrumentation())
+       .WithLogging(null, p =>
+       {
+	       p.IncludeScopes           = true;
+	       p.ParseStateValues        = true;
+	       p.IncludeFormattedMessage = true;
+       })
+       .UseOtlpExporter(OtlpExportProtocol.HttpProtobuf, new Uri("10.42.0.2:4318"));
+
 builder.WebHost.ConfigureKestrel(builder.Configuration);
 builder.WebHost.UseStaticWebAssets();
 
