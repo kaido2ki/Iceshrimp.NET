@@ -27,19 +27,15 @@ builder.Services.AddControllers()
        .AddPlugins(PluginLoader.Assemblies);
 
 builder.Services.AddSwaggerGenWithOptions();
-builder.Services.AddLogging(logging => logging//.AddCustomConsoleFormatter()
-                                              .ClearProviders()
-                                              .AddOpenTelemetry(p =>
-                                              {
-	                                              p.IncludeScopes           = true;
-	                                              p.ParseStateValues        = true;
-	                                              p.IncludeFormattedMessage = true;
-	                                              p.AddOtlpExporter(o =>
-	                                              {
-		                                              o.Protocol = OtlpExportProtocol.HttpProtobuf;
-		                                              o.Endpoint = new Uri("http://10.42.0.2:4318/");
-	                                              });
-                                              }));
+builder.Services.AddLogging(logging => logging //.AddCustomConsoleFormatter()
+                                       .ClearProviders()
+                                       .AddOpenTelemetry(p =>
+                                       {
+	                                       p.IncludeScopes           = true;
+	                                       p.ParseStateValues        = true;
+	                                       p.IncludeFormattedMessage = true;
+	                                       p.AddOtlpExporter();
+                                       }));
 builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
 builder.Services.AddCorsPolicies();
@@ -59,13 +55,9 @@ builder.Services.AddOpenTelemetry()
 	       p.IncludeScopes           = true;
 	       p.ParseStateValues        = true;
 	       p.IncludeFormattedMessage = true;
-	       p.AddOtlpExporter(o =>
-	       {
-		       o.Protocol = OtlpExportProtocol.HttpProtobuf;
-		       o.Endpoint = new Uri("http://10.42.0.2:4318/");
-	       });
+	       p.AddOtlpExporter();
        });
-       //.UseOtlpExporter(OtlpExportProtocol.HttpProtobuf, new Uri("http://10.42.0.2:4318/"));
+//.UseOtlpExporter(OtlpExportProtocol.HttpProtobuf, new Uri("http://10.42.0.2:4318/"));
 
 builder.WebHost.ConfigureKestrel(builder.Configuration);
 builder.WebHost.UseStaticWebAssets();
