@@ -63,8 +63,8 @@ builder.Services.AddOpenTelemetry()
 		       o.Protocol = OtlpExportProtocol.HttpProtobuf;
 		       o.Endpoint = new Uri("http://10.42.0.2:4318/");
 	       });
-       })
-       .UseOtlpExporter(OtlpExportProtocol.HttpProtobuf, new Uri("http://10.42.0.2:4318/"));
+       });
+       //.UseOtlpExporter(OtlpExportProtocol.HttpProtobuf, new Uri("http://10.42.0.2:4318/"));
 
 builder.WebHost.ConfigureKestrel(builder.Configuration);
 builder.WebHost.UseStaticWebAssets();
