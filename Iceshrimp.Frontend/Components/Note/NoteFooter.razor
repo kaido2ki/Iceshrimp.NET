@@ -3,6 +3,7 @@
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
+@using _Imports = Iceshrimp.Frontend._Imports
 @inject IStringLocalizer<Localization> Loc;
 @inject IJSRuntime                     Js;
 @inject SessionService                 Session;
@@ -21,10 +22,25 @@
     <button class="btn" @onclick="Reply" @onclick:stopPropagation="true">
         <Icon Name="Icons.ArrowUUpLeft" Size="1.3em"/>
     </button>
-    <button class="btn @(RenotePossible ? "" : "disabled")" @onclick="Renote" @onclick:stopPropagation="true">
+    <button class="btn @(RenotePossible ? "" : "disabled") positioned" @onclick="@(RenotePossible ? ToggleRenoteMenu : () => {})" @onclick:stopPropagation="true">
         @if (RenotePossible)
         {
             <Icon Name="Icons.Repeat" Size="1.3em"/>
+            <Menu @ref="RenoteMenu">
+                @if (Note.NoteResponse.Visibility == NoteVisibility.Public)
+                {
+                    <MenuElement Icon="Icons.Repeat" OnSelect="() => Renote(NoteVisibility.Public)">
+                        <Text>@Loc["Renote"]</Text>
+                    </MenuElement>
+                }
+                <MenuElement Icon="Icons.House" OnSelect="() => Renote(NoteVisibility.Home)">
+                    <Text>@Loc["Renote (Unlisted)"]</Text>
+                </MenuElement>
+                <MenuElement Icon="Icons.Lock" OnSelect="() => Renote(NoteVisibility.Followers)">
+                    <Text>@Loc["Renote (Followers)"]</Text>
+                </MenuElement>
+                <ClosingBackdrop OnClose="RenoteMenu.Close"></ClosingBackdrop>
+            </Menu>
         }
         else
         {
@@ -57,7 +73,7 @@
     </button>
     <button class="btn positioned" @onclick="ToggleMenu" @onclick:stopPropagation="true">
         <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
-        <Menu @ref="Menu">
+        <Menu @ref="ContextMenu">
             @if (Note.NoteResponse.User.Id == Session.Current?.Id)
             {
                 <MenuElement Icon="Icons.Trash" OnSelect="Note.Delete">
@@ -70,6 +86,7 @@
             <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
                 <Text>@Loc["Open original page"]</Text>
             </MenuElement>
+            <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>
         </Menu>
     </button>
 </div>
@@ -80,12 +97,13 @@
     [Parameter] [EditorRequired] public required bool                     IsLiked        { get; set; }
     [Parameter] [EditorRequired] public required int                      Renotes        { get; set; }
     [Parameter]                  public          bool                     RenotePossible { get; set; }
-    private                                      Menu                     Menu           { get; set; } = null!;
+    private                                      Menu                     ContextMenu    { get; set; } = null!;
+    private                                      Menu                     RenoteMenu      { get; set; } = null!;
     private                                      ElementReference         EmojiButton    { get; set; }
 
     [CascadingParameter] Note Note { get; set; } = null!;
 
-    private void ToggleMenu() => Menu.Toggle();
+    private void ToggleMenu() => ContextMenu.Toggle();
 
     private void Delete() => _ = Note.Delete();
 
@@ -101,9 +119,14 @@
         Note.Reply();
     }
 
-    private void Renote()
+    private void ToggleRenoteMenu()
     {
-        if (RenotePossible) _ = Note.Renote();
+        RenoteMenu.Toggle();
+    }
+
+    private void Renote(NoteVisibility visibility)
+    {
+        _ = Note.Renote(visibility);
     }
 
     private void Quote()

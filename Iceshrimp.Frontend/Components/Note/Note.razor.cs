@@ -132,14 +132,14 @@ public partial class Note : IDisposable
 		ComposeService.ComposeDialog?.OpenDialog(target);
 	}
 
-	public async Task Renote()
+	public async Task Renote(NoteVisibility visibility)
 	{
 		var target = NoteResponse.Renote ?? NoteResponse;
 		target.Renotes++;
 		Broadcast();
 		try
 		{
-			await ApiService.Notes.RenoteNote(target.Id);
+			await ApiService.Notes.RenoteNote(target.Id, visibility);
 		}
 		catch (ApiException)
 		{

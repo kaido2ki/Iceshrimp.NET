@@ -7,5 +7,5 @@
     width: 13rem;
     top: 2.5rem;
     left: -5rem;
-
+    z-index: +1;
 }

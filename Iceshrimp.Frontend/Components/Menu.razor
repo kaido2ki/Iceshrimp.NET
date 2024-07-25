@@ -15,4 +15,10 @@
         _display = !_display;
         StateHasChanged();
     }
+
+    public void Close()
+    {
+        _display = false;
+        StateHasChanged();
+    }
 }
