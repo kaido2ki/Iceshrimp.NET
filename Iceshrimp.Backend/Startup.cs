@@ -27,7 +27,13 @@ builder.Services.AddControllers()
        .AddPlugins(PluginLoader.Assemblies);
 
 builder.Services.AddSwaggerGenWithOptions();
-builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
+builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter()
+                                              .AddOpenTelemetry(p =>
+                                              {
+	                                              p.IncludeScopes           = true;
+	                                              p.ParseStateValues        = true;
+	                                              p.IncludeFormattedMessage = true;
+                                              }));
 builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
 builder.Services.AddCorsPolicies();
