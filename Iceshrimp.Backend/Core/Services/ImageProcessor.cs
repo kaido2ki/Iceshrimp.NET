@@ -33,8 +33,12 @@ public class ImageProcessor
 			return;
 		}
 
-		SixLabors.ImageSharp.Configuration.Default.MemoryAllocator =
-			MemoryAllocator.Create(new MemoryAllocatorOptions { AllocationLimitMegabytes = 20 });
+		SixLabors.ImageSharp.Configuration.Default.MemoryAllocator = MemoryAllocator.Create(new MemoryAllocatorOptions
+		{
+			// 1MP / 1000000 px * 4 channels (RGBA) * 8 bits per channel / 8 bit per byte / 1024 byte per kb / 1024 kb per mb
+			// This works out to ~3.85MB per Mpx, so 4 leaves a bit of buffer.
+			AllocationLimitMegabytes = config.CurrentValue.MediaProcessing.MaxResolutionMpx * 4
+		});
 
 		#if EnableLibVips
 		if (_config.CurrentValue.MediaProcessing.ImageProcessor != Enums.ImageProcessor.LibVips)
