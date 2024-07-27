@@ -209,7 +209,7 @@ public class PostgresJobQueue<T>(
 	 *
 	 * The shutdown process functions as follows:
 	 * 1. While 'token' is not yet canceled, and there are still running jobs:
-	 * 2.1 Wait for any job them to finish, or for 'token' to be canceled
+	 * 1.1 Wait for any job them to finish, or for 'token' to be canceled
 	 */
 	public async Task ExecuteAsync(
 		IServiceScopeFactory scopeFactory, CancellationToken token, CancellationToken queueToken
