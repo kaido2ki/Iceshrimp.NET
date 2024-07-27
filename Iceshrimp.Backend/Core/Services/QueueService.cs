@@ -188,7 +188,8 @@ public class PostgresJobQueue<T>(
 	 *     They get reset to the 'queued' state at a later point during the shutdown process.
 	 *
 	 * The _semaphore object tracks how many jobs are currently running / how many more can be started before reaching
-	 * the configured maximum concurrency for this queue.
+	 * the configured maximum concurrency for this queue. It also resolves a race condition that existed here previously,
+	 * because counting the number of running jobs database-side is not atomic & therefore causes a ToC/ToU condition.
 	 * 
 	 * With that out of the way, the actual loop runs the following algorithm:
 	 * 1. If either 'token' or 'queueToken' are canceled, wait for all remaining tasks to finish before returning.
@@ -236,6 +237,7 @@ public class PostgresJobQueue<T>(
 
 				if (actualParallelism == 0)
 				{
+					// Not doing this causes a TOC/TOU race condition, even if it'd likely only be a couple CPU cycles wide.
 					if (_semaphore.CurrentCount == 0 && queuedCount > 0)
 						await _semaphore.WaitAndReleaseAsync(token).SafeWaitAsync(queueToken);
 					else
