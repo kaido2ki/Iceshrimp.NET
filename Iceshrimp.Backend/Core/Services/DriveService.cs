@@ -38,7 +38,7 @@ public class DriveService(
 			// Do we already have the file?
 			DriveFile? file = null;
 			if (!forceStore)
-				file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Uri == uri);
+				file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Uri == uri && (!p.IsLink || p.UserId == user.Id));
 
 			if (file != null)
 			{
@@ -179,8 +179,8 @@ public class DriveService(
 
 		var digest = await DigestHelpers.Sha256DigestAsync(data);
 		logger.LogDebug("Storing file {digest} for user {userId}", digest, user.Id);
-		file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest);
-		if (file is { IsLink: false })
+		file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest && (!p.IsLink || p.UserId == user.Id));
+		if (file != null)
 		{
 			if (file.UserId == user.Id)
 			{
