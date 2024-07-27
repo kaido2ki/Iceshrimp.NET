@@ -101,7 +101,7 @@ else
         else
         {
             var text = Model.Note.Text;
-            if (attachments != null)
+            if (attachments is { Count: > 0 })
             {
                 var attachmentText = $"({attachments.Count} attachments)";
                 if (string.IsNullOrWhiteSpace(text))
