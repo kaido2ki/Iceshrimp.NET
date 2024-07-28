@@ -1,3 +1,14 @@
+## v2024.1-beta2.security3
+This is a security hotfix release. It's identical to v2024.1-beta2.security2, except for the following security-related changes:
+
+### Backend
+- Updated dotNetRdf to `3.2.9-iceshrimp` (addressing a possible DoS attack vector)
+- Limited the maximum HttpClient response size to 1MiB (up from 2GiB, addressing a possible DoS attack vector)
+- Refactored DriveService to use stream processing for remote media (addressing a possible DoS attack vector)
+
+### Attribution
+This release was made possible by project contributors: Laura Hausmann
+
 ## v2024.1-beta2.security2
 This is a security hotfix release. It's identical to v2024.1-beta2.security1, except for referencing an updated version of the `SixLabors.ImageSharp` dependency, fixing a Denial of Service vulnerability ([GHSA-63p8-c4ww-9cg7](https://github.com/advisories/GHSA-63p8-c4ww-9cg7)). Upgrading is strongly recommended for all server operators.
 
