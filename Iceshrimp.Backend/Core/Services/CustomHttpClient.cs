@@ -366,15 +366,3 @@ public class CustomHttpClient : HttpClient
 		}
 	}
 }
-
-public class UnrestrictedHttpClient : CustomHttpClient
-{
-	public UnrestrictedHttpClient(
-		IOptions<Config.InstanceSection> options,
-		IOptionsMonitor<Config.SecuritySection> security,
-		ILoggerFactory loggerFactory
-	) : base(options, security, loggerFactory)
-	{
-		MaxResponseContentBufferSize = int.MaxValue;
-	}
-}

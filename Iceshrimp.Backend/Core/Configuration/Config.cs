@@ -63,8 +63,8 @@ public sealed class Config
 
 	public sealed class StorageSection
 	{
-		public readonly int?      MaxCacheSizeBytes;
-		public readonly int?      MaxUploadSizeBytes;
+		public readonly long?      MaxCacheSizeBytes;
+		public readonly long?      MaxUploadSizeBytes;
 		public readonly TimeSpan? MediaRetentionTimeSpan;
 
 		public bool              CleanAvatars = false;
@@ -134,9 +134,9 @@ public sealed class Config
 				MaxUploadSizeBytes = suffix switch
 				{
 					null       => num,
-					'k' or 'K' => num * 1024,
-					'm' or 'M' => num * 1024 * 1024,
-					'g' or 'G' => num * 1024 * 1024 * 1024,
+					'k' or 'K' => num * 1024L,
+					'm' or 'M' => num * 1024L * 1024,
+					'g' or 'G' => num * 1024L * 1024 * 1024,
 
 					_ => throw new Exception("Unsupported suffix, use one of: [K]ilobytes, [M]egabytes, [G]igabytes")
 				};
@@ -165,9 +165,9 @@ public sealed class Config
 				MaxCacheSizeBytes = suffix switch
 				{
 					null       => num,
-					'k' or 'K' => num * 1024,
-					'm' or 'M' => num * 1024 * 1024,
-					'g' or 'G' => num * 1024 * 1024 * 1024,
+					'k' or 'K' => num * 1024L,
+					'm' or 'M' => num * 1024L * 1024,
+					'g' or 'G' => num * 1024L * 1024 * 1024,
 
 					_ => throw new Exception("Unsupported suffix, use one of: [K]ilobytes, [M]egabytes, [G]igabytes")
 				};
