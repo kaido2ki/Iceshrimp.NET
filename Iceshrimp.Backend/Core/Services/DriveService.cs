@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -17,7 +18,7 @@ public class DriveService(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	IOptionsSnapshot<Config.StorageSection> storageConfig,
 	IOptions<Config.InstanceSection> instanceConfig,
-	UnrestrictedHttpClient httpClient,
+	HttpClient httpClient,
 	QueueService queueSvc,
 	ILogger<DriveService> logger,
 	ImageProcessor imageProcessor
@@ -89,7 +90,7 @@ public class DriveService(
 
 			try
 			{
-				var res = await httpClient.GetAsync(uri);
+				var res = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
 				res.EnsureSuccessStatusCode();
 
 				var request = new DriveFileCreationRequest
@@ -101,7 +102,15 @@ public class DriveService(
 					MimeType    = CleanMimeType(mimeType ?? res.Content.Headers.ContentType?.MediaType)
 				};
 
-				return await StoreFile(await res.Content.ReadAsStreamAsync(), user, request);
+				var input = await res.Content.ReadAsStreamAsync();
+				var maxLength = user.IsLocalUser
+					? storageConfig.Value.MaxUploadSizeBytes
+					: storageConfig.Value.MediaRetentionTimeSpan != null
+						? storageConfig.Value.MaxCacheSizeBytes
+						: 0;
+
+				var stream = await GetSafeStreamOrNullAsync(input, maxLength, res.Content.Headers.ContentLength);
+				return await StoreFile(stream, user, request);
 			}
 			catch (Exception e)
 			{
@@ -141,8 +150,7 @@ public class DriveService(
 			throw GracefulException.UnprocessableEntity("Attachment is too large.");
 
 		DriveFile? file;
-
-		if (user.IsRemoteUser && input.Length > storageConfig.Value.MaxCacheSizeBytes)
+		if (input == Stream.Null || user.IsRemoteUser && input.Length > storageConfig.Value.MaxCacheSizeBytes)
 		{
 			file = new DriveFile
 			{
@@ -406,6 +414,37 @@ public class DriveService(
 		return mimeType == null || !Constants.BrowserSafeMimeTypes.Contains(mimeType)
 			? "application/octet-stream"
 			: mimeType;
+	}
+
+	/// <summary>
+	/// We can't trust the Content-Length header, and it might be null.
+	/// This makes sure that we only ever read up to maxLength into memory.
+	/// </summary>
+	/// <param name="stream">The response content stream</param>
+	/// <param name="maxLength">The maximum length to buffer (null = unlimited)</param>
+	/// <param name="contentLength">The content length, if known</param>
+	/// <param name="token">A CancellationToken, if applicable</param>
+	/// <returns>Either a buffered MemoryStream, or Stream.Null</returns>
+	private static async Task<Stream> GetSafeStreamOrNullAsync(
+		Stream stream, long? maxLength, long? contentLength, CancellationToken token = default
+	)
+	{
+		if (maxLength is 0) return Stream.Null;
+		if (contentLength > maxLength) return Stream.Null;
+
+		MemoryStream buf = new();
+		if (contentLength < maxLength)
+			maxLength = contentLength.Value;
+
+		await stream.CopyToAsync(buf, maxLength, token);
+		if (maxLength == null || buf.Length <= maxLength)
+		{
+			buf.Seek(0, SeekOrigin.Begin);
+			return buf;
+		}
+
+		await buf.DisposeAsync();
+		return Stream.Null;
 	}
 }
 
