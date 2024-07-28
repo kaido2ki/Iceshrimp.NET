@@ -86,6 +86,7 @@ public static class ServiceExtensions
 		// Singleton = instantiated once across application lifetime
 		services
 			.AddSingleton<HttpClient, CustomHttpClient>()
+			.AddSingleton<UnrestrictedHttpClient>()
 			.AddSingleton<HttpRequestService>()
 			.AddSingleton<CronService>()
 			.AddSingleton<QueueService>()

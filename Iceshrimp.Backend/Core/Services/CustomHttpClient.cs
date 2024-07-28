@@ -31,6 +31,9 @@ public class CustomHttpClient : HttpClient
 		DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", options.Value.UserAgent);
 		Timeout = TimeSpan.FromSeconds(30);
 
+		// Protect against DoS attacks
+		MaxResponseContentBufferSize = 1024 * 1024; // 1MiB
+
 		// Configure FastFallback
 		FastFallbackHandler.Logger   = loggerFactory.CreateLogger<FastFallback>();
 		FastFallbackHandler.Security = security;
@@ -361,5 +364,17 @@ public class CustomHttpClient : HttpClient
 					return false;
 			}
 		}
+	}
+}
+
+public class UnrestrictedHttpClient : CustomHttpClient
+{
+	public UnrestrictedHttpClient(
+		IOptions<Config.InstanceSection> options,
+		IOptionsMonitor<Config.SecuritySection> security,
+		ILoggerFactory loggerFactory
+	) : base(options, security, loggerFactory)
+	{
+		MaxResponseContentBufferSize = int.MaxValue;
 	}
 }
