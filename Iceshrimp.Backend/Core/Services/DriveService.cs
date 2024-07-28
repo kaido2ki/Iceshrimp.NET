@@ -17,7 +17,7 @@ public class DriveService(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	IOptionsSnapshot<Config.StorageSection> storageConfig,
 	IOptions<Config.InstanceSection> instanceConfig,
-	HttpClient httpClient,
+	UnrestrictedHttpClient httpClient,
 	QueueService queueSvc,
 	ILogger<DriveService> logger,
 	ImageProcessor imageProcessor
