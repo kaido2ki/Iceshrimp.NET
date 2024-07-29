@@ -5,8 +5,12 @@
 # We have to build AOT images on linux-glibc, at least until .NET 9.0 (See https://github.com/dotnet/sdk/issues/32327 for details)
 
 ARG AOT=false
+
 ARG IMAGE=${AOT/true/wasm}
 ARG IMAGE=${IMAGE/false/alpine}
+
+ARG RUNNER=${AOT/true/noble-chiseled}
+ARG RUNNER=${RUNNER/false/alpine}
 
 FROM --platform=$BUILDPLATFORM iceshrimp.dev/iceshrimp/dotnet-sdk:8.0-$IMAGE AS builder
 WORKDIR /src
@@ -56,7 +60,7 @@ RUN --mount=type=cache,target=/root/.nuget \
 # Enable globalization and time zones:
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
 # final stage/image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine-composite AS image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-$RUNNER-composite AS image
 WORKDIR /app
 COPY --from=builder /app .
 USER app
