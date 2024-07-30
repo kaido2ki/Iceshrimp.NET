@@ -4,7 +4,6 @@
 @inject NavigationManager NavigationManager
 @inject ComposeService    ComposeService
 @inject SessionService    Session;
-<CascadingValue Value="this">
     <div class="note-header">
         <NoteUserInfo
             AvatarUrl="@Note.User.AvatarUrl"
@@ -27,7 +26,6 @@
     }
     @if (!AsQuote)
     {
-        @* FIXME: Allow renotes when the post is from the current user *@
         <NoteFooter
             Reactions="Note.Reactions"
             Likes="Note.Likes"
@@ -36,7 +34,6 @@
             RenotePossible=
             "@(Note.Visibility == NoteVisibility.Public || Note.Visibility == NoteVisibility.Home || Session.Current?.Id == Note.User.Id)"/>
     }
-</CascadingValue>
 
 @code {
     [Parameter] [EditorRequired] public required NoteBase  Note     { get; set; }
