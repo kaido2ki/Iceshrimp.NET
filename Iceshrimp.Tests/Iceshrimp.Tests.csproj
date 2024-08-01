@@ -20,4 +20,8 @@
         </PackageReference>
     </ItemGroup>
 
+    <ItemGroup>
+        <EmbeddedResource Include="../Iceshrimp.Backend/configuration.ini" CopyToOutputDirectory="Never" />
+    </ItemGroup>
+
 </Project>
