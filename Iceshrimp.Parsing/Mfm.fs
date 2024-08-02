@@ -180,13 +180,13 @@ module private MfmParser =
     // Node parsers
 
     let italicNode =
-        italicPattern >>. manyTill inlineNode italicPattern
+        (italicPattern >>. manyTill inlineNode italicPattern)
+        <|> (skipString "<i>" >>. manyTill inlineNode (skipString "</i>"))
         |>> fun c -> MfmItalicNode(aggregateTextInline c) :> MfmNode
 
-    //TODO: https://github.com/pzp1997/harkdown/blob/master/src/InlineParser.hs#L173-L201
-
     let boldNode =
-        skipString "**" >>. manyTill inlineNode (skipString "**")
+        (skipString "**" >>. manyTill inlineNode (skipString "**"))
+        <|> (skipString "<b>" >>. manyTill inlineNode (skipString "</b>"))
         |>> fun c -> MfmBoldNode(aggregateTextInline c) :> MfmNode
 
     let strikeNode =

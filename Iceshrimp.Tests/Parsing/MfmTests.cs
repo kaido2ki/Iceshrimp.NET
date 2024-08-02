@@ -20,9 +20,17 @@ public class MfmTests
 			]))
 		];
 
-		var res = Mfm.parse("*italic **bold** italic*").ToList();
+		var res         = Mfm.parse("*italic **bold** italic*").ToList();
+		var resAlt      = Mfm.parse("<i>italic <b>bold</b> italic</i>").ToList();
+		var resMixed    = Mfm.parse("<i>italic **bold** italic</i>").ToList();
+		var resMixedAlt = Mfm.parse("*italic <b>bold</b> italic*").ToList();
+
 		AssertionOptions.FormattingOptions.MaxDepth = 100;
+
 		res.Should().Equal(expected, MfmNodeEqual);
+		resAlt.Should().Equal(expected, MfmNodeEqual);
+		resMixed.Should().Equal(expected, MfmNodeEqual);
+		resMixedAlt.Should().Equal(expected, MfmNodeEqual);
 	}
 
 	[TestMethod]
