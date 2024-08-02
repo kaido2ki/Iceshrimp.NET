@@ -56,8 +56,21 @@
 }
 
 ::deep {
+    .link-node {
+        color: var(--link);
+    }
+}
+
+::deep {
+    .url-node {
+        color: var(--link);
+    }
+}
+
+::deep {
     .hashtag-node {
         text-decoration-line: none;
+        color: var(--link);
     }
 }
 
