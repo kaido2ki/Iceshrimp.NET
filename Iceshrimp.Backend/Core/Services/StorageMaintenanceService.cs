@@ -102,22 +102,50 @@ public class StorageMaintenanceService(
 
 			if (file.ThumbnailAccessKey != null)
 			{
-				var path     = Path.Join(pathBase, file.ThumbnailAccessKey);
-				var stream   = File.OpenRead(path);
-				var filename = file.Name.EndsWith(".webp") ? file.Name : $"{file.Name}.webp";
-
-				await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, "image/webp", filename, stream);
+				var path           = Path.Join(pathBase, file.ThumbnailAccessKey);
+				var stream         = File.OpenRead(path);
+				var TheImageFormat = options.Value.MediaProcessing.DefaultImageFormat;
+				var filename       = file.Name.EndsWith(".webp") ? file.Name : $"{file.Name}.webp";
+				if (TheImageFormat == 1)
+					filename = file.Name.EndsWith(".jpeg") ? file.Name : $"{file.Name}.jpeg";
+					await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, "image/jpeg", filename, stream);
+				if (TheImageFormat == 2)
+					filename = file.Name.EndsWith(".webp") ? file.Name : $"{file.Name}.webp";
+					await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, "image/webp", filename, stream);
+				if (TheImageFormat == 3)
+					filename = file.Name.EndsWith(".avif") ? file.Name : $"{file.Name}.avif";
+					await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, "image/avif", filename, stream);
+				if (TheImageFormat == 4)
+					filename = file.Name.EndsWith(".jxl") ? file.Name : $"{file.Name}.jxl";
+					await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, "image/jxl", filename, stream);
+				if (TheImageFormat != 1 && TheImageFormat != 2 && TheImageFormat !=3 && TheImageFormat !=4)
+					await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, "image/webp", filename, stream);
+				
 				file.ThumbnailUrl = objectStorageSvc.GetFilePublicUrl(file.ThumbnailAccessKey).AbsoluteUri;
 				deletionQueue.Add(path);
 			}
 
 			if (file.WebpublicAccessKey != null)
 			{
-				var path     = Path.Join(pathBase, file.WebpublicAccessKey);
-				var stream   = File.OpenRead(path);
-				var filename = file.Name.EndsWith(".webp") ? file.Name : $"{file.Name}.webp";
-
+				var path           = Path.Join(pathBase, file.WebpublicAccessKey);
+				var stream         = File.OpenRead(path);
+				var filename       = file.Name.EndsWith(".webp") ? file.Name : $"{file.Name}.webp";
+				var TheImageFormat = options.Value.MediaProcessing.DefaultImageFormat;
+				
+				if (TheImageFormat == 1)
+					filename = file.Name.EndsWith(".jpeg") ? file.Name : $"{file.Name}.jpeg";
+				await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, "image/jpeg", filename, stream);
+				if (TheImageFormat == 2)
+					filename = file.Name.EndsWith(".webp") ? file.Name : $"{file.Name}.webp";
 				await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, "image/webp", filename, stream);
+				if (TheImageFormat == 3)
+					filename = file.Name.EndsWith(".avif") ? file.Name : $"{file.Name}.avif";
+				await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, "image/avif", filename, stream);
+				if (TheImageFormat == 4)
+					filename = file.Name.EndsWith(".jxl") ? file.Name : $"{file.Name}.jxl";
+				await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, "image/jxl", filename, stream);
+				if (TheImageFormat != 1 && TheImageFormat != 2 && TheImageFormat !=3 && TheImageFormat !=4)
+					await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, "image/webp", filename, stream);
 				file.WebpublicUrl = objectStorageSvc.GetFilePublicUrl(file.WebpublicAccessKey).AbsoluteUri;
 				deletionQueue.Add(path);
 			}

@@ -37,9 +37,18 @@ public class DriveController(
 			Response.Headers.CacheControl = "max-age=86400";
 			throw GracefulException.NotFound("File not found");
 		}
-
+		var TheImageFormat = options.Value.MediaProcessing.DefaultImageFormat;
 		var filename = file.AccessKey == accessKey || file.Name.EndsWith(".webp") ? file.Name : $"{file.Name}.webp";
-
+		
+		if (TheImageFormat == 1)
+			filename = file.AccessKey == accessKey || file.Name.EndsWith(".jpeg") ? file.Name : $"{file.Name}.jpeg";
+		if (TheImageFormat == 2)
+			filename = file.AccessKey == accessKey || file.Name.EndsWith(".webp") ? file.Name : $"{file.Name}.webp";
+		if (TheImageFormat == 3)
+			filename = file.AccessKey == accessKey || file.Name.EndsWith(".avif") ? file.Name : $"{file.Name}.avif";
+		if (TheImageFormat == 4)
+			filename = file.AccessKey == accessKey || file.Name.EndsWith(".avif") ? file.Name : $"{file.Name}.avif";
+		
 		if (file.StoredInternal)
 		{
 			var pathBase = options.Value.Local?.Path;
