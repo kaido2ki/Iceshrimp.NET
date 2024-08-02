@@ -19,8 +19,8 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class ImageProcessor
 {
-	private readonly ILogger<ImageProcessor>                _logger;
-	private readonly IOptionsMonitor<Config.StorageSection> _config;
+	private readonly ILogger<ImageProcessor>                  _logger;
+	private readonly IOptionsMonitor<Config.StorageSection>   _config;
 
 	public ImageProcessor(ILogger<ImageProcessor> logger, IOptionsMonitor<Config.StorageSection> config)
 	{
@@ -85,7 +85,7 @@ public class ImageProcessor
 		public          Func<Stream, Task>?      RenderWebpublic;
 	}
 
-	public async Task<Result?> ProcessImage(Stream data, DriveFileCreationRequest request, bool genThumb, bool genWebp)
+	public async Task<Result?> ProcessImage(Stream data, DriveFileCreationRequest request, bool genThumb, bool genImage)
 	{
 		try
 		{
@@ -111,7 +111,12 @@ public class ImageProcessor
 			if (ident.FrameMetadataCollection.Count != 0 || ident.IsAnimated)
 			{
 				genThumb = false;
-				genWebp  = false;
+				genImage  = false;
+			}
+			else
+			{
+				genThumb = true;
+				genImage  = true;
 			}
 
 			if (ident.Width * ident.Height > _config.CurrentValue.MediaProcessing.MaxResolutionMpx * 1000 * 1000)
@@ -134,7 +139,7 @@ public class ImageProcessor
 						buf = memoryStream.ToArray();
 					}
 
-					res = await ProcessImageVips(buf, ident, request, genThumb, genWebp);
+					res = await ProcessImageVips(buf, ident, request, genThumb, genImage);
 				}
 				catch (Exception e)
 				{
@@ -146,7 +151,7 @@ public class ImageProcessor
 
 			try
 			{
-				res ??= await ProcessImageSharp(data, ident, request, genThumb, genWebp);
+				res ??= await ProcessImageSharp(data, ident, request, genThumb, genImage);
 			}
 			catch (Exception e)
 			{
@@ -168,7 +173,7 @@ public class ImageProcessor
 	}
 
 	private static async Task<Result> ProcessImageSharp(
-		Stream data, ImageInfo ident, DriveFileCreationRequest request, bool genThumb, bool genWebp
+		Stream data, ImageInfo ident, DriveFileCreationRequest request, bool genThumb, bool genImage
 	)
 	{
 		var properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
@@ -190,7 +195,7 @@ public class ImageProcessor
 			};
 		}
 
-		if (genWebp)
+		if (genImage)
 		{
 			res.RenderWebpublic = async stream =>
 			{
@@ -218,10 +223,9 @@ public class ImageProcessor
 		image.Mutate(p => p.Resize(opts));
 		return image;
 	}
-
 	#if EnableLibVips
 	private Task<Result> ProcessImageVips(
-		byte[] buf, ImageInfo ident, DriveFileCreationRequest request, bool genThumb, bool genWebp
+		byte[] buf, ImageInfo ident, DriveFileCreationRequest request, bool genThumb, bool genImage
 	)
 	{
 		var properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
@@ -259,16 +263,23 @@ public class ImageProcessor
 				thumbnailImage.WebpsaveStream(stream, 75, false);
 				return Task.CompletedTask;
 			};
-
 			// Generate webpublic for local users, if image is not animated
-			if (genWebp)
+			if (genImage)
 			{
 				res.RenderWebpublic = stream =>
 				{
 					using var webpublicImage =
-						NetVips.Image.ThumbnailBuffer(buf, width: 2048, height: 2048,
-						                              size: NetVips.Enums.Size.Down);
-					webpublicImage.WebpsaveStream(stream, request.MimeType == "image/png" ? 100 : 75, false);
+						NetVips.Image.ThumbnailBuffer(buf, width: (_config.CurrentValue.MediaProcessing.DefaultImageWidth), height: (_config.CurrentValue.MediaProcessing.DefaultImageHeight), size: NetVips.Enums.Size.Down);
+					if (_config.CurrentValue.MediaProcessing.DefaultImageFormat == 1)
+						webpublicImage.JpegsaveStream(stream, (_config.CurrentValue.MediaProcessing.DefaultImageQuality), false)
+					if (_config.CurrentValue.MediaProcessing.DefaultImageFormat == 2)
+						webpublicImage.WebpsaveStream(stream, (_config.CurrentValue.MediaProcessing.DefaultImageQuality), false)
+					if (_config.CurrentValue.MediaProcessing.DefaultImageFormat == 3)
+						webpublicImage.HeifsaveStream(stream, (_config.CurrentValue.Mediaprocessing.DefaultImageQuality), 12, false, compression: NetVips.Enums.ForeignHeifCompression.Av1, encoder: NetVips.Enums.ForeignHeifEncoder.Aom);
+					if (_config.CurrentValue.MediaProcessing.DefaultImageFormat == 4)
+						webpublicImage.JxlsaveStream(stream, 0, 1, 7, false, (_config.CurrentValue.MediaProcessing.DefaultImageQuality));
+					if (_config.CurrentValue.MediaProcessing.DefaultImageFormat != (1,4))
+						_logger.LogDebug("DefaultImageFormat is not set correctly in configuration.ini!");
 					return Task.CompletedTask;
 				};
 			}

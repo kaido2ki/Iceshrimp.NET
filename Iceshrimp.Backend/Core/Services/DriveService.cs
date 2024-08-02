@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class DriveService(
+public class DriveService (
 	DatabaseContext db,
 	ObjectStorageService storageSvc,
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
@@ -145,7 +145,6 @@ public class DriveService(
 			return null;
 		}
 	}
-
 	public async Task<DriveFile> StoreFile(
 		Stream input, User user, DriveFileCreationRequest request, bool skipImageProcessing = false
 	)
@@ -233,21 +232,29 @@ public class DriveService(
 
 		string? thumbnailKey = null;
 		string? webpublicKey = null;
-
 		if (shouldStore)
 		{
 			if (isImage && isReasonableSize)
 			{
 				var genThumb = !skipImageProcessing;
-				var genWebp  = user.IsLocalUser && !skipImageProcessing;
-				var res      = await imageProcessor.ProcessImage(data, request, genThumb, genWebp);
+				var genImage  = user.IsLocalUser && !skipImageProcessing;
+				var res      = await imageProcessor.ProcessImage(data, request, genThumb, genImage);
 				properties = res?.Properties ?? properties;
 
 				blurhash     = res?.Blurhash;
 				thumbnailKey = res?.RenderThumbnail != null ? GenerateWebpKey("thumbnail-") : null;
 				webpublicKey = res?.RenderWebpublic != null ? GenerateWebpKey("webpublic-") : null;
-				var webpFilename = request.Filename.EndsWith(".webp") ? request.Filename : $"{request.Filename}.webp";
-
+				var TheImageFormat = storageConfig.Value.MediaProcessing.DefaultImageFormat;
+				var webpFilename   = request.Filename.EndsWith(".webp") ? request.Filename : $"{request.Filename}.webp";
+				if (TheImageFormat == 1)
+					webpFilename = request.Filename.EndsWith(".jpeg") ? request.Filename : $"{request.Filename}.jpeg";
+				if (TheImageFormat == 2)
+					webpFilename = request.Filename.EndsWith(".webp") ? request.Filename : $"{request.Filename}.webp";
+				if (TheImageFormat == 3)
+					webpFilename = request.Filename.EndsWith(".avif") ? request.Filename : $"{request.Filename}.avif";
+				if (TheImageFormat == 4)
+					webpFilename = request.Filename.EndsWith(".jxl") ? request.Filename : $"{request.Filename}.jxl";
+				
 				if (storedInternal)
 				{
 					var pathBase = storageConfig.Value.Local?.Path ??
@@ -410,10 +417,17 @@ public class DriveService(
 		return guid + ext;
 	}
 
-	private static string GenerateWebpKey(string prefix = "")
+	private string GenerateWebpKey(string prefix = "")
 	{
-		var guid = Guid.NewGuid().ToStringLower();
-		return $"{prefix}{guid}.webp";
+		var guid           = Guid.NewGuid().ToStringLower();
+
+		return storageConfig.Value.MediaProcessing.DefaultImageFormat switch {
+			1 => $"{prefix}{guid}.jpeg",
+			2 => $"{prefix}{guid}.webp",
+			3 => $"{prefix}{guid}.avif",
+			4 => $"{prefix}{guid}.jxl",
+			_ => $"{prefix}{guid}.webp"
+		};
 	}
 
 	private static string CleanMimeType(string? mimeType)
