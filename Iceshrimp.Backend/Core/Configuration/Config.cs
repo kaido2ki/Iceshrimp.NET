@@ -200,13 +200,14 @@ public sealed class Config
 	public sealed class MediaProcessingSection
 	{
 		public readonly int                  MaxFileSizeBytes = 10 * 1024 * 1024;
-		public          Enums.ImageProcessor ImageProcessor      { get; init; } = Enums.ImageProcessor.ImageSharp;
-		public          int                  MaxResolutionMpx    { get; init; } = 30;
-		public          bool                 LocalOnly           { get; init; } = false;
-		public          int                  DefaultImageFormat  { get; init; } = 1;
-		public          int                  DefaultImageQuality { get; init; } = 75;
-		public          int                  DefaultImageHeight  { get; init; } = 4096;
-		public          int                  DefaultImageWidth   { get; init; } = 4096;
+		public          Enums.ImageProcessor ImageProcessor       { get; init; } = Enums.ImageProcessor.ImageSharp;
+		public          int                  MaxResolutionMpx     { get; init; } = 30;
+		public          bool                 LocalOnly            { get; init; } = false;
+		public          int                  DefaultImageFormat   { get; init; } = 1;
+		public          int                  DefaultImageQuality  { get; init; } = 75;
+		public          int                  DefaultImageHeight   { get; init; } = 4096;
+		public          int                  DefaultImageWidth    { get; init; } = 4096;
+		public          int                  DefaultOriginalImage { get; init; } = 1;
 
 		public string MaxFileSize
 		{

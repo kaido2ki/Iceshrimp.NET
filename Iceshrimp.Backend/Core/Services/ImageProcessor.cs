@@ -106,14 +106,13 @@ public class ImageProcessor
 				var props = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
 				return new Result { Properties = props };
 			}
-
 			// Don't generate thumb/webp for animated images
-			if (ident.FrameMetadataCollection.Count != 0 || ident.IsAnimated)
+			if (ident.FrameMetadataCollection.Count != 0 || ident.IsAnimated || _config.CurrentValue.MediaProcessing.DefaultOriginalImage == 2)
 			{
 				genThumb = false;
 				genImage  = false;
 			}
-			else
+			if (_config.CurrentValue.MediaProcessing.DefaultOriginalImage == 1)
 			{
 				genThumb = true;
 				genImage  = true;
@@ -275,7 +274,7 @@ public class ImageProcessor
 					if (_config.CurrentValue.MediaProcessing.DefaultImageFormat == 2)
 						webpublicImage.WebpsaveStream(stream, (_config.CurrentValue.MediaProcessing.DefaultImageQuality), false)
 					if (_config.CurrentValue.MediaProcessing.DefaultImageFormat == 3)
-						webpublicImage.HeifsaveStream(stream, (_config.CurrentValue.Mediaprocessing.DefaultImageQuality), 12, false, compression: NetVips.Enums.ForeignHeifCompression.Av1, encoder: NetVips.Enums.ForeignHeifEncoder.Aom);
+						webpublicImage.HeifsaveStream(stream, (_config.CurrentValue.MediaProcessing.DefaultImageQuality), 12, false, compression: NetVips.Enums.ForeignHeifCompression.Av1, encoder: NetVips.Enums.ForeignHeifEncoder.Aom);
 					if (_config.CurrentValue.MediaProcessing.DefaultImageFormat == 4)
 						webpublicImage.JxlsaveStream(stream, 0, 1, 7, false, (_config.CurrentValue.MediaProcessing.DefaultImageQuality));
 					if (_config.CurrentValue.MediaProcessing.DefaultImageFormat != (1,4))
