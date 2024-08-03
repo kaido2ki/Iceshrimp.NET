@@ -47,7 +47,7 @@ public class DriveController(
 		if (TheImageFormat == 3)
 			filename = file.AccessKey == accessKey || file.Name.EndsWith(".avif") ? file.Name : $"{file.Name}.avif";
 		if (TheImageFormat == 4)
-			filename = file.AccessKey == accessKey || file.Name.EndsWith(".avif") ? file.Name : $"{file.Name}.avif";
+			filename = file.AccessKey == accessKey || file.Name.EndsWith(".jxl") ? file.Name : $"{file.Name}.jxl";
 		
 		if (file.StoredInternal)
 		{
