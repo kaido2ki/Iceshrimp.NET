@@ -277,8 +277,6 @@ public class ImageProcessor
 						webpublicImage.HeifsaveStream(stream, (_config.CurrentValue.MediaProcessing.DefaultImageQuality), 12, false, compression: NetVips.Enums.ForeignHeifCompression.Av1, encoder: NetVips.Enums.ForeignHeifEncoder.Aom);
 					if (_config.CurrentValue.MediaProcessing.DefaultImageFormat == 4)
 						webpublicImage.JxlsaveStream(stream, 0, 1, 7, false, (_config.CurrentValue.MediaProcessing.DefaultImageQuality));
-					if (_config.CurrentValue.MediaProcessing.DefaultImageFormat != (1,4))
-						_logger.LogDebug("DefaultImageFormat is not set correctly in configuration.ini!");
 					return Task.CompletedTask;
 				};
 			}
