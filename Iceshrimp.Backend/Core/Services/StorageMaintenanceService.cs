@@ -118,7 +118,7 @@ public class StorageMaintenanceService(
 				if (TheImageFormat == 4)
 					filename = file.Name.EndsWith(".jxl") ? file.Name : $"{file.Name}.jxl";
 					await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, "image/jxl", filename, stream);
-				if (TheImageFormat != 1 && TheImageFormat != 2 && TheImageFormat !=3 && TheImageFormat !=4)
+				if (TheImageFormat != 1 && TheImageFormat != 2 && TheImageFormat != 3 && TheImageFormat != 4)
 					await objectStorageSvc.UploadFileAsync(file.ThumbnailAccessKey, "image/webp", filename, stream);
 				
 				file.ThumbnailUrl = objectStorageSvc.GetFilePublicUrl(file.ThumbnailAccessKey).AbsoluteUri;
@@ -144,7 +144,7 @@ public class StorageMaintenanceService(
 				if (TheImageFormat == 4)
 					filename = file.Name.EndsWith(".jxl") ? file.Name : $"{file.Name}.jxl";
 				await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, "image/jxl", filename, stream);
-				if (TheImageFormat != 1 && TheImageFormat != 2 && TheImageFormat !=3 && TheImageFormat !=4)
+				if (TheImageFormat != 1 && TheImageFormat != 2 && TheImageFormat != 3 && TheImageFormat != 4)
 					await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, "image/webp", filename, stream);
 				file.WebpublicUrl = objectStorageSvc.GetFilePublicUrl(file.WebpublicAccessKey).AbsoluteUri;
 				deletionQueue.Add(path);
