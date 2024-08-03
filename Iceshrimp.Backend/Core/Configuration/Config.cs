@@ -201,7 +201,7 @@ public sealed class Config
 	{
 		public readonly int                  MaxFileSizeBytes = 10 * 1024 * 1024;
 		public          Enums.ImageProcessor ImageProcessor       { get; init; } = Enums.ImageProcessor.ImageSharp;
-		public          int                  MaxResolutionMpx     { get; init; } = 30;
+		public          int                  MaxResolutionMpx     { get; init; } = 50;
 		public          bool                 LocalOnly            { get; init; } = false;
 		public          int                  DefaultImageFormat   { get; init; } = 1;
 		public          int                  DefaultImageQuality  { get; init; } = 75;
