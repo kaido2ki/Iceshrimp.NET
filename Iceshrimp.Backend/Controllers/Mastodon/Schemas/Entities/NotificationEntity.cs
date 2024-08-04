@@ -28,6 +28,7 @@ public class NotificationEntity : IEntity
 			NotificationType.PollEnded             => "poll",
 			NotificationType.FollowRequestReceived => "follow_request",
 			NotificationType.Edit                  => "update",
+			NotificationType.Reaction              => "reaction",
 
 			_ => throw new GracefulException($"Unsupported notification type: {type}")
 		};
@@ -44,6 +45,7 @@ public class NotificationEntity : IEntity
 			"poll"           => [NotificationType.PollEnded],
 			"follow_request" => [NotificationType.FollowRequestReceived],
 			"update"         => [NotificationType.Edit],
+			"reaction"       => [NotificationType.Reaction],
 			_                => []
 		};
 	}
