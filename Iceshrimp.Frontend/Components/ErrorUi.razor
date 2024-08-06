@@ -1,0 +1,49 @@
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Localization> Loc;
+@inject NavigationManager              Navigation;
+@inject VersionService                 Version;
+
+<div class="error-ui">
+    <h3>@Loc["Unhandled Exception has occured"]</h3>
+    <div class="body">
+        <div class="text">
+            <div>
+                @Loc["If this issue happens more than once, please join our support chat at: "]<a href="https://chat.iceshrimp.dev/">https://chat.iceshrimp.dev/</a><br/>
+                @Loc["Providing the below stack trace and version information will aid in debugging."]
+            </div>
+        </div>
+        <div class="stacktrace">
+            <code>@Exception.GetType(): @Exception.Message @Exception.StackTrace</code>
+        </div>
+        <div class="version">
+            <span class="name">Iceshrimp.NET</span>
+            <span class="value">
+                <code>@Version.Version</code>
+            </span>
+            <span class="name">Codename</span>
+            <span class="value">
+                <code>@Version.Codename</code>
+            </span>
+            @if (Version.CommitHash != null)
+            {
+                <span class="name">Commit</span>
+                <span class="value">
+                    <code>@Version.CommitHash</code>
+                </span>
+            }
+        </div>
+    </div>
+    <button class="btn" @onclick="Reload">@Loc["Reload Application"]</button>
+
+</div>
+
+@code {
+    [Parameter] [EditorRequired] public required Exception Exception { get; set; }
+
+    private void Reload()
+    {
+        Navigation.Refresh(true);
+    }
+}
