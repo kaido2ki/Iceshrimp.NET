@@ -171,14 +171,10 @@ public class ImageProcessor
 	{
 		var properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
 		var res        = new Result { Properties              = properties };
-
 		// Calculate blurhash using a x100px image for improved performance
+		using (var image = await GetImage<Rgb24>(data, ident, 100, preferContiguous: true))
 		{
-			using var image = await GetImage<Rgb24>(data, ident, 100, preferContiguous: true);
-			if (image.DangerousTryGetSinglePixelMemory(out var mem))
-				res.Blurhash = BlurhashHelper.Encode(mem.Span.AsSpan2D(image.Height, image.Width), 7, 7);
-			else
-				_logger.LogWarning("Failed to generate blurhash using ImageSharp: memory region not contiguous");
+			res.Blurhash = GetBlurhashImageSharp(image);
 		}
 
 		if (genThumb)
@@ -203,6 +199,24 @@ public class ImageProcessor
 		}
 
 		return res;
+	}
+
+	// Since we can't work with Span<T> objects in async blocks, this needs to be done in a separate method.
+	private string GetBlurhashImageSharp(Image<Rgb24> image)
+	{
+		Span<Rgb24> span;
+		if (image.DangerousTryGetSinglePixelMemory(out var mem))
+		{
+			span = mem.Span;
+		}
+		else
+		{
+			_logger.LogWarning("Failed to generate blurhash using ImageSharp: Memory region not contiguous. Falling back to block copy...");
+			span = new Rgb24[image.Width * image.Height];
+			image.CopyPixelDataTo(span);
+		}
+
+		return BlurhashHelper.Encode(span.AsSpan2D(image.Height, image.Width), 7, 7);
 	}
 
 	private static async Task<Image<TPixel>> GetImage<TPixel>(
