@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
