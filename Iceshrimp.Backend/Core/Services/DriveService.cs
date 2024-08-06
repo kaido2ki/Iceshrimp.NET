@@ -112,7 +112,15 @@ public class DriveService(
 						: 0;
 
 				var stream = await GetSafeStreamOrNullAsync(input, maxLength, res.Content.Headers.ContentLength);
-				return await StoreFile(stream, user, request, skipImageProcessing);
+				try
+				{
+					return await StoreFile(stream, user, request, skipImageProcessing);
+				}
+				catch (Exception e)
+				{
+					logger.LogWarning("Failed to store downloaded file from {uri}: {error}, storing as link", uri, e);
+					throw;
+				}
 			}
 			catch (Exception e)
 			{
