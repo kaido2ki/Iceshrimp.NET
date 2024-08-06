@@ -1,6 +1,9 @@
+using System.Runtime.InteropServices;
 using Blurhash.ImageSharp;
+using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
@@ -55,9 +58,9 @@ public class ImageProcessor
 		NetVips.NetVips.Leak = true;
 
 		// We don't need the VIPS operation or file cache
-		NetVips.Cache.Max = 0;
+		NetVips.Cache.Max      = 0;
 		NetVips.Cache.MaxFiles = 0;
-		NetVips.Cache.MaxMem = 0;
+		NetVips.Cache.MaxMem   = 0;
 
 		NetVips.Log.SetLogHandler("VIPS", NetVips.Enums.LogLevelFlags.Warning | NetVips.Enums.LogLevelFlags.Error,
 		                          VipsLogDelegate);
@@ -225,30 +228,21 @@ public class ImageProcessor
 	)
 	{
 		var properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
-		var res = new Result { Properties = properties };
+		var res        = new Result { Properties              = properties };
 
-		// Calculate blurhash using a x200px image for improved performance
+		// Calculate blurhash using a x100px image for improved performance
 		using var blurhashImageSource =
-			NetVips.Image.ThumbnailBuffer(buf, width: 200, height: 200, size: NetVips.Enums.Size.Down);
+			NetVips.Image.ThumbnailBuffer(buf, width: 100, height: 100, size: NetVips.Enums.Size.Down);
 		using var blurhashImage = blurhashImageSource.Interpretation == NetVips.Enums.Interpretation.Srgb
 			? blurhashImageSource
 			: blurhashImageSource.Colourspace(NetVips.Enums.Interpretation.Srgb);
-		var blurBuf = blurhashImage.WriteToMemory();
-		var blurArr = new Pixel[blurhashImage.Width, blurhashImage.Height];
+		using var blurhashImageFlattened = blurhashImage.HasAlpha() ? blurhashImage.Flatten() : blurhashImage;
+		using var blurhashImageActual    = blurhashImageFlattened.Cast(NetVips.Enums.BandFormat.Uchar);
 
-		var idx = 0;
-		var incr = blurhashImage.Bands - 3;
-		for (var i = 0; i < blurhashImage.Height; i++)
-		{
-			for (var j = 0; j < blurhashImage.Width; j++)
-			{
-				blurArr[j, i] = new Pixel(blurBuf[idx++] / 255d, blurBuf[idx++] / 255d,
-				                          blurBuf[idx++] / 255d);
-				idx += incr;
-			}
-		}
-
-		res.Blurhash = Blurhash.Core.Encode(blurArr, 7, 7, new Progress<int>());
+		var blurBuf = blurhashImageActual.WriteToMemory();
+		var blurPixels = MemoryMarshal.Cast<byte, BlurhashHelper.RgbPixel>(blurBuf)
+		                              .AsSpan2D(blurhashImage.Height, blurhashImage.Width);
+		res.Blurhash = BlurhashHelper.Encode(blurPixels, 7, 7);
 
 		if (genThumb)
 		{
