@@ -53,9 +53,9 @@ public class ImageProcessor
 		NetVips.NetVips.Leak = true;
 
 		// We don't need the VIPS operation or file cache
-		NetVips.Cache.Max      = 0;
+		NetVips.Cache.Max = 0;
 		NetVips.Cache.MaxFiles = 0;
-		NetVips.Cache.MaxMem   = 0;
+		NetVips.Cache.MaxMem = 0;
 
 		NetVips.Log.SetLogHandler("VIPS", NetVips.Enums.LogLevelFlags.Warning | NetVips.Enums.LogLevelFlags.Error,
 		                          VipsLogDelegate);
@@ -165,7 +165,7 @@ public class ImageProcessor
 		}
 	}
 
-	private static async Task<Result> ProcessImageSharp(
+	private async Task<Result> ProcessImageSharp(
 		Stream data, ImageInfo ident, DriveFileCreationRequest request, bool genThumb, bool genWebp
 	)
 	{
@@ -174,9 +174,11 @@ public class ImageProcessor
 
 		// Calculate blurhash using a x100px image for improved performance
 		{
-			using var image = await GetImage<Rgb24>(data, ident, 100);
-			image.DangerousTryGetSinglePixelMemory(out var mem);
-			res.Blurhash = BlurhashHelper.Encode(mem.Span.AsSpan2D(image.Height, image.Width), 7, 7);
+			using var image = await GetImage<Rgb24>(data, ident, 100, preferContiguous: true);
+			if (image.DangerousTryGetSinglePixelMemory(out var mem))
+				res.Blurhash = BlurhashHelper.Encode(mem.Span.AsSpan2D(image.Height, image.Width), 7, 7);
+			else
+				_logger.LogWarning("Failed to generate blurhash using ImageSharp: memory region not contiguous");
 		}
 
 		if (genThumb)
@@ -204,13 +206,25 @@ public class ImageProcessor
 	}
 
 	private static async Task<Image<TPixel>> GetImage<TPixel>(
-		Stream data, ImageInfo ident, int width, int? height = null
+		Stream data, ImageInfo ident, int width, int? height = null, bool preferContiguous = false
 	) where TPixel : unmanaged, IPixel<TPixel>
 	{
 		width  = Math.Min(ident.Width, width);
 		height = Math.Min(ident.Height, height ?? width);
-		var size    = new Size(width, height.Value);
-		var options = new DecoderOptions { MaxFrames = 1, TargetSize = size };
+		var size = new Size(width, height.Value);
+		var config = preferContiguous
+			? SixLabors.ImageSharp.Configuration.Default.Clone()
+			: SixLabors.ImageSharp.Configuration.Default;
+
+		if (preferContiguous)
+			config.PreferContiguousImageBuffers = true;
+
+		var options = new DecoderOptions
+		{
+			MaxFrames     = 1,
+			TargetSize    = size,
+			Configuration = config
+		};
 
 		data.Seek(0, SeekOrigin.Begin);
 		var image = await ImageSharp.LoadAsync<TPixel>(options, data);
@@ -226,7 +240,7 @@ public class ImageProcessor
 	)
 	{
 		var properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
-		var res        = new Result { Properties              = properties };
+		var res = new Result { Properties = properties };
 
 		// Calculate blurhash using a x100px image for improved performance
 		using var blurhashImageSource =
@@ -235,9 +249,9 @@ public class ImageProcessor
 			? blurhashImageSource
 			: blurhashImageSource.Colourspace(NetVips.Enums.Interpretation.Srgb);
 		using var blurhashImageFlattened = blurhashImage.HasAlpha() ? blurhashImage.Flatten() : blurhashImage;
-		using var blurhashImageActual    = blurhashImageFlattened.Cast(NetVips.Enums.BandFormat.Uchar);
+		using var blurhashImageActual = blurhashImageFlattened.Cast(NetVips.Enums.BandFormat.Uchar);
 
-		var blurBuf    = blurhashImageActual.WriteToMemory();
+		var blurBuf = blurhashImageActual.WriteToMemory();
 		var blurPixels = MemoryMarshal.Cast<byte, Rgb24>(blurBuf).AsSpan2D(blurhashImage.Height, blurhashImage.Width);
 		res.Blurhash = BlurhashHelper.Encode(blurPixels, 7, 7);
 
