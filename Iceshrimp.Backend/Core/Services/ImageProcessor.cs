@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using Blurhash.ImageSharp;
 using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -13,10 +12,6 @@ using SixLabors.ImageSharp.Memory;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using ImageSharp = SixLabors.ImageSharp.Image;
-
-#if EnableLibVips
-using Blurhash;
-#endif
 
 namespace Iceshrimp.Backend.Core.Services;
 
@@ -177,17 +172,18 @@ public class ImageProcessor
 		var properties = new DriveFile.FileProperties { Width = ident.Size.Width, Height = ident.Size.Height };
 		var res        = new Result { Properties              = properties };
 
-		// Calculate blurhash using a x200px image for improved performance
+		// Calculate blurhash using a x100px image for improved performance
 		{
-			using var image = await GetImage(data, ident, 200);
-			res.Blurhash = Blurhasher.Encode(image, 7, 7);
+			using var image = await GetImage<Rgb24>(data, ident, 100);
+			image.DangerousTryGetSinglePixelMemory(out var mem);
+			res.Blurhash = BlurhashHelper.Encode(mem.Span.AsSpan2D(image.Height, image.Width), 7, 7);
 		}
 
 		if (genThumb)
 		{
 			res.RenderThumbnail = async stream =>
 			{
-				using var image        = await GetImage(data, ident, 1000);
+				using var image        = await GetImage<Rgba32>(data, ident, 1000);
 				var       thumbEncoder = new WebpEncoder { Quality = 75, FileFormat = WebpFileFormatType.Lossy };
 				await image.SaveAsWebpAsync(stream, thumbEncoder);
 			};
@@ -197,7 +193,7 @@ public class ImageProcessor
 		{
 			res.RenderWebpublic = async stream =>
 			{
-				using var image        = await GetImage(data, ident, 2048);
+				using var image        = await GetImage<Rgba32>(data, ident, 2048);
 				var       q            = request.MimeType == "image/png" ? 100 : 75;
 				var       thumbEncoder = new WebpEncoder { Quality = q, FileFormat = WebpFileFormatType.Lossy };
 				await image.SaveAsWebpAsync(stream, thumbEncoder);
@@ -207,7 +203,9 @@ public class ImageProcessor
 		return res;
 	}
 
-	private static async Task<Image<Rgba32>> GetImage(Stream data, ImageInfo ident, int width, int? height = null)
+	private static async Task<Image<TPixel>> GetImage<TPixel>(
+		Stream data, ImageInfo ident, int width, int? height = null
+	) where TPixel : unmanaged, IPixel<TPixel>
 	{
 		width  = Math.Min(ident.Width, width);
 		height = Math.Min(ident.Height, height ?? width);
@@ -215,7 +213,7 @@ public class ImageProcessor
 		var options = new DecoderOptions { MaxFrames = 1, TargetSize = size };
 
 		data.Seek(0, SeekOrigin.Begin);
-		var image = await ImageSharp.LoadAsync<Rgba32>(options, data);
+		var image = await ImageSharp.LoadAsync<TPixel>(options, data);
 		image.Mutate(x => x.AutoOrient());
 		var opts = new ResizeOptions { Size = size, Mode = ResizeMode.Max };
 		image.Mutate(p => p.Resize(opts));
@@ -223,7 +221,7 @@ public class ImageProcessor
 	}
 
 	#if EnableLibVips
-	private Task<Result> ProcessImageVips(
+	private static Task<Result> ProcessImageVips(
 		byte[] buf, ImageInfo ident, DriveFileCreationRequest request, bool genThumb, bool genWebp
 	)
 	{
@@ -239,9 +237,8 @@ public class ImageProcessor
 		using var blurhashImageFlattened = blurhashImage.HasAlpha() ? blurhashImage.Flatten() : blurhashImage;
 		using var blurhashImageActual    = blurhashImageFlattened.Cast(NetVips.Enums.BandFormat.Uchar);
 
-		var blurBuf = blurhashImageActual.WriteToMemory();
-		var blurPixels = MemoryMarshal.Cast<byte, BlurhashHelper.RgbPixel>(blurBuf)
-		                              .AsSpan2D(blurhashImage.Height, blurhashImage.Width);
+		var blurBuf    = blurhashImageActual.WriteToMemory();
+		var blurPixels = MemoryMarshal.Cast<byte, Rgb24>(blurBuf).AsSpan2D(blurhashImage.Height, blurhashImage.Width);
 		res.Blurhash = BlurhashHelper.Encode(blurPixels, 7, 7);
 
 		if (genThumb)

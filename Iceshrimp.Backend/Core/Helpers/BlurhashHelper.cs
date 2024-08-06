@@ -1,23 +1,22 @@
 using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Blurhash;
 using CommunityToolkit.HighPerformance;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Iceshrimp.Backend.Core.Helpers;
 
+// Adapted from https://github.com/MarkusPalcer/blurhash.net under MIT
 public static class BlurhashHelper
 {
 	private static readonly ImmutableArray<float> PrecomputedLut = [..Enumerable.Range(0, 256).Select(SRgbToLinear)];
 
 	/// <summary>
-	/// Encodes a Span2D of raw rgb data into a Blurhash string
+	/// Encodes a Span2D of raw pixel data into a Blurhash string
 	/// </summary>
-	/// <param name="pixels">The 2-dimensional array of pixels to encode</param>
+	/// <param name="pixels">The Span2D of raw pixel data to encode</param>
 	/// <param name="componentsX">The number of components used on the X-Axis for the DCT</param>
 	/// <param name="componentsY">The number of components used on the Y-Axis for the DCT</param>
 	/// <returns>The resulting Blurhash string</returns>
-	public static string Encode(Span2D<RgbPixel> pixels, int componentsX, int componentsY)
+	public static string Encode(Span2D<Rgb24> pixels, int componentsX, int componentsY)
 	{
 		if (componentsX < 1) throw new ArgumentException("componentsX needs to be at least 1");
 		if (componentsX > 9) throw new ArgumentException("componentsX needs to be at most 9");
@@ -115,28 +114,19 @@ public static class BlurhashHelper
 
 	private static int EncodeAc(double r, double g, double b, double maximumValue)
 	{
-		var quantizedR = (int)Math.Max(0, Math.Min(18, Math.Floor(MathUtils.SignPow(r / maximumValue, 0.5) * 9 + 9.5)));
-		var quantizedG = (int)Math.Max(0, Math.Min(18, Math.Floor(MathUtils.SignPow(g / maximumValue, 0.5) * 9 + 9.5)));
-		var quantizedB = (int)Math.Max(0, Math.Min(18, Math.Floor(MathUtils.SignPow(b / maximumValue, 0.5) * 9 + 9.5)));
+		var quantizedR = (int)Math.Max(0, Math.Min(18, Math.Floor(SignPow(r / maximumValue, 0.5) * 9 + 9.5)));
+		var quantizedG = (int)Math.Max(0, Math.Min(18, Math.Floor(SignPow(g / maximumValue, 0.5) * 9 + 9.5)));
+		var quantizedB = (int)Math.Max(0, Math.Min(18, Math.Floor(SignPow(b / maximumValue, 0.5) * 9 + 9.5)));
 
 		return quantizedR * 19 * 19 + quantizedG * 19 + quantizedB;
 	}
 
 	private static int EncodeDc(double r, double g, double b)
 	{
-		var roundedR = MathUtils.LinearTosRgb(r);
-		var roundedG = MathUtils.LinearTosRgb(g);
-		var roundedB = MathUtils.LinearTosRgb(b);
+		var roundedR = LinearTosRgb(r);
+		var roundedG = LinearTosRgb(g);
+		var roundedB = LinearTosRgb(b);
 		return (roundedR << 16) + (roundedG << 8) + roundedB;
-	}
-
-	[StructLayout(LayoutKind.Sequential)]
-	[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public struct RgbPixel(byte r, byte g, byte b)
-	{
-		public readonly byte R = r;
-		public readonly byte G = g;
-		public readonly byte B = b;
 	}
 
 	private static void EncodeBase83(this int number, Span<char> output)
@@ -155,5 +145,24 @@ public static class BlurhashHelper
 	{
 		var num = value / (float)byte.MaxValue;
 		return (float)(num <= 0.04045 ? num / 12.92 : float.Pow((num + 0.055f) / 1.055f, 2.4f));
+	}
+
+	private static int LinearTosRgb(double value)
+	{
+		var v = Math.Max(0.0, Math.Min(1.0, value));
+		if (v <= 0.0031308) return (int)(v * 12.92 * 255 + 0.5);
+		return (int)((1.055 * Math.Pow(v, 1 / 2.4) - 0.055) * 255 + 0.5);
+	}
+
+	private static double SignPow(double @base, double exponent)
+	{
+		return Math.Sign(@base) * Math.Pow(Math.Abs(@base), exponent);
+	}
+
+	private struct Pixel(double red, double green, double blue)
+	{
+		public double Red   = red;
+		public double Green = green;
+		public double Blue  = blue;
 	}
 }
