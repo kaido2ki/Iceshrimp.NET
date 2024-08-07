@@ -14,7 +14,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(Type))]
 [Index(nameof(IsSensitive))]
 [Index(nameof(FolderId))]
-[Index(nameof(WebpublicAccessKey))]
+[Index(nameof(PublicAccessKey))]
 [Index(nameof(CreatedAt))]
 [Index(nameof(AccessKey))]
 [Index(nameof(Uri))]
@@ -101,7 +101,7 @@ public class DriveFile : IEntity
 	/// </summary>
 	[Column("webpublicUrl")]
 	[StringLength(512)]
-	public string? WebpublicUrl { get; set; }
+	public string? PublicUrl { get; set; }
 
 	[Column("accessKey")]
 	[StringLength(256)]
@@ -113,7 +113,7 @@ public class DriveFile : IEntity
 
 	[Column("webpublicAccessKey")]
 	[StringLength(256)]
-	public string? WebpublicAccessKey { get; set; }
+	public string? PublicAccessKey { get; set; }
 
 	/// <summary>
 	///     The URI of the DriveFile. it will be null when the DriveFile is local.
@@ -150,9 +150,13 @@ public class DriveFile : IEntity
 	[StringLength(128)]
 	public string? Blurhash { get; set; }
 
+	[Column("thumbnailType")]
+	[StringLength(128)]
+	public string? ThumbnailMimeType { get; set; }
+
 	[Column("webpublicType")]
 	[StringLength(128)]
-	public string? WebpublicType { get; set; }
+	public string? PublicMimeType { get; set; }
 
 	[Column("requestHeaders", TypeName = "jsonb")]
 	public Dictionary<string, string>? RequestHeaders { get; set; }
@@ -184,8 +188,8 @@ public class DriveFile : IEntity
 	[InverseProperty(nameof(Tables.User.Banner))]
 	public virtual User? UserBanner { get; set; }
 
-	[NotMapped] public string PublicUrl          => WebpublicUrl ?? Url;
-	[NotMapped] public string PublicThumbnailUrl => ThumbnailUrl ?? WebpublicUrl ?? Url;
+	[NotMapped] public string AccessUrl          => PublicUrl ?? Url;
+	[NotMapped] public string ThumbnailAccessUrl => ThumbnailUrl ?? PublicUrl ?? Url;
 
 	[Key]
 	[Column("id")]
@@ -196,13 +200,5 @@ public class DriveFile : IEntity
 	{
 		[J("width")]  public int? Width  { get; set; }
 		[J("height")] public int? Height { get; set; }
-
-		[Obsolete("Deprecated property")]
-		[J("orientation")]
-		public int? Orientation { get; set; }
-
-		[Obsolete("Deprecated property")]
-		[J("avgColor")]
-		public string? AverageColor { get; set; }
 	}
 }

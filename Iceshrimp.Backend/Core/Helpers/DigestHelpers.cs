@@ -16,4 +16,9 @@ public static class DigestHelpers
 		var data = await SHA256.HashDataAsync(input);
 		return Convert.ToHexString(data).ToLowerInvariant();
 	}
+
+	public static async Task<string> Sha256DigestAsync(byte[] input)
+	{
+		return await Sha256DigestAsync(new MemoryStream(input));
+	}
 }

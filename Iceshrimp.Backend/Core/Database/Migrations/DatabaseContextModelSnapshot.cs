@@ -802,6 +802,22 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValueSql("'{}'::jsonb")
                         .HasComment("The any properties of the DriveFile. For example, it includes image width/height.");
 
+                    b.Property<string>("PublicAccessKey")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("webpublicAccessKey");
+
+                    b.Property<string>("PublicMimeType")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("webpublicType");
+
+                    b.Property<string>("PublicUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("webpublicUrl")
+                        .HasComment("The URL of the webpublic of the DriveFile.");
+
                     b.Property<Dictionary<string, string>>("RequestHeaders")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("jsonb")
@@ -837,6 +853,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
                         .HasColumnName("thumbnailAccessKey");
+
+                    b.Property<string>("ThumbnailMimeType")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("thumbnailType");
 
                     b.Property<string>("ThumbnailUrl")
                         .HasMaxLength(512)
@@ -876,22 +897,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("userId")
                         .HasComment("The owner ID.");
 
-                    b.Property<string>("WebpublicAccessKey")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)")
-                        .HasColumnName("webpublicAccessKey");
-
-                    b.Property<string>("WebpublicType")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("webpublicType");
-
-                    b.Property<string>("WebpublicUrl")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("webpublicUrl")
-                        .HasComment("The URL of the webpublic of the DriveFile.");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AccessKey");
@@ -904,6 +909,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex("IsSensitive");
 
+                    b.HasIndex("PublicAccessKey");
+
                     b.HasIndex("Sha256");
 
                     b.HasIndex("ThumbnailAccessKey");
@@ -915,8 +922,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.HasIndex("UserHost");
 
                     b.HasIndex("UserId");
-
-                    b.HasIndex("WebpublicAccessKey");
 
                     b.HasIndex("UserId", "FolderId", "Id");
 

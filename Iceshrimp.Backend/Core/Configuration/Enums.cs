@@ -16,9 +16,9 @@ public static class Enums
 
 	public enum ImageProcessor
 	{
-		ImageSharp,
-		LibVips,
-		None
+		None       = 0,
+		ImageSharp = 1,
+		LibVips    = 2
 	}
 
 	public enum ItemVisibility

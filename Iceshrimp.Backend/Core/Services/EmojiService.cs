@@ -43,7 +43,7 @@ public partial class EmojiService(
 			MimeType    = mimeType,
 			IsSensitive = false
 		};
-		var driveFile = await driveSvc.StoreFile(input, user, request, skipImageProcessing: true);
+		var driveFile = await driveSvc.StoreFile(input, user, request, true);
 
 		var id = IdHelpers.GenerateSlowflakeId();
 		var emoji = new Emoji
@@ -54,7 +54,7 @@ public partial class EmojiService(
 			Category    = category,
 			UpdatedAt   = DateTime.UtcNow,
 			OriginalUrl = driveFile.Url,
-			PublicUrl   = driveFile.PublicUrl,
+			PublicUrl   = driveFile.AccessUrl,
 			Width       = driveFile.Properties.Width,
 			Height      = driveFile.Properties.Height
 		};
@@ -69,7 +69,7 @@ public partial class EmojiService(
 	public async Task<Emoji> CloneEmoji(Emoji existing)
 	{
 		var user = await sysUserSvc.GetInstanceActorAsync();
-		var driveFile = await driveSvc.StoreFile(existing.OriginalUrl, user, sensitive: false, forceStore: true,
+		var driveFile = await driveSvc.StoreFile(existing.OriginalUrl, user, false, forceStore: true,
 		                                         skipImageProcessing: false) ??
 		                throw new Exception("Error storing emoji file");
 
@@ -79,7 +79,7 @@ public partial class EmojiService(
 			Name        = existing.Name,
 			UpdatedAt   = DateTime.UtcNow,
 			OriginalUrl = driveFile.Url,
-			PublicUrl   = driveFile.PublicUrl,
+			PublicUrl   = driveFile.AccessUrl,
 			Width       = driveFile.Properties.Width,
 			Height      = driveFile.Properties.Height
 		};

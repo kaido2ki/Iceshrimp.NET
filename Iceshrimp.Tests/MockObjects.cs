@@ -42,7 +42,7 @@ public static class MockObjects
 		config.AddIniStream(AssemblyHelpers.GetEmbeddedResourceStream("configuration.ini"));
 
 		var collection = new ServiceCollection();
-		collection.AddServices();
+		collection.AddServices(config);
 		collection.ConfigureServices(config);
 
 		return collection.BuildServiceProvider();

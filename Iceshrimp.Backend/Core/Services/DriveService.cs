@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -6,10 +8,14 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
+using Iceshrimp.Backend.Core.Services.ImageProcessing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using static Iceshrimp.Backend.Core.Services.ImageProcessing.ImageVersion;
 
 namespace Iceshrimp.Backend.Core.Services;
+
+using ImageVerTriple = (ImageVersion format, string accessKey, string url);
 
 public class DriveService(
 	DatabaseContext db,
@@ -163,7 +169,7 @@ public class DriveService(
 
 		DriveFile? file;
 		request.Filename = request.Filename.Trim('"');
-		if (input == Stream.Null || user.IsRemoteUser && input.Length > storageConfig.Value.MaxCacheSizeBytes)
+		if (input == Stream.Null || (user.IsRemoteUser && input.Length > storageConfig.Value.MaxCacheSizeBytes))
 		{
 			file = new DriveFile
 			{
@@ -190,9 +196,11 @@ public class DriveService(
 			return file;
 		}
 
-		await using var data = new BufferedStream(input);
+		var buf = new byte[input.Length];
+		using (var memoryStream = new MemoryStream(buf))
+			await input.CopyToAsync(memoryStream);
 
-		var digest = await DigestHelpers.Sha256DigestAsync(data);
+		var digest = await DigestHelpers.Sha256DigestAsync(buf);
 		logger.LogDebug("Storing file {digest} for user {userId}", digest, user.Id);
 		file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest && (!p.IsLink || p.UserId == user.Id));
 		if (file != null)
@@ -214,13 +222,11 @@ public class DriveService(
 			return clonedFile;
 		}
 
-		data.Seek(0, SeekOrigin.Begin);
-
 		var storedInternal = storageConfig.Value.Provider == Enums.FileStorage.Local;
 
 		var shouldCache =
 			storageConfig.Value is { MediaRetentionTimeSpan: not null, MediaProcessing.LocalOnly: false } &&
-			data.Length <= storageConfig.Value.MaxCacheSizeBytes;
+			buf.Length <= storageConfig.Value.MaxCacheSizeBytes;
 
 		var shouldStore = user.IsLocalUser || shouldCache;
 
@@ -231,138 +237,64 @@ public class DriveService(
 
 		var properties = new DriveFile.FileProperties();
 
-		string  url;
-		string? thumbnailUrl = null;
-		string? webpublicUrl = null;
+		ImageVerTriple? original  = null;
+		ImageVerTriple? thumbnail = null;
+		ImageVerTriple? @public   = null;
 
-		var isReasonableSize = data.Length < storageConfig.Value.MediaProcessing.MaxFileSizeBytes;
+		var isReasonableSize = buf.Length < storageConfig.Value.MediaProcessing.MaxFileSizeBytes;
 		var isImage          = request.MimeType.StartsWith("image/") || request.MimeType == "image";
-		var filename         = GenerateFilenameKeepingExtension(request.Filename);
-
-		string? thumbnailKey = null;
-		string? webpublicKey = null;
 
 		if (shouldStore)
 		{
 			if (isImage && isReasonableSize)
 			{
-				var genThumb = !skipImageProcessing;
-				var genWebp  = user.IsLocalUser && !skipImageProcessing;
-				var res      = await imageProcessor.ProcessImage(data, request, genThumb, genWebp);
-				properties = res?.Properties ?? properties;
-
-				blurhash     = res?.Blurhash;
-				thumbnailKey = res?.RenderThumbnail != null ? GenerateWebpKey("thumbnail-") : null;
-				webpublicKey = res?.RenderWebpublic != null ? GenerateWebpKey("webpublic-") : null;
-				var webpFilename = request.Filename.EndsWith(".webp") ? request.Filename : $"{request.Filename}.webp";
-
-				if (storedInternal)
+				var ident = imageProcessor.IdentifyImage(buf, request);
+				if (ident == null)
 				{
-					var pathBase = storageConfig.Value.Local?.Path ??
-					               throw new Exception("Local storage path cannot be null");
-					var path = Path.Combine(pathBase, filename);
-
-					data.Seek(0, SeekOrigin.Begin);
-					await using var writer = File.OpenWrite(path);
-					await data.CopyToAsync(writer);
-					url = $"https://{instanceConfig.Value.WebDomain}/files/{filename}";
-
-					if (thumbnailKey != null && res?.RenderThumbnail != null)
-					{
-						var             thumbPath   = Path.Combine(pathBase, thumbnailKey);
-						await using var thumbWriter = File.OpenWrite(thumbPath);
-						try
-						{
-							await res.RenderThumbnail(thumbWriter);
-							thumbnailUrl = $"https://{instanceConfig.Value.WebDomain}/files/{thumbnailKey}";
-						}
-						catch (Exception e)
-						{
-							logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
-							thumbnailKey = null;
-						}
-					}
-
-					if (webpublicKey != null && res?.RenderWebpublic != null)
-					{
-						var             webpPath   = Path.Combine(pathBase, webpublicKey);
-						await using var webpWriter = File.OpenWrite(webpPath);
-						try
-						{
-							await res.RenderWebpublic(webpWriter);
-							webpublicUrl = $"https://{instanceConfig.Value.WebDomain}/files/{webpublicKey}";
-						}
-						catch (Exception e)
-						{
-							logger.LogDebug("Failed to generate/write webp: {e}", e.Message);
-							webpublicKey = null;
-						}
-					}
+					logger.LogWarning("imageProcessor.IdentifyImage() returned null, skipping image processing");
+					original = await StoreOriginalFileOnly(input, request);
 				}
 				else
 				{
-					data.Seek(0, SeekOrigin.Begin);
-					await storageSvc.UploadFileAsync(filename, request.MimeType, request.Filename, data);
-					url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
-
-					if (thumbnailKey != null && res?.RenderThumbnail != null)
+					if (ident.IsAnimated)
 					{
-						try
-						{
-							await using var stream = new MemoryStream();
-							await res.RenderThumbnail(stream);
-							stream.Seek(0, SeekOrigin.Begin);
-							await storageSvc.UploadFileAsync(thumbnailKey, "image/webp", webpFilename, stream);
-							thumbnailUrl = storageSvc.GetFilePublicUrl(thumbnailKey).AbsoluteUri;
-						}
-						catch (Exception e)
-						{
-							logger.LogDebug("Failed to generate/write thumbnail: {e}", e.Message);
-							thumbnailKey = null;
-						}
+						logger.LogDebug("Image is animated, bypassing image processing...");
+						skipImageProcessing = true;
 					}
 
-					if (webpublicKey != null && res?.RenderWebpublic != null)
+					var formats = GetFormats(user, ident, request, skipImageProcessing);
+					var res     = imageProcessor.ProcessImage(buf, ident, request, formats);
+					properties = res;
+					blurhash   = res.Blurhash;
+
+					var processed = await res.RequestedFormats
+					                         .Select(p => ProcessAndStoreFileVersion(p.Key, p.Value, request.Filename))
+					                         .AwaitAllNoConcurrencyAsync()
+					                         .ContinueWithResult(p => p.ToImmutableArray());
+
+					original = processed.FirstOrDefault(p => p?.format.Key == KeyEnum.Original) ??
+					           throw new Exception("Image processing didn't result in an original version");
+
+					thumbnail = processed.FirstOrDefault(p => p?.format.Key == KeyEnum.Thumbnail);
+					@public   = processed.FirstOrDefault(p => p?.format.Key == KeyEnum.Public);
+
+					if (@public == null && user.IsLocalUser && !skipImageProcessing)
 					{
-						try
-						{
-							await using var stream = new MemoryStream();
-							await res.RenderWebpublic(stream);
-							stream.Seek(0, SeekOrigin.Begin);
-							await storageSvc.UploadFileAsync(webpublicKey, "image/webp", webpFilename, stream);
-							webpublicUrl = storageSvc.GetFilePublicUrl(webpublicKey).AbsoluteUri;
-						}
-						catch (Exception e)
-						{
-							logger.LogDebug("Failed to generate/write webp: {e}", e.Message);
-							webpublicKey = null;
-						}
+						var publicLocalFormat = storageConfig.Value.MediaProcessing.ImagePipeline.Public.Local.Format;
+						if (publicLocalFormat is not ImageFormatEnum.Keep and not ImageFormatEnum.None)
+							throw new Exception("Failed to re-encode image, bailing due to risk of metadata leakage");
 					}
 				}
 			}
 			else
 			{
-				if (storedInternal)
-				{
-					var pathBase = storageConfig.Value.Local?.Path ??
-					               throw new Exception("Local storage path cannot be null");
-					var path = Path.Combine(pathBase, filename);
-
-					await using var writer = File.OpenWrite(path);
-					await data.CopyToAsync(writer);
-					url = $"https://{instanceConfig.Value.WebDomain}/files/{filename}";
-				}
-				else
-				{
-					data.Seek(0, SeekOrigin.Begin);
-					await storageSvc.UploadFileAsync(filename, request.MimeType, request.Filename, data);
-					url = storageSvc.GetFilePublicUrl(filename).AbsoluteUri;
-				}
+				original = await StoreOriginalFileOnly(input, request);
 			}
 		}
 		else
 		{
-			url = request.Uri ?? throw new Exception("Uri must not be null at this stage");
+			if (request.Uri == null)
+				throw new Exception("Uri must not be null at this stage");
 		}
 
 		file = new DriveFile
@@ -372,14 +304,14 @@ public class DriveService(
 			User               = user,
 			UserHost           = user.Host,
 			Sha256             = digest,
-			Size               = (int)data.Length,
+			Size               = buf.Length,
 			IsLink             = !shouldStore,
-			AccessKey          = filename,
+			AccessKey          = original?.accessKey,
 			IsSensitive        = request.IsSensitive,
 			StoredInternal     = storedInternal,
 			Src                = request.Source,
 			Uri                = request.Uri,
-			Url                = url,
+			Url                = original?.url ?? request.Uri ?? throw new Exception("Uri must not be null here"),
 			Name               = request.Filename,
 			Comment            = request.Comment,
 			Type               = CleanMimeType(request.MimeType),
@@ -387,17 +319,92 @@ public class DriveService(
 			RequestIp          = request.RequestIp,
 			Blurhash           = blurhash,
 			Properties         = properties,
-			ThumbnailUrl       = thumbnailUrl,
-			ThumbnailAccessKey = thumbnailKey,
-			WebpublicType      = webpublicUrl != null ? "image/webp" : null,
-			WebpublicUrl       = webpublicUrl,
-			WebpublicAccessKey = webpublicKey
+			ThumbnailUrl       = thumbnail?.url,
+			ThumbnailAccessKey = thumbnail?.accessKey,
+			ThumbnailMimeType  = thumbnail?.format.Format.MimeType,
+			PublicUrl          = @public?.url,
+			PublicAccessKey    = @public?.accessKey,
+			PublicMimeType     = @public?.format.Format.MimeType
 		};
 
 		await db.AddAsync(file);
 		await db.SaveChangesAsync();
 
 		return file;
+	}
+
+	private async Task<ImageVerTriple?> StoreOriginalFileOnly(
+		Stream input, DriveFileCreationRequest request
+	)
+	{
+		var accessKey = GenerateAccessKey(extension: Path.GetExtension(request.Filename));
+		var url       = await StoreFileVersion(input, accessKey, request.Filename, request.MimeType);
+		return (Stub, accessKey, url);
+	}
+
+	private async Task<ImageVerTriple?> ProcessAndStoreFileVersion(
+		ImageVersion version, Func<Stream>? encode, string fileName
+	)
+	{
+		if (encode == null) return null;
+		var     accessKey = GenerateAccessKey(version.Key.ToString().ToLowerInvariant(), version.Format.Extension);
+		Stream? stream    = null;
+		try
+		{
+			try
+			{
+				var sw = Stopwatch.StartNew();
+				stream = encode();
+				sw.Stop();
+				logger.LogDebug("Encoding {version} image took {ms} ms",
+				                version.Key.ToString().ToLowerInvariant(), sw.ElapsedMilliseconds);
+			}
+			catch (Exception e)
+			{
+				logger.LogWarning("Failed to process {ext} file version: {e}", version.Format.Extension, e.Message);
+				return null;
+			}
+
+			fileName = GenerateDerivedFileName(fileName, version.Format.Extension);
+			var url = await StoreFileVersion(stream, accessKey, fileName, version.Format.MimeType);
+			return (version, accessKey, url);
+		}
+		finally
+		{
+			if (stream != null)
+				await stream.DisposeAsync();
+		}
+	}
+
+	private Task<string> StoreFileVersion(Stream stream, string accessKey, string fileName, string mimeType)
+	{
+		return storageConfig.Value.Provider switch
+		{
+			Enums.FileStorage.Local         => StoreFileVersionLocalStorage(stream, accessKey),
+			Enums.FileStorage.ObjectStorage => StoreFileVersionObjectStorage(stream, accessKey, fileName, mimeType),
+			_                               => throw new ArgumentOutOfRangeException()
+		};
+	}
+
+	private async Task<string> StoreFileVersionLocalStorage(Stream stream, string filename)
+	{
+		var pathBase = storageConfig.Value.Local?.Path ??
+		               throw new Exception("Local storage path cannot be null");
+		var path = Path.Combine(pathBase, filename);
+
+		await using var writer = File.OpenWrite(path);
+		stream.Seek(0, SeekOrigin.Begin);
+		await stream.CopyToAsync(writer);
+		return $"https://{instanceConfig.Value.WebDomain}/files/{filename}";
+	}
+
+	private async Task<string> StoreFileVersionObjectStorage(
+		Stream stream, string accessKey, string filename, string mimeType
+	)
+	{
+		stream.Seek(0, SeekOrigin.Begin);
+		await storageSvc.UploadFileAsync(accessKey, mimeType, filename, stream);
+		return storageSvc.GetFilePublicUrl(accessKey).AbsoluteUri;
 	}
 
 	public async Task RemoveFile(DriveFile file)
@@ -411,17 +418,19 @@ public class DriveService(
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(job);
 	}
 
-	private static string GenerateFilenameKeepingExtension(string filename)
+	private static string GenerateDerivedFileName(string filename, string newExt)
 	{
-		var guid = Guid.NewGuid().ToStringLower();
-		var ext  = Path.GetExtension(filename);
-		return guid + ext;
+		return filename.EndsWith($".{newExt}") ? filename : $"{filename}.{newExt}";
 	}
 
-	private static string GenerateWebpKey(string prefix = "")
+	private static string GenerateAccessKey(string prefix = "", string extension = "webp")
 	{
 		var guid = Guid.NewGuid().ToStringLower();
-		return $"{prefix}{guid}.webp";
+		// @formatter:off
+		return prefix.Length > 0
+			? extension.Length > 0 ? $"{prefix}-{guid}.{extension}" : $"{prefix}-{guid}"
+			: extension.Length > 0 ? $"{guid}.{extension}" : guid;
+		// @formatter:on
 	}
 
 	private static string CleanMimeType(string? mimeType)
@@ -431,9 +440,32 @@ public class DriveService(
 			: mimeType;
 	}
 
+	private static List<ImageVersion> GetFormats(
+		User user, IImageInfo ident, DriveFileCreationRequest request, bool skipImageProcessing
+	)
+	{
+		//TODO: make this configurable
+
+		var origFormat = new ImageFormat.Keep(Path.GetExtension(request.Filename), request.MimeType);
+		var orig       = new ImageVersion(KeyEnum.Original, origFormat);
+
+		List<ImageVersion> res = [orig];
+		if (skipImageProcessing) return res;
+
+		res.Add(new ImageVersion(KeyEnum.Thumbnail, new ImageFormat.Webp(75, 1000)));
+
+		if (user.IsLocalUser)
+		{
+			var q = ident.MimeType is "image/png" ? 100 : 75;
+			res.Add(new ImageVersion(KeyEnum.Public, new ImageFormat.Webp(q, 2048)));
+		}
+
+		return res;
+	}
+
 	/// <summary>
-	/// We can't trust the Content-Length header, and it might be null.
-	/// This makes sure that we only ever read up to maxLength into memory.
+	///     We can't trust the Content-Length header, and it might be null.
+	///     This makes sure that we only ever read up to maxLength into memory.
 	/// </summary>
 	/// <param name="stream">The response content stream</param>
 	/// <param name="maxLength">The maximum length to buffer (null = unlimited)</param>
@@ -475,7 +507,6 @@ public class DriveFileCreationRequest
 	public          string?                     Uri;
 }
 
-//TODO: set uri as well (which may be different)
 file static class DriveFileExtensions
 {
 	public static DriveFile Clone(this DriveFile file, User user, DriveFileCreationRequest request)
@@ -501,9 +532,9 @@ file static class DriveFileExtensions
 			AccessKey          = file.AccessKey,
 			ThumbnailUrl       = file.ThumbnailUrl,
 			IsSensitive        = request.IsSensitive,
-			WebpublicType      = file.WebpublicType,
-			WebpublicUrl       = file.WebpublicUrl,
-			WebpublicAccessKey = file.WebpublicAccessKey,
+			PublicMimeType     = file.PublicMimeType,
+			PublicUrl          = file.PublicUrl,
+			PublicAccessKey    = file.PublicAccessKey,
 			StoredInternal     = file.StoredInternal,
 			UserHost           = user.Host,
 			Comment            = request.Comment,

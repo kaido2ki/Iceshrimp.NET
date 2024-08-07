@@ -45,4 +45,7 @@ public static class EnumerableExtensions
 	}
 
 	public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> @enum) => @enum.OfType<T>();
+
+	public static IEnumerable<T> StructNotNull<T>(this IEnumerable<T?> @enum) where T : struct =>
+		@enum.Where(p => p.HasValue).Select(p => p!.Value);
 }

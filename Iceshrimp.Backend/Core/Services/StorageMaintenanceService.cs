@@ -111,14 +111,14 @@ public class StorageMaintenanceService(
 				deletionQueue.Add(path);
 			}
 
-			if (file.WebpublicAccessKey != null)
+			if (file.PublicAccessKey != null)
 			{
-				var path     = Path.Join(pathBase, file.WebpublicAccessKey);
+				var path     = Path.Join(pathBase, file.PublicAccessKey);
 				var stream   = File.OpenRead(path);
 				var filename = file.Name.EndsWith(".webp") ? file.Name : $"{file.Name}.webp";
 
-				await objectStorageSvc.UploadFileAsync(file.WebpublicAccessKey, "image/webp", filename, stream);
-				file.WebpublicUrl = objectStorageSvc.GetFilePublicUrl(file.WebpublicAccessKey).AbsoluteUri;
+				await objectStorageSvc.UploadFileAsync(file.PublicAccessKey, "image/webp", filename, stream);
+				file.PublicUrl = objectStorageSvc.GetFilePublicUrl(file.PublicAccessKey).AbsoluteUri;
 				deletionQueue.Add(path);
 			}
 
@@ -127,7 +127,7 @@ public class StorageMaintenanceService(
 				item.StoredInternal = false;
 				item.Url            = file.Url;
 				item.ThumbnailUrl   = file.ThumbnailUrl;
-				item.WebpublicUrl   = file.WebpublicUrl;
+				item.PublicUrl      = file.PublicUrl;
 			}
 
 			foreach (var item in deletionQueue) pathsToDelete.Add(item);

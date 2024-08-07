@@ -32,7 +32,7 @@ builder.Services.AddSignalR().AddMessagePackProtocol();
 builder.Services.AddResponseCompression();
 builder.Services.AddRazorPages();
 
-builder.Services.AddServices();
+builder.Services.AddServices(builder.Configuration);
 builder.Services.ConfigureServices(builder.Configuration);
 builder.WebHost.ConfigureKestrel(builder.Configuration);
 builder.WebHost.UseStaticWebAssets();

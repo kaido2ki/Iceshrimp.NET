@@ -113,8 +113,8 @@ public class NoteRenderer(
 		return files.Select(p => new NoteAttachment
 		            {
 			            Id           = p.Id,
-			            Url          = p.PublicUrl,
-			            ThumbnailUrl = p.PublicThumbnailUrl,
+			            Url          = p.AccessUrl,
+			            ThumbnailUrl = p.ThumbnailAccessUrl,
 			            ContentType  = p.Type,
 			            Blurhash     = p.Blurhash,
 			            AltText      = p.Comment,

@@ -74,7 +74,7 @@ public class BackgroundTaskQueue(int parallelism)
 
 			if (!file.IsLink && !deduplicated)
 			{
-				string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.WebpublicAccessKey];
+				string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.PublicAccessKey];
 
 				if (file.StoredInternal)
 				{
@@ -114,9 +114,9 @@ public class BackgroundTaskQueue(int parallelism)
 		file.IsLink             = true;
 		file.Url                = file.Uri;
 		file.ThumbnailUrl       = null;
-		file.WebpublicUrl       = null;
+		file.PublicUrl          = null;
 		file.ThumbnailAccessKey = null;
-		file.WebpublicAccessKey = null;
+		file.PublicAccessKey    = null;
 		file.StoredInternal     = false;
 
 		await db.Users.Where(p => p.AvatarId == file.Id)
@@ -133,7 +133,7 @@ public class BackgroundTaskQueue(int parallelism)
 		if (deduplicated)
 			return;
 
-		string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.WebpublicAccessKey];
+		string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.PublicAccessKey];
 		if (file.StoredInternal)
 		{
 			var pathBase = scope.GetRequiredService<IOptions<Config.StorageSection>>().Value.Local?.Path ??

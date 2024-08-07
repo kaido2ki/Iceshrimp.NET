@@ -30,8 +30,8 @@ public class DriveController(
 	public async Task<IActionResult> GetFileByAccessKey(string accessKey)
 	{
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.AccessKey == accessKey ||
-		                                                        p.WebpublicAccessKey == accessKey ||
-		                                                        p.ThumbnailAccessKey == accessKey);
+		                                                        p.PublicAccessKey == accessKey ||
+		                                                        p.ThumbnailAccessUrl == accessKey);
 		if (file == null)
 		{
 			Response.Headers.CacheControl = "max-age=86400";
@@ -110,8 +110,8 @@ public class DriveController(
 		return new DriveFileResponse
 		{
 			Id           = file.Id,
-			Url          = file.PublicUrl,
-			ThumbnailUrl = file.PublicThumbnailUrl,
+			Url          = file.AccessUrl,
+			ThumbnailUrl = file.ThumbnailAccessUrl,
 			Filename     = file.Name,
 			ContentType  = file.Type,
 			Description  = file.Comment,

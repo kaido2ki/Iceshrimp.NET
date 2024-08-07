@@ -88,8 +88,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<CacheEntry>           CacheStore            { get; init; } = null!;
 	public virtual DbSet<Job>                  Jobs                  { get; init; } = null!;
 	public virtual DbSet<Filter>               Filters               { get; init; } = null!;
-	public virtual DbSet<DataProtectionKey>    DataProtectionKeys    { get; init; } = null!;
 	public virtual DbSet<PluginStoreEntry>     PluginStore           { get; init; } = null!;
+	public virtual DbSet<DataProtectionKey>    DataProtectionKeys    { get; init; } = null!;
 
 	public static NpgsqlDataSource GetDataSource(Config.DatabaseSection config)
 	{
@@ -384,7 +384,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.Url).HasComment("The URL of the DriveFile.");
 			entity.Property(e => e.UserHost).HasComment("The host of owner. It will be null if the user in local.");
 			entity.Property(e => e.UserId).HasComment("The owner ID.");
-			entity.Property(e => e.WebpublicUrl).HasComment("The URL of the webpublic of the DriveFile.");
+			entity.Property(e => e.PublicUrl).HasComment("The URL of the webpublic of the DriveFile.");
 
 			entity.HasOne(d => d.Folder)
 			      .WithMany(p => p.DriveFiles)
@@ -1237,7 +1237,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 
 	public Task<int> GetJobRunningCount(string queue, CancellationToken token) =>
 		Jobs.CountAsync(p => p.Queue == queue && p.Status == Job.JobStatus.Running, token);
-	
+
 	public Task<int> GetJobQueuedCount(string queue, CancellationToken token) =>
 		Jobs.CountAsync(p => p.Queue == queue && p.Status == Job.JobStatus.Queued, token);
 

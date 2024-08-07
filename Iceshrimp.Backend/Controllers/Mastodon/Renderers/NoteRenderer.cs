@@ -252,9 +252,9 @@ public class NoteRenderer(
 		               .Select(f => new AttachmentEntity
 		               {
 			               Id          = f.Id,
-			               Url         = f.PublicUrl,
+			               Url         = f.AccessUrl,
 			               Blurhash    = f.Blurhash,
-			               PreviewUrl  = f.PublicThumbnailUrl,
+			               PreviewUrl  = f.ThumbnailAccessUrl,
 			               Description = f.Comment,
 			               Metadata    = null,
 			               RemoteUrl   = f.Uri,
@@ -272,9 +272,9 @@ public class NoteRenderer(
 		               .Select(f => new AttachmentEntity
 		               {
 			               Id          = f.Id,
-			               Url         = f.PublicUrl,
+			               Url         = f.AccessUrl,
 			               Blurhash    = f.Blurhash,
-			               PreviewUrl  = f.PublicThumbnailUrl,
+			               PreviewUrl  = f.ThumbnailAccessUrl,
 			               Description = f.Comment,
 			               Metadata    = null,
 			               RemoteUrl   = f.Uri,
@@ -444,11 +444,11 @@ public class NoteRenderer(
 		public List<AccountEntity>?    Accounts;
 		public List<AttachmentEntity>? Attachments;
 		public List<string>?           BookmarkedNotes;
-		public List<string>?           MutedNotes;
 		public List<EmojiEntity>?      Emoji;
 		public List<Filter>?           Filters;
 		public List<string>?           LikedNotes;
 		public List<MentionEntity>?    Mentions;
+		public List<string>?           MutedNotes;
 		public List<string>?           PinnedNotes;
 		public List<PollEntity>?       Polls;
 		public List<ReactionEntity>?   Reactions;

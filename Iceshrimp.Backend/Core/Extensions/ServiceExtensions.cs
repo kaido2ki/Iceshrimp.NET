@@ -10,6 +10,7 @@ using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Backend.Core.Services.ImageProcessing;
 using Iceshrimp.Backend.SignalR.Authentication;
 using Iceshrimp.Shared.Configuration;
 using Iceshrimp.Shared.Schemas.Web;
@@ -36,7 +37,7 @@ namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class ServiceExtensions
 {
-	public static void AddServices(this IServiceCollection services)
+	public static void AddServices(this IServiceCollection services, IConfiguration configuration)
 	{
 		// Transient = instantiated per request and class
 
@@ -99,6 +100,24 @@ public static class ServiceExtensions
 			.AddSingleton<PushService>()
 			.AddSingleton<StreamingService>()
 			.AddSingleton<ImageProcessor>();
+
+		var config = configuration.GetSection("Storage").Get<Config.StorageSection>() ??
+		             throw new Exception("Failed to read storage config section");
+
+		switch (config.MediaProcessing.ImageProcessor)
+		{
+			case Enums.ImageProcessor.LibVips:
+				services.AddSingleton<IImageProcessor, VipsProcessor>();
+				services.AddSingleton<IImageProcessor, ImageSharpProcessor>();
+				break;
+			case Enums.ImageProcessor.ImageSharp:
+				services.AddSingleton<IImageProcessor, ImageSharpProcessor>();
+				break;
+			case Enums.ImageProcessor.None:
+				break;
+			default:
+				throw new ArgumentOutOfRangeException();
+		}
 
 		// Hosted services = long running background tasks
 		// Note: These need to be added as a singleton as well to ensure data consistency
