@@ -42,10 +42,7 @@ public class ImageSharpProcessor : ImageProcessorBase, IImageProcessor
 		// @formatter:on
 	}
 
-	public IImageInfo Identify(byte[] input)
-	{
-		return new ImageSharpInfo(Image.Identify(input));
-	}
+	public IImageInfo Identify(byte[] input) => new ImageSharpInfo(Image.Identify(input));
 
 	public bool CanEncode(ImageFormat format)
 	{
@@ -130,7 +127,7 @@ public class ImageSharpProcessor : ImageProcessorBase, IImageProcessor
 		return image;
 	}
 
-	private class ImageSharpInfo(ImageInfo info) : IImageInfo
+	public class ImageSharpInfo(ImageInfo info) : IImageInfo
 	{
 		public int  Width      => info.Width;
 		public int  Height     => info.Height;

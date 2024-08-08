@@ -3,6 +3,7 @@ using System.Security;
 using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Helpers;
 using NetVips;
+using PommaLabs.MimeTypes;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Iceshrimp.Backend.Core.Services.ImageProcessing;
@@ -11,8 +12,7 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor
 {
 	private readonly ILogger<VipsProcessor> _logger;
 
-	// Set to false until https://github.com/libvips/libvips/issues/2537 is implemented
-	public bool CanIdentify         => false;
+	public bool CanIdentify         => true;
 	public bool CanGenerateBlurhash => true;
 
 	public VipsProcessor(ILogger<VipsProcessor> logger) : base("LibVips", 0)
@@ -30,8 +30,7 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor
 		Cache.MaxFiles = 0;
 		Cache.MaxMem   = 0;
 
-		Log.SetLogHandler("VIPS", Enums.LogLevelFlags.Warning | Enums.LogLevelFlags.Error,
-		                  VipsLogDelegate);
+		Log.SetLogHandler("VIPS", Enums.LogLevelFlags.Warning | Enums.LogLevelFlags.Error, VipsLogDelegate);
 	}
 
 	public bool CanEncode(ImageFormat format)
@@ -71,7 +70,18 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor
 		return BlurhashHelper.Encode(blurPixels, 7, 7);
 	}
 
-	public IImageInfo Identify(byte[] input) => new VipsImageInfo(Image.NewFromBuffer(input));
+	public IImageInfo Identify(byte[] input)
+	{
+		var image = Image.NewFromBuffer(input);
+		if (!MimeTypeMap.TryGetMimeType(new MemoryStream(input), out var mime))
+			mime = null;
+
+		// Remove when https://github.com/libvips/libvips/issues/2537 is implemented
+		if (mime == "image/png")
+			mime = new ImageSharpProcessor.ImageSharpInfo(SixLabors.ImageSharp.Image.Identify(input)).MimeType;
+
+		return new VipsImageInfo(image, mime);
+	}
 
 	private static MemoryStream EncodeWebp(byte[] buf, ImageFormat.Webp opts)
 	{
@@ -123,17 +133,30 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor
 	private void VipsLogDelegate(string domain, Enums.LogLevelFlags _, string message) =>
 		_logger.LogWarning("{domain} - {message}", domain, message);
 
-	[SuppressUnmanagedCodeSecurity]
-	[DllImport("libvips.42", EntryPoint = "vips_image_get_n_pages", CallingConvention = CallingConvention.Cdecl)]
-	private static extern int GetPageCount(Image image);
-
-	private class VipsImageInfo(Image image) : IImageInfo
+	private static int GetPageCount(Image image)
 	{
-		public int    Width      => image.Width;
-		public int    Height     => image.Height;
-		public bool   IsAnimated => GetPageCount(image) > 1;
-		public string MimeType   => throw new NotImplementedException(); //TODO
+		if (!image.GetFields().Contains("n-pages")) return 1;
+		try
+		{
+			return (image.Get("n-pages") as int?) switch
+			{
+				null      => 1,
+				< 1       => 1,
+				> 10000   => 1,
+				{ } value => value
+			};
+		}
+		catch (VipsException)
+		{
+			return 1;
+		}
+	}
 
-		public static implicit operator VipsImageInfo(Image src) => new(src);
+	private class VipsImageInfo(Image image, string? mime) : IImageInfo
+	{
+		public int     Width      => image.Width;
+		public int     Height     => image.Height;
+		public bool    IsAnimated => GetPageCount(image) > 1 || mime is "image/apng";
+		public string? MimeType   => mime;
 	}
 }
