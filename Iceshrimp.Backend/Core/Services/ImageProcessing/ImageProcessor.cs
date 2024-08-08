@@ -76,7 +76,11 @@ public class ImageProcessor
 		{
 			if (p.Format is ImageFormat.Keep) return () => Task.FromResult<Stream>(new MemoryStream(buf));
 			var proc = _imageProcessors.FirstOrDefault(i => i.CanEncode(p.Format));
-			if (proc == null) return null;
+			if (proc == null)
+			{
+				_logger.LogWarning("No image processor supports the format {format}, skipping", p.Format.MimeType);
+				return null;
+			}
 			return async () =>
 			{
 				if (_concurrency is 0)
