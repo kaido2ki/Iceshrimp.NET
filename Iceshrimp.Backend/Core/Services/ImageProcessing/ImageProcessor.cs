@@ -3,11 +3,10 @@ using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
-using Iceshrimp.Backend.Core.Services.ImageProcessing;
 using Microsoft.Extensions.Options;
 using static Iceshrimp.Backend.Core.Services.ImageProcessing.ImageVersion;
 
-namespace Iceshrimp.Backend.Core.Services;
+namespace Iceshrimp.Backend.Core.Services.ImageProcessing;
 
 public class ImageProcessor
 {
