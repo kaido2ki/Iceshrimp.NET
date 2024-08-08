@@ -207,6 +207,8 @@ public sealed class Config
 		public          int                  MaxResolutionMpx { get; init; } = 30;
 		public          bool                 LocalOnly        { get; init; } = false;
 
+		[Range(0, 128)] public int ImageProcessorConcurrency { get; init; } = 8;
+
 		public string MaxFileSize
 		{
 			get => MaxFileSizeBytes.ToString();

@@ -343,7 +343,7 @@ public class DriveService(
 	}
 
 	private async Task<ImageVerTriple?> ProcessAndStoreFileVersion(
-		ImageVersion version, Func<Stream>? encode, string fileName
+		ImageVersion version, Func<Task<Stream>>? encode, string fileName
 	)
 	{
 		if (encode == null) return null;
@@ -354,7 +354,7 @@ public class DriveService(
 			try
 			{
 				var sw = Stopwatch.StartNew();
-				stream = encode();
+				stream = await encode();
 				sw.Stop();
 				logger.LogDebug("Encoding {version} image took {ms} ms",
 				                version.Key.ToString().ToLowerInvariant(), sw.ElapsedMilliseconds);
@@ -426,11 +426,7 @@ public class DriveService(
 	private static string GenerateAccessKey(string prefix = "", string extension = "webp")
 	{
 		var guid = Guid.NewGuid().ToStringLower();
-		// @formatter:off
-		return prefix.Length > 0
-			? extension.Length > 0 ? $"{prefix}-{guid}.{extension}" : $"{prefix}-{guid}"
-			: extension.Length > 0 ? $"{guid}.{extension}" : guid;
-		// @formatter:on
+		return extension.Length > 0 ? $"{prefix}-{guid}.{extension}" : $"{prefix}-{guid}";
 	}
 
 	private static string CleanMimeType(string? mimeType)

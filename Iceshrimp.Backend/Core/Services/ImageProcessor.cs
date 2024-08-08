@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services.ImageProcessing;
 using Microsoft.Extensions.Options;
 using static Iceshrimp.Backend.Core.Services.ImageProcessing.ImageVersion;
@@ -15,6 +16,8 @@ public class ImageProcessor
 
 	private readonly List<IImageProcessor>   _imageProcessors;
 	private readonly ILogger<ImageProcessor> _logger;
+	private readonly SemaphorePlus           _semaphore;
+	private readonly int                     _concurrency;
 
 	public ImageProcessor(
 		ILogger<ImageProcessor> logger, IOptionsMonitor<Config.StorageSection> config,
@@ -24,6 +27,8 @@ public class ImageProcessor
 		_logger          = logger;
 		_config          = config;
 		_imageProcessors = imageProcessors.OrderBy(p => p.Priority).ToList();
+		_concurrency     = config.CurrentValue.MediaProcessing.ImageProcessorConcurrency;
+		_semaphore       = new SemaphorePlus(Math.Max(_concurrency, 1));
 
 		// @formatter:off
 		if (_imageProcessors.Count == 0)
@@ -63,17 +68,31 @@ public class ImageProcessor
 		// @formatter:on
 
 		var results = formats
-		              .ToDictionary<ImageVersion, ImageVersion, Func<Stream>?>(p => p, ProcessImageFormat)
+		              .ToDictionary<ImageVersion, ImageVersion, Func<Task<Stream>>?>(p => p, ProcessImageFormat)
 		              .AsReadOnly();
 
 		return new ProcessedImage(ident) { RequestedFormats = results, Blurhash = blurhash };
 
-		Func<Stream>? ProcessImageFormat(ImageVersion p)
+		Func<Task<Stream>>? ProcessImageFormat(ImageVersion p)
 		{
-			if (p.Format is ImageFormat.Keep) return () => new MemoryStream(buf);
+			if (p.Format is ImageFormat.Keep) return () => Task.FromResult<Stream>(new MemoryStream(buf));
 			var proc = _imageProcessors.FirstOrDefault(i => i.CanEncode(p.Format));
 			if (proc == null) return null;
-			return () => proc.Encode(buf, ident, p.Format);
+			return async () =>
+			{
+				if (_concurrency is 0)
+					return proc.Encode(buf, ident, p.Format);
+
+				await _semaphore.WaitAsync();
+				try
+				{
+					return proc.Encode(buf, ident, p.Format);
+				}
+				finally
+				{
+					_semaphore.Release();
+				}
+			};
 		}
 	}
 
@@ -117,7 +136,7 @@ public class ImageProcessor
 	{
 		public string? Blurhash;
 
-		public required IReadOnlyDictionary<ImageVersion, Func<Stream>?> RequestedFormats;
+		public required IReadOnlyDictionary<ImageVersion, Func<Task<Stream>>?> RequestedFormats;
 
 		public ProcessedImage(IImageInfo info)
 		{
@@ -129,9 +148,9 @@ public class ImageProcessor
 		public ProcessedImage(IImageInfo info, Stream original, DriveFileCreationRequest request) : this(info)
 		{
 			var format = new ImageFormat.Keep(Path.GetExtension(request.Filename), request.MimeType);
-			RequestedFormats = new Dictionary<ImageVersion, Func<Stream>?>
+			RequestedFormats = new Dictionary<ImageVersion, Func<Task<Stream>>?>
 			{
-				{ new ImageVersion(KeyEnum.Original, format), () => original }
+				{ new ImageVersion(KeyEnum.Original, format), () => Task.FromResult(original) }
 			};
 		}
 	}
