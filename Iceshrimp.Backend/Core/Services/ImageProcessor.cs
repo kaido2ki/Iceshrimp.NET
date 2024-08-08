@@ -147,7 +147,7 @@ public class ImageProcessor
 		[SetsRequiredMembers]
 		public ProcessedImage(IImageInfo info, Stream original, DriveFileCreationRequest request) : this(info)
 		{
-			var format = new ImageFormat.Keep(Path.GetExtension(request.Filename), request.MimeType);
+			var format = new ImageFormat.Keep(Path.GetExtension(request.Filename).TrimStart('.'), request.MimeType);
 			RequestedFormats = new Dictionary<ImageVersion, Func<Task<Stream>>?>
 			{
 				[new ImageVersion(KeyEnum.Original, format)] = () => Task.FromResult(original)

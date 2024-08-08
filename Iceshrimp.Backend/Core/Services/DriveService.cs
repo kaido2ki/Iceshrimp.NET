@@ -337,7 +337,7 @@ public class DriveService(
 		Stream input, DriveFileCreationRequest request
 	)
 	{
-		var accessKey = GenerateAccessKey(extension: Path.GetExtension(request.Filename));
+		var accessKey = GenerateAccessKey(extension: Path.GetExtension(request.Filename).TrimStart('.'));
 		var url       = await StoreFileVersion(input, accessKey, request.Filename, request.MimeType);
 		return (Stub, accessKey, url);
 	}
@@ -442,7 +442,7 @@ public class DriveService(
 	{
 		if (skipImageProcessing)
 		{
-			var origFormat = new ImageFormat.Keep(Path.GetExtension(request.Filename), request.MimeType);
+			var origFormat = new ImageFormat.Keep(Path.GetExtension(request.Filename).TrimStart('.'), request.MimeType);
 			return [new ImageVersion(KeyEnum.Original, origFormat)];
 		}
 
@@ -469,7 +469,7 @@ public class DriveService(
 		return config.Format switch
 		{
 			ImageFormatEnum.None => null,
-			ImageFormatEnum.Keep => new ImageFormat.Keep(Path.GetExtension(request.Filename), request.MimeType),
+			ImageFormatEnum.Keep => new ImageFormat.Keep(Path.GetExtension(request.Filename).TrimStart('.'), request.MimeType),
 			ImageFormatEnum.Webp => new ImageFormat.Webp(config.WebpCompressionMode, GetQualityFactor(), GetTargetRes()),
 			ImageFormatEnum.Avif => new ImageFormat.Avif(config.AvifCompressionMode, GetQualityFactor(), config.AvifBitDepth, GetTargetRes()),
 			ImageFormatEnum.Jxl  => new ImageFormat.Jxl(config.JxlCompressionMode, GetQualityFactor(), config.JxlEffort, GetTargetRes()),
