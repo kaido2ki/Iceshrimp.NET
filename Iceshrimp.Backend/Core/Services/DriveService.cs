@@ -262,7 +262,7 @@ public class DriveService(
 						skipImageProcessing = true;
 					}
 
-					var formats = GetFormats(user, ident, request, skipImageProcessing);
+					var formats = GetFormats(user, request, skipImageProcessing);
 					var res     = imageProcessor.ProcessImage(buf, ident, request, formats);
 					properties = res;
 					blurhash   = res.Blurhash;
@@ -440,27 +440,49 @@ public class DriveService(
 			: mimeType;
 	}
 
-	private static List<ImageVersion> GetFormats(
-		User user, IImageInfo ident, DriveFileCreationRequest request, bool skipImageProcessing
+	private IReadOnlyCollection<ImageVersion> GetFormats(
+		User user, DriveFileCreationRequest request, bool skipImageProcessing
 	)
 	{
-		//TODO: make this configurable
-
-		var origFormat = new ImageFormat.Keep(Path.GetExtension(request.Filename), request.MimeType);
-		var orig       = new ImageVersion(KeyEnum.Original, origFormat);
-
-		List<ImageVersion> res = [orig];
-		if (skipImageProcessing) return res;
-
-		res.Add(new ImageVersion(KeyEnum.Thumbnail, new ImageFormat.Webp(75, 1000)));
-
-		if (user.IsLocalUser)
+		if (skipImageProcessing)
 		{
-			var q = ident.MimeType is "image/png" ? 100 : 75;
-			res.Add(new ImageVersion(KeyEnum.Public, new ImageFormat.Webp(q, 2048)));
+			var origFormat = new ImageFormat.Keep(Path.GetExtension(request.Filename), request.MimeType);
+			return [new ImageVersion(KeyEnum.Original, origFormat)];
 		}
 
-		return res;
+		return Enum.GetValues<KeyEnum>()
+		           .ToDictionary(p => p, p => GetFormatFromConfig(request, user, p))
+		           .Where(p => p.Value != null)
+		           .Select(p => new ImageVersion(p.Key, p.Value!))
+		           .ToImmutableArray()
+		           .AsReadOnly();
+	}
+
+	private ImageFormat? GetFormatFromConfig(DriveFileCreationRequest request, User user, KeyEnum key)
+	{
+		var ver = key switch
+		{
+			KeyEnum.Original  => storageConfig.Value.MediaProcessing.ImagePipeline.Original,
+			KeyEnum.Thumbnail => storageConfig.Value.MediaProcessing.ImagePipeline.Thumbnail,
+			KeyEnum.Public    => storageConfig.Value.MediaProcessing.ImagePipeline.Public,
+			_                 => throw new ArgumentOutOfRangeException()
+		};
+		var config = user.IsLocalUser ? ver.Local : ver.Remote;
+
+		// @formatter:off
+		return config.Format switch
+		{
+			ImageFormatEnum.None => null,
+			ImageFormatEnum.Keep => new ImageFormat.Keep(Path.GetExtension(request.Filename), request.MimeType),
+			ImageFormatEnum.Webp => new ImageFormat.Webp(config.WebpCompressionMode, GetQualityFactor(), GetTargetRes()),
+			ImageFormatEnum.Avif => new ImageFormat.Avif(config.AvifCompressionMode, GetQualityFactor(), config.AvifBitDepth, GetTargetRes()),
+			ImageFormatEnum.Jxl  => new ImageFormat.Jxl(config.JxlCompressionMode, GetQualityFactor(), config.JxlEffort, GetTargetRes()),
+			_                    => throw new ArgumentOutOfRangeException()
+		};
+
+		int GetQualityFactor() => request.MimeType == "image/png" ? config.QualityFactorPngSource : config.QualityFactor;
+		int GetTargetRes() => config.TargetRes ?? throw new Exception("TargetRes is required to encode images");
+		// @formatter:on
 	}
 
 	/// <summary>

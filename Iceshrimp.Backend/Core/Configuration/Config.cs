@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services.ImageProcessing;
 using Iceshrimp.Shared.Helpers;
 
 namespace Iceshrimp.Backend.Core.Configuration;
@@ -63,8 +64,8 @@ public sealed class Config
 
 	public sealed class StorageSection
 	{
-		public readonly long?      MaxCacheSizeBytes;
-		public readonly long?      MaxUploadSizeBytes;
+		public readonly long?     MaxCacheSizeBytes;
+		public readonly long?     MaxUploadSizeBytes;
 		public readonly TimeSpan? MediaRetentionTimeSpan;
 
 		public bool              CleanAvatars = false;
@@ -199,6 +200,8 @@ public sealed class Config
 
 	public sealed class MediaProcessingSection
 	{
+		public ImagePipelineSection ImagePipeline { get; init; } = new();
+
 		public readonly int                  MaxFileSizeBytes = 10 * 1024 * 1024;
 		public          Enums.ImageProcessor ImageProcessor   { get; init; } = Enums.ImageProcessor.ImageSharp;
 		public          int                  MaxResolutionMpx { get; init; } = 30;
@@ -234,6 +237,54 @@ public sealed class Config
 				};
 			}
 		}
+	}
+
+	public sealed class ImagePipelineSection
+	{
+		public ImageVersion Original { get; init; } = new()
+		{
+			Local  = new ImageFormatConfiguration { Format = ImageFormatEnum.Keep },
+			Remote = new ImageFormatConfiguration { Format = ImageFormatEnum.Keep }
+		};
+
+		public ImageVersion Thumbnail { get; init; } = new()
+		{
+			Local = new ImageFormatConfiguration { Format = ImageFormatEnum.Webp, TargetRes = 1000 },
+			Remote = new ImageFormatConfiguration
+			{
+				Format                 = ImageFormatEnum.Webp,
+				TargetRes              = 1000,
+				QualityFactorPngSource = 75
+			}
+		};
+
+		public ImageVersion Public { get; init; } = new()
+		{
+			Local  = new ImageFormatConfiguration { Format = ImageFormatEnum.Webp, TargetRes = 2048 },
+			Remote = new ImageFormatConfiguration { Format = ImageFormatEnum.None }
+		};
+	}
+
+	public class ImageVersion
+	{
+		[Required] public required ImageFormatConfiguration Local  { get; init; }
+		[Required] public required ImageFormatConfiguration Remote { get; init; }
+	}
+
+	public class ImageFormatConfiguration
+	{
+		[Required] public required ImageFormatEnum Format { get; init; }
+
+		[Range(1, 100)]   public int  QualityFactor          { get; init; } = 75;
+		[Range(1, 100)]   public int  QualityFactorPngSource { get; init; } = 100;
+		[Range(1, 10240)] public int? TargetRes              { get; init; }
+
+		public ImageFormat.Webp.Compression WebpCompressionMode { get; init; } = ImageFormat.Webp.Compression.Lossy;
+		public ImageFormat.Avif.Compression AvifCompressionMode { get; init; } = ImageFormat.Avif.Compression.Lossy;
+		public ImageFormat.Jxl.Compression  JxlCompressionMode  { get; init; } = ImageFormat.Jxl.Compression.Lossy;
+
+		[Range(8, 12)] public int? AvifBitDepth { get; init; }
+		[Range(1, 9)]  public int  JxlEffort    { get; init; } = 7;
 	}
 
 	public sealed class PerformanceSection
