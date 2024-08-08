@@ -11,9 +11,9 @@ public class QueueJobModel(DatabaseContext db) : PageModel
 {
 	private static Dictionary<string, string> _lookup = new()
 	{
-		{ "inbox", "body" },
-		{ "deliver", "payload" },
-		{ "pre-deliver", "serializedActivity" }
+		["inbox"]       = "body",
+		["deliver"]     = "payload",
+		["pre-deliver"] = "serializedActivity",
 	};
 
 	public Job Job = null!;

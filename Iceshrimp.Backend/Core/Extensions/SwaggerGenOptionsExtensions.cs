@@ -119,40 +119,28 @@ public static class SwaggerGenOptionsExtensions
 		{
 			Reference   = Ref401,
 			Description = "Unauthorized",
-			Content = new Dictionary<string, OpenApiMediaType>
-			{
-				{ "application/json", new OpenApiMediaType { Example = MastoExample401 } }
-			}
+			Content     = { ["application/json"] = new OpenApiMediaType { Example = MastoExample401 } }
 		};
 
 		private static readonly OpenApiResponse MastoRes403 = new()
 		{
 			Reference   = Ref403,
 			Description = "Forbidden",
-			Content = new Dictionary<string, OpenApiMediaType>
-			{
-				{ "application/json", new OpenApiMediaType { Example = MastoExample403 } }
-			}
+			Content     = { ["application/json"] = new OpenApiMediaType { Example = MastoExample403 } }
 		};
 
 		private static readonly OpenApiResponse WebRes401 = new()
 		{
 			Reference   = Ref401,
 			Description = "Unauthorized",
-			Content = new Dictionary<string, OpenApiMediaType>
-			{
-				{ "application/json", new OpenApiMediaType { Example = WebExample401 } }
-			}
+			Content     = { ["application/json"] = new OpenApiMediaType { Example = WebExample401 } }
 		};
 
 		private static readonly OpenApiResponse WebRes403 = new()
 		{
 			Reference   = Ref403,
 			Description = "Forbidden",
-			Content = new Dictionary<string, OpenApiMediaType>
-			{
-				{ "application/json", new OpenApiMediaType { Example = WebExample403 } }
-			}
+			Content     = { ["application/json"] = new OpenApiMediaType { Example = WebExample403 } }
 		};
 
 		public void Apply(OpenApiOperation operation, OperationFilterContext context)
@@ -248,10 +236,7 @@ public static class SwaggerGenOptionsExtensions
 				var res = new OpenApiResponse
 				{
 					Description = ReasonPhrases.GetReasonPhrase((int)status),
-					Content = new Dictionary<string, OpenApiMediaType>
-					{
-						{ "application/json", new OpenApiMediaType { Schema = schema } }
-					}
+					Content     = { ["application/json"] = new OpenApiMediaType { Schema = schema } }
 				};
 
 				operation.Responses.Remove(((int)status).ToString());

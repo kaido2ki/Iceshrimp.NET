@@ -150,7 +150,7 @@ public class ImageProcessor
 			var format = new ImageFormat.Keep(Path.GetExtension(request.Filename), request.MimeType);
 			RequestedFormats = new Dictionary<ImageVersion, Func<Task<Stream>>?>
 			{
-				{ new ImageVersion(KeyEnum.Original, format), () => Task.FromResult(original) }
+				[new ImageVersion(KeyEnum.Original, format)] = () => Task.FromResult(original)
 			};
 		}
 	}
