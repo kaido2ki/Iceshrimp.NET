@@ -198,7 +198,7 @@ public sealed class Config
 		public bool    DisableValidation { get; init; } = false;
 	}
 
-	public sealed class MediaProcessingSection
+	public sealed class MediaProcessingSection : IValidatableObject
 	{
 		public ImagePipelineSection ImagePipeline { get; init; } = new();
 
@@ -241,6 +241,43 @@ public sealed class Config
 					_ => throw new Exception("Unsupported suffix, use one of: [K]ilobytes, [M]egabytes, [G]igabytes")
 				};
 			}
+		}
+
+		public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+		{
+			List<ValidationResult> res = [];
+			if (ImageProcessor == Enums.ImageProcessor.None) return res;
+
+			List<ImageFormatConfiguration> formats =
+			[
+				ImagePipeline.Thumbnail.Local,
+				ImagePipeline.Thumbnail.Remote,
+				ImagePipeline.Original.Local,
+				ImagePipeline.Original.Remote,
+				ImagePipeline.Public.Local,
+				ImagePipeline.Public.Remote
+			];
+
+			if (ImageProcessor == Enums.ImageProcessor.ImageSharp)
+			{
+				// @formatter:off
+				if (formats.Any(p => p.Format is ImageFormatEnum.Avif or ImageFormatEnum.Jxl))
+					return [new ValidationResult("ImageSharp does not support AVIF or JXL. Please choose a different format, or switch to LibVips.")];
+				// @formatter:on
+			}
+
+			// @formatter:off
+			if (ImagePipeline.Original.Local.Format == ImageFormatEnum.None || ImagePipeline.Original.Remote.Format == ImageFormatEnum.None)
+				return [new ValidationResult("The image format 'None' is not valid for original image versions. Please choose a different format.")];
+			// @formatter:on
+
+			formats.ForEach(p =>
+			{
+				var context = new ValidationContext(p);
+				Validator.TryValidateObject(p, context, res, true);
+			});
+
+			return res;
 		}
 	}
 

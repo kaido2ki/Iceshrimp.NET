@@ -128,6 +128,7 @@ public static class ServiceExtensions
 
 	public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration)
 	{
+		// @formatter:off
 		services.ConfigureWithValidation<Config>(configuration)
 		        .ConfigureWithValidation<Config.InstanceSection>(configuration, "Instance")
 		        .ConfigureWithValidation<Config.SecuritySection>(configuration, "Security")
@@ -138,7 +139,16 @@ public static class ServiceExtensions
 		        .ConfigureWithValidation<Config.DatabaseSection>(configuration, "Database")
 		        .ConfigureWithValidation<Config.StorageSection>(configuration, "Storage")
 		        .ConfigureWithValidation<Config.LocalStorageSection>(configuration, "Storage:Local")
-		        .ConfigureWithValidation<Config.ObjectStorageSection>(configuration, "Storage:ObjectStorage");
+		        .ConfigureWithValidation<Config.ObjectStorageSection>(configuration, "Storage:ObjectStorage")
+		        .ConfigureWithValidation<Config.MediaProcessingSection>(configuration, "Storage:MediaProcessing")
+		        .ConfigureWithValidation<Config.ImagePipelineSection>(configuration, "Storage:MediaProcessing:ImagePipeline")
+		        .ConfigureWithValidation<Config.ImageFormatConfiguration>(configuration, "Storage:MediaProcessing:ImagePipeline:Original:Local")
+		        .ConfigureWithValidation<Config.ImageFormatConfiguration>(configuration, "Storage:MediaProcessing:ImagePipeline:Original:Remote")
+		        .ConfigureWithValidation<Config.ImageFormatConfiguration>(configuration, "Storage:MediaProcessing:ImagePipeline:Thumbnail:Local")
+		        .ConfigureWithValidation<Config.ImageFormatConfiguration>(configuration, "Storage:MediaProcessing:ImagePipeline:Thumbnail:Remote")
+		        .ConfigureWithValidation<Config.ImageFormatConfiguration>(configuration, "Storage:MediaProcessing:ImagePipeline:Public:Local")
+		        .ConfigureWithValidation<Config.ImageFormatConfiguration>(configuration, "Storage:MediaProcessing:ImagePipeline:Public:Remote");
+		// @formatter:on
 
 		services.Configure<JsonOptions>(options =>
 		{
