@@ -203,9 +203,10 @@ public sealed class Config
 		public ImagePipelineSection ImagePipeline { get; init; } = new();
 
 		public readonly int                  MaxFileSizeBytes = 10 * 1024 * 1024;
-		public          Enums.ImageProcessor ImageProcessor   { get; init; } = Enums.ImageProcessor.ImageSharp;
-		public          int                  MaxResolutionMpx { get; init; } = 30;
-		public          bool                 LocalOnly        { get; init; } = false;
+		public          Enums.ImageProcessor ImageProcessor           { get; init; } = Enums.ImageProcessor.ImageSharp;
+		public          int                  MaxResolutionMpx         { get; init; } = 30;
+		public          bool                 LocalOnly                { get; init; } = false;
+		public          bool                 FailIfImageExceedsMaxRes { get; init; } = false;
 
 		[Range(0, 128)] public int ImageProcessorConcurrency { get; init; } = 8;
 

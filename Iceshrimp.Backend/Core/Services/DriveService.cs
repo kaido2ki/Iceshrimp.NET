@@ -263,9 +263,16 @@ public class DriveService(
 					}
 					else if (ident.Width * ident.Height > storageConfig.Value.MediaProcessing.MaxResolutionPx)
 					{
+						var config = storageConfig.Value.MediaProcessing;
+						if (config.FailIfImageExceedsMaxRes)
+						{
+							// @formatter:off
+							throw GracefulException.UnprocessableEntity($"Image is larger than {config.MaxResolutionMpx}mpx. Please resize your image to fit within the allowed dimensions.");
+							// @formatter:on
+						}
+
 						logger.LogDebug("Image is larger than {mpx}mpx ({width}x{height}), bypassing image processing...",
-						                storageConfig.Value.MediaProcessing.MaxResolutionMpx, ident.Width,
-						                ident.Height);
+						                config.MaxResolutionMpx, ident.Width, ident.Height);
 						skipImageProcessing = true;
 					}
 
