@@ -1,5 +1,4 @@
 using System.Runtime.InteropServices;
-using System.Security;
 using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Helpers;
 using NetVips;

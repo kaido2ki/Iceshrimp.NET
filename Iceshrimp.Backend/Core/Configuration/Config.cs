@@ -209,6 +209,8 @@ public sealed class Config
 
 		[Range(0, 128)] public int ImageProcessorConcurrency { get; init; } = 8;
 
+		public int MaxResolutionPx => MaxResolutionMpx * 1000 * 1000;
+
 		public string MaxFileSize
 		{
 			get => MaxFileSizeBytes.ToString();

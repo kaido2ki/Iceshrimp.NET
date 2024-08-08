@@ -261,9 +261,17 @@ public class DriveService(
 						logger.LogDebug("Image is animated, bypassing image processing...");
 						skipImageProcessing = true;
 					}
+					else if (ident.Width * ident.Height > storageConfig.Value.MediaProcessing.MaxResolutionPx)
+					{
+						logger.LogDebug("Image is larger than {mpx}mpx ({width}x{height}), bypassing image processing...",
+						                storageConfig.Value.MediaProcessing.MaxResolutionMpx, ident.Width,
+						                ident.Height);
+						skipImageProcessing = true;
+					}
 
 					var formats = GetFormats(user, request, skipImageProcessing);
-					var res     = imageProcessor.ProcessImage(buf, ident, request, formats);
+
+					var res = imageProcessor.ProcessImage(buf, ident, request, formats);
 					properties = res;
 					blurhash   = res.Blurhash;
 
