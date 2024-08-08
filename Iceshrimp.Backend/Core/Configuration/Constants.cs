@@ -31,6 +31,7 @@ public static class Constants
 		"image/tiff",
 		"image/x-icon",
 		"image/avif",
+		"image/heic",
 		"audio/opus",
 		"video/ogg",
 		"audio/ogg",
