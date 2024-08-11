@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http;
-
 namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
 internal class PaginationQuery

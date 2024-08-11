@@ -7,7 +7,6 @@ using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Shared.Configuration;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.Http;
 
 namespace Iceshrimp.Frontend.Core.Services;
 

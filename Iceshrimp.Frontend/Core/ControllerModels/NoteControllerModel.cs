@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
-using Microsoft.AspNetCore.Http;
 
 namespace Iceshrimp.Frontend.Core.ControllerModels;
 
@@ -17,14 +17,14 @@ internal class NoteControllerModel(ApiClient api)
 	public Task<List<NoteResponse>?> GetNoteAscendants(string id, [DefaultValue(20)] [Range(1, 100)] int? limit)
 	{
 		var query = new QueryString();
-		if (limit.HasValue) query.Add("limit", limit.ToString());
+		if (limit.HasValue) query.Add("limit", limit.Value.ToString());
 		return api.CallNullable<List<NoteResponse>>(HttpMethod.Get, $"/notes/{id}/ascendants", query);
 	}
 
 	public Task<List<NoteResponse>?> GetNoteDescendants(string id, [DefaultValue(20)] [Range(1, 100)] int? depth)
 	{
 		var query = new QueryString();
-		if (depth.HasValue) query.Add("depth", depth.ToString());
+		if (depth.HasValue) query.Add("depth", depth.Value.ToString());
 		return api.CallNullable<List<NoteResponse>>(HttpMethod.Get, $"/notes/{id}/descendants", query);
 	}
 

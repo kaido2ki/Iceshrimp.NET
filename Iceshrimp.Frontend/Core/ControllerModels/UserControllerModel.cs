@@ -1,7 +1,6 @@
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
-using Microsoft.AspNetCore.Http;
 
 namespace Iceshrimp.Frontend.Core.ControllerModels;
 
