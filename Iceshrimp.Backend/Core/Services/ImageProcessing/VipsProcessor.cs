@@ -112,9 +112,9 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor
 
 	private static Image StripMetadata(Image image)
 	{
-		return image.Mutate(mutable =>
+		using var intermediate = image.Autorot();
+		return intermediate.Mutate(mutable =>
 		{
-			mutable.Autorot();
 			foreach (var field in mutable.GetFields())
 			{
 				if (field is "icc-profile-data") continue;
