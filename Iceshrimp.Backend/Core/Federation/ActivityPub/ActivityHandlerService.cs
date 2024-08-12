@@ -58,6 +58,9 @@ public class ActivityHandlerService(
 
 		UpdateInstanceMetadataInBackground(resolvedActor.Host, new Uri(resolvedActor.Uri).Host);
 
+		if (resolvedActor.IsSuspended && activity is not ASDelete)
+			throw GracefulException.UnprocessableEntity("Actor is suspended");
+
 		var inboxUser = inboxUserId != null
 			? await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == inboxUserId)
 			: null;
