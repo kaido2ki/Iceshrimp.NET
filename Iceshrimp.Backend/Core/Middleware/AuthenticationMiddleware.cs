@@ -37,6 +37,10 @@ public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc, M
 				                         .Include(p => p.App)
 				                         .FirstOrDefaultAsync(p => p.Token == token && p.Active);
 
+				if (oauthToken?.User.IsSuspended == true)
+					throw GracefulException
+						.Unauthorized("Your access has been suspended by the instance administrator.");
+
 				if (oauthToken == null)
 				{
 					await next(ctx);
@@ -69,6 +73,10 @@ public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc, M
 				                      .Include(p => p.User.UserProfile)
 				                      .Include(p => p.User.UserSettings)
 				                      .FirstOrDefaultAsync(p => p.Token == token && p.Active);
+
+				if (session?.User.IsSuspended == true)
+					throw GracefulException
+						.Unauthorized("Your access has been suspended by the instance administrator.");
 
 				if (session == null)
 				{
