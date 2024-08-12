@@ -31,7 +31,7 @@ public class DriveController(
 	{
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.AccessKey == accessKey ||
 		                                                        p.PublicAccessKey == accessKey ||
-		                                                        p.ThumbnailAccessUrl == accessKey);
+		                                                        p.ThumbnailAccessKey == accessKey);
 		if (file == null)
 		{
 			Response.Headers.CacheControl = "max-age=86400";
