@@ -8,6 +8,7 @@
       "@id": "http://joinmastodon.org/ns#featured",
       "@type": "@id"
     },
-    "EmojiReact": "http://litepub.social/ns#EmojiReact"
+    "EmojiReact": "http://litepub.social/ns#EmojiReact",
+    "sensitive": "https://www.w3.org/ns/activitystreams#sensitive"
   }
 }

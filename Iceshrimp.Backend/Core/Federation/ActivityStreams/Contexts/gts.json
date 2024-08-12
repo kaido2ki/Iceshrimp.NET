@@ -1,0 +1,17 @@
+{
+  "@context": {
+    "gts": "https://gotosocial.org/ns#",
+    "interactionPolicy": "gts:interactionPolicy",
+    "canLike": "gts:canLike",
+    "canReply": "gts:canReply",
+    "canAnnounce": "gts:canAnnounce",
+    "always": {
+      "@id": "gts:always",
+      "@type": "@id"
+    },
+    "approvalRequired": {
+      "@id": "gts:approvalRequired",
+      "@type": "@id"
+    }
+  }
+}
