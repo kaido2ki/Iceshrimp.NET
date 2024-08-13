@@ -82,6 +82,10 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 					Rel      = "http://ostatus.org/schema/1.0/subscribe",
 					Template = $"https://{config.Value.WebDomain}/authorize-follow?acct={{uri}}"
 				}
+			],
+			Aliases = [
+				user.GetPublicUrl(config.Value),
+				user.GetPublicUri(config.Value)
 			]
 		};
 	}
