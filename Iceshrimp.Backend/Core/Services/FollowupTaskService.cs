@@ -1,6 +1,6 @@
 namespace Iceshrimp.Backend.Core.Services;
 
-public class FollowupTaskService(IServiceScopeFactory serviceScopeFactory)
+public class FollowupTaskService(IServiceScopeFactory serviceScopeFactory, ILogger<FollowupTaskService> logger)
 {
 	public bool IsBackgroundWorker { get; private set; }
 
@@ -9,16 +9,15 @@ public class FollowupTaskService(IServiceScopeFactory serviceScopeFactory)
 		return Task.Run(async () =>
 		{
 			await using var scope = serviceScopeFactory.CreateAsyncScope();
+
 			try
 			{
-				var provider = scope.ServiceProvider;
-				var instance = provider.GetRequiredService<FollowupTaskService>();
+				var instance = scope.ServiceProvider.GetRequiredService<FollowupTaskService>();
 				instance.IsBackgroundWorker = true;
-				await work(provider);
+				await work(scope.ServiceProvider);
 			}
 			catch (Exception e)
 			{
-				var logger = scope.ServiceProvider.GetRequiredService<ILogger<FollowupTaskService>>();
 				logger.LogError("Failed to execute background task {name}: {error}", taskName, e.ToString());
 			}
 		});

@@ -398,6 +398,7 @@ public class PostgresJobQueue<T>(
 		if (await db.GetJob(name).ToListAsync(token) is not [{ } job])
 			return;
 
+		using var _ = _logger.BeginScope(("JobId", job.Id.ToStringLower()));
 		_logger.LogTrace("Processing {queue} job {id}", name, job.Id);
 
 		var data = JsonSerializer.Deserialize<T>(job.Data);

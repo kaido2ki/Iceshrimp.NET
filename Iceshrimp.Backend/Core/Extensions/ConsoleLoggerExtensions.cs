@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Console;
 
@@ -40,6 +41,12 @@ file static class TextWriterExtensions
 		ConsoleColor? foreground
 	)
 	{
+		if (!ConsoleUtils.EmitAnsiColorCodes)
+		{
+			background = null;
+			foreground = null;
+		}
+
 		if (background.HasValue)
 			textWriter.Write(GetBackgroundColorEscapeCode(background.Value));
 		if (foreground.HasValue)
@@ -127,7 +134,7 @@ file static class ConsoleUtils
 	}
 }
 
-file sealed class CustomFormatter() : ConsoleFormatter("custom")
+file sealed class CustomFormatter() : ConsoleFormatter("custom"), ISupportExternalScope
 {
 	private const string LoglevelPadding = ": ";
 
@@ -135,6 +142,8 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom")
 		new(' ', GetLogLevelString(LogLevel.Information).Length + LoglevelPadding.Length);
 
 	private static readonly string NewLineWithMessagePadding = Environment.NewLine + MessagePadding;
+
+	private IExternalScopeProvider? _scopeProvider;
 
 	public override void Write<TState>(
 		in LogEntry<TState> logEntry,
@@ -144,10 +153,26 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom")
 	{
 		var message = logEntry.Formatter(logEntry.State, logEntry.Exception);
 		// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-		if (logEntry.Exception == null && message == null)
-		{
-			return;
-		}
+		if (logEntry.Exception == null && message == null) return;
+
+		scopeProvider = _scopeProvider ?? scopeProvider;
+		Dictionary<string, string> scopes = [];
+		scopeProvider?.ForEachScope((p, _) =>
+		                            {
+			                            if (p is KeyValuePair<string, string> kvp)
+				                            scopes.Add(kvp.Key, kvp.Value);
+			                            else if (p is Tuple<string, string> tuple)
+				                            scopes.Add(tuple.Item1, tuple.Item2);
+			                            else if (p is (string key, string value))
+				                            scopes.Add(key, value);
+			                            else if (p is IEnumerable<KeyValuePair<string, object>> @enum)
+				                            foreach (var item in @enum.Where(e => e.Value is string))
+					                            scopes.Add(item.Key, (string)item.Value);
+		                            },
+		                            null as object);
+
+		var scope = scopes.GetValueOrDefault("JobId") ??
+		            scopes.GetValueOrDefault("RequestId");
 
 		var logLevel       = logEntry.LogLevel;
 		var logLevelColors = GetLogLevelConsoleColors(logLevel);
@@ -155,30 +180,29 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom")
 
 		textWriter.WriteColoredMessage(logLevelString, logLevelColors.Background, logLevelColors.Foreground);
 
-		CreateDefaultLogMessage(textWriter, logEntry, message);
+		CreateDefaultLogMessage(textWriter, logEntry, message, scope);
 	}
 
 	private static void CreateDefaultLogMessage<TState>(
 		TextWriter textWriter, in LogEntry<TState> logEntry,
-		string message
+		string message, string? scope
 	)
 	{
-		var eventId    = logEntry.EventId.Id;
 		var exception  = logEntry.Exception;
 		var singleLine = !message.Contains('\n') && exception == null;
 
 		textWriter.Write(LoglevelPadding);
-		textWriter.Write(logEntry.Category);
-		textWriter.Write('[');
+		textWriter.WriteColoredMessage("[", null, ConsoleColor.Gray);
+		textWriter.WriteColoredMessage(scope ?? "core", null, ConsoleColor.Cyan);
+		textWriter.WriteColoredMessage("] ", null, ConsoleColor.Gray);
+		textWriter.WriteColoredMessage(logEntry.Category, null, ConsoleColor.Blue);
 
-		Span<char> span = stackalloc char[10];
-		if (eventId.TryFormat(span, out var charsWritten))
-			textWriter.Write(span[..charsWritten]);
+		if (singleLine) textWriter.WriteColoredMessage(" >", null, ConsoleColor.Gray);
 		else
-			textWriter.Write(eventId.ToString());
-
-		textWriter.Write(']');
-		if (!singleLine) textWriter.Write(Environment.NewLine);
+		{
+			textWriter.WriteColoredMessage(":", null, ConsoleColor.Gray);
+			textWriter.Write(Environment.NewLine);
+		}
 
 		WriteMessage(textWriter, message, singleLine);
 
@@ -256,11 +280,18 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom")
 		public ConsoleColor? Foreground { get; } = foreground;
 		public ConsoleColor? Background { get; } = background;
 	}
+
+	public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+	{
+		_scopeProvider = scopeProvider;
+	}
 }
 
-file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-custom")
+file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-custom"), ISupportExternalScope
 {
 	private static readonly string MessagePadding = new(' ', 6);
+
+	private IExternalScopeProvider? _scopeProvider;
 
 	public override void Write<TState>(
 		in LogEntry<TState> logEntry,
@@ -272,17 +303,37 @@ file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-cu
 		// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 		if (logEntry.Exception == null && message == null) return;
 		var logLevel             = logEntry.LogLevel;
-		var category             = logEntry.Category;
-		var id                   = logEntry.EventId.Id;
+		var category             = logEntry.Category + " " + Activity.Current?.TraceId;
 		var exception            = logEntry.Exception;
 		var singleLine           = !message.Contains('\n') && exception == null;
 		var syslogSeverityString = GetSyslogSeverityString(logLevel);
-		textWriter.Write(syslogSeverityString);
 
-		textWriter.Write(category);
+		scopeProvider = _scopeProvider ?? scopeProvider;
+		Dictionary<string, string> scopes = [];
+		scopeProvider?.ForEachScope((p, _) =>
+		                            {
+			                            if (p is KeyValuePair<string, string> kvp)
+				                            scopes.Add(kvp.Key, kvp.Value);
+			                            else if (p is Tuple<string, string> tuple)
+				                            scopes.Add(tuple.Item1, tuple.Item2);
+			                            else if (p is (string key, string value))
+				                            scopes.Add(key, value);
+			                            else if (p is IEnumerable<KeyValuePair<string, object>> @enum)
+				                            foreach (var item in @enum.Where(e => e.Value is string))
+					                            scopes.Add(item.Key, (string)item.Value);
+		                            },
+		                            null as object);
+
+		var scope = scopes.GetValueOrDefault("JobId") ??
+		            scopes.GetValueOrDefault("RequestId");
+
+		textWriter.Write(syslogSeverityString);
 		textWriter.Write('[');
-		textWriter.Write(id);
+		textWriter.Write(scope ?? "core");
 		textWriter.Write(']');
+		textWriter.Write(' ');
+		textWriter.Write(category);
+		textWriter.Write(singleLine ? " >" : ":");
 
 		if (!string.IsNullOrEmpty(message))
 			WriteMessage(textWriter, message, logLevel, singleLine);
@@ -343,6 +394,11 @@ file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-cu
 			LogLevel.Critical    => "<2>",
 			_                    => throw new ArgumentOutOfRangeException(nameof(logLevel))
 		};
+	}
+
+	public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+	{
+		_scopeProvider = scopeProvider;
 	}
 }
 
