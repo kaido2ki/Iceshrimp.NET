@@ -190,7 +190,7 @@ public class PostgresJobQueue<T>(
 	 * The _semaphore object tracks how many jobs are currently running / how many more can be started before reaching
 	 * the configured maximum concurrency for this queue. It also resolves a race condition that existed here previously,
 	 * because counting the number of running jobs database-side is not atomic & therefore causes a ToC/ToU condition.
-	 * 
+	 *
 	 * With that out of the way, the actual loop runs the following algorithm:
 	 * 1. If either 'token' or 'queueToken' are canceled, wait for all remaining tasks to finish before returning.
 	 * 2. Obtain a service scope & a corresponding database context
@@ -399,11 +399,12 @@ public class PostgresJobQueue<T>(
 			return;
 
 		using var _ = _logger.BeginScope(("JobId", job.Id.ToStringLower()));
-		_logger.LogTrace("Processing {queue} job {id}", name, job.Id);
+		_logger.LogTrace("Begin processing {queue} job", name);
 
 		var data = JsonSerializer.Deserialize<T>(job.Data);
 		if (data == null)
 		{
+			_logger.LogError("Failed to deserialize job data");
 			job.Status           = Job.JobStatus.Failed;
 			job.ExceptionMessage = "Failed to deserialize job data";
 			job.FinishedAt       = DateTime.UtcNow;
@@ -427,18 +428,17 @@ public class PostgresJobQueue<T>(
 			var queueName = data is BackgroundTaskJobData ? name + $" ({data.GetType().Name})" : name;
 			if (e is GracefulException { Details: not null } ce)
 			{
-				_logger.LogError("Failed to process job {id} in queue {queue}: {error} - {details}",
-				                 job.Id.ToStringLower(), queueName, ce.Message, ce.Details);
+				_logger.LogError("Failed to process {queue} job: {error} - {details}",
+				                 queueName, ce.Message, ce.Details);
 			}
 			else if (e is TimeoutException)
 			{
-				_logger.LogError("Job {id} in queue {queue} didn't complete within the configured timeout ({timeout} seconds)",
-				                 job.Id.ToStringLower(), queueName, (int)timeout.TotalSeconds);
+				_logger.LogError("Job in queue {queue} didn't complete within the configured timeout ({timeout} seconds)",
+				                 queueName, (int)timeout.TotalSeconds);
 			}
 			else
 			{
-				_logger.LogError(e, "Failed to process job {id} in queue {queue}: {error}",
-				                 job.Id.ToStringLower(), queueName, e);
+				_logger.LogError(e, "Failed to process {queue} job: {error}", queueName, e);
 			}
 		}
 
@@ -457,8 +457,8 @@ public class PostgresJobQueue<T>(
 			}
 			else
 			{
-				_logger.LogTrace("Job {id} in queue {queue} was delayed to {time} after {duration} ms, has been queued since {time}",
-				                 job.Id, name, job.DelayedUntil.Value.ToLocalTime().ToStringIso8601Like(), job.Duration,
+				_logger.LogTrace("Job in queue {queue} was delayed to {time} after {duration} ms, has been queued since {time}",
+				                 name, job.DelayedUntil.Value.ToLocalTime().ToStringIso8601Like(), job.Duration,
 				                 job.QueuedAt.ToLocalTime().ToStringIso8601Like());
 				db.ChangeTracker.Clear();
 				db.Update(job);
@@ -474,13 +474,13 @@ public class PostgresJobQueue<T>(
 
 			if (job.RetryCount == 0)
 			{
-				_logger.LogTrace("Job {id} in queue {queue} completed after {duration} ms, was queued for {queueDuration} ms",
-				                 job.Id, name, job.Duration, job.QueueDuration);
+				_logger.LogTrace("Job in queue {queue} completed after {duration} ms, was queued for {queueDuration} ms",
+				                 name, job.Duration, job.QueueDuration);
 			}
 			else
 			{
-				_logger.LogTrace("Job {id} in queue {queue} completed after {duration} ms, has been queued since {time}",
-				                 job.Id, name, job.Duration, job.QueuedAt.ToStringIso8601Like());
+				_logger.LogTrace("Job in queue {queue} completed after {duration} ms, has been queued since {time}",
+				                 name, job.Duration, job.QueuedAt.ToStringIso8601Like());
 			}
 		}
 

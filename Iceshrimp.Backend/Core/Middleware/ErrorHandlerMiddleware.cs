@@ -38,20 +38,18 @@ public class ErrorHandlerMiddleware(
 					var level = earlyCe.SuppressLog ? LogLevel.Trace : LogLevel.Debug;
 					if (earlyCe.Details != null)
 					{
-						logger.Log(level, "Request {id} was rejected with {statusCode} {error}: {message} - {details}",
-						           ctx.TraceIdentifier, (int)earlyCe.StatusCode, earlyCe.Error, earlyCe.Message,
-						           earlyCe.Details);
+						logger.Log(level, "Request was rejected with {statusCode} {error}: {message} - {details}",
+						           (int)earlyCe.StatusCode, earlyCe.Error, earlyCe.Message, earlyCe.Details);
 					}
 					else
 					{
-						logger.Log(level, "Request {id} was rejected with {statusCode} {error}: {message}",
-						           ctx.TraceIdentifier, (int)earlyCe.StatusCode, earlyCe.Error, earlyCe.Message);
+						logger.Log(level, "Request was rejected with {statusCode} {error}: {message}",
+						           (int)earlyCe.StatusCode, earlyCe.Error, earlyCe.Message);
 					}
 				}
 				else
 				{
-					logger.LogError("Request {id} encountered an unexpected error: {exception}", ctx.TraceIdentifier,
-					                e.ToString());
+					logger.LogError("Request encountered an unexpected error: {exception}", e.ToString());
 				}
 
 				return;
@@ -100,11 +98,11 @@ public class ErrorHandlerMiddleware(
 
 				if (ce.Details != null)
 					logger.Log(level,
-					           "Request {id} was rejected by {source} with {statusCode} {error}: {message} - {details}",
-					           ctx.TraceIdentifier, type, (int)ce.StatusCode, ce.Error, ce.Message, ce.Details);
+					           "Request was rejected by {source} with {statusCode} {error}: {message} - {details}",
+					           type, (int)ce.StatusCode, ce.Error, ce.Message, ce.Details);
 				else
-					logger.Log(level, "Request {id} was rejected by {source} with {statusCode} {error}: {message}",
-					           ctx.TraceIdentifier, type, (int)ce.StatusCode, ce.Error, ce.Message);
+					logger.Log(level, "Request was rejected by {source} with {statusCode} {error}: {message}",
+					           type, (int)ce.StatusCode, ce.Error, ce.Message);
 			}
 			else
 			{
@@ -122,8 +120,7 @@ public class ErrorHandlerMiddleware(
 					RequestId = ctx.TraceIdentifier
 				});
 				//TODO: use the overload that takes an exception instead of printing it ourselves
-				logger.LogError("Request {id} encountered an unexpected error: {exception}", ctx.TraceIdentifier,
-				                e.ToString());
+				logger.LogError("Request encountered an unexpected error: {exception}", e);
 			}
 		}
 	}
