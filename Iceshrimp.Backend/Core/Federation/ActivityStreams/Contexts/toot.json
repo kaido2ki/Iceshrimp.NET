@@ -6,9 +6,12 @@
     "memorial": "toot:memorial",
     "votersCount": "toot:votersCount",
     "suspended": "toot:suspended",
-    "devices": "toot:devices",
     "Emoji": "toot:Emoji",
     "blurhash": "toot:blurhash",
+    "devices": {
+      "@id": "toot:devices",
+      "@type": "@id"
+    },
     "featured": {
       "@id": "toot:featured",
       "@type": "@id"
