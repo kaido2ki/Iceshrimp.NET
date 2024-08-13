@@ -43,15 +43,18 @@ public class UserResolver(
 	 */
 
 	private async Task<(string Acct, string Uri)> WebFingerAsync(
-		string query, bool recurse = true, string? actorUri = null
+		string query, bool recurse = true, string? actorUri = null,
+		Dictionary<string, WebFingerResponse>? responses = null
 	)
 	{
 		if (actorUri == null)
 			logger.LogDebug("Running WebFinger for query '{query}'", query);
 		else
-			logger.LogDebug("Running WebFinger reverse discovery for query '{query}' and uri '{uri}'", query, actorUri);
+			logger.LogDebug("Performing WebFinger reverse discovery for query '{query}' and uri '{uri}'",
+			                query, actorUri);
 
-		var responses = new Dictionary<string, WebFingerResponse>();
+		responses ??= [];
+
 		var fingerRes = await webFingerSvc.ResolveAsync(query);
 		if (fingerRes == null)
 		{
@@ -121,7 +124,7 @@ public class UserResolver(
 						actor.Normalize(apUri);
 						var domain   = new Uri(actor.Id).Host;
 						var username = new Uri(actor.Username!).Host;
-						return await WebFingerAsync($"acct:{username}@{domain}", false, apUri);
+						return await WebFingerAsync($"acct:{username}@{domain}", false, apUri, responses);
 					}
 					catch (Exception e)
 					{
