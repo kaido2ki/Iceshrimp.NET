@@ -73,7 +73,8 @@ public sealed class StreamingConnectionAggregate : IDisposable
 			if (notification.Notifier != null && IsFiltered(notification.Notifier)) return;
 
 			await using var scope = GetTempScope();
-			if (notification.Note != null && await IsMutedThread(notification.Note, scope)) return;
+			if (notification.Note != null && await IsMutedThread(notification.Note, scope, true))
+				return;
 
 			var renderer = scope.ServiceProvider.GetRequiredService<NotificationRenderer>();
 			var rendered = await renderer.RenderOne(notification, _user);
@@ -171,12 +172,12 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		return res is not { Note.IsPureRenote: true, Renote: null } ? res : null;
 	}
 
-	private async Task<bool> IsMutedThread(Note note, AsyncServiceScope scope)
+	private async Task<bool> IsMutedThread(Note note, AsyncServiceScope scope, bool isNotification = false)
 	{
-		if (note.Reply == null) return false;
-		if (note.User.Id == _userId) return false;
+		if (!isNotification && note.Reply == null) return false;
+		if (!isNotification && note.User.Id == _userId) return false;
 		var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-		return await db.NoteThreadMutings.AnyAsync(p => p.UserId == _userId && p.ThreadId == note.ThreadId);
+		return await db.NoteThreadMutings.AnyAsync(p => p.UserId == _userId && p.ThreadId == note.ThreadIdOrId);
 	}
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]

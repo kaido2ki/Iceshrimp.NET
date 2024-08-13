@@ -175,7 +175,8 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			if (IsFiltered(notification)) return;
 
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
-			if (notification.Note != null && await connection.IsMutedThread(notification.Note, scope)) return;
+			if (notification.Note != null && await connection.IsMutedThread(notification.Note, scope, true))
+				return;
 
 			var renderer = scope.ServiceProvider.GetRequiredService<NotificationRenderer>();
 
