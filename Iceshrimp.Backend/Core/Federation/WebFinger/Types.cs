@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using System.Xml.Serialization;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using JR = System.Text.Json.Serialization.JsonRequiredAttribute;
 using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
@@ -9,16 +10,19 @@ namespace Iceshrimp.Backend.Core.Federation.WebFinger;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public sealed class WebFingerLink
 {
-	[J("rel")] [JR] public string Rel { get; set; } = null!;
+	[XmlAttribute("rel")] [J("rel")] [JR] public required string Rel { get; set; } = null!;
 
+	[XmlAttribute("type")]
 	[J("type")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Type { get; set; }
 
+	[XmlAttribute("href")]
 	[J("href")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Href { get; set; }
 
+	[XmlAttribute("template")]
 	[J("template")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Template { get; set; }
@@ -34,6 +38,14 @@ public sealed class WebFingerResponse
 	[J("aliases")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public List<string>? Aliases { get; set; }
+}
+
+[XmlRoot("XRD", Namespace = "http://docs.oasis-open.org/ns/xri/xrd-1.0", IsNullable = false)]
+public sealed class WebFingerXmlResponse
+{
+	[XmlElement("Subject")] public required string              Subject { get; set; } = null!;
+	[XmlElement("Alias")]   public          List<string>?       Aliases { get; set; }
+	[XmlElement("Link")]    public required List<WebFingerLink> Links   { get; set; }
 }
 
 public sealed class NodeInfoIndexResponse

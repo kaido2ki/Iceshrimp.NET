@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Net;
 using System.Text.Encodings.Web;
 using System.Xml.Linq;
+using System.Xml.Serialization;
 using Iceshrimp.Backend.Controllers.Federation.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Middleware;
@@ -52,10 +53,22 @@ public class WebFingerService(
 			throw AuthFetchException.NotFound("The remote user no longer exists.");
 		if (!res.IsSuccessStatusCode)
 			return null;
-		if (res.Content.Headers.ContentType?.MediaType is not "application/jrd+json" and not "application/json")
+		if (!Accept.Contains(res.Content.Headers.ContentType?.MediaType ?? ""))
 			return null;
 
-		return await res.Content.ReadFromJsonAsync<WebFingerResponse>(cts.Token);
+		if (res.Content.Headers.ContentType?.MediaType is "application/jrd+json" or "application/json")
+			return await res.Content.ReadFromJsonAsync<WebFingerResponse>(cts.Token);
+
+		var deserializer = new XmlSerializer(typeof(WebFingerXmlResponse));
+		if (deserializer.Deserialize(await res.Content.ReadAsStreamAsync(cts.Token)) is not WebFingerXmlResponse xml)
+			throw new Exception("Failed to deserialize xml payload");
+
+		return new WebFingerResponse
+		{
+			Subject = xml.Subject,
+			Links   = xml.Links,
+			Aliases = xml.Aliases
+		};
 	}
 
 	public static (string query, string proto, string domain) ParseQuery(string query)
