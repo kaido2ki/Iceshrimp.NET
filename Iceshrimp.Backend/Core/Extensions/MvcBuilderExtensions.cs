@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Net;
 using System.Text.Encodings.Web;
+using System.Xml;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
@@ -35,6 +36,7 @@ public static class MvcBuilderExtensions
 
 			       opts.InputFormatters.Insert(0, new JsonInputMultiFormatter());
 			       opts.OutputFormatters.Insert(0, new JsonOutputMultiFormatter());
+			       opts.OutputFormatters.Add(new XmlSerializerOutputFormatter());
 		       });
 
 		return builder;

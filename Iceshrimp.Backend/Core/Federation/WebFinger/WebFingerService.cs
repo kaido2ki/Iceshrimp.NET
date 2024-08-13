@@ -59,16 +59,10 @@ public class WebFingerService(
 		if (res.Content.Headers.ContentType?.MediaType is "application/jrd+json" or "application/json")
 			return await res.Content.ReadFromJsonAsync<WebFingerResponse>(cts.Token);
 
-		var deserializer = new XmlSerializer(typeof(WebFingerXmlResponse));
-		if (deserializer.Deserialize(await res.Content.ReadAsStreamAsync(cts.Token)) is not WebFingerXmlResponse xml)
-			throw new Exception("Failed to deserialize xml payload");
+		var deserializer = new XmlSerializer(typeof(WebFingerResponse));
 
-		return new WebFingerResponse
-		{
-			Subject = xml.Subject,
-			Links   = xml.Links,
-			Aliases = xml.Aliases
-		};
+		return deserializer.Deserialize(await res.Content.ReadAsStreamAsync(cts.Token)) as WebFingerResponse ??
+		       throw new Exception("Failed to deserialize xml payload");
 	}
 
 	public static (string query, string proto, string domain) ParseQuery(string query)

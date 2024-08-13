@@ -24,7 +24,7 @@ namespace Iceshrimp.Backend.Controllers.Federation;
 public class WellKnownController(IOptions<Config.InstanceSection> config, DatabaseContext db) : ControllerBase
 {
 	[HttpGet("webfinger")]
-	[Produces(MediaTypeNames.Application.Json, "application/jrd+json")]
+	[Produces("application/jrd+json", "application/json", "application/xrd+xml", "application/xml")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<WebFingerResponse> WebFinger([FromQuery] string resource)
@@ -63,6 +63,12 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 				{
 					Rel  = "self",
 					Type = "application/activity+json",
+					Href = user.GetPublicUri(config.Value)
+				},
+				new WebFingerLink
+				{
+					Rel  = "self",
+					Type = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"",
 					Href = user.GetPublicUri(config.Value)
 				},
 				new WebFingerLink

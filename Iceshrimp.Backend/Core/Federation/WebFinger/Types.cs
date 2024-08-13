@@ -30,22 +30,23 @@ public sealed class WebFingerLink
 
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[XmlRoot("XRD", Namespace = "http://docs.oasis-open.org/ns/xri/xrd-1.0", IsNullable = false)]
 public sealed class WebFingerResponse
 {
-	[J("links")] [JR]   public List<WebFingerLink> Links   { get; set; } = null!;
-	[J("subject")] [JR] public string              Subject { get; set; } = null!;
+	[XmlElement("Link")]
+	[J("links")]
+	[JR]
+	public required List<WebFingerLink> Links { get; set; } = null!;
 
+	[XmlElement("Subject")]
+	[J("subject")]
+	[JR]
+	public required string Subject { get; set; } = null!;
+
+	[XmlElement("Alias")]
 	[J("aliases")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public List<string>? Aliases { get; set; }
-}
-
-[XmlRoot("XRD", Namespace = "http://docs.oasis-open.org/ns/xri/xrd-1.0", IsNullable = false)]
-public sealed class WebFingerXmlResponse
-{
-	[XmlElement("Subject")] public required string              Subject { get; set; } = null!;
-	[XmlElement("Alias")]   public          List<string>?       Aliases { get; set; }
-	[XmlElement("Link")]    public required List<WebFingerLink> Links   { get; set; }
 }
 
 public sealed class NodeInfoIndexResponse
