@@ -11,7 +11,7 @@
     border-radius: 1rem;
     min-width: 15rem;
     min-height: 10rem;
-    overflow: scroll;
+    overflow: auto;
     top: calc(var(--top) + 2.5rem);
     left: calc(var(--left) - 5.5rem);
 }
