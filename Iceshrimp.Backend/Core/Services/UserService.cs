@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using AsyncKeyedLock;
 using EntityFramework.Exceptions.Common;
 using Iceshrimp.Backend.Core.Configuration;
@@ -377,8 +378,8 @@ public class UserService(
 		if (security.Value.Registrations == Enums.Registrations.Invite &&
 		    !await db.RegistrationInvites.AnyAsync(p => p.Code == invite))
 			throw new GracefulException(HttpStatusCode.Forbidden, "The specified invite code is invalid");
-		if (username.Contains('.'))
-			throw new GracefulException(HttpStatusCode.BadRequest, "Username must not contain the dot character");
+		if (!Regex.IsMatch(username, @"^\w+$"))
+			throw new GracefulException(HttpStatusCode.BadRequest, "Username must only contain letters");
 		if (Constants.SystemUsers.Contains(username.ToLowerInvariant()))
 			throw new GracefulException(HttpStatusCode.BadRequest, "Username must not be a system user");
 		if (await db.Users.AnyAsync(p => p.IsLocalUser && p.UsernameLower == username.ToLowerInvariant()))
