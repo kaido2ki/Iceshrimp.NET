@@ -12,7 +12,8 @@
 @inject MessageService                 MessageService
 @inject StateService                   State
 @inject NavigationManager              Navigation
-@inject IStringLocalizer<Localization> Loc;
+@inject IStringLocalizer<Localization> Loc
+@inject ILogger<SingleNote> Logger;
 
 @implements IDisposable
 
@@ -82,6 +83,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        Logger.LogTrace($"Opening NoteID: {NoteId}");
         _componentState = LoadState.Loading;
         if (NoteId == null)
         {
@@ -98,8 +100,9 @@
             Descendants = await descendantsTask;
             Ascendants  = await ascendantsTask;
         }
-        catch (ApiException)
+        catch (ApiException e)
         {
+            Logger.LogWarning($"Failed to load ID '{NoteId}' due to API Exception: {e.Message}");
             _componentState = LoadState.Error;
             return;
         }

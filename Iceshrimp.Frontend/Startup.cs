@@ -1,6 +1,7 @@
 using System.Globalization;
 using Blazored.LocalStorage;
 using Iceshrimp.Frontend;
+using Iceshrimp.Frontend.Core.InMemoryLogger;
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services;
 using Ljbc1994.Blazor.IntersectionObserver;
@@ -14,6 +15,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddSingleton(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddLocalization();
+builder.Logging.AddInMemoryLogger();
 builder.Services.AddSingleton<ApiClient>();
 builder.Services.AddSingleton<ApiService>();
 builder.Services.AddIntersectionObserver();

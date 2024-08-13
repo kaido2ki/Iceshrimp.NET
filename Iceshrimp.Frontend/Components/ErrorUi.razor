@@ -1,9 +1,13 @@
+@using System.Text
+@using Iceshrimp.Frontend.Core.InMemoryLogger
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              Navigation;
 @inject VersionService                 Version;
+@inject InMemoryLogService             LogService;
+@inject IJSRuntime Js;
 
 <div class="error-ui">
     <h3>@Loc["Unhandled Exception has occured"]</h3>
@@ -14,7 +18,7 @@
                 @Loc["Providing the below stack trace and version information will aid in debugging."]
             </div>
         </div>
-        <div class="stacktrace">
+        <div class="log-block">
             <code>@Exception.GetType(): @Exception.Message @Exception.StackTrace</code>
         </div>
         <div class="version">
@@ -34,16 +38,39 @@
                 </span>
             }
         </div>
+        @Loc["Logs"]
+        <div class="log-block">
+            @foreach (var line in _logs)
+            {
+                <code>@line</code><br/>
+            }
+        </div>
     </div>
     <button class="btn" @onclick="Reload">@Loc["Reload Application"]</button>
+    <button class="btn" @onclick="DownloadLogs">@Loc["Download Logs"]</button>
 
 </div>
 
 @code {
-    [Parameter] [EditorRequired] public required Exception Exception { get; set; }
+    [Parameter] [EditorRequired] public required Exception                   Exception { get; set; }
+    private                                      IReadOnlyCollection<string> _logs   = [];
+    private                                      IJSInProcessObjectReference _module = null!;
 
     private void Reload()
     {
         Navigation.Refresh(true);
     }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _logs   = LogService.GetLogs();
+        _module = (IJSInProcessObjectReference) await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
+     }
+
+    private void DownloadLogs()
+    {
+        var logBytes = _logs.SelectMany(p => Encoding.UTF8.GetBytes(p)).ToArray();
+        _module.InvokeVoid("DownloadFile", "log.txt", "text/plain", logBytes);
+    }
+    
 }
