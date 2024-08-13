@@ -20,6 +20,9 @@ public static class Constants
 	public const           string   MisskeyNs         = "https://misskey-hub.net/ns";
 	public static readonly string[] SystemUsers       = ["instance.actor", "relay.actor"];
 
+	public const string ASMime    = "application/activity+json";
+	public const string ASMimeAlt = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"";
+
 	public static readonly string[] BrowserSafeMimeTypes =
 	[
 		"image/png",

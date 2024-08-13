@@ -116,7 +116,7 @@ public class UserService(
 		var actor = await fetchSvc.FetchActorAsync(uri);
 		logger.LogDebug("Got actor: {url}", actor.Url);
 
-		actor.Normalize(uri, acct);
+		actor.Normalize(uri);
 
 		if (actor.Id != uri)
 			throw GracefulException.UnprocessableEntity("Uri doesn't match id of fetched actor");
@@ -257,7 +257,7 @@ public class UserService(
 		logger.LogDebug("Updating user with uri {uri}", uri);
 
 		actor ??= await fetchSvc.FetchActorAsync(user.Uri);
-		actor.Normalize(uri, user.AcctWithPrefix);
+		actor.Normalize(uri);
 
 		user.UserProfile ??= await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
 		user.UserProfile ??= new UserProfile { User = user };

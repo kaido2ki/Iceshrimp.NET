@@ -128,7 +128,7 @@ public class ASActor : ASObject
 
 	[JI] public bool IsBot => Type == $"{Constants.ActivityStreamsNs}#Service";
 
-	public void Normalize(string uri, string acct)
+	public void Normalize(string uri)
 	{
 		if (Type == null || !ActorTypes.Contains(Type)) throw new Exception("Actor is of invalid type");
 

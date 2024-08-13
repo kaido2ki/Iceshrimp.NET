@@ -30,16 +30,26 @@ public class UserResolver(
 	 * The full web finger algorithm:
 	 *
 	 * 1. WebFinger(input_uri), find the rel=self type=application/activity+json entry, that's ap_uri
+	 * 1.1 Failing this, fetch the actor
+	 * 1.1.1 If the actor uri differs from the query, recurse (once!) with the new uri
+	 * 1.1.2 Otherwise, Perform reverse discovery for the actor uri
 	 * 2. WebFinger(ap_uri), find the first acct: URI in [subject] + aliases, that's candidate_acct_uri
+	 * 2.1 Failing this, perform reverse discovery for ap_uri
 	 * 3. WebFinger(candidate_acct_uri), validate it also points to ap_uri. If so, you have acct_uri
-	 * 4. Failing this, acct_uri = "acct:" + preferredUsername from AP actor + "@" + hostname from ap_uri
+	 * 3.1 Failing this, acct_uri = "acct:" + preferredUsername from AP actor + "@" + hostname from ap_uri
 	 *
-	 * Avoid repeating WebFinger's with same URI for performance, optimize away validation checks when the domain matches
+	 * Avoid repeating WebFinger's with same URI for performance, optimize away validation checks when the domain matches.
+	 * Skip step 2 when performing reverse discovery & ap_uri matches the actor uri.
 	 */
 
-	private async Task<(string Acct, string Uri)> WebFingerAsync(string query, bool recurse = true)
+	private async Task<(string Acct, string Uri)> WebFingerAsync(
+		string query, bool recurse = true, string? actorUri = null
+	)
 	{
-		logger.LogDebug("Running WebFinger for query '{query}'", query);
+		if (actorUri == null)
+			logger.LogDebug("Running WebFinger for query '{query}'", query);
+		else
+			logger.LogDebug("Running WebFinger reverse discovery for query '{query}' and uri '{uri}'", query, actorUri);
 
 		var responses = new Dictionary<string, WebFingerResponse>();
 		var fingerRes = await webFingerSvc.ResolveAsync(query);
@@ -56,6 +66,12 @@ public class UserResolver(
 						logger.LogDebug("Actor ID differs from query, retrying...");
 						return await WebFingerAsync(actor.Id, false);
 					}
+
+					logger.LogDebug("Actor ID matches query, performing reverse discovery...");
+					actor.Normalize(query);
+					var domain   = new Uri(actor.Id).Host;
+					var username = actor.Username!;
+					return await WebFingerAsync($"acct:{username}@{domain}", false, actor.Id);
 				}
 				catch (Exception e)
 				{
@@ -68,7 +84,10 @@ public class UserResolver(
 
 		responses.Add(query, fingerRes);
 
-		var apUri = fingerRes.Links.FirstOrDefault(p => p is { Rel: "self", Type: "application/activity+json" })?.Href;
+		var apUri = fingerRes.Links
+		                     .FirstOrDefault(p => p is { Rel: "self", Type: Constants.ASMime or Constants.ASMimeAlt })
+		                     ?.Href;
+
 		if (apUri == null)
 			throw new GracefulException($"WebFinger response for '{query}' didn't contain a candidate link");
 		var subjectUri = GetAcctUri(fingerRes) ??
@@ -80,12 +99,39 @@ public class UserResolver(
 		if (subjectHost == apUriHost && subjectHost == queryHost)
 			return (subjectUri, apUri);
 
-		fingerRes = responses.GetValueOrDefault(apUri);
-		if (fingerRes == null)
+		// We need to skip this step when performing reverse discovery & the uris match
+		if (apUri != actorUri)
 		{
-			logger.LogDebug("AP uri didn't match query, re-running WebFinger for '{apUri}'", apUri);
-			fingerRes = await webFingerSvc.ResolveAsync(apUri) ?? throw new Exception($"Failed to WebFinger '{apUri}'");
-			responses.Add(apUri, fingerRes);
+			if (actorUri != null) throw new Exception("Reverse discovery failed: uri mismatch");
+			fingerRes = responses.GetValueOrDefault(apUri);
+			if (fingerRes == null)
+			{
+				logger.LogDebug("AP uri didn't match query, re-running WebFinger for '{apUri}'", apUri);
+				fingerRes = await webFingerSvc.ResolveAsync(apUri);
+				if (fingerRes == null)
+				{
+					logger.LogDebug("Failed to validate apUri, falling back to reverse discovery");
+					try
+					{
+						var actor = await fetchSvc.FetchActorAsync(apUri);
+						if (apUri != actor.Id)
+							throw new Exception("Reverse discovery fallback failed: uri mismatch");
+
+						logger.LogDebug("Actor ID matches apUri, performing reverse discovery...");
+						actor.Normalize(apUri);
+						var domain   = new Uri(actor.Id).Host;
+						var username = new Uri(actor.Username!).Host;
+						return await WebFingerAsync($"acct:{username}@{domain}", false, apUri);
+					}
+					catch (Exception e)
+					{
+						logger.LogDebug("Failed to fetch actor {uri}: {e}", query, e.Message);
+						throw new GracefulException($"Failed to WebFinger '{query}'");
+					}
+				}
+
+				responses.Add(apUri, fingerRes);
+			}
 		}
 
 		var acctUri = GetAcctUri(fingerRes) ??
