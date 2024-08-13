@@ -1,6 +1,7 @@
+using System.Collections.Immutable;
 using System.Net;
 using System.Text.Encodings.Web;
-using System.Xml;
+using System.Xml.Linq;
 using Iceshrimp.Backend.Controllers.Federation.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Middleware;
@@ -28,6 +29,11 @@ public class WebFingerService(
 	IOptions<Config.InstanceSection> config
 )
 {
+	private static readonly ImmutableArray<string> Accept =
+	[
+		"application/jrd+json", "application/json", "application/xrd+xml", "application/xml"
+	];
+
 	public async Task<WebFingerResponse?> ResolveAsync(string query)
 	{
 		(query, var proto, var domain) = ParseQuery(query);
@@ -39,7 +45,7 @@ public class WebFingerService(
 		using var cts = CancellationTokenSource.CreateLinkedTokenSource(appLifetime.ApplicationStopping);
 		cts.CancelAfter(TimeSpan.FromSeconds(10));
 
-		var req = httpRqSvc.Get(webFingerUrl, ["application/jrd+json", "application/json"]);
+		var req = httpRqSvc.Get(webFingerUrl, Accept);
 		var res = await client.SendAsync(req, cts.Token);
 
 		if (res.StatusCode == HttpStatusCode.Gone)
@@ -96,6 +102,7 @@ public class WebFingerService(
 		return template.Replace("{uri}", encoded);
 	}
 
+	// Technically, we should be checking for rel=lrdd *and* type=application/jrd+json, but nearly all implementations break this, so we can't.
 	private async Task<string?> GetWebFingerTemplateFromHostMetaXmlAsync(string proto, string domain)
 	{
 		try
@@ -105,19 +112,12 @@ public class WebFingerService(
 			                                       HttpCompletionOption.ResponseHeadersRead);
 			await using var stream = await res.Content.ReadAsStreamAsync();
 
-			var xml = new XmlDocument();
-			xml.Load(stream);
-
-			var section = xml["XRD"]?.GetElementsByTagName("Link");
-			if (section == null) return null;
-
-			//TODO: implement https://stackoverflow.com/a/37322614/18402176 instead
-
-			for (var i = 0; i < section.Count; i++)
-				if (section[i]?.Attributes?["rel"]?.InnerText == "lrdd")
-					return section[i]?.Attributes?["template"]?.InnerText;
-
-			return null;
+			return XElement.Load(stream)
+			               .Descendants(XName.Get("Link", "http://docs.oasis-open.org/ns/xri/xrd-1.0"))
+			               //.Where(p => Accept.Contains(p.Attribute("type"))?.Value ?? ""))
+			               .FirstOrDefault(p => p.Attribute("rel")?.Value == "lrdd")
+			               ?.Attribute("template")
+			               ?.Value;
 		}
 		catch
 		{
@@ -125,6 +125,7 @@ public class WebFingerService(
 		}
 	}
 
+	// See above comment as for why jrd+json is commented out.
 	private async Task<string?> GetWebFingerTemplateFromHostMetaJsonAsync(string proto, string domain)
 	{
 		try
@@ -137,7 +138,7 @@ public class WebFingerService(
 			var result = deserialized?.Links?.FirstOrDefault(p => p is
 			{
 				Rel: "lrdd",
-				Type: "application/jrd+json",
+				//Type: "application/jrd+json",
 				Template: not null
 			});
 
@@ -159,7 +160,7 @@ public class WebFingerService(
 			var result = deserialized?.Links?.FirstOrDefault(p => p is
 			{
 				Rel: "lrdd",
-				Type: "application/jrd+json",
+				//Type: "application/jrd+json",
 				Template: not null
 			});
 

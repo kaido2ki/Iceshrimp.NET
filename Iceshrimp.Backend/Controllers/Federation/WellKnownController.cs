@@ -24,7 +24,7 @@ namespace Iceshrimp.Backend.Controllers.Federation;
 public class WellKnownController(IOptions<Config.InstanceSection> config, DatabaseContext db) : ControllerBase
 {
 	[HttpGet("webfinger")]
-	[Produces(MediaTypeNames.Application.Json)]
+	[Produces(MediaTypeNames.Application.Json, "application/jrd+json")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<WebFingerResponse> WebFinger([FromQuery] string resource)

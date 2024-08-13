@@ -16,7 +16,7 @@ public class HostMetaXmlResponseLink()
 {
 	[XmlAttribute("rel")]      public          string Rel = "lrdd";
 	[XmlAttribute("template")] public required string Template;
-	[XmlAttribute("type")]     public          string Type = "application/xrd+xml";
+	[XmlAttribute("type")]     public          string Type = "application/jrd+json";
 
 	[SetsRequiredMembers]
 	public HostMetaXmlResponseLink(string webDomain) : this() =>
