@@ -13,7 +13,7 @@ public class HashtagChannel(WebSocketConnection connection, bool local) : IChann
 	private readonly ILogger<HashtagChannel> _logger =
 		connection.Scope.ServiceProvider.GetRequiredService<ILogger<HashtagChannel>>();
 
-	private readonly WriteLockingList<string> _tags = [];
+	private readonly WriteLockingHashSet<string> _tags = [];
 
 	public string       Name         => local ? "hashtag:local" : "hashtag";
 	public List<string> Scopes       => ["read:statuses"];
@@ -46,7 +46,7 @@ public class HashtagChannel(WebSocketConnection connection, bool local) : IChann
 			return;
 		}
 
-		_tags.RemoveAll(p => p == msg.Tag);
+		_tags.RemoveWhere(p => p == msg.Tag);
 
 		if (!IsSubscribed) Dispose();
 	}

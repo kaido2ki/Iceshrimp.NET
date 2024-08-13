@@ -18,20 +18,18 @@ namespace Iceshrimp.Backend.SignalR.Helpers;
 [MustDisposeResource]
 public sealed class StreamingConnectionAggregate : IDisposable
 {
-	private readonly WriteLockingList<string> _blockedBy     = [];
-	private readonly WriteLockingList<string> _blocking      = [];
-	private readonly WriteLockingList<string> _connectionIds = [];
-
-	private readonly EventService _eventService;
-
-	private readonly WriteLockingList<string> _following = [];
+	private readonly WriteLockingHashSet<string> _connectionIds = [];
+	private readonly WriteLockingHashSet<string> _blockedBy     = [];
+	private readonly WriteLockingHashSet<string> _blocking      = [];
+	private readonly WriteLockingHashSet<string> _following     = [];
+	private readonly WriteLockingHashSet<string> _muting        = [];
 
 	private readonly IHubContext<StreamingHub, IStreamingHubClient> _hub;
 	private readonly ILogger                                        _logger;
-	private readonly WriteLockingList<string>                       _muting = [];
 	private readonly IServiceScope                                  _scope;
 	private readonly IServiceScopeFactory                           _scopeFactory;
 	private readonly StreamingService                               _streamingService;
+	private readonly EventService                                   _eventService;
 
 	private readonly ConcurrentDictionary<string, WriteLockingList<StreamingTimeline>> _subscriptions = [];
 	private readonly User                                                              _user;

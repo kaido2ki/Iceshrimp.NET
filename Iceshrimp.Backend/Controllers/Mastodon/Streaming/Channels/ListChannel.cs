@@ -12,7 +12,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
 
 public class ListChannel(WebSocketConnection connection) : IChannel
 {
-	private readonly WriteLockingList<string> _lists = [];
+	private readonly WriteLockingHashSet<string> _lists = [];
 
 	private readonly ILogger<ListChannel> _logger =
 		connection.Scope.ServiceProvider.GetRequiredService<ILogger<ListChannel>>();
@@ -68,7 +68,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 			return;
 		}
 
-		_lists.RemoveAll(p => p == msg.List);
+		_lists.RemoveWhere(p => p == msg.List);
 		_members.TryRemove(msg.List, out _);
 		_applicableUserIds = _members.Values.SelectMany(p => p).Distinct();
 

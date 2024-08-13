@@ -23,22 +23,22 @@ public sealed class WebSocketConnection(
 	CancellationToken ct
 ) : IDisposable
 {
-	private readonly WriteLockingList<string> _blockedBy     = [];
-	private readonly WriteLockingList<string> _blocking      = [];
-	private readonly SemaphorePlus            _lock          = new(1);
-	private readonly WriteLockingList<string> _muting        = [];
-	public readonly  List<IChannel>           Channels       = [];
-	public readonly  EventService             EventService   = eventSvc;
-	public readonly  WriteLockingList<Filter> Filters        = [];
-	public readonly  WriteLockingList<string> Following      = [];
-	public readonly  IServiceScope            Scope          = scopeFactory.CreateScope();
-	public readonly  IServiceScopeFactory     ScopeFactory   = scopeFactory;
-	public readonly  OauthToken               Token          = token;
-	public           List<string>             HiddenFromHome = [];
+	private readonly SemaphorePlus               _lock          = new(1);
+	private readonly List<IChannel>              _channels      = [];
+	private readonly WriteLockingHashSet<string> _blockedBy     = [];
+	private readonly WriteLockingHashSet<string> _blocking      = [];
+	private readonly WriteLockingHashSet<string> _muting        = [];
+	public readonly  WriteLockingHashSet<string> Following      = [];
+	public readonly  WriteLockingList<Filter>    Filters        = [];
+	public readonly  EventService                EventService   = eventSvc;
+	public readonly  IServiceScope               Scope          = scopeFactory.CreateScope();
+	public readonly  IServiceScopeFactory        ScopeFactory   = scopeFactory;
+	public readonly  OauthToken                  Token          = token;
+	public           HashSet<string>             HiddenFromHome = [];
 
 	public void Dispose()
 	{
-		foreach (var channel in Channels)
+		foreach (var channel in _channels)
 			channel.Dispose();
 
 		EventService.UserBlocked        -= OnUserUnblock;
@@ -57,20 +57,20 @@ public sealed class WebSocketConnection(
 
 	public void InitializeStreamingWorker()
 	{
-		Channels.Add(new ListChannel(this));
-		Channels.Add(new DirectChannel(this));
-		Channels.Add(new UserChannel(this, true));
-		Channels.Add(new UserChannel(this, false));
-		Channels.Add(new HashtagChannel(this, true));
-		Channels.Add(new HashtagChannel(this, false));
-		Channels.Add(new PublicChannel(this, "public", true, true, false));
-		Channels.Add(new PublicChannel(this, "public:media", true, true, true));
-		Channels.Add(new PublicChannel(this, "public:allow_local_only", true, true, false));
-		Channels.Add(new PublicChannel(this, "public:allow_local_only:media", true, true, true));
-		Channels.Add(new PublicChannel(this, "public:local", true, false, false));
-		Channels.Add(new PublicChannel(this, "public:local:media", true, false, true));
-		Channels.Add(new PublicChannel(this, "public:remote", false, true, false));
-		Channels.Add(new PublicChannel(this, "public:remote:media", false, true, true));
+		_channels.Add(new ListChannel(this));
+		_channels.Add(new DirectChannel(this));
+		_channels.Add(new UserChannel(this, true));
+		_channels.Add(new UserChannel(this, false));
+		_channels.Add(new HashtagChannel(this, true));
+		_channels.Add(new HashtagChannel(this, false));
+		_channels.Add(new PublicChannel(this, "public", true, true, false));
+		_channels.Add(new PublicChannel(this, "public:media", true, true, true));
+		_channels.Add(new PublicChannel(this, "public:allow_local_only", true, true, false));
+		_channels.Add(new PublicChannel(this, "public:allow_local_only:media", true, true, true));
+		_channels.Add(new PublicChannel(this, "public:local", true, false, false));
+		_channels.Add(new PublicChannel(this, "public:local:media", true, false, true));
+		_channels.Add(new PublicChannel(this, "public:remote", false, true, false));
+		_channels.Add(new PublicChannel(this, "public:remote:media", false, true, true));
 
 		EventService.UserBlocked        += OnUserUnblock;
 		EventService.UserUnblocked      += OnUserBlock;
@@ -119,7 +119,8 @@ public sealed class WebSocketConnection(
 		                         .Where(p => p.UserList.UserId == Token.User.Id && p.UserList.HideFromHomeTl)
 		                         .Select(p => p.UserId)
 		                         .Distinct()
-		                         .ToListAsync();
+		                         .ToArrayAsync()
+		                         .ContinueWithResult(p => p.ToHashSet());
 	}
 
 	public async Task HandleSocketMessageAsync(string payload)
@@ -150,7 +151,7 @@ public sealed class WebSocketConnection(
 			case "subscribe":
 			{
 				var channel =
-					Channels.FirstOrDefault(p => p.Name == message.Stream && (!p.IsSubscribed || p.IsAggregate));
+					_channels.FirstOrDefault(p => p.Name == message.Stream && (!p.IsSubscribed || p.IsAggregate));
 				if (channel == null) return;
 				if (channel.Scopes.Except(MastodonOauthHelpers.ExpandScopes(Token.Scopes)).Any())
 					await CloseAsync(WebSocketCloseStatus.PolicyViolation);
@@ -161,7 +162,7 @@ public sealed class WebSocketConnection(
 			case "unsubscribe":
 			{
 				var channel =
-					Channels.FirstOrDefault(p => p.Name == message.Stream && (p.IsSubscribed || p.IsAggregate));
+					_channels.FirstOrDefault(p => p.Name == message.Stream && (p.IsSubscribed || p.IsAggregate));
 				if (channel != null) await channel.Unsubscribe(message);
 				break;
 			}
@@ -341,7 +342,8 @@ public sealed class WebSocketConnection(
 			HiddenFromHome = await db.UserListMembers
 			                         .Where(p => p.UserList.UserId == Token.User.Id && p.UserList.HideFromHomeTl)
 			                         .Select(p => p.UserId)
-			                         .ToListAsync();
+			                         .ToArrayAsync()
+			                         .ContinueWithResult(p => p.ToHashSet());
 		}
 		catch (Exception e)
 		{
