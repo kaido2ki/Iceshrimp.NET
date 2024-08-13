@@ -157,7 +157,8 @@ public class NoteService(
 			// @formatter:off
 			var match = asNote.Tags?.OfType<ASHashtag>().Where(p => p.Name != null && p.Href != null) ?? [];
 			//TODO: refactor this to use the nodes object instead of matching on text
-			text = match.Aggregate(text, (current, tag) => current.Replace($"[#{tag.Name!.TrimStart('#')}]({tag.Href})", $"#{tag.Name!.TrimStart('#')}"));
+			text = match.Aggregate(text, (current, tag) => current.Replace($"[#{tag.Name!.TrimStart('#')}]({tag.Href})", $"#{tag.Name!.TrimStart('#')}")
+			                                                      .Replace($"#[{tag.Name!.TrimStart('#')}]({tag.Href})", $"#{tag.Name!.TrimStart('#')}"));
 			// @formatter:on
 		}
 
