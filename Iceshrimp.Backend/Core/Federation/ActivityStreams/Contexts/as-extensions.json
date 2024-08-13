@@ -9,6 +9,7 @@
       "@type": "@id"
     },
     "EmojiReact": "http://litepub.social/ns#EmojiReact",
-    "sensitive": "https://www.w3.org/ns/activitystreams#sensitive"
+    "sensitive": "https://www.w3.org/ns/activitystreams#sensitive",
+    "manuallyApprovesFollowers": "https://www.w3.org/ns/activitystreams#manuallyApprovesFollowers"
   }
 }
