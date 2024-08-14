@@ -38,6 +38,8 @@ public class WebFingerService(
 	private static XmlReaderSettings _xmlReaderSettings =
 		new() { DtdProcessing = DtdProcessing.Ignore, XmlResolver = null };
 
+	private static readonly XmlSerializer XmlSerializer = new(typeof(WebFingerResponse));
+
 	public async Task<WebFingerResponse?> ResolveAsync(string query)
 	{
 		(query, var proto, var domain) = ParseQuery(query);
@@ -64,10 +66,9 @@ public class WebFingerService(
 
 		_xmlReaderSettings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, XmlResolver = null };
 
-		var reader       = XmlReader.Create(await res.Content.ReadAsStreamAsync(cts.Token), _xmlReaderSettings);
-		var deserializer = new XmlSerializer(typeof(WebFingerResponse));
+		var reader = XmlReader.Create(await res.Content.ReadAsStreamAsync(cts.Token), _xmlReaderSettings);
 
-		return deserializer.Deserialize(reader) as WebFingerResponse ??
+		return XmlSerializer.Deserialize(reader) as WebFingerResponse ??
 		       throw new Exception("Failed to deserialize xml payload");
 	}
 
