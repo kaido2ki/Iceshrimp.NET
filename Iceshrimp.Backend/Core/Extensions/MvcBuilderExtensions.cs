@@ -1,11 +1,11 @@
 using System.Buffers;
 using System.Net;
 using System.Text.Encodings.Web;
-using System.Xml;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -15,6 +15,17 @@ namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class MvcBuilderExtensions
 {
+	public static IMvcBuilder AddControllersWithOptions(this IServiceCollection services)
+	{
+		services.AddSingleton<OutputFormatterSelector, AcceptHeaderOutputFormatterSelector>();
+
+		return services.AddControllers(opts =>
+		{
+			opts.RespectBrowserAcceptHeader = true;
+			opts.ReturnHttpNotAcceptable    = true;
+		});
+	}
+
 	public static IMvcBuilder AddMultiFormatter(this IMvcBuilder builder)
 	{
 		builder.Services.AddOptions<MvcOptions>()
@@ -89,5 +100,28 @@ public static class MvcBuilderExtensions
 		});
 
 		return builder;
+	}
+}
+
+/// <summary>
+/// Overrides the default OutputFormatterSelector, to make sure we return a body when content negotiation errors occur.
+/// </summary>
+public class AcceptHeaderOutputFormatterSelector(
+	IOptions<MvcOptions> options,
+	ILoggerFactory loggerFactory
+) : OutputFormatterSelector
+{
+	private readonly DefaultOutputFormatterSelector _fallbackSelector = new(options, loggerFactory);
+	private readonly List<IOutputFormatter>         _formatters       = [..options.Value.OutputFormatters];
+
+	public override IOutputFormatter? SelectFormatter(
+		OutputFormatterCanWriteContext context, IList<IOutputFormatter> formatters, MediaTypeCollection mediaTypes
+	)
+	{
+		var selectedFormatter = _fallbackSelector.SelectFormatter(context, formatters, mediaTypes);
+		if (selectedFormatter == null)
+			throw new GracefulException(HttpStatusCode.NotAcceptable, "The requested Content-Type is not acceptable.");
+
+		return selectedFormatter;
 	}
 }

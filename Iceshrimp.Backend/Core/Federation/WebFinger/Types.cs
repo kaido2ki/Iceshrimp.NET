@@ -8,7 +8,7 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 namespace Iceshrimp.Backend.Core.Federation.WebFinger;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public sealed class WebFingerLink
+public class WebFingerLink
 {
 	[XmlAttribute("rel")] [J("rel")] [JR] public required string Rel { get; set; } = null!;
 
@@ -28,15 +28,10 @@ public sealed class WebFingerLink
 	public string? Template { get; set; }
 }
 
-[SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [XmlRoot("XRD", Namespace = "http://docs.oasis-open.org/ns/xri/xrd-1.0", IsNullable = false)]
 public sealed class WebFingerResponse
 {
-	[XmlElement("Link")]
-	[J("links")]
-	[JR]
-	public required List<WebFingerLink> Links { get; set; } = null!;
+	[XmlElement("Link")] [J("links")] [JR] public required List<WebFingerLink> Links { get; set; } = null!;
 
 	[XmlElement("Subject")]
 	[J("subject")]
@@ -47,6 +42,33 @@ public sealed class WebFingerResponse
 	[J("aliases")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public List<string>? Aliases { get; set; }
+}
+
+[XmlRoot("XRD", Namespace = "http://docs.oasis-open.org/ns/xri/xrd-1.0", IsNullable = false)]
+public class HostMetaResponse()
+{
+	[SetsRequiredMembers]
+	public HostMetaResponse(string webDomain) : this()
+	{
+		Links =
+		[
+			new HostMetaResponseLink(webDomain, "application/jrd+json"),
+			new HostMetaResponseLink(webDomain, "application/xrd+xml")
+		];
+	}
+
+	[XmlElement("Link")] [J("links")] [JR] public required List<HostMetaResponseLink> Links { get; set; }
+}
+
+public sealed class HostMetaResponseLink() : WebFingerLink
+{
+	[SetsRequiredMembers]
+	public HostMetaResponseLink(string webDomain, string type) : this()
+	{
+		Rel      = "lrdd";
+		Type     = type;
+		Template = $"https://{webDomain}/.well-known/webfinger?resource={{uri}}";
+	}
 }
 
 public sealed class NodeInfoIndexResponse

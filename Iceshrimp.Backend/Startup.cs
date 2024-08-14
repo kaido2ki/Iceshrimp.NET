@@ -12,7 +12,8 @@ builder.Configuration.AddCustomConfiguration();
 
 await PluginLoader.LoadPlugins();
 
-builder.Services.AddControllers()
+builder.Services
+       .AddControllersWithOptions()
        .AddNewtonsoftJson() //TODO: remove once dotNetRdf switches to System.Text.Json (or we switch to LinkedData.NET)
        .ConfigureNewtonsoftJson()
        .AddMultiFormatter()

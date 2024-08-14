@@ -1,10 +1,6 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Mime;
-using System.Text;
-using System.Xml.Serialization;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
-using Iceshrimp.Backend.Controllers.Federation.Schemas;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -24,7 +20,7 @@ namespace Iceshrimp.Backend.Controllers.Federation;
 public class WellKnownController(IOptions<Config.InstanceSection> config, DatabaseContext db) : ControllerBase
 {
 	[HttpGet("webfinger")]
-	[Produces("application/jrd+json", "application/json", "application/xrd+xml", "application/xml")]
+	[Produces("application/jrd+json", "application/xrd+xml")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<WebFingerResponse> WebFinger([FromQuery] string resource)
@@ -83,10 +79,7 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 					Template = $"https://{config.Value.WebDomain}/authorize-follow?acct={{uri}}"
 				}
 			],
-			Aliases = [
-				user.GetPublicUrl(config.Value),
-				user.GetPublicUri(config.Value)
-			]
+			Aliases = [user.GetPublicUrl(config.Value), user.GetPublicUri(config.Value)]
 		};
 	}
 
@@ -116,35 +109,14 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 	[HttpGet("host-meta")]
 	[Produces("application/xrd+xml", "application/jrd+json")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public ActionResult<HostMetaJsonResponse> HostMeta()
+	public HostMetaResponse HostMeta()
 	{
-		var accept = Request.Headers.Accept.OfType<string>()
-		                    .SelectMany(p => p.Split(","))
-		                    .Select(MediaTypeWithQualityHeaderValue.Parse)
-		                    .Select(p => p.MediaType)
-		                    .ToList();
-
-		if (accept.Contains("application/jrd+json") || accept.Contains("application/json"))
-			return Ok(HostMetaJson());
-
-		var obj        = new HostMetaXmlResponse(config.Value.WebDomain);
-		var serializer = new XmlSerializer(obj.GetType());
-		var writer     = new Utf8StringWriter();
-
-		serializer.Serialize(writer, obj);
-		return Content(writer.ToString(), "application/xrd+xml");
+		if (Request.Headers.Accept is []) Request.Headers.Accept = "application/xrd+xml";
+		return new HostMetaResponse(config.Value.WebDomain);
 	}
 
 	[HttpGet("host-meta.json")]
 	[Produces("application/jrd+json")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public HostMetaJsonResponse HostMetaJson()
-	{
-		return new HostMetaJsonResponse(config.Value.WebDomain);
-	}
-
-	private class Utf8StringWriter : StringWriter
-	{
-		public override Encoding Encoding => Encoding.UTF8;
-	}
+	public HostMetaResponse HostMetaJson() => new(config.Value.WebDomain);
 }

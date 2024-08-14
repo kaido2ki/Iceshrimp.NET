@@ -3,7 +3,6 @@ using System.Net;
 using System.Text.Encodings.Web;
 using System.Xml.Linq;
 using System.Xml.Serialization;
-using Iceshrimp.Backend.Controllers.Federation.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
@@ -140,9 +139,9 @@ public class WebFingerService(
 			var hostMetaUrl = $"{proto}://{domain}/.well-known/host-meta.json";
 			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/jrd+json"]),
 			                                       HttpCompletionOption.ResponseHeadersRead);
-			var deserialized = await res.Content.ReadFromJsonAsync<HostMetaJsonResponse>();
+			var deserialized = await res.Content.ReadFromJsonAsync<HostMetaResponse>();
 
-			var result = deserialized?.Links?.FirstOrDefault(p => p is
+			var result = deserialized?.Links.FirstOrDefault(p => p is
 			{
 				Rel: "lrdd",
 				//Type: "application/jrd+json",
@@ -162,9 +161,9 @@ public class WebFingerService(
 			var hostMetaUrl = $"{proto}://{domain}/.well-known/host-meta";
 			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/jrd+json"]),
 			                                       HttpCompletionOption.ResponseHeadersRead);
-			var deserialized = await res.Content.ReadFromJsonAsync<HostMetaJsonResponse>();
+			var deserialized = await res.Content.ReadFromJsonAsync<HostMetaResponse>();
 
-			var result = deserialized?.Links?.FirstOrDefault(p => p is
+			var result = deserialized?.Links.FirstOrDefault(p => p is
 			{
 				Rel: "lrdd",
 				//Type: "application/jrd+json",
