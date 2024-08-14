@@ -38,7 +38,8 @@ public class WebFingerService(
 	private static XmlReaderSettings _xmlReaderSettings =
 		new() { DtdProcessing = DtdProcessing.Ignore, XmlResolver = null };
 
-	private static readonly XmlSerializer XmlSerializer = new(typeof(WebFingerResponse));
+	private static readonly XmlSerializer WebFingerXmlSerializer = new(typeof(WebFingerResponse));
+	private static readonly XmlSerializer HostMetaXmlSerializer  = new(typeof(HostMetaResponse));
 
 	public async Task<WebFingerResponse?> ResolveAsync(string query)
 	{
@@ -66,9 +67,9 @@ public class WebFingerService(
 
 		_xmlReaderSettings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, XmlResolver = null };
 
-		var reader = XmlReader.Create(await res.Content.ReadAsStreamAsync(cts.Token), _xmlReaderSettings);
+		using var reader = XmlReader.Create(await res.Content.ReadAsStreamAsync(cts.Token), _xmlReaderSettings);
 
-		return XmlSerializer.Deserialize(reader) as WebFingerResponse ??
+		return WebFingerXmlSerializer.Deserialize(reader) as WebFingerResponse ??
 		       throw new Exception("Failed to deserialize xml payload");
 	}
 
@@ -124,14 +125,18 @@ public class WebFingerService(
 			var hostMetaUrl = $"{proto}://{domain}/.well-known/host-meta";
 			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/xrd+xml"]),
 			                                       HttpCompletionOption.ResponseHeadersRead);
-			await using var stream = await res.Content.ReadAsStreamAsync();
+			await using var stream       = await res.Content.ReadAsStreamAsync();
+			using var       reader       = XmlReader.Create(stream, _xmlReaderSettings);
+			var             deserialized = HostMetaXmlSerializer.Deserialize(reader) as HostMetaResponse;
 
-			return XElement.Load(stream)
-			               .Descendants(XName.Get("Link", "http://docs.oasis-open.org/ns/xri/xrd-1.0"))
-			               //.Where(p => Accept.Contains(p.Attribute("type"))?.Value ?? ""))
-			               .FirstOrDefault(p => p.Attribute("rel")?.Value == "lrdd")
-			               ?.Attribute("template")
-			               ?.Value;
+			var result = deserialized?.Links.FirstOrDefault(p => p is
+			{
+				Rel: "lrdd",
+				//Type: "application/xrd+xml" or "application/jrd+json",
+				Template: not null
+			});
+
+			return result?.Template;
 		}
 		catch
 		{
@@ -152,7 +157,7 @@ public class WebFingerService(
 			var result = deserialized?.Links.FirstOrDefault(p => p is
 			{
 				Rel: "lrdd",
-				//Type: "application/jrd+json",
+				//Type: "application/xrd+xml" or "application/jrd+json",
 				Template: not null
 			});
 
