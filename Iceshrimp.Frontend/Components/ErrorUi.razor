@@ -19,7 +19,8 @@
             </div>
         </div>
         <div class="log-block">
-            <code>@Exception.GetType(): @Exception.Message @Exception.StackTrace</code>
+            <pre><code>@Exception.GetType(): @Exception.Message
+@Exception.StackTrace</code></pre>
         </div>
         <div class="version">
             <span class="name">Iceshrimp.NET</span>
@@ -40,10 +41,12 @@
         </div>
         @Loc["Logs"]
         <div class="log-block">
-            @foreach (var line in _logs)
-            {
-                <code>@line</code><br/>
-            }
+            <pre><code>
+                @foreach (var line in _rawLog)
+                {
+                    @line
+                }
+            </code></pre>
         </div>
     </div>
     <button class="btn" @onclick="Reload">@Loc["Reload Application"]</button>
@@ -53,8 +56,9 @@
 
 @code {
     [Parameter] [EditorRequired] public required Exception                   Exception { get; set; }
-    private                                      IReadOnlyCollection<string> _logs   = [];
+    private                                      IEnumerable<string>         _logs   = [];
     private                                      IJSInProcessObjectReference _module = null!;
+    private                                      IReadOnlyCollection<string> _rawLog = null!;
 
     private void Reload()
     {
@@ -62,14 +66,15 @@
     }
 
     protected override async Task OnInitializedAsync()
-    {
-        _logs   = LogService.GetLogs();
+    { 
+        _rawLog = LogService.GetLogs();
         _module = (IJSInProcessObjectReference) await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
      }
+    
 
     private void DownloadLogs()
     {
-        var logBytes = _logs.SelectMany(p => Encoding.UTF8.GetBytes(p)).ToArray();
+        var logBytes = LogService.GetLogs().SelectMany(p => Encoding.UTF8.GetBytes(p)).ToArray();
         _module.InvokeVoid("DownloadFile", "log.txt", "text/plain", logBytes);
     }
     
