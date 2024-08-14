@@ -86,7 +86,7 @@ public class SearchController(
 				if (pagination.Offset is not null and not 0) return [];
 				try
 				{
-					var result = await userResolver.ResolveAsync(search.Query);
+					var result = await userResolver.ResolveAsync(search.Query, false);
 					return [await userRenderer.RenderAsync(result)];
 				}
 				catch
@@ -118,7 +118,7 @@ public class SearchController(
 
 					try
 					{
-						var result = await userResolver.ResolveAsync($"@{username}@{host}");
+						var result = await userResolver.ResolveAsync($"@{username}@{host}", false);
 						return [await userRenderer.RenderAsync(result)];
 					}
 					catch

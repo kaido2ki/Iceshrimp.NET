@@ -87,7 +87,7 @@ public class SearchController(
 
 		if (target.StartsWith('@') || target.StartsWith(userPrefixAlt))
 		{
-			var hit = await userResolver.ResolveAsyncOrNull(target);
+			var hit = await userResolver.ResolveAsyncOrNull(target, false);
 			if (hit != null) return new RedirectResponse { TargetUrl = $"/users/{hit.Id}" };
 			throw GracefulException.NotFound("No result found");
 		}
@@ -125,7 +125,7 @@ public class SearchController(
 			noteHit = await noteSvc.ResolveNoteAsync(target);
 			if (noteHit != null) return new RedirectResponse { TargetUrl = $"/notes/{noteHit.Id}" };
 
-			userHit = await userResolver.ResolveAsyncOrNull(target);
+			userHit = await userResolver.ResolveAsyncOrNull(target, false);
 			if (userHit != null) return new RedirectResponse { TargetUrl = $"/users/{userHit.Id}" };
 
 			throw GracefulException.NotFound("No result found");

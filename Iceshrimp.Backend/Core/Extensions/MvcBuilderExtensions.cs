@@ -112,9 +112,8 @@ public class AcceptHeaderOutputFormatterSelector(
 ) : OutputFormatterSelector
 {
 	private readonly DefaultOutputFormatterSelector _fallbackSelector = new(options, loggerFactory);
-	private readonly List<IOutputFormatter>         _formatters       = [..options.Value.OutputFormatters];
 
-	public override IOutputFormatter? SelectFormatter(
+	public override IOutputFormatter SelectFormatter(
 		OutputFormatterCanWriteContext context, IList<IOutputFormatter> formatters, MediaTypeCollection mediaTypes
 	)
 	{

@@ -108,7 +108,7 @@ public class InboxValidationMiddleware(
 				{
 					try
 					{
-						var user = await userResolver.ResolveAsync(sig.KeyId, activity is ASDelete).WaitAsync(ct);
+						var user = await userResolver.ResolveAsync(sig.KeyId, activity is ASDelete, true).WaitAsync(ct);
 						if (user == null) throw AuthFetchException.NotFound("Delete activity actor is unknown");
 						key = await db.UserPublickeys.Include(p => p.User)
 						              .FirstOrDefaultAsync(p => p.User == user, ct);
@@ -185,7 +185,7 @@ public class InboxValidationMiddleware(
 
 					if (key == null)
 					{
-						var user = await userResolver.ResolveAsync(activity.Actor.Id, activity is ASDelete)
+						var user = await userResolver.ResolveAsync(activity.Actor.Id, activity is ASDelete, true)
 						                             .WaitAsync(ct);
 						if (user == null) throw AuthFetchException.NotFound("Delete activity actor is unknown");
 						key = await db.UserPublickeys

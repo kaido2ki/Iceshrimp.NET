@@ -66,7 +66,7 @@ public class AuthorizedFetchMiddleware(
 				{
 					try
 					{
-						var user = await userResolver.ResolveAsync(sig.KeyId).WaitAsync(ct);
+						var user = await userResolver.ResolveAsync(sig.KeyId, skipUpdate: true).WaitAsync(ct);
 						key = await db.UserPublickeys.Include(p => p.User)
 						              .FirstOrDefaultAsync(p => p.User == user, ct);
 

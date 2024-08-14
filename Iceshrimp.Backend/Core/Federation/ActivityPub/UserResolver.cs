@@ -192,21 +192,23 @@ public class UserResolver(
 		return query;
 	}
 
-	public async Task<User> ResolveAsync(string username, string? host)
+	public async Task<User> ResolveAsync(string username, string? host, bool skipUpdate)
 	{
-		return host != null ? await ResolveAsync($"acct:{username}@{host}") : await ResolveAsync($"acct:{username}");
+		return host != null
+			? await ResolveAsync($"acct:{username}@{host}", skipUpdate)
+			: await ResolveAsync($"acct:{username}", skipUpdate);
 	}
 
-	public async Task<User?> LookupAsync(string query)
+	public async Task<User?> LookupAsync(string query, bool skipUpdate)
 	{
 		query = NormalizeQuery(query);
 		var user = await userSvc.GetUserFromQueryAsync(query);
 		if (user != null)
-			return await GetUpdatedUser(user);
+			return skipUpdate ? user : await GetUpdatedUser(user);
 		return user;
 	}
 
-	public async Task<User> ResolveAsync(string query)
+	public async Task<User> ResolveAsync(string query, bool skipUpdate)
 	{
 		query = NormalizeQuery(query);
 
@@ -217,16 +219,16 @@ public class UserResolver(
 		// First, let's see if we already know the user
 		var user = await userSvc.GetUserFromQueryAsync(query);
 		if (user != null)
-			return await GetUpdatedUser(user);
+			return skipUpdate ? user : await GetUpdatedUser(user);
 
 		// We don't, so we need to run WebFinger
 		var (acct, uri) = await WebFingerAsync(query);
 
 		// Check the database again with the new data
-		if (uri != query) user = await userSvc.GetUserFromQueryAsync(uri);
-		if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
+		if (uri != query) user                  = await userSvc.GetUserFromQueryAsync(uri);
+		if (user == null && acct != query) user = await userSvc.GetUserFromQueryAsync(acct);
 		if (user != null)
-			return await GetUpdatedUser(user);
+			return skipUpdate ? user : await GetUpdatedUser(user);
 
 		using (await KeyedLocker.LockAsync(uri))
 		{
@@ -235,7 +237,7 @@ public class UserResolver(
 		}
 	}
 
-	public async Task<User?> ResolveAsync(string query, bool onlyExisting)
+	public async Task<User?> ResolveAsync(string query, bool onlyExisting, bool skipUpdate)
 	{
 		query = NormalizeQuery(query);
 
@@ -246,7 +248,7 @@ public class UserResolver(
 		// First, let's see if we already know the user
 		var user = await userSvc.GetUserFromQueryAsync(query);
 		if (user != null)
-			return await GetUpdatedUser(user);
+			return skipUpdate ? user : await GetUpdatedUser(user);
 
 		if (onlyExisting)
 			return null;
@@ -255,10 +257,10 @@ public class UserResolver(
 		var (acct, uri) = await WebFingerAsync(query);
 
 		// Check the database again with the new data
-		if (uri != query) user = await userSvc.GetUserFromQueryAsync(uri);
-		if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
+		if (uri != query) user                  = await userSvc.GetUserFromQueryAsync(uri);
+		if (user == null && acct != query) user = await userSvc.GetUserFromQueryAsync(acct);
 		if (user != null)
-			return await GetUpdatedUser(user);
+			return skipUpdate ? user : await GetUpdatedUser(user);
 
 		using (await KeyedLocker.LockAsync(uri))
 		{
@@ -267,7 +269,7 @@ public class UserResolver(
 		}
 	}
 
-	public async Task<User?> ResolveAsyncOrNull(string username, string? host)
+	public async Task<User?> ResolveAsyncOrNull(string username, string? host, bool skipUpdate)
 	{
 		try
 		{
@@ -276,7 +278,7 @@ public class UserResolver(
 			// First, let's see if we already know the user
 			var user = await userSvc.GetUserFromQueryAsync(query);
 			if (user != null)
-				return await GetUpdatedUser(user);
+				return skipUpdate ? user : await GetUpdatedUser(user);
 
 			if (host == null) return null;
 
@@ -284,10 +286,10 @@ public class UserResolver(
 			var (acct, uri) = await WebFingerAsync(query);
 
 			// Check the database again with the new data
-			if (uri != query) user = await userSvc.GetUserFromQueryAsync(uri);
-			if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
+			if (uri != query) user                  = await userSvc.GetUserFromQueryAsync(uri);
+			if (user == null && acct != query) user = await userSvc.GetUserFromQueryAsync(acct);
 			if (user != null)
-				return await GetUpdatedUser(user);
+				return skipUpdate ? user : await GetUpdatedUser(user);
 
 			using (await KeyedLocker.LockAsync(uri))
 			{
@@ -301,7 +303,7 @@ public class UserResolver(
 		}
 	}
 
-	public async Task<User?> ResolveAsyncOrNull(string query)
+	public async Task<User?> ResolveAsyncOrNull(string query, bool skipUpdate)
 	{
 		try
 		{
@@ -310,7 +312,7 @@ public class UserResolver(
 			// First, let's see if we already know the user
 			var user = await userSvc.GetUserFromQueryAsync(query);
 			if (user != null)
-				return await GetUpdatedUser(user);
+				return skipUpdate ? user : await GetUpdatedUser(user);
 
 			if (query.StartsWith($"https://{config.Value.WebDomain}/")) return null;
 
@@ -321,7 +323,7 @@ public class UserResolver(
 			if (resolvedUri != query) user = await userSvc.GetUserFromQueryAsync(resolvedUri);
 			if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
 			if (user != null)
-				return await GetUpdatedUser(user);
+				return skipUpdate ? user : await GetUpdatedUser(user);
 
 			using (await KeyedLocker.LockAsync(resolvedUri))
 			{

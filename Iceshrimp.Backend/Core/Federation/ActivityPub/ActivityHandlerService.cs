@@ -39,7 +39,7 @@ public class ActivityHandlerService(
 		if (activity.Object == null && activity is not ASBite)
 			throw GracefulException.UnprocessableEntity("Activity object is null");
 
-		var resolvedActor = await userResolver.ResolveAsync(activity.Actor.Id);
+		var resolvedActor = await userResolver.ResolveAsync(activity.Actor.Id, true);
 		if (authenticatedUserId == null)
 			throw GracefulException.UnprocessableEntity("Refusing to process activity without authenticatedUserId");
 
@@ -157,7 +157,7 @@ public class ActivityHandlerService(
 		if (activity.Object is not ASActor obj)
 			throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
 
-		var followee = await userResolver.ResolveAsync(obj.Id);
+		var followee = await userResolver.ResolveAsync(obj.Id, true);
 		if (followee.IsRemoteUser)
 			throw GracefulException.UnprocessableEntity("Cannot process follow for remote followee");
 
@@ -223,7 +223,7 @@ public class ActivityHandlerService(
 		if (follow is not { Actor: not null })
 			throw GracefulException.UnprocessableEntity("Refusing to reject object with invalid follow object");
 
-		var resolvedFollower = await userResolver.ResolveAsync(follow.Actor.Id);
+		var resolvedFollower = await userResolver.ResolveAsync(follow.Actor.Id, true);
 		if (resolvedFollower is not { IsLocalUser: true })
 			throw GracefulException.UnprocessableEntity("Refusing to reject remote follow");
 		if (resolvedActor.Uri == null)
@@ -355,7 +355,7 @@ public class ActivityHandlerService(
 				Uri        = activity.Id,
 				User       = resolvedActor,
 				UserHost   = resolvedActor.Host,
-				TargetUser = await userResolver.ResolveAsync(targetActor.Id)
+				TargetUser = await userResolver.ResolveAsync(targetActor.Id, true)
 			},
 			ASNote targetNote => new Bite
 			{
@@ -385,7 +385,7 @@ public class ActivityHandlerService(
 				Uri        = activity.Id,
 				User       = resolvedActor,
 				UserHost   = resolvedActor.Host,
-				TargetUser = await userResolver.ResolveAsync(activity.To.Id)
+				TargetUser = await userResolver.ResolveAsync(activity.To.Id, true)
 			},
 			_ => throw GracefulException.UnprocessableEntity($"Invalid bite target {target.Id} with type {target.Type}")
 
@@ -479,7 +479,7 @@ public class ActivityHandlerService(
 	private async Task UnfollowAsync(ASActor followeeActor, User follower)
 	{
 		//TODO: send reject? or do we not want to copy that part of the old ap core
-		var followee = await userResolver.ResolveAsync(followeeActor.Id);
+		var followee = await userResolver.ResolveAsync(followeeActor.Id, true);
 
 		await db.FollowRequests.Where(p => p.Follower == follower && p.Followee == followee).ExecuteDeleteAsync();
 
