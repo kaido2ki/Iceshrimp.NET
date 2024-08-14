@@ -106,12 +106,12 @@ public class ImageSharpProcessor : ImageProcessorBase, IImageProcessor
 	}
 
 	private Image<TPixel> GetImage<TPixel>(
-		byte[] data, IImageInfo ident, int width, int? height = null, bool preferContiguous = false
+		byte[] data, IImageInfo ident, int targetWidth, int? targetHeight = null, bool preferContiguous = false
 	) where TPixel : unmanaged, IPixel<TPixel>
 	{
-		width  = Math.Min(ident.Width, width);
-		height = Math.Min(ident.Height, height ?? width);
-		var size = new Size(width, height.Value);
+		var width  = Math.Min(ident.Width, targetWidth);
+		var height = Math.Min(ident.Height, targetHeight ?? targetWidth);
+		var size = new Size(width, height);
 		var options = new DecoderOptions
 		{
 			MaxFrames     = 1,
