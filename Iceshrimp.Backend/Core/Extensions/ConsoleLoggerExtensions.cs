@@ -126,13 +126,17 @@ file static class ConsoleUtils
 
 file sealed class CustomFormatter() : ConsoleFormatter("custom"), ISupportExternalScope
 {
+	private static readonly bool IsSystemd     = Environment.GetEnvironmentVariable("INVOCATION_ID") is not null;
+	private static readonly bool LogTimestamps = Environment.GetEnvironmentVariable("LOG_TIMESTAMPS") is "1" or "true";
+
 	private const string LoglevelPadding = ": ";
 
+	// @formatter:off
 	private static readonly string MessagePadding =
-		new(' ', GetLogLevelString(LogLevel.Information).Length + LoglevelPadding.Length);
+		new(' ', LogTimestamps ? DateTime.Now.ToDisplayStringTz().Length + 2 : 0 + GetLogLevelString(LogLevel.Information).Length + LoglevelPadding.Length);
+	// @formatter:on
 
 	private static readonly string NewLineWithMessagePadding = Environment.NewLine + MessagePadding;
-	private static readonly bool   IsSystemd = Environment.GetEnvironmentVariable("INVOCATION_ID") is not null;
 
 	private IExternalScopeProvider? _scopeProvider;
 
@@ -172,6 +176,12 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom"), ISupportExtern
 		var prefix = IsSystemd ? GetSyslogSeverityIndicatorString(logEntry.LogLevel) : null;
 
 		if (prefix != null) textWriter.Write(prefix);
+		if (LogTimestamps)
+		{
+			textWriter.WriteColoredMessage(DateTime.Now.ToDisplayStringTz(), null, ConsoleColor.Green);
+			textWriter.WriteColoredMessage("| ", null, ConsoleColor.Gray);
+		}
+
 		textWriter.WriteColoredMessage(logLevelString, logLevelColors.Background, logLevelColors.Foreground);
 
 		CreateDefaultLogMessage(textWriter, logEntry, message, scope, prefix);
