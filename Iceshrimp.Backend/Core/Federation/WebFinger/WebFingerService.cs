@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Net;
 using System.Text.Encodings.Web;
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Iceshrimp.Backend.Core.Configuration;
@@ -34,6 +35,9 @@ public class WebFingerService(
 		"application/jrd+json", "application/json", "application/xrd+xml", "application/xml"
 	];
 
+	private static XmlReaderSettings _xmlReaderSettings =
+		new() { DtdProcessing = DtdProcessing.Ignore, XmlResolver = null };
+
 	public async Task<WebFingerResponse?> ResolveAsync(string query)
 	{
 		(query, var proto, var domain) = ParseQuery(query);
@@ -58,9 +62,12 @@ public class WebFingerService(
 		if (res.Content.Headers.ContentType?.MediaType is "application/jrd+json" or "application/json")
 			return await res.Content.ReadFromJsonAsync<WebFingerResponse>(cts.Token);
 
+		_xmlReaderSettings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, XmlResolver = null };
+
+		var reader       = XmlReader.Create(await res.Content.ReadAsStreamAsync(cts.Token), _xmlReaderSettings);
 		var deserializer = new XmlSerializer(typeof(WebFingerResponse));
 
-		return deserializer.Deserialize(await res.Content.ReadAsStreamAsync(cts.Token)) as WebFingerResponse ??
+		return deserializer.Deserialize(reader) as WebFingerResponse ??
 		       throw new Exception("Failed to deserialize xml payload");
 	}
 
