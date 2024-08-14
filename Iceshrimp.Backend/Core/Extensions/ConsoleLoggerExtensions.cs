@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Console;
 
@@ -8,18 +7,8 @@ public static class ConsoleLoggerExtensions
 {
 	public static ILoggingBuilder AddCustomConsoleFormatter(this ILoggingBuilder builder)
 	{
-		if (Environment.GetEnvironmentVariable("INVOCATION_ID") is not null)
-		{
-			builder.AddConsole(options => options.FormatterName = "systemd-custom")
-			       .AddConsoleFormatter<CustomSystemdConsoleFormatter, ConsoleFormatterOptions>();
-		}
-		else
-		{
-			builder.AddConsole(options => options.FormatterName = "custom")
-			       .AddConsoleFormatter<CustomFormatter, ConsoleFormatterOptions>();
-		}
-
-		return builder;
+		return builder.AddConsole(options => options.FormatterName = "custom")
+		              .AddConsoleFormatter<CustomFormatter, ConsoleFormatterOptions>();
 	}
 }
 
@@ -114,7 +103,8 @@ file static class ConsoleUtils
 				return Convert.ToBoolean(emitAnsiColorCodes);
 			}
 
-			var enabled = !Console.IsOutputRedirected;
+			var enabled = !Console.IsOutputRedirected ||
+			              Environment.GetEnvironmentVariable("INVOCATION_ID") is not null;
 
 			if (enabled)
 			{
@@ -142,6 +132,7 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom"), ISupportExtern
 		new(' ', GetLogLevelString(LogLevel.Information).Length + LoglevelPadding.Length);
 
 	private static readonly string NewLineWithMessagePadding = Environment.NewLine + MessagePadding;
+	private static readonly bool   IsSystemd = Environment.GetEnvironmentVariable("INVOCATION_ID") is not null;
 
 	private IExternalScopeProvider? _scopeProvider;
 
@@ -178,14 +169,17 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom"), ISupportExtern
 		var logLevelColors = GetLogLevelConsoleColors(logLevel);
 		var logLevelString = GetLogLevelString(logLevel);
 
+		var prefix = IsSystemd ? GetSyslogSeverityIndicatorString(logEntry.LogLevel) : null;
+
+		if (prefix != null) textWriter.Write(prefix);
 		textWriter.WriteColoredMessage(logLevelString, logLevelColors.Background, logLevelColors.Foreground);
 
-		CreateDefaultLogMessage(textWriter, logEntry, message, scope);
+		CreateDefaultLogMessage(textWriter, logEntry, message, scope, prefix);
 	}
 
 	private static void CreateDefaultLogMessage<TState>(
 		TextWriter textWriter, in LogEntry<TState> logEntry,
-		string message, string? scope
+		string message, string? scope, string? prefix
 	)
 	{
 		var exception  = logEntry.Exception;
@@ -204,11 +198,11 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom"), ISupportExtern
 			textWriter.Write(Environment.NewLine);
 		}
 
-		WriteMessage(textWriter, message, singleLine);
+		WriteMessage(textWriter, message, singleLine, prefix);
 
 		if (exception != null)
 		{
-			WriteMessage(textWriter, exception.ToString(), singleLine);
+			WriteMessage(textWriter, exception.ToString(), singleLine, prefix);
 		}
 
 		if (singleLine)
@@ -217,7 +211,7 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom"), ISupportExtern
 		}
 	}
 
-	private static void WriteMessage(TextWriter textWriter, string message, bool singleLine)
+	private static void WriteMessage(TextWriter textWriter, string message, bool singleLine, string? prefix)
 	{
 		if (string.IsNullOrEmpty(message)) return;
 		if (singleLine)
@@ -227,8 +221,11 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom"), ISupportExtern
 		}
 		else
 		{
-			textWriter.Write(MessagePadding);
-			WriteReplacing(textWriter, Environment.NewLine, NewLineWithMessagePadding, message);
+			textWriter.Write(prefix ?? "" + MessagePadding);
+			if (prefix != null)
+				WriteReplacing(textWriter, Environment.NewLine, Environment.NewLine + prefix + MessagePadding, message);
+			else
+				WriteReplacing(textWriter, Environment.NewLine, NewLineWithMessagePadding, message);
 			textWriter.Write(Environment.NewLine);
 		}
 
@@ -256,6 +253,20 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom"), ISupportExtern
 		};
 	}
 
+	private static string GetSyslogSeverityIndicatorString(LogLevel logLevel)
+	{
+		return logLevel switch
+		{
+			LogLevel.Trace       => "<7>",
+			LogLevel.Debug       => "<7>",
+			LogLevel.Information => "<6>",
+			LogLevel.Warning     => "<4>",
+			LogLevel.Error       => "<3>",
+			LogLevel.Critical    => "<2>",
+			_                    => throw new ArgumentOutOfRangeException(nameof(logLevel))
+		};
+	}
+
 	private static ConsoleColors GetLogLevelConsoleColors(LogLevel logLevel)
 	{
 		if (!ConsoleUtils.EmitAnsiColorCodes)
@@ -279,121 +290,6 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom"), ISupportExtern
 	{
 		public ConsoleColor? Foreground { get; } = foreground;
 		public ConsoleColor? Background { get; } = background;
-	}
-
-	public void SetScopeProvider(IExternalScopeProvider scopeProvider)
-	{
-		_scopeProvider = scopeProvider;
-	}
-}
-
-file sealed class CustomSystemdConsoleFormatter() : ConsoleFormatter("systemd-custom"), ISupportExternalScope
-{
-	private static readonly string MessagePadding = new(' ', 6);
-
-	private IExternalScopeProvider? _scopeProvider;
-
-	public override void Write<TState>(
-		in LogEntry<TState> logEntry,
-		IExternalScopeProvider? scopeProvider,
-		TextWriter textWriter
-	)
-	{
-		var message = logEntry.Formatter(logEntry.State, logEntry.Exception);
-		// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-		if (logEntry.Exception == null && message == null) return;
-		var logLevel             = logEntry.LogLevel;
-		var category             = logEntry.Category + " " + Activity.Current?.TraceId;
-		var exception            = logEntry.Exception;
-		var singleLine           = !message.Contains('\n') && exception == null;
-		var syslogSeverityString = GetSyslogSeverityString(logLevel);
-
-		scopeProvider = _scopeProvider ?? scopeProvider;
-		Dictionary<string, string> scopes = [];
-		scopeProvider?.ForEachScope((p, _) =>
-		                            {
-			                            if (p is KeyValuePair<string, string> kvp)
-				                            scopes.Add(kvp.Key, kvp.Value);
-			                            else if (p is Tuple<string, string> tuple)
-				                            scopes.Add(tuple.Item1, tuple.Item2);
-			                            else if (p is (string key, string value))
-				                            scopes.Add(key, value);
-			                            else if (p is IEnumerable<KeyValuePair<string, object>> @enum)
-				                            foreach (var item in @enum.Where(e => e.Value is string))
-					                            scopes.Add(item.Key, (string)item.Value);
-		                            },
-		                            null as object);
-
-		var scope = scopes.GetValueOrDefault("JobId") ??
-		            scopes.GetValueOrDefault("RequestId");
-
-		textWriter.Write(syslogSeverityString);
-		textWriter.Write('[');
-		textWriter.Write(scope ?? "core");
-		textWriter.Write(']');
-		textWriter.Write(' ');
-		textWriter.Write(category);
-		textWriter.Write(singleLine ? " >" : ":");
-
-		if (!string.IsNullOrEmpty(message))
-			WriteMessage(textWriter, message, logLevel, singleLine);
-
-		if (exception != null)
-			WriteMessage(textWriter, exception.ToString(), logLevel, singleLine);
-	}
-
-	private static void WriteMessage(TextWriter textWriter, string message, LogLevel logLevel, bool singleLine)
-	{
-		if (string.IsNullOrEmpty(message)) return;
-		if (singleLine)
-		{
-			textWriter.Write(' ');
-			WriteReplacing(textWriter, Environment.NewLine, " ", message);
-		}
-		else
-		{
-			var sev    = GetSyslogSeverityIndicatorString(logLevel);
-			var prefix = Environment.NewLine + sev + MessagePadding;
-			textWriter.Write(prefix);
-			WriteReplacing(textWriter, Environment.NewLine, prefix, message);
-		}
-
-		textWriter.Write(Environment.NewLine);
-		return;
-
-		static void WriteReplacing(TextWriter writer, string oldValue, string newValue, string message)
-		{
-			var newMessage = message.Replace(oldValue, newValue);
-			writer.Write(newMessage);
-		}
-	}
-
-	private static string GetSyslogSeverityString(LogLevel logLevel)
-	{
-		return logLevel switch
-		{
-			LogLevel.Trace       => "<7>trce: ",
-			LogLevel.Debug       => "<7>dbug: ",
-			LogLevel.Information => "<6>info: ",
-			LogLevel.Warning     => "<4>warn: ",
-			LogLevel.Error       => "<3>fail: ",
-			LogLevel.Critical    => "<2>crit: ",
-			_                    => throw new ArgumentOutOfRangeException(nameof(logLevel))
-		};
-	}
-
-	private static string GetSyslogSeverityIndicatorString(LogLevel logLevel)
-	{
-		return logLevel switch
-		{
-			LogLevel.Trace       => "<7>",
-			LogLevel.Debug       => "<7>",
-			LogLevel.Information => "<6>",
-			LogLevel.Warning     => "<4>",
-			LogLevel.Error       => "<3>",
-			LogLevel.Critical    => "<2>",
-			_                    => throw new ArgumentOutOfRangeException(nameof(logLevel))
-		};
 	}
 
 	public void SetScopeProvider(IExternalScopeProvider scopeProvider)
