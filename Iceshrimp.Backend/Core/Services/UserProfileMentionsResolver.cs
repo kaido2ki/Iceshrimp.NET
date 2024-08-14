@@ -39,12 +39,12 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 
 		var users = await mentionNodes
 		                  .DistinctBy(p => p.Acct)
-		                  .Select(p => userResolver.ResolveAsyncOrNull(p.Username, p.Host?.Value ?? host, true))
+		                  .Select(async p => await userResolver.ResolveAsyncOrNull(p.Username, p.Host?.Value ?? host))
 		                  .AwaitAllNoConcurrencyAsync();
 
 		users.AddRange(await userUris
 		                     .Distinct()
-		                     .Select(p => userResolver.ResolveAsyncOrNull(p, true))
+		                     .Select(async p => await userResolver.ResolveAsyncOrNull(p))
 		                     .AwaitAllNoConcurrencyAsync());
 
 		var mentions = users.Where(p => p != null)
@@ -78,11 +78,11 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 		            .Cast<string>()
 		            .ToList();
 
-		var nodes        = input.SelectMany(MfmParser.Parse);
+		var nodes        = input.SelectMany(p => MfmParser.Parse(p));
 		var mentionNodes = EnumerateMentions(nodes);
 		var users = await mentionNodes
 		                  .DistinctBy(p => p.Acct)
-		                  .Select(p => userResolver.ResolveAsyncOrNull(p.Username, p.Host?.Value ?? host, true))
+		                  .Select(async p => await userResolver.ResolveAsyncOrNull(p.Username, p.Host?.Value ?? host))
 		                  .AwaitAllNoConcurrencyAsync();
 
 		return users.Where(p => p != null)

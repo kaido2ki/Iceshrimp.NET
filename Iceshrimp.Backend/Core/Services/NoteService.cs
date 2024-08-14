@@ -177,7 +177,7 @@ public class NoteService(
 			if (asNote != null)
 			{
 				visibleUserIds = (await asNote.GetRecipients(user)
-				                              .Select(p => userResolver.ResolveAsync(p, true))
+				                              .Select(userResolver.ResolveAsync)
 				                              .AwaitAllNoConcurrencyAsync())
 				                 .Select(p => p.Id)
 				                 .Concat(mentionedUserIds)
@@ -480,7 +480,7 @@ public class NoteService(
 				if (asNote != null)
 				{
 					visibleUserIds = (await asNote.GetRecipients(note.User)
-					                              .Select(p => userResolver.ResolveAsync(p, true))
+					                              .Select(userResolver.ResolveAsync)
 					                              .AwaitAllNoConcurrencyAsync())
 					                 .Select(p => p.Id)
 					                 .Concat(visibleUserIds)
@@ -907,7 +907,7 @@ public class NoteService(
 		                  {
 			                  try
 			                  {
-				                  return await userResolver.ResolveAsync(p.Href!.Id!, true);
+				                  return await userResolver.ResolveAsync(p.Href!.Id!);
 			                  }
 			                  catch
 			                  {
@@ -930,7 +930,7 @@ public class NoteService(
 			                 {
 				                 try
 				                 {
-					                 return await userResolver.ResolveAsync(p.Acct, true);
+					                 return await userResolver.ResolveAsync(p.Acct);
 				                 }
 				                 catch
 				                 {
@@ -1096,7 +1096,7 @@ public class NoteService(
 			if (res != null && !forceRefresh) return res;
 		}
 
-		var actor = await userResolver.ResolveAsync(attrTo.Id, true);
+		var actor = await userResolver.ResolveAsync(attrTo.Id);
 
 		using (await KeyedLocker.LockAsync(uri))
 		{

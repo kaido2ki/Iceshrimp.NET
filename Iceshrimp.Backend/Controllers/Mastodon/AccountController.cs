@@ -604,7 +604,8 @@ public class AccountController(
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<AccountEntity> LookupUser([FromQuery] string acct)
 	{
-		var user = await userResolver.LookupAsync(acct, false) ?? throw GracefulException.RecordNotFound();
+		var user = await userResolver.LookupAsync(acct) ?? throw GracefulException.RecordNotFound();
+		user = await userResolver.GetUpdatedUser(user);
 		return await userRenderer.RenderAsync(user);
 	}
 
