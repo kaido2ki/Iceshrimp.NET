@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 using System.Net;
 using System.Text.Encodings.Web;
 using System.Xml;
-using System.Xml.Linq;
 using System.Xml.Serialization;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Middleware;

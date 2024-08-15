@@ -99,7 +99,8 @@ public static class ServiceExtensions
 			.AddSingleton<FederationSemaphoreMiddleware>()
 			.AddSingleton<PushService>()
 			.AddSingleton<StreamingService>()
-			.AddSingleton<ImageProcessor>();
+			.AddSingleton<ImageProcessor>()
+			.AddSingleton<RazorViewRenderService>();
 
 		var config = configuration.GetSection("Storage").Get<Config.StorageSection>() ??
 		             throw new Exception("Failed to read storage config section");

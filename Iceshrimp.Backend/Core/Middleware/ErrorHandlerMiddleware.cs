@@ -1,8 +1,13 @@
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Xml.Serialization;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Backend.Pages.Shared;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.Extensions.Options;
 
@@ -11,10 +16,12 @@ namespace Iceshrimp.Backend.Core.Middleware;
 public class ErrorHandlerMiddleware(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	IOptionsSnapshot<Config.SecuritySection> options,
-	ILoggerFactory loggerFactory
-)
-	: IMiddleware
+	ILoggerFactory loggerFactory,
+	RazorViewRenderService razor
+) : IMiddleware
 {
+	private static readonly XmlSerializer XmlSerializer = new(typeof(ErrorResponse));
+
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
 	{
 		try
@@ -55,8 +62,6 @@ public class ErrorHandlerMiddleware(
 				return;
 			}
 
-			ctx.Response.ContentType = "application/json";
-
 			var isMastodon = ctx.GetEndpoint()?.Metadata.GetMetadata<MastodonApiControllerAttribute>() != null;
 
 			if (e is GracefulException ce)
@@ -74,25 +79,32 @@ public class ErrorHandlerMiddleware(
 				ctx.Response.StatusCode        = (int)ce.StatusCode;
 				ctx.Response.Headers.RequestId = ctx.TraceIdentifier;
 
-				// @formatter:off
 				if (isMastodon)
-					await ctx.Response.WriteAsJsonAsync(new MastodonErrorResponse
+				{
+					var error = new MastodonErrorResponse
 					{
 						Error       = verbosity >= ExceptionVerbosity.Basic ? ce.Message : ce.StatusCode.ToString(),
 						Description = verbosity >= ExceptionVerbosity.Basic ? ce.Details : null
-					});
+					};
+
+					ctx.Response.ContentType = "application/json";
+					await ctx.Response.WriteAsJsonAsync(error);
+				}
 				else
-					await ctx.Response.WriteAsJsonAsync(new ErrorResponse
+				{
+					var error = new ErrorResponse
 					{
 						StatusCode = ctx.Response.StatusCode,
 						Error      = verbosity >= ExceptionVerbosity.Basic ? ce.Error : ce.StatusCode.ToString(),
 						Message    = verbosity >= ExceptionVerbosity.Basic ? ce.Message : null,
-						Details    = verbosity == ExceptionVerbosity.Full  ? ce.Details : null,
-						Errors     = verbosity == ExceptionVerbosity.Full  ? (ce as ValidationException)?.Errors : null,
-						Source     = verbosity == ExceptionVerbosity.Full  ? type : null,
+						Details    = verbosity == ExceptionVerbosity.Full ? ce.Details : null,
+						Errors     = verbosity == ExceptionVerbosity.Full ? (ce as ValidationException)?.Errors : null,
+						Source     = verbosity == ExceptionVerbosity.Full ? type : null,
 						RequestId  = ctx.TraceIdentifier
-					});
-				// @formatter:on
+					};
+
+					await WriteResponse(error);
+				}
 
 				var level = ce.SuppressLog ? LogLevel.Trace : LogLevel.Debug;
 
@@ -108,21 +120,73 @@ public class ErrorHandlerMiddleware(
 			{
 				ctx.Response.StatusCode        = 500;
 				ctx.Response.Headers.RequestId = ctx.TraceIdentifier;
-				await ctx.Response.WriteAsJsonAsync(new ErrorResponse
+
+				var error = new ErrorResponse
 				{
 					StatusCode = 500,
 					Error      = "Internal Server Error",
-					Message =
-						verbosity >= ExceptionVerbosity.Basic
-							? e.Message
-							: null,
-					Source    = verbosity == ExceptionVerbosity.Full ? type : null,
-					RequestId = ctx.TraceIdentifier
-				});
+					Message    = verbosity >= ExceptionVerbosity.Basic ? e.Message : null,
+					Source     = verbosity == ExceptionVerbosity.Full ? type : null,
+					RequestId  = ctx.TraceIdentifier
+				};
+
+				await WriteResponse(error);
 				//TODO: use the overload that takes an exception instead of printing it ourselves
 				logger.LogError("Request encountered an unexpected error: {exception}", e);
 			}
+
+			async Task WriteResponse(ErrorResponse payload)
+			{
+				var accept  = ctx.Request.Headers.Accept.NotNull().SelectMany(p => p.Split(',')).ToImmutableArray();
+				var resType = ResponseType.Json;
+				if (accept.Any(IsHtml))
+					resType = ResponseType.Html;
+				else if (accept.Any(IsXml) && accept.All(p => !IsJson(p)))
+					resType = ResponseType.Xml;
+
+				ctx.Response.ContentType = resType switch
+				{
+					ResponseType.Json => "application/json",
+					ResponseType.Xml  => "application/xml",
+					ResponseType.Html => "text/html;charset=utf8",
+					_                 => throw new ArgumentOutOfRangeException(nameof(resType))
+				};
+
+				switch (resType)
+				{
+					case ResponseType.Json:
+						await ctx.Response.WriteAsJsonAsync(payload);
+						break;
+					case ResponseType.Xml:
+					{
+						var stream = ctx.Response.BodyWriter.AsStream();
+						XmlSerializer.Serialize(stream, payload);
+						break;
+					}
+					case ResponseType.Html:
+					{
+						var model = new ErrorPageModel(payload);
+						ctx.Response.ContentType = "text/html; charset=utf8";
+						var stream = ctx.Response.BodyWriter.AsStream();
+						await razor.RenderToStreamAsync("Shared/ErrorPage.cshtml", model, stream);
+						return;
+					}
+					default:
+						throw new ArgumentOutOfRangeException(nameof(resType));
+				}
+			}
+
+			bool IsXml(string s)  => s.Contains("/xml") || s.Contains("+xml");
+			bool IsJson(string s) => s.Contains("/json") || s.Contains("+json");
+			bool IsHtml(string s) => s.Contains("/html");
 		}
+	}
+
+	private enum ResponseType
+	{
+		Json,
+		Xml,
+		Html
 	}
 }
 
