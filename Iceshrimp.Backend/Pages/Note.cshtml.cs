@@ -36,7 +36,8 @@ public class NoteModel(
 			return Partial("Shared/FrontendSPA");
 
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown)
-			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+			throw GracefulException.Forbidden("Public preview is disabled on this instance.",
+			                                  "The instance administrator has intentionally disabled this feature for privacy reasons.");
 
 		//TODO: redirect to login (with route as url param) when public preview is disabled
 		//TODO: login button
