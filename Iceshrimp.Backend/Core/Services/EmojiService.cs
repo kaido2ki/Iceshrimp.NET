@@ -142,8 +142,14 @@ public partial class EmojiService(
 		return resolved;
 	}
 
+	// This is technically the unicode character 'heavy black heart', but misskey doesn't send the emoji version selector, so here we are.
+	private const string MisskeyHeart         = "\u2764";
+	private const string EmojiVersionSelector = "\ufe0f";
+
 	public async Task<string> ResolveEmojiName(string name, string? host)
 	{
+		if (name == MisskeyHeart)
+			return name + EmojiVersionSelector;
 		if (EmojiHelpers.IsEmoji(name))
 			return name;
 

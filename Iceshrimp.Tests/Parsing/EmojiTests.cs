@@ -7,7 +7,7 @@ public class EmojiTests
 {
 	private static void TestEmojiRegexTemplate(string input, bool expectedOutput) =>
 		EmojiHelpers.IsEmoji(input).Should().Be(expectedOutput);
-	
+
 	[TestMethod]
 	[DataRow("\ud83d\ude84")] // high speed train (E1.0/U6.0)
 	[DataRow("\ud83c\udfc2\ud83c\udffd")] // snowboarder: medium skin tone (E2.0)
@@ -31,8 +31,9 @@ public class EmojiTests
 	public void TestEmojiRegexPlainText(string input) => TestEmojiRegexTemplate(input, false);
 
 	[TestMethod]
-	[DataRow("\u2122", "\ufe0f")] // trademark sign
+	[DataRow("\u2122", "\ufe0f")]       // trademark sign
 	[DataRow("\ud83d\udd74", "\ufe0f")] // man in business suit levitating
+	[DataRow("\u2764", "\ufe0f")]       // heavy black heart / red heart
 	public void TestEmojiRegexEmojiSelector(string input, string selector)
 	{
 		TestEmojiRegexTemplate(input, false);
