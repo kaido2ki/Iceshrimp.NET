@@ -105,7 +105,8 @@ public class ActivityHandlerService(
 		activity.Object = await objectResolver.ResolveObject(activity.Object, actor.Uri) as ASNote ??
 		                  throw GracefulException.UnprocessableEntity("Failed to resolve create object");
 
-		await noteSvc.ProcessNoteAsync(activity.Object, actor, inboxUser);
+		using (await NoteService.GetNoteProcessLockAsync(activity.Object.Id))
+			await noteSvc.ProcessNoteAsync(activity.Object, actor, inboxUser);
 	}
 
 	private async Task HandleDelete(ASDelete activity, User resolvedActor)
@@ -335,7 +336,8 @@ public class ActivityHandlerService(
 				await userSvc.UpdateUserAsync(resolvedActor, actor);
 				break;
 			case ASNote note:
-				await noteSvc.ProcessNoteUpdateAsync(note, resolvedActor);
+				using (await NoteService.GetNoteProcessLockAsync(note.Id))
+					await noteSvc.ProcessNoteUpdateAsync(note, resolvedActor);
 				break;
 			default:
 				logger.LogDebug("Like activity object is unknown, skipping");

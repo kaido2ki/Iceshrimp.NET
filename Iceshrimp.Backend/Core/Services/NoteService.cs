@@ -715,6 +715,8 @@ public class NoteService(
 			eventSvc.RaiseNoteDeleted(this, hit);
 	}
 
+	public static ValueTask<IDisposable> GetNoteProcessLockAsync(string uri) => KeyedLocker.LockAsync(uri);
+
 	public async Task<Note?> ProcessNoteAsync(ASNote note, User actor, User? user = null)
 	{
 		var dbHit = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == note.Id);
