@@ -51,7 +51,8 @@ public class WebFingerService(
 		using var cts = CancellationTokenSource.CreateLinkedTokenSource(appLifetime.ApplicationStopping);
 		cts.CancelAfter(TimeSpan.FromSeconds(10));
 
-		var req = httpRqSvc.Get(webFingerUrl, Accept);
+		// We're not explicitly accepting (xrd+)xml here because of https://github.com/friendica/friendica/issues/14371 and https://github.com/friendica/friendica/issues/14370
+		var req = httpRqSvc.Get(webFingerUrl, ["application/jrd+json", "application/json"]);
 		var res = await client.SendAsync(req, cts.Token);
 
 		if (res.StatusCode == HttpStatusCode.Gone)
