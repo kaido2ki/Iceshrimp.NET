@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
+using JI = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
@@ -23,6 +24,21 @@ public class ASTagLink : ASTag
 	[J($"{Constants.ActivityStreamsNs}#name")]
 	[JC(typeof(VC))]
 	public string? Name { get; set; }
+}
+
+public class ASTagRel : ASTagLink
+{
+	public ASTagRel() => Type = $"{Constants.ActivityStreamsNs}#Link";
+
+	[J($"{Constants.ActivityStreamsNs}#mediaType")]
+	[JC(typeof(VC))]
+	public string? MediaType { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#rel")]
+	[JC(typeof(VC))]
+	public string? Rel { get; set; }
+
+	[JI] public string? Link => Id ?? Href?.Id;
 }
 
 public class ASMention : ASTagLink
@@ -96,6 +112,7 @@ public sealed class ASTagConverter : JsonConverter
 
 		return tag?.Type switch
 		{
+			$"{Constants.ActivityStreamsNs}#Link"    => obj.ToObject<ASTagRel?>(),
 			$"{Constants.ActivityStreamsNs}#Mention" => obj.ToObject<ASMention?>(),
 			$"{Constants.ActivityStreamsNs}#Hashtag" => obj.ToObject<ASHashtag?>(),
 			$"{Constants.MastodonNs}#Emoji"          => obj.ToObject<ASEmoji?>(),

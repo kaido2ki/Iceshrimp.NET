@@ -24,14 +24,14 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 
 	public async Task<ASNote> RenderAsync(Note note, List<Note.MentionedUser>? mentions = null)
 	{
+		if (note.IsPureRenote)
+			throw GracefulException.BadRequest("Refusing to render pure renote as ASNote");
+
 		var id     = note.GetPublicUri(config.Value);
 		var userId = note.User.GetPublicUri(config.Value);
 		var replyId = note.Reply != null
 			? new ASObjectBase(note.Reply.Uri ?? note.Reply.GetPublicUri(config.Value))
 			: null;
-
-		if (note.IsPureRenote)
-			throw GracefulException.BadRequest("Refusing to render pure renote as ASNote");
 
 		mentions ??= await db.Users
 		                     .Where(p => note.Mentions.Contains(p.Id))
@@ -114,6 +114,17 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 
 		var quoteUri = note.IsQuote ? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value) : null;
 		var text     = quoteUri != null ? note.Text + $"\n\nRE: {quoteUri}" : note.Text;
+
+		if (quoteUri != null)
+		{
+			tags.Add(new ASTagRel
+			{
+				Href      = new ASObjectBase(quoteUri),
+				Name      = $"RE: {quoteUri}",
+				Rel       = $"{Constants.MisskeyNs}#_misskey_quote",
+				MediaType = Constants.ASMime
+			});
+		}
 
 		var sensitive = note.Cw != null || (attachments?.OfType<ASDocument>().Any(p => p.Sensitive == true) ?? false);
 

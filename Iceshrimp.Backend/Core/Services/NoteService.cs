@@ -800,7 +800,17 @@ public class NoteService(
 		var createdAt = note.PublishedAt?.ToUniversalTime() ??
 		                throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field");
 
-		var quoteUrl   = note.MkQuote ?? note.QuoteUri ?? note.QuoteUrl;
+		var quoteUrl = note.MkQuote ??
+		               note.QuoteUri ??
+		               note.QuoteUrl ??
+		               note.Tags?.OfType<ASTagRel>()
+		                   .Where(p => p.MediaType is Constants.APMime or Constants.ASMime)
+		                   .Where(p => p.Rel is $"{Constants.MisskeyNs}#_misskey_quote"
+		                                        or $"{Constants.FedibirdNs}#quoteUri"
+		                                        or $"{Constants.ActivityStreamsNs}#quoteUrl")
+		                   .Select(p => p.Link)
+		                   .FirstOrDefault();
+
 		var renote     = quoteUrl != null ? await ResolveNoteAsync(quoteUrl, user: user) : null;
 		var renoteUri  = renote == null ? quoteUrl : null;
 		var visibility = note.GetVisibility(actor);

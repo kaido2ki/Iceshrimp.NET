@@ -88,7 +88,7 @@ public class UserResolver(
 		responses.Add(query, fingerRes);
 
 		var apUri = fingerRes.Links
-		                     .FirstOrDefault(p => p is { Rel: "self", Type: Constants.ASMime or Constants.ASMimeAlt })
+		                     .FirstOrDefault(p => p is { Rel: "self", Type: Constants.APMime or Constants.ASMime })
 		                     ?.Href;
 
 		if (apUri == null)

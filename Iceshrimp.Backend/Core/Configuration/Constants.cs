@@ -18,10 +18,11 @@ public static class Constants
 	public const           string   SchemaNs          = "http://schema.org";
 	public const           string   MastodonNs        = "http://joinmastodon.org/ns";
 	public const           string   MisskeyNs         = "https://misskey-hub.net/ns";
+	public const           string   FedibirdNs        = "http://fedibird.com/ns";
 	public static readonly string[] SystemUsers       = ["instance.actor", "relay.actor"];
 
-	public const string ASMime    = "application/activity+json";
-	public const string ASMimeAlt = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"";
+	public const string APMime = "application/activity+json";
+	public const string ASMime = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"";
 
 	public static readonly string[] BrowserSafeMimeTypes =
 	[
