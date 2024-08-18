@@ -871,6 +871,8 @@ public class NoteService(
 			throw GracefulException.Forbidden("User is suspended");
 		if (dbNote.UpdatedAt != null && dbNote.UpdatedAt > updatedAt)
 			throw GracefulException.UnprocessableEntity("Note update is older than last known version");
+		if (updatedAt.Year < 2007 || updatedAt > DateTime.Now + TimeSpan.FromDays(3))
+			throw GracefulException.UnprocessableEntity("updatedAt is nonsensical");
 		if (actor.Host == null)
 			throw GracefulException.UnprocessableEntity("User.Host is null");
 
