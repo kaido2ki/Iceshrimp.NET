@@ -33,16 +33,14 @@ public class DeliverQueue(int parallelism)
 
 		logger.LogDebug("Delivering activity to: {uri}", jobData.InboxUrl);
 
-		var key = await cache.FetchAsync($"userPrivateKey:{jobData.UserId}", TimeSpan.FromMinutes(60), async () =>
-		{
-			var keypair =
-				await db.UserKeypairs.FirstOrDefaultAsync(p => p.UserId == jobData.UserId, token);
-			return keypair?.PrivateKey ?? throw new Exception($"Failed to get keypair for user {jobData.UserId}");
-		});
+		var key = await db.UserKeypairs
+		                  .Where(p => p.UserId == jobData.UserId)
+		                  .Select(p => p.PrivateKey)
+		                  .FirstOrDefaultAsync(token) ??
+		          throw new Exception($"Failed to get keypair for user {jobData.UserId}");
 
-		var request =
-			await httpRqSvc.PostSignedAsync(jobData.InboxUrl, jobData.Payload, jobData.ContentType, jobData.UserId,
-			                                key);
+		var request = await httpRqSvc.PostSignedAsync(jobData.InboxUrl, jobData.Payload, jobData.ContentType,
+		                                              jobData.UserId, key);
 
 		try
 		{
