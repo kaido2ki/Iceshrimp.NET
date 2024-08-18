@@ -20,7 +20,6 @@ public class DeliverQueue(int parallelism)
 		var logger     = scope.GetRequiredService<ILogger<DeliverQueue>>();
 		var httpClient = scope.GetRequiredService<HttpClient>();
 		var httpRqSvc  = scope.GetRequiredService<HttpRequestService>();
-		var cache      = scope.GetRequiredService<CacheService>();
 		var db         = scope.GetRequiredService<DatabaseContext>();
 		var fedCtrl    = scope.GetRequiredService<ActivityPub.FederationControlService>();
 		var followup   = scope.GetRequiredService<FollowupTaskService>();
