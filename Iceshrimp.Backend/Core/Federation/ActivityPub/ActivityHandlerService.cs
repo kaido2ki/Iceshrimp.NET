@@ -269,8 +269,8 @@ public class ActivityHandlerService(
 				await UnfollowAsync(followee, resolvedActor);
 				break;
 			case ASLike { Object: ASNote note } like:
-				if (like.MisskeyReaction != null)
-					await noteSvc.RemoveReactionFromNoteAsync(note, resolvedActor, like.MisskeyReaction);
+				if ((like.Content ?? like.MisskeyReaction) is { } reaction)
+					await noteSvc.RemoveReactionFromNoteAsync(note, resolvedActor, reaction);
 				else
 					await noteSvc.UnlikeNoteAsync(note, resolvedActor);
 				break;
