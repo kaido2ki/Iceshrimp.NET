@@ -33,6 +33,7 @@ This document **MAY** alias JSON-LD namespace IRIs to their well-known aliases. 
     + Mentions referencing a user by their non-canonical `acct` (`@user@web.domain.tld`) get canonicalized on note ingestion.
   - We support WebFinger over `application/jrd+json` as well as `application/xrd+xml` (both incoming and outgoing).
     + However, we do not ask for `xrd+xml` in our `Accept` header for outgoing WebFinger requests due to [compatibility issues](https://github.com/friendica/friendica/issues/14370) with Friendica.
+    + Responses **MUST** have their `Content-Type` set to `application/jrd+json`, `application/xrd+xml`, `application/json`, or `application/xml`.
   - We support host-meta over `application/jrd+json` as well as `application/xrd+xml` (both incoming and outgoing).
     + The json representation is also accessible under `/.well-known/host-meta.json`.
     + Implementors **SHOULD** advertise the WebFinger `Content-Type` in the `type` attribute of the WebFinger template in the host-meta response.
