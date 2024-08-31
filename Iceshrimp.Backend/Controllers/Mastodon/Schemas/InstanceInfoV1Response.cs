@@ -83,10 +83,11 @@ public class InstanceMediaConfiguration
 
 public class InstancePollConfiguration
 {
-	[J("max_options")]               public int MaxOptions        => 10;
-	[J("max_characters_per_option")] public int MaxCharsPerOption => 50;
-	[J("min_expiration")]            public int MinExpiration     => 50;
-	[J("max_expiration")]            public int MaxExpiration     => 2629746;
+	[J("allow_media")]               public bool AllowMedia        => true;
+	[J("max_options")]               public int  MaxOptions        => 10;
+	[J("max_characters_per_option")] public int  MaxCharsPerOption => 50;
+	[J("min_expiration")]            public int  MinExpiration     => 50;
+	[J("max_expiration")]            public int  MaxExpiration     => 2629746;
 }
 
 public class InstanceReactionConfiguration
