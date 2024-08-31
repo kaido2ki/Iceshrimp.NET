@@ -161,7 +161,11 @@ public class NoteRenderer(
 			Emojis           = noteEmoji,
 			Poll             = poll,
 			Reactions        = reactions,
-			Filtered         = filterResult
+			Filtered         = filterResult,
+
+			Pleroma          = new() {
+				Reactions = reactions
+			}
 		};
 
 		return res;

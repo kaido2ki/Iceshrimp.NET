@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
@@ -54,6 +55,8 @@ public class StatusEntity : IEntity, ICloneable
 
 	public                    object Clone() => MemberwiseClone();
 	[J("id")] public required string Id      { get; set; }
+
+	[J("pleroma")] public required PleromaStatusExtensions Pleroma { get; set; }
 
 	public static string EncodeVisibility(Note.NoteVisibility visibility)
 	{
