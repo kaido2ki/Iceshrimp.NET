@@ -164,7 +164,8 @@ public class NoteRenderer(
 			Filtered         = filterResult,
 
 			Pleroma          = new() {
-				Reactions = reactions
+				Reactions = reactions,
+				ConversationId = note.ThreadIdOrId
 			}
 		};
 

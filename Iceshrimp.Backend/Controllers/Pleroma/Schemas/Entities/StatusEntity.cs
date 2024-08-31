@@ -5,5 +5,6 @@ namespace Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 
 public class PleromaStatusExtensions 
 {
-	[J("emoji_reactions")]         public required List<ReactionEntity>     Reactions   { get; set; }
+	[J("emoji_reactions")] public required List<ReactionEntity> Reactions      { get; set; }
+	[J("conversation_id")] public required string               ConversationId { get; set; }
 }
