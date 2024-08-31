@@ -90,9 +90,34 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 				MaxCaptionTextLength       = 0,
 				EnableGithubIntegration    = false,
 				EnableDiscordIntegration   = false,
-				EnableEmail                = false
+				EnableEmail                = false,
+
+				// TODO: STUB
+				PublicTimelineVisibility   = new() {
+					Bubble    = true,
+					Federated = true,
+					Local     = true,
+				},
+				UploadLimits = new() {
+					General = 50_000_000,
+					Avatar = 50_000_000,
+					Background = 50_000_000,
+					Banner = 50_000_000,
+				},
+				Suggestions = new() {
+					Enabled = false
+				},
+				Federation = new() {
+					Enabled = true
+				}
 			},
 			OpenRegistrations = false
 		};
+	}
+
+	[HttpGet("2.0.json")]
+	public IActionResult GetNodeInfoAkkoFE()
+	{
+		return Redirect("/nodeinfo/2.0");
 	}
 }

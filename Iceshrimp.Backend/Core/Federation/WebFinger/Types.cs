@@ -110,6 +110,46 @@ public class NodeInfoResponse
 		[J("enableGithubIntegration")]    public bool?         EnableGithubIntegration    { get; set; }
 		[J("enableDiscordIntegration")]   public bool?         EnableDiscordIntegration   { get; set; }
 		[J("enableEmail")]                public bool?         EnableEmail                { get; set; }
+
+		[J("publicTimelineVisibility")]   public PleromaPublicTimelineVisibility? PublicTimelineVisibility { get; set; }
+		[J("features")]                   public PleromaFeature[]          Features                 { get; set; } = [];
+		[J("uploadLimits")]   public PleromaUploadLimits? UploadLimits { get; set; }
+		[J("suggestions")]   public PleromaSuggestions? Suggestions { get; set; }
+		[J("federation")]   public PleromaFederation? Federation { get; set; }
+		[J("localBubbleInstances")]   public string[] LocalBubbleInstances { get; set; } = [];
+		
+		// TODO: list of ap object ids i believe?
+		[J("staffAccounts")]   public string[] StaffAccounts { get; set; } = [];
+	}
+
+	public enum PleromaFeature
+	{
+
+	}
+
+	public class PleromaPublicTimelineVisibility
+	{
+		[J("bubble")]    public bool? Bubble    { get; set; }
+		[J("federated")] public bool? Federated { get; set; }
+		[J("local")]     public bool? Local     { get; set; }
+	}
+
+	public class PleromaUploadLimits
+	{
+		[J("general")]    public int? General   { get; set; }
+		[J("avatar")]    public int? Avatar { get; set; }
+		[J("background")]    public int? Background { get; set; }
+		[J("banner")]    public int? Banner { get; set; }
+	}
+
+	public class PleromaSuggestions
+	{
+		[J("enabled")]    public bool? Enabled { get; set; }
+	}
+
+	public class PleromaFederation
+	{
+		[J("enabled")]    public bool? Enabled { get; set; }
 	}
 
 	public class Maintainer
