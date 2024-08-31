@@ -39,7 +39,7 @@ public static class MastodonOauthHelpers
 		"read:follows", "read:blocks", "read:mutes", "write:follows", "write:blocks", "write:mutes"
 	];
 
-	private static readonly List<string> ScopeGroups = ["read", "write", "follow", "push"];
+	private static readonly List<string> ScopeGroups = ["read", "write", "follow", "push", "admin"];
 
 	private static readonly List<string> ForbiddenSchemes = ["javascript", "file", "data", "mailto", "tel"];
 
