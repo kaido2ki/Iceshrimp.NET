@@ -304,7 +304,7 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	private async Task<List<ReactionEntity>> GetReactions(List<Note> notes, User? user)
+	public async Task<List<ReactionEntity>> GetReactions(List<Note> notes, User? user, bool fillAccounts = false)
 	{
 		if (notes.Count == 0) return [];
 		var counts = notes.ToDictionary(p => p.Id, p => p.Reactions);
@@ -321,7 +321,8 @@ public class NoteRenderer(
 			                  Me = user != null &&
 			                       db.NoteReactions.Any(i => i.NoteId == p.First().NoteId &&
 			                                                 i.Reaction == p.First().Reaction &&
-			                                                 i.User == user)
+			                                                 i.User == user),
+							  AccountIds = db.NoteReactions.Where(i => i.NoteId == p.First().NoteId).Select(i => i.UserId).ToList()
 		                  })
 		                  .ToListAsync();
 
@@ -332,6 +333,17 @@ public class NoteRenderer(
 			item.Url       = hit.PublicUrl;
 			item.StaticUrl = hit.PublicUrl;
 			item.Name      = item.Name.Trim(':');
+		}
+
+		if (fillAccounts)
+		{
+			foreach (var item in res)
+			{
+				if (item.AccountIds == null) continue;
+
+				var accounts = await db.Users.Where(u => item.AccountIds.Contains(u.Id)).ToArrayAsync();
+				item.Accounts = (await userRenderer.RenderManyAsync(accounts)).ToList();
+			}
 		}
 
 		return res;
