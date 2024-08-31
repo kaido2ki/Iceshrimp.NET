@@ -11,4 +11,6 @@ public class FrontendConfigurationsResponse()
 // TODO: STUB
 public class PleromaFeConfiguration()
 {
+    // Use Oauth
+    [J("loginMethod")] public string loginMethod => "token";
 }

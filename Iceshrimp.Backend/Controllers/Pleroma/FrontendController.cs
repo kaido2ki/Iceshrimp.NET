@@ -17,7 +17,7 @@ namespace Iceshrimp.Backend.Controllers.Pleroma;
 [Produces(MediaTypeNames.Application.Json)]
 public class FrontendController : ControllerBase
 {
-	[HttpGet("/api/v1/pleroma/frontend_configurations")]
+	[HttpGet("/api/pleroma/frontend_configurations")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public FrontendConfigurationsResponse GetFrontendConfigurations([FromServices] IOptionsSnapshot<Config> config)
 	{
