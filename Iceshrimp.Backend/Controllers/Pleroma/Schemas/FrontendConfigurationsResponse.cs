@@ -8,9 +8,8 @@ public class FrontendConfigurationsResponse()
 }
 
 
-// TODO: STUB
 public class PleromaFeConfiguration()
 {
-    // Use Oauth
-    [J("loginMethod")] public string loginMethod => "token";
+    [J("loginMethod")]     public string LoginMethod     => "token";
+    [J("useStreamingApi")] public bool   UseStreamingApi => true;
 }
