@@ -33,10 +33,14 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 
 		var (instanceName, instanceDescription, adminContact) =
 			await meta.GetMany(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
+		var vapidKey = await meta.Get(MetaEntity.VapidPublicKey); // can't merge with above call since they're all nullable and this is not.
 
 		return new InstanceInfoV1Response(config.Value, instanceName, instanceDescription, adminContact)
 		{
-			Stats = new InstanceStats(userCount, noteCount, instanceCount)
+			Stats = new InstanceStats(userCount, noteCount, instanceCount),
+			Pleroma = new() {
+				VapidPublicKey = vapidKey
+			}
 		};
 	}
 

@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
@@ -33,6 +34,7 @@ public class InstanceInfoV1Response(
 
 	[J("urls")]          public InstanceUrls            Urls          => new(config.Instance);
 	[J("configuration")] public InstanceConfigurationV1 Configuration => new(config.Instance);
+	[J("pleroma")] public required PleromaInstanceExtensions Pleroma { get; set; }
 
 	//TODO: add the rest
 }
