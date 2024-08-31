@@ -29,6 +29,10 @@
                 <input type="checkbox" name="autoDetectQuotes" id="autoDetectQuotes" value="1"/>
                 <label for="autoDetectQuotes">Automatically detect quotes</label>
             </div>
+            <div>
+                <input type="checkbox" name="isPleroma" id="isPleroma" value="1"/>
+                <label for="isPleroma">This app is intended for Pleroma or Akkoma</label>
+            </div>
             @if (Model.AuthenticatedUsers.Count > 0)
             {
                 <div class="margin-top-5px">

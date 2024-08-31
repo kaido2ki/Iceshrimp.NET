@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -13,9 +14,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20240831215254_TokenPleroma")]
+    partial class TokenPleroma
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2346,6 +2349,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("channelId")
                         .HasComment("The ID of source channel.");
 
+                    b.Property<string>("CombinedAltText")
+                        .HasColumnType("text")
+                        .HasColumnName("combinedAltText");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdAt")
@@ -2374,6 +2381,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("hasPoll");
+
+                    b.Property<string>("Lang")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("lang");
 
                     b.Property<int>("LikeCount")
                         .ValueGeneratedOnAdd()
@@ -2584,6 +2596,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex("UserId", "Id");
 
+                    b.HasIndex(new[] { "CombinedAltText" }, "GIN_TRGM_note_combined_alt_text");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "CombinedAltText" }, "GIN_TRGM_note_combined_alt_text"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "CombinedAltText" }, "GIN_TRGM_note_combined_alt_text"), new[] { "gin_trgm_ops" });
+
                     b.HasIndex(new[] { "Cw" }, "GIN_TRGM_note_cw");
 
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "Cw" }, "GIN_TRGM_note_cw"), "gin");
@@ -2663,6 +2680,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)[]")
                         .HasColumnName("fileIds")
                         .HasDefaultValueSql("'{}'::character varying[]");
+
+                    b.Property<string>("Lang")
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("lang");
 
                     b.Property<string>("NoteId")
                         .IsRequired()
@@ -3416,6 +3438,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(256)[]")
                         .HasColumnName("choices")
                         .HasDefaultValueSql("'{}'::character varying[]");
+
+                    b.Property<List<string>>("Correct")
+                        .HasColumnType("character varying(256)[]")
+                        .HasColumnName("correct");
 
                     b.Property<DateTime?>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")

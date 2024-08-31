@@ -70,6 +70,7 @@ public class OauthToken
 
 	[Column("supportsHtmlFormatting")] public bool SupportsHtmlFormatting { get; set; }
 	[Column("autoDetectQuotes")]       public bool AutoDetectQuotes       { get; set; }
+	[Column("isPleroma")]              public bool IsPleroma              { get; set; }
 
 	[Column("lastActiveDate")] public DateTime? LastActiveDate { get; set; }
 }

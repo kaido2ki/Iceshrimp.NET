@@ -827,6 +827,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			entity.Property(e => e.AutoDetectQuotes)
 			      .HasComment("Whether the backend should automatically detect quote posts coming from this client")
 			      .HasDefaultValue(true);
+			entity.Property(e => e.IsPleroma)
+			      .HasComment("Whether Pleroma or Akkoma specific behavior should be enabled for this client")
+			      .HasDefaultValue(false);
 
 			entity.HasOne(d => d.App)
 			      .WithMany(p => p.OauthTokens)

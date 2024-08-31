@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -45,7 +46,11 @@ public class LinkPaginationAttribute(int defaultLimit, int maxLimit, bool offset
 
 		var mpq      = query as MastodonPaginationQuery;
 		var offsetPg = offset || mpq is { Offset: not null, MaxId: null, MinId: null, SinceId: null };
-		if (ids.Count >= limit)
+
+		var token      = context.HttpContext.GetOauthToken();
+		var alwaysNext = token?.IsPleroma ?? false;
+
+		if (alwaysNext || ids.Count >= limit)
 		{
 			var next = offsetPg
 				? new QueryBuilder { { "offset", ((mpq?.Offset ?? 0) + limit).ToString() } }

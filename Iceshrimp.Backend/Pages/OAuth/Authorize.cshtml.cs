@@ -54,7 +54,7 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 
 	public async Task OnPost(
 		[FromForm] string? username, [FromForm] string? password, [FromForm] string? userId,
-		[FromForm] bool supportsHtmlFormatting, [FromForm] bool autoDetectQuotes
+		[FromForm] bool supportsHtmlFormatting, [FromForm] bool autoDetectQuotes, [FromForm] bool isPleroma
 	)
 	{
 		// Validate query parameters & populate model first
@@ -90,7 +90,8 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 			Scopes                 = Scopes,
 			RedirectUri            = RedirectUri,
 			AutoDetectQuotes       = autoDetectQuotes,
-			SupportsHtmlFormatting = supportsHtmlFormatting
+			SupportsHtmlFormatting = supportsHtmlFormatting,
+			IsPleroma              = isPleroma,
 		};
 
 		await db.AddAsync(token);
