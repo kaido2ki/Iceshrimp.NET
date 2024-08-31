@@ -45,6 +45,10 @@ public abstract class StatusSchemas
 
 		[B(Name = "poll")] [J("poll")] public PollData? Poll { get; set; }
 
+		[B(Name = "preview")]
+		[J("preview")]
+		public bool Preview { get; set; } = false;
+
 		public class PollData
 		{
 			[B(Name = "options")]

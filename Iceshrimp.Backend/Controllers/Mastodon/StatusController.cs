@@ -330,6 +330,9 @@ public class StatusController(
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity)]
 	public async Task<StatusEntity> PostNote([FromHybrid] StatusSchemas.PostStatusRequest request)
 	{
+		if (request.Preview)
+			throw GracefulException.UnprocessableEntity("Previewing is not supported yet");
+
 		var token = HttpContext.GetOauthToken() ?? throw new Exception("Token must not be null at this stage");
 		var user  = token.User;
 
