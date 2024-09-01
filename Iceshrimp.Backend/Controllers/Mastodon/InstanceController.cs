@@ -39,7 +39,8 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 		{
 			Stats = new InstanceStats(userCount, noteCount, instanceCount),
 			Pleroma = new() {
-				VapidPublicKey = vapidKey
+				VapidPublicKey = vapidKey,
+				Metadata = new(),
 			}
 		};
 	}
