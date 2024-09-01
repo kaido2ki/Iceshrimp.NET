@@ -3,11 +3,9 @@ using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Pleroma.Schemas;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
-using Iceshrimp.Backend.Core.Configuration;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Pleroma;
 
@@ -19,7 +17,7 @@ public class FrontendController : ControllerBase
 {
 	[HttpGet("/api/pleroma/frontend_configurations")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public FrontendConfigurationsResponse GetFrontendConfigurations([FromServices] IOptionsSnapshot<Config> config)
+	public FrontendConfigurationsResponse GetFrontendConfigurations()
 	{
 		return new FrontendConfigurationsResponse();
 	}
