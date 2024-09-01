@@ -112,7 +112,9 @@ public class NodeInfoResponse
 		[J("enableEmail")]                public bool?         EnableEmail                { get; set; }
 
 		[J("publicTimelineVisibility")]   public PleromaPublicTimelineVisibility? PublicTimelineVisibility { get; set; }
-		[J("features")]                   public PleromaFeature[]          Features                 { get; set; } = [];
+
+		[J("post_formats")]               public string[] PostFormats => ["text/plain", "text/x.misskeymarkdown"];
+		[J("features")]                   public string[] Features    => ["pleroma_api", "akkoma_api", "mastodon_api", "mastodon_api_streaming", "polls", "quote_posting", "editing", "pleroma_emoji_reactions", "exposable_reactions", "custom_emoji_reactions"];
 		[J("uploadLimits")]   public PleromaUploadLimits? UploadLimits { get; set; }
 		[J("suggestions")]   public PleromaSuggestions? Suggestions { get; set; }
 		[J("federation")]   public PleromaFederation? Federation { get; set; }
@@ -120,11 +122,6 @@ public class NodeInfoResponse
 		
 		// TODO: list of ap object ids i believe?
 		[J("staffAccounts")]   public string[] StaffAccounts { get; set; } = [];
-	}
-
-	public enum PleromaFeature
-	{
-
 	}
 
 	public class PleromaPublicTimelineVisibility

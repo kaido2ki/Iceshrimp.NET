@@ -94,9 +94,9 @@ public class NodeInfoController(IOptions<Config.InstanceSection> config, Databas
 
 				// TODO: STUB
 				PublicTimelineVisibility   = new() {
-					Bubble    = true,
-					Federated = true,
-					Local     = true,
+					Bubble    = false,
+					Federated = false,
+					Local     = false,
 				},
 				UploadLimits = new() {
 					General = 50_000_000,
