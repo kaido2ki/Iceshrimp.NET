@@ -11,6 +11,7 @@ public class PleromaInstanceExtensions
 public class InstanceMetadata
 {
 	[J("post_formats")]  public string[] PostFormats => ["text/plain", "text/x.misskeymarkdown"];
+	[J("features")]      public string[] Features    => ["pleroma_api", "akkoma_api", "mastodon_api", "mastodon_api_streaming", "polls", "quote_posting", "editing", "pleroma_emoji_reactions", "exposable_reactions", "custom_emoji_reactions"];
 	[J("fields_limits")] public FieldsLimits FieldsLimits => new();
 }
 
