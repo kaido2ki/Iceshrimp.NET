@@ -322,7 +322,7 @@ public class NoteRenderer(
 			                       db.NoteReactions.Any(i => i.NoteId == p.First().NoteId &&
 			                                                 i.Reaction == p.First().Reaction &&
 			                                                 i.User == user),
-							  AccountIds = db.NoteReactions.Where(i => i.NoteId == p.First().NoteId).Select(i => i.UserId).ToList()
+							  AccountIds = db.NoteReactions.Where(i => i.NoteId == p.First().NoteId && p.Select(r => r.Id).Contains(i.Id)).Select(i => i.UserId).ToList()
 		                  })
 		                  .ToListAsync();
 
