@@ -104,6 +104,10 @@ public class StatusController(
 		if (!shouldShowContext)
 			return new StatusContext { Ancestors = [], Descendants = [] };
 
+		// Akkoma-FE calls /context on boosts
+		if (note.IsPureRenote)
+			return await GetStatusContext(note.RenoteId!);
+
 		var ancestors = await db.NoteAncestors(id, maxAncestors)
 		                        .IncludeCommonProperties()
 		                        .EnsureVisibleFor(user)
