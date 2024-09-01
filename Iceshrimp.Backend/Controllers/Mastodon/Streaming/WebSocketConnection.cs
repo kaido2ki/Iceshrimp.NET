@@ -125,6 +125,13 @@ public sealed class WebSocketConnection(
 
 	public async Task HandleSocketMessageAsync(string payload)
 	{
+		// Akkoma-FE sends a plain ping
+		if (payload == "ping")
+		{
+			await SendMessageAsync("pong");
+			return;
+		}
+
 		StreamingRequestMessage? message = null;
 		try
 		{
