@@ -12,7 +12,7 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 {
 	public async Task<NotificationEntity> RenderAsync(
 		Notification notification, User user, bool isPleroma, List<AccountEntity>? accounts = null,
-		IEnumerable<StatusEntity>? statuses = null
+		IEnumerable<StatusEntity>? statuses = null, Dictionary<string, string>? emojiUrls = null
 	)
 	{
 		var dbNotifier = notification.Notifier ?? throw new GracefulException("Notification has no notifier");
@@ -29,9 +29,17 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 		               await userRenderer.RenderAsync(dbNotifier);
 
 		string? emojiUrl = null;
-		if (notification.Reaction != null && EmojiService.IsCustomEmoji(notification.Reaction)) {
-			var parts = notification.Reaction.Trim(':').Split('@');
-			emojiUrl = await db.Emojis.Where(e => e.Name == parts[0] && e.Host == (parts.Length > 1 ? parts[1] : null)).Select(e => e.PublicUrl).FirstOrDefaultAsync();
+		if (notification.Reaction != null) {
+			// explicitly check to skip another database call if url is actually null
+			if (emojiUrls != null)
+			{
+				emojiUrl = emojiUrls.GetValueOrDefault(notification.Reaction);
+			}
+			else if (emojiUrl == null && EmojiService.IsCustomEmoji(notification.Reaction))
+			{
+				var parts = notification.Reaction.Trim(':').Split('@');
+				emojiUrl = await db.Emojis.Where(e => e.Name == parts[0] && e.Host == (parts.Length > 1 ? parts[1] : null)).Select(e => e.PublicUrl).FirstOrDefaultAsync();
+			}
 		}
 
 		var res = new NotificationEntity
@@ -81,8 +89,23 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 		                                                               .DistinctBy(p => p.Id),
 		                                               user, Filter.FilterContext.Notifications, accounts);
 
+		var parts = notifications.Where(p => p.Reaction != null && EmojiService.IsCustomEmoji(p.Reaction)).Select(p => {
+			var parts = p.Reaction!.Trim(':').Split('@');
+			return new { Name = parts[0], Host = parts.Length > 1 ? parts[1] : null };
+		});
+
+		// https://github.com/dotnet/efcore/issues/31492
+		IQueryable<Emoji> urlQ = db.Emojis;
+		foreach (var part in parts)
+			urlQ = urlQ.Concat(db.Emojis.Where(e => e.Name == part.Name && e.Host == part.Host));
+		var emojiUrls = (await urlQ
+				.Select(e => new { Name = $":{e.Name}{(e.Host != null ? "@" + e.Host : "")}:", Url = e.PublicUrl })
+				.ToArrayAsync())
+			.DistinctBy(e => e.Name)
+			.ToDictionary(e => e.Name, e => e.Url);
+
 		return await notificationList
-		             .Select(p => RenderAsync(p, user, isPleroma, accounts, notes))
+		             .Select(p => RenderAsync(p, user, isPleroma, accounts, notes, emojiUrls))
 		             .AwaitAllAsync();
 	}
 }
