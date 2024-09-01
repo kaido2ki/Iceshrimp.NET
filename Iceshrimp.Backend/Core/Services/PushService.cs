@@ -33,12 +33,14 @@ public class PushService(
 
 	private async void MastodonPushHandler(object? _, Notification notification)
 	{
+		// TODO: do not hardcode isPleroma
+
 		try
 		{
 			await using var scope = scopeFactory.CreateAsyncScope();
 			await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
-			var type = NotificationEntity.EncodeType(notification.Type);
+			var type = NotificationEntity.EncodeType(notification.Type, isPleroma: false);
 			var subscriptions = await db.PushSubscriptions.Where(p => p.User == notification.Notifiee)
 			                            .Include(pushSubscription => pushSubscription.OauthToken)
 			                            .Where(p => p.Types.Contains(type))
@@ -74,7 +76,7 @@ public class PushService(
 			                                                 p.Followee == notification.Notifiee);
 
 			var renderer = scope.ServiceProvider.GetRequiredService<NotificationRenderer>();
-			var rendered = await renderer.RenderAsync(notification, notification.Notifiee);
+			var rendered = await renderer.RenderAsync(notification, notification.Notifiee, isPleroma: false);
 			var name     = rendered.Notifier.DisplayName;
 			var subject = rendered.Type switch
 			{

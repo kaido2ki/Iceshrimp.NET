@@ -134,7 +134,8 @@ public class NotificationService(
 			Note      = reaction.Note,
 			Notifiee  = reaction.Note.User,
 			Notifier  = reaction.User,
-			Type      = Notification.NotificationType.Reaction
+			Type      = Notification.NotificationType.Reaction,
+			Reaction  = reaction.Reaction
 		};
 
 		await db.AddAsync(notification);

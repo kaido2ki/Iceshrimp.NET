@@ -230,6 +230,8 @@ public partial class EmojiService(
 		return emoji;
 	}
 
+	public static bool IsCustomEmoji(string s) => CustomEmojiRegex().IsMatch(s);
+
 	[GeneratedRegex(@"^:?([\w+-]+)(?:@\.)?:?$", RegexOptions.Compiled)]
 	private static partial Regex CustomEmojiRegex();
 

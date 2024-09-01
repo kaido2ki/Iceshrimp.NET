@@ -34,6 +34,8 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 	)
 	{
 		var user = HttpContext.GetUserOrFail();
+		var isPleroma = HttpContext.GetOauthToken()!.IsPleroma;
+
 		return await db.Notifications
 		               .IncludeCommonProperties()
 		               .Where(p => p.Notifiee == user)
@@ -54,7 +56,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		               .FilterMutedThreads(user, db)
 		               .Paginate(p => p.MastoId, query, ControllerContext)
 		               .PrecomputeNoteVisibilities(user)
-		               .RenderAllForMastodonAsync(notificationRenderer, user);
+		               .RenderAllForMastodonAsync(notificationRenderer, user, isPleroma);
 	}
 
 	[HttpGet("{id:long}")]
@@ -64,6 +66,8 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 	public async Task<NotificationEntity> GetNotification(long id)
 	{
 		var user = HttpContext.GetUserOrFail();
+		var isPleroma = HttpContext.GetOauthToken()!.IsPleroma;
+
 		var notification = await db.Notifications
 		                           .IncludeCommonProperties()
 		                           .Where(p => p.Notifiee == user && p.MastoId == id)
@@ -72,7 +76,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                           .FirstOrDefaultAsync() ??
 		                   throw GracefulException.RecordNotFound();
 
-		var res = await notificationRenderer.RenderAsync(notification.EnforceRenoteReplyVisibility(p => p.Note), user);
+		var res = await notificationRenderer.RenderAsync(notification.EnforceRenoteReplyVisibility(p => p.Note), user, isPleroma);
 		return res;
 	}
 }

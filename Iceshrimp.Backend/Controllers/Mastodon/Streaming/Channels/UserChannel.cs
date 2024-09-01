@@ -183,7 +183,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			NotificationEntity rendered;
 			try
 			{
-				rendered = await renderer.RenderAsync(notification, connection.Token.User);
+				rendered = await renderer.RenderAsync(notification, connection.Token.User, connection.Token.IsPleroma);
 			}
 			catch (GracefulException)
 			{

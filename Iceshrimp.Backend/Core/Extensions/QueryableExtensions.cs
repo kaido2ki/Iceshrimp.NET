@@ -523,13 +523,13 @@ public static class QueryableExtensions
 	}
 
 	public static async Task<List<NotificationEntity>> RenderAllForMastodonAsync(
-		this IQueryable<Notification> notifications, NotificationRenderer renderer, User user
+		this IQueryable<Notification> notifications, NotificationRenderer renderer, User user, bool isPleroma
 	)
 	{
 		var list = (await notifications.ToListAsync())
 		           .EnforceRenoteReplyVisibility(p => p.Note)
 		           .ToList();
-		return (await renderer.RenderManyAsync(list, user)).ToList();
+		return (await renderer.RenderManyAsync(list, user, isPleroma)).ToList();
 	}
 
 	public static IQueryable<Note> FilterByAccountStatusesRequest(
