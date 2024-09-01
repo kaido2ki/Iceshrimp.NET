@@ -35,7 +35,7 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 			{
 				emojiUrl = emojiUrls.GetValueOrDefault(notification.Reaction);
 			}
-			else if (emojiUrl == null && EmojiService.IsCustomEmoji(notification.Reaction))
+			else if (EmojiService.IsCustomEmoji(notification.Reaction))
 			{
 				var parts = notification.Reaction.Trim(':').Split('@');
 				emojiUrl = await db.Emojis.Where(e => e.Name == parts[0] && e.Host == (parts.Length > 1 ? parts[1] : null)).Select(e => e.PublicUrl).FirstOrDefaultAsync();
