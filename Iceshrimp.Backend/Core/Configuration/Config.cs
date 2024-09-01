@@ -32,6 +32,9 @@ public sealed class Config
 		[Required]         public string  WebDomain      { get; init; } = null!;
 		[Required]         public string  AccountDomain  { get; init; } = null!;
 		[Range(1, 100000)] public int     CharacterLimit { get; init; } = 8192;
+
+		public string? ExtraWebDomains { get; init; }
+		public string[] ExtraWebDomainsArray => ExtraWebDomains?.Split(',') ?? [];
 	}
 
 	public sealed class SecuritySection
