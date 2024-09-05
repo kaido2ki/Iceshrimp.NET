@@ -1,0 +1,111 @@
+@page "/settings/profile"
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@layout SettingsLayout
+@inject ApiService                     Api;
+@inject ILogger<Profile>               Logger;
+@inject IStringLocalizer<Localization> Loc;
+
+<div class="body">
+    @if (State is State.Loaded)
+    {
+        <div class="section">
+            <span class="title">Profile Description</span><textarea class="input" @bind="@UserProfile.Description"></textarea>
+        </div>
+        <div class="section">
+            <span class="title">Birthday</span><input class="input" @bind="@UserProfile.Birthday"/>
+        </div>
+        <div class="section">
+            <span class="title">Location</span><input class="input" @bind="@UserProfile.Location"/>
+        </div>
+        <div class="user-fields">
+            <span class="title">@Loc["Fields"]</span>
+            <div class="fields">
+                @foreach (var entry in UserProfile.Fields)
+                {
+                    <div class="field">
+                        <input class="input" @bind="@entry.Name"/>
+                        <input class="input" @bind="@entry.Value"/>
+                        <button @onclick="() => DeleteField(entry)">
+                            <Icon Name="Icons.Trash"/>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="new-field">
+            <input class="input" @bind="@FieldName"/>
+            <input class="input" @bind="@FieldValue"/>
+            <button @onclick="AddField">@Loc["Add Field"]</button>
+        </div>
+        
+        <div class="section">
+            <StateButton OnClick="SaveChanges" @ref="SaveButton">
+                <Initial><Icon Name="Icons.FloppyDisk"/>@Loc["Save"]</Initial>
+                <Loading><Icon Name="Icons.Spinner"/></Loading>
+                <Failed><Icon Name="Icons.X" />@Loc["Error"]</Failed>
+                <Success><Icon Name="Icons.Check"/>@Loc["Saved"]</Success>
+            </StateButton>
+        </div>
+    }
+    @if (State is State.Loading)
+    {
+        <div>Loading!</div>
+    }
+</div>
+
+@code {
+    private UserProfileEntity UserProfile { get; set; } = null!;
+    private State             State       { get; set; } = State.Loading;
+    private string            FieldName   { get; set; } = "";
+    private string            FieldValue  { get; set; } = "";
+    private StateButton       SaveButton  { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            UserProfile = await Api.Profile.GetProfile();
+            State       = State.Loaded;
+        }
+        catch (ApiException e)
+        {
+            Logger.LogError($"Profile load failed: {e.Message}");
+            State = State.Error;
+        }
+    }
+
+    private void AddField()
+    {
+        UserProfile.Fields.Add(new UserProfileEntity.Field { Name = FieldName, Value = FieldValue });
+        FieldName  = "";
+        FieldValue = "";
+    }
+
+    private void DeleteField(UserProfileEntity.Field field)
+    {
+        UserProfile.Fields.Remove(field);
+    }
+
+    private async Task SaveChanges()
+    {
+        try
+        {
+            SaveButton.State = StateButton.StateEnum.Loading;
+            var res = await Api.Profile.UpdateProfile(UserProfile);
+            SaveButton.State = StateButton.StateEnum.Success;
+            UserProfile      = res;
+        }
+        catch (ApiException e)
+        {
+            Logger.LogError($"Failed to update profile: {e.Message}");
+            SaveButton.State = StateButton.StateEnum.Failed;
+        }
+    }
+}

@@ -1,6 +1,9 @@
 namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
-public class ComponentStateEnum
+public enum State
 {
-	
+	Loading,
+	NotFound,
+	Loaded,
+	Error
 }

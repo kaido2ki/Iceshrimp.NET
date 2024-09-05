@@ -1,5 +1,27 @@
-<h3>StateButton</h3>
+<button @onclick="OnClick">
+    @(State switch
+    {
+        StateEnum.Initial => Initial,
+        StateEnum.Loading => Loading,
+        StateEnum.Failed  => Failed,
+        StateEnum.Success => Success,
+        _                 => throw new ArgumentOutOfRangeException()
+    })
+</button>
 
 @code {
-    
+    [Parameter, EditorRequired] public required EventCallback  OnClick     { get; set; }
+    [Parameter, EditorRequired] public required RenderFragment Initial     { get; set; }
+    [Parameter, EditorRequired] public required RenderFragment Loading     { get; set; }
+    [Parameter, EditorRequired] public required RenderFragment Failed      { get; set; }
+    [Parameter, EditorRequired] public required RenderFragment Success     { get; set; }
+    public                                     StateEnum          State { get; set; }
+
+    public enum StateEnum
+    {
+        Initial,
+        Loading,
+        Failed,
+        Success
+    }
 }
