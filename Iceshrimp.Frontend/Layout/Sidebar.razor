@@ -7,7 +7,7 @@
 @inject NavigationManager              Navigation;
 
 <GlobalComponents></GlobalComponents>
-<div @ref="SidebarElementRef" @onfocusout="Close" class="sidebar @(_open ? "open" : "")" tabindex=0>
+<div @ref="SidebarElementRef" class="sidebar @(_open ? "open" : "")" tabindex=0>
     <div class="header">
         <account-dropdown/>
     </div>
@@ -47,6 +47,10 @@
     <button class="sidebar-btn post-btn" @onclick="Open">
         <Icon Name="Icons.Pencil"></Icon>@Loc["Post"]
     </button>
+    @if (_open)
+    {
+        <ClosingBackdrop OnClose="Close" />
+    }
 </div>
 
 <div class="bottom-bar">
@@ -101,11 +105,6 @@
     {
         _open = false;
         StateHasChanged();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (_open) await SidebarElementRef.FocusAsync();
     }
 
     protected override void OnInitialized()
