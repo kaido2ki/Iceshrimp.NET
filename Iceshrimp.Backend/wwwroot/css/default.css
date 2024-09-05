@@ -616,6 +616,10 @@ time {
     font-size: 1em;
 }
 
+pre {
+    width: 100%;
+}
+
 pre > code {
     padding: 10px;
     display: block;
