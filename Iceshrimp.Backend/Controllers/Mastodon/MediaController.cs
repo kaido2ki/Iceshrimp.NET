@@ -25,6 +25,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Produces(MediaTypeNames.Application.Json)]
 public class MediaController(DriveService driveSvc, DatabaseContext db) : ControllerBase
 {
+	[MaxRequestSizeIsMaxUploadSize]
 	[HttpPost("/api/v1/media")]
 	[HttpPost("/api/v2/media")]
 	[ProducesResults(HttpStatusCode.OK)]

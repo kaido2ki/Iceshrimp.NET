@@ -82,6 +82,7 @@ public class DriveController(
 	[Authorize]
 	[Produces(MediaTypeNames.Application.Json)]
 	[ProducesResults(HttpStatusCode.OK)]
+	[MaxRequestSizeIsMaxUploadSize]
 	public async Task<DriveFileResponse> UploadFile(IFormFile file)
 	{
 		var user = HttpContext.GetUserOrFail();
