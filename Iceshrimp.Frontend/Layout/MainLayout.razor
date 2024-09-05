@@ -1,10 +1,14 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Components.Sections
+@inherits LayoutComponentBase
 <div class="page">
     <div class="sidebar">
         <Sidebar/>
     </div>
 
     <div class="main">
+        <div class="top-bar">
+            <SectionOutlet SectionName="top-bar" /> 
+        </div>
         @Body
     </div>
     <div class="widget-panel">

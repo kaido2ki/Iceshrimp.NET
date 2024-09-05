@@ -1,5 +1,17 @@
 @page "/search"
 @using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Sections
+@using Iceshrimp.Assets.PhosphorIcons
+
+@inject IStringLocalizer<Localization> Loc;
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.MagnifyingGlass"></Icon>
+    @Loc["Search"]
+</SectionContent>
+
 <SearchComponent />
 @code {
     

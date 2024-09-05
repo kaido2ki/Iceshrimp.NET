@@ -1,0 +1,52 @@
+@page "/settings/about"
+@using System.Text
+@using Iceshrimp.Frontend.Core.InMemoryLogger
+@using Iceshrimp.Frontend.Core.Services;
+@using Iceshrimp.Frontend.Localization;
+@using Microsoft.Extensions.Localization;
+@layout SettingsLayout;
+@inject VersionService                 Version;
+@inject IStringLocalizer<Localization> Loc;
+@inject IJSRuntime                     Js;
+@inject InMemoryLogService LogService;
+
+<div class="version">
+    <h1>@Loc["Version Information"]</h1>
+    <span class="name">Iceshrimp.NET</span>
+    <span class="value">
+        <code>@Version.Version</code>
+    </span>
+    <span class="name">Codename</span>
+    <span class="value">
+        <code>@Version.Codename</code>
+    </span>
+    @if (Version.CommitHash != null)
+    {
+        <span class="name">Commit</span>
+        <span class="value">
+            <code>@Version.CommitHash</code>
+        </span>
+    }
+</div>
+<div class="logs">
+    <h1>@Loc["Logs"]</h1>
+    @Loc["These logs may contain sensitive information, please do not post them publicly.\n"
+    + "Providing them to developers upon request may help with debugging."]
+    <button class="btn" @onclick="DownloadLogs">@Loc["Download Logs"]</button>
+</div>
+
+@code {
+    private                                      IJSInProcessObjectReference _module = null!;
+    
+    protected override async Task OnInitializedAsync()
+    { 
+        _module = (IJSInProcessObjectReference) await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
+    }
+    
+    private void DownloadLogs()
+    {
+        var logBytes = LogService.GetLogs().SelectMany(p => Encoding.UTF8.GetBytes(p)).ToArray();
+        _module.InvokeVoid("DownloadFile", "log.txt", "text/plain", logBytes);
+    }
+    
+}

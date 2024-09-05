@@ -1,16 +1,24 @@
-@page "/"
 @using Iceshrimp.Frontend.Components
 @using Microsoft.AspNetCore.Components.Sections
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
+@inherits LayoutComponentBase
+@layout MainLayout
 @inject IStringLocalizer<Localization> Loc;
 
 <SectionContent SectionName="top-bar">
-    <Icon Name="Icons.House"></Icon>
-    @Loc["Timeline"]
+    <Icon Name="Icons.Gear"></Icon>
+    @Loc["Settings"]
 </SectionContent>
-<TimelineComponent/>
+<div class="layout">
+    <div class="sidebar">
+        <SettingsMenu/>
+    </div>
+    <div class="body">
+        @Body
+    </div>
+</div>
 
 @code {
 }

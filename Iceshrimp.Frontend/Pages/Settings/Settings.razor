@@ -1,0 +1,9 @@
+@page "/Settings"
+@layout SettingsLayout
+@inject NavigationManager Nav;
+@code {
+    protected override void OnInitialized()
+    {
+        Nav.NavigateTo("/settings/profile");
+    }
+}

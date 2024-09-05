@@ -40,6 +40,8 @@
             }
         </div>
         @Loc["Logs"]
+        @Loc["These logs may contain sensitive information, please do not post them publicly.\n" + 
+             "Providing them to developers upon request may help with debugging."]
         <div class="log-block">
             <pre><code>
                 @foreach (var line in _rawLog)
@@ -58,7 +60,7 @@
     [Parameter] [EditorRequired] public required Exception                   Exception { get; set; }
     private                                      IEnumerable<string>         _logs   = [];
     private                                      IJSInProcessObjectReference _module = null!;
-    private                                      IReadOnlyCollection<string> _rawLog = null!;
+    private                                      List<string> _rawLog = null!;
 
     private void Reload()
     {

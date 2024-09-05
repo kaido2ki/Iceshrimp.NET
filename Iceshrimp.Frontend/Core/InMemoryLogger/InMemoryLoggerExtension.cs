@@ -8,12 +8,14 @@ using Microsoft.Extensions.Logging.Configuration;
 internal static class InMemoryLoggerExtension
 {
 	public static void AddInMemoryLogger(
-		this ILoggingBuilder builder)
+		this ILoggingBuilder builder, IConfiguration configuration)
 	{
 		builder.AddConfiguration();
+		builder.Services.AddOptionsWithValidateOnStart<InMemoryLoggerConfiguration>()
+			   .Bind(configuration.GetSection("InMemoryLogger"));
+		LoggerProviderOptions.RegisterProviderOptions<InMemoryLoggerConfiguration, InMemoryLoggerProvider>(builder.Services);
 		builder.Services.TryAddSingleton<InMemoryLogService>();
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, InMemoryLoggerProvider>());
-		LoggerProviderOptions.RegisterProviderOptions<InMemoryLoggerConfiguration, InMemoryLoggerProvider>(builder.Services);
 	}
 	
 	public static void AddInMemoryLogger(

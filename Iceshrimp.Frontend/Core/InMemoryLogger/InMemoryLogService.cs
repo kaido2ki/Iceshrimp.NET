@@ -1,27 +1,18 @@
+using Iceshrimp.Frontend.Core.Miscellaneous;
+using Microsoft.Extensions.Options;
+
 namespace Iceshrimp.Frontend.Core.InMemoryLogger;
 
-internal class InMemoryLogService
+internal class InMemoryLogService(IOptions<InMemoryLoggerConfiguration> configuration)
 {
-	private List<string> LogBuffer { get; } = [];
-	private int          _bufferCapacity = 100;
-
+	private readonly LogBuffer _buffer = new(configuration.Value.BufferSize);
 	public void Add(string logline)
 	{
-		if (LogBuffer.Count > _bufferCapacity - 1) LogBuffer.RemoveAt(0);
-		LogBuffer.Add(logline);
-	}
-
-	public void ResizeBuffer(int newCapacity)
-	{
-		if (newCapacity > _bufferCapacity)
-		{
-			LogBuffer.RemoveRange(0, newCapacity - _bufferCapacity);
-		}
-		_bufferCapacity = newCapacity;
+		_buffer.Add(logline);
 	}
 	
-	public IReadOnlyCollection<string> GetLogs()
+	public List<string> GetLogs()
 	{
-		return LogBuffer.AsReadOnly();
+		return _buffer.AsList();
 	}
 }

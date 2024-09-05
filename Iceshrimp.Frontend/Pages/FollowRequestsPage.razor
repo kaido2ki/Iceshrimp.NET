@@ -1,5 +1,16 @@
 @page "/follow-requests"
 @using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Sections
+@using Iceshrimp.Assets.PhosphorIcons
+@inject IStringLocalizer<Localization> Loc;
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.HandWaving"></Icon>
+    @Loc["Follow requests"]
+</SectionContent>
+
 <FollowRequestList />
 @code {
     

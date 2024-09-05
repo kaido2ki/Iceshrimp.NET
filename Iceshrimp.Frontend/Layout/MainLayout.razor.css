@@ -23,3 +23,12 @@
     }
 
 }
+
+.top-bar {
+    background-color: var(--background-color);
+    border-bottom: 0.1rem var(--highlight-color) solid;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    padding-left: 1rem;
+}

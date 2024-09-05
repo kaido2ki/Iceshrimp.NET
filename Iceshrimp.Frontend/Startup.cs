@@ -15,7 +15,7 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddSingleton(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddLocalization();
-builder.Logging.AddInMemoryLogger();
+builder.Logging.AddInMemoryLogger(builder.Configuration);
 builder.Services.AddSingleton<ApiClient>();
 builder.Services.AddSingleton<ApiService>();
 builder.Services.AddIntersectionObserver();
@@ -38,4 +38,9 @@ var helper  = new LocaleHelper(host.Services.GetRequiredService<ISyncLocalStorag
 var culture = helper.LoadCulture();
 CultureInfo.DefaultThreadCurrentCulture   = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;
+
+var logger = host.Services.GetRequiredService<ILoggerFactory>()
+				 .CreateLogger<Program>();
+
+logger.LogInformation("Starting Iceshrimp.Frontend");
 await host.RunAsync();

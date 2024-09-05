@@ -1,0 +1,23 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject NavigationManager              Nav;
+@inject IStringLocalizer<Localization> Loc;
+<div class="nav">
+    <NavLink href="/settings/profile">
+        <div class="sidebar-btn">
+            <Icon Name="Icons.User"/>
+            <span class="text">@Loc["Profile"]</span>
+        </div>
+    </NavLink>
+    <NavLink href="/settings/about">
+        <div class="sidebar-btn">
+            <Icon Name="Icons.Info"/>
+            <span class="text">@Loc["About"]</span>
+        </div>
+    </NavLink>
+</div>
+
+@code {
+    
+}
