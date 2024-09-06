@@ -7,6 +7,8 @@
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Sections
+@using Iceshrimp.Assets.PhosphorIcons
 @inject ApiService                     ApiService
 @inject IJSRuntime                     Js
 @inject MessageService                 MessageService
@@ -19,6 +21,10 @@
 
 @if (_componentState == LoadState.Init)
 {
+    <SectionContent SectionName="top-bar">
+        <Icon Name="Icons.Signpost"></Icon>
+        @Loc["Post by {0}", (RootNote?.User.DisplayName ?? RootNote?.User.Username) ?? string.Empty]
+    </SectionContent>
     <div @ref="Scroller" class="scroller">
         <div class="wrapper">
             <div class="container">
