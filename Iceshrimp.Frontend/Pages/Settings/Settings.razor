@@ -1,9 +1,24 @@
 @page "/Settings"
-@layout SettingsLayout
-@inject NavigationManager Nav;
+@using Iceshrimp.Frontend.Components
+@using Microsoft.AspNetCore.Components.Sections
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject NavigationManager              Nav;
+@inject IStringLocalizer<Localization> Loc;
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.Gear"></Icon>
+    @Loc["Settings"]
+</SectionContent>
+
+<div class="body">
+    <SettingsMenu/>
+</div>
+
 @code {
     protected override void OnInitialized()
     {
-        Nav.NavigateTo("/settings/profile");
+        // Nav.NavigateTo("/settings/profile");
     }
 }
