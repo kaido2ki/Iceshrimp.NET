@@ -1,43 +1,44 @@
-.DEFAULT_GOAL    = help
+.DEFAULT_GOAL     = help
 
-WORKLOAD_PROJECT = Iceshrimp.Frontend
-BUILD_PROJECT    = Iceshrimp.Backend
-CONFIGURATION    = Release
+WORKLOAD_PROJECT  = Iceshrimp.Frontend
+BUILD_PROJECT     = Iceshrimp.Backend
+CONFIGURATION     = Release
 
-DOTNET_CMD       = dotnet
-VERBOSE          = false
+DOTNET_CMD        = dotnet
+VERBOSE           = false
 
-AOT              = false
-VIPS             = false
-BUNDLE_NATIVE    = false
+AOT               = false
+VIPS              = false
+BUNDLE_NATIVE     = false
 
-RELEASE_TARGETS  = linux-glibc-amd64 linux-glibc-arm64 linux-musl-amd64 linux-musl-arm64
+RELEASE_TARGETS   = linux-glibc-amd64 linux-glibc-arm64 linux-musl-amd64 linux-musl-arm64
 
 ifeq (${VERBOSE},false)
-	TL_ENV       = MSBUILDTERMINALLOGGER=true
+	TL_ENV        = MSBUILDTERMINALLOGGER=true
 else
-	TL_ENV       = MSBUILDTERMINALLOGGER=false
+	TL_ENV        = MSBUILDTERMINALLOGGER=false
 endif
 
-PUBLISH_CMD      = ${TL_ENV} ${DOTNET_CMD} publish ${BUILD_PROJECT} -c ${CONFIGURATION} -noLogo
-BUILD_CMD        = ${TL_ENV} ${DOTNET_CMD} build -noLogo
-TEST_CMD         = ${TL_ENV} ${DOTNET_CMD} test --no-build --nologo
+PUBLISH_CMD       = ${TL_ENV} ${DOTNET_CMD} publish ${BUILD_PROJECT} -c ${CONFIGURATION} -noLogo
+BUILD_CMD         = ${TL_ENV} ${DOTNET_CMD} build -noLogo
+TEST_CMD          = ${TL_ENV} ${DOTNET_CMD} test --no-build --nologo
 
-BUILD_FLAGS      = -p:EnableLibVips=${VIPS} -p:BundleNativeDeps=${BUNDLE_NATIVE}
-PUBLISH_FLAGS    = ${PUBLISH_RIDARG} -o publish/${TARGETRID} -p:EnableAOT=${AOT} ${BUILD_FLAGS} -p:DeterministicSourcePaths=true -p:ContinuousIntegrationBuild=true
-RELEASE_FLAGS    = -r ${TARGETRID} -o release/${TARGETPLATFORM} ${PUBLISH_FLAGS}
+BUILD_FLAGS       = -p:EnableLibVips=${VIPS} -p:BundleNativeDeps=${BUNDLE_NATIVE}
+PUBLISH_FLAGS     = --self-contained -p:EnableAOT=${AOT} -p:DeterministicSourcePaths=true -p:ContinuousIntegrationBuild=true ${BUILD_FLAGS}
+PUBLISH_FLAGS_EXT = ${PUBLISH_RIDARG} -o publish/${TARGETRID} ${PUBLISH_FLAGS}
+RELEASE_FLAGS     = -r ${TARGETRID} -o release/${TARGETPLATFORM} ${PUBLISH_FLAGS}
 
-TARGETRID        = $(TARGETPLATFORM:linux-glibc-%=linux-%)
-PUBLISH_RIDARG   = $(if $(TARGETRID),-r $(TARGETRID),)
-ARCHIVE_TGTNAME  = $(patsubst linux-glibc-%,linux-%-glibc,$(patsubst linux-musl-%,linux-%-musl,$(TARGETPLATFORM)))
-ARCHIVE_BASENAME = iceshrimp.net
-ARCHIVE_VERSION  = unknown
-ARCHIVE_DIRNAME  = ${ARCHIVE_BASENAME}-${ARCHIVE_VERSION}-${ARCHIVE_TGTNAME}
-ARCHIVE_FILENAME = ${ARCHIVE_DIRNAME}.tar.zst
-ARTIFACT_DIR     = artifacts
-ARTIFACT_CMD     = tar caf ${ARTIFACT_DIR}/${ARCHIVE_FILENAME} --transform 's,^release/${TARGETPLATFORM},${ARCHIVE_DIRNAME},' release/${TARGETPLATFORM}
+TARGETRID         = $(TARGETPLATFORM:linux-glibc-%=linux-%)
+PUBLISH_RIDARG    = $(if $(TARGETRID),-r $(TARGETRID),)
+ARCHIVE_TGTNAME   = $(patsubst linux-glibc-%,linux-%-glibc,$(patsubst linux-musl-%,linux-%-musl,$(TARGETPLATFORM)))
+ARCHIVE_BASENAME  = iceshrimp.net
+ARCHIVE_VERSION   = unknown
+ARCHIVE_DIRNAME   = ${ARCHIVE_BASENAME}-${ARCHIVE_VERSION}-${ARCHIVE_TGTNAME}
+ARCHIVE_FILENAME  = ${ARCHIVE_DIRNAME}.tar.zst
+ARTIFACT_DIR      = artifacts
+ARTIFACT_CMD      = tar caf ${ARTIFACT_DIR}/${ARCHIVE_FILENAME} --transform 's,^release/${TARGETPLATFORM},${ARCHIVE_DIRNAME},' release/${TARGETPLATFORM}
 
-.PHONY           : --release-pre --release-post --workload-restore --release-% artifact-% publish build test publish-aot release-artifacts help
+.PHONY            : --release-pre --release-post --workload-restore --release-% artifact-% publish build test publish-aot release-artifacts help
 
 --release-pre:
 	@echo 'Building release artifacts for targets: ${RELEASE_TARGETS}'
@@ -54,7 +55,7 @@ ARTIFACT_CMD     = tar caf ${ARTIFACT_DIR}/${ARCHIVE_FILENAME} --transform 's,^r
 --release-%: TARGETPLATFORM=$*
 --release-%:
 	@echo 'Building for release with flags: ${RELEASE_FLAGS}'
-	@${PUBLISH_CMD} ${PUBLISH_FLAGS} -r ${TARGETRID} -o release/${TARGETPLATFORM}
+	@${PUBLISH_CMD} ${RELEASE_FLAGS}
 
 --artifact-%: TARGETPLATFORM=$*
 --artifact-%:
@@ -65,8 +66,8 @@ ARTIFACT_CMD     = tar caf ${ARTIFACT_DIR}/${ARCHIVE_FILENAME} --transform 's,^r
 	@echo
 
 publish:
-	@echo 'Building for publish with flags: ${strip ${PUBLISH_FLAGS}}'
-	@${PUBLISH_CMD} ${PUBLISH_FLAGS}
+	@echo 'Building for publish with flags: ${strip ${PUBLISH_FLAGS_EXT}}'
+	@${PUBLISH_CMD} ${PUBLISH_FLAGS_EXT}
 
 build:
 	@echo 'Building with flags: ${BUILD_FLAGS}'
