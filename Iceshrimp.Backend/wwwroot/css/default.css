@@ -158,7 +158,7 @@ q::after {
 blockquote {
     border-left: 4px solid #0096bfab;
     border-left: 4px solid var(--focus);
-    margin: 1.5em 0;
+    margin: 0.75em 0;
     padding: 0.5em 1em;
     font-style: italic;
 }
