@@ -216,7 +216,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 		var keyword = request.WholeWord ? $"\"{request.Keyword}\"" : request.Keyword;
 		filter.Keywords.Add(keyword);
 
-		db.Update(keyword);
+		db.Update(filter);
 		await db.SaveChangesAsync();
 		eventSvc.RaiseFilterUpdated(this, filter);
 
