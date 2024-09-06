@@ -120,6 +120,30 @@ public class DriveController(
 		};
 	}
 
+	[HttpGet("/by-hash/{sha256}")]
+	[Authenticate]
+	[Authorize]
+	[Produces(MediaTypeNames.Application.Json)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<DriveFileResponse> GetFileByHash(string sha256)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Sha256 == sha256) ??
+		           throw GracefulException.NotFound("File not found");
+
+		return new DriveFileResponse
+		{
+			Id           = file.Id,
+			Url          = file.AccessUrl,
+			ThumbnailUrl = file.ThumbnailAccessUrl,
+			Filename     = file.Name,
+			ContentType  = file.Type,
+			Description  = file.Comment,
+			Sensitive    = file.IsSensitive
+		};
+	}
+
 	[HttpPatch("{id}")]
 	[Authenticate]
 	[Authorize]
