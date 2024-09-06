@@ -59,13 +59,13 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 	}
 
 	public async Task<string> ToHtmlAsync(
-		IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions, string? host,
-		string? quoteUri = null, bool quoteInaccessible = false, bool replyInaccessible = false
+		IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
+		bool quoteInaccessible = false, bool replyInaccessible = false, bool divAsRoot = false
 	)
 	{
 		var context    = BrowsingContext.New();
 		var document   = await context.OpenNewAsync();
-		var element    = document.CreateElement("div");
+		var element    = document.CreateElement(divAsRoot ? "div" : "p");
 		var nodeList   = nodes.ToList();
 		var hasContent = nodeList.Count > 0;
 
@@ -130,11 +130,11 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 
 	public async Task<string> ToHtmlAsync(
 		string mfm, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
-		bool quoteInaccessible = false, bool replyInaccessible = false
+		bool quoteInaccessible = false, bool replyInaccessible = false, bool divAsRoot = false
 	)
 	{
 		var nodes = MfmParser.Parse(mfm);
-		return await ToHtmlAsync(nodes, mentions, host, quoteUri, quoteInaccessible, replyInaccessible);
+		return await ToHtmlAsync(nodes, mentions, host, quoteUri, quoteInaccessible, replyInaccessible, divAsRoot);
 	}
 
 	private INode FromMfmNode(

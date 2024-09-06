@@ -67,12 +67,14 @@ public class NoteModel(
 
 		if (Note is { Text: not null })
 		{
-			TextContent[Note.Id] = await mfmConverter.ToHtmlAsync(Note.Text, await GetMentions(Note), Note.UserHost);
+			TextContent[Note.Id] = await mfmConverter.ToHtmlAsync(Note.Text, await GetMentions(Note), Note.UserHost,
+			                                                      divAsRoot: true);
 			if (Note.Renote is { Text: not null })
 			{
 				TextContent[Note.Renote.Id] = await mfmConverter.ToHtmlAsync(Note.Renote.Text,
 				                                                             await GetMentions(Note.Renote),
-				                                                             Note.Renote.UserHost);
+				                                                             Note.Renote.UserHost,
+				                                                             divAsRoot: true);
 				MediaAttachments[Note.Renote.Id] = await GetAttachments(Note.Renote);
 			}
 		}
