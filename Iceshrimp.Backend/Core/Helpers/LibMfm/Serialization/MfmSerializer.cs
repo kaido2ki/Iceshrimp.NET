@@ -139,7 +139,7 @@ public static class MfmSerializer
 						result.Append(mfmUrlNode.Url);
 					break;
 				}
-				case MfmQuoteNode:
+				case MfmQuoteNode mfmQuoteNode:
 				{
 					var serialized = Serialize(node.Children);
 					var split      = serialized.Split('\n');
@@ -150,6 +150,10 @@ public static class MfmSerializer
 					}
 
 					result.Append(string.Join('\n', split));
+					if (!mfmQuoteNode.FollowedByEof)
+						result.Append('\n');
+					if (mfmQuoteNode.FollowedByQuote)
+						result.Append('\n');
 					break;
 				}
 				default:

@@ -212,6 +212,77 @@ public class MfmTests
 	}
 
 	[TestMethod]
+	public void TestQuote()
+	{
+		const string input1 = "> this is a quote";
+		const string input2 = ">this is a quote";
+		List<MfmNode> expected =
+		[
+			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a quote")]), false, true)
+		];
+
+		var res1 = Mfm.parse(input1);
+		var res2 = Mfm.parse(input2);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res1.ToList().Should().Equal(expected, MfmNodeEqual);
+		res2.ToList().Should().Equal(expected, MfmNodeEqual);
+
+		MfmSerializer.Serialize(res1).Should().BeEquivalentTo(input1);
+		MfmSerializer.Serialize(res2).Should().BeEquivalentTo(input1);
+	}
+
+	[TestMethod]
+	public void TestQuoteInline()
+	{
+		const string input = """
+		                     this is plain text > this is not a quote >this is also not a quote
+		                     > this is a quote
+		                     > this is part of the same quote
+		                     >this too
+		                     
+		                     this is some plain text inbetween
+		                     >this is a second quote
+		                     > this is part of the second quote
+
+		                     > this is a third quote
+		                     and this is some plain text to close it off
+		                     """;
+
+		const string canonical = """
+		                         this is plain text > this is not a quote >this is also not a quote
+		                         > this is a quote
+		                         > this is part of the same quote
+		                         > this too
+		                         this is some plain text inbetween
+		                         > this is a second quote
+		                         > this is part of the second quote
+
+		                         > this is a third quote
+		                         and this is some plain text to close it off
+		                         """;
+
+		// @formatter:off
+		List<MfmNode> expected =
+		[
+			new MfmTextNode("this is plain text > this is not a quote >this is also not a quote\n"),
+			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a quote\nthis is part of the same quote\nthis too"),]), false, false),
+			new MfmTextNode("this is some plain text inbetween\n"),
+			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a second quote\nthis is part of the second quote")]), true, false),
+			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a third quote")]), false, false),
+			new MfmTextNode("and this is some plain text to close it off")
+		];
+		// @formatter:on
+
+		var res = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(canonical);
+	}
+
+	[TestMethod]
 	public void Benchmark()
 	{
 		const string mfm =

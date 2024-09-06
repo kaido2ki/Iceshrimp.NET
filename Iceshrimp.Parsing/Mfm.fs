@@ -42,8 +42,10 @@ module MfmNodeTypes =
     type MfmSmallNode(c) =
         inherit MfmInlineNode(c)
 
-    type MfmQuoteNode(c) =
+    type MfmQuoteNode(c, followedByQuote, followedByEof) =
         inherit MfmBlockNode(c)
+        member val FollowedByQuote = followedByQuote
+        member val FollowedByEof = followedByEof
 
     type MfmSearchNode(content: string, query: string) =
         inherit MfmBlockNode([])
@@ -111,6 +113,8 @@ module private MfmParser =
 
     let isAsciiLetterOrNumber c = Char.IsAsciiLetter c || Char.IsDigit c
     let isLetterOrNumber c = Char.IsLetterOrDigit c
+    let isNewline c = '\n'.Equals(c)
+    let isNotNewline c = not (isNewline c)
 
     let (|CharNode|MfmNode|) (x: MfmNode) =
         if x :? MfmCharNode then
@@ -296,6 +300,20 @@ module private MfmParser =
                 | _ -> fail "invalid scheme"
             | _ -> fail "invalid url"
 
+    let quoteNode =
+        previousCharSatisfiesNot isNotNewline
+        >>. many1 (pchar '>' >>. (opt (pchar ' ')) >>. (many1Till inlineNode (skipNewline <|> eof)))
+        .>> opt (attempt (skipNewline >>. (notFollowedBy <| pchar '>')))
+        .>>. ((opt (attempt (skipNewline >>. (followedBy <| pchar '>')))) .>>. opt eof)
+        |>> fun (q, (followedByQuote, followedByEof)) ->
+            MfmQuoteNode(
+                List.collect (fun e -> e @ [ (MfmCharNode('\n') :> MfmInlineNode) ]) q
+                |> fun q -> List.take (q.Length - 1) q
+                |> aggregateTextInline,
+                followedByQuote.IsSome,
+                followedByEof.IsSome
+            )
+            :> MfmNode
 
     let charNode = anyChar |>> fun v -> MfmCharNode(v) :> MfmNode
 
@@ -313,10 +331,10 @@ module private MfmParser =
           emojiCodeNode
           charNode ]
 
-    //TODO: still missing: FnNode, MfmSearchNode, MfmQuoteNode
+    //TODO: still missing: FnNode, MfmSearchNode
 
     let blockNodeSeq =
-        [ plainNode; centerNode; smallNode; codeBlockNode; mathBlockNode ]
+        [ plainNode; centerNode; smallNode; codeBlockNode; mathBlockNode; quoteNode ]
 
     let nodeSeq = [ blockNodeSeq; inlineNodeSeq ]
 
