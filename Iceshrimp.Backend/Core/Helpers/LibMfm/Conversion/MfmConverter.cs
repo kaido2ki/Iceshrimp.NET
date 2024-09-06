@@ -65,7 +65,7 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 	{
 		var context    = BrowsingContext.New();
 		var document   = await context.OpenNewAsync();
-		var element    = document.CreateElement("p");
+		var element    = document.CreateElement("div");
 		var nodeList   = nodes.ToList();
 		var hasContent = nodeList.Count > 0;
 
