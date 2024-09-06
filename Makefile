@@ -24,7 +24,7 @@ BUILD_CMD         = ${TL_ENV} ${DOTNET_CMD} build -noLogo
 TEST_CMD          = ${TL_ENV} ${DOTNET_CMD} test --no-build --nologo
 
 BUILD_FLAGS       = -p:EnableLibVips=${VIPS} -p:BundleNativeDeps=${BUNDLE_NATIVE}
-PUBLISH_FLAGS     = --self-contained -p:EnableAOT=${AOT} -p:DeterministicSourcePaths=true -p:ContinuousIntegrationBuild=true ${BUILD_FLAGS}
+PUBLISH_FLAGS     = -p:EnableAOT=${AOT} -p:DeterministicSourcePaths=true -p:ContinuousIntegrationBuild=true ${BUILD_FLAGS}
 PUBLISH_FLAGS_EXT = ${PUBLISH_RIDARG} -o publish/${TARGETRID} ${PUBLISH_FLAGS}
 RELEASE_FLAGS     = -r ${TARGETRID} -o release/${TARGETPLATFORM} ${PUBLISH_FLAGS}
 
@@ -95,10 +95,10 @@ help:
 	@echo '-- Makefile --'
 	@echo 'Targets:'
 	@echo '  test               - runs all available unit tests'
-	@echo '  build              - compiles the application (framework- & architecture-dependent)'
+	@echo '  build              - compiles the application (for development)'
 	@echo '  clean              - removes all build-related files from the working tree'
 	@echo '  cleanall           - removes all untracked files from the working tree'
-	@echo '  publish            - compiles the application (self-contained)'
+	@echo '  publish            - compiles the application (for production)'
 	@echo '  publish-aot        - equivalent to `make AOT=true publish`'
 	@echo '  release-artifacts  - generates release artifacts for all supported architectures'
 	@echo
