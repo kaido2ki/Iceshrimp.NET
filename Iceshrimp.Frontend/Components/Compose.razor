@@ -1,5 +1,6 @@
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components.Note
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Parsing
@@ -19,9 +20,20 @@
                 <Icon Name="Icons.X"/>
             </button>
             <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
-            <button @onclick="SendNote" class="post-btn">
-                @Loc["ComposePost"]<Icon Name="Icons.PaperPlaneRight"/>
-            </button>
+                <StateButton OnClick="SendNote" @ref=SendButton ExtraClasses="post-btn">
+                    <Initial>
+                        @Loc["ComposePost"]<Icon Name="Icons.PaperPlaneRight"/>
+                    </Initial>
+                    <Loading>
+                        <Icon Name="Icons.Spinner"/>
+                    </Loading>
+                    <Success>
+                        <Icon Name="Icons.Check"/>
+                    </Success>
+                    <Failed>
+                        @Loc["Retry"]<Icon Name="Icons.X"/>
+                    </Failed>
+                </StateButton>
         </div>
         @if (ReplyOrQuote != null)
         {
@@ -63,6 +75,7 @@
     private string?                  TextPlaceholder { get; set; }
     private ElementReference         Textarea        { get; set; }
     private ElementReference         EmojiButton     { get; set; }
+    private StateButton              SendButton      { get; set; } = null!;
 
     private NoteCreateRequest NoteDraft { get; set; } = new()
     {
@@ -210,19 +223,31 @@
 
     private async Task SendNote()
     {
+        SendButton.State = StateButton.StateEnum.Loading;
         if (Attachments.Count > 0)
         {
             NoteDraft.MediaIds = Attachments.Select(x => x.Id).ToList();
         }
 
-        await ApiService.Notes.CreateNote(NoteDraft);
+        try
+        {
+            await ApiService.Notes.CreateNote(NoteDraft);
+        }
+        catch (ApiException)
+        {
+            SendButton.State = StateButton.StateEnum.Failed;
+            return;
+        }
+
         if (ReplyOrQuote != null)
         {
             var res            = await ApiService.Notes.GetNote(ReplyOrQuote.Id);
             if (res != null) _ = MessageService.UpdateNote(res);
         }
 
+        SendButton.State = StateButton.StateEnum.Success;
         await CloseDialog();
+        SendButton.State = StateButton.StateEnum.Success;
 
         // FIXME: Implement timeline refresh and call it here.
     }

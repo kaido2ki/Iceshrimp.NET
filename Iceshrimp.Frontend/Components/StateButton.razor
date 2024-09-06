@@ -1,4 +1,4 @@
-<button @onclick="OnClick">
+<button @onclick="OnClick" class="@ExtraClasses">
     @(State switch
     {
         StateEnum.Initial => Initial,
@@ -10,12 +10,13 @@
 </button>
 
 @code {
-    [Parameter, EditorRequired] public required EventCallback  OnClick     { get; set; }
-    [Parameter, EditorRequired] public required RenderFragment Initial     { get; set; }
-    [Parameter, EditorRequired] public required RenderFragment Loading     { get; set; }
-    [Parameter, EditorRequired] public required RenderFragment Failed      { get; set; }
-    [Parameter, EditorRequired] public required RenderFragment Success     { get; set; }
-    public                                     StateEnum          State { get; set; }
+    [Parameter, EditorRequired] public required EventCallback  OnClick      { get; set; }
+    [Parameter, EditorRequired] public required RenderFragment Initial      { get; set; }
+    [Parameter, EditorRequired] public required RenderFragment Loading      { get; set; }
+    [Parameter, EditorRequired] public required RenderFragment Failed       { get; set; }
+    [Parameter, EditorRequired] public required RenderFragment Success      { get; set; }
+    [Parameter]                 public          string?        ExtraClasses { get; set; }
+    public                                      StateEnum      State        { get; set; }
 
     public enum StateEnum
     {
