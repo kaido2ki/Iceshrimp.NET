@@ -24,8 +24,7 @@ public class EmojiController(DatabaseContext db) : ControllerBase
 		var emoji = await db.Emojis.Where(p => p.Host == null)
 			.Select(p => KeyValuePair.Create(p.Name, new PleromaEmojiEntity
 			{
-				// TODO: akkoma-fe expects *relative paths* instead of absolute URLs... i genuinely think this is unfixable without forking the fe
-				ImageUrl = new Uri(p.PublicUrl).AbsolutePath,
+				ImageUrl = p.PublicUrl,
 				Tags     = new string[] { p.Category == null ?  "" : p.Category }
 			}))
 			.ToArrayAsync();
