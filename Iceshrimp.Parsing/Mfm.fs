@@ -302,9 +302,13 @@ module private MfmParser =
 
     let quoteNode =
         previousCharSatisfiesNot isNotNewline
-        >>. many1 (pchar '>' >>. (opt (pchar ' ')) >>. (many1Till inlineNode (skipNewline <|> eof)))
-        .>> opt (attempt (skipNewline >>. (notFollowedBy <| pchar '>')))
-        .>>. ((opt (attempt (skipNewline >>. (followedBy <| pchar '>')))) .>>. opt eof)
+        >>. many1 (
+            pchar '>'
+            >>. (opt <| pchar ' ')
+            >>. (many1Till inlineNode (skipNewline <|> eof))
+        )
+        .>> (opt <| attempt (skipNewline >>. (notFollowedBy <| pchar '>')))
+        .>>. (opt <| attempt (skipNewline >>. (followedBy <| pchar '>')) .>>. opt eof)
         |>> fun (q, (followedByQuote, followedByEof)) ->
             MfmQuoteNode(
                 List.collect (fun e -> e @ [ (MfmCharNode('\n') :> MfmInlineNode) ]) q
