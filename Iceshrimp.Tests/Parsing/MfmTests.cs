@@ -235,32 +235,34 @@ public class MfmTests
 	[TestMethod]
 	public void TestQuoteInline()
 	{
-		const string input = """
-		                     this is plain text > this is not a quote >this is also not a quote
-		                     > this is a quote
-		                     > this is part of the same quote
-		                     >this too
-		                     
-		                     this is some plain text inbetween
-		                     >this is a second quote
-		                     > this is part of the second quote
+		const string input =
+			"""
+			this is plain text > this is not a quote >this is also not a quote
+			> this is a quote
+			> this is part of the same quote
+			>this too
 
-		                     > this is a third quote
-		                     and this is some plain text to close it off
-		                     """;
+			this is some plain text inbetween
+			>this is a second quote
+			> this is part of the second quote
 
-		const string canonical = """
-		                         this is plain text > this is not a quote >this is also not a quote
-		                         > this is a quote
-		                         > this is part of the same quote
-		                         > this too
-		                         this is some plain text inbetween
-		                         > this is a second quote
-		                         > this is part of the second quote
+			> this is a third quote
+			and this is some plain text to close it off
+			""";
 
-		                         > this is a third quote
-		                         and this is some plain text to close it off
-		                         """;
+		const string canonical =
+			"""
+			this is plain text > this is not a quote >this is also not a quote
+			> this is a quote
+			> this is part of the same quote
+			> this too
+			this is some plain text inbetween
+			> this is a second quote
+			> this is part of the second quote
+
+			> this is a third quote
+			and this is some plain text to close it off
+			""";
 
 		// @formatter:off
 		List<MfmNode> expected =
@@ -388,6 +390,13 @@ public class MfmTests
 				var bx = (MfmLinkNode)b;
 				if (ax.Url != bx.Url) return false;
 				if (ax.Silent != bx.Silent) return false;
+				break;
+			}
+			case MfmQuoteNode ax:
+			{
+				var bx = (MfmQuoteNode)b;
+				if (ax.FollowedByEof != bx.FollowedByEof) return false;
+				if (ax.FollowedByQuote != bx.FollowedByQuote) return false;
 				break;
 			}
 			case MfmFnNode ax:
