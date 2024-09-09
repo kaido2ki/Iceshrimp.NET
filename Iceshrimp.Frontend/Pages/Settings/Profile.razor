@@ -99,9 +99,8 @@
         try
         {
             SaveButton.State = StateButton.StateEnum.Loading;
-            var res = await Api.Profile.UpdateProfile(UserProfile);
+            await Api.Profile.UpdateProfile(UserProfile);
             SaveButton.State = StateButton.StateEnum.Success;
-            UserProfile      = res;
         }
         catch (ApiException e)
         {

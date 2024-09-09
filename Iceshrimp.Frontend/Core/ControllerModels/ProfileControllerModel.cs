@@ -8,6 +8,6 @@ internal class ProfileControllerModel(ApiClient api)
 	public Task<UserProfileEntity> GetProfile() =>
 		api.Call<UserProfileEntity>(HttpMethod.Get, "/profile");
 
-	public Task<UserProfileEntity> UpdateProfile(UserProfileEntity request) =>
-		api.Call<UserProfileEntity>(HttpMethod.Put, "/profile", data: request);
+	public Task UpdateProfile(UserProfileEntity request) =>
+		api.Call(HttpMethod.Put, "/profile", data: request);
 }
