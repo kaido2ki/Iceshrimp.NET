@@ -81,7 +81,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			SharedInbox      = new ASLink($"https://{config.Value.WebDomain}/inbox"),
 			Url              = new ASLink(user.GetPublicUrl(config.Value)),
 			Username         = user.Username,
-			WebfingerAddress = user.IsLocalUser ? $"{user.Username}@{config.Value.AccountDomain}" : null,
+			WebfingerAddressXsd = user.IsLocalUser ? $"{user.Username}@{config.Value.AccountDomain}" : null,
 			DisplayName      = user.DisplayName ?? user.Username,
 			Summary          = summary,
 			MkSummary        = profile?.Description,

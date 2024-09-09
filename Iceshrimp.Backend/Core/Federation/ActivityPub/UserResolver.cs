@@ -74,10 +74,7 @@ public class UserResolver(
 					actor.Normalize(query);
 					var domain   = new Uri(actor.Id).Host;
 					var username = actor.Username!;
-					var wfaddr = actor.WebfingerAddress != null && !actor.WebfingerAddress.StartsWith("acct:")
-						? "acct:" + actor.WebfingerAddress
-						: actor.WebfingerAddress;
-					return await WebFingerAsync(wfaddr ?? $"acct:{username}@{domain}", false, actor.Id);
+					return await WebFingerAsync(actor.WebfingerAddress ?? $"acct:{username}@{domain}", false, actor.Id);
 				}
 				catch (Exception e)
 				{
@@ -127,11 +124,8 @@ public class UserResolver(
 						actor.Normalize(apUri);
 						var domain   = new Uri(actor.Id).Host;
 						var username = new Uri(actor.Username!).Host;
-						var wfaddr = actor.WebfingerAddress != null && !actor.WebfingerAddress.StartsWith("acct:")
-							? "acct:" + actor.WebfingerAddress
-							: actor.WebfingerAddress;
-
-						return await WebFingerAsync(wfaddr ?? $"acct:{username}@{domain}", false, apUri, responses);
+						return await WebFingerAsync(actor.WebfingerAddress ?? $"acct:{username}@{domain}", false,
+						                            apUri, responses);
 					}
 					catch (Exception e)
 					{

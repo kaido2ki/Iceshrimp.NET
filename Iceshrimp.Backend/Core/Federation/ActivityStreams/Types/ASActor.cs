@@ -125,10 +125,15 @@ public class ASActor : ASObject
 	[J($"{Constants.ActivityStreamsNs}#attachment")]
 	[JC(typeof(ASAttachmentConverter))]
 	public List<ASAttachment>? Attachments { get; set; }
-	
+
 	[J("https://purl.archive.org/socialweb/webfinger#webfinger")]
 	[JC(typeof(VC))]
-	public string? WebfingerAddress { get; set; }
+	public XsdString? WebfingerAddressXsd { get; set; }
+
+	[JI]
+	public string? WebfingerAddress => WebfingerAddressXsd is { } s && !s.ToString()?.StartsWith("acct:") == true
+		? "acct:" + WebfingerAddressXsd
+		: WebfingerAddressXsd?.ToString();
 
 	[JI] public bool IsBot => Type == $"{Constants.ActivityStreamsNs}#Service";
 

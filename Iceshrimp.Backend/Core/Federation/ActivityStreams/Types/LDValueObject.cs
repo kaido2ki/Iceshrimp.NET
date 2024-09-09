@@ -77,6 +77,12 @@ public class ValueObjectConverter : JsonConverter
 			return val != null ? Convert.ToInt64(val) : null;
 		}
 
+		if (objectType == typeof(XsdString))
+		{
+			var val = obj?.Value;
+			return val as XsdString;
+		}
+
 		if (obj?.Value is string id)
 		{
 			if (objectType == typeof(ASOrderedCollection))
@@ -124,6 +130,12 @@ public class ValueObjectConverter : JsonConverter
 				writer.WritePropertyName("@value");
 				writer.WriteRawValue(JsonConvert.SerializeObject(c));
 				break;
+			case XsdString xs:
+				writer.WritePropertyName("@type");
+				writer.WriteValue($"{Constants.XsdNs}#string");
+				writer.WritePropertyName("@value");
+				writer.WriteValue(xs);
+				break;
 			default:
 				writer.WritePropertyName("@value");
 				writer.WriteValue(value);
@@ -132,4 +144,16 @@ public class ValueObjectConverter : JsonConverter
 
 		writer.WriteEndObject();
 	}
+}
+
+// For some reason, some FEPs use xsd:string for storing their string data.
+// To accomodate this, we use this wrapper class with bidirectional implicit conversions.
+public sealed class XsdString(string? str)
+{
+	private string? Str => str;
+
+	public static implicit operator XsdString?(string? s) => s == null ? null : new XsdString(s);
+	public static implicit operator string?(XsdString? s) => s?.Str;
+
+	public override string? ToString() => str;
 }
