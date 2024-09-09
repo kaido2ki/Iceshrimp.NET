@@ -80,6 +80,7 @@ public class ValueObjectConverter : JsonConverter
 		if (objectType == typeof(XsdString))
 		{
 			var val = obj?.Value;
+			if (val is string x) return new XsdString(x);
 			return val as XsdString;
 		}
 
