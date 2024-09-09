@@ -29,6 +29,7 @@ public class StatusController(
 	DatabaseContext db,
 	NoteRenderer noteRenderer,
 	NoteService noteSvc,
+	UserRenderer userRenderer,
 	IOptionsSnapshot<Config.SecuritySection> security
 ) : ControllerBase
 {
@@ -66,7 +67,17 @@ public class StatusController(
 		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		return await noteRenderer.GetReactions([note], user, fillAccounts: true);
+		var res = await noteRenderer.GetReactions([note], user);
+
+		foreach (var item in res)
+		{
+			if (item.AccountIds == null) continue;
+
+			var accounts = await db.Users.Where(u => item.AccountIds.Contains(u.Id)).ToArrayAsync();
+			item.Accounts = (await userRenderer.RenderManyAsync(accounts)).ToList();
+		}
+
+		return res;
 	}
 
 	[HttpPut("{id}/reactions/{reaction}")]

@@ -162,9 +162,8 @@ public class NoteRenderer(
 			Poll             = poll,
 			Reactions        = reactions,
 			Filtered         = filterResult,
-
 			Pleroma          = new() {
-				Reactions = reactions,
+				Reactions      = reactions,
 				ConversationId = note.ThreadIdOrId
 			}
 		};
@@ -304,7 +303,7 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	public async Task<List<ReactionEntity>> GetReactions(List<Note> notes, User? user, bool fillAccounts = false)
+	public async Task<List<ReactionEntity>> GetReactions(List<Note> notes, User? user)
 	{
 		if (notes.Count == 0) return [];
 		var counts = notes.ToDictionary(p => p.Id, p => p.Reactions);
@@ -333,17 +332,6 @@ public class NoteRenderer(
 			item.Url       = hit.PublicUrl;
 			item.StaticUrl = hit.PublicUrl;
 			item.Name      = item.Name.Trim(':');
-		}
-
-		if (fillAccounts)
-		{
-			foreach (var item in res)
-			{
-				if (item.AccountIds == null) continue;
-
-				var accounts = await db.Users.Where(u => item.AccountIds.Contains(u.Id)).ToArrayAsync();
-				item.Accounts = (await userRenderer.RenderManyAsync(accounts)).ToList();
-			}
 		}
 
 		return res;

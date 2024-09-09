@@ -7,7 +7,7 @@ public abstract class PleromaNotificationSchemas
 {
 	public class ReadNotificationsRequest
 	{
-		[B(Name = "id")] [J("id")]         public long? Id    { get; set; }
+		[B(Name = "id")]     [J("id")]     public long? Id    { get; set; }
 		[B(Name = "max_id")] [J("max_id")] public long? MaxId { get; set; }
 	}
 }

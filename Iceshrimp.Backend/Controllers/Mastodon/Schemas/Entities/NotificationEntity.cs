@@ -8,16 +8,14 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 public class NotificationEntity : IEntity
 {
-	[J("created_at")] public required string        CreatedAt { get; set; }
-	[J("type")]       public required string        Type      { get; set; }
-	[J("account")]    public required AccountEntity Notifier  { get; set; }
-	[J("status")]     public required StatusEntity? Note      { get; set; }
-	[J("id")]         public required string        Id        { get; set; }
-
-
-	[J("emoji")]     public string? Emoji { get; set; }
-	[J("emoji_url")] public string? EmojiUrl { get; set; }
-	[J("pleroma")]   public required PleromaNotificationExtensions Pleroma { get; set; }
+	[J("created_at")] public required string                        CreatedAt { get; set; }
+	[J("type")]       public required string                        Type      { get; set; }
+	[J("account")]    public required AccountEntity                 Notifier  { get; set; }
+	[J("status")]     public required StatusEntity?                 Note      { get; set; }
+	[J("id")]         public required string                        Id        { get; set; }
+	[J("pleroma")]    public required PleromaNotificationExtensions Pleroma   { get; set; }
+	[J("emoji")]      public string?                                Emoji     { get; set; }
+	[J("emoji_url")]  public string?                                EmojiUrl  { get; set; }
 
 	public static string EncodeType(NotificationType type, bool isPleroma)
 	{
@@ -44,16 +42,16 @@ public class NotificationEntity : IEntity
 	{
 		return type switch
 		{
-			"follow"         => [NotificationType.Follow],
-			"mention"        => [NotificationType.Mention, NotificationType.Reply],
-			"reblog"         => [NotificationType.Renote, NotificationType.Quote],
-			"favourite"      => [NotificationType.Like],
-			"poll"           => [NotificationType.PollEnded],
-			"follow_request" => [NotificationType.FollowRequestReceived],
-			"update"         => [NotificationType.Edit],
-			"reaction"       => [NotificationType.Reaction],
+			"follow"                 => [NotificationType.Follow],
+			"mention"                => [NotificationType.Mention, NotificationType.Reply],
+			"reblog"                 => [NotificationType.Renote, NotificationType.Quote],
+			"favourite"              => [NotificationType.Like],
+			"poll"                   => [NotificationType.PollEnded],
+			"follow_request"         => [NotificationType.FollowRequestReceived],
+			"update"                 => [NotificationType.Edit],
+			"reaction"               => [NotificationType.Reaction],
 			"pleroma:emoji_reaction" => [NotificationType.Reaction],
-			_                => []
+			_                        => []
 		};
 	}
 }

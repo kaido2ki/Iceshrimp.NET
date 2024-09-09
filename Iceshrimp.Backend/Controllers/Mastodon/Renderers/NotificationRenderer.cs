@@ -49,13 +49,9 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 			Note      = note,
 			Notifier  = notifier,
 			CreatedAt = notification.CreatedAt.ToStringIso8601Like(),
-
-			Emoji = notification.Reaction,
-			EmojiUrl = emojiUrl,
-			
-			Pleroma = new() {
-				// TODO: stub
-				IsMuted = false,
+			Emoji     = notification.Reaction,
+			EmojiUrl  = emojiUrl,
+			Pleroma   = new() {
 				IsSeen = notification.IsRead
 			}
 		};

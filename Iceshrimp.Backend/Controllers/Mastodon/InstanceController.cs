@@ -37,10 +37,10 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 
 		return new InstanceInfoV1Response(config.Value, instanceName, instanceDescription, adminContact)
 		{
-			Stats = new InstanceStats(userCount, noteCount, instanceCount),
+			Stats   = new InstanceStats(userCount, noteCount, instanceCount),
 			Pleroma = new() {
 				VapidPublicKey = vapidKey,
-				Metadata = new(),
+				Metadata       = new(),
 			}
 		};
 	}
