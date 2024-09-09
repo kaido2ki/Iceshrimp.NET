@@ -7,10 +7,16 @@
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
 @using Microsoft.Extensions.Logging
+@using Microsoft.AspNetCore.Components.Sections
 @* @layout SettingsLayout *@
 @inject ApiService                     Api;
 @inject ILogger<Filters>               Logger;
 @inject IStringLocalizer<Localization> Loc;
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.SpeakerX"></Icon>
+    @Loc["Filters"]
+</SectionContent>
 
 <div>
     @if (State is State.Loaded)
@@ -259,6 +265,7 @@
             try
             {
                 var filter = await Api.Filters.CreateFilter(newFilterRequest);
+                FilterList.Add(filter);
             }
             catch (ApiException) { }
         }
