@@ -1,0 +1,290 @@
+@page "/settings/filters"
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
+@using Microsoft.Extensions.Logging
+@* @layout SettingsLayout *@
+@inject ApiService                     Api;
+@inject ILogger<Filters>               Logger;
+@inject IStringLocalizer<Localization> Loc;
+
+<div>
+    @if (State is State.Loaded)
+    {
+        <div class="filter-list">
+            @foreach (var el in FilterList)
+            {
+                <div class="filter">
+                    <div>
+                        <h3>@Loc["Name"]</h3>
+                        @el.Name
+                    </div>
+                    <div>
+                        <h3>@Loc["Expiry"]</h3>
+                        @el.Expiry.ToString()
+                    </div>
+                    <div>
+                        <h3>@Loc["Keywords"]</h3>
+                        @foreach (var keyword in el.Keywords)
+                        {
+                            <span>@keyword</span>
+                        }
+                    </div>
+                    <div>
+                        <h3>@Loc["Action"]</h3>
+                        @el.Action.ToString()
+                    </div>
+                    <div>
+                        <h3>@Loc["Contexts"]</h3>
+                        @foreach (var context in el.Contexts)
+                        {
+                            <span>@context</span>
+                        }
+                    </div>
+                </div>
+                <button @onclick="() => DeleteFilter(el.Id)">@Loc["Delete"]</button>
+            }
+        </div>
+
+        <div class="add-filter">
+            <div class="name section">
+                <h3>@Loc["Filter Name"]</h3>
+                @if (_filterNameInvalid)
+                {
+                    <span>@Loc["Filter name is required"]</span>
+                }
+                <input class="name-input" required="required" type="text" @bind="FilterName"/>
+            </div>
+            <div class="keywords section">
+                <h3>
+                    @Loc["Keywords"]
+                </h3>
+                @if (_filterKeywordsInvalid)
+                {
+                    <span>@Loc["At least 1 keyword is required"]</span>
+                }
+                @foreach (var el in FilterKeywords)
+                {
+                    <div>
+                        <span>@el</span>
+                        <button @onclick="() => FilterKeywords.Remove(el)">
+                            <Icon Name="Icons.X"/>
+                        </button>
+                    </div>
+                }
+                <input type="text" @bind="Keyword"/>
+                <button @onclick="AddKeyword">@Loc["Add"]</button>
+            </div>
+            <div class="action section">
+                <h3>@Loc["Filter Action"]</h3>
+                <button class="positioned" @onclick="ToggleMenu">
+                    @if (FilterAction == FilterResponse.FilterAction.Hide)
+                    {
+                        <Icon Name="Icons.EyeClosed"/>
+                        <span>@Loc["Hide"]</span>
+                    }
+                    @if (FilterAction == FilterResponse.FilterAction.Warn)
+                    {
+                        <Icon Name="Icons.Warning"/>
+                        <span>@Loc["Warn"]</span>
+                    }
+                    <Menu @ref="MenuFilterAction">
+                        <MenuElement Icon="Icons.EyeClosed" OnSelect="() => FilterAction = FilterResponse.FilterAction.Hide">
+                            <Text>@Loc["Hide"]</Text>
+                        </MenuElement>
+                        <MenuElement Icon="Icons.Warning" OnSelect="() => FilterAction = FilterResponse.FilterAction.Warn">
+                            <Text>@Loc["Warn"]</Text>
+                        </MenuElement>
+                    </Menu>
+                </button>
+            </div>
+            <div class="contexts section">
+                <h3>@Loc["Filter Contexts"]</h3>
+                @if (_filterContextsInvalid)
+                {
+                    <span>@Loc["At least 1 context required"]</span>
+                }
+                <div class="active-contexts">
+                    @foreach (var el in FilterContexts)
+                    {
+                        <div>
+                            <span>@el</span>
+                            <button @onclick="() => FilterContexts.Remove(el)">
+                                <Icon Name="Icons.X"></Icon>
+                            </button>
+                        </div>
+                    }
+                </div>
+                <button class="positioned" @onclick="ToggleFilterContextMenu">
+                    @Loc["Add Filter Context"]
+                    <Menu @ref="MenuFilterContexts">
+                        <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Home)">
+                            <Text>@Loc["Home"]</Text>
+                        </MenuElement>
+                        <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Lists)">
+                            <Text>@Loc["Lists"]</Text>
+                        </MenuElement>
+                        <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Threads)">
+                            <Text>@Loc["Threads"]</Text>
+                        </MenuElement>
+                        <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Notifications)">
+                            <Text>@Loc["Notifications"]</Text>
+                        </MenuElement>
+                        <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Accounts)">
+                            <Text>@Loc["Accounts"]</Text>
+                        </MenuElement>
+                        <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Public)">
+                            <Text>@Loc["Public"]</Text>
+                        </MenuElement>
+                        <ClosingBackdrop OnClose="MenuFilterContexts.Close"></ClosingBackdrop>
+                    </Menu>
+                </button>
+            </div>
+            <div class="expiry-section">
+                @if (_filterExpiryInvalid)
+                {
+                    <span>@Loc["Expiry is required"]</span>
+                }
+                <h3>@Loc["Filter Expiry"]</h3>
+                <input @bind="FilterExpiry" type="datetime-local"/>
+            </div>
+            <StateButton OnClick="TryAddFilter" @ref="ButtonAddFilter">
+                <Initial>@Loc["Add Filter"]</Initial>
+                <Success>@Loc["Add Filter"]</Success>
+                <Loading>
+                    <Icon Name="Icons.Spinner"/>
+                </Loading>
+                <Failed>
+                    <Icon Name="Icons.X"/>@Loc["Error"]
+                </Failed>
+            </StateButton>
+        </div>
+    }
+</div>
+
+@code {
+    private List<FilterResponse>        FilterList         { get; set; } = [];
+    private State                              State              { get; set; } = State.Loading;
+    private string                             FilterName         { get; set; } = "";
+    private string                             Keyword            { get; set; } = "";
+    private List<String>                       FilterKeywords     { get; set; } = [];
+    private DateTime?                          FilterExpiry       { get; set; }
+    private FilterResponse.FilterAction        FilterAction       { get; set; }
+    private Menu                               MenuFilterAction   { get; set; } = null!;
+    private Menu                               MenuFilterContexts { get; set; } = null!;
+    private List<FilterResponse.FilterContext> FilterContexts     { get; set; } = [];
+    private StateButton                        ButtonAddFilter    { get; set; } = null!;
+    private bool                               _filterNameInvalid     = false;
+    private bool                               _filterKeywordsInvalid = false;
+    private bool                               _filterExpiryInvalid   = false;
+    private bool                               _filterContextsInvalid = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            FilterList = (List<FilterResponse>)await Api.Filters.GetFilters();
+            State      = State.Loaded;
+        }
+        catch (ApiException)
+        {
+            State = State.Error;
+        }
+    }
+
+    private async Task DeleteFilter(long id)
+    {
+        try
+        {
+            var res = await Api.Filters.DeleteFilter(id);
+            if (res == true)
+            {
+                var index = FilterList.FindIndex(p => p.Id == id);
+                FilterList.RemoveAt(index);
+            }
+        }
+        catch (ApiException)
+        {
+            
+        }
+    }
+
+    private async Task TryAddFilter()
+    {
+        bool valid = true;
+
+        if (FilterName.Length < 1)
+        {
+            _filterNameInvalid = true;
+            valid              = false;
+        }
+
+        if (FilterKeywords.Count < 1)
+        {
+            _filterKeywordsInvalid = true;
+            valid                  = false;
+        }
+
+        if (FilterExpiry == null)
+        {
+            _filterExpiryInvalid = true;
+            valid                = false;
+        }
+
+        if (FilterContexts.Count < 1)
+        {
+            _filterContextsInvalid = true;
+            valid                  = false;
+        }
+
+        if (valid)
+        {
+            if (FilterExpiry is not null)
+            {
+                FilterExpiry = new DateTimeOffset((DateTime)FilterExpiry, DateTimeOffset.Now.Offset).UtcDateTime;
+            }
+
+            var newFilterRequest = new FilterRequest
+            {
+                Name     = FilterName,
+                Expiry   = FilterExpiry,
+                Keywords = FilterKeywords,
+                Action   = FilterAction,
+                Contexts = FilterContexts
+            };
+            try
+            {
+                var filter = await Api.Filters.CreateFilter(newFilterRequest);
+            }
+            catch (ApiException) { }
+        }
+    }
+
+    private void ToggleMenu()
+    {
+        MenuFilterAction.Toggle();
+    }
+
+    private void ToggleFilterContextMenu()
+    {
+        MenuFilterContexts.Toggle();
+    }
+
+    private void AddKeyword()
+    {
+        if (Keyword.Length >= 1)
+            FilterKeywords.Add(Keyword);
+    }
+
+    private void AddFilterContext(FilterResponse.FilterContext context)
+    {
+        if (FilterContexts.Contains(context) == false)
+        {
+            FilterContexts.Add(context);
+        }
+    }
+}

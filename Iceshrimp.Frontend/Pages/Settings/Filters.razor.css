@@ -1,0 +1,21 @@
+.positioned {
+    position: relative;
+    top: 0;
+}
+
+h3 {
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+}
+
+.filter {
+    border: var(--highlight-color) solid 0.1rem;
+}
+
+.creature-input:invalid {
+    border-color: red;
+}
+
+.name-input:invalid {
+    border-color: red;
+}
