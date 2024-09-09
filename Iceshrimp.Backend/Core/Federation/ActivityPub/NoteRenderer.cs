@@ -27,8 +27,9 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		if (note.IsPureRenote)
 			throw GracefulException.BadRequest("Refusing to render pure renote as ASNote");
 
-		var id     = note.GetPublicUri(config.Value);
-		var userId = note.User.GetPublicUri(config.Value);
+		var id      = note.GetPublicUri(config.Value);
+		var userId  = note.User.GetPublicUri(config.Value);
+		var replies = new ASOrderedCollection($"{id}/replies");
 		var replyId = note.Reply != null
 			? new ASObjectBase(note.Reply.Uri ?? note.Reply.GetPublicUri(config.Value))
 			: null;
@@ -160,6 +161,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 					UpdatedAt    = note.UpdatedAt,
 					Sensitive    = sensitive,
 					InReplyTo    = replyId,
+					Replies      = replies,
 					Cc           = cc,
 					To           = to,
 					Tags         = tags,
@@ -190,6 +192,7 @@ public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			UpdatedAt    = note.UpdatedAt,
 			Sensitive    = sensitive,
 			InReplyTo    = replyId,
+			Replies      = replies,
 			Cc           = cc,
 			To           = to,
 			Tags         = tags,
