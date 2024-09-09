@@ -128,12 +128,16 @@ public class ASActor : ASObject
 
 	[J("https://purl.archive.org/socialweb/webfinger#webfinger")]
 	[JC(typeof(VC))]
-	public XsdString? WebfingerAddressXsd { get; set; }
+	private XsdString? WebfingerAddressXsd { get; set; }
 
 	[JI]
-	public string? WebfingerAddress => WebfingerAddressXsd is { } s && !s.ToString()?.StartsWith("acct:") == true
-		? "acct:" + WebfingerAddressXsd
-		: WebfingerAddressXsd?.ToString();
+	public string? WebfingerAddress
+	{
+		get => WebfingerAddressXsd is { } s && !s.ToString()?.StartsWith("acct:") == true
+			? "acct:" + WebfingerAddressXsd
+			: WebfingerAddressXsd?.ToString();
+		set => WebfingerAddressXsd = value;
+	}
 
 	[JI] public bool IsBot => Type == $"{Constants.ActivityStreamsNs}#Service";
 
