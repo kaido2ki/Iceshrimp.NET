@@ -12,14 +12,15 @@ public static class MockObjects
 {
 	public static readonly ASActor ASActor = new()
 	{
-		Id             = $"https://example.org/users/{IdHelpers.GenerateSlowflakeId()}",
-		Type           = ASActor.Types.Person,
-		Url            = new ASLink("https://example.org/@test"),
-		Username       = "test",
-		DisplayName    = "Test account",
-		IsCat          = false,
-		IsDiscoverable = true,
-		IsLocked       = true
+		Id               = $"https://example.org/users/{IdHelpers.GenerateSlowflakeId()}",
+		Type             = ASActor.Types.Person,
+		Url              = new ASLink("https://example.org/@test"),
+		Username         = "test",
+		DisplayName      = "Test account",
+		IsCat            = false,
+		IsDiscoverable   = true,
+		IsLocked         = true,
+		WebfingerAddress = "test@example.org"
 	};
 
 	public static readonly User User = new() { Id = IdHelpers.GenerateSlowflakeId() };

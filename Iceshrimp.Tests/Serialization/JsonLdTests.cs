@@ -14,6 +14,10 @@ public class JsonLdTests
 		var expanded = LdHelpers.Expand(_actor);
 		expanded.Should().NotBeNull();
 
+		var deserialized = ASObject.Deserialize(expanded);
+		deserialized.Should().NotBeNull();
+		deserialized.Should().BeEquivalentTo(_actor);
+
 		var canonicalized = LdHelpers.Canonicalize(expanded);
 		canonicalized.Should().NotBeNull();
 
