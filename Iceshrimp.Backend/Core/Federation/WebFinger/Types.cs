@@ -133,10 +133,10 @@ public class NodeInfoResponse
 
 	public class PleromaUploadLimits
 	{
-		[J("general")]    public int? General   { get; set; }
-		[J("avatar")]    public int? Avatar { get; set; }
-		[J("background")]    public int? Background { get; set; }
-		[J("banner")]    public int? Banner { get; set; }
+		[J("general")]    public long? General    { get; set; }
+		[J("avatar")]     public long? Avatar     { get; set; }
+		[J("background")] public long? Background { get; set; }
+		[J("banner")]     public long? Banner     { get; set; }
 	}
 
 	public class PleromaSuggestions
