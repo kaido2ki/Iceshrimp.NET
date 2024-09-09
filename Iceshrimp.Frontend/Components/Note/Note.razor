@@ -25,7 +25,28 @@
 }
 else
 {
-    <NoteComponent Note="NoteResponse" Quote="NoteResponse.Quote" Indented="Indented"/>
+    @if (NoteResponse.Filtered is not null && NoteResponse.Filtered.Hide == false)
+    {
+        <div>
+            @Loc["This note contains the filter keyword '{0}'", NoteResponse.Filtered.Keyword]
+            <button
+                @onclick="@ShowNote"
+                @onclick:stopPropagation="true">
+                @if (_overrideHide)
+                {
+                    @Loc["Hide"]
+                }
+                else
+                {
+                    @Loc["Show"]
+                }
+            </button>
+        </div>
+    }
+    @if (_overrideHide || NoteResponse.Filtered == null)
+    {
+        <NoteComponent Note="NoteResponse" Quote="NoteResponse.Quote" Indented="Indented"/>
+    }
 }
 </CascadingValue>
 

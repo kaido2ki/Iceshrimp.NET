@@ -2,20 +2,23 @@ using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Localization;
 
 namespace Iceshrimp.Frontend.Components.Note;
 
 public partial class Note : IDisposable
 {
-	[Inject] private ApiService        ApiService        { get; set; } = null!;
-	[Inject] private NavigationManager NavigationManager { get; set; } = null!;
-	[Inject] private ComposeService    ComposeService    { get; set; } = null!;
-	[Inject] private MessageService    MessageSvc        { get; set; } = null!;
+	[Inject] private ApiService                                  ApiService        { get; set; } = null!;
+	[Inject] private NavigationManager                           NavigationManager { get; set; } = null!;
+	[Inject] private ComposeService                              ComposeService    { get; set; } = null!;
+	[Inject] private MessageService                              MessageSvc        { get; set; } = null!;
+	[Inject] private IStringLocalizer<Localization.Localization> Loc               { get; set; } = null!;
 
 	[Parameter] [EditorRequired] public required NoteResponse NoteResponse { get; set; }
 	[Parameter]                  public          bool         Indented     { get; set; }
 	private                                      bool         _shouldRender       = false;
 	private                                      IDisposable  _noteChangedHandler = null!;
+	private                                      bool         _overrideHide       = false;
 
 	public void React(EmojiResponse emoji)
 	{
@@ -178,6 +181,12 @@ public partial class Note : IDisposable
 	{
 		await ApiService.Notes.DeleteNote(NoteResponse.Id);
 		await MessageSvc.DeleteNote(NoteResponse);
+	}
+	
+	private void ShowNote()
+	{
+		_overrideHide = !_overrideHide;
+		Rerender();
 	}
 
 	public void Dispose()
