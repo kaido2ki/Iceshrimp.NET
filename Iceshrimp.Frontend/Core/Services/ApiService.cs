@@ -17,6 +17,7 @@ internal class ApiService(ApiClient client)
 	public readonly FollowRequestControllerModel FollowRequests = new(client);
 	public readonly MiscControllerModel          Misc           = new(client);
 	public readonly ProfileControllerModel       Profile        = new(client);
+	public readonly FilterControllerModel        Filters        = new(client);
 
 	public void SetBearerToken(string token) => client.SetToken(token);
 }
