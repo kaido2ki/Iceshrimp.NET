@@ -165,6 +165,11 @@ public partial class Note : IDisposable
 		ComposeService.ComposeDialog?.OpenDialogRedraft(NoteResponse);
 	}
 
+	public async void Mute()
+	{
+		await ApiService.Notes.MuteNote(NoteResponse.Id);
+	}
+
 	private void Rerender()
 	{
 		_shouldRender = true;
