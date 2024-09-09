@@ -1,13 +1,16 @@
 @using Iceshrimp.Assets.PhosphorIcons
 
 <div @onclick="OnClick" class="menu-element">
-    <Icon Name="Icon"></Icon>
+    @if (Icon != null)
+    {
+        <Icon Name="Icon"></Icon>
+    }
     @Text
 </div>
 @code {
-    [Parameter] [EditorRequired] public required IconName             Icon     { get; set; }
-    [Parameter] [EditorRequired] public required RenderFragment       Text     { get; set; }
-    [Parameter] [EditorRequired] public required EventCallback OnSelect { get; set; }
+    [Parameter]                  public          IconName?      Icon     { get; set; }
+    [Parameter] [EditorRequired] public required RenderFragment Text     { get; set; }
+    [Parameter] [EditorRequired] public required EventCallback  OnSelect { get; set; }
 
     private async Task OnClick()
     {
