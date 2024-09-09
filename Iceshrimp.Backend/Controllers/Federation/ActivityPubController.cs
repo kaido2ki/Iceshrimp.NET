@@ -74,6 +74,34 @@ public class ActivityPubController(
 		                  .Compact();
 	}
 
+	[HttpGet("/notes/{id}/replies")]
+	[AuthorizedFetch]
+	[OverrideResultType<ASOrderedCollection>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<JObject> GetNoteReplies(string id)
+	{
+		var actor = HttpContext.GetActor();
+		var note = await db.Notes
+		                   .EnsureVisibleFor(actor)
+		                   .FirstOrDefaultAsync(p => p.Id == id) ??
+		           throw GracefulException.NotFound("Note not found");
+
+		var replies = await db.Notes.Where(p => p.ReplyId == id)
+		                   .OrderByDescending(p => p.Id)
+		                   .ToListAsync();
+
+		var rendered = replies.Select(noteRenderer.RenderLite).ToList();
+		var res = new ASOrderedCollection
+		{
+			Id         = $"{note.GetPublicUri(config.Value)}/replies",
+			TotalItems = (ulong)rendered.Count,
+			Items      = rendered.Cast<ASObject>().ToList()
+		};
+
+		return res.Compact();
+	}
+
 	[HttpGet("/users/{id}")]
 	[AuthorizedFetch]
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]

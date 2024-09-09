@@ -87,6 +87,10 @@ public class ASNote : ASObject
 	[JC(typeof(ASAttachmentConverter))]
 	public List<ASAttachment>? Attachments { get; set; }
 
+	[J($"{Constants.ActivityStreamsNs}#replies")]
+	[JC(typeof(ASOrderedCollectionConverter))]
+	public ASOrderedCollection? Replies { get; set; }
+
 	public Note.NoteVisibility GetVisibility(User actor)
 	{
 		if (actor.IsLocalUser) throw new Exception("Can't get recipients for local actor");
