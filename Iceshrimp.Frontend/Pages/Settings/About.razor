@@ -1,8 +1,10 @@
 @page "/settings/about"
+@attribute [Authorize]
 @using System.Text
 @using Iceshrimp.Frontend.Core.InMemoryLogger
 @using Iceshrimp.Frontend.Core.Services;
 @using Iceshrimp.Frontend.Localization;
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.Extensions.Localization;
 @layout SettingsLayout;
 @inject VersionService                 Version;

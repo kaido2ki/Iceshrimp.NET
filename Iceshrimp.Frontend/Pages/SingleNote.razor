@@ -1,4 +1,5 @@
 @page "/notes/{NoteId}"
+@attribute [Authorize]
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Frontend.Core.Miscellaneous
@@ -9,6 +10,7 @@
 @using Microsoft.Extensions.Localization
 @using Microsoft.AspNetCore.Components.Sections
 @using Iceshrimp.Assets.PhosphorIcons
+@using Microsoft.AspNetCore.Authorization
 @inject ApiService                     ApiService
 @inject IJSRuntime                     Js
 @inject MessageService                 MessageService

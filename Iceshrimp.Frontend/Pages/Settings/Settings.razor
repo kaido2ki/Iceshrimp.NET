@@ -1,8 +1,10 @@
 @page "/Settings"
+@attribute [Authorize]
 @using Iceshrimp.Frontend.Components
 @using Microsoft.AspNetCore.Components.Sections
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.Extensions.Localization
 @* @inject NavigationManager              Nav; *@
 @inject IStringLocalizer<Localization> Loc;

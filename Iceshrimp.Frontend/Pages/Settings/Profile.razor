@@ -1,4 +1,5 @@
 @page "/settings/profile"
+@attribute [Authorize]
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
@@ -6,6 +7,7 @@
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.Extensions.Logging
 @layout SettingsLayout
 @inject ApiService                     Api;

@@ -1,9 +1,11 @@
 @page "/search"
+@attribute [Authorize]
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
 @using Microsoft.AspNetCore.Components.Sections
 @using Iceshrimp.Assets.PhosphorIcons
+@using Microsoft.AspNetCore.Authorization
 
 @inject IStringLocalizer<Localization> Loc;
 
