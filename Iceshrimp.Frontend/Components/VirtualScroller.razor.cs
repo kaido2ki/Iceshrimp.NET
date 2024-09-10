@@ -104,6 +104,11 @@ public partial class VirtualScroller : IAsyncDisposable
 		if (OvrscrlObsvBottom is null) throw new Exception("Tried to use observer that does not exist");
 		await OvrscrlObsvBottom.Disconnect();
 
+		if (NoteResponseList.Count <= 0)
+		{
+			return;
+		}
+		
 		var index = NoteResponseList.IndexOf(State.RenderedList.Last());
 		if (index >= NoteResponseList.Count - (1 + UpdateCount))
 		{

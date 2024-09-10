@@ -5,5 +5,6 @@ public enum State
 	Loading,
 	NotFound,
 	Loaded,
-	Error
+	Error,
+	Empty
 }

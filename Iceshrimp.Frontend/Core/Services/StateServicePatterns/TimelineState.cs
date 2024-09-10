@@ -55,6 +55,11 @@ internal class TimelineState : IDisposable
 	private void OnNoteDeleted(object? _, NoteResponse note)
 	{
 		var i                           = Timeline.FindIndex(p => p.Id == note.Id);
+		if (Timeline.Count <= 1)
+		{
+			Timeline.RemoveAt(i);
+			return;
+		}
 		if (i == 0) MaxId                  = Timeline[1].Id;
 		if (i == Timeline.Count - 1) MinId = Timeline[^2].Id;
 		Timeline.RemoveAt(i);

@@ -9,14 +9,13 @@ namespace Iceshrimp.Frontend.Components;
 
 public partial class TimelineComponent : IAsyncDisposable
 {
-	private          bool                       _init = false;
 	[Inject] private ApiService                 ApiService       { get; set; } = null!;
 	[Inject] private StreamingService           StreamingService { get; set; } = null!;
 	[Inject] private StateService               StateService     { get; set; } = null!;
 	[Inject] private ILogger<TimelineComponent> Logger           { get; set; } = null!;
 
-	private TimelineState State { get; set; } = null!;
-
+	private TimelineState   State           { get; set; } = null!;
+	private State           ComponentState  { get; set; } = Core.Miscellaneous.State.Loading;
 	private VirtualScroller VirtualScroller { get; set; } = null!;
 	private bool            LockFetch       { get; set; }
 
@@ -27,13 +26,18 @@ public partial class TimelineComponent : IAsyncDisposable
 		StateService.Timeline.SetState("home", State);
 	}
 
-	private async Task Initialize()
+	private async Task<bool> Initialize()
 	{
 		var pq  = new PaginationQuery { Limit = 30 };
 		var res = await ApiService.Timelines.GetHomeTimeline(pq);
+		if (res.Count < 1)
+		{
+			return false;
+		}
 		State.MaxId    = res[0].Id;
 		State.MinId    = res.Last().Id;
 		State.Timeline = res;
+		return true;
 	}
 
 	// Returning false means the API has no more content.
@@ -91,8 +95,17 @@ public partial class TimelineComponent : IAsyncDisposable
 	{
 		State.Timeline.Insert(0, data.note);
 		State.MaxId = data.note.Id;
-		StateHasChanged();
-		await VirtualScroller.OnNewNote();
+		if (ComponentState is Core.Miscellaneous.State.Empty)
+		{
+			State.MinId    = data.note.Id;
+			ComponentState = Core.Miscellaneous.State.Loaded;
+			StateHasChanged();
+		}
+		else
+		{
+			StateHasChanged();
+			await VirtualScroller.OnNewNote();
+		}	
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -106,12 +119,12 @@ public partial class TimelineComponent : IAsyncDisposable
 		if (firstRender)
 		{
 			State = StateService.Timeline.GetState("home");
+			var initResult = true;
 			if (State.Timeline.Count == 0)
 			{
-				await Initialize();
+				initResult = await Initialize();
 			}
-
-			_init = true;
+			ComponentState = initResult ? Core.Miscellaneous.State.Loaded : Core.Miscellaneous.State.Empty;
 			StateHasChanged();
 		}
 	}

@@ -1,10 +1,14 @@
-@if (_init)
+@if (ComponentState is Core.Miscellaneous.State.Loaded)
 {
     <VirtualScroller @ref=VirtualScroller NoteResponseList="State.Timeline" ReachedEnd="FetchOlder" ReachedStart="FetchNewer"/>
 }
-else
+@if (ComponentState is Core.Miscellaneous.State.Loading)
 {
     <div>Loading</div>
+}
+@if (ComponentState is Core.Miscellaneous.State.Empty)
+{
+    <div>No posts here yet! Go find someone to follow!</div>
 }
 
 @code {
