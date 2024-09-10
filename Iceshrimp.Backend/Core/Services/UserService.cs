@@ -379,7 +379,7 @@ public class UserService(
 		    !await db.RegistrationInvites.AnyAsync(p => p.Code == invite))
 			throw new GracefulException(HttpStatusCode.Forbidden, "The specified invite code is invalid");
 		if (!Regex.IsMatch(username, @"^\w+$"))
-			throw new GracefulException(HttpStatusCode.BadRequest, "Username must only contain letters");
+			throw new GracefulException(HttpStatusCode.BadRequest, "Username must only contain letters and numbers");
 		if (Constants.SystemUsers.Contains(username.ToLowerInvariant()))
 			throw new GracefulException(HttpStatusCode.BadRequest, "Username must not be a system user");
 		if (await db.Users.AnyAsync(p => p.IsLocalUser && p.UsernameLower == username.ToLowerInvariant()))
