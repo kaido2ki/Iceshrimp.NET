@@ -7,5 +7,5 @@ export function SetScrollTop(ref, number) {
 }
 
 export function ScrollIntoView(ref) {
-    ref.scrollIntoView(true)
+    ref.scrollIntoView({ behavior: "instant", block: "center"})
 }
