@@ -6,11 +6,9 @@
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
-@using Microsoft.Extensions.Logging
 @using Microsoft.AspNetCore.Components.Sections
 @layout SettingsLayout
 @inject ApiService                     Api;
-@inject ILogger<Filters>               Logger;
 @inject IStringLocalizer<Localization> Loc;
 
 <SectionContent SectionName="top-bar">
@@ -173,21 +171,21 @@
 </div>
 
 @code {
-    private List<FilterResponse>        FilterList         { get; set; } = [];
+    private List<FilterResponse>               FilterList         { get; set; } = [];
     private State                              State              { get; set; } = State.Loading;
     private string                             FilterName         { get; set; } = "";
     private string                             Keyword            { get; set; } = "";
-    private List<String>                       FilterKeywords     { get; set; } = [];
+    private List<String>                       FilterKeywords     { get; }      = [];
     private DateTime?                          FilterExpiry       { get; set; }
     private FilterResponse.FilterAction        FilterAction       { get; set; }
     private Menu                               MenuFilterAction   { get; set; } = null!;
     private Menu                               MenuFilterContexts { get; set; } = null!;
-    private List<FilterResponse.FilterContext> FilterContexts     { get; set; } = [];
+    private List<FilterResponse.FilterContext> FilterContexts     { get; }      = [];
     private StateButton                        ButtonAddFilter    { get; set; } = null!;
-    private bool                               _filterNameInvalid     = false;
-    private bool                               _filterKeywordsInvalid = false;
-    private bool                               _filterExpiryInvalid   = false;
-    private bool                               _filterContextsInvalid = false;
+    private bool                               _filterNameInvalid;
+    private bool                               _filterKeywordsInvalid;
+    private bool                               _filterExpiryInvalid;
+    private bool                               _filterContextsInvalid;
 
     protected override async Task OnInitializedAsync()
     {
@@ -206,17 +204,13 @@
     {
         try
         {
-            var res = await Api.Filters.DeleteFilter(id);
-            if (res == true)
+            if (await Api.Filters.DeleteFilter(id))
             {
                 var index = FilterList.FindIndex(p => p.Id == id);
                 FilterList.RemoveAt(index);
             }
         }
-        catch (ApiException)
-        {
-            
-        }
+        catch (ApiException) { }
     }
 
     private async Task TryAddFilter()

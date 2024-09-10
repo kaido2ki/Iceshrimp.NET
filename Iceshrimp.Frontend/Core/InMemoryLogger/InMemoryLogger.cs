@@ -1,4 +1,3 @@
-using Iceshrimp.Frontend.Core.Services;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Frontend.Core.InMemoryLogger;
@@ -15,5 +14,5 @@ internal class InMemoryLogger (IOptions<InMemoryLoggerConfiguration> config, InM
 		return config.Value.LogLevel.HasFlag(logLevel);
 	}
 
-	public IDisposable? BeginScope<TState>(TState state) where TState : notnull => default!;
+	public IDisposable BeginScope<TState>(TState state) where TState : notnull => default!;
 }
