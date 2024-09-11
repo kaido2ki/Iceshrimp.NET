@@ -84,7 +84,7 @@
     position: fixed;
     width: 15rem;
     height: 100vh;
-    z-index: +3;
+    z-index: +23;
     background-color: var(--foreground-color);
 }
 
@@ -116,6 +116,6 @@
         bottom: 0;
         left: 0;
         background-color: var(--foreground-color);
-        z-index: +4;
+        z-index: +24;
     }
 }
