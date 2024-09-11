@@ -110,6 +110,7 @@ public static class MfmRenderer
 	private static INode MfmCodeBlockNode(MfmNodeTypes.MfmCodeBlockNode node, IDocument document)
 	{
 		var el      = document.CreateElement("pre");
+		el.ClassName = "code-pre";
 		var childEl = document.CreateElement("code");
 		childEl.TextContent = node.Code;
 		el.AppendChild(childEl);

@@ -85,3 +85,9 @@
         text-decoration: none;
     }
 }
+
+::deep {
+    .code-pre {
+        overflow: auto;
+    }
+}
