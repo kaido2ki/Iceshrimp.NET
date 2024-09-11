@@ -6,9 +6,12 @@
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
+@using Iceshrimp.Frontend.Core.Services.StateServicePatterns
 @inject IStringLocalizer<Localization> Loc;
 @inject ApiService                     Api;
 @inject NavigationManager              Navigation;
+@inject StateService                   StateService;
+@inject IJSRuntime                     Js;
 
 <div class="search">
     <input @bind="SearchString" class="input"/>
@@ -23,7 +26,7 @@
 
 @if (_resultType == ResultType.Notes)
 {
-    <div class="note-results">
+    <div class="note-results" @ref="Scroller">
         @if (NoteSearchInstance?.NoteResponses != null)
         {
             foreach (var note in NoteSearchInstance?.NoteResponses!)
@@ -61,11 +64,37 @@
 }
 
 @code {
-    private string         SearchString       { get; set; } = "";
-    private SearchTypeEnum SearchType         { get; set; } = SearchTypeEnum.Note;
-    private NoteSearch?    NoteSearchInstance { get; set; }
-    private UserSearch?    UserSearchInstance { get; set; }
-    private ResultType     _resultType;
+    private string                      SearchString       { get; set; } = "";
+    private SearchTypeEnum              SearchType         { get; set; } = SearchTypeEnum.Note;
+    private NoteSearch?                 NoteSearchInstance { get; set; }
+    private UserSearch?                 UserSearchInstance { get; set; }
+    private IJSInProcessObjectReference Module             { get; set; } = null!;
+    private ElementReference            Scroller           { get; set; }
+    private ResultType                  _resultType;
+    private bool                        _setScroll;
+    private float                       _scrollTop;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "/Components/SearchComponent.razor.js");
+        var state = StateService.Search.GetState();
+        if (state != null)
+        {
+            NoteSearchInstance = new NoteSearch(state.SearchString, Api, state.SearchResults);
+            _resultType        = ResultType.Notes;
+            _scrollTop         = state.ScrollTop;
+            _setScroll         = true;
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_setScroll)
+        {
+            SetScrollY(_scrollTop);
+            _setScroll = false;
+        }
+    }
 
     private async Task Search()
     {
@@ -118,6 +147,7 @@
 
     private void OpenNote(string id)
     {
+        StateService.Search.SetState(new SearchState { SearchResults = NoteSearchInstance!.NoteResponses, ScrollTop = GetScrollY(), SearchString = NoteSearchInstance!.SearchString });
         Navigation.NavigateTo($"/notes/{id}");
     }
 
@@ -126,6 +156,16 @@
         var username                    = $"@{user.Username}";
         if (user.Host != null) username += $"@{user.Host}";
         Navigation.NavigateTo($"/{username}");
+    }
+
+    private float GetScrollY()
+    {
+        return Module.Invoke<float>("GetScrollY");
+    }
+
+    private void SetScrollY(float scrollTop)
+    {
+        Module.InvokeVoid("SetScrollY", scrollTop);
     }
 
     private enum ResultType
@@ -174,7 +214,7 @@
     {
         internal required string             MinId        = noteResponses.Last().Id;
         internal required string             MaxId        = noteResponses.First().Id;
-        internal required string             SearchString = searchString;
+        public required   string             SearchString = searchString;
         internal required ApiService         Api          = api;
         public required   List<NoteResponse> NoteResponses { get; init; } = noteResponses;
         public            bool               SearchComplete = false;
