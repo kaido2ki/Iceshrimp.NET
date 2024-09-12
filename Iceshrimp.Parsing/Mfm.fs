@@ -375,7 +375,7 @@ module private MfmParser =
         .>> clearParen
         >>= fun uri ->
             match Uri.TryCreate(uri, UriKind.Absolute) with
-            | true, finalUri ->
+            | true, NonNullQuick finalUri ->
                 match finalUri.Scheme with
                 | "http" -> preturn (MfmUrlNode(uri, false) :> MfmNode)
                 | "https" -> preturn (MfmUrlNode(uri, false) :> MfmNode)
@@ -388,7 +388,7 @@ module private MfmParser =
         >>. manyCharsTill anyChar (skipChar '>')
         >>= fun uri ->
             match Uri.TryCreate(uri, UriKind.Absolute) with
-            | true, finalUri ->
+            | true, NonNullQuick finalUri ->
                 match finalUri.Scheme with
                 | "http" -> preturn (MfmUrlNode(uri, true) :> MfmNode)
                 | "https" -> preturn (MfmUrlNode(uri, true) :> MfmNode)
@@ -406,7 +406,7 @@ module private MfmParser =
         .>> clearParen
         >>= fun ((silent, text), uri) ->
             match Uri.TryCreate(uri, UriKind.Absolute) with
-            | true, finalUri ->
+            | true, NonNullQuick finalUri ->
                 match finalUri.Scheme with
                 | "http" -> preturn (MfmLinkNode(uri, text, silent.IsSome) :> MfmNode)
                 | "https" -> preturn (MfmLinkNode(uri, text, silent.IsSome) :> MfmNode)

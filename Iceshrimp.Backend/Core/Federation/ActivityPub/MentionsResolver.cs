@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 using Microsoft.Extensions.Options;
 using Microsoft.FSharp.Collections;
+using Microsoft.FSharp.Core;
 using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
@@ -75,8 +76,10 @@ public class MentionsResolver(
 
 		if (resolvedUser != null)
 		{
-			return new MfmMentionNode($"@{resolvedUser.Username}@{resolvedUser.Host}",
-			                          resolvedUser.Username, resolvedUser.Host);
+			return resolvedUser.Host == null
+				? new MfmMentionNode($"@{resolvedUser.Username}", resolvedUser.Username, FSharpOption<string>.None)
+				: new MfmMentionNode($"@{resolvedUser.Username}@{resolvedUser.Host}", resolvedUser.Username,
+				                     FSharpOption<string>.Some(resolvedUser.Host));
 		}
 
 		return new MfmPlainNode($"@{node.Acct}");

@@ -43,10 +43,12 @@
         }
         @if (NoteDraft.Cw != null)
         {
-            <input @bind="NoteDraft.Cw" class="input cw-field" placeholder="Content Warning" aria-label="content warning"/>
+            <input @bind="NoteDraft.Cw" class="input cw-field" placeholder="Content Warning"
+                   aria-label="content warning"/>
             <hr class="separator"/>
         }
-        <textarea @ref="Textarea" @bind="NoteDraft.Text" class="textarea" placeholder="@TextPlaceholder" rows="5" cols="35" autofocus="autofocus" aria-label="note text"></textarea>
+        <textarea @ref="Textarea" @bind="NoteDraft.Text" class="textarea" placeholder="@TextPlaceholder" rows="5"
+                  cols="35" autofocus="autofocus" aria-label="note text"></textarea>
         <div class="footer">
             <button class="btn" title="@Loc["Upload file"]" @onclick="OpenUpload" aria-label="upload">
                 <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
@@ -54,7 +56,8 @@
             <button class="btn" title="@Loc["Content warning"]" @onclick="ToggleCw" aria-label="content warning">
                 <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
             </button>
-            <button @ref="EmojiButton" class="btn" title="@Loc["Emoji"]" @onclick="ToggleEmojiPicker" aria-label="emoji">
+            <button @ref="EmojiButton" class="btn" title="@Loc["Emoji"]" @onclick="ToggleEmojiPicker"
+                    aria-label="emoji">
                 <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
             </button>
             <div class="file-input">
@@ -201,7 +204,7 @@
         }
 
         var current  = $"@{SessionService.Current.Username}@{SessionService.Current.Host}";
-        var mfmNodes = Mfm.parse(noteBase.Text);
+        var mfmNodes = noteBase.Text != null ? Mfm.parse(noteBase.Text) : [];
         foreach (var node in mfmNodes)
         {
             if (node is MfmNodeTypes.MfmMentionNode mentionNode)
