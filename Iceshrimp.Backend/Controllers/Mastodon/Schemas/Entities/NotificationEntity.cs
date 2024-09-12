@@ -25,11 +25,13 @@ public class NotificationEntity : IEntity
 			NotificationType.Mention               => "mention",
 			NotificationType.Reply                 => "mention",
 			NotificationType.Renote                => "reblog",
-			NotificationType.Quote                 => "status",
 			NotificationType.Like                  => "favourite",
 			NotificationType.PollEnded             => "poll",
 			NotificationType.FollowRequestReceived => "follow_request",
 			NotificationType.Edit                  => "update",
+
+			NotificationType.Quote when isPleroma  => "mention",
+			NotificationType.Quote when !isPleroma => "status",
 
 			NotificationType.Reaction when isPleroma  => "pleroma:emoji_reaction",
 			NotificationType.Reaction when !isPleroma => "reaction",
