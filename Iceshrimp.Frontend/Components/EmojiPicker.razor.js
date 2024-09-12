@@ -6,7 +6,7 @@ export function getPosition(ref){
 }
 
 export function openDialog(ref){
-    ref.show();
+    ref.setAttribute("open", "open");
 }
 
 export function closeDialog(ref){
