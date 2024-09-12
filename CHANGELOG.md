@@ -1,3 +1,18 @@
+## v2024.1-beta3.patch1
+This is a hotfix release. It's identical to v2024.1-beta3, except for a bunch of fixed frontend crashes. Upgrading is strongly recommended for all server operators.
+
+### Blazor frontend
+- Empty timelines no longer cause a frontend crash
+- Unauthenticated access to some pages no longer causes a frontend crash
+- The overflow behavior of several list UI elements was fixed
+- An issue that caused UI elements to not fade out properly when a dialog was open has been resolved
+- Code blocks now scroll horizontally
+- Opening the emoji picker no longer scrolls the page to the top
+- A button to copy the link to a post to the clipboard has been added
+
+### Attribution
+This release was made possible by project contributors: Lilian
+
 ## v2024.1-beta3
 This release contains lots of new features & bugfixes. Upgrading is recommended for all server operators.
 
