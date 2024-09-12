@@ -85,6 +85,9 @@
             <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
                 <Text>@Loc["Open original page"]</Text>
             </MenuElement>
+            <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
+                <Text>@Loc["Copy link"]</Text>
+            </MenuElement>
             <MenuElement Icon="Icons.SpeakerX" OnSelect="Note.Mute">
                 <Text>@Loc["Mute Note"]</Text>
             </MenuElement>
@@ -110,6 +113,8 @@
     private void Delete() => _ = Note.Delete();
 
     private void OpenOriginal() => Js.InvokeVoidAsync("open", Note.NoteResponse.Url, "_blank");
+
+    private void CopyLink() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.NoteResponse.Url);
 
     private void Like()
     { 
