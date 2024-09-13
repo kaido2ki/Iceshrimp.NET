@@ -144,6 +144,7 @@ public static class MfmRenderer
 	{
 		var el = document.CreateElement("a");
 		el.SetAttribute("href", node.Url);
+		el.SetAttribute("target", "_blank");
 		el.ClassName = "link-node";
 		return el;
 	}
@@ -182,6 +183,7 @@ public static class MfmRenderer
 	{
 		var el = document.CreateElement("a");
 		el.SetAttribute("href", node.Url);
+		el.SetAttribute("target", "_blank");
 		el.ClassName   = "url-node";
 		el.TextContent = node.Url;
 		return el;
