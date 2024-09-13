@@ -39,7 +39,7 @@ public sealed class Config
 		[Required]         public string  AccountDomain  { get; init; } = null!;
 		[Range(1, 100000)] public int     CharacterLimit { get; init; } = 8192;
 
-		private string? AdditionalDomains
+		public string? AdditionalDomains
 		{
 			get => string.Join(',', AdditionalDomainsArray);
 			init => AdditionalDomainsArray = value?.Split(',').Select(p => p.Trim()).ToArray() ?? [];
