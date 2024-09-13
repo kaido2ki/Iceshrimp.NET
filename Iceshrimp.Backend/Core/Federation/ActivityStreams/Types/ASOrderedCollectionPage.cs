@@ -8,9 +8,9 @@ using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectCo
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASOrderedCollectionPage : ASObject
+public class ASOrderedCollectionPage : ASCollectionPage
 {
-	public const string ObjectType = $"{Constants.ActivityStreamsNs}#OrderedCollectionPage";
+	public new const string ObjectType = $"{Constants.ActivityStreamsNs}#OrderedCollectionPage";
 
 	[JsonConstructor]
 	public ASOrderedCollectionPage(bool withType = true) => Type = withType ? ObjectType : null;
@@ -19,24 +19,12 @@ public class ASOrderedCollectionPage : ASObject
 	public ASOrderedCollectionPage(string id, bool withType = false) : this(withType) => Id = id;
 
 	[J($"{Constants.ActivityStreamsNs}#items")]
-	[JC(typeof(ASCollectionItemsConverter))]
-	public List<ASObject>? Items { get; set; }
-
-	[J($"{Constants.ActivityStreamsNs}#totalItems")]
-	[JC(typeof(VC))]
-	public ulong? TotalItems { get; set; }
-
-	[J($"{Constants.ActivityStreamsNs}#partOf")]
-	[JC(typeof(ASLinkConverter))]
-	public ASLink? PartOf { get; set; }
-
-	[J($"{Constants.ActivityStreamsNs}#prev")]
-	[JC(typeof(ASLinkConverter))]
-	public ASLink? Prev { get; set; }
-
-	[J($"{Constants.ActivityStreamsNs}#next")]
-	[JC(typeof(ASLinkConverter))]
-	public ASLink? Next { get; set; }
+	[JC(typeof(ASOrderedCollectionItemsConverter))]
+	public new List<ASObject>? Items
+	{
+		get => base.Items;
+		set => base.Items = value;
+	}
 }
 
 public sealed class ASOrderedCollectionPageConverter : JsonConverter

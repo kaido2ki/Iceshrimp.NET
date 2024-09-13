@@ -31,12 +31,12 @@ public class ASCollection : ASObject
 	public ASLink? Current { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#first")]
-	[JC(typeof(ASLinkConverter))]
-	public ASLink? First { get; set; }
+	[JC(typeof(ASCollectionPageConverter))]
+	public ASCollectionPage? First { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#last")]
-	[JC(typeof(ASLinkConverter))]
-	public ASLink? Last { get; set; }
+	[JC(typeof(ASCollectionPageConverter))]
+	public ASCollectionPage? Last { get; set; }
 
 	public new bool IsUnresolved => !TotalItems.HasValue;
 }

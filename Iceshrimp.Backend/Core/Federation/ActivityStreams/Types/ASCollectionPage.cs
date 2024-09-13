@@ -27,16 +27,16 @@ public class ASCollectionPage : ASObject
 	public ulong? TotalItems { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#partOf")]
-	[JC(typeof(ASLinkConverter))]
-	public ASLink? PartOf { get; set; }
+	[JC(typeof(ASCollectionConverter))]
+	public ASCollection? PartOf { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#prev")]
-	[JC(typeof(ASLinkConverter))]
-	public ASLink? Prev { get; set; }
+	[JC(typeof(ASCollectionPageConverter))]
+	public ASCollectionPage? Prev { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#next")]
-	[JC(typeof(ASLinkConverter))]
-	public ASLink? Next { get; set; }
+	[JC(typeof(ASCollectionPageConverter))]
+	public ASCollectionPage? Next { get; set; }
 }
 
 public sealed class ASCollectionPageConverter : JsonConverter
@@ -55,10 +55,7 @@ public sealed class ASCollectionPageConverter : JsonConverter
 	{
 		if (reader.TokenType == JsonToken.StartArray)
 		{
-			var obj       = JArray.Load(reader);
-			var valueList = obj.ToObject<List<LDValueObject<object?>>>();
-			if (valueList is { Count: > 0 })
-				return VC.HandleObject(valueList[0], objectType);
+			var obj  = JArray.Load(reader);
 			var list = obj.ToObject<List<ASCollectionPage?>>();
 			return list == null || list.Count == 0 ? null : list[0];
 		}
