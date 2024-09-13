@@ -6,6 +6,12 @@ using Iceshrimp.Shared.Helpers;
 
 namespace Iceshrimp.Backend.Core.Configuration;
 
+[SuppressMessage("ReSharper", "UnusedMember.Local")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
+[SuppressMessage("ReSharper", "AutoPropertyCanBeMadeGetOnly.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public sealed class Config
 {
 	public required InstanceSection    Instance    { get; init; } = new();
@@ -26,15 +32,20 @@ public sealed class Config
 		public string  Version    => _versionInfo.Version;
 		public string  UserAgent  => $"Iceshrimp.NET/{Version} (+https://{WebDomain}/)";
 
-		[Range(1, 65535)] public  int     ListenPort      { get; init; } = 3000;
-		[Required]        public  string  ListenHost      { get; init; } = "localhost";
-		public                    string? ListenSocket    { get; init; }
-		[Required]         public string  WebDomain       { get; init; } = null!;
-		[Required]         public string  AccountDomain   { get; init; } = null!;
-		[Range(1, 100000)] public int     CharacterLimit  { get; init; } = 8192;
-		public                    string? ExtraWebDomains { get; init; }
+		[Range(1, 65535)] public  int     ListenPort     { get; init; } = 3000;
+		[Required]        public  string  ListenHost     { get; init; } = "localhost";
+		public                    string? ListenSocket   { get; init; }
+		[Required]         public string  WebDomain      { get; init; } = null!;
+		[Required]         public string  AccountDomain  { get; init; } = null!;
+		[Range(1, 100000)] public int     CharacterLimit { get; init; } = 8192;
 
-		public string[] ExtraWebDomainsArray => ExtraWebDomains?.Split(',') ?? [];
+		private string? AdditionalDomains
+		{
+			get => string.Join(',', AdditionalDomainsArray);
+			init => AdditionalDomainsArray = value?.Split(',') ?? [];
+		}
+
+		public string[] AdditionalDomainsArray { get; private init; } = [];
 	}
 
 	public sealed class SecuritySection

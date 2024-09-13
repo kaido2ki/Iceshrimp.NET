@@ -22,7 +22,7 @@ public class RequestVerificationMiddleware(
 	public bool IsValid(HttpRequest rq)
 	{
 		if (rq.Host.Host == config.Value.WebDomain) return true;
-		if (config.Value.ExtraWebDomainsArray.Contains(rq.Host.Host)) return true;
+		if (config.Value.AdditionalDomainsArray.Contains(rq.Host.Host)) return true;
 		if (rq.Host.Host == config.Value.AccountDomain && rq.Path.StartsWithSegments("/.well-known"))
 		{
 			if (rq.Path == "/.well-known/webfinger") return true;
