@@ -8,7 +8,7 @@ public static class VersionHelpers
 {
 	public static VersionInfo GetVersionInfo()
 	{
-		var attributes = Assembly.GetCallingAssembly()
+		var attributes = Assembly.GetExecutingAssembly()
 		                         .GetCustomAttributes()
 		                         .ToList();
 
