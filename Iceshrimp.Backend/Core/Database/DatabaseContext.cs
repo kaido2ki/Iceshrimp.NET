@@ -141,7 +141,21 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		DbContextOptionsBuilder optionsBuilder, NpgsqlDataSource dataSource, Config.DatabaseSection config
 	)
 	{
-		optionsBuilder.UseNpgsql(dataSource);
+		optionsBuilder.UseNpgsql(dataSource, options =>
+		{
+			options.MapEnum<Antenna.AntennaSource>("antenna_src_enum");
+			options.MapEnum<Note.NoteVisibility>("note_visibility_enum");
+			options.MapEnum<Notification.NotificationType>("notification_type_enum");
+			options.MapEnum<Page.PageVisibility>("page_visibility_enum");
+			options.MapEnum<Relay.RelayStatus>("relay_status_enum");
+			options.MapEnum<UserProfile.UserProfileFFVisibility>("user_profile_ffvisibility_enum");
+			options.MapEnum<Marker.MarkerType>("marker_type_enum");
+			options.MapEnum<PushSubscription.PushPolicy>("push_subscription_policy_enum");
+			options.MapEnum<Job.JobStatus>("job_status");
+			options.MapEnum<Filter.FilterContext>("filter_context_enum");
+			options.MapEnum<Filter.FilterAction>("filter_action_enum");
+		});
+
 		optionsBuilder.UseProjectables(options => { options.CompatibilityMode(CompatibilityMode.Full); });
 		optionsBuilder.UseExceptionProcessor();
 
