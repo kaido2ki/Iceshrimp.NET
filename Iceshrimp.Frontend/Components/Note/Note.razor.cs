@@ -187,7 +187,7 @@ public partial class Note : IDisposable
 		await ApiService.Notes.DeleteNote(NoteResponse.Id);
 		await MessageSvc.DeleteNote(NoteResponse);
 	}
-	
+
 	private void ShowNote()
 	{
 		_overrideHide = !_overrideHide;

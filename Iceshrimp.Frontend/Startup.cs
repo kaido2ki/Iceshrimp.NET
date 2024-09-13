@@ -40,7 +40,7 @@ CultureInfo.DefaultThreadCurrentCulture   = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;
 
 var logger = host.Services.GetRequiredService<ILoggerFactory>()
-				 .CreateLogger<Program>();
+                 .CreateLogger<Program>();
 
 logger.LogInformation("Starting Iceshrimp.Frontend");
 await host.RunAsync();

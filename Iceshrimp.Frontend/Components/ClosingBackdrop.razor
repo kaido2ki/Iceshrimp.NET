@@ -1,8 +1,8 @@
 <div @onclick="Close" @onclick:stopPropagation="true" class="backdrop @(Darken ? "darken" : "")"></div>
 
 @code {
-    [Parameter][EditorRequired] public required EventCallback OnClose { get; set; }
-    [Parameter]                 public          bool          Darken  { get; set; }
+    [Parameter] [EditorRequired] public required EventCallback OnClose { get; set; }
+    [Parameter]                  public          bool          Darken  { get; set; }
 
     private void Close()
     {

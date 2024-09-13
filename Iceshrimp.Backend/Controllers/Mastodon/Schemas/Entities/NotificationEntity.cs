@@ -1,8 +1,8 @@
+using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using static Iceshrimp.Backend.Core.Database.Tables.Notification;
-using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
@@ -14,8 +14,8 @@ public class NotificationEntity : IEntity
 	[J("status")]     public required StatusEntity?                 Note      { get; set; }
 	[J("id")]         public required string                        Id        { get; set; }
 	[J("pleroma")]    public required PleromaNotificationExtensions Pleroma   { get; set; }
-	[J("emoji")]      public string?                                Emoji     { get; set; }
-	[J("emoji_url")]  public string?                                EmojiUrl  { get; set; }
+	[J("emoji")]      public          string?                       Emoji     { get; set; }
+	[J("emoji_url")]  public          string?                       EmojiUrl  { get; set; }
 
 	public static string EncodeType(NotificationType type, bool isPleroma)
 	{

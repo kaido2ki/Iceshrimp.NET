@@ -1,11 +1,11 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
-@using Iceshrimp.Assets.PhosphorIcons
-@using Iceshrimp.Frontend.Core.Services
 @inject IStringLocalizer<Localization> Loc;
 @inject ApiService                     Api;
-@inject NavigationManager NavigationManager;
+@inject NavigationManager              NavigationManager;
 
 
 <div class="follow-request-card">
@@ -33,7 +33,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var profile = await Api.Users.GetUserProfile(FollowRequest.User.Id);
+        var profile                      = await Api.Users.GetUserProfile(FollowRequest.User.Id);
         if (profile != null) _followBack = profile.Relations.HasFlag(Relations.None);
     }
 
@@ -42,7 +42,7 @@
         await Api.FollowRequests.AcceptFollowRequest(FollowRequest.Id);
         await OnDelete.InvokeAsync(FollowRequest.Id);
     }
-    
+
     private async void AcceptAndFollowBack()
     {
         await Api.FollowRequests.AcceptFollowRequest(FollowRequest.Id);

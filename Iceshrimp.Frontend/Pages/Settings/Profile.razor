@@ -1,14 +1,13 @@
 @page "/settings/profile"
-@attribute [Authorize]
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
-@using Microsoft.Extensions.Localization
-@using Iceshrimp.Assets.PhosphorIcons
-@using Iceshrimp.Frontend.Components
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.Extensions.Logging
+@using Microsoft.Extensions.Localization
+@attribute [Authorize]
 @layout SettingsLayout
 @inject ApiService                     Api;
 @inject ILogger<Profile>               Logger;
@@ -47,13 +46,21 @@
             <input class="input" @bind="@FieldValue"/>
             <button @onclick="AddField">@Loc["Add Field"]</button>
         </div>
-        
+
         <div class="section">
             <StateButton OnClick="SaveChanges" @ref="SaveButton">
-                <Initial><Icon Name="Icons.FloppyDisk"/>@Loc["Save"]</Initial>
-                <Loading><Icon Name="Icons.Spinner"/></Loading>
-                <Failed><Icon Name="Icons.X" />@Loc["Error"]</Failed>
-                <Success><Icon Name="Icons.Check"/>@Loc["Saved"]</Success>
+                <Initial>
+                    <Icon Name="Icons.FloppyDisk"/>@Loc["Save"]
+                </Initial>
+                <Loading>
+                    <Icon Name="Icons.Spinner"/>
+                </Loading>
+                <Failed>
+                    <Icon Name="Icons.X"/>@Loc["Error"]
+                </Failed>
+                <Success>
+                    <Icon Name="Icons.Check"/>@Loc["Saved"]
+                </Success>
             </StateButton>
         </div>
     }

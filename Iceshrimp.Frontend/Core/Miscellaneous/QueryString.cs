@@ -9,19 +9,19 @@ namespace Iceshrimp.Frontend.Core.Miscellaneous;
 // Adapted under MIT from https://raw.githubusercontent.com/dotnet/aspnetcore/3f1acb59718cadf111a0a796681e3d3509bb3381/src/Http/Http.Abstractions/src/QueryString.cs
 
 /// <summary>
-/// Provides correct handling for QueryString value when needed to reconstruct a request or redirect URI string
+///     Provides correct handling for QueryString value when needed to reconstruct a request or redirect URI string
 /// </summary>
 [DebuggerDisplay("{Value}")]
 public readonly struct QueryString : IEquatable<QueryString>
 {
 	/// <summary>
-	/// Represents the empty query string. This field is read-only.
+	///     Represents the empty query string. This field is read-only.
 	/// </summary>
 	public static readonly QueryString Empty = new(string.Empty);
 
 	/// <summary>
-	/// Initialize the query string with a given value. This value must be in escaped and delimited format with
-	/// a leading '?' character.
+	///     Initialize the query string with a given value. This value must be in escaped and delimited format with
+	///     a leading '?' character.
 	/// </summary>
 	/// <param name="value">The query string to be assigned to the Value property.</param>
 	public QueryString(string? value)
@@ -35,20 +35,20 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// The escaped query string with the leading '?' character
+	///     The escaped query string with the leading '?' character
 	/// </summary>
 	public string? Value { get; }
 
 	/// <summary>
-	/// True if the query string is not empty
+	///     True if the query string is not empty
 	/// </summary>
 	[MemberNotNullWhen(true, nameof(Value))]
 	public bool HasValue => !string.IsNullOrEmpty(Value);
 
 	/// <summary>
-	/// Provides the query string escaped in a way which is correct for combining into the URI representation.
-	/// A leading '?' character will be included unless the Value is null or empty. Characters which are potentially
-	/// dangerous are escaped.
+	///     Provides the query string escaped in a way which is correct for combining into the URI representation.
+	///     A leading '?' character will be included unless the Value is null or empty. Characters which are potentially
+	///     dangerous are escaped.
 	/// </summary>
 	/// <returns>The query string value</returns>
 	public override string ToString()
@@ -57,9 +57,9 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Provides the query string escaped in a way which is correct for combining into the URI representation.
-	/// A leading '?' character will be included unless the Value is null or empty. Characters which are potentially
-	/// dangerous are escaped.
+	///     Provides the query string escaped in a way which is correct for combining into the URI representation.
+	///     A leading '?' character will be included unless the Value is null or empty. Characters which are potentially
+	///     dangerous are escaped.
 	/// </summary>
 	/// <returns>The query string value</returns>
 	public string ToUriComponent()
@@ -69,8 +69,8 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Returns an QueryString given the query as it is escaped in the URI format. The string MUST NOT contain any
-	/// value that is not a query.
+	///     Returns an QueryString given the query as it is escaped in the URI format. The string MUST NOT contain any
+	///     value that is not a query.
 	/// </summary>
 	/// <param name="uriComponent">The escaped query as it appears in the URI format.</param>
 	/// <returns>The resulting QueryString</returns>
@@ -85,7 +85,7 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Returns an QueryString given the query as from a Uri object. Relative Uri objects are not supported.
+	///     Returns an QueryString given the query as from a Uri object. Relative Uri objects are not supported.
 	/// </summary>
 	/// <param name="uri">The Uri object</param>
 	/// <returns>The resulting QueryString</returns>
@@ -93,7 +93,7 @@ public readonly struct QueryString : IEquatable<QueryString>
 	{
 		ArgumentNullException.ThrowIfNull(uri);
 
-		string queryValue = uri.GetComponents(UriComponents.Query, UriFormat.UriEscaped);
+		var queryValue = uri.GetComponents(UriComponents.Query, UriFormat.UriEscaped);
 		if (!string.IsNullOrEmpty(queryValue))
 		{
 			queryValue = "?" + queryValue;
@@ -103,7 +103,7 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Create a query string with a single given parameter name and value.
+	///     Create a query string with a single given parameter name and value.
 	/// </summary>
 	/// <param name="name">The un-encoded parameter name</param>
 	/// <param name="value">The un-encoded parameter value</param>
@@ -121,7 +121,7 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Creates a query string composed from the given name value pairs.
+	///     Creates a query string composed from the given name value pairs.
 	/// </summary>
 	/// <param name="parameters"></param>
 	/// <returns>The resulting QueryString</returns>
@@ -139,7 +139,7 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Creates a query string composed from the given name value pairs.
+	///     Creates a query string composed from the given name value pairs.
 	/// </summary>
 	/// <param name="parameters"></param>
 	/// <returns>The resulting QueryString</returns>
@@ -170,10 +170,10 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Concatenates <paramref name="other"/> to the current query string.
+	///     Concatenates <paramref name="other" /> to the current query string.
 	/// </summary>
-	/// <param name="other">The <see cref="QueryString"/> to concatenate.</param>
-	/// <returns>The concatenated <see cref="QueryString"/>.</returns>
+	/// <param name="other">The <see cref="QueryString" /> to concatenate.</param>
+	/// <returns>The concatenated <see cref="QueryString" />.</returns>
 	public QueryString Add(QueryString other)
 	{
 		if (!HasValue || Value.Equals("?", StringComparison.Ordinal))
@@ -191,12 +191,12 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Concatenates a query string with <paramref name="name"/> and <paramref name="value"/>
-	/// to the current query string.
+	///     Concatenates a query string with <paramref name="name" /> and <paramref name="value" />
+	///     to the current query string.
 	/// </summary>
 	/// <param name="name">The name of the query string to concatenate.</param>
 	/// <param name="value">The value of the query string to concatenate.</param>
-	/// <returns>The concatenated <see cref="QueryString"/>.</returns>
+	/// <returns>The concatenated <see cref="QueryString" />.</returns>
 	public QueryString Add(string name, string value)
 	{
 		ArgumentNullException.ThrowIfNull(name);
@@ -212,10 +212,10 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Evalutes if the current query string is equal to <paramref name="other"/>.
+	///     Evalutes if the current query string is equal to <paramref name="other" />.
 	/// </summary>
-	/// <param name="other">The <see cref="QueryString"/> to compare.</param>
-	/// <returns><see langword="true"/> if the query strings are equal.</returns>
+	/// <param name="other">The <see cref="QueryString" /> to compare.</param>
+	/// <returns><see langword="true" /> if the query strings are equal.</returns>
 	public bool Equals(QueryString other)
 	{
 		if (!HasValue && !other.HasValue)
@@ -227,7 +227,7 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Evaluates if the current query string is equal to an object <paramref name="obj"/>.
+	///     Evaluates if the current query string is equal to an object <paramref name="obj" />.
 	/// </summary>
 	/// <param name="obj">An object to compare.</param>
 	/// <returns><see langword="true" /> if the query strings are equal.</returns>
@@ -242,19 +242,19 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Gets a hash code for the value.
+	///     Gets a hash code for the value.
 	/// </summary>
-	/// <returns>The hash code as an <see cref="int"/>.</returns>
+	/// <returns>The hash code as an <see cref="int" />.</returns>
 	public override int GetHashCode()
 	{
-		return (HasValue ? Value.GetHashCode() : 0);
+		return HasValue ? Value.GetHashCode() : 0;
 	}
 
 	/// <summary>
-	/// Evaluates if one query string is equal to another.
+	///     Evaluates if one query string is equal to another.
 	/// </summary>
-	/// <param name="left">A <see cref="QueryString"/> instance.</param>
-	/// <param name="right">A <see cref="QueryString"/> instance.</param>
+	/// <param name="left">A <see cref="QueryString" /> instance.</param>
+	/// <param name="right">A <see cref="QueryString" /> instance.</param>
 	/// <returns><see langword="true" /> if the query strings are equal.</returns>
 	public static bool operator ==(QueryString left, QueryString right)
 	{
@@ -262,10 +262,10 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Evaluates if one query string is not equal to another.
+	///     Evaluates if one query string is not equal to another.
 	/// </summary>
-	/// <param name="left">A <see cref="QueryString"/> instance.</param>
-	/// <param name="right">A <see cref="QueryString"/> instance.</param>
+	/// <param name="left">A <see cref="QueryString" /> instance.</param>
+	/// <param name="right">A <see cref="QueryString" /> instance.</param>
 	/// <returns><see langword="true" /> if the query strings are not equal.</returns>
 	public static bool operator !=(QueryString left, QueryString right)
 	{
@@ -273,11 +273,11 @@ public readonly struct QueryString : IEquatable<QueryString>
 	}
 
 	/// <summary>
-	/// Concatenates <paramref name="left"/> and <paramref name="right"/> into a single query string.
+	///     Concatenates <paramref name="left" /> and <paramref name="right" /> into a single query string.
 	/// </summary>
-	/// <param name="left">A <see cref="QueryString"/> instance.</param>
-	/// <param name="right">A <see cref="QueryString"/> instance.</param>
-	/// <returns>The concatenated <see cref="QueryString"/>.</returns>
+	/// <param name="left">A <see cref="QueryString" /> instance.</param>
+	/// <param name="right">A <see cref="QueryString" /> instance.</param>
+	/// <returns>The concatenated <see cref="QueryString" />.</returns>
 	public static QueryString operator +(QueryString left, QueryString right)
 	{
 		return left.Add(right);

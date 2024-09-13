@@ -33,7 +33,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		MastodonPaginationQuery query, NotificationSchemas.GetNotificationsRequest request
 	)
 	{
-		var user = HttpContext.GetUserOrFail();
+		var user      = HttpContext.GetUserOrFail();
 		var isPleroma = HttpContext.GetOauthToken()!.IsPleroma;
 
 		return await db.Notifications
@@ -65,7 +65,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<NotificationEntity> GetNotification(long id)
 	{
-		var user = HttpContext.GetUserOrFail();
+		var user      = HttpContext.GetUserOrFail();
 		var isPleroma = HttpContext.GetOauthToken()!.IsPleroma;
 
 		var notification = await db.Notifications
@@ -76,7 +76,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                           .FirstOrDefaultAsync() ??
 		                   throw GracefulException.RecordNotFound();
 
-		var res = await notificationRenderer.RenderAsync(notification.EnforceRenoteReplyVisibility(p => p.Note), user, isPleroma);
-		return res;
+		return await notificationRenderer.RenderAsync(notification.EnforceRenoteReplyVisibility(p => p.Note),
+		                                              user, isPleroma);
 	}
 }

@@ -1,13 +1,13 @@
+@inject IStringLocalizer<Localization> Loc;
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
-@inject IStringLocalizer<Localization> Loc;
 @implements IDisposable
 @inject NavigationManager              Navigation;
 
 <GlobalComponents></GlobalComponents>
-<div @ref="SidebarElementRef" class="sidebar @(_open ? "open" : "")" tabindex=0>
+<div @ref="SidebarElementRef" class="sidebar @(_open ? "open" : "")" tabindex="0">
     <div class="header">
         <account-dropdown/>
     </div>
@@ -49,7 +49,7 @@
     </button>
     @if (_open)
     {
-        <ClosingBackdrop OnClose="Close" />
+        <ClosingBackdrop OnClose="Close"/>
     }
 </div>
 

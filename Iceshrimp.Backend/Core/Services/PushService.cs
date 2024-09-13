@@ -90,7 +90,7 @@ public class PushService(
 				"reaction" when rendered.Emoji is null     => $"{name} reacted to your post",
 				"reaction" when rendered.Emoji is not null => $"{name} reacted with {rendered.Emoji} to your post",
 
-				_                => $"New notification from {name}"
+				_ => $"New notification from {name}"
 			};
 
 			var body = "";

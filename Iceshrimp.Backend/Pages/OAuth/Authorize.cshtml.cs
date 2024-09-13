@@ -17,11 +17,11 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 	public                                     List<string> Scopes = [];
 	public                                     OauthToken?  Token;
 	public                                     List<User>   AuthenticatedUsers = [];
-	[FromQuery(Name = "response_type")] public string       ResponseType  { get; set; } = null!;
-	[FromQuery(Name = "client_id")]     public string       ClientId      { get; set; } = null!;
-	[FromQuery(Name = "redirect_uri")]  public string       RedirectUri   { get; set; } = null!;
-	[FromQuery(Name = "force_login")]   public bool         ForceLogin    { get; set; } = false;
-	[FromQuery(Name = "lang")]          public string?      Language      { get; set; }
+	[FromQuery(Name = "response_type")] public string       ResponseType { get; set; } = null!;
+	[FromQuery(Name = "client_id")]     public string       ClientId     { get; set; } = null!;
+	[FromQuery(Name = "redirect_uri")]  public string       RedirectUri  { get; set; } = null!;
+	[FromQuery(Name = "force_login")]   public bool         ForceLogin   { get; set; } = false;
+	[FromQuery(Name = "lang")]          public string?      Language     { get; set; }
 
 	[FromQuery(Name = "scope")]
 	public string Scope
@@ -91,7 +91,7 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 			RedirectUri            = RedirectUri,
 			AutoDetectQuotes       = autoDetectQuotes,
 			SupportsHtmlFormatting = supportsHtmlFormatting,
-			IsPleroma              = isPleroma,
+			IsPleroma              = isPleroma
 		};
 
 		await db.AddAsync(token);

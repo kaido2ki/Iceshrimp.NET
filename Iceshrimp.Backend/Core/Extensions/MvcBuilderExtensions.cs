@@ -104,7 +104,7 @@ public static class MvcBuilderExtensions
 }
 
 /// <summary>
-/// Overrides the default OutputFormatterSelector, to make sure we return a body when content negotiation errors occur.
+///     Overrides the default OutputFormatterSelector, to make sure we return a body when content negotiation errors occur.
 /// </summary>
 public class AcceptHeaderOutputFormatterSelector(
 	IOptions<MvcOptions> options,

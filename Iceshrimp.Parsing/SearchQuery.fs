@@ -4,9 +4,7 @@ open System
 open FParsec
 
 module SearchQueryFilters =
-    type Filter() =
-        class
-        end
+    type Filter() = class end
 
     type WordFilter(neg: bool, value: string) =
         inherit Filter()

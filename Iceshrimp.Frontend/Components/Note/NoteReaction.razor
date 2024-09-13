@@ -16,12 +16,12 @@
 </button>
 
 @code {
-    [Parameter] [EditorRequired] public required NoteReactionSchema Reaction      { get; set; }
-    [CascadingParameter]                         Note      Note { get; set; } = null!;
+    [Parameter] [EditorRequired] public required NoteReactionSchema Reaction { get; set; }
+    [CascadingParameter]                         Note               Note     { get; set; } = null!;
 
     private void React()
     {
         if (Reaction.Reacted) _ = Note.RemoveReact(Reaction.Name);
-        else _ = Note.AddReact(Reaction.Name, Reaction.Url);
+        else _                  = Note.AddReact(Reaction.Name, Reaction.Url);
     }
 }

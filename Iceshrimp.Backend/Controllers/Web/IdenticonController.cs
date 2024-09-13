@@ -31,7 +31,6 @@ public class IdenticonController : ControllerBase
 		var gradient = new LinearGradientBrush(new Point(0, 0), new Point(Size, Size), GradientRepetitionMode.None,
 		                                       new ColorStop(0, color.start), new ColorStop(1, color.end));
 
-
 		image.Mutate(p => p.Fill(gradient));
 
 		var paint = new SolidBrush(Color.White);

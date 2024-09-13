@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -162,10 +163,7 @@ public class NoteRenderer(
 			Poll             = poll,
 			Reactions        = reactions,
 			Filtered         = filterResult,
-			Pleroma          = new() {
-				Reactions      = reactions,
-				ConversationId = note.ThreadIdOrId
-			}
+			Pleroma          = new PleromaStatusExtensions { Reactions = reactions, ConversationId = note.ThreadIdOrId }
 		};
 
 		return res;
@@ -321,7 +319,11 @@ public class NoteRenderer(
 			                       db.NoteReactions.Any(i => i.NoteId == p.First().NoteId &&
 			                                                 i.Reaction == p.First().Reaction &&
 			                                                 i.User == user),
-							  AccountIds = db.NoteReactions.Where(i => i.NoteId == p.First().NoteId && p.Select(r => r.Id).Contains(i.Id)).Select(i => i.UserId).ToList()
+			                  AccountIds = db.NoteReactions
+			                                 .Where(i => i.NoteId == p.First().NoteId &&
+			                                             p.Select(r => r.Id).Contains(i.Id))
+			                                 .Select(i => i.UserId)
+			                                 .ToList()
 		                  })
 		                  .ToListAsync();
 

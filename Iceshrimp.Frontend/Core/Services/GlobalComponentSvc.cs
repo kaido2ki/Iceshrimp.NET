@@ -1,4 +1,5 @@
 using Iceshrimp.Frontend.Components;
+
 namespace Iceshrimp.Frontend.Core.Services;
 
 public class GlobalComponentSvc

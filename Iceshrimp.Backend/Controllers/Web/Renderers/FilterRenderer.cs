@@ -12,7 +12,7 @@ public static class FilterRenderer
 		Expiry   = filter.Expiry,
 		Keywords = filter.Keywords,
 		Action   = (FilterResponse.FilterAction)filter.Action,
-		Contexts = filter.Contexts.Cast<FilterResponse.FilterContext>().ToList(),
+		Contexts = filter.Contexts.Cast<FilterResponse.FilterContext>().ToList()
 	};
 
 	public static IEnumerable<FilterResponse> RenderMany(IEnumerable<Filter> filters) => filters.Select(RenderOne);

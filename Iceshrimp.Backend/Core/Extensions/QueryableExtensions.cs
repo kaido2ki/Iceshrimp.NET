@@ -537,7 +537,7 @@ public static class QueryableExtensions
 	)
 	{
 		if (request.ExcludeReplies)
-			query = query.Where(p => p.Reply == null && p.ReplyUri == null || p.ReplyUserId == p.UserId);
+			query = query.Where(p => (p.Reply == null && p.ReplyUri == null) || p.ReplyUserId == p.UserId);
 		if (request.ExcludeRenotes)
 			query = query.Where(p => p.Renote == null && p.RenoteUri == null);
 		if (request.Tagged != null)

@@ -43,7 +43,7 @@ internal sealed class ASOrderedCollectionItemsConverter : ASCollectionItemsConve
 		serializer.Serialize(writer, value);
 		writer.WriteEndObject();
 	}
-	
+
 	public override object? ReadJson(
 		JsonReader reader, Type objectType, object? existingValue,
 		JsonSerializer serializer

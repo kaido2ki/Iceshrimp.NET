@@ -4,7 +4,7 @@
 @using Iceshrimp.Shared.Schemas.Web
 @inject NavigationManager NavigationManager
 @inject MessageService    MessageService
-@inject ApiService Api
+@inject ApiService        Api
 @implements IDisposable
 
 @if (_hidden == false)
@@ -80,14 +80,14 @@
             _indented = true;
         }
         // If the note is filtered, we don't want to render its tree, and hide this note.
-        
+
         if (Note.Filtered is { Hide: true })
         {
             Note.Descendants = null;
             _hidden          = true;
         }
     }
-    
+
     private void OnNoteChanged(object? _, NoteResponse note)
     {
         var __ = Refresh();
@@ -101,7 +101,6 @@
             Note.Descendants = res;
             StateHasChanged();
         }
-
     }
 
     private void OpenNote()

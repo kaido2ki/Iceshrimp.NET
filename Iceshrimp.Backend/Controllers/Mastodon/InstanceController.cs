@@ -3,6 +3,7 @@ using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -33,15 +34,14 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 
 		var (instanceName, instanceDescription, adminContact) =
 			await meta.GetMany(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
-		var vapidKey = await meta.Get(MetaEntity.VapidPublicKey); // can't merge with above call since they're all nullable and this is not.
+
+		// can't merge with above call since they're all nullable and this is not.
+		var vapidKey = await meta.Get(MetaEntity.VapidPublicKey);
 
 		return new InstanceInfoV1Response(config.Value, instanceName, instanceDescription, adminContact)
 		{
 			Stats   = new InstanceStats(userCount, noteCount, instanceCount),
-			Pleroma = new() {
-				VapidPublicKey = vapidKey,
-				Metadata       = new(),
-			}
+			Pleroma = new PleromaInstanceExtensions { VapidPublicKey = vapidKey, Metadata = new InstanceMetadata() }
 		};
 	}
 

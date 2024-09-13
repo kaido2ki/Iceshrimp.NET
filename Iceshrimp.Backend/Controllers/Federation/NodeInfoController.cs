@@ -16,7 +16,11 @@ namespace Iceshrimp.Backend.Controllers.Federation;
 [Route("/nodeinfo")]
 [EnableCors("well-known")]
 [Produces(MediaTypeNames.Application.Json)]
-public class NodeInfoController(IOptions<Config.InstanceSection> instanceConfig, IOptions<Config.StorageSection> storageConfig, DatabaseContext db) : ControllerBase
+public class NodeInfoController(
+	IOptions<Config.InstanceSection> instanceConfig,
+	IOptions<Config.StorageSection> storageConfig,
+	DatabaseContext db
+) : ControllerBase
 {
 	[HttpGet("2.1")]
 	[HttpGet("2.0")]
@@ -36,7 +40,7 @@ public class NodeInfoController(IOptions<Config.InstanceSection> instanceConfig,
 			await db.Users.LongCountAsync(p => p.IsLocalUser &&
 			                                   !Constants.SystemUsers.Contains(p.UsernameLower) &&
 			                                   p.LastActiveDate > cutoffHalfYear);
-		var localPosts = await db.Notes.LongCountAsync(p => p.UserHost == null);
+		var localPosts    = await db.Notes.LongCountAsync(p => p.UserHost == null);
 		var maxUploadSize = storageConfig.Value.MaxUploadSizeBytes;
 
 		return new NodeInfoResponse
@@ -92,30 +96,30 @@ public class NodeInfoController(IOptions<Config.InstanceSection> instanceConfig,
 				EnableGithubIntegration    = false,
 				EnableDiscordIntegration   = false,
 				EnableEmail                = false,
-				PublicTimelineVisibility   = new() {
+				PublicTimelineVisibility = new NodeInfoResponse.PleromaPublicTimelineVisibility
+				{
 					Bubble    = false,
 					Federated = false,
-					Local     = false,
+					Local     = false
 				},
-				UploadLimits               = new() {
+				// @formatter:off
+				UploadLimits = new NodeInfoResponse.PleromaUploadLimits
+				{
 					General    = maxUploadSize,
 					Avatar     = maxUploadSize,
 					Background = maxUploadSize,
-					Banner     = maxUploadSize,
+					Banner     = maxUploadSize
 				},
-				Suggestions                = new() {
-					Enabled = false
-				},
-				Federation                 = new() {
-					Enabled = true
-				}
+				// @formatter:on
+				Suggestions = new NodeInfoResponse.PleromaSuggestions { Enabled = false },
+				Federation  = new NodeInfoResponse.PleromaFederation { Enabled  = true }
 			},
 			OpenRegistrations = false
 		};
 	}
 
 	[HttpGet("2.0.json")]
-	public IActionResult GetNodeInfoAkkoFE()
+	public IActionResult GetNodeInfoAkkoma()
 	{
 		return Redirect("/nodeinfo/2.0");
 	}

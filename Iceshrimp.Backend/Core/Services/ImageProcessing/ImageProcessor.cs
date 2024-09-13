@@ -81,6 +81,7 @@ public class ImageProcessor
 				_logger.LogWarning("No image processor supports the format {format}, skipping", p.Format.MimeType);
 				return null;
 			}
+
 			return async () =>
 			{
 				if (_concurrency is 0)

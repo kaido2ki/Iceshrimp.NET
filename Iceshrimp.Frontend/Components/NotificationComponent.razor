@@ -7,7 +7,7 @@
 @inject NavigationManager              NavigationManager
 
 <div class="notification">
-    @if (NotificationResponse is { User: not null, Type: "like" or "follow" or "reaction" or "followRequestReceived" or "followRequestAccepted"})
+    @if (NotificationResponse is { User: not null, Type: "like" or "follow" or "reaction" or "followRequestReceived" or "followRequestAccepted" })
     {
         <img class="user-avatar" src="@NotificationResponse.User.AvatarUrl"/>
         <div class="notification-body">
@@ -85,7 +85,7 @@
 
     private void OpenProfile()
     {
-        var username                    = $"@{NotificationResponse.User?.Username}";
+        var username                                          = $"@{NotificationResponse.User?.Username}";
         if (NotificationResponse.User?.Host != null) username += $"@{NotificationResponse.User.Host}";
         NavigationManager.NavigateTo($"/{username}");
     }

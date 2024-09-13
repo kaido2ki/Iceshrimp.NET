@@ -111,7 +111,7 @@ public class ImageSharpProcessor : ImageProcessorBase, IImageProcessor
 	{
 		var width  = Math.Min(ident.Width, targetWidth);
 		var height = Math.Min(ident.Height, targetHeight ?? targetWidth);
-		var size = new Size(width, height);
+		var size   = new Size(width, height);
 		var options = new DecoderOptions
 		{
 			MaxFrames     = 1,

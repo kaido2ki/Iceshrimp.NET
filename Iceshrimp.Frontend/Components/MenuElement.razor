@@ -1,5 +1,4 @@
 @using Iceshrimp.Assets.PhosphorIcons
-
 <div @onclick="OnClick" class="menu-element">
     @if (Icon != null)
     {
@@ -7,6 +6,7 @@
     }
     @Text
 </div>
+
 @code {
     [Parameter]                  public          IconName?      Icon     { get; set; }
     [Parameter] [EditorRequired] public required RenderFragment Text     { get; set; }

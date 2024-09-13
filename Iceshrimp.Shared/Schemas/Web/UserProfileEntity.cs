@@ -9,7 +9,7 @@ public class UserProfileEntity
 	[MaxLength(128)]  public string? Location    { get; set; }
 
 	/// <remarks>
-	/// Accepts YYYY-MM-DD format, empty string, or null.
+	///     Accepts YYYY-MM-DD format, empty string, or null.
 	/// </remarks>
 	public string? Birthday { get; set; }
 

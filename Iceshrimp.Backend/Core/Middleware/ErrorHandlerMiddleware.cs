@@ -231,7 +231,7 @@ public class GracefulException(
 
 	public static GracefulException Conflict(string message, string? details = null) =>
 		new(HttpStatusCode.Conflict, message, details);
-	
+
 	public static GracefulException RequestEntityTooLarge(string message, string? details = null) =>
 		new(HttpStatusCode.RequestEntityTooLarge, message, details);
 

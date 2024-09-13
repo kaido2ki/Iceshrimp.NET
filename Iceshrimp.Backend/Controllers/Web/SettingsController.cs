@@ -30,7 +30,7 @@ public class SettingsController(DatabaseContext db) : ControllerBase
 			AlwaysMarkSensitive     = settings.AlwaysMarkSensitive,
 			AutoAcceptFollowed      = settings.AutoAcceptFollowed,
 			DefaultNoteVisibility   = (NoteVisibility)settings.DefaultNoteVisibility,
-			DefaultRenoteVisibility = (NoteVisibility)settings.DefaultNoteVisibility,
+			DefaultRenoteVisibility = (NoteVisibility)settings.DefaultNoteVisibility
 		};
 	}
 

@@ -34,6 +34,7 @@ public partial class TimelineComponent : IAsyncDisposable
 		{
 			return false;
 		}
+
 		State.MaxId    = res[0].Id;
 		State.MinId    = res.Last().Id;
 		State.Timeline = res;
@@ -105,7 +106,7 @@ public partial class TimelineComponent : IAsyncDisposable
 		{
 			StateHasChanged();
 			await VirtualScroller.OnNewNote();
-		}	
+		}
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -124,6 +125,7 @@ public partial class TimelineComponent : IAsyncDisposable
 			{
 				initResult = await Initialize();
 			}
+
 			ComponentState = initResult ? Core.Miscellaneous.State.Loaded : Core.Miscellaneous.State.Empty;
 			StateHasChanged();
 		}

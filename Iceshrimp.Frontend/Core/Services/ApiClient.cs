@@ -27,7 +27,7 @@ internal class ApiClient(HttpClient client)
 			throw new Exception("Deserialized API error was null");
 		throw new ApiException(error);
 	}
-	
+
 	public async Task<bool> CallNullable(
 		HttpMethod method, string path, QueryString? query = null, object? data = null
 	)

@@ -129,7 +129,7 @@ public class ASLike : ASActivity
 	[J($"{Constants.MisskeyNs}#_misskey_reaction")]
 	[JC(typeof(VC))]
 	public string? MisskeyReaction { get; set; }
-	
+
 	[J($"{Constants.ActivityStreamsNs}#content")]
 	[JC(typeof(VC))]
 	public string? Content { get; set; }

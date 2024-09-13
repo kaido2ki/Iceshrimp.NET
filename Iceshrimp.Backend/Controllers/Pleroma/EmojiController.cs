@@ -21,13 +21,15 @@ public class EmojiController(DatabaseContext db) : ControllerBase
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<Dictionary<string, PleromaEmojiEntity>> GetCustomEmojis()
 	{
-		var emoji = await db.Emojis.Where(p => p.Host == null)
-			.Select(p => KeyValuePair.Create(p.Name, new PleromaEmojiEntity
-			{
-				ImageUrl = p.PublicUrl,
-				Tags     = new string[] { p.Category == null ?  "" : p.Category }
-			}))
-			.ToArrayAsync();
+		var emoji = await db.Emojis
+		                    .Where(p => p.Host == null)
+		                    .Select(p => KeyValuePair.Create(p.Name,
+		                                                     new PleromaEmojiEntity
+		                                                     {
+			                                                     ImageUrl = p.PublicUrl,
+			                                                     Tags     = new[] { p.Category ?? "" }
+		                                                     }))
+		                    .ToArrayAsync();
 
 		return new Dictionary<string, PleromaEmojiEntity>(emoji);
 	}

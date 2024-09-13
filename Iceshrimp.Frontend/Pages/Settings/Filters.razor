@@ -1,14 +1,14 @@
 @page "/settings/filters"
-@attribute [Authorize]
-@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
-@using Microsoft.Extensions.Localization
-@using Iceshrimp.Assets.PhosphorIcons
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.Extensions.Localization
+@attribute [Authorize]
 @layout SettingsLayout
 @inject ApiService                     Api;
 @inject IStringLocalizer<Localization> Loc;
@@ -177,7 +177,7 @@
     private State                              State              { get; set; } = State.Loading;
     private string                             FilterName         { get; set; } = "";
     private string                             Keyword            { get; set; } = "";
-    private List<String>                       FilterKeywords     { get; }      = [];
+    private List<string>                       FilterKeywords     { get; }      = [];
     private DateTime?                          FilterExpiry       { get; set; }
     private FilterResponse.FilterAction        FilterAction       { get; set; }
     private Menu                               MenuFilterAction   { get; set; } = null!;
@@ -217,7 +217,7 @@
 
     private async Task TryAddFilter()
     {
-        bool valid = true;
+        var valid = true;
 
         if (FilterName.Length < 1)
         {

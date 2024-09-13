@@ -82,7 +82,7 @@ public class ActivityFetcherService(
 	}
 
 	/// <summary>
-	/// This abstracts FetchActivityInternal to keep stack traces short in case of HTTP timeouts.
+	///     This abstracts FetchActivityInternal to keep stack traces short in case of HTTP timeouts.
 	/// </summary>
 	/// <exception cref="TimeoutException"></exception>
 	private async Task<(ASObject? obj, Uri finalUri)> FetchActivityInternalWrapper(

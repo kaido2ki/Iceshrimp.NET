@@ -20,20 +20,20 @@
                 <Icon Name="Icons.X"/>
             </button>
             <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
-                <StateButton OnClick="SendNote" @ref=SendButton ExtraClasses="post-btn">
-                    <Initial>
-                        @Loc["ComposePost"]<Icon Name="Icons.PaperPlaneRight"/>
-                    </Initial>
-                    <Loading>
-                        <Icon Name="Icons.Spinner"/>
-                    </Loading>
-                    <Success>
-                        <Icon Name="Icons.Check"/>
-                    </Success>
-                    <Failed>
-                        @Loc["Retry"]<Icon Name="Icons.X"/>
-                    </Failed>
-                </StateButton>
+            <StateButton OnClick="SendNote" @ref="SendButton" ExtraClasses="post-btn">
+                <Initial>
+                    @Loc["ComposePost"]<Icon Name="Icons.PaperPlaneRight"/>
+                </Initial>
+                <Loading>
+                    <Icon Name="Icons.Spinner"/>
+                </Loading>
+                <Success>
+                    <Icon Name="Icons.Check"/>
+                </Success>
+                <Failed>
+                    @Loc["Retry"]<Icon Name="Icons.X"/>
+                </Failed>
+            </StateButton>
         </div>
         @if (ReplyOrQuote != null)
         {
@@ -84,7 +84,12 @@
         Cw         = null
     };
 
-    private Dictionary<string, string> AvailablePlaceholders { get; set; } = new() { { "default", "What's on your mind?" }, { "reply", "Reply goes here!" }, { "quote", "Quote this post!" } };
+    private Dictionary<string, string> AvailablePlaceholders { get; set; } = new()
+    {
+        { "default", "What's on your mind?" },
+        { "reply", "Reply goes here!" },
+        { "quote", "Quote this post!" }
+    };
 
     RenderFragment DropdownIcon(NoteVisibility vis)
     {
@@ -117,7 +122,9 @@
                                new DropdownElement<NoteVisibility>
                                {
                                    #pragma warning disable BL0005 // Setting this outside the component is fine until this is reworked
-                                   Icon = DropdownIcon(vis), Content = DropdownContent(vis), Selection = vis
+                                   Icon      = DropdownIcon(vis),
+                                   Content   = DropdownContent(vis),
+                                   Selection = vis
                                    #pragma warning restore BL0005
                                })
                    .ToList();
@@ -210,9 +217,14 @@
 
     private void ResetState()
     {
-        ReplyOrQuote    = null;
-        Attachments     = new List<DriveFileResponse>();
-        NoteDraft       = new NoteCreateRequest { Text = "", Visibility = NoteVisibility.Followers, Cw = null };
+        ReplyOrQuote = null;
+        Attachments  = new List<DriveFileResponse>();
+        NoteDraft = new NoteCreateRequest
+        {
+            Text       = "",
+            Visibility = NoteVisibility.Followers,
+            Cw         = null
+        };
         TextPlaceholder = AvailablePlaceholders["default"];
     }
 

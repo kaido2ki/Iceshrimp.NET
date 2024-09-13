@@ -40,7 +40,7 @@ public partial class VirtualScroller : IAsyncDisposable
 		set => _refs.Add(value);
 	}
 
-	private bool               _interlock = false;
+	private bool                        _interlock = false;
 	private IJSInProcessObjectReference Module { get; set; } = null!;
 
 	private void InitialRender(string? id)
@@ -83,7 +83,7 @@ public partial class VirtualScroller : IAsyncDisposable
 
 	private void SaveState()
 	{
-		GetScrollY();  // ^-^ grblll mrrp
+		GetScrollY(); // ^-^ grblll mrrp
 		StateService.VirtualScroller.SetState("home", State);
 	}
 
@@ -108,7 +108,7 @@ public partial class VirtualScroller : IAsyncDisposable
 		{
 			return;
 		}
-		
+
 		var index = NoteResponseList.IndexOf(State.RenderedList.Last());
 		if (index >= NoteResponseList.Count - (1 + UpdateCount))
 		{
@@ -277,7 +277,9 @@ public partial class VirtualScroller : IAsyncDisposable
 	{
 		if (firstRender)
 		{
-			Module = (IJSInProcessObjectReference) await Js.InvokeAsync<IJSObjectReference>("import", "./Components/VirtualScroller.razor.js");
+			Module =
+				(IJSInProcessObjectReference)
+				await Js.InvokeAsync<IJSObjectReference>("import", "./Components/VirtualScroller.razor.js");
 			await SetupObservers();
 		}
 

@@ -84,7 +84,7 @@ public class UserProfile
 		[J("value")]    public required string Value      { get; set; }
 		[J("verified")] public          bool?  IsVerified { get; set; }
 	}
-	
+
 	[PgName("user_profile_ffvisibility_enum")]
 	public enum UserProfileFFVisibility
 	{

@@ -10,7 +10,7 @@ public static class BlurhashHelper
 	private static readonly ImmutableArray<float> PrecomputedLut = [..Enumerable.Range(0, 256).Select(SRgbToLinear)];
 
 	/// <summary>
-	/// Encodes a Span2D of raw pixel data into a Blurhash string
+	///     Encodes a Span2D of raw pixel data into a Blurhash string
 	/// </summary>
 	/// <param name="pixels">The Span2D of raw pixel data to encode</param>
 	/// <param name="componentsX">The number of components used on the X-Axis for the DCT</param>
@@ -64,7 +64,7 @@ public static class BlurhashHelper
 		var dc      = factors[0];
 		var acCount = componentsX * componentsY - 1;
 
-		var sizeFlag = (componentsX - 1) + (componentsY - 1) * 9;
+		var sizeFlag = componentsX - 1 + (componentsY - 1) * 9;
 		sizeFlag.EncodeBase83(resultBuffer[..1]);
 
 		float maximumValue;

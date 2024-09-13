@@ -268,7 +268,7 @@ public class MfmTests
 		List<MfmNode> expected =
 		[
 			new MfmTextNode("this is plain text > this is not a quote >this is also not a quote\n"),
-			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a quote\nthis is part of the same quote\nthis too"),]), false, false),
+			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a quote\nthis is part of the same quote\nthis too")]), false, false),
 			new MfmTextNode("this is some plain text inbetween\n"),
 			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a second quote\nthis is part of the second quote")]), true, false),
 			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a third quote")]), false, false),

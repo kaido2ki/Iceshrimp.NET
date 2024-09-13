@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -29,7 +30,8 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 		               await userRenderer.RenderAsync(dbNotifier);
 
 		string? emojiUrl = null;
-		if (notification.Reaction != null) {
+		if (notification.Reaction != null)
+		{
 			// explicitly check to skip another database call if url is actually null
 			if (emojiUrls != null)
 			{
@@ -38,7 +40,10 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 			else if (EmojiService.IsCustomEmoji(notification.Reaction))
 			{
 				var parts = notification.Reaction.Trim(':').Split('@');
-				emojiUrl = await db.Emojis.Where(e => e.Name == parts[0] && e.Host == (parts.Length > 1 ? parts[1] : null)).Select(e => e.PublicUrl).FirstOrDefaultAsync();
+				emojiUrl = await db.Emojis
+				                   .Where(e => e.Name == parts[0] && e.Host == (parts.Length > 1 ? parts[1] : null))
+				                   .Select(e => e.PublicUrl)
+				                   .FirstOrDefaultAsync();
 			}
 		}
 
@@ -51,9 +56,7 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 			CreatedAt = notification.CreatedAt.ToStringIso8601Like(),
 			Emoji     = notification.Reaction,
 			EmojiUrl  = emojiUrl,
-			Pleroma   = new() {
-				IsSeen = notification.IsRead
-			}
+			Pleroma   = new PleromaNotificationExtensions { IsSeen = notification.IsRead }
 		};
 
 		return res;
@@ -85,20 +88,28 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 		                                                               .DistinctBy(p => p.Id),
 		                                               user, Filter.FilterContext.Notifications, accounts);
 
-		var parts = notifications.Where(p => p.Reaction != null && EmojiService.IsCustomEmoji(p.Reaction)).Select(p => {
-			var parts = p.Reaction!.Trim(':').Split('@');
-			return new { Name = parts[0], Host = parts.Length > 1 ? parts[1] : null };
-		});
+		var parts = notificationList.Where(p => p.Reaction != null && EmojiService.IsCustomEmoji(p.Reaction))
+		                            .Select(p =>
+		                            {
+			                            var parts = p.Reaction!.Trim(':').Split('@');
+			                            return new { Name = parts[0], Host = parts.Length > 1 ? parts[1] : null };
+		                            });
 
 		// https://github.com/dotnet/efcore/issues/31492
+		//TODO: is there a better way of expressing this using LINQ?
 		IQueryable<Emoji> urlQ = db.Emojis;
 		foreach (var part in parts)
 			urlQ = urlQ.Concat(db.Emojis.Where(e => e.Name == part.Name && e.Host == part.Host));
-		var emojiUrls = (await urlQ
-				.Select(e => new { Name = $":{e.Name}{(e.Host != null ? "@" + e.Host : "")}:", Url = e.PublicUrl })
-				.ToArrayAsync())
-			.DistinctBy(e => e.Name)
-			.ToDictionary(e => e.Name, e => e.Url);
+
+		//TODO: can we somehow optimize this to do the dedupe database side?
+		var emojiUrls = await urlQ.Select(e => new
+		                          {
+			                          Name = $":{e.Name}{(e.Host != null ? "@" + e.Host : "")}:",
+			                          Url  = e.PublicUrl
+		                          })
+		                          .ToArrayAsync()
+		                          .ContinueWithResult(res => res.DistinctBy(e => e.Name)
+		                                                        .ToDictionary(e => e.Name, e => e.Url));
 
 		return await notificationList
 		             .Select(p => RenderAsync(p, user, isPleroma, accounts, notes, emojiUrls))

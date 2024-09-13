@@ -1,53 +1,54 @@
 @using Iceshrimp.Assets.PhosphorIcons
 <CascadingValue Value="this">
 
-@if (NoteResponse.Renote != null)
-{
-    <div class="renote">
-        <div class="renote-info">
-            <span class="user">
-                <Icon Name="Icons.Repeat" /> Boosted by
-                @if (NoteResponse.User.DisplayName != null)
-                {
-                    @NoteResponse.User.DisplayName
-                }
-                else
-                {
-                    @NoteResponse.User.Username
-                }
-            </span>
-            <span class="metadata">
-                <NoteMetadata Visibility="NoteResponse.Visibility" InstanceName="@null" CreatedAt="DateTime.Parse(NoteResponse.CreatedAt)"/>
-            </span>
-        </div>
-        <NoteComponent Note="NoteResponse.Renote" Quote="NoteResponse.Quote" Indented="Indented"/>
-    </div>
-}
-else
-{
-    @if (NoteResponse.Filtered is not null && NoteResponse.Filtered.Hide == false)
+    @if (NoteResponse.Renote != null)
     {
-        <div>
-            @Loc["This note contains the filter keyword '{0}'", NoteResponse.Filtered.Keyword]
-            <button
-                @onclick="@ShowNote"
-                @onclick:stopPropagation="true">
-                @if (_overrideHide)
-                {
-                    @Loc["Hide"]
-                }
-                else
-                {
-                    @Loc["Show"]
-                }
-            </button>
+        <div class="renote">
+            <div class="renote-info">
+                <span class="user">
+                    <Icon Name="Icons.Repeat"/> Boosted by
+                    @if (NoteResponse.User.DisplayName != null)
+                    {
+                        @NoteResponse.User.DisplayName
+                    }
+                    else
+                    {
+                        @NoteResponse.User.Username
+                    }
+                </span>
+                <span class="metadata">
+                    <NoteMetadata Visibility="NoteResponse.Visibility" InstanceName="@null" CreatedAt="DateTime.Parse(NoteResponse.CreatedAt)"/>
+                </span>
+            </div>
+            <NoteComponent Note="NoteResponse.Renote" Quote="NoteResponse.Quote" Indented="Indented"/>
         </div>
     }
-    @if (_overrideHide || NoteResponse.Filtered == null)
+    else
     {
-        <NoteComponent Note="NoteResponse" Quote="NoteResponse.Quote" Indented="Indented"/>
+        @if (NoteResponse.Filtered is not null && NoteResponse.Filtered.Hide == false)
+        {
+            <div>
+                @Loc["This note contains the filter keyword '{0}'", NoteResponse.Filtered.Keyword]
+                <button
+                    @onclick="@ShowNote"
+                    @onclick:stopPropagation="true">
+                    @if (_overrideHide)
+                    {
+                        @Loc["Hide"]
+                    }
+                    else
+                    {
+                        @Loc["Show"]
+                    }
+                </button>
+            </div>
+        }
+
+        @if (_overrideHide || NoteResponse.Filtered == null)
+        {
+            <NoteComponent Note="NoteResponse" Quote="NoteResponse.Quote" Indented="Indented"/>
+        }
     }
-}
 </CascadingValue>
 
 

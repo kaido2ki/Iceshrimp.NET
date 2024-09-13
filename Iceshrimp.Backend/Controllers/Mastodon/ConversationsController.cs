@@ -96,7 +96,7 @@ public class ConversationsController(
 		var user = HttpContext.GetUserOrFail();
 		var conversation = await db.Conversations(user)
 		                           .IncludeCommonProperties()
-		                           .Where(p => (p.ThreadIdOrId) == id)
+		                           .Where(p => p.ThreadIdOrId == id)
 		                           .Select(p => new Conversation
 		                           {
 			                           Id       = p.ThreadIdOrId,

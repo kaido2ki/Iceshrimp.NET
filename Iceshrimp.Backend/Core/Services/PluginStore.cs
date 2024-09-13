@@ -11,7 +11,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Services;
 
 /// <summary>
-/// This is needed because static fields in generic classes aren't shared between instances with different generic type arguments
+///     This is needed because static fields in generic classes aren't shared between instances with different generic type
+///     arguments
 /// </summary>
 file static class PluginStoreHelpers
 {

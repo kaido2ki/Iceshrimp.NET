@@ -6,7 +6,7 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject IJSRuntime                     Js;
 @inject SessionService                 Session;
-@inject GlobalComponentSvc GlobalComponentSvc
+@inject GlobalComponentSvc             GlobalComponentSvc
 
 <div class="note-footer">
     @if (Reactions.Count > 0)
@@ -21,7 +21,7 @@
     <button class="btn" @onclick="Reply" @onclick:stopPropagation="true">
         <Icon Name="Icons.ArrowUUpLeft" Size="1.3em"/>
     </button>
-    <button class="btn @(RenotePossible ? "" : "disabled") positioned" @onclick="@(RenotePossible ? ToggleRenoteMenu : () => {})" @onclick:stopPropagation="true">
+    <button class="btn @(RenotePossible ? "" : "disabled") positioned" @onclick="@(RenotePossible ? ToggleRenoteMenu : () => { })" @onclick:stopPropagation="true">
         @if (RenotePossible)
         {
             <Icon Name="Icons.Repeat" Size="1.3em"/>
@@ -46,7 +46,7 @@
             <Icon ExtraClasses="faded" Name="Icons.Lock" Size="1.3em"/>
         }
         @if (Renotes > 0)
-        {   
+        {
             <span class="renote-count">@Renotes</span>
         }
     </button>
@@ -103,7 +103,7 @@
     [Parameter] [EditorRequired] public required int                      Renotes        { get; set; }
     [Parameter]                  public          bool                     RenotePossible { get; set; }
     private                                      Menu                     ContextMenu    { get; set; } = null!;
-    private                                      Menu                     RenoteMenu      { get; set; } = null!;
+    private                                      Menu                     RenoteMenu     { get; set; } = null!;
     private                                      ElementReference         EmojiButton    { get; set; }
 
     [CascadingParameter] Note Note { get; set; } = null!;
@@ -117,7 +117,7 @@
     private void CopyLink() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.NoteResponse.Url);
 
     private void Like()
-    { 
+    {
         _ = Note.ToggleLike();
     }
 
@@ -142,7 +142,7 @@
     }
 
     private void ToggleEmojiPicker()
-    { 
+    {
         GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, React));
     }
 

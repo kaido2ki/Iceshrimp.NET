@@ -57,7 +57,7 @@ public static class StringBuilderExtensions
 	private const char NewLineLf = '\n';
 
 	/// <summary>
-	/// Equivalent to .AppendLine, but always uses \n instead of Environment.NewLine 
+	///     Equivalent to .AppendLine, but always uses \n instead of Environment.NewLine
 	/// </summary>
 	public static StringBuilder AppendLineLf(this StringBuilder sb, string? value)
 	{

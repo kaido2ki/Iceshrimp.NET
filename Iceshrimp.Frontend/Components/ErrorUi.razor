@@ -7,7 +7,7 @@
 @inject NavigationManager              Navigation;
 @inject VersionService                 Version;
 @inject InMemoryLogService             LogService;
-@inject IJSRuntime Js;
+@inject IJSRuntime                     Js;
 
 <div class="error-ui">
     <h3>@Loc["Unhandled Exception has occured"]</h3>
@@ -40,8 +40,7 @@
             }
         </div>
         @Loc["Logs"]
-        @Loc["These logs may contain sensitive information, please do not post them publicly.\n" + 
-             "Providing them to developers upon request may help with debugging."]
+        @Loc["These logs may contain sensitive information, please do not post them publicly.\n" + "Providing them to developers upon request may help with debugging."]
         <div class="log-block">
             <pre><code>
                 @foreach (var line in _rawLog)
@@ -60,7 +59,7 @@
     [Parameter] [EditorRequired] public required Exception                   Exception { get; set; }
     private                                      IEnumerable<string>         _logs   = [];
     private                                      IJSInProcessObjectReference _module = null!;
-    private                                      List<string> _rawLog = null!;
+    private                                      List<string>                _rawLog = null!;
 
     private void Reload()
     {
@@ -68,16 +67,14 @@
     }
 
     protected override async Task OnInitializedAsync()
-    { 
+    {
         _rawLog = LogService.GetLogs();
-        _module = (IJSInProcessObjectReference) await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
-     }
-    
+        _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
+    }
 
     private void DownloadLogs()
     {
         var logBytes = LogService.GetLogs().SelectMany(p => Encoding.UTF8.GetBytes(p)).ToArray();
         _module.InvokeVoid("DownloadFile", "log.txt", "text/plain", logBytes);
     }
-    
 }

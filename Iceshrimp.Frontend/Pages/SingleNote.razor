@@ -1,5 +1,14 @@
 @page "/notes/{NoteId}"
 @attribute [Authorize]
+@inject ApiService                     ApiService
+@inject IJSRuntime                     Js
+@inject MessageService                 MessageService
+@inject StateService                   State
+@inject NavigationManager              Navigation
+@inject IStringLocalizer<Localization> Loc
+@inject ILogger<SingleNote>            Logger;
+
+@using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Frontend.Core.Miscellaneous
@@ -7,18 +16,9 @@
 @using Iceshrimp.Frontend.Core.Services.StateServicePatterns
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
-@using Microsoft.Extensions.Localization
-@using Microsoft.AspNetCore.Components.Sections
-@using Iceshrimp.Assets.PhosphorIcons
 @using Microsoft.AspNetCore.Authorization
-@inject ApiService                     ApiService
-@inject IJSRuntime                     Js
-@inject MessageService                 MessageService
-@inject StateService                   State
-@inject NavigationManager              Navigation
-@inject IStringLocalizer<Localization> Loc
-@inject ILogger<SingleNote> Logger;
-
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.Extensions.Localization
 @implements IDisposable
 
 @if (_componentState == LoadState.Init)
@@ -114,11 +114,13 @@
             _componentState = LoadState.Error;
             return;
         }
+
         if (RootNote == null)
         {
             _componentState = LoadState.Error;
             return;
         }
+
         _componentState = LoadState.Init;
 
         StateHasChanged();

@@ -88,8 +88,8 @@ public class ActivityPubController(
 		           throw GracefulException.NotFound("Note not found");
 
 		var replies = await db.Notes.Where(p => p.ReplyId == id)
-		                   .OrderByDescending(p => p.Id)
-		                   .ToListAsync();
+		                      .OrderByDescending(p => p.Id)
+		                      .ToListAsync();
 
 		var rendered = replies.Select(noteRenderer.RenderLite).ToList();
 		var res = new ASOrderedCollection

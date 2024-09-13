@@ -13,7 +13,7 @@ public class QueueJobModel(DatabaseContext db) : PageModel
 	{
 		["inbox"]       = "body",
 		["deliver"]     = "payload",
-		["pre-deliver"] = "serializedActivity",
+		["pre-deliver"] = "serializedActivity"
 	};
 
 	public Job Job = null!;

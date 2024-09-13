@@ -2,15 +2,12 @@
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Shared.Schemas.Web
 @inject NavigationManager Navigation
-@if (Note.Filtered is { Hide: true })
+@if (Note.Filtered is { Hide: true }) { }
+else
 {
-    
-}
-else {
     <div class="note-container" @onclick="OpenNote" id="@Note.Id">
         <Note NoteResponse="Note"></Note>
     </div>
-    
 }
 
 @code {
