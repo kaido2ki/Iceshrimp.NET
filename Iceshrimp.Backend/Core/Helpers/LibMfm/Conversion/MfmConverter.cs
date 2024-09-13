@@ -258,6 +258,7 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 				var el = CreateInlineFormattingElement(document, "blockquote");
 				AddHtmlMarkupStartOnly(node, "> ");
 				AppendChildren(el, document, node, mentions, host);
+				el.AppendChild(document.CreateElement("br"));
 				return el;
 			}
 			case MfmTextNode textNode:
