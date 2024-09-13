@@ -42,7 +42,7 @@ public sealed class Config
 		private string? AdditionalDomains
 		{
 			get => string.Join(',', AdditionalDomainsArray);
-			init => AdditionalDomainsArray = value?.Split(',') ?? [];
+			init => AdditionalDomainsArray = value?.Split(',').Select(p => p.Trim()).ToArray() ?? [];
 		}
 
 		public string[] AdditionalDomainsArray { get; private init; } = [];
