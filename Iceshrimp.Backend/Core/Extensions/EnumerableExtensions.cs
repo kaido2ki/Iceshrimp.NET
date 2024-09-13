@@ -22,6 +22,16 @@ public static class EnumerableExtensions
 		return results;
 	}
 
+	public static async Task<List<T>> AwaitAllNoConcurrencyAsync<T>(this IAsyncEnumerable<Task<T>> tasks)
+	{
+		var results = new List<T>();
+
+		await foreach (var task in tasks)
+			results.Add(await task);
+
+		return results;
+	}
+
 	public static async Task AwaitAllNoConcurrencyAsync(this IEnumerable<Task> tasks)
 	{
 		foreach (var task in tasks) await task;

@@ -77,4 +77,18 @@ public class ObjectResolver(
 			return null;
 		}
 	}
+
+	public async IAsyncEnumerable<ASObject> IterateCollection(ASCollection? collection)
+	{
+		if (collection == null) yield break;
+
+		if (collection.IsUnresolved)
+			collection = await ResolveObject(collection, force: true) as ASCollection;
+
+		if (collection == null) yield break;
+
+		if (collection.Items != null)
+			foreach (var item in collection.Items)
+				yield return item;
+	}
 }
