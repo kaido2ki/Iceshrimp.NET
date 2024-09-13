@@ -12,7 +12,6 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <InvariantGlobalization>true</InvariantGlobalization>
         <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
-        <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
     </PropertyGroup>
 
     <!-- Analyze dependencies for all dependencies, not just direct ones. Remove when upgrading to net90-->

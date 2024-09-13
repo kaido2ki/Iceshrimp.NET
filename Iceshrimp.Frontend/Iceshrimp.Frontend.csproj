@@ -3,7 +3,6 @@
     <PropertyGroup>
         <PublishTrimmed>true</PublishTrimmed>
         <InvariantGlobalization>false</InvariantGlobalization>
-        <UseCurrentRuntimeIdentifier>false</UseCurrentRuntimeIdentifier>
         <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
 

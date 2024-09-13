@@ -3,6 +3,8 @@
     <PropertyGroup>
         <!-- ASP.NET MVC & Razor Pages don't support trimming yet (and everything else might also break) -->
         <PublishTrimmed>false</PublishTrimmed>
+        <!-- Makes sure that we compile against the correct native dependency -->
+        <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
         <!-- Enables DATAS - https://www.thinktecture.com/en/net/optimize-asp-net-core-memory-with-datas -->
         <GarbageCollectionAdaptationMode>1</GarbageCollectionAdaptationMode>
     </PropertyGroup>
