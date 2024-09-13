@@ -90,5 +90,19 @@ public class ObjectResolver(
 		if (collection.Items != null)
 			foreach (var item in collection.Items)
 				yield return item;
+
+		var page = collection.First;
+		while (page != null)
+		{
+			if (page.IsUnresolved)
+				page = await ResolveObject(page, force: true) as ASCollectionPage;
+			if (page == null) break;
+
+			if (page.Items != null)
+				foreach (var item in page.Items)
+					yield return item;
+
+			page = page.Next;
+		}
 	}
 }
