@@ -10,6 +10,7 @@ public static class ConfigurationBuilderExtensions
 		var overrides = Environment.GetEnvironmentVariable("ICESHRIMP_CONFIG_OVERRIDES") ??
 		                "configuration.overrides.ini";
 
+		configuration.SetBasePath(Directory.GetCurrentDirectory());
 		configuration.AddIniStream(AssemblyHelpers.GetEmbeddedResourceStream("configuration.ini"))
 		             .AddIniFile(main, false, true)
 		             .AddIniFile(overrides, true, true)
