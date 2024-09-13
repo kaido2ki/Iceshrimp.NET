@@ -10,14 +10,6 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASObject : ASObjectBase
 {
-	[J("@id")]
-	[JR]
-	public new required string Id
-	{
-		get => base.Id ?? throw new NullReferenceException("base.Id should never be null on a required property");
-		set => base.Id = value;
-	}
-
 	[J("@type")]
 	[JC(typeof(StringListSingleConverter))]
 	public string? Type { get; set; }
@@ -88,6 +80,14 @@ public class ASObject : ASObjectBase
 
 public class ASTombstone : ASObject
 {
+	[J("@id")]
+	[JR]
+	public new required string Id
+	{
+		get => base.Id ?? throw new NullReferenceException("base.Id should never be null on a required property");
+		set => base.Id = value;
+	}
+
 	public ASTombstone() => Type = Types.Tombstone;
 }
 

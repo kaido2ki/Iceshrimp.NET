@@ -56,7 +56,7 @@ public class ActivityFetcherService(
 	{
 		logger.LogDebug("Fetching activity {url} as user {id}", url, actor.Id);
 		var (activity, finalUri) = await FetchActivityInternalWrapper(url, actor, keypair);
-		if (activity == null) return [];
+		if (activity?.Id == null) return [];
 
 		var activityUri = new Uri(activity.Id);
 
@@ -70,7 +70,7 @@ public class ActivityFetcherService(
 
 		logger.LogDebug("Fetching activity {url} as user {id} (attempt 2)", activityIdUri.AbsoluteUri, actor.Id);
 		(activity, finalUri) = await FetchActivityInternalWrapper(activityIdUri.AbsoluteUri, actor, keypair);
-		if (activity == null) return [];
+		if (activity?.Id == null) return [];
 
 		activityUri = new Uri(activity.Id);
 

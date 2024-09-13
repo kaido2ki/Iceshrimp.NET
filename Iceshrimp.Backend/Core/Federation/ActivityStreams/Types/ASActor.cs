@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Extensions;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using JI = Newtonsoft.Json.JsonIgnoreAttribute;
+using JR = Newtonsoft.Json.JsonRequiredAttribute;
 using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
@@ -18,6 +19,14 @@ public class ASActor : ASObject
 	[
 		Types.Person, Types.Service, Types.Group, Types.Organization, Types.Application
 	];
+
+	[J("@id")]
+	[JR]
+	public new required string Id
+	{
+		get => base.Id ?? throw new NullReferenceException("base.Id should never be null on a required property");
+		set => base.Id = value;
+	}
 
 	[J("https://misskey-hub.net/ns#_misskey_summary")]
 	[JC(typeof(VC))]
@@ -173,6 +182,7 @@ public class ASActor : ASObject
 
 	public static ASActor FromObject(ASObject obj)
 	{
+		if (obj.Id == null) throw new Exception("Unable to convert Object to Actor: Missing or invalid id");
 		return new ASActor { Id = obj.Id };
 	}
 

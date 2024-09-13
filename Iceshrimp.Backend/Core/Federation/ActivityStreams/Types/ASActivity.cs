@@ -10,6 +10,14 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASActivity : ASObject
 {
+	[J("@id")]
+	[JR]
+	public new required string Id
+	{
+		get => base.Id ?? throw new NullReferenceException("base.Id should never be null on a required property");
+		set => base.Id = value;
+	}
+
 	[J($"{Constants.ActivityStreamsNs}#actor")]
 	[JC(typeof(ASActorConverter))]
 	public ASActor? Actor { get; set; }
