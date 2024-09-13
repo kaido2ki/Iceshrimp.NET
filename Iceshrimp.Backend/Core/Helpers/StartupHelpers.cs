@@ -1,8 +1,10 @@
+using System.Reflection;
+
 namespace Iceshrimp.Backend.Core.Helpers;
 
 public static class StartupHelpers
 {
-	public static void ParseCliArguments(string[] args)
+	public static WebApplicationOptions ParseCliArguments(string[] args)
 	{
 		if (args.Contains("-h") || args.Contains("--help") || args.Contains("-?"))
 		{
@@ -30,5 +32,8 @@ public static class StartupHelpers
 			Console.WriteLine(config);
 			Environment.Exit(0);
 		}
+
+		var contentRoot = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+		return new WebApplicationOptions { Args = args, ContentRootPath = contentRoot };
 	}
 }

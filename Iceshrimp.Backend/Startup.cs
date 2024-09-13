@@ -3,9 +3,8 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.SignalR;
 using Iceshrimp.Backend.SignalR.Authentication;
 
-StartupHelpers.ParseCliArguments(args);
-
-var builder = WebApplication.CreateBuilder(args);
+var options = StartupHelpers.ParseCliArguments(args);
+var builder = WebApplication.CreateBuilder(options);
 
 builder.Configuration.Sources.Clear();
 builder.Configuration.AddCustomConfiguration();
