@@ -24,12 +24,13 @@ public class QueueService(
 	public readonly  DeliverQueue            DeliverQueue        = new(queueConcurrency.Value.Deliver);
 	public readonly  InboxQueue              InboxQueue          = new(queueConcurrency.Value.Inbox);
 	public readonly  PreDeliverQueue         PreDeliverQueue     = new(queueConcurrency.Value.PreDeliver);
+	public readonly  BackfillQueue           BackfillQueue       = new(queueConcurrency.Value.Backfill);
 
 	public IEnumerable<string> QueueNames => _queues.Select(p => p.Name);
 
 	protected override async Task ExecuteAsync(CancellationToken token)
 	{
-		_queues.AddRange([InboxQueue, PreDeliverQueue, DeliverQueue, BackgroundTaskQueue]);
+		_queues.AddRange([InboxQueue, PreDeliverQueue, DeliverQueue, BackgroundTaskQueue, BackfillQueue]);
 
 		var tokenSource      = new CancellationTokenSource();
 		var queueTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token, lifetime.ApplicationStopping);

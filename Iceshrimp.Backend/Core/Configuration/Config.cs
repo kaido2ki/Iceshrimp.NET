@@ -356,6 +356,7 @@ public sealed class Config
 		[Range(1, int.MaxValue)] public int Deliver        { get; init; } = 20;
 		[Range(1, int.MaxValue)] public int PreDeliver     { get; init; } = 4;
 		[Range(1, int.MaxValue)] public int BackgroundTask { get; init; } = 4;
+		[Range(1, int.MaxValue)] public int Backfill       { get; init; } = 4;
 	}
 
 	public sealed class QueueSection

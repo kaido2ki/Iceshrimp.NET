@@ -220,7 +220,8 @@ public class NoteService(
 			LocalOnly            = localOnly,
 			Emojis               = emoji ?? [],
 			ReplyUri             = replyUri,
-			RenoteUri            = renoteUri
+			RenoteUri            = renoteUri,
+			RepliesCollection    = asNote?.Replies?.Id
 		};
 
 		if (poll != null)
@@ -311,6 +312,18 @@ public class NoteService(
 			});
 		}
 
+		// If we're renoting a note we backfilled replies to some time ago (and know how to backfill), enqueue a backfill.
+		if (renote != null && renote.RepliesCollection != null && renote.RepliesFetchedAt != null && renote.RepliesFetchedAt?.AddDays(7) <= DateTime.UtcNow)
+		{
+			logger.LogDebug("Enqueueing reply collection fetch for renote {renoteId}", renote.Id);
+			await queueSvc.BackfillQueue.EnqueueAsync(new BackfillJobData
+			{
+				NoteId = renote.Id,
+				RecursionLimit = _recursionLimit,
+				AuthenticatedUserId = null, // FIXME: for private replies
+			});
+		}
+
 		if (user.IsRemoteUser)
 		{
 			_ = followupTaskSvc.ExecuteTask("UpdateInstanceNoteCounter", async provider =>
@@ -321,6 +334,19 @@ public class NoteService(
 				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount + 1));
 			});
+
+			if (note.RepliesCollection != null)
+			{
+				var jobData = new BackfillJobData
+				{
+					NoteId = note.Id,
+					RecursionLimit = _recursionLimit,
+					AuthenticatedUserId = null, // FIXME: for private replies
+				};
+
+				logger.LogDebug("Enqueueing reply collection fetch for note {noteId}", note.Id);
+				await queueSvc.BackfillQueue.EnqueueAsync(jobData);
+			}
 
 			return note;
 		}
@@ -1131,6 +1157,19 @@ public class NoteService(
 	public async Task<Note?> ResolveNoteAsync(ASNote note)
 	{
 		return await ResolveNoteAsync(note.Id, note);
+	}
+
+	public async Task BackfillRepliesAsync(Note note, User? fetchUser, int recursionLimit) 
+	{
+		if (note.RepliesCollection == null) return;
+		note.RepliesFetchedAt = DateTime.UtcNow; // should get committed alongside the resolved reply objects 
+
+		_recursionLimit = recursionLimit;
+		await objectResolver.IterateCollection(new ASCollection(note.RepliesCollection, withType: true))
+		                    .Take(100) // does this limit make sense?
+		                    .Where(p => p.Id != null)
+		                    .Select(p => ResolveNoteAsync(p.Id!, null, fetchUser, forceRefresh: false))
+		                    .AwaitAllNoConcurrencyAsync();
 	}
 
 	public async Task<bool> LikeNoteAsync(Note note, User user)

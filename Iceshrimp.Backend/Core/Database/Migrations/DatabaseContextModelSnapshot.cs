@@ -2448,11 +2448,20 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("renoteUserId")
                         .HasComment("[Denormalized]");
 
+                    b.Property<string>("RepliesCollection")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("repliesCollection");
+
                     b.Property<short>("RepliesCount")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("smallint")
                         .HasDefaultValue((short)0)
                         .HasColumnName("repliesCount");
+
+                    b.Property<DateTime?>("RepliesFetchedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("repliesFetchedAt");
 
                     b.Property<string>("ReplyId")
                         .HasMaxLength(32)

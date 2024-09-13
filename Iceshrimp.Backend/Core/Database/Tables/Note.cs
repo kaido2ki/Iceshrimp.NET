@@ -209,6 +209,16 @@ public class Note : IEntity
 	[Column("updatedAt")]
 	public DateTime? UpdatedAt { get; set; }
 
+	/// <summary>
+	///		ID of the ActivityStreams replies collection for this note, used to re-fetch replies.
+	/// </summary>
+	[Column("repliesCollection")]
+	[StringLength(512)]
+	public string? RepliesCollection { get; set; }
+
+	[Column("repliesFetchedAt")]
+	public DateTime? RepliesFetchedAt { get;set; }
+
 	[ForeignKey(nameof(ChannelId))]
 	[InverseProperty(nameof(Tables.Channel.Notes))]
 	public virtual Channel? Channel { get; set; }
