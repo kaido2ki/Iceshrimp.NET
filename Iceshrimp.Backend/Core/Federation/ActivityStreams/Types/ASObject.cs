@@ -14,7 +14,7 @@ public class ASObject : ASObjectBase
 	[JC(typeof(StringListSingleConverter))]
 	public string? Type { get; set; }
 
-	[JI] public bool IsUnresolved => this is ASObject && Type == null;
+	[JI] public bool IsUnresolved => GetType() == typeof(ASObject) && Type == null;
 
 	//FIXME: don't recurse creates and co
 	public static ASObject? Deserialize(JToken token)
@@ -78,7 +78,7 @@ public class ASObject : ASObjectBase
 	}
 }
 
-public class ASTombstone : ASObject
+public class ASObjectWithId : ASObject
 {
 	[J("@id")]
 	[JR]
@@ -87,7 +87,10 @@ public class ASTombstone : ASObject
 		get => base.Id ?? throw new NullReferenceException("base.Id should never be null on a required property");
 		set => base.Id = value;
 	}
+}
 
+public class ASTombstone : ASObjectWithId
+{
 	public ASTombstone() => Type = Types.Tombstone;
 }
 

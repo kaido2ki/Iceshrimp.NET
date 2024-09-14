@@ -55,7 +55,10 @@ public sealed class ASCollectionPageConverter : JsonConverter
 	{
 		if (reader.TokenType == JsonToken.StartArray)
 		{
-			var obj  = JArray.Load(reader);
+			var obj       = JArray.Load(reader);
+			var valueList = obj.ToObject<List<LDValueObject<object?>>>();
+			if (valueList is { Count: > 0 } && valueList[0] is { Value: not null })
+				return VC.HandleObject(valueList[0], objectType);
 			var list = obj.ToObject<List<ASCollectionPage?>>();
 			return list == null || list.Count == 0 ? null : list[0];
 		}

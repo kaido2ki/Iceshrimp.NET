@@ -2,26 +2,17 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
-using JR = Newtonsoft.Json.JsonRequiredAttribute;
 using JI = Newtonsoft.Json.JsonIgnoreAttribute;
 using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
-public class ASNote : ASObject
+public class ASNote : ASObjectWithId
 {
 	private string? _mkContent;
 
 	[JI] public bool VerifiedFetch = false;
 	public ASNote(bool withType = true) => Type = withType ? Types.Note : null;
-
-	[J("@id")]
-	[JR]
-	public new required string Id
-	{
-		get => base.Id ?? throw new NullReferenceException("base.Id should never be null on a required property");
-		set => base.Id = value;
-	}
 
 	[J("https://misskey-hub.net/ns#_misskey_content")]
 	[JC(typeof(VC))]
