@@ -91,16 +91,35 @@ public class ObjectResolver(
 			foreach (var item in collection.Items)
 				yield return item;
 
+		// we only limit based on pages here. the consumer of this iterator may
+		// additionally limit per-item via System.Linq.Async Take()
+		var pageLimit = 50;
+
+		// some remote software (e.g. fedibird) can get in a state where page.next == page.id
+		var visitedPages = new HashSet<string>();
+
 		var page = collection.First;
 		while (page != null)
 		{
 			if (page.IsUnresolved)
 				page = await ResolveObject(page, force: true) as ASCollectionPage;
+
 			if (page == null) break;
 
 			if (page.Items != null)
 				foreach (var item in page.Items)
 					yield return item;
+
+			if (page.Next?.Id != null)
+			{
+				if (visitedPages.Contains(page.Next.Id))
+					break;
+
+				visitedPages.Add(page.Next.Id);
+			}
+
+			if (--pageLimit <= 0)
+				break;
 
 			page = page.Next;
 		}
