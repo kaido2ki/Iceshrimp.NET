@@ -612,6 +612,9 @@ public class NoteService(
 			await db.AddAsync(noteEdit);
 		}
 
+		if (asNote != null)
+			note.RepliesCollection = asNote.Replies?.Id;
+
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNoteUpdated(this, note);
 
