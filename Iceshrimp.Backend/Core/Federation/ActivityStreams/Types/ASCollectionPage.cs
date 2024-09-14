@@ -64,7 +64,7 @@ public sealed class ASCollectionPageConverter : JsonConverter
 		{
 			var obj      = JObject.Load(reader);
 			var valueObj = obj.ToObject<LDValueObject<object?>>();
-			return valueObj != null
+			return valueObj is { Value: not null }
 				? VC.HandleObject(valueObj, objectType)
 				: obj.ToObject<ASCollectionPage?>();
 		}
