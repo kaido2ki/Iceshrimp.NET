@@ -119,6 +119,12 @@ public class UserService(
 
 		actor.Normalize(uri);
 
+		user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == actor.Username!.ToLowerInvariant() &&
+		                                               p.Host == host);
+		if (user is not null)
+			throw GracefulException
+				.UnprocessableEntity($"A user with acct @{user.UsernameLower}@{user.Host} already exists: {user.Uri}");
+
 		if (actor.Id != uri)
 			throw GracefulException.UnprocessableEntity("Uri doesn't match id of fetched actor");
 		if (actor.PublicKey?.Id == null || actor.PublicKey?.PublicKey == null)
@@ -153,7 +159,7 @@ public class UserService(
 			IsBot               = actor.IsBot,
 			Username            = actor.Username!,
 			UsernameLower       = actor.Username!.ToLowerInvariant(),
-			Host                = AcctToTuple(acct).Host,
+			Host                = host,
 			MovedToUri          = actor.MovedTo?.Link,
 			AlsoKnownAs         = actor.AlsoKnownAs?.Where(p => p.Link != null).Select(p => p.Link!).ToList(),
 			IsExplorable        = actor.IsDiscoverable ?? false,
