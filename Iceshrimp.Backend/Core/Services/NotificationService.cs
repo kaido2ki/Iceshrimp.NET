@@ -58,9 +58,15 @@ public class NotificationService(
 		                     .Select(p => p.BlockerId)
 		                     .ToListAsync();
 
+		var remote = await db.Users
+		                     .Where(p => users.Contains(p.Id) && p.IsRemoteUser)
+		                     .Select(p => p.Id)
+		                     .ToListAsync();
+
 		var notifications = users
 		                    .Where(p => p != note.UserId)
 		                    .Except(blocks)
+		                    .Except(remote)
 		                    .Select(p => new Notification
 		                    {
 			                    Id         = IdHelpers.GenerateSlowflakeId(),
