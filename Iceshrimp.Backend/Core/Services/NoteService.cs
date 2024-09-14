@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
@@ -13,6 +14,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -320,7 +322,7 @@ public class NoteService(
 			{
 				NoteId = renote.Id,
 				RecursionLimit = _recursionLimit,
-				AuthenticatedUserId = null, // FIXME: for private replies
+				AuthenticatedUserId = null, // TODO: for private replies
 			});
 		}
 
@@ -341,7 +343,8 @@ public class NoteService(
 				{
 					NoteId = note.Id,
 					RecursionLimit = _recursionLimit,
-					AuthenticatedUserId = null, // FIXME: for private replies
+					AuthenticatedUserId = null, // TODO: for private replies
+					Collection = JsonConvert.SerializeObject(asNote?.Replies as ASObject, LdHelpers.JsonSerializerSettings)
 				};
 
 				logger.LogDebug("Enqueueing reply collection fetch for note {noteId}", note.Id);
@@ -1167,13 +1170,15 @@ public class NoteService(
 		return await ResolveNoteAsync(note.Id, note);
 	}
 
-	public async Task BackfillRepliesAsync(Note note, User? fetchUser, int recursionLimit) 
+	public async Task BackfillRepliesAsync(Note note, User? fetchUser, ASCollection? repliesCollection, int recursionLimit) 
 	{
 		if (note.RepliesCollection == null) return;
 		note.RepliesFetchedAt = DateTime.UtcNow; // should get committed alongside the resolved reply objects 
 
+		repliesCollection ??= new ASCollection(note.RepliesCollection);
+
 		_recursionLimit = recursionLimit;
-		await objectResolver.IterateCollection(new ASCollection(note.RepliesCollection, withType: true))
+		await objectResolver.IterateCollection(repliesCollection)
 		                    .Take(100) // does this limit make sense?
 		                    .Where(p => p.Id != null)
 		                    .Select(p => ResolveNoteAsync(p.Id!, null, fetchUser, forceRefresh: false))

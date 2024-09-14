@@ -97,8 +97,8 @@ public class ASNote : ASObject
 	public List<ASAttachment>? Attachments { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#replies")]
-	[JC(typeof(ASOrderedCollectionConverter))]
-	public ASOrderedCollection? Replies { get; set; }
+	[JC(typeof(ASCollectionConverter))]
+	public ASCollection? Replies { get; set; }
 
 	public Note.NoteVisibility GetVisibility(User actor)
 	{

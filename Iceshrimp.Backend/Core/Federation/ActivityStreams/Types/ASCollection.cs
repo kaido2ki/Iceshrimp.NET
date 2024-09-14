@@ -37,8 +37,6 @@ public class ASCollection : ASObject
 	[J($"{Constants.ActivityStreamsNs}#last")]
 	[JC(typeof(ASCollectionPageConverter))]
 	public ASCollectionPage? Last { get; set; }
-
-	public new bool IsUnresolved => !TotalItems.HasValue;
 }
 
 public sealed class ASCollectionConverter : JsonConverter
