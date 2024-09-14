@@ -135,6 +135,8 @@ public static class ServiceExtensions
 		        .ConfigureWithValidation<Config.SecuritySection>(configuration, "Security")
 		        .ConfigureWithValidation<Config.PerformanceSection>(configuration, "Performance")
 		        .ConfigureWithValidation<Config.QueueConcurrencySection>(configuration, "Performance:QueueConcurrency")
+		        .ConfigureWithValidation<Config.BackfillSection>(configuration, "Backfill")
+		        .ConfigureWithValidation<Config.BackfillRepliesSection>(configuration, "Backfill:Replies")
 		        .ConfigureWithValidation<Config.QueueSection>(configuration, "Queue")
 		        .ConfigureWithValidation<Config.JobRetentionSection>(configuration, "Queue:JobRetention")
 		        .ConfigureWithValidation<Config.DatabaseSection>(configuration, "Database")

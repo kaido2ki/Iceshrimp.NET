@@ -16,6 +16,7 @@ public class QueueService(
 	IServiceScopeFactory scopeFactory,
 	ILogger<QueueService> logger,
 	IOptions<Config.QueueConcurrencySection> queueConcurrency,
+	IOptions<Config.BackfillSection> backfill,
 	IHostApplicationLifetime lifetime
 ) : BackgroundService
 {
@@ -30,7 +31,10 @@ public class QueueService(
 
 	protected override async Task ExecuteAsync(CancellationToken token)
 	{
-		_queues.AddRange([InboxQueue, PreDeliverQueue, DeliverQueue, BackgroundTaskQueue, BackfillQueue]);
+		_queues.AddRange([InboxQueue, PreDeliverQueue, DeliverQueue, BackgroundTaskQueue]);
+
+		if (backfill.Value.Replies.Enabled)
+			_queues.Add(BackfillQueue);
 
 		var tokenSource      = new CancellationTokenSource();
 		var queueTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token, lifetime.ApplicationStopping);

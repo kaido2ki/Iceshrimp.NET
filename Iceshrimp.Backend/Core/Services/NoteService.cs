@@ -33,6 +33,7 @@ public class NoteService(
 	DatabaseContext db,
 	ActivityPub.UserResolver userResolver,
 	IOptionsSnapshot<Config.InstanceSection> config,
+	IOptionsSnapshot<Config.BackfillSection> backfillConfig,
 	ActivityPub.ActivityFetcherService fetchSvc,
 	ActivityPub.ActivityDeliverService deliverSvc,
 	ActivityPub.NoteRenderer noteRenderer,
@@ -314,14 +315,18 @@ public class NoteService(
 			});
 		}
 
+		var replyBackfillConfig = backfillConfig.Value.Replies;
+
 		// If we're renoting a note we backfilled replies to some time ago (and know how to backfill), enqueue a backfill.
-		if (renote != null && renote.RepliesCollection != null && renote.RepliesFetchedAt != null && renote.RepliesFetchedAt?.AddDays(7) <= DateTime.UtcNow)
+		if (replyBackfillConfig.Enabled &&
+		    renote?.RepliesCollection != null &&
+		    renote.RepliesFetchedAt?.Add(replyBackfillConfig.RefreshOnRenoteAfterTimeSpan) <= DateTime.UtcNow)
 		{
 			logger.LogDebug("Enqueueing reply collection fetch for renote {renoteId}", renote.Id);
 			await queueSvc.BackfillQueue.EnqueueAsync(new BackfillJobData
 			{
-				NoteId = renote.Id,
-				RecursionLimit = _recursionLimit,
+				NoteId              = renote.Id,
+				RecursionLimit      = _recursionLimit,
 				AuthenticatedUserId = null, // TODO: for private replies
 			});
 		}
@@ -337,23 +342,27 @@ public class NoteService(
 				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount + 1));
 			});
 
-			if (note.RepliesCollection != null)
+			if (replyBackfillConfig.Enabled && note.RepliesCollection != null)
 			{
 				var jobData = new BackfillJobData
 				{
-					NoteId = note.Id,
-					RecursionLimit = _recursionLimit,
+					NoteId              = note.Id,
+					RecursionLimit      = _recursionLimit,
 					AuthenticatedUserId = null, // TODO: for private replies
-					Collection = JsonConvert.SerializeObject(asNote?.Replies as ASObject, LdHelpers.JsonSerializerSettings)
+					Collection = asNote?.Replies?.IsUnresolved == false
+						? JsonConvert.SerializeObject(asNote.Replies, LdHelpers.JsonSerializerSettings)
+						: null
 				};
 
 				logger.LogDebug("Enqueueing reply collection fetch for note {noteId}", note.Id);
 
 				// Delay reply backfilling for brand new notes to allow them time to collect replies.
-				if (note.CreatedAt.AddHours(3) <= DateTime.UtcNow)
+				if (note.CreatedAt + replyBackfillConfig.NewNoteThresholdTimeSpan <= DateTime.UtcNow)
 					await queueSvc.BackfillQueue.EnqueueAsync(jobData);
 				else
-					await queueSvc.BackfillQueue.ScheduleAsync(jobData, DateTime.UtcNow.AddHours(3));
+					await queueSvc.BackfillQueue.ScheduleAsync(jobData,
+					                                           DateTime.UtcNow +
+					                                           replyBackfillConfig.NewNoteDelayTimeSpan);
 			}
 
 			return note;
@@ -1170,10 +1179,13 @@ public class NoteService(
 		return await ResolveNoteAsync(note.Id, note);
 	}
 
-	public async Task BackfillRepliesAsync(Note note, User? fetchUser, ASCollection? repliesCollection, int recursionLimit) 
+	public async Task BackfillRepliesAsync(
+		Note note, User? fetchUser, ASCollection? repliesCollection, int recursionLimit
+	)
 	{
 		if (note.RepliesCollection == null) return;
-		note.RepliesFetchedAt = DateTime.UtcNow; // should get committed alongside the resolved reply objects 
+		await db.Notes.Where(p => p == note)
+		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.RepliesFetchedAt, _ => DateTime.UtcNow));
 
 		repliesCollection ??= new ASCollection(note.RepliesCollection);
 
@@ -1367,10 +1379,11 @@ public class NoteService(
 
 		// ReSharper disable once EntityFramework.UnsupportedServerSideFunctionCall
 		var followingUser = await db.Users.FirstOrDefaultAsync(p => p.IsFollowing(user));
-		var notes = await objectResolver.IterateCollection(collection).Take(10)
-		                            .Where(p => p.Id != null)
-		                            .Select(p => ResolveNoteAsync(p.Id!, null, followingUser, true))
-		                            .AwaitAllNoConcurrencyAsync();
+		var notes = await objectResolver.IterateCollection(collection)
+		                                .Take(10)
+		                                .Where(p => p.Id != null)
+		                                .Select(p => ResolveNoteAsync(p.Id!, null, followingUser, true))
+		                                .AwaitAllNoConcurrencyAsync();
 
 		var previousPins = await db.Users.Where(p => p.Id == user.Id)
 		                           .Select(p => p.PinnedNotes.Select(i => i.Id))

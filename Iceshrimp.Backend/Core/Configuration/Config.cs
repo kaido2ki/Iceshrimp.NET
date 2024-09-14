@@ -20,6 +20,7 @@ public sealed class Config
 	public required StorageSection     Storage     { get; init; } = new();
 	public required PerformanceSection Performance { get; init; } = new();
 	public required QueueSection       Queue       { get; init; } = new();
+	public required BackfillSection    Backfill    { get; init; } = new();
 
 	public sealed class InstanceSection
 	{
@@ -97,34 +98,7 @@ public sealed class Config
 		public string? MediaRetention
 		{
 			get => MediaRetentionTimeSpan?.ToString();
-			init
-			{
-				if (value == null || string.IsNullOrWhiteSpace(value) || value.Trim() == "0")
-				{
-					MediaRetentionTimeSpan = null;
-					return;
-				}
-
-				if (value.Trim() == "-1")
-				{
-					MediaRetentionTimeSpan = TimeSpan.MaxValue;
-					return;
-				}
-
-				if (value.Length < 2 || !int.TryParse(value[..^1].Trim(), out var num))
-					throw new Exception("Invalid media retention time");
-
-				var suffix = value[^1];
-
-				MediaRetentionTimeSpan = suffix switch
-				{
-					'd' => TimeSpan.FromDays(num),
-					'w' => TimeSpan.FromDays(num * 7),
-					'm' => TimeSpan.FromDays(num * 30),
-					'y' => TimeSpan.FromDays(num * 365),
-					_   => throw new Exception("Unsupported suffix, use one of: [d]ays, [w]eeks, [m]onths, [y]ears")
-				};
-			}
+			init => MediaRetentionTimeSpan = ParseNaturalDuration(value, "media retention time");
 		}
 
 		public string? MaxUploadSize
@@ -368,5 +342,64 @@ public sealed class Config
 	{
 		[Range(0, int.MaxValue)] public int Completed { get; init; } = 100;
 		[Range(0, int.MaxValue)] public int Failed    { get; init; } = 10;
+	}
+
+	public sealed class BackfillSection
+	{
+		public BackfillRepliesSection Replies { get; init; } = new();
+	}
+
+	public sealed class BackfillRepliesSection
+	{
+		public bool Enabled { get; init; } = false;
+
+		public string? NewNoteThreshold
+		{
+			get => NewNoteThresholdTimeSpan.ToString();
+			init => NewNoteThresholdTimeSpan =
+				ParseNaturalDuration(value, "new note threshold") ?? TimeSpan.FromHours(3);
+		}
+
+		public string? NewNoteDelay
+		{
+			get => NewNoteDelayTimeSpan.ToString();
+			init => NewNoteDelayTimeSpan =
+				ParseNaturalDuration(value, "new note delay") ?? TimeSpan.FromHours(3);
+		}
+
+		public string? RefreshOnRenoteAfter
+		{
+			get => RefreshOnRenoteAfterTimeSpan.ToString();
+			init => RefreshOnRenoteAfterTimeSpan =
+				ParseNaturalDuration(value, "refresh renote after duration") ?? TimeSpan.FromDays(7);
+		}
+
+		public TimeSpan NewNoteThresholdTimeSpan     = TimeSpan.FromHours(3);
+		public TimeSpan NewNoteDelayTimeSpan         = TimeSpan.FromHours(3);
+		public TimeSpan RefreshOnRenoteAfterTimeSpan = TimeSpan.FromDays(7);
+	}
+
+	private static TimeSpan? ParseNaturalDuration(string? value, string name)
+	{
+		if (value == null || string.IsNullOrWhiteSpace(value) || value.Trim() == "0")
+			return null;
+
+		if (value.Trim() == "-1")
+			return TimeSpan.MaxValue;
+
+		if (value.Length < 2 || !int.TryParse(value[..^1].Trim(), out var num))
+			throw new Exception($"Invalid {name}");
+
+		var suffix = value[^1];
+
+		return suffix switch
+		{
+			'h' => TimeSpan.FromHours(num),
+			'd' => TimeSpan.FromDays(num),
+			'w' => TimeSpan.FromDays(num * 7),
+			'm' => TimeSpan.FromDays(num * 30),
+			'y' => TimeSpan.FromDays(num * 365),
+			_   => throw new Exception("Unsupported suffix, use one of: [h]ours, [d]ays, [w]eeks, [m]onths, [y]ears")
+		};
 	}
 }
