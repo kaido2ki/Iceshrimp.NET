@@ -345,7 +345,12 @@ public class NoteService(
 				};
 
 				logger.LogDebug("Enqueueing reply collection fetch for note {noteId}", note.Id);
-				await queueSvc.BackfillQueue.EnqueueAsync(jobData);
+
+				// Delay reply backfilling for brand new notes to allow them time to collect replies.
+				if (note.CreatedAt.AddHours(3) <= DateTime.UtcNow)
+					await queueSvc.BackfillQueue.EnqueueAsync(jobData);
+				else
+					await queueSvc.BackfillQueue.ScheduleAsync(jobData, DateTime.UtcNow.AddHours(3));
 			}
 
 			return note;
