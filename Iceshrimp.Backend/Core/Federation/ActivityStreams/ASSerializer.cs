@@ -32,6 +32,15 @@ public static class ASSerializer
 				return obj.ToObject<T?>();
 			}
 
+			if (reader.TokenType == JsonToken.String && typeof(T).IsAssignableFrom(reader.ValueType))
+				return reader.Value;
+
+			if (reader.TokenType == JsonToken.Integer && typeof(T).IsAssignableFrom(reader.ValueType))
+				return reader.Value;
+
+			if (reader.TokenType == JsonToken.Float && typeof(T).IsAssignableFrom(reader.ValueType))
+				return reader.Value;
+
 			return null;
 		}
 
