@@ -140,6 +140,8 @@ public class InstanceService(DatabaseContext db, HttpClient httpClient, ILogger<
 	public async Task MarkInstanceAsUnresponsive(string host, string webDomain)
 	{
 		var instance = await GetUpdatedInstanceMetadataAsync(host, webDomain);
-
+		instance.LatestRequestSentAt = DateTime.UtcNow;
+		instance.IsNotResponding     = true;
+		await db.SaveChangesAsync();
 	}
 }
