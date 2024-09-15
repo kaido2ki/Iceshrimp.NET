@@ -80,6 +80,7 @@
     private            IDisposable?                _locationChangingHandlerDisposable;
     private            IDisposable?                _noteChangedHandler;
     private            LoadState                   _componentState;
+    private            bool                        _firstLoad = true;
 
     private enum LoadState
     {
@@ -89,7 +90,7 @@
         Deleted
     }
 
-    protected override async Task OnParametersSetAsync()
+    private async Task Load()
     {
         Logger.LogTrace($"Opening NoteID: {NoteId}");
         _componentState = LoadState.Loading;
@@ -122,7 +123,21 @@
         }
 
         _componentState = LoadState.Init;
+    }
 
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_firstLoad)
+        {
+            _firstLoad = false;
+            return;
+        }
+        await Load();
         StateHasChanged();
     }
 
