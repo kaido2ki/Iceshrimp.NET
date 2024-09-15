@@ -68,44 +68,8 @@ public sealed class ASOrderedCollectionConverter : JsonConverter
 	}
 
 	public override object? ReadJson(
-		JsonReader reader, Type objectType, object? existingValue,
-		JsonSerializer serializer
-	)
-	{
-		if (reader.TokenType == JsonToken.StartArray)
-		{
-			var obj = JArray.Load(reader);
-			try
-			{
-				var valueList = obj.ToObject<List<LDValueObject<object?>>>();
-				if (valueList?.Any(p => p.Value != null) ?? false)
-					return ValueObjectConverter.HandleObject(valueList[0], objectType);
-			}
-			catch
-			{
-				//ignored
-			}
-
-			var list = obj.ToObject<List<ASOrderedCollection?>>();
-			return list == null || list.Count == 0 ? null : list[0];
-		}
-
-		if (reader.TokenType == JsonToken.StartObject)
-		{
-			var obj = JObject.Load(reader);
-			try { }
-			catch
-			{
-				var valueObj = obj.ToObject<LDValueObject<object?>>();
-				if (valueObj is { Value: not null })
-					return ValueObjectConverter.HandleObject(valueObj, objectType);
-			}
-
-			return obj.ToObject<ASOrderedCollection?>();
-		}
-
-		return null;
-	}
+		JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer
+	) => ASCollectionConverter.HandleCollectionObject<ASOrderedCollection>(reader, objectType);
 
 	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
 	{

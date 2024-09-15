@@ -49,18 +49,18 @@ public sealed class ASCollectionConverter : JsonConverter
 	}
 
 	public override object? ReadJson(
-		JsonReader reader, Type objectType, object? existingValue,
-		JsonSerializer serializer
-	)
+		JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer
+	) => HandleCollectionObject<ASCollection>(reader, objectType);
+
+	public static object? HandleCollectionObject<T>(JsonReader reader, Type objectType)
 	{
 		if (reader.TokenType == JsonToken.StartArray)
 		{
 			var obj = JArray.Load(reader);
-
 			try
 			{
 				var valueList = obj.ToObject<List<LDValueObject<object?>>>();
-				if (valueList is { Count: > 0 })
+				if (valueList is { Count: > 0 } && valueList[0] is { Value: not null })
 					return VC.HandleObject(valueList[0], objectType);
 			}
 			catch
@@ -68,7 +68,7 @@ public sealed class ASCollectionConverter : JsonConverter
 				// ignored
 			}
 
-			var list = obj.ToObject<List<ASCollection?>>();
+			var list = obj.ToObject<List<T?>>();
 			return list == null || list.Count == 0 ? null : list[0];
 		}
 
@@ -78,7 +78,7 @@ public sealed class ASCollectionConverter : JsonConverter
 			try
 			{
 				var valueObj = obj.ToObject<LDValueObject<object?>>();
-				if (valueObj != null)
+				if (valueObj is { Value: not null })
 					return VC.HandleObject(valueObj, objectType);
 			}
 			catch
@@ -86,7 +86,7 @@ public sealed class ASCollectionConverter : JsonConverter
 				// ignored
 			}
 
-			return obj.ToObject<ASCollection?>();
+			return obj.ToObject<T?>();
 		}
 
 		return null;

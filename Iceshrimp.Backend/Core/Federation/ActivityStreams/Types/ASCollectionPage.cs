@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using VC = Iceshrimp.Backend.Core.Federation.ActivityStreams.Types.ValueObjectConverter;
@@ -49,31 +48,8 @@ public sealed class ASCollectionPageConverter : JsonConverter
 	}
 
 	public override object? ReadJson(
-		JsonReader reader, Type objectType, object? existingValue,
-		JsonSerializer serializer
-	)
-	{
-		if (reader.TokenType == JsonToken.StartArray)
-		{
-			var obj       = JArray.Load(reader);
-			var valueList = obj.ToObject<List<LDValueObject<object?>>>();
-			if (valueList is { Count: > 0 } && valueList[0] is { Value: not null })
-				return VC.HandleObject(valueList[0], objectType);
-			var list = obj.ToObject<List<ASCollectionPage?>>();
-			return list == null || list.Count == 0 ? null : list[0];
-		}
-
-		if (reader.TokenType == JsonToken.StartObject)
-		{
-			var obj      = JObject.Load(reader);
-			var valueObj = obj.ToObject<LDValueObject<object?>>();
-			return valueObj is { Value: not null }
-				? VC.HandleObject(valueObj, objectType)
-				: obj.ToObject<ASCollectionPage?>();
-		}
-
-		return null;
-	}
+		JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer
+	) => ASCollectionConverter.HandleCollectionObject<ASCollectionPage>(reader, objectType);
 
 	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
 	{
