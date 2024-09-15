@@ -21,6 +21,7 @@ public class UserModel(
 {
 	public new User?   User;
 	public     string? Bio;
+	public     bool    ShowMedia = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery",
 	                 Justification = "IncludeCommonProperties")]
@@ -55,6 +56,9 @@ public class UserModel(
 
 		if (User?.UserProfile?.Description is { } bio)
 			Bio = await mfm.ToHtmlAsync(bio, User.UserProfile.Mentions, User.Host, divAsRoot: true);
+
+		if (User is { AvatarUrl: null } || (User is not null && !ShowMedia))
+			User.AvatarUrl = User.GetIdenticonUrl(instance.Value);
 
 		return Page();
 	}

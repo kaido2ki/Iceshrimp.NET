@@ -19,9 +19,10 @@ else
         var acct        = "@" + note.User.Username + (note.User.IsLocalUser ? "" : "@" + note.User.Host);
         var displayName = note.User.DisplayName;
         var username    = note.User.Username;
+        var avatarUrl   = note.User.AvatarUrl == null || !Model.ShowMedia ? $"/identicon/{note.User.Id}" : note.User.AvatarUrl;
 
         <div class="user">
-            <img src="@(note.User.AvatarUrl ?? $"/identicon/{note.User.Id}")" class="avatar" alt="User avatar"/>
+            <img src="@avatarUrl" class="avatar" alt="User avatar"/>
             <div class="title">@name by <span>@(displayName ?? username)</span></div>
             <span class="acct">@acct</span>
         </div>

@@ -28,7 +28,7 @@ else
 
     <div class="user">
         <div class="header">
-            <img src="@(Model.User.AvatarUrl ?? $"/identicon/{Model.User.Id}")" class="avatar" alt="User avatar"/>
+            <img src="@(Model.User.AvatarUrl)" class="avatar" alt="User avatar"/>
             <div class="title">
                 <span>@(Model.User.DisplayName ?? Model.User.Username)</span>
             </div>
