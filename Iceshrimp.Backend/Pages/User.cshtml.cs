@@ -24,7 +24,7 @@ public class UserModel(
 	public new User?   User;
 	public     string? Bio;
 	public     bool    ShowMedia    = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
-	public     string  InstanceName = await meta.Get(MetaEntity.InstanceName) ?? "Iceshrimp.NET";
+	public     string  InstanceName = "Iceshrimp.NET";
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery",
 	                 Justification = "IncludeCommonProperties")]
@@ -37,6 +37,8 @@ public class UserModel(
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance.",
 			                                  "The instance administrator has intentionally disabled this feature for privacy reasons.");
+
+		InstanceName = await meta.Get(MetaEntity.InstanceName) ?? InstanceName;
 
 		//TODO: login button
 		//TODO: user note view (respect public preview settings - don't show renotes of remote notes if set to restricted or lower)

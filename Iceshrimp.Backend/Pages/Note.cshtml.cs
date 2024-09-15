@@ -26,7 +26,7 @@ public class NoteModel(
 	public string? QuoteUrl;
 	public bool ShowMedia = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
 	public bool ShowRemoteReplies = security.Value.PublicPreview > Enums.PublicPreview.Restricted;
-	public string InstanceName = await meta.Get(MetaEntity.InstanceName) ?? "Iceshrimp.NET";
+	public string InstanceName = "Iceshrimp.NET";
 
 	public Dictionary<string, string> TextContent = new();
 
@@ -41,6 +41,8 @@ public class NoteModel(
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance.",
 			                                  "The instance administrator has intentionally disabled this feature for privacy reasons.");
+
+		InstanceName = await meta.Get(MetaEntity.InstanceName) ?? InstanceName;
 
 		//TODO: redirect to login (with route as url param) when public preview is disabled
 		//TODO: login button
