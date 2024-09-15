@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -16,15 +17,17 @@ public class NoteModel(
 	DatabaseContext db,
 	IOptions<Config.InstanceSection> config,
 	IOptions<Config.SecuritySection> security,
+	MetaService meta,
 	MfmConverter mfmConverter
 ) : PageModel
 {
 	public Dictionary<string, List<DriveFile>> MediaAttachments = new();
-	public Note?                               Note;
-	public string?                             QuoteUrl;
+	public Note? Note;
+	public string? QuoteUrl;
+	public bool ShowMedia = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
+	public bool ShowRemoteReplies = security.Value.PublicPreview > Enums.PublicPreview.Restricted;
+	public string InstanceName = await meta.Get(MetaEntity.InstanceName) ?? "Iceshrimp.NET";
 
-	public bool                       ShowMedia = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
-	public bool                       ShowRemoteReplies = security.Value.PublicPreview > Enums.PublicPreview.Restricted;
 	public Dictionary<string, string> TextContent = new();
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery",

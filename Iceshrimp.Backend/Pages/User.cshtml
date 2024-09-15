@@ -13,11 +13,11 @@
 }
 else
 {
-    ViewData["title"] = $"@{Model.User.Username} - Iceshrimp.NET";
+    ViewData["title"] = $"@{Model.User.Username} - {Model.InstanceName}";
     @section head
     {
         <meta name="twitter:card" content="summary">
-        <meta name="og:site_name" content="Iceshrimp.NET">
+        <meta name="og:site_name" content="@Model.InstanceName">
         <meta name="og:title" content="@@@Model.User.Username">
         @if (Model.User.UserProfile?.Description is { } bio)
         {

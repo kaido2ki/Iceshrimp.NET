@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -16,12 +17,14 @@ public class UserModel(
 	DatabaseContext db,
 	IOptions<Config.SecuritySection> security,
 	IOptions<Config.InstanceSection> instance,
+	MetaService meta,
 	MfmConverter mfm
 ) : PageModel
 {
 	public new User?   User;
 	public     string? Bio;
-	public     bool    ShowMedia = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
+	public     bool    ShowMedia    = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
+	public     string  InstanceName = await meta.Get(MetaEntity.InstanceName) ?? "Iceshrimp.NET";
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery",
 	                 Justification = "IncludeCommonProperties")]

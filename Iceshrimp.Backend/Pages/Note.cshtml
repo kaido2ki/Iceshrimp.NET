@@ -87,7 +87,7 @@ else
         </p>
     }
 
-    ViewData["title"] = $"Note by @{Model.Note.User.Username} - Iceshrimp.NET";
+    ViewData["title"] = $"Note by @{Model.Note.User.Username} - {Model.InstanceName}";
     @section head
     {
         @{
@@ -113,7 +113,7 @@ else
 
             <meta name="og:description" content="@(text + (Model.QuoteUrl != null ? $"\n\nRE: {Model.QuoteUrl}" : ""))">
         }
-        <meta name="og:site_name" content="Iceshrimp.NET">
+        <meta name="og:site_name" content="@Model.InstanceName">
         @if (Model.ShowMedia && attachments != null)
         {
             if (attachments.Any(p => p.Type.StartsWith("image/")))
