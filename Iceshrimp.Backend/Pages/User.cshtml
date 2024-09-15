@@ -21,7 +21,7 @@ else
         <meta name="og:title" content="@@@Model.User.Username">
         @if (Model.User.UserProfile?.Description is { } bio)
         {
-            <meta name="og:description" content="@bio)">
+            <meta name="og:description" content="@bio">
         }
         <meta name="og:image" content="@(Model.User.AvatarUrl ?? $"/identicon/{Model.User.Id}")">
     }
