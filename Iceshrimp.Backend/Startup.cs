@@ -30,7 +30,7 @@ builder.Services.AddAuthorizationPolicies();
 builder.Services.AddAuthenticationServices();
 builder.Services.AddSignalR().AddMessagePackProtocol();
 builder.Services.AddResponseCompression();
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages().AddRouteOverrides();
 
 builder.Services.AddServices(builder.Configuration);
 builder.Services.ConfigureServices(builder.Configuration);

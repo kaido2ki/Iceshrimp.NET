@@ -1,0 +1,41 @@
+@page
+@attribute [RazorCompiledItemMetadata("RouteTemplate", "/@{user}")]
+@using Microsoft.AspNetCore.Razor.Hosting
+@model UserModel
+
+@if (Model.User == null)
+{
+    Response.StatusCode = 404;
+    <div>
+        <h2>Not found</h2>
+        <p>This user doesn't appear to exist on this server</p>
+    </div>
+}
+else
+{
+    ViewData["title"] = $"@{Model.User.Username} - Iceshrimp.NET";
+    @section head
+    {
+        <meta name="twitter:card" content="summary">
+        <meta name="og:site_name" content="Iceshrimp.NET">
+        <meta name="og:title" content="@@@Model.User.Username">
+        @if (Model.User.UserProfile?.Description is { } bio)
+        {
+            <meta name="og:description" content="@bio)">
+        }
+        <meta name="og:image" content="@(Model.User.AvatarUrl ?? $"/identicon/{Model.User.Id}")">
+    }
+
+    <div class="user">
+        <div class="header">
+            <img src="@(Model.User.AvatarUrl ?? $"/identicon/{Model.User.Id}")" class="avatar" alt="User avatar"/>
+            <div class="title">
+                <span>@(Model.User.DisplayName ?? Model.User.Username)</span>
+            </div>
+            <span class="acct">@@@Model.User.Acct</span>
+        </div>
+        <div class="bio">
+            @Html.Raw(Model.Bio ?? "<i>This user hasn't added a bio yet.</i>")
+        </div>
+    </div>
+}
