@@ -43,7 +43,21 @@ public class DeliverQueue(int parallelism)
 
 		try
 		{
-			var response = await httpClient.SendAsync(request, token).WaitAsync(TimeSpan.FromSeconds(10), token);
+			HttpResponseMessage response;
+			try
+			{
+				response = await httpClient.SendAsync(request, token).WaitAsync(TimeSpan.FromSeconds(10), token);
+			}
+			catch
+			{
+				_ = followup.ExecuteTask("UpdateInstanceMetadata", async provider =>
+				{
+					var instanceSvc = provider.GetRequiredService<InstanceService>();
+					await instanceSvc.MarkInstanceAsUnresponsive(jobData.RecipientHost, new Uri(jobData.InboxUrl).Host);
+				});
+
+				throw;
+			}
 
 			_ = followup.ExecuteTask("UpdateInstanceMetadata", async provider =>
 			{

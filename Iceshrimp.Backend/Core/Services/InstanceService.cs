@@ -136,4 +136,10 @@ public class InstanceService(DatabaseContext db, HttpClient httpClient, ILogger<
 
 		await db.SaveChangesAsync();
 	}
+
+	public async Task MarkInstanceAsUnresponsive(string host, string webDomain)
+	{
+		var instance = await GetUpdatedInstanceMetadataAsync(host, webDomain);
+
+	}
 }
