@@ -171,6 +171,11 @@ public static class WebApplicationExtensions
 				Environment.Exit(1);
 			}
 		}
+		else if (args.Contains("--migrate") || args.Contains("--migrate-and-start"))
+		{
+			app.Logger.LogInformation("No migrations are pending.");
+			if (args.Contains("--migrate")) Environment.Exit(0);
+		}
 
 		if (args.Contains("--recompute-counters"))
 		{
