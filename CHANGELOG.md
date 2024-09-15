@@ -181,7 +181,6 @@ This release contains lots of new features & bugfixes. Upgrading is recommended 
 - Transitive dependencies are now being audited for vulnerabilities as well
 - Docker builds based on musl no longer result in glibc binaries
 - FEDERATION.md (FEP-67ff) has been added to the project root
-- 
 
 ### Attribution
 This release was made possible by project contributors: Kopper, Laura Hausmann, Lilian, pancakes & zotan
