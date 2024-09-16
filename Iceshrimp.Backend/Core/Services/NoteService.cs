@@ -1195,7 +1195,7 @@ public class NoteService(
 
 		_recursionLimit = recursionLimit;
 		await objectResolver.IterateCollection(repliesCollection)
-		                    .Take(100) // does this limit make sense?
+		                    .Take(50)
 		                    .Where(p => p.Id != null && (replyBackfillConfig.BackfillEverything || new Uri(p.Id).Authority == collectionId.Authority))
 		                    .Select(p => ResolveNoteAsync(p.Id!, null, fetchUser, forceRefresh: false))
 		                    .AwaitAllNoConcurrencyAsync();

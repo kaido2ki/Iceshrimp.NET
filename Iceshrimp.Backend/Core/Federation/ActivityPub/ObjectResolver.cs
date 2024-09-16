@@ -78,7 +78,7 @@ public class ObjectResolver(
 		}
 	}
 
-	public async IAsyncEnumerable<ASObject> IterateCollection(ASCollection? collection)
+	public async IAsyncEnumerable<ASObject> IterateCollection(ASCollection? collection, int pageLimit = 10)
 	{
 		if (collection == null) yield break;
 
@@ -90,10 +90,6 @@ public class ObjectResolver(
 		if (collection.Items != null)
 			foreach (var item in collection.Items)
 				yield return item;
-
-		// we only limit based on pages here. the consumer of this iterator may
-		// additionally limit per-item via System.Linq.Async Take()
-		var pageLimit = 50;
 
 		// some remote software (e.g. fedibird) can get in a state where page.next == page.id
 		var visitedPages = new HashSet<string>();
@@ -118,6 +114,8 @@ public class ObjectResolver(
 				visitedPages.Add(page.Next.Id);
 			}
 
+			// we only limit based on pages here. the consumer of this iterator may
+			// additionally limit per-item via System.Linq.Async Take()
 			if (--pageLimit <= 0)
 				break;
 
