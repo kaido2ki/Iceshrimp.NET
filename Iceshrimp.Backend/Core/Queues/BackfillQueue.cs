@@ -20,6 +20,10 @@ public class BackfillQueue(int parallelism)
 		CancellationToken token
 	)
 	{
+		// Exit early if a job that ran out of it's recursion limit has been queued.
+		// This should usually not happen, but just in case.
+		if (jobData.RecursionLimit <= 0) return;
+
 		var logger = scope.GetRequiredService<ILogger<BackfillQueue>>();
 		logger.LogDebug("Backfilling replies for note {id} as user {userId}", jobData.NoteId,
 		                jobData.AuthenticatedUserId);

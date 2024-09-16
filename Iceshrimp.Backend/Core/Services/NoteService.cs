@@ -320,7 +320,8 @@ public class NoteService(
 		// If we're renoting a note we backfilled replies to some time ago (and know how to backfill), enqueue a backfill.
 		if (replyBackfillConfig.Enabled &&
 		    renote?.RepliesCollection != null &&
-		    renote.RepliesFetchedAt?.Add(replyBackfillConfig.RefreshOnRenoteAfterTimeSpan) <= DateTime.UtcNow)
+		    renote.RepliesFetchedAt?.Add(replyBackfillConfig.RefreshOnRenoteAfterTimeSpan) <= DateTime.UtcNow &&
+			_recursionLimit > 0)
 		{
 			logger.LogDebug("Enqueueing reply collection fetch for renote {renoteId}", renote.Id);
 			await queueSvc.BackfillQueue.EnqueueAsync(new BackfillJobData
@@ -342,7 +343,7 @@ public class NoteService(
 				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount + 1));
 			});
 
-			if (replyBackfillConfig.Enabled && note.RepliesCollection != null)
+			if (replyBackfillConfig.Enabled && note.RepliesCollection != null && _recursionLimit > 0)
 			{
 				var jobData = new BackfillJobData
 				{
