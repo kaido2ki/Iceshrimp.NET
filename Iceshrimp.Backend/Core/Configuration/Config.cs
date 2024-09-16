@@ -351,7 +351,8 @@ public sealed class Config
 
 	public sealed class BackfillRepliesSection
 	{
-		public bool Enabled { get; init; } = false;
+		public bool Enabled            { get; init; } = false;
+		public bool BackfillEverything { get; init; } = false;
 
 		public string? NewNoteThreshold
 		{
