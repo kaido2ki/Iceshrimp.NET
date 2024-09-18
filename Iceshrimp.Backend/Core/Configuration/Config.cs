@@ -33,12 +33,13 @@ public sealed class Config
 		public string  Version    => _versionInfo.Version;
 		public string  UserAgent  => $"Iceshrimp.NET/{Version} (+https://{WebDomain}/)";
 
-		[Range(1, 65535)] public  int     ListenPort     { get; init; } = 3000;
-		[Required]        public  string  ListenHost     { get; init; } = "localhost";
-		public                    string? ListenSocket   { get; init; }
-		[Required]         public string  WebDomain      { get; init; } = null!;
-		[Required]         public string  AccountDomain  { get; init; } = null!;
-		[Range(1, 100000)] public int     CharacterLimit { get; init; } = 8192;
+		[Range(1, 65535)] public  int     ListenPort      { get; init; } = 3000;
+		[Required]        public  string  ListenHost      { get; init; } = "localhost";
+		public                    string? ListenSocket    { get; init; }
+		[Required]         public string  WebDomain       { get; init; } = null!;
+		[Required]         public string  AccountDomain   { get; init; } = null!;
+		[Range(1, 100000)] public int     CharacterLimit  { get; init; } = 8192;
+		public                    string? RedirectIndexTo { get; init; }
 
 		public string? AdditionalDomains
 		{
