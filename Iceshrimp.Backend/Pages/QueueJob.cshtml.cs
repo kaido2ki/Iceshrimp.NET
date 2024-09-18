@@ -1,13 +1,14 @@
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Pages;
 
-public class QueueJobModel(DatabaseContext db) : PageModel
+public class QueueJobModel(DatabaseContext db, MetaService meta) : PageModel
 {
 	private static Dictionary<string, string> _lookup = new()
 	{
@@ -16,8 +17,8 @@ public class QueueJobModel(DatabaseContext db) : PageModel
 		["pre-deliver"] = "serializedActivity"
 	};
 
-	public Job Job = null!;
-
+	public Job                        Job          = null!;
+	public string                     InstanceName = "Iceshrimp.NET";
 	public Dictionary<string, string> Lookup => _lookup;
 
 	public async Task<IActionResult> OnGet([FromRoute] Guid id)
@@ -26,8 +27,9 @@ public class QueueJobModel(DatabaseContext db) : PageModel
 			return Redirect("/login");
 		if (!await db.Sessions.AnyAsync(p => p.Token == cookie && p.Active && p.User.IsAdmin))
 			return Redirect("/login");
-		
+
 		Request.HttpContext.HideFooter();
+		InstanceName = await meta.Get(MetaEntity.InstanceName) ?? InstanceName;
 
 		Job = await db.Jobs.FirstOrDefaultAsync(p => p.Id == id) ??
 		      throw GracefulException.NotFound($"Job {id} not found");

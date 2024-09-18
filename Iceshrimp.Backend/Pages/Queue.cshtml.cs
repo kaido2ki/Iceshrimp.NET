@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Pages;
 
-public class QueueModel(DatabaseContext db, QueueService queueSvc) : PageModel
+public class QueueModel(DatabaseContext db, QueueService queueSvc, MetaService meta) : PageModel
 {
 	public int?               DelayedCount;
 	public Job.JobStatus?     Filter;
@@ -21,6 +21,7 @@ public class QueueModel(DatabaseContext db, QueueService queueSvc) : PageModel
 	public int?               TotalCount;
 	public List<QueueStatus>? QueueStatuses;
 	public long?              Last;
+	public string             InstanceName = "Iceshrimp.NET";
 
 	public async Task<IActionResult> OnGet(
 		[FromRoute] string? queue, [FromRoute(Name = "pagination")] int? page, [FromRoute] string? status
@@ -30,8 +31,9 @@ public class QueueModel(DatabaseContext db, QueueService queueSvc) : PageModel
 			return Redirect("/login");
 		if (!await db.Sessions.AnyAsync(p => p.Token == cookie && p.Active && p.User.IsAdmin))
 			return Redirect("/login");
-		
+
 		Request.HttpContext.HideFooter();
+		InstanceName = await meta.Get(MetaEntity.InstanceName) ?? InstanceName;
 
 		if (queue == null)
 		{
