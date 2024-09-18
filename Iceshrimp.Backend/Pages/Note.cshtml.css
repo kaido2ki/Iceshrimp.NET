@@ -42,3 +42,7 @@
 .note {
     background-color: var(--background-body)
 }
+
+.display-name {
+    color: var(--text-bright);
+}

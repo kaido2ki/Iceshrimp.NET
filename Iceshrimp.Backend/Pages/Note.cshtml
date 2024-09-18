@@ -19,11 +19,12 @@ else
         var acct        = "@" + note.User.Username + (note.User.IsLocalUser ? "" : "@" + note.User.Host);
         var displayName = note.User.DisplayName;
         var username    = note.User.Username;
+        var url         = note.User.UserProfile?.Url ?? note.User.Uri ?? note.User.GetPublicUrl(Model.WebDomain);
         var avatarUrl   = note.User.AvatarUrl == null || !Model.ShowMedia ? note.User.IdenticonUrlPath : note.User.AvatarUrl;
 
         <div class="user">
-            <img src="@avatarUrl" class="avatar" alt="User avatar"/>
-            <div class="title">@name by <span>@(displayName ?? username)</span></div>
+            <a href="@url"><img src="@avatarUrl" class="avatar" alt="User avatar"/></a>
+            <div class="title">@name by <a class="display-name" href="@url">@(displayName ?? username)</a></div>
             <span class="acct">@acct</span>
         </div>
         <small>Published at: @note.CreatedAt.ToDisplayString()</small>

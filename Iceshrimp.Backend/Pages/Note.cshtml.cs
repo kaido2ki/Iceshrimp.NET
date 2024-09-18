@@ -27,6 +27,7 @@ public class NoteModel(
 	public bool ShowMedia = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
 	public bool ShowRemoteReplies = security.Value.PublicPreview > Enums.PublicPreview.Restricted;
 	public string InstanceName = "Iceshrimp.NET";
+	public string WebDomain = config.Value.WebDomain;
 
 	public Dictionary<string, string> TextContent = new();
 
