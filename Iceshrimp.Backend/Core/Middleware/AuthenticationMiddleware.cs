@@ -110,8 +110,9 @@ public class AuthenticateAttribute(params string[] scopes) : Attribute
 
 public static partial class HttpContextExtensions
 {
-	private const string Key         = "session";
-	private const string MastodonKey = "masto-session";
+	private const string Key           = "session";
+	private const string MastodonKey   = "masto-session";
+	private const string HideFooterKey = "hide-login-footer";
 
 	internal static void SetSession(this HttpContext ctx, Session session)
 	{
@@ -149,4 +150,12 @@ public static partial class HttpContextExtensions
 	{
 		return ctx.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
 	}
+
+	public static bool ShouldHideFooter(this HttpContext ctx)
+	{
+		ctx.Items.TryGetValue(HideFooterKey, out var auth);
+		return auth is true;
+	}
+
+	public static void HideFooter(this HttpContext ctx) => ctx.Items.Add(HideFooterKey, true);
 }

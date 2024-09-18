@@ -40,7 +40,6 @@ public class UserModel(
 
 		InstanceName = await meta.Get(MetaEntity.InstanceName) ?? InstanceName;
 
-		//TODO: login button
 		//TODO: user note view (respect public preview settings - don't show renotes of remote notes if set to restricted or lower)
 		//TODO: emoji
 

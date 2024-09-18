@@ -1,5 +1,6 @@
 ﻿@inject IOptions<Config.InstanceSection> Instance
 @using Iceshrimp.Backend.Core.Configuration
+@using Iceshrimp.Backend.Core.Middleware
 @using Microsoft.Extensions.Options
 <!DOCTYPE html>
 <html lang="en">
@@ -18,6 +19,12 @@
 @await RenderSectionAsync("scripts", false)
 <footer>
     <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
+    <span class="float-right">
+        @if (!Context.ShouldHideFooter())
+        {
+            <a href="/login?rd=@(Context.Request.Path.ToUriComponent())">Login</a>
+        }
+    </span>
 </footer>
 </body>
 </html>

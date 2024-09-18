@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -13,6 +14,7 @@ public class ErrorModel : PageModel
 
 	public void OnGet()
 	{
+		Request.HttpContext.HideFooter();
 		RequestId = HttpContext.TraceIdentifier;
 	}
 }

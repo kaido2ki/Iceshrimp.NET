@@ -44,8 +44,6 @@ public class NoteModel(
 
 		InstanceName = await meta.Get(MetaEntity.InstanceName) ?? InstanceName;
 
-		//TODO: redirect to login (with route as url param) when public preview is disabled
-		//TODO: login button
 		//TODO: thread view (respect public preview settings - don't show remote replies if set to restricted or lower)
 		//TODO: emoji
 

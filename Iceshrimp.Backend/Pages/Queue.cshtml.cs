@@ -30,6 +30,8 @@ public class QueueModel(DatabaseContext db, QueueService queueSvc) : PageModel
 			return Redirect("/login");
 		if (!await db.Sessions.AnyAsync(p => p.Token == cookie && p.Active && p.User.IsAdmin))
 			return Redirect("/login");
+		
+		Request.HttpContext.HideFooter();
 
 		if (queue == null)
 		{

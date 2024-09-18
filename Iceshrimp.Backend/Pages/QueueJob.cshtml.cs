@@ -26,6 +26,8 @@ public class QueueJobModel(DatabaseContext db) : PageModel
 			return Redirect("/login");
 		if (!await db.Sessions.AnyAsync(p => p.Token == cookie && p.Active && p.User.IsAdmin))
 			return Redirect("/login");
+		
+		Request.HttpContext.HideFooter();
 
 		Job = await db.Jobs.FirstOrDefaultAsync(p => p.Id == id) ??
 		      throw GracefulException.NotFound($"Job {id} not found");
