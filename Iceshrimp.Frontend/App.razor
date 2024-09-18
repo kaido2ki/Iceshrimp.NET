@@ -1,6 +1,6 @@
 ﻿@using Iceshrimp.Frontend.Components
 @using Microsoft.AspNetCore.Components.Authorization
-<ErrorBoundary @ref="ErrorBoundary">
+<ErrorBoundary>
     <ChildContent>
         <Router AppAssembly="@typeof(App).Assembly">
             <Found Context="routeData">
@@ -24,7 +24,3 @@
         <ErrorUi Exception="Exception"></ErrorUi>
     </ErrorContent>
 </ErrorBoundary>
-
-@code {
-    private ErrorBoundary? ErrorBoundary { get; set; }
-}

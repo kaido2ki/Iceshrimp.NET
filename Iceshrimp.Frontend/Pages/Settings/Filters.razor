@@ -183,11 +183,14 @@
     private Menu                               MenuFilterAction   { get; set; } = null!;
     private Menu                               MenuFilterContexts { get; set; } = null!;
     private List<FilterResponse.FilterContext> FilterContexts     { get; }      = [];
-    private StateButton                        ButtonAddFilter    { get; set; } = null!;
-    private bool                               _filterNameInvalid;
-    private bool                               _filterKeywordsInvalid;
-    private bool                               _filterExpiryInvalid;
-    private bool                               _filterContextsInvalid;
+
+    // ReSharper disable once UnusedAutoPropertyAccessor.Local, Justification: this is still work in progress
+    private StateButton ButtonAddFilter { get; set; } = null!;
+
+    private bool _filterNameInvalid;
+    private bool _filterKeywordsInvalid;
+    private bool _filterExpiryInvalid;
+    private bool _filterContextsInvalid;
 
     protected override async Task OnInitializedAsync()
     {
