@@ -491,8 +491,9 @@ public class User : IEntity
 	[NotMapped] public bool? PrecomputedIsRequested   { get; set; }
 	[NotMapped] public bool? PrecomputedIsRequestedBy { get; set; }
 
-	[Projectable] public bool IsLocalUser  => Host == null;
-	[Projectable] public bool IsRemoteUser => Host != null;
+	[Projectable] public bool   IsLocalUser          => Host == null;
+	[Projectable] public bool   IsRemoteUser         => Host != null;
+	[Projectable] public string IdenticonUrlPath => $"/identicon/{Id}";
 
 	[Key]
 	[Column("id")]
@@ -622,7 +623,7 @@ public class User : IEntity
 		? $"https://{webDomain}/@{Username}"
 		: throw new Exception("Cannot access PublicUrl for remote user");
 
-	public string GetIdenticonUrl(string webDomain) => $"https://{webDomain}/identicon/{Id}";
+	public string GetIdenticonUrl(string webDomain) => $"https://{webDomain}{IdenticonUrlPath}";
 }
 
 public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User>
