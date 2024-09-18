@@ -32,7 +32,7 @@ else
             <div class="title">
                 <span>@(Model.User.DisplayName ?? Model.User.Username)</span>
             </div>
-            <span class="acct">@@@Model.User.Acct</span>
+            <span class="acct">@@@Model.User.Username<span class="host">@@@Model.User.Host</span></span>
         </div>
         <div class="bio">
             @Html.Raw(Model.Bio ?? "<i>This user hasn't added a bio yet.</i>")

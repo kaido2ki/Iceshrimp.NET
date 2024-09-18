@@ -65,6 +65,9 @@ public class UserModel(
 		if (User is { AvatarUrl: null } || (User is not null && !ShowMedia))
 			User.AvatarUrl = User.GetIdenticonUrl(instance.Value);
 
+		if (User is { Host: null })
+			User.Host = instance.Value.AccountDomain;
+
 		return Page();
 	}
 }
