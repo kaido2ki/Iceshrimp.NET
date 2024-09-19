@@ -83,7 +83,7 @@ public class StatusController(
 	[Authenticate("read:statuses")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
-	public async Task<List<ReactionEntity>> GetSpecificNoteReaction(string id, string reaction)
+	public async Task<IEnumerable<ReactionEntity>> GetSpecificNoteReaction(string id, string reaction)
 	{
 		var user = HttpContext.GetUser();
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
@@ -98,15 +98,17 @@ public class StatusController(
 		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		var res = (await noteRenderer.GetReactions([note], user)).First(r => r.Name == Regex.Unescape(reaction));
+		var res = (await noteRenderer.GetReactions([note], user)).Where(r => r.Name.Split("@").First() == Regex.Unescape(reaction));
 
-		if (res.AccountIds != null)
+		foreach (var item in res)
 		{
-			var accounts = await db.Users.Where(u => res.AccountIds.Contains(u.Id)).ToArrayAsync();
-			res.Accounts = (await userRenderer.RenderManyAsync(accounts, user)).ToList();
+			if (item.AccountIds == null) continue;
+
+			var accounts = await db.Users.Where(u => item.AccountIds.Contains(u.Id)).ToArrayAsync();
+			item.Accounts = (await userRenderer.RenderManyAsync(accounts, user)).ToList();
 		}
 
-		return [res];
+		return res;
 	}
 
 	[HttpPut("{id}/reactions/{reaction}")]
