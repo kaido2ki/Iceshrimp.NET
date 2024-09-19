@@ -57,6 +57,9 @@ public class Emoji
 	[Column("height")]
 	public int? Height { get; set; }
 
+	[Column("sensitive")]
+	public bool Sensitive { get; set; }
+
 	public string GetPublicUri(Config.InstanceSection config) => Host == null
 		? $"https://{config.WebDomain}/emoji/{Name}"
 		: throw new Exception("Cannot access PublicUri for remote emoji");

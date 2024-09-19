@@ -9,4 +9,5 @@ public class EmojiResponse
 	public required string?      Category  { get; set; }
 	public required string       PublicUrl { get; set; }
 	public required string?      License   { get; set; }
+	public required bool         Sensitive { get; set; }
 }

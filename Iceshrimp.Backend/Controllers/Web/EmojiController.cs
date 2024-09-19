@@ -37,7 +37,8 @@ public class EmojiController(
 			               Aliases   = p.Aliases,
 			               Category  = p.Category,
 			               PublicUrl = p.PublicUrl,
-			               License   = p.License
+			               License   = p.License,
+			               Sensitive = p.Sensitive
 		               })
 		               .ToListAsync();
 	}
@@ -58,7 +59,8 @@ public class EmojiController(
 			Aliases   = emoji.Aliases,
 			Category  = emoji.Category,
 			PublicUrl = emoji.PublicUrl,
-			License   = emoji.License
+			License   = emoji.License,
+			Sensitive = emoji.Sensitive
 		};
 	}
 
@@ -78,7 +80,8 @@ public class EmojiController(
 			Aliases   = [],
 			Category  = null,
 			PublicUrl = emoji.PublicUrl,
-			License   = null
+			License   = null,
+			Sensitive = false
 		};
 	}
 
@@ -103,7 +106,8 @@ public class EmojiController(
 			Aliases   = [],
 			Category  = null,
 			PublicUrl = cloned.PublicUrl,
-			License   = null
+			License   = null,
+			Sensitive = cloned.Sensitive
 		};
 	}
 
@@ -125,7 +129,7 @@ public class EmojiController(
 	public async Task<EmojiResponse> UpdateEmoji(string id, UpdateEmojiRequest request)
 	{
 		var emoji = await emojiSvc.UpdateLocalEmoji(id, request.Name, request.Aliases, request.Category,
-		                                            request.License) ??
+		                                            request.License, request.Sensitive) ??
 		            throw GracefulException.NotFound("Emoji not found");
 
 		return new EmojiResponse
@@ -136,7 +140,8 @@ public class EmojiController(
 			Aliases   = emoji.Aliases,
 			Category  = emoji.Category,
 			PublicUrl = emoji.PublicUrl,
-			License   = emoji.License
+			License   = emoji.License,
+			Sensitive = emoji.Sensitive
 		};
 	}
 

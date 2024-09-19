@@ -1024,6 +1024,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("publicUrl")
                         .HasDefaultValueSql("''::character varying");
 
+                    b.Property<bool>("Sensitive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("sensitive");
+
                     b.Property<string>("Type")
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)")

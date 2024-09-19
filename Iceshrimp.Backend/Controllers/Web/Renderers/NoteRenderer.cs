@@ -191,7 +191,8 @@ public class NoteRenderer(
 			               Aliases   = p.Aliases,
 			               Category  = p.Category,
 			               PublicUrl = p.PublicUrl,
-			               License   = p.License
+			               License   = p.License,
+			               Sensitive = p.Sensitive
 		               })
 		               .ToListAsync();
 	}

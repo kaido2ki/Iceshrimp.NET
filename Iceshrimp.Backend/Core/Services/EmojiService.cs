@@ -56,7 +56,8 @@ public partial class EmojiService(
 			OriginalUrl = driveFile.Url,
 			PublicUrl   = driveFile.AccessUrl,
 			Width       = driveFile.Properties.Width,
-			Height      = driveFile.Properties.Height
+			Height      = driveFile.Properties.Height,
+			Sensitive   = false
 		};
 		emoji.Uri = emoji.GetPublicUri(config.Value);
 
@@ -81,7 +82,8 @@ public partial class EmojiService(
 			OriginalUrl = driveFile.Url,
 			PublicUrl   = driveFile.AccessUrl,
 			Width       = driveFile.Properties.Width,
-			Height      = driveFile.Properties.Height
+			Height      = driveFile.Properties.Height,
+			Sensitive   = existing.Sensitive
 		};
 		emoji.Uri = emoji.GetPublicUri(config.Value);
 
@@ -130,7 +132,8 @@ public partial class EmojiService(
 						UpdatedAt   = DateTime.UtcNow,
 						OriginalUrl = emojo.Image?.Url?.Link ?? throw new Exception("Emoji.Image has no url"),
 						PublicUrl   = emojo.Image.Url.Link,
-						Uri         = emojo.Id
+						Uri         = emojo.Id,
+						Sensitive   = false
 					};
 					await db.AddAsync(dbEmojo);
 					await db.SaveChangesAsync();
@@ -204,7 +207,7 @@ public partial class EmojiService(
 	}
 
 	public async Task<Emoji?> UpdateLocalEmoji(
-		string id, string? name, List<string>? aliases, string? category, string? license
+		string id, string? name, List<string>? aliases, string? category, string? license, bool? sensitive
 	)
 	{
 		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id);
@@ -227,6 +230,8 @@ public partial class EmojiService(
 		if (category != null) emoji.Category = string.IsNullOrEmpty(category) ? null : category;
 
 		if (license != null) emoji.License = license;
+
+		if (sensitive.HasValue) emoji.Sensitive = sensitive.Value;
 
 		await db.SaveChangesAsync();
 
