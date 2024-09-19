@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Mime;
+using System.Text.RegularExpressions;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
@@ -97,7 +98,7 @@ public class StatusController(
 		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		var res = (await noteRenderer.GetReactions([note], user)).First(r => r.Name == reaction);
+		var res = (await noteRenderer.GetReactions([note], user)).First(r => r.Name == Regex.Unescape(reaction));
 
 		if (res.AccountIds != null)
 		{
