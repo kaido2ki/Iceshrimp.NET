@@ -710,7 +710,7 @@ public class NoteService(
 		// @formatter:on
 
 		if (note.Visibility == Note.NoteVisibility.Specified)
-			await deliverSvc.DeliverToAsync(activity, note.User, recipients.ToArray());
+			await deliverSvc.DeliverToAsync(activity, note.User, recipients);
 		else
 			await deliverSvc.DeliverToFollowersAsync(activity, note.User, recipients);
 	}

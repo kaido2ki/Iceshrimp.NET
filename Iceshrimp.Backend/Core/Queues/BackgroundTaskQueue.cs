@@ -93,7 +93,7 @@ public class BackgroundTaskQueue(int parallelism)
 				else
 				{
 					var storageSvc = scope.GetRequiredService<ObjectStorageService>();
-					await storageSvc.RemoveFilesAsync(paths.Where(p => p != null).Select(p => p!).ToArray());
+					await storageSvc.RemoveFilesAsync(paths.Where(p => p != null).Select(p => p!));
 				}
 			}
 
@@ -152,7 +152,7 @@ public class BackgroundTaskQueue(int parallelism)
 			var rendered = await noteRenderer.RenderAsync(note);
 			var activity = ActivityPub.ActivityRenderer.RenderUpdate(rendered, actor);
 
-			await deliverSvc.DeliverToAsync(activity, note.User, voters.ToArray());
+			await deliverSvc.DeliverToAsync(activity, note.User, voters);
 		}
 	}
 

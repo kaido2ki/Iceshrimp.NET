@@ -120,7 +120,7 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 		}
 	}
 
-	public async Task RemoveFilesAsync(params string[] filenames)
+	public async Task RemoveFilesAsync(params IEnumerable<string> filenames)
 	{
 		if (_bucket == null)
 			throw new Exception("Refusing to remove file from object storage with invalid configuration");

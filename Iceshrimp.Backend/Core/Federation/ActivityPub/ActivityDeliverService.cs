@@ -31,7 +31,7 @@ public class ActivityDeliverService(
 		// @formatter:on
 	}
 
-	public async Task DeliverToAsync(ASActivity activity, User actor, params User[] recipients)
+	public async Task DeliverToAsync(ASActivity activity, User actor, params IEnumerable<User> recipients)
 	{
 		logger.LogDebug("Queuing deliver-to-recipients jobs for activity {id}", activity.Id);
 		if (activity.Actor == null) throw new Exception("Actor must not be null");
