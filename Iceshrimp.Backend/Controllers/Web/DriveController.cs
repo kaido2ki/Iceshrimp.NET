@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Cors;
@@ -20,7 +21,8 @@ public class DriveController(
 	ObjectStorageService objectStorage,
 	IOptionsSnapshot<Config.StorageSection> options,
 	ILogger<DriveController> logger,
-	DriveService driveSvc
+	DriveService driveSvc,
+	QueueService queueSvc
 ) : ControllerBase
 {
 	[EnableCors("drive")]
@@ -163,5 +165,29 @@ public class DriveController(
 		await db.SaveChangesAsync();
 
 		return await GetFileById(id);
+	}
+
+	[HttpDelete("{id}")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.Accepted)]
+	[ProducesErrors(HttpStatusCode.NotFound, HttpStatusCode.UnprocessableEntity)]
+	public async Task<IActionResult> DeleteFile(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Id == id) ??
+		           throw GracefulException.NotFound("File not found");
+
+		if (await db.Users.AnyAsync(p => p.Avatar == file || p.Banner == file))
+			throw GracefulException.UnprocessableEntity("Refusing to delete file: used in banner or avatar");
+		if (await db.Notes.AnyAsync(p => p.FileIds.Contains(file.Id)))
+			throw GracefulException.UnprocessableEntity("Refusing to delete file: used in note");
+
+		await queueSvc.BackgroundTaskQueue.EnqueueAsync(new DriveFileDeleteJobData
+		{
+			DriveFileId = file.Id, Expire = false
+		});
+
+		return Accepted();
 	}
 }
