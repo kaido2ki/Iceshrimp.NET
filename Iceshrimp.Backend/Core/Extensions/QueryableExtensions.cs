@@ -25,7 +25,7 @@ public static class QueryableExtensions
 	/// </remarks>
 	/// <returns>
 	/// The result set as an IAsyncEnumerable. Makes one DB roundtrip at the start of each chunk.
-	/// Successive items of the chunk are yielded instantaneously.
+	/// Successive items in the chunk are yielded instantaneously.
 	/// </returns>
 	public static async IAsyncEnumerable<T> AsChunkedAsyncEnumerable<T>(this IQueryable<T> query, int chunkSize)
 	{
