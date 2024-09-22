@@ -188,6 +188,6 @@ public class DriveController(
 			DriveFileId = file.Id, Expire = false
 		});
 
-		return Accepted();
+		return StatusCode(StatusCodes.Status202Accepted);
 	}
 }
