@@ -34,6 +34,9 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions)
 							: $"<plain>{el.TextContent}</plain>";
 					}
 
+					if (el.TextContent == href && (href.StartsWith("http://") || href.StartsWith("https://")))
+						return href;
+
 					return $"[{el.TextContent}]({href})";
 				}
 
