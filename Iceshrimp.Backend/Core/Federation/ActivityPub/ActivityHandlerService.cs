@@ -76,6 +76,7 @@ public class ActivityHandlerService(
 			ASEmojiReact react  => HandleReact(react, resolvedActor),
 			ASFollow follow     => HandleFollow(follow, resolvedActor),
 			ASLike like         => HandleLike(like, resolvedActor),
+			ASMove move         => HandleMove(move, resolvedActor),
 			ASReject reject     => HandleReject(reject, resolvedActor),
 			ASUndo undo         => HandleUndo(undo, resolvedActor),
 			ASUnfollow unfollow => HandleUnfollow(unfollow, resolvedActor),
@@ -204,8 +205,13 @@ public class ActivityHandlerService(
 		                      .FirstOrDefaultAsync(p => p.Followee == actor && p.FollowerId == ids[0]);
 
 		if (request == null)
-			throw GracefulException
-				.UnprocessableEntity($"No follow request matching follower '{ids[0]}' and followee '{actor.Id}' found");
+		{
+			if (await db.Followings.AnyAsync(p => p.Followee == actor && p.FollowerId == ids[0]))
+				return;
+
+			throw GracefulException.UnprocessableEntity($"No follow request matching follower '{ids[0]}'" +
+			                                            $"and followee '{actor.Id}' found");
+		}
 
 		await userSvc.AcceptFollowRequestAsync(request);
 	}
@@ -476,6 +482,51 @@ public class ActivityHandlerService(
 		if (resolvedBlockee.IsRemoteUser)
 			throw GracefulException.UnprocessableEntity("Refusing to process block between two remote users");
 		await userSvc.BlockUserAsync(resolvedActor, resolvedBlockee);
+	}
+
+	private async Task HandleMove(ASMove activity, User resolvedActor)
+	{
+		if (activity.Target.Id is null) throw GracefulException.UnprocessableEntity("Move target must have an ID");
+		var target = await userResolver.ResolveAsync(activity.Target.Id);
+		var source = await userSvc.UpdateUserAsync(resolvedActor, force: true);
+		target = await userSvc.UpdateUserAsync(target, force: true);
+
+		var sourceUri = source.Uri ?? source.GetPublicUri(config.Value.WebDomain);
+		var targetUri = target.Uri ?? target.GetPublicUri(config.Value.WebDomain);
+		var aliases   = target.AlsoKnownAs ?? [];
+		if (!aliases.Contains(sourceUri))
+			throw GracefulException.UnprocessableEntity("Refusing to process move activity:" +
+			                                            "source uri not listed in target aliases");
+
+		source.MovedToUri = targetUri;
+		await db.SaveChangesAsync();
+
+		var followers = db.Followings
+		                  .Where(p => p.Followee == source)
+		                  .Where(p => p.Follower.IsLocalUser)
+		                  .OrderBy(p => p.Id)
+		                  .Select(p => p.Follower)
+		                  .PrecomputeRelationshipData(source)
+		                  .AsChunkedAsyncEnumerable(50);
+
+		await foreach (var follower in followers)
+		{
+			try
+			{
+				await userSvc.FollowUserAsync(follower, target);
+
+				// We need to transfer the precomputed properties to the source user for each follower so that the unfollow method works correctly
+				source.PrecomputedIsFollowedBy  = follower.PrecomputedIsFollowing;
+				source.PrecomputedIsRequestedBy = follower.PrecomputedIsRequested;
+
+				await userSvc.UnfollowUserAsync(follower, source);
+			}
+			catch (Exception e)
+			{
+				logger.LogWarning("Failed to process move ({sourceUri} -> {targetUri}) for user {id}: {error}",
+				                  sourceUri, targetUri, follower.Id, e);
+			}
+		}
 	}
 
 	private async Task UnfollowAsync(ASActor followeeActor, User follower)

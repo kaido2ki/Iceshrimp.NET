@@ -16,6 +16,30 @@ namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class QueryableExtensions
 {
+	/// <summary>
+	/// This helper method allows consumers to obtain the performance &amp; memory footprint benefits of chunked DB transactions,
+	/// while not requiring them to work with chunks instead of a regular enumerator.
+	/// </summary>
+	/// <remarks>
+	/// Make sure to call .OrderBy() on the query, otherwise the results will be unpredictable.
+	/// </remarks>
+	/// <returns>
+	/// The result set as an IAsyncEnumerable. Makes one DB roundtrip at the start of each chunk.
+	/// Successive items of the chunk are yielded instantaneously.
+	/// </returns>
+	public static async IAsyncEnumerable<T> AsChunkedAsyncEnumerable<T>(this IQueryable<T> query, int chunkSize)
+	{
+		var offset = 0;
+		while (true)
+		{
+			var res = await query.Skip(offset).Take(chunkSize).ToArrayAsync();
+			if (res.Length == 0) break;
+			foreach (var item in res) yield return item;
+			if (res.Length < chunkSize) break;
+			offset += chunkSize;
+		}
+	}
+
 	public static IQueryable<T> Paginate<T>(
 		this IQueryable<T> query,
 		MastodonPaginationQuery pq,

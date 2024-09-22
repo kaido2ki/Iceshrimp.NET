@@ -34,6 +34,7 @@ public class ASActivity : ASObjectWithId
 		public const string Undo     = $"{Ns}#Undo";
 		public const string Like     = $"{Ns}#Like";
 		public const string Block    = $"{Ns}#Block";
+		public const string Move     = $"{Ns}#Move";
 
 		// Extensions
 		public const string Bite       = "https://ns.mia.jetzt/as#Bite";
@@ -194,4 +195,14 @@ public class ASEmojiReact : ASActivity
 	[J($"{Constants.ActivityStreamsNs}#tag")]
 	[JC(typeof(ASTagConverter))]
 	public List<ASTag>? Tags { get; set; }
+}
+
+public class ASMove : ASActivity
+{
+	public ASMove() => Type = Types.Move;
+
+	[JR]
+	[J($"{Constants.ActivityStreamsNs}#target")]
+	[JC(typeof(ASLinkConverter))]
+	public required ASLink Target { get; set; }
 }

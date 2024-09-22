@@ -251,6 +251,7 @@ public class UserService(
 	public async Task<User> UpdateUserAsync(User user, ASActor? actor = null, bool force = false)
 	{
 		if (!user.NeedsUpdate && actor == null && !force) return user;
+		if (user.IsLocalUser) return user;
 		if (actor is { IsUnresolved: true } or { Username: null })
 			actor = null; // This will trigger a fetch a couple lines down
 
