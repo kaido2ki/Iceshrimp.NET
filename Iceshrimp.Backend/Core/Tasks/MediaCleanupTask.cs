@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +34,7 @@ public class MediaCleanupTask : ICronTask
 		var cnt     = await fileIds.CountAsync();
 
 		logger.LogInformation("Expiring {count} files...", cnt);
-		await foreach (var fileId in fileIds.AsAsyncEnumerable())
+		await foreach (var fileId in fileIds.AsChunkedAsyncEnumerable(50))
 		{
 			await queueService.BackgroundTaskQueue.EnqueueAsync(new DriveFileDeleteJobData
 			{
