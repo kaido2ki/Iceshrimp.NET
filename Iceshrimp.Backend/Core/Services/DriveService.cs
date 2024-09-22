@@ -352,7 +352,7 @@ public class DriveService(
 		Stream input, DriveFileCreationRequest request
 	)
 	{
-		var accessKey = GenerateAccessKey(extension: Path.GetExtension(request.Filename).TrimStart('.'));
+		var accessKey = GenerateAccessKey(extension: Path.GetExtension(request.Filename).TrimStart('.')).TrimStart('-');
 		var url       = await StoreFileVersion(input, accessKey, request.Filename, request.MimeType);
 		return (Stub, accessKey, url);
 	}
