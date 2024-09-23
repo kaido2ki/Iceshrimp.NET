@@ -20,6 +20,10 @@
     }
     <button class="btn" @onclick="Reply" @onclick:stopPropagation="true" aria-label="reply">
         <Icon Name="Icons.ArrowUUpLeft" Size="1.3em"/>
+        @if (Replies > 0)
+        {
+            <span class="reply-count">@Replies</span>
+        }
     </button>
     <button class="btn @(RenotePossible ? "" : "disabled") positioned" @onclick="@(RenotePossible ? ToggleRenoteMenu : () => { })" @onclick:stopPropagation="true" aria-label="renote">
         @if (RenotePossible)
@@ -107,6 +111,7 @@
     [Parameter] [EditorRequired] public required int                      Likes          { get; set; }
     [Parameter] [EditorRequired] public required bool                     IsLiked        { get; set; }
     [Parameter] [EditorRequired] public required int                      Renotes        { get; set; }
+    [Parameter] [EditorRequired] public required int                      Replies        { get; set; }
     [Parameter]                  public          bool                     RenotePossible { get; set; }
     private                                      Menu                     ContextMenu    { get; set; } = null!;
     private                                      Menu                     RenoteMenu     { get; set; } = null!;
