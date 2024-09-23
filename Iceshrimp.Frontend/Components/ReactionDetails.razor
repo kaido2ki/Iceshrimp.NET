@@ -1,0 +1,55 @@
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas.Web
+@inject ApiService               Api;
+@inject ILogger<ReactionDetails> Logger;
+@inject NavigationManager        Nav;
+
+@if (State is State.Loaded)
+{
+    <div class="user-list">
+        @if (ReactedBy != null) @foreach (var el in ReactedBy)
+        {
+            <div @onclick="() => OpenProfile(el.Username, el.Host)" class="like-entry">
+                <img class="icon" src="@el.AvatarUrl"/>
+                <div class="name-section">
+                    <div class="displayname">@el.DisplayName</div>
+                    <div class="username">@@@el.Username@(el.Host != null ? $"@{el.Host}" : "")</div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public required NoteReactionSchema  Reaction  { get; set; }
+    [Parameter, EditorRequired] public required string              NoteId    { get; set; }
+    private                                     List<UserResponse>? ReactedBy { get; set; } = [];
+    private                                     State               State     { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            State     = State.Loading;
+            ReactedBy = await Api.Notes.GetNoteReactions(NoteId, Reaction.Name);
+            State     = State.Loaded;
+        }
+        catch (ApiException e)
+        {
+            Logger.LogError(e, "Failed to fetch reactions.");
+            State = State.Error;
+        }
+    }
+
+    private void OpenProfile(string username, string? host)
+    {
+        var path = $"@{username}";
+        if (host != null)
+        {
+            path += $"@{host}";
+        }
+
+        Nav.NavigateTo($"/{path}");
+    }
+}

@@ -1,0 +1,15 @@
+@if (Parent.ActivePage == this)
+{
+    @TabContent
+}
+
+@code {
+    [CascadingParameter]        private         TabbedMenu     Parent       { get; set; } = null!;
+    [Parameter, EditorRequired] public required RenderFragment TabContent { get; set; }
+    [Parameter, EditorRequired] public RenderFragment? Title { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Parent.AddPage(this);
+    }
+}

@@ -1,0 +1,22 @@
+@using Iceshrimp.Shared.Schemas.Web
+
+<div class="reactions">
+    <TabbedMenu>
+        @foreach (var el in Reactions)
+        {
+            <TabPage>
+                <Title>
+                    <InlineEmoji Reaction="el"/> (@el.Count)
+                </Title>
+                <TabContent>
+                    <ReactionDetails Reaction="@el" NoteId="@NoteId"/>
+                </TabContent>
+            </TabPage>
+        }
+    </TabbedMenu>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required string                   NoteId    { get; set; }
+    [Parameter, EditorRequired] public required List<NoteReactionSchema> Reactions { get; set; }
+}

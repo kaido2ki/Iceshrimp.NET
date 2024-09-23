@@ -1,0 +1,12 @@
+.tab-button {
+    padding: 0.5em;
+}
+
+.buttons {
+    border-bottom: solid var(--highlight-color) 0.1rem;
+}
+
+.active {
+    border-bottom: solid var(--notice-color) 0.1rem;
+    border-radius: 0;
+}

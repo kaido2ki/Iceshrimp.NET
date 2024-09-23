@@ -1,0 +1,25 @@
+<CascadingValue Value="this">
+    <div class="buttons">
+        @foreach (var tab in Pages)
+        {
+            <button class="tab-button @(ActivePage == tab ? "active" : "")" @onclick="() => ActivePage = tab">@tab.Title</button>
+        }
+    </div>
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter, EditorRequired] public required RenderFragment ChildContent { get; set; }
+    private                                     List<TabPage>  Pages        { get; } = [];
+    internal                                    TabPage?       ActivePage   { get; private set; }
+
+    internal void AddPage(TabPage tabPage)
+    {
+        Pages.Add(tabPage);
+        if (Pages.Count == 1)
+        {
+            ActivePage = tabPage;
+        }
+        StateHasChanged();
+    }
+}

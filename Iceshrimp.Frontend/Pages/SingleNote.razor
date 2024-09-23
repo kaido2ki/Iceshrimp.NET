@@ -42,15 +42,39 @@
                 <div @ref="RootNoteRef" class="root-note">
                     <Note NoteResponse="RootNote"></Note>
                 </div>
-                @if (Descendants != null)
-                {
-                    <div class="descendants">
-                        @foreach (var element in Descendants)
-                        {
-                            <RecursiveNote Note="element" Depth="0" MaxDepth="_depth"/>
-                        }
-                    </div>
-                }
+                <div class="details">
+                    <TabbedMenu>
+                        <TabPage>
+                            <Title>
+                                @Loc["Replies ({0})", RootNote!.Replies]
+                            </Title>
+                            <TabContent>
+                                @if (Descendants != null)
+                                {
+                                    <div class="descendants">
+                                        @foreach (var element in Descendants)
+                                        {
+                                            <RecursiveNote Note="element" Depth="0" MaxDepth="_depth"/>
+                                        }
+                                    </div>
+                                }
+                            </TabContent>
+                        </TabPage>
+                        <TabPage>
+                            <Title>@Loc["Likes ({0})", RootNote!.Likes]</Title>
+                            <TabContent>
+                                <NoteLikeDetails NoteId="@RootNote?.Id" />
+                            </TabContent>
+                        </TabPage>
+                        <TabPage>
+                            <Title>@Loc["Reactions ({0})", RootNote!.Reactions.Count]</Title>
+                            <TabContent>
+                                <NoteReactionDetails Reactions="RootNote?.Reactions" NoteId="@RootNote?.Id" />
+                            </TabContent>
+                        </TabPage>
+                    </TabbedMenu>
+                </div>
+                
             </div>
         </div>
     </div>
