@@ -1,7 +1,13 @@
 @page "/notes/{id}"
+@using AngleSharp
 @using Iceshrimp.Backend.Core.Database.Tables
 @using Iceshrimp.Backend.Core.Extensions
 @model NoteModel
+
+@section styles
+{
+    <link rel="stylesheet" href="~/css/public-preview.css"/>
+}
 
 @if (Model.Note == null)
 {
@@ -17,14 +23,15 @@ else
     {
         Model.TextContent.TryGetValue(note.Id, out var textContent);
         var acct        = "@" + note.User.Username + (note.User.IsLocalUser ? "" : "@" + note.User.Host);
-        var displayName = note.User.DisplayName;
-        var username    = note.User.Username;
+        var displayName = await RenderDisplayName(note.User.DisplayName ?? note.User.Username);
         var url         = note.User.UserProfile?.Url ?? note.User.Uri ?? note.User.GetPublicUrl(Model.WebDomain);
         var avatarUrl   = note.User.AvatarUrl == null || !Model.ShowMedia ? note.User.IdenticonUrlPath : note.User.AvatarUrl;
 
         <div class="user">
-            <a href="@url"><img src="@avatarUrl" class="avatar" alt="User avatar"/></a>
-            <div class="title">@name by <a class="display-name" href="@url">@(displayName ?? username)</a></div>
+            <a href="@url">
+                <img src="@avatarUrl" class="avatar" alt="User avatar"/>
+            </a>
+            <div class="title">@name by <a class="display-name" href="@url">@Html.Raw(displayName)</a></div>
             <span class="acct">@acct</span>
         </div>
         <small>Published at: @note.CreatedAt.ToDisplayString()</small>
@@ -77,6 +84,29 @@ else
             {
                 <div>Attachment: <a href="@file.Url">@file.Name</a> (@file.Type)</div>
             }
+        }
+
+        return;
+
+        async Task<string> RenderDisplayName(string input)
+        {
+            var res    = Html.Encode(input);
+            var emojis = Model.UserEmoji[note.User.Id];
+            if (emojis is []) return res;
+
+            var context  = BrowsingContext.New();
+            var document = await context.OpenNewAsync();
+            foreach (var emoji in emojis)
+            {
+                var el    = document.CreateElement("span");
+                var inner = document.CreateElement("img");
+                inner.SetAttribute("src", emoji.PublicUrl);
+                el.AppendChild(inner);
+                el.ClassList.Add("emoji");
+                res = res.Replace($":{emoji.Name.Trim(':')}:", el.OuterHtml);
+            }
+
+            return res;
         }
     }
 

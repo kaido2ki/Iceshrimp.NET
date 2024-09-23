@@ -1,0 +1,10 @@
+span.emoji {
+    display: inline;
+    position: relative;
+    top: 0;
+
+    > img {
+        height: 2em;
+        vertical-align: middle;
+    }
+}

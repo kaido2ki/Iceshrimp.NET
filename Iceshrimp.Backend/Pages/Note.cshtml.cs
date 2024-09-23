@@ -29,7 +29,8 @@ public class NoteModel(
 	public string InstanceName = "Iceshrimp.NET";
 	public string WebDomain = config.Value.WebDomain;
 
-	public Dictionary<string, string> TextContent = new();
+	public Dictionary<string, string>      TextContent = new();
+	public Dictionary<string, List<Emoji>> UserEmoji   = new();
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery",
 	                 Justification = "IncludeCommonProperties")]
@@ -46,7 +47,6 @@ public class NoteModel(
 		InstanceName = await meta.Get(MetaEntity.InstanceName) ?? InstanceName;
 
 		//TODO: thread view (respect public preview settings - don't show remote replies if set to restricted or lower)
-		//TODO: emoji
 
 		Note = await db.Notes
 		               .IncludeCommonProperties()
@@ -58,7 +58,16 @@ public class NoteModel(
 		Note     = Note?.EnforceRenoteReplyVisibility();
 
 		if (Note != null)
+		{
 			MediaAttachments[Note.Id] = await GetAttachments(Note);
+			UserEmoji[Note.User.Id]   = await GetEmoji(Note.User);
+		}
+
+		if (Note?.Renote != null)
+		{
+			MediaAttachments[Note.Renote.Id] = await GetAttachments(Note.Renote);
+			UserEmoji[Note.Renote.User.Id]   = await GetEmoji(Note.User);
+		}
 
 		if (Note is { IsPureRenote: true })
 			return RedirectPermanent(Note.Renote?.Url ??
@@ -72,15 +81,16 @@ public class NoteModel(
 		if (Note is { Text: not null })
 		{
 			TextContent[Note.Id] = await mfmConverter.ToHtmlAsync(Note.Text, await GetMentions(Note), Note.UserHost,
-			                                                      divAsRoot: true);
-			if (Note.Renote is { Text: not null })
-			{
-				TextContent[Note.Renote.Id] = await mfmConverter.ToHtmlAsync(Note.Renote.Text,
-				                                                             await GetMentions(Note.Renote),
-				                                                             Note.Renote.UserHost,
-				                                                             divAsRoot: true);
-				MediaAttachments[Note.Renote.Id] = await GetAttachments(Note.Renote);
-			}
+			                                                      divAsRoot: true, emoji: await GetEmoji(Note));
+		}
+
+		if (Note?.Renote is { Text: not null })
+		{
+			TextContent[Note.Renote.Id] = await mfmConverter.ToHtmlAsync(Note.Renote.Text!,
+			                                                             await GetMentions(Note.Renote),
+			                                                             Note.Renote.UserHost,
+			                                                             divAsRoot: true,
+			                                                             emoji: await GetEmoji(Note));
 		}
 
 		return Page();
@@ -104,5 +114,21 @@ public class NoteModel(
 			               Url      = u.UserProfile != null ? u.UserProfile.Url : null
 		               })
 		               .ToListAsync();
+	}
+
+	private async Task<List<Emoji>> GetEmoji(Note note)
+	{
+		var ids = note.Emojis;
+		if (ids.Count == 0) return [];
+
+		return await db.Emojis.Where(p => ids.Contains(p.Id)).ToListAsync();
+	}
+
+	private async Task<List<Emoji>> GetEmoji(User user)
+	{
+		var ids = user.Emojis;
+		if (ids.Count == 0) return [];
+
+		return await db.Emojis.Where(p => ids.Contains(p.Id)).ToListAsync();
 	}
 }

@@ -60,7 +60,8 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 
 	public async Task<string> ToHtmlAsync(
 		IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
-		bool quoteInaccessible = false, bool replyInaccessible = false, bool divAsRoot = false
+		bool quoteInaccessible = false, bool replyInaccessible = false, bool divAsRoot = false,
+		List<Emoji>? emoji = null
 	)
 	{
 		var context    = BrowsingContext.New();
@@ -85,7 +86,7 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 			element.AppendChild(wrapper);
 		}
 
-		foreach (var node in nodeList) element.AppendNodes(FromMfmNode(document, node, mentions, host));
+		foreach (var node in nodeList) element.AppendNodes(FromMfmNode(document, node, mentions, host, emoji));
 
 		if (quoteUri != null)
 		{
@@ -130,15 +131,17 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 
 	public async Task<string> ToHtmlAsync(
 		string mfm, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
-		bool quoteInaccessible = false, bool replyInaccessible = false, bool divAsRoot = false
+		bool quoteInaccessible = false, bool replyInaccessible = false, bool divAsRoot = false,
+		List<Emoji>? emoji = null
 	)
 	{
 		var nodes = MfmParser.Parse(mfm);
-		return await ToHtmlAsync(nodes, mentions, host, quoteUri, quoteInaccessible, replyInaccessible, divAsRoot);
+		return await ToHtmlAsync(nodes, mentions, host, quoteUri, quoteInaccessible,
+		                         replyInaccessible, divAsRoot, emoji);
 	}
 
 	private INode FromMfmNode(
-		IDocument document, MfmNode node, List<Note.MentionedUser> mentions, string? host
+		IDocument document, MfmNode node, List<Note.MentionedUser> mentions, string? host, List<Emoji>? emoji = null
 	)
 	{
 		switch (node)
@@ -187,6 +190,16 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 			}
 			case MfmEmojiCodeNode emojiCodeNode:
 			{
+				if (emoji?.FirstOrDefault(p => p.Name == emojiCodeNode.Name && p.Host == host) is { } hit)
+				{
+					var el = document.CreateElement("span");
+					var inner = document.CreateElement("img");
+					inner.SetAttribute("src", hit.PublicUrl);
+					el.AppendChild(inner);
+					el.ClassList.Add("emoji");
+					return el;
+				}
+
 				return document.CreateTextNode($"\u200B:{emojiCodeNode.Name}:\u200B");
 			}
 			case MfmHashtagNode hashtagNode:
@@ -311,10 +324,10 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 
 	private void AppendChildren(
 		INode element, IDocument document, MfmNode parent,
-		List<Note.MentionedUser> mentions, string? host
+		List<Note.MentionedUser> mentions, string? host, List<Emoji>? emoji = null
 	)
 	{
-		foreach (var node in parent.Children) element.AppendNodes(FromMfmNode(document, node, mentions, host));
+		foreach (var node in parent.Children) element.AppendNodes(FromMfmNode(document, node, mentions, host, emoji));
 	}
 
 	private IElement CreateInlineFormattingElement(IDocument document, string name)

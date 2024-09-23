@@ -1,4 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Encodings.Web;
+using AngleSharp;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -21,10 +23,12 @@ public class UserModel(
 	MfmConverter mfm
 ) : PageModel
 {
-	public new User?   User;
-	public     string? Bio;
-	public     bool    ShowMedia    = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
-	public     string  InstanceName = "Iceshrimp.NET";
+	public new User?        User;
+	public     string?      Bio;
+	public     List<Emoji>? Emoji;
+	public     bool         ShowMedia    = security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
+	public     string       InstanceName = "Iceshrimp.NET";
+	public     string?      DisplayName;
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery",
 	                 Justification = "IncludeCommonProperties")]
@@ -41,7 +45,6 @@ public class UserModel(
 		InstanceName = await meta.Get(MetaEntity.InstanceName) ?? InstanceName;
 
 		//TODO: user note view (respect public preview settings - don't show renotes of remote notes if set to restricted or lower)
-		//TODO: emoji
 
 		user = user.ToLowerInvariant();
 		host = host?.ToLowerInvariant();
@@ -58,8 +61,28 @@ public class UserModel(
 			                         User.Uri ??
 			                         throw new Exception("User is remote but has no uri"));
 
+		if (User != null)
+		{
+			Emoji       = await GetEmoji(User);
+			DisplayName = HtmlEncoder.Default.Encode(User.DisplayName ?? User.Username);
+			if (Emoji is { Count: > 0 })
+			{
+				var context  = BrowsingContext.New();
+				var document = await context.OpenNewAsync();
+				foreach (var emoji in Emoji)
+				{
+					var el    = document.CreateElement("span");
+					var inner = document.CreateElement("img");
+					inner.SetAttribute("src", emoji.PublicUrl);
+					el.AppendChild(inner);
+					el.ClassList.Add("emoji");
+					DisplayName = DisplayName.Replace($":{emoji.Name.Trim(':')}:", el.OuterHtml);
+				}
+			}
+		}
+
 		if (User?.UserProfile?.Description is { } bio)
-			Bio = await mfm.ToHtmlAsync(bio, User.UserProfile.Mentions, User.Host, divAsRoot: true);
+			Bio = await mfm.ToHtmlAsync(bio, User.UserProfile.Mentions, User.Host, divAsRoot: true, emoji: Emoji);
 
 		if (User is { AvatarUrl: null } || (User is not null && !ShowMedia))
 			User.AvatarUrl = User.GetIdenticonUrl(instance.Value);
@@ -68,5 +91,13 @@ public class UserModel(
 			User.Host = instance.Value.AccountDomain;
 
 		return Page();
+	}
+
+	private async Task<List<Emoji>> GetEmoji(User user)
+	{
+		var ids = user.Emojis;
+		if (ids.Count == 0) return [];
+
+		return await db.Emojis.Where(p => ids.Contains(p.Id)).ToListAsync();
 	}
 }

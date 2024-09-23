@@ -3,6 +3,11 @@
 @using Microsoft.AspNetCore.Razor.Hosting
 @model UserModel
 
+@section styles
+{
+    <link rel="stylesheet" href="~/css/public-preview.css"/>
+}
+
 @if (Model.User == null)
 {
     Response.StatusCode = 404;
@@ -30,7 +35,7 @@ else
         <div class="header">
             <img src="@(Model.User.AvatarUrl)" class="avatar" alt="User avatar"/>
             <div class="title">
-                <span>@(Model.User.DisplayName ?? Model.User.Username)</span>
+                <span>@Html.Raw(Model.DisplayName)</span>
             </div>
             <span class="acct">@@@Model.User.Username<span class="host">@@@Model.User.Host</span></span>
         </div>
