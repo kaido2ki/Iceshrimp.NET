@@ -1,0 +1,62 @@
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas.Web
+@inject ApiService               Api;
+@inject ILogger<NoteLikeDetails> Logger;
+@inject NavigationManager        Nav;
+
+@if (State is State.Loaded)
+{
+    <div class="renotes">
+        @if (RenotedBy != null) @foreach (var el in RenotedBy)
+        {
+            <div @onclick="() => OpenProfile(el.Username, el.Host)" class="renote-entry">
+                <img class="icon" src="@el.AvatarUrl"/>
+                <div class="name-section">
+                    <div class="displayname">@el.DisplayName</div>
+                    <div class="username">@@@el.Username@(el.Host != null ? $"@{el.Host}" : "")</div>
+                </div>
+            </div>
+        }
+    </div>
+}
+@if (State is State.Loading)
+{
+    <span>Loading</span>
+}
+@if (State is State.Error)
+{
+    <span>Failed to load</span>
+}
+
+
+@code {
+    [Parameter, EditorRequired] public required string              NoteId  { get; set; }
+    private                                     State               State   { get; set; }
+    private                                     List<UserResponse>? RenotedBy { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            RenotedBy = await Api.Notes.GetRenotes(NoteId);
+            State   = State.Loaded;
+        }
+        catch (ApiException e)
+        {
+            Logger.LogError(e, "Failed to load likes");
+            State = State.Error;
+        }
+    }
+
+    private void OpenProfile(string username, string? host)
+    {
+        var path = $"@{username}";
+        if (host != null)
+        {
+            path += $"@{host}";
+        }
+
+        Nav.NavigateTo($"/{path}");
+    }
+}

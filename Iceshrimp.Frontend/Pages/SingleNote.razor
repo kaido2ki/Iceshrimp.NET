@@ -67,6 +67,12 @@
                             </TabContent>
                         </TabPage>
                         <TabPage>
+                            <Title>@Loc["Renotes ({0})", RootNote!.Renotes]</Title>
+                            <TabContent>
+                                <NoteRenoteDetails NoteId="@RootNote?.Id" />
+                            </TabContent>
+                        </TabPage>
+                        <TabPage>
                             <Title>@Loc["Reactions ({0})", RootNote!.Reactions.Count]</Title>
                             <TabContent>
                                 <NoteReactionDetails Reactions="RootNote?.Reactions" NoteId="@RootNote?.Id" />
