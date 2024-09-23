@@ -161,13 +161,13 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 			          .Where(p => p.UserList == list)
 			          .Include(p => p.User.UserProfile)
 			          .Select(p => p.User)
-			          .RenderAllForMastodonAsync(userRenderer)
+			          .RenderAllForMastodonAsync(userRenderer, user)
 			: await db.UserListMembers
 			          .Where(p => p.UserList == list)
 			          .Paginate(pq, ControllerContext)
 			          .Include(p => p.User.UserProfile)
 			          .Select(p => p.User)
-			          .RenderAllForMastodonAsync(userRenderer);
+			          .RenderAllForMastodonAsync(userRenderer, user);
 	}
 
 	[HttpPost("{id}/accounts")]

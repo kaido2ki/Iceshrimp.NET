@@ -89,7 +89,7 @@ public class SearchController(
 					var result = await userResolver.ResolveAsync(search.Query)
 					                               .ContinueWithResult(userResolver.GetUpdatedUser);
 
-					return [await userRenderer.RenderAsync(result)];
+					return [await userRenderer.RenderAsync(result, user)];
 				}
 				catch
 				{
@@ -111,7 +111,7 @@ public class SearchController(
 					                     .Where(p => p.UsernameLower == username)
 					                     .FirstOrDefaultAsync();
 
-					return result != null ? [await userRenderer.RenderAsync(result)] : [];
+					return result != null ? [await userRenderer.RenderAsync(result, user)] : [];
 				}
 				else
 				{
@@ -123,7 +123,7 @@ public class SearchController(
 						var result = await userResolver.ResolveAsync($"@{username}@{host}")
 						                               .ContinueWithResult(userResolver.GetUpdatedUser);
 
-						return [await userRenderer.RenderAsync(result)];
+						return [await userRenderer.RenderAsync(result, user)];
 					}
 					catch
 					{
@@ -140,7 +140,7 @@ public class SearchController(
 		               .Where(p => !search.Following || p.IsFollowedBy(user))
 		               .OrderByDescending(p => p.NotesCount)
 		               .PaginateByOffset(pagination, ControllerContext)
-		               .RenderAllForMastodonAsync(userRenderer);
+		               .RenderAllForMastodonAsync(userRenderer, user);
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",

@@ -565,7 +565,7 @@ public class StatusController(
 		                    .ToListAsync();
 
 		HttpContext.SetPaginationData(likes);
-		return await userRenderer.RenderManyAsync(likes.Select(p => p.Entity));
+		return await userRenderer.RenderManyAsync(likes.Select(p => p.Entity), user);
 	}
 
 	[HttpGet("{id}/reblogged_by")]
@@ -598,7 +598,7 @@ public class StatusController(
 		                      .ToListAsync();
 
 		HttpContext.SetPaginationData(renotes);
-		return await userRenderer.RenderManyAsync(renotes.Select(p => p.Entity));
+		return await userRenderer.RenderManyAsync(renotes.Select(p => p.Entity), user);
 	}
 
 	[HttpGet("{id}/history")]
@@ -622,7 +622,7 @@ public class StatusController(
 		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.User.IsRemoteUser && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		return await noteRenderer.RenderHistoryAsync(note);
+		return await noteRenderer.RenderHistoryAsync(note, user);
 	}
 
 	[HttpPost("{id}/mute")]

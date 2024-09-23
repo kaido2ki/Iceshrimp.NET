@@ -26,7 +26,7 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 			: null;
 
 		var notifier = accounts?.FirstOrDefault(p => p.Id == dbNotifier.Id) ??
-		               await userRenderer.RenderAsync(dbNotifier);
+		               await userRenderer.RenderAsync(dbNotifier, user);
 
 		string? emojiUrl = null;
 		if (notification.Reaction != null)
@@ -76,7 +76,7 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 		                                                                      .Where(p => p != null))
 		                                                              .Cast<User>()
 		                                                              .DistinctBy(p => p.Id)
-		                                                              .ToList());
+		                                                              .ToList(), user);
 
 		var notes = await noteRenderer.RenderManyAsync(notificationList.Where(p => p.Note != null)
 		                                                               .Select(p => p.Note)

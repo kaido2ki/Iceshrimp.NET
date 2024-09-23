@@ -66,7 +66,7 @@ public class ConversationsController(
 		                    .Where(p => userIds.Contains(p.Id))
 		                    .ToListAsync();
 
-		var accounts = await userRenderer.RenderManyAsync(users).ToListAsync();
+		var accounts = await userRenderer.RenderManyAsync(users, user).ToListAsync();
 
 		var notes = await noteRenderer.RenderManyAsync(conversations.Select(p => p.LastNote), user, accounts: accounts);
 
@@ -132,7 +132,7 @@ public class ConversationsController(
 		                    .Where(p => userIds.Contains(p.Id))
 		                    .ToListAsync();
 
-		var accounts = await userRenderer.RenderManyAsync(users).ToListAsync();
+		var accounts = await userRenderer.RenderManyAsync(users, user).ToListAsync();
 
 		var noteRendererDto = new NoteRenderer.NoteRendererDto { Accounts = accounts };
 

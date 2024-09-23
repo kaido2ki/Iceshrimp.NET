@@ -14,6 +14,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
 public class NoteRenderer(
 	IOptions<Config.InstanceSection> config,
+	IOptionsSnapshot<Config.SecuritySection> security,
 	UserRenderer userRenderer,
 	PollRenderer pollRenderer,
 	MfmConverter mfmConverter,
@@ -106,7 +107,7 @@ public class NoteRenderer(
 			: null;
 
 		var account = data?.Accounts?.FirstOrDefault(p => p.Id == note.UserId) ??
-		              await userRenderer.RenderAsync(note.User);
+		              await userRenderer.RenderAsync(note.User, user);
 
 		var poll = note.HasPoll
 			? (data?.Polls ?? await GetPolls([note], user)).FirstOrDefault(p => p.Id == note.Id)
@@ -128,6 +129,9 @@ public class NoteRenderer(
 
 		if ((user?.UserSettings?.FilterInaccessible ?? false) && (replyInaccessible || quoteInaccessible))
 			filterResult.Insert(0, InaccessibleFilter);
+		
+		if (user == null && security.Value.PublicPreview == Enums.PublicPreview.RestrictedNoMedia) //TODO
+			attachments = [];
 
 		var res = new StatusEntity
 		{
@@ -169,7 +173,7 @@ public class NoteRenderer(
 		return res;
 	}
 
-	public async Task<List<StatusEdit>> RenderHistoryAsync(Note note)
+	public async Task<List<StatusEdit>> RenderHistoryAsync(Note note, User? user)
 	{
 		var edits = await db.NoteEdits.Where(p => p.Note == note).OrderBy(p => p.Id).ToListAsync();
 		edits.Add(RenderEdit(note));
@@ -185,7 +189,7 @@ public class NoteRenderer(
 		                             })
 		                             .ToList();
 
-		var account  = await userRenderer.RenderAsync(note.User);
+		var account  = await userRenderer.RenderAsync(note.User, user);
 		var lastDate = note.CreatedAt;
 
 		List<StatusEdit> history = [];
@@ -286,10 +290,10 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	internal async Task<List<AccountEntity>> GetAccounts(List<User> users)
+	internal async Task<List<AccountEntity>> GetAccounts(List<User> users, User? localUser)
 	{
 		if (users.Count == 0) return [];
-		return (await userRenderer.RenderManyAsync(users.DistinctBy(p => p.Id))).ToList();
+		return (await userRenderer.RenderManyAsync(users.DistinctBy(p => p.Id), localUser)).ToList();
 	}
 
 	private async Task<List<string>> GetLikedNotes(List<Note> notes, User? user)
@@ -429,7 +433,7 @@ public class NoteRenderer(
 
 		var data = new NoteRendererDto
 		{
-			Accounts        = accounts ?? await GetAccounts(allNotes.Select(p => p.User).ToList()),
+			Accounts        = accounts ?? await GetAccounts(allNotes.Select(p => p.User).ToList(), user),
 			Mentions        = await GetMentions(allNotes),
 			Attachments     = await GetAttachments(allNotes),
 			Polls           = await GetPolls(allNotes, user),

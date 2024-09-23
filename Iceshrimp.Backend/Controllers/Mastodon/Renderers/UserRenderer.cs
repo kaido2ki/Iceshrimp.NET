@@ -9,12 +9,17 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
-public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter mfmConverter, DatabaseContext db)
+public class UserRenderer(
+	IOptions<Config.InstanceSection> config,
+	IOptionsSnapshot<Config.SecuritySection> security,
+	MfmConverter mfmConverter,
+	DatabaseContext db
+)
 {
 	private readonly string _transparent = $"https://{config.Value.WebDomain}/assets/transparent.png";
 
 	public async Task<AccountEntity> RenderAsync(
-		User user, UserProfile? profile, IEnumerable<EmojiEntity>? emoji = null, bool source = false
+		User user, UserProfile? profile, User? localUser, IEnumerable<EmojiEntity>? emoji = null, bool source = false
 	)
 	{
 		var acct = user.Username;
@@ -66,6 +71,14 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 			Emoji              = profileEmoji
 		};
 
+		if (localUser is null && security.Value.PublicPreview == Enums.PublicPreview.RestrictedNoMedia) //TODO
+		{
+			res.AvatarUrl       = user.GetIdenticonUrlPng(config.Value);
+			res.AvatarStaticUrl = user.GetIdenticonUrlPng(config.Value);
+			res.HeaderUrl       = _transparent;
+			res.HeaderStaticUrl = _transparent;
+		}
+
 		if (source)
 		{
 			//TODO: populate these
@@ -103,16 +116,16 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, MfmConverter 
 		               .ToListAsync();
 	}
 
-	public async Task<AccountEntity> RenderAsync(User user, List<EmojiEntity>? emoji = null)
+	public async Task<AccountEntity> RenderAsync(User user, User? localUser, List<EmojiEntity>? emoji = null)
 	{
-		return await RenderAsync(user, user.UserProfile, emoji);
+		return await RenderAsync(user, user.UserProfile, localUser, emoji);
 	}
 
-	public async Task<IEnumerable<AccountEntity>> RenderManyAsync(IEnumerable<User> users)
+	public async Task<IEnumerable<AccountEntity>> RenderManyAsync(IEnumerable<User> users, User? localUser)
 	{
 		var userList = users.ToList();
 		if (userList.Count == 0) return [];
 		var emoji = await GetEmoji(userList);
-		return await userList.Select(p => RenderAsync(p, emoji)).AwaitAllAsync();
+		return await userList.Select(p => RenderAsync(p, localUser, emoji)).AwaitAllAsync();
 	}
 }

@@ -86,7 +86,7 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 		var users = await db.Users.IncludeCommonProperties()
 		                    .Where(p => note.VisibleUserIds.Contains(p.Id))
 		                    .ToListAsync();
-		var accounts = await userRenderer.RenderManyAsync(users);
+		var accounts = await userRenderer.RenderManyAsync(users, connection.Token.User);
 
 		return new ConversationEntity
 		{

@@ -72,7 +72,7 @@ public class StatusController(
 			if (item.AccountIds == null) continue;
 
 			var accounts = await db.Users.Where(u => item.AccountIds.Contains(u.Id)).ToArrayAsync();
-			item.Accounts = (await userRenderer.RenderManyAsync(accounts)).ToList();
+			item.Accounts = (await userRenderer.RenderManyAsync(accounts, user)).ToList();
 		}
 
 		return res;

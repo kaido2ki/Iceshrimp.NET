@@ -539,11 +539,11 @@ public static class QueryableExtensions
 	}
 
 	public static async Task<List<AccountEntity>> RenderAllForMastodonAsync(
-		this IQueryable<User> users, UserRenderer renderer
+		this IQueryable<User> users, UserRenderer renderer, User? localUser
 	)
 	{
 		var list = await users.ToListAsync();
-		return (await renderer.RenderManyAsync(list)).ToList();
+		return (await renderer.RenderManyAsync(list, localUser)).ToList();
 	}
 
 	public static async Task<List<NotificationEntity>> RenderAllForMastodonAsync(

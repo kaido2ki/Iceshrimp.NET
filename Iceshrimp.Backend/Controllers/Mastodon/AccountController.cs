@@ -42,7 +42,7 @@ public class AccountController(
 	public async Task<AccountEntity> VerifyUserCredentials()
 	{
 		var user = HttpContext.GetUserOrFail();
-		return await userRenderer.RenderAsync(user, user.UserProfile, source: true);
+		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true);
 	}
 
 	[HttpPatch("update_credentials")]
@@ -124,7 +124,7 @@ public class AccountController(
 		}
 
 		user = await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
-		return await userRenderer.RenderAsync(user, user.UserProfile, source: true);
+		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true);
 	}
 
 	[HttpDelete("/api/v1/profile/avatar")]
@@ -186,7 +186,7 @@ public class AccountController(
 		if (config.Value.PublicPreview <= Enums.PublicPreview.Restricted && user.IsRemoteUser && localUser == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		return await userRenderer.RenderAsync(await userResolver.GetUpdatedUser(user));
+		return await userRenderer.RenderAsync(await userResolver.GetUpdatedUser(user), localUser);
 	}
 
 	[HttpPost("{id}/follow")]
@@ -401,7 +401,7 @@ public class AccountController(
 		               .SelectMany(p => p.Followers)
 		               .IncludeCommonProperties()
 		               .Paginate(query, ControllerContext)
-		               .RenderAllForMastodonAsync(userRenderer);
+		               .RenderAllForMastodonAsync(userRenderer, user);
 	}
 
 	[HttpGet("{id}/following")]
@@ -437,7 +437,7 @@ public class AccountController(
 		               .SelectMany(p => p.Following)
 		               .IncludeCommonProperties()
 		               .Paginate(query, ControllerContext)
-		               .RenderAllForMastodonAsync(userRenderer);
+		               .RenderAllForMastodonAsync(userRenderer, user);
 	}
 
 	[HttpGet("{id}/featured_tags")]
@@ -468,7 +468,7 @@ public class AccountController(
 		                       .ToListAsync();
 
 		HttpContext.SetPaginationData(requests);
-		return await userRenderer.RenderManyAsync(requests.Select(p => p.Entity));
+		return await userRenderer.RenderManyAsync(requests.Select(p => p.Entity), user);
 	}
 
 	[HttpGet("/api/v1/favourites")]
@@ -531,7 +531,7 @@ public class AccountController(
 		                     .ToListAsync();
 
 		HttpContext.SetPaginationData(blocks);
-		return await userRenderer.RenderManyAsync(blocks.Select(p => p.Entity));
+		return await userRenderer.RenderManyAsync(blocks.Select(p => p.Entity), user);
 	}
 
 	[HttpGet("/api/v1/mutes")]
@@ -550,7 +550,7 @@ public class AccountController(
 		                    .ToListAsync();
 
 		HttpContext.SetPaginationData(mutes);
-		return await userRenderer.RenderManyAsync(mutes.Select(p => p.Entity));
+		return await userRenderer.RenderManyAsync(mutes.Select(p => p.Entity), user);
 	}
 
 	[HttpPost("/api/v1/follow_requests/{id}/authorize")]
@@ -604,9 +604,10 @@ public class AccountController(
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<AccountEntity> LookupUser([FromQuery] string acct)
 	{
+		var localUser = HttpContext.GetUser();
 		var user = await userResolver.LookupAsync(acct) ?? throw GracefulException.RecordNotFound();
 		user = await userResolver.GetUpdatedUser(user);
-		return await userRenderer.RenderAsync(user);
+		return await userRenderer.RenderAsync(user, localUser);
 	}
 
 	private static RelationshipEntity RenderRelationship(User u)
