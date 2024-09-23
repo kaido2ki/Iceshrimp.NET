@@ -37,6 +37,30 @@ public class InboxQueue(int parallelism)
 			else
 				logger.LogDebug("Refusing to process activity {id}: Instance is blocked ({uri})", job.Id, e.Uri);
 		}
+		catch (Exception e) when (e is not GracefulException)
+		{
+			if (job.RetryCount++ < 4)
+			{
+				var jitter     = TimeSpan.FromSeconds(new Random().Next(0, 60));
+				var baseDelay  = TimeSpan.FromMinutes(1);
+				var maxBackoff = TimeSpan.FromHours(8);
+				var backoff    = (Math.Pow(2, job.RetryCount) - 1) * baseDelay;
+				if (backoff > maxBackoff)
+					backoff = maxBackoff;
+				backoff += jitter;
+
+				job.ExceptionMessage = e.Message;
+				job.ExceptionSource  = e.Source;
+				job.StackTrace       = e.StackTrace;
+				job.Exception        = e.ToString();
+				job.DelayedUntil     = DateTime.UtcNow + backoff;
+				job.Status           = Job.JobStatus.Delayed;
+			}
+			else
+			{
+				throw;
+			}
+		}
 	}
 }
 
