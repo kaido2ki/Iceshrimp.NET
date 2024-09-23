@@ -92,6 +92,9 @@ public class NoteService(
 		if (poll is { Choices.Count: < 2 })
 			throw GracefulException.UnprocessableEntity("Polls must have at least two options");
 
+		if (!localOnly && (renote is { LocalOnly: true } || reply is { LocalOnly: true }))
+			localOnly = true;
+
 		if (renote != null)
 		{
 			var pureRenote = text == null && poll == null && attachments is not { Count: > 0 };
