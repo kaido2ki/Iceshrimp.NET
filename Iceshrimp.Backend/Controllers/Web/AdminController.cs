@@ -98,7 +98,6 @@ public class AdminController(
 	}
 
 	[HttpPost("queue/jobs/{id::guid}/retry")]
-	[Produces(MediaTypeNames.Application.Json)]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
 	public async Task RetryQueueJob(Guid id)
@@ -108,6 +107,32 @@ public class AdminController(
 
 		await queueSvc.RetryJobAsync(job);
 	}
+
+	[HttpPost("queue/{queue}/retry-all")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task RetryFailedJobs(string queue)
+	{
+		var jobs = db.Jobs
+		             .Where(p => p.Queue == queue && p.Status == Job.JobStatus.Failed)
+		             .AsChunkedAsyncEnumerable(10);
+
+		await foreach (var job in jobs)
+			await queueSvc.RetryJobAsync(job);
+	}
+	
+	[HttpPost("queue/{queue}/retry-range/{from::guid}/{to::guid}")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task RetryRange(string queue, Guid from, Guid to)
+	{
+		var jobs = db.Jobs
+		             .Where(p => p.Queue == queue && p.Status == Job.JobStatus.Failed)
+		             .Where(p => p.Id >= from && p.Id <= to)
+		             .AsChunkedAsyncEnumerable(10);
+
+		await foreach (var job in jobs)
+			await queueSvc.RetryJobAsync(job);
+	}
+
 
 	[UseNewtonsoftJson]
 	[HttpGet("activities/notes/{id}")]

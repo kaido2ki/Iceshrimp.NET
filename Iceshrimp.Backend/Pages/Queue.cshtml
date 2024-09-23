@@ -91,7 +91,13 @@ else
     }
     else
     {
-        <p>Listing @Model.TotalCount <span class="status-@Model.Filter.Value.ToString().ToLowerInvariant()">@Model.Filter.Value.ToString().ToLowerInvariant()</span> <b>@Model.Queue</b> jobs.</p>
+        <p>
+            Listing @Model.TotalCount <span class="status-@Model.Filter.Value.ToString().ToLowerInvariant()">@Model.Filter.Value.ToString().ToLowerInvariant()</span> <b>@Model.Queue</b> jobs.
+            @if (Model.Filter is Job.JobStatus.Failed)
+            {
+                <span>Batch retry: <a class="fake-link" onclick="retryAllFailed('@Model.Queue')">all failed</a> / <a class="fake-link" onclick="retryAllOnPage('@Model.Queue')">all on this page</a></span>
+            }
+        </p>
     }
 
     <table class="auto-table">

@@ -49,3 +49,17 @@ async function retry(id) {
     await callApiMethod(`/api/iceshrimp/admin/queue/jobs/${id}/retry`);
     window.location.reload();
 }
+
+async function retryAllFailed(queue) {
+    await callApiMethod(`/api/iceshrimp/admin/queue/${queue}/retry-all`);
+    window.location.reload();
+}
+
+async function retryAllOnPage(queue) {
+    const elements = document.getElementsByClassName("uuid");
+    const items = Array.prototype.map.call(elements, x => x.textContent).sort();
+    const first = items[0];
+    const last = items[items.length - 1];
+    await callApiMethod(`/api/iceshrimp/admin/queue/${queue}/retry-range/${first}/${last}`);
+    window.location.reload();
+}
