@@ -274,6 +274,31 @@ public class NoteController(
 		return new ValueResponse(note.RenoteCount - count);
 	}
 
+	[HttpGet("{id}/renotes")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<UserResponse>> GetRenotes(string id)
+	{
+		var user = HttpContext.GetUser();
+		var note = await db.Notes
+						   .Where(p => p.Id == id)
+						   .EnsureVisibleFor(user)
+						   .FirstOrDefaultAsync() ??
+				   throw GracefulException.NotFound("Note not found");
+
+		var users = await db.Notes
+							  .Where(p => p.Renote == note && p.IsPureRenote)
+							  .EnsureVisibleFor(user)
+							  .Include(p => p.User.UserProfile)
+							  .FilterHidden(user, db)
+							  .Select(p => p.User)
+							  .ToListAsync();
+
+		return await userRenderer.RenderMany(users);
+	}
+
 	[HttpPost("{id}/react/{name}")]
 	[Authenticate]
 	[Authorize]
