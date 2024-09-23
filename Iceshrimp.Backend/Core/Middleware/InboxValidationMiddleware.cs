@@ -89,7 +89,8 @@ public class InboxValidationMiddleware(
 			if (obj == null)
 				throw new Exception("Failed to deserialize ASObject");
 			if (obj is not ASActivity activity)
-				throw new GracefulException("Request body is not an ASActivity", $"Type: {obj.Type}");
+				throw new GracefulException(HttpStatusCode.UnprocessableEntity,
+				                            "Request body is not an ASActivity", $"Type: {obj.Type}");
 
 			UserPublickey? key      = null;
 			var            verified = false;
@@ -128,7 +129,7 @@ public class InboxValidationMiddleware(
 				if (key == null) throw new GracefulException($"Failed to fetch key of signature user ({sig.KeyId})");
 
 				if (key.User.IsLocalUser)
-					throw new GracefulException("Remote user must have a host");
+					throw new Exception("Remote user must have a host");
 
 				// We want to check both the user host & the keyId host (as account & web domain might be different)
 				if (await fedCtrlSvc.ShouldBlockAsync(key.User.Host, key.KeyId))

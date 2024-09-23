@@ -76,16 +76,15 @@ public class AuthorizedFetchMiddleware(
 					catch (Exception e)
 					{
 						if (e is GracefulException) throw;
-						throw new
-							GracefulException($"Failed to fetch key of signature user ({sig.KeyId}) - {e.Message}");
+						throw new Exception($"Failed to fetch key of signature user ({sig.KeyId}) - {e.Message}");
 					}
 				}
 
 				// If we still don't have the key, something went wrong and we need to throw an exception
-				if (key == null) throw new GracefulException($"Failed to fetch key of signature user ({sig.KeyId})");
+				if (key == null) throw new Exception($"Failed to fetch key of signature user ({sig.KeyId})");
 
 				if (key.User.IsLocalUser)
-					throw new GracefulException("Remote user must have a host");
+					throw new Exception("Remote user must have a host");
 
 				// We want to check both the user host & the keyId host (as account & web domain might be different)
 				if (await fedCtrlSvc.ShouldBlockAsync(key.User.Host, key.KeyId))

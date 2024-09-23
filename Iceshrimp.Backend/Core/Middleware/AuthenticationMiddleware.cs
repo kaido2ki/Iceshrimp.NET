@@ -148,7 +148,7 @@ public static partial class HttpContextExtensions
 
 	public static User GetUserOrFail(this HttpContext ctx)
 	{
-		return ctx.GetUser() ?? throw new GracefulException("Failed to get user from HttpContext");
+		return ctx.GetUser() ?? throw new Exception("Failed to get user from HttpContext");
 	}
 
 	public static bool ShouldHideFooter(this HttpContext ctx)

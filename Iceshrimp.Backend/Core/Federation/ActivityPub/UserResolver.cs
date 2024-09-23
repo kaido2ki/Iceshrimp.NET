@@ -151,7 +151,7 @@ public class UserResolver(
 
 			fingerRes = await webFingerSvc.ResolveAsync(acctUri);
 
-			if (fingerRes == null) throw new GracefulException($"Failed to WebFinger '{acctUri}'");
+			if (fingerRes == null) throw new Exception($"Failed to WebFinger '{acctUri}'");
 			responses.Add(acctUri, fingerRes);
 		}
 
@@ -159,14 +159,14 @@ public class UserResolver(
 		                throw new Exception($"WebFinger response for '{acctUri}' didn't contain any acct uris");
 		var finalUri = fingerRes.Links.FirstOrDefault(p => p is { Rel: "self", Type: "application/activity+json" })
 		                        ?.Href ??
-		               throw new GracefulException("Final AP URI was null");
+		               throw new Exception("Final AP URI was null");
 
 		if (apUri != finalUri)
 		{
 			logger.LogDebug("WebFinger: finalUri doesn't match apUri, setting acct host to apUri host: {apUri}", apUri);
 			var split = finalAcct.Split('@');
 			if (split.Length != 2)
-				throw new GracefulException($"Failed to finalize WebFinger for '{apUri}': invalid acct '{finalAcct}'");
+				throw new Exception($"Failed to finalize WebFinger for '{apUri}': invalid acct '{finalAcct}'");
 			split[1]  = new Uri(apUri).Host;
 			finalAcct = string.Join('@', split);
 		}

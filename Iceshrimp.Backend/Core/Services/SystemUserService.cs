@@ -3,7 +3,6 @@ using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
-using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -67,7 +66,7 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 	private async Task<User> CreateSystemUserAsync(string username)
 	{
 		if (await db.Users.AnyAsync(p => p.UsernameLower == username.ToLowerInvariant() && p.IsLocalUser))
-			throw new GracefulException($"System user {username} already exists");
+			throw new Exception($"System user {username} already exists");
 
 		var keypair = RSA.Create(4096);
 		var user = new User

@@ -109,9 +109,9 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 	                 Justification = "Argon2 is execution time-heavy by design")]
 	public async Task<AuthResponse> ChangePassword([FromBody] ChangePasswordRequest request)
 	{
-		var user     = HttpContext.GetUser() ?? throw new GracefulException("HttpContext.GetUser() was null");
+		var user     = HttpContext.GetUserOrFail();
 		var settings = await db.UserSettings.FirstOrDefaultAsync(p => p.User == user);
-		if (settings is not { Password: not null }) throw new GracefulException("settings?.Password was null");
+		if (settings is not { Password: not null }) throw new Exception("settings?.Password was null");
 		if (!AuthHelpers.ComparePassword(request.OldPassword, settings.Password))
 			throw GracefulException.BadRequest("old_password is invalid");
 		if (request.NewPassword.Length < 8)

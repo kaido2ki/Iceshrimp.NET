@@ -145,12 +145,14 @@ public class ActivityFetcherService(
 		var input = await response.Content.ReadAsStringAsync();
 		var json  = JsonConvert.DeserializeObject<JObject?>(input);
 
-		var res = LdHelpers.Expand(json) ?? throw new GracefulException("Failed to expand JSON-LD object");
+		var res = LdHelpers.Expand(json) ??
+		          throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Failed to expand JSON-LD object");
 		if (res.Count != 1)
-			throw new GracefulException("Received zero or more than one activity");
+			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Received zero or more than one activity");
 
 		var activity = res[0].ToObject<ASObject>(new JsonSerializer { Converters = { new ASObjectConverter() } }) ??
-		               throw new GracefulException("Failed to deserialize activity");
+		               throw new GracefulException(HttpStatusCode.UnprocessableEntity,
+		                                           "Failed to deserialize activity");
 
 		if (finalUri.Host == config.Value.WebDomain || finalUri.Host == config.Value.WebDomain)
 			throw GracefulException.UnprocessableEntity("Refusing to process activity from local domain");
@@ -214,7 +216,7 @@ public class ActivityFetcherService(
 	{
 		var activity = await FetchActivityAsync(uri, actor, keypair);
 		return activity.OfType<ASActor>().FirstOrDefault() ??
-		       throw new GracefulException($"Failed to fetch actor: {uri}");
+		       throw new Exception($"Failed to fetch actor: {uri}");
 	}
 
 	public async Task<ASActor> FetchActorAsync(string uri)

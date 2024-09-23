@@ -4,7 +4,6 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
-using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -20,7 +19,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 	public ASActor RenderLite(User user)
 	{
 		return user.IsRemoteUser
-			? new ASActor { Id = user.Uri ?? throw new GracefulException("Remote user must have an URI") }
+			? new ASActor { Id = user.Uri ?? throw new Exception("Remote user must have an URI") }
 			: new ASActor { Id = user.GetPublicUri(config.Value) };
 	}
 
@@ -28,13 +27,13 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 	{
 		if (user.IsRemoteUser)
 		{
-			return new ASActor { Id = user.Uri ?? throw new GracefulException("Remote user must have an URI") };
+			return new ASActor { Id = user.Uri ?? throw new Exception("Remote user must have an URI") };
 		}
 
 		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
 		var keypair = await db.UserKeypairs.FirstOrDefaultAsync(p => p.User == user);
 
-		if (keypair == null) throw new GracefulException("User has no keypair");
+		if (keypair == null) throw new Exception("User has no keypair");
 
 		var id = user.GetPublicUri(config.Value);
 		var type = Constants.SystemUsers.Contains(user.UsernameLower)

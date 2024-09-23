@@ -202,7 +202,7 @@ public static class QueryableExtensions
 		                    .OfType<LinkPaginationAttribute>()
 		                    .FirstOrDefault();
 		if (filter == null)
-			throw new GracefulException("Route doesn't have a LinkPaginationAttribute");
+			throw new Exception("Route doesn't have a LinkPaginationAttribute");
 
 		return Paginate(query, pq, filter.DefaultLimit, filter.MaxLimit);
 	}
@@ -230,7 +230,7 @@ public static class QueryableExtensions
 		                    .OfType<LinkPaginationAttribute>()
 		                    .FirstOrDefault();
 		if (filter == null)
-			throw new GracefulException("Route doesn't have a LinkPaginationAttribute");
+			throw new Exception("Route doesn't have a LinkPaginationAttribute");
 
 		return PaginateByOffset(query, pq, filter.DefaultLimit, filter.MaxLimit);
 	}
@@ -246,7 +246,7 @@ public static class QueryableExtensions
 		                    .OfType<LinkPaginationAttribute>()
 		                    .FirstOrDefault();
 		if (filter == null)
-			throw new GracefulException("Route doesn't have a LinkPaginationAttribute");
+			throw new Exception("Route doesn't have a LinkPaginationAttribute");
 
 		return Paginate(query, predicate, pq, filter.DefaultLimit, filter.MaxLimit);
 	}
@@ -262,7 +262,7 @@ public static class QueryableExtensions
 		                    .OfType<LinkPaginationAttribute>()
 		                    .FirstOrDefault();
 		if (filter == null)
-			throw new GracefulException("Route doesn't have a LinkPaginationAttribute");
+			throw new Exception("Route doesn't have a LinkPaginationAttribute");
 
 		return Paginate(query, predicate, pq, filter.DefaultLimit, filter.MaxLimit);
 	}
@@ -277,7 +277,7 @@ public static class QueryableExtensions
 		                    .OfType<LinkPaginationAttribute>()
 		                    .FirstOrDefault();
 		if (filter == null)
-			throw new GracefulException("Route doesn't have a LinkPaginationAttribute");
+			throw new Exception("Route doesn't have a LinkPaginationAttribute");
 
 		return Paginate(query, pq, filter.DefaultLimit, filter.MaxLimit);
 	}

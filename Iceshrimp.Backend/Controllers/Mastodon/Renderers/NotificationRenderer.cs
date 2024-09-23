@@ -3,7 +3,6 @@ using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
-using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +15,7 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 		IEnumerable<StatusEntity>? statuses = null, Dictionary<string, string>? emojiUrls = null
 	)
 	{
-		var dbNotifier = notification.Notifier ?? throw new GracefulException("Notification has no notifier");
+		var dbNotifier = notification.Notifier ?? throw new Exception("Notification has no notifier");
 
 		var targetNote = notification.Note;
 

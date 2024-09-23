@@ -1,3 +1,4 @@
+using System.Net;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
@@ -22,7 +23,8 @@ public class InboxQueue(int parallelism)
 		var expanded = LdHelpers.Expand(JToken.Parse(jobData.Body)) ?? throw new Exception("Failed to expand ASObject");
 		var obj      = ASObject.Deserialize(expanded) ?? throw new Exception("Failed to deserialize ASObject");
 		if (obj is not ASActivity activity)
-			throw new GracefulException("Job data is not an ASActivity", $"Type: {obj.Type}");
+			throw new GracefulException(HttpStatusCode.UnprocessableEntity, "Job data is not an ASActivity",
+			                            $"Type: {obj.Type}");
 
 		var apHandler = scope.GetRequiredService<ActivityPub.ActivityHandlerService>();
 		try
