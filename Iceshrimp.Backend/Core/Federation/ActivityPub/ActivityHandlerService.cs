@@ -209,7 +209,7 @@ public class ActivityHandlerService(
 			if (await db.Followings.AnyAsync(p => p.Followee == actor && p.FollowerId == ids[0]))
 				return;
 
-			throw GracefulException.UnprocessableEntity($"No follow request matching follower '{ids[0]}'" +
+			throw GracefulException.UnprocessableEntity($"No follow or follow request matching follower '{ids[0]}'" +
 			                                            $"and followee '{actor.Id}' found");
 		}
 
