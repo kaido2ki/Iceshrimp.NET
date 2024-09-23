@@ -324,7 +324,7 @@ public class NoteService(
 		if (replyBackfillConfig.Enabled &&
 		    renote?.RepliesCollection != null &&
 		    renote.RepliesFetchedAt?.Add(replyBackfillConfig.RefreshOnRenoteAfterTimeSpan) <= DateTime.UtcNow &&
-			_recursionLimit > 0)
+		    _recursionLimit > 0)
 		{
 			logger.LogDebug("Enqueueing reply collection fetch for renote {renoteId}", renote.Id);
 			await queueSvc.BackfillQueue.EnqueueAsync(new BackfillJobData
@@ -1193,13 +1193,15 @@ public class NoteService(
 
 		repliesCollection ??= new ASCollection(note.RepliesCollection);
 
-		var collectionId = new Uri(note.RepliesCollection);
+		var collectionId        = new Uri(note.RepliesCollection);
 		var replyBackfillConfig = backfillConfig.Value.Replies;
 
 		_recursionLimit = recursionLimit;
 		await objectResolver.IterateCollection(repliesCollection)
 		                    .Take(50)
-		                    .Where(p => p.Id != null && (replyBackfillConfig.BackfillEverything || new Uri(p.Id).Authority == collectionId.Authority))
+		                    .Where(p => p.Id != null &&
+		                                (replyBackfillConfig.BackfillEverything ||
+		                                 new Uri(p.Id).Authority == collectionId.Authority))
 		                    .Select(p => ResolveNoteAsync(p.Id!, null, fetchUser, forceRefresh: false))
 		                    .AwaitAllNoConcurrencyAsync();
 	}
