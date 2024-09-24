@@ -290,7 +290,7 @@ public static class ServiceExtensions
 			{
 				context.HttpContext.Response.StatusCode  = 429;
 				context.HttpContext.Response.ContentType = "application/json";
-				var res = new ErrorResponse
+				var res = new ErrorResponse(new Exception())
 				{
 					Error      = "Too Many Requests",
 					StatusCode = 429,

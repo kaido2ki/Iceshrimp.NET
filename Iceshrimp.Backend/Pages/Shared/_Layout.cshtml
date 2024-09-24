@@ -20,12 +20,12 @@
 @await RenderSectionAsync("scripts", false)
 <footer>
     <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
-    <span class="float-right">
-        @if (!Context.ShouldHideFooter())
-        {
+    @if (!Context.ShouldHideFooter())
+    {
+        <span class="float-right">
             <a href="/login?rd=@(Context.Request.Path.ToUriComponent())">Login</a>
-        }
-    </span>
+        </span>
+    }
 </footer>
 </body>
 </html>

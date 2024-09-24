@@ -30,8 +30,7 @@ public class RedirectController(IOptionsSnapshot<Config.SecuritySection> config,
 	{
 		var localUser = HttpContext.GetUser();
 		if (config.Value.PublicPreview == Enums.PublicPreview.Lockdown && localUser == null)
-			throw GracefulException.Forbidden("Public preview is disabled on this instance.",
-			                                  "The instance administrator has intentionally disabled this feature for privacy reasons.");
+			throw new PublicPreviewDisabledException();
 
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
 		           throw GracefulException.NotFound("User not found");

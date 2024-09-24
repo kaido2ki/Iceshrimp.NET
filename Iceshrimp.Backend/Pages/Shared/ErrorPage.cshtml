@@ -1,5 +1,6 @@
 @page
 @using Iceshrimp.Backend.Core.Configuration
+@using Iceshrimp.Backend.Core.Middleware
 @using Microsoft.Extensions.Options
 @model ErrorPageModel
 @inject IOptions<Config.InstanceSection>         Instance
@@ -60,6 +61,12 @@
 </p>
 <footer>
     <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
+    @if (Model.Error.Exception is PublicPreviewDisabledException)
+    {
+        <span class="float-right">
+            <a href="/login?rd=@(Request.Path.ToUriComponent())">Login</a>
+        </span>
+    }
 </footer>
 </body>
 </html>

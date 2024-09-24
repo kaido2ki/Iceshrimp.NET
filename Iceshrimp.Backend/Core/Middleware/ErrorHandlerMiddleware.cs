@@ -92,7 +92,7 @@ public class ErrorHandlerMiddleware(
 				}
 				else
 				{
-					var error = new ErrorResponse
+					var error = new ErrorResponse(e)
 					{
 						StatusCode = ctx.Response.StatusCode,
 						Error      = verbosity >= ExceptionVerbosity.Basic ? ce.Error : ce.StatusCode.ToString(),
@@ -121,7 +121,7 @@ public class ErrorHandlerMiddleware(
 				ctx.Response.StatusCode        = 500;
 				ctx.Response.Headers.RequestId = ctx.TraceIdentifier;
 
-				var error = new ErrorResponse
+				var error = new ErrorResponse(e)
 				{
 					StatusCode = 500,
 					Error      = "Internal Server Error",
@@ -276,6 +276,10 @@ public class InstanceBlockedException(string uri, string? host = null)
 
 	public string Uri => uri;
 }
+
+public class PublicPreviewDisabledException()
+	: GracefulException(HttpStatusCode.Forbidden, "Public preview is disabled on this instance.",
+	                    "The instance administrator has intentionally disabled this feature for privacy reasons.");
 
 public class ValidationException(
 	HttpStatusCode statusCode,

@@ -39,8 +39,7 @@ public class UserModel(
 			return Partial("Shared/FrontendSPA");
 
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown)
-			throw GracefulException.Forbidden("Public preview is disabled on this instance.",
-			                                  "The instance administrator has intentionally disabled this feature for privacy reasons.");
+			throw new PublicPreviewDisabledException();
 
 		InstanceName = await meta.Get(MetaEntity.InstanceName) ?? InstanceName;
 
