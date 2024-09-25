@@ -114,7 +114,7 @@ public class AdminController(
 	{
 		var jobs = db.Jobs
 		             .Where(p => p.Queue == queue && p.Status == Job.JobStatus.Failed)
-		             .AsChunkedAsyncEnumerable(10);
+		             .AsChunkedAsyncEnumerable(10, p => p.Id);
 
 		await foreach (var job in jobs)
 			await queueSvc.RetryJobAsync(job);
@@ -127,7 +127,7 @@ public class AdminController(
 		var jobs = db.Jobs
 		             .Where(p => p.Queue == queue && p.Status == Job.JobStatus.Failed)
 		             .Where(p => p.Id >= from && p.Id <= to)
-		             .AsChunkedAsyncEnumerable(10);
+		             .AsChunkedAsyncEnumerable(10, p => p.Id);
 
 		await foreach (var job in jobs)
 			await queueSvc.RetryJobAsync(job);

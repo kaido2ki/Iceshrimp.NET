@@ -22,6 +22,7 @@ public static class QueryableExtensions
 	/// </summary>
 	/// <remarks>
 	/// Make sure to call .OrderBy() on the query, otherwise the results will be unpredictable.
+	/// Furthermore, this method is unsuitable for cases where the consumer removes elements from the original collection.
 	/// </remarks>
 	/// <returns>
 	/// The result set as an IAsyncEnumerable. Makes one DB roundtrip at the start of each chunk.
@@ -37,6 +38,76 @@ public static class QueryableExtensions
 			foreach (var item in res) yield return item;
 			if (res.Length < chunkSize) break;
 			offset += chunkSize;
+		}
+	}
+
+	/// <inheritdoc cref="AsChunkedAsyncEnumerable{T}(System.Linq.IQueryable{T},int)" select="summary|returns"/>
+	/// <remarks>
+	/// This overload requires you to pass a predicate to the identifier.
+	/// When <paramref name="isOrdered"/> is set to false, .OrderBy(<paramref name="idPredicate"/>) is appended to the query.
+	/// </remarks>
+	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerable<TResult>(
+		this IQueryable<TResult> query, int chunkSize, Expression<Func<TResult, string>> idPredicate,
+		bool isOrdered = false
+	)
+	{
+		var pred = idPredicate.Compile();
+		query = isOrdered ? query : query.OrderBy(idPredicate);
+
+		string? last = null;
+		while (true)
+		{
+			// ReSharper disable once AccessToModifiedClosure
+			var final = last is not null ? query.Where(idPredicate.Compose(p => p.IsGreaterThan(last))) : query;
+			var res   = await final.Take(chunkSize).ToArrayAsync();
+			if (res.Length == 0) break;
+			foreach (var item in res) yield return item;
+			if (res.Length < chunkSize) break;
+			last = pred.Invoke(res.Last());
+		}
+	}
+
+	/// <inheritdoc cref="AsChunkedAsyncEnumerable{T}(System.Linq.IQueryable{T},int,Expression{Func{T,string}},bool)"/>
+	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerable<TResult>(
+		this IQueryable<TResult> query, int chunkSize, Expression<Func<TResult, Guid>> idPredicate,
+		bool isOrdered = false
+	)
+	{
+		var pred = idPredicate.Compile();
+		query = isOrdered ? query : query.OrderBy(idPredicate);
+
+		Guid? last = null;
+		while (true)
+		{
+			// ReSharper disable once AccessToModifiedClosure
+			var final = last is not null ? query.Where(idPredicate.Compose(p => p > last)) : query;
+			var res   = await final.Take(chunkSize).ToArrayAsync();
+			if (res.Length == 0) break;
+			foreach (var item in res) yield return item;
+			if (res.Length < chunkSize) break;
+			last = pred.Invoke(res.Last());
+		}
+	}
+
+	/// <inheritdoc cref="AsChunkedAsyncEnumerable{T}(System.Linq.IQueryable{T},int,Expression{Func{T,string}},bool)"/>
+	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerable<TResult>(
+		this IQueryable<TResult> query, int chunkSize, Expression<Func<TResult, int>> idPredicate,
+		bool isOrdered = false
+	)
+	{
+		var pred = idPredicate.Compile();
+		query = isOrdered ? query : query.OrderBy(idPredicate);
+
+		int? last = null;
+		while (true)
+		{
+			// ReSharper disable once AccessToModifiedClosure
+			var final = last is not null ? query.Where(idPredicate.Compose(p => p > last)) : query;
+			var res   = await final.Take(chunkSize).ToArrayAsync();
+			if (res.Length == 0) break;
+			foreach (var item in res) yield return item;
+			if (res.Length < chunkSize) break;
+			last = pred.Invoke(res.Last());
 		}
 	}
 

@@ -507,7 +507,7 @@ public class ActivityHandlerService(
 		                  .OrderBy(p => p.Id)
 		                  .Select(p => p.Follower)
 		                  .PrecomputeRelationshipData(source)
-		                  .AsChunkedAsyncEnumerable(50);
+		                  .AsChunkedAsyncEnumerable(50, p => p.Id, isOrdered: true);
 
 		await foreach (var follower in followers)
 		{
