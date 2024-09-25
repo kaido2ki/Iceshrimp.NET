@@ -237,7 +237,7 @@ module private MfmParser =
         |>> fun c -> MfmCenterNode(aggregateTextInline c) :> MfmNode
 
     let mentionNode =
-        previousCharSatisfiesNot isNotWhitespace
+        (previousCharSatisfiesNot isNotWhitespace <|> previousCharSatisfies (isAnyOf <| "()")) 
         >>. skipString "@"
         >>. many1Chars (
             satisfy isLetterOrNumber

@@ -75,7 +75,7 @@ public class MfmTests
 	public void TestMention()
 	{
 		const string input =
-			"test @test test @test@instance.tld @test_ @_test @test_@ins-tance.tld @_test@xn--mastodn-f1a.de @_test@-xn--mastodn-f1a.de";
+			"test @test test @test@instance.tld @test_ @_test @test_@ins-tance.tld @_test@xn--mastodn-f1a.de @_test@-xn--mastodn-f1a.de (@test@domain.tld)";
 		List<MfmNode> expected =
 		[
 			new MfmTextNode("test "),
@@ -90,7 +90,9 @@ public class MfmTests
 			new MfmMentionNode("test_@ins-tance.tld", "test_", "ins-tance.tld"),
 			new MfmTextNode(" "),
 			new MfmMentionNode("_test@xn--mastodn-f1a.de", "_test", "xn--mastodn-f1a.de"),
-			new MfmTextNode(" @_test@-xn--mastodn-f1a.de")
+			new MfmTextNode(" @_test@-xn--mastodn-f1a.de ("),
+			new MfmMentionNode("test@domain.tld", "test", "domain.tld"),
+			new MfmTextNode(")"),
 		];
 		var res = Mfm.parse(input);
 
