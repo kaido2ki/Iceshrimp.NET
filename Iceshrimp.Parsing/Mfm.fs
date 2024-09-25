@@ -208,7 +208,7 @@ module private MfmParser =
         >>. opt (many1CharsTill asciiLetter (lookAhead newline))
         .>>. (skipNewline
               >>. manyCharsTill anyChar (attempt (skipNewline >>. skipString "```")))
-        .>> (opt <| attempt (skipNewline >>. nextCharSatisfies isNewline))
+        .>> (opt <| attempt (skipNewline >>. skipNewline))
         |>> fun (lang: string option, code: string) -> MfmCodeBlockNode(code, lang) :> MfmNode
 
     let mathNode =

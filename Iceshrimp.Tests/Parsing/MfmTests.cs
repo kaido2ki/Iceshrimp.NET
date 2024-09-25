@@ -153,7 +153,7 @@ public class MfmTests
 		[
 			new MfmTextNode("test 123\n"),
 			new MfmCodeBlockNode("this is a code block", null),
-			new MfmTextNode("\ntest 123")
+			new MfmTextNode("test 123")
 		];
 		var res = Mfm.parse(input);
 
