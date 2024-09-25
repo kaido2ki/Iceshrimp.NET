@@ -13,6 +13,7 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -297,6 +298,34 @@ public class NoteController(
 							  .ToListAsync();
 
 		return await userRenderer.RenderMany(users);
+	}
+
+	[HttpGet("{id}/quotes")]
+	[Authenticate]
+	[Authorize]
+	[LinkPagination(20, 40)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<NoteResponse>> GetQuotes(string id, PaginationQuery pq)
+	{
+		var user = HttpContext.GetUser();
+
+		var note = await db.Notes
+						   .Where(p => p.Id == id)
+						   .EnsureVisibleFor(user)
+						   .FirstOrDefaultAsync() ??
+				   throw GracefulException.NotFound("Note not found");
+
+		var renotes = await db.Notes
+							  .Where(p => p.Renote == note && p.IsQuote)
+							  .Include(p => p.User.UserProfile)
+							  .EnsureVisibleFor(user)
+							  .FilterHidden(user, db)
+							  .Paginate(pq, ControllerContext)
+							  .ToListAsync();
+
+		return await noteRenderer.RenderMany(renotes.EnforceRenoteReplyVisibility(), user,
+											 Filter.FilterContext.Threads);
 	}
 
 	[HttpPost("{id}/react/{name}")]
