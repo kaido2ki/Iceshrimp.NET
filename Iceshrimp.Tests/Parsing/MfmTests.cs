@@ -140,26 +140,38 @@ public class MfmTests
 	[TestMethod]
 	public void TestCodeBlock()
 	{
-		const string input = """
-		                     test 123
+		const string canonical = """
+		                         test 123
+		                         ```
+		                         this is a code block
+		                         ```
+		                         test 123
+		                         """;
 
-		                     ```
-		                     this is a code block
-		                     ```
+		const string alt = """
+		                   test 123
 
-		                     test 123
-		                     """;
+		                   ```
+		                   this is a code block
+		                   ```
+
+		                   test 123
+		                   """;
+
 		List<MfmNode> expected =
 		[
-			new MfmTextNode("test 123\n"),
+			new MfmTextNode("test 123"),
 			new MfmCodeBlockNode("this is a code block", null),
 			new MfmTextNode("test 123")
 		];
-		var res = Mfm.parse(input);
+		var res  = Mfm.parse(canonical);
+		var res2 = Mfm.parse(alt);
 
 		AssertionOptions.FormattingOptions.MaxDepth = 100;
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
-		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+		res2.ToList().Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(canonical);
+		MfmSerializer.Serialize(res2).Should().BeEquivalentTo(canonical);
 	}
 
 	[TestMethod]
