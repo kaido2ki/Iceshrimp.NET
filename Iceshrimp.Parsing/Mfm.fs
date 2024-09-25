@@ -202,11 +202,13 @@ module private MfmParser =
         |>> fun v -> MfmInlineCodeNode(v) :> MfmNode
 
     let codeBlockNode =
-        previousCharSatisfiesNot isNotWhitespace
+        opt (previousCharSatisfies isNewline >>. skipNewline)
+        >>. previousCharSatisfiesNot isNotNewline
         >>. skipString "```"
         >>. opt (many1CharsTill asciiLetter (lookAhead newline))
         .>>. (skipNewline
               >>. manyCharsTill anyChar (attempt (skipNewline >>. skipString "```")))
+        .>> (opt <| attempt (skipNewline >>. nextCharSatisfies isNewline))
         |>> fun (lang: string option, code: string) -> MfmCodeBlockNode(code, lang) :> MfmNode
 
     let mathNode =

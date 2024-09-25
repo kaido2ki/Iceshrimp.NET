@@ -15,9 +15,9 @@ public static class MfmSerializer
 			{
 				case MfmCodeBlockNode mfmCodeBlockNode:
 				{
-					result.Append($"```{mfmCodeBlockNode.Language?.Value ?? ""}\n");
+					result.Append($"\n```{mfmCodeBlockNode.Language?.Value ?? ""}\n");
 					result.Append(mfmCodeBlockNode.Code);
-					result.Append("\n```");
+					result.Append("\n```\n");
 					break;
 				}
 				case MfmMathBlockNode mfmMathBlockNode:

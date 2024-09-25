@@ -142,9 +142,11 @@ public class MfmTests
 	{
 		const string input = """
 		                     test 123
+
 		                     ```
 		                     this is a code block
 		                     ```
+
 		                     test 123
 		                     """;
 		List<MfmNode> expected =
