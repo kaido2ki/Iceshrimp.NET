@@ -175,6 +175,9 @@ public class PostgresJobQueue<T>(
 	public           string                Name    => name;
 	public           TimeSpan              Timeout => timeout;
 
+	private readonly string _exceptionPrefix =
+		$"   at {typeof(PostgresJobQueue<T>).Namespace}.{typeof(PostgresJobQueue<T>).Name}";
+
 	/*
 	 * This is the main queue processor loop. The algorithm aims to only ever have as many workers running as needed,
 	 * conserving resources.
@@ -436,10 +439,13 @@ public class PostgresJobQueue<T>(
 				_logger.LogError("Failed to process {queue} job: {error} - {details}",
 				                 queueName, ce.Message, ce.Details);
 			}
-			else if (e is TimeoutException)
+			else if (e is TimeoutException && e.StackTrace is not null && e.StackTrace.StartsWith(_exceptionPrefix))
 			{
 				_logger.LogError("Job in queue {queue} didn't complete within the configured timeout ({timeout} seconds)",
 				                 queueName, (int)timeout.TotalSeconds);
+
+				job.Exception = job.ExceptionMessage =
+					$"Job didn't complete within the configured timeout ({(int)timeout.TotalSeconds} seconds)";
 			}
 			else
 			{
