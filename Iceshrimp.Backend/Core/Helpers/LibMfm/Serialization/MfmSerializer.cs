@@ -163,6 +163,6 @@ public static class MfmSerializer
 			}
 		}
 
-		return result.ToString();
+		return result.ToString().Trim();
 	}
 }

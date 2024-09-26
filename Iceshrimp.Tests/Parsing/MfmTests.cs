@@ -39,9 +39,7 @@ public class MfmTests
 		List<MfmNode> expected =
 		[
 			new MfmInlineCodeNode("test"),
-			new MfmTextNode("\n"),
 			new MfmCodeBlockNode("test", null),
-			new MfmTextNode("\n"),
 			new MfmCodeBlockNode("test", "lang")
 		];
 
