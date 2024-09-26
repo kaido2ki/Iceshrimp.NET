@@ -53,6 +53,9 @@ internal class NoteControllerModel(ApiClient api)
 	public Task<ValueResponse?> UnrenoteNote(string id) =>
 		api.CallNullable<ValueResponse>(HttpMethod.Post, $"/notes/{id}/unrenote");
 
+	public Task<List<UserResponse>?> GetRenotes(string id) =>
+		api.CallNullable<List<UserResponse>>(HttpMethod.Get, $"/notes/{id}/renotes");
+
 	public Task<ValueResponse?> ReactToNote(string id, string name) =>
 		api.CallNullable<ValueResponse>(HttpMethod.Post, $"/notes/{id}/react/{name}");
 
