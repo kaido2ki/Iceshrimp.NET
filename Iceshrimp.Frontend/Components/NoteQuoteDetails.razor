@@ -1,0 +1,81 @@
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas.Web
+@using Iceshrimp.Frontend.Components.Note
+@inject ApiService                Api;
+@inject ILogger<NoteQuoteDetails> Logger;
+@inject NavigationManager         Nav;
+
+@if (State is State.Loaded)
+{
+    <div class="quotes">
+        @foreach (var el in Quotes)
+        {
+            <div class="quote">
+                <Note NoteResponse="el"/>
+            </div>
+        }
+        @if (_end is false)
+        {
+            <ScrollEnd ManualLoad="LoadMore" IntersectionChange="LoadMore"/>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public required string             NoteId { get; set; }
+    private                                     State              State  { get; set; }
+    private                                     List<NoteResponse> Quotes { get; set; } = [];
+    private                                     string?            _minId;
+    private                                     string?            _maxId;
+    private                                     bool               _end   = false;
+    private                                     int                _limit = 40;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var res   = await Api.Notes.GetQuotes(NoteId, new PaginationQuery { Limit = _limit });
+            if (res is not null && res.Count > 0)
+            {
+                Quotes = res;
+                _minId = Quotes.Last().Id;
+                _maxId = Quotes.First().Id;
+                if (res.Count < _limit)
+                {
+                    _end = true;
+                }
+            }
+
+            State = State.Loaded;
+        }
+        catch (ApiException e)
+        {
+            Logger.LogError(e, "Failed to load quotes");
+            State = State.Error;
+        }
+    }
+
+    private async void LoadMore()
+    {
+        var pq = new PaginationQuery { MaxId = _minId, Limit = 40 };
+        try
+        {
+            var res = await Api.Notes.GetQuotes(NoteId, pq);
+            if (res is null) return; // If server returns null here, the note was likely deleted.
+            if (res.Count < 1)
+            {
+                _end = true;
+                return;
+            }
+
+            if (res.Count < _limit) _end = true;
+            _minId = res.Last().Id;
+            Quotes.AddRange(res);
+        }
+        catch (ApiException e)
+        {
+            Logger.LogError(e, "Failed to load more quotes");
+        }
+    }
+}

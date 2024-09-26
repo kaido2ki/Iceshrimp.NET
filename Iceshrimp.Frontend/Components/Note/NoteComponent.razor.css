@@ -24,3 +24,9 @@
     padding: 1rem;
     margin: 0.5rem;
 }
+
+.quote-link {
+    text-decoration: none;
+    color: var(--notice-color);
+    font-style: italic;
+}
