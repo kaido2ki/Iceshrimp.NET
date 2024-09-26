@@ -1193,6 +1193,57 @@ public class UserService(
 		}
 	}
 
+	public async Task AddAliasAsync(User user, User alias)
+	{
+		if (user.IsRemoteUser) throw GracefulException.BadRequest("Cannot add alias for remote user");
+		if (user.Id == alias.Id) throw GracefulException.BadRequest("You cannot add an alias to yourself");
+
+		user.AlsoKnownAs ??= [];
+		var uri = alias.Uri ?? alias.GetPublicUri(instance.Value);
+
+		if (!user.AlsoKnownAs.Contains(uri)) user.AlsoKnownAs.Add(uri);
+		await UpdateLocalUserAsync(user, user.AvatarId, user.BannerId);
+	}
+
+	public async Task RemoveAliasAsync(User user, string aliasUri)
+	{
+		if (user.IsRemoteUser) throw GracefulException.BadRequest("Cannot manage aliases for remote user");
+		if (user.AlsoKnownAs is null or []) return;
+		if (!user.AlsoKnownAs.Contains(aliasUri)) return;
+
+		user.AlsoKnownAs.RemoveAll(p => p == aliasUri);
+		await UpdateLocalUserAsync(user, user.AvatarId, user.BannerId);
+	}
+
+	public async Task MoveToUserAsync(User source, User target)
+	{
+		if (source.IsRemoteUser) throw GracefulException.BadRequest("Cannot initiate move for remote user");
+		if (source.Id == target.Id) throw GracefulException.BadRequest("You cannot migrate to yourself");
+
+		target = await UpdateUserAsync(target, force: true);
+		if (target.AlsoKnownAs is null || !target.AlsoKnownAs.Contains(source.GetPublicUri(instance.Value)))
+			throw GracefulException.BadRequest("Target user has not added you as an account alias");
+
+		var sourceUri = source.Uri ?? source.GetPublicUri(instance.Value);
+		var targetUri = target.Uri ?? target.GetPublicUri(instance.Value);
+		if (source.MovedToUri is not null && source.MovedToUri != targetUri)
+			throw GracefulException.BadRequest("You can only initiate repeated migrations to the same target account");
+
+		source.MovedToUri = targetUri;
+		await db.SaveChangesAsync();
+
+		await MoveRelationshipsAsync(source, target, sourceUri, targetUri);
+		var move = activityRenderer.RenderMove(userRenderer.RenderLite(source), userRenderer.RenderLite(target));
+		await deliverSvc.DeliverToFollowersAsync(move, source, []);
+	}
+
+	public async Task UndoMoveAsync(User user)
+	{
+		if (user.MovedToUri is null) return;
+		user.MovedToUri = null;
+		await UpdateLocalUserAsync(user, user.AvatarId, user.BannerId);
+	}
+
 	private async Task<string?> UpdateUserHostAsync(User user)
 	{
 		if (user.IsLocalUser || user.Uri == null || user.SplitDomainResolved)
@@ -1242,5 +1293,57 @@ public class UserService(
 
 		user.SplitDomainResolved = true;
 		return split[1];
+	}
+
+	public async Task MoveRelationshipsAsync(User source, User target, string sourceUri, string targetUri)
+	{
+		var followers = db.Followings
+		                  .Where(p => p.Followee == source && p.Follower.IsLocalUser)
+		                  .Select(p => p.Follower)
+		                  .OrderBy(p => p.Id)
+		                  .PrecomputeRelationshipData(source)
+		                  .AsChunkedAsyncEnumerable(50, p => p.Id, isOrdered: true);
+
+		await foreach (var follower in followers)
+		{
+			try
+			{
+				await FollowUserAsync(follower, target);
+
+				// We need to transfer the precomputed properties to the source user for each follower so that the unfollow method works correctly
+				source.PrecomputedIsFollowedBy  = follower.PrecomputedIsFollowing;
+				source.PrecomputedIsRequestedBy = follower.PrecomputedIsRequested;
+
+				await UnfollowUserAsync(follower, source);
+			}
+			catch (Exception e)
+			{
+				logger.LogWarning("Failed to process move ({sourceUri} -> {targetUri}) for follower {id}: {error}",
+				                  sourceUri, targetUri, follower.Id, e);
+			}
+		}
+
+		if (source.IsRemoteUser || target.IsRemoteUser) return;
+		
+		var following = db.Followings
+		                  .Where(p => p.Follower == source)
+		                  .Select(p => p.Follower)
+		                  .OrderBy(p => p.Id)
+		                  .PrecomputeRelationshipData(source)
+		                  .AsChunkedAsyncEnumerable(50, p => p.Id, isOrdered: true);
+		
+		await foreach (var followee in following)
+		{
+			try
+			{
+				await FollowUserAsync(target, followee);
+				await UnfollowUserAsync(source, followee);
+			}
+			catch (Exception e)
+			{
+				logger.LogWarning("Failed to process move ({sourceUri} -> {targetUri}) for followee {id}: {error}",
+				                  sourceUri, targetUri, followee.Id, e);
+			}
+		}
 	}
 }

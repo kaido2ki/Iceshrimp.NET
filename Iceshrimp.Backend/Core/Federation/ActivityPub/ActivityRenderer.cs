@@ -212,4 +212,12 @@ public class ActivityRenderer(
 		InReplyTo    = new ASObjectBase(note.Uri ?? note.GetPublicUri(config.Value)),
 		Name         = poll.Choices[vote.Choice]
 	};
+
+	public ASMove RenderMove(ASActor actor, ASActor target) => new()
+	{
+		Id     = GenerateActivityId(),
+		Actor  = actor.Compact(),
+		Object = actor.Compact(),
+		Target = new ASLink(target.Id)
+	};
 }

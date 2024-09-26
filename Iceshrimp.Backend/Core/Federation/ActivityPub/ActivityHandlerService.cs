@@ -500,33 +500,7 @@ public class ActivityHandlerService(
 
 		source.MovedToUri = targetUri;
 		await db.SaveChangesAsync();
-
-		var followers = db.Followings
-		                  .Where(p => p.Followee == source)
-		                  .Where(p => p.Follower.IsLocalUser)
-		                  .OrderBy(p => p.Id)
-		                  .Select(p => p.Follower)
-		                  .PrecomputeRelationshipData(source)
-		                  .AsChunkedAsyncEnumerable(50, p => p.Id, isOrdered: true);
-
-		await foreach (var follower in followers)
-		{
-			try
-			{
-				await userSvc.FollowUserAsync(follower, target);
-
-				// We need to transfer the precomputed properties to the source user for each follower so that the unfollow method works correctly
-				source.PrecomputedIsFollowedBy  = follower.PrecomputedIsFollowing;
-				source.PrecomputedIsRequestedBy = follower.PrecomputedIsRequested;
-
-				await userSvc.UnfollowUserAsync(follower, source);
-			}
-			catch (Exception e)
-			{
-				logger.LogWarning("Failed to process move ({sourceUri} -> {targetUri}) for user {id}: {error}",
-				                  sourceUri, targetUri, follower.Id, e);
-			}
-		}
+		await userSvc.MoveRelationshipsAsync(source, target, sourceUri, targetUri);
 	}
 
 	private async Task UnfollowAsync(ASActor followeeActor, User follower)

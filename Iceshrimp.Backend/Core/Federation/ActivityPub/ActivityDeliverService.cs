@@ -20,15 +20,15 @@ public class ActivityDeliverService(
 		logger.LogDebug("Queuing deliver-to-followers jobs for activity {id}", activity.Id);
 		if (activity.Actor == null) throw new Exception("Actor must not be null");
 
+		// @formatter:off
 		await queueService.PreDeliverQueue.EnqueueAsync(new PreDeliverJobData
 		{
-			ActorId      = actor.Id,
-			RecipientIds = recipients.Select(p => p.Id).ToList(),
-			SerializedActivity =
-				JsonConvert.SerializeObject(activity,
-				                            LdHelpers.JsonSerializerSettings),
+			ActorId            = actor.Id,
+			RecipientIds       = recipients.Select(p => p.Id).ToList(),
+			SerializedActivity = JsonConvert.SerializeObject(activity, LdHelpers.JsonSerializerSettings),
 			DeliverToFollowers = true
 		});
+		// @formatter:on
 	}
 
 	public async Task DeliverToAsync(ASActivity activity, User actor, params User[] recipients)
@@ -36,15 +36,15 @@ public class ActivityDeliverService(
 		logger.LogDebug("Queuing deliver-to-recipients jobs for activity {id}", activity.Id);
 		if (activity.Actor == null) throw new Exception("Actor must not be null");
 
+		// @formatter:off
 		await queueService.PreDeliverQueue.EnqueueAsync(new PreDeliverJobData
 		{
-			ActorId      = actor.Id,
-			RecipientIds = recipients.Select(p => p.Id).ToList(),
-			SerializedActivity =
-				JsonConvert.SerializeObject(activity,
-				                            LdHelpers.JsonSerializerSettings),
+			ActorId            = actor.Id,
+			RecipientIds       = recipients.Select(p => p.Id).ToList(),
+			SerializedActivity = JsonConvert.SerializeObject(activity, LdHelpers.JsonSerializerSettings),
 			DeliverToFollowers = false
 		});
+		// @formatter:on
 	}
 
 	public async Task DeliverToConditionalAsync(ASActivity activity, User actor, Note note)
@@ -56,7 +56,10 @@ public class ActivityDeliverService(
 		}
 
 		var recipients = await db.Users
-		                         .Where(p => note.VisibleUserIds.Prepend(note.User.Id).Contains(p.Id) && p.IsRemoteUser)
+		                         .Where(p => p.IsRemoteUser &&
+		                                     note.VisibleUserIds
+		                                         .Prepend(note.User.Id)
+		                                         .Contains(p.Id))
 		                         .ToArrayAsync();
 
 		await DeliverToAsync(activity, actor, recipients);
