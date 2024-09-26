@@ -41,11 +41,11 @@ public class InboxQueue(int parallelism)
 		}
 		catch (Exception e) when (e is not GracefulException)
 		{
-			if (job.RetryCount++ < 4)
+			if (job.RetryCount++ < 10)
 			{
 				var jitter     = TimeSpan.FromSeconds(new Random().Next(0, 60));
 				var baseDelay  = TimeSpan.FromMinutes(1);
-				var maxBackoff = TimeSpan.FromHours(8);
+				var maxBackoff = TimeSpan.FromHours(7);
 				var backoff    = (Math.Pow(2, job.RetryCount) - 1) * baseDelay;
 				if (backoff > maxBackoff)
 					backoff = maxBackoff;
