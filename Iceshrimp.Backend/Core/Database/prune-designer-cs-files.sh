@@ -1,4 +1,6 @@
 #!/bin/bash
+# This file is licensed under the MIT license, in addition to the project-scoped EUPL v1.2.
+# Copyright (c) 2024 Laura Hausmann
 set -e
 
 if [[ $(uname) == "Darwin" ]]; then
