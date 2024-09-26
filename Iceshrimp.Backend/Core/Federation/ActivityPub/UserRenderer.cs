@@ -89,6 +89,8 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			IsLocked         = user.IsLocked,
 			Location         = profile?.Location,
 			Birthday         = profile?.Birthday,
+			AlsoKnownAs      = user.AlsoKnownAs?.Select(p => new ASLink(p)).ToList(),
+			MovedTo          = user.MovedToUri is not null ? new ASLink(user.MovedToUri) : null,
 			Featured         = new ASOrderedCollection($"{id}/collections/featured"),
 			Avatar = user.AvatarUrl != null
 				? new ASImage { Url = new ASLink(user.AvatarUrl) }
