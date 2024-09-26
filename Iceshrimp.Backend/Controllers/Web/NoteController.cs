@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Mime;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
+using Iceshrimp.Backend.Controllers.Shared.Schemas;
 using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -210,6 +211,29 @@ public class NoteController(
 		var success = await noteSvc.UnlikeNoteAsync(note, user);
 
 		return new ValueResponse(success ? --note.LikeCount : note.LikeCount);
+	}
+	
+	[HttpGet("{id}/likes")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<UserResponse>> GetNoteLikes(string id)
+	{
+		var user = HttpContext.GetUser();
+		var note = await db.Notes
+						   .Where(p => p.Id == id)
+						   .EnsureVisibleFor(user)
+						   .FirstOrDefaultAsync() ??
+				   throw GracefulException.NotFound("Note not found");
+
+		var users = await db.NoteLikes
+							.Where(p => p.Note == note)
+							.Include(p => p.User.UserProfile)
+							.Select(p => p.User)
+							.ToListAsync();
+
+		return await userRenderer.RenderMany(users);
 	}
 
 	[HttpPost("{id}/renote")]
