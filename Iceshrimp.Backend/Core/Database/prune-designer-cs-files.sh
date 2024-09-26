@@ -1,5 +1,5 @@
 #!/bin/bash
-# This file is licensed under the MIT license, in addition to the EUPL v1.2 as with the rest of the Iceshrimp.NET project
+# This file is licensed under the MIT license, in addition to the EUPL v1.2 (as with the rest of the Iceshrimp.NET project)
 # Copyright (c) 2024 Laura Hausmann
 set -e
 
