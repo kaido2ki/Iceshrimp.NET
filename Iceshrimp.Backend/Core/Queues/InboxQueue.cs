@@ -35,9 +35,9 @@ public class InboxQueue(int parallelism)
 		{
 			var logger = scope.GetRequiredService<ILogger<InboxQueue>>();
 			if (e.Host != null)
-				logger.LogDebug("Refusing to process activity {id}: Instance {host} is blocked", job.Id, e.Host);
+				logger.LogDebug("Refusing to process activity: Instance {host} is blocked", e.Host);
 			else
-				logger.LogDebug("Refusing to process activity {id}: Instance is blocked ({uri})", job.Id, e.Uri);
+				logger.LogDebug("Refusing to process activity: Instance is blocked ({uri})", e.Uri);
 		}
 		catch (Exception e) when (e is not GracefulException)
 		{
