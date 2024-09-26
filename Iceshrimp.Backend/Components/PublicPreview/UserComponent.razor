@@ -1,0 +1,32 @@
+@using Iceshrimp.Backend.Components.PublicPreview.Schemas
+
+@if (Link)
+{
+    <div class="user">
+        <a href="@User.Url">
+            <img src="@User.AvatarUrl" class="avatar" alt="User avatar"/>
+        </a>
+        <div class="title">
+            <a class="display-name" href="@User.Url">
+                @if (User.DisplayName != null)
+                {
+                    @User.DisplayName
+                }
+                else
+                {
+                    @User.Username
+                }
+            </a>
+        </div>
+        <span class="acct">@@@User.Username<span class="host">@@@User.Host</span></span>
+    </div>
+}
+else
+{
+    <img src="@User.AvatarUrl" class="avatar" alt="User avatar"/>
+}
+
+@code {
+    [Parameter, EditorRequired] public required PreviewUser User   { get; set; }
+    [Parameter]                 public          bool        Link   { get; set; } = true;
+}

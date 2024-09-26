@@ -1,0 +1,111 @@
+@page "/notes/{id}"
+@using Iceshrimp.Backend.Components.PublicPreview.Attributes
+@using Iceshrimp.Backend.Core.Extensions
+@attribute [PublicPreviewRouteFilter]
+@inherits AsyncComponentBase
+
+@if (_note is null)
+{
+    Context.Response.StatusCode = 404;
+    <div>
+        <h2>Not found</h2>
+        <p>This note either doesn't exist or is only accessible to authenticated users</p>
+    </div>
+}
+else
+{
+    <NoteComponent Note="_note"/>
+    if (_note.QuoteUrl != null)
+    {
+        var displayUrl = _note.QuoteUrl.StartsWith("https://") ? _note.QuoteUrl[8..] : _note.QuoteUrl[7..];
+        <p>
+            @if (_note.QuoteInaccessible)
+            {
+                <i>This note is quoting <a href="@_note.QuoteUrl">@displayUrl</a>, which has either been deleted or is not publicly visible.</i>
+            }
+            else
+            {
+                <i>This note is quoting <a href="@_note.QuoteUrl">@displayUrl</a></i>
+            }
+        </p>
+    }
+
+    if (!ShowMedia && _note.Attachments != null)
+    {
+        <p>
+            <i>This post has attachments, but this server's configuration prevents them from being displayed here.</i>
+        </p>
+    }
+    else if (ShowMedia && _note.Attachments is { Count: > 0 })
+    {
+        foreach (var file in _note.Attachments)
+        {
+            if (file.MimeType.StartsWith("image/"))
+            {
+                <img src="@file.Url" max-width="200px" max-height="200px" alt="@(file.Alt ?? "")"/>
+            }
+            else if (file.MimeType.StartsWith("video/"))
+            {
+                <video controls max-width="200px" max-height="200px">
+                    <source src="@file.Url" type="@file.MimeType"/>
+                    <p>@(file.Alt ?? "No alt text.")</p>
+                </video>
+            }
+            else
+            {
+                <div>Attachment: <a href="@file.Url">@file.Name</a> (@file.MimeType)</div>
+            }
+        }
+    }
+
+    <PageTitle>Note by @@@_note.User.Username - @_instanceName</PageTitle>
+    <HeadContent>
+        @{
+            var previewImageUrl = _note.User.AvatarUrl;
+            if (ShowMedia && _note.Attachments != null)
+            {
+                if (_note.Attachments.FirstOrDefault(p => p.MimeType.StartsWith("image/")) is { } img)
+                {
+                    previewImageUrl = img.Url;
+                }
+            }
+
+            string description;
+            if (_note.Cw is { } cw)
+            {
+                description = $"Content warning: {cw}";
+            }
+            else
+            {
+                var text = _note.RawText?.TruncateEllipsis(280);
+                if (_note.Attachments is { Count: > 0 })
+                {
+                    var attachmentText = $"({_note.Attachments.Count} attachments)";
+                    text = text is null
+                        ? attachmentText
+                        : text + $"\n{attachmentText}";
+                }
+
+                description = text + (_note.QuoteUrl != null ? $"\n\nRE: {_note.QuoteUrl}" : "");
+            }
+
+            var username = _note.User.Username;
+            var title    = _note.User.RawDisplayName is { } name ? $"{name} (@{username})" : $"@{username}";
+        }
+
+        <meta name="twitter:card" content="summary">
+        <meta name="og:site_name" content="@_instanceName">
+        <meta name="og:title" content="@title">
+        <meta name="og:image" content="@previewImageUrl">
+        <meta name="og:description" content="@description">
+
+        <link rel="stylesheet" href="/css/public-preview.css"/>
+    </HeadContent>
+
+    if (!ShowRemoteReplies)
+    {
+        <p>
+            <i>This server's configuration is preventing remotely originating content from being shown. This view may therefore be incomplete.</i>
+        </p>
+    }
+}

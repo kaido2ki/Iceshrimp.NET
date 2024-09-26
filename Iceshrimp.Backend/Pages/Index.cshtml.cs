@@ -15,7 +15,7 @@ public class IndexModel(MetaService meta, IOptionsSnapshot<Config.InstanceSectio
 
 	public async Task<IActionResult> OnGet()
 	{
-		if (Request.Cookies.ContainsKey("session") || Request.Cookies.ContainsKey("sessions"))
+		if (Request.Cookies.ContainsKey("sessions"))
 			return Partial("Shared/FrontendSPA");
 
 		if (config.Value.RedirectIndexTo is { } dest)

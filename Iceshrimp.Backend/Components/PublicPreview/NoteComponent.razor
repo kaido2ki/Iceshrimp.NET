@@ -1,0 +1,34 @@
+@using Iceshrimp.Backend.Components.PublicPreview.Schemas
+
+
+<UserComponent User="Note.User" Link="true"/>
+
+<!-- TODO: figure out a better place to put this
+<small>Published at: @Note.CreatedAt</small>
+@if (Note.UpdatedAt != null)
+{
+    <br/>
+    <small>Edited at: @Note.UpdatedAt</small>
+}
+-->
+
+<div class="content">
+    @if (Note.Text != null)
+    {
+        if (Note.Cw != null)
+        {
+            <details>
+                <summary>@Note.Cw</summary>
+                @Note.Text
+            </details>
+        }
+        else
+        {
+            @Note.Text
+        }
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required PreviewNote Note { get; set; }
+}

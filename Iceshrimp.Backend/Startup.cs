@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Components;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.SignalR;
@@ -30,7 +31,8 @@ builder.Services.AddAuthorizationPolicies();
 builder.Services.AddAuthenticationServices();
 builder.Services.AddSignalR().AddMessagePackProtocol();
 builder.Services.AddResponseCompression();
-builder.Services.AddRazorPages().AddRouteOverrides();
+builder.Services.AddRazorPages(); //.AddRouteOverrides();
+builder.Services.AddRazorComponents();
 
 builder.Services.AddServices(builder.Configuration);
 builder.Services.ConfigureServices(builder.Configuration);
@@ -65,6 +67,7 @@ app.MapControllers();
 app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback").WithOrder(int.MaxValue - 3);
 app.MapHub<StreamingHub>("/hubs/streaming");
 app.MapRazorPages();
+app.MapRazorComponents<RootComponent>().DisableAntiforgery();
 app.MapFrontendRoutes("/Shared/FrontendSPA");
 
 PluginLoader.RunAppHooks(app);

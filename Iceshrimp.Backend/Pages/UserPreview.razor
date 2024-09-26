@@ -1,0 +1,41 @@
+@page "/User"
+@using Iceshrimp.Backend.Components.PublicPreview.Attributes
+@attribute [Route("/@{Acct}")]
+@attribute [PublicPreviewRouteFilter]
+@inherits AsyncComponentBase
+
+@if (_user is null)
+{
+    Context.Response.StatusCode = 404;
+    <div>
+        <h2>Not found</h2>
+        <p>This user doesn't appear to exist on this server</p>
+    </div>
+}
+else
+{
+    <div class="user">
+        <UserComponent User="_user"/>
+        <div class="bio">
+            @(_user.Bio ?? new MarkupString("<i>This user hasn't added a bio yet.</i>"))
+        </div>
+        @if (_user.MovedToUri != null)
+        {
+            <div class="bio">
+                <i>This user has migrated to a <a href="@_user.MovedToUri">different account</a>.</i>
+            </div>
+        }
+    </div>
+    <PageTitle>@@@_user.Username - @_instanceName</PageTitle>
+    <HeadContent>
+        <meta name="twitter:card" content="summary">
+        <meta name="og:site_name" content="@_instanceName">
+        <meta name="og:title" content="@@@_user.Username">
+        @if (_user.Bio is { } bio)
+        {
+            <meta name="og:description" content="@bio">
+        }
+        <meta name="og:image" content="@_user.AvatarUrl">
+        <link rel="stylesheet" href="/css/public-preview.css"/>
+    </HeadContent>
+}

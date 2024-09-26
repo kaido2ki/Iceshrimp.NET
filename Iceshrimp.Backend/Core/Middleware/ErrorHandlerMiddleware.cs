@@ -131,7 +131,6 @@ public class ErrorHandlerMiddleware(
 				};
 
 				await WriteResponse(error);
-				//TODO: use the overload that takes an exception instead of printing it ourselves
 				logger.LogError("Request encountered an unexpected error: {exception}", e);
 			}
 
@@ -167,7 +166,7 @@ public class ErrorHandlerMiddleware(
 					{
 						var model = new ErrorPageModel(payload);
 						ctx.Response.ContentType = "text/html; charset=utf8";
-						var stream = ctx.Response.BodyWriter.AsStream();
+						var stream = ctx.Response.Body;
 						await razor.RenderToStreamAsync("Shared/ErrorPage.cshtml", model, stream);
 						return;
 					}

@@ -101,11 +101,6 @@ public static class MvcBuilderExtensions
 
 		return builder;
 	}
-
-	public static IMvcBuilder AddRouteOverrides(this IMvcBuilder builder)
-	{
-		return builder.AddRazorPagesOptions(o => { o.Conventions.AddPageRoute("/User", "@{user}@{host}"); });
-	}
 }
 
 /// <summary>

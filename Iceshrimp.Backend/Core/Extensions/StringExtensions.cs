@@ -19,6 +19,12 @@ public static class StringExtensions
 	{
 		return target[..Math.Min(target.Length, maxLength)];
 	}
+	
+	public static string TruncateEllipsis(this string target, int maxLength)
+	{
+		if (target.Length <= maxLength) return target;
+		return target[..(maxLength-3)] + "...";
+	}
 
 	private static string ToPunycode(this string target)
 	{

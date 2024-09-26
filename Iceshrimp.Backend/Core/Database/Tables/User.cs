@@ -624,8 +624,10 @@ public class User : IEntity
 		: throw new Exception("Cannot access PublicUri for remote user");
 
 	public string GetPublicUrl(string webDomain) => Host == null
-		? $"https://{webDomain}/@{Username}"
+		? $"https://{webDomain}{PublicUrlPath}"
 		: throw new Exception("Cannot access PublicUrl for remote user");
+
+	[Projectable] public string PublicUrlPath => $"/@{Username}";
 
 	public string GetIdenticonUrl(string webDomain) => $"https://{webDomain}{IdenticonUrlPath}";
 }

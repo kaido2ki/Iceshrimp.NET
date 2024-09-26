@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.RateLimiting;
 using System.Xml.Linq;
+using Iceshrimp.Backend.Components.PublicPreview.Attributes;
+using Iceshrimp.Backend.Components.PublicPreview.Renderers;
 using Iceshrimp.Backend.Controllers.Federation;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Web.Renderers;
@@ -83,7 +85,9 @@ public static class ServiceExtensions
 			.AddScoped<CacheService>()
 			.AddScoped<MetaService>()
 			.AddScoped<StorageMaintenanceService>()
-			.AddScoped<RelayService>();
+			.AddScoped<RelayService>()
+			.AddScoped<Components.PublicPreview.Renderers.UserRenderer>()
+			.AddScoped<Components.PublicPreview.Renderers.NoteRenderer>();
 
 		// Singleton = instantiated once across application lifetime
 		services
@@ -101,7 +105,10 @@ public static class ServiceExtensions
 			.AddSingleton<PushService>()
 			.AddSingleton<StreamingService>()
 			.AddSingleton<ImageProcessor>()
-			.AddSingleton<RazorViewRenderService>();
+			.AddSingleton<RazorViewRenderService>()
+			.AddSingleton<StripRazorJsInitMiddleware>()
+			.AddSingleton<MfmRenderer>()
+			.AddSingleton<MatcherPolicy, PublicPreviewRouteMatcher>();
 
 		var config = configuration.GetSection("Storage").Get<Config.StorageSection>() ??
 		             throw new Exception("Failed to read storage config section");
