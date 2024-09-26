@@ -6,7 +6,7 @@ public static class TaskExtensions
 	{
 		try
 		{
-			await task.WaitAsync(TimeSpan.FromMilliseconds(500));
+			await task.WaitAsync(timeSpan);
 		}
 		catch (TimeoutException)
 		{
