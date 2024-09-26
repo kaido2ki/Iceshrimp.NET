@@ -449,7 +449,7 @@ public class PostgresJobQueue<T>(
 			}
 			else
 			{
-				_logger.LogError(e, "Failed to process {queue} job: {error}", queueName, e);
+				_logger.LogError("Failed to process {queue} job: {error}", queueName, e);
 			}
 		}
 
