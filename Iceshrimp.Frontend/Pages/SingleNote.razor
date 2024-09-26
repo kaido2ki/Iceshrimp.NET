@@ -60,24 +60,33 @@
                                 }
                             </TabContent>
                         </TabPage>
-                        <TabPage>
-                            <Title>@Loc["Likes ({0})", RootNote!.Likes]</Title>
-                            <TabContent>
-                                <NoteLikeDetails NoteId="@RootNote?.Id"/>
-                            </TabContent>
-                        </TabPage>
-                        <TabPage>
-                            <Title>@Loc["Renotes ({0})", RootNote!.Renotes]</Title>
-                            <TabContent>
-                                <NoteRenoteDetails NoteId="@RootNote?.Id"/>
-                            </TabContent>
-                        </TabPage>
-                        <TabPage>
-                            <Title>@Loc["Reactions ({0})", RootNote!.Reactions.Count]</Title>
-                            <TabContent>
-                                <NoteReactionDetails Reactions="RootNote?.Reactions" NoteId="@RootNote?.Id"/>
-                            </TabContent>
-                        </TabPage>
+                        @if (RootNote?.Likes > 0)
+                        {
+                            <TabPage>
+                                <Title>@Loc["Likes ({0})", RootNote!.Likes]</Title>
+                                <TabContent>
+                                    <NoteLikeDetails NoteId="@RootNote?.Id"/>
+                                </TabContent>
+                            </TabPage>
+                        }
+                        @if (RootNote?.Renotes > 0)
+                        {
+                            <TabPage>
+                                <Title>@Loc["Renotes ({0})", RootNote!.Renotes]</Title>
+                                <TabContent>
+                                    <NoteRenoteDetails NoteId="@RootNote?.Id"/>
+                                </TabContent>
+                            </TabPage>
+                        }
+                        @if (RootNote?.Reactions.Count > 0)
+                        {
+                            <TabPage>
+                                <Title>@Loc["Reactions ({0})", RootNote!.Reactions.Count]</Title>
+                                <TabContent>
+                                    <NoteReactionDetails Reactions="RootNote?.Reactions" NoteId="@RootNote?.Id"/>
+                                </TabContent>
+                            </TabPage>
+                        }
                         <TabPage>
                             <Title>@Loc["Quotes"]</Title>
                             <TabContent>
