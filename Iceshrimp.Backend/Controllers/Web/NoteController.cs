@@ -213,28 +213,31 @@ public class NoteController(
 
 		return new ValueResponse(success ? --note.LikeCount : note.LikeCount);
 	}
-	
+
 	[HttpGet("{id}/likes")]
 	[Authenticate]
 	[Authorize]
+	[LinkPagination(20, 40)]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
-	public async Task<IEnumerable<UserResponse>> GetNoteLikes(string id)
+	public async Task<IEnumerable<UserResponse>> GetNoteLikes(string id, PaginationQuery pq)
 	{
 		var user = HttpContext.GetUser();
 		var note = await db.Notes
-						   .Where(p => p.Id == id)
-						   .EnsureVisibleFor(user)
-						   .FirstOrDefaultAsync() ??
-				   throw GracefulException.NotFound("Note not found");
+		                   .Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
 
 		var users = await db.NoteLikes
-							.Where(p => p.Note == note)
-							.Include(p => p.User.UserProfile)
-							.Select(p => p.User)
-							.ToListAsync();
+		                    .Where(p => p.Note == note)
+		                    .Include(p => p.User.UserProfile)
+		                    .Paginate(pq, ControllerContext)
+		                    .Wrap(p => p.User)
+		                    .ToListAsync();
 
-		return await userRenderer.RenderMany(users);
+		HttpContext.SetPaginationData(users);
+		return await userRenderer.RenderMany(users.Select(p => p.Entity));
 	}
 
 	[HttpPost("{id}/renote")]
@@ -278,26 +281,29 @@ public class NoteController(
 	[HttpGet("{id}/renotes")]
 	[Authenticate]
 	[Authorize]
+	[LinkPagination(20, 40)]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
-	public async Task<IEnumerable<UserResponse>> GetRenotes(string id)
+	public async Task<IEnumerable<UserResponse>> GetRenotes(string id, PaginationQuery pq)
 	{
 		var user = HttpContext.GetUser();
 		var note = await db.Notes
-						   .Where(p => p.Id == id)
-						   .EnsureVisibleFor(user)
-						   .FirstOrDefaultAsync() ??
-				   throw GracefulException.NotFound("Note not found");
+		                   .Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
 
 		var users = await db.Notes
-							  .Where(p => p.Renote == note && p.IsPureRenote)
-							  .EnsureVisibleFor(user)
-							  .Include(p => p.User.UserProfile)
-							  .FilterHidden(user, db)
-							  .Select(p => p.User)
-							  .ToListAsync();
+		                    .Where(p => p.Renote == note && p.IsPureRenote)
+		                    .EnsureVisibleFor(user)
+		                    .Include(p => p.User.UserProfile)
+		                    .FilterHidden(user, db)
+		                    .Paginate(pq, ControllerContext)
+		                    .Wrap(p => p.User)
+		                    .ToListAsync();
 
-		return await userRenderer.RenderMany(users);
+		HttpContext.SetPaginationData(users);
+		return await userRenderer.RenderMany(users.Select(p => p.Entity));
 	}
 
 	[HttpGet("{id}/quotes")]
@@ -311,21 +317,21 @@ public class NoteController(
 		var user = HttpContext.GetUser();
 
 		var note = await db.Notes
-						   .Where(p => p.Id == id)
-						   .EnsureVisibleFor(user)
-						   .FirstOrDefaultAsync() ??
-				   throw GracefulException.NotFound("Note not found");
+		                   .Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
 
 		var renotes = await db.Notes
-							  .Where(p => p.Renote == note && p.IsQuote)
-							  .Include(p => p.User.UserProfile)
-							  .EnsureVisibleFor(user)
-							  .FilterHidden(user, db)
-							  .Paginate(pq, ControllerContext)
-							  .ToListAsync();
+		                      .Where(p => p.Renote == note && p.IsQuote)
+		                      .Include(p => p.User.UserProfile)
+		                      .EnsureVisibleFor(user)
+		                      .FilterHidden(user, db)
+		                      .Paginate(pq, ControllerContext)
+		                      .ToListAsync();
 
 		return await noteRenderer.RenderMany(renotes.EnforceRenoteReplyVisibility(), user,
-											 Filter.FilterContext.Threads);
+		                                     Filter.FilterContext.Threads);
 	}
 
 	[HttpPost("{id}/react/{name}")]

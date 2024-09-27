@@ -360,6 +360,13 @@ public static class QueryableExtensions
 		return Paginate(query, pq, filter.DefaultLimit, filter.MaxLimit);
 	}
 
+	public static IQueryable<EntityWrapper<TResult>> Wrap<TSource, TResult>(
+		this IQueryable<TSource> query, Expression<Func<TSource, TResult>> predicate
+	) where TSource : IEntity
+	{
+		return query.Select(p => new EntityWrapper<TResult> { Id = p.Id, Entity = predicate.Compile().Invoke(p) });
+	}
+
 	public static IQueryable<Note> HasVisibility(this IQueryable<Note> query, Note.NoteVisibility visibility)
 	{
 		return query.Where(note => note.Visibility == visibility);
