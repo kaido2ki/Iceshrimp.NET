@@ -78,6 +78,36 @@ public class StatusController(
 		return res;
 	}
 
+	[HttpGet("{id}/reactions/{reaction}")]
+	[Authenticate("read:statuses")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
+	public async Task<List<ReactionEntity>> GetSpecificNoteReaction(string id, string reaction)
+	{
+		var user = HttpContext.GetUser();
+		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FilterHidden(user, db, filterMutes: false)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
+		var res = (await noteRenderer.GetReactions([note], user)).First(r => r.Name == reaction);
+
+		if (res.AccountIds != null)
+		{
+			var accounts = await db.Users.Where(u => res.AccountIds.Contains(u.Id)).ToArrayAsync();
+			res.Accounts = (await userRenderer.RenderManyAsync(accounts, user)).ToList();
+		}
+
+		return [res];
+	}
+
 	[HttpPut("{id}/reactions/{reaction}")]
 	[Authorize("write:favourites")]
 	[ProducesResults(HttpStatusCode.OK)]
