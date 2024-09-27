@@ -12,9 +12,9 @@ public class Relay
 	[PgName("relay_status_enum")]
 	public enum RelayStatus
 	{
-		[PgName("requesting")] Requesting,
-		[PgName("accepted")]   Accepted,
-		[PgName("rejected")]   Rejected
+		[PgName("requesting")] Requesting = 0,
+		[PgName("accepted")]   Accepted = 1,
+		[PgName("rejected")]   Rejected = 2
 	}
 
 	[Key]

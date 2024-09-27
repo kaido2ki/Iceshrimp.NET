@@ -26,7 +26,8 @@ public class ActivityHandlerService(
 	ObjectResolver objectResolver,
 	FollowupTaskService followupTaskSvc,
 	EmojiService emojiSvc,
-	EventService eventSvc
+	EventService eventSvc,
+	RelayService relaySvc
 )
 {
 	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId, string? authenticatedUserId)
@@ -187,6 +188,13 @@ public class ActivityHandlerService(
 		if (activity.Object is not ASFollow obj)
 			throw GracefulException.UnprocessableEntity("Accept activity object is invalid");
 
+		var relayPrefix = $"https://{config.Value.WebDomain}/activities/follow-relay/";
+		if (obj.Id.StartsWith(relayPrefix))
+		{
+			await relaySvc.HandleAccept(actor, obj.Id[relayPrefix.Length..]);
+			return;
+		}
+
 		var prefix = $"https://{config.Value.WebDomain}/follows/";
 		if (!obj.Id.StartsWith(prefix))
 			throw GracefulException.UnprocessableEntity($"Object id '{obj.Id}' not a valid follow request id");
@@ -226,6 +234,13 @@ public class ActivityHandlerService(
 		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
 		if (activity.Object is not ASFollow follow)
 			throw GracefulException.UnprocessableEntity("Reject activity object is invalid");
+
+		var relayPrefix = $"https://{config.Value.WebDomain}/activities/follow-relay/";
+		if (follow.Id.StartsWith(relayPrefix))
+		{
+			await relaySvc.HandleReject(resolvedActor, follow.Id[relayPrefix.Length..]);
+			return;
+		}
 
 		if (follow is not { Actor: not null })
 			throw GracefulException.UnprocessableEntity("Refusing to reject object with invalid follow object");
@@ -435,6 +450,9 @@ public class ActivityHandlerService(
 			logger.LogDebug("Announce activity object is unknown, skipping");
 			return;
 		}
+
+		if (resolvedActor.IsRelayActor)
+			return;
 
 		if (await db.Notes.AnyAsync(p => p.Uri == activity.Id))
 		{

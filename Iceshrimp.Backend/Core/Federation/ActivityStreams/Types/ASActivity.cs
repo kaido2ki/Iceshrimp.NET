@@ -91,6 +91,9 @@ public class ASAnnounce : ASActivity
 public class ASDelete : ASActivity
 {
 	public ASDelete() => Type = Types.Delete;
+	
+	[J($"{Constants.ActivityStreamsNs}#to")]
+	public List<ASObjectBase>? To { get; set; }
 }
 
 public class ASFollow : ASActivity

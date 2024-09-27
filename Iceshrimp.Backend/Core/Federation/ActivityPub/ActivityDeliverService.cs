@@ -64,4 +64,19 @@ public class ActivityDeliverService(
 
 		await DeliverToAsync(activity, actor, recipients);
 	}
+
+	public async Task DeliverToAsync(ASActivity activity, User actor, string recipientInbox)
+	{
+		logger.LogDebug("Queuing deliver-to-inbox job for activity {id}", activity.Id);
+		if (activity.Actor == null) throw new Exception("Actor must not be null");
+
+		await queueService.DeliverQueue.EnqueueAsync(new DeliverJobData
+		{
+			RecipientHost = new Uri(recipientInbox).Host,
+			InboxUrl      = recipientInbox,
+			Payload       = activity.CompactToPayload(),
+			ContentType   = "application/activity+json",
+			UserId        = actor.Id
+		});
+	}
 }

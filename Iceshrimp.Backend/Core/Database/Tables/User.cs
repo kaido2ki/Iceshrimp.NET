@@ -124,6 +124,10 @@ public class User : IEntity
 	[Column("isBot")]
 	public bool IsBot { get; set; }
 
+	[Column("isSystem")] public bool IsSystem { get; set; }
+
+	[Column("isRelayActor")] public bool IsRelayActor { get; set; }
+
 	/// <summary>
 	///     Whether the User is a cat.
 	/// </summary>
@@ -491,8 +495,8 @@ public class User : IEntity
 	[NotMapped] public bool? PrecomputedIsRequested   { get; set; }
 	[NotMapped] public bool? PrecomputedIsRequestedBy { get; set; }
 
-	[Projectable] public bool   IsLocalUser          => Host == null;
-	[Projectable] public bool   IsRemoteUser         => Host != null;
+	[Projectable] public bool   IsLocalUser      => Host == null;
+	[Projectable] public bool   IsRemoteUser     => Host != null;
 	[Projectable] public string IdenticonUrlPath => $"/identicon/{Id}";
 
 	[Key]

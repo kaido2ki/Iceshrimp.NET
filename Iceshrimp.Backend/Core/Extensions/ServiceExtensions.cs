@@ -82,7 +82,8 @@ public static class ServiceExtensions
 			.AddScoped<UserProfileRenderer>()
 			.AddScoped<CacheService>()
 			.AddScoped<MetaService>()
-			.AddScoped<StorageMaintenanceService>();
+			.AddScoped<StorageMaintenanceService>()
+			.AddScoped<RelayService>();
 
 		// Singleton = instantiated once across application lifetime
 		services

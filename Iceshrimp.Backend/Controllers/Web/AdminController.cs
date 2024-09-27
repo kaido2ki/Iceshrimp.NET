@@ -33,7 +33,8 @@ public class AdminController(
 	ActivityPub.NoteRenderer noteRenderer,
 	ActivityPub.UserRenderer userRenderer,
 	IOptions<Config.InstanceSection> config,
-	QueueService queueSvc
+	QueueService queueSvc,
+	RelayService relaySvc
 ) : ControllerBase
 {
 	[HttpPost("invites/generate")]
@@ -119,7 +120,7 @@ public class AdminController(
 		await foreach (var job in jobs)
 			await queueSvc.RetryJobAsync(job);
 	}
-	
+
 	[HttpPost("queue/{queue}/retry-range/{from::guid}/{to::guid}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task RetryRange(string queue, Guid from, Guid to)
@@ -142,6 +143,38 @@ public class AdminController(
 		          throw GracefulException.NotFound($"Job {id} was not found.");
 
 		await queueSvc.AbandonJobAsync(job);
+	}
+
+	[HttpGet("relays")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<List<RelaySchemas.RelayResponse>> GetRelays()
+	{
+		return await db.Relays
+		               .ToArrayAsync()
+		               .ContinueWithResult(res => res.Select(p => new RelaySchemas.RelayResponse
+		                                             {
+			                                             Id     = p.Id,
+			                                             Inbox  = p.Inbox,
+			                                             Status = (RelaySchemas.RelayStatus)p.Status
+		                                             })
+		                                             .ToList());
+	}
+
+	[HttpPost("relays")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task SubscribeToRelay(RelaySchemas.RelayRequest rq)
+	{
+		await relaySvc.SubscribeToRelay(rq.Inbox);
+	}
+
+	[HttpDelete("relays/{id}")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task UnsubscribeFromRelay(string id)
+	{
+		var relay = await db.Relays.FirstOrDefaultAsync(p => p.Id == id) ??
+		            throw GracefulException.NotFound("Relay not found");
+		await relaySvc.UnsubscribeFromRelay(relay);
 	}
 
 	[UseNewtonsoftJson]

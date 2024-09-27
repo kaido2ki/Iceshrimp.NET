@@ -4053,6 +4053,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("isModerator")
                         .HasComment("Whether the User is a moderator.");
 
+                    b.Property<bool>("IsRelayActor")
+                        .HasColumnType("boolean")
+                        .HasColumnName("isRelayActor");
+
                     b.Property<bool>("IsSilenced")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -4066,6 +4070,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("isSuspended")
                         .HasComment("Whether the User is suspended.");
+
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("boolean")
+                        .HasColumnName("isSystem");
 
                     b.Property<DateTime?>("LastActiveDate")
                         .HasColumnType("timestamp with time zone")

@@ -80,19 +80,43 @@ public class PreDeliverQueue(int parallelism)
 		}
 
 		foreach (var inboxQueryResult in inboxQueryResults)
+		{
+			// @formatter:off
 			await queueSvc.DeliverQueue.EnqueueAsync(new DeliverJobData
 			{
-				RecipientHost =
-					inboxQueryResult.Host ??
-					throw new Exception("Recipient host must not be null"),
-				InboxUrl =
-					inboxQueryResult.InboxUrl ??
-					throw new
-						Exception("Recipient inboxUrl must not be null"),
-				Payload     = payload,
-				ContentType = "application/activity+json",
-				UserId      = jobData.ActorId
+				RecipientHost = inboxQueryResult.Host ?? throw new Exception("Recipient host must not be null"),
+				InboxUrl      = inboxQueryResult.InboxUrl ?? throw new Exception("Recipient inboxUrl must not be null"),
+				Payload       = payload,
+				ContentType   = "application/activity+json",
+				UserId        = jobData.ActorId
 			});
+			// @formatter:on
+		}
+
+		if (activity is ASCreate or ASDelete { Object: ASNote })
+		{
+			var relays = await db.Relays.ToArrayAsync(token);
+			if (relays is []) return;
+
+			if (!config.Value.AttachLdSignatures || activity is ASDelete)
+			{
+				if (activity is ASDelete del) del.To = [new ASObjectBase($"{Constants.ActivityStreamsNs}#Public")];
+				var keypair = await db.UserKeypairs.FirstAsync(p => p.UserId == jobData.ActorId, token);
+				payload = await activity.SignAndCompactAsync(keypair);
+			}
+
+			foreach (var relay in relays)
+			{
+				await queueSvc.DeliverQueue.EnqueueAsync(new DeliverJobData
+				{
+					RecipientHost = new Uri(relay.Inbox).Host,
+					InboxUrl      = relay.Inbox,
+					Payload       = payload,
+					ContentType   = "application/activity+json",
+					UserId        = jobData.ActorId
+				});
+			}
+		}
 	}
 }
 

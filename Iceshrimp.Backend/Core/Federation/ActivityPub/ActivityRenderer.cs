@@ -112,6 +112,16 @@ public class ActivityRenderer(
 		                    RenderFollowId(follower, followee, relationshipId));
 	}
 
+	public ASFollow RenderFollow(User actor, Relay relay)
+	{
+		return new ASFollow
+		{
+			Id     = $"https://{config.Value.WebDomain}/activities/follow-relay/{relay.Id}",
+			Actor  = userRenderer.RenderLite(actor),
+			Object = new ASObject { Id = "https://www.w3.org/ns/activitystreams#Public" }
+		};
+	}
+
 	public ASActivity RenderUnfollow(User follower, User followee, Guid? relationshipId)
 	{
 		if (follower.IsLocalUser && followee.IsLocalUser)

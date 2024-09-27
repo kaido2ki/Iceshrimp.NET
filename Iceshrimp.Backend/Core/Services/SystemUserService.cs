@@ -79,7 +79,8 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 			IsAdmin       = false,
 			IsLocked      = true,
 			IsExplorable  = false,
-			IsBot         = true
+			IsBot         = true,
+			IsSystem      = true
 		};
 
 		var userKeypair = new UserKeypair

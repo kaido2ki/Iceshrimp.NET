@@ -174,9 +174,21 @@ public class UserResolver(
 		return (finalAcct, finalUri);
 	}
 
-	private static string? GetAcctUri(WebFingerResponse fingerRes) => (fingerRes.Aliases ?? [])
-	                                                                  .Prepend(fingerRes.Subject)
-	                                                                  .FirstOrDefault(p => p.StartsWith("acct:"));
+	private static string? GetAcctUri(WebFingerResponse fingerRes)
+	{
+		var acct = (fingerRes.Aliases ?? [])
+		           .Prepend(fingerRes.Subject)
+		           .FirstOrDefault(p => p.StartsWith("acct:"));
+		if (acct != null) return acct;
+
+		// AodeRelay doesn't prefix its actor's subject with acct, so we have to fall back to guessing here
+		acct = (fingerRes.Aliases ?? [])
+		       .Prepend(fingerRes.Subject)
+		       .FirstOrDefault(p => !p.Contains(':') &&
+		                            !p.Contains(' ') &&
+		                            p.Split("@").Length == 2);
+		return acct is not null ? $"acct:{acct}" : acct;
+	}
 
 	public static string NormalizeQuery(string query)
 	{
