@@ -14,5 +14,5 @@ public class UserResponse
 	public required string? InstanceName    { get; set; }
 	public required string? InstanceIconUrl { get; set; }
 
-	[JI(Condition = WhenWritingNull)] public required string? MovedTo { get; set; }
+	[JI(Condition = WhenWritingNull)] public string? MovedTo { get; set; }
 }
