@@ -515,7 +515,7 @@ public static class QueryableExtensions
 			               !hidden.Contains(note.ReplyUserId) &&
 			               note.Mentions.IsDisjoint(mentionsHidden) &&
 			               (note.Renote == null || !hidden.Contains(note.Renote.RenoteUserId)) &&
-			               (note.Renote == null || !note.Renote.Mentions.IsDisjoint(mentionsHidden));
+			               (note.Renote == null || note.Renote.Mentions.IsDisjoint(mentionsHidden));
 		}
 
 		return note => !hidden.Contains(note.UserId) &&
