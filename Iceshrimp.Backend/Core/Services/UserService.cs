@@ -726,11 +726,14 @@ public class UserService(
 					// Followee has auto accept enabled & is already following the follower user
 					if (autoAccept)
 					{
-						if (requestId == null)
-							throw new Exception("requestId must not be null at this stage");
+						if (follower.IsRemoteUser)
+						{
+							if (requestId == null)
+								throw new Exception("requestId must not be null at this stage");
 
-						var activity = activityRenderer.RenderAccept(followee, follower, requestId);
-						await deliverSvc.DeliverToAsync(activity, followee, follower);
+							var activity = activityRenderer.RenderAccept(followee, follower, requestId);
+							await deliverSvc.DeliverToAsync(activity, followee, follower);
+						}
 
 						var following = new Following
 						{
@@ -757,15 +760,18 @@ public class UserService(
 						        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount,
 						                                               i => i.FollowersCount + 1));
 
-						_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
+						if (follower.IsRemoteUser)
 						{
-							var bgDb          = provider.GetRequiredService<DatabaseContext>();
-							var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-							var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower);
-							await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-							          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows,
-							                                                 i => i.IncomingFollows + 1));
-						});
+							_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
+							{
+								var bgDb          = provider.GetRequiredService<DatabaseContext>();
+								var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+								var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower);
+								await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+								          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows,
+										                               i => i.IncomingFollows + 1));
+							});
+						}
 
 						return;
 					}
@@ -821,15 +827,18 @@ public class UserService(
 				await db.Users.Where(p => p.Id == followee.Id)
 				        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount, i => i.FollowersCount + 1));
 
-				_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
+				if (follower.IsRemoteUser)
 				{
-					var bgDb          = provider.GetRequiredService<DatabaseContext>();
-					var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-					var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower);
-					await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows,
-					                                                 i => i.IncomingFollows + 1));
-				});
+					_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
+					{
+						var bgDb          = provider.GetRequiredService<DatabaseContext>();
+						var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+						var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower);
+						await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows,
+						                                                 i => i.IncomingFollows + 1));
+					});
+				}
 			}
 
 			// If follower is remote, send an accept activity
