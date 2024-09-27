@@ -29,7 +29,8 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			AvatarUrl       = user.AvatarUrl ?? user.GetIdenticonUrl(config.Value),
 			BannerUrl       = user.BannerUrl,
 			InstanceName    = instanceName,
-			InstanceIconUrl = instanceIcon
+			InstanceIconUrl = instanceIcon,
+			MovedTo         = user.MovedToUri
 		};
 	}
 

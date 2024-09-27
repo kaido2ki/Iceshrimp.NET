@@ -10,4 +10,5 @@ public class UserResponse
 	public required string? BannerUrl       { get; set; }
 	public required string? InstanceName    { get; set; }
 	public required string? InstanceIconUrl { get; set; }
+	public required string? MovedTo         { get; set; }
 }

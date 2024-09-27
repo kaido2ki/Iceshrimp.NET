@@ -60,7 +60,8 @@
                         InstanceIconUrl = res.User.InstanceIconUrl,
                         Token           = res.Token!,
                         Host            = res.User.Host,
-                        IsAdmin         = res.IsAdmin ?? false
+                        IsAdmin         = res.IsAdmin ?? false,
+                        MovedTo         = res.User.MovedTo
                     });
                     SessionService.SetSession(res.User.Id);
                     Navigation.NavigateTo("/");
