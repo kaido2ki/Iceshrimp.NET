@@ -127,10 +127,11 @@ public class QueueService(
 
 	public async Task RetryJobAsync(Job job)
 	{
-		await using var scope = scopeFactory.CreateAsyncScope();
-		await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 		if (job.Status == Job.JobStatus.Failed)
 		{
+			await using var scope = scopeFactory.CreateAsyncScope();
+			await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
 			var cnt = await db.Jobs.Where(p => p.Id == job.Id && p.Status == Job.JobStatus.Failed)
 			                  .ExecuteUpdateAsync(p => p.SetProperty(i => i.Status, _ => Job.JobStatus.Queued)
 			                                            .SetProperty(i => i.QueuedAt, _ => DateTime.UtcNow)
@@ -144,6 +145,26 @@ public class QueueService(
 			                                            .SetProperty(i => i.StackTrace, _ => null));
 			if (cnt <= 0) return;
 			_queues.FirstOrDefault(p => p.Name == job.Queue)?.RaiseJobQueuedEvent();
+		}
+	}
+
+	public async Task AbandonJobAsync(Job job)
+	{
+		if (job.Status == Job.JobStatus.Delayed)
+		{
+			await using var scope   = scopeFactory.CreateAsyncScope();
+			await using var db      = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+			const string    message = "Job was abandoned on user request";
+
+			await db.Jobs.Where(p => p.Id == job.Id && p.Status == Job.JobStatus.Delayed)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.Status, _ => Job.JobStatus.Failed)
+			                                  .SetProperty(i => i.DelayedUntil, _ => null)
+			                                  .SetProperty(i => i.StartedAt, _ => DateTime.UtcNow)
+			                                  .SetProperty(i => i.FinishedAt, _ => DateTime.UtcNow)
+			                                  .SetProperty(i => i.Exception, _ => message)
+			                                  .SetProperty(i => i.ExceptionMessage, _ => message)
+			                                  .SetProperty(i => i.ExceptionSource, _ => "QueueService")
+			                                  .SetProperty(i => i.StackTrace, _ => null));
 		}
 	}
 }

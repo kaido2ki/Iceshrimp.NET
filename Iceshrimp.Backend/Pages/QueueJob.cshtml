@@ -47,6 +47,15 @@
             </td>
         </tr>
     }
+    else if (Model.Job.Status.Equals(Job.JobStatus.Delayed))
+    {
+        <tr>
+            <td>Actions</td>
+            <td>
+                <a class="fake-link" onclick="abandon('@Model.Job.Id.ToStringLower()')">Abandon</a>
+            </td>
+        </tr>
+    }
     <tr>
         <td>Queued at</td>
         <td>@Model.Job.QueuedAt.ToLocalTime().ToDisplayStringTz()</td>

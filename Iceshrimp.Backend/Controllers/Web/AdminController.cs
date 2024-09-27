@@ -133,6 +133,16 @@ public class AdminController(
 			await queueSvc.RetryJobAsync(job);
 	}
 
+	[HttpPost("queue/jobs/{id::guid}/abandon")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task AbandonQueueJob(Guid id)
+	{
+		var job = await db.Jobs.FirstOrDefaultAsync(p => p.Id == id) ??
+		          throw GracefulException.NotFound($"Job {id} was not found.");
+
+		await queueSvc.AbandonJobAsync(job);
+	}
 
 	[UseNewtonsoftJson]
 	[HttpGet("activities/notes/{id}")]

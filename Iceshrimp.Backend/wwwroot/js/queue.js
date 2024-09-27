@@ -63,3 +63,8 @@ async function retryAllOnPage(queue) {
     await callApiMethod(`/api/iceshrimp/admin/queue/${queue}/retry-range/${first}/${last}`);
     window.location.reload();
 }
+
+async function abandon(id) {
+    await callApiMethod(`/api/iceshrimp/admin/queue/jobs/${id}/abandon`);
+    window.location.reload();
+}
