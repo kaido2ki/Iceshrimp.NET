@@ -660,6 +660,8 @@ public class UserService(
 			throw GracefulException.UnprocessableEntity("You cannot follow yourself");
 		if (follower.IsRemoteUser && followee.IsRemoteUser)
 			throw GracefulException.UnprocessableEntity("Cannot process follow between two remote users");
+		if (follower.IsSystemUser || followee.IsSystemUser)
+			throw GracefulException.UnprocessableEntity("System users cannot have follow relationships");
 
 		Guid? relationshipId = null;
 

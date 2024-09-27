@@ -124,7 +124,7 @@ public class User : IEntity
 	[Column("isBot")]
 	public bool IsBot { get; set; }
 
-	[Column("isSystem")] public bool IsSystem { get; set; }
+	[Column("isSystem")] public bool IsSystemUser { get; set; }
 
 	[Column("isRelayActor")] public bool IsRelayActor { get; set; }
 

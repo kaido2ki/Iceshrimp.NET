@@ -80,7 +80,7 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 			IsLocked      = true,
 			IsExplorable  = false,
 			IsBot         = true,
-			IsSystem      = true
+			IsSystemUser  = true
 		};
 
 		var userKeypair = new UserKeypair
