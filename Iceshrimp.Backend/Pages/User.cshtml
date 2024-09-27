@@ -42,5 +42,11 @@ else
         <div class="bio">
             @Html.Raw(Model.Bio ?? "<i>This user hasn't added a bio yet.</i>")
         </div>
+        @if (Model.User.MovedToUri is { } target)
+        {
+            <div class="bio">
+                <i>This user has migrated to a <a href="@target">different account</a>.</i>
+            </div>
+        }
     </div>
 }
