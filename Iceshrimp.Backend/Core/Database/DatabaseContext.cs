@@ -1286,6 +1286,9 @@ public class DesignTimeDatabaseContextFactory : IDesignTimeDbContextFactory<Data
 		var config = configuration.GetSection("Database").Get<Config.DatabaseSection>() ??
 		             throw new Exception("Failed to initialize database: Failed to load configuration");
 
+		// Required to make `dotnet ef database update` work correctly 
+		config.Multiplexing = false;
+
 		var dataSource = DatabaseContext.GetDataSource(config);
 		var builder    = new DbContextOptionsBuilder<DatabaseContext>();
 		DatabaseContext.Configure(builder, dataSource, config);
