@@ -17,7 +17,7 @@
         CreatedAt="DateTime.Parse(Note.CreatedAt)">
     </NoteMetadata>
 </div>
-<NoteBody NoteBase="Note" OverLength="@CheckLen()" Indented="Indented"/>
+<NoteBody NoteBase="Note" OverLength="@CheckLen()" Indented="Indented" ReplyInaccessible="ReplyInaccessible"/>
 @if (Quote != null)
 {
     <div @onclick="OpenQuote" @onclick:stopPropagation="true" class="quote">
@@ -37,10 +37,11 @@
 }
 
 @code {
-    [Parameter] [EditorRequired] public required NoteBase  Note     { get; set; }
-    [Parameter]                  public          bool      Indented { get; set; }
-    [Parameter]                  public          NoteBase? Quote    { get; set; }
-    [Parameter]                  public          bool      AsQuote  { get; set; }
+    [Parameter] [EditorRequired] public required NoteBase  Note              { get; set; }
+    [Parameter]                  public          bool      Indented          { get; set; }
+    [Parameter]                  public          NoteBase? Quote             { get; set; }
+    [Parameter]                  public          bool      AsQuote           { get; set; }
+    [Parameter]                  public          bool      ReplyInaccessible { get; set; }
 
     private bool CheckLen()
     {

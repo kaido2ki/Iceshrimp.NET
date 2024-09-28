@@ -33,3 +33,9 @@
 .indent {
     padding-left: 0.75em;
 }
+
+.reply-inaccessible {
+    color: var(--notice-color);
+    vertical-align: middle;
+    margin-right: 0.25em;
+}

@@ -46,7 +46,7 @@
 
         @if (_overrideHide || NoteResponse.Filtered == null)
         {
-            <NoteComponent Note="NoteResponse" Quote="NoteResponse.Quote" Indented="Indented"/>
+            <NoteComponent Note="NoteResponse" Quote="NoteResponse.Quote" Indented="Indented" ReplyInaccessible="NoteResponse.ReplyInaccessible"/>
         }
     }
 </CascadingValue>
