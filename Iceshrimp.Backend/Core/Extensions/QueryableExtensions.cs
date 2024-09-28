@@ -500,8 +500,8 @@ public static class QueryableExtensions
 
 		if (except != null)
 		{
-			hidden         = hidden.Except([except]);
-			mentionsHidden = mentionsHidden?.Except([except]);
+			hidden         = hidden.Where(p => p != except);
+			mentionsHidden = mentionsHidden?.Where(p => p != except);
 		}
 
 		return (hidden, mentionsHidden);
