@@ -11,3 +11,24 @@
     margin-left: 0.5rem;
     width: 100%;
 }
+
+.note-indent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.user-avatar {
+    border-radius: 8px;
+    object-fit: cover;
+    width: 3em;
+    height: 3em;
+}
+
+.ancestor-wrapper {
+    display: flex
+}
+
+.note {
+    width: 100%;
+}

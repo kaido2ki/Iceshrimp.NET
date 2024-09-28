@@ -5,15 +5,29 @@
 @if (Note.Filtered is { Hide: true }) { }
 else
 {
-    <div class="note-container" @onclick="OpenNote" id="@Note.Id">
-        <Note NoteResponse="Note"></Note>
+    <div class="note-container" id="@Note.Id">
+        @if (Note.Reply is not null)
+        {
+            <div class="ancestor-wrapper" @onclick="() => OpenNote(Note.Reply.Id)">
+                <div class="note-indent">
+                    <img class="user-avatar" src="@Note.User.AvatarUrl"/>
+                    <Line></Line>
+                </div>
+                <div class="note">
+                    <NoteComponent Note="Note.Reply" Indented="true"/>
+                </div>
+            </div>
+        }
+        <div class="link-wrapper" @onclick="() => OpenNote(Note.RenoteId ?? Note.Id)">
+            <Note NoteResponse="Note"/>
+        </div>
     </div>
 }
 
 @code {
     [Parameter] [EditorRequired] public required NoteResponse Note { get; set; }
 
-    private void OpenNote()
+    private void OpenNote(string id)
     {
         Navigation.NavigateTo(Note.RenoteId != null ? $"/notes/{Note.RenoteId}" : $"/notes/{Note.Id}");
     }
