@@ -5,8 +5,13 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 namespace Iceshrimp.Shared.Schemas.Web;
 
 [XmlRoot("Error")]
-public class ErrorResponse(Exception exception)
+public class ErrorResponse()
 {
+	public ErrorResponse(Exception exception) : this()
+	{
+		Exception = exception;
+	}
+
 	[XmlElement("Status")] public required int    StatusCode { get; set; }
 	[XmlElement("Error")]  public required string Error      { get; set; }
 
@@ -38,7 +43,7 @@ public class ErrorResponse(Exception exception)
 
 	[XmlElement("RequestId")] public required string RequestId { get; set; }
 
-	[JI] [XmlIgnore] public Exception Exception => exception;
+	[JI] [XmlIgnore] public Exception Exception = new();
 }
 
 public class XmlValidationError
