@@ -139,7 +139,8 @@ public class NoteRenderer(
 			                                                      i.Reaction == p.First().Reaction &&
 			                                                      i.User == user),
 			                  Name = p.First().Reaction,
-			                  Url  = null
+			                  Url  = null,
+			                  Sensitive = false,
 		                  })
 		                  .ToListAsync();
 
@@ -147,7 +148,8 @@ public class NoteRenderer(
 		{
 			var hit = await emojiSvc.ResolveEmoji(item.Name);
 			if (hit == null) continue;
-			item.Url = hit.PublicUrl;
+			item.Url       = hit.PublicUrl;
+			item.Sensitive = hit.Sensitive;
 		}
 
 		return res;

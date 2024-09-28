@@ -24,10 +24,10 @@ public partial class Note : IDisposable
 	{
 		var target                             = NoteResponse.Renote ?? NoteResponse;
 		var x                                  = target.Reactions.FirstOrDefault(p => p.Name == emoji.Name);
-		if (x is null || x.Reacted == false) _ = AddReact(emoji.Name, emoji.PublicUrl);
+		if (x is null || x.Reacted == false) _ = AddReact(emoji.Name, emoji.Sensitive, emoji.PublicUrl);
 	}
 
-	public async Task AddReact(string name, string? url = null)
+	public async Task AddReact(string name, bool sensitive, string? url = null)
 	{
 		var target = NoteResponse.Renote ?? NoteResponse;
 		var x      = target.Reactions.FirstOrDefault(p => p.Name == name);
@@ -35,11 +35,12 @@ public partial class Note : IDisposable
 		{
 			target.Reactions.Add(new NoteReactionSchema
 			{
-				NoteId  = target.Id,
-				Name    = name,
-				Count   = 1,
-				Reacted = true,
-				Url     = url
+				NoteId    = target.Id,
+				Name      = name,
+				Count     = 1,
+				Reacted   = true,
+				Url       = url,
+				Sensitive = sensitive
 			});
 		}
 		else x.Count++;

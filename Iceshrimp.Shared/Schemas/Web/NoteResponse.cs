@@ -60,10 +60,11 @@ public class NoteAttachment
 public class NoteReactionSchema
 {
 	[JI] public required string  NoteId;
-	public required      string  Name    { get; set; }
-	public required      int     Count   { get; set; }
-	public required      bool    Reacted { get; set; }
-	public required      string? Url     { get; set; }
+	public required      string  Name      { get; set; }
+	public required      int     Count     { get; set; }
+	public required      bool    Reacted   { get; set; }
+	public required      string? Url       { get; set; }
+	public required      bool    Sensitive { get; set; }
 }
 
 public class NoteFilteredSchema
