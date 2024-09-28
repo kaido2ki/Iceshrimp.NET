@@ -20,7 +20,7 @@ public class PushSubscription
 	}
 
 	[Column("types", TypeName = "character varying(32)[]")]
-	public List<string> Types = null!;
+	public List<string> Types { get; set; } = null!;
 
 	[Key]
 	[Column("id")]
