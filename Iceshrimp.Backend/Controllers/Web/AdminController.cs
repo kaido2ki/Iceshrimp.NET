@@ -12,6 +12,7 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Backend.Core.Tasks;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -175,6 +176,14 @@ public class AdminController(
 		var relay = await db.Relays.FirstOrDefaultAsync(p => p.Id == id) ??
 		            throw GracefulException.NotFound("Relay not found");
 		await relaySvc.UnsubscribeFromRelay(relay);
+	}
+
+	[HttpPost("drive/prune-expired-media")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task PruneExpiredMedia([FromServices] IServiceScopeFactory factory)
+	{
+		await using var scope = factory.CreateAsyncScope();
+		await new MediaCleanupTask().Invoke(scope.ServiceProvider);
 	}
 
 	[UseNewtonsoftJson]
