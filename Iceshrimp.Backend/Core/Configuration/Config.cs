@@ -392,6 +392,9 @@ public sealed class Config
 		if (value.Length < 2 || !int.TryParse(value[..^1].Trim(), out var num))
 			throw new Exception($"Invalid {name}");
 
+		if (num == 0)
+			return null;
+
 		var suffix = value[^1];
 
 		return suffix switch
