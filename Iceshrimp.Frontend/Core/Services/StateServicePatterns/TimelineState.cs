@@ -28,15 +28,15 @@ internal class Timeline(MessageService messageService)
 internal class TimelineState : IDisposable
 {
 	private         MessageService     MessageService { get; set; }
-	public required string?            MaxId;
-	public required string?            MinId;
+	public required string?            PageUp;
+	public required string?            PageDown;
 	public required List<NoteResponse> Timeline;
 
 	[SetsRequiredMembers]
-	internal TimelineState(List<NoteResponse> timeline, string? maxId, string? minId, MessageService messageService)
+	internal TimelineState(List<NoteResponse> timeline, string? pageDown, string? pageUp, MessageService messageService)
 	{
-		MaxId                         =  maxId;
-		MinId                         =  minId;
+		PageDown                      =  pageDown;
+		PageUp                        =  pageUp;
 		Timeline                      =  timeline;
 		MessageService                =  messageService;
 		MessageService.AnyNoteChanged += OnNoteChanged;
@@ -61,8 +61,9 @@ internal class TimelineState : IDisposable
 			return;
 		}
 
-		if (i == 0) MaxId                  = Timeline[1].Id;
-		if (i == Timeline.Count - 1) MinId = Timeline[^2].Id;
+		// TODO: how should the below commented out lines be handled with cursor pagination?
+		// if (i == 0) MaxId                  = Timeline[1].Id;
+		// if (i == Timeline.Count - 1) MinId = Timeline[^2].Id;
 		Timeline.RemoveAt(i);
 	}
 

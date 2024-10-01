@@ -28,16 +28,15 @@ public partial class TimelineComponent : IAsyncDisposable
 
 	private async Task<bool> Initialize()
 	{
-		var pq  = new PaginationQuery { Limit = 30 };
-		var res = await ApiService.Timelines.GetHomeTimeline(pq);
-		if (res.Count < 1)
+		var res = await ApiService.Timelines.GetHomeTimeline();
+		if (res.Items.Count < 1)
 		{
 			return false;
 		}
 
-		State.MaxId    = res[0].Id;
-		State.MinId    = res.Last().Id;
-		State.Timeline = res;
+		State.PageUp = res.PageUp;
+		State.PageDown = res.PageDown;
+		State.Timeline = res.Items;
 		return true;
 	}
 
@@ -48,26 +47,25 @@ public partial class TimelineComponent : IAsyncDisposable
 		{
 			if (LockFetch) return true;
 			LockFetch = true;
-			var pq  = new PaginationQuery { Limit = 15, MaxId = State.MinId };
-			var res = await ApiService.Timelines.GetHomeTimeline(pq);
-			switch (res.Count)
+
+			var res = await ApiService.Timelines.GetHomeTimeline(State.PageDown);
+			if (res.Items.Count > 0)
 			{
-				case > 0:
-					State.MinId = res.Last().Id;
-					State.Timeline.AddRange(res);
-					break;
-				case 0:
-					return false;
+				State.PageDown = res.PageDown;
+				State.Timeline.AddRange(res.Items);
 			}
+
+			// TODO: despite this returning false it keeps trying to load new pages. bug in VirtualScroller?
+			LockFetch = false;
+			return res.PageDown != null;
 		}
 		catch (HttpRequestException)
 		{
 			Logger.LogError("Network Error");
-			return false;
 		}
 
 		LockFetch = false;
-		return true;
+		return false;
 	}
 
 	private async Task FetchNewer()
@@ -76,12 +74,16 @@ public partial class TimelineComponent : IAsyncDisposable
 		{
 			if (LockFetch) return;
 			LockFetch = true;
-			var pq  = new PaginationQuery { Limit = 15, MinId = State.MaxId };
-			var res = await ApiService.Timelines.GetHomeTimeline(pq);
-			if (res.Count > 0)
+
+			var res = await ApiService.Timelines.GetHomeTimeline(State.PageUp);
+			if (res.Items.Count > 0)
 			{
-				State.MaxId = res.Last().Id;
-				State.Timeline.InsertRange(0, res);
+				// TODO: the cursor-based pagination always sorts items the same way, the old one reversed when min_id was used
+				// is it possible to modify the frontend to make this unnecessary? is the effort even worth it?
+				res.Items.Reverse();
+
+				State.PageUp = res.PageUp;
+				State.Timeline.InsertRange(0, res.Items);
 			}
 		}
 		catch (HttpRequestException)
@@ -95,10 +97,11 @@ public partial class TimelineComponent : IAsyncDisposable
 	private async void OnNotePublished(object? _, (StreamingTimeline timeline, NoteResponse note) data)
 	{
 		State.Timeline.Insert(0, data.note);
-		State.MaxId = data.note.Id;
+		// TODO: how should the below commented out lines be handled with cursor pagination?
+		// State.MaxId = data.note.Id;
 		if (ComponentState is Core.Miscellaneous.State.Empty)
 		{
-			State.MinId    = data.note.Id;
+			// State.MinId    = data.note.Id;
 			ComponentState = Core.Miscellaneous.State.Loaded;
 			StateHasChanged();
 		}

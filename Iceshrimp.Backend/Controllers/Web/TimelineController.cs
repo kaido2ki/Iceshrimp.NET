@@ -3,6 +3,7 @@ using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Schemas;
 using Iceshrimp.Backend.Controllers.Web.Renderers;
+using Iceshrimp.Backend.Controllers.Web.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -26,7 +27,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 {
 	[HttpGet("home")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public async Task<IEnumerable<NoteResponse>> GetHomeTimeline(PaginationQuery pq)
+	public async Task<PaginationWrapper<NoteResponse>> GetHomeTimeline(PaginationQueryCursor pq)
 	{
 		var user      = HttpContext.GetUserOrFail();
 		var heuristic = await QueryableTimelineExtensions.GetHeuristic(user, db, cache);
@@ -39,6 +40,22 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
 
-		return await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user, Filter.FilterContext.Home);
+		// TODO: we're parsing the cursor twice. once here and once in .Paginate()
+		var cursor = pq.Cursor?.ParseCursor<NotePaginationCursor>();
+
+		// TODO: get from attribute
+		var limit = pq.Limit ?? 20;
+
+		// @formatter:off
+		var items = (await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user, Filter.FilterContext.Home)).ToList();
+		if (cursor?.Up == true) items.Reverse();
+
+		return new PaginationWrapper<NoteResponse>
+		{
+			PageUp   = items.Count > 0 ? new NotePaginationCursor { Id = items[0].Id, Up = true }.Serialize() : null,
+			PageDown = (cursor?.Up == true && items.Count > 0) || items.Count >= limit ? new NotePaginationCursor { Id = items[^1].Id }.Serialize() : null,
+			Items    = items,
+		};
+		// @formatter:on
 	}
 }

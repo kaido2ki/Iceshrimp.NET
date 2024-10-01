@@ -96,3 +96,10 @@ public interface IPaginationQuery
 	public string? MinId { get; }
 	public int?    Limit { get; }
 }
+
+// TODO: replace IPaginationQuery with this once all endpoints are converted over
+public interface IPaginationQueryCursor
+{
+	public string? Cursor { get; }
+	public int?    Limit  { get; }
+}
