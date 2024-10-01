@@ -168,7 +168,7 @@ public class ActivityPubController(
 			var remoteUser = await db.Users
 			                         .IncludeCommonProperties()
 			                         .FirstOrDefaultAsync(p => p.UsernameLower == split[0].ToLowerInvariant() &&
-			                                                   p.Host == split[1].ToLowerInvariant().ToPunycode());
+			                                                   p.Host == split[1].ToPunycodeLower());
 
 			if (remoteUser?.Uri != null)
 				return RedirectPermanent(remoteUser.Uri);

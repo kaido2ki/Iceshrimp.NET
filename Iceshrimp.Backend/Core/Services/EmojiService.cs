@@ -109,6 +109,7 @@ public partial class EmojiService(
 		if (emoji is not { Count: > 0 }) return [];
 
 		foreach (var emojo in emoji) emojo.Name = emojo.Name?.Trim(':');
+		host = host.ToPunycodeLower();
 
 		var resolved = await db.Emojis.Where(p => p.Host == host && emoji.Select(e => e.Name).Contains(p.Name))
 		                       .ToListAsync();
@@ -153,17 +154,19 @@ public partial class EmojiService(
 		if (EmojiHelpers.IsEmoji(name))
 			return name;
 
-		host = host?.ToPunycode();
+		host = host?.ToPunycodeLower();
 		var match             = CustomEmojiRegex().Match(name);
 		var remoteMatch       = RemoteCustomEmojiRegex().Match(name);
 		var localMatchSuccess = !match.Success || match.Groups.Count != 2;
 		if (localMatchSuccess && !remoteMatch.Success)
 			throw GracefulException.BadRequest("Invalid emoji name");
 
+		// @formatter:off
 		var hit = !remoteMatch.Success
 			? await db.Emojis.FirstOrDefaultAsync(p => p.Host == host && p.Name == match.Groups[1].Value)
 			: await db.Emojis.FirstOrDefaultAsync(p => p.Name == remoteMatch.Groups[1].Value &&
-			                                           p.Host == remoteMatch.Groups[2].Value);
+			                                           p.Host == remoteMatch.Groups[2].Value.ToPunycodeLower());
+		// @formatter:on
 
 		if (hit == null)
 			throw GracefulException.BadRequest("Unknown emoji");
@@ -176,7 +179,7 @@ public partial class EmojiService(
 		if (!fqn.StartsWith(':')) return null;
 		var split = fqn.Trim(':').Split('@');
 		var name  = split[0];
-		var host  = split.Length > 1 ? split[1] : null;
+		var host  = split.Length > 1 ? split[1].ToPunycodeLower() : null;
 
 		return await db.Emojis.FirstOrDefaultAsync(p => p.Host == host && p.Name == name);
 	}

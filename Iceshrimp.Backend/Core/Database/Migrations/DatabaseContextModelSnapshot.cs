@@ -4071,7 +4071,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("isSuspended")
                         .HasComment("Whether the User is suspended.");
 
-                    b.Property<bool>("IsSystem")
+                    b.Property<bool>("IsSystemUser")
                         .HasColumnType("boolean")
                         .HasColumnName("isSystem");
 

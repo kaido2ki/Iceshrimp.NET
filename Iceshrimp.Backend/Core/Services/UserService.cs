@@ -48,15 +48,14 @@ public class UserService(
 		o.PoolInitialFill = 5;
 	});
 
-	private (string Username, string? Host) AcctToTuple(string acct)
+	private static (string Username, string? Host) AcctToTuple(string acct)
 	{
-		if (!acct.StartsWith("acct:")) throw new GracefulException(HttpStatusCode.BadRequest, $"Invalid query: {acct}");
-
+		if (!acct.StartsWith("acct:")) throw GracefulException.BadRequest($"Invalid query: {acct}");
 		var split = acct[5..].Split('@');
-		if (split.Length != 2)
-			return (split[0], instance.Value.AccountDomain.ToPunycode());
-
-		return (split[0], split[1].ToPunycode());
+		if (split.Length > 2) throw GracefulException.BadRequest($"Invalid query: {acct}");
+		return split.Length != 2
+			? (split[0], null)
+			: (split[0], split[1].ToPunycodeLower());
 	}
 
 	public async Task<User?> GetUserFromQueryAsync(string query)
@@ -771,7 +770,7 @@ public class UserService(
 								var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower);
 								await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 								          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows,
-										                               i => i.IncomingFollows + 1));
+									                              i => i.IncomingFollows + 1));
 							});
 						}
 
@@ -1326,14 +1325,14 @@ public class UserService(
 		}
 
 		if (source.IsRemoteUser || target.IsRemoteUser) return;
-		
+
 		var following = db.Followings
 		                  .Where(p => p.Follower == source)
 		                  .Select(p => p.Follower)
 		                  .OrderBy(p => p.Id)
 		                  .PrecomputeRelationshipData(source)
 		                  .AsChunkedAsyncEnumerable(50, p => p.Id, isOrdered: true);
-		
+
 		await foreach (var followee in following)
 		{
 			try

@@ -1,6 +1,7 @@
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ public class InstanceService(DatabaseContext db, HttpClient httpClient, ILogger<
 		else
 			logger.LogDebug("Updating instance metadata for {host} ({domain})", host, webDomain);
 
-		host = host.ToLowerInvariant();
+		host = host.ToPunycodeLower();
 		var instance = await db.Instances.FirstOrDefaultAsync(p => p.Host == host);
 		if (instance == null)
 		{

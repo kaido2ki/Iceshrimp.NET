@@ -51,7 +51,7 @@ public class UserController(
 	public async Task<UserResponse> LookupUser([FromQuery] string username, [FromQuery] string? host)
 	{
 		username = username.ToLowerInvariant();
-		host     = host?.ToLowerInvariant();
+		host     = host?.ToPunycodeLower();
 
 		if (host == config.Value.WebDomain || host == config.Value.AccountDomain)
 			host = null;

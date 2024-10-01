@@ -258,7 +258,8 @@ public static class QueryableFtsExtensions
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
 	                 Justification = "Projectable chain must have consistent visibility")]
 	internal static IQueryable<User> UserSubquery((string username, string? host) filter, DatabaseContext db) =>
-		db.Users.Where(p => p.UsernameLower == filter.username && p.Host == filter.host);
+		db.Users.Where(p => p.UsernameLower == filter.username &&
+		                    p.Host == (filter.host != null ? filter.host.ToPunycodeLower() : null));
 
 	[Projectable]
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",

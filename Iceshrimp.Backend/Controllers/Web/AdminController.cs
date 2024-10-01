@@ -78,7 +78,7 @@ public class AdminController(
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task ForceInstanceState(string host, AdminSchemas.InstanceState state)
 	{
-		var instance = await db.Instances.FirstOrDefaultAsync(p => p.Host == host.ToLowerInvariant()) ??
+		var instance = await db.Instances.FirstOrDefaultAsync(p => p.Host == host.ToPunycodeLower()) ??
 		               throw GracefulException.NotFound("Instance not found");
 
 		if (state == AdminSchemas.InstanceState.Active)

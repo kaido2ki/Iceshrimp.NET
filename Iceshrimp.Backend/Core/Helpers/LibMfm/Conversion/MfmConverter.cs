@@ -190,7 +190,8 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 			}
 			case MfmEmojiCodeNode emojiCodeNode:
 			{
-				if (emoji?.FirstOrDefault(p => p.Name == emojiCodeNode.Name && p.Host == host) is { } hit)
+				var punyHost = host?.ToPunycodeLower();
+				if (emoji?.FirstOrDefault(p => p.Name == emojiCodeNode.Name && p.Host == punyHost) is { } hit)
 				{
 					var el = document.CreateElement("span");
 					var inner = document.CreateElement("img");

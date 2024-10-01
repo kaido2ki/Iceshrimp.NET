@@ -7,6 +7,8 @@ namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class StringExtensions
 {
+	private static readonly IdnMapping IdnMapping = new();
+
 	public static bool EqualsInvariant(this string? s1, string? s2) =>
 		string.Equals(s1, s2, StringComparison.InvariantCulture);
 
@@ -18,14 +20,19 @@ public static class StringExtensions
 		return target[..Math.Min(target.Length, maxLength)];
 	}
 
-	public static string ToPunycode(this string target)
+	private static string ToPunycode(this string target)
 	{
-		return new IdnMapping().GetAscii(target);
+		return IdnMapping.GetAscii(target);
+	}
+
+	public static string ToPunycodeLower(this string target)
+	{
+		return ToPunycode(target).ToLowerInvariant();
 	}
 
 	public static string FromPunycode(this string target)
 	{
-		return new IdnMapping().GetUnicode(target);
+		return IdnMapping.GetUnicode(target);
 	}
 
 	public static string ToTitleCase(this string input) => input switch

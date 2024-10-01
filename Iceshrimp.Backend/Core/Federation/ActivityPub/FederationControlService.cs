@@ -24,7 +24,7 @@ public class FederationControlService(
 		                      .Cast<string>()
 		                      .Distinct()
 		                      .Select(p => p.StartsWith("http://") || p.StartsWith("https://") ? new Uri(p).Host : p)
-		                      .Select(p => p.ToPunycode())
+		                      .Select(p => p.ToPunycodeLower())
 		                      .ToArray();
 
 		// We want to check for fully qualified domains *and* subdomains of them
