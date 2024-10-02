@@ -171,6 +171,7 @@ public static class ServiceExtensions
 		services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
 		{
 			options.JsonSerializerOptions.PropertyNamingPolicy = JsonSerialization.Options.PropertyNamingPolicy;
+			options.JsonSerializerOptions.MaxDepth             = 256;
 			foreach (var converter in JsonSerialization.Options.Converters)
 				options.JsonSerializerOptions.Converters.Add(converter);
 		});
