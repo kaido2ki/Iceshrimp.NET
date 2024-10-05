@@ -44,22 +44,25 @@ public static class QueryableExtensions
 	/// <inheritdoc cref="AsChunkedAsyncEnumerable{T}(System.Linq.IQueryable{T},int)" select="summary|returns"/>
 	/// <remarks>
 	/// This overload requires you to pass a predicate to the identifier.
-	/// When <paramref name="isOrdered"/> is set to false, .OrderBy(<paramref name="idPredicate"/>) is appended to the query.
+	/// .OrderBy(<paramref name="idPredicate"/>) is appended to the query.
+	/// Set the <paramref name="hook"/> parameter to append things to the query after pagination, for cases where query translation would fail otherwise.
 	/// </remarks>
 	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerable<TResult>(
 		this IQueryable<TResult> query, int chunkSize, Expression<Func<TResult, string>> idPredicate,
-		bool isOrdered = false
+		Func<IQueryable<TResult>, IQueryable<TResult>>? hook = null
 	)
 	{
 		var pred = idPredicate.Compile();
-		query = isOrdered ? query : query.OrderBy(idPredicate);
+		query = query.OrderBy(idPredicate);
 
 		string? last = null;
 		while (true)
 		{
 			// ReSharper disable once AccessToModifiedClosure
 			var final = last is not null ? query.Where(idPredicate.Compose(p => p.IsGreaterThan(last))) : query;
-			var res   = await final.Take(chunkSize).ToArrayAsync();
+			if (hook != null)
+				final = hook(final);
+			var res = await final.Take(chunkSize).ToArrayAsync();
 			if (res.Length == 0) break;
 			foreach (var item in res) yield return item;
 			if (res.Length < chunkSize) break;
@@ -67,21 +70,23 @@ public static class QueryableExtensions
 		}
 	}
 
-	/// <inheritdoc cref="AsChunkedAsyncEnumerable{T}(System.Linq.IQueryable{T},int,Expression{Func{T,string}},bool)"/>
+	/// <inheritdoc cref="AsChunkedAsyncEnumerable{T}(System.Linq.IQueryable{T},int,Expression{Func{T,string}},Func{IQueryable{T},IQueryable{T}})"/>
 	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerable<TResult>(
 		this IQueryable<TResult> query, int chunkSize, Expression<Func<TResult, Guid>> idPredicate,
-		bool isOrdered = false
+		Func<IQueryable<TResult>, IQueryable<TResult>>? hook = null
 	)
 	{
 		var pred = idPredicate.Compile();
-		query = isOrdered ? query : query.OrderBy(idPredicate);
+		query = query.OrderBy(idPredicate);
 
 		Guid? last = null;
 		while (true)
 		{
 			// ReSharper disable once AccessToModifiedClosure
 			var final = last is not null ? query.Where(idPredicate.Compose(p => p > last)) : query;
-			var res   = await final.Take(chunkSize).ToArrayAsync();
+			if (hook != null)
+				final = hook(final);
+			var res = await final.Take(chunkSize).ToArrayAsync();
 			if (res.Length == 0) break;
 			foreach (var item in res) yield return item;
 			if (res.Length < chunkSize) break;
@@ -89,21 +94,23 @@ public static class QueryableExtensions
 		}
 	}
 
-	/// <inheritdoc cref="AsChunkedAsyncEnumerable{T}(System.Linq.IQueryable{T},int,Expression{Func{T,string}},bool)"/>
+	/// <inheritdoc cref="AsChunkedAsyncEnumerable{T}(System.Linq.IQueryable{T},int,Expression{Func{T,string}},Func{IQueryable{T},IQueryable{T}})"/>
 	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerable<TResult>(
 		this IQueryable<TResult> query, int chunkSize, Expression<Func<TResult, int>> idPredicate,
-		bool isOrdered = false
+		Func<IQueryable<TResult>, IQueryable<TResult>>? hook = null
 	)
 	{
 		var pred = idPredicate.Compile();
-		query = isOrdered ? query : query.OrderBy(idPredicate);
+		query = query.OrderBy(idPredicate);
 
 		int? last = null;
 		while (true)
 		{
 			// ReSharper disable once AccessToModifiedClosure
 			var final = last is not null ? query.Where(idPredicate.Compose(p => p > last)) : query;
-			var res   = await final.Take(chunkSize).ToArrayAsync();
+			if (hook != null)
+				final = hook(final);
+			var res = await final.Take(chunkSize).ToArrayAsync();
 			if (res.Length == 0) break;
 			foreach (var item in res) yield return item;
 			if (res.Length < chunkSize) break;
