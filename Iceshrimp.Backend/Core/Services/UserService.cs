@@ -1233,9 +1233,9 @@ public class UserService(
 		source.MovedToUri = targetUri;
 		await db.SaveChangesAsync();
 
-		await MoveRelationshipsAsync(source, target, sourceUri, targetUri);
 		var move = activityRenderer.RenderMove(userRenderer.RenderLite(source), userRenderer.RenderLite(target));
 		await deliverSvc.DeliverToFollowersAsync(move, source, []);
+		await MoveRelationshipsAsync(source, target, sourceUri, targetUri);
 	}
 
 	public async Task UndoMoveAsync(User user)
