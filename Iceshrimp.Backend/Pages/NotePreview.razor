@@ -61,11 +61,13 @@ else
     <PageTitle>Note by @@@_note.User.Username - @_instanceName</PageTitle>
     <HeadContent>
         @{
+            var cardType        = "summary";
             var previewImageUrl = _note.User.AvatarUrl;
             if (ShowMedia && _note.Attachments != null)
             {
-                if (_note.Attachments.FirstOrDefault(p => p.MimeType.StartsWith("image/")) is { } img)
+                if (_note.Attachments.FirstOrDefault(p => p.MimeType.StartsWith("image/") && !p.Sensitive) is { } img)
                 {
+                    cardType        = "summary_large_image";
                     previewImageUrl = img.Url;
                 }
             }
@@ -93,7 +95,7 @@ else
             var title    = _note.User.RawDisplayName is { } name ? $"{name} (@{username})" : $"@{username}";
         }
 
-        <meta name="twitter:card" content="summary">
+        <meta name="twitter:card" content="@cardType">
         <meta name="og:site_name" content="@_instanceName">
         <meta name="og:title" content="@title">
         <meta name="og:image" content="@previewImageUrl">

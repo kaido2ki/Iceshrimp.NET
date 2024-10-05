@@ -21,4 +21,5 @@ public class PreviewAttachment
 	public required string  Url;
 	public required string  Name;
 	public required string? Alt;
+	public required bool    Sensitive;
 }
