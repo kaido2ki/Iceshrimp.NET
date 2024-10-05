@@ -97,10 +97,11 @@ public class NoteRenderer(
 		                                                                       .Where(f => p.FileIds.Contains(f.Id))
 		                                                                       .Select(f => new PreviewAttachment
 		                                                                       {
-			                                                                       MimeType = f.Type,
-			                                                                       Url      = f.AccessUrl,
-			                                                                       Name     = f.Name,
-			                                                                       Alt      = f.Comment
+			                                                                       MimeType  = f.Type,
+			                                                                       Url       = f.AccessUrl,
+			                                                                       Name      = f.Name,
+			                                                                       Alt       = f.Comment,
+			                                                                       Sensitive = f.IsSensitive
 		                                                                       })
 		                                                                       .ToList());
 	}
