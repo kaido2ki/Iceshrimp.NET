@@ -109,17 +109,6 @@ public static class WebApplicationExtensions
 			Environment.Exit(1);
 		}
 
-		var firstUser = await db.Users.OrderBy(p => p.Id).FirstOrDefaultAsync();
-
-		var res = db.Followings
-		            .Select(p => p.Follower)
-		            .AsChunkedAsyncEnumerable(5, p => p.Id, p => p.PrecomputeRelationshipData(firstUser!));
-
-		await foreach (var x in res)
-		{
-			app.Logger.LogDebug(x.Id);
-		}
-		
 		// @formatter:off
 		var pendingMigration = (await db.Database.GetPendingMigrationsAsync()).FirstOrDefault();
 		if (args.Contains("--migrate-from-js"))
