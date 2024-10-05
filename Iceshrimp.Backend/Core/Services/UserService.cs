@@ -1309,6 +1309,8 @@ public class UserService(
 		{
 			try
 			{
+				if (follower.Id == target.Id) continue;
+
 				await FollowUserAsync(follower, target);
 
 				// We need to transfer the precomputed properties to the source user for each follower so that the unfollow method works correctly
