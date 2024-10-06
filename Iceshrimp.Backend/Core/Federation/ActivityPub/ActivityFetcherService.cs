@@ -185,7 +185,7 @@ public class ActivityFetcherService(
 		if (!response.IsSuccessStatusCode)
 		{
 			if (response.StatusCode == HttpStatusCode.Gone)
-				throw AuthFetchException.NotFound("The remote user no longer exists.");
+				throw AuthFetchException.NotFound("The remote object no longer exists.");
 			logger.LogDebug("Failed to fetch activity: response status was {code}", response.StatusCode);
 			return null;
 		}

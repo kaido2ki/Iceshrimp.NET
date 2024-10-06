@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -1140,6 +1141,16 @@ public class NoteService(
 		{
 			var id = e.Uri[$"https://{config.Value.WebDomain}/notes/".Length..];
 			return await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
+		}
+		catch (AuthFetchException e) when (e.StatusCode == HttpStatusCode.NotFound)
+		{
+			logger.LogDebug("Failed to fetch note, skipping: {error}", e.Message);
+			return null;
+		}
+		catch (Exception e)
+		{
+			logger.LogDebug("Failed to fetch note, skipping: {error}", e);
+			return null;
 		}
 
 		if (fetchedNote == null)
