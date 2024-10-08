@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Services;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Middleware;
@@ -17,6 +18,14 @@ public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc, M
 
 		if (attribute != null)
 		{
+			var isBlazorSsr = endpoint?.Metadata.GetMetadata<RootComponentMetadata>() != null;
+			if (isBlazorSsr)
+			{
+				await AuthenticateBlazorSsr(ctx, attribute);
+				await next(ctx);
+				return;
+			}
+
 			ctx.Response.Headers.CacheControl = "private, no-store";
 			var request = ctx.Request;
 			var header  = request.Headers.Authorization.ToString();
@@ -98,6 +107,32 @@ public class AuthenticationMiddleware(DatabaseContext db, UserService userSvc, M
 		}
 
 		await next(ctx);
+	}
+
+	private async Task AuthenticateBlazorSsr(HttpContext ctx, AuthenticateAttribute attribute)
+	{
+		if (!ctx.Request.Cookies.TryGetValue("admin_session", out var token)) return;
+
+		var session = await db.Sessions
+		                      .Include(p => p.User.UserProfile)
+		                      .Include(p => p.User.UserSettings)
+		                      .FirstOrDefaultAsync(p => p.Token == token && p.Active);
+
+		if (session == null)
+			return;
+		if (session.User.IsSuspended)
+			throw GracefulException.Unauthorized("Your access has been suspended by the instance administrator.");
+
+		if (
+			(attribute.AdminRole && !session.User.IsAdmin) ||
+			(attribute.ModeratorRole && session.User is { IsAdmin: false, IsModerator: false })
+		)
+		{
+			return;
+		}
+
+		userSvc.UpdateSessionMetadata(session);
+		ctx.SetSession(session);
 	}
 }
 

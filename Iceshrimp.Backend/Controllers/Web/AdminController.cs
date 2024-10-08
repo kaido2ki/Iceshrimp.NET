@@ -35,6 +35,8 @@ public class AdminController(
 	ActivityPub.NoteRenderer noteRenderer,
 	ActivityPub.UserRenderer userRenderer,
 	IOptions<Config.InstanceSection> config,
+	[SuppressMessage("ReSharper", "ParameterOnlyUsedForPreconditionCheck.Local")]
+	IOptionsSnapshot<Config.SecuritySection> security,
 	QueueService queueSvc,
 	RelayService relaySvc,
 	PolicyService policySvc
@@ -73,6 +75,79 @@ public class AdminController(
 
 		settings.Password = AuthHelpers.HashPassword(request.Password);
 		await db.SaveChangesAsync();
+	}
+
+	[HttpPost("instances/{host}/allow")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task AllowInstance(string host, [FromQuery] bool? imported = false)
+	{
+		if (security.Value.FederationMode == Enums.FederationMode.BlockList)
+			throw GracefulException.BadRequest("Federation mode is set to blocklist.");
+
+		if (await db.AllowedInstances.FirstOrDefaultAsync(p => p.Host == host.ToPunycodeLower()) is { } instance)
+		{
+			if (imported.HasValue)
+			{
+				instance.IsImported = imported.Value;
+				await db.SaveChangesAsync();
+			}
+
+			return;
+		}
+
+		var obj = new AllowedInstance { Host = host.ToPunycodeLower(), IsImported = imported ?? false };
+		db.Add(obj);
+		await db.SaveChangesAsync();
+	}
+
+	[HttpPost("instances/{host}/block")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task BlockInstance(string host, [FromQuery] bool? imported = null, [FromQuery] string? reason = null)
+	{
+		if (security.Value.FederationMode == Enums.FederationMode.AllowList)
+			throw GracefulException.BadRequest("Federation mode is set to allowlist.");
+
+		if (await db.BlockedInstances.FirstOrDefaultAsync(p => p.Host == host.ToPunycodeLower()) is { } instance)
+		{
+			if (imported.HasValue)
+				instance.IsImported = imported.Value;
+			if (reason != null)
+				instance.Reason = reason;
+			await db.SaveChangesAsync();
+			return;
+		}
+
+		var obj = new BlockedInstance
+		{
+			Host       = host.ToPunycodeLower(),
+			IsImported = imported ?? false,
+			Reason     = reason
+		};
+
+		db.Add(obj);
+		await db.SaveChangesAsync();
+	}
+
+	[HttpPost("instances/{host}/disallow")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task DisallowInstance(string host)
+	{
+		if (security.Value.FederationMode == Enums.FederationMode.BlockList)
+			throw GracefulException.BadRequest("Federation mode is set to blocklist.");
+
+		await db.AllowedInstances.Where(p => p.Host == host.ToPunycodeLower()).ExecuteDeleteAsync();
+	}
+
+	[HttpPost("instances/{host}/unblock")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task UnblockInstance(string host)
+	{
+		if (security.Value.FederationMode == Enums.FederationMode.AllowList)
+			throw GracefulException.BadRequest("Federation mode is set to allowlist.");
+
+		await db.BlockedInstances.Where(p => p.Host == host.ToPunycodeLower()).ExecuteDeleteAsync();
 	}
 
 	[HttpPost("instances/{host}/force-state/{state}")]

@@ -1,0 +1,72 @@
+@using Iceshrimp.Backend.Core.Configuration
+@using Iceshrimp.Backend.Core.Database.Tables
+@using Iceshrimp.Backend.Core.Extensions
+@using Iceshrimp.Backend.Core.Middleware
+@using Iceshrimp.Backend.Core.Services
+@using Microsoft.Extensions.Options
+@using Microsoft.AspNetCore.Components.Routing
+@inject IOptions<Config.InstanceSection> Instance
+@preservewhitespace true
+@attribute [RazorSsr]
+@inherits AsyncComponentBase
+<!DOCTYPE html>
+<html lang="en">
+<!--suppress HtmlRequiredTitleElement, Justification: HeadOutlet -->
+<head>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="/Iceshrimp.Backend.styles.css"/>
+    <link rel="stylesheet" href="/css/default.css"/>
+    <link rel="icon" type="image/png" href="/favicon.png"/>
+    <HeadOutlet/>
+    <PageTitle>@(_instanceName ?? "Iceshrimp.NET")</PageTitle>
+</head>
+<body>
+<Router AppAssembly="@typeof(RootComponent).Assembly">
+    <Found Context="routeData">
+        <CascadingValue Value="_user">
+            <CascadingValue Value="_instanceName" Name="InstanceName">
+                <RouteView RouteData="@routeData"/>
+            </CascadingValue>
+        </CascadingValue>
+        <footer>
+            @if (_instanceName != null)
+            {
+                <span>@_instanceName - </span>
+            }
+            <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
+            <span class="float-right">
+                @if (_user == null)
+                {
+                    <a href="/login?rd=@((Context.Request.Path.Value ?? "/").UrlEncode())">Login</a>
+                }
+                else
+                {
+                    <span>Authenticated as <i>@_user.Username</i></span>
+                }
+            </span>
+        </footer>
+    </Found>
+</Router>
+</body>
+</html>
+
+@code {
+    [Inject] public required MetaService Meta { get; set; }
+
+    // This is separate from AuthorizationMiddleware.AuthorizeAttribute, as that middleware is meant for API calls.
+    public class RequireAuthorizationAttribute : Attribute;
+
+    private string? _instanceName;
+    private User?   _user;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _instanceName = await Meta.Get(MetaEntity.InstanceName);
+        _user         = Context.GetUser();
+
+        if (Context.GetEndpoint()?.Metadata.GetMetadata<RequireAuthorizationAttribute>() == null)
+            return;
+        if (_user == null)
+            RedirectToLogin();
+    }
+}

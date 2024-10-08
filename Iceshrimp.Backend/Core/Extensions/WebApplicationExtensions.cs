@@ -28,7 +28,7 @@ public static class WebApplicationExtensions
 		          .UseMiddleware<FederationSemaphoreMiddleware>()
 		          .UseMiddleware<AuthorizedFetchMiddleware>()
 		          .UseMiddleware<InboxValidationMiddleware>()
-		          .UseMiddleware<StripRazorJsInitMiddleware>();
+		          .UseMiddleware<StripRazorSsrHandoffDataMiddleware>();
 	}
 
 	public static IApplicationBuilder UseSwaggerWithOptions(this WebApplication app)

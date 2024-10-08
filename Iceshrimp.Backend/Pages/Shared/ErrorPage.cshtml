@@ -1,5 +1,6 @@
 @page
 @using Iceshrimp.Backend.Core.Configuration
+@using Iceshrimp.Backend.Core.Extensions
 @using Iceshrimp.Backend.Core.Middleware
 @using Microsoft.Extensions.Options
 @model ErrorPageModel
@@ -69,7 +70,7 @@
     @if (Model.Error.Exception is PublicPreviewDisabledException)
     {
         <span class="float-right">
-            <a href="/login?rd=@(Request.Path.ToUriComponent())">Login</a>
+            <a href="/login?rd=@(Request.Path.ToString().UrlEncode())">Login</a>
         </span>
     }
 </footer>

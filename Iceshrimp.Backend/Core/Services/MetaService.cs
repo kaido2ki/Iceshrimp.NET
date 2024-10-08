@@ -8,7 +8,7 @@ public class MetaService([FromKeyedServices("cache")] DatabaseContext db)
 {
 	public async Task<T> Get<T>(Meta<T> meta) => meta.ConvertGet(await Fetch(meta.Key));
 
-	public async Task<IList<T>> GetMany<T>(params Meta<T>[] entities)
+	public async Task<T[]> GetMany<T>(params Meta<T>[] entities)
 	{
 		var res = await FetchMany(entities.Select(p => p.Key));
 		return entities.Select(p => p.ConvertGet(res.GetValueOrDefault(p.Key, null))).ToArray();

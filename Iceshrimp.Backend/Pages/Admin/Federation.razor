@@ -1,0 +1,202 @@
+@page "/admin/federation"
+@using Iceshrimp.Backend.Components.Admin
+@using Iceshrimp.Backend.Core.Configuration
+@using Iceshrimp.Backend.Core.Database.Tables
+@using Iceshrimp.Backend.Core.Extensions
+@using Iceshrimp.Backend.Core.Middleware
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Options
+@using static Iceshrimp.Backend.Core.Configuration.Enums;
+@using Microsoft.AspNetCore.Components.Forms
+@inherits AdminComponentBase
+<AdminHead/>
+<AdminPageHeader Title="@($"{ModeString} instances")"/>
+<table>
+    <thead>
+    <th>Host</th>
+    <th>Imported</th>
+    @if (IsBlocklist)
+    {
+        <th>Reason</th>
+    }
+    <th>Actions</th>
+    </thead>
+    <tbody>
+    @if (IsBlocklist)
+    {
+        @foreach (var instance in _blockedInstances)
+        {
+            <tr>
+                @{
+                    var host = instance.Host;
+                    if (host.StartsWith("xn--"))
+                        host = $"{host.FromPunycode()} ({host})";
+                }
+                <td>@host</td>
+                <td>
+                    <i>@(instance.IsImported ? "Yes" : "No")</i>
+                </td>
+                <td>
+                    @if (instance.Reason is not null)
+                    {
+                        @instance.Reason
+                    }
+                    else
+                    {
+                        <i>No reason set</i>
+                    }
+                </td>
+                <td>
+                    <a class="fake-link" onclick="unblockInstance('@instance.Host', event.target)">Unblock</a>
+                </td>
+            </tr>
+        }
+    }
+    else
+    {
+        @foreach (var instance in _allowedInstances)
+        {
+            <tr>
+                @{
+                    var host = instance.Host;
+                    if (host.StartsWith("xn--"))
+                        host = host.FromPunycode() + $"({instance.Host})";
+                }
+                <td>@host</td>
+                <td>
+                    <i>@(instance.IsImported ? "Yes" : "No")</i>
+                </td>
+                <td>
+                    <a class="fake-link" onclick="disallowInstance('@instance.Host', event.target)">Remove</a>
+                </td>
+            </tr>
+        }
+    }
+    </tbody>
+</table>
+
+@if (_blockedInstances is [] && _allowedInstances is [])
+{
+    <p>
+        <i>No instances listed.</i>
+    </p>
+}
+
+@if (Offset is > 0)
+{
+    <button role="link" data-target="/admin/federation?offset=@(Math.Max(0, Offset.Value - 50))" onclick="navigate(event)">❮ Previous page</button>
+}
+else
+{
+    <button disabled>❮ Previous page</button>
+}
+
+@if (_blockedInstances.Length == 50 || _allowedInstances.Length == 50)
+{
+    <button role="link" data-target="/admin/federation?offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">Next page ❯</button>
+}
+else
+{
+    <button disabled>Next page ❯</button>
+}
+
+<h3>Add @ModeString.ToLowerInvariant() instance</h3>
+@if (IsBlocklist)
+{
+    <EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
+        <label for="host">Host</label>
+        <InputText @bind-Value="@Model.Host" id="host" placeholder="example.org" required/>
+        <label for="reason">Reason</label>
+        <InputText @bind-Value="@Model.Reason" id="reason" placeholder="Bad vibes"/>
+        <button type="submit">Submit</button>
+    </EditForm>
+}
+else
+{
+    <EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
+        <label for="host">Host</label>
+        <InputText @bind-Value="@Model.Host" id="host" placeholder="example.org" required/>
+        <button type="submit">Submit</button>
+    </EditForm>
+}
+
+@code {
+    [Inject] public required IOptionsSnapshot<Config.SecuritySection> Options { get; set; }
+
+    [SupplyParameterFromQuery] public  int?            Offset { get; set; }
+    [SupplyParameterFromForm]  private FederationModel Model  { get; set; } = null!;
+
+    private bool              IsBlocklist => Options.Value.FederationMode == FederationMode.BlockList;
+    private string            ModeString  => IsBlocklist ? "Blocked" : "Allowed";
+    private BlockedInstance[] _blockedInstances = [];
+    private AllowedInstance[] _allowedInstances = [];
+
+    private class FederationModel
+    {
+        public string? Host   { get; set; }
+        public string? Reason { get; set; }
+
+        public void Canonicalize()
+        {
+            Host   = Host?.Trim().ToPunycodeLower();
+            Reason = Reason?.Trim();
+
+            if (Host?.Length == 0)
+                Host = null;
+            if (Reason?.Length == 0)
+                Reason = null;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+        Model ??= new FederationModel();
+    }
+
+    protected override async Task OnGet()
+    {
+        if (IsBlocklist)
+            _blockedInstances = await Database.BlockedInstances.OrderBy(p => p.Host).Skip(Offset ?? 0).Take(50).ToArrayAsync();
+        else
+            _allowedInstances = await Database.AllowedInstances.OrderBy(p => p.Host).Skip(Offset ?? 0).Take(50).ToArrayAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        Model.Canonicalize();
+        if (Model.Host == null)
+            throw GracefulException.BadRequest("Missing host field");
+
+        if (IsBlocklist)
+        {
+            if (await Database.BlockedInstances.FirstOrDefaultAsync(p => p.Host == Model.Host) is { } instance)
+            {
+                instance.Reason     = Model.Reason;
+                instance.IsImported = false;
+            }
+            else
+            {
+                var newInstance = new BlockedInstance
+                {
+                    Host       = Model.Host,
+                    Reason     = Model.Reason,
+                    IsImported = false
+                };
+
+                Database.Add(newInstance);
+            }
+        }
+        else
+        {
+            if (!await Database.AllowedInstances.AnyAsync(p => p.Host == Model.Host))
+            {
+                var newInstance = new AllowedInstance { Host = Model.Host, IsImported = false };
+                Database.Add(newInstance);
+            }
+        }
+
+        await Database.SaveChangesAsync();
+        ReloadPage();
+    }
+}

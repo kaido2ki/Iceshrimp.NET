@@ -1,0 +1,70 @@
+@page "/admin/metadata"
+@using Iceshrimp.Backend.Components.Admin
+@using Iceshrimp.Backend.Core.Extensions
+@using Iceshrimp.Backend.Core.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inherits AdminComponentBase
+
+<AdminHead/>
+<AdminPageHeader Title="Instance metadata"/>
+
+<p>Here you can adjust basic instance metadata. It gets displayed to all users, including guests.</p>
+
+<EditForm FormName="update-metadata" Model="Model" OnSubmit="@OnSubmit">
+    <label for="name">Instance name</label>
+    <InputText @bind-Value="@Model.Name" id="name" placeholder="Shrimp & friends"/>
+    <label for="desc">Instance description</label>
+    <InputTextArea @bind-Value="@Model.Description" id="desc" placeholder="Welcome to my instance!"/>
+    <label for="contact">Admin contact email</label>
+    <InputText @bind-Value="@Model.AdminContact" type="email" id="contact" placeholder="webmaster@example.org"/>
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    [Inject] public required MetaService Meta { get; set; }
+
+    [SupplyParameterFromForm] private MetadataModel Model { get; set; } = null!;
+
+    private class MetadataModel
+    {
+        public string? Name         { get; set; }
+        public string? Description  { get; set; }
+        public string? AdminContact { get; set; }
+
+        public void Canonicalize()
+        {
+            Name         = Name?.Trim();
+            Description  = Description?.Trim();
+            AdminContact = AdminContact?.Trim();
+
+            if (Name?.Length == 0 || Name == "Iceshrimp.NET")
+                Name = null;
+            if (Description?.Length == 0)
+                Description = null;
+            if (AdminContact?.Length == 0)
+                AdminContact = null;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+        Model ??= new MetadataModel();
+    }
+
+    protected override async Task OnGet()
+    {
+        (Model.Name, Model.Description, Model.AdminContact) =
+            await Meta.GetMany(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
+    }
+
+    async Task OnSubmit()
+    {
+        Model.Canonicalize();
+        await Meta.Set(MetaEntity.InstanceName, Model.Name);
+        await Meta.Set(MetaEntity.InstanceDescription, Model.Description);
+        await Meta.Set(MetaEntity.AdminContactEmail, Model.AdminContact);
+
+        Navigation.Refresh(true);
+    }
+}

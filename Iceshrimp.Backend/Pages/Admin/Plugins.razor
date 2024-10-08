@@ -1,0 +1,27 @@
+@page "/admin/plugins"
+@using Iceshrimp.Backend.Components.Admin
+@using Iceshrimp.Backend.Core.Helpers
+@inherits AdminComponentBase
+<AdminHead/>
+<AdminPageHeader Title="Plugins"/>
+
+<table>
+    <thead>
+    <th>Name</th>
+    <th>Version</th>
+    </thead>
+    <tbody>
+    @foreach (var plugin in PluginLoader.Loaded)
+    {
+        <tr>
+            <td>@plugin.instance.Name</td>
+            <td>@plugin.instance.Version</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (PluginLoader.Loaded is [])
+{
+    <i>No plugins found.</i>
+}

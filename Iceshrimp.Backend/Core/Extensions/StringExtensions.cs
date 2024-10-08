@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
+using System.Text.Encodings.Web;
 using EntityFrameworkCore.Projectables;
 
 namespace Iceshrimp.Backend.Core.Extensions;
@@ -28,7 +29,7 @@ public static class StringExtensions
 
 	private static string ToPunycode(this string target)
 	{
-		return IdnMapping.GetAscii(target);
+		return target.Length > 0 ? IdnMapping.GetAscii(target) : target;
 	}
 
 	public static string ToPunycodeLower(this string target)
@@ -47,6 +48,8 @@ public static class StringExtensions
 		""   => throw new ArgumentException(@$"{nameof(input)} cannot be empty", nameof(input)),
 		_    => string.Concat(input[0].ToString().ToUpper(), input.AsSpan(1))
 	};
+
+	public static string UrlEncode(this string input) => UrlEncoder.Default.Encode(input);
 }
 
 [SuppressMessage("ReSharper", "StringCompareToIsCultureSpecific")]

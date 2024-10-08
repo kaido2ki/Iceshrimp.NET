@@ -106,7 +106,7 @@ public static class ServiceExtensions
 			.AddSingleton<StreamingService>()
 			.AddSingleton<ImageProcessor>()
 			.AddSingleton<RazorViewRenderService>()
-			.AddSingleton<StripRazorJsInitMiddleware>()
+			.AddSingleton<StripRazorSsrHandoffDataMiddleware>()
 			.AddSingleton<MfmRenderer>()
 			.AddSingleton<MatcherPolicy, PublicPreviewRouteMatcher>()
 			.AddSingleton<PolicyService>();

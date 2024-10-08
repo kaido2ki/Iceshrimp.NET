@@ -1,6 +1,6 @@
-using Iceshrimp.Backend.Components;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Pages.Shared;
 using Iceshrimp.Backend.SignalR;
 using Iceshrimp.Backend.SignalR.Authentication;
 
@@ -33,6 +33,7 @@ builder.Services.AddSignalR().AddMessagePackProtocol();
 builder.Services.AddResponseCompression();
 builder.Services.AddRazorPages(); //.AddRouteOverrides();
 builder.Services.AddRazorComponents();
+builder.Services.AddAntiforgery(o => o.Cookie.Name = "CSRF-Token");
 
 builder.Services.AddServices(builder.Configuration);
 builder.Services.ConfigureServices(builder.Configuration);
@@ -62,12 +63,13 @@ app.UseCors();
 app.UseAuthorization();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
 app.UseCustomMiddleware();
+app.UseAntiforgery();
 
 app.MapControllers();
 app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback").WithOrder(int.MaxValue - 3);
 app.MapHub<StreamingHub>("/hubs/streaming");
 app.MapRazorPages();
-app.MapRazorComponents<RootComponent>().DisableAntiforgery();
+app.MapRazorComponents<RootComponent>();
 app.MapFrontendRoutes("/Shared/FrontendSPA");
 
 PluginLoader.RunAppHooks(app);

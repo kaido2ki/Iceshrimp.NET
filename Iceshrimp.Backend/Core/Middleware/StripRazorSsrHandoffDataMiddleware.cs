@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components.Endpoints;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
-public class StripRazorJsInitMiddleware : IMiddleware
+public class StripRazorSsrHandoffDataMiddleware : IMiddleware
 {
 	private static readonly byte[] Magic = "<!--Blazor-Web-Initializers"u8.ToArray();
 
@@ -23,6 +23,11 @@ public class StripRazorJsInitMiddleware : IMiddleware
 		var body   = context.Response.Body;
 		var stream = new MemoryStream();
 		context.Response.Body = stream;
+		context.Response.OnStarting(() =>
+		{
+			context.Response.Headers.Remove("blazor-enhanced-nav");
+			return Task.CompletedTask;
+		});
 
 		try
 		{

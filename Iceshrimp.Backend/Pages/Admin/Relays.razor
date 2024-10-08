@@ -1,0 +1,87 @@
+@page "/admin/relays"
+@using Iceshrimp.Backend.Components.Admin
+@using Iceshrimp.Backend.Core.Configuration
+@using Iceshrimp.Backend.Core.Database.Tables
+@using Iceshrimp.Backend.Core.Middleware
+@using Iceshrimp.Backend.Core.Services
+@using Microsoft.AspNetCore.Mvc
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Options
+@using Microsoft.AspNetCore.Components.Forms
+@inherits AdminComponentBase
+<AdminHead/>
+<AdminPageHeader Title="Relays"/>
+
+@if (!Options.Value.AcceptLdSignatures)
+{
+    <p><strong>Warning:</strong> The configuration option <code>AcceptLdSignatures</code> is not enabled. Activities received from relays will be rejected.</p>
+}
+
+<table>
+    <thead>
+    <th>URI</th>
+    <th>Status</th>
+    <th>Actions</th>
+    </thead>
+    <tbody>
+    @foreach (var relay in _relays)
+    {
+        <tr>
+            <td>@relay.Inbox</td>
+            <td>
+                <i>@(relay.Status.ToString())</i>
+            </td>
+            <td>
+                <a class="fake-link" onclick="removeRelay('@relay.Id', event.target)">Unsubscribe</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (_relays is [])
+{
+    <i>No relays configured.</i>
+}
+
+<h3>Subscribe to new relay</h3>
+
+<EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
+    <label for="inbox">Inbox URI</label>
+    <InputText @bind-Value="@Model.InboxUri" id="inbox" placeholder="https://relay.example.org/inbox" class="width30" required/>
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    [Inject]                  public required IOptionsSnapshot<Config.SecuritySection> Options      { get; set; }
+    [Inject]                  public required RelayService                             RelayService { get; set; }
+    [Parameter, FromQuery]    public          int?                                     Offset       { get; set; }
+    [SupplyParameterFromForm] private         RelayModel                               Model        { get; set; } = null!;
+
+    private Relay[] _relays = [];
+
+    private class RelayModel
+    {
+        public string? InboxUri { get; set; }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+        Model ??= new RelayModel();
+    }
+
+    protected override async Task OnGet()
+    {
+        _relays = await Database.Relays.OrderBy(p => p.Id).ToArrayAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        if (Model.InboxUri == null)
+            throw GracefulException.BadRequest("Missing host field");
+
+        await RelayService.SubscribeToRelay(Model.InboxUri);
+        ReloadPage();
+    }
+}

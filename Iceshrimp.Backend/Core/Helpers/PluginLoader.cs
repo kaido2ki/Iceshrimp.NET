@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Reflection;
 using Iceshrimp.AssemblyUtils;
 using Iceshrimp.Backend.Core.Extensions;
@@ -17,20 +18,20 @@ public abstract class PluginLoader
 
 	private static readonly string DllPath = Path.Combine(PathRoot, $"v{ApiVersion}");
 
-	private static List<LoadedPlugin>    _loaded = [];
-	private static IEnumerable<IPlugin>  Plugins    => _loaded.Select(p => p.instance);
-	public static  IEnumerable<Assembly> Assemblies => _loaded.Select(p => p.assembly);
+	public static  ImmutableList<LoadedPlugin> Loaded = [];
+	private static IEnumerable<IPlugin>        Plugins    => Loaded.Select(p => p.instance);
+	public static  IEnumerable<Assembly>       Assemblies => Loaded.Select(p => p.assembly);
 
 	public static async Task LoadPlugins()
 	{
 		if (!Directory.Exists(DllPath)) return;
 		var dlls = Directory.EnumerateFiles(DllPath, "*.dll").ToList();
-		_loaded = dlls.Select(Path.GetFullPath)
-		              .Select(AssemblyLoader.LoadAssemblyFromPath)
-		              .Select(p => (assembly: p, impls: AssemblyLoader.GetImplementationsOfInterface<IPlugin>(p)))
-		              .SelectMany(p => p.impls.Select(impl => (p.assembly, Activator.CreateInstance(impl) as IPlugin)))
-		              .Cast<LoadedPlugin>()
-		              .ToList();
+		Loaded = dlls.Select(Path.GetFullPath)
+		             .Select(AssemblyLoader.LoadAssemblyFromPath)
+		             .Select(p => (assembly: p, impls: AssemblyLoader.GetImplementationsOfInterface<IPlugin>(p)))
+		             .SelectMany(p => p.impls.Select(impl => (p.assembly, Activator.CreateInstance(impl) as IPlugin)))
+		             .Cast<LoadedPlugin>()
+		             .ToImmutableList();
 
 		await Plugins.Select(i => i.Initialize()).AwaitAllNoConcurrencyAsync();
 	}
@@ -48,15 +49,15 @@ public abstract class PluginLoader
 	public static void PrintPluginInformation(WebApplication app)
 	{
 		var logger = app.Services.GetRequiredService<ILogger<PluginLoader>>();
-		if (_loaded.Count == 0)
+		if (Loaded.Count == 0)
 		{
-			logger.LogInformation("Found {count} plugins in {dllPath}.", _loaded.Count, DllPath);
+			logger.LogInformation("Found {count} plugins in {dllPath}.", Loaded.Count, DllPath);
 			return;
 		}
 
-		var plugins = _loaded.Select(plugin => $"{plugin.instance.Name} v{plugin.instance.Version} " +
-		                                       $"({Path.GetFileName(plugin.assembly.Location)})");
-		logger.LogInformation("Loaded {count} plugins from {dllPath}: \n* {files}", _loaded.Count, DllPath,
+		var plugins = Loaded.Select(plugin => $"{plugin.instance.Name} v{plugin.instance.Version} " +
+		                                      $"({Path.GetFileName(plugin.assembly.Location)})");
+		logger.LogInformation("Loaded {count} plugins from {dllPath}: \n* {files}", Loaded.Count, DllPath,
 		                      string.Join("\n* ", plugins));
 	}
 }

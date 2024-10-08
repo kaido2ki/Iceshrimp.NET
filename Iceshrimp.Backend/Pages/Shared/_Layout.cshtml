@@ -1,5 +1,6 @@
 ﻿@inject IOptions<Config.InstanceSection> Instance
 @using Iceshrimp.Backend.Core.Configuration
+@using Iceshrimp.Backend.Core.Extensions
 @using Iceshrimp.Backend.Core.Middleware
 @using Microsoft.Extensions.Options
 <!DOCTYPE html>
@@ -23,7 +24,7 @@
     @if (!Context.ShouldHideFooter())
     {
         <span class="float-right">
-            <a href="/login?rd=@(Context.Request.Path.ToUriComponent())">Login</a>
+            <a href="/login?rd=@((Context.Request.Path.Value ?? "/").UrlEncode())">Login</a>
         </span>
     }
 </footer>

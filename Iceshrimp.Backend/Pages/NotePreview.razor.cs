@@ -2,7 +2,6 @@ using Iceshrimp.Backend.Components.Helpers;
 using Iceshrimp.Backend.Components.PublicPreview.Renderers;
 using Iceshrimp.Backend.Components.PublicPreview.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
@@ -14,13 +13,11 @@ namespace Iceshrimp.Backend.Pages;
 
 public partial class NotePreview : AsyncComponentBase
 {
-	[Inject]             public required IOptions<Config.InstanceSection>         Config   { get; set; }
-	[Inject]             public required IOptionsSnapshot<Config.SecuritySection> Security { get; set; }
-	[Inject]             public required MetaService                              Meta     { get; set; }
-	[Inject]             public required DatabaseContext                          Database { get; set; }
-	[Inject]             public required NoteRenderer                             Renderer { get; set; }
-	[Parameter]          public required string                                   Id       { get; set; }
-	[CascadingParameter] public required HttpContext                              Context  { get; set; }
+	[Inject]    public required IOptions<Config.InstanceSection>         Config     { get; set; }
+	[Inject]    public required IOptionsSnapshot<Config.SecuritySection> Security   { get; set; }
+	[Inject]    public required MetaService                              Meta       { get; set; }
+	[Inject]    public required NoteRenderer                             Renderer   { get; set; }
+	[Parameter] public required string                                   Id         { get; set; }
 
 	private PreviewNote? _note;
 	private string       _instanceName = "Iceshrimp.NET";
