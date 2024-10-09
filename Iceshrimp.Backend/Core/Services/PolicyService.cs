@@ -81,6 +81,39 @@ public class PolicyService(IServiceScopeFactory scopeFactory)
 
 		foreach (var hook in hooks) hook.Apply(data);
 	}
+
+	public async Task<Type?> GetConfigurationType(string name)
+	{
+		await Initialize();
+		var type = _policyTypes.FirstOrDefault(p => p.Name == name);
+		return _policyConfigurationTypes
+			.FirstOrDefault(p => p.GetInterfaces()
+			                      .FirstOrDefault(i => i.Name == typeof(IPolicyConfiguration<>).Name)
+			                      ?.GenericTypeArguments.FirstOrDefault() ==
+			                     type);
+	}
+
+	public async Task<IPolicyConfiguration?> GetConfiguration(string name, string? data)
+	{
+		var type = await GetConfigurationType(name);
+		if (type == null) return null;
+
+		var cType = _policyConfigurationTypes
+			.FirstOrDefault(p => p.GetInterfaces()
+			                      .FirstOrDefault(i => i.Name == typeof(IPolicyConfiguration<>).Name)
+			                      ?.GenericTypeArguments.FirstOrDefault() ==
+			                     type);
+
+		if (cType == null) return null;
+		if (data == null) return (IPolicyConfiguration?)Activator.CreateInstance(cType);
+		return (IPolicyConfiguration?)JsonSerializer.Deserialize(data, cType);
+	}
+
+	public async Task<List<string>> GetAvailablePolicies()
+	{
+		await Initialize();
+		return _policyTypes.Select(p => p.Name).ToList();
+	}
 }
 
 public interface IPolicy
@@ -115,7 +148,7 @@ public interface IPolicyConfiguration
 	public IPolicy Apply();
 }
 
-public interface IPolicyConfiguration<out TPolicy> : IPolicyConfiguration
+public interface IPolicyConfiguration<out TPolicy> : IPolicyConfiguration where TPolicy : IPolicy
 {
 	public new TPolicy Apply();
 }

@@ -45,6 +45,6 @@ public class WordRejectPolicyConfiguration : IPolicyConfiguration<WordRejectPoli
 	public WordRejectPolicy      Apply() => new(Enabled, Words);
 	IPolicy IPolicyConfiguration.Apply() => Apply();
 
-	public required bool     Enabled { get; set; }
-	public required string[] Words   { get; set; }
+	public bool     Enabled { get; set; }
+	public string[] Words   { get; set; } = [];
 }

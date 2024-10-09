@@ -12,7 +12,6 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
-using Iceshrimp.Backend.Core.Policies;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Backend.Core.Tasks;
 using Iceshrimp.Shared.Schemas.Web;
@@ -20,6 +19,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
+using static Iceshrimp.Backend.Core.Extensions.SwaggerGenOptionsExtensions;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
@@ -187,87 +187,34 @@ public class AdminController(
 		await new MediaCleanupTask().Invoke(scope.ServiceProvider);
 	}
 
-	[HttpGet("policy/word-reject")]
+	[HttpGet("policy")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public async Task<WordRejectPolicyConfiguration> GetWordRejectPolicy()
-	{
-		var raw = await db.PolicyConfiguration.Where(p => p.Name == nameof(WordRejectPolicy))
-		                  .Select(p => p.Data)
-		                  .FirstOrDefaultAsync();
+	public async Task<List<string>> GetAvailablePolicies() => await policySvc.GetAvailablePolicies();
 
-		var res = raw != null ? JsonSerializer.Deserialize<WordRejectPolicyConfiguration>(raw) : null;
-		res ??= new WordRejectPolicyConfiguration { Enabled = false, Words = [] };
-		return res;
+	[HttpGet("policy/{name}")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IPolicyConfiguration> GetPolicyConfiguration(string name)
+	{
+		var raw = await db.PolicyConfiguration.Where(p => p.Name == name).Select(p => p.Data).FirstOrDefaultAsync();
+		return await policySvc.GetConfiguration(name, raw) ?? throw GracefulException.NotFound("Policy not found");
 	}
 
-	[HttpGet("policy/user-age-reject")]
+	[HttpPut("policy/{name}")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public async Task<UserAgeRejectPolicyConfiguration> GetUserAgeRejectPolicy()
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task UpdateWordRejectPolicy(
+		string name, [SwaggerBodyExample("{\n  \"enabled\": true\n}")] JsonDocument body
+	)
 	{
-		var raw = await db.PolicyConfiguration.Where(p => p.Name == nameof(UserAgeRejectPolicy))
-		                  .Select(p => p.Data)
-		                  .FirstOrDefaultAsync();
+		// @formatter:off
+		var type = await policySvc.GetConfigurationType(name) ?? throw GracefulException.NotFound("Policy not found");
+		var data = body.Deserialize(type) as IPolicyConfiguration ?? throw GracefulException.BadRequest("Invalid policy config");
+		if (data.GetType() != type) throw GracefulException.BadRequest("Invalid policy config");
+		// @formatter:on
 
-		var res = raw != null ? JsonSerializer.Deserialize<UserAgeRejectPolicyConfiguration>(raw) : null;
-		res ??= new UserAgeRejectPolicyConfiguration { Enabled = false, Age = TimeSpan.Zero };
-		return res;
-	}
-
-	[HttpGet("policy/hellthread-reject")]
-	[ProducesResults(HttpStatusCode.OK)]
-	public async Task<HellthreadRejectPolicyConfiguration> GetHellthreadRejectPolicy()
-	{
-		var raw = await db.PolicyConfiguration.Where(p => p.Name == nameof(HellthreadRejectPolicy))
-		                  .Select(p => p.Data)
-		                  .FirstOrDefaultAsync();
-
-		var res = raw != null ? JsonSerializer.Deserialize<HellthreadRejectPolicyConfiguration>(raw) : null;
-		res ??= new HellthreadRejectPolicyConfiguration { Enabled = false, MentionLimit = 0 };
-		return res;
-	}
-
-	[HttpPut("policy/word-reject")]
-	[ProducesResults(HttpStatusCode.OK)]
-	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task UpdateWordRejectPolicy(WordRejectPolicyConfiguration data)
-	{
 		await db.PolicyConfiguration
-		        .Upsert(new PolicyConfiguration
-		        {
-			        Name = nameof(WordRejectPolicy), Data = JsonSerializer.Serialize(data)
-		        })
-		        .On(p => new { p.Name })
-		        .RunAsync();
-
-		await policySvc.Update();
-	}
-
-	[HttpPut("policy/user-age-reject")]
-	[ProducesResults(HttpStatusCode.OK)]
-	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task UpdateUserAgeRejectPolicy(UserAgeRejectPolicyConfiguration data)
-	{
-		await db.PolicyConfiguration
-		        .Upsert(new PolicyConfiguration
-		        {
-			        Name = nameof(UserAgeRejectPolicy), Data = JsonSerializer.Serialize(data)
-		        })
-		        .On(p => new { p.Name })
-		        .RunAsync();
-
-		await policySvc.Update();
-	}
-
-	[HttpPut("policy/hellthread-reject")]
-	[ProducesResults(HttpStatusCode.OK)]
-	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task UpdateHellthreadRejectPolicy(HellthreadRejectPolicyConfiguration data)
-	{
-		await db.PolicyConfiguration.Upsert(new PolicyConfiguration
-		        {
-			        Name = nameof(HellthreadRejectPolicy),
-			        Data = JsonSerializer.Serialize(data)
-		        })
+		        .Upsert(new PolicyConfiguration { Name = name, Data = JsonSerializer.Serialize(data) })
 		        .On(p => new { p.Name })
 		        .RunAsync();
 

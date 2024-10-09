@@ -19,6 +19,7 @@ public static class SwaggerGenOptionsExtensions
 	public static void AddFilters(this SwaggerGenOptions options)
 	{
 		options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
+		options.SchemaFilter<SwaggerBodyExampleSchemaFilter>();
 		options.SupportNonNullableReferenceTypes(); // Sets Nullable flags appropriately.              
 		options.UseAllOfToExtendReferenceSchemas(); // Allows $ref enums to be nullable
 		options.UseAllOfForInheritance();           // Allows $ref objects to be nullable
@@ -65,6 +66,18 @@ public static class SwaggerGenOptionsExtensions
 			{
 				model.Required.Add(propKey);
 			}
+		}
+	}
+
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
+	                 Justification = "SwaggerGenOptions.SchemaFilter<T> instantiates this class at runtime")]
+	private class SwaggerBodyExampleSchemaFilter : ISchemaFilter
+	{
+		public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+		{
+			var att = context.ParameterInfo?.GetCustomAttribute<SwaggerBodyExampleAttribute>();
+			if (att != null)
+				schema.Example = new OpenApiString(att.Value);
 		}
 	}
 
@@ -387,5 +400,10 @@ public static class SwaggerGenOptionsExtensions
 					                          ex);
 			}
 		}
+	}
+
+	public class SwaggerBodyExampleAttribute(string value) : Attribute
+	{
+		public string Value => value;
 	}
 }

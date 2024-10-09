@@ -16,7 +16,6 @@ public class HellthreadRejectPolicyConfiguration : IPolicyConfiguration<Hellthre
 	public HellthreadRejectPolicy Apply() => new(Enabled, MentionLimit);
 	IPolicy IPolicyConfiguration. Apply() => Apply();
 
-	public required bool Enabled { get; set; }
-
-	public required int MentionLimit { get; set; }
+	public bool Enabled      { get; set; }
+	public int  MentionLimit { get; set; }
 }

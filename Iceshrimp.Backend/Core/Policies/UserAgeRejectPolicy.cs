@@ -15,6 +15,6 @@ public class UserAgeRejectPolicyConfiguration : IPolicyConfiguration<UserAgeReje
 	public UserAgeRejectPolicy   Apply() => new(Enabled, Age);
 	IPolicy IPolicyConfiguration.Apply() => Apply();
 
-	public required bool     Enabled { get; set; }
-	public required TimeSpan Age     { get; set; }
+	public bool     Enabled { get; set; }
+	public TimeSpan Age     { get; set; } = TimeSpan.Zero;
 }
