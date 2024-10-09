@@ -516,6 +516,11 @@ public class UserService(
 	{
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(new UserDeleteJobData { UserId = user.Id });
 	}
+	
+	public async Task PurgeUserAsync(User user)
+	{
+		await queueSvc.BackgroundTaskQueue.EnqueueAsync(new UserPurgeJobData { UserId = user.Id });
+	}
 
 	public void UpdateOauthTokenMetadata(OauthToken token)
 	{
@@ -1344,5 +1349,19 @@ public class UserService(
 				                  sourceUri, targetUri, followee.Id, e);
 			}
 		}
+	}
+
+	public async Task SuspendUserAsync(User user)
+	{
+		if (user.IsSuspended) return;
+		user.IsSuspended = true;
+		await db.SaveChangesAsync();
+	}
+
+	public async Task UnsuspendUserAsync(User user)
+	{
+		if (!user.IsSuspended) return;
+		user.IsSuspended = false;
+		await db.SaveChangesAsync();
 	}
 }

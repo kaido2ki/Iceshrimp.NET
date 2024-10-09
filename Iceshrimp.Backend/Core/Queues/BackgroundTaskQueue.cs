@@ -43,6 +43,9 @@ public class BackgroundTaskQueue(int parallelism)
 			case UserDeleteJobData userDeleteJob:
 				await ProcessUserDelete(userDeleteJob, scope, token);
 				break;
+			case UserPurgeJobData userPurgeJob:
+				await ProcessUserPurge(userPurgeJob, scope, token);
+				break;
 		}
 	}
 
@@ -236,6 +239,8 @@ public class BackgroundTaskQueue(int parallelism)
 		var db              = scope.GetRequiredService<DatabaseContext>();
 		var queue           = scope.GetRequiredService<QueueService>();
 		var logger          = scope.GetRequiredService<ILogger<BackgroundTaskQueue>>();
+		var renderer        = scope.GetRequiredService<ActivityPub.UserRenderer>();
+		var deliver         = scope.GetRequiredService<ActivityPub.ActivityDeliverService>();
 		var followupTaskSvc = scope.GetRequiredService<FollowupTaskService>();
 
 		logger.LogDebug("Processing delete for user {id}", jobData.UserId);
@@ -245,6 +250,13 @@ public class BackgroundTaskQueue(int parallelism)
 		{
 			logger.LogDebug("Failed to delete user {id}: id not found in database", jobData.UserId);
 			return;
+		}
+
+		if (user.IsLocalUser)
+		{
+			var actor = renderer.RenderLite(user);
+			var activity = ActivityPub.ActivityRenderer.RenderDelete(actor, actor);
+			await deliver.DeliverToFollowersAsync(activity, user, []);
 		}
 
 		var fileIds = await db.DriveFiles.Where(p => p.User == user).Select(p => p.Id).ToListAsync(token);
@@ -260,17 +272,65 @@ public class BackgroundTaskQueue(int parallelism)
 		db.Remove(user);
 		await db.SaveChangesAsync(token);
 
-		await followupTaskSvc.ExecuteTask("UpdateInstanceUserCounter", async provider =>
+		if (user.IsRemoteUser)
 		{
-			var bgDb          = provider.GetRequiredService<DatabaseContext>();
-			var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-			var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user);
-			await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-			          .ExecuteUpdateAsync(p => p.SetProperty(i => i.UsersCount, i => i.UsersCount - 1),
-			                              token);
-		});
+			await followupTaskSvc.ExecuteTask("UpdateInstanceUserCounter", async provider =>
+			{
+				var bgDb          = provider.GetRequiredService<DatabaseContext>();
+				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user);
+				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.UsersCount, i => i.UsersCount - 1),
+				                              token);
+			});
+		}
 
 		logger.LogDebug("User {id} deleted successfully", jobData.UserId);
+	}
+
+	private static async Task ProcessUserPurge(
+		UserPurgeJobData jobData,
+		IServiceProvider scope,
+		CancellationToken token
+	)
+	{
+		var db      = scope.GetRequiredService<DatabaseContext>();
+		var queue   = scope.GetRequiredService<QueueService>();
+		var logger  = scope.GetRequiredService<ILogger<BackgroundTaskQueue>>();
+		var noteSvc = scope.GetRequiredService<NoteService>();
+
+		logger.LogDebug("Processing purge for user {id}", jobData.UserId);
+
+		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == jobData.UserId, token);
+		if (user == null)
+		{
+			logger.LogDebug("Failed to purge user {id}: id not found in database", jobData.UserId);
+			return;
+		}
+
+		var fileIdQ   = db.DriveFiles.Where(p => p.User == user).Select(p => p.Id);
+		var fileIdCnt = fileIdQ.CountAsync(token);
+		var fileIds   = fileIdQ.AsChunkedAsyncEnumerable(50, p => p);
+		logger.LogDebug("Removing {count} files for user {id}", fileIdCnt, user.Id);
+		await foreach (var id in fileIds)
+		{
+			await queue.BackgroundTaskQueue.EnqueueAsync(new DriveFileDeleteJobData
+			{
+				DriveFileId = id, Expire = false
+			});
+		}
+
+		var noteQ   = db.Notes.Where(p => p.User == user).Select(p => p.Id);
+		var noteCnt = noteQ.CountAsync(token);
+		var noteIds = noteQ.AsChunkedAsyncEnumerable(50, p => p);
+		logger.LogDebug("Removing {count} notes for user {id}", noteCnt, user.Id);
+		await foreach (var id in noteIds)
+		{
+			var note = await db.Notes.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id, cancellationToken: token);
+			if (note != null) await noteSvc.DeleteNoteAsync(note);
+		}
+
+		logger.LogDebug("User {id} purged successfully", jobData.UserId);
 	}
 }
 
@@ -279,6 +339,7 @@ public class BackgroundTaskQueue(int parallelism)
 [JsonDerivedType(typeof(MuteExpiryJobData), "muteExpiry")]
 [JsonDerivedType(typeof(FilterExpiryJobData), "filterExpiry")]
 [JsonDerivedType(typeof(UserDeleteJobData), "userDelete")]
+[JsonDerivedType(typeof(UserPurgeJobData), "userPurge")]
 public abstract class BackgroundTaskJobData;
 
 public class DriveFileDeleteJobData : BackgroundTaskJobData
@@ -303,6 +364,11 @@ public class FilterExpiryJobData : BackgroundTaskJobData
 }
 
 public class UserDeleteJobData : BackgroundTaskJobData
+{
+	[JR] [J("userId")] public required string UserId { get; set; }
+}
+
+public class UserPurgeJobData : BackgroundTaskJobData
 {
 	[JR] [J("userId")] public required string UserId { get; set; }
 }
