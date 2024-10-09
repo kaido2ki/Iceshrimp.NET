@@ -100,7 +100,7 @@ public class PolicyService(IServiceScopeFactory scopeFactory)
 		var type = await GetConfigurationType(name);
 		if (type == null) return null;
 		if (data == null) return (IPolicyConfiguration?)Activator.CreateInstance(type);
-		return (IPolicyConfiguration?)JsonSerializer.Deserialize(data, type);
+		return (IPolicyConfiguration?)JsonSerializer.Deserialize(data, type, JsonSerialization.Options);
 	}
 
 	public async Task<List<string>> GetAvailablePolicies()
