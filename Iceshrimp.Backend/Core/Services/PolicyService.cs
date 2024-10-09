@@ -97,16 +97,8 @@ public class PolicyService(IServiceScopeFactory scopeFactory)
 	{
 		var type = await GetConfigurationType(name);
 		if (type == null) return null;
-
-		var cType = _policyConfigurationTypes
-			.FirstOrDefault(p => p.GetInterfaces()
-			                      .FirstOrDefault(i => i.Name == typeof(IPolicyConfiguration<>).Name)
-			                      ?.GenericTypeArguments.FirstOrDefault() ==
-			                     type);
-
-		if (cType == null) return null;
-		if (data == null) return (IPolicyConfiguration?)Activator.CreateInstance(cType);
-		return (IPolicyConfiguration?)JsonSerializer.Deserialize(data, cType);
+		if (data == null) return (IPolicyConfiguration?)Activator.CreateInstance(type);
+		return (IPolicyConfiguration?)JsonSerializer.Deserialize(data, type);
 	}
 
 	public async Task<List<string>> GetAvailablePolicies()
