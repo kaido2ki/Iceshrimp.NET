@@ -4,6 +4,7 @@ using System.Text.Json;
 using Iceshrimp.AssemblyUtils;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Shared.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -52,7 +53,8 @@ public class PolicyService(IServiceScopeFactory scopeFactory)
 				                     config.Name);
 
 			if (match == null) continue;
-			var deserialized = JsonSerializer.Deserialize(config.Data, match) as IPolicyConfiguration;
+			var deserialized =
+				JsonSerializer.Deserialize(config.Data, match, JsonSerialization.Options) as IPolicyConfiguration;
 			if (deserialized?.Apply() is { } policy) policies.Add(policy);
 		}
 

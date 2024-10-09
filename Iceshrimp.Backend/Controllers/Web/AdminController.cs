@@ -14,6 +14,7 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Backend.Core.Tasks;
+using Iceshrimp.Shared.Configuration;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -207,14 +208,13 @@ public class AdminController(
 		string name, [SwaggerBodyExample("{\n  \"enabled\": true\n}")] JsonDocument body
 	)
 	{
-		// @formatter:off
 		var type = await policySvc.GetConfigurationType(name) ?? throw GracefulException.NotFound("Policy not found");
-		var data = body.Deserialize(type) as IPolicyConfiguration ?? throw GracefulException.BadRequest("Invalid policy config");
-		if (data.GetType() != type) throw GracefulException.BadRequest("Invalid policy config");
-		// @formatter:on
+		var data = body.Deserialize(type, JsonSerialization.Options) as IPolicyConfiguration;
+		if (data?.GetType() != type) throw GracefulException.BadRequest("Invalid policy config");
+		var serialized = JsonSerializer.Serialize(data, type, JsonSerialization.Options);
 
 		await db.PolicyConfiguration
-		        .Upsert(new PolicyConfiguration { Name = name, Data = JsonSerializer.Serialize(data) })
+		        .Upsert(new PolicyConfiguration { Name = name, Data = serialized })
 		        .On(p => new { p.Name })
 		        .RunAsync();
 
