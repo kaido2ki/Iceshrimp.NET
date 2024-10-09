@@ -18,10 +18,10 @@
             }
         </div>
     }
-    <button class="btn" @onclick="Reply" @onclick:stopPropagation="true">
+    <button class="btn" @onclick="Reply" @onclick:stopPropagation="true" aria-label="reply">
         <Icon Name="Icons.ArrowUUpLeft" Size="1.3em"/>
     </button>
-    <button class="btn @(RenotePossible ? "" : "disabled") positioned" @onclick="@(RenotePossible ? ToggleRenoteMenu : () => { })" @onclick:stopPropagation="true">
+    <button class="btn @(RenotePossible ? "" : "disabled") positioned" @onclick="@(RenotePossible ? ToggleRenoteMenu : () => { })" @onclick:stopPropagation="true" aria-label="renote">
         @if (RenotePossible)
         {
             <Icon Name="Icons.Repeat" Size="1.3em"/>
@@ -50,7 +50,7 @@
             <span class="renote-count">@Renotes</span>
         }
     </button>
-    <button @onclick="Like" @onclick:stopPropagation="true" class="btn">
+    <button @onclick="Like" @onclick:stopPropagation="true" class="btn" aria-label="like">
         @if (IsLiked)
         {
             <Icon Name="Icons.Heart" Pack="IconStyle.Fill" Size="1.3em"/>
@@ -64,13 +64,13 @@
             <span class="like-count">@Likes</span>
         }
     </button>
-    <button @ref="EmojiButton" class="btn" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true">
+    <button @ref="EmojiButton" class="btn" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true" aria-label="emoji picker" >
         <Icon Name="Icons.Smiley" Size="1.3em"/>
     </button>
-    <button class="btn" @onclick="Quote" @onclick:stopPropagation="true">
+    <button class="btn" @onclick="Quote" @onclick:stopPropagation="true" aria-label="quote">
         <Icon Name="Icons.Quotes" Size="1.3em"/>
     </button>
-    <button class="btn positioned" @onclick="ToggleMenu" @onclick:stopPropagation="true">
+    <button class="btn positioned" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">
         <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
         <Menu @ref="ContextMenu">
             @if (Note.NoteResponse.User.Id == Session.Current?.Id)
