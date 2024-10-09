@@ -13,14 +13,15 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+	        Console.WriteLine("Indexing drive file alt text, please hang tight!");
+	        Console.WriteLine("This may take a long time (15-30 minutes), especially if your database is unusually large or you're running low end hardware.");
+	        
             migrationBuilder.AddColumn<string>(
                 name: "combinedAltText",
                 table: "note",
                 type: "text",
                 nullable: true);
-
-            Console.WriteLine("Indexing drive file alt text, please hang tight!");
-            Console.WriteLine("This may take a long time (15-30 minutes), especially if your database is unusually large or you're running low end hardware.");
+            
             migrationBuilder.Sql("""UPDATE note SET "combinedAltText"=(SELECT string_agg(comment, ' ') FROM drive_file WHERE id = ANY ("fileIds")) WHERE "fileIds" != '{}';""");
 
             migrationBuilder.CreateIndex(
