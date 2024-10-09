@@ -20,13 +20,6 @@ using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-using MentionQuintuple =
-	(List<string> mentionedUserIds,
-	List<string> mentionedLocalUserIds,
-	List<Note.MentionedUser> mentions,
-	List<Note.MentionedUser> remoteMentions,
-	Dictionary<(string usernameLower, string webDomain), string> splitDomainMapping);
-
 [SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor",
                  Justification = "We need IOptionsSnapshot for config hot reload")]
 public class NoteService(
@@ -49,7 +42,8 @@ public class NoteService(
 	ActivityPub.ObjectResolver objectResolver,
 	QueueService queueSvc,
 	PollService pollSvc,
-	ActivityPub.FederationControlService fedCtrlSvc
+	ActivityPub.FederationControlService fedCtrlSvc,
+	PolicyService policySvc
 )
 {
 	private const int DefaultRecursionLimit = 100;
@@ -63,69 +57,112 @@ public class NoteService(
 	private readonly List<string> _resolverHistory = [];
 	private          int          _recursionLimit  = DefaultRecursionLimit;
 
-	public async Task<Note> CreateNoteAsync(
-		User user, Note.NoteVisibility visibility, string? text = null, string? cw = null, Note? reply = null,
-		Note? renote = null, IReadOnlyCollection<DriveFile>? attachments = null, Poll? poll = null,
-		bool localOnly = false, string? uri = null, string? url = null, List<string>? emoji = null,
-		MentionQuintuple? resolvedMentions = null, DateTime? createdAt = null, ASNote? asNote = null,
-		string? replyUri = null, string? renoteUri = null
-	)
+	public class NoteCreationData
 	{
-		logger.LogDebug("Creating note for user {id}", user.Id);
+		public required User                            User;
+		public required Note.NoteVisibility             Visibility;
+		public          string?                         Text;
+		public          string?                         Cw;
+		public          Note?                           Reply;
+		public          Note?                           Renote;
+		public          IReadOnlyCollection<DriveFile>? Attachments;
+		public          Poll?                           Poll;
+		public          bool                            LocalOnly;
+		public          string?                         Uri;
+		public          string?                         Url;
+		public          List<string>?                   Emoji;
+		public          NoteMentionData?                ResolvedMentions;
+		public          DateTime?                       CreatedAt;
+		public          ASNote?                         ASNote;
+		public          string?                         ReplyUri;
+		public          string?                         RenoteUri;
+	}
 
-		if (user.IsLocalUser && (text?.Length ?? 0) + (cw?.Length ?? 0) > config.Value.CharacterLimit)
-			throw GracefulException
-				.UnprocessableEntity($"Text & content warning cannot exceed {config.Value.CharacterLimit} characters in total");
-		if (text is { Length: > 100000 })
+	public class NoteUpdateData
+	{
+		public required Note                            Note;
+		public          string?                         Text;
+		public          string?                         Cw;
+		public          IReadOnlyCollection<DriveFile>? Attachments;
+		public          Poll?                           Poll;
+		public          DateTime?                       UpdatedAt;
+		public          NoteMentionData?                ResolvedMentions;
+		public          ASNote?                         ASNote;
+		public          List<string>?                   Emoji;
+	}
+
+	public record struct NoteMentionData(
+		List<string> MentionedUserIds,
+		List<string> MentionedLocalUserIds,
+		List<Note.MentionedUser> Mentions,
+		List<Note.MentionedUser> RemoteMentions,
+		Dictionary<(string usernameLower, string webDomain), string> SplitDomainMapping
+	);
+
+	public async Task<Note> CreateNoteAsync(NoteCreationData data)
+	{
+		logger.LogDebug("Creating note for user {id}", data.User.Id);
+
+		await policySvc.Initialize();
+
+		// @formatter:off
+		if (data.User.IsRemoteUser && policySvc.ShouldReject(data, out var policy))
+			throw GracefulException.UnprocessableEntity($"Note was rejected by {policy.Name}");
+		if (data.User.IsLocalUser && (data.Text?.Length ?? 0) + (data.Cw?.Length ?? 0) > config.Value.CharacterLimit)
+			throw GracefulException.UnprocessableEntity($"Text & content warning cannot exceed {config.Value.CharacterLimit} characters in total");
+		if (data.Text is { Length: > 100000 })
 			throw GracefulException.UnprocessableEntity("Text cannot be longer than 100.000 characters");
-		if (cw is { Length: > 100000 })
+		if (data.Cw is { Length: > 100000 })
 			throw GracefulException.UnprocessableEntity("Content warning cannot be longer than 100.000 characters");
-		if (renote?.IsPureRenote ?? false)
+		if (data.Renote?.IsPureRenote ?? false)
 			throw GracefulException.UnprocessableEntity("Cannot renote or quote a pure renote");
-		if (reply?.IsPureRenote ?? false)
+		if (data.Reply?.IsPureRenote ?? false)
 			throw GracefulException.UnprocessableEntity("Cannot reply to a pure renote");
-		if (user.IsSuspended)
+		if (data.User.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
-		if (attachments != null && attachments.Any(p => p.UserId != user.Id))
+		if (data.Attachments != null && data.Attachments.Any(p => p.UserId != data.User.Id))
 			throw GracefulException.UnprocessableEntity("Refusing to create note with files belonging to someone else");
+		// @formatter:on
 
-		poll?.Choices.RemoveAll(string.IsNullOrWhiteSpace);
-		if (poll is { Choices.Count: < 2 })
+		data.Poll?.Choices.RemoveAll(string.IsNullOrWhiteSpace);
+		if (data.Poll is { Choices.Count: < 2 })
 			throw GracefulException.UnprocessableEntity("Polls must have at least two options");
 
-		if (!localOnly && (renote is { LocalOnly: true } || reply is { LocalOnly: true }))
-			localOnly = true;
+		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PreLogic);
 
-		if (renote != null)
+		if (!data.LocalOnly && (data.Renote is { LocalOnly: true } || data.Reply is { LocalOnly: true }))
+			data.LocalOnly = true;
+
+		if (data.Renote != null)
 		{
-			var pureRenote = text == null && poll == null && attachments is not { Count: > 0 };
+			var pureRenote = data.Text == null && data.Poll == null && data.Attachments is not { Count: > 0 };
 
-			if (renote.Visibility > Note.NoteVisibility.Followers)
+			if (data.Renote.Visibility > Note.NoteVisibility.Followers)
 			{
 				var target = pureRenote ? "renote" : "quote";
 				throw GracefulException.UnprocessableEntity($"You're not allowed to {target} this note");
 			}
 
-			if (renote.User != user)
+			if (data.Renote.User != data.User)
 			{
-				if (pureRenote && renote.Visibility > Note.NoteVisibility.Home)
+				if (pureRenote && data.Renote.Visibility > Note.NoteVisibility.Home)
 					throw GracefulException.UnprocessableEntity("You're not allowed to renote this note");
-				if (await db.Blockings.AnyAsync(p => p.Blockee == user && p.Blocker == renote.User))
-					throw GracefulException.Forbidden($"You are not allowed to interact with @{renote.User.Acct}");
+				if (await db.Blockings.AnyAsync(p => p.Blockee == data.User && p.Blocker == data.Renote.User))
+					throw GracefulException.Forbidden($"You are not allowed to interact with @{data.Renote.User.Acct}");
 			}
 
-			if (pureRenote && renote.Visibility > visibility)
-				visibility = renote.Visibility;
+			if (pureRenote && data.Renote.Visibility > data.Visibility)
+				data.Visibility = data.Renote.Visibility;
 		}
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
-			resolvedMentions ?? await ResolveNoteMentionsAsync(text);
+			data.ResolvedMentions ?? await ResolveNoteMentionsAsync(data.Text);
 
 		// ReSharper disable once EntityFramework.UnsupportedServerSideFunctionCall
 		if (mentionedUserIds.Count > 0)
 		{
 			var blockAcct = await db.Users
-			                        .Where(p => mentionedUserIds.Contains(p.Id) && p.ProhibitInteractionWith(user))
+			                        .Where(p => mentionedUserIds.Contains(p.Id) && p.ProhibitInteractionWith(data.User))
 			                        .Select(p => p.Acct)
 			                        .FirstOrDefaultAsync();
 			if (blockAcct != null)
@@ -133,62 +170,65 @@ public class NoteService(
 		}
 
 		List<MfmNode>? nodes = null;
-		if (text != null && string.IsNullOrWhiteSpace(text))
+		if (data.Text != null && string.IsNullOrWhiteSpace(data.Text))
 		{
-			text = null;
+			data.Text = null;
 		}
-		else if (text != null)
+		else if (data.Text != null)
 		{
-			nodes = MfmParser.Parse(text).ToList();
-			nodes = mentionsResolver.ResolveMentions(nodes, user.Host, mentions, splitDomainMapping).ToList();
-			text  = MfmSerializer.Serialize(nodes);
+			nodes     = MfmParser.Parse(data.Text).ToList();
+			nodes     = mentionsResolver.ResolveMentions(nodes, data.User.Host, mentions, splitDomainMapping).ToList();
+			data.Text = MfmSerializer.Serialize(nodes);
 		}
 
-		if (cw != null && string.IsNullOrWhiteSpace(cw))
-			cw = null;
+		if (data.Cw != null && string.IsNullOrWhiteSpace(data.Cw))
+			data.Cw = null;
 
-		if ((user.UserSettings?.PrivateMode ?? false) && visibility < Note.NoteVisibility.Followers)
-			visibility = Note.NoteVisibility.Followers;
+		if ((data.User.UserSettings?.PrivateMode ?? false) && data.Visibility < Note.NoteVisibility.Followers)
+			data.Visibility = Note.NoteVisibility.Followers;
 
 		// Enforce UserSettings.AlwaysMarkSensitive, if configured
-		if ((user.UserSettings?.AlwaysMarkSensitive ?? false) && (attachments?.Any(p => !p.IsSensitive) ?? false))
+		if (
+			(data.User.UserSettings?.AlwaysMarkSensitive ?? false) &&
+			(data.Attachments?.Any(p => !p.IsSensitive) ?? false)
+		)
 		{
-			foreach (var driveFile in attachments.Where(p => !p.IsSensitive)) driveFile.IsSensitive = true;
-			await db.DriveFiles.Where(p => attachments.Select(a => a.Id).Contains(p.Id) && !p.IsSensitive)
+			foreach (var driveFile in data.Attachments.Where(p => !p.IsSensitive)) driveFile.IsSensitive = true;
+			await db.DriveFiles.Where(p => data.Attachments.Select(a => a.Id).Contains(p.Id) && !p.IsSensitive)
 			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.IsSensitive, _ => true));
 		}
 
-		var tags = ResolveHashtags(text, asNote);
-		if (tags.Count > 0 && text != null && asNote != null)
+		var tags = ResolveHashtags(data.Text, data.ASNote);
+		if (tags.Count > 0 && data.Text != null && data.ASNote != null)
 		{
 			// @formatter:off
-			var match = asNote.Tags?.OfType<ASHashtag>().Where(p => p.Name != null && p.Href != null) ?? [];
+			var match = data.ASNote.Tags?.OfType<ASHashtag>().Where(p => p.Name != null && p.Href != null) ?? [];
 			//TODO: refactor this to use the nodes object instead of matching on text
-			text = match.Aggregate(text, (current, tag) => current.Replace($"[#{tag.Name!.TrimStart('#')}]({tag.Href})", $"#{tag.Name!.TrimStart('#')}")
+			data.Text = match.Aggregate(data.Text, (current, tag) => current.Replace($"[#{tag.Name!.TrimStart('#')}]({tag.Href})", $"#{tag.Name!.TrimStart('#')}")
 			                                                      .Replace($"#[{tag.Name!.TrimStart('#')}]({tag.Href})", $"#{tag.Name!.TrimStart('#')}"));
 			// @formatter:on
 		}
 
-		var mastoReplyUserId = reply?.UserId != user.Id
-			? reply?.UserId
-			: reply.MastoReplyUserId ?? reply.ReplyUserId ?? reply.UserId;
+		var mastoReplyUserId = data.Reply?.UserId != data.User.Id
+			? data.Reply?.UserId
+			: data.Reply.MastoReplyUserId ?? data.Reply.ReplyUserId ?? data.Reply.UserId;
 
-		if (emoji == null && user.IsLocalUser && nodes != null)
+		if (data.Emoji == null && data.User.IsLocalUser && nodes != null)
 		{
-			emoji = (await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList();
+			data.Emoji = (await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList();
 		}
 
 		List<string> visibleUserIds = [];
-		if (visibility == Note.NoteVisibility.Specified)
+		if (data.Visibility == Note.NoteVisibility.Specified)
 		{
-			if (asNote != null)
+			if (data.ASNote != null)
 			{
-				visibleUserIds = (await asNote.GetRecipients(user)
-				                              .Select(userResolver.ResolveAsync)
-				                              .AwaitAllNoConcurrencyAsync())
+				visibleUserIds = (await data.ASNote.GetRecipients(data.User)
+				                            .Select(userResolver.ResolveAsync)
+				                            .AwaitAllNoConcurrencyAsync())
 				                 .Select(p => p.Id)
 				                 .Concat(mentionedUserIds)
-				                 .Append(reply?.UserId)
+				                 .Append(data.Reply?.UserId)
 				                 .OfType<string>()
 				                 .Distinct()
 				                 .ToList();
@@ -199,55 +239,57 @@ public class NoteService(
 			}
 		}
 
+		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PostLogic);
+
 		var note = new Note
 		{
-			Id                   = IdHelpers.GenerateSlowflakeId(createdAt),
-			Uri                  = uri,
-			Url                  = url,
-			Text                 = text?.Trim(),
-			Cw                   = cw?.Trim(),
-			Reply                = reply,
-			ReplyUserId          = reply?.UserId,
+			Id                   = IdHelpers.GenerateSlowflakeId(data.CreatedAt),
+			Uri                  = data.Uri,
+			Url                  = data.Url,
+			Text                 = data.Text?.Trim(),
+			Cw                   = data.Cw?.Trim(),
+			Reply                = data.Reply,
+			ReplyUserId          = data.Reply?.UserId,
 			MastoReplyUserId     = mastoReplyUserId,
-			ReplyUserHost        = reply?.UserHost,
-			Renote               = renote,
-			RenoteUserId         = renote?.UserId,
-			RenoteUserHost       = renote?.UserHost,
-			User                 = user,
-			CreatedAt            = createdAt ?? DateTime.UtcNow,
-			UserHost             = user.Host,
-			Visibility           = visibility,
-			FileIds              = attachments?.Select(p => p.Id).ToList() ?? [],
-			AttachedFileTypes    = attachments?.Select(p => p.Type).ToList() ?? [],
+			ReplyUserHost        = data.Reply?.UserHost,
+			Renote               = data.Renote,
+			RenoteUserId         = data.Renote?.UserId,
+			RenoteUserHost       = data.Renote?.UserHost,
+			User                 = data.User,
+			CreatedAt            = data.CreatedAt ?? DateTime.UtcNow,
+			UserHost             = data.User.Host,
+			Visibility           = data.Visibility,
+			FileIds              = data.Attachments?.Select(p => p.Id).ToList() ?? [],
+			AttachedFileTypes    = data.Attachments?.Select(p => p.Type).ToList() ?? [],
 			Mentions             = mentionedUserIds,
 			VisibleUserIds       = visibleUserIds,
 			MentionedRemoteUsers = remoteMentions,
-			ThreadId             = reply?.ThreadIdOrId,
+			ThreadId             = data.Reply?.ThreadIdOrId,
 			Tags                 = tags,
-			LocalOnly            = localOnly,
-			Emojis               = emoji ?? [],
-			ReplyUri             = replyUri,
-			RenoteUri            = renoteUri,
-			RepliesCollection    = asNote?.Replies?.Id
+			LocalOnly            = data.LocalOnly,
+			Emojis               = data.Emoji ?? [],
+			ReplyUri             = data.ReplyUri,
+			RenoteUri            = data.RenoteUri,
+			RepliesCollection    = data.ASNote?.Replies?.Id
 		};
 
-		if (poll != null)
+		if (data.Poll != null)
 		{
-			poll.Note           =   note;
-			poll.UserId         =   note.User.Id;
-			poll.UserHost       =   note.UserHost;
-			poll.NoteVisibility =   note.Visibility;
-			poll.VotersCount    ??= note.UserHost == null ? 0 : null;
+			data.Poll.Note           =   note;
+			data.Poll.UserId         =   note.User.Id;
+			data.Poll.UserHost       =   note.UserHost;
+			data.Poll.NoteVisibility =   note.Visibility;
+			data.Poll.VotersCount    ??= note.UserHost == null ? 0 : null;
 
-			if (poll.Votes == null! || poll.Votes.Count != poll.Choices.Count)
-				poll.Votes = poll.Choices.Select(_ => 0).ToList();
+			if (data.Poll.Votes == null! || data.Poll.Votes.Count != data.Poll.Choices.Count)
+				data.Poll.Votes = data.Poll.Choices.Select(_ => 0).ToList();
 
-			await db.AddAsync(poll);
+			await db.AddAsync(data.Poll);
 			note.HasPoll = true;
-			await EnqueuePollExpiryTask(poll);
+			await EnqueuePollExpiryTask(data.Poll);
 		}
 
-		logger.LogDebug("Inserting created note {noteId} for user {userId} into the database", note.Id, user.Id);
+		logger.LogDebug("Inserting created note {noteId} for user {userId} into the database", note.Id, data.User.Id);
 
 		await UpdateNoteCountersAsync(note, true);
 		await db.AddAsync(note);
@@ -259,48 +301,48 @@ public class NoteService(
 
 		logger.LogDebug("Note {id} created successfully", note.Id);
 
-		if (uri != null || url != null)
+		if (data.Uri != null || data.Url != null)
 		{
 			_ = followupTaskSvc.ExecuteTask("ResolvePendingReplyRenoteTargets", async provider =>
 			{
 				var bgDb  = provider.GetRequiredService<DatabaseContext>();
 				var count = 0;
 
-				if (uri != null)
+				if (data.Uri != null)
 				{
 					count +=
-						await bgDb.Notes.Where(p => p.ReplyUri == uri)
+						await bgDb.Notes.Where(p => p.ReplyUri == data.Uri)
 						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.ReplyUri, _ => null)
 						                                    .SetProperty(i => i.ReplyId, _ => note.Id)
 						                                    .SetProperty(i => i.ReplyUserId, _ => note.UserId)
 						                                    .SetProperty(i => i.ReplyUserHost, _ => note.UserHost)
 						                                    .SetProperty(i => i.MastoReplyUserId,
-						                                                 i => i.UserId != user.Id
+						                                                 i => i.UserId != data.User.Id
 							                                                 ? i.UserId
 							                                                 : mastoReplyUserId));
 
 					count +=
-						await bgDb.Notes.Where(p => p.RenoteUri == uri)
+						await bgDb.Notes.Where(p => p.RenoteUri == data.Uri)
 						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RenoteUri, _ => null)
 						                                    .SetProperty(i => i.RenoteId, _ => note.Id)
 						                                    .SetProperty(i => i.RenoteUserId, _ => note.UserId)
 						                                    .SetProperty(i => i.RenoteUserHost, _ => note.UserHost));
 				}
 
-				if (url != null)
+				if (data.Url != null)
 				{
 					count +=
-						await bgDb.Notes.Where(p => p.ReplyUri == url)
+						await bgDb.Notes.Where(p => p.ReplyUri == data.Url)
 						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.ReplyUri, _ => null)
 						                                    .SetProperty(i => i.ReplyId, _ => note.Id)
 						                                    .SetProperty(i => i.ReplyUserId, _ => note.UserId)
 						                                    .SetProperty(i => i.ReplyUserHost, _ => note.UserHost)
 						                                    .SetProperty(i => i.MastoReplyUserId,
-						                                                 i => i.UserId != user.Id
+						                                                 i => i.UserId != data.User.Id
 							                                                 ? i.UserId
 							                                                 : mastoReplyUserId));
 					count +=
-						await bgDb.Notes.Where(p => p.RenoteUri == url)
+						await bgDb.Notes.Where(p => p.RenoteUri == data.Url)
 						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RenoteUri, _ => null)
 						                                    .SetProperty(i => i.RenoteId, _ => note.Id)
 						                                    .SetProperty(i => i.RenoteUserId, _ => note.UserId)
@@ -323,26 +365,26 @@ public class NoteService(
 
 		// If we're renoting a note we backfilled replies to some time ago (and know how to backfill), enqueue a backfill.
 		if (replyBackfillConfig.Enabled &&
-		    renote?.RepliesCollection != null &&
-		    renote.RepliesFetchedAt?.Add(replyBackfillConfig.RefreshOnRenoteAfterTimeSpan) <= DateTime.UtcNow &&
+		    data.Renote?.RepliesCollection != null &&
+		    data.Renote.RepliesFetchedAt?.Add(replyBackfillConfig.RefreshOnRenoteAfterTimeSpan) <= DateTime.UtcNow &&
 		    _recursionLimit > 0)
 		{
-			logger.LogDebug("Enqueueing reply collection fetch for renote {renoteId}", renote.Id);
+			logger.LogDebug("Enqueueing reply collection fetch for renote {renoteId}", data.Renote.Id);
 			await queueSvc.BackfillQueue.EnqueueAsync(new BackfillJobData
 			{
-				NoteId              = renote.Id,
+				NoteId              = data.Renote.Id,
 				RecursionLimit      = _recursionLimit,
 				AuthenticatedUserId = null, // TODO: for private replies
 			});
 		}
 
-		if (user.IsRemoteUser)
+		if (data.User.IsRemoteUser)
 		{
 			_ = followupTaskSvc.ExecuteTask("UpdateInstanceNoteCounter", async provider =>
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(user);
+				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(data.User);
 				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount + 1));
 			});
@@ -354,8 +396,8 @@ public class NoteService(
 					NoteId              = note.Id,
 					RecursionLimit      = _recursionLimit,
 					AuthenticatedUserId = null, // TODO: for private replies
-					Collection = asNote?.Replies?.IsUnresolved == false
-						? JsonConvert.SerializeObject(asNote.Replies, LdHelpers.JsonSerializerSettings)
+					Collection = data.ASNote?.Replies?.IsUnresolved == false
+						? JsonConvert.SerializeObject(data.ASNote.Replies, LdHelpers.JsonSerializerSettings)
 						: null
 				};
 
@@ -373,16 +415,16 @@ public class NoteService(
 			return note;
 		}
 
-		if (localOnly) return note;
+		if (data.LocalOnly) return note;
 
-		var actor = userRenderer.RenderLite(user);
+		var actor = userRenderer.RenderLite(data.User);
 		ASActivity activity = note is { IsPureRenote: true, Renote: not null }
 			? ActivityPub.ActivityRenderer.RenderAnnounce(note.Renote.User == note.User
 				                                              ? await noteRenderer.RenderAsync(note.Renote)
 				                                              : noteRenderer.RenderLite(note.Renote),
 			                                              note.GetPublicUri(config.Value), actor,
 			                                              note.Visibility,
-			                                              user.GetPublicUri(config.Value) + "/followers")
+			                                              data.User.GetPublicUri(config.Value) + "/followers")
 			: ActivityPub.ActivityRenderer.RenderCreate(await noteRenderer.RenderAsync(note, mentions), actor);
 
 		List<string> additionalUserIds =
@@ -396,9 +438,9 @@ public class NoteService(
 		                         .ToListAsync();
 
 		if (note.Visibility == Note.NoteVisibility.Specified)
-			await deliverSvc.DeliverToAsync(activity, user, recipients.ToArray());
+			await deliverSvc.DeliverToAsync(activity, data.User, recipients.ToArray());
 		else
-			await deliverSvc.DeliverToFollowersAsync(activity, user, recipients);
+			await deliverSvc.DeliverToFollowersAsync(activity, data.User, recipients);
 
 		return note;
 	}
@@ -433,33 +475,32 @@ public class NoteService(
 		}
 	}
 
-	public async Task<Note> UpdateNoteAsync(
-		Note note, string? text = null, string? cw = null, IReadOnlyCollection<DriveFile>? attachments = null,
-		Poll? poll = null, DateTime? updatedAt = null, MentionQuintuple? resolvedMentions = null, ASNote? asNote = null,
-		List<string>? emoji = null
-	)
+	public async Task<Note> UpdateNoteAsync(NoteUpdateData data)
 	{
-		logger.LogDebug("Processing note update for note {id}", note.Id);
+		logger.LogDebug("Processing note update for note {id}", data.Note.Id);
+
+		var note = data.Note;
+		if (note.User.IsLocalUser && (data.Text?.Length ?? 0) + (data.Cw?.Length ?? 0) > config.Value.CharacterLimit)
+			throw GracefulException
+				.UnprocessableEntity($"Text & content warning cannot exceed {config.Value.CharacterLimit} characters in total");
+		if (data.Text is { Length: > 100000 })
+			throw GracefulException.UnprocessableEntity("Text cannot be longer than 100.000 characters");
+		if (data.Cw is { Length: > 100000 })
+			throw GracefulException.UnprocessableEntity("Content warning cannot be longer than 100.000 characters");
+		if (data.Attachments != null && data.Attachments.Any(p => p.UserId != note.User.Id))
+			throw GracefulException.UnprocessableEntity("Refusing to create note with files belonging to someone else");
 
 		var noteEdit = new NoteEdit
 		{
 			Id        = IdHelpers.GenerateSlowflakeId(),
-			UpdatedAt = updatedAt ?? DateTime.UtcNow,
+			UpdatedAt = data.UpdatedAt ?? DateTime.UtcNow,
 			Note      = note,
 			Text      = note.Text,
 			Cw        = note.Cw,
 			FileIds   = note.FileIds
 		};
 
-		if (note.User.IsLocalUser && (text?.Length ?? 0) + (cw?.Length ?? 0) > config.Value.CharacterLimit)
-			throw GracefulException
-				.UnprocessableEntity($"Text & content warning cannot exceed {config.Value.CharacterLimit} characters in total");
-		if (text is { Length: > 100000 })
-			throw GracefulException.UnprocessableEntity("Text cannot be longer than 100.000 characters");
-		if (cw is { Length: > 100000 })
-			throw GracefulException.UnprocessableEntity("Content warning cannot be longer than 100.000 characters");
-		if (attachments != null && attachments.Any(p => p.UserId != note.User.Id))
-			throw GracefulException.UnprocessableEntity("Refusing to create note with files belonging to someone else");
+		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PreLogic);
 
 		var previousMentionedLocalUserIds = await db.Users.Where(p => note.Mentions.Contains(p.Id) && p.IsLocalUser)
 		                                            .Select(p => p.Id)
@@ -470,22 +511,22 @@ public class NoteService(
 		                                       .ToListAsync();
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
-			resolvedMentions ?? await ResolveNoteMentionsAsync(text);
+			data.ResolvedMentions ?? await ResolveNoteMentionsAsync(data.Text);
 
 		List<MfmNode>? nodes = null;
-		if (text != null && string.IsNullOrWhiteSpace(text))
+		if (data.Text != null && string.IsNullOrWhiteSpace(data.Text))
 		{
-			text = null;
+			data.Text = null;
 		}
-		else if (text != null)
+		else if (data.Text != null)
 		{
-			nodes = MfmParser.Parse(text).ToList();
-			nodes = mentionsResolver.ResolveMentions(nodes, note.User.Host, mentions, splitDomainMapping).ToList();
-			text  = MfmSerializer.Serialize(nodes);
+			nodes     = MfmParser.Parse(data.Text).ToList();
+			nodes     = mentionsResolver.ResolveMentions(nodes, note.User.Host, mentions, splitDomainMapping).ToList();
+			data.Text = MfmSerializer.Serialize(nodes);
 		}
 
-		if (cw != null && string.IsNullOrWhiteSpace(cw))
-			cw = null;
+		if (data.Cw != null && string.IsNullOrWhiteSpace(data.Cw))
+			data.Cw = null;
 
 		// ReSharper disable EntityFramework.UnsupportedServerSideFunctionCall
 		if (mentionedUserIds.Except(previousMentionedUserIds).Any())
@@ -501,21 +542,21 @@ public class NoteService(
 		// ReSharper restore EntityFramework.UnsupportedServerSideFunctionCall
 
 		mentionedLocalUserIds = mentionedLocalUserIds.Except(previousMentionedLocalUserIds).ToList();
-		note.Text             = text?.Trim();
-		note.Cw               = cw?.Trim();
-		note.Tags             = ResolveHashtags(text, asNote);
+		note.Text             = data.Text?.Trim();
+		note.Cw               = data.Cw?.Trim();
+		note.Tags             = ResolveHashtags(data.Text, data.ASNote);
 
 		if (note.User.IsLocalUser && nodes != null)
 		{
-			emoji = (await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList();
+			data.Emoji = (await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList();
 		}
 
-		if (emoji != null && !note.Emojis.IsEquivalent(emoji))
-			note.Emojis = emoji;
-		else if (emoji == null && note.Emojis.Count != 0)
+		if (data.Emoji != null && !note.Emojis.IsEquivalent(data.Emoji))
+			note.Emojis = data.Emoji;
+		else if (data.Emoji == null && note.Emojis.Count != 0)
 			note.Emojis = [];
 
-		if (text is not null)
+		if (data.Text is not null)
 		{
 			if (!note.Mentions.IsEquivalent(mentionedUserIds))
 				note.Mentions = mentionedUserIds;
@@ -525,11 +566,11 @@ public class NoteService(
 			if (note.Visibility == Note.NoteVisibility.Specified)
 			{
 				var visibleUserIds = mentionedUserIds.ToList();
-				if (asNote != null)
+				if (data.ASNote != null)
 				{
-					visibleUserIds = (await asNote.GetRecipients(note.User)
-					                              .Select(userResolver.ResolveAsync)
-					                              .AwaitAllNoConcurrencyAsync())
+					visibleUserIds = (await data.ASNote.GetRecipients(note.User)
+					                            .Select(userResolver.ResolveAsync)
+					                            .AwaitAllNoConcurrencyAsync())
 					                 .Select(p => p.Id)
 					                 .Concat(visibleUserIds)
 					                 .ToList();
@@ -544,19 +585,20 @@ public class NoteService(
 					note.VisibleUserIds.AddRange(missing);
 			}
 
-			note.Text = mentionsResolver.ResolveMentions(text, note.UserHost, mentions, splitDomainMapping);
+			note.Text = mentionsResolver.ResolveMentions(data.Text, note.UserHost, mentions, splitDomainMapping);
 		}
 
 		//TODO: handle updated alt text et al
-		var fileIds = attachments?.Select(p => p.Id).ToList() ?? [];
+		var fileIds = data.Attachments?.Select(p => p.Id).ToList() ?? [];
 		if (!note.FileIds.IsEquivalent(fileIds))
 		{
 			note.FileIds           = fileIds;
-			note.AttachedFileTypes = attachments?.Select(p => p.Type).ToList() ?? [];
+			note.AttachedFileTypes = data.Attachments?.Select(p => p.Type).ToList() ?? [];
 		}
 
 		var isPollEdited = false;
 
+		var poll = data.Poll;
 		if (poll != null)
 		{
 			poll.Choices.RemoveAll(string.IsNullOrWhiteSpace);
@@ -618,20 +660,21 @@ public class NoteService(
 			}
 		}
 
-		var isEdit = asNote is not ASQuestion ||
+		var isEdit = data.ASNote is not ASQuestion ||
 		             poll == null ||
 		             isPollEdited ||
 		             db.Entry(note).State != EntityState.Unchanged;
 
 		if (isEdit)
 		{
-			note.UpdatedAt = updatedAt ?? DateTime.UtcNow;
+			note.UpdatedAt = data.UpdatedAt ?? DateTime.UtcNow;
 			await db.AddAsync(noteEdit);
 		}
 
-		if (asNote != null)
-			note.RepliesCollection = asNote.Replies?.Id;
+		if (data.ASNote != null)
+			note.RepliesCollection = data.ASNote.Replies?.Id;
 
+		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PostLogic);
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNoteUpdated(this, note);
 
@@ -847,7 +890,7 @@ public class NoteService(
 				replyUri = null;
 		}
 
-		var mentionQuintuple = await ResolveNoteMentionsAsync(note);
+		var mentionData = await ResolveNoteMentionsAsync(note);
 		var createdAt = note.PublishedAt?.ToUniversalTime() ??
 		                throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field");
 
@@ -865,7 +908,7 @@ public class NoteService(
 		var renote     = quoteUrl != null ? await ResolveNoteAsync(quoteUrl, user: user) : null;
 		var renoteUri  = renote == null ? quoteUrl : null;
 		var visibility = note.GetVisibility(actor);
-		var text       = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content, mentionQuintuple.mentions);
+		var text       = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions);
 		var cw         = note.Summary;
 		var url        = note.Url?.Link;
 		var uri        = note.Id;
@@ -897,8 +940,26 @@ public class NoteService(
 		            .Select(p => p.Id)
 		            .ToList();
 
-		return await CreateNoteAsync(actor, visibility, text, cw, reply, renote, files, poll, false, uri, url, emoji,
-		                             mentionQuintuple, createdAt, note, replyUri, renoteUri);
+		return await CreateNoteAsync(new NoteCreationData
+		{
+			User             = actor,
+			Visibility       = visibility,
+			Text             = text,
+			Cw               = cw,
+			Reply            = reply,
+			Renote           = renote,
+			Attachments      = files,
+			Poll             = poll,
+			LocalOnly        = false,
+			Uri              = uri,
+			Url              = url,
+			Emoji            = emoji,
+			ResolvedMentions = mentionData,
+			CreatedAt        = createdAt,
+			ASNote           = note,
+			ReplyUri         = replyUri,
+			RenoteUri        = renoteUri
+		});
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage",
@@ -927,9 +988,9 @@ public class NoteService(
 		if (actor.Host == null)
 			throw GracefulException.UnprocessableEntity("User.Host is null");
 
-		var mentionQuintuple = await ResolveNoteMentionsAsync(note);
+		var mentionData = await ResolveNoteMentionsAsync(note);
 
-		var text = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content, mentionQuintuple.mentions);
+		var text = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions);
 		var cw   = note.Summary;
 
 		Poll? poll = null;
@@ -961,10 +1022,21 @@ public class NoteService(
 		            .Select(p => p.Id)
 		            .ToList();
 
-		return await UpdateNoteAsync(dbNote, text, cw, files, poll, updatedAt, mentionQuintuple, note, emoji);
+		return await UpdateNoteAsync(new NoteUpdateData
+		{
+			Note             = dbNote,
+			Text             = text,
+			Cw               = cw,
+			Attachments      = files,
+			Poll             = poll,
+			UpdatedAt        = updatedAt,
+			ResolvedMentions = mentionData,
+			ASNote           = note,
+			Emoji            = emoji
+		});
 	}
 
-	private async Task<MentionQuintuple> ResolveNoteMentionsAsync(ASNote note)
+	private async Task<NoteMentionData> ResolveNoteMentionsAsync(ASNote note)
 	{
 		var mentionTags = note.Tags?.OfType<ASMention>().Where(p => p.Href != null) ?? [];
 		var users = await mentionTags
@@ -984,7 +1056,7 @@ public class NoteService(
 		return ResolveNoteMentions(users.Where(p => p != null).Select(p => p!).ToList());
 	}
 
-	private async Task<MentionQuintuple> ResolveNoteMentionsAsync(string? text)
+	private async Task<NoteMentionData> ResolveNoteMentionsAsync(string? text)
 	{
 		var users = text != null
 			? await MfmParser.Parse(text)
@@ -1050,7 +1122,7 @@ public class NoteService(
 		return tags;
 	}
 
-	private MentionQuintuple ResolveNoteMentions(IReadOnlyCollection<User> users)
+	private NoteMentionData ResolveNoteMentions(IReadOnlyCollection<User> users)
 	{
 		var userIds      = users.Select(p => p.Id).Distinct().ToList();
 		var localUserIds = users.Where(p => p.IsLocalUser).Select(p => p.Id).Distinct().ToList();
@@ -1084,7 +1156,7 @@ public class NoteService(
 
 		var mentions = remoteMentions.Concat(localMentions).ToList();
 
-		return (userIds, localUserIds, mentions, remoteMentions, splitDomainMapping);
+		return new NoteMentionData(userIds, localUserIds, mentions, remoteMentions, splitDomainMapping);
 	}
 
 	private async Task<List<DriveFile>> ProcessAttachmentsAsync(
@@ -1290,7 +1362,12 @@ public class NoteService(
 			throw GracefulException.BadRequest("Cannot renote a pure renote");
 
 		if (!await db.Notes.AnyAsync(p => p.Renote == note && p.IsPureRenote && p.User == user))
-			return await CreateNoteAsync(user, visibility.Value, renote: note);
+			return await CreateNoteAsync(new NoteCreationData
+			{
+				User       = user,
+				Visibility = visibility.Value,
+				Renote     = note
+			});
 
 		return null;
 	}

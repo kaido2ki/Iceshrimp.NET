@@ -108,7 +108,8 @@ public static class ServiceExtensions
 			.AddSingleton<RazorViewRenderService>()
 			.AddSingleton<StripRazorJsInitMiddleware>()
 			.AddSingleton<MfmRenderer>()
-			.AddSingleton<MatcherPolicy, PublicPreviewRouteMatcher>();
+			.AddSingleton<MatcherPolicy, PublicPreviewRouteMatcher>()
+			.AddSingleton<PolicyService>();
 
 		var config = configuration.GetSection("Storage").Get<Config.StorageSection>() ??
 		             throw new Exception("Failed to read storage config section");

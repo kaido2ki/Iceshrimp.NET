@@ -435,8 +435,16 @@ public class NoteController(
 			? await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id)).ToListAsync()
 			: null;
 
-		var note = await noteSvc.CreateNoteAsync(user, (Note.NoteVisibility)request.Visibility, request.Text,
-		                                         request.Cw, reply, renote, attachments);
+		var note = await noteSvc.CreateNoteAsync(new NoteService.NoteCreationData
+		{
+			User        = user,
+			Visibility  = (Note.NoteVisibility)request.Visibility,
+			Text        = request.Text,
+			Cw          = request.Cw,
+			Reply       = reply,
+			Renote      = renote,
+			Attachments = attachments
+		});
 
 		if (request.IdempotencyKey != null)
 			await cache.SetAsync($"idempotency:{user.Id}:{request.IdempotencyKey}", note.Id, TimeSpan.FromHours(24));

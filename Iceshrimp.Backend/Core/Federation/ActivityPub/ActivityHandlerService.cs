@@ -460,8 +460,13 @@ public class ActivityHandlerService(
 			return;
 		}
 
-		await noteSvc.CreateNoteAsync(resolvedActor, activity.GetVisibility(activity.Actor), renote: dbNote,
-		                              uri: activity.Id);
+		await noteSvc.CreateNoteAsync(new NoteService.NoteCreationData
+		{
+			User       = resolvedActor,
+			Visibility = activity.GetVisibility(activity.Actor),
+			Renote     = dbNote,
+			Uri        = activity.Id
+		});
 	}
 
 	private async Task HandleReact(ASEmojiReact activity, User resolvedActor)

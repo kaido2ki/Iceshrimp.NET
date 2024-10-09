@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Mime;
+using System.Text.Json;
 using Iceshrimp.Backend.Controllers.Federation;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
@@ -11,6 +12,7 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Policies;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Backend.Core.Tasks;
 using Iceshrimp.Shared.Schemas.Web;
@@ -25,8 +27,6 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Authorize("role:admin")]
 [ApiController]
 [Route("/api/iceshrimp/admin")]
-[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor",
-                 Justification = "We only have a DatabaseContext in our DI pool, not the base type")]
 public class AdminController(
 	DatabaseContext db,
 	ActivityPubController apController,
@@ -35,7 +35,8 @@ public class AdminController(
 	ActivityPub.UserRenderer userRenderer,
 	IOptions<Config.InstanceSection> config,
 	QueueService queueSvc,
-	RelayService relaySvc
+	RelayService relaySvc,
+	PolicyService policySvc
 ) : ControllerBase
 {
 	[HttpPost("invites/generate")]
@@ -184,6 +185,93 @@ public class AdminController(
 	{
 		await using var scope = factory.CreateAsyncScope();
 		await new MediaCleanupTask().Invoke(scope.ServiceProvider);
+	}
+
+	[HttpGet("policy/word-reject")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<WordRejectPolicyConfiguration> GetWordRejectPolicy()
+	{
+		var raw = await db.PolicyConfiguration.Where(p => p.Name == nameof(WordRejectPolicy))
+		                  .Select(p => p.Data)
+		                  .FirstOrDefaultAsync();
+
+		var res = raw != null ? JsonSerializer.Deserialize<WordRejectPolicyConfiguration>(raw) : null;
+		res ??= new WordRejectPolicyConfiguration { Enabled = false, Words = [] };
+		return res;
+	}
+
+	[HttpGet("policy/user-age-reject")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<UserAgeRejectPolicyConfiguration> GetUserAgeRejectPolicy()
+	{
+		var raw = await db.PolicyConfiguration.Where(p => p.Name == nameof(UserAgeRejectPolicy))
+		                  .Select(p => p.Data)
+		                  .FirstOrDefaultAsync();
+
+		var res = raw != null ? JsonSerializer.Deserialize<UserAgeRejectPolicyConfiguration>(raw) : null;
+		res ??= new UserAgeRejectPolicyConfiguration { Enabled = false, Age = TimeSpan.Zero };
+		return res;
+	}
+
+	[HttpGet("policy/hellthread-reject")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<HellthreadRejectPolicyConfiguration> GetHellthreadRejectPolicy()
+	{
+		var raw = await db.PolicyConfiguration.Where(p => p.Name == nameof(HellthreadRejectPolicy))
+		                  .Select(p => p.Data)
+		                  .FirstOrDefaultAsync();
+
+		var res = raw != null ? JsonSerializer.Deserialize<HellthreadRejectPolicyConfiguration>(raw) : null;
+		res ??= new HellthreadRejectPolicyConfiguration { Enabled = false, MentionLimit = 0 };
+		return res;
+	}
+
+	[HttpPut("policy/word-reject")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task UpdateWordRejectPolicy(WordRejectPolicyConfiguration data)
+	{
+		await db.PolicyConfiguration
+		        .Upsert(new PolicyConfiguration
+		        {
+			        Name = nameof(WordRejectPolicy), Data = JsonSerializer.Serialize(data)
+		        })
+		        .On(p => new { p.Name })
+		        .RunAsync();
+
+		await policySvc.Update();
+	}
+
+	[HttpPut("policy/user-age-reject")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task UpdateUserAgeRejectPolicy(UserAgeRejectPolicyConfiguration data)
+	{
+		await db.PolicyConfiguration
+		        .Upsert(new PolicyConfiguration
+		        {
+			        Name = nameof(UserAgeRejectPolicy), Data = JsonSerializer.Serialize(data)
+		        })
+		        .On(p => new { p.Name })
+		        .RunAsync();
+
+		await policySvc.Update();
+	}
+
+	[HttpPut("policy/hellthread-reject")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task UpdateHellthreadRejectPolicy(HellthreadRejectPolicyConfiguration data)
+	{
+		await db.PolicyConfiguration.Upsert(new PolicyConfiguration
+		        {
+			        Name = nameof(HellthreadRejectPolicy),
+			        Data = JsonSerializer.Serialize(data)
+		        })
+		        .On(p => new { p.Name })
+		        .RunAsync();
+
+		await policySvc.Update();
 	}
 
 	[UseNewtonsoftJson]

@@ -451,8 +451,18 @@ public class StatusController(
 		if (quote != null && request.Text != null && newText != null && urls.OfType<string>().Contains(quoteUri))
 			request.Text = newText;
 
-		var note = await noteSvc.CreateNoteAsync(user, visibility, request.Text, request.Cw, reply, quote, attachments,
-		                                         poll, request.LocalOnly);
+		var note = await noteSvc.CreateNoteAsync(new NoteService.NoteCreationData
+		{
+			User        = user,
+			Visibility  = visibility,
+			Text        = request.Text,
+			Cw          = request.Cw,
+			Reply       = reply,
+			Renote      = quote,
+			Attachments = attachments,
+			Poll        = poll,
+			LocalOnly   = request.LocalOnly
+		});
 
 		if (idempotencyKey != null)
 			await cache.SetAsync($"idempotency:{user.Id}:{idempotencyKey}", note.Id, TimeSpan.FromHours(24));
@@ -501,7 +511,15 @@ public class StatusController(
 			await db.SaveChangesAsync();
 		}
 
-		note = await noteSvc.UpdateNoteAsync(note, request.Text, request.Cw, attachments, poll);
+		note = await noteSvc.UpdateNoteAsync(new NoteService.NoteUpdateData
+		{
+			Note        = note,
+			Text        = request.Text,
+			Cw          = request.Cw,
+			Attachments = attachments,
+			Poll        = poll
+		});
+
 		return await noteRenderer.RenderAsync(note, user);
 	}
 

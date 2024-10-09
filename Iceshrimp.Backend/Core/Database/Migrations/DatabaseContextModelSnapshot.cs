@@ -3416,6 +3416,25 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.ToTable("plugin_store");
                 });
 
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.PolicyConfiguration", b =>
+                {
+                    b.Property<string>("Name")
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("data")
+                        .HasDefaultValueSql("'{}'::jsonb")
+                        .HasComment("The plugin-specific data object");
+
+                    b.HasKey("Name");
+
+                    b.ToTable("policy_configuration");
+                });
+
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Poll", b =>
                 {
                     b.Property<string>("NoteId")
