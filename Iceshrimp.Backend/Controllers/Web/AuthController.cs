@@ -54,6 +54,8 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		                                                   p.UsernameLower == request.Username.ToLowerInvariant());
 		if (user == null)
 			throw GracefulException.Forbidden("Invalid username or password");
+		if (user.IsSystemUser)
+			throw GracefulException.BadRequest("Cannot log in as system user");
 		var settings = await db.UserSettings.FirstOrDefaultAsync(p => p.User == user);
 		if (settings?.Password == null)
 			throw GracefulException.Forbidden("Invalid username or password");

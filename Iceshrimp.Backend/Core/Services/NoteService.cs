@@ -110,6 +110,8 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity($"Note was rejected by {policy.Name}");
 		if (data.User.IsLocalUser && (data.Text?.Length ?? 0) + (data.Cw?.Length ?? 0) > config.Value.CharacterLimit)
 			throw GracefulException.UnprocessableEntity($"Text & content warning cannot exceed {config.Value.CharacterLimit} characters in total");
+		if (data.User.IsSystemUser)
+			throw GracefulException.BadRequest("System users cannot create notes");
 		if (data.Text is { Length: > 100000 })
 			throw GracefulException.UnprocessableEntity("Text cannot be longer than 100.000 characters");
 		if (data.Cw is { Length: > 100000 })

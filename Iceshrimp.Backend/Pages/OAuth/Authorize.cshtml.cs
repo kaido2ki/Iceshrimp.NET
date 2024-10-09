@@ -71,6 +71,7 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 			user = await db.Users.FirstOrDefaultAsync(p => p.IsLocalUser &&
 			                                               p.UsernameLower == username.ToLowerInvariant()) ??
 			       throw Forbidden();
+			if (user.IsSystemUser) throw GracefulException.BadRequest("Cannot log in as system user");
 			var userSettings = await db.UserSettings.FirstOrDefaultAsync(p => p.User == user);
 			if (userSettings?.Password == null)
 				throw Forbidden();
