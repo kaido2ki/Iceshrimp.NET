@@ -849,6 +849,8 @@ public class NoteService(
 		if (await fedCtrlSvc.ShouldBlockAsync(note.Id, actor.Host))
 			throw GracefulException.UnprocessableEntity("Refusing to create note for user on blocked instance");
 
+		policySvc.CallRewriteHooks(note, actor, IRewritePolicy.HookLocationEnum.PreLogic);
+
 		var   replyUri = note.InReplyTo?.Id;
 		var   reply    = replyUri != null ? await ResolveNoteAsync(replyUri, user: user) : null;
 		Poll? poll     = null;
@@ -945,6 +947,8 @@ public class NoteService(
 		var emoji = (await emojiSvc.ProcessEmojiAsync(note.Tags?.OfType<ASEmoji>().ToList(), actor.Host))
 		            .Select(p => p.Id)
 		            .ToList();
+		
+		policySvc.CallRewriteHooks(note, actor, IRewritePolicy.HookLocationEnum.PostLogic);
 
 		return await CreateNoteAsync(new NoteCreationData
 		{

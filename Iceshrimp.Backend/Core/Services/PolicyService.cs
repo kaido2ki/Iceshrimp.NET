@@ -3,6 +3,8 @@ using System.Reflection;
 using System.Text.Json;
 using Iceshrimp.AssemblyUtils;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Shared.Configuration;
 using Microsoft.EntityFrameworkCore;
@@ -84,6 +86,14 @@ public class PolicyService(IServiceScopeFactory scopeFactory)
 		foreach (var hook in hooks) hook.Apply(data);
 	}
 
+	public void CallRewriteHooks(ASNote note, User actor, IRewritePolicy.HookLocationEnum location)
+	{
+		var hooks = _rewritePolicies.Where(p => p.Enabled && p.HookLocation == location)
+		                            .OrderByDescending(p => p.Priority);
+
+		foreach (var hook in hooks) hook.Apply(note, actor);
+	}
+
 	public async Task<Type?> GetConfigurationType(string name)
 	{
 		await Initialize();
@@ -129,11 +139,13 @@ public interface IRewritePolicy : IPolicy
 
 	public void Apply(NoteService.NoteCreationData data);
 	public void Apply(NoteService.NoteUpdateData data);
+	public void Apply(ASNote note, User actor);
 }
 
 public interface IRejectPolicy : IPolicy
 {
 	public bool ShouldReject(NoteService.NoteCreationData data);
+	//TODO: reject during note update & note process
 }
 
 public interface IPolicyConfiguration
