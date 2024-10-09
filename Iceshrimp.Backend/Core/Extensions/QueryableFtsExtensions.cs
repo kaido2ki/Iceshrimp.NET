@@ -37,8 +37,7 @@ public static class QueryableFtsExtensions
 			MiscFilter miscFilter             => current.ApplyMiscFilter(miscFilter, user),
 			ReplyFilter replyFilter           => current.ApplyReplyFilter(replyFilter, config, db),
 			WordFilter wordFilter             => current.ApplyWordFilter(wordFilter, caseSensitivity, matchType),
-			MultiWordFilter multiWordFilter =>
-				current.ApplyMultiWordFilter(multiWordFilter, caseSensitivity, matchType),
+			MultiWordFilter multiWordFilter   => current.ApplyMultiWordFilter(multiWordFilter, caseSensitivity, matchType),
 			_ => throw new ArgumentOutOfRangeException(nameof(filter))
 		});
 	}
@@ -264,31 +263,37 @@ public static class QueryableFtsExtensions
 	[Projectable]
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
 	                 Justification = "Projectable chain must have consistent visibility")]
-	internal static bool FtsQueryPreEscaped(
-		this Note note, string query, bool negated, CaseFilterType caseSensitivity, MatchFilterType matchType
-	) => matchType.Equals(MatchFilterType.Substring)
+	internal static bool FtsQueryPreEscaped(this Note note, string query, bool negated, CaseFilterType caseSensitivity, MatchFilterType matchType) => matchType.Equals(MatchFilterType.Substring)
 		? caseSensitivity.Equals(CaseFilterType.Sensitive)
 			? negated
 				? !EF.Functions.Like(note.Text!, "%" + query + "%", @"\") &&
-				  !EF.Functions.Like(note.Cw!, "%" + query + "%", @"\")
+				  !EF.Functions.Like(note.Cw!, "%" + query + "%", @"\") &&
+				  !EF.Functions.Like(note.CombinedAltText!, "%" + query + "%", @"\")
 				: EF.Functions.Like(note.Text!, "%" + query + "%", @"\") ||
-				  EF.Functions.Like(note.Cw!, "%" + query + "%", @"\")
+				  EF.Functions.Like(note.Cw!, "%" + query + "%", @"\") ||
+				  EF.Functions.Like(note.CombinedAltText!, "%" + query + "%", @"\")
 			: negated
 				? !EF.Functions.ILike(note.Text!, "%" + query + "%", @"\") &&
-				  !EF.Functions.ILike(note.Cw!, "%" + query + "%", @"\")
+				  !EF.Functions.ILike(note.Cw!, "%" + query + "%", @"\") &&
+				  !EF.Functions.ILike(note.CombinedAltText!, "%" + query + "%", @"\")
 				: EF.Functions.ILike(note.Text!, "%" + query + "%", @"\") ||
-				  EF.Functions.ILike(note.Cw!, "%" + query + "%", @"\")
+				  EF.Functions.ILike(note.Cw!, "%" + query + "%", @"\") ||
+				  EF.Functions.ILike(note.CombinedAltText!, "%" + query + "%", @"\")
 		: caseSensitivity.Equals(CaseFilterType.Sensitive)
 			? negated
 				? !Regex.IsMatch(note.Text!, "\\y" + query + "\\y") &&
-				  !Regex.IsMatch(note.Cw!, "\\y" + query + "\\y")
+				  !Regex.IsMatch(note.Cw!, "\\y" + query + "\\y") &&
+				  !Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y")
 				: Regex.IsMatch(note.Text!, "\\y" + query + "\\y") ||
-				  Regex.IsMatch(note.Cw!, "\\y" + query + "\\y")
+				  Regex.IsMatch(note.Cw!, "\\y" + query + "\\y") ||
+				  Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y")
 			: negated
 				? !Regex.IsMatch(note.Text!, "\\y" + query + "\\y", RegexOptions.IgnoreCase) &&
-				  !Regex.IsMatch(note.Cw!, "\\y" + query + "\\y", RegexOptions.IgnoreCase)
+				  !Regex.IsMatch(note.Cw!, "\\y" + query + "\\y", RegexOptions.IgnoreCase) &&
+				  !Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y", RegexOptions.IgnoreCase)
 				: Regex.IsMatch(note.Text!, "\\y" + query + "\\y", RegexOptions.IgnoreCase) ||
-				  Regex.IsMatch(note.Cw!, "\\y" + query + "\\y", RegexOptions.IgnoreCase);
+				  Regex.IsMatch(note.Cw!, "\\y" + query + "\\y", RegexOptions.IgnoreCase) ||
+				  Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y", RegexOptions.IgnoreCase);
 
 	internal static string PreEscapeFtsQuery(string query, MatchFilterType matchType)
 		=> matchType.Equals(MatchFilterType.Substring)

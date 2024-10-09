@@ -2350,6 +2350,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("channelId")
                         .HasComment("The ID of source channel.");
 
+                    b.Property<string>("CombinedAltText")
+                        .HasColumnType("text")
+                        .HasColumnName("combinedAltText");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdAt")
@@ -2596,6 +2600,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.HasIndex("Id", "UserHost");
 
                     b.HasIndex("UserId", "Id");
+
+                    b.HasIndex(new[] { "CombinedAltText" }, "GIN_TRGM_note_combined_alt_text");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "CombinedAltText" }, "GIN_TRGM_note_combined_alt_text"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "CombinedAltText" }, "GIN_TRGM_note_combined_alt_text"), new[] { "gin_trgm_ops" });
 
                     b.HasIndex(new[] { "Cw" }, "GIN_TRGM_note_cw");
 

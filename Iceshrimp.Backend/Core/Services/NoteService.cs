@@ -239,6 +239,7 @@ public class NoteService(
 			}
 		}
 
+		var combinedAltText = data.Attachments?.Select(p => p.Comment).Where(c => c != null);
 		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PostLogic);
 
 		var note = new Note
@@ -270,7 +271,8 @@ public class NoteService(
 			Emojis               = data.Emoji ?? [],
 			ReplyUri             = data.ReplyUri,
 			RenoteUri            = data.RenoteUri,
-			RepliesCollection    = data.ASNote?.Replies?.Id
+			RepliesCollection    = data.ASNote?.Replies?.Id,
+			CombinedAltText      = combinedAltText != null ? string.Join(' ', combinedAltText) : null
 		};
 
 		if (data.Poll != null)
@@ -594,6 +596,10 @@ public class NoteService(
 		{
 			note.FileIds           = fileIds;
 			note.AttachedFileTypes = data.Attachments?.Select(p => p.Type).ToList() ?? [];
+
+			var combinedAltText = data.Attachments?.Select(p => p.Comment).Where(c => c != null);
+			note.CombinedAltText = combinedAltText != null ? string.Join(' ', combinedAltText) : null;
+
 		}
 
 		var isPollEdited = false;

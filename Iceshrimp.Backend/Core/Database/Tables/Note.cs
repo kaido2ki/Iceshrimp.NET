@@ -219,6 +219,9 @@ public class Note : IEntity
 	[Column("repliesFetchedAt")]
 	public DateTime? RepliesFetchedAt { get;set; }
 
+	[Column("combinedAltText")]
+	public string? CombinedAltText { get; set; } 
+
 	[ForeignKey(nameof(ChannelId))]
 	[InverseProperty(nameof(Tables.Channel.Notes))]
 	public virtual Channel? Channel { get; set; }
