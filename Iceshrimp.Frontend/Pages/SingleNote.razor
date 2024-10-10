@@ -3,7 +3,7 @@
 @inject ApiService                     ApiService
 @inject IJSRuntime                     Js
 @inject MessageService                 MessageService
-@inject StateService                   State
+@inject StateService                   StateSvc
 @inject NavigationManager              Navigation
 @inject IStringLocalizer<Localization> Loc
 @inject ILogger<SingleNote>            Logger;
@@ -21,7 +21,7 @@
 @using Microsoft.Extensions.Localization
 @implements IDisposable
 
-@if (_componentState == LoadState.Init)
+@if (_componentState == State.Loaded)
 {
     <SectionContent SectionName="top-bar">
         <Icon Name="Icons.Signpost"></Icon>
@@ -79,17 +79,21 @@
         </div>
     </div>
 }
-@if (_componentState == LoadState.Loading)
+@if (_componentState == State.Loading)
 {
     <div>Loading</div>
 }
-@if (_componentState == LoadState.Error)
+@if (_componentState == State.NotFound)
 {
     <div>This note does not exist!</div>
 }
-@if (_componentState == LoadState.Deleted)
+@if (_componentState == State.Empty)
 {
     <div>@Loc["This post has been deleted"]</div>
+}
+@if (_componentState == State.Error)
+{
+    <div>An error occured loading the notes. Please inspect logs.</div>
 }
 
 @code {
@@ -103,24 +107,16 @@
     private            ElementReference            Scroller { get; set; }
     private            IDisposable?                _locationChangingHandlerDisposable;
     private            IDisposable?                _noteChangedHandler;
-    private            LoadState                   _componentState;
+    private            State                   _componentState;
     private            bool                        _firstLoad = true;
-
-    private enum LoadState
-    {
-        Loading,
-        Init,
-        Error,
-        Deleted
-    }
 
     private async Task Load()
     {
         Logger.LogTrace($"Opening NoteID: {NoteId}");
-        _componentState = LoadState.Loading;
+        _componentState = State.Loading;
         if (NoteId == null)
         {
-            _componentState = LoadState.Error;
+            _componentState = State.NotFound;
             return;
         }
 
@@ -136,17 +132,17 @@
         catch (ApiException e)
         {
             Logger.LogWarning($"Failed to load ID '{NoteId}' due to API Exception: {e.Message}");
-            _componentState = LoadState.Error;
+            _componentState = State.Error;
             return;
         }
 
         if (RootNote == null)
         {
-            _componentState = LoadState.Error;
+            _componentState = State.NotFound;
             return;
         }
 
-        _componentState = LoadState.Init;
+        _componentState = State.Loaded;
     }
 
     protected override async Task OnInitializedAsync()
@@ -181,7 +177,7 @@
     {
         if (NoteId == note.Id)
         {
-            _componentState = LoadState.Deleted;
+            _componentState = State.Empty;
         }
         else
         {
@@ -213,9 +209,9 @@
             Module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "/Pages/SingleNote.razor.js");
         }
 
-        if (_componentState == LoadState.Init)
+        if (_componentState == State.Loaded)
         {
-            var state = State.SingleNote.GetState(NoteId!);
+            var state = StateSvc.SingleNote.GetState(NoteId!);
             if (state != null)
             {
                 Module.InvokeVoid("SetScrollTop", Scroller, state.ScrollTop);
@@ -229,10 +225,10 @@
 
     private void SaveState()
     {
-        if (NoteId == null || _componentState != LoadState.Init) return;
+        if (NoteId == null || _componentState != State.Loaded) return;
         var scrollTop = Module.Invoke<float>("GetScrollTop", Scroller);
         var state     = new SingleNoteState { ScrollTop = scrollTop };
-        State.SingleNote.SetState(NoteId, state);
+        StateSvc.SingleNote.SetState(NoteId, state);
     }
 
     public void Dispose()
