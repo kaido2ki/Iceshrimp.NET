@@ -29,6 +29,6 @@ else
 
     private void OpenNote(string id)
     {
-        Navigation.NavigateTo(Note.RenoteId != null ? $"/notes/{Note.RenoteId}" : $"/notes/{Note.Id}");
+        Navigation.NavigateTo($"/notes/{id}");
     }
 }
