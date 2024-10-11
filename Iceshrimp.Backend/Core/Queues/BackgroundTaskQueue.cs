@@ -254,7 +254,7 @@ public class BackgroundTaskQueue(int parallelism)
 
 		if (user.IsLocalUser)
 		{
-			var actor = renderer.RenderLite(user);
+			var actor    = renderer.RenderLite(user);
 			var activity = ActivityPub.ActivityRenderer.RenderDelete(actor, actor);
 			await deliver.DeliverToFollowersAsync(activity, user, []);
 		}
@@ -326,7 +326,10 @@ public class BackgroundTaskQueue(int parallelism)
 		logger.LogDebug("Removing {count} notes for user {id}", noteCnt, user.Id);
 		await foreach (var id in noteIds)
 		{
-			var note = await db.Notes.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id, cancellationToken: token);
+			var note = await db.Notes.AsNoTracking()
+			                   .IncludeCommonProperties()
+			                   .FirstOrDefaultAsync(p => p.Id == id, cancellationToken: token);
+
 			if (note != null) await noteSvc.DeleteNoteAsync(note);
 		}
 
