@@ -34,9 +34,12 @@ public class ModerationController(DatabaseContext db, NoteService noteSvc, UserS
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && !p.IsSystemUser) ??
 		           throw GracefulException.NotFound("User not found");
 
+		if (user == HttpContext.GetUserOrFail())
+			throw GracefulException.BadRequest("You cannot suspend yourself.");
+
 		await userSvc.SuspendUserAsync(user);
 	}
-	
+
 	[HttpPost("users/{id}/unsuspend")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -44,10 +47,13 @@ public class ModerationController(DatabaseContext db, NoteService noteSvc, UserS
 	{
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && !p.IsSystemUser) ??
 		           throw GracefulException.NotFound("User not found");
-		
+
+		if (user == HttpContext.GetUserOrFail())
+			throw GracefulException.BadRequest("You cannot unsuspend yourself.");
+
 		await userSvc.UnsuspendUserAsync(user);
 	}
-	
+
 	[HttpPost("users/{id}/delete")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -56,9 +62,12 @@ public class ModerationController(DatabaseContext db, NoteService noteSvc, UserS
 		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && !p.IsSystemUser) ??
 		           throw GracefulException.NotFound("User not found");
 
+		if (user == HttpContext.GetUserOrFail())
+			throw GracefulException.BadRequest("You cannot delete yourself.");
+
 		await userSvc.DeleteUserAsync(user);
 	}
-	
+
 	[HttpPost("users/{id}/purge")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
