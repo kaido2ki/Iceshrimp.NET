@@ -31,7 +31,7 @@ public class ModerationController(DatabaseContext db, NoteService noteSvc, UserS
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task SuspendUser(string id)
 	{
-		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && !p.IsSystemUser) ??
 		           throw GracefulException.NotFound("User not found");
 
 		await userSvc.SuspendUserAsync(user);
@@ -42,7 +42,7 @@ public class ModerationController(DatabaseContext db, NoteService noteSvc, UserS
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task UnsuspendUser(string id)
 	{
-		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && !p.IsSystemUser) ??
 		           throw GracefulException.NotFound("User not found");
 		
 		await userSvc.UnsuspendUserAsync(user);
@@ -53,7 +53,7 @@ public class ModerationController(DatabaseContext db, NoteService noteSvc, UserS
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task DeleteUser(string id)
 	{
-		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && !p.IsSystemUser) ??
 		           throw GracefulException.NotFound("User not found");
 
 		await userSvc.DeleteUserAsync(user);
@@ -64,7 +64,7 @@ public class ModerationController(DatabaseContext db, NoteService noteSvc, UserS
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task PurgeUser(string id)
 	{
-		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && !p.IsSystemUser) ??
 		           throw GracefulException.NotFound("User not found");
 
 		await userSvc.PurgeUserAsync(user);
