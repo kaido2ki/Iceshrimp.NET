@@ -166,7 +166,7 @@ public class ErrorHandlerMiddleware(
 					{
 						var model = new ErrorPageModel(payload);
 						ctx.Response.ContentType = "text/html; charset=utf8";
-						var stream = ctx.Response.Body;
+						var stream = ctx.Response.BodyWriter.AsStream();
 						await razor.RenderToStreamAsync("Shared/ErrorPage.cshtml", model, stream);
 						return;
 					}
