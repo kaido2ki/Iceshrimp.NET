@@ -65,6 +65,6 @@
         await Meta.Set(MetaEntity.InstanceDescription, Model.Description);
         await Meta.Set(MetaEntity.AdminContactEmail, Model.AdminContact);
 
-        Navigation.Refresh(true);
+        ReloadPage();
     }
 }
