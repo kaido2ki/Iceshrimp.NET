@@ -3,6 +3,7 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Pages.Shared;
 using Iceshrimp.Backend.SignalR;
 using Iceshrimp.Backend.SignalR.Authentication;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var options = StartupHelpers.ParseCliArguments(args);
 var builder = WebApplication.CreateBuilder(options);
@@ -55,6 +56,7 @@ else
 app.UseResponseCompression();
 #endif
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedProto });
 app.UseRouting();
 app.UseSwaggerWithOptions();
 app.UseBlazorFrameworkFilesWithTransparentDecompression();
