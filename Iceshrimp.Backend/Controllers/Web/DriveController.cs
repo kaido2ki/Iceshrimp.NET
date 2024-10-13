@@ -3,6 +3,7 @@ using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
@@ -56,7 +57,9 @@ public class DriveController(
 
 			Response.Headers.CacheControl        = "max-age=31536000, immutable";
 			Response.Headers.XContentTypeOptions = "nosniff";
-			return File(stream, file.Type, filename, true);
+			return Constants.BrowserSafeMimeTypes.Contains(file.Type)
+				? new InlineFileStreamResult(stream, file.Type, filename, true)
+				: File(stream, file.Type, filename, true);
 		}
 		else
 		{
@@ -75,7 +78,9 @@ public class DriveController(
 
 			Response.Headers.CacheControl        = "max-age=31536000, immutable";
 			Response.Headers.XContentTypeOptions = "nosniff";
-			return File(stream, file.Type, filename, true);
+			return Constants.BrowserSafeMimeTypes.Contains(file.Type)
+				? new InlineFileStreamResult(stream, file.Type, filename, true)
+				: File(stream, file.Type, filename, true);
 		}
 	}
 
