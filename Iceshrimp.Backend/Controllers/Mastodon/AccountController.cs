@@ -106,7 +106,7 @@ public class AccountController(
 			var avatar = await driveSvc.StoreFile(request.Avatar.OpenReadStream(), user, rq);
 			user.Avatar         = avatar;
 			user.AvatarBlurhash = avatar.Blurhash;
-			user.AvatarUrl      = avatar.Url;
+			user.AvatarUrl      = avatar.AccessUrl;
 		}
 
 		if (request.Banner != null)
@@ -120,7 +120,7 @@ public class AccountController(
 			var banner = await driveSvc.StoreFile(request.Banner.OpenReadStream(), user, rq);
 			user.Banner         = banner;
 			user.BannerBlurhash = banner.Blurhash;
-			user.BannerUrl      = banner.Url;
+			user.BannerUrl      = banner.AccessUrl;
 		}
 
 		user = await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
