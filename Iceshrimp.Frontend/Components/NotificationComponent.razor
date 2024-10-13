@@ -7,67 +7,76 @@
 @inject NavigationManager              NavigationManager
 
 <div class="notification">
-    @if (NotificationResponse is { User: not null, Type: "like" or "follow" or "reaction" or "followRequestReceived" or "followRequestAccepted" })
-    {
-        <img class="user-avatar" src="@NotificationResponse.User.AvatarUrl"/>
+    <div class="notification-header">
+        @if (NotificationResponse is { User: not null })
+        {
+            <img @onclick="OpenProfile" class="user-avatar" src="@NotificationResponse.User.AvatarUrl"/>
+        }
+
         <div class="notification-body">
-            <span class="display-name">@(NotificationResponse.User.DisplayName ?? NotificationResponse.User.Username)</span>
+            @if (NotificationResponse is { User: not null })
+            {
+                <span @onclick="OpenProfile" class="display-name">@(NotificationResponse.User.DisplayName ?? NotificationResponse.User.Username)</span>
+            }
 
             @if (NotificationResponse is { Note: not null, Type: "like", User: not null })
             {
-                <span @onclick="OpenNote" class="notification-text">
-                    @Loc["liked your post: "]<MfmText Text="@NotificationResponse.Note.Text"></MfmText>
+                <span class="notification-text">@Loc["liked your post: "]</span>
+            }
+            else if (NotificationResponse is { Note: not null, Type: "reaction" })
+            {
+                <span class="notification-text">@Loc["reacted to your post:"]</span>
+            }
+            else if (NotificationResponse is { Type: "follow", User: not null })
+            {
+                <span class="notification-text">@Loc["Followed you."]</span>
+            }
+            else if (NotificationResponse is { Type: "followRequestReceived" })
+            {
+                <span class="notification-text">@Loc["Requested to follow you."]</span>
+            }
+            else if (NotificationResponse is { Type: "followRequestAccepted" })
+            {
+                <span class="notification-text">@Loc["Accepted your follow request."]</span>
+            }
+            else if (NotificationResponse is { Type: "mention" })
+            {
+                <span class="notification-text">@Loc["mentioned you:"]</span>
+            }
+            else if (NotificationResponse is { Type: "reply" })
+            {
+                <span class="notification-text">@Loc["replied to your post:"]</span>
+            }
+            else if (NotificationResponse is { Type: "renote" })
+            {
+                <span class="notification-text">@Loc["boosted your post:"]</span>
+            }
+            else if (NotificationResponse is { Type: "quote" })
+            {
+                <span class="notification-text">@Loc["quoted your post:"]</span>
+            }
+            else
+            {
+                <span class="notification-text">
+                    <i>@Loc["unsupported notification type"]</i>
                 </span>
+                <details>
+                    <summary>view details</summary>
+                    <span>ID: @NotificationResponse.Id</span>
+                    <span>Type: @NotificationResponse.Type</span>
+                </details>
             }
-            @if (NotificationResponse is { Note: not null, Type: "reaction" })
-            {
-                <span @onclick="OpenNote" class="notification-text">
-                    @Loc["reacted to your post: "] <MfmText Text="@NotificationResponse.Note.Text"></MfmText>
-                </span>
-            }
+        </div>
+        
+        <span>@RenderDate(DateTime.Parse(NotificationResponse.CreatedAt))</span>
+    </div>
 
-            @if (NotificationResponse is { Type: "follow", User: not null })
-            {
-                <span @onclick="OpenProfile" class="notification-text">@Loc["Followed you."]</span>
-            }
-            @if (NotificationResponse is { Type: "followRequestReceived" })
-            {
-                <div @onclick="OpenFollowRequests" class="notification-text">@Loc["Requested to follow you."]</div>
-            }
-            @if (NotificationResponse is { Type: "followRequestAccepted" })
-            {
-                <span @onclick="OpenProfile" class="notification-text">@Loc["Accepted your follow request."]</span>
-            }
-        </div>
-    }
-    @if (NotificationResponse is { Type: "mention" })
+    @if (NotificationResponse is { Note: not null })
     {
         <div @onclick="OpenNote" class="notification-note">
             <Note NoteResponse="NotificationResponse.Note"/>
         </div>
     }
-    @if (NotificationResponse is { Type: "reply" })
-    {
-        <div @onclick="OpenNote" class="notification-note">
-            <Note NoteResponse="NotificationResponse.Note"/>
-        </div>
-    }
-    @if (NotificationResponse is { Type: "renote" })
-    {
-        <div @onclick="OpenNote" class="notification-body">
-            <div class="renote-info">@Loc["{0} boosted your post.", NotificationResponse.User!.DisplayName ?? NotificationResponse.User.Username]</div>
-            <div class="notification-note">
-                <Note NoteResponse="NotificationResponse.Note"/>
-            </div>
-        </div>
-    }
-    @if (NotificationResponse is { Type: "quote" })
-    {
-        <div @onclick="OpenNote" class="notification-note">
-            <Note NoteResponse="NotificationResponse.Note"/>
-        </div>
-    }
-
 </div>
 
 @code {
@@ -88,5 +97,22 @@
         var username                                          = $"@{NotificationResponse.User?.Username}";
         if (NotificationResponse.User?.Host != null) username += $"@{NotificationResponse.User.Host}";
         NavigationManager.NavigateTo($"/{username}");
+    }
+    
+    // TODO: Deduplicate this and NoteMetadata.RenderDate
+    private string RenderDate(DateTime date)
+    {
+        var diff = DateTime.Now - date;
+        return diff switch
+        {
+            { TotalDays: >= 365 }  => Loc["{0}y", Math.Round(diff.TotalDays / 365)],
+            { TotalDays: >= 30 }   => Loc["{0}mo", Math.Round(diff.TotalDays / 30)],
+            { TotalDays: >= 7 }    => Loc["{0}d", Math.Round(diff.TotalDays / 7)],
+            { TotalDays: >= 1 }    => Loc["{0}d", Math.Round(diff.TotalDays)],
+            { TotalHours: >= 1 }   => Loc["{0}h", Math.Round(diff.TotalHours)],
+            { TotalMinutes: >= 1 } => Loc["{0}m", Math.Round(diff.TotalMinutes)],
+            { TotalSeconds: >= 1 } => Loc["{0}s", Math.Round(diff.TotalSeconds)],
+            _                      => Loc["Just now"]
+        };
     }
 }
