@@ -1,5 +1,6 @@
 .notification {
     display: flex;
+    flex-direction: column;
     background-color: var(--foreground-color);
     border-radius: 0.75rem;
     padding: 1rem 1rem 1rem; /* top, left-right, bottom*/
@@ -15,6 +16,12 @@
     display: flex;
     flex-direction: column;
     width: 100%;
+    border-style: solid;
+    border-color: var(--highlight-color);
+    border-width: 0.2rem;
+    border-radius: 1.25rem;
+    padding: 0.5rem;
+    margin-top: 1rem;
 }
 
 .user-avatar {
@@ -34,5 +41,10 @@
 .notification-body {
     display: flex;
     flex-direction: column;
+    width: 100%;
+}
+
+.notification-header {
+    display: flex;
     width: 100%;
 }
