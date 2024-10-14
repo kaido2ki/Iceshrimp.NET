@@ -35,8 +35,11 @@
         <td>@Model.Job.Queue</td>
     </tr>
     <tr>
+        @{
+            var status = Model.Job is { Status: Job.JobStatus.Delayed, RetryCount: 0 } ? "Scheduled" : Model.Job.Status.ToString();
+        }
         <td>Status</td>
-        <td class="status-@Model.Job.Status.ToString().ToLowerInvariant()">@Model.Job.Status</td>
+        <td class="status-@status.ToLowerInvariant()">@status</td>
     </tr>
     @if (Model.Job.Status.Equals(Job.JobStatus.Failed))
     {
@@ -49,10 +52,11 @@
     }
     else if (Model.Job.Status.Equals(Job.JobStatus.Delayed))
     {
+        var abandonName = Model.Job.RetryCount == 0 ? "Deschedule" : "Abandon";
         <tr>
             <td>Actions</td>
             <td>
-                <a class="fake-link" onclick="abandon('@Model.Job.Id.ToStringLower()')">Abandon</a>
+                <a class="fake-link" onclick="abandon('@Model.Job.Id.ToStringLower()')">@abandonName</a>
             </td>
         </tr>
     }

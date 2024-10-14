@@ -1,6 +1,7 @@
 :root {
     --queued-color: #9958FC;
     --delayed-color: #FFCD59;
+    --scheduled-color: #FFE4A5;
     --running-color: #59D5FF;
     --completed-color: #92EF5F;
     --failed-color: #FF5151;
@@ -12,6 +13,10 @@
 
 .status-delayed {
     color: var(--delayed-color);
+}
+
+.status-scheduled {
+    color: var(--scheduled-color);
 }
 
 .status-running {

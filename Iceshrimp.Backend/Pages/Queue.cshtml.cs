@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
@@ -22,6 +23,8 @@ public class QueueModel(DatabaseContext db, QueueService queueSvc, MetaService m
 	public List<QueueStatus>? QueueStatuses;
 	public long?              Last;
 	public string             InstanceName = "Iceshrimp.NET";
+
+	public static readonly ImmutableArray<string> ScheduledQueues = ["background-task", "backfill"];
 
 	public async Task<IActionResult> OnGet(
 		[FromRoute] string? queue, [FromRoute(Name = "pagination")] int? page, [FromRoute] string? status

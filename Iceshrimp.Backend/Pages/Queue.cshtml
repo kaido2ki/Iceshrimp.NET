@@ -50,11 +50,26 @@
         <tbody>
         @foreach (var queue in Model.QueueStatuses ?? throw new Exception("Model.QueueStatuses must not be null here"))
         {
+            var isScheduled = QueueModel.ScheduledQueues.Contains(queue.Name);
+            var scheduled   = isScheduled ? queue.JobCounts[Job.JobStatus.Delayed].ToString() : "-";
+            var delayed     = !isScheduled ? queue.JobCounts[Job.JobStatus.Delayed].ToString() : "-";
+
             <tr>
                 <td>@queue.Name</td>
                 @foreach (var status in Enum.GetValues<Job.JobStatus>())
                 {
-                    <td class="status-@Enum.GetName(status)!.ToLowerInvariant() justify-right">@queue.JobCounts[status]</td>
+                    if (status == Job.JobStatus.Delayed)
+                    {
+                        <td class="status-delayed justify-right">@delayed</td>
+                    }
+                    else if (status == Job.JobStatus.Queued && isScheduled)
+                    {
+                        <td class="justify-right">(<span class="status-scheduled">@scheduled</span>) <span class="status-queued">@queue.JobCounts[status]</span></td>
+                    }
+                    else
+                    {
+                        <td class="status-@Enum.GetName(status)!.ToLowerInvariant() justify-right">@queue.JobCounts[status]</td>
+                    }
                 }
             </tr>
         }
@@ -85,14 +100,19 @@
 
 else
 {
+    var delayedStr = QueueModel.ScheduledQueues.Contains(Model.Queue) ? "scheduled" : "delayed";
     if (Model.Filter == null)
     {
-        <p>Listing @Model.TotalCount <b>@Model.Queue</b> jobs, out of which <span class="status-running">@Model.RunningCount</span> are <span class="status-running">running</span>, <span class="status-queued">@Model.QueuedCount</span> are <span class="status-queued">queued</span> and <span class="status-delayed">@Model.DelayedCount</span> are <span class="status-delayed">delayed</span>.</p>
+        <p>Listing @Model.TotalCount <b>@Model.Queue</b> jobs, out of which <span class="status-running">@Model.RunningCount</span> are <span class="status-running">running</span>, <span class="status-queued">@Model.QueuedCount</span> are <span class="status-queued">queued</span> and <span class="status-delayed">@Model.DelayedCount</span> are <span class="status-@delayedStr">@delayedStr</span>.</p>
     }
     else
     {
+        var filterStr = Model.Filter.Value == Job.JobStatus.Delayed && QueueModel.ScheduledQueues.Contains(Model.Queue)
+            ? "scheduled"
+            : Model.Filter.Value.ToString().ToLowerInvariant();
+
         <p>
-            Listing @Model.TotalCount <span class="status-@Model.Filter.Value.ToString().ToLowerInvariant()">@Model.Filter.Value.ToString().ToLowerInvariant()</span> <b>@Model.Queue</b> jobs.
+            Listing @Model.TotalCount <span class="status-@filterStr">@filterStr</span> <b>@Model.Queue</b> jobs.
             @if (Model.Filter is Job.JobStatus.Failed)
             {
                 <span>Batch retry: <a class="fake-link" onclick="retryAllFailed('@Model.Queue')">all failed</a> / <a class="fake-link" onclick="retryAllOnPage('@Model.Queue')">all on this page</a></span>
@@ -158,13 +178,17 @@ else
             }
             @foreach (var status in Enum.GetValues<Job.JobStatus>())
             {
+                var statusStr = status == Job.JobStatus.Delayed && QueueModel.ScheduledQueues.Contains(Model.Queue)
+                    ? "Scheduled"
+                    : status.ToString();
+
                 if (Model.Filter.Equals(status))
                 {
-                    <option value="@status.ToString().ToLowerInvariant()" selected>@status.ToString()</option>
+                    <option value="@status.ToString().ToLowerInvariant()" selected>@statusStr</option>
                 }
                 else
                 {
-                    <option value="@status.ToString().ToLowerInvariant()">@status.ToString()</option>
+                    <option value="@status.ToString().ToLowerInvariant()">@statusStr</option>
                 }
             }
         </select>
@@ -181,6 +205,8 @@ else
         var id = job.Id.ToStringLower();
         var additional = job.Status switch
         {
+            Job.JobStatus.Delayed when job.RetryCount is 0 => $"for {job.DelayedUntil?.ToLocalTime().ToDisplayStringTz() ?? "<unknown>"}",
+            // Separated for readability
             Job.JobStatus.Queued    => $"for {job.QueueDuration.ToDurationDisplayString()}",
             Job.JobStatus.Running   => $"for {job.Duration.ToDurationDisplayString()}",
             Job.JobStatus.Delayed   => $"until {job.DelayedUntil?.ToLocalTime().ToDisplayStringTz() ?? "<unknown>"}",
@@ -193,6 +219,8 @@ else
             ? "new-item"
             : "";
 
+        var status = job is { Status: Job.JobStatus.Delayed, RetryCount: 0 } ? "Scheduled" : job.Status.ToString();
+
         <tr class="@classes">
             @if (withQueue)
             {
@@ -203,8 +231,8 @@ else
             {
                 <td class="uuid">@id</td>
             }
-            <td class="status-@job.Status.ToString().ToLowerInvariant()">
-            <b>@job.Status</b> <small>@additional</small>
+            <td class="status-@status.ToLowerInvariant()">
+            <b>@status</b> <small>@additional</small>
             <td>
                 <a href="/queue/job/@id">View details</a>
             </td>
