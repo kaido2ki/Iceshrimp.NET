@@ -13,6 +13,7 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -217,10 +218,10 @@ public class NoteController(
 	[HttpGet("{id}/likes")]
 	[Authenticate]
 	[Authorize]
-	[LinkPagination(20, 40)]
+	[RestPagination(20, 40)]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
-	public async Task<IEnumerable<UserResponse>> GetNoteLikes(string id, PaginationQuery pq)
+	public async Task<PaginationWrapper<IEnumerable<UserResponse>>> GetNoteLikes(string id, PaginationQuery pq)
 	{
 		var user = HttpContext.GetUser();
 		var note = await db.Notes
@@ -236,8 +237,8 @@ public class NoteController(
 		                    .Wrap(p => p.User)
 		                    .ToListAsync();
 
-		HttpContext.SetPaginationData(users);
-		return await userRenderer.RenderMany(users.Select(p => p.Entity));
+		var res = await userRenderer.RenderMany(users.Select(p => p.Entity));
+		return HttpContext.CreatePaginationWrapper(pq, users, res);
 	}
 
 	[HttpPost("{id}/renote")]

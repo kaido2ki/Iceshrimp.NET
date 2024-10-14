@@ -365,7 +365,7 @@ public static class ServiceExtensions
 	}
 }
 
-public static class HttpContextExtensions
+public static partial class HttpContextExtensions
 {
 	public static string GetRateLimitPartition(this HttpContext ctx, bool includeRoute) =>
 		(includeRoute ? ctx.Request.Path.ToString() + "#" : "") + (GetRateLimitPartitionInternal(ctx) ?? "");

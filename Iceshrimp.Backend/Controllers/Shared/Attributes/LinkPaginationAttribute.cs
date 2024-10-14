@@ -7,7 +7,11 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Iceshrimp.Backend.Controllers.Shared.Attributes;
 
-public class LinkPaginationAttribute(int defaultLimit, int maxLimit, bool offset = false) : ActionFilterAttribute
+public class LinkPaginationAttribute(
+	int defaultLimit,
+	int maxLimit,
+	bool offset = false
+) : ActionFilterAttribute, IPaginationAttribute
 {
 	public int DefaultLimit => defaultLimit;
 	public int MaxLimit     => maxLimit;
@@ -73,6 +77,12 @@ public class LinkPaginationAttribute(int defaultLimit, int maxLimit, bool offset
 	{
 		return UriHelper.BuildAbsolute("https", request.Host, request.PathBase, request.Path, query);
 	}
+}
+
+public interface IPaginationAttribute
+{
+	public int  DefaultLimit { get; }
+	public int  MaxLimit     { get; }
 }
 
 public static class HttpContextExtensions

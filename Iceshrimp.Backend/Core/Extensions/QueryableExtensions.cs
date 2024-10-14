@@ -276,13 +276,11 @@ public static class QueryableExtensions
 		ControllerContext context
 	) where T : IEntity
 	{
-		var filter = context.ActionDescriptor.FilterDescriptors.Select(p => p.Filter)
-		                    .OfType<LinkPaginationAttribute>()
-		                    .FirstOrDefault();
-		if (filter == null)
-			throw new Exception("Route doesn't have a LinkPaginationAttribute");
+		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
+		if (attr == null)
+			throw new Exception("Route doesn't have a IPaginationAttribute");
 
-		return Paginate(query, pq, filter.DefaultLimit, filter.MaxLimit);
+		return Paginate(query, pq, attr.DefaultLimit, attr.MaxLimit);
 	}
 
 	public static IQueryable<T> PaginateByOffset<T>(
@@ -304,13 +302,11 @@ public static class QueryableExtensions
 		ControllerContext context
 	) where T : IEntity
 	{
-		var filter = context.ActionDescriptor.FilterDescriptors.Select(p => p.Filter)
-		                    .OfType<LinkPaginationAttribute>()
-		                    .FirstOrDefault();
-		if (filter == null)
-			throw new Exception("Route doesn't have a LinkPaginationAttribute");
+		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
+		if (attr == null)
+			throw new Exception("Route doesn't have a IPaginationAttribute");
 
-		return PaginateByOffset(query, pq, filter.DefaultLimit, filter.MaxLimit);
+		return PaginateByOffset(query, pq, attr.DefaultLimit, attr.MaxLimit);
 	}
 
 	public static IQueryable<T> Paginate<T>(
@@ -320,13 +316,11 @@ public static class QueryableExtensions
 		ControllerContext context
 	) where T : IEntity
 	{
-		var filter = context.ActionDescriptor.FilterDescriptors.Select(p => p.Filter)
-		                    .OfType<LinkPaginationAttribute>()
-		                    .FirstOrDefault();
-		if (filter == null)
-			throw new Exception("Route doesn't have a LinkPaginationAttribute");
+		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
+		if (attr == null)
+			throw new Exception("Route doesn't have a IPaginationAttribute");
 
-		return Paginate(query, predicate, pq, filter.DefaultLimit, filter.MaxLimit);
+		return Paginate(query, predicate, pq, attr.DefaultLimit, attr.MaxLimit);
 	}
 
 	public static IQueryable<T> Paginate<T>(
@@ -336,13 +330,11 @@ public static class QueryableExtensions
 		ControllerContext context
 	) where T : IEntity
 	{
-		var filter = context.ActionDescriptor.FilterDescriptors.Select(p => p.Filter)
-		                    .OfType<LinkPaginationAttribute>()
-		                    .FirstOrDefault();
-		if (filter == null)
-			throw new Exception("Route doesn't have a LinkPaginationAttribute");
+		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
+		if (attr == null)
+			throw new Exception("Route doesn't have a IPaginationAttribute");
 
-		return Paginate(query, predicate, pq, filter.DefaultLimit, filter.MaxLimit);
+		return Paginate(query, predicate, pq, attr.DefaultLimit, attr.MaxLimit);
 	}
 
 	public static IQueryable<T> Paginate<T>(
@@ -351,13 +343,11 @@ public static class QueryableExtensions
 		ControllerContext context
 	) where T : IEntity
 	{
-		var filter = context.ActionDescriptor.FilterDescriptors.Select(p => p.Filter)
-		                    .OfType<LinkPaginationAttribute>()
-		                    .FirstOrDefault();
-		if (filter == null)
-			throw new Exception("Route doesn't have a LinkPaginationAttribute");
+		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
+		if (attr == null)
+			throw new Exception("Route doesn't have a IPaginationAttribute");
 
-		return Paginate(query, pq, filter.DefaultLimit, filter.MaxLimit);
+		return Paginate(query, pq, attr.DefaultLimit, attr.MaxLimit);
 	}
 
 	public static IQueryable<EntityWrapper<TResult>> Wrap<TSource, TResult>(
