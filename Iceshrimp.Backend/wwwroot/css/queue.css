@@ -95,3 +95,7 @@
 .display-none {
     display: none;
 }
+
+.color-fg {
+    color: var(--text-main);
+}

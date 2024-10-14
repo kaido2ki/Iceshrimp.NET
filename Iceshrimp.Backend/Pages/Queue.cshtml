@@ -44,7 +44,8 @@
         <th>Name</th>
         @foreach (var status in Enum.GetValues<Job.JobStatus>())
         {
-            <th class="justify-right">@Enum.GetName(status)</th>
+            var name = Enum.GetName(status);
+            <th class="justify-right">@name</th>
         }
         </thead>
         <tbody>
@@ -55,20 +56,37 @@
             var delayed     = !isScheduled ? queue.JobCounts[Job.JobStatus.Delayed].ToString() : "-";
 
             <tr>
-                <td>@queue.Name</td>
+                <td>
+                    <a href="/queue/@queue.Name" class="color-fg">@queue.Name</a>
+                </td>
                 @foreach (var status in Enum.GetValues<Job.JobStatus>())
                 {
+                    var name = Enum.GetName(status)!.ToLowerInvariant();
                     if (status == Job.JobStatus.Delayed)
                     {
-                        <td class="status-delayed justify-right">@delayed</td>
+                        if (!isScheduled)
+                        {
+                            <td class="justify-right">
+                                <a href="/queue/@queue.Name/1/delayed" class="status-@name">@delayed</a>
+                            </td>
+                        }
+                        else
+                        {
+                            <td class="justify-right status-@name">@delayed</td>
+                        }
                     }
                     else if (status == Job.JobStatus.Queued && isScheduled)
                     {
-                        <td class="justify-right">(<span class="status-scheduled">@scheduled</span>) <span class="status-queued">@queue.JobCounts[status]</span></td>
+                        <td class="justify-right">
+                            (<a href="/queue/@queue.Name/1/delayed" class="status-scheduled">@scheduled</a>)
+                            <a href="/queue/@queue.Name/1/queued" class="status-queued">@queue.JobCounts[status]</a>
+                        </td>
                     }
                     else
                     {
-                        <td class="status-@Enum.GetName(status)!.ToLowerInvariant() justify-right">@queue.JobCounts[status]</td>
+                        <td class="justify-right">
+                            <a href="/queue/@queue.Name/1/@name" class="status-@name">@queue.JobCounts[status]</a>
+                        </td>
                     }
                 }
             </tr>
