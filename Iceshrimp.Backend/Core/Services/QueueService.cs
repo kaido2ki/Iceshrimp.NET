@@ -504,7 +504,7 @@ public class PostgresJobQueue<T>(
 			job.Status     = Job.JobStatus.Completed;
 			job.FinishedAt = DateTime.UtcNow;
 
-			if (job.RetryCount == 0)
+			if (job.QueueDuration < 10_000)
 			{
 				_logger.LogTrace("Job in queue {queue} completed after {duration} ms, was queued for {queueDuration} ms",
 				                 name, job.Duration, job.QueueDuration);
