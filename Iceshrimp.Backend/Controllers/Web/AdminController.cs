@@ -77,6 +77,40 @@ public class AdminController(
 		await db.SaveChangesAsync();
 	}
 
+	[HttpGet("instances/allowed")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<List<AllowedInstance>> GetAllowedInstances([FromQuery] int? limit, [FromQuery] int? offset)
+	{
+		if (security.Value.FederationMode == Enums.FederationMode.BlockList)
+			throw GracefulException.BadRequest("Federation mode is set to blocklist.");
+
+		var q = db.AllowedInstances.OrderBy(p => p.Host).AsQueryable();
+		if (offset != null)
+			q = q.Skip(offset.Value);
+		if (limit != null)
+			q = q.Take(limit.Value);
+
+		return await q.ToListAsync();
+	}
+
+	[HttpGet("instances/blocked")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<List<BlockedInstance>> GetBlockedInstances([FromQuery] int? limit, [FromQuery] int? offset)
+	{
+		if (security.Value.FederationMode == Enums.FederationMode.AllowList)
+			throw GracefulException.BadRequest("Federation mode is set to allowlist.");
+
+		var q = db.BlockedInstances.OrderBy(p => p.Host).AsQueryable();
+		if (offset != null)
+			q = q.Skip(offset.Value);
+		if (limit != null)
+			q = q.Take(limit.Value);
+
+		return await q.ToListAsync();
+	}
+
 	[HttpPost("instances/{host}/allow")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
