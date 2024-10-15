@@ -77,5 +77,4 @@ async function retryAllOnPage(queue) {
 
 async function abandon(id, target) {
     await confirm(target, () => callApiMethod(`/api/iceshrimp/admin/queue/jobs/${id}/abandon`));
-    window.location.reload();
 }
