@@ -98,7 +98,7 @@ public class PreDeliverQueue(int parallelism)
 			if (activity.Object is not ASNote n) return;
 			if (!n.To?.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public") ?? true) return;
 
-			var relays = await db.Relays.ToArrayAsync(token);
+			var relays = await db.Relays.Where(p => p.Status == Relay.RelayStatus.Accepted).ToArrayAsync(token);
 			if (relays is []) return;
 
 			if (!config.Value.AttachLdSignatures || activity is ASDelete)
