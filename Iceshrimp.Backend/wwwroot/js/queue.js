@@ -34,6 +34,17 @@ function getCookie(key) {
     return (result = new RegExp('(?:^|; )' + encodeURIComponent(key) + '=([^;]*)').exec(document.cookie)) ? (result[1]) : null;
 }
 
+async function confirm(target, action) {
+    const match = " (confirm)";
+    if (!target.innerText.endsWith(match)) {
+        target.innerText += match;
+    }
+    else {
+        await action();
+        window.location.reload();
+    }
+}
+
 async function callApiMethod(route) {
     const cookie = getCookie('admin_session');
     if (cookie == null) throw new Error('Failed to get admin_session cookie');
@@ -64,7 +75,7 @@ async function retryAllOnPage(queue) {
     window.location.reload();
 }
 
-async function abandon(id) {
-    await callApiMethod(`/api/iceshrimp/admin/queue/jobs/${id}/abandon`);
+async function abandon(id, target) {
+    await confirm(target, () => callApiMethod(`/api/iceshrimp/admin/queue/jobs/${id}/abandon`));
     window.location.reload();
 }
