@@ -601,7 +601,6 @@ public class NoteService(
 
 			var combinedAltText = data.Attachments?.Select(p => p.Comment).Where(c => c != null);
 			note.CombinedAltText = combinedAltText != null ? string.Join(' ', combinedAltText) : null;
-
 		}
 
 		var isPollEdited = false;
@@ -949,7 +948,7 @@ public class NoteService(
 		var emoji = (await emojiSvc.ProcessEmojiAsync(note.Tags?.OfType<ASEmoji>().ToList(), actor.Host))
 		            .Select(p => p.Id)
 		            .ToList();
-		
+
 		policySvc.CallRewriteHooks(note, actor, IRewritePolicy.HookLocationEnum.PostLogic);
 
 		return await CreateNoteAsync(new NoteCreationData
@@ -1397,13 +1396,17 @@ public class NoteService(
 
 	public async Task LikeNoteAsync(ASNote note, User actor)
 	{
-		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot register like for unknown note");
+		var dbNote = await ResolveNoteAsync(note) ??
+		             throw GracefulException.UnprocessableEntity("Cannot register like for unknown note");
+
 		await LikeNoteAsync(dbNote, actor);
 	}
 
 	public async Task UnlikeNoteAsync(ASNote note, User user)
 	{
-		var dbNote = await ResolveNoteAsync(note) ?? throw new Exception("Cannot unregister like for unknown note");
+		var dbNote = await ResolveNoteAsync(note) ??
+		             throw GracefulException.UnprocessableEntity("Cannot unregister like for unknown note");
+
 		await UnlikeNoteAsync(dbNote, user);
 	}
 
