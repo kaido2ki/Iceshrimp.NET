@@ -309,7 +309,7 @@ public class BackgroundTaskQueue(int parallelism)
 		}
 
 		var fileIdQ   = db.DriveFiles.Where(p => p.User == user).Select(p => p.Id);
-		var fileIdCnt = fileIdQ.CountAsync(token);
+		var fileIdCnt = await fileIdQ.CountAsync(token);
 		var fileIds   = fileIdQ.AsChunkedAsyncEnumerable(50, p => p);
 		logger.LogDebug("Removing {count} files for user {id}", fileIdCnt, user.Id);
 		await foreach (var id in fileIds)
@@ -321,16 +321,18 @@ public class BackgroundTaskQueue(int parallelism)
 		}
 
 		var noteQ   = db.Notes.Where(p => p.User == user).Select(p => p.Id);
-		var noteCnt = noteQ.CountAsync(token);
+		var noteCnt = await noteQ.CountAsync(token);
 		var noteIds = noteQ.AsChunkedAsyncEnumerable(50, p => p);
 		logger.LogDebug("Removing {count} notes for user {id}", noteCnt, user.Id);
 		await foreach (var id in noteIds)
 		{
-			var note = await db.Notes.AsNoTracking()
+			var note = await db.Notes
 			                   .IncludeCommonProperties()
 			                   .FirstOrDefaultAsync(p => p.Id == id, cancellationToken: token);
 
 			if (note != null) await noteSvc.DeleteNoteAsync(note);
+			
+			db.ChangeTracker.Clear();
 		}
 
 		logger.LogDebug("User {id} purged successfully", jobData.UserId);
