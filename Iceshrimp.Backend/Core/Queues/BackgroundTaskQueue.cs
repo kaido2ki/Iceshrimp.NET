@@ -14,7 +14,7 @@ namespace Iceshrimp.Backend.Core.Queues;
 
 public class BackgroundTaskQueue(int parallelism)
 	: PostgresJobQueue<BackgroundTaskJobData>("background-task", BackgroundTaskQueueProcessorDelegateAsync,
-	                                          parallelism, TimeSpan.FromSeconds(60))
+	                                          parallelism, TimeSpan.FromMinutes(15))
 {
 	private static async Task BackgroundTaskQueueProcessorDelegateAsync(
 		Job job,
