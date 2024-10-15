@@ -56,7 +56,7 @@
         <tr>
             <td>Actions</td>
             <td>
-                <a class="fake-link" onclick="abandon('@Model.Job.Id.ToStringLower()', event)">@abandonName</a>
+                <a class="fake-link" onclick="abandon('@Model.Job.Id.ToStringLower()', event.target)">@abandonName</a>
             </td>
         </tr>
     }
