@@ -121,7 +121,7 @@ else
     var delayedStr = QueueModel.ScheduledQueues.Contains(Model.Queue) ? "scheduled" : "delayed";
     if (Model.Filter == null)
     {
-        <p>Listing @Model.TotalCount <b>@Model.Queue</b> jobs, out of which <span class="status-running">@Model.RunningCount</span> are <span class="status-running">running</span>, <span class="status-queued">@Model.QueuedCount</span> are <span class="status-queued">queued</span> and <span class="status-delayed">@Model.DelayedCount</span> are <span class="status-@delayedStr">@delayedStr</span>.</p>
+        <p>Listing @Model.TotalCount <b>@Model.Queue</b> jobs, out of which <span class="status-running">@Model.RunningCount</span> are <span class="status-running">running</span>, <span class="status-queued">@Model.QueuedCount</span> are <span class="status-queued">queued</span> and <span class="status-@delayedStr">@Model.DelayedCount</span> are <span class="status-@delayedStr">@delayedStr</span>.</p>
     }
     else
     {
