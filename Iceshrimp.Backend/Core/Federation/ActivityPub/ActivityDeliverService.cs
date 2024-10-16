@@ -49,18 +49,8 @@ public class ActivityDeliverService(
 
 	public async Task DeliverToConditionalAsync(ASActivity activity, User actor, Note note)
 	{
-		if (note.Visibility != Note.NoteVisibility.Specified)
-		{
-			await DeliverToFollowersAsync(activity, actor, note.User.IsLocalUser ? [] : [note.User]);
-			return;
-		}
-
-		var recipients = await db.Users
-		                         .Where(p => note.VisibleUserIds.Prepend(note.User.Id).Contains(p.Id))
-		                         .Where(p => p.IsRemoteUser)
-		                         .ToArrayAsync();
-
-		await DeliverToAsync(activity, actor, recipients);
+		var recipientIds = note.VisibleUserIds.Prepend(note.User.Id);
+		await DeliverToConditionalAsync(activity, actor, note, recipientIds);
 	}
 
 	public async Task DeliverToConditionalAsync(
@@ -71,8 +61,8 @@ public class ActivityDeliverService(
 		                         .Where(p => recipientIds.Contains(p.Id))
 		                         .Where(p => p.IsRemoteUser)
 		                         .Select(p => new User { Id = p.Id })
-		                         .ToListAsync();
-		
+		                         .ToArrayAsync();
+
 		if (note.Visibility == Note.NoteVisibility.Specified)
 			await DeliverToAsync(activity, actor, recipients.ToArray());
 		else
