@@ -436,15 +436,8 @@ public class NoteService(
 				? [note.Renote.User.Id]
 				: [];
 
-		var recipients = await db.Users
-		                         .Where(p => mentionedUserIds.Concat(additionalUserIds).Contains(p.Id))
-		                         .Select(p => new User { Id = p.Id })
-		                         .ToListAsync();
-
-		if (note.Visibility == Note.NoteVisibility.Specified)
-			await deliverSvc.DeliverToAsync(activity, data.User, recipients.ToArray());
-		else
-			await deliverSvc.DeliverToFollowersAsync(activity, data.User, recipients);
+		var recipientIds = mentionedUserIds.Concat(additionalUserIds);
+		await deliverSvc.DeliverToConditionalAsync(activity, note.User, note, recipientIds);
 
 		return note;
 	}
@@ -696,15 +689,7 @@ public class NoteService(
 		var obj      = await noteRenderer.RenderAsync(note, mentions);
 		var activity = ActivityPub.ActivityRenderer.RenderUpdate(obj, actor);
 
-		var recipients = await db.Users.Where(p => mentionedUserIds.Contains(p.Id))
-		                         .Select(p => new User { Id = p.Id })
-		                         .ToListAsync();
-
-		if (note.Visibility == Note.NoteVisibility.Specified)
-			await deliverSvc.DeliverToAsync(activity, note.User, recipients.ToArray());
-		else
-			await deliverSvc.DeliverToFollowersAsync(activity, note.User, recipients);
-
+		await deliverSvc.DeliverToConditionalAsync(activity, note.User, note, mentionedUserIds);
 		return note;
 	}
 

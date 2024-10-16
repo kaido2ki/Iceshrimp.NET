@@ -65,6 +65,22 @@ public class ActivityDeliverService(
 		await DeliverToAsync(activity, actor, recipients);
 	}
 
+	public async Task DeliverToConditionalAsync(
+		ASActivity activity, User actor, Note note, IEnumerable<string> recipientIds
+	)
+	{
+		var recipients = await db.Users
+		                         .Where(p => recipientIds.Contains(p.Id))
+		                         .Where(p => p.IsRemoteUser)
+		                         .Select(p => new User { Id = p.Id })
+		                         .ToListAsync();
+		
+		if (note.Visibility == Note.NoteVisibility.Specified)
+			await DeliverToAsync(activity, note.User, recipients.ToArray());
+		else
+			await DeliverToFollowersAsync(activity, note.User, recipients);
+	}
+
 	public async Task DeliverToAsync(ASActivity activity, User actor, string recipientInbox)
 	{
 		logger.LogDebug("Queuing deliver-to-inbox job for activity {id}", activity.Id);
