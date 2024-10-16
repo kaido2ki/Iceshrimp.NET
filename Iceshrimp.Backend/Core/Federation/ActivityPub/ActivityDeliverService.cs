@@ -56,10 +56,8 @@ public class ActivityDeliverService(
 		}
 
 		var recipients = await db.Users
-		                         .Where(p => p.IsRemoteUser &&
-		                                     note.VisibleUserIds
-		                                         .Prepend(note.User.Id)
-		                                         .Contains(p.Id))
+		                         .Where(p => note.VisibleUserIds.Prepend(note.User.Id).Contains(p.Id))
+		                         .Where(p => p.IsRemoteUser)
 		                         .ToArrayAsync();
 
 		await DeliverToAsync(activity, actor, recipients);
