@@ -623,12 +623,20 @@ public class NoteService(
 					note.Poll.Votes = poll.Votes == null! || poll.Votes.Count != poll.Choices.Count
 						? poll.Choices.Select(_ => 0).ToList()
 						: poll.Votes;
-					note.Poll.VotersCount = poll.VotersCount ?? note.Poll.VotersCount;
+					note.Poll.VotersCount =
+						poll.VotersCount ??
+						(note.Poll.VotersCount == null
+							? null
+							: Math.Max(note.Poll.VotersCount.Value, note.Poll.Votes.Sum()));
 				}
 				else if (poll.Votes.Count == poll.Choices.Count)
 				{
-					note.Poll.Votes       = poll.Votes;
-					note.Poll.VotersCount = poll.VotersCount ?? note.Poll.VotersCount;
+					note.Poll.Votes = poll.Votes;
+					note.Poll.VotersCount =
+						poll.VotersCount ??
+						(note.Poll.VotersCount == null
+							? null
+							: Math.Max(note.Poll.VotersCount.Value, note.Poll.Votes.Sum()));
 				}
 			}
 			else
