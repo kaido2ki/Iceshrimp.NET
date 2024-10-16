@@ -76,9 +76,9 @@ public class ActivityDeliverService(
 		                         .ToListAsync();
 		
 		if (note.Visibility == Note.NoteVisibility.Specified)
-			await DeliverToAsync(activity, note.User, recipients.ToArray());
+			await DeliverToAsync(activity, actor, recipients.ToArray());
 		else
-			await DeliverToFollowersAsync(activity, note.User, recipients);
+			await DeliverToFollowersAsync(activity, actor, recipients);
 	}
 
 	public async Task DeliverToAsync(ASActivity activity, User actor, string recipientInbox)
