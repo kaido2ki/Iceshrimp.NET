@@ -17,6 +17,7 @@ public static class StartupHelpers
 			                    --recompute-counters  Recomputes denormalized database counters.
 			                    --migrate-storage     Migrates all files currently stored locally to the
 			                                          configured object storage bucket.
+			                    --fixup-media         Fixes up cached remote drive files with missing files.
 			                    --migrate-from-js     Migrates an iceshrimp-js database to an Iceshrimp.NET one.
 			                    --https               For development purposes only. Listens using https
 			                                          instead of http on the specified port.

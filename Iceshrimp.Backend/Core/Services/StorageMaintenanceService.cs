@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -11,6 +12,7 @@ namespace Iceshrimp.Backend.Core.Services;
 public class StorageMaintenanceService(
 	DatabaseContext db,
 	ObjectStorageService objectStorageSvc,
+	DriveService driveSvc,
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	IOptionsSnapshot<Config.StorageSection> options,
 	ILogger<StorageMaintenanceService> logger
@@ -139,6 +141,80 @@ public class StorageMaintenanceService(
 			foreach (var chunk in failed.Chunk(100))
 				await db.DriveFiles.Where(p => chunk.Contains(p.Id)).ExecuteDeleteAsync();
 			logger.LogInformation("All done.");
+		}
+	}
+
+	public async Task FixupMedia(bool dryRun)
+	{
+		var query    = db.DriveFiles.Where(p => !p.IsLink && p.Uri != null);
+		var total    = await query.CountAsync();
+		var progress = 0;
+		var modified = 0;
+		logger.LogInformation("Validating all files, this may take a long time...");
+
+		await foreach (var file in query.AsChunkedAsyncEnumerable(50, p => p.Id))
+		{
+			if (++progress % 100 == 0)
+				logger.LogInformation("Validating files... ({idx}/{total})", progress, total);
+
+			var res = await driveSvc.VerifyFileExistence(file);
+			if (res == (true, true, true)) continue;
+
+			modified++;
+
+			if (!res.original)
+			{
+				if (dryRun)
+				{
+					logger.LogInformation("Would expire file {id}, but --dry-run was specified.", file.Id);
+					continue;
+				}
+
+				await driveSvc.ExpireFile(file);
+				continue;
+			}
+
+			if (!res.thumbnail)
+			{
+				if (dryRun)
+				{
+					logger.LogInformation("Would remove thumbnail for {id}, but --dry-run was specified.", file.Id);
+				}
+				else
+				{
+					file.ThumbnailAccessKey = null;
+					file.ThumbnailUrl       = null;
+					file.ThumbnailMimeType  = null;
+					await db.SaveChangesAsync();
+				}
+			}
+
+			if (!res.@public)
+			{
+				if (dryRun)
+				{
+					logger.LogInformation("Would remove public version for {id}, but --dry-run was specified.",
+					                      file.Id);
+				}
+				else
+				{
+					file.PublicAccessKey = null;
+					file.PublicUrl       = null;
+					file.PublicMimeType  = null;
+					await db.SaveChangesAsync();
+				}
+			}
+		}
+
+		if (dryRun)
+		{
+			logger.LogInformation("Finished validating {count} files, of which {count} would have been fixed up.",
+			                      progress, modified);
+		}
+		else
+		{
+			logger.LogInformation("Finished validating {count} files, of which {count} have been fixed up.",
+			                      progress, modified);
 		}
 	}
 }

@@ -195,6 +195,12 @@ public static class WebApplicationExtensions
 			await provider.GetRequiredService<StorageMaintenanceService>().MigrateLocalFiles(args.Contains("--purge"));
 			Environment.Exit(0);
 		}
+		
+		if (args.Contains("--fixup-media"))
+		{
+			await provider.GetRequiredService<StorageMaintenanceService>().FixupMedia(args.Contains("--dry-run"));
+			Environment.Exit(0);
+		}
 
 		var storageConfig = app.Configuration.GetSection("Storage").Get<Config.StorageSection>() ??
 		                    throw new Exception("Failed to read Storage config section");

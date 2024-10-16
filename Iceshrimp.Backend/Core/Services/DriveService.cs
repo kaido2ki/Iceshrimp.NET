@@ -433,6 +433,75 @@ public class DriveService(
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(job);
 	}
 
+	public async Task ExpireFile(DriveFile file, CancellationToken token = default)
+	{
+		if (file is not { UserHost: not null, Uri: not null, IsLink: false }) return;
+
+		file.IsLink             = true;
+		file.Url                = file.Uri;
+		file.ThumbnailUrl       = null;
+		file.PublicUrl          = null;
+		file.ThumbnailAccessKey = null;
+		file.PublicAccessKey    = null;
+		file.ThumbnailMimeType  = null;
+		file.PublicMimeType     = null;
+		file.StoredInternal     = false;
+
+		await db.Users.Where(p => p.AvatarId == file.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.AvatarUrl, file.Uri), token);
+		await db.Users.Where(p => p.BannerId == file.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.BannerUrl, file.Uri), token);
+		await db.SaveChangesAsync(token);
+
+		if (file.AccessKey == null) return;
+		var deduplicated =
+			await db.DriveFiles.AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey && !p.IsLink,
+			                             token);
+
+		if (deduplicated)
+			return;
+
+		string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.PublicAccessKey];
+		if (file.StoredInternal)
+		{
+			var pathBase = storageConfig.Value.Local?.Path ??
+			               throw new Exception("Cannot delete locally stored file: pathBase is null");
+
+			paths.Where(p => p != null)
+			     .Select(p => Path.Combine(pathBase, p!))
+			     .Where(File.Exists)
+			     .ToList()
+			     .ForEach(File.Delete);
+		}
+		else
+		{
+			await storageSvc.RemoveFilesAsync(paths.Where(p => p != null).Select(p => p!).ToArray());
+		}
+	}
+
+	public async Task<(bool original, bool thumbnail, bool @public)> VerifyFileExistence(DriveFile file)
+	{
+		string?[] allFilenames = [file.AccessKey, file.ThumbnailAccessKey, file.PublicAccessKey];
+		var       filenames    = allFilenames.NotNull().ToArray();
+		var missing = file.StoredInternal
+			? filenames.Where(p => !VerifyFileLocalStorage(p)).ToArray()
+			: await filenames.Select(async p => (name: p, exists: await storageSvc.VerifyFileExistenceAsync(p)))
+			                 .AwaitAllAsync()
+			                 .ContinueWithResult(p => p.Where(i => !i.exists).Select(i => i.name).ToArray());
+
+		var original  = !missing.Contains(file.AccessKey);
+		var thumbnail = file.ThumbnailAccessKey == null || !missing.Contains(file.ThumbnailAccessKey);
+		var @public   = file.PublicAccessKey == null || !missing.Contains(file.PublicAccessKey);
+
+		return (original, thumbnail, @public);
+	}
+
+	private bool VerifyFileLocalStorage(string filename)
+	{
+		var pathBase = storageConfig.Value.Local?.Path ?? throw new Exception("Local storage path cannot be null");
+		return File.Exists(Path.Combine(pathBase, filename));
+	}
+
 	private static string GenerateDerivedFileName(string filename, string newExt)
 	{
 		return filename.EndsWith($".{newExt}") ? filename : $"{filename}.{newExt}";

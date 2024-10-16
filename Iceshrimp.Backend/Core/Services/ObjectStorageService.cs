@@ -123,6 +123,22 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 		await _bucket.DeleteAsync(filenames.Select(GetKeyWithPrefix).ToImmutableList());
 	}
 
+	public async Task<bool> VerifyFileExistenceAsync(string filename)
+	{
+		if (_bucket == null)
+			throw new Exception("Refusing to verify file existence from object storage with invalid configuration");
+
+		try
+		{
+			var res = await _bucket.ListAsync(GetKeyWithPrefix(filename));
+			return res.Count == 1;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
 	private string GetKeyWithPrefix(string filename)
 	{
 		return !string.IsNullOrWhiteSpace(_prefix) ? _prefix + "/" + filename : filename;
