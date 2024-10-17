@@ -282,10 +282,10 @@ public class NoteController(
 	[HttpGet("{id}/renotes")]
 	[Authenticate]
 	[Authorize]
-	[LinkPagination(20, 40)]
+	[RestPagination(20, 40)]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
-	public async Task<IEnumerable<UserResponse>> GetRenotes(string id, PaginationQuery pq)
+	public async Task<PaginationWrapper<IEnumerable<UserResponse>>> GetRenotes(string id, PaginationQuery pq)
 	{
 		var user = HttpContext.GetUser();
 		var note = await db.Notes
@@ -303,17 +303,17 @@ public class NoteController(
 		                    .Wrap(p => p.User)
 		                    .ToListAsync();
 
-		HttpContext.SetPaginationData(users);
-		return await userRenderer.RenderMany(users.Select(p => p.Entity));
+		var res = await userRenderer.RenderMany(users.Select(p => p.Entity));
+		return HttpContext.CreatePaginationWrapper(pq, users, res);
 	}
 
 	[HttpGet("{id}/quotes")]
 	[Authenticate]
 	[Authorize]
-	[LinkPagination(20, 40)]
+	[RestPagination(20, 40)]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
-	public async Task<IEnumerable<NoteResponse>> GetQuotes(string id, PaginationQuery pq)
+	public async Task<PaginationWrapper<IEnumerable<NoteResponse>>> GetQuotes(string id, PaginationQuery pq)
 	{
 		var user = HttpContext.GetUser();
 
@@ -331,8 +331,9 @@ public class NoteController(
 		                      .Paginate(pq, ControllerContext)
 		                      .ToListAsync();
 
-		return await noteRenderer.RenderMany(renotes.EnforceRenoteReplyVisibility(), user,
+		var res = await noteRenderer.RenderMany(renotes.EnforceRenoteReplyVisibility(), user,
 		                                     Filter.FilterContext.Threads);
+		return HttpContext.CreatePaginationWrapper(pq, renotes, res);
 	}
 
 	[HttpPost("{id}/react/{name}")]
