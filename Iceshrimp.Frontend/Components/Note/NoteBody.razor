@@ -1,11 +1,15 @@
 @using Iceshrimp.Shared.Schemas.Web
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Localization> Loc;
+@inject IJSRuntime                     Js;
 @if (NoteBase.Cw != null)
 {
     <div class="cw">
         <span class="cw-field">@NoteBase.Cw</span><button class="cw-button" @onclick="ToggleCw" @onclick:stopPropagation="true">Toggle CW</button>
     </div>
-    <div hidden="@CwToggle" class="note-body @(CwToggle ? "hidden" : "") @(Indented ? "indent" : "")">
+    <div hidden="@_cwToggle" class="note-body @(_cwToggle ? "hidden" : "") @(Indented ? "indent" : "")" @ref="Body">
         <span>
             @if (ReplyInaccessible)
             {
@@ -21,11 +25,10 @@
         }
     </div>
 }
-@if (NoteBase.Cw == null && OverLength)
+@if (NoteBase.Cw == null)
 {
     <div
-        class="note-body @(Truncate ? "truncated" : "") @(Indented ? "indent" : "")"
-        style="max-height: @(Truncate ? MaxHeight + "px" : "initial")">
+        class="note-body @(Indented ? "indent" : "") @(_showFull ? "show-full" : "")" @ref="Body">
         <span>
             @if (ReplyInaccessible)
             {
@@ -39,33 +42,18 @@
         {
             <NoteAttachments Attachments="NoteBase.Attachments"/>
         }
-    </div>
-    <button class="truncate-btn" @onclick="ToggleTruncate" @onclick:stopPropagation="true">
-        @if (Truncate)
+        @if (_overHeight)
         {
-            <span>Show more</span>
-        }
-        @if (!Truncate)
-        {
-            <span>Show less</span>
-        }
-    </button>
-}
-@if (NoteBase.Cw == null && OverLength == false)
-{
-    <div class="note-body @(Indented ? "indent" : "")">
-        <span>
-            @if (ReplyInaccessible)
-            {
-                <span class="reply-inaccessible">
-                    <Icon Name="Icons.ArrowBendLeftUp"/><Icon Name="Icons.Lock"/>
-                </span>
-            }
-            <MfmText Text="@NoteBase.Text" Emoji="@NoteBase.Emoji"/>
-        </span>
-        @if (NoteBase.Attachments.Count > 0)
-        {
-            <NoteAttachments Attachments="NoteBase.Attachments"/>
+            <button class="truncate-btn" @onclick="ToggleTruncate" @onclick:stopPropagation="true">
+                @if (_showFull)
+                {
+                    <span>@Loc["Show less"]</span>
+                }
+                @if (!_showFull)
+                {
+                    <span>@Loc["Show more"]</span>
+                }
+            </button>
         }
     </div>
 }
@@ -77,18 +65,43 @@
     [Parameter] public          bool     Indented          { get; set; }
     [Parameter] public          bool     ReplyInaccessible { get; set; }
 
-    private static int  MaxHeight => 500;
-    private        bool Truncate  { get; set; } = true;
-    private        bool CwToggle  { get; set; } = true;
+    private IJSObjectReference? Module { get; set; }
+    private ElementReference    Body   { get; set; }
+    private bool                _showFull    = false;
+    private bool                _cwToggle    = true;
+    private bool                _overHeight = false;
+    private bool                _flag         = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Module = await Js.InvokeAsync<IJSObjectReference>("import", "./Components/Note/NoteBody.razor.js");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender == false)
+        {
+            if (Module != null && _flag == false)
+            {
+                var computedHeight = await Module.InvokeAsync<float>("getComputedHeight", Body);
+                if (computedHeight > 40)
+                {
+                    _overHeight = true;
+                }
+                _flag         = true;
+                StateHasChanged();
+            }
+        }
+    }
 
     private void ToggleCw()
     {
-        CwToggle = !CwToggle;
+        _cwToggle = !_cwToggle;
         StateHasChanged();
     }
 
     private void ToggleTruncate()
     {
-        Truncate = !Truncate;
+        _showFull = !_showFull;
     }
 }
