@@ -15,7 +15,7 @@
                 <Note NoteResponse="el"/>
             </div>
         }
-        @if (_end is false)
+        @if (EndReached is false)
         {
             <ScrollEnd ManualLoad="LoadMore" IntersectionChange="LoadMore"/>
         }
@@ -23,31 +23,28 @@
 }
 
 @code {
-    [Parameter, EditorRequired] public required string             NoteId { get; set; }
-    private                                     State              State  { get; set; }
-    private                                     List<NoteResponse> Quotes { get; set; } = [];
-    private                                     string?            _minId;
-    private                                     string?            _maxId;
-    private                                     bool               _end   = false;
-    private                                     int                _limit = 40;
+    [Parameter, EditorRequired] public required string             NoteId     { get; set; }
+    private                                     State              State      { get; set; }
+    private                                     List<NoteResponse> Quotes     { get; set; } = [];
+    private                                     PaginationData     Pd         { get; set; } = null!;
+    private                                     bool               EndReached { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            var res   = await Api.Notes.GetQuotes(NoteId, new PaginationQuery { Limit = _limit });
-            if (res is not null && res.Count > 0)
+            var res = await Api.Notes.GetQuotes(NoteId, new PaginationQuery { Limit = 20 });
+            if (res is null)
             {
-                Quotes = res;
-                _minId = Quotes.Last().Id;
-                _maxId = Quotes.First().Id;
-                if (res.Count < _limit)
-                {
-                    _end = true;
-                }
+                State = State.NotFound;
+                Logger.LogWarning($"Quotes for '{NoteId}' not found.");
+                return;
             }
 
-            State = State.Loaded;
+            if (res.Links.Next is null) EndReached = true;
+            Quotes = res.Data;
+            Pd     = res.Links;
+            State  = State.Loaded;
         }
         catch (ApiException e)
         {
@@ -56,26 +53,32 @@
         }
     }
 
-    private async void LoadMore()
+    private async Task<PaginationWrapper<List<NoteResponse>>?> FetchMore(PaginationData data)
     {
-        var pq = new PaginationQuery { MaxId = _minId, Limit = 40 };
+        if (data.Next is null) return null;
+        var pq  = new PaginationQuery { MaxId = data.Next?.Split('=')[1], Limit = 20 };
+        var res = await Api.Notes.GetQuotes(NoteId, pq);
+        return res;
+    }
+
+    private async Task LoadMore()
+    {
+        if (EndReached) return;
         try
         {
-            var res = await Api.Notes.GetQuotes(NoteId, pq);
-            if (res is null) return; // If server returns null here, the note was likely deleted.
-            if (res.Count < 1)
+            var res = await FetchMore(Pd);
+            if (res is null)
             {
-                _end = true;
+                EndReached = true;
                 return;
             }
 
-            if (res.Count < _limit) _end = true;
-            _minId = res.Last().Id;
-            Quotes.AddRange(res);
+            Pd = res.Links;
+            Quotes.AddRange(res.Data);
         }
         catch (ApiException e)
         {
-            Logger.LogError(e, "Failed to load more quotes");
+            Logger.LogError(e, "Failed to load Quotes");
         }
     }
 }

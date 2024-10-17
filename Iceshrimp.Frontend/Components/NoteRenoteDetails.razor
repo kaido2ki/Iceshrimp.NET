@@ -8,7 +8,7 @@
 @if (State is State.Loaded)
 {
     <div class="renotes">
-        @if (RenotedBy != null) @foreach (var el in RenotedBy)
+        @foreach (var el in RenotedBy)
         {
             <div @onclick="() => OpenProfile(el.Username, el.Host)" class="renote-entry">
                 <img class="icon" src="@el.AvatarUrl"/>
@@ -17,6 +17,10 @@
                     <div class="username">@@@el.Username@(el.Host != null ? $"@{el.Host}" : "")</div>
                 </div>
             </div>
+        }
+        @if (EndReached == false)
+        {
+        <ScrollEnd IntersectionChange="LoadMore" ManualLoad="LoadMore"/>
         }
     </div>
 }
@@ -31,21 +35,63 @@
 
 
 @code {
-    [Parameter, EditorRequired] public required string              NoteId  { get; set; }
-    private                                     State               State   { get; set; }
-    private                                     List<UserResponse>? RenotedBy { get; set; } = [];
+    [Parameter, EditorRequired] public required string             NoteId     { get; set; }
+    private                                     State              State      { get; set; }
+    private                                     List<UserResponse> RenotedBy  { get; set; } = [];
+    private                                     PaginationData     Pd         { get; set; } = null!;
+    private                                     bool               EndReached { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            RenotedBy = await Api.Notes.GetRenotes(NoteId);
-            State   = State.Loaded;
+            var pq  = new PaginationQuery { Limit = 20 };
+            var res = await Api.Notes.GetRenotes(NoteId, pq);
+            if (res is null)
+            {
+                State = State.NotFound;
+                Logger.LogWarning($"Renotes for '{NoteId}' not found.");
+                return;
+            }
+
+            if (res.Links.Next is null) EndReached = true;
+            RenotedBy = res.Data;
+            Pd        = res.Links;
+            State     = State.Loaded;
         }
         catch (ApiException e)
         {
             Logger.LogError(e, "Failed to load likes");
             State = State.Error;
+        }
+    }
+
+    private async Task<PaginationWrapper<List<UserResponse>>?> FetchMore(PaginationData data)
+    {
+        if (data.Next is null) return null;
+        var pq  = new PaginationQuery { MaxId = data.Next?.Split('=')[1], Limit = 20 };
+        var res = await Api.Notes.GetRenotes(NoteId, pq);
+        return res;
+    }
+
+    private async Task LoadMore()
+    {
+        if (EndReached) return;
+        try
+        {
+            var res = await FetchMore(Pd);
+            if (res is null)
+            {
+                EndReached = true;
+                return;
+            }
+
+            Pd = res.Links;
+            RenotedBy.AddRange(res.Data);
+        }
+        catch (ApiException e)
+        {
+            Logger.LogError(e, "Failed to load renotes");
         }
     }
 
