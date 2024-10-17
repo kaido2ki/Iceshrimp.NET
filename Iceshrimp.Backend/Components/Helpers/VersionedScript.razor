@@ -1,0 +1,15 @@
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+<script src="@VersionedSrc" @attributes="AdditionalAttributes"></script>
+
+@code {
+    [Inject] public required IFileVersionProvider FileVersionProvider { get; set; }
+
+    @* ReSharper disable InconsistentNaming *@
+    [Parameter, EditorRequired] public required string src { get; set; }
+    @* ReSharper restore InconsistentNaming *@
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string VersionedSrc => FileVersionProvider.AddFileVersionToPath("", src);
+}

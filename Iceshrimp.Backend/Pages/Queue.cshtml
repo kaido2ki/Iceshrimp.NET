@@ -10,14 +10,14 @@
 }
 
 @section head {
-    <link rel="stylesheet" href="~/css/queue.css"/>
+    <link rel="stylesheet" href="~/css/queue.css" asp-append-version="true"/>
 }
 
 @section scripts {
-    <script src="~/js/queue.js"></script>
+    <script src="~/js/queue.js" asp-append-version="true"></script>
     @if (Model.Queue == null)
     {
-        <script src="~/js/queue-index.js"></script>
+        <script src="~/js/queue-index.js" asp-append-version="true"></script>
     }
 }
 
@@ -25,6 +25,7 @@
 <button role="link" data-target="/queue" onclick="navigate(event)">overview</button>
 @foreach (var queue in QueueSvc.QueueNames)
 {
+    //asd
     <button role="link" data-target="/queue/@queue" onclick="navigate(event)">@queue</button>
 }
 <br/>
