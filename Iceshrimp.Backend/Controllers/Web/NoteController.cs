@@ -119,6 +119,7 @@ public class NoteController(
 
 		var hits = await db.NoteDescendants(note, depth ?? 20, 100)
 		                   .Include(p => p.User.UserProfile)
+		                   .Include(p => p.Reply!.User.UserProfile)
 		                   .Include(p => p.Renote!.User.UserProfile)
 		                   .EnsureVisibleFor(user)
 		                   .FilterHidden(user, db)
@@ -126,8 +127,13 @@ public class NoteController(
 		                   .ToListAsync();
 
 		var notes = hits.EnforceRenoteReplyVisibility();
-		var res   = await noteRenderer.RenderMany(notes, user, Filter.FilterContext.Threads);
-		return res.ToList().OrderDescendants();
+		var res   = await noteRenderer.RenderMany(notes, user, Filter.FilterContext.Threads).ToListAsync();
+
+		// Strip redundant reply data
+		foreach (var item in res.Where(p => p.Reply != null && res.Any(i => i.Id == p.Reply.Id)))
+			item.Reply = null;
+
+		return res.OrderDescendants();
 	}
 
 	[HttpGet("{id}/reactions/{name}")]

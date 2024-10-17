@@ -391,8 +391,7 @@ public static class QueryableExtensions
 	public static IQueryable<Note> PrecomputeVisibilities(this IQueryable<Note> query, User? user)
 	{
 		return query.Select(p => p.WithPrecomputedVisibilities(p.Reply != null && p.Reply.IsVisibleFor(user),
-		                                                       p.Renote != null &&
-		                                                       p.Renote.IsVisibleFor(user),
+		                                                       p.Renote != null && p.Renote.IsVisibleFor(user),
 		                                                       p.Renote != null &&
 		                                                       p.Renote.Renote != null &&
 		                                                       p.Renote.Renote.IsVisibleFor(user)));
@@ -400,7 +399,7 @@ public static class QueryableExtensions
 
 	public static IQueryable<Note> PrecomputeNoteContextVisibilities(this IQueryable<Note> query, User? user)
 	{
-		return query.Select(p => p.WithPrecomputedVisibilities(false,
+		return query.Select(p => p.WithPrecomputedVisibilities(p.Reply != null && p.Reply.IsVisibleFor(user),
 		                                                       p.Renote != null && p.Renote.IsVisibleFor(user),
 		                                                       p.Renote != null &&
 		                                                       false));
