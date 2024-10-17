@@ -40,8 +40,8 @@ internal class NoteControllerModel(ApiClient api)
 	public Task<ValueResponse?> UnlikeNote(string id) =>
 		api.CallNullable<ValueResponse>(HttpMethod.Post, $"/notes/{id}/unlike");
 
-	public Task<List<UserResponse>?> GetNoteLikes(string id) =>
-		api.CallNullable<List<UserResponse>>(HttpMethod.Get, $"/notes/{id}/likes");
+	public Task<PaginationWrapper<List<UserResponse>>?> GetNoteLikes(string id, PaginationQuery pq) =>
+		api.CallNullable<PaginationWrapper<List<UserResponse>>>(HttpMethod.Get, $"/notes/{id}/likes", pq);
 
 	public Task<ValueResponse?> RenoteNote(string id, NoteVisibility? visibility = null)
 	{
@@ -53,11 +53,11 @@ internal class NoteControllerModel(ApiClient api)
 	public Task<ValueResponse?> UnrenoteNote(string id) =>
 		api.CallNullable<ValueResponse>(HttpMethod.Post, $"/notes/{id}/unrenote");
 
-	public Task<List<UserResponse>?> GetRenotes(string id) =>
-		api.CallNullable<List<UserResponse>>(HttpMethod.Get, $"/notes/{id}/renotes");
+	public Task<PaginationWrapper<List<UserResponse>>?> GetRenotes(string id, PaginationQuery pq) =>
+		api.CallNullable<PaginationWrapper<List<UserResponse>>>(HttpMethod.Get, $"/notes/{id}/renotes", pq);
 
-	public Task<List<NoteResponse>?> GetQuotes(string id, PaginationQuery pq) =>
-		api.CallNullable<List<NoteResponse>>(HttpMethod.Get, $"/notes/{id}/quotes");
+	public Task<PaginationWrapper<List<NoteResponse>>?> GetQuotes(string id, PaginationQuery pq) =>
+		api.CallNullable<PaginationWrapper<List<NoteResponse>>>(HttpMethod.Get, $"/notes/{id}/quotes");
 
 	public Task<ValueResponse?> ReactToNote(string id, string name) =>
 		api.CallNullable<ValueResponse>(HttpMethod.Post, $"/notes/{id}/react/{name}");
