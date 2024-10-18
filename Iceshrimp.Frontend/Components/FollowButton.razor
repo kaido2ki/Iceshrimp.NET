@@ -6,27 +6,33 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject ApiService                     Api;
 <span class="follow-button">
-    <button @onclick="Action" class="btn">
-        @switch (_buttonType)
+    @switch (_buttonType)
         {
             case ButtonType.Follow:
-                <span class="text">@Loc["Follow"]</span>
-                <Icon Name="Icons.Plus" class="icon"/>
+                <button @onclick="Action" class="btn">
+                    <span class="text">@Loc["Follow"]</span>
+                    <Icon Name="Icons.Plus" class="icon"/>
+                </button>
                 break;
             case ButtonType.Unfollow:
-                <span class="text">@Loc["Unfollow"]</span>
-                <Icon Name="Icons.Minus" class="icon"/>
+                <button @onclick="Action" class="btn inverted">
+                    <span class="text">@Loc["Unfollow"]</span>
+                    <Icon Name="Icons.Minus" class="icon"/>
+                </button>
                 break;
             case ButtonType.FollowBack:
-                <span class="text">@Loc["Follow back"]</span>
-                <Icon Name="Icons.Plus" class="icon"/>
+                <button @onclick="Action" class="btn">
+                    <span class="text">@Loc["Follow back"]</span>
+                    <Icon Name="Icons.Plus" class="icon"/>
+                </button>
                 break;
             case ButtonType.CancelRequest:
-                <span class="text">@Loc["Cancel request"]</span>
-                <Icon Name="Icons.X" class="icon"/>
+                <button @onclick="Action" class="btn inverted">
+                    <span class="text">@Loc["Cancel request"]</span>
+                    <Icon Name="Icons.X" class="icon"/>
+                </button>
                 break;
         }
-    </button>
 </span>
 
 @code {

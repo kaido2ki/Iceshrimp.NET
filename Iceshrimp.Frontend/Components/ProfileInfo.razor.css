@@ -1,14 +1,41 @@
 .bio {
-    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+    padding-bottom: 1rem;
     border-bottom: 0.1rem solid var(--highlight-color);
     white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.data {
+    margin: 1rem 0;
 }
 
 .metadata {
     display: flex;
     justify-content: space-evenly;
+    padding-top: 1rem;
+    border-top: 0.1rem solid var(--highlight-color);
+}
+
+::deep {
+    .field {
+        display: flex;
+        margin: 0.2rem 0;
+    
+        .field-name {
+            font-weight: 600;
+            width: 10rem;
+        }
+    }
+}
+
+.fields {
+    margin: 1rem 0;
 }
 
 .section {
     text-align: center;
+    .field-data {
+        font-weight: 600;
+    }
 }

@@ -9,16 +9,16 @@
     <div class="data">
         @if (UserProfile.Location != null)
         {
-            <div class="location">
-                <span class="location-field">@Loc["Location"]</span>
-                <span class="location-data">@UserProfile.Location</span>
+            <div class="location field">
+                <span class="field-name">@Loc["Location"]</span>
+                <span class="field-value">@UserProfile.Location</span>
             </div>
         }
         @if (UserProfile.Birthday != null)
         {
-            <div class="joined">
-                <span class="joined-field">@Loc["Joined on"]</span>
-                <span class="joined-data">@UserProfile.Birthday</span>
+            <div class="birthday field">
+                <span class="field-name">@Loc["Birthday"]</span>
+                <span class="field-value">@UserProfile.Birthday</span>
             </div>
         }
     </div>
