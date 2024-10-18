@@ -56,21 +56,21 @@
 <div class="bottom-bar">
     <div class="bottom-nav">
         <button @onclick="ToggleSidebar" class="bottom-bar-btn">
-            <Icon Name="Icons.List"/>
+            <Icon Name="Icons.List" class="bottom-bar-icon"/>
         </button>
-        <NavLink href="/">
+        <NavLink href="/" Match="NavLinkMatch.All">
             <div class="bottom-bar-btn">
-                <Icon Name="Icons.House"/>
+                <Icon Name="Icons.House" class="bottom-bar-icon"/>
             </div>
         </NavLink>
         <NavLink href="/notifications">
             <div class="bottom-bar-btn">
-                <Icon Name="Icons.Bell"/>
+                <Icon Name="Icons.Bell" class="bottom-bar-icon"/>
             </div>
         </NavLink>
         <div>
-            <button @onclick="Open" class="bottom-bar-btn">
-                <Icon Name="Icons.Pencil"/>
+            <button @onclick="Open" class="bottom-bar-btn post-btn">
+                <Icon Name="Icons.Pencil" class="bottom-bar-icon"/>
             </button>
         </div>
     </div>
