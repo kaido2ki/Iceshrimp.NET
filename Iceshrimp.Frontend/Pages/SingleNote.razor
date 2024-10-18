@@ -90,7 +90,7 @@
                         <TabPage>
                             <Title>@Loc["Quotes"]</Title>
                             <TabContent>
-                                <NoteQuoteDetails NoteId="@RootNote?.Id" />
+                                <NoteQuoteDetails NoteId="@RootNote?.Id"/>
                             </TabContent>
                         </TabPage>
                     </TabbedMenu>
@@ -118,18 +118,18 @@
 }
 
 @code {
-    [Parameter] public string?                     NoteId      { get; set; }
-    public             NoteResponse?               RootNote    { get; set; }
-    private            IList<NoteResponse>?        Descendants { get; set; }
-    private            IList<NoteResponse>?        Ascendants  { get; set; }
-    private            IJSInProcessObjectReference Module      { get; set; } = null!;
-    private            ElementReference            RootNoteRef { get; set; }
-    private            int                         _depth = 20;
-    private            ElementReference            Scroller { get; set; }
-    private            IDisposable?                _locationChangingHandlerDisposable;
-    private            IDisposable?                _noteChangedHandler;
-    private            State                   _componentState;
-    private            bool                        _firstLoad = true;
+    [Parameter] public string?                      NoteId      { get; set; }
+    public             NoteResponse?                RootNote    { get; set; }
+    private            IList<NoteResponse>?         Descendants { get; set; }
+    private            IList<NoteResponse>?         Ascendants  { get; set; }
+    private            IJSInProcessObjectReference? Module      { get; set; }
+    private            ElementReference             RootNoteRef { get; set; }
+    private            int                          _depth = 20;
+    private            ElementReference             Scroller { get; set; }
+    private            IDisposable?                 _locationChangingHandlerDisposable;
+    private            IDisposable?                 _noteChangedHandler;
+    private            State                        _componentState;
+    private            bool                         _firstLoad = true;
 
     private async Task Load()
     {
@@ -234,6 +234,12 @@
         if (_componentState == State.Loaded)
         {
             var state = StateSvc.SingleNote.GetState(NoteId!);
+            if (Module is null)
+            {
+                Logger.LogError("JS Interop used before initialization");
+                return;
+            }
+
             if (state != null)
             {
                 Module.InvokeVoid("SetScrollTop", Scroller, state.ScrollTop);
@@ -248,7 +254,8 @@
     private void SaveState()
     {
         if (NoteId == null || _componentState != State.Loaded) return;
-        var scrollTop = Module.Invoke<float>("GetScrollTop", Scroller);
+        var scrollTop = (Module ?? throw new Exception("JS Interop used before init"))
+            .Invoke<float>("GetScrollTop", Scroller);
         var state     = new SingleNoteState { ScrollTop = scrollTop };
         StateSvc.SingleNote.SetState(NoteId, state);
     }
