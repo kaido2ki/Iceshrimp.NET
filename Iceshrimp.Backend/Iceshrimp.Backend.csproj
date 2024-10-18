@@ -56,6 +56,7 @@
     <ItemGroup>
         <PackageReference Include="System.Private.Uri" Version="4.3.2" />
         <PackageReference Include="System.Formats.Asn1" Version="8.0.1" />
+        <PackageReference Include="MessagePack" Version="2.5.187" />
     </ItemGroup>
 
     <!-- If the build flag BundleNativeDeps is set, reference the LibVips native dependecy -->
