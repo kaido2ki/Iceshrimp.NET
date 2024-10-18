@@ -181,7 +181,7 @@ public interface IPostgresJobQueue
 	public void RaiseJobDelayedEvent();
 }
 
-public class PostgresJobQueue<T>(
+public abstract class PostgresJobQueue<T>(
 	string name,
 	Func<Job, T, IServiceProvider, CancellationToken, Task> handler,
 	int parallelism,
