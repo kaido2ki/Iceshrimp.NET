@@ -1,4 +1,4 @@
-<button @onclick="OnClick" class="@ExtraClasses">
+<button @onclick="OnClick" class="@ExtraClasses" aria-label="@AriaLabel">
     @(State switch
     {
         StateEnum.Initial => Initial,
@@ -16,7 +16,9 @@
     [Parameter] [EditorRequired] public required RenderFragment Failed       { get; set; }
     [Parameter] [EditorRequired] public required RenderFragment Success      { get; set; }
     [Parameter]                  public          string?        ExtraClasses { get; set; }
-    public                                       StateEnum      State        { get; set; }
+    // this is godawful but properties can't have dashes and I'm not actually sure how else to do this:
+    [Parameter]                  public          string?        AriaLabel { get; set; }
+        public                                       StateEnum      State        { get; set; }
 
     public enum StateEnum
     {
