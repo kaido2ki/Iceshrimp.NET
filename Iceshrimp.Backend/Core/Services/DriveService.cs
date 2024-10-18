@@ -479,27 +479,36 @@ public class DriveService(
 		}
 	}
 
-	public async Task<(bool original, bool thumbnail, bool @public)> VerifyFileExistence(DriveFile file)
+	public async Task<HashSet<string>> GetAllFileNamesFromObjectStorage()
+	{
+		return storageConfig.Value.ObjectStorage?.Bucket != null
+			? await storageSvc.EnumerateFilesAsync().ToArrayAsync().AsTask().ContinueWithResult(p => p.ToHashSet())
+			: [];
+	}
+
+	public HashSet<string> GetAllFileNamesFromLocalStorage()
+	{
+		return storageConfig.Value.Local?.Path is { } path && Directory.Exists(path)
+			? Directory.EnumerateFiles(path).Select(Path.GetFileName).NotNull().ToHashSet()
+			: [];
+	}
+
+	public static bool VerifyFileExistence(
+		DriveFile file, HashSet<string> objectStorageFiles, HashSet<string> localStorageFiles,
+		out bool original, out bool thumbnail, out bool @public
+	)
 	{
 		string?[] allFilenames = [file.AccessKey, file.ThumbnailAccessKey, file.PublicAccessKey];
 		var       filenames    = allFilenames.NotNull().ToArray();
 		var missing = file.StoredInternal
-			? filenames.Where(p => !VerifyFileLocalStorage(p)).ToArray()
-			: await filenames.Select(async p => (name: p, exists: await storageSvc.VerifyFileExistenceAsync(p)))
-			                 .AwaitAllAsync()
-			                 .ContinueWithResult(p => p.Where(i => !i.exists).Select(i => i.name).ToArray());
+			? filenames.Where(p => !localStorageFiles.Contains(p)).ToArray()
+			: filenames.Where(p => !objectStorageFiles.Contains(p)).ToArray();
 
-		var original  = !missing.Contains(file.AccessKey);
-		var thumbnail = file.ThumbnailAccessKey == null || !missing.Contains(file.ThumbnailAccessKey);
-		var @public   = file.PublicAccessKey == null || !missing.Contains(file.PublicAccessKey);
+		original  = !missing.Contains(file.AccessKey);
+		thumbnail = file.ThumbnailAccessKey == null || !missing.Contains(file.ThumbnailAccessKey);
+		@public   = file.PublicAccessKey == null || !missing.Contains(file.PublicAccessKey);
 
-		return (original, thumbnail, @public);
-	}
-
-	private bool VerifyFileLocalStorage(string filename)
-	{
-		var pathBase = storageConfig.Value.Local?.Path ?? throw new Exception("Local storage path cannot be null");
-		return File.Exists(Path.Combine(pathBase, filename));
+		return original && thumbnail && @public;
 	}
 
 	private static string GenerateDerivedFileName(string filename, string newExt)

@@ -152,17 +152,25 @@ public class StorageMaintenanceService(
 		var modified = 0;
 		logger.LogInformation("Validating all files, this may take a long time...");
 
+		var localFiles      = driveSvc.GetAllFileNamesFromLocalStorage();
+		var objStorageFiles = await driveSvc.GetAllFileNamesFromObjectStorage();
+
 		await foreach (var file in query.AsChunkedAsyncEnumerable(50, p => p.Id))
 		{
-			if (++progress % 100 == 0)
+			if (++progress % 500 == 0)
 				logger.LogInformation("Validating files... ({idx}/{total})", progress, total);
 
-			var res = await driveSvc.VerifyFileExistence(file);
-			if (res == (true, true, true)) continue;
+			if (
+				DriveService.VerifyFileExistence(file, objStorageFiles, localFiles, out var original,
+				                                 out var thumbnail, out var @public)
+			)
+			{
+				continue;
+			}
 
 			modified++;
 
-			if (!res.original)
+			if (!original)
 			{
 				if (dryRun)
 				{
@@ -174,7 +182,7 @@ public class StorageMaintenanceService(
 				continue;
 			}
 
-			if (!res.thumbnail)
+			if (!thumbnail)
 			{
 				if (dryRun)
 				{
@@ -189,7 +197,7 @@ public class StorageMaintenanceService(
 				}
 			}
 
-			if (!res.@public)
+			if (!@public)
 			{
 				if (dryRun)
 				{
@@ -238,7 +246,7 @@ public class StorageMaintenanceService(
 		                                                      .NotNull()
 		                                                      .Append(".iceshrimp-test")
 		                                                      .ToHashSet());
-		
+
 		logger.LogInformation("Loaded {count} files from database.", filenames.Count);
 
 		if (options.Value.Local?.Path is { } path && Directory.Exists(path))
