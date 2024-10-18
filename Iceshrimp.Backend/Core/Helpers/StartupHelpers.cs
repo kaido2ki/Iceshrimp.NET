@@ -18,7 +18,9 @@ public static class StartupHelpers
 			                    --migrate-storage     Migrates all files currently stored locally to the
 			                                          configured object storage bucket.
 			                    --cleanup-storage     Removes dangling media files from disk / object storage.
+			                                          Append --dry-run to log files instead of deleting them.
 			                    --fixup-media         Fixes up cached remote drive files with missing files.
+			                                          Append --dry-run to log files instead of processing them.
 			                    --migrate-from-js     Migrates an iceshrimp-js database to an Iceshrimp.NET one.
 			                    --https               For development purposes only. Listens using https
 			                                          instead of http on the specified port.
