@@ -179,6 +179,10 @@ public class StorageMaintenanceService(
 				}
 
 				await driveSvc.ExpireFile(file);
+				await db.Users.Where(p => p.AvatarId == file.Id)
+				        .ExecuteUpdateAsync(p => p.SetProperty(u => u.AvatarUrl, file.Uri));
+				await db.Users.Where(p => p.BannerId == file.Id)
+				        .ExecuteUpdateAsync(p => p.SetProperty(u => u.BannerUrl, file.Uri));
 				continue;
 			}
 
@@ -193,7 +197,6 @@ public class StorageMaintenanceService(
 					file.ThumbnailAccessKey = null;
 					file.ThumbnailUrl       = null;
 					file.ThumbnailMimeType  = null;
-					await db.SaveChangesAsync();
 				}
 			}
 
@@ -209,9 +212,16 @@ public class StorageMaintenanceService(
 					file.PublicAccessKey = null;
 					file.PublicUrl       = null;
 					file.PublicMimeType  = null;
-					await db.SaveChangesAsync();
 				}
 			}
+
+			if (dryRun) continue;
+
+			await db.SaveChangesAsync();
+			await db.Users.Where(p => p.AvatarId == file.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(u => u.AvatarUrl, file.AccessUrl));
+			await db.Users.Where(p => p.BannerId == file.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(u => u.BannerUrl, file.AccessUrl));
 		}
 
 		if (dryRun)
