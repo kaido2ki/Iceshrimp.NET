@@ -437,6 +437,8 @@ public class DriveService(
 	{
 		if (file is not { UserHost: not null, Uri: not null, IsLink: false }) return;
 
+		string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.PublicAccessKey];
+
 		file.IsLink             = true;
 		file.Url                = file.Uri;
 		file.ThumbnailUrl       = null;
@@ -453,15 +455,16 @@ public class DriveService(
 		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.BannerUrl, file.Uri), token);
 		await db.SaveChangesAsync(token);
 
-		if (file.AccessKey == null) return;
-		var deduplicated =
-			await db.DriveFiles.AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey && !p.IsLink,
-			                             token);
+		if (file.AccessKey != null)
+		{
+			var deduplicated = await db.DriveFiles
+			                           .AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey && !p.IsLink,
+			                                     token);
 
-		if (deduplicated)
-			return;
+			if (deduplicated)
+				return;
+		}
 
-		string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.PublicAccessKey];
 		if (file.StoredInternal)
 		{
 			var pathBase = storageConfig.Value.Local?.Path ??
