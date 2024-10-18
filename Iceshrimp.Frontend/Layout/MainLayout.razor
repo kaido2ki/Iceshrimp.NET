@@ -3,7 +3,7 @@
 @inherits LayoutComponentBase
 
 <div class="page">
-    <div class="sidebar">
+    <div class="sidebar" role="navigation">
         <AuthorizeView>
             <Authorized>
                 <Sidebar/>
@@ -11,13 +11,13 @@
         </AuthorizeView>
     </div>
 
-    <div class="main">
+    <div class="main" role="main">
         <div class="top-bar">
             <SectionOutlet SectionName="top-bar"/>
         </div>
         @Body
     </div>
-    <div class="widget-panel">
+    <div class="widget-panel" role="region" aria-label="widgets">
         <AuthorizeView>
             <Authorized>
                 <WidgetPanel/>
