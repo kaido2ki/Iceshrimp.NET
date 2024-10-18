@@ -8,7 +8,7 @@
     }
     @foreach (var el in State.RenderedList)
     {
-        <div class="target" @ref="@Ref">
+        <div class="target" @ref="@Ref" role="article" aria-labelledby="note-header" aria-describedby="note-body">
             <TimelineNote @key="el.Id" Note="el"></TimelineNote>
         </div>
     }

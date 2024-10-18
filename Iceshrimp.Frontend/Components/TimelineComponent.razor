@@ -1,6 +1,8 @@
 @if (ComponentState is Core.Miscellaneous.State.Loaded)
 {
+    <div role="feed" aria-label="timeline">
     <VirtualScroller @ref=VirtualScroller NoteResponseList="State.Timeline" ReachedEnd="FetchOlder" ReachedStart="FetchNewer"/>
+    </div>
 }
 @if (ComponentState is Core.Miscellaneous.State.Loading)
 {
