@@ -216,6 +216,7 @@ public class NotificationService(
 			Notifiee = (bite.TargetUser ?? bite.TargetNote?.User ?? bite.TargetBite?.User) ??
 			           throw new InvalidOperationException("Null checks say one of these must not be null"),
 			Notifier = bite.User,
+			Note     = bite.TargetNote,
 			Bite     = bite,
 			Type     = Notification.NotificationType.Bite
 		};
