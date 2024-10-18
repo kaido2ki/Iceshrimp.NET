@@ -146,7 +146,7 @@ public class StorageMaintenanceService(
 
 	public async Task FixupMedia(bool dryRun)
 	{
-		var query    = db.DriveFiles.Where(p => !p.IsLink && p.Uri != null);
+		var query    = db.DriveFiles.Where(p => !p.IsLink && p.Uri != null && p.CreatedAt < DateTime.UtcNow);
 		var total    = await query.CountAsync();
 		var progress = 0;
 		var modified = 0;
