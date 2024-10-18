@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Helpers;
 using NetVips;
-using PommaLabs.MimeTypes;
+using Iceshrimp.MimeTypes;
 using SixLabors.ImageSharp.PixelFormats;
 
 namespace Iceshrimp.Backend.Core.Services.ImageProcessing;
