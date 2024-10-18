@@ -13,7 +13,7 @@
 @inject StateService                   StateService;
 @inject IJSRuntime                     Js;
 
-<div class="search">
+<div class="search" role="search">
     <input @bind="SearchString" class="input"/>
     <InputSelect @bind-Value="@SearchType">
         @foreach (var type in Enum.GetValues(typeof(SearchTypeEnum)))
