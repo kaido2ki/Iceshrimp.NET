@@ -258,6 +258,7 @@ public class StorageMaintenanceService(
 		                                                      .ToHashSet());
 
 		logger.LogInformation("Loaded {count} files from database.", filenames.Count);
+		var count = 0;
 
 		if (options.Value.Local?.Path is { } path && Directory.Exists(path))
 		{
@@ -271,6 +272,7 @@ public class StorageMaintenanceService(
 					logger.LogInformation("Would delete {file} from disk, but --dry-run was specified.", file);
 				else
 				{
+					count++;
 					try
 					{
 						File.Delete(file);
@@ -295,6 +297,7 @@ public class StorageMaintenanceService(
 					logger.LogInformation("Would delete {file} from object storage, but --dry-run was specified.", key);
 				else
 				{
+					count++;
 					try
 					{
 						await objectStorageSvc.RemoveFilesAsync(key);
@@ -307,6 +310,6 @@ public class StorageMaintenanceService(
 			}
 		}
 
-		logger.LogInformation("Finished scanning for orphaned files.");
+		logger.LogInformation("Finished removing {count} orphaned files.", count);
 	}
 }
