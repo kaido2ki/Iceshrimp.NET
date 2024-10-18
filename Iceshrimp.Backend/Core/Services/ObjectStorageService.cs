@@ -139,6 +139,16 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 		}
 	}
 
+	public async IAsyncEnumerable<string> EnumerateFilesAsync()
+	{
+		if (_bucket == null)
+			throw new Exception("Refusing to enumerate files from object storage with invalid configuration");
+		var prefix       = _prefix != null ? _prefix + "/" : null;
+		var prefixLength = prefix?.Length;
+		await foreach (var blob in _bucket.ScanAsync(prefix))
+			yield return prefixLength != null ? blob.Key[prefixLength.Value..] : blob.Key;
+	}
+
 	private string GetKeyWithPrefix(string filename)
 	{
 		return !string.IsNullOrWhiteSpace(_prefix) ? _prefix + "/" + filename : filename;

@@ -217,4 +217,78 @@ public class StorageMaintenanceService(
 			                      progress, modified);
 		}
 	}
+
+	public async Task CleanupStorage(bool dryRun)
+	{
+		var filenames = await db.DriveFiles
+		                        .Where(p => !p.IsLink)
+		                        .Select(p => new
+		                        {
+			                        p.AccessKey,
+			                        p.ThumbnailAccessKey,
+			                        p.PublicAccessKey
+		                        })
+		                        .ToArrayAsync()
+		                        .ContinueWithResult(res => res.SelectMany(p => new List<string?>
+		                                                      {
+			                                                      p.AccessKey,
+			                                                      p.ThumbnailAccessKey,
+			                                                      p.PublicAccessKey
+		                                                      })
+		                                                      .NotNull()
+		                                                      .Append(".iceshrimp-test")
+		                                                      .ToHashSet());
+		
+		logger.LogInformation("Loaded {count} files from database.", filenames.Count);
+
+		if (options.Value.Local?.Path is { } path && Directory.Exists(path))
+		{
+			logger.LogInformation("Looking for orphaned files on disk, please wait...");
+
+			foreach (var file in Directory.EnumerateFiles(path))
+			{
+				if (filenames.Contains(Path.GetFileName(file)))
+					continue;
+				if (dryRun)
+					logger.LogInformation("Would delete {file} from disk, but --dry-run was specified.", file);
+				else
+				{
+					try
+					{
+						File.Delete(file);
+					}
+					catch (Exception e)
+					{
+						logger.LogError("Failed to delete {file} from disk: {error}", file, e.Message);
+					}
+				}
+			}
+		}
+
+		if (options.Value.ObjectStorage?.Bucket != null)
+		{
+			logger.LogInformation("Looking for orphaned files in object storage, please wait...");
+
+			await foreach (var key in objectStorageSvc.EnumerateFilesAsync())
+			{
+				if (filenames.Contains(key))
+					continue;
+				if (dryRun)
+					logger.LogInformation("Would delete {file} from object storage, but --dry-run was specified.", key);
+				else
+				{
+					try
+					{
+						await objectStorageSvc.RemoveFilesAsync(key);
+					}
+					catch (Exception e)
+					{
+						logger.LogError("Failed to delete {file} from object storage: {error}", key, e.Message);
+					}
+				}
+			}
+		}
+
+		logger.LogInformation("Finished scanning for orphaned files.");
+	}
 }
