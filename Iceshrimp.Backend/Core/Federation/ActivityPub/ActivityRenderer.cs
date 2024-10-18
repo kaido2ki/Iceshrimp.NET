@@ -230,4 +230,13 @@ public class ActivityRenderer(
 		Object = actor.Compact(),
 		Target = new ASLink(target.Id)
 	};
+
+	public ASBite RenderBite(Bite bite, string target, User fallbackTo) => new()
+	{
+		Id          = bite.Uri ?? bite.GetPublicUri(config.Value),
+		Actor       = userRenderer.RenderLite(bite.User).Compact(),
+		Target      = new ASObjectBase(target),
+		PublishedAt = bite.CreatedAt,
+		To          = userRenderer.RenderLite(fallbackTo).Compact()
+	};
 }

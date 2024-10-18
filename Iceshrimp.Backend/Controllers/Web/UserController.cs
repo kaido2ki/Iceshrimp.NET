@@ -30,6 +30,7 @@ public class UserController(
 	UserProfileRenderer userProfileRenderer,
 	ActivityPub.UserResolver userResolver,
 	UserService userSvc,
+	BiteService biteSvc,
 	IOptions<Config.InstanceSection> config
 ) : ControllerBase
 {
@@ -97,6 +98,22 @@ public class UserController(
 		                    .ContinueWithResult(res => res.EnforceRenoteReplyVisibility());
 
 		return await noteRenderer.RenderMany(notes, localUser, Filter.FilterContext.Accounts);
+	}
+
+	[HttpPost("{id}/bite")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task BiteUser(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot bite yourself");
+
+		var target = await db.Users.IncludeCommonProperties().Where(p => p.Id == id).FirstOrDefaultAsync() ?? throw GracefulException.NotFound("User not found");
+
+		await biteSvc.BiteAsync(user, target);
 	}
 
 	[HttpPost("{id}/follow")]
