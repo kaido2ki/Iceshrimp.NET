@@ -2,7 +2,7 @@
 
 @if (Indented == false)
 {
-    <img @onclick="OpenProfile" class="user-avatar" src="@AvatarUrl"/>
+    <img @onclick="OpenProfile" class="user-avatar" src="@AvatarUrl" alt="@(DisplayName ?? Username)" role="link"/>
 }
 <div class="name-section">
     <span class="display-name">@(DisplayName ?? Username)</span>
