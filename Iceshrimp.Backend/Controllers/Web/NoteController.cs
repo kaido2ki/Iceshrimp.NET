@@ -27,7 +27,8 @@ public class NoteController(
 	NoteService noteSvc,
 	NoteRenderer noteRenderer,
 	UserRenderer userRenderer,
-	CacheService cache
+	CacheService cache,
+	BiteService biteSvc
 ) : ControllerBase
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -148,6 +149,23 @@ public class NoteController(
 		                    .ToListAsync();
 
 		return await userRenderer.RenderMany(users);
+	}
+
+	[HttpPost("{id}/bite")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task BiteNote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot bite your own note");
+
+		var target = await db.Notes.Where(p => p.Id == id).IncludeCommonProperties().FirstOrDefaultAsync() ??
+		             throw GracefulException.NotFound("Note not found");
+
+		await biteSvc.BiteAsync(user, target);
 	}
 
 	[HttpPost("{id}/like")]
