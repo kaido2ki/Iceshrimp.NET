@@ -11,6 +11,11 @@ module SearchQueryFilters =
         member val Negated = neg
         member val Value = value
 
+    type CwFilter(neg: bool, value: string) =
+        inherit Filter()
+        member val Negated = neg
+        member val Value = value
+
     type MultiWordFilter(values: string list) =
         inherit Filter()
         member val Values = values
@@ -166,6 +171,8 @@ module private SearchQueryParser =
     // Filters
     let wordFilter = pipe2 neg token <| fun a b -> WordFilter(a.IsSome, b) :> Filter
 
+    let cwFilter = negFilter [ "cw" ] <| fun n v -> CwFilter(n.IsSome, v) :> Filter
+
     let multiWordFilter =
         skipChar '(' >>. strSepByOr .>> skipChar ')'
         |>> fun v -> MultiWordFilter(v) :> Filter
@@ -239,6 +246,7 @@ module private SearchQueryParser =
           beforeFilter
           caseFilter
           matchFilter
+          cwFilter
           multiWordFilter
           wordFilter ]
 

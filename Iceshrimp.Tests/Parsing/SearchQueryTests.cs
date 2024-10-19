@@ -18,6 +18,16 @@ public class SearchQueryTests
 	[TestMethod]
 	[DataRow(false)]
 	[DataRow(true)]
+	public void TestParseCw(bool negated)
+	{
+		var result         = SearchQuery.parse(negated ? "-cw:meta" : "cw:meta").ToList();
+		var expectedResult = new CwFilter(negated, "meta");
+		Validate(result, expectedResult, 1);
+	}
+
+	[TestMethod]
+	[DataRow(false)]
+	[DataRow(true)]
 	public void TestParseFrom(bool negated)
 	{
 		List<string> candidates = ["from", "author", "by", "user"];

@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using EntityFrameworkCore.Projectables;
 using Iceshrimp.Backend.Core.Configuration;
@@ -36,8 +37,10 @@ public static class QueryableFtsExtensions
 			MentionFilter mentionFilter       => current.ApplyMentionFilter(mentionFilter, config, db),
 			MiscFilter miscFilter             => current.ApplyMiscFilter(miscFilter, user),
 			ReplyFilter replyFilter           => current.ApplyReplyFilter(replyFilter, config, db),
+			CwFilter cwFilter                 => current.ApplyCwFilter(cwFilter, caseSensitivity, matchType),
 			WordFilter wordFilter             => current.ApplyWordFilter(wordFilter, caseSensitivity, matchType),
-			MultiWordFilter multiWordFilter   => current.ApplyMultiWordFilter(multiWordFilter, caseSensitivity, matchType),
+			MultiWordFilter multiWordFilter =>
+				current.ApplyMultiWordFilter(multiWordFilter, caseSensitivity, matchType),
 			_ => throw new ArgumentOutOfRangeException(nameof(filter))
 		});
 	}
@@ -71,6 +74,11 @@ public static class QueryableFtsExtensions
 		this IQueryable<Note> query, WordFilter filter, CaseFilterType caseSensitivity, MatchFilterType matchType
 	) => query.Where(p => p.FtsQueryPreEscaped(PreEscapeFtsQuery(filter.Value, matchType), filter.Negated,
 	                                           caseSensitivity, matchType));
+
+	private static IQueryable<Note> ApplyCwFilter(
+		this IQueryable<Note> query, CwFilter filter, CaseFilterType caseSensitivity, MatchFilterType matchType
+	) => query.Where(p => FtsQueryPreEscapedMatch(p.Cw, PreEscapeFtsQuery(filter.Value, matchType), filter.Negated,
+	                                              caseSensitivity, matchType));
 
 	private static IQueryable<Note> ApplyMultiWordFilter(
 		this IQueryable<Note> query, MultiWordFilter filter, CaseFilterType caseSensitivity, MatchFilterType matchType
@@ -263,7 +271,9 @@ public static class QueryableFtsExtensions
 	[Projectable]
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
 	                 Justification = "Projectable chain must have consistent visibility")]
-	internal static bool FtsQueryPreEscaped(this Note note, string query, bool negated, CaseFilterType caseSensitivity, MatchFilterType matchType) => matchType.Equals(MatchFilterType.Substring)
+	internal static bool FtsQueryPreEscaped(
+		this Note note, string query, bool negated, CaseFilterType caseSensitivity, MatchFilterType matchType
+	) => matchType.Equals(MatchFilterType.Substring)
 		? caseSensitivity.Equals(CaseFilterType.Sensitive)
 			? negated
 				? !EF.Functions.Like(note.Text!, "%" + query + "%", @"\") &&
@@ -294,6 +304,28 @@ public static class QueryableFtsExtensions
 				: Regex.IsMatch(note.Text!, "\\y" + query + "\\y", RegexOptions.IgnoreCase) ||
 				  Regex.IsMatch(note.Cw!, "\\y" + query + "\\y", RegexOptions.IgnoreCase) ||
 				  Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y", RegexOptions.IgnoreCase);
+
+	[Projectable]
+	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
+	                 Justification = "Projectable chain must have consistent visibility")]
+	internal static bool FtsQueryPreEscapedMatch(
+		string? match, string query, bool negated,
+		CaseFilterType caseSensitivity, MatchFilterType matchType
+	) => matchType.Equals(MatchFilterType.Substring)
+		? caseSensitivity.Equals(CaseFilterType.Sensitive)
+			? negated
+				? !EF.Functions.Like(match!, "%" + query + "%", @"\")
+				: EF.Functions.Like(match!, "%" + query + "%", @"\")
+			: negated
+				? !EF.Functions.ILike(match!, "%" + query + "%", @"\")
+				: EF.Functions.ILike(match!, "%" + query + "%", @"\")
+		: caseSensitivity.Equals(CaseFilterType.Sensitive)
+			? negated
+				? !Regex.IsMatch(match!, "\\y" + query + "\\y")
+				: Regex.IsMatch(match!, "\\y" + query + "\\y")
+			: negated
+				? !Regex.IsMatch(match!, "\\y" + query + "\\y", RegexOptions.IgnoreCase)
+				: Regex.IsMatch(match!, "\\y" + query + "\\y", RegexOptions.IgnoreCase);
 
 	internal static string PreEscapeFtsQuery(string query, MatchFilterType matchType)
 		=> matchType.Equals(MatchFilterType.Substring)
