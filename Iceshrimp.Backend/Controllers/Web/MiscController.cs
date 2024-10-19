@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -19,8 +20,28 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/misc")]
 [Produces(MediaTypeNames.Application.Json)]
-public class MiscController(DatabaseContext db, NoteRenderer noteRenderer) : ControllerBase
+public class MiscController(DatabaseContext db, NoteRenderer noteRenderer, BiteService biteSvc) : ControllerBase
 {
+	[HttpPost("bite_back/{id}")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task BiteBack(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var target = await db.Bites
+		                     .IncludeCommonProperties()
+		                     .Where(p => p.Id == id)
+		                     .FirstOrDefaultAsync()
+		             ?? throw GracefulException.NotFound("Bite not found");
+
+		if (user.Id != (target.TargetUserId ?? target.TargetNote?.UserId ?? target.TargetBite?.UserId))
+			throw GracefulException.BadRequest("You can only bite back at a user who bit you");
+		
+		await biteSvc.BiteAsync(user, target);
+	}
+	
 	[HttpGet("muted_threads")]
 	[LinkPagination(20, 40)]
 	[ProducesResults(HttpStatusCode.OK)]
