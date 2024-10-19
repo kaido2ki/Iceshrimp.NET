@@ -162,7 +162,11 @@ public class NoteController(
 		if (user.Id == id)
 			throw GracefulException.BadRequest("You cannot bite your own note");
 
-		var target = await db.Notes.Where(p => p.Id == id).IncludeCommonProperties().FirstOrDefaultAsync() ??
+		var target = await db.Notes
+		                     .Where(p => p.Id == id)
+		                     .IncludeCommonProperties()
+		                     .EnsureVisibleFor(user)
+		                     .FirstOrDefaultAsync() ??
 		             throw GracefulException.NotFound("Note not found");
 
 		await biteSvc.BiteAsync(user, target);
