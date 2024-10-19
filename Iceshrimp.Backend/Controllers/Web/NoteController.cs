@@ -88,17 +88,23 @@ public class NoteController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 
-		var notes = await db.NoteAncestors(note, limit ?? 20)
-		                    .Include(p => p.User.UserProfile)
-		                    .Include(p => p.Renote!.User.UserProfile)
-		                    .EnsureVisibleFor(user)
-		                    .FilterHidden(user, db)
-		                    .PrecomputeNoteContextVisibilities(user)
-		                    .ToListAsync();
-		var res = await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user,
-		                                        Filter.FilterContext.Threads);
+		var hits = await db.NoteAncestors(note, limit ?? 20)
+		                   .Include(p => p.User.UserProfile)
+		                   .Include(p => p.Reply!.User.UserProfile)
+		                   .Include(p => p.Renote!.User.UserProfile)
+		                   .EnsureVisibleFor(user)
+		                   .FilterHidden(user, db)
+		                   .PrecomputeNoteContextVisibilities(user)
+		                   .ToListAsync();
 
-		return res.ToList().OrderAncestors();
+		var notes = hits.EnforceRenoteReplyVisibility();
+		var res   = await noteRenderer.RenderMany(notes, user, Filter.FilterContext.Threads).ToListAsync();
+
+		// Strip redundant reply data
+		foreach (var item in res.Where(p => p.Reply != null && res.Any(i => i.Id == p.Reply.Id)))
+			item.Reply = null;
+
+		return res.OrderAncestors();
 	}
 
 	[HttpGet("{id}/descendants")]
@@ -338,7 +344,7 @@ public class NoteController(
 		                      .ToListAsync();
 
 		var res = await noteRenderer.RenderMany(renotes.EnforceRenoteReplyVisibility(), user,
-		                                     Filter.FilterContext.Threads);
+		                                        Filter.FilterContext.Threads);
 		return HttpContext.CreatePaginationWrapper(pq, renotes, res);
 	}
 
