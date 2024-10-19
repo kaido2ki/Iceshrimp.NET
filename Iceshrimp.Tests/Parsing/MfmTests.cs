@@ -1,6 +1,7 @@
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 using Iceshrimp.Parsing;
 using Microsoft.FSharp.Collections;
+using Microsoft.FSharp.Core;
 using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Tests.Parsing;
@@ -38,9 +39,7 @@ public class MfmTests
 	{
 		List<MfmNode> expected =
 		[
-			new MfmInlineCodeNode("test"),
-			new MfmCodeBlockNode("test", null),
-			new MfmCodeBlockNode("test", "lang")
+			new MfmInlineCodeNode("test"), new MfmCodeBlockNode("test", null), new MfmCodeBlockNode("test", "lang")
 		];
 
 		var res = Mfm.parse("""
@@ -299,6 +298,54 @@ public class MfmTests
 	}
 
 	[TestMethod]
+	public void TestFn()
+	{
+		const string input =
+			"test $[] $[test] $[test ] $[test test] $[test.a test] $[test.a=b test] $[test.a=b,c=e test] $[test.a,c=e test] $[test.a=b,c test]";
+
+		var some = FSharpOption<IDictionary<string, FSharpOption<string>>>.Some;
+		var none = FSharpOption<IDictionary<string, FSharpOption<string>>>.None;
+		var test = ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("test")]);
+		
+		// @formatter:off
+		List<MfmNode> expected =
+		[
+			new MfmTextNode("test $[] $[test] $[test ] "),
+			new MfmFnNode("test",
+			              none,
+			              test),
+			new MfmTextNode(" "),
+			new MfmFnNode("test",
+			              some(new Dictionary<string, FSharpOption<string>>{ {"a", FSharpOption<string>.None} }),
+			              test),
+			new MfmTextNode(" "),
+			new MfmFnNode("test",
+			              some(new Dictionary<string, FSharpOption<string>>{ {"a", FSharpOption<string>.Some("b")} }),
+			              test),
+			new MfmTextNode(" "),
+			new MfmFnNode("test",
+			              some(new Dictionary<string, FSharpOption<string>>{ {"a", FSharpOption<string>.Some("b")}, {"c", FSharpOption<string>.Some("e")} }),
+			              test),
+			new MfmTextNode(" "),
+			new MfmFnNode("test",
+			              some(new Dictionary<string, FSharpOption<string>>{ {"a", FSharpOption<string>.None}, {"c", FSharpOption<string>.Some("e")} }),
+			              test),
+			new MfmTextNode(" "),
+			new MfmFnNode("test",
+			              some(new Dictionary<string, FSharpOption<string>>{ {"a", FSharpOption<string>.Some("b")}, {"c", FSharpOption<string>.None} }),
+			              test),
+		];
+		// @formatter:on
+
+		var res = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
+
+	[TestMethod]
 	public void Benchmark()
 	{
 		const string mfm =
@@ -416,8 +463,13 @@ public class MfmTests
 			case MfmFnNode ax:
 			{
 				var bx = (MfmFnNode)b;
-				if (ax.Args != bx.Args) return false;
 				if (ax.Name != bx.Name) return false;
+				if ((ax.Args == null) != (bx.Args == null)) return false;
+				if (ax.Args == null || bx.Args == null) return true;
+				if (ax.Args.Value.Count != bx.Args.Value.Count) return false;
+				// ReSharper disable once UsageOfDefaultStructEquality
+				if (ax.Args.Value.Except(bx.Args.Value).Any()) return false;
+
 				break;
 			}
 		}

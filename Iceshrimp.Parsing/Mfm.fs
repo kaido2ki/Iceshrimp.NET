@@ -92,11 +92,10 @@ module MfmNodeTypes =
         member val Url = url
         member val Silent = silent
 
-    type MfmFnNode(args: Dictionary<string, string>, name, children) =
+    type MfmFnNode(name, args: IDictionary<string, string option> option, children) =
         inherit MfmInlineNode(children)
-        // (string, bool) args = (string, null as string?)
-        member val Args = args
         member val Name = name
+        member val Args = args
 
     type internal MfmCharNode(v: char) =
         inherit MfmInlineNode([])
@@ -163,6 +162,18 @@ module private MfmParser =
         | None -> user
         | Some v -> user + "@" + v
 
+    let fnArg =
+        many1Chars asciiLetter
+        .>>. opt (
+            pchar '='
+            >>. manyCharsTill anyChar (nextCharSatisfies <| fun p -> p = ',' || isWhitespace p)
+        )
+
+    let fnDict (input: (string * string option) list option) : IDictionary<string, string option> option =
+        match input with
+        | None -> None
+        | Some items -> items |> dict |> Some
+
     // References
     let node, nodeRef = createParserForwardedToRef ()
     let inlineNode, inlineNodeRef = createParserForwardedToRef ()
@@ -228,6 +239,13 @@ module private MfmParser =
         >>. manyCharsTill (satisfy isAsciiLetter <|> satisfy isDigit <|> anyOf "+-_") (skipChar ':')
         |>> fun e -> MfmEmojiCodeNode(e) :> MfmNode
 
+    let fnNode =
+        skipString "$[" >>. many1Chars asciiLower
+        .>>. opt (skipChar '.' >>. sepBy1 fnArg (skipChar ','))
+        .>> skipChar ' '
+        .>>. many1Till inlineNode (skipChar ']')
+        |>> fun ((n, o), c) -> MfmFnNode(n, fnDict o, aggregateTextInline c) :> MfmNode
+
     let plainNode =
         skipString "<plain>" >>. manyCharsTill anyChar (skipString "</plain>")
         |>> fun v -> MfmPlainNode(v) :> MfmNode
@@ -241,7 +259,8 @@ module private MfmParser =
         |>> fun c -> MfmCenterNode(aggregateTextInline c) :> MfmNode
 
     let mentionNode =
-        (previousCharSatisfiesNot isNotWhitespace <|> previousCharSatisfies (isAnyOf <| "()")) 
+        (previousCharSatisfiesNot isNotWhitespace
+         <|> previousCharSatisfies (isAnyOf <| "()"))
         >>. skipString "@"
         >>. many1Chars (
             satisfy isLetterOrNumber
@@ -337,9 +356,10 @@ module private MfmParser =
           linkNode
           mathNode
           emojiCodeNode
+          fnNode
           charNode ]
 
-    //TODO: still missing: FnNode, MfmSearchNode
+    //TODO: still missing: FnNode
 
     let blockNodeSeq =
         [ plainNode; centerNode; smallNode; codeBlockNode; mathBlockNode; quoteNode ]

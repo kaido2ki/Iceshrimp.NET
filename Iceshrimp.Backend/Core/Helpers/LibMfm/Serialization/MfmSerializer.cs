@@ -56,9 +56,13 @@ public static class MfmSerializer
 				{
 					result.Append("$[");
 					result.Append(mfmFnNode.Name);
-					result.Append('.');
-					var args = mfmFnNode.Args.Select(p => p.Value != null ? $"{p.Key}={p.Value}" : $"{p.Key}");
-					result.Append(string.Join(',', args));
+					if (mfmFnNode.Args is { } args)
+					{
+						result.Append('.');
+						var str = args.Value.Select(p => p.Value != null ? $"{p.Key}={p.Value.Value}" : $"{p.Key}");
+						result.Append(string.Join(',', str));
+					}
+
 					result.Append(' ');
 					result.Append(Serialize(node.Children));
 					result.Append(']');
