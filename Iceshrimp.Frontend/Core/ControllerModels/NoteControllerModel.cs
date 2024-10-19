@@ -31,6 +31,9 @@ internal class NoteControllerModel(ApiClient api)
 	public Task<List<UserResponse>?> GetNoteReactions(string id, string name) =>
 		api.CallNullable<List<UserResponse>>(HttpMethod.Get, $"/notes/{id}/reactions/{name}");
 
+	public Task BiteNote(string id) =>
+		api.Call(HttpMethod.Post, $"/notes/{id}/bite");
+	
 	public Task<ValueResponse?> LikeNote(string id) =>
 		api.CallNullable<ValueResponse>(HttpMethod.Post, $"/notes/{id}/like");
 
