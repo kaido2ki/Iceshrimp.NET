@@ -165,6 +165,11 @@ public partial class Note : IDisposable
 		await ApiService.Notes.DeleteNote(NoteResponse.Id);
 		ComposeService.ComposeDialog?.OpenDialogRedraft(NoteResponse);
 	}
+	
+	public async void Bite()
+	{
+		await ApiService.Notes.BiteNote(NoteResponse.Id);
+	}
 
 	public async void Mute()
 	{
