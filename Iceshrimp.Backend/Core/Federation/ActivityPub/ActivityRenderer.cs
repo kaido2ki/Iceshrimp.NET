@@ -234,9 +234,9 @@ public class ActivityRenderer(
 	public ASBite RenderBite(Bite bite, string target, User fallbackTo) => new()
 	{
 		Id          = bite.Uri ?? bite.GetPublicUri(config.Value),
-		Actor       = userRenderer.RenderLite(bite.User).Compact(),
+		Actor       = userRenderer.RenderLite(bite.User),
 		Target      = new ASObjectBase(target),
 		PublishedAt = bite.CreatedAt,
-		To          = userRenderer.RenderLite(fallbackTo).Compact()
+		To          = userRenderer.RenderLite(fallbackTo)
 	};
 }
