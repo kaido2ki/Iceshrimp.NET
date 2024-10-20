@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
@@ -27,18 +28,22 @@ public class MiscController(DatabaseContext db, NoteRenderer noteRenderer, BiteS
 	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage",
+	                 Justification = "IncludeCommonProperties")]
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery",
+	                 Justification = "IncludeCommonProperties")]
 	public async Task BiteBack(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var target = await db.Bites
 		                     .IncludeCommonProperties()
 		                     .Where(p => p.Id == id)
-		                     .FirstOrDefaultAsync()
-		             ?? throw GracefulException.NotFound("Bite not found");
+		                     .FirstOrDefaultAsync() ??
+		             throw GracefulException.NotFound("Bite not found");
 
 		if (user.Id != (target.TargetUserId ?? target.TargetNote?.UserId ?? target.TargetBite?.UserId))
 			throw GracefulException.BadRequest("You can only bite back at a user who bit you");
-		
+
 		await biteSvc.BiteAsync(user, target);
 	}
 	
