@@ -94,12 +94,12 @@ public class ActivityPubController(
 		                      .Select(p => new Note { Id = p.Id, Uri = p.Uri })
 		                      .ToListAsync();
 
-		var rendered = replies.Select(noteRenderer.RenderLite).ToList();
+		var rendered = replies.Select(noteRenderer.RenderLite).Cast<ASObject>().ToList();
 		var res = new ASOrderedCollection
 		{
 			Id         = $"{note.GetPublicUri(config.Value)}/replies",
 			TotalItems = (ulong)rendered.Count,
-			Items      = rendered.Cast<ASObject>().ToList()
+			Items      = rendered
 		};
 
 		return res.Compact();
