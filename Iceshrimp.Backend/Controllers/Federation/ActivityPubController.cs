@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
@@ -87,8 +88,10 @@ public class ActivityPubController(
 		                   .FirstOrDefaultAsync(p => p.Id == id) ??
 		           throw GracefulException.NotFound("Note not found");
 
-		var replies = await db.Notes.Where(p => p.ReplyId == id)
+		var replies = await db.Notes
+		                      .Where(p => p.ReplyId == id)
 		                      .OrderByDescending(p => p.Id)
+		                      .Select(p => new Note { Id = p.Id, Uri = p.Uri })
 		                      .ToListAsync();
 
 		var rendered = replies.Select(noteRenderer.RenderLite).ToList();
