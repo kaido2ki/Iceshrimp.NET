@@ -247,7 +247,7 @@ public class MfmTests
 		const string input2 = ">this is a quote";
 		List<MfmNode> expected =
 		[
-			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a quote")]), false, true)
+			new MfmQuoteNode(ListModule.OfSeq<MfmNode>([new MfmTextNode("this is a quote")]), false, true, 1)
 		];
 
 		var res1 = Mfm.parse(input1);
@@ -297,10 +297,10 @@ public class MfmTests
 		List<MfmNode> expected =
 		[
 			new MfmTextNode("this is plain text > this is not a quote >this is also not a quote\n"),
-			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a quote\nthis is part of the same quote\nthis too")]), false, false),
+			new MfmQuoteNode(ListModule.OfSeq<MfmNode>([new MfmTextNode("this is a quote\nthis is part of the same quote\nthis too")]), false, false, 1),
 			new MfmTextNode("this is some plain text inbetween\n"),
-			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a second quote\nthis is part of the second quote")]), true, false),
-			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a third quote")]), false, false),
+			new MfmQuoteNode(ListModule.OfSeq<MfmNode>([new MfmTextNode("this is a second quote\nthis is part of the second quote")]), true, false, 1),
+			new MfmQuoteNode(ListModule.OfSeq<MfmNode>([new MfmTextNode("this is a third quote")]), false, false, 1),
 			new MfmTextNode("and this is some plain text to close it off")
 		];
 		// @formatter:on
@@ -311,6 +311,37 @@ public class MfmTests
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
 
 		MfmSerializer.Serialize(res).Should().BeEquivalentTo(canonical);
+	}
+
+	[TestMethod]
+	public void TestQuoteNested()
+	{
+		const string input =
+			"""
+			> test
+			>> test
+			> test
+			""";
+
+		// @formatter:off
+		List<MfmNode> expected =
+		[
+			new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+				new MfmTextNode("test"),
+				new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+					new MfmTextNode("test")
+				]), false, false, 2),
+				new MfmTextNode("test")
+			]), false, true, 1)
+		];
+		// @formatter:on
+
+		var res = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
 	}
 
 	[TestMethod]

@@ -145,12 +145,16 @@ public static class MfmSerializer
 				}
 				case MfmQuoteNode mfmQuoteNode:
 				{
+					if (mfmQuoteNode.Level > 1)
+						result.Append('\n');
+
 					var serialized = Serialize(node.Children);
 					var split      = serialized.Split('\n');
 
 					for (var i = 0; i < split.Length; i++)
 					{
-						split[i] = "> " + split[i];
+						var prefix = split[i].StartsWith('>') ? ">" : "> ";
+						split[i] = prefix + split[i];
 					}
 
 					result.Append(string.Join('\n', split));

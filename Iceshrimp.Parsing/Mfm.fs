@@ -19,6 +19,11 @@ module MfmNodeTypes =
         inherit MfmNode()
         do base.Children <- c |> List.map (fun x -> x :> MfmNode)
 
+    [<AbstractClass>]
+    type MfmHybridNode(c: MfmNode list) =
+        inherit MfmNode()
+        do base.Children <- c
+
     type MfmTextNode(v: string) =
         inherit MfmInlineNode([])
         member val Text = v
@@ -42,10 +47,11 @@ module MfmNodeTypes =
     type MfmSmallNode(c) =
         inherit MfmInlineNode(c)
 
-    type MfmQuoteNode(c, followedByQuote, followedByEof) =
-        inherit MfmBlockNode(c)
+    type MfmQuoteNode(c, followedByQuote, followedByEof, level) =
+        inherit MfmHybridNode(c)
         member val FollowedByQuote = followedByQuote
         member val FollowedByEof = followedByEof
+        member val Level = level
 
     type MfmSearchNode(content: string, query: string) =
         inherit MfmBlockNode([])
@@ -100,6 +106,11 @@ module MfmNodeTypes =
     type internal MfmCharNode(v: char) =
         inherit MfmInlineNode([])
         member val Char = v
+
+    type internal UserState =
+        { QuoteStack: char list }
+
+        static member Default = { QuoteStack = [] }
 
 open MfmNodeTypes
 
@@ -188,6 +199,7 @@ module private MfmParser =
     // References
     let node, nodeRef = createParserForwardedToRef ()
     let inlineNode, inlineNodeRef = createParserForwardedToRef ()
+    let inlineOrQuoteNode, inlineOrQuoteNodeRef = createParserForwardedToRef ()
 
     let seqFlatten items =
         seq {
@@ -340,21 +352,63 @@ module private MfmParser =
             | _ -> fail "invalid url"
 
     let quoteNode =
-        previousCharSatisfiesNot isNotNewline
-        >>. many1 (
-            pchar '>'
-            >>. (opt <| pchar ' ')
-            >>. (many1Till inlineNode (skipNewline <|> eof))
-        )
-        .>> (opt <| attempt (skipNewline >>. (notFollowedBy <| pchar '>')))
-        .>>. (opt <| attempt (skipNewline >>. (followedBy <| pchar '>')) .>>. opt eof)
-        |>> fun (q, (followedByQuote, followedByEof)) ->
+        let pushQuote =
+            updateUserState (fun us ->
+                { us with
+                    QuoteStack = '>' :: us.QuoteStack })
+
+        let popQuote =
+            updateUserState (fun u ->
+                { u with
+                    QuoteStack = List.tail u.QuoteStack })
+
+        let stack: Parser<string, UserState> =
+            fun stream -> pstring (String(List.toArray stream.UserState.QuoteStack)) stream
+
+        let level: Parser<int, UserState> =
+            fun stream -> Reply(stream.UserState.QuoteStack.Length)
+
+        let line =
+            (opt <| pchar ' ')
+            >>. many1Till (attempt inlineOrQuoteNode) (skipNewline <|> eof <|> previousCharSatisfies isNewline)
+
+        let qFolder (result: MfmNode list list) (current: MfmNode list) =
+            match result.IsEmpty with
+            | true ->
+                match current.Head with
+                | :? MfmQuoteNode -> current :: result
+                | _ -> (current @ [ (MfmCharNode('\n') :> MfmNode) ]) :: result
+            | false ->
+                match current.Head with
+                | :? MfmQuoteNode -> current :: result
+                | _ ->
+                    match result.Head.Head with
+                    | :? MfmQuoteNode -> current :: result
+                    | _ -> (current @ [ (MfmCharNode('\n') :> MfmNode) ]) :: result
+
+        previousCharSatisfiesNot (fun c -> isNotNewline c && c <> '>')
+        >>. pchar '>'
+        >>. pushQuote
+        >>. line
+        .>>. many (attempt (stack >>. line))
+        .>> (opt <| attempt (skipNewline >>. notFollowedBy stack >>. notFollowedBy (pchar '>')))
+        .>>. (opt <| attempt (skipNewline >>. followedBy (pchar '>')) .>>. opt eof .>>. level)
+        .>> popQuote
+        |>> fun ((initial, rest), ((followedByQuote, followedByEof), level)) ->
             MfmQuoteNode(
-                List.collect (fun e -> e @ [ (MfmCharNode('\n') :> MfmInlineNode) ]) q
-                |> fun q -> List.take (q.Length - 1) q
-                |> aggregateTextInline,
+                ([], (initial :: rest) |> List.rev)
+                ||> List.fold qFolder
+                |> List.collect id
+                |> fun q ->
+                    List.take
+                        (match q.Head with
+                         | :? MfmQuoteNode -> q.Length
+                         | _ -> q.Length - 1)
+                        q
+                |> aggregateText,
                 followedByQuote.IsSome,
-                followedByEof.IsSome
+                followedByEof.IsSome,
+                level
             )
             :> MfmNode
 
@@ -386,6 +440,7 @@ module private MfmParser =
     do nodeRef.Value <- choice <| seqAttempt (seqFlatten <| nodeSeq)
 
     do inlineNodeRef.Value <- choice <| (seqAttempt inlineNodeSeq) |>> fun v -> v :?> MfmInlineNode
+    do inlineOrQuoteNodeRef.Value <- (attempt quoteNode) <|> (inlineNode |>> fun v -> v :> MfmNode)
 
     // Final parse command
     let parse = spaces >>. manyTill node eof .>> spaces
@@ -394,6 +449,6 @@ open MfmParser
 
 module Mfm =
     let parse str =
-        match runParserOnString parse 0 "" str with
+        match runParserOnString parse UserState.Default "" str with
         | Success(result, _, _) -> aggregateText result
         | Failure(s, _, _) -> failwith $"Failed to parse MFM: {s}"
