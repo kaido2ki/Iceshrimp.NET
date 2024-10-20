@@ -85,7 +85,7 @@ public class ActivityPubController(
 		var actor = HttpContext.GetActor();
 		var note = await db.Notes
 		                   .EnsureVisibleFor(actor)
-		                   .FirstOrDefaultAsync(p => p.Id == id) ??
+		                   .FirstOrDefaultAsync(p => p.Id == id && p.User.IsLocalUser) ??
 		           throw GracefulException.NotFound("Note not found");
 
 		var replies = await db.Notes
