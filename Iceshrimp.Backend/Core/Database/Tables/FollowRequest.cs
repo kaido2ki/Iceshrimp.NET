@@ -34,7 +34,7 @@ public class FollowRequest : IEntity
 	///     id of Follow Activity.
 	/// </summary>
 	[Column("requestId")]
-	[StringLength(128)]
+	[StringLength(512)]
 	public string? RequestId { get; set; }
 
 	[Column("relationshipId")] public Guid? RelationshipId { get; set; }

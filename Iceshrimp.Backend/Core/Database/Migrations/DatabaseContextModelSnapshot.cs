@@ -19,7 +19,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "8.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "antenna_src_enum", new[] { "home", "all", "users", "list", "group", "instances" });
@@ -1172,8 +1172,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("relationshipId");
 
                     b.Property<string>("RequestId")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
                         .HasColumnName("requestId")
                         .HasComment("id of Follow Activity.");
 
