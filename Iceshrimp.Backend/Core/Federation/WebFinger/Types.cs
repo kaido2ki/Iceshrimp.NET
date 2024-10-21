@@ -132,7 +132,8 @@ public class NodeInfoResponse
 			"editing",
 			"pleroma_emoji_reactions",
 			"exposable_reactions",
-			"custom_emoji_reactions"
+			"custom_emoji_reactions",
+			"pleroma:bites"
 		];
 
 		[J("localBubbleInstances")] public string[] LocalBubbleInstances { get; set; } = [];
