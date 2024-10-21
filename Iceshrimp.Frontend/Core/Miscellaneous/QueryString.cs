@@ -238,7 +238,7 @@ public readonly struct QueryString : IEquatable<QueryString>
 			return !HasValue;
 		}
 
-		return obj is QueryString && Equals((QueryString)obj);
+		return obj is QueryString qs && Equals(qs);
 	}
 
 	/// <summary>
