@@ -437,7 +437,8 @@ public class DriveService(
 	{
 		if (file is not { UserHost: not null, Uri: not null, IsLink: false }) return;
 
-		string?[] paths = [file.AccessKey, file.ThumbnailAccessKey, file.PublicAccessKey];
+		string?[] paths          = [file.AccessKey, file.ThumbnailAccessKey, file.PublicAccessKey];
+		var       storedInternal = file.StoredInternal;
 
 		file.IsLink             = true;
 		file.Url                = file.Uri;
@@ -465,7 +466,7 @@ public class DriveService(
 				return;
 		}
 
-		if (file.StoredInternal)
+		if (storedInternal)
 		{
 			var pathBase = storageConfig.Value.Local?.Path ??
 			               throw new Exception("Cannot delete locally stored file: pathBase is null");
