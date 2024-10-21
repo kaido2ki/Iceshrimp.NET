@@ -392,7 +392,7 @@ module private MfmParser =
         >>. line
         .>>. many (attempt (stack >>. line))
         .>> (opt <| attempt (skipNewline >>. notFollowedBy stack >>. notFollowedBy (pchar '>')))
-        .>>. (opt <| attempt (skipNewline >>. followedBy (pchar '>')) .>>. opt eof .>>. level)
+        .>>. (opt <| attempt (skipNewline >>. followedBy stack) .>>. opt eof .>>. level)
         .>> popQuote
         |>> fun ((initial, rest), ((followedByQuote, followedByEof), level)) ->
             MfmQuoteNode(

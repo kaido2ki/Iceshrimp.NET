@@ -316,22 +316,47 @@ public class MfmTests
 	[TestMethod]
 	public void TestQuoteNested()
 	{
+		//TODO: test some 3rd level
+		//TODO: test why it eats text if you put many newlines after a trailing 2nd level
 		const string input =
 			"""
-			> test
-			>> test
-			> test
+			> 1st level
+			>> 2nd level
+			> back to 1st level
+			
+			> 1st level
+			>> trailing 2nd level
+			
+			> 1st level
+			> more 1st level
+			>> 2nd level
+			>> more 2nd level
+			> back to 1st
+			> trailing 1st
 			""";
 
 		// @formatter:off
 		List<MfmNode> expected =
 		[
 			new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
-				new MfmTextNode("test"),
+				new MfmTextNode("1st level"),
 				new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
-					new MfmTextNode("test")
+					new MfmTextNode("2nd level")
 				]), false, false, 2),
-				new MfmTextNode("test")
+				new MfmTextNode("back to 1st level")
+			]), true, false, 1),
+			new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+				new MfmTextNode("1st level"),
+				new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+					new MfmTextNode("trailing 2nd level")
+				]), false, false, 2)
+			]), true, false, 1),
+			new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+				new MfmTextNode("1st level\nmore 1st level"),
+				new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+					new MfmTextNode("2nd level\nmore 2nd level")
+				]), false, false, 2),
+				new MfmTextNode("back to 1st\ntrailing 1st")
 			]), false, true, 1)
 		];
 		// @formatter:on
