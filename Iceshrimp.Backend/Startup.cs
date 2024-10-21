@@ -32,7 +32,7 @@ builder.Services.AddAuthorizationPolicies();
 builder.Services.AddAuthenticationServices();
 builder.Services.AddSignalR().AddMessagePackProtocol();
 builder.Services.AddResponseCompression();
-builder.Services.AddRazorPages(); //.AddRouteOverrides();
+builder.Services.AddRazorPages();
 builder.Services.AddRazorComponents();
 builder.Services.AddAntiforgery(o => o.Cookie.Name = "CSRF-Token");
 
