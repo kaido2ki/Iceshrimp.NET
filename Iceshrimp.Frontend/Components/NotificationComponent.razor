@@ -55,6 +55,10 @@
             {
                 <span class="notification-text">@Loc["quoted your post:"]</span>
             }
+            else if (NotificationResponse is { Bite: { BiteBack: true }, Type: "bite" })
+            {
+                <span class="notification-text">@Loc["bit you back"]</span>
+            }
             else if (NotificationResponse is { Note: not null, Type: "bite" })
             {
                 <span class="notification-text">@Loc["bit your note:"]</span>
