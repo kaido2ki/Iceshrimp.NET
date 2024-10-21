@@ -35,6 +35,8 @@ public class NotificationEntity : IEntity
 
 			NotificationType.Reaction when isPleroma  => "pleroma:emoji_reaction",
 			NotificationType.Reaction when !isPleroma => "reaction",
+			
+			NotificationType.Bite when isPleroma => "bite",
 
 			_ => throw new GracefulException($"Unsupported notification type: {type}")
 		};
@@ -53,6 +55,7 @@ public class NotificationEntity : IEntity
 			"update"                 => [NotificationType.Edit],
 			"reaction"               => [NotificationType.Reaction],
 			"pleroma:emoji_reaction" => [NotificationType.Reaction],
+			"bite"                   => [NotificationType.Bite],
 			_                        => []
 		};
 	}

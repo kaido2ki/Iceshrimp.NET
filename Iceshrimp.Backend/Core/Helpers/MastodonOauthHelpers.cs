@@ -31,7 +31,8 @@ public static class MastodonOauthHelpers
 		"write:mutes",
 		"write:notifications",
 		"write:reports",
-		"write:statuses"
+		"write:statuses",
+		"write:bites"
 	];
 
 	private static readonly List<string> FollowScopes =

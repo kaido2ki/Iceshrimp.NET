@@ -85,6 +85,13 @@ public class NodeInfoResponse
 	[J("usage")]             public NodeInfoUsage?    Usage             { get; set; }
 	[J("metadata")]          public NodeInfoMetadata? Metadata          { get; set; }
 	[J("openRegistrations")] public bool?             OpenRegistrations { get; set; }
+	
+	[J("operations")]
+	public Dictionary<string, string[]> Operations => new Dictionary<string, string[]>()
+	{
+		{ "com.shinolabs.api.bite", ["1.0.0"] },
+		{ "jetzt.mia.ns.activitypub.accept.bite", ["1.0.0"] }
+	};
 
 	public class NodeInfoMetadata
 	{

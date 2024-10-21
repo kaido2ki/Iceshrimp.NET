@@ -24,7 +24,8 @@ public class InstanceMetadata
 		"editing",
 		"pleroma_emoji_reactions",
 		"exposable_reactions",
-		"custom_emoji_reactions"
+		"custom_emoji_reactions",
+		"pleroma:bites"
 	];
 
 	[J("fields_limits")] public FieldsLimits FieldsLimits => new();
