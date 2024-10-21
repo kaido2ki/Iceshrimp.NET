@@ -111,7 +111,8 @@ public class UserController(
 		if (user.Id == id)
 			throw GracefulException.BadRequest("You cannot bite yourself");
 
-		var target = await db.Users.IncludeCommonProperties().Where(p => p.Id == id).FirstOrDefaultAsync() ?? throw GracefulException.NotFound("User not found");
+		var target = await db.Users.IncludeCommonProperties().Where(p => p.Id == id).FirstOrDefaultAsync() ??
+		             throw GracefulException.NotFound("User not found");
 
 		await biteSvc.BiteAsync(user, target);
 	}
