@@ -1,12 +1,15 @@
+using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Shared.Schemas.Web;
+using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Web.Renderers;
 
 public class NotificationRenderer(
 	UserRenderer userRenderer,
-	NoteRenderer noteRenderer
+	NoteRenderer noteRenderer,
+	DatabaseContext db
 )
 {
 	public async Task<NotificationResponse> RenderOne(
@@ -21,6 +24,13 @@ public class NotificationRenderer(
 			? (data?.Notes ?? await GetNotes([notification], localUser)).First(p => p.Id == notification.Note.Id)
 			: null;
 
+		var dbBite = notification.BiteId != null
+			? await db.Bites.FirstOrDefaultAsync(p => p.Id == notification.BiteId)
+			: null;
+		var bite = dbBite != null
+			? new NotificationResponse.BiteResponse { Id = dbBite.Id, BiteBack = dbBite.TargetBiteId != null }
+			: null;
+
 		return new NotificationResponse
 		{
 			Id        = notification.Id,
@@ -28,6 +38,7 @@ public class NotificationRenderer(
 			CreatedAt = notification.CreatedAt.ToStringIso8601Like(),
 			User      = user,
 			Note      = note,
+			Bite      = bite,
 			Type      = RenderType(notification.Type)
 		};
 	}
