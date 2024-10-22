@@ -25,7 +25,7 @@ public class BiteController(DatabaseContext db, BiteService biteSvc) : Controlle
     [Authenticate("write:bites")]
     [ProducesResults(HttpStatusCode.OK)]
     [ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
-    public async Task BiteUser(string id)
+    public async Task BiteUser([FromHybrid] string id)
     {
         var user = HttpContext.GetUserOrFail();
         if (user.Id == id)
