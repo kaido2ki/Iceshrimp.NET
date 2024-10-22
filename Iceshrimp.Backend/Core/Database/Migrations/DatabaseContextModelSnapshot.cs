@@ -1584,6 +1584,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("finished_at");
 
+                    b.Property<string>("Mutex")
+                        .HasColumnType("text")
+                        .HasColumnName("mutex");
+
                     b.Property<string>("Queue")
                         .IsRequired()
                         .HasColumnType("text")
@@ -1618,6 +1622,9 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.HasIndex("DelayedUntil");
 
                     b.HasIndex("FinishedAt");
+
+                    b.HasIndex("Mutex")
+                        .IsUnique();
 
                     b.HasIndex("Queue");
 

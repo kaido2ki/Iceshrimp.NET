@@ -10,6 +10,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(Status))]
 [Index(nameof(FinishedAt))]
 [Index(nameof(DelayedUntil))]
+[Index(nameof(Mutex), IsUnique = true)]
 public class Job
 {
 	public enum JobStatus
@@ -35,6 +36,7 @@ public class Job
 	[Column("stack_trace")]       public string?   StackTrace       { get; set; }
 	[Column("exception")]         public string?   Exception        { get; set; }
 	[Column("data")]              public string    Data             { get; set; } = null!;
+	[Column("mutex")]             public string?   Mutex            { get; set; }
 
 	[NotMapped]
 	public long Duration => (long)((FinishedAt ?? DateTime.UtcNow) - (StartedAt ?? QueuedAt)).TotalMilliseconds;
