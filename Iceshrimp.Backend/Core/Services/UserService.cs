@@ -131,7 +131,7 @@ public class UserService(
 		var actor = await fetchSvc.FetchActorAsync(uri);
 		logger.LogDebug("Got actor: {url}", actor.Url);
 
-		actor.Normalize(uri);
+		actor.NormalizeAndValidate(uri);
 
 		user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == actor.Username!.ToLowerInvariant() &&
 		                                               p.Host == host);
@@ -143,8 +143,6 @@ public class UserService(
 			throw GracefulException.UnprocessableEntity("Uri doesn't match id of fetched actor");
 		if (actor.PublicKey?.Id == null || actor.PublicKey?.PublicKey == null)
 			throw GracefulException.UnprocessableEntity("Actor has no valid public key");
-		if (new Uri(actor.PublicKey.Id).Host != new Uri(actor.Id).Host)
-			throw GracefulException.UnprocessableEntity("Actor public key id host doesn't match actor id host");
 
 		var emoji = await emojiSvc.ProcessEmojiAsync(actor.Tags?.OfType<ASEmoji>().ToList(), host);
 
@@ -279,7 +277,7 @@ public class UserService(
 		logger.LogDebug("Updating user with uri {uri}", uri);
 
 		actor ??= await fetchSvc.FetchActorAsync(user.Uri);
-		actor.Normalize(uri);
+		actor.NormalizeAndValidate(uri);
 
 		user.UserProfile ??= await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
 		user.UserProfile ??= new UserProfile { User = user };

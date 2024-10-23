@@ -73,7 +73,7 @@ public class UserResolver(
 					}
 
 					logger.LogDebug("Actor ID matches query, performing reverse discovery...");
-					actor.Normalize(query);
+					actor.NormalizeAndValidate(query);
 					var domain   = new Uri(actor.Id).Host;
 					var username = actor.Username!;
 					return await WebFingerAsync(actor.WebfingerAddress ?? $"acct:{username}@{domain}", false, actor.Id);
@@ -123,7 +123,7 @@ public class UserResolver(
 							throw new Exception("Reverse discovery fallback failed: uri mismatch");
 
 						logger.LogDebug("Actor ID matches apUri, performing reverse discovery...");
-						actor.Normalize(apUri);
+						actor.NormalizeAndValidate(apUri);
 						var domain   = new Uri(actor.Id).Host;
 						var username = new Uri(actor.Username!).Host;
 						return await WebFingerAsync(actor.WebfingerAddress ?? $"acct:{username}@{domain}", false,
