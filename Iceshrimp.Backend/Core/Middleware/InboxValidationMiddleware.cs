@@ -76,6 +76,7 @@ public class InboxValidationMiddleware(
 			try
 			{
 				expanded = LdHelpers.Expand(parsed);
+				if (expanded == null) throw new Exception("Failed to expand ASObject");
 			}
 			catch (Exception e)
 			{
@@ -83,11 +84,18 @@ public class InboxValidationMiddleware(
 				return;
 			}
 
-			if (expanded == null)
-				throw new Exception("Failed to expand ASObject");
-			var obj = ASObject.Deserialize(expanded);
-			if (obj == null)
-				throw new Exception("Failed to deserialize ASObject");
+			ASObject? obj;
+			try
+			{
+				obj = ASObject.Deserialize(expanded);
+				if (obj == null) throw new Exception("Failed to deserialize ASObject");
+			}
+			catch (Exception e)
+			{
+				throw GracefulException
+					.UnprocessableEntity($"Failed to deserialize request body as ASObject: {e.Message}");
+			}
+
 			if (obj is not ASActivity activity)
 				throw new GracefulException(HttpStatusCode.UnprocessableEntity,
 				                            "Request body is not an ASActivity", $"Type: {obj.Type}");
