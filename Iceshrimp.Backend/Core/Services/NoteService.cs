@@ -817,6 +817,8 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Note.Id schema is invalid");
 		if (note.Url?.Link != null && !note.Url.Link.StartsWith("https://"))
 			throw GracefulException.UnprocessableEntity("Note.Url schema is invalid");
+		if (note.Url?.Link != null && new Uri(note.Id).IdnHost != new Uri(note.Url.Link).IdnHost)
+			note.Url = null;
 		if (actor.IsSuspended)
 			throw GracefulException.Forbidden("User is suspended");
 		if (await fedCtrlSvc.ShouldBlockAsync(note.Id, actor.Host))

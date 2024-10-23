@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Middleware;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
 using JI = Newtonsoft.Json.JsonIgnoreAttribute;
@@ -141,7 +142,7 @@ public class ASActor : ASObjectWithId
 
 	[JI] public bool IsBot => Type == $"{Constants.ActivityStreamsNs}#Service";
 
-	public void Normalize(string uri)
+	public void NormalizeAndValidate(string uri)
 	{
 		if (Type == null || !ActorTypes.Contains(Type)) throw new Exception("Actor is of invalid type");
 
@@ -154,9 +155,26 @@ public class ASActor : ASObjectWithId
 		    !Regex.IsMatch(Username, @"^\w([\w-.]*\w)?$"))
 			throw new Exception("Actor username is invalid");
 
+		var uriHost = new Uri(uri).Host;
+
 		var publicKeyId = PublicKey?.Id ?? throw new Exception("Invalid actor: missing PublicKey?.Id");
+		var sharedInbox = SharedInbox?.Link ?? Endpoints?.SharedInbox?.Id;
+		if (Inbox?.Id == null)
+			throw GracefulException.UnprocessableEntity("Invalid actor: missing inbox");
 		if (new Uri(publicKeyId).Host != new Uri(uri).Host)
-			throw new Exception("Invalid actor: public key id / actor id host mismatch");
+			throw GracefulException.UnprocessableEntity("Invalid actor: public key id / actor id host mismatch");
+		if (new Uri(Inbox.Id).Host != uriHost)
+			throw GracefulException.UnprocessableEntity("Invalid actor: inbox host doesn't match id host");
+		if (Outbox?.Id != null && new Uri(Outbox.Id).Host != uriHost)
+			throw GracefulException.UnprocessableEntity("Invalid actor: outbox doesn't match id host");
+		if (sharedInbox != null && new Uri(sharedInbox).Host != uriHost)
+			throw GracefulException.UnprocessableEntity("Invalid actor: shared inbox host doesn't match id host");
+		if (Followers?.Id != null && new Uri(Followers.Id).Host != uriHost)
+			throw GracefulException.UnprocessableEntity("Invalid actor: followers host doesn't match actor id host");
+		if (Following?.Id != null && new Uri(Following.Id).Host != uriHost)
+			throw GracefulException.UnprocessableEntity("Invalid actor: following host doesn't match id host");
+		if (Url?.Link != null && new Uri(Url.Link).Host != uriHost)
+			Url = null;
 
 		DisplayName = DisplayName switch
 		{
