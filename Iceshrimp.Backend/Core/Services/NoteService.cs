@@ -16,6 +16,7 @@ using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -226,8 +227,9 @@ public class NoteService(
 			if (data.ASNote != null)
 			{
 				visibleUserIds = (await data.ASNote.GetRecipients(data.User)
-				                            .Select(userResolver.ResolveAsync)
+				                            .Select(p => userResolver.ResolveOrNullAsync(p, EnforceUriFlags))
 				                            .AwaitAllNoConcurrencyAsync())
+				                 .NotNull()
 				                 .Select(p => p.Id)
 				                 .Concat(mentionedUserIds)
 				                 .Append(data.Reply?.UserId)
@@ -566,8 +568,9 @@ public class NoteService(
 				if (data.ASNote != null)
 				{
 					visibleUserIds = (await data.ASNote.GetRecipients(note.User)
-					                            .Select(userResolver.ResolveAsync)
+					                            .Select(p => userResolver.ResolveOrNullAsync(p, EnforceUriFlags))
 					                            .AwaitAllNoConcurrencyAsync())
+					                 .NotNull()
 					                 .Select(p => p.Id)
 					                 .Concat(visibleUserIds)
 					                 .ToList();
@@ -1044,22 +1047,12 @@ public class NoteService(
 
 	private async Task<NoteMentionData> ResolveNoteMentionsAsync(ASNote note)
 	{
-		var mentionTags = note.Tags?.OfType<ASMention>().Where(p => p.Href != null) ?? [];
+		var mentionTags = note.Tags?.OfType<ASMention>().Where(p => p.Href?.Id != null) ?? [];
 		var users = await mentionTags
-		                  .Select(async p =>
-		                  {
-			                  try
-			                  {
-				                  return await userResolver.ResolveAsync(p.Href!.Id!);
-			                  }
-			                  catch
-			                  {
-				                  return null;
-			                  }
-		                  })
+		                  .Select(p => userResolver.ResolveOrNullAsync(p.Href!.Id!, EnforceUriFlags))
 		                  .AwaitAllNoConcurrencyAsync();
 
-		return ResolveNoteMentions(users.Where(p => p != null).Select(p => p!).ToList());
+		return ResolveNoteMentions(users.NotNull().ToList());
 	}
 
 	private async Task<NoteMentionData> ResolveNoteMentionsAsync(string? text)
@@ -1069,21 +1062,11 @@ public class NoteService(
 			                 .SelectMany(p => p.Children.Append(p))
 			                 .OfType<MfmMentionNode>()
 			                 .DistinctBy(p => p.Acct)
-			                 .Select(async p =>
-			                 {
-				                 try
-				                 {
-					                 return await userResolver.ResolveAsync(p.Acct);
-				                 }
-				                 catch
-				                 {
-					                 return null;
-				                 }
-			                 })
+			                 .Select(p => userResolver.ResolveOrNullAsync(p.Acct, ResolveFlags.Acct))
 			                 .AwaitAllNoConcurrencyAsync()
 			: [];
 
-		return ResolveNoteMentions(users.Where(p => p != null).Select(p => p!).ToList());
+		return ResolveNoteMentions(users.NotNull().ToList());
 	}
 
 	private List<string> ResolveHashtags(string? text, ASNote? note = null)
@@ -1203,6 +1186,9 @@ public class NoteService(
 			return await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
 		}
 
+		if (uri.StartsWith($"https://{config.Value.WebDomain}/"))
+			return null;
+
 		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == uri);
 
 		if (note != null && !forceRefresh) return note;
@@ -1249,7 +1235,7 @@ public class NoteService(
 			if (res != null && !forceRefresh) return res;
 		}
 
-		var actor = await userResolver.ResolveAsync(attrTo.Id);
+		var actor = await userResolver.ResolveAsync(attrTo.Id, EnforceUriFlags);
 
 		using (await KeyedLocker.LockAsync(uri))
 		{

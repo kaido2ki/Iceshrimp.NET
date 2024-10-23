@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
@@ -87,7 +88,7 @@ public class SearchController(
 
 		if (target.StartsWith('@') || target.StartsWith(userPrefixAlt))
 		{
-			var hit = await userResolver.ResolveAsyncOrNull(target);
+			var hit = await userResolver.ResolveOrNullAsync(target, SearchFlags);
 			if (hit != null) return new RedirectResponse { TargetUrl = $"/users/{hit.Id}" };
 			throw GracefulException.NotFound("No result found");
 		}
@@ -125,7 +126,7 @@ public class SearchController(
 			noteHit = await noteSvc.ResolveNoteAsync(target);
 			if (noteHit != null) return new RedirectResponse { TargetUrl = $"/notes/{noteHit.Id}" };
 
-			userHit = await userResolver.ResolveAsyncOrNull(target);
+			userHit = await userResolver.ResolveOrNullAsync(target, ResolveFlags.Uri | ResolveFlags.MatchUrl);
 			if (userHit != null) return new RedirectResponse { TargetUrl = $"/users/{userHit.Id}" };
 
 			throw GracefulException.NotFound("No result found");

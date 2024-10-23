@@ -58,32 +58,37 @@ public class UserService(
 			: (split[0], split[1].ToPunycodeLower());
 	}
 
-	public async Task<User?> GetUserFromQueryAsync(string query)
+	public async Task<User?> GetUserFromQueryAsync(string query, bool allowUrl)
 	{
 		if (query.StartsWith("http://") || query.StartsWith("https://"))
+		{
 			if (query.StartsWith($"https://{instance.Value.WebDomain}/users/"))
 			{
 				query = query[$"https://{instance.Value.WebDomain}/users/".Length..];
 				return await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == query) ??
 				       throw GracefulException.NotFound("User not found");
 			}
-			else if (query.StartsWith($"https://{instance.Value.WebDomain}/@"))
+
+			if (query.StartsWith($"https://{instance.Value.WebDomain}/@"))
 			{
 				query = query[$"https://{instance.Value.WebDomain}/@".Length..];
 				if (query.Split('@').Length != 1)
-					return await GetUserFromQueryAsync($"acct:{query}");
+					return await GetUserFromQueryAsync($"acct:{query}", allowUrl);
 
 				return await db.Users.IncludeCommonProperties()
-				               .FirstOrDefaultAsync(p => p.Username == query.ToLower()) ??
+				               .FirstOrDefaultAsync(p => p.Username == query.ToLower() && p.IsLocalUser) ??
 				       throw GracefulException.NotFound("User not found");
 			}
-			else
-			{
-				return await db.Users
-				               .IncludeCommonProperties()
-				               .FirstOrDefaultAsync(p => (p.Uri != null && p.Uri == query) ||
-				                                         (p.UserProfile != null && p.UserProfile.Url == query));
-			}
+
+			var res = await db.Users.IncludeCommonProperties()
+			                  .FirstOrDefaultAsync(p => p.Uri != null && p.Uri == query);
+
+			if (res != null || !allowUrl)
+				return res;
+
+			return await db.Users.IncludeCommonProperties()
+			               .FirstOrDefaultAsync(p => p.UserProfile != null && p.UserProfile.Url == query);
+		}
 
 		var tuple = AcctToTuple(query);
 		if (tuple.Host == instance.Value.WebDomain || tuple.Host == instance.Value.AccountDomain)

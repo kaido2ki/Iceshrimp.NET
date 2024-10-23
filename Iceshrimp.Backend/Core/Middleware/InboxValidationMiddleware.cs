@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
@@ -117,7 +118,11 @@ public class InboxValidationMiddleware(
 				{
 					try
 					{
-						var user = await userResolver.ResolveAsync(sig.KeyId, activity is ASDelete).WaitAsync(ct);
+						var flags = activity is ASDelete
+							? ResolveFlags.Uri | ResolveFlags.OnlyExisting
+							: ResolveFlags.Uri;
+
+						var user = await userResolver.ResolveOrNullAsync(sig.KeyId, flags).WaitAsync(ct);
 						if (user == null) throw AuthFetchException.NotFound("Delete activity actor is unknown");
 						key = await db.UserPublickeys.Include(p => p.User)
 						              .FirstOrDefaultAsync(p => p.User == user, ct);
@@ -196,8 +201,13 @@ public class InboxValidationMiddleware(
 
 					if (key == null)
 					{
-						var user = await userResolver.ResolveAsync(activity.Actor.Id, activity is ASDelete)
-						                             .WaitAsync(ct);
+						var flags = activity is ASDelete
+							? ResolveFlags.Uri | ResolveFlags.OnlyExisting
+							: ResolveFlags.Uri;
+
+						var user = await userResolver
+						                 .ResolveOrNullAsync(activity.Actor.Id, flags)
+						                 .WaitAsync(ct);
 						if (user == null) throw AuthFetchException.NotFound("Delete activity actor is unknown");
 						key = await db.UserPublickeys
 						              .Include(p => p.User)

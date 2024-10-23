@@ -1,8 +1,10 @@
+using System.Net;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
@@ -205,136 +207,143 @@ public class UserResolver(
 		return query;
 	}
 
-	public async Task<User> ResolveAsync(string username, string? host)
+	public static string GetQuery(string username, string? host) => host != null
+		? $"acct:{username}@{host}"
+		: $"acct:{username}";
+
+	[Flags]
+	public enum ResolveFlags
 	{
-		return host != null ? await ResolveAsync($"acct:{username}@{host}") : await ResolveAsync($"acct:{username}");
+		/// <summary>
+		/// No flags. Do not use.
+		/// </summary>
+		None = 0,
+
+		/// <summary>
+		/// Whether to allow http/s: queries.
+		/// </summary>
+		Uri = 1,
+
+		/// <summary>
+		/// Whether to allow acct: queries.
+		/// </summary>
+		Acct = 2,
+
+		/// <summary>
+		/// Whether to match user urls in addition to user uris. Does nothing if the Uri flag is not set.
+		/// </summary>
+		MatchUrl = 4,
+
+		/// <summary>
+		/// Whether to enforce that the returned object has the same URL as the query. Does nothing if the Uri flag is not set.
+		/// </summary>
+		EnforceUri = 8,
+
+		/// <summary>
+		/// Return early if no matching user was found in the database
+		/// </summary>
+		OnlyExisting = 16
 	}
 
-	public async Task<User?> LookupAsync(string query)
+	public const ResolveFlags EnforceUriFlags = ResolveFlags.Uri | ResolveFlags.EnforceUri;
+	public const ResolveFlags SearchFlags     = ResolveFlags.Uri | ResolveFlags.MatchUrl | ResolveFlags.Acct;
+
+	/// <summary>
+	/// Resolves a local or remote user.
+	/// </summary>
+	/// <param name="query">The query to resolve. Can be an acct (with acct: or @ prefix), </param>
+	/// <param name="flags">The options to use for the resolve process.</param>
+	/// <returns>The user in question.</returns>
+	private async Task<Result<User>> ResolveInternalAsync(string query, ResolveFlags flags)
 	{
 		query = NormalizeQuery(query);
-		return await userSvc.GetUserFromQueryAsync(query);
-	}
 
-	public async Task<User> ResolveAsync(string query)
-	{
-		query = NormalizeQuery(query);
-
-		// Before we begin, let's skip local note urls
+		// Before we begin, validate method parameters
+		if (flags == 0)
+			throw new Exception("ResolveFlags.None is not valid for this method");
+		if (query.Contains(' '))
+			return GracefulException.BadRequest("Invalid query");
 		if (query.StartsWith($"https://{config.Value.WebDomain}/notes/"))
-			throw GracefulException.BadRequest("Refusing to resolve local note URL as user");
+			return GracefulException.BadRequest("Refusing to resolve local note URL as user");
+		if (query.StartsWith("acct:") && !flags.HasFlag(ResolveFlags.Acct))
+			return GracefulException.BadRequest("Refusing to resolve acct: uri without ResolveFlags.Acct");
+		if ((query.StartsWith("https://") || query.StartsWith("http://")) && !flags.HasFlag(ResolveFlags.Uri))
+			return GracefulException.BadRequest("Refusing to resolve http(s): uri without !allowUri");
 
 		// First, let's see if we already know the user
-		var user = await userSvc.GetUserFromQueryAsync(query);
+		var user = await userSvc.GetUserFromQueryAsync(query, flags.HasFlag(ResolveFlags.MatchUrl));
 		if (user != null) return user;
+
+		// If query still starts with web domain, we can return early
+		if (query.StartsWith($"https://{config.Value.WebDomain}/"))
+			throw GracefulException.NotFound("No match found");
+
+		if (flags.HasFlag(ResolveFlags.OnlyExisting))
+			return GracefulException.NotFound("No match found & OnlyExisting flag is set");
 
 		// We don't, so we need to run WebFinger
 		var (acct, uri) = await WebFingerAsync(query);
 
 		// Check the database again with the new data
-		if (uri != query) user = await userSvc.GetUserFromQueryAsync(uri);
-		if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
-		if (user != null) return user;
+		if (uri != query)
+			user = await userSvc.GetUserFromQueryAsync(uri, allowUrl: false);
 
+		// If there's still no match, try looking it up by acct returned by WebFinger
+		if (user == null && acct != query)
+		{
+			user = await userSvc.GetUserFromQueryAsync(acct, allowUrl: false);
+			if (user != null && !flags.HasFlag(ResolveFlags.Acct))
+				return GracefulException.BadRequest($"User with acct {acct} is known, but Acct flag is not set");
+		}
+
+		if (flags.HasFlag(ResolveFlags.EnforceUri) && user != null && user.GetUriOrPublicUri(config.Value) != query)
+			return GracefulException.BadRequest("Refusing to return user with mismatching uri with EnforceUri flag");
+
+		if (user != null)
+			return user;
+
+		if (flags.HasFlag(ResolveFlags.EnforceUri) && uri != query)
+			return GracefulException.BadRequest("Refusing to create user with mismatching uri with EnforceUri flag");
+
+		// All checks passed & we still don't know the user, so we pass the job on to userSvc, which will create it
 		using (await KeyedLocker.LockAsync(uri))
 		{
-			// Pass the job on to userSvc, which will create the user
 			return await userSvc.CreateUserAsync(uri, acct);
 		}
 	}
 
-	public async Task<User?> ResolveAsync(string query, bool onlyExisting)
+	public async Task<User> ResolveAsync(string query, ResolveFlags flags)
 	{
-		query = NormalizeQuery(query);
-
-		// Before we begin, let's skip local note urls
-		if (query.StartsWith($"https://{config.Value.WebDomain}/notes/"))
-			throw GracefulException.BadRequest("Refusing to resolve local note URL as user");
-
-		// First, let's see if we already know the user
-		var user = await userSvc.GetUserFromQueryAsync(query);
-		if (user != null) return user;
-
-		if (onlyExisting)
-			return null;
-
-		// We don't, so we need to run WebFinger
-		var (acct, uri) = await WebFingerAsync(query);
-
-		// Check the database again with the new data
-		if (uri != query) user = await userSvc.GetUserFromQueryAsync(uri);
-		if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
-		if (user != null) return user;
-
-		using (await KeyedLocker.LockAsync(uri))
+		return await ResolveInternalAsync(query, flags) switch
 		{
-			// Pass the job on to userSvc, which will create the user
-			return await userSvc.CreateUserAsync(uri, acct);
-		}
+			Result<User>.Success result  => result.Result,
+			Result<User>.Failure failure => throw failure.Error,
+			_                            => throw new ArgumentOutOfRangeException()
+		};
 	}
 
-	public async Task<User?> ResolveAsyncOrNull(string username, string? host)
+	public async Task<User?> ResolveOrNullAsync(string query, ResolveFlags flags)
 	{
+		string errorMessage;
 		try
 		{
-			var query = $"acct:{username}@{host}";
-
-			// First, let's see if we already know the user
-			var user = await userSvc.GetUserFromQueryAsync(query);
-			if (user != null) return user;
-
-			if (host == null) return null;
-
-			// We don't, so we need to run WebFinger
-			var (acct, uri) = await WebFingerAsync(query);
-
-			// Check the database again with the new data
-			if (uri != query) user = await userSvc.GetUserFromQueryAsync(uri);
-			if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
-			if (user != null) return user;
-
-			using (await KeyedLocker.LockAsync(uri))
-			{
-				// Pass the job on to userSvc, which will create the user
-				return await userSvc.CreateUserAsync(uri, acct);
-			}
+			var res = await ResolveInternalAsync(query, flags);
+			if (res.TryGetResult(out var result)) return result;
+			if (!res.TryGetError(out var error)) throw new Exception("Return value neither result nor error");
+			if (error is GracefulException { StatusCode: HttpStatusCode.NotFound }) return null;
+			errorMessage = error.Message;
 		}
-		catch
+		catch (GracefulException ge) when (ge.StatusCode == HttpStatusCode.NotFound)
 		{
 			return null;
 		}
-	}
-
-	public async Task<User?> ResolveAsyncOrNull(string query)
-	{
-		try
+		catch (Exception e)
 		{
-			query = NormalizeQuery(query);
-
-			// First, let's see if we already know the user
-			var user = await userSvc.GetUserFromQueryAsync(query);
-			if (user != null) return user;
-
-			if (query.StartsWith($"https://{config.Value.WebDomain}/")) return null;
-
-			// We don't, so we need to run WebFinger
-			var (acct, resolvedUri) = await WebFingerAsync(query);
-
-			// Check the database again with the new data
-			if (resolvedUri != query) user = await userSvc.GetUserFromQueryAsync(resolvedUri);
-			if (user == null && acct != query) await userSvc.GetUserFromQueryAsync(acct);
-			if (user != null) return user;
-
-			using (await KeyedLocker.LockAsync(resolvedUri))
-			{
-				// Pass the job on to userSvc, which will create the user
-				return await userSvc.CreateUserAsync(resolvedUri, acct);
-			}
+			errorMessage = e.Message;
 		}
-		catch
-		{
-			return null;
-		}
+
+		logger.LogDebug("Failed to resolve user: {error}", errorMessage);
+		return null;
 	}
 
 	public async Task<User> GetUpdatedUser(User user)

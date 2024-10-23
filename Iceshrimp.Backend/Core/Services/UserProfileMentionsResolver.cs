@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Microsoft.Extensions.Options;
+using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -39,16 +40,16 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 
 		var users = await mentionNodes
 		                  .DistinctBy(p => p.Acct)
-		                  .Select(async p => await userResolver.ResolveAsyncOrNull(p.Username, p.Host?.Value ?? host))
+		                  .Select(p => userResolver.ResolveOrNullAsync(GetQuery(p.Username, p.Host?.Value ?? host),
+		                                                               ResolveFlags.Acct))
 		                  .AwaitAllNoConcurrencyAsync();
 
 		users.AddRange(await userUris
 		                     .Distinct()
-		                     .Select(async p => await userResolver.ResolveAsyncOrNull(p))
+		                     .Select(p => userResolver.ResolveOrNullAsync(p, EnforceUriFlags))
 		                     .AwaitAllNoConcurrencyAsync());
 
-		var mentions = users.Where(p => p != null)
-		                    .Cast<User>()
+		var mentions = users.NotNull()
 		                    .DistinctBy(p => p.Id)
 		                    .Select(p => new Note.MentionedUser
 		                    {
@@ -82,11 +83,11 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 		var mentionNodes = EnumerateMentions(nodes);
 		var users = await mentionNodes
 		                  .DistinctBy(p => p.Acct)
-		                  .Select(async p => await userResolver.ResolveAsyncOrNull(p.Username, p.Host?.Value ?? host))
+		                  .Select(p => userResolver.ResolveOrNullAsync(GetQuery(p.Username, p.Host?.Value ?? host),
+		                                                               ResolveFlags.Acct))
 		                  .AwaitAllNoConcurrencyAsync();
 
-		return users.Where(p => p != null)
-		            .Cast<User>()
+		return users.NotNull()
 		            .DistinctBy(p => p.Id)
 		            .Select(p => new Note.MentionedUser
 		            {

@@ -9,6 +9,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
@@ -40,7 +41,7 @@ public class ActivityHandlerService(
 		if (activity.Object == null && activity is not ASBite)
 			throw GracefulException.UnprocessableEntity("Activity object is null");
 
-		var resolvedActor = await userResolver.ResolveAsync(activity.Actor.Id);
+		var resolvedActor = await userResolver.ResolveAsync(activity.Actor.Id, EnforceUriFlags);
 		if (authenticatedUserId == null)
 			throw GracefulException.UnprocessableEntity("Refusing to process activity without authenticatedUserId");
 
@@ -160,7 +161,7 @@ public class ActivityHandlerService(
 		if (activity.Object is not ASActor obj)
 			throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
 
-		var followee = await userResolver.ResolveAsync(obj.Id);
+		var followee = await userResolver.ResolveAsync(obj.Id, EnforceUriFlags);
 		if (followee.IsRemoteUser)
 			throw GracefulException.UnprocessableEntity("Cannot process follow for remote followee");
 
@@ -245,7 +246,7 @@ public class ActivityHandlerService(
 		if (follow is not { Actor: not null })
 			throw GracefulException.UnprocessableEntity("Refusing to reject object with invalid follow object");
 
-		var resolvedFollower = await userResolver.ResolveAsync(follow.Actor.Id);
+		var resolvedFollower = await userResolver.ResolveAsync(follow.Actor.Id, EnforceUriFlags);
 		if (resolvedFollower is not { IsLocalUser: true })
 			throw GracefulException.UnprocessableEntity("Refusing to reject remote follow");
 		if (resolvedActor.Uri == null)
@@ -378,7 +379,7 @@ public class ActivityHandlerService(
 				Uri        = activity.Id,
 				User       = resolvedActor,
 				UserHost   = resolvedActor.Host,
-				TargetUser = await userResolver.ResolveAsync(targetActor.Id)
+				TargetUser = await userResolver.ResolveAsync(targetActor.Id, EnforceUriFlags)
 			},
 			ASNote targetNote => new Bite
 			{
@@ -408,7 +409,7 @@ public class ActivityHandlerService(
 				Uri        = activity.Id,
 				User       = resolvedActor,
 				UserHost   = resolvedActor.Host,
-				TargetUser = await userResolver.ResolveAsync(activity.To.Id)
+				TargetUser = await userResolver.ResolveAsync(activity.To.Id, EnforceUriFlags)
 			},
 			_ => throw GracefulException.UnprocessableEntity($"Invalid bite target {target.Id} with type {target.Type}")
 
@@ -499,7 +500,7 @@ public class ActivityHandlerService(
 			return;
 		}
 
-		var resolvedBlockee = await userResolver.ResolveAsync(blockee.Id, true);
+		var resolvedBlockee = await userResolver.ResolveAsync(blockee.Id, EnforceUriFlags | ResolveFlags.OnlyExisting);
 		if (resolvedBlockee == null)
 			throw GracefulException.UnprocessableEntity("Unknown block target");
 		if (resolvedBlockee.IsRemoteUser)
@@ -510,7 +511,7 @@ public class ActivityHandlerService(
 	private async Task HandleMove(ASMove activity, User resolvedActor)
 	{
 		if (activity.Target.Id is null) throw GracefulException.UnprocessableEntity("Move target must have an ID");
-		var target = await userResolver.ResolveAsync(activity.Target.Id);
+		var target = await userResolver.ResolveAsync(activity.Target.Id, EnforceUriFlags);
 		var source = await userSvc.UpdateUserAsync(resolvedActor, force: true);
 		target = await userSvc.UpdateUserAsync(target, force: true);
 
@@ -529,7 +530,7 @@ public class ActivityHandlerService(
 	private async Task UnfollowAsync(ASActor followeeActor, User follower)
 	{
 		//TODO: send reject? or do we not want to copy that part of the old ap core
-		var followee = await userResolver.ResolveAsync(followeeActor.Id);
+		var followee = await userResolver.ResolveAsync(followeeActor.Id, EnforceUriFlags);
 
 		await db.FollowRequests.Where(p => p.Follower == follower && p.Followee == followee).ExecuteDeleteAsync();
 
@@ -567,7 +568,7 @@ public class ActivityHandlerService(
 
 	private async Task UnblockAsync(User blocker, ASActor blockee)
 	{
-		var resolvedBlockee = await userResolver.ResolveAsync(blockee.Id, true);
+		var resolvedBlockee = await userResolver.ResolveAsync(blockee.Id, EnforceUriFlags | ResolveFlags.OnlyExisting);
 		if (resolvedBlockee == null)
 			throw GracefulException.UnprocessableEntity("Unknown block target");
 		if (resolvedBlockee.IsRemoteUser)

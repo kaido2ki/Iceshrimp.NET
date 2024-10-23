@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -84,17 +85,15 @@ public class SearchController(
 			if (search.Query!.StartsWith("https://") || search.Query.StartsWith("http://"))
 			{
 				if (pagination.Offset is not null and not 0) return [];
-				try
-				{
-					var result = await userResolver.ResolveAsync(search.Query)
-					                               .ContinueWithResult(userResolver.GetUpdatedUser);
 
-					return [await userRenderer.RenderAsync(result, user)];
-				}
-				catch
+				var result = await userResolver
+					.ResolveOrNullAsync(search.Query, ResolveFlags.Uri | ResolveFlags.MatchUrl);
+
+				return result switch
 				{
-					return [];
-				}
+					not null => [await userRenderer.RenderAsync(await userResolver.GetUpdatedUser(result), user)],
+					_        => []
+				};
 			}
 
 			var regex = new Regex
@@ -118,17 +117,12 @@ public class SearchController(
 					var username = match.Groups["user"].Value;
 					var host     = match.Groups["host"].Value;
 
-					try
+					var result = await userResolver.ResolveOrNullAsync(GetQuery(username, host), ResolveFlags.Acct);
+					return result switch
 					{
-						var result = await userResolver.ResolveAsync($"@{username}@{host}")
-						                               .ContinueWithResult(userResolver.GetUpdatedUser);
-
-						return [await userRenderer.RenderAsync(result, user)];
-					}
-					catch
-					{
-						return [];
-					}
+						not null => [await userRenderer.RenderAsync(await userResolver.GetUpdatedUser(result), user)],
+						_        => []
+					};
 				}
 			}
 		}

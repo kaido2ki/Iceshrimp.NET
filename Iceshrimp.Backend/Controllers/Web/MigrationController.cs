@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
@@ -50,7 +51,7 @@ public class MigrationController(
 		if (rq.UserId is not null)
 			aliasUser = await db.Users.IncludeCommonProperties().Where(p => p.Id == rq.UserId).FirstOrDefaultAsync();
 		if (rq.UserUri is not null)
-			aliasUser ??= await userResolver.ResolveAsyncOrNull(rq.UserUri);
+			aliasUser ??= await userResolver.ResolveOrNullAsync(rq.UserUri, EnforceUriFlags);
 		if (aliasUser is null)
 			throw GracefulException.NotFound("Alias user not found or not specified");
 
@@ -88,7 +89,7 @@ public class MigrationController(
 		if (rq.UserId is not null)
 			targetUser = await db.Users.IncludeCommonProperties().Where(p => p.Id == rq.UserId).FirstOrDefaultAsync();
 		if (rq.UserUri is not null)
-			targetUser ??= await userResolver.ResolveAsyncOrNull(rq.UserUri);
+			targetUser ??= await userResolver.ResolveOrNullAsync(rq.UserUri, EnforceUriFlags);
 		if (targetUser is null)
 			throw GracefulException.NotFound("Target user not found");
 

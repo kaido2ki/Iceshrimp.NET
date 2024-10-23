@@ -7,6 +7,7 @@ using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
@@ -66,7 +67,7 @@ public class AuthorizedFetchMiddleware(
 				{
 					try
 					{
-						var user = await userResolver.ResolveAsync(sig.KeyId).WaitAsync(ct);
+						var user = await userResolver.ResolveAsync(sig.KeyId, ResolveFlags.Uri).WaitAsync(ct);
 						key = await db.UserPublickeys.Include(p => p.User)
 						              .FirstOrDefaultAsync(p => p.User == user, ct);
 

@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -604,8 +605,11 @@ public class AccountController(
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<AccountEntity> LookupUser([FromQuery] string acct)
 	{
+		const ResolveFlags flags =
+			ResolveFlags.Acct | ResolveFlags.Uri | ResolveFlags.MatchUrl | ResolveFlags.OnlyExisting;
+
 		var localUser = HttpContext.GetUser();
-		var user = await userResolver.LookupAsync(acct) ?? throw GracefulException.RecordNotFound();
+		var user      = await userResolver.ResolveOrNullAsync(acct, flags) ?? throw GracefulException.RecordNotFound();
 		user = await userResolver.GetUpdatedUser(user);
 		return await userRenderer.RenderAsync(user, localUser);
 	}
