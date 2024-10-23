@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public partial class BiteService(DatabaseContext db, ActivityPub.ActivityRenderer activityRenderer, ActivityPub.ActivityDeliverService deliverSvc, NotificationService notificationSvc, IOptions<Config.InstanceSection> config)
+public class BiteService(DatabaseContext db, ActivityPub.ActivityRenderer activityRenderer, ActivityPub.ActivityDeliverService deliverSvc, NotificationService notificationSvc, IOptions<Config.InstanceSection> config)
 {
     public async Task BiteAsync(User user, Bite target)
     {

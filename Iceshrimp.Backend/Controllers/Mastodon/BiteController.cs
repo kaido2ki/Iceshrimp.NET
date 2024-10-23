@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
-namespace Iceshrimp.Backend.Controllers.Pleroma;
+namespace Iceshrimp.Backend.Controllers.Mastodon;
 
 [MastodonApiController]
 [Route("/api/v1/bite")]
