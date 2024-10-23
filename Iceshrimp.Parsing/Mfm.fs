@@ -108,9 +108,12 @@ module MfmNodeTypes =
         member val Char = v
 
     type internal UserState =
-        { QuoteStack: char list }
+        { QuoteStack: char list
+          QuoteStackLastLine: char list }
 
-        static member Default = { QuoteStack = [] }
+        static member Default =
+            { QuoteStack = []
+              QuoteStackLastLine = [] }
 
 open MfmNodeTypes
 
@@ -368,9 +371,28 @@ module private MfmParser =
         let level: Parser<int, UserState> =
             fun stream -> Reply(stream.UserState.QuoteStack.Length)
 
+        let setLastLineStack: Parser<unit, UserState> =
+            updateUserState (fun u ->
+                { u with
+                    QuoteStackLastLine = u.QuoteStack })
+
+        let lastLineStackWasOneOrLower: Parser<unit, UserState> =
+            userStateSatisfies <| fun u -> u.QuoteStackLastLine.Length <= 1
+
+        let hasStack: Parser<unit, UserState> =
+            userStateSatisfies <| fun u -> u.QuoteStack.Length > 1
+
+        let hasNoStack: Parser<unit, UserState> =
+            userStateSatisfies <| fun u -> u.QuoteStack.Length <= 1
+
         let line =
             (opt <| pchar ' ')
-            >>. many1Till (attempt inlineOrQuoteNode) (skipNewline <|> eof <|> previousCharSatisfies isNewline)
+            >>. many1Till
+                    (attempt (setLastLineStack >>. inlineOrQuoteNode))
+                    ((nextCharSatisfies isNewline >>. hasStack)
+                     <|> (hasNoStack >>. skipNewline)
+                     <|> eof
+                     <|> previousCharSatisfies isNewline)
 
         let qFolder (result: MfmNode list list) (current: MfmNode list) =
             match result.IsEmpty with
@@ -391,8 +413,11 @@ module private MfmParser =
         >>. pushQuote
         >>. line
         .>>. many (attempt (stack >>. line))
-        .>> (opt <| attempt (skipNewline >>. notFollowedBy stack >>. notFollowedBy (pchar '>')))
-        .>>. (opt <| attempt (skipNewline >>. followedBy stack) .>>. opt eof .>>. level)
+        .>> (opt
+             <| attempt (hasNoStack >>. skipNewline >>. notFollowedBy stack >>. notFollowedBy (pchar '>')))
+        .>>. (opt <| attempt (hasNoStack >>. skipNewline >>. followedBy stack)
+              .>>. opt eof
+              .>>. level)
         .>> popQuote
         |>> fun ((initial, rest), ((followedByQuote, followedByEof), level)) ->
             MfmQuoteNode(
