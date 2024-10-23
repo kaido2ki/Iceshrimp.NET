@@ -49,7 +49,8 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                           p.Type == NotificationType.PollEnded ||
 		                           p.Type == NotificationType.FollowRequestReceived ||
 		                           p.Type == NotificationType.Reaction ||
-		                           p.Type == NotificationType.Edit)
+		                           p.Type == NotificationType.Edit ||
+		                           p.Type == NotificationType.Bite)
 		               .FilterByGetNotificationsRequest(request)
 		               .EnsureNoteVisibilityFor(p => p.Note, user)
 		               .FilterHiddenNotifications(user, db)
