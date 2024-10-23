@@ -1009,6 +1009,8 @@ public class NoteService(
 
 			if (choices.Count == 0)
 				throw GracefulException.UnprocessableEntity("Poll must have at least one option");
+			if (question.VotersCount is < 0)
+				throw GracefulException.UnprocessableEntity("Voters count must not be negative");
 
 			poll = new Poll
 			{
