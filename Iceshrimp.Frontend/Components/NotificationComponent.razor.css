@@ -33,9 +33,10 @@
 }
 
 .display-name {
-    white-space: wrap;
+    white-space: nowrap;
     text-overflow: ellipsis;
-    overflow: clip;
+    overflow: hidden;
+    max-width: 15rem;
 }
 
 .notification-body {

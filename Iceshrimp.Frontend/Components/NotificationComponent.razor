@@ -29,15 +29,15 @@
             }
             else if (NotificationResponse is { Type: "follow", User: not null })
             {
-                <span class="notification-text">@Loc["Followed you."]</span>
+                <span class="notification-text">@Loc["followed you"]</span>
             }
             else if (NotificationResponse is { Type: "followRequestReceived" })
             {
-                <span class="notification-text">@Loc["Requested to follow you."]</span>
+                <span class="notification-text">@Loc["requested to follow you"]</span>
             }
             else if (NotificationResponse is { Type: "followRequestAccepted" })
             {
-                <span class="notification-text">@Loc["Accepted your follow request."]</span>
+                <span class="notification-text">@Loc["accepted your follow request"]</span>
             }
             else if (NotificationResponse is { Type: "mention" })
             {
