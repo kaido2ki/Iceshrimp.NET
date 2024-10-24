@@ -1,5 +1,6 @@
 @using System.Diagnostics.CodeAnalysis
 @* ReSharper disable once RedundantUsingDirective *@
+@using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
@@ -13,16 +14,16 @@
 @inject StateService                   StateService;
 @inject IJSRuntime                     Js;
 
-<div class="search" role="search">
-    <input @bind="SearchString" class="input"/>
+<form class="search" @onsubmit="Search" role="search">
+    <input @bind="SearchString" class="input" aria-label=""/>
     <InputSelect @bind-Value="@SearchType">
         @foreach (var type in Enum.GetValues(typeof(SearchTypeEnum)))
         {
             <option value="@type">@type</option>
         }
     </InputSelect>
-    <button @onclick="Search">@Loc["Search"]</button>
-</div>
+    <button class="button"><Icon Name="Icons.MagnifyingGlass"/>@Loc["Search"]</button>
+</form>
 
 @if (_resultType == ResultType.Notes)
 {

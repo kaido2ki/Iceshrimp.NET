@@ -1,8 +1,11 @@
 .search {
     display: flex;
     justify-content: center;
+    align-items: center;
+    flex-direction: row;
     padding: 1rem;
 }
+
 .end {
     display: flex;
     justify-content: center;
