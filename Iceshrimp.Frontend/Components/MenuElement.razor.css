@@ -1,3 +1,16 @@
 .menu-element {
     display: flex;
+    margin: 0.2rem 0;
+    padding: 0.2rem 0;
+    padding-inline: 0.5rem;
+    border-radius: 0.5rem;
+    align-items: center;
+
+    > i {
+        padding-right: 0.5rem;
+    }
+}
+
+.menu-element:hover {
+    background-color: var(--hover-color);
 }
