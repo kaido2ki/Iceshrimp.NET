@@ -53,12 +53,16 @@
     align-items: center;
     justify-content: start;
     border-radius: 1.25rem;
-    padding-inline: 0.5rem;
+    padding-inline: 1rem;
     margin-bottom: 0.5rem;
     margin-inline: 1rem;
     color: white;
     font-size: 0.9em;
     background: var(--foreground-color);
+    
+    > i {
+        padding-right: 0.5rem;
+    }
 }
 
 .sidebar-btn:hover {
@@ -72,6 +76,9 @@
 
 .rule {
     width: 90%;
+    color: var(--highlight-color);
+    margin-bottom: 1rem;
+    border-style: solid;
 }
 
 .bottom-nav {
