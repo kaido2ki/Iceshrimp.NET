@@ -119,6 +119,8 @@ public class CacheService([FromKeyedServices("cache")] DatabaseContext db)
 	public async Task<T> FetchValueAsync<T>(string key, TimeSpan ttl, Func<T> fetcher, bool renew = false)
 		where T : struct => await FetchValueAsync(key, ttl, () => Task.FromResult(fetcher()), renew);
 
+	public async Task ClearAsync(string key) => await db.CacheStore.Where(p => p.Key == key).ExecuteDeleteAsync();
+
 	private async Task<string?> GetValueAsync(string key)
 	{
 		return await db.CacheStore

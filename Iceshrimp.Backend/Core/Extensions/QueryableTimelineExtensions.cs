@@ -11,6 +11,8 @@ public static class QueryableTimelineExtensions
 	// Determined empirically in 2023. Ask zotan for the spreadsheet if you're curious.
 	private const int Cutoff = 250;
 
+	private const string Prefix = "following-query-heuristic";
+
 	public static IQueryable<Note> FilterByFollowingAndOwn(
 		this IQueryable<Note> query, User user, DatabaseContext db, int heuristic
 	)
@@ -27,10 +29,14 @@ public static class QueryableTimelineExtensions
 		                         .Concat(new[] { user.Id })
 		                         .Contains(note.UserId));
 
+	public static async Task ResetHeuristic(User user, CacheService cache)
+	{
+		await cache.ClearAsync($"{Prefix}:{user.Id}");
+	}
+
 	public static async Task<int> GetHeuristic(User user, DatabaseContext db, CacheService cache)
 	{
-		return await cache.FetchValueAsync($"following-query-heuristic:{user.Id}",
-		                                   TimeSpan.FromHours(24), FetchHeuristic);
+		return await cache.FetchValueAsync($"{Prefix}:{user.Id}", TimeSpan.FromHours(24), FetchHeuristic);
 
 		[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall")]
 		async Task<int> FetchHeuristic()
