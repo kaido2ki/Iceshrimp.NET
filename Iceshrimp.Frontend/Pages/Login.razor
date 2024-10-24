@@ -67,7 +67,7 @@
                         MovedTo         = res.User.MovedTo
                     });
                     SessionService.SetSession(res.User.Id);
-                    Navigation.NavigateTo(Uri.TryCreate(Redirect, UriKind.Relative, out var rel) ? Redirect : "/");
+                    Navigation.NavigateTo(Uri.TryCreate(Redirect, UriKind.Relative, out _) ? Redirect : "/");
                     break;
                 case AuthStatusEnum.Guest:
                     Failure = true;
