@@ -42,11 +42,11 @@
                 <span class="text">@Loc["Settings"]</span>
             </div>
         </NavLink>
-    </div>
     <hr class="rule"/>
     <button class="sidebar-btn post-btn" @onclick="Open">
-        <Icon Name="Icons.Pencil"></Icon>@Loc["Post"]
+        <Icon Name="Icons.Pencil"></Icon>@Loc["Note"]
     </button>
+    </div>
     @if (_open)
     {
         <ClosingBackdrop OnClose="Close"/>

@@ -69,9 +69,10 @@
     background-color: var(--hover-color);
 }
 
-
 .post-btn {
     background: var(--accent-color);
+    justify-self: start;
+    width: auto;
 }
 
 .rule {
