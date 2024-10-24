@@ -1,5 +1,6 @@
 @page "/settings/about"
 @using System.Text
+@using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Core.InMemoryLogger
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
@@ -12,34 +13,35 @@
 @inject IJSRuntime                     Js;
 @inject InMemoryLogService             LogService;
 
-<div class="version">
-    <h1>@Loc["Version Information"]</h1>
-    <span class="name">Iceshrimp.NET</span>
-    <span class="value">
-        <code>@Version.Version</code>
-    </span>
-    <span class="name">Codename</span>
-    <span class="value">
-        <code>@Version.Codename</code>
-    </span>
-    @if (Version.CommitHash != null)
-    {
-        <span class="name">Commit</span>
+<div class="body">
+    <div class="version">
+        <h1>@Loc["Version Information"]</h1>
+        <span class="name">Iceshrimp.NET</span>
         <span class="value">
-            <code>@Version.CommitHash</code>
+            <code>@Version.Version</code>
         </span>
-    }
-    <span class="name">.NET Runtime</span>
-    <span class="value">
-        <code>@Environment.Version</code>
-    </span>
+        <span class="name">Codename</span>
+        <span class="value">
+            <code>@Version.Codename</code>
+        </span>
+        @if (Version.CommitHash != null)
+        {
+            <span class="name">Commit</span>
+            <span class="value">
+                <code>@Version.CommitHash</code>
+            </span>
+        }
+        <span class="name">.NET Runtime</span>
+        <span class="value">
+            <code>@Environment.Version</code>
+        </span>
+    </div>
+    <div class="logs">
+        <h1>@Loc["Logs"]</h1>
+        @Loc["These logs may contain sensitive information, please do not post them publicly.\n" + "Providing them to developers upon request may help with debugging."]
+        <button class="button" @onclick="DownloadLogs"><Icon Name="Icons.DownloadSimple"/><span>@Loc["Download Logs"]</span></button>
+    </div>
 </div>
-<div class="logs">
-    <h1>@Loc["Logs"]</h1>
-    @Loc["These logs may contain sensitive information, please do not post them publicly.\n" + "Providing them to developers upon request may help with debugging."]
-    <button class="btn" @onclick="DownloadLogs">@Loc["Download Logs"]</button>
-</div>
-
 @code {
     private IJSInProcessObjectReference _module = null!;
 
