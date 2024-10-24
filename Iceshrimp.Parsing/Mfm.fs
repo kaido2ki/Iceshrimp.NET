@@ -109,11 +109,13 @@ module MfmNodeTypes =
 
     type internal UserState =
         { QuoteStack: char list
-          QuoteStackLastLine: char list }
+          QuoteStackLastLine: char list
+          LastLine: int64 }
 
         static member Default =
             { QuoteStack = []
-              QuoteStackLastLine = [] }
+              QuoteStackLastLine = []
+              LastLine = 0 }
 
 open MfmNodeTypes
 
@@ -188,14 +190,17 @@ module private MfmParser =
         | None -> None
         | Some items -> items |> dict |> Some
 
-    let pushLine: Parser<unit, int64> =
+    let pushLine: Parser<unit, UserState> =
         fun stream ->
-            stream.UserState <- stream.Line
+            stream.UserState <-
+                { stream.UserState with
+                    LastLine = stream.Line }
+
             Reply(())
 
-    let assertLine: Parser<unit, int64> =
+    let assertLine: Parser<unit, UserState> =
         fun stream ->
-            match stream.UserState = stream.Line with
+            match stream.UserState.LastLine = stream.Line with
             | true -> Reply(())
             | false -> Reply(Error, messageError "Line changed")
 
@@ -453,8 +458,6 @@ module private MfmParser =
           emojiCodeNode
           fnNode
           charNode ]
-
-    //TODO: still missing: FnNode
 
     let blockNodeSeq =
         [ plainNode; centerNode; smallNode; codeBlockNode; mathBlockNode; quoteNode ]
