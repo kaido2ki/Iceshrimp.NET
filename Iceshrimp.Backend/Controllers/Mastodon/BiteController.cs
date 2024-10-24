@@ -15,13 +15,14 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
 [MastodonApiController]
+[Route("/api/v1")]
 [Authenticate]
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
 public class BiteController(DatabaseContext db, BiteService biteSvc) : ControllerBase
 {
-    [HttpPost("/api/v1/bite")]
+    [HttpPost("bite")]
     [Authenticate("write:bites")]
     [ProducesResults(HttpStatusCode.OK)]
     [ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -37,7 +38,7 @@ public class BiteController(DatabaseContext db, BiteService biteSvc) : Controlle
         await biteSvc.BiteAsync(user, target);
     }
     
-    [HttpPost("/api/v1/users/{id}/bite")]
+    [HttpPost("users/{id}/bite")]
     [Authenticate("write:bites")]
     [ProducesResults(HttpStatusCode.OK)]
     [ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -53,7 +54,7 @@ public class BiteController(DatabaseContext db, BiteService biteSvc) : Controlle
         await biteSvc.BiteAsync(user, target);
     }
     
-    [HttpPost("/api/v1/users/{id}/bite_back")]
+    [HttpPost("users/{id}/bite_back")]
     [Authenticate("write:bites")]
     [ProducesResults(HttpStatusCode.OK)]
     [ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -74,7 +75,7 @@ public class BiteController(DatabaseContext db, BiteService biteSvc) : Controlle
         await biteSvc.BiteAsync(user, target);
     }
 
-    [HttpPost("/api/v1/statuses/{id}/bite")]
+    [HttpPost("statuses/{id}/bite")]
     [Authenticate("write:bites")]
     [ProducesResults(HttpStatusCode.OK)]
     [ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
