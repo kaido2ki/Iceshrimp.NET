@@ -402,8 +402,6 @@ public sealed class Config
 
 		var suffix = value[idx..];
 
-		const string options = "[s]econds, [m]inutes, [h]ours, [d]ays, [w]eeks";
-
 		return suffix switch
 		{
 			"s" => TimeSpan.FromSeconds(num),
