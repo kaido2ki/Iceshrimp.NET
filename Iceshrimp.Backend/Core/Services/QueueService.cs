@@ -1,4 +1,5 @@
 using System.Text.Json;
+using EntityFramework.Exceptions.Common;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -521,7 +522,7 @@ public abstract class PostgresJobQueue<T>(
 		await db.SaveChangesAsync(token);
 	}
 
-	public async Task EnqueueAsync(T jobData)
+	public async Task EnqueueAsync(T jobData, string? mutex = null)
 	{
 		await using var scope = GetScope();
 		await using var db    = GetDbContext(scope);
@@ -529,15 +530,16 @@ public abstract class PostgresJobQueue<T>(
 		var job = new Job
 		{
 			Id    = Ulid.NewUlid().ToGuid(),
+			Mutex = mutex,
 			Queue = name,
 			Data  = JsonSerializer.Serialize(jobData)
 		};
-		db.Add(job);
-		await db.SaveChangesAsync();
+
+		await db.Jobs.Upsert(job).On(j => j.Mutex!).NoUpdate().RunAsync();
 		RaiseJobQueuedEvent();
 	}
 
-	public async Task ScheduleAsync(T jobData, DateTime triggerAt)
+	public async Task ScheduleAsync(T jobData, DateTime triggerAt, string? mutex = null)
 	{
 		await using var scope = GetScope();
 		await using var db    = GetDbContext(scope);
@@ -545,13 +547,14 @@ public abstract class PostgresJobQueue<T>(
 		var job = new Job
 		{
 			Id           = Ulid.NewUlid().ToGuid(),
+			Mutex        = mutex,
 			Queue        = name,
 			Data         = JsonSerializer.Serialize(jobData),
 			Status       = Job.JobStatus.Delayed,
 			DelayedUntil = triggerAt.ToUniversalTime()
 		};
-		db.Add(job);
-		await db.SaveChangesAsync();
+
+		await db.Jobs.Upsert(job).On(j => j.Mutex!).NoUpdate().RunAsync();
 		RaiseJobDelayedEvent();
 	}
 }

@@ -43,6 +43,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<ModerationLog>        ModerationLogs        { get; init; } = null!;
 	public virtual DbSet<Muting>               Mutings               { get; init; } = null!;
 	public virtual DbSet<Note>                 Notes                 { get; init; } = null!;
+	public virtual DbSet<NoteThread>           NoteThreads           { get; init; } = null!;
 	public virtual DbSet<NoteBookmark>         NoteBookmarks         { get; init; } = null!;
 	public virtual DbSet<NoteEdit>             NoteEdits             { get; init; } = null!;
 	public virtual DbSet<NoteLike>             NoteLikes             { get; init; } = null!;

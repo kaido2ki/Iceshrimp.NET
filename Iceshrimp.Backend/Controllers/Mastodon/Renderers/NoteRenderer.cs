@@ -64,8 +64,8 @@ public class NoteRenderer(
 		            await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 		var bookmarked = data?.BookmarkedNotes?.Contains(note.Id) ??
 		                 await db.NoteBookmarks.AnyAsync(p => p.Note == note && p.User == user);
-		var muted = data?.MutedNotes?.Contains(note.ThreadIdOrId) ??
-		            await db.NoteThreadMutings.AnyAsync(p => p.ThreadId == note.ThreadIdOrId && p.User == user);
+		var muted = data?.MutedNotes?.Contains(note.ThreadId) ??
+		            await db.NoteThreadMutings.AnyAsync(p => p.ThreadId == note.ThreadId && p.User == user);
 		var pinned = data?.PinnedNotes?.Contains(note.Id) ??
 		             await db.UserNotePins.AnyAsync(p => p.Note == note && p.User == user);
 		var renoted = data?.Renotes?.Contains(note.Id) ??
@@ -167,7 +167,7 @@ public class NoteRenderer(
 			Poll             = poll,
 			Reactions        = reactions,
 			Filtered         = filterResult,
-			Pleroma          = new PleromaStatusExtensions { Reactions = reactions, ConversationId = note.ThreadIdOrId }
+			Pleroma          = new PleromaStatusExtensions { Reactions = reactions, ConversationId = note.ThreadId }
 		};
 
 		return res;
@@ -356,7 +356,7 @@ public class NoteRenderer(
 	{
 		if (user == null) return [];
 		if (notes.Count == 0) return [];
-		var ids = notes.Select(p => p.ThreadIdOrId).Distinct();
+		var ids = notes.Select(p => p.ThreadId).Distinct();
 		return await db.NoteThreadMutings.Where(p => p.User == user && ids.Contains(p.ThreadId))
 		               .Select(p => p.ThreadId)
 		               .ToListAsync();

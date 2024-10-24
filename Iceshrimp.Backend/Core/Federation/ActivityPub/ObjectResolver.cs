@@ -107,12 +107,8 @@ public class ObjectResolver(
 					yield return item;
 
 			if (page.Next?.Id != null)
-			{
-				if (visitedPages.Contains(page.Next.Id))
+				if (!visitedPages.Add(page.Next.Id))
 					break;
-
-				visitedPages.Add(page.Next.Id);
-			}
 
 			// we only limit based on pages here. the consumer of this iterator may
 			// additionally limit per-item via System.Linq.Async Take()

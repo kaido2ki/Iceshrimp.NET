@@ -91,7 +91,7 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 		return new ConversationEntity
 		{
 			Accounts   = accounts.ToList(),
-			Id         = note.ThreadIdOrId,
+			Id         = note.ThreadId,
 			LastStatus = rendered,
 			Unread     = true
 		};

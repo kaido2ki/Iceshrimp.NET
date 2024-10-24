@@ -199,9 +199,7 @@ public class Note : IEntity
 
 	[Column("threadId")]
 	[StringLength(256)]
-	public string? ThreadId { get; set; }
-
-	[Projectable] [NotMapped] public string ThreadIdOrId => ThreadId ?? Id;
+	public string ThreadId { get; set; } = null!;
 
 	/// <summary>
 	///     The updated date of the Note.
@@ -220,7 +218,7 @@ public class Note : IEntity
 	public DateTime? RepliesFetchedAt { get;set; }
 
 	[Column("combinedAltText")]
-	public string? CombinedAltText { get; set; } 
+	public string? CombinedAltText { get; set; }
 
 	[ForeignKey(nameof(ChannelId))]
 	[InverseProperty(nameof(Tables.Channel.Notes))]
@@ -276,6 +274,10 @@ public class Note : IEntity
 	[ForeignKey(nameof(ReplyId))]
 	[InverseProperty(nameof(InverseReply))]
 	public virtual Note? Reply { get; set; }
+	
+	[ForeignKey(nameof(ThreadId))]
+	[InverseProperty(nameof(NoteThread.Notes))]
+	public virtual NoteThread Thread { get; set; } = null!;
 
 	[Projectable]
 	public string RawAttachments

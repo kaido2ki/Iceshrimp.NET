@@ -123,6 +123,8 @@ public class StatusController(
 		                          .PrecomputeVisibilities(user)
 		                          .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Threads);
 
+		if (user != null) await noteSvc.EnqueueBackfillTaskAsync(note);
+
 		return new StatusContext
 		{
 			Ancestors = ancestors.OrderAncestors(), Descendants = descendants.OrderDescendants()
@@ -652,7 +654,7 @@ public class StatusController(
 		var user = HttpContext.GetUserOrFail();
 		var target = await db.Notes.Where(p => p.Id == id)
 		                     .EnsureVisibleFor(user)
-		                     .Select(p => p.ThreadIdOrId)
+		                     .Select(p => p.ThreadId)
 		                     .FirstOrDefaultAsync() ??
 		             throw GracefulException.RecordNotFound();
 
@@ -677,7 +679,7 @@ public class StatusController(
 		var user = HttpContext.GetUserOrFail();
 		var target = await db.Notes.Where(p => p.Id == id)
 		                     .EnsureVisibleFor(user)
-		                     .Select(p => p.ThreadIdOrId)
+		                     .Select(p => p.ThreadId)
 		                     .FirstOrDefaultAsync() ??
 		             throw GracefulException.RecordNotFound();
 

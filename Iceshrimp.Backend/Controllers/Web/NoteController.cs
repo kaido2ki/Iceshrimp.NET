@@ -137,6 +137,8 @@ public class NoteController(
 		foreach (var item in res.Where(p => p.Reply != null && res.Any(i => i.Id == p.Reply.Id)))
 			item.Reply = null;
 
+		if (user != null) await noteSvc.EnqueueBackfillTaskAsync(note);
+
 		return res.OrderDescendants();
 	}
 
@@ -465,7 +467,7 @@ public class NoteController(
 		var user = HttpContext.GetUserOrFail();
 		var target = await db.Notes.Where(p => p.Id == id)
 		                     .EnsureVisibleFor(user)
-		                     .Select(p => p.ThreadIdOrId)
+		                     .Select(p => p.ThreadId)
 		                     .FirstOrDefaultAsync() ??
 		             throw GracefulException.NotFound("Note not found");
 
@@ -491,7 +493,7 @@ public class NoteController(
 		var user = HttpContext.GetUserOrFail();
 		var target = await db.Notes.Where(p => p.Id == id)
 		                     .EnsureVisibleFor(user)
-		                     .Select(p => p.ThreadIdOrId)
+		                     .Select(p => p.ThreadId)
 		                     .FirstOrDefaultAsync() ??
 		             throw GracefulException.NotFound("Note not found");
 

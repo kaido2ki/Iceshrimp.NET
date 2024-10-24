@@ -331,7 +331,7 @@ public sealed class Config
 		[Range(1, int.MaxValue)] public int Deliver        { get; init; } = 20;
 		[Range(1, int.MaxValue)] public int PreDeliver     { get; init; } = 4;
 		[Range(1, int.MaxValue)] public int BackgroundTask { get; init; } = 4;
-		[Range(1, int.MaxValue)] public int Backfill       { get; init; } = 4;
+		[Range(1, int.MaxValue)] public int Backfill       { get; init; } = 10;
 	}
 
 	public sealed class QueueSection
@@ -353,32 +353,23 @@ public sealed class Config
 	public sealed class BackfillRepliesSection
 	{
 		public bool Enabled            { get; init; } = false;
-		public bool BackfillEverything { get; init; } = false;
-
-		public string? NewNoteThreshold
-		{
-			get => NewNoteThresholdTimeSpan.ToString();
-			init => NewNoteThresholdTimeSpan =
-				ParseNaturalDuration(value, "new note threshold") ?? TimeSpan.FromHours(3);
-		}
 
 		public string? NewNoteDelay
 		{
 			get => NewNoteDelayTimeSpan.ToString();
 			init => NewNoteDelayTimeSpan =
-				ParseNaturalDuration(value, "new note delay") ?? TimeSpan.FromHours(3);
+				ParseNaturalDuration(value, "new note delay") ?? TimeSpan.FromMinutes(5);
 		}
 
-		public string? RefreshOnRenoteAfter
+		public string? RefreshAfter
 		{
-			get => RefreshOnRenoteAfterTimeSpan.ToString();
-			init => RefreshOnRenoteAfterTimeSpan =
-				ParseNaturalDuration(value, "refresh renote after duration") ?? TimeSpan.FromDays(7);
+			get => RefreshAfterTimeSpan.ToString();
+			init => RefreshAfterTimeSpan =
+				ParseNaturalDuration(value, "refresh renote after duration") ?? TimeSpan.FromMinutes(15);
 		}
 
-		public TimeSpan NewNoteThresholdTimeSpan     = TimeSpan.FromHours(3);
-		public TimeSpan NewNoteDelayTimeSpan         = TimeSpan.FromHours(3);
-		public TimeSpan RefreshOnRenoteAfterTimeSpan = TimeSpan.FromDays(7);
+		public TimeSpan NewNoteDelayTimeSpan = TimeSpan.FromMinutes(5);
+		public TimeSpan RefreshAfterTimeSpan = TimeSpan.FromMinutes(15);
 	}
 
 	private static readonly char[] Digits = [..Enumerable.Range(0, 10).Select(p => p.ToString()[0])];

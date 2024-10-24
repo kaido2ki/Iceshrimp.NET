@@ -2520,6 +2520,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("text");
 
                     b.Property<string>("ThreadId")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
                         .HasColumnName("threadId");
@@ -2793,6 +2794,22 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .IsUnique();
 
                     b.ToTable("note_reaction");
+                });
+
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.NoteThread", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("BackfilledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("backfilledAt");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("note_thread");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.NoteThreadMuting", b =>
@@ -5266,6 +5283,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasForeignKey("ReplyId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.NoteThread", "Thread")
+                        .WithMany("Notes")
+                        .HasForeignKey("ThreadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "User")
                         .WithMany("Notes")
                         .HasForeignKey("UserId")
@@ -5277,6 +5300,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Navigation("Renote");
 
                     b.Navigation("Reply");
+
+                    b.Navigation("Thread");
 
                     b.Navigation("User");
                 });
@@ -5351,11 +5376,19 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.NoteThreadMuting", b =>
                 {
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.NoteThread", "Thread")
+                        .WithMany("NoteThreadMutings")
+                        .HasForeignKey("ThreadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "User")
                         .WithMany("NoteThreadMutings")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Thread");
 
                     b.Navigation("User");
                 });
@@ -5911,6 +5944,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Navigation("PromoReads");
 
                     b.Navigation("UserNotePins");
+                });
+
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.NoteThread", b =>
+                {
+                    b.Navigation("NoteThreadMutings");
+
+                    b.Navigation("Notes");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.OauthApp", b =>

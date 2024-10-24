@@ -42,10 +42,10 @@ public class ConversationsController(
 		                            .IncludeCommonProperties()
 		                            .FilterHiddenConversations(user, db)
 		                            .FilterMutedThreads(user, db)
-		                            .Paginate(p => p.ThreadIdOrId, pq, ControllerContext)
+		                            .Paginate(p => p.ThreadId, pq, ControllerContext)
 		                            .Select(p => new Conversation
 		                            {
-			                            Id       = p.ThreadIdOrId,
+			                            Id       = p.ThreadId,
 			                            LastNote = p,
 			                            UserIds  = p.VisibleUserIds,
 			                            Unread = db.Notifications.Any(n => n.Note == p &&
@@ -96,10 +96,10 @@ public class ConversationsController(
 		var user = HttpContext.GetUserOrFail();
 		var conversation = await db.Conversations(user)
 		                           .IncludeCommonProperties()
-		                           .Where(p => p.ThreadIdOrId == id)
+		                           .Where(p => p.ThreadId == id)
 		                           .Select(p => new Conversation
 		                           {
-			                           Id       = p.ThreadIdOrId,
+			                           Id       = p.ThreadId,
 			                           LastNote = p,
 			                           UserIds  = p.VisibleUserIds,
 			                           Unread = db.Notifications.Any(n => n.Note == p &&

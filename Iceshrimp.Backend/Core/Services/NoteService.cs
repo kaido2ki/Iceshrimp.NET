@@ -246,9 +246,15 @@ public class NoteService(
 		var combinedAltText = data.Attachments?.Select(p => p.Comment).Where(c => c != null);
 		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PostLogic);
 
+		var noteId   = IdHelpers.GenerateSlowflakeId(data.CreatedAt);
+		var threadId = data.Reply?.ThreadId ?? noteId;
+
+		var thread = await db.NoteThreads.Where(t => t.Id == threadId).FirstOrDefaultAsync() ??
+		             new NoteThread { Id = threadId };
+
 		var note = new Note
 		{
-			Id                   = IdHelpers.GenerateSlowflakeId(data.CreatedAt),
+			Id                   = noteId,
 			Uri                  = data.Uri,
 			Url                  = data.Url,
 			Text                 = data.Text?.Trim(),
@@ -269,7 +275,7 @@ public class NoteService(
 			Mentions             = mentionedUserIds,
 			VisibleUserIds       = visibleUserIds,
 			MentionedRemoteUsers = remoteMentions,
-			ThreadId             = data.Reply?.ThreadIdOrId,
+			Thread               = thread,
 			Tags                 = tags,
 			LocalOnly            = data.LocalOnly,
 			Emojis               = data.Emoji ?? [],
@@ -367,23 +373,6 @@ public class NoteService(
 			});
 		}
 
-		var replyBackfillConfig = backfillConfig.Value.Replies;
-
-		// If we're renoting a note we backfilled replies to some time ago (and know how to backfill), enqueue a backfill.
-		if (replyBackfillConfig.Enabled &&
-		    data.Renote?.RepliesCollection != null &&
-		    data.Renote.RepliesFetchedAt?.Add(replyBackfillConfig.RefreshOnRenoteAfterTimeSpan) <= DateTime.UtcNow &&
-		    _recursionLimit > 0)
-		{
-			logger.LogDebug("Enqueueing reply collection fetch for renote {renoteId}", data.Renote.Id);
-			await queueSvc.BackfillQueue.EnqueueAsync(new BackfillJobData
-			{
-				NoteId              = data.Renote.Id,
-				RecursionLimit      = _recursionLimit,
-				AuthenticatedUserId = null, // TODO: for private replies
-			});
-		}
-
 		if (data.User.IsRemoteUser)
 		{
 			_ = followupTaskSvc.ExecuteTask("UpdateInstanceNoteCounter", async provider =>
@@ -394,29 +383,6 @@ public class NoteService(
 				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount + 1));
 			});
-
-			if (replyBackfillConfig.Enabled && note.RepliesCollection != null && _recursionLimit > 0)
-			{
-				var jobData = new BackfillJobData
-				{
-					NoteId              = note.Id,
-					RecursionLimit      = _recursionLimit,
-					AuthenticatedUserId = null, // TODO: for private replies
-					Collection = data.ASNote?.Replies?.IsUnresolved == false
-						? JsonConvert.SerializeObject(data.ASNote.Replies, LdHelpers.JsonSerializerSettings)
-						: null
-				};
-
-				logger.LogDebug("Enqueueing reply collection fetch for note {noteId}", note.Id);
-
-				// Delay reply backfilling for brand new notes to allow them time to collect replies.
-				if (note.CreatedAt + replyBackfillConfig.NewNoteThresholdTimeSpan <= DateTime.UtcNow)
-					await queueSvc.BackfillQueue.EnqueueAsync(jobData);
-				else
-					await queueSvc.BackfillQueue.ScheduleAsync(jobData,
-					                                           DateTime.UtcNow +
-					                                           replyBackfillConfig.NewNoteDelayTimeSpan);
-			}
 
 			return note;
 		}
@@ -1258,27 +1224,39 @@ public class NoteService(
 		return await ResolveNoteAsync(note.Id, note);
 	}
 
-	public async Task BackfillRepliesAsync(
-		Note note, User? fetchUser, ASCollection? repliesCollection, int recursionLimit
-	)
+	public async Task EnqueueBackfillTaskAsync(Note note)
 	{
-		if (note.RepliesCollection == null) return;
-		await db.Notes.Where(p => p == note)
-		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.RepliesFetchedAt, _ => DateTime.UtcNow));
+		var cfg = backfillConfig.Value.Replies;
 
-		repliesCollection ??= new ASCollection(note.RepliesCollection);
+		// return immediately if backfilling is not enabled
+		if (!cfg.Enabled) return;
 
-		var collectionId        = new Uri(note.RepliesCollection);
-		var replyBackfillConfig = backfillConfig.Value.Replies;
+		// don't try to schedule a backfill for local notes
+		if (note.UserHost == null) return;
 
-		_recursionLimit = recursionLimit;
-		await objectResolver.IterateCollection(repliesCollection)
-		                    .Take(50)
-		                    .Where(p => p.Id != null &&
-		                                (replyBackfillConfig.BackfillEverything ||
-		                                 new Uri(p.Id).Authority == collectionId.Authority))
-		                    .Select(p => ResolveNoteAsync(p.Id!, null, fetchUser, forceRefresh: false))
-		                    .AwaitAllNoConcurrencyAsync();
+		// don't try to schedule a backfill when we're actively backfilling the thread
+		if (BackfillQueue.KeyedLocker.IsInUse(note.ThreadId)) return;
+
+		var updatedRows = await db.NoteThreads
+		                          .Where(t => t.Id == note.ThreadId &&
+		                                      t.Notes.Count < BackfillQueue.MaxRepliesPerThread &&
+		                                      (t.BackfilledAt == null ||
+		                                       t.BackfilledAt <= DateTime.UtcNow - cfg.RefreshAfterTimeSpan))
+		                          .ExecuteUpdateAsync(p => p.SetProperty(t => t.BackfilledAt, DateTime.UtcNow));
+
+		// only queue if the thread's backfill timestamp got updated. if it didn't, it means the cooldown is still in effect
+		// (or the thread doesn't exist, which shouldn't be possible)
+		if (updatedRows <= 0) return;
+
+		await queueSvc.BackfillQueue.EnqueueAsync(new BackfillJobData
+		                                          {
+			                                          ThreadId = note.ThreadId,
+
+			                                          // TODO: should this ever be set? 
+			                                          // this can be used as a "read receipt" and may potentially be a privacy problem. but it also allows for
+			                                          // fetching private replies if the remote provides those
+			                                          AuthenticatedUserId = null
+		                                          }, mutex: $"backfill:{note.ThreadId}");
 	}
 
 	public async Task<bool> LikeNoteAsync(Note note, User user)
