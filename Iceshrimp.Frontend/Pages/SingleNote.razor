@@ -25,7 +25,7 @@
 {
     <SectionContent SectionName="top-bar">
         <Icon Name="Icons.Signpost"></Icon>
-        @Loc["Post by {0}", (RootNote?.User.DisplayName ?? RootNote?.User.Username) ?? string.Empty]
+        @Loc["Note by {0}", (RootNote?.User.DisplayName ?? RootNote?.User.Username) ?? string.Empty]
     </SectionContent>
     <div @ref="Scroller" class="scroller">
         <div class="wrapper">
