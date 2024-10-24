@@ -3,9 +3,12 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
 <div class="profile-info">
-    <div class="bio">
-        <MfmText Text="@UserProfile.Bio"/>
-    </div>
+    @if (UserProfile.Bio != null)
+    { 
+        <div class="bio">
+            <MfmText Text="@UserProfile.Bio"/>
+        </div>
+    }
     <div class="data">
         @if (UserProfile.Location != null)
         {
