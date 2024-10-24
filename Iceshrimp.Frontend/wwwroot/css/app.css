@@ -104,6 +104,21 @@ button {
     padding: 0.2em;
 }
 
+.button {
+    border-radius: 0.5em;
+    margin: 0.5em;
+    display: flex;
+    padding: 0.5em;
+    padding-inline: 1em;
+    align-items: center;
+    i {
+        padding: 0 0.5em 0 0;
+    }
+}
+.button:hover {
+    background-color: var(--hover-color);
+}
+
 /*Blazor stuff, Fix Later*/
 .validation-message {
     color: red;
