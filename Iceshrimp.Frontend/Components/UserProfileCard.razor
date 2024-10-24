@@ -1,7 +1,10 @@
 @using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
 @inject ApiService        Api;
 @inject NavigationManager NavigationManager;
+@inject IStringLocalizer<Localization> Loc;
 @if (UserProfile != null)
 {
     <div @onclick="Open" class="profile-card">
@@ -10,7 +13,9 @@
                 <img class="avatar" src="@User.AvatarUrl" alt="avatar for @User.DisplayName"/>
             </div>
             <div class="name-section">
-                <div class="name">@User.DisplayName</div>
+                <div class="name">
+                    @(User.DisplayName ?? User.Username)
+                </div>
                 <div class="identifier">
                     @@@User.Username
                     @if (User.Host != null)
@@ -19,13 +24,34 @@
                         @host
                     }
                 </div>
+                <div class="metadata">
+                    <div class="section">
+                        <div class="field-data">
+                            @UserProfile.Followers
+                        </div>
+                        <div class="field-text">
+                            @Loc["Followers"]
+                        </div>
+                    </div>
+                    <div class="section">
+                        <div class="field-data">
+                            @UserProfile.Following
+                        </div>
+                        <div class="field-text">
+                            @Loc["Following"]
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         @if (ShowBio)
         {
-            <div class="bio">
-                <MfmText Text="@UserProfile.Bio"/>
-            </div>
+            @if (UserProfile.Bio != null)
+            {
+                <div class="bio">
+                    <MfmText Text="@UserProfile.Bio"/>
+                </div>
+            }
         }
     </div>
 }
