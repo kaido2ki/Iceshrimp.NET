@@ -13,15 +13,15 @@
     <div class="buttons">
         @if (_followBack)
         {
-            <button @onclick="AcceptAndFollowBack" class="btn accept">
-                <Icon Name="Icons.ArrowsLeftRight"/>
+            <button @onclick="AcceptAndFollowBack" class="button accept">
+                <Icon Name="Icons.ArrowsLeftRight"/>@Loc["Accept and follow back"]
             </button>
         }
-        <button @onclick="Accept" class="btn accept">
-            <Icon Name="Icons.Check"/>
+        <button @onclick="Accept" class="button accept">
+            <Icon Name="Icons.Check"/>@Loc["Accept"]
         </button>
-        <button @onclick="Reject" class="btn decline">
-            <Icon Name="Icons.X"/>
+        <button @onclick="Reject" class="button decline">
+            <Icon Name="Icons.X"/>@Loc["Decline"]
         </button>
     </div>
 </div>

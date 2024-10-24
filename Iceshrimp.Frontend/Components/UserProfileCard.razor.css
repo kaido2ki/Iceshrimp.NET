@@ -9,6 +9,23 @@
 .name {
     font-size: 1.25rem;
     margin-bottom: 0.25rem;
+    white-space: nowrap;
+    word-break: break-all;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+@media (min-width: 1001px) {
+    .name {
+        max-width: 40rem;
+    }
+}
+
+@media (max-width: 1000px) {
+    .name {
+        max-width: 20rem;
+    }
+
 }
 
 .identifier {
