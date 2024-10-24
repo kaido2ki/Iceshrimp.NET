@@ -1,9 +1,8 @@
-.widget-panel {
+.widget-panel-elements {
     display: flex;
     max-width: 23rem;
     min-width: 23rem;
     position: sticky;
     top: 0;
     max-height: 100vh;
-    border-left: 0.1rem var(--highlight-color) solid;
 }
