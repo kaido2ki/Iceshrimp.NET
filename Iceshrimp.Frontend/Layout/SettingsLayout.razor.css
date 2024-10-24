@@ -12,6 +12,13 @@
     }
 }
 
+::deep {
+    h3 {
+        margin-top: 0.25rem;
+        font-size: 0.9rem;
+    }
+} 
+
 .layout {
     display: flex;
     flex-direction: row;
