@@ -174,6 +174,17 @@ module private MfmParser =
         | None -> None
         | Some items -> items |> dict |> Some
 
+    let pushLine: Parser<unit, int64> =
+        fun stream ->
+            stream.UserState <- stream.Line
+            Reply(())
+
+    let assertLine: Parser<unit, int64> =
+        fun stream ->
+            match stream.UserState = stream.Line with
+            | true -> Reply(())
+            | false -> Reply(Error, messageError "Line changed")
+
     // References
     let node, nodeRef = createParserForwardedToRef ()
     let inlineNode, inlineNodeRef = createParserForwardedToRef ()
@@ -195,21 +206,25 @@ module private MfmParser =
     // Node parsers
 
     let italicNode =
-        (italicPattern >>. manyTill inlineNode italicPattern)
-        <|> (skipString "<i>" >>. manyTill inlineNode (skipString "</i>"))
+        (italicPattern >>. pushLine >>. manyTill inlineNode italicPattern .>> assertLine)
+        <|> (skipString "<i>" >>. pushLine >>. manyTill inlineNode (skipString "</i>")
+             .>> assertLine)
         |>> fun c -> MfmItalicNode(aggregateTextInline c) :> MfmNode
 
     let boldNode =
-        (skipString "**" >>. manyTill inlineNode (skipString "**"))
-        <|> (skipString "<b>" >>. manyTill inlineNode (skipString "</b>"))
+        (skipString "**" >>. pushLine >>. manyTill inlineNode (skipString "**")
+         .>> assertLine)
+        <|> (skipString "<b>" >>. pushLine >>. manyTill inlineNode (skipString "</b>")
+             .>> assertLine)
         |>> fun c -> MfmBoldNode(aggregateTextInline c) :> MfmNode
 
     let strikeNode =
-        skipString "~~" >>. manyTill inlineNode (skipString "~~")
+        skipString "~~" >>. pushLine >>. manyTill inlineNode (skipString "~~")
+        .>> assertLine
         |>> fun c -> MfmStrikeNode(aggregateTextInline c) :> MfmNode
 
     let codeNode =
-        codePattern >>. manyCharsTill anyChar codePattern
+        codePattern >>. pushLine >>. manyCharsTill anyChar codePattern .>> assertLine
         |>> fun v -> MfmInlineCodeNode(v) :> MfmNode
 
     let codeBlockNode =
@@ -225,7 +240,8 @@ module private MfmParser =
         |>> fun (lang: string option, code: string) -> MfmCodeBlockNode(code, lang) :> MfmNode
 
     let mathNode =
-        skipString "\(" >>. manyCharsTill anyChar (skipString "\)")
+        skipString "\(" >>. pushLine >>. manyCharsTill anyChar (skipString "\)")
+        .>> assertLine
         |>> fun f -> MfmMathInlineNode(f) :> MfmNode
 
     let mathBlockNode =
@@ -368,6 +384,7 @@ module private MfmParser =
 
     // Populate references
     do nodeRef.Value <- choice <| seqAttempt (seqFlatten <| nodeSeq)
+
     do inlineNodeRef.Value <- choice <| (seqAttempt inlineNodeSeq) |>> fun v -> v :?> MfmInlineNode
 
     // Final parse command
@@ -377,6 +394,6 @@ open MfmParser
 
 module Mfm =
     let parse str =
-        match run parse str with
+        match runParserOnString parse 0 "" str with
         | Success(result, _, _) -> aggregateText result
         | Failure(s, _, _) -> failwith $"Failed to parse MFM: {s}"

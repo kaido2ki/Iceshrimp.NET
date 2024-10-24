@@ -35,6 +35,22 @@ public class MfmTests
 	}
 
 	[TestMethod]
+	public void TestParseList()
+	{
+		const string input = """
+		                     * test
+		                     * test2
+		                     * test3
+		                     """;
+
+		List<MfmNode> expected = [new MfmTextNode("* test\n* test2\n* test3")];
+
+		var res = Mfm.parse(input).ToList();
+		res.Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
+
+	[TestMethod]
 	public void TestParseCode()
 	{
 		List<MfmNode> expected =
