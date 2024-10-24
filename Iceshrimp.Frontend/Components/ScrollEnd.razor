@@ -2,7 +2,7 @@
 @using Ljbc1994.Blazor.IntersectionObserver.Components
 <IntersectionObserve OnChange="entry => OnChange(entry)">
     <div @ref="context.Ref.Current" class="@Class">
-        <button @onclick="ManualLoad">Load More</button>
+        <button class="button" @onclick="ManualLoad">Load more</button>
     </div>
 </IntersectionObserve>
 
