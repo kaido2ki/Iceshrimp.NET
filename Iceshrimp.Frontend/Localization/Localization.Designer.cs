@@ -57,9 +57,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Post {
+        internal static string Note {
             get {
-                return ResourceManager.GetString("Post", resourceCulture);
+                return ResourceManager.GetString("Note", resourceCulture);
             }
         }
         
@@ -105,9 +105,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string ComposePost {
+        internal static string ComposeNote {
             get {
-                return ResourceManager.GetString("ComposePost", resourceCulture);
+                return ResourceManager.GetString("ComposeNote", resourceCulture);
             }
         }
     }

@@ -21,8 +21,8 @@
     <data name="Notifications" xml:space="preserve">
         <value>Notifications</value>
     </data>
-    <data name="Post" xml:space="preserve">
-        <value>Post</value>
+    <data name="Note" xml:space="preserve">
+        <value>Note</value>
     </data>
     <data name="{0}yr" xml:space="preserve">
         <value>{0}yr</value>
@@ -45,7 +45,7 @@
     <data name="Just now" xml:space="preserve">
         <value>Just now</value>
     </data>
-    <data name="ComposePost" xml:space="preserve">
-        <value>Post</value>
+    <data name="ComposeNote" xml:space="preserve">
+        <value>Note</value>
     </data>
 </root>
