@@ -17,13 +17,13 @@
     @if (State is State.Loaded)
     {
         <div class="section">
-            <span class="title">Profile Description</span><textarea class="input" @bind="@UserProfile.Description"></textarea>
+            <span class="title">@Loc["Profile Description"]</span><textarea class="input" @bind="@UserProfile.Description"></textarea>
         </div>
         <div class="section">
-            <span class="title">Birthday</span><input class="input" @bind="@UserProfile.Birthday"/>
+            <span class="title">@Loc["Birthday"]</span><input class="input" @bind="@UserProfile.Birthday"/>
         </div>
         <div class="section">
-            <span class="title">Location</span><input class="input" @bind="@UserProfile.Location"/>
+            <span class="title">@Loc["Location"]</span><input class="input" @bind="@UserProfile.Location"/>
         </div>
         <div class="user-fields">
             <span class="title">@Loc["Fields"]</span>
@@ -33,7 +33,7 @@
                     <div class="field">
                         <input class="input" @bind="@entry.Name"/>
                         <input class="input" @bind="@entry.Value"/>
-                        <button @onclick="() => DeleteField(entry)">
+                        <button class="button" title="@Loc["Delete Field"]" @onclick="() => DeleteField(entry)">
                             <Icon Name="Icons.Trash"/>
                         </button>
                     </div>
@@ -44,11 +44,13 @@
         <div class="new-field">
             <input class="input" @bind="@FieldName"/>
             <input class="input" @bind="@FieldValue"/>
-            <button @onclick="AddField">@Loc["Add Field"]</button>
+            <button class="button" title="@Loc["Add Field"]" @onclick="AddField">
+                <Icon Name="Icons.Plus"/>
+            </button>
         </div>
 
         <div class="section">
-            <StateButton OnClick="SaveChanges" @ref="SaveButton">
+            <StateButton OnClick="SaveChanges" ExtraClasses="button" @ref="SaveButton">
                 <Initial>
                     <Icon Name="Icons.FloppyDisk"/>@Loc["Save"]
                 </Initial>
