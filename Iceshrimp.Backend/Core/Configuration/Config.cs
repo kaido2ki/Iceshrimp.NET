@@ -381,30 +381,36 @@ public sealed class Config
 		public TimeSpan RefreshOnRenoteAfterTimeSpan = TimeSpan.FromDays(7);
 	}
 
+	private static readonly char[] Digits = [..Enumerable.Range(0, 10).Select(p => p.ToString()[0])];
+
 	private static TimeSpan? ParseNaturalDuration(string? value, string name)
 	{
-		if (value == null || string.IsNullOrWhiteSpace(value) || value.Trim() == "0")
+		value = value?.Trim();
+		if (value == null || string.IsNullOrWhiteSpace(value) || value == "0")
 			return null;
 
-		if (value.Trim() == "-1")
+		if (value == "-1")
 			return TimeSpan.MaxValue;
 
-		if (value.Length < 2 || !int.TryParse(value[..^1].Trim(), out var num))
+		var idx = value.LastIndexOfAny(Digits);
+
+		if (!char.IsDigit(value[0]) || idx < 0 || value.Length < 2 || !int.TryParse(value[..++idx], out var num))
 			throw new Exception($"Invalid {name}");
 
 		if (num == 0)
 			return null;
 
-		var suffix = value[^1];
+		var suffix = value[idx..];
+
+		const string options = "[s]econds, [m]inutes, [h]ours, [d]ays, [w]eeks";
 
 		return suffix switch
 		{
-			'h' => TimeSpan.FromHours(num),
-			'd' => TimeSpan.FromDays(num),
-			'w' => TimeSpan.FromDays(num * 7),
-			'm' => TimeSpan.FromDays(num * 30),
-			'y' => TimeSpan.FromDays(num * 365),
-			_   => throw new Exception("Unsupported suffix, use one of: [h]ours, [d]ays, [w]eeks, [m]onths, [y]ears")
+			"s" => TimeSpan.FromSeconds(num),
+			"m" => TimeSpan.FromMinutes(num),
+			"h" => TimeSpan.FromHours(num),
+			"d" => TimeSpan.FromDays(num),
+			_   => throw new Exception("Unsupported suffix, use one of: [s]econds, [m]inutes, [h]ours, [d]ays, [w]eeks")
 		};
 	}
 }
