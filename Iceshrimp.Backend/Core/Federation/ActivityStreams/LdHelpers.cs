@@ -15,12 +15,13 @@ public static class LdHelpers
 {
 	private static readonly Dictionary<string, RemoteDocument> PreloadedContexts = new()
 	{
-		["https://www.w3.org/ns/activitystreams"] = GetPreloadedContext("as.json"),
-		["https://w3id.org/security/v1"]          = GetPreloadedContext("security.json"),
-		["http://joinmastodon.org/ns"]            = GetPreloadedContext("toot.json"),
-		["https://gotosocial.org/ns"]             = GetPreloadedContext("gts.json"),
-		["http://schema.org/"]                    = GetPreloadedContext("schema.json"),
-		["litepub-0.1"]                           = GetPreloadedContext("litepub.json")
+		["https://purl.archive.org/socialweb/webfinger"] = GetPreloadedContext("wf.json"),
+		["https://www.w3.org/ns/activitystreams"]        = GetPreloadedContext("as.json"),
+		["https://w3id.org/security/v1"]                 = GetPreloadedContext("security.json"),
+		["http://joinmastodon.org/ns"]                   = GetPreloadedContext("toot.json"),
+		["https://gotosocial.org/ns"]                    = GetPreloadedContext("gts.json"),
+		["http://schema.org/"]                           = GetPreloadedContext("schema.json"),
+		["litepub-0.1"]                                  = GetPreloadedContext("litepub.json")
 	};
 
 	private static readonly ConcurrentDictionary<string, RemoteDocument> ContextCache = new();
