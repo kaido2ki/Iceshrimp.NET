@@ -8,11 +8,6 @@
     }
 }
 
-h3 {
-    margin-top: 0.25rem;
-    font-size: 0.8rem;
-}
-
 .filter {
     border: var(--highlight-color) solid 0.1rem;
 }
