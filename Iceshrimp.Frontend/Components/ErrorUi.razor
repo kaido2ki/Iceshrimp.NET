@@ -1,4 +1,5 @@
 @using System.Text
+@using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Core.InMemoryLogger
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
@@ -50,8 +51,8 @@
             </code></pre>
         </div>
     </div>
-    <button class="btn" @onclick="Reload">@Loc["Reload Application"]</button>
-    <button class="btn" @onclick="DownloadLogs">@Loc["Download Logs"]</button>
+    <button class="button" @onclick="Reload"><Icon Name="Icons.ArrowsClockwise"/>@Loc["Reload Application"]</button>
+    <button class="button" @onclick="DownloadLogs"><Icon Name="Icons.DownloadSimple"/>@Loc["Download Logs"]</button>
 
 </div>
 
