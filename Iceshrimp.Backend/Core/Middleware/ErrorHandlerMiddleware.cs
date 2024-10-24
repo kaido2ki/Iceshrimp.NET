@@ -26,6 +26,7 @@ public class ErrorHandlerMiddleware(
 	{
 		try
 		{
+			ctx.Response.Headers.RequestId = ctx.TraceIdentifier;
 			await next(ctx);
 		}
 		catch (Exception e)
@@ -76,8 +77,7 @@ public class ErrorHandlerMiddleware(
 				if (verbosity > ExceptionVerbosity.Basic && ce.OverrideBasic)
 					verbosity = ExceptionVerbosity.Basic;
 
-				ctx.Response.StatusCode        = (int)ce.StatusCode;
-				ctx.Response.Headers.RequestId = ctx.TraceIdentifier;
+				ctx.Response.StatusCode = (int)ce.StatusCode;
 
 				if (isMastodon)
 				{
@@ -118,8 +118,7 @@ public class ErrorHandlerMiddleware(
 			}
 			else
 			{
-				ctx.Response.StatusCode        = 500;
-				ctx.Response.Headers.RequestId = ctx.TraceIdentifier;
+				ctx.Response.StatusCode = 500;
 
 				var error = new ErrorResponse(e)
 				{
