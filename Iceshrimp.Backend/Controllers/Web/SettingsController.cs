@@ -1,9 +1,11 @@
 using System.Net;
 using System.Net.Mime;
+using AngleSharp.Text;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -16,7 +18,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/settings")]
 [Produces(MediaTypeNames.Application.Json)]
-public class SettingsController(DatabaseContext db) : ControllerBase
+public class SettingsController(DatabaseContext db, UserService userSvc) : ControllerBase
 {
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -62,5 +64,26 @@ public class SettingsController(DatabaseContext db) : ControllerBase
 		await db.SaveChangesAsync();
 		await db.ReloadEntityAsync(settings);
 		return settings;
+	}
+
+	[HttpPost("import/following")]
+	[ProducesResults(HttpStatusCode.Accepted)]
+	public async Task<AcceptedResult> ImportFollowing(IFormFile file)
+	{
+		var user = HttpContext.GetUserOrFail();
+		
+		var reader   = new StreamReader(file.OpenReadStream());
+		var contents = await reader.ReadToEndAsync();
+
+		var fqns = contents
+		           .Split("\n")
+		           .Where(line => !string.IsNullOrWhiteSpace(line))
+		           .Select(line => line.SplitCommas().First())
+		           .Where(fqn => fqn.Contains('@'))
+		           .ToList();
+
+		await userSvc.ImportFollowingAsync(user, fqns);
+
+		return Accepted();
 	}
 }

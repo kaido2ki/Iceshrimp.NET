@@ -39,6 +39,7 @@ public class UserService(
 	QueueService queueSvc,
 	EventService eventSvc,
 	WebFingerService webFingerSvc,
+	CacheService cacheSvc,
 	ActivityPub.FederationControlService fedCtrlSvc
 )
 {
@@ -943,6 +944,31 @@ public class UserService(
 
 		// Clean up user list memberships
 		await db.UserListMembers.Where(p => p.UserList.User == user && p.User == followee).ExecuteDeleteAsync();
+	}
+
+	public async Task ImportFollowingAsync(User user, List<string> fqns)
+	{
+		foreach (var fqn in fqns.Select(fqn => fqn.Split("@")))
+		{
+			var followee = await db.Users
+			                       .IncludeCommonProperties()
+			                       .FirstOrDefaultAsync(p => fqn[0].ToLower() == p.UsernameLower &&
+			                                                 fqn[1] == (p.Host ?? instance.Value.AccountDomain));
+
+			if (followee == null) continue;
+
+			try
+			{
+				await FollowUserAsync(user, followee);
+			}
+			catch (Exception e)
+			{
+				logger.LogWarning("Failed to import follow {followee} for user {follower}: {error}",
+				                  followee.Id, user.Id, e);
+			}
+		}
+
+		await QueryableTimelineExtensions.ResetHeuristic(user, cacheSvc);
 	}
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
