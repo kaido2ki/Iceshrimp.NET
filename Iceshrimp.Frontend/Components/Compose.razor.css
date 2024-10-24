@@ -25,7 +25,17 @@
 }
 
 .header {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    gap: 0.5rem;
     margin-bottom: 0.5rem;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
 }
 
 .textarea {
@@ -33,7 +43,7 @@
     background-color: var(--background-color);
     border: none;
     outline: none;
-    width: 100%;
+    padding: unset;
 }
 
 .input {
@@ -50,21 +60,36 @@
 
 ::deep {
     .post-btn {
+        display: flex;
+        margin-left: auto;
+        align-items: center;
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
         background: var(--accent-color);
         float: right;
+        > i {
+            padding-left: 0.5rem;
+        }
     }
 }
 
-.footer-btn {
-    width: 2.5rem;
+.btn {
+    padding: 0.5rem 0.75rem;
     height: max-content;
     background-color: var(--background-color);
+    line-height: 1;
 }
+
+.btn:hover {
+    background-color: var(--hover-color);
+}
+
 
 .separator {
     color: var(--highlight-color);
     margin-top: 0.25rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    border-style: solid;
 }
 
 .file-input {

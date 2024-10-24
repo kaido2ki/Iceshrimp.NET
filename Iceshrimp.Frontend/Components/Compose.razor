@@ -16,19 +16,19 @@
 <dialog class="dialog" @ref="Dialog">
     <div class="compose">
         <div class="header">
-            <button @onclick="CloseDialog" aria-label="close">
-                <Icon Name="Icons.X" />
+            <button class="btn" title="@Loc["Close"]" @onclick="CloseDialog" aria-label="close">
+                <Icon Name="Icons.X"/>
             </button>
             <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
             <StateButton OnClick="SendNote" @ref="SendButton" ExtraClasses="post-btn" AriaLabel="post">
                 <Initial>
-                    @Loc["ComposePost"]<Icon Name="Icons.PaperPlaneRight"/>
+                    @Loc["ComposeNote"]<Icon Name="Icons.PaperPlaneRight"/>
                 </Initial>
                 <Loading>
-                    <Icon Name="Icons.Spinner"/>
+                    @Loc["Sending"]<Icon Name="Icons.Spinner"/>
                 </Loading>
                 <Success>
-                    <Icon Name="Icons.Check"/>
+                    @Loc["Done"]<Icon Name="Icons.Check"/>
                 </Success>
                 <Failed>
                     @Loc["Retry"]<Icon Name="Icons.X"/>
@@ -48,13 +48,13 @@
         }
         <textarea @ref="Textarea" @bind="NoteDraft.Text" class="textarea" placeholder="@TextPlaceholder" rows="5" cols="35" autofocus="autofocus" aria-label="note text"></textarea>
         <div class="footer">
-            <button class="footer-btn" @onclick="OpenUpload" aria-label="upload">
+            <button class="btn" title="@Loc["Upload file"]" @onclick="OpenUpload" aria-label="upload">
                 <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
             </button>
-            <button class="footer-btn" @onclick="ToggleCw" aria-label="content warning">
+            <button class="btn" title="@Loc["Content warning"]" @onclick="ToggleCw" aria-label="content warning">
                 <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
             </button>
-            <button @ref="EmojiButton" class="footer-btn positioned" @onclick="ToggleEmojiPicker" aria-label="emoji">
+            <button @ref="EmojiButton" class="btn positioned" title="@Loc["Emoji"]" @onclick="ToggleEmojiPicker" aria-label="emoji">
                 <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
             </button>
             <div class="file-input">
