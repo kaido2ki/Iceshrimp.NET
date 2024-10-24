@@ -17,22 +17,22 @@
     @if (State is State.Loaded)
     {
         <div class="section">
-            <span class="title">@Loc["Profile Description"]</span><textarea class="input" @bind="@UserProfile.Description"></textarea>
+            <h3>@Loc["Profile Description"]</h3><textarea class="input" @bind="@UserProfile.Description"></textarea>
         </div>
         <div class="section">
-            <span class="title">@Loc["Birthday"]</span><input class="input" @bind="@UserProfile.Birthday"/>
+            <h3>@Loc["Birthday"]</h3><input class="input" @bind="@UserProfile.Birthday"/>
         </div>
         <div class="section">
-            <span class="title">@Loc["Location"]</span><input class="input" @bind="@UserProfile.Location"/>
+            <h3>@Loc["Location"]</h3><input class="input" @bind="@UserProfile.Location"/>
         </div>
         <div class="user-fields">
-            <span class="title">@Loc["Fields"]</span>
+            <h3>@Loc["Fields"]</h3>
             <div class="fields">
                 @foreach (var entry in UserProfile.Fields)
                 {
                     <div class="field">
-                        <input class="input" @bind="@entry.Name"/>
-                        <input class="input" @bind="@entry.Value"/>
+                        <input class="input" placeholder="@Loc["Name"]" @bind="@entry.Name"/>
+                        <input class="input" placeholder="@Loc["Value"]" @bind="@entry.Value"/>
                         <button class="button" title="@Loc["Delete Field"]" @onclick="() => DeleteField(entry)">
                             <Icon Name="Icons.Trash"/>
                         </button>
@@ -42,8 +42,8 @@
         </div>
 
         <div class="new-field">
-            <input class="input" @bind="@FieldName"/>
-            <input class="input" @bind="@FieldValue"/>
+            <input class="input" placeholder="@Loc["Name"]" @bind="@FieldName"/>
+            <input class="input" placeholder="@Loc["Value"]" @bind="@FieldValue"/>
             <button class="button" title="@Loc["Add Field"]" @onclick="AddField">
                 <Icon Name="Icons.Plus"/>
             </button>
