@@ -18,7 +18,7 @@
     @Loc["Filters"]
 </SectionContent>
 
-<div>
+<div class='body'>
     @if (State is State.Loaded)
     {
         <div class="filter-list">
@@ -52,7 +52,7 @@
                         }
                     </div>
                 </div>
-                <button @onclick="() => DeleteFilter(el.Id)">@Loc["Delete"]</button>
+                <button class="button" @onclick="() => DeleteFilter(el.Id)">@Loc["Delete"]</button>
             }
         </div>
 
@@ -63,7 +63,7 @@
                 {
                     <span>@Loc["Filter name is required"]</span>
                 }
-                <input class="name-input" required="required" type="text" @bind="FilterName"/>
+                <input class="name-input input" required="required" type="text" @bind="FilterName"/>
             </div>
             <div class="keywords section">
                 <h3>
@@ -77,17 +77,20 @@
                 {
                     <div>
                         <span>@el</span>
-                        <button @onclick="() => FilterKeywords.Remove(el)">
+                        <button class="button" @onclick="() => FilterKeywords.Remove(el)">
                             <Icon Name="Icons.X"/>
                         </button>
                     </div>
                 }
-                <input type="text" @bind="Keyword"/>
-                <button @onclick="AddKeyword">@Loc["Add"]</button>
+                <input class="input" type="text" @bind="Keyword"/>
+                <button class="button" @onclick="AddKeyword">
+                    <Icon Name="Icons.Plus"/>
+                    <span>@Loc["Add"]</span>
+                </button>
             </div>
             <div class="action section">
                 <h3>@Loc["Filter Action"]</h3>
-                <button class="positioned" @onclick="ToggleMenu">
+                <button class="positioned button" @onclick="ToggleMenu">
                     @if (FilterAction == FilterResponse.FilterAction.Hide)
                     {
                         <Icon Name="Icons.EyeClosed"/>
@@ -119,14 +122,15 @@
                     {
                         <div>
                             <span>@el</span>
-                            <button @onclick="() => FilterContexts.Remove(el)">
+                            <button class="button" @onclick="() => FilterContexts.Remove(el)">
                                 <Icon Name="Icons.X"></Icon>
                             </button>
                         </div>
                     }
                 </div>
-                <button class="positioned" @onclick="ToggleFilterContextMenu">
-                    @Loc["Add Filter Context"]
+                <button class="positioned button" @onclick="ToggleFilterContextMenu">
+                    <Icon Name="Icons.Plus"/>
+                    <span>@Loc["Add Filter Context"]</span>
                     <Menu @ref="MenuFilterContexts">
                         <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Home)">
                             <Text>@Loc["Home"]</Text>
@@ -156,11 +160,11 @@
                     <span>@Loc["Expiry is required"]</span>
                 }
                 <h3>@Loc["Filter Expiry"]</h3>
-                <input @bind="FilterExpiry" type="datetime-local"/>
+                <input class="input" @bind="FilterExpiry" type="datetime-local"/>
             </div>
-            <StateButton OnClick="TryAddFilter" @ref="ButtonAddFilter">
-                <Initial>@Loc["Add Filter"]</Initial>
-                <Success>@Loc["Add Filter"]</Success>
+            <StateButton OnClick="TryAddFilter" ExtraClasses="button" @ref="ButtonAddFilter">
+                <Initial><Icon Name="Icons.Plus"/><span>@Loc["Add Filter"]</span></Initial>
+                <Success><Icon Name="Icons.Plus"/><span>@Loc["Add Filter"]</span></Success>
                 <Loading>
                     <Icon Name="Icons.Spinner"/>
                 </Loading>
