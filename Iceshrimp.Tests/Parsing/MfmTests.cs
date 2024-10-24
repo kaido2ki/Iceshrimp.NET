@@ -322,11 +322,20 @@ public class MfmTests
 			"""
 			> 1st level
 			>> 2nd level
+			>>> 3rd level
+			>> 2nd level
 			> back to 1st level
-			
+
 			> 1st level
 			>> trailing 2nd level
 			
+			> 1st level
+			>> 2nd level
+			>>> trailing 3rd level
+			
+			> 1st level
+			>>> trailing 3rd level
+
 			> 1st level
 			> more 1st level
 			>> 2nd level
@@ -341,6 +350,10 @@ public class MfmTests
 			new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
 				new MfmTextNode("1st level"),
 				new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+					new MfmTextNode("2nd level"),
+					new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+						new MfmTextNode("3rd level")
+					]), false, false, 3),
 					new MfmTextNode("2nd level")
 				]), false, false, 2),
 				new MfmTextNode("back to 1st level")
@@ -349,6 +362,23 @@ public class MfmTests
 				new MfmTextNode("1st level"),
 				new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
 					new MfmTextNode("trailing 2nd level")
+				]), false, false, 2)
+			]), true, false, 1),
+			new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+				new MfmTextNode("1st level"),
+				new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+					new MfmTextNode("2nd level"),
+					new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+						new MfmTextNode("trailing 3nd level")
+					]), false, false, 3)
+				]), false, false, 2)
+			]), true, false, 1),
+			new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+				new MfmTextNode("1st level"),
+				new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+					new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
+						new MfmTextNode("trailing 3nd level")
+					]), false, false, 3)
 				]), false, false, 2)
 			]), true, false, 1),
 			new MfmQuoteNode(ListModule.OfSeq<MfmNode>([
@@ -364,6 +394,7 @@ public class MfmTests
 		var res = Mfm.parse(input);
 
 		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		AssertionOptions.FormattingOptions.MaxLines = 500;
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
 
 		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
