@@ -123,7 +123,7 @@ public class StatusController(
 		                          .PrecomputeVisibilities(user)
 		                          .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Threads);
 
-		if (user != null) await noteSvc.EnqueueBackfillTaskAsync(note);
+		if (user != null) await noteSvc.EnqueueBackfillTaskAsync(note, user);
 
 		return new StatusContext
 		{

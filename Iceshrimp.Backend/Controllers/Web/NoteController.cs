@@ -137,7 +137,7 @@ public class NoteController(
 		foreach (var item in res.Where(p => p.Reply != null && res.Any(i => i.Id == p.Reply.Id)))
 			item.Reply = null;
 
-		if (user != null) await noteSvc.EnqueueBackfillTaskAsync(note);
+		if (user != null) await noteSvc.EnqueueBackfillTaskAsync(note, user);
 
 		return res.OrderDescendants();
 	}

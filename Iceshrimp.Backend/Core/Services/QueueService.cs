@@ -1,5 +1,4 @@
 using System.Text.Json;
-using EntityFramework.Exceptions.Common;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;

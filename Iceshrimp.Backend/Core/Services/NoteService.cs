@@ -5,7 +5,6 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
-using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
@@ -15,7 +14,6 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 using static Iceshrimp.Parsing.MfmNodeTypes;
 
@@ -1224,7 +1222,7 @@ public class NoteService(
 		return await ResolveNoteAsync(note.Id, note);
 	}
 
-	public async Task EnqueueBackfillTaskAsync(Note note)
+	public async Task EnqueueBackfillTaskAsync(Note note, User? user)
 	{
 		var cfg = backfillConfig.Value.Replies;
 
@@ -1248,15 +1246,12 @@ public class NoteService(
 		// (or the thread doesn't exist, which shouldn't be possible)
 		if (updatedRows <= 0) return;
 
-		await queueSvc.BackfillQueue.EnqueueAsync(new BackfillJobData
-		                                          {
-			                                          ThreadId = note.ThreadId,
+		var jobData = new BackfillJobData
+		{
+			ThreadId = note.ThreadId, AuthenticatedUserId = cfg.FetchAsUser ? user?.Id : null
+		};
 
-			                                          // TODO: should this ever be set? 
-			                                          // this can be used as a "read receipt" and may potentially be a privacy problem. but it also allows for
-			                                          // fetching private replies if the remote provides those
-			                                          AuthenticatedUserId = null
-		                                          }, mutex: $"backfill:{note.ThreadId}");
+		await queueSvc.BackfillQueue.EnqueueAsync(jobData, mutex: $"backfill:{note.ThreadId}");
 	}
 
 	public async Task<bool> LikeNoteAsync(Note note, User user)

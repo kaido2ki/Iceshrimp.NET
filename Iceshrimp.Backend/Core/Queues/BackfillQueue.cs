@@ -63,9 +63,9 @@ public class BackfillQueue(int parallelism)
 		                         .ToArrayAsync(token);
 		
 		var toBackfill = new Queue<BackfillData>(toBackfillArray);
-		while (toBackfill.TryDequeue(out var _current))
+		while (toBackfill.TryDequeue(out var currentItem))
 		{
-			var current = _current;
+			var current = currentItem;
 			if (!history.Add(current.RepliesCollection)) 
 			{
 				logger.LogDebug("Skipping {collection} as it was already backfilled in this run", current.RepliesCollection);
@@ -78,7 +78,7 @@ public class BackfillQueue(int parallelism)
 			        .Where(n => n.Id == current.Id)
 			        .ExecuteUpdateAsync(p => p.SetProperty(n => n.RepliesFetchedAt, DateTime.UtcNow), token);
 
-			await foreach (var asNote in objectResolver.IterateCollection(new ASCollection(current.RepliesCollection))
+			await foreach (var asNote in objectResolver.IterateCollection(new ASCollection(current.RepliesCollection), user: user)
 			                                             .Take(MaxRepliesPerNote)
 			                                             .Where(p => p.Id != null)
 														 .WithCancellation(token))

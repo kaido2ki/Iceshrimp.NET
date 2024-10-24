@@ -30,12 +30,6 @@ public class ActivityFetcherService(
 		"application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\""
 	];
 
-	public async Task<IEnumerable<ASObject>> FetchActivityAsync(string url)
-	{
-		var (actor, keypair) = await systemUserSvc.GetInstanceActorWithKeypairAsync();
-		return await FetchActivityAsync(url, actor, keypair);
-	}
-
 	public async Task<IEnumerable<ASObject>> FetchActivityAsync(string url, User? actor)
 	{
 		var keypair = actor != null ? await db.UserKeypairs.FirstOrDefaultAsync(p => p.User == actor) : null;

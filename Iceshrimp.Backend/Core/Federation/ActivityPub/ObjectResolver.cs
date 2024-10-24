@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -15,7 +16,7 @@ public class ObjectResolver(
 )
 {
 	public async Task<ASObject?> ResolveObject(
-		ASObjectBase baseObj, string? actorUri = null, int recurse = 5, bool force = false
+		ASObjectBase baseObj, string? actorUri = null, int recurse = 5, bool force = false, User? user = null
 	)
 	{
 		logger.LogDebug("Resolving object: {id}", baseObj.Id ?? "<anonymous>");
@@ -65,7 +66,7 @@ public class ObjectResolver(
 
 		try
 		{
-			var result      = await fetchSvc.FetchActivityAsync(baseObj.Id);
+			var result      = await fetchSvc.FetchActivityAsync(baseObj.Id, user);
 			var resolvedObj = result.FirstOrDefault();
 			if (resolvedObj is not ASNote note) return resolvedObj;
 			note.VerifiedFetch = true;
@@ -78,12 +79,12 @@ public class ObjectResolver(
 		}
 	}
 
-	public async IAsyncEnumerable<ASObject> IterateCollection(ASCollection? collection, int pageLimit = 10)
+	public async IAsyncEnumerable<ASObject> IterateCollection(ASCollection? collection, User? user = null, int pageLimit = 10)
 	{
 		if (collection == null) yield break;
 
 		if (collection.IsUnresolved)
-			collection = await ResolveObject(collection, force: true) as ASCollection;
+			collection = await ResolveObject(collection, force: true, user: user) as ASCollection;
 
 		if (collection == null) yield break;
 
@@ -98,7 +99,7 @@ public class ObjectResolver(
 		while (page != null)
 		{
 			if (page.IsUnresolved)
-				page = await ResolveObject(page, force: true) as ASCollectionPage;
+				page = await ResolveObject(page, force: true, user: user) as ASCollectionPage;
 
 			if (page == null) break;
 
