@@ -22,76 +22,76 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Produces(MediaTypeNames.Application.Json)]
 public class BiteController(DatabaseContext db, BiteService biteSvc) : ControllerBase
 {
-    [HttpPost("bite")]
-    [Authenticate("write:bites")]
-    [ProducesResults(HttpStatusCode.OK)]
-    [ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
-    public async Task BiteUser([FromHybrid] string id)
-    {
-        var user = HttpContext.GetUserOrFail();
-        if (user.Id == id)
-            throw GracefulException.BadRequest("You cannot bite yourself");
+	[HttpPost("bite")]
+	[Authenticate("write:bites")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task BiteUser([FromHybrid] string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot bite yourself");
 
-        var target = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
-                     throw GracefulException.NotFound("User not found");
+		var target = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
+		             throw GracefulException.NotFound("User not found");
 
-        await biteSvc.BiteAsync(user, target);
-    }
-    
-    [HttpPost("users/{id}/bite")]
-    [Authenticate("write:bites")]
-    [ProducesResults(HttpStatusCode.OK)]
-    [ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
-    public async Task BiteUser2(string id)
-    {
-        var user = HttpContext.GetUserOrFail();
-        if (user.Id == id)
-            throw GracefulException.BadRequest("You cannot bite yourself");
+		await biteSvc.BiteAsync(user, target);
+	}
 
-        var target = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
-                     throw GracefulException.NotFound("User not found");
+	[HttpPost("users/{id}/bite")]
+	[Authenticate("write:bites")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task BiteUser2(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot bite yourself");
 
-        await biteSvc.BiteAsync(user, target);
-    }
-    
-    [HttpPost("users/{id}/bite_back")]
-    [Authenticate("write:bites")]
-    [ProducesResults(HttpStatusCode.OK)]
-    [ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
-    [SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery")]
-    [SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage")]
-    public async Task BiteBack(string id)
-    {
-        var user = HttpContext.GetUserOrFail();
-        var target = await db.Bites
-                             .IncludeCommonProperties()
-                             .Where(p => p.Id == id)
-                             .FirstOrDefaultAsync() ??
-                     throw GracefulException.NotFound("Bite not found");
+		var target = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
+		             throw GracefulException.NotFound("User not found");
 
-        if (user.Id != (target.TargetUserId ?? target.TargetNote?.UserId ?? target.TargetBite?.UserId))
-            throw GracefulException.BadRequest("You can only bite back at a user who bit you");
+		await biteSvc.BiteAsync(user, target);
+	}
 
-        await biteSvc.BiteAsync(user, target);
-    }
+	[HttpPost("users/{id}/bite_back")]
+	[Authenticate("write:bites")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery")]
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage")]
+	public async Task BiteBack(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var target = await db.Bites
+		                     .IncludeCommonProperties()
+		                     .Where(p => p.Id == id)
+		                     .FirstOrDefaultAsync() ??
+		             throw GracefulException.NotFound("Bite not found");
 
-    [HttpPost("statuses/{id}/bite")]
-    [Authenticate("write:bites")]
-    [ProducesResults(HttpStatusCode.OK)]
-    [ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
-    public async Task BiteStatus(string id)
-    {
-        var user = HttpContext.GetUserOrFail();
-        if (user.Id == id)
-            throw GracefulException.BadRequest("You cannot bite your own note");
+		if (user.Id != (target.TargetUserId ?? target.TargetNote?.UserId ?? target.TargetBite?.UserId))
+			throw GracefulException.BadRequest("You can only bite back at a user who bit you");
 
-        var target = await db.Notes
-                             .Where(p => p.Id == id)
-                             .IncludeCommonProperties()
-                             .EnsureVisibleFor(user)
-                             .FirstOrDefaultAsync() ??
-                     throw GracefulException.NotFound("Note not found");
+		await biteSvc.BiteAsync(user, target);
+	}
 
-        await biteSvc.BiteAsync(user, target);
-    }
+	[HttpPost("statuses/{id}/bite")]
+	[Authenticate("write:bites")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task BiteStatus(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot bite your own note");
+
+		var target = await db.Notes
+		                     .Where(p => p.Id == id)
+		                     .IncludeCommonProperties()
+		                     .EnsureVisibleFor(user)
+		                     .FirstOrDefaultAsync() ??
+		             throw GracefulException.NotFound("Note not found");
+
+		await biteSvc.BiteAsync(user, target);
+	}
 }
