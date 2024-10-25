@@ -14,6 +14,9 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            Console.WriteLine("Recomputing note thread identifiers, please hang tight!");
+            Console.WriteLine("This may take a long time (15-30 minutes), especially if your database is unusually large or you're running low end hardware.");
+
             migrationBuilder.CreateTable(
                 name: "note_thread",
                 columns: table => new
