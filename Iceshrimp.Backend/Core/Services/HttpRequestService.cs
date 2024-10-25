@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using Iceshrimp.Backend.Core.Configuration;
@@ -16,7 +17,15 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options)
 		IEnumerable<string>? accept = null
 	)
 	{
-		var message = new HttpRequestMessage { RequestUri = new Uri(url), Method = method };
+		var message = new HttpRequestMessage
+		{
+			RequestUri = new Uri(url),
+			Method     = method,
+
+			// Default to HTTP/2, but allow for down-negotiation to HTTP/1.1 or HTTP/1.0
+			Version       = HttpVersion.Version20,
+			VersionPolicy = HttpVersionPolicy.RequestVersionOrLower
+		};
 
 		if (body != null)
 		{

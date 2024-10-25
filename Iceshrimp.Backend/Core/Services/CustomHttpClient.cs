@@ -31,6 +31,10 @@ public class CustomHttpClient : HttpClient
 		DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", options.Value.UserAgent);
 		Timeout = TimeSpan.FromSeconds(30);
 
+		// Default to HTTP/2, but allow for down-negotiation to HTTP/1.1 or HTTP/1.0
+		DefaultRequestVersion = HttpVersion.Version20;
+		DefaultVersionPolicy  = HttpVersionPolicy.RequestVersionOrLower;
+
 		// Protect against DoS attacks
 		MaxResponseContentBufferSize = 1024 * 1024; // 1MiB
 
