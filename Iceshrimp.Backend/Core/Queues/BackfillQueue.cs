@@ -72,7 +72,12 @@ public class BackfillQueue(int parallelism)
 				continue;
 			}
 
-			logger.LogTrace("Backfilling {collection} (remaining limit {limit})", current.RepliesCollection, backfillLimit);
+			if (--backfillLimit <= 0)
+			{
+				logger.LogDebug("Reached backfill limit");
+				break;
+			}
+			logger.LogTrace("Backfilling collection {collection} (remaining limit {limit})", current.RepliesCollection, backfillLimit);
 			
 			await db.Notes
 			        .Where(n => n.Id == current.Id)
@@ -83,20 +88,32 @@ public class BackfillQueue(int parallelism)
 			                                             .Where(p => p.Id != null)
 														 .WithCancellation(token))
 			{
-				if (--backfillLimit <= 0) 
+				logger.LogTrace("Backfilling note {note} (remaining limit {limit})", asNote.Id, backfillLimit);
+
+				try
 				{
-					logger.LogDebug("Reached backfill limit");
-					toBackfill.Clear();
-					break;
+					var note = await noteSvc.ResolveNoteAsync(asNote.Id!, asNote as ASNote, user, clearHistory: true,
+					                                          forceRefresh: false);
+
+					backfillLimit -= Math.Max(noteSvc.NotesFetched, 1);
+					if (backfillLimit <= 0)
+					{
+						logger.LogDebug("Reached backfill limit");
+						toBackfill.Clear();
+						break;
+					}
+
+					if (note is { UserHost: not null, RepliesCollection: not null, RepliesCount: < MaxRepliesPerNote } &&
+					    note.CreatedAt <= DateTime.UtcNow - cfg.NewNoteDelayTimeSpan &&
+					    (note.RepliesFetchedAt == null ||
+					     note.RepliesFetchedAt <= DateTime.UtcNow - cfg.RefreshAfterTimeSpan))
+					{
+						toBackfill.Enqueue(new BackfillData(note.Id, note.RepliesCollection!));
+					}
 				}
-				
-				var note = await noteSvc.ResolveNoteAsync(asNote.Id!, asNote as ASNote, user, clearHistory: true, forceRefresh: false);
-				
-				if (note is { UserHost: not null, RepliesCollection: not null, RepliesCount: < MaxRepliesPerNote }
-				    && note.CreatedAt <= DateTime.UtcNow - cfg.NewNoteDelayTimeSpan 
-				    && (note.RepliesFetchedAt == null || note.RepliesFetchedAt <= DateTime.UtcNow - cfg.RefreshAfterTimeSpan))
+				catch (Exception e)
 				{
-					toBackfill.Enqueue(new BackfillData(note.Id, note.RepliesCollection!));
+					logger.LogWarning(e, "Failed to backfill {note}", asNote.Id);
 				}
 			}
 		}
