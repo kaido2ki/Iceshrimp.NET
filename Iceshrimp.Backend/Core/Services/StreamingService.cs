@@ -80,26 +80,30 @@ public sealed class StreamingService
 		return Task.CompletedTask;
 	}
 
-	private async Task<NoteResponse> Render(Note note)
+	private Func<Task<NoteResponse>> Render(Note note)
 	{
 		NoteResponse? res = null;
-		using (await Locker.LockAsync(note.Id))
+		return async () =>
 		{
+			// Skip the mutex if res is already set
 			if (res != null) return res;
-			await using var scope = _scopeFactory.CreateAsyncScope();
 
-			var renderer = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
-			res = await renderer.RenderOne(note, null);
-		}
-
-		return res ?? throw new Exception("NoteResponse was null after async lock");
+			using (await Locker.LockAsync(note.Id))
+			{
+				if (res != null) return res;
+				await using var scope    = _scopeFactory.CreateAsyncScope();
+				var             renderer = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
+				res = await renderer.RenderOne(note, null);
+				return res;
+			}
+		};
 	}
 
 	private void OnNotePublished(object? _, Note note)
 	{
 		try
 		{
-			NotePublished?.Invoke(this, (note, () => Render(note)));
+			NotePublished?.Invoke(this, (note, Render(note)));
 		}
 		catch (Exception e)
 		{
@@ -111,7 +115,7 @@ public sealed class StreamingService
 	{
 		try
 		{
-			NoteUpdated?.Invoke(this, (note, () => Render(note)));
+			NoteUpdated?.Invoke(this, (note, Render(note)));
 		}
 		catch (Exception e)
 		{
