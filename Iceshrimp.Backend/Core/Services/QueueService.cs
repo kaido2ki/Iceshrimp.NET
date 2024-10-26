@@ -528,10 +528,12 @@ public abstract class PostgresJobQueue<T>(
 
 		var job = new Job
 		{
-			Id    = Ulid.NewUlid().ToGuid(),
-			Mutex = mutex,
-			Queue = name,
-			Data  = JsonSerializer.Serialize(jobData)
+			Id       = Ulid.NewUlid().ToGuid(),
+			Mutex    = mutex,
+			Queue    = name,
+			Data     = JsonSerializer.Serialize(jobData),
+			Status   = Job.JobStatus.Queued,
+			QueuedAt = DateTime.UtcNow
 		};
 
 		await db.Jobs.Upsert(job).On(j => j.Mutex!).NoUpdate().RunAsync();
@@ -550,6 +552,7 @@ public abstract class PostgresJobQueue<T>(
 			Queue        = name,
 			Data         = JsonSerializer.Serialize(jobData),
 			Status       = Job.JobStatus.Delayed,
+			QueuedAt     = DateTime.UtcNow,
 			DelayedUntil = triggerAt.ToUniversalTime()
 		};
 
