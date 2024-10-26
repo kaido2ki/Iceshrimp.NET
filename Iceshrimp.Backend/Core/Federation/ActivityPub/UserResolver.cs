@@ -292,7 +292,7 @@ public class UserResolver(
 		if (user == null && acct != query)
 		{
 			user = await userSvc.GetUserFromQueryAsync(acct, allowUrl: false);
-			if (user != null && !flags.HasFlag(ResolveFlags.Acct))
+			if (user != null && user.Uri != uri && !flags.HasFlag(ResolveFlags.Acct))
 				return GracefulException.BadRequest($"User with acct {acct} is known, but Acct flag is not set");
 		}
 
