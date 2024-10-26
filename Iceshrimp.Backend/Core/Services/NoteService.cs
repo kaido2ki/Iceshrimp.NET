@@ -55,6 +55,8 @@ public class NoteService(
 
 	private readonly List<string> _resolverHistory = [];
 	private          int          _recursionLimit  = DefaultRecursionLimit;
+	internal         int          NotesFetched => DefaultRecursionLimit - _recursionLimit;
+
 
 	public class NoteCreationData
 	{
