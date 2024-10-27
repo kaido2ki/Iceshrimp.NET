@@ -1,8 +1,6 @@
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Shared.Schemas.Web;
-using Microsoft.EntityFrameworkCore;
 using static Iceshrimp.Shared.Schemas.Web.NotificationResponse;
 
 namespace Iceshrimp.Backend.Controllers.Web.Renderers;
