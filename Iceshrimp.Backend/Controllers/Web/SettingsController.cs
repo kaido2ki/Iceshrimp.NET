@@ -19,7 +19,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/settings")]
 [Produces(MediaTypeNames.Application.Json)]
-public class SettingsController(DatabaseContext db, UserService userSvc) : ControllerBase
+public class SettingsController(DatabaseContext db, ImportExportService importExportSvc) : ControllerBase
 {
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -79,7 +79,7 @@ public class SettingsController(DatabaseContext db, UserService userSvc) : Contr
 		if (followCount < 1)
 			throw GracefulException.BadRequest("You do not follow any users");
 
-		await userSvc.ExportFollowingAsync(user);
+		await importExportSvc.ExportFollowingAsync(user);
 		
 		return Accepted();
 	}
@@ -100,7 +100,7 @@ public class SettingsController(DatabaseContext db, UserService userSvc) : Contr
 		           .Where(fqn => fqn.Contains('@'))
 		           .ToList();
 
-		await userSvc.ImportFollowingAsync(user, fqns);
+		await importExportSvc.ImportFollowingAsync(user, fqns);
 
 		return Accepted();
 	}

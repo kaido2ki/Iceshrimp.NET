@@ -65,6 +65,7 @@ public static class ServiceExtensions
 			.AddScoped<NotificationService>()
 			.AddScoped<DatabaseMaintenanceService>()
 			.AddScoped<BiteService>()
+			.AddScoped<ImportExportService>()
 			.AddScoped<UserProfileMentionsResolver>()
 			.AddScoped<AuthorizedFetchMiddleware>()
 			.AddScoped<InboxValidationMiddleware>()
