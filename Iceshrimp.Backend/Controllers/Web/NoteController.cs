@@ -459,7 +459,7 @@ public class NoteController(
 	[HttpPost("{id}/mute")]
 	[Authenticate]
 	[Authorize]
-	[EnableRateLimiting("strict")]
+	[EnableRateLimiting("sliding")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task MuteNoteThread(string id)
@@ -485,7 +485,7 @@ public class NoteController(
 	[HttpPost("{id}/unmute")]
 	[Authenticate]
 	[Authorize]
-	[EnableRateLimiting("strict")]
+	[EnableRateLimiting("sliding")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task UnmuteNoteThread(string id)
