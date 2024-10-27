@@ -10,10 +10,10 @@
     <div class="user-list">
         @if (ReactedBy != null) @foreach (var el in ReactedBy)
         {
-            <div @onclick="() => OpenProfile(el.Username, el.Host)" class="like-entry">
+            <div @onclick="() => OpenProfile(el.Username, el.Host)" class="detail-entry">
                 <img class="icon" src="@el.AvatarUrl"/>
                 <div class="name-section">
-                    <div class="displayname">@el.DisplayName</div>
+                    <div class="displayname">@(el.DisplayName ?? el.Username)</div>
                     <div class="username">@@@el.Username@(el.Host != null ? $"@{el.Host}" : "")</div>
                 </div>
             </div>
