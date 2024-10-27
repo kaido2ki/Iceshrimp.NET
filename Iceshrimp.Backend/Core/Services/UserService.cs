@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using AsyncKeyedLock;
 using EntityFramework.Exceptions.Common;
@@ -944,6 +945,29 @@ public class UserService(
 
 		// Clean up user list memberships
 		await db.UserListMembers.Where(p => p.UserList.User == user && p.User == followee).ExecuteDeleteAsync();
+	}
+
+	public async Task ExportFollowingAsync(User user)
+	{
+		var followees = await db.Followings
+		                        .Include(p => p.Followee)
+		                        .Where(p => p.FollowerId == user.Id)
+		                        .Select(p => p.Followee)
+		                        .Where(p => !p.IsDeleted && !p.IsSystemUser && p.MovedToUri == null)
+		                        .OrderBy(p => p.Host)
+		                        .ThenBy(p => p.UsernameLower)
+		                        .Select(p => p.GetFqn(instance.Value.AccountDomain))
+		                        .ToListAsync();
+
+		var stream = new MemoryStream(Encoding.UTF8.GetBytes(string.Join("\n", followees)));
+
+		await driveSvc.StoreFile(stream, user,
+		                         new DriveFileCreationRequest
+		                         {
+			                         Filename    = $"following-{DateTime.UtcNow:yyyy-MM-dd-HH-mm-ss}.csv",
+			                         IsSensitive = false,
+			                         MimeType    = "text/csv"
+		                         }, true);
 	}
 
 	public async Task ImportFollowingAsync(User user, List<string> fqns)

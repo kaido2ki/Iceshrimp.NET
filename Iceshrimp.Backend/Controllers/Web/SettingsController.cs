@@ -9,6 +9,7 @@ using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
@@ -64,6 +65,23 @@ public class SettingsController(DatabaseContext db, UserService userSvc) : Contr
 		await db.SaveChangesAsync();
 		await db.ReloadEntityAsync(settings);
 		return settings;
+	}
+	
+	[HttpPost("export/following")]
+	[ProducesResults(HttpStatusCode.Accepted)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<AcceptedResult> ExportFollowing()
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var followCount = await db.Followings
+		                          .CountAsync(p => p.FollowerId == user.Id);
+		if (followCount < 1)
+			throw GracefulException.BadRequest("You do not follow any users");
+
+		await userSvc.ExportFollowingAsync(user);
+		
+		return Accepted();
 	}
 
 	[HttpPost("import/following")]
