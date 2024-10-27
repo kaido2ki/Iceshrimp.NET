@@ -6,6 +6,7 @@ CONFIGURATION     = Release
 
 DOTNET_CMD        = dotnet
 VERBOSE           = false
+DEP_VULN_WERROR   = false
 
 AOT               = false
 VIPS              = false
@@ -23,7 +24,7 @@ PUBLISH_CMD       = ${TL_ENV} ${DOTNET_CMD} publish ${BUILD_PROJECT} -c ${CONFIG
 BUILD_CMD         = ${TL_ENV} ${DOTNET_CMD} build -noLogo
 TEST_CMD          = ${TL_ENV} ${DOTNET_CMD} test --no-build --nologo
 
-BUILD_FLAGS       = -p:EnableLibVips=${VIPS} -p:BundleNativeDeps=${BUNDLE_NATIVE}
+BUILD_FLAGS       = -p:EnableLibVips=${VIPS} -p:BundleNativeDeps=${BUNDLE_NATIVE} -p:DependencyVulnsAsError=${DEP_VULN_WERROR}
 PUBLISH_FLAGS     = -p:EnableAOT=${AOT} -p:DeterministicSourcePaths=true -p:ContinuousIntegrationBuild=true ${BUILD_FLAGS}
 PUBLISH_FLAGS_EXT = ${PUBLISH_RIDARG} -o publish/${TARGETRID} ${PUBLISH_FLAGS}
 RELEASE_FLAGS     = -r ${TARGETRID} -o release/${TARGETPLATFORM} ${PUBLISH_FLAGS}
