@@ -1,5 +1,20 @@
 .reaction {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    padding: 0.2em 0.5em;
     margin-right: 0.5em;
+    border-radius: 0.5em;
+    border: 0.1em solid var(--notice-color);
+}
+
+.reacted {
+    background-color: var(--notice-color);
+    color: var(--foreground-color);
+}
+
+.count {
+    margin-left: 0.5em;
 }
 
 .custom-reaction {

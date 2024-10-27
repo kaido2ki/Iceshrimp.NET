@@ -2,6 +2,10 @@
     margin-top: 0.5em;
 }
 
+.reactions {
+    margin-bottom: 0.5em;
+}
+
 .btn {
     display: inline-flex;
     align-items: center;
