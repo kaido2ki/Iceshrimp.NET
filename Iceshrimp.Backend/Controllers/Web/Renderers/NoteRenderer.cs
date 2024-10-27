@@ -14,6 +14,7 @@ public class NoteRenderer(
 	UserRenderer userRenderer,
 	DatabaseContext db,
 	EmojiService emojiSvc,
+	MediaProxyService mediaProxy,
 	IOptions<Config.InstanceSection> config
 ) : IScopedService
 {
@@ -114,8 +115,8 @@ public class NoteRenderer(
 		return files.Select(p => new NoteAttachment
 		            {
 			            Id           = p.Id,
-			            Url          = p.AccessUrl,
-			            ThumbnailUrl = p.ThumbnailAccessUrl,
+			            Url          = mediaProxy.GetProxyUrl(p),
+			            ThumbnailUrl = mediaProxy.GetThumbnailProxyUrl(p),
 			            ContentType  = p.Type,
 			            Blurhash     = p.Blurhash,
 			            AltText      = p.Comment,
@@ -141,7 +142,7 @@ public class NoteRenderer(
 			                                                      i.User == user),
 			                  Name      = p.First().Reaction,
 			                  Url       = null,
-			                  Sensitive = false,
+			                  Sensitive = false
 		                  })
 		                  .ToListAsync();
 

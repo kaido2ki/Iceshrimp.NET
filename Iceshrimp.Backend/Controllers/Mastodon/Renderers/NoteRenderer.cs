@@ -19,7 +19,8 @@ public class NoteRenderer(
 	PollRenderer pollRenderer,
 	MfmConverter mfmConverter,
 	DatabaseContext db,
-	EmojiService emojiSvc
+	EmojiService emojiSvc,
+	MediaProxyService mediaProxy
 ) : IScopedService
 {
 	private static readonly FilterResultEntity InaccessibleFilter = new()
@@ -258,9 +259,9 @@ public class NoteRenderer(
 		               .Select(f => new AttachmentEntity
 		               {
 			               Id          = f.Id,
-			               Url         = f.AccessUrl,
+			               Url         = mediaProxy.GetProxyUrl(f),
 			               Blurhash    = f.Blurhash,
-			               PreviewUrl  = f.ThumbnailAccessUrl,
+			               PreviewUrl  = mediaProxy.GetThumbnailProxyUrl(f),
 			               Description = f.Comment,
 			               Metadata    = null,
 			               RemoteUrl   = f.Uri,
@@ -278,9 +279,9 @@ public class NoteRenderer(
 		               .Select(f => new AttachmentEntity
 		               {
 			               Id          = f.Id,
-			               Url         = f.AccessUrl,
+			               Url         = mediaProxy.GetProxyUrl(f),
 			               Blurhash    = f.Blurhash,
-			               PreviewUrl  = f.ThumbnailAccessUrl,
+			               PreviewUrl  = mediaProxy.GetThumbnailProxyUrl(f),
 			               Description = f.Comment,
 			               Metadata    = null,
 			               RemoteUrl   = f.Uri,

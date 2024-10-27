@@ -83,10 +83,10 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 		{
 			Id          = file.Id,
 			Type        = AttachmentEntity.GetType(file.Type),
-			Url         = file.AccessUrl,
+			Url         = file.RawAccessUrl,
 			Blurhash    = file.Blurhash,
 			Description = file.Comment,
-			PreviewUrl  = file.ThumbnailAccessUrl,
+			PreviewUrl  = file.RawThumbnailAccessUrl,
 			RemoteUrl   = file.Uri,
 			Sensitive   = file.IsSensitive
 			//Metadata    = TODO,

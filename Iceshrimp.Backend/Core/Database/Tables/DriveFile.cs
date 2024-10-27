@@ -189,8 +189,8 @@ public class DriveFile : IEntity
 	[InverseProperty(nameof(Tables.User.Banner))]
 	public virtual User? UserBanner { get; set; }
 
-	[NotMapped] public string AccessUrl          => PublicUrl ?? Url;
-	[NotMapped] public string ThumbnailAccessUrl => ThumbnailUrl ?? PublicUrl ?? Url;
+	[NotMapped] public string RawAccessUrl => PublicUrl ?? Url;
+	[NotMapped] public string RawThumbnailAccessUrl => ThumbnailUrl ?? PublicUrl ?? Url;
 
 	[Key]
 	[Column("id")]

@@ -54,7 +54,7 @@ public partial class EmojiService(
 			Category    = category,
 			UpdatedAt   = DateTime.UtcNow,
 			OriginalUrl = driveFile.Url,
-			PublicUrl   = driveFile.AccessUrl,
+			PublicUrl   = driveFile.RawAccessUrl,
 			Width       = driveFile.Properties.Width,
 			Height      = driveFile.Properties.Height,
 			Sensitive   = false
@@ -80,7 +80,7 @@ public partial class EmojiService(
 			Name        = existing.Name,
 			UpdatedAt   = DateTime.UtcNow,
 			OriginalUrl = driveFile.Url,
-			PublicUrl   = driveFile.AccessUrl,
+			PublicUrl   = driveFile.RawAccessUrl,
 			Width       = driveFile.Properties.Width,
 			Height      = driveFile.Properties.Height,
 			Sensitive   = existing.Sensitive

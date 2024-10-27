@@ -115,7 +115,7 @@ public class NoteRenderer(
 			          .Select(p => new ASDocument
 			          {
 				          Sensitive   = p.IsSensitive,
-				          Url         = new ASLink(p.AccessUrl),
+				          Url         = new ASLink(p.RawAccessUrl),
 				          MediaType   = p.Type,
 				          Description = p.Comment
 			          })

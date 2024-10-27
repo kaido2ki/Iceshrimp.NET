@@ -3,6 +3,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -12,6 +13,7 @@ public class NoteRenderer(
 	DatabaseContext db,
 	UserRenderer userRenderer,
 	MfmRenderer mfm,
+	MediaProxyService mediaProxy,
 	IOptions<Config.InstanceSection> instance,
 	IOptionsSnapshot<Config.SecuritySection> security
 ) : IScopedService
@@ -99,7 +101,7 @@ public class NoteRenderer(
 			                                                           .Select(f => new PreviewAttachment
 			                                                           {
 				                                                           MimeType  = f.Type,
-				                                                           Url       = f.AccessUrl,
+				                                                           Url       = mediaProxy.GetProxyUrl(f),
 				                                                           Name      = f.Name,
 				                                                           Alt       = f.Comment,
 				                                                           Sensitive = f.IsSensitive

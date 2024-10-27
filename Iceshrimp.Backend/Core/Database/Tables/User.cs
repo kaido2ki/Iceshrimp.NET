@@ -578,12 +578,12 @@ public class User : IEntity
 
 	[Projectable]
 	public bool HasInteractedWith(Note note) =>
-		HasLiked(note) ||
-		HasReacted(note) ||
-		HasBookmarked(note) ||
-		HasReplied(note) ||
-		HasRenoted(note) ||
-		HasVoted(note);
+		HasLiked(note)
+		|| HasReacted(note)
+		|| HasBookmarked(note)
+		|| HasReplied(note)
+		|| HasRenoted(note)
+		|| HasVoted(note);
 
 	[Projectable]
 	public bool ProhibitInteractionWith(User user) => IsBlocking(user) || IsBlockedBy(user);

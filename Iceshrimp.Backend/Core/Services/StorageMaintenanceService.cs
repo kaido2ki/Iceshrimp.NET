@@ -219,9 +219,9 @@ public class StorageMaintenanceService(
 
 			await db.SaveChangesAsync();
 			await db.Users.Where(p => p.AvatarId == file.Id)
-			        .ExecuteUpdateAsync(p => p.SetProperty(u => u.AvatarUrl, file.AccessUrl));
+			        .ExecuteUpdateAsync(p => p.SetProperty(u => u.AvatarUrl, file.RawAccessUrl));
 			await db.Users.Where(p => p.BannerId == file.Id)
-			        .ExecuteUpdateAsync(p => p.SetProperty(u => u.BannerUrl, file.AccessUrl));
+			        .ExecuteUpdateAsync(p => p.SetProperty(u => u.BannerUrl, file.RawAccessUrl));
 		}
 
 		if (dryRun)

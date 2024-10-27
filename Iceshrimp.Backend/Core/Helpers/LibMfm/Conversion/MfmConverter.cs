@@ -8,6 +8,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.Extensions.Options;
 using Microsoft.FSharp.Collections;
 using static Iceshrimp.Parsing.MfmNodeTypes;
@@ -17,7 +18,8 @@ using HtmlParser = AngleSharp.Html.Parser.HtmlParser;
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 
 public class MfmConverter(
-	IOptions<Config.InstanceSection> config
+	IOptions<Config.InstanceSection> config,
+	MediaProxyService mediaProxy
 ) : ISingletonService
 {
 	public AsyncLocal<bool> SupportsHtmlFormatting { get; } = new();
@@ -197,7 +199,7 @@ public class MfmConverter(
 				{
 					var el    = document.CreateElement("span");
 					var inner = document.CreateElement("img");
-					inner.SetAttribute("src", hit.PublicUrl);
+					inner.SetAttribute("src", mediaProxy.GetProxyUrl(hit));
 					inner.SetAttribute("alt", hit.Name);
 					el.AppendChild(inner);
 					el.ClassList.Add("emoji");
