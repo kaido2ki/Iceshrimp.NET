@@ -1,5 +1,9 @@
-.note {
+.note-parent, .note {
     width: 100%;
+}
+
+.note {
+    padding-bottom: 1rem;
 }
 
 .note-indent {
@@ -19,9 +23,4 @@
     display: flex;
     max-width: 45rem;
     width: 100%;
-}
-
-.pad {
-    height: 1rem;
-    width: 1px;
 }
