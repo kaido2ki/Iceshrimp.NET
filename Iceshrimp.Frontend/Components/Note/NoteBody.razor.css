@@ -1,7 +1,8 @@
 .note-body {
     display: flex;
     flex-direction: column;
-    text-wrap: normal;
+    text-wrap: wrap;
+    word-break: break-all;
     white-space: pre-wrap;
     max-height: 40em;
     height: auto;
