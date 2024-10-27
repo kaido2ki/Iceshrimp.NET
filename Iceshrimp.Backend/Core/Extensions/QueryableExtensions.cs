@@ -751,7 +751,8 @@ public static class QueryableExtensions
 		            .Include(p => p.Note.Renote.Renote.User.UserProfile)
 		            .Include(p => p.Note.Reply.User.UserProfile)
 		            .Include(p => p.FollowRequest.Follower.UserProfile)
-		            .Include(p => p.FollowRequest.Followee.UserProfile);
+		            .Include(p => p.FollowRequest.Followee.UserProfile)
+		            .Include(p => p.Bite);
 	}
 
 	#pragma warning restore CS8602 // Dereference of a possibly null reference.
