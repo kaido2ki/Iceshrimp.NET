@@ -105,7 +105,7 @@ public class NoteRenderer(
 		               {
 			               Id    = e.GetPublicUri(config.Value),
 			               Name  = e.Name,
-			               Image = new ASImage { Url = new ASLink(e.PublicUrl) }
+			               Image = new ASImage { Url = new ASLink(e.RawPublicUrl) }
 		               }))
 		               .ToList();
 
@@ -119,14 +119,14 @@ public class NoteRenderer(
 		var attachments = driveFiles?.Select(p => new ASDocument
 		                            {
 			                            Sensitive   = p.IsSensitive,
-			                            Url         = new ASLink(p.AccessUrl),
+			                            Url         = new ASLink(p.RawAccessUrl),
 			                            MediaType   = p.Type,
 			                            Description = p.Comment
 		                            })
 		                            .Cast<ASAttachment>()
 		                            .ToList();
 
-		var inlineMedia = driveFiles?.Select(p => new MfmInlineMedia(MfmInlineMedia.GetType(p.Type), p.AccessUrl, p.Comment))
+		var inlineMedia = driveFiles?.Select(p => new MfmInlineMedia(MfmInlineMedia.GetType(p.Type), p.RawAccessUrl, p.Comment))
 		                            .ToList();
 
 		var quoteUri = note.IsQuote ? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value) : null;

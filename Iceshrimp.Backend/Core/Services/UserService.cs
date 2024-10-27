@@ -464,9 +464,6 @@ public class UserService(
 		user.AvatarBlurhash = avatar?.Blurhash;
 		user.BannerBlurhash = banner?.Blurhash;
 
-		user.AvatarUrl = avatar?.Url;
-		user.BannerUrl = banner?.Url;
-
 		await db.SaveChangesAsync();
 
 		return async () =>

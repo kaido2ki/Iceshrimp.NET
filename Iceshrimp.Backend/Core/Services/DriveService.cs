@@ -110,7 +110,7 @@ public class DriveService(
 					Filename    = filename,
 					IsSensitive = sensitive,
 					Comment     = description,
-					MimeType    = CleanMimeType(mimeType ?? res.Content.Headers.ContentType?.MediaType)
+					MimeType    = CleanMimeType(res.Content.Headers.ContentType?.MediaType ?? mimeType)
 				};
 
 				var input = await res.Content.ReadAsStreamAsync();
@@ -148,7 +148,8 @@ public class DriveService(
 					Url            = uri,
 					Name           = new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "",
 					Comment        = description,
-					Type           = CleanMimeType(mimeType ?? "application/octet-stream")
+					Type           = CleanMimeType(mimeType ?? "application/octet-stream"),
+					AccessKey      = Guid.NewGuid().ToStringLower()
 				};
 
 				db.Add(file);
@@ -191,7 +192,8 @@ public class DriveService(
 				Comment        = request.Comment,
 				Type           = CleanMimeType(request.MimeType),
 				RequestHeaders = request.RequestHeaders,
-				RequestIp      = request.RequestIp
+				RequestIp      = request.RequestIp,
+				AccessKey      = Guid.NewGuid().ToStringLower() + Path.GetExtension(request.Filename)
 			};
 
 			db.Add(file);
@@ -331,7 +333,7 @@ public class DriveService(
 			Sha256             = digest,
 			Size               = buf.Length,
 			IsLink             = !shouldStore,
-			AccessKey          = original?.accessKey,
+			AccessKey          = original?.accessKey ?? Guid.NewGuid().ToStringLower(),
 			IsSensitive        = request.IsSensitive,
 			StoredInternal     = storedInternal,
 			Src                = request.Source,
@@ -461,21 +463,13 @@ public class DriveService(
 		file.PublicMimeType     = null;
 		file.StoredInternal     = false;
 
-		await db.Users.Where(p => p.AvatarId == file.Id)
-		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.AvatarUrl, file.Uri), token);
-		await db.Users.Where(p => p.BannerId == file.Id)
-		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.BannerUrl, file.Uri), token);
 		await db.SaveChangesAsync(token);
 
-		if (file.AccessKey != null)
-		{
-			var deduplicated = await db.DriveFiles
-			                           .AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey && !p.IsLink,
-			                                     token);
+		var deduplicated =
+			await db.DriveFiles.AnyAsync(p => p.Id != file.Id && p.AccessKey == file.AccessKey && !p.IsLink, token);
 
-			if (deduplicated)
-				return;
-		}
+		if (deduplicated)
+			return;
 
 		if (storedInternal)
 		{

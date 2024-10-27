@@ -3,12 +3,14 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.MfmSharp;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 
 namespace Iceshrimp.Backend.Components.PublicPreview.Renderers;
 
 public readonly record struct MfmRenderData(MarkupString Html, List<MfmInlineMedia> InlineMedia);
 
+[UsedImplicitly]
 public class MfmRenderer(MfmConverter converter) : ISingletonService
 {
 	public async Task<MfmRenderData?> RenderAsync(

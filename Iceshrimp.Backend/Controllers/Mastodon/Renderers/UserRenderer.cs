@@ -49,7 +49,7 @@ public class UserRenderer(
 		{
 			Id                 = user.Id,
 			DisplayName        = user.DisplayName ?? user.Username,
-			AvatarUrl          = user.AvatarUrl ?? user.GetIdenticonUrlPng(config.Value),
+			AvatarUrl          = user.GetAvatarUrl(config.Value),
 			Username           = user.Username,
 			Acct               = acct,
 			FullyQualifiedName = $"{user.Username}@{user.Host ?? config.Value.AccountDomain}",
@@ -61,9 +61,9 @@ public class UserRenderer(
 			Note               = (await mfmConverter.ToHtmlAsync(profile?.Description ?? "", mentions, user.Host)).Html,
 			Url                = profile?.Url ?? user.Uri ?? user.GetPublicUrl(config.Value),
 			Uri                = user.Uri ?? user.GetPublicUri(config.Value),
-			AvatarStaticUrl    = user.AvatarUrl ?? user.GetIdenticonUrlPng(config.Value), //TODO
-			HeaderUrl          = user.BannerUrl ?? _transparent,
-			HeaderStaticUrl    = user.BannerUrl ?? _transparent, //TODO
+			AvatarStaticUrl    = user.GetAvatarUrl(config.Value), //TODO
+			HeaderUrl          = user.GetBannerUrl(config.Value) ?? _transparent,
+			HeaderStaticUrl    = user.GetBannerUrl(config.Value) ?? _transparent, //TODO
 			MovedToAccount     = null,                           //TODO
 			IsBot              = user.IsBot,
 			IsDiscoverable     = user.IsExplorable,
@@ -73,8 +73,8 @@ public class UserRenderer(
 
 		if (localUser is null && security.Value.PublicPreview == Enums.PublicPreview.RestrictedNoMedia) //TODO
 		{
-			res.AvatarUrl       = user.GetIdenticonUrlPng(config.Value);
-			res.AvatarStaticUrl = user.GetIdenticonUrlPng(config.Value);
+			res.AvatarUrl       = user.GetIdenticonUrl(config.Value);
+			res.AvatarStaticUrl = user.GetIdenticonUrl(config.Value);
 			res.HeaderUrl       = _transparent;
 			res.HeaderStaticUrl = _transparent;
 		}
@@ -108,8 +108,8 @@ public class UserRenderer(
 		               {
 			               Id              = p.Id,
 			               Shortcode       = p.Name,
-			               Url             = p.PublicUrl,
-			               StaticUrl       = p.PublicUrl, //TODO
+			               Url             = p.GetAccessUrl(config.Value),
+			               StaticUrl       = p.GetAccessUrl(config.Value), //TODO
 			               VisibleInPicker = true,
 			               Category        = p.Category
 		               })

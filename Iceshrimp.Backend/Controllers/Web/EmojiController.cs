@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
@@ -8,6 +9,7 @@ using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
@@ -18,6 +20,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Route("/api/iceshrimp/emoji")]
 [Produces(MediaTypeNames.Application.Json)]
 public class EmojiController(
+	IOptions<Config.InstanceSection> instance,
 	DatabaseContext db,
 	EmojiService emojiSvc,
 	EmojiImportService emojiImportSvc
@@ -36,7 +39,7 @@ public class EmojiController(
 			               Uri       = p.Uri,
 			               Aliases   = p.Aliases,
 			               Category  = p.Category,
-			               PublicUrl = p.PublicUrl,
+			               PublicUrl = p.GetAccessUrl(instance.Value),
 			               License   = p.License,
 			               Sensitive = p.Sensitive
 		               })
@@ -58,7 +61,7 @@ public class EmojiController(
 			Uri       = emoji.Uri,
 			Aliases   = emoji.Aliases,
 			Category  = emoji.Category,
-			PublicUrl = emoji.PublicUrl,
+			PublicUrl = emoji.GetAccessUrl(instance.Value),
 			License   = emoji.License,
 			Sensitive = emoji.Sensitive
 		};
@@ -80,7 +83,7 @@ public class EmojiController(
 			Uri       = emoji.Uri,
 			Aliases   = [],
 			Category  = null,
-			PublicUrl = emoji.PublicUrl,
+			PublicUrl = emoji.GetAccessUrl(instance.Value),
 			License   = null,
 			Sensitive = false
 		};
@@ -106,7 +109,7 @@ public class EmojiController(
 			Uri       = cloned.Uri,
 			Aliases   = [],
 			Category  = null,
-			PublicUrl = cloned.PublicUrl,
+			PublicUrl = cloned.GetAccessUrl(instance.Value),
 			License   = null,
 			Sensitive = cloned.Sensitive
 		};
@@ -141,7 +144,7 @@ public class EmojiController(
 			Uri       = emoji.Uri,
 			Aliases   = emoji.Aliases,
 			Category  = emoji.Category,
-			PublicUrl = emoji.PublicUrl,
+			PublicUrl = emoji.GetAccessUrl(instance.Value),
 			License   = emoji.License,
 			Sensitive = emoji.Sensitive
 		};

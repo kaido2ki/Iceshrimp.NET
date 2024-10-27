@@ -151,7 +151,12 @@ public class ActivityPubController(
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<ActionResult<JObject>> GetUser(string id)
 	{
-		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
+		var user = await db.Users
+		                   .IncludeCommonProperties()
+		                   .Include(p => p.Avatar)
+		                   .Include(p => p.Banner)
+		                   .FirstOrDefaultAsync(p => p.Id == id);
+
 		if (user == null) throw GracefulException.NotFound("User not found");
 		if (user.IsRemoteUser)
 		{
@@ -282,6 +287,8 @@ public class ActivityPubController(
 
 		var user = await db.Users
 		                   .IncludeCommonProperties()
+		                   .Include(p => p.Avatar)
+		                   .Include(p => p.Banner)
 		                   .FirstOrDefaultAsync(p => p.UsernameLower == acct.ToLowerInvariant() && p.IsLocalUser);
 
 		if (user == null) throw GracefulException.NotFound("User not found");
@@ -327,7 +334,7 @@ public class ActivityPubController(
 		{
 			Id    = emoji.GetPublicUri(config.Value),
 			Name  = emoji.Name,
-			Image = new ASImage { Url = new ASLink(emoji.PublicUrl) }
+			Image = new ASImage { Url = new ASLink(emoji.RawPublicUrl) }
 		};
 
 		return LdHelpers.Compact(rendered);

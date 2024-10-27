@@ -55,7 +55,7 @@ public partial class EmojiService(
 			Category    = category,
 			UpdatedAt   = DateTime.UtcNow,
 			OriginalUrl = driveFile.Url,
-			PublicUrl   = driveFile.AccessUrl,
+			RawPublicUrl   = driveFile.RawAccessUrl,
 			Width       = driveFile.Properties.Width,
 			Height      = driveFile.Properties.Height,
 			Sensitive   = false
@@ -81,7 +81,7 @@ public partial class EmojiService(
 			Name        = existing.Name,
 			UpdatedAt   = DateTime.UtcNow,
 			OriginalUrl = driveFile.Url,
-			PublicUrl   = driveFile.AccessUrl,
+			RawPublicUrl   = driveFile.RawAccessUrl,
 			Width       = driveFile.Properties.Width,
 			Height      = driveFile.Properties.Height,
 			Sensitive   = existing.Sensitive
@@ -132,7 +132,7 @@ public partial class EmojiService(
 						Name        = emojo.Name ?? throw new Exception("emojo.Name must not be null at this stage"),
 						UpdatedAt   = DateTime.UtcNow,
 						OriginalUrl = emojo.Image?.Url?.Link ?? throw new Exception("Emoji.Image has no url"),
-						PublicUrl   = emojo.Image.Url.Link,
+						RawPublicUrl   = emojo.Image.Url.Link,
 						Uri         = emojo.Id,
 						Sensitive   = false
 					};

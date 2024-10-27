@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http.Headers;
+using Microsoft.Net.Http.Headers;
 using System.Text;
 using Carbon.Storage;
 using Iceshrimp.Backend.Core.Configuration;
@@ -89,10 +89,11 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 		if (_bucket == null) throw new Exception("Refusing to upload to object storage with invalid configuration");
 
 		var properties         = (_acl ?? BlobProperties.Empty).ToDictionary();
-		var contentDisposition = new ContentDispositionHeaderValue("inline") { FileName = filename }.ToString();
+		var contentDisposition = new ContentDispositionHeaderValue("inline");
+		contentDisposition.SetHttpFileName(filename);
 
 		properties.Add("Content-Type", contentType);
-		properties.Add("Content-Disposition", contentDisposition);
+		properties.Add("Content-Disposition", contentDisposition.ToString());
 
 		IBlob blob = data.Length > 0
 			? new Blob(GetKeyWithPrefix(key), data, properties)

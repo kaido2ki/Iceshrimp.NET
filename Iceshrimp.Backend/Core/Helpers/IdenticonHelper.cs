@@ -1,27 +1,15 @@
 using System.IO.Hashing;
-using System.Net;
-using System.Net.Mime;
 using System.Text;
-using Iceshrimp.Backend.Controllers.Shared.Attributes;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Mvc;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace Iceshrimp.Backend.Controllers.Web;
+namespace Iceshrimp.Backend.Core.Helpers;
 
-[ApiController]
-[EnableCors("drive")]
-[Route("/identicon/{id}")]
-[Route("/identicon/{id}.png")]
-[Produces(MediaTypeNames.Image.Png)]
-public class IdenticonController : ControllerBase
+public static class IdenticonHelper
 {
-	[HttpGet]
-	[ProducesResults(HttpStatusCode.OK)]
-	public async Task GetIdenticon(string id)
+	public static async Task<Stream> GetIdenticonAsync(string id)
 	{
 		using var image = new Image<Rgb24>(Size, Size);
 
@@ -74,9 +62,10 @@ public class IdenticonController : ControllerBase
 			}
 		}
 
-		Response.Headers.CacheControl = "max-age=31536000, immutable";
-		Response.Headers.ContentType  = "image/png";
-		await image.SaveAsPngAsync(Response.Body);
+		var stream = new MemoryStream();
+		await image.SaveAsPngAsync(stream);
+		stream.Seek(0, SeekOrigin.Begin);
+		return stream;
 	}
 
 	#region Color definitions & Constants

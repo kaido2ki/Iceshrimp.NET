@@ -14,6 +14,7 @@ public class NoteRenderer(
 	UserRenderer userRenderer,
 	DatabaseContext db,
 	EmojiService emojiSvc,
+	MediaProxyService mediaProxy,
 	IOptions<Config.InstanceSection> config
 ) : IScopedService
 {
@@ -114,8 +115,8 @@ public class NoteRenderer(
 		return files.Select(p => new NoteAttachment
 		            {
 			            Id           = p.Id,
-			            Url          = p.AccessUrl,
-			            ThumbnailUrl = p.ThumbnailAccessUrl,
+			            Url          = mediaProxy.GetProxyUrl(p),
+			            ThumbnailUrl = mediaProxy.GetThumbnailProxyUrl(p),
 			            ContentType  = p.Type,
 			            Blurhash     = p.Blurhash,
 			            AltText      = p.Comment,
@@ -141,7 +142,7 @@ public class NoteRenderer(
 			                                                      i.User == user),
 			                  Name      = p.First().Reaction,
 			                  Url       = null,
-			                  Sensitive = false,
+			                  Sensitive = false
 		                  })
 		                  .ToListAsync();
 
@@ -149,7 +150,7 @@ public class NoteRenderer(
 		{
 			var hit = await emojiSvc.ResolveEmojiAsync(item.Name);
 			if (hit == null) continue;
-			item.Url       = hit.PublicUrl;
+			item.Url       = hit.GetAccessUrl(config.Value);
 			item.Sensitive = hit.Sensitive;
 		}
 
@@ -193,7 +194,7 @@ public class NoteRenderer(
 			               Uri       = p.Uri,
 			               Aliases   = p.Aliases,
 			               Category  = p.Category,
-			               PublicUrl = p.PublicUrl,
+			               PublicUrl = p.GetAccessUrl(config.Value),
 			               License   = p.License,
 			               Sensitive = p.Sensitive
 		               })

@@ -241,6 +241,9 @@ public class GracefulException(
 		new(HttpStatusCode.MisdirectedRequest, HttpStatusCode.MisdirectedRequest.ToString(),
 		    "This server is not configured to respond to this request.", null, true, true);
 
+	public static GracefulException BadGateway(string message, string? details = null, bool suppressLog = false) =>
+		new(HttpStatusCode.BadGateway, HttpStatusCode.BadGateway.ToString(), message, details, suppressLog);
+
 	/// <summary>
 	///     This is intended for cases where no error occured, but the request needs to be aborted early (e.g. WebFinger
 	///     returning 410 Gone)

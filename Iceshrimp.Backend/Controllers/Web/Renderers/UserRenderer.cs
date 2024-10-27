@@ -27,8 +27,8 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			Username        = user.Username,
 			Host            = user.Host,
 			DisplayName     = user.DisplayName,
-			AvatarUrl       = user.AvatarUrl ?? user.GetIdenticonUrl(config.Value),
-			BannerUrl       = user.BannerUrl,
+			AvatarUrl       = user.GetAvatarUrl(config.Value),
+			BannerUrl       = user.GetBannerUrl(config.Value),
 			InstanceName    = instanceName,
 			InstanceIconUrl = instanceIcon,
 			Emojis          = emoji,
@@ -78,7 +78,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			                    Uri       = p.Uri,
 			                    Aliases   = p.Aliases,
 			                    Category  = p.Category,
-			                    PublicUrl = p.PublicUrl,
+			                    PublicUrl = p.GetAccessUrl(config.Value),
 			                    License   = p.License,
 			                    Sensitive = p.Sensitive
 		                    })

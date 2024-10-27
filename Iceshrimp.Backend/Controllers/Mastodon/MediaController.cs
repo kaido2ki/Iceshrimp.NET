@@ -23,7 +23,11 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
-public class MediaController(DriveService driveSvc, DatabaseContext db) : ControllerBase
+public class MediaController(
+	DriveService driveSvc,
+	DatabaseContext db,
+	AttachmentRenderer attachmentRenderer
+) : ControllerBase
 {
 	[MaxRequestSizeIsMaxUploadSize]
 	[HttpPost("/api/v1/media")]
@@ -40,7 +44,7 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 			MimeType    = request.File.ContentType
 		};
 		var file = await driveSvc.StoreFileAsync(request.File.OpenReadStream(), user, rq);
-		return AttachmentRenderer.Render(file);
+		return attachmentRenderer.Render(file);
 	}
 
 	[HttpPut("/api/v1/media/{id}")]
@@ -51,12 +55,12 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 	)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
-		           throw GracefulException.RecordNotFound();
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == id && p.User == user)
+		           ?? throw GracefulException.RecordNotFound();
 		file.Comment = request.Description;
 		await db.SaveChangesAsync();
 
-		return AttachmentRenderer.Render(file);
+		return attachmentRenderer.Render(file);
 	}
 
 	[HttpGet("/api/v1/media/{id}")]
@@ -65,10 +69,10 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 	public async Task<AttachmentEntity> GetAttachment(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
-		           throw GracefulException.RecordNotFound();
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == id && p.User == user)
+		           ?? throw GracefulException.RecordNotFound();
 
-		return AttachmentRenderer.Render(file);
+		return attachmentRenderer.Render(file);
 	}
 
 	[HttpPut("/api/v2/media/{id}")]

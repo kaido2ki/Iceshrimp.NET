@@ -243,25 +243,11 @@ public class User : IEntity
 	public bool SpeakAsCat { get; set; }
 
 	/// <summary>
-	///     The URL of the avatar DriveFile
-	/// </summary>
-	[Column("avatarUrl")]
-	[StringLength(512)]
-	public string? AvatarUrl { get; set; }
-
-	/// <summary>
 	///     The blurhash of the avatar DriveFile
 	/// </summary>
 	[Column("avatarBlurhash")]
 	[StringLength(128)]
 	public string? AvatarBlurhash { get; set; }
-
-	/// <summary>
-	///     The URL of the banner DriveFile
-	/// </summary>
-	[Column("bannerUrl")]
-	[StringLength(512)]
-	public string? BannerUrl { get; set; }
 
 	/// <summary>
 	///     The blurhash of the banner DriveFile
@@ -587,12 +573,12 @@ public class User : IEntity
 
 	[Projectable]
 	public bool HasInteractedWith(Note note) =>
-		HasLiked(note) ||
-		HasReacted(note) ||
-		HasBookmarked(note) ||
-		HasReplied(note) ||
-		HasRenoted(note) ||
-		HasVoted(note);
+		HasLiked(note)
+		|| HasReacted(note)
+		|| HasBookmarked(note)
+		|| HasReplied(note)
+		|| HasRenoted(note)
+		|| HasVoted(note);
 
 	[Projectable]
 	public bool ProhibitInteractionWith(User user) => IsBlocking(user) || IsBlockedBy(user);
@@ -623,11 +609,10 @@ public class User : IEntity
 		return this;
 	}
 
-	public string GetPublicUrl(Config.InstanceSection config)       => GetPublicUrl(config.WebDomain);
-	public string GetPublicUri(Config.InstanceSection config)       => GetPublicUri(config.WebDomain);
-	public string GetUriOrPublicUri(Config.InstanceSection config)  => GetUriOrPublicUri(config.WebDomain);
-	public string GetIdenticonUrl(Config.InstanceSection config)    => GetIdenticonUrl(config.WebDomain);
-	public string GetIdenticonUrlPng(Config.InstanceSection config) => GetIdenticonUrl(config.WebDomain) + ".png";
+	public string GetPublicUrl(Config.InstanceSection config)      => GetPublicUrl(config.WebDomain);
+	public string GetPublicUri(Config.InstanceSection config)      => GetPublicUri(config.WebDomain);
+	public string GetUriOrPublicUri(Config.InstanceSection config) => GetUriOrPublicUri(config.WebDomain);
+	public string GetIdenticonUrl(Config.InstanceSection config)   => GetIdenticonUrl(config.WebDomain);
 
 	public string GetPublicUri(string webDomain) => Host == null
 		? $"https://{webDomain}/users/{Id}"
@@ -643,6 +628,12 @@ public class User : IEntity
 
 	public string GetIdenticonUrl(string webDomain) => $"https://{webDomain}{IdenticonUrlPath}";
 
+	public string GetAvatarUrl(Config.InstanceSection config)
+		=> $"https://{config.WebDomain}/avatars/{Id}/{AvatarId ?? "identicon"}";
+
+	public string? GetBannerUrl(Config.InstanceSection config)
+		=> BannerId != null ? $"https://{config.WebDomain}/banners/{Id}/{BannerId}" : null;
+
 	private class EntityTypeConfiguration : IEntityTypeConfiguration<User>
 	{
 		public void Configure(EntityTypeBuilder<User> entity)
@@ -650,10 +641,8 @@ public class User : IEntity
 			entity.Property(e => e.AlsoKnownAs).HasComment("URIs the user is known as too");
 			entity.Property(e => e.AvatarBlurhash).HasComment("The blurhash of the avatar DriveFile");
 			entity.Property(e => e.AvatarId).HasComment("The ID of avatar DriveFile.");
-			entity.Property(e => e.AvatarUrl).HasComment("The URL of the avatar DriveFile");
 			entity.Property(e => e.BannerBlurhash).HasComment("The blurhash of the banner DriveFile");
 			entity.Property(e => e.BannerId).HasComment("The ID of banner DriveFile.");
-			entity.Property(e => e.BannerUrl).HasComment("The URL of the banner DriveFile");
 			entity.Property(e => e.CreatedAt).HasComment("The created date of the User.");
 			entity.Property(e => e.DriveCapacityOverrideMb).HasComment("Overrides user drive capacity limit");
 			entity.Property(e => e.Emojis).HasDefaultValueSql("'{}'::character varying[]");

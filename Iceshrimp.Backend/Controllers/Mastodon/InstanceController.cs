@@ -21,7 +21,11 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
-public class InstanceController(DatabaseContext db, MetaService meta) : ControllerBase
+public class InstanceController(
+	IOptions<Config.InstanceSection> instance,
+	DatabaseContext db,
+	MetaService meta
+) : ControllerBase
 {
 	[HttpGet("/api/v1/instance")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -51,9 +55,10 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 	public async Task<InstanceInfoV2Response> GetInstanceInfoV2([FromServices] IOptionsSnapshot<Config> config)
 	{
 		var cutoff = DateTime.UtcNow - TimeSpan.FromDays(30);
-		var activeMonth = await db.Users.LongCountAsync(p => p.IsLocalUser &&
-		                                                     !Constants.SystemUsers.Contains(p.UsernameLower) &&
-		                                                     p.LastActiveDate > cutoff);
+		var activeMonth =
+			await db.Users.LongCountAsync(p => p.IsLocalUser
+			                                   && !Constants.SystemUsers.Contains(p.UsernameLower)
+			                                   && p.LastActiveDate > cutoff);
 
 		var (instanceName, instanceDescription, adminContact) =
 			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription,
@@ -74,8 +79,8 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 		               {
 			               Id              = p.Id,
 			               Shortcode       = p.Name,
-			               Url             = p.PublicUrl,
-			               StaticUrl       = p.PublicUrl, //TODO
+			               Url             = p.GetAccessUrl(instance.Value),
+			               StaticUrl       = p.GetAccessUrl(instance.Value), //TODO
 			               VisibleInPicker = true,
 			               Category        = p.Category
 		               })

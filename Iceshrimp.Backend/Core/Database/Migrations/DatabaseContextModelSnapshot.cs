@@ -747,6 +747,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("id");
 
                     b.Property<string>("AccessKey")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)")
                         .HasColumnName("accessKey");
@@ -3998,12 +3999,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("avatarId")
                         .HasComment("The ID of avatar DriveFile.");
 
-                    b.Property<string>("AvatarUrl")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("avatarUrl")
-                        .HasComment("The URL of the avatar DriveFile");
-
                     b.Property<string>("BannerBlurhash")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
@@ -4015,12 +4010,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("bannerId")
                         .HasComment("The ID of banner DriveFile.");
-
-                    b.Property<string>("BannerUrl")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("bannerUrl")
-                        .HasComment("The URL of the banner DriveFile");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")

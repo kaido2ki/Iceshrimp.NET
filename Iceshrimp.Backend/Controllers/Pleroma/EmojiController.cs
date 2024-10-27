@@ -3,11 +3,13 @@ using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Pleroma;
 
@@ -15,7 +17,7 @@ namespace Iceshrimp.Backend.Controllers.Pleroma;
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
-public class EmojiController(DatabaseContext db) : ControllerBase
+public class EmojiController(IOptions<Config.InstanceSection> instance, DatabaseContext db) : ControllerBase
 {
 	[HttpGet("/api/v1/pleroma/emoji")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -26,7 +28,7 @@ public class EmojiController(DatabaseContext db) : ControllerBase
 		                    .Select(p => KeyValuePair.Create(p.Name,
 		                                                     new PleromaEmojiEntity
 		                                                     {
-			                                                     ImageUrl = p.PublicUrl,
+			                                                     ImageUrl = p.GetAccessUrl(instance.Value),
 			                                                     Tags     = new[] { p.Category ?? "" }
 		                                                     }))
 		                    .ToArrayAsync();

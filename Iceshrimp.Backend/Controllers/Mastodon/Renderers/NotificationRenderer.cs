@@ -1,14 +1,17 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
 public class NotificationRenderer(
+	IOptions<Config.InstanceSection> instance,
 	DatabaseContext db,
 	NoteRenderer noteRenderer,
 	UserRenderer userRenderer
@@ -45,7 +48,7 @@ public class NotificationRenderer(
 				var parts = notification.Reaction.Trim(':').Split('@');
 				emojiUrl = await db.Emojis
 				                   .Where(e => e.Name == parts[0] && e.Host == (parts.Length > 1 ? parts[1] : null))
-				                   .Select(e => e.PublicUrl)
+				                   .Select(e => e.GetAccessUrl(instance.Value))
 				                   .FirstOrDefaultAsync();
 			}
 		}
@@ -107,7 +110,7 @@ public class NotificationRenderer(
 		var emojiUrls = await urlQ.Select(e => new
 		                          {
 			                          Name = $":{e.Name}{(e.Host != null ? "@" + e.Host : "")}:",
-			                          Url  = e.PublicUrl
+			                          Url  = e.GetAccessUrl(instance.Value)
 		                          })
 		                          .ToArrayAsync()
 		                          .ContinueWithResult(res => res.DistinctBy(e => e.Name)

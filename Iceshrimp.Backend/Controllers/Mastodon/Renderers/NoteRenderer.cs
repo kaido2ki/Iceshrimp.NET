@@ -19,7 +19,8 @@ public class NoteRenderer(
 	PollRenderer pollRenderer,
 	MfmConverter mfmConverter,
 	DatabaseContext db,
-	EmojiService emojiSvc
+	EmojiService emojiSvc,
+	AttachmentRenderer attachmentRenderer
 ) : IScopedService
 {
 	private static readonly FilterResultEntity InaccessibleFilter = new()
@@ -296,7 +297,7 @@ public class NoteRenderer(
 		if (notes.Count == 0) return [];
 		var ids = notes.SelectMany(n => n.FileIds).Distinct();
 		return await db.DriveFiles.Where(p => ids.Contains(p.Id))
-		               .Select(f => AttachmentRenderer.Render(f))
+		               .Select(f => attachmentRenderer.Render(f, true))
 		               .ToListAsync();
 	}
 
@@ -305,7 +306,7 @@ public class NoteRenderer(
 		var ids = fileIds.Distinct().ToList();
 		if (ids.Count == 0) return [];
 		return await db.DriveFiles.Where(p => ids.Contains(p.Id))
-		               .Select(f => AttachmentRenderer.Render(f))
+		               .Select(f => attachmentRenderer.Render(f, true))
 		               .ToListAsync();
 	}
 
@@ -354,8 +355,8 @@ public class NoteRenderer(
 		{
 			var hit = await emojiSvc.ResolveEmojiAsync(item.Name);
 			if (hit == null) continue;
-			item.Url       = hit.PublicUrl;
-			item.StaticUrl = hit.PublicUrl;
+			item.Url       = hit.GetAccessUrl(config.Value);
+			item.StaticUrl = hit.GetAccessUrl(config.Value);
 			item.Name      = item.Name.Trim(':');
 		}
 
@@ -422,8 +423,8 @@ public class NoteRenderer(
 		               {
 			               Id              = p.Id,
 			               Shortcode       = p.Name.Trim(':'),
-			               Url             = p.PublicUrl,
-			               StaticUrl       = p.PublicUrl, //TODO
+			               Url             = p.GetAccessUrl(config.Value),
+			               StaticUrl       = p.GetAccessUrl(config.Value), //TODO
 			               VisibleInPicker = true,
 			               Category        = p.Category
 		               })

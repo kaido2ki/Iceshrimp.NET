@@ -40,7 +40,7 @@ public class Emoji
 
 	[Column("publicUrl")]
 	[StringLength(512)]
-	public string PublicUrl { get; set; } = null!;
+	public string RawPublicUrl { get; set; } = null!;
 
 	[Column("license")]
 	[StringLength(1024)]
@@ -69,13 +69,16 @@ public class Emoji
 		? $"https://{config.WebDomain}/emoji/{Name}"
 		: null;
 	
+	public string GetAccessUrl(Config.InstanceSection config)
+		=> $"https://{config.WebDomain}/media/emoji/{Id}";
+
 	private class EntityTypeConfiguration : IEntityTypeConfiguration<Emoji>
 	{
 		public void Configure(EntityTypeBuilder<Emoji> entity)
 		{
 			entity.Property(e => e.Aliases).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.Height).HasComment("Image height");
-			entity.Property(e => e.PublicUrl).HasDefaultValueSql("''::character varying");
+			entity.Property(e => e.RawPublicUrl).HasDefaultValueSql("''::character varying");
 			entity.Property(e => e.Width).HasComment("Image width");
 		}
 	}

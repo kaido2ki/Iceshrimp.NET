@@ -1,17 +1,19 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Services;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
-public static class AttachmentRenderer
+public class AttachmentRenderer(MediaProxyService mediaProxy) : ISingletonService
 {
-	public static AttachmentEntity Render(DriveFile file) => new()
+	public AttachmentEntity Render(DriveFile file, bool proxy = true) => new()
 	{
 		Id          = file.Id,
 		Type        = AttachmentEntity.GetType(file.Type),
-		Url         = file.AccessUrl,
+		Url         = proxy ? mediaProxy.GetProxyUrl(file) : file.RawAccessUrl,
 		Blurhash    = file.Blurhash,
-		PreviewUrl  = file.ThumbnailAccessUrl,
+		PreviewUrl  = proxy ? mediaProxy.GetThumbnailProxyUrl(file) : file.RawThumbnailAccessUrl,
 		Description = file.Comment,
 		RemoteUrl   = file.Uri,
 		Sensitive   = file.IsSensitive,

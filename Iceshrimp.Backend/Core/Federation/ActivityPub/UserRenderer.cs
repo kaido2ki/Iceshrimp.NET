@@ -40,6 +40,19 @@ public class UserRenderer(
 
 		if (keypair == null) throw new Exception("User has no keypair");
 
+		// Fetch avatar/banner relations if missing
+		if ((user.Avatar == null && user.AvatarId != null) || (user.Banner == null && user.BannerId != null))
+		{
+			var newUser = await db.Users
+			                      .IncludeCommonProperties()
+			                      .Include(p => p.Avatar)
+			                      .Include(p => p.Banner)
+			                      .FirstOrDefaultAsync(p => p.Id == user.Id);
+
+			if (newUser != null)
+				user = newUser;
+		}
+
 		var id = user.GetPublicUri(config.Value);
 		var type = Constants.SystemUsers.Contains(user.UsernameLower)
 			? ASActor.Types.Application
@@ -61,7 +74,7 @@ public class UserRenderer(
 		               {
 			               Id    = e.GetPublicUri(config.Value),
 			               Name  = e.Name,
-			               Image = new ASImage { Url = new ASLink(e.PublicUrl) }
+			               Image = new ASImage { Url = new ASLink(e.RawPublicUrl) }
 		               }))
 		               .ToList();
 
@@ -97,11 +110,11 @@ public class UserRenderer(
 			AlsoKnownAs      = user.AlsoKnownAs?.Select(p => new ASLink(p)).ToList(),
 			MovedTo          = user.MovedToUri is not null ? new ASLink(user.MovedToUri) : null,
 			Featured         = new ASOrderedCollection($"{id}/collections/featured"),
-			Avatar = user.AvatarUrl != null
-				? new ASImage { Url = new ASLink(user.AvatarUrl) }
+			Avatar = user.Avatar != null
+				? new ASImage { Url = new ASLink(user.Avatar.RawAccessUrl) }
 				: null,
-			Banner = user.BannerUrl != null
-				? new ASImage { Url = new ASLink(user.BannerUrl) }
+			Banner = user.Banner != null
+				? new ASImage { Url = new ASLink(user.Banner.RawAccessUrl) }
 				: null,
 			Endpoints = new ASEndpoints { SharedInbox = new ASObjectBase($"https://{config.Value.WebDomain}/inbox") },
 			PublicKey = new ASPublicKey

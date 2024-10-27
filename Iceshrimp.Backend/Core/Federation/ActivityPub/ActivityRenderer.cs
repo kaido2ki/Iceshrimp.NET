@@ -92,7 +92,7 @@ public class ActivityRenderer(
 		{
 			Id    = emoji.GetPublicUriOrNull(config.Value),
 			Name  = name,
-			Image = new ASImage { Url = new ASLink(emoji.PublicUrl) }
+			Image = new ASImage { Url = new ASLink(emoji.RawPublicUrl) }
 		};
 
 		res.Tags = [e];

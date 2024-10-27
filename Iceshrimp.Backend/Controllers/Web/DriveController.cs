@@ -3,6 +3,7 @@ using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
@@ -10,6 +11,7 @@ using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -23,63 +25,78 @@ public class DriveController(
 	IOptionsSnapshot<Config.StorageSection> options,
 	ILogger<DriveController> logger,
 	DriveService driveSvc,
-	QueueService queueSvc
+	QueueService queueSvc,
+	HttpClient httpClient
 ) : ControllerBase
 {
+	private const string CacheControl = "max-age=31536000, immutable";
+
 	[EnableCors("drive")]
-	[HttpGet("/files/{accessKey}")]
+	[EnableRateLimiting("proxy")]
+	[HttpGet("/files/{accessKey}/{version?}")]
 	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.NoContent)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
-	public async Task<IActionResult> GetFileByAccessKey(string accessKey)
+	public async Task<IActionResult> GetFileByAccessKey(string accessKey, string? version)
 	{
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.AccessKey == accessKey ||
-		                                                        p.PublicAccessKey == accessKey ||
-		                                                        p.ThumbnailAccessKey == accessKey);
-		if (file == null)
+		return await GetFileByAccessKey(accessKey, version, null);
+	}
+
+	[EnableCors("drive")]
+	[EnableRateLimiting("proxy")]
+	[HttpGet("/media/emoji/{id}")]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.NoContent)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IActionResult> GetEmojiById(string id)
+	{
+		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id)
+		            ?? throw GracefulException.NotFound("Emoji not found");
+
+		if (!options.Value.ProxyRemoteMedia)
+			return Redirect(emoji.RawPublicUrl);
+
+		return await ProxyAsync(emoji.RawPublicUrl, null, null);
+	}
+
+	[EnableCors("drive")]
+	[EnableRateLimiting("proxy")]
+	[HttpGet("/avatars/{userId}/{version}")]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.NoContent)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IActionResult> GetAvatarByUserId(string userId, string? version)
+	{
+		var user = await db.Users.Include(p => p.Avatar).FirstOrDefaultAsync(p => p.Id == userId)
+		           ?? throw GracefulException.NotFound("User not found");
+
+		if (user.Avatar is null)
 		{
-			Response.Headers.CacheControl = "max-age=86400";
-			throw GracefulException.NotFound("File not found");
+			var stream = await IdenticonHelper.GetIdenticonAsync(user.Id);
+			Response.Headers.CacheControl = CacheControl;
+			return new InlineFileStreamResult(stream, "image/png", $"{user.Id}.png", false);
 		}
 
-		if (file.StoredInternal)
-		{
-			var pathBase = options.Value.Local?.Path;
-			if (string.IsNullOrWhiteSpace(pathBase))
-			{
-				logger.LogError("Failed to get file {accessKey} from local storage: path does not exist", accessKey);
-				throw GracefulException.NotFound("File not found");
-			}
+		if (!options.Value.ProxyRemoteMedia)
+			return Redirect(user.Avatar.RawThumbnailAccessUrl);
 
-			var path   = Path.Join(pathBase, accessKey);
-			var stream = System.IO.File.OpenRead(path);
+		return await GetFileByAccessKey(user.Avatar.AccessKey, "thumbnail", user.Avatar);
+	}
 
-			Response.Headers.CacheControl        = "max-age=31536000, immutable";
-			Response.Headers.XContentTypeOptions = "nosniff";
-			return Constants.BrowserSafeMimeTypes.Contains(file.Type)
-				? new InlineFileStreamResult(stream, file.Type, file.Name, true)
-				: File(stream, file.Type, file.Name, true);
-		}
-		else
-		{
-			if (file.IsLink)
-			{
-				//TODO: handle remove media proxying
-				return NoContent();
-			}
+	[EnableCors("drive")]
+	[EnableRateLimiting("proxy")]
+	[HttpGet("/banners/{userId}/{version}")]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.NoContent)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IActionResult> GetBannerByUserId(string userId, string? version)
+	{
+		var user = await db.Users.Include(p => p.Banner).FirstOrDefaultAsync(p => p.Id == userId)
+		           ?? throw GracefulException.NotFound("User not found");
 
-			var stream = await objectStorage.GetFileAsync(accessKey);
-			if (stream == null)
-			{
-				logger.LogError("Failed to get file {accessKey} from object storage", accessKey);
-				throw GracefulException.NotFound("File not found");
-			}
+		if (user.Banner is null)
+			return NoContent();
 
-			Response.Headers.CacheControl        = "max-age=31536000, immutable";
-			Response.Headers.XContentTypeOptions = "nosniff";
-			return Constants.BrowserSafeMimeTypes.Contains(file.Type)
-				? new InlineFileStreamResult(stream, file.Type, file.Name, true)
-				: File(stream, file.Type, file.Name, true);
-		}
+		if (!options.Value.ProxyRemoteMedia)
+			return Redirect(user.Banner.RawThumbnailAccessUrl);
+
+		return await GetFileByAccessKey(user.Banner.AccessKey, "thumbnail", user.Banner);
 	}
 
 	[HttpPost]
@@ -110,14 +127,14 @@ public class DriveController(
 	public async Task<DriveFileResponse> GetFileById(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Id == id) ??
-		           throw GracefulException.NotFound("File not found");
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Id == id)
+		           ?? throw GracefulException.NotFound("File not found");
 
 		return new DriveFileResponse
 		{
 			Id           = file.Id,
-			Url          = file.AccessUrl,
-			ThumbnailUrl = file.ThumbnailAccessUrl,
+			Url          = file.RawAccessUrl,
+			ThumbnailUrl = file.RawThumbnailAccessUrl,
 			Filename     = file.Name,
 			ContentType  = file.Type,
 			Description  = file.Comment,
@@ -134,14 +151,14 @@ public class DriveController(
 	public async Task<DriveFileResponse> GetFileByHash(string sha256)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Sha256 == sha256) ??
-		           throw GracefulException.NotFound("File not found");
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Sha256 == sha256)
+		           ?? throw GracefulException.NotFound("File not found");
 
 		return new DriveFileResponse
 		{
 			Id           = file.Id,
-			Url          = file.AccessUrl,
-			ThumbnailUrl = file.ThumbnailAccessUrl,
+			Url          = file.RawAccessUrl,
+			ThumbnailUrl = file.RawThumbnailAccessUrl,
 			Filename     = file.Name,
 			ContentType  = file.Type,
 			Description  = file.Comment,
@@ -159,8 +176,8 @@ public class DriveController(
 	public async Task<DriveFileResponse> UpdateFile(string id, UpdateDriveFileRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Id == id) ??
-		           throw GracefulException.NotFound("File not found");
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Id == id)
+		           ?? throw GracefulException.NotFound("File not found");
 
 		file.Name        = request.Filename ?? file.Name;
 		file.IsSensitive = request.Sensitive ?? file.IsSensitive;
@@ -178,8 +195,8 @@ public class DriveController(
 	public async Task<IActionResult> DeleteFile(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Id == id) ??
-		           throw GracefulException.NotFound("File not found");
+		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Id == id)
+		           ?? throw GracefulException.NotFound("File not found");
 
 		if (await db.Users.AnyAsync(p => p.Avatar == file || p.Banner == file))
 			throw GracefulException.UnprocessableEntity("Refusing to delete file: used in banner or avatar");
@@ -192,5 +209,105 @@ public class DriveController(
 		});
 
 		return StatusCode(StatusCodes.Status202Accepted);
+	}
+
+	private async Task<IActionResult> GetFileByAccessKey(string accessKey, string? version, DriveFile? file)
+	{
+		file ??= await db.DriveFiles.FirstOrDefaultAsync(p => p.AccessKey == accessKey
+		                                                      || p.PublicAccessKey == accessKey
+		                                                      || p.ThumbnailAccessKey == accessKey);
+		if (file == null)
+		{
+			Response.Headers.CacheControl = "max-age=86400";
+			throw GracefulException.NotFound("File not found");
+		}
+
+		if (file.IsLink)
+		{
+			if (!options.Value.ProxyRemoteMedia)
+				return NoContent();
+
+			try
+			{
+				var fetchUrl = version is "thumbnail"
+					? file.RawThumbnailAccessUrl
+					: file.RawAccessUrl;
+
+				var filename = file.AccessKey == accessKey || file.Name.EndsWith(".webp")
+					? file.Name
+					: $"{file.Name}.webp";
+
+				return await ProxyAsync(fetchUrl, file.Type, filename);
+			}
+			catch (Exception e) when (e is not GracefulException)
+			{
+				throw GracefulException.BadGateway($"Failed to proxy request: {e.Message}", suppressLog: true);
+			}
+		}
+
+		if (file.StoredInternal)
+		{
+			var pathBase = options.Value.Local?.Path;
+			if (string.IsNullOrWhiteSpace(pathBase))
+			{
+				logger.LogError("Failed to get file {accessKey} from local storage: path does not exist", accessKey);
+				throw GracefulException.NotFound("File not found");
+			}
+
+			var path   = Path.Join(pathBase, accessKey);
+			var stream = System.IO.File.OpenRead(path);
+
+			Response.Headers.CacheControl        = CacheControl;
+			Response.Headers.XContentTypeOptions = "nosniff";
+
+			return Constants.BrowserSafeMimeTypes.Contains(file.Type)
+				? new InlineFileStreamResult(stream, file.Type, file.Name, true)
+				: File(stream, file.Type, file.Name, true);
+		}
+		else
+		{
+			var stream = await objectStorage.GetFileAsync(accessKey);
+			if (stream == null)
+			{
+				logger.LogError("Failed to get file {accessKey} from object storage", accessKey);
+				throw GracefulException.NotFound("File not found");
+			}
+
+			Response.Headers.CacheControl        = CacheControl;
+			Response.Headers.XContentTypeOptions = "nosniff";
+
+			return Constants.BrowserSafeMimeTypes.Contains(file.Type)
+				? new InlineFileStreamResult(stream, file.Type, file.Name, true)
+				: File(stream, file.Type, file.Name, true);
+		}
+	}
+
+	private async Task<IActionResult> ProxyAsync(string url, string? expectedMediaType, string? filename)
+	{
+		try
+		{
+			// @formatter:off
+			var res = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+			if (!res.IsSuccessStatusCode)
+				throw GracefulException.BadGateway($"Failed to proxy request: response status was {res.StatusCode}", suppressLog: true);
+			if (res.Content.Headers.ContentType?.MediaType is not { } mediaType)
+				throw GracefulException.BadGateway("Failed to proxy request: remote didn't return Content-Type");
+			if (expectedMediaType != null && mediaType != expectedMediaType && !Constants.BrowserSafeMimeTypes.Contains(mediaType))
+				throw GracefulException.BadGateway("Failed to proxy request: content type mismatch", suppressLog: true);
+			// @formatter:on
+
+			Response.Headers.CacheControl        = CacheControl;
+			Response.Headers.XContentTypeOptions = "nosniff";
+
+			var stream = await res.Content.ReadAsStreamAsync();
+
+			return Constants.BrowserSafeMimeTypes.Contains(mediaType)
+				? new InlineFileStreamResult(stream, mediaType, filename, true)
+				: File(stream, mediaType, filename, true);
+		}
+		catch (Exception e) when (e is not GracefulException)
+		{
+			throw GracefulException.BadGateway($"Failed to proxy request: {e.Message}", suppressLog: true);
+		}
 	}
 }

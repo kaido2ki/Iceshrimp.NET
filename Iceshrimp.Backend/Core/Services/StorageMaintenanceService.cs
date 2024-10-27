@@ -92,7 +92,6 @@ public class StorageMaintenanceService(
 			// defer deletions in case an error occurs
 			List<string> deletionQueue = [];
 
-			if (file.AccessKey != null)
 			{
 				var path   = Path.Join(pathBase, file.AccessKey);
 				var stream = File.OpenRead(path);
@@ -179,10 +178,6 @@ public class StorageMaintenanceService(
 				}
 
 				await driveSvc.ExpireFileAsync(file);
-				await db.Users.Where(p => p.AvatarId == file.Id)
-				        .ExecuteUpdateAsync(p => p.SetProperty(u => u.AvatarUrl, file.Uri));
-				await db.Users.Where(p => p.BannerId == file.Id)
-				        .ExecuteUpdateAsync(p => p.SetProperty(u => u.BannerUrl, file.Uri));
 				continue;
 			}
 
@@ -218,10 +213,6 @@ public class StorageMaintenanceService(
 			if (dryRun) continue;
 
 			await db.SaveChangesAsync();
-			await db.Users.Where(p => p.AvatarId == file.Id)
-			        .ExecuteUpdateAsync(p => p.SetProperty(u => u.AvatarUrl, file.AccessUrl));
-			await db.Users.Where(p => p.BannerId == file.Id)
-			        .ExecuteUpdateAsync(p => p.SetProperty(u => u.BannerUrl, file.AccessUrl));
 		}
 
 		if (dryRun)

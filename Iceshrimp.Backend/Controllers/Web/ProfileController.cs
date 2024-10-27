@@ -1,12 +1,14 @@
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
@@ -16,7 +18,11 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/profile")]
 [Produces(MediaTypeNames.Application.Json)]
-public class ProfileController(UserService userSvc, DriveService driveSvc) : ControllerBase
+public class ProfileController(
+	IOptions<Config.InstanceSection> instance,
+	UserService userSvc,
+	DriveService driveSvc
+) : ControllerBase
 {
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -34,7 +40,7 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 			Birthday     = profile.Birthday,
 			FFVisibility = ffVisibility,
 			Fields       = fields.ToList(),
-			DisplayName  = user.DisplayName ?? "", 
+			DisplayName  = user.DisplayName ?? "",
 			IsBot        = user.IsBot,
 			IsCat        = user.IsCat,
 			SpeakAsCat   = user.SpeakAsCat
@@ -80,13 +86,13 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 		var prevBannerId = user.BannerId;
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
-	
+
 	[HttpGet("avatar")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public string GetAvatarUrl()
 	{
 		var user = HttpContext.GetUserOrFail();
-		return user.AvatarUrl ?? "";
+		return user.AvatarId != null ? user.GetAvatarUrl(instance.Value) : "";
 	}
 
 	[HttpPost("avatar")]
@@ -113,7 +119,6 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 
 		user.Avatar         = avatar;
 		user.AvatarBlurhash = avatar.Blurhash;
-		user.AvatarUrl      = avatar.AccessUrl;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
@@ -133,19 +138,18 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 
 		user.Avatar         = null;
 		user.AvatarBlurhash = null;
-		user.AvatarUrl      = null;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
-	
+
 	[HttpGet("banner")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public string GetBannerUrl()
 	{
 		var user = HttpContext.GetUserOrFail();
-		return user.BannerUrl ?? "";
+		return user.GetBannerUrl(instance.Value) ?? "";
 	}
-	
+
 	[HttpPost("banner")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -170,7 +174,6 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 
 		user.Banner         = banner;
 		user.BannerBlurhash = banner.Blurhash;
-		user.BannerUrl      = banner.AccessUrl;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
@@ -190,7 +193,6 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 
 		user.Banner         = null;
 		user.BannerBlurhash = null;
-		user.BannerUrl      = null;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}

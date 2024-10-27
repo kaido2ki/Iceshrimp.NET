@@ -85,9 +85,10 @@ public sealed class Config
 		public readonly long?     MaxUploadSizeBytes;
 		public readonly TimeSpan? MediaRetentionTimeSpan;
 
-		public bool              CleanAvatars = false;
-		public bool              CleanBanners = false;
-		public Enums.FileStorage Provider { get; init; } = Enums.FileStorage.Local;
+		public bool              CleanAvatars     { get; init; } = false;
+		public bool              CleanBanners     { get; init; } = false;
+		public bool              ProxyRemoteMedia { get; init; } = true;
+		public Enums.FileStorage Provider         { get; init; } = Enums.FileStorage.Local;
 
 		[Obsolete("This property is for backwards compatibility only, use StorageSection.Provider instead", true)]
 		[SuppressMessage("ReSharper", "UnusedMember.Global")]
