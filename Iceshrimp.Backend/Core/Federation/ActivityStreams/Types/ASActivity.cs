@@ -75,13 +75,15 @@ public class ASAnnounce : ASActivity
 	[J($"{Constants.ActivityStreamsNs}#cc")]
 	public List<ASObjectBase>? Cc { get; set; }
 
-	public Note.NoteVisibility GetVisibility(ASActor actor)
+	public Note.NoteVisibility GetVisibility(User actor)
 	{
+		if (actor.IsLocalUser) throw new Exception("Can't get recipients for local actor");
+
 		if (To?.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public") ?? false)
 			return Note.NoteVisibility.Public;
 		if (Cc?.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public") ?? false)
 			return Note.NoteVisibility.Home;
-		if (To?.Any(p => p.Id is not null && p.Id == (actor.Followers?.Id ?? actor.Id + "/followers")) ?? false)
+		if (To?.Any(p => p.Id is not null && p.Id == (actor.FollowersUri ?? actor.Uri + "/followers")) ?? false)
 			return Note.NoteVisibility.Followers;
 
 		return Note.NoteVisibility.Specified;
@@ -91,7 +93,7 @@ public class ASAnnounce : ASActivity
 public class ASDelete : ASActivity
 {
 	public ASDelete() => Type = Types.Delete;
-	
+
 	[J($"{Constants.ActivityStreamsNs}#to")]
 	public List<ASObjectBase>? To { get; set; }
 }

@@ -433,8 +433,6 @@ public class ActivityHandlerService(
 
 	private async Task HandleAnnounce(ASAnnounce activity, User resolvedActor)
 	{
-		if (activity.Actor == null)
-			throw GracefulException.UnprocessableEntity("Cannot process announce for null actor");
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Announce activity object was null");
 
@@ -464,7 +462,7 @@ public class ActivityHandlerService(
 		await noteSvc.CreateNoteAsync(new NoteService.NoteCreationData
 		{
 			User       = resolvedActor,
-			Visibility = activity.GetVisibility(activity.Actor),
+			Visibility = activity.GetVisibility(resolvedActor),
 			Renote     = dbNote,
 			Uri        = activity.Id
 		});
