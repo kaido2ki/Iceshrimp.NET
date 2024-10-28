@@ -312,6 +312,7 @@ public class UserResolver(
 		}
 	}
 
+	/// <inheritdoc cref="ResolveInternalAsync"/>
 	public async Task<User> ResolveAsync(string query, ResolveFlags flags)
 	{
 		return await ResolveInternalAsync(query, flags) switch
@@ -322,6 +323,7 @@ public class UserResolver(
 		};
 	}
 
+	/// <inheritdoc cref="ResolveInternalAsync"/>
 	public async Task<User?> ResolveOrNullAsync(string query, ResolveFlags flags)
 	{
 		string errorMessage;
