@@ -103,11 +103,6 @@
     padding: 0.5rem;
 }
 
-.positioned {
-    position: relative;
-    top: 0;
-}
-
 .backdrop {
     position: fixed;
     width: 100vw;
