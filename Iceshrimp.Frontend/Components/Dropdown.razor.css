@@ -1,6 +1,7 @@
 .dropdown-menu {
     position: absolute;
-    top: 5rem;
+    top: 3rem;
+    left: 1.75rem;
     background-color: var(--background-color);
     padding: 0.5rem;
     border-color: var(--highlight-color);
@@ -10,5 +11,14 @@
 }
 
 .dropdown-root {
-    display: inline-block
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    height: max-content;
+    line-height: 1;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.dropdown-root:hover {
+    background-color: var(--hover-color);
 }

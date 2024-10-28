@@ -86,6 +86,11 @@
     background-color: var(--hover-color);
 }
 
+::deep {
+    .dropdown-root, .dropdown-menu {
+        color: var(--notice-color);
+    }
+}
 
 .separator {
     color: var(--highlight-color);

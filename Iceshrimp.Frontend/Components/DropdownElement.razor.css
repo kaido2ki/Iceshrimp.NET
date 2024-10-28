@@ -1,4 +1,15 @@
 .dropdown-element {
-    margin: 0.25em;
+    display: flex;
+    align-items: center;
     cursor: pointer;
+    gap: 0.25rem;
+    margin: 0.3em 0.25em;
+    padding: 0.2rem 0;
+    line-height: 1;
+}
+
+@media (max-width: 1000px) {
+    .dropdown-element {
+        margin: 0.5em 0.25em;
+    }
 }
