@@ -86,6 +86,7 @@ public class SettingsController(DatabaseContext db, ImportExportService importEx
 	}
 
 	[HttpPost("import/following")]
+	[EnableRateLimiting("imports")]
 	[ProducesResults(HttpStatusCode.Accepted)]
 	public async Task<AcceptedResult> ImportFollowing(IFormFile file)
 	{
