@@ -1,3 +1,5 @@
+using EntityFrameworkCore.Projectables;
+
 namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class EnumerableExtensions
@@ -37,15 +39,11 @@ public static class EnumerableExtensions
 		foreach (var task in tasks) await task;
 	}
 
-	public static bool IsDisjoint<T>(this IEnumerable<T> x, IEnumerable<T> y)
-	{
-		return x.All(item => !y.Contains(item));
-	}
+	[Projectable]
+	public static bool IsDisjoint<T>(this IEnumerable<T> x, IEnumerable<T> y) => x.All(item => !y.Contains(item));
 
-	public static bool Intersects<T>(this IEnumerable<T> x, IEnumerable<T> y)
-	{
-		return x.Any(y.Contains);
-	}
+	[Projectable]
+	public static bool Intersects<T>(this IEnumerable<T> x, IEnumerable<T> y) => x.Any(y.Contains);
 
 	public static bool IsEquivalent<T>(this IEnumerable<T> x, IEnumerable<T> y)
 	{

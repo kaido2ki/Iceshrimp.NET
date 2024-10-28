@@ -427,6 +427,7 @@ public static class QueryableExtensions
 		                                                       p.IsRequested(user), p.IsRequestedBy(user)));
 	}
 
+	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall")]
 	public static IQueryable<Notification> FilterHiddenNotifications(
 		this IQueryable<Notification> query, User user, DatabaseContext db
 	)
@@ -435,7 +436,9 @@ public static class QueryableExtensions
 		var mutes  = db.Mutings.Where(i => i.Muter == user).Select(p => p.MuteeId);
 		var hidden = blocks.Concat(mutes);
 
-		return query.Where(p => !hidden.Contains(p.NotifierId) && (p.Note == null || !hidden.Contains(p.Note.Id)));
+		return query.Where(p => !hidden.Contains(p.NotifierId) &&
+		                        (p.Note == null ||
+		                         hidden.IsDisjoint(p.Note.Mentions.Concat(new[] { p.Note.User.Id }))));
 	}
 
 	public static IQueryable<Note> FilterHiddenConversations(this IQueryable<Note> query, User user, DatabaseContext db)
@@ -696,6 +699,16 @@ public static class QueryableExtensions
 		return query.FilterByPublicTimelineRequest(request);
 	}
 
+	public static bool IsDisjoint<T>(this IQueryable<T> x, IQueryable<T> y)
+	{
+		return x.All(item => !y.Contains(item));
+	}
+
+	public static bool Intersects<T>(this IQueryable<T> x, IQueryable<T> y)
+	{
+		return x.Any(y.Contains);
+	}
+
 	#pragma warning disable CS8602 // Dereference of a possibly null reference.
 // Justification: in the context of nullable EF navigation properties, null values are ignored and therefore irrelevant.
 // Source: https://learn.microsoft.com/en-us/ef/core/miscellaneous/nullable-reference-types#navigating-and-including-nullable-relationships
@@ -712,7 +725,7 @@ public static class QueryableExtensions
 	{
 		return query.Include(p => p.UserProfile);
 	}
-	
+
 	public static IQueryable<Bite> IncludeCommonProperties(this IQueryable<Bite> query)
 	{
 		return query.Include(p => p.TargetNote)
