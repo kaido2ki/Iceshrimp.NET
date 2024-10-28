@@ -50,7 +50,18 @@ public class PushService(
 			var skip = await db.Blockings.AnyAsync(p => p.Blocker == notification.Notifiee &&
 			                                            p.Blockee == notification.Notifier) ||
 			           await db.Mutings.AnyAsync(p => p.Muter == notification.Notifiee &&
-			                                          p.Mutee == notification.Notifier);
+			                                          p.Mutee == notification.Notifier) ||
+			           (notification.Note is { } note &&
+			            (await db.Mutings.AnyAsync(p => p.Muter == notification.Notifiee &&
+			                                            note.Mentions
+			                                                .Prepend(note.Reply != null ? note.Reply.UserId : null)
+			                                                .NotNull()
+			                                                .Contains(p.MuteeId)) ||
+			             await db.Blockings.AnyAsync(p => p.Blocker == notification.Notifiee &&
+			                                              note.Mentions
+			                                                  .Prepend(note.Reply != null ? note.Reply.UserId : null)
+			                                                  .NotNull()
+			                                                  .Contains(p.BlockeeId))));
 
 			if (skip)
 			{
