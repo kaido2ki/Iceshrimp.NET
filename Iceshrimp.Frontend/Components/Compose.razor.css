@@ -6,6 +6,7 @@
     padding: 1rem;
     position: relative;
     max-width: 45rem;
+    color: var(--font-color);
 }
 
 .dialog {
