@@ -5,7 +5,7 @@
     font-size: 15px;
 
     color-scheme: light dark;
-    color: rgba(255, 255, 255, 0.87);
+    color: var(--font-color);
     background-color: #3b364c;
 
     font-synthesis: none;
@@ -19,6 +19,7 @@
     --hover-color: #544f6f;
     --accent-color: linear-gradient(to right, #9A92FF, #8372F5);
     --notice-color: #ffc684;
+    --font-color: rgba(255, 255, 255, 0.87);
     --link: #9E9EFF
 
 }
