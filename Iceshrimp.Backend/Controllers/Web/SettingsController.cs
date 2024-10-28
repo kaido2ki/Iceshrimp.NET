@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Mime;
+using System.Text;
 using AngleSharp.Text;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
@@ -68,9 +69,9 @@ public class SettingsController(DatabaseContext db, ImportExportService importEx
 	}
 	
 	[HttpPost("export/following")]
-	[ProducesResults(HttpStatusCode.Accepted)]
+	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task<AcceptedResult> ExportFollowing()
+	public async Task<FileContentResult> ExportFollowing()
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -79,9 +80,9 @@ public class SettingsController(DatabaseContext db, ImportExportService importEx
 		if (followCount < 1)
 			throw GracefulException.BadRequest("You do not follow any users");
 
-		await importExportSvc.ExportFollowingAsync(user);
-		
-		return Accepted();
+		var following = await importExportSvc.ExportFollowingAsync(user);
+
+		return File(Encoding.UTF8.GetBytes(following), "text/csv", $"following-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.csv");
 	}
 
 	[HttpPost("import/following")]

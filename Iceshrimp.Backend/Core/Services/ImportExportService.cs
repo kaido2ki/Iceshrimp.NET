@@ -1,4 +1,3 @@
-using System.Text;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -14,12 +13,11 @@ public class ImportExportService(
     ILogger<UserService> logger,
     IOptions<Config.InstanceSection> instance,
     CacheService cacheSvc,
-    DriveService driveSvc,
     UserService userSvc,
     ActivityPub.UserResolver userResolver
 )
 {
-    public async Task ExportFollowingAsync(User user)
+    public async Task<string> ExportFollowingAsync(User user)
     {
         var followees = await db.Followings
                                 .Include(p => p.Followee)
@@ -31,15 +29,7 @@ public class ImportExportService(
                                 .Select(p => p.GetFqn(instance.Value.AccountDomain))
                                 .ToListAsync();
 
-        var stream = new MemoryStream(Encoding.UTF8.GetBytes(string.Join("\n", followees)));
-
-        await driveSvc.StoreFile(stream, user,
-                                 new DriveFileCreationRequest
-                                 {
-                                     Filename    = $"following-{DateTime.UtcNow:yyyy-MM-dd-HH-mm-ss}.csv",
-                                     IsSensitive = false,
-                                     MimeType    = "text/csv"
-                                 }, true);
+        return string.Join("\n", followees);
     }
 
     public async Task ImportFollowingAsync(User user, List<string> fqns)
