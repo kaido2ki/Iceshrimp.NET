@@ -241,14 +241,17 @@ public class UserResolver(
 	/// <returns>The user in question.</returns>
 	private async Task<Result<User>> ResolveInternalAsync(string query, ResolveFlags flags)
 	{
-		if (query.StartsWith('@'))
-			query = "acct:" + query[1..];
-
-		// Before we begin, validate method parameters
+		// Before we begin, validate method parameters & canonicalize query
 		if (flags == 0)
 			throw new Exception("ResolveFlags.None is not valid for this method");
-		if (query.Contains(' ') || !Uri.TryCreate(query, UriKind.Absolute, out var parsedQuery))
-			return GracefulException.BadRequest("Invalid query");
+		if (query.Contains(' '))
+			return GracefulException.BadRequest($"Invalid query: {query}");
+		if (query.StartsWith('@'))
+			query = $"acct:{query[1..]}";
+		if (!Uri.TryCreate(query, UriKind.Absolute, out var parsedQuery))
+			query = $"acct:{query}";
+		if (parsedQuery == null && !Uri.TryCreate(query, UriKind.Absolute, out parsedQuery))
+			return GracefulException.BadRequest($"Invalid query: {query}");
 		if (parsedQuery.Scheme is not "https" and not "acct")
 			return GracefulException.BadRequest("Invalid query scheme");
 		if (parsedQuery.AbsolutePath.StartsWith("/notes/"))
