@@ -1027,7 +1027,7 @@ public class NoteService(
 			                 .SelectMany(p => p.Children.Append(p))
 			                 .OfType<MfmMentionNode>()
 			                 .DistinctBy(p => p.Acct)
-			                 .Select(p => userResolver.ResolveOrNullAsync(p.Acct, ResolveFlags.Acct))
+			                 .Select(p => userResolver.ResolveOrNullAsync($"acct:{p.Acct}", ResolveFlags.Acct))
 			                 .AwaitAllNoConcurrencyAsync()
 			: [];
 
