@@ -57,7 +57,6 @@ public class NoteService(
 	private          int          _recursionLimit  = DefaultRecursionLimit;
 	internal         int          NotesFetched => DefaultRecursionLimit - _recursionLimit;
 
-
 	public class NoteCreationData
 	{
 		public required User                            User;
@@ -1146,13 +1145,15 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Refusing to resolve circular threads");
 		_resolverHistory.Add(uri);
 
-		if (uri.StartsWith($"https://{config.Value.WebDomain}/notes/"))
+		var parsedUri = new Uri(uri, UriKind.Absolute);
+
+		if (parsedUri.Host == config.Value.WebDomain && parsedUri.AbsolutePath.StartsWith("/notes/"))
 		{
-			var id = uri[$"https://{config.Value.WebDomain}/notes/".Length..];
+			var id = parsedUri.AbsolutePath["/notes/".Length..];
 			return await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
 		}
 
-		if (uri.StartsWith($"https://{config.Value.WebDomain}/"))
+		if (parsedUri.Host == config.Value.WebDomain)
 			return null;
 
 		var note = await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Uri == uri);
@@ -1167,9 +1168,13 @@ public class NoteService(
 			fetchedNote ??=
 				user != null ? await fetchSvc.FetchNoteAsync(uri, user) : await fetchSvc.FetchNoteAsync(uri);
 		}
-		catch (LocalFetchException e) when (e.Uri.StartsWith($"https://{config.Value.WebDomain}/notes/"))
+		catch (LocalFetchException e) when (
+			Uri.TryCreate(e.Uri, UriKind.Absolute, out var parsed) &&
+			parsed.Host == config.Value.WebDomain &&
+			parsed.AbsolutePath.StartsWith("/notes/")
+		)
 		{
-			var id = e.Uri[$"https://{config.Value.WebDomain}/notes/".Length..];
+			var id = parsed.AbsolutePath["/notes/".Length..];
 			return await db.Notes.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
 		}
 		catch (AuthFetchException e) when (e.StatusCode == HttpStatusCode.NotFound)

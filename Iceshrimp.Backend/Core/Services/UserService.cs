@@ -48,51 +48,59 @@ public class UserService(
 		o.PoolInitialFill = 5;
 	});
 
-	private static (string Username, string? Host) AcctToTuple(string acct)
+	private static (string Username, string? Host) AcctToTuple(Uri acct)
 	{
-		if (!acct.StartsWith("acct:")) throw GracefulException.BadRequest($"Invalid query: {acct}");
-		var split = acct[5..].Split('@');
+		if (acct.Scheme is not "acct") throw GracefulException.BadRequest($"Invalid query scheme: {acct}");
+		var split = acct.AbsolutePath.Split('@');
 		if (split.Length > 2) throw GracefulException.BadRequest($"Invalid query: {acct}");
 		return split.Length != 2
 			? (split[0], null)
 			: (split[0], split[1].ToPunycodeLower());
 	}
 
-	public async Task<User?> GetUserFromQueryAsync(string query, bool allowUrl)
+	private static (string Username, string? Host) AcctToTuple(string acct) => AcctToTuple(new Uri(acct));
+
+	public async Task<User?> GetUserFromQueryAsync(Uri query, bool allowUrl)
 	{
-		if (query.StartsWith("http://") || query.StartsWith("https://"))
+		if (query.Scheme is "https")
 		{
-			if (query.StartsWith($"https://{instance.Value.WebDomain}/users/"))
+			if (query.Host == instance.Value.WebDomain)
 			{
-				query = query[$"https://{instance.Value.WebDomain}/users/".Length..];
-				return await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == query) ??
-				       throw GracefulException.NotFound("User not found");
-			}
+				if (query.AbsolutePath.StartsWith("/users/"))
+				{
+					var userId = query.AbsolutePath["/users/".Length..];
+					return await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == userId);
+				}
 
-			if (query.StartsWith($"https://{instance.Value.WebDomain}/@"))
-			{
-				query = query[$"https://{instance.Value.WebDomain}/@".Length..];
-				if (query.Split('@').Length != 1)
-					return await GetUserFromQueryAsync($"acct:{query}", allowUrl);
+				if (query.AbsolutePath.StartsWith("/@"))
+				{
+					var acct  = query.AbsolutePath[2..];
+					var split = acct.Split('@');
+					if (split.Length != 1)
+						return await GetUserFromQueryAsync(new Uri($"acct:{acct}"), allowUrl);
 
-				return await db.Users.IncludeCommonProperties()
-				               .FirstOrDefaultAsync(p => p.Username == query.ToLower() && p.IsLocalUser) ??
-				       throw GracefulException.NotFound("User not found");
+					return await db.Users.IncludeCommonProperties()
+					               .FirstOrDefaultAsync(p => p.Username == split[0].ToLower() && p.IsLocalUser);
+				}
+
+				return null;
 			}
 
 			var res = await db.Users.IncludeCommonProperties()
-			                  .FirstOrDefaultAsync(p => p.Uri != null && p.Uri == query);
+			                  .FirstOrDefaultAsync(p => p.Uri != null && p.Uri == query.AbsoluteUri);
 
 			if (res != null || !allowUrl)
 				return res;
 
 			return await db.Users.IncludeCommonProperties()
-			               .FirstOrDefaultAsync(p => p.UserProfile != null && p.UserProfile.Url == query);
+			               .FirstOrDefaultAsync(p => p.UserProfile != null && p.UserProfile.Url == query.AbsoluteUri);
 		}
 
 		var tuple = AcctToTuple(query);
+
 		if (tuple.Host == instance.Value.WebDomain || tuple.Host == instance.Value.AccountDomain)
 			tuple.Host = null;
+
 		return await db.Users
 		               .IncludeCommonProperties()
 		               .FirstOrDefaultAsync(p => p.UsernameLower == tuple.Username.ToLowerInvariant() &&
@@ -523,7 +531,7 @@ public class UserService(
 	{
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(new UserDeleteJobData { UserId = user.Id });
 	}
-	
+
 	public async Task PurgeUserAsync(User user)
 	{
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(new UserPurgeJobData { UserId = user.Id });
@@ -1271,7 +1279,13 @@ public class UserService(
 			return user.Host;
 		}
 
-		var acct  = ActivityPub.UserResolver.NormalizeQuery(res.Subject);
+		var acct = ActivityPub.UserResolver.GetAcctUri(res);
+		if (acct == null)
+		{
+			logger.LogWarning("Updating split domain host failed for user {id}: acct was null", user.Id);
+			return user.Host;
+		}
+
 		var split = acct.Split('@');
 		if (split.Length != 2)
 		{
@@ -1297,7 +1311,7 @@ public class UserService(
 			return user.Host;
 		}
 
-		if (acct != ActivityPub.UserResolver.NormalizeQuery(res.Subject))
+		if (acct != ActivityPub.UserResolver.GetAcctUri(res))
 		{
 			logger.LogWarning("Updating split domain host failed for user {id}: subject mismatch - '{acct}' <> '{subject}'",
 			                  user.Id, acct, res.Subject.TrimStart('@'));

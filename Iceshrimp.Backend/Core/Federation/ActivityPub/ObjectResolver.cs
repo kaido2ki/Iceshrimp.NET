@@ -2,6 +2,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
+using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -45,13 +46,22 @@ public class ObjectResolver(
 			logger.LogDebug("Refusing to resolve object with null id property");
 			return null;
 		}
+		
+		if (!Uri.TryCreate(baseObj.Id, UriKind.Absolute, out var uri) || uri.Scheme != "https"){
+			logger.LogDebug("Refusing to resolve object with invalid id property");
+			return null;
+		}
 
-		if (baseObj.Id.StartsWith($"https://{config.Value.WebDomain}/notes/"))
-			return new ASNote { Id = baseObj.Id, VerifiedFetch = true };
-		if (baseObj.Id.StartsWith($"https://{config.Value.WebDomain}/users/"))
-			return new ASActor { Id = baseObj.Id };
-		if (baseObj.Id.StartsWith($"https://{config.Value.WebDomain}/follows/"))
-			return new ASFollow { Id = baseObj.Id };
+		if (uri.Host == config.Value.WebDomain)
+		{
+			if (uri.AbsolutePath.StartsWith("/notes/"))
+				return new ASNote { Id = baseObj.Id, VerifiedFetch = true };
+			if (uri.AbsolutePath.StartsWith("/users/"))
+				return new ASActor { Id = baseObj.Id };
+			if (uri.AbsolutePath.StartsWith("/follows/"))
+				return new ASFollow { Id = baseObj.Id };
+			throw GracefulException.UnprocessableEntity($"Unable to resolve local object of unknown type: {baseObj.Id}");
+		}
 
 		if (await federationCtrl.ShouldBlockAsync(baseObj.Id))
 		{

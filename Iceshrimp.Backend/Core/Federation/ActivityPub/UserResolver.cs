@@ -176,7 +176,7 @@ public class UserResolver(
 		return (finalAcct, finalUri);
 	}
 
-	private static string? GetAcctUri(WebFingerResponse fingerRes)
+	public static string? GetAcctUri(WebFingerResponse fingerRes)
 	{
 		var acct = (fingerRes.Aliases ?? [])
 		           .Prepend(fingerRes.Subject)
@@ -190,21 +190,6 @@ public class UserResolver(
 		                            !p.Contains(' ') &&
 		                            p.Split("@").Length == 2);
 		return acct is not null ? $"acct:{acct}" : acct;
-	}
-
-	public static string NormalizeQuery(string query)
-	{
-		if (query.StartsWith("https://") || query.StartsWith("http://"))
-			if (query.Contains('#'))
-				query = query.Split("#")[0];
-			else
-				return query;
-		else if (query.StartsWith('@'))
-			query = $"acct:{query[1..]}";
-		else if (!query.StartsWith("acct:"))
-			query = $"acct:{query}";
-
-		return query;
 	}
 
 	public static string GetQuery(string username, string? host) => host != null
@@ -256,26 +241,34 @@ public class UserResolver(
 	/// <returns>The user in question.</returns>
 	private async Task<Result<User>> ResolveInternalAsync(string query, ResolveFlags flags)
 	{
-		query = NormalizeQuery(query);
+		if (query.StartsWith('@'))
+			query = "acct:" + query[1..];
 
 		// Before we begin, validate method parameters
 		if (flags == 0)
 			throw new Exception("ResolveFlags.None is not valid for this method");
-		if (query.Contains(' '))
+		if (query.Contains(' ') || !Uri.TryCreate(query, UriKind.Absolute, out var parsedQuery))
 			return GracefulException.BadRequest("Invalid query");
-		if (query.StartsWith($"https://{config.Value.WebDomain}/notes/"))
+		if (parsedQuery.Scheme is not "https" and not "acct")
+			return GracefulException.BadRequest("Invalid query scheme");
+		if (parsedQuery.AbsolutePath.StartsWith("/notes/"))
 			return GracefulException.BadRequest("Refusing to resolve local note URL as user");
-		if (query.StartsWith("acct:") && !flags.HasFlag(ResolveFlags.Acct))
-			return GracefulException.BadRequest("Refusing to resolve acct: uri without ResolveFlags.Acct");
-		if ((query.StartsWith("https://") || query.StartsWith("http://")) && !flags.HasFlag(ResolveFlags.Uri))
+		if (parsedQuery.Scheme is "acct" && !flags.HasFlag(ResolveFlags.Acct))
+			return GracefulException.BadRequest("Refusing to resolve acct: resource without ResolveFlags.Acct");
+		if (parsedQuery.Scheme is "https" && !flags.HasFlag(ResolveFlags.Uri))
 			return GracefulException.BadRequest("Refusing to resolve http(s): uri without !allowUri");
+		if (parsedQuery.Fragment is { Length: > 0 })
+			parsedQuery = new Uri(parsedQuery.GetLeftPart(UriPartial.Query));
+
+		// Update query after canonicalization for use below
+		query = parsedQuery.AbsoluteUri;
 
 		// First, let's see if we already know the user
-		var user = await userSvc.GetUserFromQueryAsync(query, flags.HasFlag(ResolveFlags.MatchUrl));
+		var user = await userSvc.GetUserFromQueryAsync(parsedQuery, flags.HasFlag(ResolveFlags.MatchUrl));
 		if (user != null) return user;
 
-		// If query still starts with web domain, we can return early
-		if (query.StartsWith($"https://{config.Value.WebDomain}/"))
+		// If query still matches the web domain, we can return early
+		if (parsedQuery.Host == config.Value.WebDomain)
 			throw GracefulException.NotFound("No match found");
 
 		if (flags.HasFlag(ResolveFlags.OnlyExisting))
@@ -286,12 +279,12 @@ public class UserResolver(
 
 		// Check the database again with the new data
 		if (uri != query)
-			user = await userSvc.GetUserFromQueryAsync(uri, allowUrl: false);
+			user = await userSvc.GetUserFromQueryAsync(new Uri(uri), allowUrl: false);
 
 		// If there's still no match, try looking it up by acct returned by WebFinger
 		if (user == null && acct != query)
 		{
-			user = await userSvc.GetUserFromQueryAsync(acct, allowUrl: false);
+			user = await userSvc.GetUserFromQueryAsync(new Uri(acct), allowUrl: false);
 			if (user != null && user.Uri != uri && !flags.HasFlag(ResolveFlags.Acct))
 				return GracefulException.BadRequest($"User with acct {acct} is known, but Acct flag is not set");
 		}

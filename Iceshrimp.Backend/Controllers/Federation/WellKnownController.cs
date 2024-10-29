@@ -26,9 +26,14 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 	public async Task<WebFingerResponse> WebFinger([FromQuery] string resource)
 	{
 		User? user;
-		if (resource.StartsWith($"https://{config.Value.WebDomain}/users/"))
+		if (Uri.TryCreate(resource, UriKind.Absolute, out var uri) && uri.Scheme is "https")
 		{
-			var id = resource[$"https://{config.Value.WebDomain}/users/".Length..];
+			if (uri.Host != config.Value.WebDomain)
+				throw GracefulException.NotFound("User not found");
+			if (!uri.AbsolutePath.StartsWith("/users/"))
+				throw GracefulException.NotFound("User not found");
+
+			var id = uri.AbsolutePath["/users/".Length..];
 			user = await db.Users.FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser);
 		}
 		else
