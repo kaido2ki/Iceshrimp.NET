@@ -104,6 +104,8 @@ public class UserService(
 		logger.LogDebug("Creating user {acct} with uri {uri}", acct, uri);
 
 		var host = AcctToTuple(acct).Host ?? throw new Exception("Host must not be null at this stage");
+		if (host == instance.Value.WebDomain || host == instance.Value.AccountDomain)
+			throw GracefulException.UnprocessableEntity("Refusing to create remote user on local instance domain");
 		if (await fedCtrlSvc.ShouldBlockAsync(uri, host))
 			throw GracefulException.UnprocessableEntity("Refusing to create user on blocked instance");
 
