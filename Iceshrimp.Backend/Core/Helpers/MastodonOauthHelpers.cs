@@ -71,14 +71,6 @@ public static class MastodonOauthHelpers
 	public static bool ValidateRedirectUri(string uri)
 	{
 		if (uri == "urn:ietf:wg:oauth:2.0:oob") return true;
-		try
-		{
-			var proto = new Uri(uri).Scheme;
-			return !ForbiddenSchemes.Contains(proto);
-		}
-		catch
-		{
-			return false;
-		}
+		return Uri.TryCreate(uri, UriKind.Absolute, out var parsed) && !ForbiddenSchemes.Contains(parsed.Scheme);
 	}
 }
