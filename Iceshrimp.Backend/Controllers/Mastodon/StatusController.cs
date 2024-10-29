@@ -442,7 +442,13 @@ public class StatusController(
 				          .FirstOrDefaultAsync()
 				: await db.Notes
 				          .IncludeCommonProperties()
-				          .Where(p => p.Uri == quoteUri || p.Url == quoteUri)
+				          .Where(p => p.Uri == quoteUri)
+				          .EnsureVisibleFor(user)
+				          .FilterHidden(user, db, filterMutes: false)
+				          .FirstOrDefaultAsync() ??
+				  await db.Notes
+				          .IncludeCommonProperties()
+				          .Where(p => p.Url == quoteUri)
 				          .EnsureVisibleFor(user)
 				          .FilterHidden(user, db, filterMutes: false)
 				          .FirstOrDefaultAsync()
