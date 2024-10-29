@@ -52,6 +52,9 @@ public class ActivityHandlerService(
 			return;
 		}
 
+		if (resolvedActor.IsLocalUser)
+			throw GracefulException.UnprocessableEntity("Refusing to process activity for local user");
+
 		if (new Uri(activity.Actor.Id).Host != new Uri(activity.Id).Host)
 			throw GracefulException
 				.UnprocessableEntity($"Activity identifier ({activity.Id}) host doesn't match actor identifier ({activity.Actor.Id}) host");
