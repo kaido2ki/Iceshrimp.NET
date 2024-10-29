@@ -93,7 +93,7 @@ public class SearchController(
 			throw GracefulException.NotFound("No result found");
 		}
 
-		if (target.StartsWith("http://") || target.StartsWith("https://"))
+		if (target.StartsWith("https://"))
 		{
 			Note? noteHit = null;
 			User? userHit = null;

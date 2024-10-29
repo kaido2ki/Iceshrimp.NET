@@ -82,7 +82,7 @@ public class SearchController(
 
 		if (search.Resolve)
 		{
-			if (search.Query!.StartsWith("https://") || search.Query.StartsWith("http://"))
+			if (search.Query!.StartsWith("https://"))
 			{
 				if (pagination.Offset is not null and not 0) return [];
 
@@ -146,7 +146,7 @@ public class SearchController(
 	{
 		var user = HttpContext.GetUserOrFail();
 
-		if (search.Resolve && (search.Query!.StartsWith("https://") || search.Query.StartsWith("http://")))
+		if (search.Resolve && search.Query!.StartsWith("https://"))
 		{
 			if (pagination.Offset is not null and not 0) return [];
 

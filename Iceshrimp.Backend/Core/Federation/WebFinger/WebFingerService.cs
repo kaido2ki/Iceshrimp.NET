@@ -42,11 +42,11 @@ public class WebFingerService(
 
 	public async Task<WebFingerResponse?> ResolveAsync(string query)
 	{
-		(query, var proto, var domain) = ParseQuery(query);
+		(query, var domain) = ParseQuery(query);
 		if (domain == config.Value.WebDomain || domain == config.Value.AccountDomain)
 			throw new GracefulException(HttpStatusCode.BadRequest, "Can't run WebFinger for local user");
 
-		var webFingerUrl = await GetWebFingerUrlAsync(query, proto, domain);
+		var webFingerUrl = await GetWebFingerUrlAsync(query, domain);
 
 		using var cts = CancellationTokenSource.CreateLinkedTokenSource(appLifetime.ApplicationStopping);
 		cts.CancelAfter(TimeSpan.FromSeconds(10));
@@ -73,20 +73,20 @@ public class WebFingerService(
 		       throw new Exception("Failed to deserialize xml payload");
 	}
 
-	public static (string query, string proto, string domain) ParseQuery(string query)
+	public static (string query, string domain) ParseQuery(string query)
 	{
 		string domain;
-		string proto;
 		query = query.StartsWith("acct:") ? $"@{query[5..]}" : query;
-		if (query.StartsWith("http://") || query.StartsWith("https://"))
+		if (query.StartsWith("http://"))
+			throw GracefulException.BadRequest($"Invalid query scheme: {query}");
+
+		if (query.StartsWith("https://"))
 		{
 			var uri = new Uri(query);
 			domain = uri.Host;
-			proto  = query.StartsWith("http://") ? "http" : "https";
 		}
 		else if (query.StartsWith('@'))
 		{
-			proto = "https";
 			var split = query.Split('@');
 
 			// @formatter:off
@@ -103,14 +103,14 @@ public class WebFingerService(
 			throw new GracefulException(HttpStatusCode.BadRequest, $"Invalid query: {query}");
 		}
 
-		return (query, proto, domain);
+		return (query, domain);
 	}
 
-	private async Task<string> GetWebFingerUrlAsync(string query, string proto, string domain)
+	private async Task<string> GetWebFingerUrlAsync(string query, string domain)
 	{
-		var template = await GetWebFingerTemplateFromHostMetaXmlAsync(proto, domain) ??
-		               await GetWebFingerTemplateFromHostMetaJsonAsync(proto, domain) ??
-		               $"{proto}://{domain}/.well-known/webfinger?resource={{uri}}";
+		var template = await GetWebFingerTemplateFromHostMetaXmlAsync(domain) ??
+		               await GetWebFingerTemplateFromHostMetaJsonAsync(domain) ??
+		               $"https://{domain}/.well-known/webfinger?resource={{uri}}";
 
 		var finalQuery = query.StartsWith('@') ? $"acct:{query[1..]}" : query;
 		var encoded    = UrlEncoder.Default.Encode(finalQuery);
@@ -118,11 +118,11 @@ public class WebFingerService(
 	}
 
 	// Technically, we should be checking for rel=lrdd *and* type=application/jrd+json, but nearly all implementations break this, so we can't.
-	private async Task<string?> GetWebFingerTemplateFromHostMetaXmlAsync(string proto, string domain)
+	private async Task<string?> GetWebFingerTemplateFromHostMetaXmlAsync(string domain)
 	{
 		try
 		{
-			var hostMetaUrl = $"{proto}://{domain}/.well-known/host-meta";
+			var hostMetaUrl = $"https://{domain}/.well-known/host-meta";
 			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/xrd+xml"]),
 			                                       HttpCompletionOption.ResponseHeadersRead);
 			await using var stream       = await res.Content.ReadAsStreamAsync();
@@ -145,11 +145,11 @@ public class WebFingerService(
 	}
 
 	// See above comment as for why jrd+json is commented out.
-	private async Task<string?> GetWebFingerTemplateFromHostMetaJsonAsync(string proto, string domain)
+	private async Task<string?> GetWebFingerTemplateFromHostMetaJsonAsync(string domain)
 	{
 		try
 		{
-			var hostMetaUrl = $"{proto}://{domain}/.well-known/host-meta.json";
+			var hostMetaUrl = $"https://{domain}/.well-known/host-meta.json";
 			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/jrd+json"]),
 			                                       HttpCompletionOption.ResponseHeadersRead);
 			var deserialized = await res.Content.ReadFromJsonAsync<HostMetaResponse>();
@@ -171,7 +171,7 @@ public class WebFingerService(
 
 		try
 		{
-			var hostMetaUrl = $"{proto}://{domain}/.well-known/host-meta";
+			var hostMetaUrl = $"https://{domain}/.well-known/host-meta";
 			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/jrd+json"]),
 			                                       HttpCompletionOption.ResponseHeadersRead);
 			var deserialized = await res.Content.ReadFromJsonAsync<HostMetaResponse>();
