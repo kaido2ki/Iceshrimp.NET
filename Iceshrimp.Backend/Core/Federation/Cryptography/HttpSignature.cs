@@ -10,6 +10,8 @@ namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
 public static class HttpSignature
 {
+	public static readonly TimeSpan MaxClockSkew = TimeSpan.FromMinutes(5);
+
 	public static async Task<bool> VerifyAsync(
 		HttpRequest request, HttpSignatureHeader signature,
 		IEnumerable<string> requiredHeaders, string key
@@ -53,10 +55,10 @@ public static class HttpSignature
 		if (created == null && !datePresent)
 			throw new GracefulException(HttpStatusCode.Forbidden, "Neither date nor (created) are present, refusing");
 
-		var dateCheck = datePresent && DateTime.Now - DateTime.Parse(date!) > TimeSpan.FromHours(12);
+		var dateCheck = datePresent && DateTime.Now - DateTime.Parse(date!) > MaxClockSkew;
 		var createdCheck = created != null &&
 		                   DateTime.UtcNow - (DateTime.UnixEpoch + TimeSpan.FromSeconds(long.Parse(created))) >
-		                   TimeSpan.FromHours(12);
+		                   MaxClockSkew;
 
 		if (dateCheck || createdCheck)
 			throw new GracefulException(HttpStatusCode.Forbidden, "Request signature is too old");
