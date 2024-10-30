@@ -57,7 +57,7 @@ public static class LdSignature
 	{
 		var options = new SignatureOptions
 		{
-			Created = DateTime.Now,
+			Created = DateTime.UtcNow,
 			Creator = new ASObjectBase(creator),
 			Nonce   = CryptographyHelpers.GenerateRandomHexString(16),
 			Type    = ["_:RsaSignature2017"],

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Iceshrimp.Backend.Core.Helpers;
 
 namespace Iceshrimp.Tests.Concurrency;
@@ -9,7 +10,7 @@ public class EventTests
 	public async Task TestAsyncAutoResetEvent()
 	{
 		var autoResetEvent = new AsyncAutoResetEvent();
-		var pre            = DateTime.Now;
+		var pre            = Stopwatch.GetTimestamp();
 		var task           = autoResetEvent.WaitAsync();
 		_ = Task.Run(async () =>
 		{
@@ -17,7 +18,7 @@ public class EventTests
 			autoResetEvent.Set();
 		});
 		await task;
-		(DateTime.Now - pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(45));
+		Stopwatch.GetElapsedTime(pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(45));
 		autoResetEvent.Signaled.Should().BeFalse();
 	}
 
@@ -25,7 +26,7 @@ public class EventTests
 	public async Task TestAsyncAutoResetEventWithoutReset()
 	{
 		var autoResetEvent = new AsyncAutoResetEvent();
-		var pre            = DateTime.Now;
+		var pre            = Stopwatch.GetTimestamp();
 		var task           = autoResetEvent.WaitWithoutResetAsync();
 		_ = Task.Run(async () =>
 		{
@@ -33,7 +34,7 @@ public class EventTests
 			autoResetEvent.Set();
 		});
 		await task;
-		(DateTime.Now - pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(45));
+		Stopwatch.GetElapsedTime(pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(45));
 		autoResetEvent.Signaled.Should().BeTrue();
 	}
 
@@ -41,7 +42,7 @@ public class EventTests
 	public async Task TestAsyncAutoResetEventMulti()
 	{
 		var    autoResetEvent = new AsyncAutoResetEvent();
-		var    pre            = DateTime.Now;
+		var    pre            = Stopwatch.GetTimestamp();
 		Task[] tasks          = [autoResetEvent.WaitAsync(), autoResetEvent.WaitAsync()];
 		_ = Task.Run(async () =>
 		{
@@ -49,7 +50,7 @@ public class EventTests
 			autoResetEvent.Set();
 		});
 		await Task.WhenAll(tasks);
-		(DateTime.Now - pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(45));
+		Stopwatch.GetElapsedTime(pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(45));
 		autoResetEvent.Signaled.Should().BeFalse();
 	}
 
@@ -57,7 +58,7 @@ public class EventTests
 	public async Task TestAsyncAutoResetEventWithoutResetMulti()
 	{
 		var    autoResetEvent = new AsyncAutoResetEvent();
-		var    pre            = DateTime.Now;
+		var    pre            = Stopwatch.GetTimestamp();
 		Task[] tasks          = [autoResetEvent.WaitWithoutResetAsync(), autoResetEvent.WaitWithoutResetAsync()];
 		_ = Task.Run(async () =>
 		{
@@ -65,7 +66,7 @@ public class EventTests
 			autoResetEvent.Set();
 		});
 		await Task.WhenAll(tasks);
-		(DateTime.Now - pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(45));
+		Stopwatch.GetElapsedTime(pre).Should().BeGreaterThan(TimeSpan.FromMilliseconds(45));
 		autoResetEvent.Signaled.Should().BeTrue();
 	}
 

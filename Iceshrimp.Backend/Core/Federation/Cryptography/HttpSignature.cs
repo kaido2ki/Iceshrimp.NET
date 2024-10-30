@@ -93,7 +93,7 @@ public static class HttpSignature
 	{
 		ArgumentNullException.ThrowIfNull(request.RequestUri);
 
-		request.Headers.Date = DateTime.Now;
+		request.Headers.Date = DateTimeOffset.UtcNow;
 		request.Headers.Host = request.RequestUri.Host;
 
 		var requiredHeadersEnum = requiredHeaders.ToList();

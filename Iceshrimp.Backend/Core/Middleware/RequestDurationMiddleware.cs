@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 
 namespace Iceshrimp.Backend.Core.Middleware;
@@ -8,10 +9,10 @@ public class RequestDurationMiddleware : IMiddleware
 	{
 		if (ctx.GetEndpoint()?.Metadata.GetMetadata<HideRequestDuration>() == null)
 		{
-			var pre = DateTime.Now;
+			var pre = Stopwatch.GetTimestamp();
 			ctx.Response.OnStarting(() =>
 			{
-				var duration = (int)(DateTime.Now - pre).TotalMilliseconds;
+				var duration = Math.Truncate(Stopwatch.GetElapsedTime(pre).TotalMilliseconds);
 				ctx.Response.Headers.Append("X-Request-Duration",
 				                            duration.ToString(CultureInfo.InvariantCulture) + " ms");
 				return Task.CompletedTask;

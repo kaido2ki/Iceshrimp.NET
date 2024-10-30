@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 using Iceshrimp.Parsing;
 using Microsoft.FSharp.Collections;
@@ -376,10 +377,9 @@ public class MfmTests
 
 		double RunBenchmark()
 		{
-			var pre = DateTime.Now;
+			var pre = Stopwatch.GetTimestamp();
 			Mfm.parse(mfm);
-			var post = DateTime.Now;
-			var ms   = (post - pre).TotalMilliseconds;
+			var ms   = Stopwatch.GetElapsedTime(pre).TotalMilliseconds;
 			Console.WriteLine($@"Took {ms} ms");
 			return ms;
 		}
