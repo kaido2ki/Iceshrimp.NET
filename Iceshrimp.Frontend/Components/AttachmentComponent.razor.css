@@ -1,8 +1,8 @@
 .attachment {
     max-width: 100%;
     object-fit: contain;
-    max-height: 25rem;
-    border-radius: 0.5rem;
+    max-height: 30rem;
+    aspect-ratio: 3/2;
 }
 
 audio.attachment {
@@ -27,10 +27,11 @@ audio.attachment {
 }
 
 .wrapper {
-    flex: 1 1 48%;
-    margin-right: 0.2em;
-    margin-left: 0.2em;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    overflow: clip;
+    background: var(--background-color);
+    border-radius: 0.5rem;
 }
 
 .blur-image {

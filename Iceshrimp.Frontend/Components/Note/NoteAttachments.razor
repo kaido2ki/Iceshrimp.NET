@@ -1,5 +1,5 @@
 @using Iceshrimp.Shared.Schemas.Web
-<div class="attachment-container">
+<div class="attachment-container" data-count="@Attachments.Count">
     @foreach (var element in Attachments)
     {
         <AttachmentComponent Attachment="element" OnOpen="Open"/>

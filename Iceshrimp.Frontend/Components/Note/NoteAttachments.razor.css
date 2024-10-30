@@ -1,4 +1,43 @@
 .attachment-container {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    width: 100%;
+    gap: 0.5em;
+}
+
+.attachment-container:not(:is([data-count="1"])) {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+}
+
+.attachment-container:not(:is([data-count="3"])) {
+    > .wrapper:last-of-type:is(:nth-child(odd)) {
+        grid-column: 1 / -1;
+    }
+}
+
+.attachment-container[data-count="1"] {
+    grid-template-columns: 1fr;
+    gap: 0;
+    
+    .wrapper > .attachment {
+        aspect-ratio: unset;
+    }
+}
+
+.attachment-container[data-count="2"] {
+    > .wrapper:nth-of-type(1) {
+        grid-area: 1 / 1 / 3 / 2;
+    }
+}
+
+.attachment-container[data-count="2"] {
+    > .wrapper:nth-of-type(2) {
+        grid-area: 1 / 2 / 3 / 3;
+    }
+}
+
+.attachment-container[data-count="3"] {
+    > .wrapper:nth-of-type(1) { 
+        grid-area: 1 / 1 / 3 / 2; 
+    }
 }
