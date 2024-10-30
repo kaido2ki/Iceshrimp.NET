@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EntityFrameworkCore.Projectables;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
@@ -39,9 +40,9 @@ public class Job
 	[Column("mutex")]             public string?   Mutex            { get; set; }
 
 	[NotMapped]
-	public long Duration => (long)((FinishedAt ?? DateTime.UtcNow) - (StartedAt ?? QueuedAt)).TotalMilliseconds;
+	public long Duration => ((FinishedAt ?? DateTime.UtcNow) - (StartedAt ?? QueuedAt)).GetTotalMilliseconds();
 
-	[NotMapped] public long QueueDuration => (long)((StartedAt ?? DateTime.UtcNow) - QueuedAt).TotalMilliseconds;
+	[NotMapped] public long QueueDuration => ((StartedAt ?? DateTime.UtcNow) - QueuedAt).GetTotalMilliseconds();
 
 	[NotMapped] [Projectable] public DateTime LastUpdatedAt => FinishedAt ?? StartedAt ?? QueuedAt;
 }

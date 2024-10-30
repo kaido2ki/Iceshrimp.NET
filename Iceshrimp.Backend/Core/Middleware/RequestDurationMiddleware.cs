@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using System.Globalization;
+using Iceshrimp.Backend.Core.Extensions;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
@@ -12,9 +12,8 @@ public class RequestDurationMiddleware : IMiddleware
 			var pre = Stopwatch.GetTimestamp();
 			ctx.Response.OnStarting(() =>
 			{
-				var duration = Math.Truncate(Stopwatch.GetElapsedTime(pre).TotalMilliseconds);
-				ctx.Response.Headers.Append("X-Request-Duration",
-				                            duration.ToString(CultureInfo.InvariantCulture) + " ms");
+				var duration = Stopwatch.GetElapsedTime(pre).GetTotalMilliseconds();
+				ctx.Response.Headers.Append("X-Request-Duration", $"{duration} ms");
 				return Task.CompletedTask;
 			});
 		}

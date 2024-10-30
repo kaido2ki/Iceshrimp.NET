@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 using Iceshrimp.Parsing;
 using Microsoft.FSharp.Collections;
@@ -379,7 +380,7 @@ public class MfmTests
 		{
 			var pre = Stopwatch.GetTimestamp();
 			Mfm.parse(mfm);
-			var ms   = Stopwatch.GetElapsedTime(pre).TotalMilliseconds;
+			var ms   = Stopwatch.GetElapsedTime(pre).GetTotalMilliseconds();
 			Console.WriteLine($@"Took {ms} ms");
 			return ms;
 		}
