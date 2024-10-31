@@ -127,7 +127,7 @@ public class HttpSignatureTests
 		const string headers = "(request-target) host (created) (expires) (opaque)";
 		const string opaque  = "stub";
 
-		var created = (int)(DateTime.UtcNow - TimeSpan.FromHours(6) - DateTime.UnixEpoch).TotalSeconds;
+		var created = (int)(DateTime.UtcNow - TimeSpan.FromSeconds(5) - DateTime.UnixEpoch).TotalSeconds;
 		var expires = (int)(DateTime.UtcNow + TimeSpan.FromHours(1) - DateTime.UnixEpoch).TotalSeconds;
 
 		var sigHeader =
@@ -166,7 +166,7 @@ public class HttpSignatureTests
 		const string headers = "(request-target) host (created) (expires) (opaque)";
 		const string opaque  = "stub";
 
-		var created = (int)(DateTime.UtcNow - TimeSpan.FromHours(6) - DateTime.UnixEpoch).TotalSeconds;
+		var created = (int)(DateTime.UtcNow - TimeSpan.FromSeconds(5) - DateTime.UnixEpoch).TotalSeconds;
 		var expires = (int)(DateTime.UtcNow - TimeSpan.FromHours(1) - DateTime.UnixEpoch).TotalSeconds;
 
 		var sigHeader =
