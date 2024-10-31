@@ -372,7 +372,7 @@ public class UserService(
 		db.Update(user.UserProfile);
 		await db.SaveChangesAsync();
 
-		user = await UpdateProfileMentions(user, null);
+		user = await UpdateProfileMentions(user, null, wait: true);
 
 		var activity = activityRenderer.RenderUpdate(await userRenderer.RenderAsync(user));
 		await deliverSvc.DeliverToFollowersAsync(activity, user, []);
@@ -988,7 +988,7 @@ public class UserService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "Projectables")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
-	private async Task<User> UpdateProfileMentions(User user, ASActor? actor, bool force = false)
+	private async Task<User> UpdateProfileMentions(User user, ASActor? actor, bool force = false, bool wait = false)
 	{
 		if (followupTaskSvc.IsBackgroundWorker && !force) return user;
 		if (KeyedLocker.IsInUse($"profileMentions:{user.Id}")) return user;
@@ -1041,7 +1041,10 @@ public class UserService(
 			}
 		});
 
-		await task.SafeWaitAsync(TimeSpan.FromMilliseconds(500));
+		if (wait)
+			await task;
+		else
+			await task.SafeWaitAsync(TimeSpan.FromMilliseconds(500));
 
 		if (success)
 			await db.ReloadEntityRecursivelyAsync(user);
