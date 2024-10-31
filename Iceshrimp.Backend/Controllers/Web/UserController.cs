@@ -141,6 +141,25 @@ public class UserController(
 			await userSvc.FollowUserAsync(user, followee);
 	}
 
+	[HttpPost("{id}/remove_from_followers")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task RemoveFromFollowers(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot unfollow yourself");
+
+		var follower = await db.Users
+		                       .Where(p => p.Id == id)
+		                       .IncludeCommonProperties()
+		                       .PrecomputeRelationshipData(user)
+		                       .FirstOrDefaultAsync() ??
+		               throw GracefulException.RecordNotFound();
+
+		await userSvc.RemoveFromFollowersAsync(user, follower);
+	}
+
 	[HttpPost("{id}/unfollow")]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
 	public async Task UnfollowUser(string id)

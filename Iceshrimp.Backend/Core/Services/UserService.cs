@@ -877,6 +877,61 @@ public class UserService(
 	/// <remarks>
 	///     Make sure to call .PrecomputeRelationshipData(user) on the database query for the followee
 	/// </remarks>
+	public async Task RemoveFromFollowersAsync(User user, User follower)
+	{
+		if ((follower.PrecomputedIsFollowing ?? false) && follower.IsRemoteUser)
+		{
+			var followingId = await db.Followings
+			                          .Where(p => p.Followee == user && p.Follower == follower)
+			                          .Select(p => p.Id)
+			                          .FirstAsync();
+
+			var accept   = activityRenderer.RenderAccept(user, follower, followingId);
+			var activity = activityRenderer.RenderUndo(userRenderer.RenderLite(user), accept);
+			await deliverSvc.DeliverToAsync(activity, user, follower);
+		}
+
+		if (follower.PrecomputedIsFollowing ?? false)
+		{
+			var followers = await db.Followings
+			                        .Where(p => p.Followee == user && p.Follower == follower)
+			                        .ToListAsync();
+
+			await db.Users
+			        .Where(p => p.Id == user.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowersCount,
+			                                               i => i.FollowersCount - followers.Count));
+
+			await db.Users
+			        .Where(p => p.Id == follower.Id)
+			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount,
+			                                               i => i.FollowingCount - followers.Count));
+
+			db.RemoveRange(followers);
+			await db.SaveChangesAsync();
+
+			if (follower.IsRemoteUser)
+			{
+				_ = followupTaskSvc.ExecuteTask("DecrementInstanceIncomingFollowsCounter", async provider =>
+				{
+					var bgDb          = provider.GetRequiredService<DatabaseContext>();
+					var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
+					var dbInstance =
+						await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower);
+					await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
+					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows,
+					                                                 i => i.IncomingFollows - 1));
+				});
+			}
+
+			follower.PrecomputedIsFollowedBy = false;
+			eventSvc.RaiseUserUnfollowed(this, follower, user);
+		}
+	}
+
+	/// <remarks>
+	///     Make sure to call .PrecomputeRelationshipData(user) on the database query for the followee
+	/// </remarks>
 	public async Task UnfollowUserAsync(User user, User followee)
 	{
 		if (((followee.PrecomputedIsFollowedBy ?? false) || (followee.PrecomputedIsRequestedBy ?? false)) &&
