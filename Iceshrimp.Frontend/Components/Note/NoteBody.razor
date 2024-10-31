@@ -27,33 +27,34 @@
 }
 @if (NoteBase.Cw == null)
 {
-    <div
-        class="note-body @(Indented ? "indent" : "") @(_showFull ? "show-full" : "")" @ref="Body">
-        <span>
-            @if (ReplyInaccessible)
-            {
-                <span class="reply-inaccessible">
-                    <Icon Name="Icons.ArrowBendLeftUp"/><Icon Name="Icons.Lock"/>
-                </span>
-            }
-            <MfmText Text="@NoteBase.Text" Emoji="@NoteBase.Emoji"/>
-        </span>
-        @if (NoteBase.Attachments.Count > 0)
+    <div class="note-content @(!_showFull ? "collapsed" : "")">
+        @if (_overHeight & !_showFull)
         {
-            <NoteAttachments Attachments="NoteBase.Attachments"/>
+        <button class="truncate-btn" @onclick="ToggleTruncate" @onclick:stopPropagation="true">
+            <span>@Loc["Show more"]</span>
+        </button>
         }
-        @if (_overHeight)
+        <div
+            class="note-body @(_overHeight ? "too-long" : "") @(Indented ? "indent" : "") @(_showFull ? "show-full" : "")" @ref="Body">
+            <span>
+                @if (ReplyInaccessible)
+                {
+                    <span class="reply-inaccessible">
+                        <Icon Name="Icons.ArrowBendLeftUp"/><Icon Name="Icons.Lock"/>
+                    </span>
+                }
+                <MfmText Text="@NoteBase.Text" Emoji="@NoteBase.Emoji"/>
+            </span>
+            @if (NoteBase.Attachments.Count > 0)
+            {
+                <NoteAttachments Attachments="NoteBase.Attachments"/>
+            }
+        </div>
+        @if (_overHeight & _showFull)
         {
-            <button class="truncate-btn" @onclick="ToggleTruncate" @onclick:stopPropagation="true">
-                @if (_showFull)
-                {
-                    <span>@Loc["Show less"]</span>
-                }
-                @if (!_showFull)
-                {
-                    <span>@Loc["Show more"]</span>
-                }
-            </button>
+        <button class="truncate-btn show-less" @onclick="ToggleTruncate" @onclick:stopPropagation="true">
+            <span>@Loc["Show less"]</span>
+        </button>
         }
     </div>
 }

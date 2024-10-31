@@ -8,6 +8,25 @@
     overflow-y: hidden;
 }
 
+.note-content.collapsed {
+    position: relative;
+    
+    .truncate-btn {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+    }
+}
+
+.note-content > .truncate-btn.show-less {
+    position: sticky;
+    bottom: 20px;
+}
+
+.note-body.too-long {
+    mask: linear-gradient(black calc(100% - 64px),transparent);
+}
+
 .cw {
     display: inline-block;
 }
@@ -19,18 +38,23 @@
 }
 
 .truncate-btn {
-    position: sticky;
-    bottom: 20px;
+    z-index: 5;
     width: 100%;
     margin-top: 0.5em;
+    background-color: var(--background-color);
     @container note-body (max-height: 20rem){
         display: none;
     }
 }
 
+.truncate-btn:hover {
+    background-color: var(--hover-color);
+}
+
 .show-full {
     overflow: initial;
     max-height: initial;
+    mask: unset !important;
 }
 
 .hidden {
