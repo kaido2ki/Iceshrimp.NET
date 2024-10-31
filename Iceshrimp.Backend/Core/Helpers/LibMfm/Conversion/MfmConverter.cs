@@ -193,7 +193,7 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 				var punyHost = host?.ToPunycodeLower();
 				if (emoji?.FirstOrDefault(p => p.Name == emojiCodeNode.Name && p.Host == punyHost) is { } hit)
 				{
-					var el = document.CreateElement("span");
+					var el    = document.CreateElement("span");
 					var inner = document.CreateElement("img");
 					inner.SetAttribute("src", hit.PublicUrl);
 					el.AppendChild(inner);
@@ -246,9 +246,13 @@ public class MfmConverter(IOptions<Config.InstanceSection> config)
 				if (finalHost == config.Value.WebDomain)
 					finalHost = config.Value.AccountDomain;
 
-				var mention = mentions.FirstOrDefault(p => p.Username.EqualsIgnoreCase(mentionNode.Username) &&
-				                                           p.Host.EqualsIgnoreCase(finalHost));
-				if (mention == null)
+				Func<Note.MentionedUser, bool> predicate = finalHost == config.Value.AccountDomain
+					? p => p.Username.EqualsIgnoreCase(mentionNode.Username) &&
+					       (p.Host.EqualsIgnoreCase(finalHost) || p.Host == null)
+					: p => p.Username.EqualsIgnoreCase(mentionNode.Username) &&
+					       p.Host.EqualsIgnoreCase(finalHost);
+
+				if (mentions.FirstOrDefault(predicate) is not { } mention)
 				{
 					el.TextContent = $"@{mentionNode.Acct}";
 				}
