@@ -35,5 +35,5 @@ audio.attachment {
 }
 
 .blur-image {
-    filter: blur(1rem);
+    filter: blur(10rem);
 }
