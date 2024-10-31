@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -16,7 +16,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/profile")]
 [Produces(MediaTypeNames.Application.Json)]
-public class ProfileController(DatabaseContext db) : ControllerBase
+public class ProfileController(UserService userSvc) : ControllerBase
 {
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -40,7 +40,7 @@ public class ProfileController(DatabaseContext db) : ControllerBase
 	[HttpPut]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResults(HttpStatusCode.OK)]
-	public async Task UpdateSettings(UserProfileEntity newProfile)
+	public async Task UpdateProfile(UserProfileEntity newProfile)
 	{
 		var     user     = HttpContext.GetUserOrFail();
 		var     profile  = user.UserProfile ?? throw new Exception("Local user must have profile");
@@ -66,6 +66,8 @@ public class ProfileController(DatabaseContext db) : ControllerBase
 		profile.Fields       = fields.ToArray();
 		profile.FFVisibility = (UserProfile.UserProfileFFVisibility)newProfile.FFVisibility;
 
-		await db.SaveChangesAsync();
+		var prevAvatarId = user.AvatarId;
+		var prevBannerId = user.BannerId;
+		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
 }
