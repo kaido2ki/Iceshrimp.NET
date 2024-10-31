@@ -84,7 +84,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private async void OnNotePublished(object? _, (Note note, Func<Task<NoteResponse>> rendered) data)
+	private async void OnNotePublished(object? _, (Note note, Lazy<Task<NoteResponse>> rendered) data)
 	{
 		try
 		{
@@ -100,7 +100,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 					return;
 			}
 
-			var rendered = EnforceRenoteReplyVisibility(await data.rendered(), wrapped);
+			var rendered = EnforceRenoteReplyVisibility(await data.rendered.Value, wrapped);
 			await _hub.Clients.Clients(recipients.connectionIds).NotePublished(recipients.timelines, rendered);
 		}
 		catch (Exception e)
@@ -109,7 +109,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private async void OnNoteUpdated(object? _, (Note note, Func<Task<NoteResponse>> rendered) data)
+	private async void OnNoteUpdated(object? _, (Note note, Lazy<Task<NoteResponse>> rendered) data)
 	{
 		try
 		{
@@ -118,7 +118,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 			var (connectionIds, _) = FindRecipients(data.note);
 			if (connectionIds.Count == 0) return;
 
-			var rendered = EnforceRenoteReplyVisibility(await data.rendered(), wrapped);
+			var rendered = EnforceRenoteReplyVisibility(await data.rendered.Value, wrapped);
 			await _hub.Clients.Clients(connectionIds).NoteUpdated(rendered);
 		}
 		catch (Exception e)

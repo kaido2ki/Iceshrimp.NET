@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using AsyncKeyedLock;
 using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.SignalR;
@@ -12,12 +11,6 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public sealed class StreamingService
 {
-	private static readonly AsyncKeyedLocker<string> Locker = new(o =>
-	{
-		o.PoolSize        = 100;
-		o.PoolInitialFill = 5;
-	});
-
 	private readonly ConcurrentDictionary<string, StreamingConnectionAggregate> _connections = [];
 	private readonly EventService                                               _eventSvc;
 	private readonly IHubContext<StreamingHub, IStreamingHubClient>             _hub;
@@ -40,8 +33,8 @@ public sealed class StreamingService
 		eventSvc.NoteUpdated   += OnNoteUpdated;
 	}
 
-	public event EventHandler<(Note note, Func<Task<NoteResponse>> rendered)>? NotePublished;
-	public event EventHandler<(Note note, Func<Task<NoteResponse>> rendered)>? NoteUpdated;
+	public event EventHandler<(Note note, Lazy<Task<NoteResponse>> rendered)>? NotePublished;
+	public event EventHandler<(Note note, Lazy<Task<NoteResponse>> rendered)>? NoteUpdated;
 
 	public void Connect(string userId, User user, string connectionId)
 	{
@@ -80,23 +73,14 @@ public sealed class StreamingService
 		return Task.CompletedTask;
 	}
 
-	private Func<Task<NoteResponse>> Render(Note note)
+	private Lazy<Task<NoteResponse>> Render(Note note)
 	{
-		NoteResponse? res = null;
-		return async () =>
+		return new Lazy<Task<NoteResponse>>(async () =>
 		{
-			// Skip the mutex if res is already set
-			if (res != null) return res;
-
-			using (await Locker.LockAsync(note.Id))
-			{
-				if (res != null) return res;
-				await using var scope    = _scopeFactory.CreateAsyncScope();
-				var             renderer = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
-				res = await renderer.RenderOne(note, null);
-				return res;
-			}
-		};
+			await using var scope    = _scopeFactory.CreateAsyncScope();
+			var             renderer = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
+			return await renderer.RenderOne(note, null);
+		});
 	}
 
 	private void OnNotePublished(object? _, Note note)
