@@ -47,5 +47,9 @@
 @media (max-width: 640px) {
     ::deep .field {
         flex-direction: column;
+        
+        .field-name {
+            width: auto;
+        }
     }
 }
