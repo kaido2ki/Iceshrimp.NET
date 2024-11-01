@@ -7,6 +7,7 @@
 .header {
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
 }
 
 .subheader {
@@ -35,11 +36,29 @@
     max-width: 45rem;
 }
 
+.banner + .profile-card {
+    margin-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
 .avatar {
     border-radius: 8px;
     object-fit: cover;
     width: 5em;
     height: 5em;
+}
+
+.banner {
+    display: block;
+    width: 100%;
+    max-width: 45rem;
+    height: auto;
+    object-fit: cover;
+    aspect-ratio: 21/9;
+    margin: 1rem auto auto;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
 }
 
 .notes {
