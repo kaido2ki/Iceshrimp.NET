@@ -25,6 +25,10 @@
         .field-name {
             font-weight: 600;
             width: 10rem;
+            
+            .ph {
+                vertical-align: text-bottom;
+            }
         }
     }
 }
@@ -37,5 +41,11 @@
     text-align: center;
     .field-data {
         font-weight: 600;
+    }
+}
+
+@media (max-width: 640px) {
+    ::deep .field {
+        flex-direction: column;
     }
 }

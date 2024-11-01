@@ -1,6 +1,7 @@
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
 @inject IStringLocalizer<Localization> Loc;
 <div class="profile-info">
     @if (UserProfile.Bio != null)
@@ -10,18 +11,24 @@
         </div>
     }
     <div class="data">
-        @if (UserProfile.Location != null)
-        {
-            <div class="location field">
-                <span class="field-name">@Loc["Location"]</span>
-                <span class="field-value">@UserProfile.Location</span>
-            </div>
-        }
         @if (UserProfile.Birthday != null)
         {
             <div class="birthday field">
-                <span class="field-name">@Loc["Birthday"]</span>
+                <span class="field-name">
+                    <Icon Name="Icons.Balloon" Size="1.3em"/>
+                    @Loc["Birthday"]
+                </span>
                 <span class="field-value">@UserProfile.Birthday</span>
+            </div>
+        }
+        @if (UserProfile.Location != null)
+        {
+            <div class="location field">
+                <span class="field-name">
+                    <Icon Name="Icons.MapPin" Size="1.3em"/>
+                    @Loc["Location"]
+                </span>
+                <span class="field-value">@UserProfile.Location</span>
             </div>
         }
     </div>
