@@ -150,8 +150,9 @@ public class UserController(
 		if (user.Id == id)
 			throw GracefulException.BadRequest("You cannot unfollow yourself");
 
-		var follower = await db.Users
-		                       .Where(p => p.Id == id)
+		var follower = await db.Followings
+		                       .Where(p => p.FolloweeId == user.Id && p.FollowerId == id)
+		                       .Select(p => p.Follower)
 		                       .IncludeCommonProperties()
 		                       .PrecomputeRelationshipData(user)
 		                       .FirstOrDefaultAsync() ??
