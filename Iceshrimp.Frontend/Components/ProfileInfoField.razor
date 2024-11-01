@@ -1,6 +1,13 @@
 @using Iceshrimp.Shared.Schemas.Web
+@using Iceshrimp.Assets.PhosphorIcons
 <div class="field">
-    <span class="field-name">@Field.Name</span>
+    <span class="field-name">
+        @if (Field.Verified.GetValueOrDefault())
+        {
+            <Icon class="verified" Name="Icons.SealCheck" Size="1.3em"/>
+        }
+        @Field.Name
+    </span>
     <span class="field-value">
         <MfmText Text="@Field.Value"></MfmText>
     </span>
