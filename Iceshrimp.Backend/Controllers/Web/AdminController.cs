@@ -49,7 +49,7 @@ public class AdminController(
 	{
 		var invite = new RegistrationInvite
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Code      = CryptographyHelpers.GenerateRandomString(32)
 		};

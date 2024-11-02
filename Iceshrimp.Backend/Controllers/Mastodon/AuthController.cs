@@ -65,7 +65,7 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 
 		var app = new OauthApp
 		{
-			Id           = IdHelpers.GenerateSlowflakeId(),
+			Id           = IdHelpers.GenerateSnowflakeId(),
 			ClientId     = CryptographyHelpers.GenerateRandomString(32),
 			ClientSecret = CryptographyHelpers.GenerateRandomString(32),
 			CreatedAt    = DateTime.UtcNow,

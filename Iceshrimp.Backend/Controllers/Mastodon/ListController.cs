@@ -77,7 +77,7 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 		var user = HttpContext.GetUserOrFail();
 		var list = new UserList
 		{
-			Id             = IdHelpers.GenerateSlowflakeId(),
+			Id             = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt      = DateTime.UtcNow,
 			User           = user,
 			Name           = request.Title,
@@ -196,7 +196,7 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 
 		var memberships = subjects.Select(subject => new UserListMember
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			UserList  = list,
 			UserId    = subject

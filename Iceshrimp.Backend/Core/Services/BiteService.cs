@@ -12,7 +12,7 @@ public class BiteService(DatabaseContext db, ActivityPub.ActivityRenderer activi
     {
         var bite = new Bite
         {
-            Id         = IdHelpers.GenerateSlowflakeId(),
+            Id         = IdHelpers.GenerateSnowflakeId(),
             CreatedAt  = DateTime.UtcNow,
             User       = user,
             TargetBite = target
@@ -35,7 +35,7 @@ public class BiteService(DatabaseContext db, ActivityPub.ActivityRenderer activi
     {
         var bite = new Bite
         {
-            Id         = IdHelpers.GenerateSlowflakeId(),
+            Id         = IdHelpers.GenerateSnowflakeId(),
             CreatedAt  = DateTime.UtcNow,
             User       = user,
             TargetNote = target
@@ -58,7 +58,7 @@ public class BiteService(DatabaseContext db, ActivityPub.ActivityRenderer activi
     {
         var bite = new Bite
         {
-            Id         = IdHelpers.GenerateSlowflakeId(),
+            Id         = IdHelpers.GenerateSnowflakeId(),
             CreatedAt  = DateTime.UtcNow,
             User       = user,
             TargetUser = target

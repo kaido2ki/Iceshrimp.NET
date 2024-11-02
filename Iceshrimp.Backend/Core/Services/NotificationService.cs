@@ -27,7 +27,7 @@ public class NotificationService(
 		                    .Except(blocks)
 		                    .Select(p => new Notification
 		                    {
-			                    Id         = IdHelpers.GenerateSlowflakeId(),
+			                    Id         = IdHelpers.GenerateSnowflakeId(),
 			                    CreatedAt  = DateTime.UtcNow,
 			                    Note       = note,
 			                    NotifierId = note.UserId,
@@ -69,7 +69,7 @@ public class NotificationService(
 		                    .Except(remote)
 		                    .Select(p => new Notification
 		                    {
-			                    Id         = IdHelpers.GenerateSlowflakeId(),
+			                    Id         = IdHelpers.GenerateSnowflakeId(),
 			                    CreatedAt  = DateTime.UtcNow,
 			                    Note       = note,
 			                    NotifierId = note.UserId,
@@ -91,7 +91,7 @@ public class NotificationService(
 		                            .Where(p => p.IsLocalUser && p != note.User && p.HasInteractedWith(note))
 		                            .Select(p => new Notification
 		                            {
-			                            Id         = IdHelpers.GenerateSlowflakeId(DateTime.UtcNow),
+			                            Id         = IdHelpers.GenerateSnowflakeId(DateTime.UtcNow),
 			                            CreatedAt  = DateTime.UtcNow,
 			                            Note       = note,
 			                            NotifierId = note.UserId,
@@ -115,7 +115,7 @@ public class NotificationService(
 
 		var notification = new Notification
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Note      = note,
 			Notifiee  = note.User,
@@ -135,7 +135,7 @@ public class NotificationService(
 
 		var notification = new Notification
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Note      = reaction.Note,
 			Notifiee  = reaction.Note.User,
@@ -155,7 +155,7 @@ public class NotificationService(
 
 		var notification = new Notification
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Notifiee  = followee,
 			Notifier  = follower,
@@ -174,7 +174,7 @@ public class NotificationService(
 
 		var notification = new Notification
 		{
-			Id            = IdHelpers.GenerateSlowflakeId(),
+			Id            = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
 			FollowRequest = followRequest,
 			Notifier      = followRequest.Follower,
@@ -194,7 +194,7 @@ public class NotificationService(
 
 		var notification = new Notification
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Notifier  = followRequest.Followee,
 			Notifiee  = followRequest.Follower,
@@ -211,7 +211,7 @@ public class NotificationService(
 	{
 		var notification = new Notification
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Notifiee = (bite.TargetUser ?? bite.TargetNote?.User ?? bite.TargetBite?.User) ??
 			           throw new InvalidOperationException("Null checks say one of these must not be null"),
@@ -236,7 +236,7 @@ public class NotificationService(
 		                            .Distinct()
 		                            .Select(p => new Notification
 		                            {
-			                            Id        = IdHelpers.GenerateSlowflakeId(DateTime.UtcNow),
+			                            Id        = IdHelpers.GenerateSnowflakeId(DateTime.UtcNow),
 			                            CreatedAt = DateTime.UtcNow,
 			                            Notifiee  = p,
 			                            Notifier  = note.User,
@@ -249,7 +249,7 @@ public class NotificationService(
 		{
 			notifications.Add(new Notification
 			{
-				Id        = IdHelpers.GenerateSlowflakeId(DateTime.UtcNow),
+				Id        = IdHelpers.GenerateSnowflakeId(DateTime.UtcNow),
 				CreatedAt = DateTime.UtcNow,
 				Notifiee  = note.User,
 				Note      = note,
@@ -275,7 +275,7 @@ public class NotificationService(
 
 		var notification = new Notification
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Note      = note.IsQuote ? note : note.Renote,
 			Notifiee  = note.Renote.User,

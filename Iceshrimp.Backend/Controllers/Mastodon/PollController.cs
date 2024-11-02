@@ -81,7 +81,7 @@ public class PollController(
 
 			var vote = new PollVote
 			{
-				Id        = IdHelpers.GenerateSlowflakeId(),
+				Id        = IdHelpers.GenerateSnowflakeId(),
 				CreatedAt = DateTime.UtcNow,
 				User      = user,
 				Note      = note,
@@ -100,7 +100,7 @@ public class PollController(
 
 				var vote = new PollVote
 				{
-					Id        = IdHelpers.GenerateSlowflakeId(),
+					Id        = IdHelpers.GenerateSnowflakeId(),
 					CreatedAt = DateTime.UtcNow,
 					User      = user,
 					Note      = note,

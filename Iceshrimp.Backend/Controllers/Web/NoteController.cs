@@ -473,7 +473,7 @@ public class NoteController(
 
 		var mute = new NoteThreadMuting
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			ThreadId  = target,
 			UserId    = user.Id

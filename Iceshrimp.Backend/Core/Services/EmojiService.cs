@@ -45,7 +45,7 @@ public partial class EmojiService(
 		};
 		var driveFile = await driveSvc.StoreFile(input, user, request, true);
 
-		var id = IdHelpers.GenerateSlowflakeId();
+		var id = IdHelpers.GenerateSnowflakeId();
 		var emoji = new Emoji
 		{
 			Id          = id,
@@ -76,7 +76,7 @@ public partial class EmojiService(
 
 		var emoji = new Emoji
 		{
-			Id          = IdHelpers.GenerateSlowflakeId(),
+			Id          = IdHelpers.GenerateSnowflakeId(),
 			Name        = existing.Name,
 			UpdatedAt   = DateTime.UtcNow,
 			OriginalUrl = driveFile.Url,
@@ -126,7 +126,7 @@ public partial class EmojiService(
 				{
 					dbEmojo = new Emoji
 					{
-						Id          = IdHelpers.GenerateSlowflakeId(),
+						Id          = IdHelpers.GenerateSnowflakeId(),
 						Host        = host,
 						Name        = emojo.Name ?? throw new Exception("emojo.Name must not be null at this stage"),
 						UpdatedAt   = DateTime.UtcNow,

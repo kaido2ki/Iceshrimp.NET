@@ -21,7 +21,7 @@ public class RelayService(
 
 		var relay = new Relay
 		{
-			Id     = IdHelpers.GenerateSlowflakeId(),
+			Id     = IdHelpers.GenerateSnowflakeId(),
 			Inbox  = uri,
 			Status = Relay.RelayStatus.Requesting
 		};

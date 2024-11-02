@@ -133,7 +133,7 @@ public class DriveService(
 				logger.LogDebug("Failed to download file from {uri}: {error}, storing as link", uri, e.Message);
 				file = new DriveFile
 				{
-					Id             = IdHelpers.GenerateSlowflakeId(),
+					Id             = IdHelpers.GenerateSnowflakeId(),
 					CreatedAt      = DateTime.UtcNow,
 					User           = user,
 					UserHost       = user.Host,
@@ -173,7 +173,7 @@ public class DriveService(
 		{
 			file = new DriveFile
 			{
-				Id             = IdHelpers.GenerateSlowflakeId(),
+				Id             = IdHelpers.GenerateSnowflakeId(),
 				CreatedAt      = DateTime.UtcNow,
 				User           = user,
 				UserHost       = user.Host,
@@ -314,7 +314,7 @@ public class DriveService(
 
 		file = new DriveFile
 		{
-			Id                 = IdHelpers.GenerateSlowflakeId(),
+			Id                 = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt          = DateTime.UtcNow,
 			User               = user,
 			UserHost           = user.Host,
@@ -631,7 +631,7 @@ file static class DriveFileExtensions
 
 		return new DriveFile
 		{
-			Id                 = IdHelpers.GenerateSlowflakeId(),
+			Id                 = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt          = DateTime.UtcNow,
 			User               = user,
 			Blurhash           = file.Blurhash,

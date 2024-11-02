@@ -33,7 +33,7 @@ public class InstanceService(DatabaseContext db, HttpClient httpClient, ILogger<
 				{
 					instance = new Instance
 					{
-						Id                 = IdHelpers.GenerateSlowflakeId(),
+						Id                 = IdHelpers.GenerateSnowflakeId(),
 						Host               = host,
 						CaughtAt           = DateTime.UtcNow,
 						LastCommunicatedAt = DateTime.UtcNow

@@ -39,7 +39,7 @@ public class PushController(DatabaseContext db, MetaService meta) : ControllerBa
 		{
 			pushSubscription = new PushSubscription
 			{
-				Id         = IdHelpers.GenerateSlowflakeId(),
+				Id         = IdHelpers.GenerateSnowflakeId(),
 				CreatedAt  = DateTime.UtcNow,
 				Endpoint   = request.Subscription.Endpoint,
 				User       = token.User,

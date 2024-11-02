@@ -165,7 +165,7 @@ public class UserService(
 
 		user = new User
 		{
-			Id                  = IdHelpers.GenerateSlowflakeId(),
+			Id                  = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt           = DateTime.UtcNow,
 			LastFetchedAt       = followupTaskSvc.IsBackgroundWorker ? null : DateTime.UtcNow,
 			DisplayName         = actor.DisplayName,
@@ -413,7 +413,7 @@ public class UserService(
 		var keypair = RSA.Create(4096);
 		var user = new User
 		{
-			Id            = IdHelpers.GenerateSlowflakeId(),
+			Id            = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
 			Username      = username,
 			UsernameLower = username.ToLowerInvariant(),
@@ -586,7 +586,7 @@ public class UserService(
 
 		var following = new Following
 		{
-			Id                  = IdHelpers.GenerateSlowflakeId(),
+			Id                  = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt           = DateTime.UtcNow,
 			Follower            = request.Follower,
 			Followee            = request.Followee,
@@ -758,7 +758,7 @@ public class UserService(
 
 						var following = new Following
 						{
-							Id                  = IdHelpers.GenerateSlowflakeId(),
+							Id                  = IdHelpers.GenerateSnowflakeId(),
 							CreatedAt           = DateTime.UtcNow,
 							Followee            = followee,
 							Follower            = follower,
@@ -799,7 +799,7 @@ public class UserService(
 
 					var request = new FollowRequest
 					{
-						Id                  = IdHelpers.GenerateSlowflakeId(),
+						Id                  = IdHelpers.GenerateSnowflakeId(),
 						CreatedAt           = DateTime.UtcNow,
 						RequestId           = requestId,
 						Followee            = followee,
@@ -827,7 +827,7 @@ public class UserService(
 			{
 				var following = new Following
 				{
-					Id                  = IdHelpers.GenerateSlowflakeId(),
+					Id                  = IdHelpers.GenerateSnowflakeId(),
 					CreatedAt           = DateTime.UtcNow,
 					Followee            = followee,
 					Follower            = follower,
@@ -1087,7 +1087,7 @@ public class UserService(
 			var bgDb     = provider.GetRequiredService<DatabaseContext>();
 			var existing = await bgDb.Hashtags.Where(p => tags.Contains(p.Name)).Select(p => p.Name).ToListAsync();
 			var dbTags = tags.Except(existing)
-			                 .Select(p => new Hashtag { Id = IdHelpers.GenerateSlowflakeId(), Name = p });
+			                 .Select(p => new Hashtag { Id = IdHelpers.GenerateSnowflakeId(), Name = p });
 			await bgDb.UpsertRange(dbTags).On(p => p.Name).NoUpdate().RunAsync();
 		});
 
@@ -1113,7 +1113,7 @@ public class UserService(
 
 		muting = new Muting
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Mutee     = mutee,
 			Muter     = muter,
@@ -1149,7 +1149,7 @@ public class UserService(
 
 		var blocking = new Blocking
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Blockee   = blockee,
 			Blocker   = blocker

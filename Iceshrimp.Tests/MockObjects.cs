@@ -12,7 +12,7 @@ public static class MockObjects
 {
 	public static readonly ASActor ASActor = new()
 	{
-		Id               = $"https://example.org/users/{IdHelpers.GenerateSlowflakeId()}",
+		Id               = $"https://example.org/users/{IdHelpers.GenerateSnowflakeId()}",
 		Type             = ASActor.Types.Person,
 		Url              = new ASLink("https://example.org/@test"),
 		Username         = "test",
@@ -23,7 +23,7 @@ public static class MockObjects
 		WebfingerAddress = "test@example.org"
 	};
 
-	public static readonly User User = new() { Id = IdHelpers.GenerateSlowflakeId() };
+	public static readonly User User = new() { Id = IdHelpers.GenerateSnowflakeId() };
 
 	public static readonly RSA Keypair = RSA.Create(4096);
 

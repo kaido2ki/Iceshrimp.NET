@@ -377,7 +377,7 @@ public class ActivityHandlerService(
 		{
 			ASActor targetActor => new Bite
 			{
-				Id         = IdHelpers.GenerateSlowflakeId(activity.PublishedAt),
+				Id         = IdHelpers.GenerateSnowflakeId(activity.PublishedAt),
 				CreatedAt  = activity.PublishedAt ?? DateTime.UtcNow,
 				Uri        = activity.Id,
 				User       = resolvedActor,
@@ -386,7 +386,7 @@ public class ActivityHandlerService(
 			},
 			ASNote targetNote => new Bite
 			{
-				Id         = IdHelpers.GenerateSlowflakeId(activity.PublishedAt),
+				Id         = IdHelpers.GenerateSnowflakeId(activity.PublishedAt),
 				CreatedAt  = activity.PublishedAt ?? DateTime.UtcNow,
 				Uri        = activity.Id,
 				User       = resolvedActor,
@@ -395,7 +395,7 @@ public class ActivityHandlerService(
 			},
 			ASBite targetBite => new Bite
 			{
-				Id        = IdHelpers.GenerateSlowflakeId(activity.PublishedAt),
+				Id        = IdHelpers.GenerateSnowflakeId(activity.PublishedAt),
 				CreatedAt = activity.PublishedAt ?? DateTime.UtcNow,
 				Uri       = activity.Id,
 				User      = resolvedActor,
@@ -407,7 +407,7 @@ public class ActivityHandlerService(
 			null => throw GracefulException.UnprocessableEntity($"Failed to resolve bite target {activity.Target.Id}"),
 			_ when activity.To?.Id != null => new Bite
 			{
-				Id         = IdHelpers.GenerateSlowflakeId(activity.PublishedAt),
+				Id         = IdHelpers.GenerateSnowflakeId(activity.PublishedAt),
 				CreatedAt  = activity.PublishedAt ?? DateTime.UtcNow,
 				Uri        = activity.Id,
 				User       = resolvedActor,

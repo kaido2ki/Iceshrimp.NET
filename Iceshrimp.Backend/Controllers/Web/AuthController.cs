@@ -67,7 +67,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		{
 			session = new Session
 			{
-				Id        = IdHelpers.GenerateSlowflakeId(),
+				Id        = IdHelpers.GenerateSnowflakeId(),
 				UserId    = user.Id,
 				Active    = !settings.TwoFactorEnabled,
 				CreatedAt = DateTime.UtcNow,

@@ -245,7 +245,7 @@ public class NoteService(
 		var combinedAltText = data.Attachments?.Select(p => p.Comment).Where(c => c != null);
 		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PostLogic);
 
-		var noteId   = IdHelpers.GenerateSlowflakeId(data.CreatedAt);
+		var noteId   = IdHelpers.GenerateSnowflakeId(data.CreatedAt);
 		var threadId = data.Reply?.ThreadId ?? noteId;
 
 		var thread = await db.NoteThreads.Where(t => t.Id == threadId).FirstOrDefaultAsync() ??
@@ -456,7 +456,7 @@ public class NoteService(
 
 		var noteEdit = new NoteEdit
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			UpdatedAt = data.UpdatedAt ?? DateTime.UtcNow,
 			Note      = note,
 			Text      = note.Text,
@@ -836,7 +836,7 @@ public class NoteService(
 
 			var vote = new PollVote
 			{
-				Id        = IdHelpers.GenerateSlowflakeId(),
+				Id        = IdHelpers.GenerateSnowflakeId(),
 				CreatedAt = DateTime.UtcNow,
 				User      = actor,
 				Note      = reply,
@@ -1069,7 +1069,7 @@ public class NoteService(
 			var bgDb     = provider.GetRequiredService<DatabaseContext>();
 			var existing = await bgDb.Hashtags.Where(p => tags.Contains(p.Name)).Select(p => p.Name).ToListAsync();
 			var dbTags = tags.Except(existing)
-			                 .Select(p => new Hashtag { Id = IdHelpers.GenerateSlowflakeId(), Name = p });
+			                 .Select(p => new Hashtag { Id = IdHelpers.GenerateSnowflakeId(), Name = p });
 			await bgDb.UpsertRange(dbTags).On(p => p.Name).NoUpdate().RunAsync();
 		});
 
@@ -1273,7 +1273,7 @@ public class NoteService(
 
 			var like = new NoteLike
 			{
-				Id        = IdHelpers.GenerateSlowflakeId(),
+				Id        = IdHelpers.GenerateSnowflakeId(),
 				CreatedAt = DateTime.UtcNow,
 				User      = user,
 				Note      = note
@@ -1382,7 +1382,7 @@ public class NoteService(
 		{
 			var bookmark = new NoteBookmark
 			{
-				Id        = IdHelpers.GenerateSlowflakeId(),
+				Id        = IdHelpers.GenerateSnowflakeId(),
 				CreatedAt = DateTime.UtcNow,
 				User      = user,
 				Note      = note
@@ -1416,7 +1416,7 @@ public class NoteService(
 
 			var pin = new UserNotePin
 			{
-				Id        = IdHelpers.GenerateSlowflakeId(),
+				Id        = IdHelpers.GenerateSnowflakeId(),
 				CreatedAt = DateTime.UtcNow,
 				User      = user,
 				Note      = note
@@ -1471,7 +1471,7 @@ public class NoteService(
 		var pins = notes.OfType<Note>()
 		                .Select(p => new UserNotePin
 		                {
-			                Id        = IdHelpers.GenerateSlowflakeId(),
+			                Id        = IdHelpers.GenerateSnowflakeId(),
 			                CreatedAt = DateTime.UtcNow,
 			                Note      = p,
 			                User      = user
@@ -1507,7 +1507,7 @@ public class NoteService(
 
 		var reaction = new NoteReaction
 		{
-			Id        = IdHelpers.GenerateSlowflakeId(),
+			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
 			Note      = note,
 			User      = user,

@@ -81,7 +81,7 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 
 		var token = new OauthToken
 		{
-			Id                     = IdHelpers.GenerateSlowflakeId(),
+			Id                     = IdHelpers.GenerateSnowflakeId(),
 			Active                 = false,
 			Code                   = CryptographyHelpers.GenerateRandomString(32),
 			Token                  = CryptographyHelpers.GenerateRandomString(32),

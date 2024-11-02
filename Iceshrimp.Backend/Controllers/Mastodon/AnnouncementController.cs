@@ -75,7 +75,7 @@ public class AnnouncementController(DatabaseContext db, MfmConverter mfmConverte
 		{
 			var announcementRead = new AnnouncementRead
 			{
-				Id           = IdHelpers.GenerateSlowflakeId(),
+				Id           = IdHelpers.GenerateSnowflakeId(),
 				CreatedAt    = DateTime.UtcNow,
 				Announcement = announcement,
 				User         = user

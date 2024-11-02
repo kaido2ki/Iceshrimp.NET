@@ -71,7 +71,7 @@ public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContex
 		var keypair = RSA.Create(4096);
 		var user = new User
 		{
-			Id            = IdHelpers.GenerateSlowflakeId(),
+			Id            = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt     = DateTime.UtcNow,
 			Username      = username,
 			UsernameLower = username.ToLowerInvariant(),
