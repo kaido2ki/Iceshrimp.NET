@@ -79,7 +79,7 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 		            .Cast<string>()
 		            .ToList();
 
-		var nodes        = input.SelectMany(p => MfmParser.Parse(p));
+		var nodes        = input.SelectMany(MfmParser.Parse);
 		var mentionNodes = EnumerateMentions(nodes);
 		var users = await mentionNodes
 		                  .DistinctBy(p => p.Acct)
@@ -93,7 +93,7 @@ public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, 
 		            {
 			            Host     = p.Host,
 			            Uri      = p.Uri ?? p.GetPublicUri(config.Value),
-			            Url      = p.UserProfile?.Url,
+			            Url      = p.IsRemoteUser ? p.UserProfile?.Url : p.GetPublicUrl(config.Value),
 			            Username = p.Username
 		            })
 		            .ToList();
