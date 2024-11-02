@@ -6,11 +6,6 @@
     border-bottom: solid var(--highlight-color) 0.1rem;
 }
 
-.scroller {
-    overflow-y: auto;
-    overflow-x: clip;
-}
-
 .descendants {
     display: flex;
     flex-direction: column;

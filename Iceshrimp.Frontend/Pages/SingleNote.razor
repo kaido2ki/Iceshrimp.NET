@@ -242,7 +242,7 @@
 
             if (state != null)
             {
-                Module.InvokeVoid("SetScrollTop", Scroller, state.ScrollTop);
+                Module.InvokeVoid("SetScrollY", state.ScrollTop);
             }
             else
             {
@@ -255,14 +255,14 @@
     {
         if (NoteId == null || _componentState != State.Loaded) return;
         var scrollTop = (Module ?? throw new Exception("JS Interop used before init"))
-            .Invoke<float>("GetScrollTop", Scroller);
-        var state     = new SingleNoteState { ScrollTop = scrollTop };
+            .Invoke<float>("GetScrollY");
+        var state = new SingleNoteState { ScrollTop = scrollTop };
         StateSvc.SingleNote.SetState(NoteId, state);
     }
 
     public void Dispose()
     {
-        if (_noteChangedHandler != null) _noteChangedHandler.Dispose();
+        _noteChangedHandler?.Dispose();
         SaveState();
         _locationChangingHandlerDisposable?.Dispose();
         MessageService.AnyNoteDeleted -= OnNoteDeleted;

@@ -1,11 +1,11 @@
-export function GetScrollTop(ref) {
-    return ref.scrollTop;
-}
-
-export function SetScrollTop(ref, number) {
-    ref.scrollTop = number;
-}
-
 export function ScrollIntoView(ref) {
     ref.scrollIntoView({ behavior: "instant", block: "center"})
+}
+
+export function GetScrollY(){
+    return window.scrollY;
+}
+
+export function SetScrollY(number){
+    window.scroll(window.scrollX, number);
 }
