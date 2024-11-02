@@ -29,6 +29,7 @@
 .follow-button {
     display: flex;
     align-items: center;
+    margin-left: auto;
 }
 ::deep {.icon {
     vertical-align: text-bottom;
