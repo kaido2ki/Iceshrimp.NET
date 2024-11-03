@@ -24,7 +24,7 @@ public sealed class Config
 
 	public sealed class InstanceSection
 	{
-		private readonly VersionInfo _versionInfo = VersionHelpers.GetVersionInfo();
+		private readonly VersionInfo _versionInfo = VersionHelpers.VersionInfo.Value;
 
 		public string  Codename   => _versionInfo.Codename;
 		public string  Edition    => _versionInfo.Edition;
@@ -352,8 +352,8 @@ public sealed class Config
 
 	public sealed class BackfillRepliesSection
 	{
-		public bool Enabled            { get; init; } = false;
-		public bool FetchAsUser        { get; init; } = false;
+		public bool Enabled     { get; init; } = false;
+		public bool FetchAsUser { get; init; } = false;
 
 		public string? NewNoteDelay
 		{

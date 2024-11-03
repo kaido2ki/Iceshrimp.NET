@@ -4,7 +4,7 @@ namespace Iceshrimp.Frontend.Core.Services;
 
 public sealed class VersionService
 {
-	private readonly VersionInfo _versionInfo = VersionHelpers.GetVersionInfo();
+	private readonly VersionInfo _versionInfo = VersionHelpers.VersionInfo.Value;
 
 	public string  Codename   => _versionInfo.Codename;
 	public string  Edition    => _versionInfo.Edition;
