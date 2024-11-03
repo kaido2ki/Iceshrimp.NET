@@ -157,7 +157,7 @@ public class ActivityRenderer(
 		Object = obj
 	};
 
-	private ASReject RenderReject(ASActor actor, ASObject obj) => new()
+	public ASReject RenderReject(ASActor actor, ASObject obj) => new()
 	{
 		Id     = GenerateActivityId(),
 		Actor  = actor.Compact(),

@@ -881,7 +881,8 @@ public class UserService(
 	{
 		if ((follower.PrecomputedIsFollowing ?? false) && follower.IsRemoteUser)
 		{
-			var activity = activityRenderer.RenderUnfollow(follower, user, null);
+			var activity = activityRenderer.RenderReject(userRenderer.RenderLite(user),
+			                                             activityRenderer.RenderFollow(follower, user, null));
 			await deliverSvc.DeliverToAsync(activity, user, follower);
 		}
 
