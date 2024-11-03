@@ -1,3 +1,162 @@
+## v2024.1-beta4
+This release contains lots of new features & bug fixes, including security fixes. Upgrading is strongly recommended for all server operators.
+
+### Release notes
+This release contains a **breaking change** regarding the configuration file. If you have configured a *natural duration* using the units for \[w\]eeks, \[m\]onths, or \[y\]ears, please update your configuration file to use one of \[s\]econds, \[m\]inutes, \[h\]ours, and \[d\]ays. This change was necessary to accommodate the newly added minute unit.
+
+Furthermore, this release contains a migration that may take a while, as it goes through every note in the database in order to migrate to a new thread schema required for reply backfilling.
+
+### Highlights
+- Akkoma clients are now supported, including Akko-FE
+- Note reply backfilling is now available as an opt-in experimental feature
+- Index redirects for unauthenticated users are now configurable
+- Incoming, outgoing, local-local & remote-remote account migrations are now supported
+- Inbox jobs are now retried with exponential backoff
+- Connecting to relays is now supported
+- Reject & rewrite policies are now supported & can be arbitrarily extended via plugins
+- Full text search now also searches for alt text matches
+- Basic moderation actions are now supported
+- A basic admin dashboard has been added
+- Commands for fixing up media & pruning unreferenced files have been added
+- The frontend now shows significantly more note details
+- The frontend layout & stylesheet has been significantly refined
+- The follow list can now be imported & exported
+
+### Blazor frontend
+- Version information is now displayed correctly
+- The .NET Runtime version is now shown on the about page
+- Note footer buttons now have correct accessibility labeling
+- Notifications have received a visual overhaul
+- Unsupported notification details are now displayed
+- Bites notifications are now rendered correctly
+- Buttons to bite users and notes have been added
+- Note search now supports state reconstruction
+- Links now open in a new tab
+- Initial loads for the single note view have been reworked
+- Reply count is now shown next to the reply button
+- Replies are now shown inline on the timeline
+- Replies to inaccessible notes are now marked with a lock
+- The login page now redirects to the previous page after successful authentication
+- Erroneous "note not found" messages in the single note view have been resolved
+- Long notes now get truncated correctly
+- Accessibility issues with the compose dialog have been resolved
+- The main layout now carries accessibility landmarks
+- Profile images on notes are now indicated as being links
+- Various bits of missing alt text have been added
+- User profiles now show the profile banner, if set
+- Verified, birthday & location fields now have appropriate icons
+
+### Backend
+- The content root path is now set to the assembly directory instead of the working directory
+- Additional domains to permit can now be added in the configuration file
+- Reply notifications are no longer generated for remote users
+- User creations with database conflicts now fail early and with a better error message
+- Paginated collections are now handled correctly
+- Raw JSON-LD value types are now deserialized correctly
+- Dead instances are no longer erroneously marked as responsive
+- The program now exits when started with --migrate & no pending migrations
+- Several long-running tasks now consume less memory due to improved database abstractions
+- Files larger than 128MB can now be uploaded
+- Non-image attachments no longer have leading dashes erroneously added to their filenames
+- Drive files can now be deleted
+- Links converted from HTML now get shortened if the url and text components match
+- The local-only flag is now enforced for renotes & replies of local-only notes
+- Invalid accept activities now have improved error logging
+- Mention in parentheses are now parsed correctly
+- The media cleanup task no longer causes database query warnings
+- Newlines surrounding code blocks are now handled correctly
+- Code blocks are now serialized correctly
+- Erroneous job timeouts are no longer logged
+- Job timeouts now log improved error messages
+- Queue exceptions are no longer logged twice
+- The prune-designer-cs-files helper script has been relicensed under MIT
+- Inbox queue logs have been improved
+- Creating local follow relationships no longer cause errors related to instance stats
+- Delayed jobs can now be abandoned in the queue dashboard
+- Renotes & quotes mentioning muted/blocked users now get filtered
+- System users can no longer be followed
+- Reply/renote accessibility is now indicated correctly in Web API responses
+- Zero-durations in the configuration file now get treated the same regardless of their suffix
+- Media cleanup can now be triggered manually
+- Punycode hosts are now represented in lowercase everywhere
+- Deep threads no longer cause API errors
+- Emoji can now be marked as sensitive
+- Erroneous inbox job failures for activities referencing deleted notes have been resolved
+- System users can no longer log in or create notes
+- Avatar & banner updates now set the denormalized URLs to the AccessUrl instead of the regular Url
+- Files served by /files are now returned as inline attachments
+- Endpoints to get all blocked/allowed instances have been added
+- Log messages related to jobs that were queued for more than 10 seconds have been improved
+- The background-task queue timeout has been increased to accommodate longer-running tasks
+- The inbox queue timeout has been increased to accommodate longer-running jobs
+- Erroneous voter counts for polls from instances that don't return a voter count value have been resolved
+- Drive file expiry no longer leaves orphaned file versions in the storage backend
+- MFM fn nodes now get parsed correctly
+- Content warnings can now be searched for explicitly using the cw: search filter
+- The replies collection is now exposed for local notes
+- A bug in the drive file cleanup job related to locally stored files has been resolved
+- The job queue now supports a mutex field to prevent the same job from being queued by multiple threads
+- Negative voter counts are now rejected
+- It's now possible to bite users, posts & other bites
+- InboxValidationMiddleware error handling has been improved
+- A typo causing confusing log messages in ActivityHandlerService has been fixed
+- UserResolver has been fully reworked, deduplicating significant amounts of code & greatly limiting attack surface, as well as improving consistency & performance
+- Endpoints for listing note likes, renotes & quotes have been added
+- Web API responses now use RestPagination instead of LinkPagination
+- Stripped reply data is now returned for the note ascendants & descendants Web API endpoints
+- The request trace identifier is now returned as a header even when no errors have occurred
+- The WebFinger JSON-LD context definition is now preloaded
+- The natural duration configuration parser has been reworked to support seconds & minutes. Support for weeks, months & years has been removed.
+- Lists using stars as item indicators no longer get mis-parsed by libmfm
+- HTTP/2 is now preferred for outgoing connections
+- The StreamingService render-only-once mutex implementation has been fixed
+- DriveController is no longer serving files with possibly invalid extensions
+- The thread mute endpoints no longer have incorrect rate limits
+- A bug causing some followers-only renote activities to be registered as specified has been fixed
+- Stricter guard clauses have been added to some federation-related methods
+- ActivityPub URIs are now enforced to be https everywhere
+- More efficient time & duration is now being used where applicable
+- An edge case related to local mentions in profile fields & bios has been resolved
+- Followers can now be removed via a new endpoint
+
+### Razor (public preview, admin panel, queue dashboard, etc.)
+- Basic user page public preview has been added
+- Razor pages now carry a footer with login, instance & version information
+- The RestrictedNoMedia public preview mode is now enforced
+- Avatars are now replaced with identicons when public preview mode is set to RestrictedNoMedia
+- Public hashtag preview now displays a placeholder instead of loading the blazor frontend
+- When public preview is disabled, a better error message is now shown
+- The instance name is now shown in the title of queue dashboard pages
+- You can now click on avatars & display names of users on public note preview pages
+- The queue dashboard now allows for batch retries of failed jobs
+- Custom emoji are now displayed on public preview pages
+- The error page for disabled public preview now has a login button
+- Public preview pages have been rebuilt using Blazor SSR (Razor components)
+- Sensitive media is now skipped for public preview embeds
+- Public preview embeds with images now use the correct card type
+- Delayed jobs with a retry count of zero are now marked as scheduled on the queue dashboard
+- The entries in the queue dashboard overview table are now clickable
+- Abandoning or descheduling jobs in the queue dashboard now requires confirmation
+- CSS & JS files are now versioned on razor pages & blazor SSR
+
+### Mastodon client API
+- Blockquotes are now handled better for some clients
+- Reaction notification are now shown in supported clients
+- The git revision is no longer reported in the backend version string
+- The bite extension is now supported, allowing bites to originate from compatible clients
+
+### Akkoma client API
+- Akkoma-specific endpoints have been implemented, adding support for Akkoma clients, including Akko-FE
+
+### Miscellaneous
+- The frontend is no longer unnecessarily rebuilt during CI runs
+- SECURITY.md has been added to the repository root
+- FEDERATION.md has been updated to reflect support for FEP-9fde
+- Vulnerable dependency checks no longer cause build failures by default. To opt back in to the previous behavior, add the `DependencyVulnsAsError=true` build flag, or the `DEP_VULN_WERROR=true` make flag.
+
+### Attribution
+This release was made possible by project contributors: Jeder, Kopper, Laura Hausmann, Lilian, Samuel Proulx, kopper, notfire, pancakes & zotan
+
 ## v2024.1-beta3.patch1
 This is a hotfix release. It's identical to v2024.1-beta3, except for a bunch of fixed frontend crashes. Upgrading is strongly recommended for all server operators.
 
