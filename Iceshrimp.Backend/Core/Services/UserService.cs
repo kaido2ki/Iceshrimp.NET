@@ -881,13 +881,7 @@ public class UserService(
 	{
 		if ((follower.PrecomputedIsFollowing ?? false) && follower.IsRemoteUser)
 		{
-			var followingId = await db.Followings
-			                          .Where(p => p.Followee == user && p.Follower == follower)
-			                          .Select(p => p.Id)
-			                          .FirstAsync();
-
-			var accept   = activityRenderer.RenderAccept(user, follower, followingId);
-			var activity = activityRenderer.RenderUndo(userRenderer.RenderLite(user), accept);
+			var activity = activityRenderer.RenderUnfollow(follower, user, null);
 			await deliverSvc.DeliverToAsync(activity, user, follower);
 		}
 
