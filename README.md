@@ -32,7 +32,7 @@
 > **Note**
 > This is beta software. The Mastodon client API is relatively complete, the frontend is rapidly improving. Nonetheless, we don't recommend to upgrade existing Iceshrimp-JS instances quite yet. Setting up new instances and reporting bugs is very appreciated, however, and will help us ensure eventual upgrades go as smoothly as possible.
 >
-> If everything goes well, we estimate that there'll be a stable release by the end of 2024.
+> If everything goes well, we estimate that there'll be a stable release by the end of Q1 2025.
 
 ---
 
