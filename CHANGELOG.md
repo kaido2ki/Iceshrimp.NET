@@ -155,7 +155,7 @@ Furthermore, this release contains a migration that may take a while, as it goes
 - Vulnerable dependency checks no longer cause build failures by default. To opt back in to the previous behavior, add the `DependencyVulnsAsError=true` build flag, or the `DEP_VULN_WERROR=true` make flag.
 
 ### Attribution
-This release was made possible by project contributors: Jeder, Kopper, Laura Hausmann, Lilian, Samuel Proulx, kopper, notfire, pancakes & zotan
+This release was made possible by project contributors: Jeder, Laura Hausmann, Lilian, Samuel Proulx, kopper, notfire & pancakes
 
 ## v2024.1-beta3.patch1
 This is a hotfix release. It's identical to v2024.1-beta3, except for a bunch of fixed frontend crashes. Upgrading is strongly recommended for all server operators.
