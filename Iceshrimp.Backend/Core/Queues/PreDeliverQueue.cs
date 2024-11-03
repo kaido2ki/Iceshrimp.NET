@@ -93,7 +93,7 @@ public class PreDeliverQueue(int parallelism)
 			// @formatter:on
 		}
 
-		if (activity is ASCreate or ASDelete { Object: ASNote })
+		if (activity is ASCreate or ASUpdate { Object: ASNote } or ASDelete { Object: ASNote })
 		{
 			if (activity.Object is not ASNote n) return;
 			if (!n.To?.Any(p => p.Id == $"{Constants.ActivityStreamsNs}#Public") ?? true) return;
