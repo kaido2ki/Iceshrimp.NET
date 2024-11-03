@@ -257,7 +257,6 @@ public class AccountController(
 		var follower = await db.Followings
 		                       .Where(p => p.FolloweeId == user.Id && p.FollowerId == id)
 		                       .Select(p => p.Follower)
-		                       .IncludeCommonProperties()
 		                       .PrecomputeRelationshipData(user)
 		                       .FirstOrDefaultAsync() ??
 		               throw GracefulException.RecordNotFound();
