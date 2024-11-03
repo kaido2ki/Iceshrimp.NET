@@ -6,6 +6,10 @@ public record VersionInfo(string Version, string RawVersion, string Codename, st
 
 public static class VersionHelpers
 {
+	// Leave this as-is, unless you've forked the project. Set to a shorthand string that identifies your fork.
+	// Gets appended to the version string like this: v1234.5+fork.commit
+	private const string VersionIdentifier = "upstream";
+
 	public static VersionInfo GetVersionInfo()
 	{
 		var attributes = Assembly.GetExecutingAssembly()
@@ -38,9 +42,28 @@ public static class VersionHelpers
 		// If we have a git revision, limit it to 10 characters
 		if (fullVersion.Split('+') is { Length: 2 } split)
 		{
-			// Accomodate for fork information, e.g. version+fork.commit
-			var extra     = split[1].Split(".");
-			var maxLength = extra.Length == 2 ? extra[0].Length + 1 : 0;
+			int maxLength;
+
+			#pragma warning disable CS8519 // The given expression never matches the provided pattern.
+			#pragma warning disable CS8793 // The input always matches the provided pattern.
+			#pragma warning disable CS8794 // The given expression always matches the provided pattern.
+			// ReSharper disable HeuristicUnreachableCode
+			// ReSharper disable once RedundantIfElseBlock
+			if (VersionIdentifier is not "upstream")
+			{
+				split[1]  = $"{VersionIdentifier}.{split[1]}";
+				maxLength = VersionIdentifier.Length + 1;
+			}
+			else
+			{
+				// Accomodate for fork information, e.g. version+fork.commit
+				var extra = split[1].Split(".");
+				maxLength = extra.Length == 2 ? extra[0].Length + 1 : 0;
+			}
+			// ReSharper restore HeuristicUnreachableCode
+			#pragma warning restore CS8519 // The given expression never matches the provided pattern.
+			#pragma warning restore CS8794 // The input always matches the provided pattern.
+			#pragma warning restore CS8793 // The given expression always matches the provided pattern.
 
 			maxLength  += Math.Min(split[1].Length, 10);
 			commitHash =  split[1];

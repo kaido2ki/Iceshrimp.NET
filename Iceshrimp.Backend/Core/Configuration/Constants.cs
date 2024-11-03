@@ -10,6 +10,8 @@ public static class Constants
 
 	// Leave this as-is, unless you've forked the project & want to reference your own website / repository (irrelevant for license compliance)
 	public const string ProjectHomepageUrl = "https://iceshrimp.dev/iceshrimp/Iceshrimp.NET";
+	
+	// Make sure to also update VersionHelpers.VersionIdentifier if you are building a fork
 
 	public const           string   ActivityStreamsNs = "https://www.w3.org/ns/activitystreams";
 	public const           string   W3IdSecurityNs    = "https://w3id.org/security";
