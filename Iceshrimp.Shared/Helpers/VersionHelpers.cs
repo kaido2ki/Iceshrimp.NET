@@ -38,10 +38,15 @@ public static class VersionHelpers
 		// If we have a git revision, limit it to 10 characters
 		if (fullVersion.Split('+') is { Length: 2 } split)
 		{
-			commitHash = split[1];
-			split[1]   = split[1][..Math.Min(split[1].Length, 10)];
-			version    = string.Join('+', split);
-			rawVersion = split[0];
+			// Accomodate for fork information, e.g. version+fork.commit
+			var extra     = split[1].Split(".");
+			var maxLength = extra.Length == 2 ? extra[0].Length + 1 : 0;
+
+			maxLength  += Math.Min(split[1].Length, 10);
+			commitHash =  split[1];
+			split[1]   =  split[1][..maxLength];
+			version    =  string.Join('+', split);
+			rawVersion =  split[0];
 		}
 		else
 		{
