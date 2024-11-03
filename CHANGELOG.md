@@ -19,7 +19,7 @@ Furthermore, this release contains a migration that may take a while, as it goes
 - A basic admin dashboard has been added
 - Commands for fixing up media & pruning unreferenced files have been added
 - The frontend now shows significantly more note details
-- The frontend layout & stylesheet has been significantly refined
+- The frontend layout & stylesheet have been significantly refined
 - The follow list can now be imported & exported
 
 ### Blazor frontend
