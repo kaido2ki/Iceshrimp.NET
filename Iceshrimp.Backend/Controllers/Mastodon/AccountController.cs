@@ -244,6 +244,28 @@ public class AccountController(
 		return RenderRelationship(followee);
 	}
 
+	[HttpPost("{id}/remove_from_followers")]
+	[Authorize("write:follows")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<RelationshipEntity> RemoveFromFollowers(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot unfollow yourself");
+		
+		var follower = await db.Followings
+		                       .Where(p => p.FolloweeId == user.Id && p.FollowerId == id)
+		                       .Select(p => p.Follower)
+		                       .IncludeCommonProperties()
+		                       .PrecomputeRelationshipData(user)
+		                       .FirstOrDefaultAsync() ??
+		               throw GracefulException.RecordNotFound();
+		
+		await userSvc.RemoveFromFollowersAsync(user, follower);
+		return RenderRelationship(follower);
+	}
+
 	[HttpPost("{id}/mute")]
 	[Authorize("write:mutes")]
 	[ProducesResults(HttpStatusCode.OK)]
