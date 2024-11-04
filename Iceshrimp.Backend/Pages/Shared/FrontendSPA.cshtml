@@ -16,6 +16,9 @@
     <link rel="stylesheet" href="~/_content/Iceshrimp.Assets.PhosphorIcons/css/ph-fill.css" asp-append-version="true"/>
     <link rel="icon" type="image/png" href="~/favicon.png" asp-append-version="true"/>
     <link rel="stylesheet" href="~/Iceshrimp.Frontend.styles.css" asp-append-version="true"/>
+    <link href="manifest.webmanifest" rel="manifest" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
 </head>
 
 <body>
@@ -38,6 +41,7 @@
 </div>
 
 <script src="~/_framework/blazor.webassembly.js" asp-append-version="true"></script>
+<script>navigator.serviceWorker.register('service-worker.js');</script>
 </body>
 
 </html>
