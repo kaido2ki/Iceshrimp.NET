@@ -14,8 +14,11 @@
     <link rel="stylesheet" href="~/css/app.css"/>
     <link rel="stylesheet" href="~/_content/Iceshrimp.Assets.PhosphorIcons/css/ph-regular.css"/>
     <link rel="stylesheet" href="~/_content/Iceshrimp.Assets.PhosphorIcons/css/ph-fill.css"/>
-    <link rel="icon" type="image/png" href="~/favicon.png"/>
+    <link rel="icon" type="image/png" href="~/_content/Iceshrimp.Assets.Branding/favicon.png"/>
     <link rel="stylesheet" href="~/Iceshrimp.Frontend.styles.css"/>
+    <link href="manifest.webmanifest" rel="manifest"/>
+    <link rel="apple-touch-icon" sizes="512x512" href="~/_content/Iceshrimp.Assets.Branding/512.png"/>
+    <link rel="apple-touch-icon" sizes="192x192" href="~/_content/Iceshrimp.Assets.Branding/192.png"/>
 </head>
 
 <body>
@@ -38,6 +41,7 @@
 </div>
 
 <script src="~/_framework/blazor.webassembly.js"></script>
+<script>navigator.serviceWorker.register('service-worker.js');</script>
 </body>
 
 </html>

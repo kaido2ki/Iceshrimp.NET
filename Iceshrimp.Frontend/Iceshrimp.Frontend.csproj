@@ -6,8 +6,8 @@
         <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
 
-    <Import Project="..\Iceshrimp.Build\Iceshrimp.Build.props"/>
-    <Import Project="..\Iceshrimp.Build\Iceshrimp.Build.targets"/>
+    <Import Project="..\Iceshrimp.Build\Iceshrimp.Build.props" />
+    <Import Project="..\Iceshrimp.Build\Iceshrimp.Build.targets" />
 
     <!-- Disables erroneous ILLink warnings. See https://github.com/dotnet/fsharp/issues/15261#issuecomment-1562959640 for more details.-->
     <PropertyGroup>
@@ -16,6 +16,7 @@
 
     <ItemGroup>
         <None Update="Components/MfmText.razor.css" CssScope="mfm" />
+        <None Include="wwwroot\icon-512.png" />
     </ItemGroup>
 
     <ItemGroup>
@@ -27,6 +28,7 @@
         <PackageReference Include="AngleSharp" Version="1.1.2" />
         <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
         <PackageReference Include="BlazorIntersectionObserver" Version="3.1.0" />
+        <PackageReference Include="Iceshrimp.Assets.Branding" Version="1.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />
@@ -43,6 +45,15 @@
     <!-- Transitive dependency version overrides to patch security vulnerabilities -->
     <ItemGroup>
         <PackageReference Include="MessagePack" Version="2.5.192" />
+    </ItemGroup>
+
+    <!-- Required for PWA Features -->
+    <PropertyGroup>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
     </ItemGroup>
 
     <ItemGroup>
