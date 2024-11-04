@@ -14,5 +14,7 @@ public class UserResponse
 	public required string? InstanceName    { get; set; }
 	public required string? InstanceIconUrl { get; set; }
 
+	public List<EmojiResponse> Emojis { get; set; } = [];
+
 	[JI(Condition = WhenWritingNull)] public string? MovedTo { get; set; }
 }

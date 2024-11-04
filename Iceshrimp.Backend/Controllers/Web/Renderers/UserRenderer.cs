@@ -20,6 +20,8 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		var instanceName = user.IsLocalUser ? config.Value.AccountDomain : instance?.Name;
 		var instanceIcon = user.IsLocalUser ? null : instance?.FaviconUrl;
 
+		var emojis = await GetEmojis([user]);
+
 		return new UserResponse
 		{
 			Id              = user.Id,
@@ -30,6 +32,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			BannerUrl       = user.BannerUrl,
 			InstanceName    = instanceName,
 			InstanceIconUrl = instanceIcon,
+			Emojis          = emojis,
 			MovedTo         = user.MovedToUri
 		};
 	}
@@ -45,6 +48,27 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		var userList = users.ToList();
 		var data     = new UserRendererDto { InstanceData = await GetInstanceData(userList) };
 		return await userList.Select(p => RenderOne(p, data)).AwaitAllAsync();
+	}
+
+	private async Task<List<EmojiResponse>> GetEmojis(IEnumerable<User> users)
+	{
+		var ids = users.SelectMany(p => p.Emojis).ToList();
+		if (ids.Count == 0) return [];
+
+		return await db.Emojis
+		               .Where(p => ids.Contains(p.Id))
+		               .Select(p => new EmojiResponse
+		               {
+			               Id        = p.Id,
+			               Name      = p.Name,
+			               Uri       = p.Uri,
+			               Aliases   = p.Aliases,
+			               Category  = p.Category,
+			               PublicUrl = p.PublicUrl,
+			               License   = p.License,
+			               Sensitive = p.Sensitive
+		               })
+		               .ToListAsync();
 	}
 
 	public class UserRendererDto
