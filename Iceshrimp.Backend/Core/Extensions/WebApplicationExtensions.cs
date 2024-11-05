@@ -124,7 +124,7 @@ public static class WebApplicationExtensions
 			         !args.Contains("--i-made-a-database-backup") ||
 			         !args.Contains("--i-understand-that-this-is-a-one-way-operation"))
 			{
-				app.Logger.LogCritical("Missing confirmation argument(s), please follow the instructions in the wiki exactly.");
+				app.Logger.LogCritical("Missing confirmation argument(s), please follow the instructions on https://iceshrimp.net/help/migrate exactly.");
 				Environment.Exit(1);
 			}
 			else
@@ -137,12 +137,12 @@ public static class WebApplicationExtensions
 				catch (Exception e)
 				{
 					app.Logger.LogCritical("Failed to apply initial migration: {error}", e);
-					app.Logger.LogCritical("Manual intervention required, please follow the instructions in the wiki for more information.");
+					app.Logger.LogCritical("Manual intervention required, please follow the instructions on https://iceshrimp.net/help/migrate for more information.");
 					Environment.Exit(1);
 				}
 
 				app.Logger.LogInformation("Successfully applied the initial migration.");
-				app.Logger.LogInformation("Please follow the instructions on the wiki to validate the database schema.");
+				app.Logger.LogInformation("Please follow the instructions on https://iceshrimp.net/help/migrate to validate the database schema.");
 				Environment.Exit(0);
 			}
 		}
@@ -154,7 +154,7 @@ public static class WebApplicationExtensions
 			if (pendingMigration == initialMigration && !await db.IsDatabaseEmpty())
 			{
 				app.Logger.LogCritical("Initial migration is pending but database is not empty.");
-				app.Logger.LogCritical("If you are trying to migrate from iceshrimp-js, please follow the instructions in the wiki.");
+				app.Logger.LogCritical("If you are trying to migrate from iceshrimp-js, please follow the instructions on https://iceshrimp.net/help/migrate.");
 				Environment.Exit(1);
 			}
 
@@ -195,13 +195,13 @@ public static class WebApplicationExtensions
 			await provider.GetRequiredService<StorageMaintenanceService>().MigrateLocalFiles(args.Contains("--purge"));
 			Environment.Exit(0);
 		}
-		
+
 		if (args.Contains("--fixup-media"))
 		{
 			await provider.GetRequiredService<StorageMaintenanceService>().FixupMedia(args.Contains("--dry-run"));
 			Environment.Exit(0);
 		}
-		
+
 		if (args.Contains("--cleanup-storage"))
 		{
 			await provider.GetRequiredService<StorageMaintenanceService>().CleanupStorage(args.Contains("--dry-run"));
