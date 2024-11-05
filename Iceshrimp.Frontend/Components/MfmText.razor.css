@@ -47,6 +47,23 @@
 }
 
 ::deep {
+    .emoji.simple {
+        > img {
+            height: 1.25em;
+            vertical-align: -0.25em;
+        }
+    }
+}
+
+::deep {
+    .emoji.simple {
+        > img:hover {
+            transform: none;
+        }
+    }
+}
+
+::deep {
     .quote-node {
         /*Copying the appearance of -js*/
         margin: 8px 0;

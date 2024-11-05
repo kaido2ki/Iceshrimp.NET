@@ -8,18 +8,18 @@ namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
 public static class MfmRenderer
 {
-	public static async Task<MarkupString> RenderString(string text, List<EmojiResponse> emoji)
+	public static async Task<MarkupString> RenderString(string text, List<EmojiResponse> emoji, bool simple = false)
 	{
-		var res         = Mfm.parse(text);
+		var res         = simple ? Mfm.parseSimple(text) : Mfm.parse(text);
 		var context     = BrowsingContext.New();
 		var document    = await context.OpenNewAsync();
-		var renderedMfm = RenderMultipleNodes(res, document, emoji);
+		var renderedMfm = RenderMultipleNodes(res, document, emoji, simple);
 		var html        = renderedMfm.ToHtml();
 		return new MarkupString(html);
 	}
 
 	private static INode RenderMultipleNodes(
-		IEnumerable<MfmNodeTypes.MfmNode> nodes, IDocument document, List<EmojiResponse> emoji
+		IEnumerable<MfmNodeTypes.MfmNode> nodes, IDocument document, List<EmojiResponse> emoji, bool simple
 	)
 	{
 		var el = document.CreateElement("span");
@@ -29,7 +29,7 @@ public static class MfmRenderer
 		{
 			try
 			{
-				el.AppendNodes(RenderNode(node, document, emoji));
+				el.AppendNodes(RenderNode(node, document, emoji, simple));
 			}
 			catch (NotImplementedException e)
 			{
@@ -42,7 +42,7 @@ public static class MfmRenderer
 		return el;
 	}
 
-	private static INode RenderNode(MfmNodeTypes.MfmNode node, IDocument document, List<EmojiResponse> emoji)
+	private static INode RenderNode(MfmNodeTypes.MfmNode node, IDocument document, List<EmojiResponse> emoji, bool simple)
 	{
 		// Hard wrap makes this impossible to read
 		// @formatter:off
@@ -55,7 +55,7 @@ public static class MfmRenderer
 			MfmNodeTypes.MfmSearchNode mfmSearchNode         => throw new NotImplementedException($"{mfmSearchNode.GetType()}"),
 			MfmNodeTypes.MfmBlockNode mfmBlockNode           => throw new NotImplementedException($"{mfmBlockNode.GetType()}"),
 			MfmNodeTypes.MfmBoldNode mfmBoldNode             => MfmBoldNode(mfmBoldNode, document),
-			MfmNodeTypes.MfmEmojiCodeNode mfmEmojiCodeNode   => MfmEmojiCodeNode(mfmEmojiCodeNode, document, emoji),
+			MfmNodeTypes.MfmEmojiCodeNode mfmEmojiCodeNode   => MfmEmojiCodeNode(mfmEmojiCodeNode, document, emoji, simple),
 			MfmNodeTypes.MfmFnNode mfmFnNode                 => throw new NotImplementedException($"{mfmFnNode.GetType()}"),
 			MfmNodeTypes.MfmHashtagNode mfmHashtagNode       => MfmHashtagNode(mfmHashtagNode, document),
 			MfmNodeTypes.MfmInlineCodeNode mfmInlineCodeNode => MfmInlineCodeNode(mfmInlineCodeNode, document),
@@ -79,7 +79,7 @@ public static class MfmRenderer
 			{
 				try
 				{
-					rendered.AppendNodes(RenderNode(childNode, document, emoji));
+					rendered.AppendNodes(RenderNode(childNode, document, emoji, simple));
 				}
 				catch (NotImplementedException e)
 				{
@@ -157,11 +157,11 @@ public static class MfmRenderer
 	}
 
 	private static INode MfmEmojiCodeNode(
-		MfmNodeTypes.MfmEmojiCodeNode node, IDocument document, List<EmojiResponse> emojiList
+		MfmNodeTypes.MfmEmojiCodeNode node, IDocument document, List<EmojiResponse> emojiList, bool simple
 	)
 	{
 		var el = document.CreateElement("span");
-		el.ClassName = "emoji";
+		el.ClassName = simple ? "emoji simple" : "emoji";
 
 		var emoji = emojiList.Find(p => p.Name == node.Name);
 		if (emoji is null)
@@ -173,6 +173,7 @@ public static class MfmRenderer
 			var image = document.CreateElement("img");
 			image.SetAttribute("src", emoji.PublicUrl);
 			image.SetAttribute("alt", node.Name);
+			image.SetAttribute("title", $":{emoji.Name}:");
 			el.AppendChild(image);
 		}
 
