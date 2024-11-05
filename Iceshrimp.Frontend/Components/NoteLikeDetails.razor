@@ -13,7 +13,7 @@
             <div @onclick="() => OpenProfile(el.Username, el.Host)" class="detail-entry">
                 <img class="icon" src="@el.AvatarUrl"/>
                 <div class="name-section">
-                    <div class="displayname">@(el.DisplayName ?? el.Username)</div>
+                    <div class="displayname"><UserDisplayName User="@el"/></div>
                     <div class="username">@@@el.Username@(el.Host != null ? $"@{el.Host}" : "")</div>
                 </div>
             </div>

@@ -7,14 +7,7 @@
             <div class="renote-info">
                 <span class="user">
                     <Icon Name="Icons.Repeat"/> Renoted by
-                    @if (NoteResponse.User.DisplayName != null)
-                    {
-                        @NoteResponse.User.DisplayName
-                    }
-                    else
-                    {
-                        @NoteResponse.User.Username
-                    }
+                    <UserDisplayName User="@NoteResponse.User"/>
                 </span>
                 <span class="metadata">
                     <NoteMetadata Visibility="NoteResponse.Visibility" InstanceName="@null" CreatedAt="DateTime.Parse(NoteResponse.CreatedAt)"/>
