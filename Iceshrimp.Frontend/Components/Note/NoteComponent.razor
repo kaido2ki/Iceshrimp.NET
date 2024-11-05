@@ -5,12 +5,7 @@
 @inject ComposeService    ComposeService
 @inject SessionService    Session;
 <div class="note-header">
-    <NoteUserInfo
-        AvatarUrl="@Note.User.AvatarUrl"
-        DisplayName="@Note.User.DisplayName"
-        Username="@Note.User.Username"
-        Host="@Note.User.Host"
-        Indented="Indented"/>
+    <NoteUserInfo User="@Note.User" Indented="Indented"/>
     <NoteMetadata
         Visibility="@Note.Visibility"
         InstanceName="@Note.User.InstanceName"

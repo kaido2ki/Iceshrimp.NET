@@ -1,27 +1,25 @@
+@using Iceshrimp.Shared.Schemas.Web
 @inject NavigationManager Nav
 
 @if (Indented == false)
 {
-    <img @onclick="OpenProfile" class="user-avatar" src="@AvatarUrl" alt="@(DisplayName ?? Username)" role="link"/>
+    <img @onclick="OpenProfile" class="user-avatar" src="@(User.AvatarUrl ?? $"/identicon/{User.Id}")" alt="@(User.DisplayName ?? User.Username)" role="link"/>
 }
 <div class="name-section">
-    <span class="display-name">@(DisplayName ?? Username)</span>
-    <span class="identifier">@@@Username@(Host != null ? $"@{Host}" : "")</span>
+    <span class="display-name"><UserDisplayName User="@User"/></span>
+    <span class="identifier">@@@User.Username@(User.Host != null ? $"@{User.Host}" : "")</span>
 </div>
 
 @code {
-    [Parameter] [EditorRequired] public required string  AvatarUrl   { get; set; }
-    [Parameter] [EditorRequired] public required string? DisplayName { get; set; }
-    [Parameter] [EditorRequired] public required string  Username    { get; set; }
-    [Parameter] [EditorRequired] public required bool    Indented    { get; set; }
-    [Parameter] [EditorRequired] public required string? Host        { get; set; }
+    [Parameter] [EditorRequired] public required UserResponse User     { get; set; }
+    [Parameter] [EditorRequired] public required bool         Indented { get; set; }
 
     private void OpenProfile()
     {
-        var path = $"@{Username}";
-        if (Host?.Length > 0)
+        var path = $"@{User.Username}";
+        if (User.Host?.Length > 0)
         {
-            path += $"@{Host}";
+            path += $"@{User.Host}";
         }
 
         Nav.NavigateTo($"/{path}");
