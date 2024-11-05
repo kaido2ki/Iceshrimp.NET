@@ -20,10 +20,10 @@
   - Flashy marketing
   - Commercialization of any kind
 - Want to set up an instance?
-  - Have a look at the [documentation](https://kb.iceshrimp.dev/s/docs) & the [feature comparison matrix](https://kb.iceshrimp.dev/s/docs/doc/production-readiness-Bs0HK2ZXO8)!
+  - Have a look at the [documentation](https://iceshrimp.net/docs) & the [feature comparison matrix](https://iceshrimp.net/help/prodready)!
   - Please note that we do not operate a "flagship instance", the only project-affiliated domains are `iceshrimp.dev` and `iceshrimp.net`.
 - Want to join development efforts?
-  - Have a look at the [knowledgebase](https://kb.iceshrimp.dev) and join the [chat room](https://chat.iceshrimp.dev)!
+  - Have a look at the [knowledgebase](https://iceshrimp.net/kb) and join the [chat room](https://chat.iceshrimp.dev)!
 - Want to donate to the project?
   - Our frontend dev (Lilian) needs help paying for healthcare costs. You can contribute [here](https://bunq.me/LilianHealthcare). Money from the fund will be used for co-pays, and medical expenses not covered by insurance.
 
