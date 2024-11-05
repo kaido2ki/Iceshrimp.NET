@@ -7,7 +7,7 @@
 @if (NoteBase.Cw != null)
 {
     <div class="cw">
-        <span class="cw-field">@NoteBase.Cw</span><button class="cw-button" @onclick="ToggleCw" @onclick:stopPropagation="true">Toggle CW</button>
+        <span class="cw-field"><MfmText Text="@NoteBase.Cw" Emoji="@NoteBase.Emoji" Simple="@true"/></span><button class="cw-button" @onclick="ToggleCw" @onclick:stopPropagation="true">Toggle CW</button>
     </div>
     <div hidden="@_cwToggle" class="note-body @(_cwToggle ? "hidden" : "") @(Indented ? "indent" : "")" @ref="Body">
         <span>
