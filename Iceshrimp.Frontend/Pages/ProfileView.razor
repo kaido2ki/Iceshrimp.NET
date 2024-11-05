@@ -39,7 +39,7 @@
                 </div>
                 <FollowButton User="UserResponse" UserProfile="Profile"/>
             </div>
-            <ProfileInfo UserProfile="Profile"/>
+            <ProfileInfo Emojis="@UserResponse.Emojis" UserProfile="Profile"/>
         </div>
         @if (UserNotes.Count > 0)
         {
