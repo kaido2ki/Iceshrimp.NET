@@ -25,7 +25,7 @@
                     </div>
                     <div class="name-section">
                         <div class="name">
-                            @(UserResponse.DisplayName ?? UserResponse.Username)
+                            <UserDisplayName User="@UserResponse"/>
                         </div>
                         <div class="identifier">
                             @@@UserResponse.Username
