@@ -6,13 +6,14 @@
         {
             <Icon class="verified" Name="Icons.SealCheck" Size="1.3em"/>
         }
-        @Field.Name
+        <MfmText Text="@Field.Name" Emoji="@Emojis" Simple="@true"></MfmText>
     </span>
     <span class="field-value">
-        <MfmText Text="@Field.Value"></MfmText>
+        <MfmText Text="@Field.Value" Emoji="@Emojis" Simple="@true"></MfmText>
     </span>
 </div>
 
 @code {
-    [Parameter] [EditorRequired] public required UserProfileField Field { get; set; }
+    [Parameter] [EditorRequired] public required UserProfileField    Field  { get; set; }
+    [Parameter] [EditorRequired] public required List<EmojiResponse> Emojis { get; set; }
 }

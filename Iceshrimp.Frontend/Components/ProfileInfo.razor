@@ -7,7 +7,7 @@
     @if (UserProfile.Bio != null)
     { 
         <div class="bio">
-            <MfmText Text="@UserProfile.Bio"/>
+            <MfmText Text="@UserProfile.Bio" Emoji="@Emojis"/>
         </div>
     }
     <div class="data">
@@ -37,7 +37,7 @@
         <div class="fields">
             @foreach (var field in UserProfile.Fields)
             {
-                <ProfileInfoField Field="field"/>
+                <ProfileInfoField Field="field" Emojis="@Emojis"/>
             }
         </div>
     }
@@ -63,4 +63,5 @@
 
 @code {
     [Parameter] [EditorRequired] public required UserProfileResponse UserProfile { get; set; }
+    [Parameter] [EditorRequired] public required List<EmojiResponse> Emojis      { get; set; }
 }
