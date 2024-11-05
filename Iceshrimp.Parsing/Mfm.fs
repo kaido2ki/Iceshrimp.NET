@@ -196,7 +196,8 @@ module private MfmParser =
         }
 
     // Patterns
-    let italicPattern = (notFollowedBy <| str "**") >>. skipChar '*'
+    let italicPattern = ((notFollowedBy <| str "**") >>. skipChar '*')
+    let italicPatternAlt = ((notFollowedBy <| str "__") >>. skipChar '_')
     let codePattern = (notFollowedBy <| str "```") >>. skipChar '`'
 
     // Matchers
@@ -207,6 +208,8 @@ module private MfmParser =
 
     let italicNode =
         (italicPattern >>. pushLine >>. manyTill inlineNode italicPattern .>> assertLine)
+        <|> (italicPatternAlt >>. pushLine >>. manyTill inlineNode italicPatternAlt
+             .>> assertLine)
         <|> (skipString "<i>" >>. pushLine >>. manyTill inlineNode (skipString "</i>")
              .>> assertLine)
         |>> fun c -> MfmItalicNode(aggregateTextInline c) :> MfmNode
@@ -214,6 +217,8 @@ module private MfmParser =
     let boldNode =
         (skipString "**" >>. pushLine >>. manyTill inlineNode (skipString "**")
          .>> assertLine)
+        <|> (skipString "__" >>. pushLine >>. manyTill inlineNode (skipString "__")
+             .>> assertLine)
         <|> (skipString "<b>" >>. pushLine >>. manyTill inlineNode (skipString "</b>")
              .>> assertLine)
         |>> fun c -> MfmBoldNode(aggregateTextInline c) :> MfmNode

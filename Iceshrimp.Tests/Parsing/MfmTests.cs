@@ -24,7 +24,9 @@ public class MfmTests
 		];
 
 		var res         = Mfm.parse("*italic **bold** italic*").ToList();
-		var resAlt      = Mfm.parse("<i>italic <b>bold</b> italic</i>").ToList();
+		var resAlt      = Mfm.parse("_italic **bold** italic_").ToList();
+		var resAlt2     = Mfm.parse("_italic __bold__ italic_").ToList();
+		var resAlt3     = Mfm.parse("<i>italic <b>bold</b> italic</i>").ToList();
 		var resMixed    = Mfm.parse("<i>italic **bold** italic</i>").ToList();
 		var resMixedAlt = Mfm.parse("*italic <b>bold</b> italic*").ToList();
 
@@ -32,6 +34,8 @@ public class MfmTests
 
 		res.Should().Equal(expected, MfmNodeEqual);
 		resAlt.Should().Equal(expected, MfmNodeEqual);
+		resAlt2.Should().Equal(expected, MfmNodeEqual);
+		resAlt3.Should().Equal(expected, MfmNodeEqual);
 		resMixed.Should().Equal(expected, MfmNodeEqual);
 		resMixedAlt.Should().Equal(expected, MfmNodeEqual);
 	}
@@ -380,7 +384,7 @@ public class MfmTests
 		{
 			var pre = Stopwatch.GetTimestamp();
 			Mfm.parse(mfm);
-			var ms   = Stopwatch.GetElapsedTime(pre).GetTotalMilliseconds();
+			var ms = Stopwatch.GetElapsedTime(pre).GetTotalMilliseconds();
 			Console.WriteLine($@"Took {ms} ms");
 			return ms;
 		}
