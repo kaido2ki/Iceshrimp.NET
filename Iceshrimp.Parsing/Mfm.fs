@@ -188,6 +188,7 @@ module private MfmParser =
     // References
     let node, nodeRef = createParserForwardedToRef ()
     let inlineNode, inlineNodeRef = createParserForwardedToRef ()
+    let simple, simpleRef = createParserForwardedToRef ()
 
     let seqFlatten items =
         seq {
@@ -375,6 +376,11 @@ module private MfmParser =
           fnNode
           charNode ]
 
+    let simpleNodeSeq =
+        [ plainNode
+          emojiCodeNode
+          charNode ]
+
     //TODO: still missing: FnNode
 
     let blockNodeSeq =
@@ -386,14 +392,23 @@ module private MfmParser =
     do nodeRef.Value <- choice <| seqAttempt (seqFlatten <| nodeSeq)
 
     do inlineNodeRef.Value <- choice <| (seqAttempt inlineNodeSeq) |>> fun v -> v :?> MfmInlineNode
+    
+    do simpleRef.Value <- choice <| seqAttempt simpleNodeSeq
 
     // Final parse command
     let parse = spaces >>. manyTill node eof .>> spaces
+    
+    let parseSimple = spaces >>. manyTill simple eof .>> spaces
 
 open MfmParser
 
 module Mfm =
     let parse str =
         match runParserOnString parse 0 "" str with
+        | Success(result, _, _) -> aggregateText result
+        | Failure(s, _, _) -> failwith $"Failed to parse MFM: {s}"
+
+    let parseSimple str =
+        match runParserOnString parseSimple 0 "" str with
         | Success(result, _, _) -> aggregateText result
         | Failure(s, _, _) -> failwith $"Failed to parse MFM: {s}"
