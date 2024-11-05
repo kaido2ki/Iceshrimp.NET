@@ -36,16 +36,15 @@ public class ImportExportService(
     {
         foreach (var fqn in fqns)
         {
-            var followee = await userResolver.ResolveAsync($"acct:{fqn}", ResolveFlags.Acct);
-
             try
             {
+                var followee = await userResolver.ResolveAsync($"acct:{fqn}", ResolveFlags.Acct);
                 await userSvc.FollowUserAsync(user, followee);
             }
             catch (Exception e)
             {
                 logger.LogWarning("Failed to import follow {followee} for user {follower}: {error}",
-                                  followee.Id, user.Id, e);
+                                  fqn, user.Id, e);
             }
         }
 
