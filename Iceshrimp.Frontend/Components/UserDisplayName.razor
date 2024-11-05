@@ -1,0 +1,13 @@
+@using Iceshrimp.Shared.Schemas.Web
+@if (User.DisplayName != null && User.Emojis.Count != 0)
+{
+    <MfmText Text="@User.DisplayName" Emoji="@User.Emojis" Simple="@true"/>
+}
+else
+{
+    @(User.DisplayName ?? User.Username)
+}
+
+@code {
+    [Parameter] [EditorRequired] public required UserResponse User { get; set; }
+}
