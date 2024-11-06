@@ -17,6 +17,7 @@ internal class UpdateService
 		_logger             =  logger;
 		UpdateTimer         =  new Timer { AutoReset = true, Enabled = true, Interval = 60000, };
 		UpdateTimer.Elapsed += (_, _) => CheckVersion();
+		CheckVersion();
 	}
 
 	private VersionInfo FrontendVersion { get; } = VersionHelpers.GetVersionInfo();
@@ -27,11 +28,12 @@ internal class UpdateService
 		try
 		{
 			var backendVersion = await _api.Version.GetVersion();
+			_logger.LogInformation("Successfully fetched backend version.");
 			return backendVersion;
 		}
 		catch (ApiException e)
 		{
-			_logger.LogError(e, "Failed to fetch version.");
+			_logger.LogError(e, "Failed to fetch backend version.");
 			return null;
 		}
 	}
