@@ -25,7 +25,7 @@ public class BackfillQueue(int parallelism)
 		o.PoolSize        = 100;
 		o.PoolInitialFill = 5;
 	});
-	
+
 	private static async Task BackfillQueueProcessorDelegateAsync(
 		Job job,
 		BackfillJobData jobData,
@@ -35,38 +35,38 @@ public class BackfillQueue(int parallelism)
 	{
 		if (KeyedLocker.IsInUse(jobData.ThreadId)) return;
 		using var _ = await KeyedLocker.LockAsync(jobData.ThreadId, token);
-		
+
 		var logger         = scope.GetRequiredService<ILogger<BackfillQueue>>();
 		var backfillConfig = scope.GetRequiredService<IOptionsSnapshot<Config.BackfillSection>>();
 		var db             = scope.GetRequiredService<DatabaseContext>();
 		var noteSvc        = scope.GetRequiredService<NoteService>();
 		var objectResolver = scope.GetRequiredService<ActivityPub.ObjectResolver>();
-		
+
 		var user = jobData.AuthenticatedUserId == null
 			? null
 			: await db.Users.Where(u => u.Id == jobData.AuthenticatedUserId).FirstOrDefaultAsync(token);
-		
+
 		logger.LogDebug("Backfilling replies for thread {id} as user {userId}", jobData.ThreadId, user?.Username);
 
 		var cfg = backfillConfig.Value.Replies;
 		var backfillLimit = MaxRepliesPerThread;
 		var history = new HashSet<string>();
-		
+
 		var toBackfillArray = await db.Notes
 		                         .Where(n => n.ThreadId == jobData.ThreadId
 		                                     && n.RepliesCount < MaxRepliesPerNote
 		                                     && n.UserHost != null
-		                                     && n.RepliesCollection != null 
-		                                     && n.CreatedAt <= DateTime.UtcNow - cfg.NewNoteDelayTimeSpan 
+		                                     && n.RepliesCollection != null
+		                                     && n.CreatedAt <= DateTime.UtcNow - cfg.NewNoteDelayTimeSpan
 		                                     && (n.RepliesFetchedAt == null || n.RepliesFetchedAt <= DateTime.UtcNow - cfg.RefreshAfterTimeSpan))
 		                         .Select(n => new BackfillData(n.Id, n.RepliesCollection!))
 		                         .ToArrayAsync(token);
-		
-		var toBackfill = new Queue<BackfillData>(toBackfillArray);
-		while (toBackfill.TryDequeue(out var currentItem))
+
+		var toBackfill = new Stack<BackfillData>(toBackfillArray);
+		while (toBackfill.TryPop(out var currentItem))
 		{
 			var current = currentItem;
-			if (!history.Add(current.RepliesCollection)) 
+			if (!history.Add(current.RepliesCollection))
 			{
 				logger.LogDebug("Skipping {collection} as it was already backfilled in this run", current.RepliesCollection);
 				continue;
@@ -78,7 +78,7 @@ public class BackfillQueue(int parallelism)
 				break;
 			}
 			logger.LogTrace("Backfilling collection {collection} (remaining limit {limit})", current.RepliesCollection, backfillLimit);
-			
+
 			await db.Notes
 			        .Where(n => n.Id == current.Id)
 			        .ExecuteUpdateAsync(p => p.SetProperty(n => n.RepliesFetchedAt, DateTime.UtcNow), token);
@@ -108,7 +108,7 @@ public class BackfillQueue(int parallelism)
 					    (note.RepliesFetchedAt == null ||
 					     note.RepliesFetchedAt <= DateTime.UtcNow - cfg.RefreshAfterTimeSpan))
 					{
-						toBackfill.Enqueue(new BackfillData(note.Id, note.RepliesCollection!));
+						toBackfill.Push(new BackfillData(note.Id, note.RepliesCollection!));
 					}
 				}
 				catch (Exception e)
