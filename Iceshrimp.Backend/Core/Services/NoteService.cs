@@ -252,8 +252,49 @@ public class NoteService(
 		var noteId   = IdHelpers.GenerateSnowflakeId(data.CreatedAt);
 		var threadId = data.Reply?.ThreadId ?? noteId;
 
-		var thread = await db.NoteThreads.Where(t => t.Id == threadId).FirstOrDefaultAsync() ??
-		             new NoteThread { Id = threadId };
+		var context = data.ASNote?.Context;
+		var contextId = context?.Id;
+
+		var thread = contextId != null
+			? await db.NoteThreads.Where(t => t.Uri == contextId || t.Id == threadId).FirstOrDefaultAsync()
+			: await db.NoteThreads.Where(t => t.Id == threadId).FirstOrDefaultAsync();
+
+		var contextOwner      = data.User.IsLocalUser ? data.User : null;
+		bool? contextResolvable = data.User.IsLocalUser ? null : false;
+
+		if (thread == null && context != null)
+		{
+			try
+			{
+				if (await objectResolver.ResolveObjectAsync(context) is ASCollection maybeContext)
+				{
+					context           = maybeContext;
+					contextResolvable = true;
+
+					var owner = context.AttributedTo?.FirstOrDefault();
+					if (owner?.Id != null
+					    && Uri.TryCreate(owner.Id, UriKind.Absolute, out var ownerUri)
+					    && Uri.TryCreate(contextId, UriKind.Absolute, out var contextUri)
+					    && ownerUri.Host == contextUri.Host)
+						contextOwner = await userResolver.ResolveOrNullAsync(owner.Id, ResolveFlags.Uri);
+				}
+			}
+			catch
+			{
+				/*
+				 * some instance software such as the Pleroma family expose a context that isn't resolvable, which is permitted by spec.
+				 * in that case we still use it for threading but mark it as unresolvable.
+				 */
+			}
+		}
+
+		thread ??= new NoteThread
+		{
+			 Id = threadId,
+			 Uri = contextId,
+			 User = contextOwner,
+			 IsResolvable = contextResolvable,
+		};
 
 		var note = new Note
 		{

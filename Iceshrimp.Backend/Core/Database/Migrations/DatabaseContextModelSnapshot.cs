@@ -2807,7 +2807,26 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("backfilledAt");
 
+                    b.Property<bool?>("IsResolvable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("isResolvable");
+
+                    b.Property<string>("Uri")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("uri");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("userId");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("Uri")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("note_thread");
                 });
@@ -5370,6 +5389,16 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Note");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.NoteThread", b =>
+                {
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
                 });

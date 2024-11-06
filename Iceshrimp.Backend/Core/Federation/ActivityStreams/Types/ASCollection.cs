@@ -18,6 +18,9 @@ public class ASCollection : ASObject
 	[SetsRequiredMembers]
 	public ASCollection(string id, bool withType = false) : this(withType) => Id = id;
 
+	[J($"{Constants.ActivityStreamsNs}#attributedTo")]
+	public List<ASObjectBase>? AttributedTo { get; set; }
+
 	[J($"{Constants.ActivityStreamsNs}#items")]
 	[JC(typeof(ASCollectionItemsConverter))]
 	public List<ASObject>? Items { get; set; }

@@ -66,6 +66,10 @@ This document **MAY** alias JSON-LD namespace IRIs to their well-known aliases. 
 - [FEP-67ff: FEDERATION.md](https://codeberg.org/fediverse/fep/src/branch/main/fep/67ff/fep-67ff.md)
 - [FEP-2c59: Discovery of a Webfinger address from an ActivityPub actor](https://codeberg.org/fediverse/fep/src/branch/main/fep/2c59/fep-2c59.md)
 - [FEP-9fde: Mechanism for servers to expose supported operations](https://codeberg.org/fediverse/fep/src/branch/main/fep/9fde/fep-9fde.md)
+- [FEP-7888: Demystifying the context property](https://codeberg.org/fediverse/fep/src/branch/main/fep/7888/fep-7888.md)
+    + Specifically, we use it in a "conversational context" sense, where each note has an attached context, which maps to an internal "thread".
+    + We currently do not use the context for anything other than grouping.
+    + Our context collections contain objects, not activities.
 
 ## FEPs we intend to support in the future
 - [FEP-8fcf: Followers collection synchronization across servers](https://codeberg.org/fediverse/fep/src/branch/main/fep/8fcf/fep-8fcf.md)

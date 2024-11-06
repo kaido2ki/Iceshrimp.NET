@@ -62,6 +62,12 @@ public class NoteRenderer(
 		                      })
 		                      .ToListAsync();
 
+		var contextId = await db.NoteThreads
+		                      .Where(p => p.Id == note.ThreadId)
+		                      .Select(p => p.Uri ?? p.GetPublicUri(config.Value))
+		                      .FirstOrDefaultAsync();
+		var context = contextId != null ? new ASCollection(contextId) : null;
+
 		var emoji = note.Emojis.Count != 0
 			? await db.Emojis.Where(p => note.Emojis.Contains(p.Id) && p.Host == null).ToListAsync()
 			: [];
@@ -166,6 +172,7 @@ public class NoteRenderer(
 					Sensitive    = sensitive,
 					InReplyTo    = replyId,
 					Replies      = replies,
+					Context      = context,
 					Cc           = cc,
 					To           = to,
 					Tags         = tags,
@@ -197,6 +204,7 @@ public class NoteRenderer(
 			Sensitive    = sensitive,
 			InReplyTo    = replyId,
 			Replies      = replies,
+			Context      = context,
 			Cc           = cc,
 			To           = to,
 			Tags         = tags,

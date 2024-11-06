@@ -91,6 +91,10 @@ public class ASNote : ASObjectWithId
 	[JC(typeof(ASCollectionConverter))]
 	public ASCollection? Replies { get; set; }
 
+	[J($"{Constants.ActivityStreamsNs}#context")]
+	[JC(typeof(ASCollectionConverter))]
+	public ASCollection? Context { get; set; }
+
 	public Note.NoteVisibility GetVisibility(User actor)
 	{
 		if (actor.IsLocalUser) throw new Exception("Can't get recipients for local actor");

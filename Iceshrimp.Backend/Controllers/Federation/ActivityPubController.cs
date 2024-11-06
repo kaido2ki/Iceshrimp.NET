@@ -107,6 +107,38 @@ public class ActivityPubController(
 		return res.Compact();
 	}
 
+	[HttpGet("/threads/{id}")]
+	[AuthorizedFetch]
+	[OverrideResultType<ASOrderedCollection>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<JObject> GetThread(string id)
+	{
+		var actor = HttpContext.GetActor();
+		var thread = await db.NoteThreads
+		                     .Include(p => p.User)
+		                     .FirstOrDefaultAsync(p => p.Id == id && p.User != null && p.User.IsLocalUser) ??
+		           throw GracefulException.NotFound("Thread not found");
+
+		var notes = await db.Notes
+		                      .Where(p => p.ThreadId == id)
+		                      .EnsureVisibleFor(actor)
+		                      .OrderByDescending(p => p.Id)
+		                      .Select(p => new Note { Id = p.Id, Uri = p.Uri })
+		                      .ToListAsync();
+
+		var rendered = notes.Select(noteRenderer.RenderLite).Cast<ASObject>().ToList();
+		var res = new ASOrderedCollection
+		{
+			Id         = thread.GetPublicUri(config.Value),
+			AttributedTo = [new ASObjectBase(thread.User!.GetPublicUri(config.Value))],
+			TotalItems = (ulong)rendered.Count,
+			Items      = rendered
+		};
+
+		return res.Compact();
+	}
+
 	[HttpGet("/users/{id}")]
 	[AuthorizedFetch]
 	[OutputCache(PolicyName = "federation")]
