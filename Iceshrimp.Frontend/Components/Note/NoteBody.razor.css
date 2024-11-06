@@ -2,11 +2,11 @@
     display: flex;
     flex-direction: column;
     text-wrap: wrap;
-    word-break: break-all;
     white-space: pre-wrap;
     max-height: 40em;
     height: auto;
     overflow-y: hidden;
+    overflow-wrap: break-word;
 }
 
 .note-content.collapsed {
