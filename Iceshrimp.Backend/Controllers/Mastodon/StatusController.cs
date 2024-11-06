@@ -385,6 +385,12 @@ public class StatusController(
 			}
 			: null;
 
+		if (request.Visibility == "local")
+		{
+			request.Visibility = "public";
+			request.LocalOnly  = true;
+		}
+
 		var visibility = StatusEntity.DecodeVisibility(request.Visibility);
 		var reply = request.ReplyId != null
 			? await db.Notes.Where(p => p.Id == request.ReplyId)
