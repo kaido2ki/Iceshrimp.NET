@@ -7,86 +7,73 @@
 @inject NavigationManager              NavigationManager
 
 <div class="notification">
-    <div class="notification-header">
-        @if (NotificationResponse is { User: not null })
-        {
-            <img @onclick="OpenProfile" class="user-avatar" src="@NotificationResponse.User.AvatarUrl"/>
-        }
-
-        <div class="notification-body">
+    @if (NotificationResponse is not { Type: "mention" } or { Type: "reply" })
+    {
+        <div class="notification-header">
             @if (NotificationResponse is { User: not null })
             {
-                <span @onclick="OpenProfile" class="display-name"><UserDisplayName User="@NotificationResponse.User"/></span>
+                <img @onclick="OpenProfile" class="user-avatar" src="@NotificationResponse.User.AvatarUrl"/>
             }
 
-            @if (NotificationResponse is { Note: not null, Type: "like", User: not null })
-            {
-                <span class="notification-text">@Loc["liked your post: "]</span>
-            }
-            else if (NotificationResponse is { Note: not null, Type: "reaction" })
-            {
-                <span class="notification-text">@Loc["reacted to your post:"]</span>
-            }
-            else if (NotificationResponse is { Type: "follow", User: not null })
-            {
-                <span class="notification-text">@Loc["followed you"]</span>
-            }
-            else if (NotificationResponse is { Type: "followRequestReceived" })
-            {
-                <span class="notification-text">@Loc["requested to follow you"]</span>
-            }
-            else if (NotificationResponse is { Type: "followRequestAccepted" })
-            {
-                <span class="notification-text">@Loc["accepted your follow request"]</span>
-            }
-            else if (NotificationResponse is { Type: "mention" })
-            {
-                <span class="notification-text">@Loc["mentioned you:"]</span>
-            }
-            else if (NotificationResponse is { Type: "reply" })
-            {
-                <span class="notification-text">@Loc["replied to your post:"]</span>
-            }
-            else if (NotificationResponse is { Type: "renote" })
-            {
-                <span class="notification-text">@Loc["renoted your post:"]</span>
-            }
-            else if (NotificationResponse is { Type: "quote" })
-            {
-                <span class="notification-text">@Loc["quoted your post:"]</span>
-            }
-            else if (NotificationResponse is { Bite: { BiteBack: true }, Type: "bite" })
-            {
-                <span class="notification-text">@Loc["bit you back"]</span>
-            }
-            else if (NotificationResponse is { Note: not null, Type: "bite" })
-            {
-                <span class="notification-text">@Loc["bit your note:"]</span>
-            }
-            else if (NotificationResponse is { Type: "bite" })
-            {
-                <span class="notification-text">@Loc["bit you"]</span>
-            }
-            else
-            {
-                <span class="notification-text">
-                    <i>@Loc["unsupported notification type"]</i>
-                </span>
-                <details>
-                    <summary>view details</summary>
-                    <p>ID: @NotificationResponse.Id</p>
-                    <p>Type: @NotificationResponse.Type</p>
-                </details>
-            }
-        </div>
+            <div class="notification-body">
+                @if (NotificationResponse is { User: not null })
+                {
+                    <span @onclick="OpenProfile" class="display-name">@(NotificationResponse.User.DisplayName ?? NotificationResponse.User.Username)</span>
+                }
+                
+                @switch (NotificationResponse)
+                {
+                    case { Note: not null, Type: "like", User: not null }: 
+                        <span class="notification-text">@Loc["liked your note"]</span> 
+                        break; 
+                    case { Note: not null, Type: "reaction" }:
+                        <span class="notification-text">@Loc["reacted to your note"]</span>
+                        break;
+                    case { Type: "follow", User: not null }:
+                        <span class="notification-text">@Loc["followed you"]</span>
+                        break;
+                    case { Type: "followRequestReceived" }:
+                        <span class="notification-text">@Loc["requested to follow you"]</span>
+                        break;
+                    case { Type: "followRequestAccepted" }:
+                        <span class="notification-text">@Loc["accepted your follow request"]</span>
+                        break;
+                    case { Type: "renote" }:
+                        <span class="notification-text">@Loc["renoted your note"]</span>
+                        break;
+                    case { Type: "quote" }:
+                        <span class="notification-text">@Loc["quoted your note"]</span>
+                        break;
+                    case { Bite: { BiteBack: true }, Type: "bite" }:
+                        <span class="notification-text">@Loc["bit you back"]</span>
+                        break;
+                    case { Note: not null, Type: "bite" }:
+                        <span class="notification-text">@Loc["bit your note"]</span>
+                        break;
+                    case { Type: "bite" }:
+                        <span class="notification-text">@Loc["bit you"]</span>
+                        break;
+                    default:
+                        <span class="notification-text">
+                            <i>@Loc["unsupported notification type"]</i>
+                        </span>
+                        <details>
+                            <summary>view details</summary>
+                            <p>ID: @NotificationResponse.Id</p>
+                            <p>Type: @NotificationResponse.Type</p>
+                        </details>
+                        break;
+                }
+            </div>
         
-        <span>@RenderDate(DateTime.Parse(NotificationResponse.CreatedAt))</span>
-    </div>
+            <span>@RenderDate(DateTime.Parse(NotificationResponse.CreatedAt))</span>
+        </div>
+    }
 
     @if (NotificationResponse is { Note: not null })
     {
-        <div @onclick="OpenNote" class="notification-note">
-            <Note NoteResponse="NotificationResponse.Note"/>
+        <div @onclick="OpenNote" class="@(NotificationResponse is not { Type: "mention" } or { Type: "reply" } ? "notification-note" : "")">
+            <NoteComponent Note="NotificationResponse.Note" AsQuote="@(NotificationResponse is not { Type: "mention" } or { Type: "reply" })"/>
         </div>
     }
 </div>
