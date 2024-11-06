@@ -19,7 +19,7 @@ public class ActivityRenderer(
 
 	public static ASCreate RenderCreate(ASNote obj, ASObject actor) => new()
 	{
-		Id     = $"{obj.Id}#Create",
+		Id     = $"{obj.Id}/activity",
 		Actor  = ASActor.FromObject(actor),
 		Object = obj,
 		To     = obj.To,

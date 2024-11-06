@@ -52,27 +52,28 @@ public class ActivityPubController(
 
 	[HttpGet("/notes/{id}/activity")]
 	[AuthorizedFetch]
-	[OverrideResultType<ASAnnounce>]
+	[OverrideResultType<ASActivity>]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
-	public async Task<JObject> GetRenote(string id)
+	public async Task<JObject> GetNoteActivity(string id)
 	{
 		var actor = HttpContext.GetActor();
 
 		var note = await db.Notes
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(actor)
-		                   .Where(p => p.Id == id && p.UserHost == null && p.IsPureRenote && p.Renote != null)
+		                   .Where(p => p.Id == id && p.UserHost == null)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 
-		return ActivityPub.ActivityRenderer
-		                  .RenderAnnounce(noteRenderer.RenderLite(note.Renote!),
-		                                  note.GetPublicUri(config.Value),
-		                                  userRenderer.RenderLite(note.User),
-		                                  note.Visibility,
-		                                  note.User.GetPublicUri(config.Value) + "/followers")
-		                  .Compact();
+		var noteActor = userRenderer.RenderLite(note.User);
+		ASActivity activity = note is { IsPureRenote: true, Renote: not null }
+			? ActivityPub.ActivityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
+			                                              note.GetPublicUri(config.Value), noteActor, note.Visibility,
+			                                              note.User.GetPublicUri(config.Value) + "/followers")
+			: ActivityPub.ActivityRenderer.RenderCreate(await noteRenderer.RenderAsync(note), noteActor);
+
+		return activity.Compact();
 	}
 
 	[HttpGet("/notes/{id}/replies")]
