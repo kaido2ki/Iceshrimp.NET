@@ -10,6 +10,7 @@
 }
 
 .notification-text {
+    font-size: 0.8em;
 }
 
 .notification-note {
@@ -29,7 +30,7 @@
     object-fit: cover;
     width: 3em;
     height: 3em;
-    margin-right: 0.5em;
+    margin-right: 0.75em;
 }
 
 .display-name {
