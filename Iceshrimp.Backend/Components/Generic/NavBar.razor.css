@@ -1,0 +1,146 @@
+.navbar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    height: 50px;
+    padding: 0;
+    background-color: var(--button-base);
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+a {
+    text-decoration: none;
+}
+
+.navbar ::deep a {
+    color: var(--text-main);
+}
+
+.navbar ul {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    list-style-type: none;
+    display: flex;
+    align-items: center;
+}
+
+.navbar .brand {
+    color: var(--text-bright);
+    padding: 0 15px;
+    font-weight: bold;
+}
+
+.navbar ul.nav-right:last-of-type li:last-of-type ::deep a {
+    padding: 0 15px;
+}
+
+.navbar ul li {
+    height: 100%;
+}
+
+.navbar ul li ::deep a {
+    color: var(--text-main);
+    padding: 0 12px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4pt;
+}
+
+.navbar ::deep a.active,
+.navbar ul ::deep a:hover,
+.navbar ul ::deep a:focus,
+.navbar .brand:hover,
+.navbar .brand:focus {
+    background-color: var(--button-hover);
+    text-decoration: none;
+}
+
+.navbar ul.nav-right {
+    margin-left: auto;
+}
+
+.dropdown-button {
+    cursor: pointer;
+}
+
+.dropdown:hover > .dropdown-menu,
+.dropdown:focus-within > .dropdown-menu,
+.dropdown-menu:hover,
+.dropdown-menu:focus {
+    visibility: visible;
+    opacity: 1;
+    display: block !important;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    opacity: 0;
+    min-width: 5rem;
+    position: absolute;
+    margin-top: 1rem;
+    left: 0;
+    z-index: +1;
+    display: none !important;
+}
+
+ul.dropdown-menu li {
+    background-color: var(--button-base);
+}
+
+li.dropdown-spacer,
+li.hamburger-spacer {
+    height: 1px !important;
+    border-top: 1px solid var(--border);
+    filter: brightness(65%);
+}
+
+.hamburger-button {
+    cursor: pointer;
+}
+
+.hamburger-menu.hidden {
+    display: none !important;
+}
+
+.hamburger-menu {
+    position: absolute;
+    right: 0;
+    display: inline-block !important;
+    z-index: +1;
+}
+
+ul.hamburger-menu li {
+    display: block !important;
+    background-color: var(--button-base);
+}
+
+.navbar-lg {
+    display: none;
+    @media screen and (min-width: 1200px) {
+        display: flex;
+    }
+}
+
+.navbar-md {
+    display: none;
+    @media screen and (min-width: 800px) and (max-width: 1199px) {
+        display: flex;
+    }
+}
+
+.navbar-sm {
+    display: none;
+    @media screen and (max-width: 799px) {
+        display: flex;
+    }
+}

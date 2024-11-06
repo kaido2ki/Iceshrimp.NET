@@ -1,0 +1,147 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Backend.Components.Helpers
+<nav class="navbar navbar-lg">
+    <ul>
+        <li>
+            <a href="@Brand.Href" class="brand">@Brand.Name</a>
+        </li>
+    </ul>
+    <ul>
+        @foreach (var link in Links[..Math.Min(MaxItemsLg, Links.Count)])
+        {
+            <li>
+                <NavBarLink Link="link"/>
+            </li>
+        }
+        @if (OverflowsLg)
+        {
+            var offset = Links.Count - MaxItemsLg;
+            <li class="dropdown">
+                <a class="dropdown-button" tabindex="0">
+                    <Icon Name="Icons.DotsThree" Size="20pt"/>
+                </a>
+                <ul class="dropdown-menu">
+                    @foreach (var link in Links[offset..])
+                    {
+                        <li>
+                            <NavBarLink Link="link"/>
+                        </li>
+                    }
+                    @if (Right is { Count: > 0 })
+                    {
+                        <li class="dropdown-spacer"></li>
+                        @foreach (var link in Right)
+                        {
+                            <li>
+                                <NavBarLink Link="link"/>
+                            </li>
+                        }
+                    }
+                </ul>
+            </li>
+        }
+    </ul>
+    @if (!OverflowsLg)
+    {
+        <ul class="nav-right">
+            @if (Right is { Count: > 0 })
+            {
+                foreach (var link in Right)
+                {
+                    <li>
+                        <NavBarLink Link="link"/>
+                    </li>
+                }
+            }
+        </ul>
+    }
+</nav>
+<nav class="navbar navbar-md">
+    <ul>
+        <li>
+            <a href="@Brand.Href" class="brand">@Brand.Name</a>
+        </li>
+    </ul>
+    <ul>
+        @foreach (var link in Links[..Math.Min(MaxItemsMd, Links.Count)])
+        {
+            <li>
+                <NavBarLink Link="link"/>
+            </li>
+        }
+        @if (OverflowsMd)
+        {
+            var offset = Links.Count - MaxItemsMd;
+            <li class="dropdown">
+                <a class="dropdown-button" tabindex="0">
+                    <Icon Name="Icons.DotsThree" Size="20pt"/>
+                </a>
+                <ul class="dropdown-menu">
+                    @foreach (var link in Links[offset..])
+                    {
+                        <li>
+                            <NavBarLink Link="link"/>
+                        </li>
+                    }
+                    @if (Right is { Count: > 0 })
+                    {
+                        <li class="dropdown-spacer"></li>
+                        @foreach (var link in Right)
+                        {
+                            <li>
+                                <NavBarLink Link="link"/>
+                            </li>
+                        }
+                    }
+                </ul>
+            </li>
+        }
+    </ul>
+</nav>
+
+<nav class="navbar navbar-sm">
+    <ul>
+        <li>
+            <a href="@Brand.Href" class="brand">@Brand.Name</a>
+        </li>
+    </ul>
+    <ul class="nav-right">
+        <li>
+            <a class="hamburger-button" href="#" onclick="toggleHamburger(event)">
+                <Icon Name="Icons.List" Size="20pt"/>
+            </a>
+            <ul class="hamburger-menu hidden">
+                @foreach (var link in Links)
+                {
+                    <li>
+                        <NavBarLink Link="link"/>
+                    </li>
+                }
+                @if (Right is { Count: > 0 })
+                {
+                    <li class="hamburger-spacer"></li>
+                    @foreach (var link in Right)
+                    {
+                        <li>
+                            <NavBarLink Link="link"/>
+                        </li>
+                    }
+                }
+            </ul>
+        </li>
+    </ul>
+</nav>
+<VersionedScript src="/Components/Generic/NavBar.razor.js"/>
+
+@code {
+    public record struct NavLink(string Href, string Name, IconName? Icon = null, IconName? IconRight = null, bool NewTab = false);
+
+    [Parameter, EditorRequired] public required int            MaxItemsLg { get; set; }
+    [Parameter, EditorRequired] public required int            MaxItemsMd { get; set; }
+    [Parameter, EditorRequired] public required NavLink        Brand      { get; set; }
+    [Parameter, EditorRequired] public required List<NavLink>  Links      { get; set; }
+    [Parameter]                 public          List<NavLink>? Right      { get; set; }
+
+    private bool OverflowsLg => Links.Count + (Right?.Count ?? 0) > MaxItemsLg;
+    private bool OverflowsMd => Links.Count + (Right?.Count ?? 0) > MaxItemsMd;
+}

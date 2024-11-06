@@ -4,20 +4,10 @@
 @using Microsoft.EntityFrameworkCore
 @inherits AdminComponentBase
 
-<PageTitle>Overview - Admin - @(InstanceName ?? "Iceshrimp.NET")</PageTitle>
-<AdminHead/>
-<h1>Admin Dashboard</h1>
-<p>This interface is used to adjust parameters of this Iceshrimp.NET instance. Please pick a category below.</p>
-
-<button role="link" data-target="/admin/metadata" onclick="navigate(event)">Instance metadata</button>
-<button role="link" data-target="/admin/users" onclick="navigate(event)">User management</button>
-<button role="link" data-target="/admin/federation" onclick="navigate(event)">Federation control</button>
-<button role="link" data-target="/admin/relays" onclick="navigate(event)">Relays</button>
-<button role="link" data-target="/admin/plugins" onclick="navigate(event)">Plugins</button>
-<button role="link" data-target="/queue" onclick="navigate(event)">[ext] Queue dashboard</button>
+<AdminPageHeader Title="Overview"/>
+<p>This interface is used to adjust parameters of this Iceshrimp.NET instance.</p>
 
 @*
-- TODO: Improve styles, possibly add a navbar
 - TODO: Remote user management
 - TODO: More federation stats (e.g. # of activities sent/fetched, some basic queue stats)
 - TODO: Move queue dashboard to blazor ssr

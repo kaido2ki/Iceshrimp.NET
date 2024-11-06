@@ -1,7 +1,7 @@
 @using Microsoft.AspNetCore.Components.Web
 <PageTitle>@Title - Admin - @(InstanceName ?? "Iceshrimp.NET")</PageTitle>
-<h1>Admin Dashboard</h1>
-<button role="link" data-target="/admin" onclick="navigate(event)">Return to overview</button>
+<AdminHead/>
+<AdminNav/>
 <h2>@Title</h2>
 
 @code {

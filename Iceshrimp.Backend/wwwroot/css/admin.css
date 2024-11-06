@@ -14,3 +14,7 @@ p {
 .width30 {
     width: 30ch;
 }
+
+body {
+    margin-top: 60px;
+}

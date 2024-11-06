@@ -1,0 +1,20 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Backend.Components.Generic
+<NavBar Brand="_brand" Links="_links" Right="_right" MaxItemsLg="7" MaxItemsMd="3"/>
+
+@code
+{
+    private NavBar.NavLink _brand = new("/admin", "Admin Dashboard");
+
+    private List<NavBar.NavLink> _links =
+    [
+        new("/admin", "Overview", Icons.ChartLine), // spacer for alignment
+        new("/admin/metadata", "Instance metadata", Icons.Info),
+        new("/admin/users", "User management", Icons.Users),
+        new("/admin/federation", "Federation control", Icons.Graph),
+        new("/admin/relays", "Relays", Icons.FastForward),
+        new("/admin/plugins", "Plugins", Icons.Plug)
+    ];
+
+    private List<NavBar.NavLink> _right = [new("/queue", "Queue dashboard", IconRight: Icons.ArrowSquareOut, NewTab: true)];
+}
