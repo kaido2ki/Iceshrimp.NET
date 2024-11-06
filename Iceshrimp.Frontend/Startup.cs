@@ -28,6 +28,7 @@ builder.Services.AddSingleton<EmojiService>();
 builder.Services.AddSingleton<VersionService>();
 builder.Services.AddSingleton<MessageService>();
 builder.Services.AddSingleton<GlobalComponentSvc>();
+builder.Services.AddSingleton<UpdateService>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddBlazoredLocalStorageAsSingleton();
