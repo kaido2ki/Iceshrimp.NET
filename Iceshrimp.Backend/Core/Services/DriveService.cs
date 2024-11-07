@@ -329,7 +329,7 @@ public class DriveService(
 			Url                = original?.url ?? request.Uri ?? throw new Exception("Uri must not be null here"),
 			Name               = request.Filename,
 			Comment            = request.Comment,
-			Type               = CleanMimeType(request.MimeType),
+			Type               = original.format.Format.MimeType,
 			RequestHeaders     = request.RequestHeaders,
 			RequestIp          = request.RequestIp,
 			Blurhash           = blurhash,
