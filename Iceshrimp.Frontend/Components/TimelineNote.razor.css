@@ -32,4 +32,5 @@
 .note {
     width: 100%;
     padding-bottom: 1rem;
+    min-width: 0;
 }

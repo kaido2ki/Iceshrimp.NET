@@ -1,9 +1,11 @@
 .note-parent, .note {
     width: 100%;
+    min-width: 0;
 }
 
 .note {
     padding-bottom: 1rem;
+    min-width: 0;
 }
 
 .note-indent {
