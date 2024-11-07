@@ -312,6 +312,12 @@ public class DriveService(
 				throw new Exception("Uri must not be null at this stage");
 		}
 
+		if (original?.format.Format is { } fmt and not ImageFormat.Keep)
+		{
+			request.MimeType =  fmt.MimeType;
+			request.Filename += $".{fmt.Extension}";
+		}
+
 		file = new DriveFile
 		{
 			Id                 = IdHelpers.GenerateSnowflakeId(),
