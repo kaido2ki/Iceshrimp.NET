@@ -2,8 +2,23 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Iceshrimp.Backend.Core.Services.ImageProcessing;
 
-public abstract record ImageFormat(string Extension, string MimeType)
+public abstract record ImageFormat
 {
+	public string Extension { get; init; }
+	public string MimeType  { get; init; }
+
+	private ImageFormat(string Extension, string MimeType)
+	{
+		this.Extension = Extension;
+		this.MimeType  = MimeType;
+	}
+
+	public void Deconstruct(out string extension, out string mimeType)
+	{
+		extension = Extension;
+		mimeType  = MimeType;
+	}
+
 	public record Keep(string Extension, string MimeType) : ImageFormat(Extension, MimeType);
 	//TODO: public record StripExifAndIcc(string Extension, string MimeType) : ImageFormat(Extension, MimeType);
 
