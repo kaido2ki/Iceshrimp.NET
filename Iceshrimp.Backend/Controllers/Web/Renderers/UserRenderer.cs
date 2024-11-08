@@ -1,7 +1,6 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -10,17 +9,16 @@ namespace Iceshrimp.Backend.Controllers.Web.Renderers;
 
 public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db)
 {
-	public async Task<UserResponse> RenderOne(User user, UserRendererDto? data = null)
+	private UserResponse Render(User user, UserRendererDto data)
 	{
-		var instance = user.IsLocalUser
-			? null
-			: (data?.InstanceData ?? await GetInstanceData([user])).FirstOrDefault(p => p.Host == user.Host);
+		var instance = user.IsRemoteUser ? data.InstanceData.FirstOrDefault(p => p.Host == user.Host) : null;
 
 		//TODO: populate the below two lines for local users
 		var instanceName = user.IsLocalUser ? config.Value.AccountDomain : instance?.Name;
 		var instanceIcon = user.IsLocalUser ? null : instance?.FaviconUrl;
 
-		var emojis = await GetEmojis([user]);
+		if (!data.Emojis.TryGetValue(user.Id, out var emoji))
+			throw new Exception("DTO didn't contain emoji for user");
 
 		return new UserResponse
 		{
@@ -32,9 +30,18 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			BannerUrl       = user.BannerUrl,
 			InstanceName    = instanceName,
 			InstanceIconUrl = instanceIcon,
-			Emojis          = emojis,
+			Emojis          = emoji,
 			MovedTo         = user.MovedToUri
 		};
+	}
+
+	public async Task<UserResponse> RenderOne(User user)
+	{
+		var instanceData = await GetInstanceData([user]);
+		var emojis       = await GetEmojis([user]);
+		var data         = new UserRendererDto { Emojis = emojis, InstanceData = instanceData };
+
+		return Render(user, data);
 	}
 
 	private async Task<List<Instance>> GetInstanceData(IEnumerable<User> users)
@@ -46,33 +53,40 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 	public async Task<IEnumerable<UserResponse>> RenderMany(IEnumerable<User> users)
 	{
 		var userList = users.ToList();
-		var data     = new UserRendererDto { InstanceData = await GetInstanceData(userList) };
-		return await userList.Select(p => RenderOne(p, data)).AwaitAllAsync();
+		var data = new UserRendererDto
+		{
+			InstanceData = await GetInstanceData(userList), Emojis = await GetEmojis(userList)
+		};
+
+		return userList.Select(p => Render(p, data));
 	}
 
-	private async Task<List<EmojiResponse>> GetEmojis(IEnumerable<User> users)
+	private async Task<Dictionary<string, List<EmojiResponse>>> GetEmojis(ICollection<User> users)
 	{
 		var ids = users.SelectMany(p => p.Emojis).ToList();
-		if (ids.Count == 0) return [];
+		if (ids.Count == 0) return users.ToDictionary<User, string, List<EmojiResponse>>(p => p.Id, _ => []);
 
-		return await db.Emojis
-		               .Where(p => ids.Contains(p.Id))
-		               .Select(p => new EmojiResponse
-		               {
-			               Id        = p.Id,
-			               Name      = p.Name,
-			               Uri       = p.Uri,
-			               Aliases   = p.Aliases,
-			               Category  = p.Category,
-			               PublicUrl = p.PublicUrl,
-			               License   = p.License,
-			               Sensitive = p.Sensitive
-		               })
-		               .ToListAsync();
+		var emoji = await db.Emojis
+		                    .Where(p => ids.Contains(p.Id))
+		                    .Select(p => new EmojiResponse
+		                    {
+			                    Id        = p.Id,
+			                    Name      = p.Name,
+			                    Uri       = p.Uri,
+			                    Aliases   = p.Aliases,
+			                    Category  = p.Category,
+			                    PublicUrl = p.PublicUrl,
+			                    License   = p.License,
+			                    Sensitive = p.Sensitive
+		                    })
+		                    .ToListAsync();
+
+		return users.ToDictionary(p => p.Id, p => emoji.Where(e => p.Emojis.Contains(e.Id)).ToList());
 	}
 
-	public class UserRendererDto
+	private class UserRendererDto
 	{
-		public List<Instance>? InstanceData;
+		public required List<Instance>                          InstanceData;
+		public required Dictionary<string, List<EmojiResponse>> Emojis;
 	}
 }
