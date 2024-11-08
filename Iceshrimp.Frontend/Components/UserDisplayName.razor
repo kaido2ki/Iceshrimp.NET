@@ -1,7 +1,7 @@
 @using Iceshrimp.Shared.Schemas.Web
 @if (User.DisplayName != null && User.Emojis.Count != 0)
 {
-    <MfmText Text="@User.DisplayName" Emoji="@User.Emojis" Simple="@true"/>
+    <MfmText Text="@User.DisplayName.Split('\n')[0]" Emoji="@User.Emojis" Simple="@true"/>
 }
 else
 {

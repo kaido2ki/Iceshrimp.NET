@@ -6,10 +6,10 @@
         {
             <Icon class="verified" Name="Icons.SealCheck" Size="1.3em"/>
         }
-        <MfmText Text="@Field.Name" Emoji="@Emojis" Simple="@true"></MfmText>
+        <MfmText Text="@Field.Name.Split('\n')[0]" Emoji="@Emojis" Simple="@true"></MfmText>
     </span>
     <span class="field-value">
-        <MfmText Text="@Field.Value" Emoji="@Emojis" Simple="@true"></MfmText>
+        <MfmText Text="@Field.Value.Split('\n')[0]" Emoji="@Emojis" Simple="@true"></MfmText>
     </span>
 </div>
 
