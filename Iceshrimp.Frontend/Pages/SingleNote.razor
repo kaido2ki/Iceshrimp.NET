@@ -25,7 +25,14 @@
 {
     <SectionContent SectionName="top-bar">
         <Icon Name="Icons.Signpost"></Icon>
-        @Loc["Note by {0}", (RootNote?.User.DisplayName ?? RootNote?.User.Username) ?? string.Empty]
+        @if (RootNote is { User.DisplayName: not null } && RootNote.User.Emojis.Count != 0)
+        {
+            <MfmText Text="@Loc["Note by {0}", RootNote.User.DisplayName]" Emoji="@RootNote.User.Emojis" Simple="@true"/>
+        }
+        else
+        {
+            @Loc["Note by {0}", (RootNote?.User.DisplayName ?? RootNote?.User.Username) ?? string.Empty]
+        }
     </SectionContent>
     <div @ref="Scroller" class="scroller">
         <div class="wrapper">
