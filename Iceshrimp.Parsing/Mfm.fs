@@ -380,8 +380,6 @@ module private MfmParser =
           fnNode
           charNode ]
 
-    //TODO: still missing: FnNode
-
     let blockNodeSeq =
         [ plainNode; centerNode; smallNode; codeBlockNode; mathBlockNode; quoteNode ]
 
