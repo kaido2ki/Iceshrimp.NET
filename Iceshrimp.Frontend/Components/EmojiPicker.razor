@@ -1,3 +1,4 @@
+@using AngleSharp.Text
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @inject EmojiService       EmojiService
@@ -6,11 +7,20 @@
 
 <dialog class="dialog" @ref="EmojiPickerRef">
     <div class="emoji-picker" style="--top: @(_top)px; --left: @(_left)px">
-        @foreach (var el in EmojiList)
+        <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Search" aria-label="search"/>
+        @foreach (var category in Categories)
         {
-            <div class="emoji">
-                <img @onclick="() => Select(el)" src="@el.PublicUrl" alt="@el.Name"/>
-            </div>
+            <details open>
+                <summary aria-label="category">@category.Key</summary>
+                <div class="emoji-list">
+                    @foreach (var emoji in category.Value)
+                    {
+                        <div class="emoji">
+                            <img @onclick="() => Select(emoji)" src="@emoji.PublicUrl" alt="@emoji.Name" title=":@emoji.Name:" loading="lazy"/>
+                        </div>
+                    }
+                </div>
+            </details>
         }
     </div>
     <ClosingBackdrop OnClose="Close"></ClosingBackdrop>
@@ -25,17 +35,22 @@
     private float                        _left;
     private IJSInProcessObjectReference  _module = null!;
 
+    private string                                  EmojiFilter { get; set; } = "";
+    private Dictionary<string, List<EmojiResponse>> Categories  { get; set; } = [];
+
     protected override async Task OnInitializedAsync()
     {
         GlobalComponentSvc.EmojiPicker = this;
         EmojiList                      = await EmojiService.GetEmoji();
         _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import",
                                                                                         "./Components/EmojiPicker.razor.js");
+        FilterEmojis();
     }
 
     private async void Select(EmojiResponse emoji)
     {
         await OnEmojiSelect.InvokeAsync(emoji);
+        Close();
     }
 
     private void Close()
@@ -51,5 +66,17 @@
         _top  = pos[1];
         StateHasChanged();
         _module.InvokeVoid("openDialog", EmojiPickerRef);
+    }
+
+    private void FilterEmojis()
+    {
+        Categories = EmojiList
+            .Where(p => p.Name.Contains(EmojiFilter.StripLeadingTrailingSpaces()) || p.Aliases.Count(a => a.Contains(EmojiFilter.StripLeadingTrailingSpaces())) != 0)
+            .OrderBy(p => p.Name)
+            .ThenBy(p => p.Id)
+            .GroupBy(p => p.Category)
+            .OrderBy(p => string.IsNullOrEmpty(p.Key))
+            .ThenBy(p => p.Key)
+            .ToDictionary(p => p.Key ?? "Other", p => p.ToList());
     }
 }

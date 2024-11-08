@@ -1,9 +1,6 @@
 .emoji-picker {
     --top: 0px;
     --left: 0px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr));
-    grid-template-rows: repeat(auto-fill, minmax(2.5rem, 1fr));
     position: absolute;
     background-color: var(--foreground-color);
     border: var(--highlight-color) solid 0.1rem;
@@ -11,9 +8,16 @@
     border-radius: 1rem;
     min-width: 15rem;
     min-height: 10rem;
+    max-height: 20rem;
     overflow: auto;
     top: calc(var(--top) + 2.5rem);
     left: calc(var(--left) - 5.5rem);
+}
+
+.emoji-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr));
+    grid-template-rows: repeat(auto-fill, minmax(2.5rem, 1fr));
 }
 
 .dialog {
@@ -26,4 +30,14 @@
         height: 2rem;
         width: 2rem;
     }
+}
+
+summary {
+    padding: 0.5rem 0;
+    cursor: pointer;
+}
+
+.search {
+    margin: 0;
+    padding: 0;
 }
