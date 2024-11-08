@@ -6,23 +6,27 @@ using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using static Iceshrimp.Backend.Core.Database.DatabaseContext;
 
 namespace Iceshrimp.Backend.Pages;
 
-public class QueueModel(DatabaseContext db, QueueService queueSvc, MetaService meta) : PageModel
+public class QueueModel(DatabaseContext db, QueueService queueSvc, MetaService meta, CacheService cache) : PageModel
 {
-	public int?               DelayedCount;
-	public Job.JobStatus?     Filter;
-	public List<Job>          Jobs = [];
-	public int?               NextPage;
-	public int?               PrevPage;
-	public string?            Queue;
-	public int?               QueuedCount;
-	public int?               RunningCount;
-	public int?               TotalCount;
-	public List<QueueStatus>? QueueStatuses;
-	public long?              Last;
-	public string             InstanceName = "Iceshrimp.NET";
+	private NamedCache _cache = cache.GetNamedCache("admin:queue-dash");
+
+	public int?                       DelayedCount;
+	public Job.JobStatus?             Filter;
+	public List<Job>                  Jobs = [];
+	public int?                       NextPage;
+	public int?                       PrevPage;
+	public string?                    Queue;
+	public int?                       QueuedCount;
+	public int?                       RunningCount;
+	public int?                       TotalCount;
+	public List<QueueStatus>?         QueueStatuses;
+	public List<DelayedDeliverTarget> TopDelayed = [];
+	public long?                      Last;
+	public string                     InstanceName = "Iceshrimp.NET";
 
 	public static readonly ImmutableArray<string> ScheduledQueues = ["background-task", "backfill"];
 
@@ -40,7 +44,7 @@ public class QueueModel(DatabaseContext db, QueueService queueSvc, MetaService m
 
 		if (queue == null)
 		{
-			Jobs = await db.Jobs.OrderByDescending(p => p.LastUpdatedAt).Take(20).ToListAsync();
+			Jobs = await db.Jobs.OrderByDescending(p => p.LastUpdatedAt).Take(15).ToListAsync();
 			if (Request.Query.TryGetValue("last", out var last) && long.TryParse(last, out var parsed))
 				Last = parsed;
 
@@ -56,34 +60,35 @@ public class QueueModel(DatabaseContext db, QueueService queueSvc, MetaService m
 				                        {
 					                        {
 						                        Job.JobStatus.Queued, db.Jobs.Count(job =>
-							                        job.Queue == queueName &&
-							                        job.Status ==
-							                        Job.JobStatus.Queued)
+							                        job.Queue == queueName
+							                        && job.Status
+							                        == Job.JobStatus.Queued)
 					                        },
 					                        {
 						                        Job.JobStatus.Delayed, db.Jobs.Count(job =>
-							                        job.Queue == queueName &&
-							                        job.Status == Job.JobStatus.Delayed)
+							                        job.Queue == queueName && job.Status == Job.JobStatus.Delayed)
 					                        },
 					                        {
 						                        Job.JobStatus.Running, db.Jobs.Count(job =>
-							                        job.Queue == queueName &&
-							                        job.Status == Job.JobStatus.Running)
+							                        job.Queue == queueName && job.Status == Job.JobStatus.Running)
 					                        },
 					                        {
 						                        Job.JobStatus.Completed, db.Jobs.Count(job =>
-							                        job.Queue == queueName &&
-							                        job.Status == Job.JobStatus.Completed)
+							                        job.Queue == queueName
+							                        && job.Status == Job.JobStatus.Completed)
 					                        },
 					                        {
 						                        Job.JobStatus.Failed, db.Jobs.Count(job =>
-							                        job.Queue == queueName &&
-							                        job.Status ==
-							                        Job.JobStatus.Failed)
+							                        job.Queue == queueName
+							                        && job.Status
+							                        == Job.JobStatus.Failed)
 					                        }
 				                        }.AsReadOnly()
 			                        })
 			                        .ToListAsync();
+
+			TopDelayed = await _cache.FetchAsync("top-delayed", TimeSpan.FromSeconds(60),
+			                                     () => db.GetDelayedDeliverTargets().ToListAsync());
 
 			return Page();
 		}

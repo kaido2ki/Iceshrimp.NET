@@ -27,7 +27,10 @@ async function reloadTables() {
             document.getElementById('last-updated').innerText = newLast;
             document.getElementById('recent-jobs').innerHTML = newDocument.getElementById('recent-jobs').innerHTML;
         }
+
         document.getElementById('queue-status').innerHTML = newDocument.getElementById('queue-status').innerHTML;
+        document.getElementById('top-delayed').innerHTML = newDocument.getElementById('top-delayed').innerHTML;
+
         setStatus("Updating in real time", "status-completed");
     }
     catch {

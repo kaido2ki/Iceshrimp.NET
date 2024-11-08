@@ -261,6 +261,18 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public Task<int> GetJobQueuedCountAsync(string queue, CancellationToken token) =>
 		Jobs.CountAsync(p => p.Queue == queue && p.Status == Job.JobStatus.Queued, token);
 
+	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Instantiated by EF")]
+	public record DelayedDeliverTarget(string Host, int Count);
+	
+	public IQueryable<DelayedDeliverTarget> GetDelayedDeliverTargets()
+		=> Database.SqlQuery<DelayedDeliverTarget>($"""
+		                                            SELECT "data"::json->>'recipientHost' "host", COUNT(*) "count"
+		                                            FROM "jobs"
+		                                            WHERE "queue" = 'deliver' AND "status" = 'delayed'
+		                                            GROUP BY "host"
+		                                            ORDER BY "count" DESC;
+		                                            """);
+
 	public async Task<bool> IsDatabaseEmptyAsync()
 		=> !await Database.SqlQuery<object>($"""
 		                                     select s.nspname from pg_class c

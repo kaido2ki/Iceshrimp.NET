@@ -111,6 +111,27 @@
         </tbody>
     </table>
 
+    <h3>Top delayed deliver job targets</h3>
+    <table class="auto-table" id="top-delayed">
+        <thead>
+        <th class="width0">Instance</th>
+        <th>Count</th>
+        </thead>
+        <tbody>
+        @foreach (var instance in Model.TopDelayed)
+        {
+            <tr>
+                <td>@instance.Host</td>
+                <td><i>@instance.Count jobs</i></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    @if (Model.TopDelayed is [])
+    {
+        <i>No delayed jobs found.</i>
+    }
+
     var last        = Model.Jobs.FirstOrDefault();
     var lastUpdated = last != null ? new DateTimeOffset(last.LastUpdatedAt).ToUnixTimeMilliseconds() : 0;
 

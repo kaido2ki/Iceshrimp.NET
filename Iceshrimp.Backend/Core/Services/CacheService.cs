@@ -19,6 +19,8 @@ public class CacheService([FromKeyedServices("cache")] DatabaseContext db) : ISc
 	private static readonly JsonSerializerOptions Options =
 		new(JsonSerializerOptions.Default) { ReferenceHandler = ReferenceHandler.Preserve };
 
+	public NamedCache GetNamedCache(string prefix) => new(prefix, this);
+
 	public async Task<T?> GetAsync<T>(string key, bool renew = false) where T : class?
 	{
 		var res = await GetValueAsync(key);
@@ -168,4 +170,40 @@ public class CacheService([FromKeyedServices("cache")] DatabaseContext db) : ISc
 		        .Where(p => p.Key == key && p.Expiry != null && p.Expiry > DateTime.UtcNow && p.Ttl != null)
 		        .ExecuteUpdateAsync(p => p.SetProperty(i => i.Expiry, i => i.Expiry + i.Ttl));
 	}
+}
+
+public class NamedCache(string prefix, CacheService cache)
+{
+	private readonly string _prefix = prefix.EndsWith(':') ? prefix : $"{prefix}:";
+	private          string Prefix(string key) => _prefix + key;
+
+	public Task<T?> GetAsync<T>(string key, bool renew = false) where T : class?
+		=> cache.GetAsync<T>(Prefix(key), renew);
+
+	public Task<T?> GetValueAsync<T>(string key, bool renew = false) where T : struct
+		=> cache.GetValueAsync<T>(Prefix(key), renew);
+
+	public Task SetAsync<T>(string key, T data, TimeSpan ttl) where T : class?
+		=> cache.SetAsync(Prefix(key), data, ttl);
+
+	public Task SetValueAsync<T>(string key, T data, TimeSpan ttl) where T : struct
+		=> cache.SetValueAsync(Prefix(key), data, ttl);
+
+	public Task<T> FetchAsync<T>(string key, TimeSpan ttl, Func<Task<T>> fetcher, bool renew = false)
+		where T : class?
+		=> cache.FetchAsync(Prefix(key), ttl, fetcher, renew);
+
+	public Task<T> FetchAsync<T>(string key, TimeSpan ttl, Func<T> fetcher, bool renew = false) where T : class?
+		=> cache.FetchAsync(Prefix(key), ttl, fetcher, renew);
+
+	public Task<T> FetchValueAsync<T>(string key, TimeSpan ttl, Func<Task<T>> fetcher, bool renew = false)
+		where T : struct
+		=> cache.FetchValueAsync(Prefix(key), ttl, fetcher, renew);
+
+	public Task<T> FetchValueAsync<T>(string key, TimeSpan ttl, Func<T> fetcher, bool renew = false)
+		where T : struct
+		=> cache.FetchValueAsync(Prefix(key), ttl, fetcher, renew);
+
+	public Task ClearAsync(string key)
+		=> cache.ClearAsync(Prefix(key));
 }
