@@ -1,3 +1,7 @@
+.navbar-placeholder {
+    margin-top: 60px;
+}
+
 .navbar {
     position: absolute;
     left: 0;
