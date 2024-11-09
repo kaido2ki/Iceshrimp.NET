@@ -1,5 +1,5 @@
 function toggleHamburger(e) {
-    e.preventDefault()
+    e.preventDefault();
 
     for (let el of document.getElementsByClassName("hamburger-menu")) {
         if (el.classList.contains("hidden")) {
