@@ -119,6 +119,7 @@ li.hamburger-spacer {
 .hamburger-menu {
     position: absolute;
     right: 0;
+    width: 100%;
     display: inline-block !important;
     z-index: +1;
 }
