@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Dom;
 using Iceshrimp.Parsing;
@@ -7,7 +8,7 @@ using Microsoft.FSharp.Core;
 
 namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
-public static class MfmRenderer
+public static partial class MfmRenderer
 {
 	public static async Task<MarkupString> RenderStringAsync(
 		string text, List<EmojiResponse> emoji, string accountDomain, bool simple = false
@@ -377,12 +378,20 @@ public static class MfmRenderer
 
 		return el;
 	}
+
+	[GeneratedRegex(@"^[0-9a-f]{3,6}$", RegexOptions.IgnoreCase)]
+	private static partial Regex ColorRegex();
+	
+	private static bool ValidColor(string? color)
+	{
+		return color != null && ColorRegex().Match(color).Success;
+	}
 	
 	private static INode MfmFnFg(Dictionary<string, string?> args, IDocument document)
 	{
 		var el = document.CreateElement("span");
 
-		if (args.TryGetValue("color", out var color))
+		if (args.TryGetValue("color", out var color) && ValidColor(color))
 			el.SetAttribute("style", $"color: #{color};");
 
 		return el;
@@ -392,7 +401,7 @@ public static class MfmRenderer
 	{
 		var el = document.CreateElement("span");
 
-		if (args.TryGetValue("color", out var color))
+		if (args.TryGetValue("color", out var color) && ValidColor(color))
 			el.SetAttribute("style", $"background-color: #{color};");
 
 		return el;
@@ -405,7 +414,7 @@ public static class MfmRenderer
 		var width  = args.GetValueOrDefault("width") ?? "1";
 		var radius = args.GetValueOrDefault("radius") ?? "0";
 		var style  = args.GetValueOrDefault("style") ?? "solid";
-		var color  = args.ContainsKey("color") ? "#" + args["color"] : "var(--notice-color)";
+		var color  = args.TryGetValue("color", out var c) && ValidColor(c) ? "#" + c : "var(--notice-color)";
 		
 		el.SetAttribute("style", $"display: inline-block; border: {width}px {style} {color}; border-radius: {radius}px;");
 
