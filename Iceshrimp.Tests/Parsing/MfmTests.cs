@@ -368,6 +368,31 @@ public class MfmTests
 	}
 
 	[TestMethod]
+	public void TestComplexFnRoundtrip()
+	{
+		// MFM art by https://github.com/ChaoticLeah
+		const string input = """
+		                     <center>
+		                     $[scale.x=10,y=10 $[scale.x=10,y=110 $[scale.x=10,y=10 ⬛]]]
+		                     $[position.y=9 :neocat:                                                  :neocat_aww:]
+		                     $[position.y=4.3 $[border.radius=20                                                                        ]
+		                     ]
+		                     $[followmouse.x $[position.y=.8 $[scale.x=5,y=5  $[scale.x=0.5,y=0.5 
+		                     ⚪$[position.x=-16.5 $[scale.x=10 $[scale.x=10 ⬛]]]$[position.x=16.5,y=-1.3 $[scale.x=10 $[scale.x=10 ⬛]]]]]]]
+
+
+		                     $[position.x=-88 $[scale.x=10,y=10 $[scale.x=10,y=110 $[scale.x=10,y=10 ⬛]]]]
+		                     $[position.x=88 $[scale.x=10,y=10 $[scale.x=10,y=110 $[scale.x=10,y=10 ⬛]]]]
+
+		                     $[position.y=-10 Neocat Awwww Slider]
+		                     </center>
+		                     """;
+
+		var res = Mfm.parse(input);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
+
+	[TestMethod]
 	public void Benchmark()
 	{
 		const string mfm =
