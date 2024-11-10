@@ -349,7 +349,7 @@ public class MfmTests
 	public void TestFn()
 	{
 		const string input =
-			"test $[] $[test] $[test ] $[test test] $[test.a test] $[test.a=b test] $[test.a=b,c=e test] $[test.a,c=e test] $[test.a=b,c test]";
+			"test $[] $[test] $[test ] $[test test] $[test123 test] $[test.a test] $[test.a=b test] $[test.a=b,c=e test] $[test.a,c=e test] $[test.a=b,c test]";
 
 		var some = FSharpOption<IDictionary<string, FSharpOption<string>>>.Some;
 		var none = FSharpOption<IDictionary<string, FSharpOption<string>>>.None;
@@ -360,6 +360,10 @@ public class MfmTests
 		[
 			new MfmTextNode("test $[] $[test] $[test ] "),
 			new MfmFnNode("test",
+			              none,
+			              test),
+			new MfmTextNode(" "),
+			new MfmFnNode("test123",
 			              none,
 			              test),
 			new MfmTextNode(" "),

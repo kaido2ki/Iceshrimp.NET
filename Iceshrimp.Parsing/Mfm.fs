@@ -276,7 +276,7 @@ module private MfmParser =
         |>> fun e -> MfmEmojiCodeNode(e) :> MfmNode
 
     let fnNode =
-        skipString "$[" >>. many1Chars asciiLower
+        skipString "$[" >>. many1Chars (asciiLower <|> digit)
         .>>. opt (skipChar '.' >>. sepBy1 fnArg (skipChar ','))
         .>> skipChar ' '
         .>>. many1Till inlineNode (skipChar ']')
