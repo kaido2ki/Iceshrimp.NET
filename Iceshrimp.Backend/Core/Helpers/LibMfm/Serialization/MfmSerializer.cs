@@ -5,7 +5,9 @@ namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 
 public static class MfmSerializer
 {
-	public static string Serialize(IEnumerable<MfmNode> nodes)
+	public static string Serialize(IEnumerable<MfmNode> nodes) => SerializeInternal(nodes).Trim();
+
+	private static string SerializeInternal(IEnumerable<MfmNode> nodes)
 	{
 		var result = new StringBuilder();
 
@@ -36,14 +38,14 @@ public static class MfmSerializer
 				case MfmBoldNode:
 				{
 					result.Append("**");
-					result.Append(Serialize(node.Children));
+					result.Append(SerializeInternal(node.Children));
 					result.Append("**");
 					break;
 				}
 				case MfmCenterNode:
 				{
 					result.Append("<center>");
-					result.Append(Serialize(node.Children));
+					result.Append(SerializeInternal(node.Children));
 					result.Append("</center>");
 					break;
 				}
@@ -64,7 +66,7 @@ public static class MfmSerializer
 					}
 
 					result.Append(' ');
-					result.Append(Serialize(node.Children));
+					result.Append(SerializeInternal(node.Children));
 					result.Append(']');
 					break;
 				}
@@ -81,7 +83,7 @@ public static class MfmSerializer
 				case MfmItalicNode:
 				{
 					result.Append('*');
-					result.Append(Serialize(node.Children));
+					result.Append(SerializeInternal(node.Children));
 					result.Append('*');
 					break;
 				}
@@ -89,7 +91,7 @@ public static class MfmSerializer
 				{
 					if (mfmLinkNode.Silent) result.Append('?');
 					result.Append('[');
-					result.Append(Serialize(node.Children));
+					result.Append(SerializeInternal(node.Children));
 					result.Append(']');
 					result.Append($"({mfmLinkNode.Url})");
 					break;
@@ -119,14 +121,14 @@ public static class MfmSerializer
 				case MfmSmallNode:
 				{
 					result.Append("<small>");
-					result.Append(Serialize(node.Children));
+					result.Append(SerializeInternal(node.Children));
 					result.Append("</small>");
 					break;
 				}
 				case MfmStrikeNode:
 				{
 					result.Append("~~");
-					result.Append(Serialize(node.Children));
+					result.Append(SerializeInternal(node.Children));
 					result.Append("~~");
 					break;
 				}
@@ -145,7 +147,7 @@ public static class MfmSerializer
 				}
 				case MfmQuoteNode mfmQuoteNode:
 				{
-					var serialized = Serialize(node.Children);
+					var serialized = SerializeInternal(node.Children);
 					var split      = serialized.Split('\n');
 
 					for (var i = 0; i < split.Length; i++)
@@ -167,6 +169,6 @@ public static class MfmSerializer
 			}
 		}
 
-		return result.ToString().Trim();
+		return result.ToString();
 	}
 }
