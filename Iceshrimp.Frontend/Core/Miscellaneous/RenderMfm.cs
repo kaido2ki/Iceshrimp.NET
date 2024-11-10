@@ -273,8 +273,8 @@ public static class MfmRenderer
 			"crop"     => MfmFnCrop(args, document),
 			"position" => MfmFnPosition(args, document),
 			"scale"    => MfmFnScale(args, document),
-			"fg"       => throw new NotImplementedException($"{node.Name}"),
-			"bg"       => throw new NotImplementedException($"{node.Name}"),
+			"fg"       => MfmFnFg(args, document),
+			"bg"       => MfmFnBg(args, document),
 			"border"   => throw new NotImplementedException($"{node.Name}"),
 			"ruby"     => throw new NotImplementedException($"{node.Name}"),
 			"unixtime" => throw new NotImplementedException($"{node.Name}"),
@@ -374,6 +374,26 @@ public static class MfmRenderer
 		var scaleX = args.GetValueOrDefault("x") ?? "1";
 		var scaleY = args.GetValueOrDefault("y") ?? "1";
 		el.SetAttribute("style", $"display: inline-block; transform: scale({scaleX}, {scaleY});");
+
+		return el;
+	}
+	
+	private static INode MfmFnFg(Dictionary<string, string?> args, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		if (args.TryGetValue("color", out var color))
+			el.SetAttribute("style", $"color: #{color};");
+
+		return el;
+	}
+	
+	private static INode MfmFnBg(Dictionary<string, string?> args, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		if (args.TryGetValue("color", out var color))
+			el.SetAttribute("style", $"background-color: #{color};");
 
 		return el;
 	}
