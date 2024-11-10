@@ -41,6 +41,32 @@ public class MfmTests
 	}
 
 	[TestMethod]
+	public void TestItalicNegative()
+	{
+		List<MfmNode> expected    = [new MfmTextNode("test*test*test")];
+		List<MfmNode> expectedAlt = [new MfmTextNode("test_test_test")];
+
+		Mfm.parse("test*test*test").ToList().Should().Equal(expected, MfmNodeEqual);
+		Mfm.parse("test_test_test").ToList().Should().Equal(expectedAlt, MfmNodeEqual);
+
+		expected    = [new MfmTextNode("test*test* test")];
+		expectedAlt = [new MfmTextNode("test_test_ test")];
+
+		Mfm.parse("test*test* test").ToList().Should().Equal(expected, MfmNodeEqual);
+		Mfm.parse("test_test_ test").ToList().Should().Equal(expectedAlt, MfmNodeEqual);
+
+		expected =
+		[
+			new MfmTextNode("test "),
+			new MfmItalicNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("test")])),
+			new MfmTextNode("test")
+		];
+
+		Mfm.parse("test *test*test").ToList().Should().Equal(expected, MfmNodeEqual);
+		Mfm.parse("test _test_test").ToList().Should().Equal(expected, MfmNodeEqual);
+	}
+
+	[TestMethod]
 	public void TestParseList()
 	{
 		const string input = """

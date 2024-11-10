@@ -207,12 +207,26 @@ module private MfmParser =
 
     // Node parsers
 
+    let italicNode1 =
+        previousCharSatisfiesNot isNotWhitespace
+        >>. italicPattern
+        >>. pushLine
+        >>. manyTill inlineNode italicPattern
+        .>> assertLine
+
+    let italicNode2 =
+        previousCharSatisfiesNot isNotWhitespace
+        >>. italicPatternAlt
+        >>. pushLine
+        >>. manyTill inlineNode italicPatternAlt
+        .>> assertLine
+
+    let italicNode3 =
+        skipString "<i>" >>. pushLine >>. manyTill inlineNode (skipString "</i>")
+        .>> assertLine
+
     let italicNode =
-        (italicPattern >>. pushLine >>. manyTill inlineNode italicPattern .>> assertLine)
-        <|> (italicPatternAlt >>. pushLine >>. manyTill inlineNode italicPatternAlt
-             .>> assertLine)
-        <|> (skipString "<i>" >>. pushLine >>. manyTill inlineNode (skipString "</i>")
-             .>> assertLine)
+        italicNode1 <|> italicNode2 <|> italicNode3
         |>> fun c -> MfmItalicNode(aggregateTextInline c) :> MfmNode
 
     let boldNode =
@@ -381,10 +395,7 @@ module private MfmParser =
           fnNode
           charNode ]
 
-    let simpleNodeSeq =
-        [ plainNode
-          emojiCodeNode
-          charNode ]
+    let simpleNodeSeq = [ plainNode; emojiCodeNode; charNode ]
 
     let blockNodeSeq =
         [ plainNode; centerNode; smallNode; codeBlockNode; mathBlockNode; quoteNode ]
@@ -395,12 +406,12 @@ module private MfmParser =
     do nodeRef.Value <- choice <| seqAttempt (seqFlatten <| nodeSeq)
 
     do inlineNodeRef.Value <- choice <| (seqAttempt inlineNodeSeq) |>> fun v -> v :?> MfmInlineNode
-    
+
     do simpleRef.Value <- choice <| seqAttempt simpleNodeSeq
 
     // Final parse command
     let parse = spaces >>. manyTill node eof .>> spaces
-    
+
     let parseSimple = spaces >>. manyTill simple eof .>> spaces
 
 open MfmParser
