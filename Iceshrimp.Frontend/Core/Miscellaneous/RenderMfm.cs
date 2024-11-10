@@ -270,7 +270,7 @@ public static class MfmRenderer
 			"sparkle"  => throw new NotImplementedException($"{node.Name}"),
 			"rotate"   => MfmFnRotate(args, document),
 			"fade"     => throw new NotImplementedException($"{node.Name}"),
-			"crop"     => throw new NotImplementedException($"{node.Name}"),
+			"crop"     => MfmFnCrop(args, document),
 			"position" => throw new NotImplementedException($"{node.Name}"),
 			"scale"    => throw new NotImplementedException($"{node.Name}"),
 			"fg"       => throw new NotImplementedException($"{node.Name}"),
@@ -342,6 +342,16 @@ public static class MfmRenderer
 			el.SetAttribute("style", $"transform: perspective(120px) rotateX({deg}deg);");
 		else
 			el.SetAttribute("style", $"transform: rotate({deg}deg);");
+
+		return el;
+	}
+
+	private static INode MfmFnCrop(Dictionary<string, string?> args, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		var inset = $"{args.GetValueOrDefault("top") ?? "0"}% {args.GetValueOrDefault("right") ?? "0"}% {args.GetValueOrDefault("bottom") ?? "0"}% {args.GetValueOrDefault("left") ?? "0"}%";
+		el.SetAttribute("style", $"display: inline-block; clip-path: inset({inset});");
 
 		return el;
 	}
