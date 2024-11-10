@@ -271,7 +271,7 @@ public static class MfmRenderer
 			"rotate"   => MfmFnRotate(args, document),
 			"fade"     => throw new NotImplementedException($"{node.Name}"),
 			"crop"     => MfmFnCrop(args, document),
-			"position" => throw new NotImplementedException($"{node.Name}"),
+			"position" => MfmFnPosition(args, document),
 			"scale"    => throw new NotImplementedException($"{node.Name}"),
 			"fg"       => throw new NotImplementedException($"{node.Name}"),
 			"bg"       => throw new NotImplementedException($"{node.Name}"),
@@ -352,6 +352,17 @@ public static class MfmRenderer
 
 		var inset = $"{args.GetValueOrDefault("top") ?? "0"}% {args.GetValueOrDefault("right") ?? "0"}% {args.GetValueOrDefault("bottom") ?? "0"}% {args.GetValueOrDefault("left") ?? "0"}%";
 		el.SetAttribute("style", $"display: inline-block; clip-path: inset({inset});");
+
+		return el;
+	}
+	
+	private static INode MfmFnPosition(Dictionary<string, string?> args, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		var translateX = args.GetValueOrDefault("x") ?? "0";
+		var translateY = args.GetValueOrDefault("y") ?? "0";
+		el.SetAttribute("style", $"display: inline-block; transform: translateX({translateX}em) translateY({translateY}em);");
 
 		return el;
 	}
