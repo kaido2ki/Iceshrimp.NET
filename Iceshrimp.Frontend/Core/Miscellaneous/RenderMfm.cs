@@ -3,6 +3,7 @@ using AngleSharp.Dom;
 using Iceshrimp.Parsing;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components;
+using Microsoft.FSharp.Core;
 
 namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
@@ -60,7 +61,7 @@ public static class MfmRenderer
 			MfmNodeTypes.MfmBlockNode mfmBlockNode           => throw new NotImplementedException($"{mfmBlockNode.GetType()}"),
 			MfmNodeTypes.MfmBoldNode mfmBoldNode             => MfmBoldNode(mfmBoldNode, document),
 			MfmNodeTypes.MfmEmojiCodeNode mfmEmojiCodeNode   => MfmEmojiCodeNode(mfmEmojiCodeNode, document, emoji, simple),
-			MfmNodeTypes.MfmFnNode mfmFnNode                 => throw new NotImplementedException($"{mfmFnNode.GetType()}"),
+			MfmNodeTypes.MfmFnNode mfmFnNode                 => MfmFnNode(mfmFnNode, document),
 			MfmNodeTypes.MfmHashtagNode mfmHashtagNode       => MfmHashtagNode(mfmHashtagNode, document),
 			MfmNodeTypes.MfmInlineCodeNode mfmInlineCodeNode => MfmInlineCodeNode(mfmInlineCodeNode, document),
 			MfmNodeTypes.MfmItalicNode mfmItalicNode         => MfmItalicNode(mfmItalicNode, document),
@@ -241,5 +242,107 @@ public static class MfmRenderer
 		}
 
 		return link;
+	}
+
+	private static INode MfmFnNode(MfmNodeTypes.MfmFnNode node, IDocument document)
+	{
+		// FSharpOption is a pain to work with in C#, this makes dealing with the args a lot easier
+		var args = FSharpOption<IDictionary<string, FSharpOption<string>>>.get_IsSome(node.Args)
+			? node.Args.Value.ToDictionary(p => p.Key,
+			                               p => FSharpOption<string>.get_IsSome(p.Value) ? p.Value.Value : null)
+			: new Dictionary<string, string?>();
+
+		return node.Name switch {
+			"flip"     => MfmFnFlip(args, document),
+			"font"     => MfmFnFont(args, document),
+			"x2"       => MfmFnX(node.Name, document),
+			"x3"       => MfmFnX(node.Name, document),
+			"x4"       => MfmFnX(node.Name, document),
+			"blur"     => MfmFnBlur(document),
+			"jelly"    => throw new NotImplementedException($"{node.Name}"),
+			"tada"     => throw new NotImplementedException($"{node.Name}"),
+			"jump"     => throw new NotImplementedException($"{node.Name}"),
+			"bounce"   => throw new NotImplementedException($"{node.Name}"),
+			"spin"     => throw new NotImplementedException($"{node.Name}"),
+			"shake"    => throw new NotImplementedException($"{node.Name}"),
+			"twitch"   => throw new NotImplementedException($"{node.Name}"),
+			"rainbow"  => throw new NotImplementedException($"{node.Name}"),
+			"sparkle"  => throw new NotImplementedException($"{node.Name}"),
+			"rotate"   => MfmFnRotate(args, document),
+			"fade"     => throw new NotImplementedException($"{node.Name}"),
+			"crop"     => throw new NotImplementedException($"{node.Name}"),
+			"position" => throw new NotImplementedException($"{node.Name}"),
+			"scale"    => throw new NotImplementedException($"{node.Name}"),
+			"fg"       => throw new NotImplementedException($"{node.Name}"),
+			"bg"       => throw new NotImplementedException($"{node.Name}"),
+			"border"   => throw new NotImplementedException($"{node.Name}"),
+			"ruby"     => throw new NotImplementedException($"{node.Name}"),
+			"unixtime" => throw new NotImplementedException($"{node.Name}"),
+			_          => throw new NotImplementedException($"{node.Name}")
+		};
+	}
+
+	private static INode MfmFnFlip(Dictionary<string, string?> args, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		if (args.ContainsKey("h") && args.ContainsKey("v"))
+			el.ClassName = "fn-flip h v";
+		else if (args.ContainsKey("v"))
+			el.ClassName = "fn-flip v";
+		else
+			el.ClassName = "fn-flip h";
+
+		return el;
+	}
+	
+	private static INode MfmFnFont(Dictionary<string, string?> args, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		if (args.ContainsKey("serif"))
+			el.SetAttribute("style", "font-family: serif;");
+		else if (args.ContainsKey("monospace"))
+			el.SetAttribute("style", "font-family: monospace;");
+		else if (args.ContainsKey("cursive"))
+			el.SetAttribute("style", "font-family: cursive;");
+		else if (args.ContainsKey("fantasy"))
+			el.SetAttribute("style", "font-family: fantasy;");
+
+		return el;
+	}
+
+	private static INode MfmFnX(string name, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		el.ClassName = "fn-x";
+		el.SetAttribute("data-scale", name.Replace("x", ""));
+
+		return el;
+	}
+	
+	private static INode MfmFnBlur(IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		el.ClassName = "fn-blur";
+
+		return el;
+	}
+
+	private static INode MfmFnRotate(Dictionary<string, string?> args, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		var deg = args.GetValueOrDefault("deg") ?? "90";
+
+		el.ClassName = "fn-rotate";
+		if (args.ContainsKey("x"))
+			el.SetAttribute("style", $"transform: perspective(120px) rotateX({deg}deg);");
+		else
+			el.SetAttribute("style", $"transform: rotate({deg}deg);");
+
+		return el;
 	}
 }

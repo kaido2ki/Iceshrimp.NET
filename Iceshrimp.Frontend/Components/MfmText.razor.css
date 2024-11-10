@@ -110,3 +110,52 @@
         overflow: auto;
     }
 }
+
+/* fn nodes */
+::deep {
+    .fn-flip.h {
+        display: inline-block;
+        transform: scaleX(-1);
+    }
+}
+
+::deep {
+    .fn-flip.v {
+        display: inline-block;
+        transform: scaleY(-1);
+    }
+}
+
+::deep {
+    .fn-flip.h.v {
+        display: inline-block;
+        transform: scaleX(-1) scaleY(-1);
+    }
+}
+
+::deep {
+    .fn-x {
+        display: inline-block;
+        scale: attr(data-scale number, 2);
+    }
+}
+
+::deep {
+    .fn-blur {
+        filter: blur(6px);
+        transition: filter 0.3s;
+    }
+}
+
+::deep {
+    .fn-blur:hover {
+        filter: blur(0);
+    }
+}
+
+::deep {
+    .fn-rotate {
+        display: inline-block;
+        transform-origin: center center 0;
+    }
+}
