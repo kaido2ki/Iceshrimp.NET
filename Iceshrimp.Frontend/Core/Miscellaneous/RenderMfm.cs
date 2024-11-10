@@ -275,7 +275,7 @@ public static class MfmRenderer
 			"scale"    => MfmFnScale(args, document),
 			"fg"       => MfmFnFg(args, document),
 			"bg"       => MfmFnBg(args, document),
-			"border"   => throw new NotImplementedException($"{node.Name}"),
+			"border"   => MfmFnBorder(args, document),
 			"ruby"     => throw new NotImplementedException($"{node.Name}"),
 			"unixtime" => throw new NotImplementedException($"{node.Name}"),
 			_          => throw new NotImplementedException($"{node.Name}")
@@ -394,6 +394,20 @@ public static class MfmRenderer
 
 		if (args.TryGetValue("color", out var color))
 			el.SetAttribute("style", $"background-color: #{color};");
+
+		return el;
+	}
+	
+	private static INode MfmFnBorder(Dictionary<string, string?> args, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		var width  = args.GetValueOrDefault("width") ?? "1";
+		var radius = args.GetValueOrDefault("radius") ?? "0";
+		var style  = args.GetValueOrDefault("style") ?? "solid";
+		var color  = args.ContainsKey("color") ? "#" + args["color"] : "var(--notice-color)";
+		
+		el.SetAttribute("style", $"display: inline-block; border: {width}px {style} {color}; border-radius: {radius}px;");
 
 		return el;
 	}
