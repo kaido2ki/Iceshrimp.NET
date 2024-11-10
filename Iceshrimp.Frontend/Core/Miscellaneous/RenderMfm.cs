@@ -272,7 +272,7 @@ public static class MfmRenderer
 			"fade"     => throw new NotImplementedException($"{node.Name}"),
 			"crop"     => MfmFnCrop(args, document),
 			"position" => MfmFnPosition(args, document),
-			"scale"    => throw new NotImplementedException($"{node.Name}"),
+			"scale"    => MfmFnScale(args, document),
 			"fg"       => throw new NotImplementedException($"{node.Name}"),
 			"bg"       => throw new NotImplementedException($"{node.Name}"),
 			"border"   => throw new NotImplementedException($"{node.Name}"),
@@ -363,6 +363,17 @@ public static class MfmRenderer
 		var translateX = args.GetValueOrDefault("x") ?? "0";
 		var translateY = args.GetValueOrDefault("y") ?? "0";
 		el.SetAttribute("style", $"display: inline-block; transform: translateX({translateX}em) translateY({translateY}em);");
+
+		return el;
+	}
+	
+	private static INode MfmFnScale(Dictionary<string, string?> args, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		var scaleX = args.GetValueOrDefault("x") ?? "1";
+		var scaleY = args.GetValueOrDefault("y") ?? "1";
+		el.SetAttribute("style", $"display: inline-block; transform: scale({scaleX}, {scaleY});");
 
 		return el;
 	}
