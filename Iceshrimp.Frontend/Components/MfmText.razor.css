@@ -146,6 +146,8 @@
     }
 }
 
+/* Animation keyframes prefixed with fn- are adapted from Misskey under fair use / for interoperability */
+
 @keyframes fn-jelly {
     0% {
         transform: scaleZ(1);
