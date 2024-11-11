@@ -456,7 +456,7 @@ public static partial class MfmRenderer
 		var el = document.CreateElement("span");
 
 		if (args.TryGetValue("color", out var color) && ValidColor(color))
-			el.SetAttribute("style", $"color: #{color};");
+			el.SetAttribute("style", $"display: inline-block; color: #{color};");
 
 		return el;
 	}
@@ -466,7 +466,7 @@ public static partial class MfmRenderer
 		var el = document.CreateElement("span");
 
 		if (args.TryGetValue("color", out var color) && ValidColor(color))
-			el.SetAttribute("style", $"background-color: #{color};");
+			el.SetAttribute("style", $"display: inline-block; background-color: #{color};");
 
 		return el;
 	}
@@ -480,7 +480,7 @@ public static partial class MfmRenderer
 		var style  = args.GetValueOrDefault("style") ?? "solid";
 		var color  = args.TryGetValue("color", out var c) && ValidColor(c) ? "#" + c : "var(--notice-color)";
 		
-		el.SetAttribute("style", $"display: inline-block; border: {width}px {style} {color}; border-radius: {radius}px;");
+		el.SetAttribute("style", $"display: inline-block; border: {width}px {style} {color}; border-radius: {radius}px; overflow: clip;");
 
 		return el;
 	}
