@@ -34,7 +34,7 @@
             @Loc["Note by {0}", (RootNote?.User.DisplayName ?? RootNote?.User.Username) ?? string.Empty]
         }
     </SectionContent>
-    <div @ref="Scroller" class="scroller">
+    <div class="scroller">
         <div class="wrapper">
             <div class="container">
                 @if (Ascendants != null)
@@ -132,7 +132,6 @@
     private            IJSInProcessObjectReference? Module      { get; set; }
     private            ElementReference             RootNoteRef { get; set; }
     private            int                          _depth = 20;
-    private            ElementReference             Scroller { get; set; }
     private            IDisposable?                 _locationChangingHandlerDisposable;
     private            IDisposable?                 _noteChangedHandler;
     private            State                        _componentState;
