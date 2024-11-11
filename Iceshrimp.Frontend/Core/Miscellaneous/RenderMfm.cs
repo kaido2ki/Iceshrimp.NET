@@ -279,7 +279,7 @@ public static partial class MfmRenderer
 			"bg"       => MfmFnBg(args, document),
 			"border"   => MfmFnBorder(args, document),
 			"ruby"     => MfmFnRuby(node, document),
-			"unixtime" => throw new NotImplementedException($"{node.Name}"),
+			"unixtime" => MfmFnUnixtime(node, document),
 			_          => throw new NotImplementedException($"{node.Name}")
 		};
 	}
@@ -517,6 +517,31 @@ public static partial class MfmRenderer
 		var rp2 = document.CreateElement("rp");
 		rp1.TextContent = ")";
 		el.AppendChild(rp2);
+
+		return el;
+	}
+
+	private static INode MfmFnUnixtime(MfmNodeTypes.MfmFnNode node, IDocument document)
+	{
+		var el = document.CreateElement("time");
+
+		if (node.Children.Length != 1) return el;
+		var childText = GetNodeText(node.Children[0]);
+		if (childText == null) return el;
+
+		double timestamp;
+		try
+		{
+			timestamp = double.Parse(childText);
+		}
+		catch
+		{
+			return el;
+		}
+
+		var date = DateTime.UnixEpoch.AddSeconds(timestamp);
+		el.SetAttribute("datetime", date.ToString("O"));
+		el.TextContent = date.ToString("G");
 
 		return el;
 	}
