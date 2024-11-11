@@ -362,6 +362,15 @@
     }
 }
 
+@keyframes fn-rainbow {
+    0% {
+        filter: hue-rotate(0deg) contrast(150%) saturate(150%)
+    }
+    to {
+        filter: hue-rotate(360deg) contrast(150%) saturate(150%)
+    }
+}
+
 ::deep {
     .fn-animation {
         display: inline-block;
