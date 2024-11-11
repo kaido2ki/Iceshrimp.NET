@@ -262,7 +262,7 @@ public static partial class MfmRenderer
 			"blur"     => MfmFnBlur(document),
 			"jelly"    => MfmFnAnimation(node.Name, args, document),
 			"tada"     => MfmFnAnimation(node.Name, args, document),
-			"jump"     => throw new NotImplementedException($"{node.Name}"),
+			"jump"     => MfmFnAnimation(node.Name, args, document),
 			"bounce"   => throw new NotImplementedException($"{node.Name}"),
 			"spin"     => throw new NotImplementedException($"{node.Name}"),
 			"shake"    => throw new NotImplementedException($"{node.Name}"),
