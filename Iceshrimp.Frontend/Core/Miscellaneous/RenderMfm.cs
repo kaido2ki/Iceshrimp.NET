@@ -260,7 +260,7 @@ public static partial class MfmRenderer
 			"x3"       => MfmFnX(node.Name, document),
 			"x4"       => MfmFnX(node.Name, document),
 			"blur"     => MfmFnBlur(document),
-			"jelly"    => throw new NotImplementedException($"{node.Name}"),
+			"jelly"    => MfmFnJelly(args, document),
 			"tada"     => throw new NotImplementedException($"{node.Name}"),
 			"jump"     => throw new NotImplementedException($"{node.Name}"),
 			"bounce"   => throw new NotImplementedException($"{node.Name}"),
@@ -327,6 +327,23 @@ public static partial class MfmRenderer
 		var el = document.CreateElement("span");
 
 		el.ClassName = "fn-blur";
+
+		return el;
+	}
+
+	private static INode MfmFnJelly(Dictionary<string, string?> args, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		el.ClassName = "fn-jelly";
+
+		var style = "";
+		style += args.TryGetValue("speed", out var speed) ? $"animation-duration: {speed}; " : "";
+		style += args.TryGetValue("delay", out var delay) ? $"animation-delay: {delay}; " : "";
+		style += args.TryGetValue("loop", out var loop) ? $"animation-iteration-count: {loop}; " : "";
+
+		if (!string.IsNullOrWhiteSpace(style))
+			el.SetAttribute("style", style.Trim());
 
 		return el;
 	}
