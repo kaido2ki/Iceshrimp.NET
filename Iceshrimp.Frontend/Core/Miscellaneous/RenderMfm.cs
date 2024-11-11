@@ -266,7 +266,7 @@ public static partial class MfmRenderer
 			"bounce"   => MfmFnAnimation(node.Name, args, document, "0.75s"),
 			"spin"     => MfmFnSpin(args, document),
 			"shake"    => MfmFnAnimation(node.Name, args, document, "0.5s"),
-			"twitch"   => throw new NotImplementedException($"{node.Name}"),
+			"twitch"   => MfmFnAnimation(node.Name, args, document, "0.5s"),
 			"rainbow"  => throw new NotImplementedException($"{node.Name}"),
 			"sparkle"  => throw new NotImplementedException($"{node.Name}"),
 			"rotate"   => MfmFnRotate(args, document),
