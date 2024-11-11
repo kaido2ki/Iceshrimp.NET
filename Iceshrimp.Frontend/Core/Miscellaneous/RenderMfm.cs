@@ -263,7 +263,7 @@ public static partial class MfmRenderer
 			"jelly"    => MfmFnAnimation(node.Name, args, document),
 			"tada"     => MfmFnAnimation(node.Name, args, document),
 			"jump"     => MfmFnAnimation(node.Name, args, document),
-			"bounce"   => throw new NotImplementedException($"{node.Name}"),
+			"bounce"   => MfmFnAnimation(node.Name, args, document),
 			"spin"     => throw new NotImplementedException($"{node.Name}"),
 			"shake"    => throw new NotImplementedException($"{node.Name}"),
 			"twitch"   => throw new NotImplementedException($"{node.Name}"),
