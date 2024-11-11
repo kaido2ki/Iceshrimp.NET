@@ -260,7 +260,7 @@ public static partial class MfmRenderer
 			"x3"       => MfmFnX(node.Name, document),
 			"x4"       => MfmFnX(node.Name, document),
 			"blur"     => MfmFnBlur(document),
-			"jelly"    => MfmFnJelly(args, document),
+			"jelly"    => MfmFnAnimation(node.Name, args, document),
 			"tada"     => throw new NotImplementedException($"{node.Name}"),
 			"jump"     => throw new NotImplementedException($"{node.Name}"),
 			"bounce"   => throw new NotImplementedException($"{node.Name}"),
@@ -331,19 +331,18 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmFnJelly(Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnAnimation(string name, Dictionary<string, string?> args, IDocument document)
 	{
 		var el = document.CreateElement("span");
 
-		el.ClassName = "fn-jelly";
+		el.ClassName = "fn-animation";
 
-		var style = "";
-		style += args.TryGetValue("speed", out var speed) ? $"animation-duration: {speed}; " : "";
-		style += args.TryGetValue("delay", out var delay) ? $"animation-delay: {delay}; " : "";
-		style += args.TryGetValue("loop", out var loop) ? $"animation-iteration-count: {loop}; " : "";
+		var style = $"animation-name: fn-{name}-mfm;";
+		style += args.TryGetValue("speed", out var speed) ? $" animation-duration: {speed};" : "";
+		style += args.TryGetValue("delay", out var delay) ? $" animation-delay: {delay};" : "";
+		style += args.TryGetValue("loop", out var loop) ? $" animation-iteration-count: {loop};" : "";
 
-		if (!string.IsNullOrWhiteSpace(style))
-			el.SetAttribute("style", style.Trim());
+		el.SetAttribute("style", style.Trim());
 
 		return el;
 	}

@@ -171,14 +171,13 @@
 }
 
 ::deep {
-    .fn-jelly {
+    .fn-animation {
         display: inline-block;
         animation-delay: 0s;
         animation-duration: 1s;
         animation-fill-mode: both;
         animation-iteration-count: infinite;
         animation-timing-function: linear;
-        animation-name: fn-jelly;
     }
 }
 
