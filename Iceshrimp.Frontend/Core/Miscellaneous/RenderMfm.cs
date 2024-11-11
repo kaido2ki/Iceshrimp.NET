@@ -270,7 +270,7 @@ public static partial class MfmRenderer
 			"rainbow"  => MfmFnAnimation(node.Name, args, document),
 			"sparkle"  => throw new NotImplementedException($"{node.Name}"),
 			"rotate"   => MfmFnRotate(args, document),
-			"fade"     => throw new NotImplementedException($"{node.Name}"),
+			"fade"     => MfmFnFade(args, document),
 			"crop"     => MfmFnCrop(args, document),
 			"position" => MfmFnPosition(args, document),
 			"scale"    => MfmFnScale(args, document),
@@ -389,6 +389,23 @@ public static partial class MfmRenderer
 			el.SetAttribute("style", $"transform: perspective(120px) rotateX({deg}deg);");
 		else
 			el.SetAttribute("style", $"transform: rotate({deg}deg);");
+
+		return el;
+	}
+	
+	private static INode MfmFnFade(Dictionary<string, string?> args, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		el.ClassName = "fn-fade";
+
+		var style = "";
+		style += args.ContainsKey("out") ? "animation-direction: alternate-reverse; " : "";
+		style += args.TryGetValue("speed", out var speed) ? $"animation-duration: {speed}; " : "";
+		style += args.TryGetValue("delay", out var delay) ? $"animation-delay: {delay}; " : "";
+
+		if (!string.IsNullOrWhiteSpace(style))
+			el.SetAttribute("style", style.Trim());
 
 		return el;
 	}
