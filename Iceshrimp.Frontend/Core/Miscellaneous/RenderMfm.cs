@@ -264,7 +264,7 @@ public static partial class MfmRenderer
 			"tada"     => MfmFnAnimation(node.Name, args, document),
 			"jump"     => MfmFnAnimation(node.Name, args, document),
 			"bounce"   => MfmFnAnimation(node.Name, args, document),
-			"spin"     => throw new NotImplementedException($"{node.Name}"),
+			"spin"     => MfmFnSpin(args, document),
 			"shake"    => throw new NotImplementedException($"{node.Name}"),
 			"twitch"   => throw new NotImplementedException($"{node.Name}"),
 			"rainbow"  => throw new NotImplementedException($"{node.Name}"),
@@ -338,6 +338,33 @@ public static partial class MfmRenderer
 		el.ClassName = "fn-animation";
 
 		var style = $"animation-name: fn-{name}-mfm;";
+		style += args.TryGetValue("speed", out var speed) ? $" animation-duration: {speed};" : "";
+		style += args.TryGetValue("delay", out var delay) ? $" animation-delay: {delay};" : "";
+		style += args.TryGetValue("loop", out var loop) ? $" animation-iteration-count: {loop};" : "";
+
+		el.SetAttribute("style", style.Trim());
+
+		return el;
+	}
+	
+	private static INode MfmFnSpin(Dictionary<string, string?> args, IDocument document)
+	{
+		var el = document.CreateElement("span");
+
+		el.ClassName = "fn-spin";
+
+		var name = args.ContainsKey("y")
+			? "fn-spin-y-mfm"
+			: args.ContainsKey("x")
+				? "fn-spin-x-mfm"
+				: "fn-spin-mfm";
+		var direction = args.ContainsKey("alternate")
+			? "alternate"
+			: args.ContainsKey("left")
+				? "reverse"
+				: "normal";
+
+		var style = $"animation-name: {name}; animation-direction: {direction};";
 		style += args.TryGetValue("speed", out var speed) ? $" animation-duration: {speed};" : "";
 		style += args.TryGetValue("delay", out var delay) ? $" animation-delay: {delay};" : "";
 		style += args.TryGetValue("loop", out var loop) ? $" animation-iteration-count: {loop};" : "";

@@ -241,6 +241,44 @@
     }
 }
 
+@keyframes fn-spin {
+    0% {
+        transform: rotate(0)
+    }
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+@keyframes fn-spin-x {
+    0% {
+        transform: perspective(128px) rotateX(0)
+    }
+    to {
+        transform: perspective(128px) rotateX(360deg)
+    }
+}
+
+@keyframes fn-spin-y {
+    0% {
+        transform: perspective(128px) rotateY(0)
+    }
+    to {
+        transform: perspective(128px) rotateY(360deg)
+    }
+}
+
+::deep {
+    .fn-spin {
+        display: inline-block;
+        animation-delay: 0s;
+        animation-duration: 1.5s;
+        animation-fill-mode: both;
+        animation-iteration-count: infinite;
+        animation-timing-function: linear;
+    }
+}
+
 ::deep {
     .fn-rotate {
         display: inline-block;
