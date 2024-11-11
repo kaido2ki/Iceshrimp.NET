@@ -382,7 +382,9 @@ module private MfmParser =
 
     // Node collection
     let inlineNodeSeq =
-        [ italicNode
+        [ plainNode
+          smallNode
+          italicNode
           boldNode
           strikeNode
           hashtagNode
@@ -397,8 +399,7 @@ module private MfmParser =
 
     let simpleNodeSeq = [ plainNode; emojiCodeNode; charNode ]
 
-    let blockNodeSeq =
-        [ plainNode; centerNode; smallNode; codeBlockNode; mathBlockNode; quoteNode ]
+    let blockNodeSeq = [ centerNode; codeBlockNode; mathBlockNode; quoteNode ]
 
     let nodeSeq = [ blockNodeSeq; inlineNodeSeq ]
 
