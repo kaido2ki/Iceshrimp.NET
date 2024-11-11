@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Dom;
+using AngleSharp.Text;
 using Iceshrimp.Parsing;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components;
@@ -79,7 +80,7 @@ public static partial class MfmRenderer
 		};
 		// @formatter:on
 
-		if (node.Children.Length > 0)
+		if (node.Children.Length > 0 && rendered.ChildNodes.Length == 0)
 		{
 			foreach (var childNode in node.Children)
 			{
@@ -252,7 +253,7 @@ public static partial class MfmRenderer
 			? node.Args.Value.ToDictionary(p => p.Key,
 			                               p => FSharpOption<string>.get_IsSome(p.Value) ? p.Value.Value : null)
 			: new Dictionary<string, string?>();
-
+		
 		return node.Name switch {
 			"flip"     => MfmFnFlip(args, document),
 			"font"     => MfmFnFont(args, document),
@@ -277,7 +278,7 @@ public static partial class MfmRenderer
 			"fg"       => MfmFnFg(args, document),
 			"bg"       => MfmFnBg(args, document),
 			"border"   => MfmFnBorder(args, document),
-			"ruby"     => throw new NotImplementedException($"{node.Name}"),
+			"ruby"     => MfmFnRuby(node, document),
 			"unixtime" => throw new NotImplementedException($"{node.Name}"),
 			_          => throw new NotImplementedException($"{node.Name}")
 		};
@@ -480,6 +481,42 @@ public static partial class MfmRenderer
 		var color  = args.TryGetValue("color", out var c) && ValidColor(c) ? "#" + c : "var(--notice-color)";
 		
 		el.SetAttribute("style", $"display: inline-block; border: {width}px {style} {color}; border-radius: {radius}px;");
+
+		return el;
+	}
+
+	private static string? GetNodeText(MfmNodeTypes.MfmNode node)
+	{
+		return node switch
+		{
+			MfmNodeTypes.MfmTextNode mfmTextNode => mfmTextNode.Text,
+			_                                    => null,
+		};
+	}
+
+	private static INode MfmFnRuby(MfmNodeTypes.MfmFnNode node, IDocument document)
+	{
+		var el = document.CreateElement("ruby");
+
+		if (node.Children.Length != 1) return el;
+		var childText = GetNodeText(node.Children[0]);
+		if (childText == null) return el;
+		var split = childText.SplitSpaces();
+		if (split.Length < 2) return el;
+		
+		el.TextContent = split[0];
+
+		var rp1 = document.CreateElement("rp");
+		rp1.TextContent = "(";
+		el.AppendChild(rp1);
+
+		var rt = document.CreateElement("rt");
+		rt.TextContent = split[1];
+		el.AppendChild(rt);
+
+		var rp2 = document.CreateElement("rp");
+		rp1.TextContent = ")";
+		el.AppendChild(rp2);
 
 		return el;
 	}
