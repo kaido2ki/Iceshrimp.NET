@@ -182,7 +182,7 @@ public static class QueryableFtsExtensions
 
 	private static IQueryable<Note> ApplyRegularAttachmentFilter(this IQueryable<Note> query, AttachmentFilter filter)
 	{
-		if (filter.Value.IsAny)
+		if (filter.Value.IsMedia)
 			return query.Where(p => p.AttachedFileTypes.Count != 0);
 		if (filter.Value.IsPoll)
 			return query.Where(p => p.HasPoll);
@@ -209,7 +209,7 @@ public static class QueryableFtsExtensions
 
 	private static IQueryable<Note> ApplyNegatedAttachmentFilter(this IQueryable<Note> query, AttachmentFilter filter)
 	{
-		if (filter.Value.IsAny)
+		if (filter.Value.IsMedia)
 			return query.Where(p => p.AttachedFileTypes.Count == 0);
 		if (filter.Value.IsPoll)
 			return query.Where(p => !p.HasPoll);

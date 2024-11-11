@@ -84,7 +84,7 @@ module SearchQueryFilters =
 
 
     type AttachmentFilterType =
-        | Any
+        | Media
         | Image
         | Video
         | Audio
@@ -97,7 +97,8 @@ module SearchQueryFilters =
 
         member val Value =
             match value with
-            | "any" -> Any
+            | "any" -> Media
+            | "media" -> Media
             | "image" -> Image
             | "video" -> Video
             | "audio" -> Audio
@@ -215,7 +216,7 @@ module private SearchQueryParser =
         <| fun n v -> InFilter(n.IsSome, v) :> Filter
 
     let attachmentFilter =
-        negKeyFilter [ "has"; "attachment"; "attached" ] [ "any"; "image"; "video"; "audio"; "file"; "poll" ]
+        negKeyFilter [ "has"; "attachment"; "attached" ] [ "any"; "media"; "image"; "video"; "audio"; "file"; "poll" ]
         <| fun n v -> AttachmentFilter(n.IsSome, v) :> Filter
 
     let afterFilter =

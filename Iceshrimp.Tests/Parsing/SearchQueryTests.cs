@@ -98,12 +98,13 @@ public class SearchQueryTests
 	{
 		List<string> keyCandidates = ["has", "attachment", "attached"];
 		if (negated) keyCandidates = keyCandidates.Select(p => "-" + p).ToList();
-		List<string> candidates    = ["any", "image", "video", "audio", "file", "poll"];
+		List<string> candidates    = ["any", "media", "image", "video", "audio", "file", "poll"];
 		var results =
 			keyCandidates.Select(k => candidates.Select(v => $"{k}:{v}").SelectMany(SearchQuery.parse).ToList());
 		List<Filter> expectedResults =
 		[
 			new AttachmentFilter(negated, "any"),
+			new AttachmentFilter(negated, "media"),
 			new AttachmentFilter(negated, "image"),
 			new AttachmentFilter(negated, "video"),
 			new AttachmentFilter(negated, "audio"),
