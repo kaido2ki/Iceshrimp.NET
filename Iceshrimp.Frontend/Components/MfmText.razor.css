@@ -134,13 +134,6 @@
 }
 
 ::deep {
-    .fn-x {
-        display: inline-block;
-        scale: attr(data-scale number, 2);
-    }
-}
-
-::deep {
     .fn-blur {
         filter: blur(6px);
         transition: filter 0.3s;

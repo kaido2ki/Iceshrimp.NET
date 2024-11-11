@@ -317,8 +317,7 @@ public static partial class MfmRenderer
 	{
 		var el = document.CreateElement("span");
 
-		el.ClassName = "fn-x";
-		el.SetAttribute("data-scale", name.Replace("x", ""));
+		el.SetAttribute("style", $"display: inline-block; font-size: {name.Replace("x", "")}em;");
 
 		return el;
 	}
