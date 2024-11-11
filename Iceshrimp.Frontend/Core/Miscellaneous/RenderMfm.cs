@@ -262,8 +262,8 @@ public static partial class MfmRenderer
 			"blur"     => MfmFnBlur(document),
 			"jelly"    => MfmFnAnimation(node.Name, args, document),
 			"tada"     => MfmFnAnimation(node.Name, args, document),
-			"jump"     => MfmFnAnimation(node.Name, args, document),
-			"bounce"   => MfmFnAnimation(node.Name, args, document),
+			"jump"     => MfmFnAnimation(node.Name, args, document, "0.75s"),
+			"bounce"   => MfmFnAnimation(node.Name, args, document, "0.75s"),
 			"spin"     => MfmFnSpin(args, document),
 			"shake"    => throw new NotImplementedException($"{node.Name}"),
 			"twitch"   => throw new NotImplementedException($"{node.Name}"),
@@ -331,14 +331,18 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmFnAnimation(string name, Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnAnimation(
+		string name, Dictionary<string, string?> args, IDocument document, string defaultSpeed = "1s"
+	)
 	{
 		var el = document.CreateElement("span");
 
 		el.ClassName = "fn-animation";
 
 		var style = $"animation-name: fn-{name}-mfm;";
-		style += args.TryGetValue("speed", out var speed) ? $" animation-duration: {speed};" : "";
+		style += args.TryGetValue("speed", out var speed)
+			? $" animation-duration: {speed};"
+			: $" animation-duration: {defaultSpeed};";
 		style += args.TryGetValue("delay", out var delay) ? $" animation-delay: {delay};" : "";
 		style += args.TryGetValue("loop", out var loop) ? $" animation-iteration-count: {loop};" : "";
 
