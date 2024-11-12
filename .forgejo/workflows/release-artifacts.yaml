@@ -6,7 +6,7 @@ jobs:
   build-artifacts:
     runs-on: docker
     container:
-      image: iceshrimp.dev/iceshrimp/ci-env:dotnet8-wasm
+      image: iceshrimp.dev/iceshrimp/ci-env:dotnet9-wasm
       options: |
         --volume /opt/iceshrimp-cache/nuget:/root/.nuget
         --volume /root/.docker:/root/.docker
@@ -46,5 +46,5 @@ jobs:
         run: |
           docker login iceshrimp.dev -u ${{ github.actor }} -p ${{ secrets.REGISTRY_TOKEN }}
           docker buildx create --name iceshrimp-ci 2>&1 &>/dev/null || true
-          docker buildx build ${{ env.TAGS }} --provenance=false --platform=linux/amd64,linux/arm64 --push --builder iceshrimp-ci -f ./.docker/dotnet-runner-8.0.Dockerfile ./release
+          docker buildx build ${{ env.TAGS }} --provenance=false --platform=linux/amd64,linux/arm64 --push --builder iceshrimp-ci -f ./.docker/dotnet-runner-9.0.Dockerfile ./release
           docker buildx prune --keep-storage 20G --builder iceshrimp-ci
