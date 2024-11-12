@@ -205,7 +205,7 @@ public class UserService(
 		{
 			UserId = user.Id,
 			KeyId  = actor.PublicKey.Id,
-			KeyPem = actor.PublicKey.PublicKey
+			KeyPem = actor.PublicKey.PublicKey.Trim()
 		};
 
 		try
@@ -506,7 +506,7 @@ public class UserService(
 		var insert = key.KeyId == null!;
 
 		key.KeyId  = actor.PublicKey.Id;
-		key.KeyPem = actor.PublicKey.PublicKey;
+		key.KeyPem = actor.PublicKey.PublicKey.Trim();
 
 		if (insert) db.Add(key);
 		else db.Update(key);
