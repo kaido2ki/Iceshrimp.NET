@@ -18,7 +18,7 @@
             }
         </div>
     }
-    <button class="btn" @onclick="Reply" @onclick:stopPropagation="true" aria-label="reply">
+    <button class="btn positioned" @onclick="Reply" @onclick:stopPropagation="true" aria-label="reply">
         <Icon Name="Icons.ArrowUUpLeft" Size="1.3em"/>
         @if (Replies > 0)
         {
@@ -54,7 +54,7 @@
             <span class="renote-count">@Renotes</span>
         }
     </button>
-    <button @onclick="Like" @onclick:stopPropagation="true" class="btn" aria-label="like">
+    <button @onclick="Like" @onclick:stopPropagation="true" class="btn positioned" aria-label="like">
         @if (IsLiked)
         {
             <Icon Name="Icons.Heart" Pack="IconStyle.Fill" Size="1.3em"/>
@@ -68,10 +68,10 @@
             <span class="like-count">@Likes</span>
         }
     </button>
-    <button @ref="EmojiButton" class="btn" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true" aria-label="emoji picker" >
+    <button @ref="EmojiButton" class="btn positioned" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true" aria-label="emoji picker" >
         <Icon Name="Icons.Smiley" Size="1.3em"/>
     </button>
-    <button class="btn" @onclick="Quote" @onclick:stopPropagation="true" aria-label="quote">
+    <button class="btn positioned" @onclick="Quote" @onclick:stopPropagation="true" aria-label="quote">
         <Icon Name="Icons.Quotes" Size="1.3em"/>
     </button>
     <button class="btn positioned" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">

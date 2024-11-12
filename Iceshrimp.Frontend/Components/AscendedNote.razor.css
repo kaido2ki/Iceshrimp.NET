@@ -25,4 +25,5 @@
     display: flex;
     max-width: 45rem;
     width: 100%;
+    overflow: clip;
 }

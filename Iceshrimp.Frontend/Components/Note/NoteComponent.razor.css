@@ -1,10 +1,13 @@
 .note-header {
     display: flex;
     padding-bottom: 0.5em;
+    position: relative;
+    z-index: 1;
 }
 
 .note-container {
-    width: 100%
+    width: 100%;
+    overflow: clip;
 }
 
 .user-avatar {
