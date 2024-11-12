@@ -25,7 +25,7 @@
             <span class="reply-count">@Replies</span>
         }
     </button>
-    <button class="btn @(RenotePossible ? "" : "disabled") positioned" @onclick="@(RenotePossible ? ToggleRenoteMenu : () => { })" @onclick:stopPropagation="true" aria-label="renote">
+    <button @ref="RenoteButton" class="btn @(RenotePossible ? "" : "disabled") positioned" @onclick="@(RenotePossible ? ToggleRenoteMenu : () => { })" @onclick:stopPropagation="true" aria-label="renote">
         @if (RenotePossible)
         {
             <Icon Name="Icons.Repeat" Size="1.3em"/>
@@ -74,7 +74,7 @@
     <button class="btn positioned" @onclick="Quote" @onclick:stopPropagation="true" aria-label="quote">
         <Icon Name="Icons.Quotes" Size="1.3em"/>
     </button>
-    <button class="btn positioned" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">
+    <button @ref="MenuButton" class="btn positioned" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">
         <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
         <Menu @ref="ContextMenu">
             @if (Note.NoteResponse.User.Id == Session.Current?.Id)
@@ -115,11 +115,13 @@
     [Parameter]                  public          bool                     RenotePossible { get; set; }
     private                                      Menu                     ContextMenu    { get; set; } = null!;
     private                                      Menu                     RenoteMenu     { get; set; } = null!;
+    private                                      ElementReference         RenoteButton   { get; set; }
     private                                      ElementReference         EmojiButton    { get; set; }
+    private                                      ElementReference         MenuButton     { get; set; }
 
     [CascadingParameter] Note Note { get; set; } = null!;
 
-    private void ToggleMenu() => ContextMenu.Toggle();
+    private void ToggleMenu() => ContextMenu.Toggle(MenuButton);
 
     private void Delete() => _ = Note.Delete();
 
@@ -139,7 +141,7 @@
 
     private void ToggleRenoteMenu()
     {
-        RenoteMenu.Toggle();
+        RenoteMenu.Toggle(RenoteButton);
     }
 
     private void Renote(NoteVisibility visibility)

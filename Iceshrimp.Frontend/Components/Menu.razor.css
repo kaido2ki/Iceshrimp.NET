@@ -1,12 +1,14 @@
 .menu {
+    --top: 0px;
+    --left: 0px;
     background-color: var(--foreground-color);
-    position: absolute;
+    position: fixed;
     padding: 0.5rem;
     border-radius: 0.5rem;
     border: var(--highlight-color) solid 0.1rem;
     width: 15rem;
     max-width: 20rem;
-    top: 2.5rem;
-    left: -5rem;
-    z-index: +1;
+    top: calc(var(--top) + 2.5rem);
+    left: calc(var(--left) - 5.5rem);
+    z-index: +2;
 }
