@@ -2,9 +2,8 @@ using System.Diagnostics;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 using Iceshrimp.Parsing;
-using Microsoft.FSharp.Collections;
-using Microsoft.FSharp.Core;
 using static Iceshrimp.Parsing.MfmNodeTypes;
+using FSDict = System.Collections.Generic.Dictionary<string, Microsoft.FSharp.Core.FSharpOption<string>?>;
 
 namespace Iceshrimp.Tests.Parsing;
 
@@ -17,38 +16,38 @@ public class MfmTests
 		// @formatter:off
 		List<MfmNode> expected123 =
 		[
-			new MfmItalicNode(ListModule.OfSeq<MfmInlineNode>([
+			new MfmItalicNode([
 				new MfmTextNode("italic "),
-				new MfmBoldNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("bold")]), InlineNodeType.Symbol),
+				new MfmBoldNode([new MfmTextNode("bold")], InlineNodeType.Symbol),
 				new MfmTextNode(" italic")
-			]), InlineNodeType.Symbol)
+			], InlineNodeType.Symbol)
 		];
 		
 		List<MfmNode> expected4 =
 		[
-			new MfmItalicNode(ListModule.OfSeq<MfmInlineNode>([
+			new MfmItalicNode([
 				new MfmTextNode("italic "),
-				new MfmBoldNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("bold")]), InlineNodeType.HtmlTag),
+				new MfmBoldNode([new MfmTextNode("bold")], InlineNodeType.HtmlTag),
 				new MfmTextNode(" italic")
-			]), InlineNodeType.HtmlTag)
+			], InlineNodeType.HtmlTag)
 		];
 		
 		List<MfmNode> expected5 =
 		[
-			new MfmItalicNode(ListModule.OfSeq<MfmInlineNode>([
+			new MfmItalicNode([
 				new MfmTextNode("italic "),
-				new MfmBoldNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("bold")]), InlineNodeType.Symbol),
+				new MfmBoldNode([new MfmTextNode("bold")], InlineNodeType.Symbol),
 				new MfmTextNode(" italic")
-			]), InlineNodeType.HtmlTag)
+			], InlineNodeType.HtmlTag)
 		];
 		
 		List<MfmNode> expected6 =
 		[
-			new MfmItalicNode(ListModule.OfSeq<MfmInlineNode>([
+			new MfmItalicNode([
 				new MfmTextNode("italic "),
-				new MfmBoldNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("bold")]), InlineNodeType.HtmlTag),
+				new MfmBoldNode([new MfmTextNode("bold")], InlineNodeType.HtmlTag),
 				new MfmTextNode(" italic")
-			]), InlineNodeType.Symbol)
+			], InlineNodeType.Symbol)
 		];
 		// @formatter:on
 
@@ -101,7 +100,7 @@ public class MfmTests
 		expected =
 		[
 			new MfmTextNode("test "),
-			new MfmItalicNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("test")]), InlineNodeType.Symbol),
+			new MfmItalicNode([new MfmTextNode("test")], InlineNodeType.Symbol),
 			new MfmTextNode("test")
 		];
 
@@ -114,15 +113,9 @@ public class MfmTests
 	{
 		const string input  = "~~test~~";
 		const string input2 = "<s>test</s>";
-		List<MfmNode> expected =
-		[
-			new MfmStrikeNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("test")]), InlineNodeType.Symbol)
-		];
 
-		List<MfmNode> expected2 =
-		[
-			new MfmStrikeNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("test")]), InlineNodeType.HtmlTag)
-		];
+		List<MfmNode> expected  = [new MfmStrikeNode([new MfmTextNode("test")], InlineNodeType.Symbol)];
+		List<MfmNode> expected2 = [new MfmStrikeNode([new MfmTextNode("test")], InlineNodeType.HtmlTag)];
 
 		var res  = Mfm.parse(input).ToList();
 		var res2 = Mfm.parse(input2).ToList();
@@ -393,12 +386,9 @@ public class MfmTests
 	[TestMethod]
 	public void TestQuote()
 	{
-		const string input1 = "> this is a quote";
-		const string input2 = ">this is a quote";
-		List<MfmNode> expected =
-		[
-			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a quote")]), false, true)
-		];
+		const string  input1   = "> this is a quote";
+		const string  input2   = ">this is a quote";
+		List<MfmNode> expected = [new MfmQuoteNode([new MfmTextNode("this is a quote")], false, true)];
 
 		var res1 = Mfm.parse(input1);
 		var res2 = Mfm.parse(input2);
@@ -447,10 +437,10 @@ public class MfmTests
 		List<MfmNode> expected =
 		[
 			new MfmTextNode("this is plain text > this is not a quote >this is also not a quote\n"),
-			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a quote\nthis is part of the same quote\nthis too")]), false, false),
+			new MfmQuoteNode([new MfmTextNode("this is a quote\nthis is part of the same quote\nthis too")], false, false),
 			new MfmTextNode("this is some plain text inbetween\n"),
-			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a second quote\nthis is part of the second quote")]), true, false),
-			new MfmQuoteNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("this is a third quote")]), false, false),
+			new MfmQuoteNode([new MfmTextNode("this is a second quote\nthis is part of the second quote")], true, false),
+			new MfmQuoteNode([new MfmTextNode("this is a third quote")], false, false),
 			new MfmTextNode("and this is some plain text to close it off")
 		];
 		// @formatter:on
@@ -469,43 +459,23 @@ public class MfmTests
 		const string input =
 			"test $[] $[test] $[test ] $[test test] $[test123 test] $[test.a test] $[test.a=b test] $[test.a=b,c=e test] $[test.a,c=e test] $[test.a=b,c test]";
 
-		var some = FSharpOption<IDictionary<string, FSharpOption<string>>>.Some;
-		var none = FSharpOption<IDictionary<string, FSharpOption<string>>>.None;
-		var test = ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("test")]);
-		
-		// @formatter:off
 		List<MfmNode> expected =
 		[
 			new MfmTextNode("test $[] $[test] $[test ] "),
-			new MfmFnNode("test",
-			              none,
-			              test),
+			new MfmFnNode("test", null, [new MfmTextNode("test")]),
 			new MfmTextNode(" "),
-			new MfmFnNode("test123",
-			              none,
-			              test),
+			new MfmFnNode("test123", null, [new MfmTextNode("test")]),
 			new MfmTextNode(" "),
-			new MfmFnNode("test",
-			              some(new Dictionary<string, FSharpOption<string>>{ {"a", FSharpOption<string>.None} }),
-			              test),
+			new MfmFnNode("test", new FSDict { { "a", null } }, [new MfmTextNode("test")]),
 			new MfmTextNode(" "),
-			new MfmFnNode("test",
-			              some(new Dictionary<string, FSharpOption<string>>{ {"a", FSharpOption<string>.Some("b")} }),
-			              test),
+			new MfmFnNode("test", new FSDict { { "a", "b" } }, [new MfmTextNode("test")]),
 			new MfmTextNode(" "),
-			new MfmFnNode("test",
-			              some(new Dictionary<string, FSharpOption<string>>{ {"a", FSharpOption<string>.Some("b")}, {"c", FSharpOption<string>.Some("e")} }),
-			              test),
+			new MfmFnNode("test", new FSDict { { "a", "b" }, { "c", "e" } }, [new MfmTextNode("test")]),
 			new MfmTextNode(" "),
-			new MfmFnNode("test",
-			              some(new Dictionary<string, FSharpOption<string>>{ {"a", FSharpOption<string>.None}, {"c", FSharpOption<string>.Some("e")} }),
-			              test),
+			new MfmFnNode("test", new FSDict { { "a", null }, { "c", "e" } }, [new MfmTextNode("test")]),
 			new MfmTextNode(" "),
-			new MfmFnNode("test",
-			              some(new Dictionary<string, FSharpOption<string>>{ {"a", FSharpOption<string>.Some("b")}, {"c", FSharpOption<string>.None} }),
-			              test),
+			new MfmFnNode("test", new FSDict { { "a", "b" }, { "c", null } }, [new MfmTextNode("test")]),
 		];
-		// @formatter:on
 
 		var res = Mfm.parse(input);
 
