@@ -60,17 +60,17 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = Forward
 app.UseRouting();
 app.UseSwaggerWithOptions();
 app.UseBlazorFrameworkFilesWithTransparentDecompression();
-app.UseStaticFiles();
 app.UseCors();
 app.UseAuthorization();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
 app.UseCustomMiddleware();
 app.UseAntiforgery();
 
+app.MapStaticAssets();
 app.MapControllers();
 app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback").WithOrder(int.MaxValue - 3);
 app.MapHub<StreamingHub>("/hubs/streaming");
-app.MapRazorPages();
+app.MapRazorPages().WithStaticAssets();
 app.MapRazorComponents<RootComponent>();
 app.MapFrontendRoutes("/Shared/FrontendSPA");
 

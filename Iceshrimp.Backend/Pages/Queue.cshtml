@@ -10,14 +10,14 @@
 }
 
 @section head {
-    <link rel="stylesheet" href="~/css/queue.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/css/queue.css"/>
 }
 
 @section scripts {
-    <script src="~/js/queue.js" asp-append-version="true"></script>
+    <script src="~/js/queue.js"></script>
     @if (Model.Queue == null)
     {
-        <script src="~/js/queue-index.js" asp-append-version="true"></script>
+        <script src="~/js/queue-index.js"></script>
     }
 }
 

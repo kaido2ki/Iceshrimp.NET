@@ -1,15 +1,10 @@
-@using Microsoft.AspNetCore.Mvc.ViewFeatures
-<link @attributes="AdditionalAttributes" href="@VersionedHref"/>
+<link @attributes="AdditionalAttributes" href="/@Assets[href.TrimStart('/')]"/>
 
 @code {
-    [Inject] public required IFileVersionProvider FileVersionProvider { get; set; }
-
     @* ReSharper disable InconsistentNaming *@
     [Parameter, EditorRequired] public required string href { get; set; }
     @* ReSharper restore InconsistentNaming *@
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IDictionary<string, object>? AdditionalAttributes { get; set; }
-
-    private string VersionedHref => FileVersionProvider.AddFileVersionToPath("", href);
 }
