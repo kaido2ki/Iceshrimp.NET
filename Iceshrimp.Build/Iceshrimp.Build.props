@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <CustomTasksAssembly>$(MSBuildThisFileDirectory)\bin\Release\net9.0\$(MSBuildThisFileName).dll</CustomTasksAssembly>
+    </PropertyGroup>
+ 
+    <UsingTask TaskName="Iceshrimp.Build.Tasks.RewriteStaticAssetManifest" AssemblyFile="$(CustomTasksAssembly)" />
+</Project>

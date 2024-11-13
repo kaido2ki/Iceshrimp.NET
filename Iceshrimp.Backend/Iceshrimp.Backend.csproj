@@ -7,7 +7,10 @@
         <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
     </PropertyGroup>
 
+    <Import Project="..\Iceshrimp.Build\Iceshrimp.Build.props"/>
+
     <ItemGroup>
+        <ProjectReference Include="..\Iceshrimp.Build\Iceshrimp.Build.csproj" PrivateAssets="all" IncludeAssets="build" />
         <ProjectReference Include="..\Iceshrimp.Frontend\Iceshrimp.Frontend.csproj" />
         <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj" />
         <ProjectReference Include="..\Iceshrimp.Shared\Iceshrimp.Shared.csproj" />
@@ -45,9 +48,9 @@
         <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
         <PackageReference Include="System.Text.Json" Version="9.0.0" />
         <PackageReference Include="Ulid" Version="1.3.4" />
-        <PackageReference Include="Iceshrimp.AssemblyUtils" Version="1.0.0" />
-        <PackageReference Include="Iceshrimp.MimeTypes" Version="1.0.0" />
-        <PackageReference Include="Iceshrimp.WebPush" Version="2.0.0" />
+        <PackageReference Include="Iceshrimp.AssemblyUtils" Version="1.0.1" />
+        <PackageReference Include="Iceshrimp.MimeTypes" Version="1.0.1" />
+        <PackageReference Include="Iceshrimp.WebPush" Version="2.1.0" />
         <PackageReference Include="NetVips" Version="3.0.0" />
     </ItemGroup>
 
@@ -88,6 +91,14 @@
         </ItemGroup>
 
         <Delete Files="@(FilesToClean->Exists())" />
+    </Target>
+
+    <!-- This runs a task that rewrites the static asset endpoints JSON file to enable transparent decompression. -->
+    <ItemGroup>
+        <ManifestFiles Include="$(PublishDir)\Iceshrimp.Backend.staticwebassets.endpoints.json"/>
+    </ItemGroup>
+    <Target Name="RewriteStaticAssetManifest" AfterTargets="KeepOnlyBrotliCompressedStaticAssets">
+        <RewriteStaticAssetManifest ManifestFiles="@(ManifestFiles)" />
     </Target>
 
 </Project>

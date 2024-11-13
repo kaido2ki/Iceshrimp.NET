@@ -59,14 +59,13 @@ app.UseResponseCompression();
 app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedProto });
 app.UseRouting();
 app.UseSwaggerWithOptions();
-app.UseBlazorFrameworkFilesWithTransparentDecompression();
 app.UseCors();
 app.UseAuthorization();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
 app.UseCustomMiddleware();
 app.UseAntiforgery();
 
-app.MapStaticAssets();
+app.MapStaticAssetsWithTransparentDecompression();
 app.MapControllers();
 app.MapFallbackToController("/api/{**slug}", "FallbackAction", "Fallback").WithOrder(int.MaxValue - 3);
 app.MapHub<StreamingHub>("/hubs/streaming");
