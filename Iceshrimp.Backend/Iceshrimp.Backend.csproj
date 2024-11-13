@@ -82,7 +82,7 @@
     <!-- For clients that don't support brotli, they will be transparently decompressed by the server. -->
     <Target Name="KeepOnlyBrotliCompressedStaticAssets" AfterTargets="Publish">
         <ItemGroup>
-            <CompressedFiles Include="$(PublishDir)\wwwroot\_framework\*.br" />
+            <CompressedFiles Include="$(PublishDir)\wwwroot\**\*.br" />
             <FilesToClean Include="@(CompressedFiles->'%(RootDir)%(Directory)%(Filename)')" />
             <FilesToClean Include="@(CompressedFiles->'%(RootDir)%(Directory)%(Filename).gz')" />
         </ItemGroup>
