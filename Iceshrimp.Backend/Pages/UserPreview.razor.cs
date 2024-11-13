@@ -12,14 +12,15 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Pages;
 
-public partial class UserPreview : AsyncComponentBase
+public partial class UserPreview(
+	UserRenderer renderer,
+	MetaService meta,
+	IOptions<Config.InstanceSection> instance,
+	IOptionsSnapshot<Config.SecuritySection> security
+) : AsyncComponentBase
 {
-	[Inject]    public required UserRenderer                             Renderer { get; set; }
-	[Inject]    public required MetaService                              Meta     { get; set; }
-	[Inject]    public required IOptions<Config.InstanceSection>         Instance { get; set; }
-	[Inject]    public required IOptionsSnapshot<Config.SecuritySection> Security { get; set; }
-	[Parameter] public required string                                   Id       { get; set; }
-	[Parameter] public required string                                   Acct     { get; set; }
+	[Parameter] public required string Id   { get; set; }
+	[Parameter] public required string Acct { get; set; }
 
 	private PreviewUser? _user;
 	private string       _instanceName = "Iceshrimp.NET";
@@ -28,10 +29,10 @@ public partial class UserPreview : AsyncComponentBase
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage")]
 	protected override async Task OnInitializedAsync()
 	{
-		if (Security.Value.PublicPreview == Enums.PublicPreview.Lockdown)
+		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown)
 			throw new PublicPreviewDisabledException();
 
-		_instanceName = await Meta.Get(MetaEntity.InstanceName) ?? _instanceName;
+		_instanceName = await meta.Get(MetaEntity.InstanceName) ?? _instanceName;
 
 		//TODO: user banner
 		//TODO: user note view (respect public preview settings - don't show renotes of remote notes if set to restricted or lower)
@@ -41,7 +42,7 @@ public partial class UserPreview : AsyncComponentBase
 		var username = split[0].ToLowerInvariant();
 		var host     = split.Length == 2 ? split[1].ToPunycodeLower() : null;
 
-		if (host == Instance.Value.AccountDomain || host == Instance.Value.WebDomain)
+		if (host == instance.Value.AccountDomain || host == instance.Value.WebDomain)
 			host = null;
 
 		var user = await Database.Users
@@ -57,6 +58,6 @@ public partial class UserPreview : AsyncComponentBase
 			return;
 		}
 
-		_user = await Renderer.RenderOne(user);
+		_user = await renderer.RenderOne(user);
 	}
 }
