@@ -34,7 +34,7 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Iceshrimp.Assets.PhosphorIcons" Version="2.1.1" />
+        <PackageReference Include="Iceshrimp.Assets.PhosphorIcons" Version="2.1.2" />
     </ItemGroup>
 
     <!-- Transitive dependency version overrides to patch security vulnerabilities -->
