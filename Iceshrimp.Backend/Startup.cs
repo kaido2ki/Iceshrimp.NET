@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Pages.Shared;
@@ -87,6 +88,8 @@ if (!app.Urls.IsReadOnly)
 		app.Urls.Add($"{(args.Contains("--https") ? "https" : "http")}://{config.ListenHost}:{config.ListenPort}");
 }
 
+var elapsed = (DateTime.Now - Process.GetCurrentProcess().StartTime).GetTotalMilliseconds();
+app.Logger.LogInformation("Startup complete after {ms} ms.", elapsed);
 await app.StartAsync();
 app.SetKestrelUnixSocketPermissions();
 await app.WaitForShutdownAsync();
