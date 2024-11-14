@@ -12,6 +12,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
@@ -108,6 +109,7 @@ public class ActivityPubController(
 
 	[HttpGet("/users/{id}")]
 	[AuthorizedFetch]
+	[OutputCache(PolicyName = "federation")]
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
 	[OverrideResultType<ASActor>]
 	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.MovedPermanently)]
@@ -129,6 +131,7 @@ public class ActivityPubController(
 
 	[HttpGet("/users/{id}/collections/featured")]
 	[AuthorizedFetch]
+	[OutputCache(PolicyName = "federation")]
 	[OverrideResultType<ASOrderedCollection>]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -159,6 +162,7 @@ public class ActivityPubController(
 
 	[HttpGet("/@{acct}")]
 	[AuthorizedFetch]
+	[OutputCache(PolicyName = "federation")]
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
 	[OverrideResultType<ASActor>]
 	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.MovedPermanently)]
@@ -212,6 +216,7 @@ public class ActivityPubController(
 
 	[HttpGet("/emoji/{name}")]
 	[AuthorizedFetch]
+	[OutputCache(PolicyName = "federation")]
 	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
 	[OverrideResultType<ASEmoji>]
 	[ProducesResults(HttpStatusCode.OK)]

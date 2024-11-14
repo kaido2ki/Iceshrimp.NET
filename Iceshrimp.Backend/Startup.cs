@@ -24,6 +24,7 @@ builder.Services
        .AddPlugins(PluginLoader.Assemblies);
 
 builder.Services.AddSwaggerGenWithOptions();
+builder.Services.AddOutputCacheWithOptions();
 builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
 builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
@@ -38,6 +39,7 @@ builder.Services.AddAntiforgery(o => o.Cookie.Name = "CSRF-Token");
 
 builder.Services.AddServices(builder.Configuration);
 builder.Services.ConfigureServices(builder.Configuration);
+
 builder.WebHost.ConfigureKestrel(builder.Configuration);
 builder.WebHost.UseStaticWebAssets();
 
@@ -64,6 +66,7 @@ app.UseAuthorization();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
 app.UseCustomMiddleware();
 app.UseAntiforgery();
+app.UseOutputCache();
 
 app.MapStaticAssetsWithTransparentDecompression();
 app.MapControllers();

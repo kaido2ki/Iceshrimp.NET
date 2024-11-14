@@ -9,6 +9,7 @@ using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -17,6 +18,7 @@ namespace Iceshrimp.Backend.Controllers.Federation;
 [FederationApiController]
 [Route("/.well-known")]
 [EnableCors("well-known")]
+[OutputCache(PolicyName = "federation")]
 public class WellKnownController(IOptions<Config.InstanceSection> config, DatabaseContext db) : ControllerBase
 {
 	[HttpGet("webfinger")]

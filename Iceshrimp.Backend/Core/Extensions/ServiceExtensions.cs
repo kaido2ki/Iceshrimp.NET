@@ -374,10 +374,22 @@ public static class ServiceExtensions
 			options.AddScheme<IAuthenticationHandler>("StubAuthenticationHandler", null);
 		});
 	}
+
+	public static void AddOutputCacheWithOptions(this IServiceCollection services)
+	{
+		services.AddOutputCache(options =>
+		{
+			options.AddPolicy("conditional", o => o.With(ctx => ctx.HttpContext.ShouldCacheOutput()));
+			options.AddPolicy("federation", o => o.SetVaryByHeader("Accept").Expire(TimeSpan.FromSeconds(60)));
+			options.DefaultExpirationTimeSpan = TimeSpan.FromDays(365);
+		});
+	}
 }
 
 public static partial class HttpContextExtensions
 {
+	private const string CacheKey = "shouldCache";
+
 	public static string GetRateLimitPartition(this HttpContext ctx, bool includeRoute) =>
 		(includeRoute ? ctx.Request.Path.ToString() + "#" : "") + (GetRateLimitPartitionInternal(ctx) ?? "");
 
@@ -385,6 +397,11 @@ public static partial class HttpContextExtensions
 		ctx.GetUser()?.Id ??
 		ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault() ??
 		ctx.Connection.RemoteIpAddress?.ToString();
+
+	public static void CacheOutput(this HttpContext ctx) => ctx.Items[CacheKey] = true;
+
+	public static bool ShouldCacheOutput(this HttpContext ctx) =>
+		ctx.Items.TryGetValue(CacheKey, out var s) && s is true;
 }
 
 #region AsyncDataProtection handlers
