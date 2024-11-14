@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NpgsqlTypes;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
@@ -91,5 +92,33 @@ public class UserProfile
 		[PgName("public")]    Public    = 0,
 		[PgName("followers")] Followers = 1,
 		[PgName("private")]   Private   = 2
+	}
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<UserProfile>
+	{
+		public void Configure(EntityTypeBuilder<UserProfile> entity)
+		{
+			entity.Property(e => e.Birthday)
+			      .IsFixedLength()
+			      .HasComment("The birthday (YYYY-MM-DD) of the User.");
+			entity.Property(e => e.Description).HasComment("The description (bio) of the User.");
+			entity.Property(e => e.Fields).HasDefaultValueSql("'[]'::jsonb");
+			entity.Property(e => e.Location).HasComment("The location of the User.");
+			entity.Property(e => e.Mentions).HasDefaultValueSql("'[]'::jsonb");
+			entity.Property(e => e.ModerationNote).HasDefaultValueSql("''::character varying");
+			entity.Property(e => e.Url).HasComment("Remote URL of the user.");
+			entity.Property(e => e.UserHost).HasComment("[Denormalized]");
+			entity.Property(e => e.FFVisibility)
+			      .HasDefaultValue(UserProfileFFVisibility.Public);
+			entity.Property(e => e.MentionsResolved).HasDefaultValue(false);
+
+			entity.HasOne(d => d.PinnedPage)
+			      .WithOne(p => p.UserProfile)
+			      .OnDelete(DeleteBehavior.SetNull);
+
+			entity.HasOne(d => d.User)
+			      .WithOne(p => p.UserProfile)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
 	}
 }

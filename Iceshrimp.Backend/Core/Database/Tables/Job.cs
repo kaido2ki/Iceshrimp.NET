@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using EntityFrameworkCore.Projectables;
 using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -45,4 +46,14 @@ public class Job
 	[NotMapped] public long QueueDuration => ((StartedAt ?? DateTime.UtcNow) - QueuedAt).GetTotalMilliseconds();
 
 	[NotMapped] [Projectable] public DateTime LastUpdatedAt => FinishedAt ?? StartedAt ?? QueuedAt;
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Job>
+	{
+		public void Configure(EntityTypeBuilder<Job> entity)
+		{
+			entity.Property(e => e.Id).ValueGeneratedNever();
+			entity.Property(e => e.Status).HasDefaultValue(JobStatus.Queued);
+			entity.Property(e => e.QueuedAt).HasDefaultValueSql("now()");
+		}
+	}
 }

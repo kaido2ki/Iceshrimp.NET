@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NpgsqlTypes;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
@@ -132,5 +133,39 @@ public class Notification : IEntity
 	{
 		Note = Note?.WithPrecomputedVisibilities(reply, renote, renoteRenote);
 		return this;
+	}
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Notification>
+	{
+		public void Configure(EntityTypeBuilder<Notification> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the Notification.");
+			entity.Property(e => e.IsRead)
+			      .HasDefaultValue(false)
+			      .HasComment("Whether the notification was read.");
+			entity.Property(e => e.NotifieeId).HasComment("The ID of recipient user of the Notification.");
+			entity.Property(e => e.NotifierId).HasComment("The ID of sender user of the Notification.");
+			entity.Property(e => e.Type).HasComment("The type of the Notification.");
+
+			entity.HasOne(d => d.FollowRequest)
+			      .WithMany(p => p.Notifications)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.Notifications)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Notifiee)
+			      .WithMany(p => p.NotificationNotifiees)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Notifier)
+			      .WithMany(p => p.NotificationNotifiers)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.UserGroupInvitation)
+			      .WithMany(p => p.Notifications)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
 	}
 }

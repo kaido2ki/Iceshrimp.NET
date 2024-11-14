@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NpgsqlTypes;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
@@ -91,4 +92,32 @@ public class Antenna
 	[ForeignKey(nameof(UserListId))]
 	[InverseProperty(nameof(Tables.UserList.Antennas))]
 	public virtual UserList? UserList { get; set; }
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Antenna>
+	{
+		public void Configure(EntityTypeBuilder<Antenna> entity)
+		{
+			entity.Property(e => e.CaseSensitive).HasDefaultValue(false);
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the Antenna.");
+			entity.Property(e => e.ExcludeKeywords).HasDefaultValueSql("'[]'::jsonb");
+			entity.Property(e => e.Instances).HasDefaultValueSql("'[]'::jsonb");
+			entity.Property(e => e.Keywords).HasDefaultValueSql("'[]'::jsonb");
+			entity.Property(e => e.Name).HasComment("The name of the Antenna.");
+			entity.Property(e => e.UserId).HasComment("The owner ID.");
+			entity.Property(e => e.Users).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.WithReplies).HasDefaultValue(false);
+
+			entity.HasOne(d => d.UserGroupMember)
+			      .WithMany(p => p.Antennas)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Antennas)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.UserList)
+			      .WithMany(p => p.Antennas)
+			      .OnDelete(DeleteBehavior.Cascade);			
+		}
+	}
 }

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -48,4 +49,21 @@ public class UserList
 
 	[InverseProperty(nameof(UserListMember.UserList))]
 	public virtual ICollection<UserListMember> UserListMembers { get; set; } = new List<UserListMember>();
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<UserList>
+	{
+		public void Configure(EntityTypeBuilder<UserList> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserList.");
+			entity.Property(e => e.HideFromHomeTl)
+			      .HasDefaultValue(false)
+			      .HasComment("Whether posts from list members should be hidden from the home timeline.");
+			entity.Property(e => e.Name).HasComment("The name of the UserList.");
+			entity.Property(e => e.UserId).HasComment("The owner ID.");
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.UserLists)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

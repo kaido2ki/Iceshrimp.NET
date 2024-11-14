@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -48,4 +49,21 @@ public class NoteUnread
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.NoteUnreads))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<NoteUnread>
+	{
+		public void Configure(EntityTypeBuilder<NoteUnread> entity)
+		{
+			entity.Property(e => e.NoteChannelId).HasComment("[Denormalized]");
+			entity.Property(e => e.NoteUserId).HasComment("[Denormalized]");
+
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.NoteUnreads)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.NoteUnreads)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

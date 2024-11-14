@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -43,4 +44,22 @@ public class Blocking
 	[ForeignKey(nameof(BlockerId))]
 	[InverseProperty(nameof(User.OutgoingBlocks))]
 	public virtual User Blocker { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Blocking>
+	{
+		public void Configure(EntityTypeBuilder<Blocking> entity)
+		{
+			entity.Property(e => e.BlockeeId).HasComment("The blockee user ID.");
+			entity.Property(e => e.BlockerId).HasComment("The blocker user ID.");
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the Blocking.");
+
+			entity.HasOne(d => d.Blockee)
+			      .WithMany(p => p.IncomingBlocks)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Blocker)
+			      .WithMany(p => p.OutgoingBlocks)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

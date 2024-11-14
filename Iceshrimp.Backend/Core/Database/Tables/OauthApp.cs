@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -67,4 +68,18 @@ public class OauthApp
 	/// </summary>
 	[Column("appToken")] [StringLength(64)]
 	public string? Token;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<OauthApp>
+	{
+		public void Configure(EntityTypeBuilder<OauthApp> entity)
+		{
+			entity.Property(e => e.ClientId).HasComment("The client id of the OAuth application");
+			entity.Property(e => e.ClientSecret).HasComment("The client secret of the OAuth application");
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the OAuth application");
+			entity.Property(e => e.Name).HasComment("The name of the OAuth application");
+			entity.Property(e => e.RedirectUris).HasComment("The redirect URIs of the OAuth application");
+			entity.Property(e => e.Scopes).HasComment("The scopes requested by the OAuth application");
+			entity.Property(e => e.Website).HasComment("The website of the OAuth application");			
+		}
+	}
 }

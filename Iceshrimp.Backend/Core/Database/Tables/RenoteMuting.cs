@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -43,4 +44,22 @@ public class RenoteMuting
 	[ForeignKey(nameof(MuterId))]
 	[InverseProperty(nameof(User.RenoteMutingMuters))]
 	public virtual User Muter { get; set; } = null!;
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<RenoteMuting>
+	{
+		public void Configure(EntityTypeBuilder<RenoteMuting> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the Muting.");
+			entity.Property(e => e.MuteeId).HasComment("The mutee user ID.");
+			entity.Property(e => e.MuterId).HasComment("The muter user ID.");
+
+			entity.HasOne(d => d.Mutee)
+			      .WithMany(p => p.RenoteMutingMutees)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Muter)
+			      .WithMany(p => p.RenoteMutingMuters)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

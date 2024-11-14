@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -55,4 +56,24 @@ public class DriveFolder
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.DriveFolders))]
 	public virtual User? User { get; set; }
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<DriveFolder>
+	{
+		public void Configure(EntityTypeBuilder<DriveFolder> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the DriveFolder.");
+			entity.Property(e => e.Name).HasComment("The name of the DriveFolder.");
+			entity.Property(e => e.ParentId)
+			      .HasComment("The parent folder ID. If null, it means the DriveFolder is located in root.");
+			entity.Property(e => e.UserId).HasComment("The owner ID.");
+
+			entity.HasOne(d => d.Parent)
+			      .WithMany(p => p.InverseParent)
+			      .OnDelete(DeleteBehavior.SetNull);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.DriveFolders)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

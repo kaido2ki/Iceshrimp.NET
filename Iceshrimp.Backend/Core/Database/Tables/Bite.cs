@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Iceshrimp.Backend.Core.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -57,4 +58,15 @@ public class Bite
 	public string GetPublicUri(string webDomain) => User.IsLocalUser
 		? $"https://{webDomain}/bites/{Id}"
 		: throw new Exception("Cannot access PublicUri for remote user");
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Bite>
+	{
+		public void Configure(EntityTypeBuilder<Bite> entity)
+		{
+			entity.HasOne(d => d.User).WithMany().OnDelete(DeleteBehavior.Cascade);
+			entity.HasOne(d => d.TargetUser).WithMany().OnDelete(DeleteBehavior.Cascade);
+			entity.HasOne(d => d.TargetNote).WithMany().OnDelete(DeleteBehavior.Cascade);
+			entity.HasOne(d => d.TargetBite).WithMany().OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

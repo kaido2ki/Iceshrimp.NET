@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -36,4 +37,18 @@ public class NoteEdit
 	[ForeignKey(nameof(NoteId))]
 	[InverseProperty(nameof(Tables.Note.NoteEdits))]
 	public virtual Note Note { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<NoteEdit>
+	{
+		public void Configure(EntityTypeBuilder<NoteEdit> entity)
+		{
+			entity.Property(e => e.FileIds).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.NoteId).HasComment("The ID of note.");
+			entity.Property(e => e.UpdatedAt).HasComment("The updated date of the Note.");
+
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.NoteEdits)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

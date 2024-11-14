@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -48,4 +49,19 @@ public class Poll
 	/// </summary>
 	[Column("noteVisibility")]
 	public Note.NoteVisibility NoteVisibility { get; set; }
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Poll>
+	{
+		public void Configure(EntityTypeBuilder<Poll> entity)
+		{
+			entity.Property(e => e.Choices).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.UserHost).HasComment("[Denormalized]");
+			entity.Property(e => e.UserId).HasComment("[Denormalized]");
+			entity.Property(e => e.NoteVisibility).HasComment("[Denormalized]");
+
+			entity.HasOne(d => d.Note)
+			      .WithOne(p => p.Poll)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

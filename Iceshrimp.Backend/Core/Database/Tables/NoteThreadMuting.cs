@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -30,4 +31,14 @@ public class NoteThreadMuting
 	[ForeignKey(nameof(ThreadId))]
 	[InverseProperty(nameof(NoteThread.NoteThreadMutings))]
 	public virtual NoteThread Thread { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<NoteThreadMuting>
+	{
+		public void Configure(EntityTypeBuilder<NoteThreadMuting> entity)
+		{
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.NoteThreadMutings)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

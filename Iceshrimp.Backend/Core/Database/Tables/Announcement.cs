@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using EntityFrameworkCore.Projectables;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -45,4 +46,15 @@ public class Announcement
 
 	[Projectable]
 	public bool IsReadBy(User user) => ReadBy.Contains(user);
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Announcement>
+	{
+		public void Configure(EntityTypeBuilder<Announcement> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the Announcement.");
+			entity.Property(e => e.IsGoodNews).HasDefaultValue(false);
+			entity.Property(e => e.ShowPopup).HasDefaultValue(false);
+			entity.Property(e => e.UpdatedAt).HasComment("The updated date of the Announcement.");
+		}
+	}
 }

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -25,4 +26,16 @@ public class PromoNote
 	[ForeignKey(nameof(NoteId))]
 	[InverseProperty(nameof(Tables.Note.PromoNote))]
 	public virtual Note Note { get; set; } = null!;
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<PromoNote>
+	{
+		public void Configure(EntityTypeBuilder<PromoNote> entity)
+		{
+			entity.Property(e => e.UserId).HasComment("[Denormalized]");
+
+			entity.HasOne(d => d.Note)
+			      .WithOne(p => p.PromoNote)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

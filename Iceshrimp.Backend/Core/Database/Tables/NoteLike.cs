@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -28,4 +29,18 @@ public class NoteLike : IEntity
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.NoteLikes))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<NoteLike>
+	{
+		public void Configure(EntityTypeBuilder<NoteLike> entity)
+		{
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.NoteLikes)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.NoteLikes)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

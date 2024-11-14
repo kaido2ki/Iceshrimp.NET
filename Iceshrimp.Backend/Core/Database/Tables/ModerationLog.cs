@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -29,4 +30,16 @@ public class ModerationLog
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.ModerationLogs))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<ModerationLog>
+	{
+		public void Configure(EntityTypeBuilder<ModerationLog> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the ModerationLog.");
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.ModerationLogs)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

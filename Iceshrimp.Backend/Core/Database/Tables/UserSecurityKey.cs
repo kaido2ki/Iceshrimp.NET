@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -40,4 +41,21 @@ public class UserSecurityKey
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.UserSecurityKeys))]
 	public virtual User User { get; set; } = null!;
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<UserSecurityKey>
+	{
+		public void Configure(EntityTypeBuilder<UserSecurityKey> entity)
+		{
+			entity.Property(e => e.Id).HasComment("Variable-length id given to navigator.credentials.get()");
+			entity.Property(e => e.LastUsed)
+			      .HasComment("The date of the last time the UserSecurityKey was successfully validated.");
+			entity.Property(e => e.Name).HasComment("User-defined name for this key");
+			entity.Property(e => e.PublicKey)
+			      .HasComment("Variable-length public key used to verify attestations (hex-encoded).");
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.UserSecurityKeys)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

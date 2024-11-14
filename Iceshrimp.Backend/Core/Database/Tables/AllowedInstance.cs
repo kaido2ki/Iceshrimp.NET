@@ -14,12 +14,12 @@ public class AllowedInstance
 	public string Host { get; set; } = null!;
 
 	[Column("imported")] public bool IsImported { get; set; }
-}
 
-public class AllowedInstanceEntityTypeConfiguration : IEntityTypeConfiguration<AllowedInstance>
-{
-	public void Configure(EntityTypeBuilder<AllowedInstance> builder)
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<AllowedInstance>
 	{
-		builder.Property(p => p.IsImported).HasDefaultValue(false);
+		public void Configure(EntityTypeBuilder<AllowedInstance> builder)
+		{
+			builder.Property(p => p.IsImported).HasDefaultValue(false);
+		}
 	}
 }

@@ -12,12 +12,14 @@ public class PluginStoreEntry
 	[Key] [Column("id")]                 public Guid   Id   { get; set; }
 	[Column("name")]                     public string Name { get; set; } = null!;
 	[Column("data", TypeName = "jsonb")] public string Data { get; set; } = null!;
-}
 
-public class PluginStoreEntityTypeConfiguration : IEntityTypeConfiguration<PluginStoreEntry>
-{
-	public void Configure(EntityTypeBuilder<PluginStoreEntry> entity)
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<PluginStoreEntry>
 	{
-		entity.Property(e => e.Data).HasDefaultValueSql("'{}'::jsonb").HasComment("The plugin-specific data object");
+		public void Configure(EntityTypeBuilder<PluginStoreEntry> entity)
+		{
+			entity.Property(e => e.Data)
+			      .HasDefaultValueSql("'{}'::jsonb")
+			      .HasComment("The plugin-specific data object");
+		}
 	}
 }

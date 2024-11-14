@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -56,4 +57,23 @@ public class RegistryItem
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.RegistryItems))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<RegistryItem>
+	{
+		public void Configure(EntityTypeBuilder<RegistryItem> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the RegistryItem.");
+			entity.Property(e => e.Key).HasComment("The key of the RegistryItem.");
+			entity.Property(e => e.Scope).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.UpdatedAt).HasComment("The updated date of the RegistryItem.");
+			entity.Property(e => e.UserId).HasComment("The owner ID.");
+			entity.Property(e => e.Value)
+			      .HasDefaultValueSql("'{}'::jsonb")
+			      .HasComment("The value of the RegistryItem.");
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.RegistryItems)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -53,4 +54,20 @@ public class Webhook
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.Webhooks))]
 	public virtual User User { get; set; } = null!;
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Webhook>
+	{
+		public void Configure(EntityTypeBuilder<Webhook> entity)
+		{
+			entity.Property(e => e.Active).HasDefaultValue(true);
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the Antenna.");
+			entity.Property(e => e.Name).HasComment("The name of the Antenna.");
+			entity.Property(e => e.On).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.UserId).HasComment("The owner ID.");
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Webhooks)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

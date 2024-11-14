@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -39,4 +40,19 @@ public class Session
 	public virtual User User { get; set; } = null!;
 
 	[Column("lastActiveDate")] public DateTime? LastActiveDate { get; set; }
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Session>
+	{
+		public void Configure(EntityTypeBuilder<Session> entity)
+		{
+			entity.Property(e => e.Active)
+			      .HasComment("Whether or not the token has been activated (i.e. 2fa has been confirmed)");
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the OAuth token");
+			entity.Property(e => e.Token).HasComment("The authorization token");
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Sessions)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

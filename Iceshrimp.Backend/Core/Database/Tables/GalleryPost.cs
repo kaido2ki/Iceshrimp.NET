@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -64,4 +65,24 @@ public class GalleryPost
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.GalleryPosts))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<GalleryPost>
+	{
+		public void Configure(EntityTypeBuilder<GalleryPost> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the GalleryPost.");
+			entity.Property(e => e.FileIds).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.IsSensitive)
+			      .HasDefaultValue(false)
+			      .HasComment("Whether the post is sensitive.");
+			entity.Property(e => e.LikedCount).HasDefaultValue(0);
+			entity.Property(e => e.Tags).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.UpdatedAt).HasComment("The updated date of the GalleryPost.");
+			entity.Property(e => e.UserId).HasComment("The ID of author.");
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.GalleryPosts)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -43,4 +44,20 @@ public class AttestationChallenge
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.AttestationChallenges))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<AttestationChallenge>
+	{
+		public void Configure(EntityTypeBuilder<AttestationChallenge> entity)
+		{
+			entity.Property(e => e.Challenge).HasComment("Hex-encoded sha256 hash of the challenge.");
+			entity.Property(e => e.CreatedAt).HasComment("The date challenge was created for expiry purposes.");
+			entity.Property(e => e.RegistrationChallenge)
+			      .HasDefaultValue(false)
+			      .HasComment("Indicates that the challenge is only for registration purposes if true to prevent the challenge for being used as authentication.");
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.AttestationChallenges)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

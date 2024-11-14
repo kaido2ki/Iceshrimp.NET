@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NpgsqlTypes;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
@@ -54,4 +55,21 @@ public class PushSubscription
 	[ForeignKey(nameof(OauthTokenId))]
 	[InverseProperty(nameof(Tables.OauthToken.PushSubscription))]
 	public virtual OauthToken OauthToken { get; set; } = null!;
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<PushSubscription>
+	{
+		public void Configure(EntityTypeBuilder<PushSubscription> entity)
+		{
+			entity.Property(e => e.Types).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.Policy).HasDefaultValue(PushPolicy.All);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.PushSubscriptions)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.OauthToken)
+			      .WithOne(p => p.PushSubscription)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using EntityFrameworkCore.Projectables;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -103,4 +104,24 @@ public class Instance
 	[NotMapped]
 	[Projectable]
 	public bool NeedsUpdate => InfoUpdatedAt == null || InfoUpdatedAt < DateTime.Now - TimeSpan.FromHours(24);
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Instance>
+	{
+		public void Configure(EntityTypeBuilder<Instance> entity)
+		{
+			entity.Property(e => e.CaughtAt).HasComment("The caught date of the Instance.");
+			entity.Property(e => e.OutgoingFollows).HasDefaultValue(0);
+			entity.Property(e => e.IncomingFollows).HasDefaultValue(0);
+			entity.Property(e => e.Host).HasComment("The host of the Instance.");
+			entity.Property(e => e.IsNotResponding).HasDefaultValue(false);
+			entity.Property(e => e.IsSuspended).HasDefaultValue(false);
+			entity.Property(e => e.NotesCount)
+			      .HasDefaultValue(0)
+			      .HasComment("The count of the notes of the Instance.");
+			entity.Property(e => e.SoftwareName).HasComment("The software of the Instance.");
+			entity.Property(e => e.UsersCount)
+			      .HasDefaultValue(0)
+			      .HasComment("The count of the users of the Instance.");
+		}
+	}
 }

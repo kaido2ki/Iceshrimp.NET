@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -32,4 +33,16 @@ public class SwSubscription
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.SwSubscriptions))]
 	public virtual User User { get; set; } = null!;
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<SwSubscription>
+	{
+		public void Configure(EntityTypeBuilder<SwSubscription> entity)
+		{
+			entity.Property(e => e.SendReadMessage).HasDefaultValue(false);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.SwSubscriptions)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -37,4 +38,20 @@ public class NoteReaction
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.NoteReactions))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<NoteReaction>
+	{
+		public void Configure(EntityTypeBuilder<NoteReaction> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the NoteReaction.");
+
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.NoteReactions)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.NoteReactions)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

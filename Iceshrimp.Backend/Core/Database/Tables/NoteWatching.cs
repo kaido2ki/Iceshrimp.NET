@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -51,4 +52,23 @@ public class NoteWatching
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.NoteWatchings))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<NoteWatching>
+	{
+		public void Configure(EntityTypeBuilder<NoteWatching> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the NoteWatching.");
+			entity.Property(e => e.NoteId).HasComment("The target Note ID.");
+			entity.Property(e => e.NoteUserId).HasComment("[Denormalized]");
+			entity.Property(e => e.UserId).HasComment("The watcher ID.");
+
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.NoteWatchings)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.NoteWatchings)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

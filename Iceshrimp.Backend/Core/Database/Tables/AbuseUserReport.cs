@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -69,4 +70,28 @@ public class AbuseUserReport
 	[ForeignKey(nameof(TargetUserId))]
 	[InverseProperty(nameof(User.AbuseUserReportTargetUsers))]
 	public virtual User TargetUser { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<AbuseUserReport>
+	{
+		public void Configure(EntityTypeBuilder<AbuseUserReport> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the AbuseUserReport.");
+			entity.Property(e => e.Forwarded).HasDefaultValue(false);
+			entity.Property(e => e.ReporterHost).HasComment("[Denormalized]");
+			entity.Property(e => e.Resolved).HasDefaultValue(false);
+			entity.Property(e => e.TargetUserHost).HasComment("[Denormalized]");
+
+			entity.HasOne(d => d.Assignee)
+			      .WithMany(p => p.AbuseUserReportAssignees)
+			      .OnDelete(DeleteBehavior.SetNull);
+
+			entity.HasOne(d => d.Reporter)
+			      .WithMany(p => p.AbuseUserReportReporters)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.TargetUser)
+			      .WithMany(p => p.AbuseUserReportTargetUsers)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

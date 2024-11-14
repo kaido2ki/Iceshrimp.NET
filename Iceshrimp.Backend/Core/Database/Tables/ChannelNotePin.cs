@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -33,4 +34,20 @@ public class ChannelNotePin
 	[ForeignKey(nameof(NoteId))]
 	[InverseProperty(nameof(Tables.Note.ChannelNotePins))]
 	public virtual Note Note { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<ChannelNotePin>
+	{
+		public void Configure(EntityTypeBuilder<ChannelNotePin> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the ChannelNotePin.");
+
+			entity.HasOne(d => d.Channel)
+			      .WithMany(p => p.ChannelNotePins)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.ChannelNotePins)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

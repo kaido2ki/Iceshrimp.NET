@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -96,4 +97,29 @@ public class FollowRequest : IEntity
 	[Column("id")]
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<FollowRequest>
+	{
+		public void Configure(EntityTypeBuilder<FollowRequest> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the FollowRequest.");
+			entity.Property(e => e.FolloweeHost).HasComment("[Denormalized]");
+			entity.Property(e => e.FolloweeId).HasComment("The followee user ID.");
+			entity.Property(e => e.FolloweeInbox).HasComment("[Denormalized]");
+			entity.Property(e => e.FolloweeSharedInbox).HasComment("[Denormalized]");
+			entity.Property(e => e.FollowerHost).HasComment("[Denormalized]");
+			entity.Property(e => e.FollowerId).HasComment("The follower user ID.");
+			entity.Property(e => e.FollowerInbox).HasComment("[Denormalized]");
+			entity.Property(e => e.FollowerSharedInbox).HasComment("[Denormalized]");
+			entity.Property(e => e.RequestId).HasComment("id of Follow Activity.");
+
+			entity.HasOne(d => d.Followee)
+			      .WithMany(p => p.IncomingFollowRequests)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Follower)
+			      .WithMany(p => p.OutgoingFollowRequests)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -69,4 +70,33 @@ public class MessagingMessage
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.MessagingMessageUsers))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<MessagingMessage>
+	{
+		public void Configure(EntityTypeBuilder<MessagingMessage> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the MessagingMessage.");
+			entity.Property(e => e.GroupId).HasComment("The recipient group ID.");
+			entity.Property(e => e.IsRead).HasDefaultValue(false);
+			entity.Property(e => e.Reads).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.RecipientId).HasComment("The recipient user ID.");
+			entity.Property(e => e.UserId).HasComment("The sender user ID.");
+
+			entity.HasOne(d => d.File)
+			      .WithMany(p => p.MessagingMessages)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Group)
+			      .WithMany(p => p.MessagingMessages)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Recipient)
+			      .WithMany(p => p.MessagingMessageRecipients)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.MessagingMessageUsers)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

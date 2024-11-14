@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -44,4 +45,18 @@ public class UserGroup
 
 	[InverseProperty(nameof(UserGroupMember.UserGroup))]
 	public virtual ICollection<UserGroupMember> UserGroupMembers { get; set; } = new List<UserGroupMember>();
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<UserGroup>
+	{
+		public void Configure(EntityTypeBuilder<UserGroup> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserGroup.");
+			entity.Property(e => e.IsPrivate).HasDefaultValue(false);
+			entity.Property(e => e.UserId).HasComment("The ID of owner.");
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.UserGroups)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

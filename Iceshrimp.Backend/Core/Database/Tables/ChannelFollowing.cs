@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -43,4 +44,22 @@ public class ChannelFollowing
 	[ForeignKey(nameof(FollowerId))]
 	[InverseProperty(nameof(User.ChannelFollowings))]
 	public virtual User Follower { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<ChannelFollowing>
+	{
+		public void Configure(EntityTypeBuilder<ChannelFollowing> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the ChannelFollowing.");
+			entity.Property(e => e.FolloweeId).HasComment("The followee channel ID.");
+			entity.Property(e => e.FollowerId).HasComment("The follower user ID.");
+
+			entity.HasOne(d => d.Followee)
+			      .WithMany(p => p.ChannelFollowings)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Follower)
+			      .WithMany(p => p.ChannelFollowings)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

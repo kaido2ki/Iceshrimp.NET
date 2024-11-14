@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
@@ -200,5 +201,46 @@ public class DriveFile : IEntity
 	{
 		[J("width")]  public int? Width  { get; set; }
 		[J("height")] public int? Height { get; set; }
+	}
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<DriveFile>
+	{
+		public void Configure(EntityTypeBuilder<DriveFile> entity)
+		{
+			entity.Property(e => e.Blurhash).HasComment("The BlurHash string.");
+			entity.Property(e => e.Comment).HasComment("The comment of the DriveFile.");
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the DriveFile.");
+			entity.Property(e => e.FolderId)
+			      .HasComment("The parent folder ID. If null, it means the DriveFile is located in root.");
+			entity.Property(e => e.IsLink)
+			      .HasDefaultValue(false)
+			      .HasComment("Whether the DriveFile is direct link to remote server.");
+			entity.Property(e => e.IsSensitive)
+			      .HasDefaultValue(false)
+			      .HasComment("Whether the DriveFile is NSFW.");
+			entity.Property(e => e.Sha256).HasComment("The SHA256 hash of the DriveFile.");
+			entity.Property(e => e.Name).HasComment("The file name of the DriveFile.");
+			entity.Property(e => e.Properties)
+			      .HasDefaultValueSql("'{}'::jsonb")
+			      .HasComment("The any properties of the DriveFile. For example, it includes image width/height.");
+			entity.Property(e => e.RequestHeaders).HasDefaultValueSql("'{}'::jsonb");
+			entity.Property(e => e.Size).HasComment("The file size (bytes) of the DriveFile.");
+			entity.Property(e => e.ThumbnailUrl).HasComment("The URL of the thumbnail of the DriveFile.");
+			entity.Property(e => e.Type).HasComment("The content type (MIME) of the DriveFile.");
+			entity.Property(e => e.Uri)
+			      .HasComment("The URI of the DriveFile. it will be null when the DriveFile is local.");
+			entity.Property(e => e.Url).HasComment("The URL of the DriveFile.");
+			entity.Property(e => e.UserHost).HasComment("The host of owner. It will be null if the user in local.");
+			entity.Property(e => e.UserId).HasComment("The owner ID.");
+			entity.Property(e => e.PublicUrl).HasComment("The URL of the webpublic of the DriveFile.");
+
+			entity.HasOne(d => d.Folder)
+			      .WithMany(p => p.DriveFiles)
+			      .OnDelete(DeleteBehavior.SetNull);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.DriveFiles)
+			      .OnDelete(DeleteBehavior.SetNull);
+		}
 	}
 }

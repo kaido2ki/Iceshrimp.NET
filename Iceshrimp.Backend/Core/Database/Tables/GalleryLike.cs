@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -27,4 +28,18 @@ public class GalleryLike
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.GalleryLikes))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<GalleryLike>
+	{
+		public void Configure(EntityTypeBuilder<GalleryLike> entity)
+		{
+			entity.HasOne(d => d.Post)
+			      .WithMany(p => p.GalleryLikes)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.GalleryLikes)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

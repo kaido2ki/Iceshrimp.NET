@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -48,4 +49,20 @@ public class Clip
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.Clips))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Clip>
+	{
+		public void Configure(EntityTypeBuilder<Clip> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the Clip.");
+			entity.Property(e => e.Description).HasComment("The description of the Clip.");
+			entity.Property(e => e.IsPublic).HasDefaultValue(false);
+			entity.Property(e => e.Name).HasComment("The name of the Clip.");
+			entity.Property(e => e.UserId).HasComment("The owner ID.");
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Clips)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

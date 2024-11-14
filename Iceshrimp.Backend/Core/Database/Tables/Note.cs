@@ -5,6 +5,7 @@ using EntityFrameworkCore.Projectables;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NpgsqlTypes;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
@@ -370,5 +371,73 @@ public class Note : IEntity
 		[J("url")]      public          string? Url      { get; set; }
 		[J("username")] public required string  Username { get; set; }
 		[J("host")]     public required string? Host     { get; set; }
+	}
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Note>
+	{
+		public void Configure(EntityTypeBuilder<Note> entity)
+		{
+			entity.HasIndex(e => e.Mentions, "GIN_note_mentions").HasMethod("gin");
+			entity.HasIndex(e => e.Tags, "GIN_note_tags").HasMethod("gin");
+			entity.HasIndex(e => e.VisibleUserIds, "GIN_note_visibleUserIds").HasMethod("gin");
+			entity.HasIndex(e => e.Text, "GIN_TRGM_note_text")
+			      .HasMethod("gin")
+			      .HasOperators("gin_trgm_ops");
+			entity.HasIndex(e => e.Cw, "GIN_TRGM_note_cw")
+			      .HasMethod("gin")
+			      .HasOperators("gin_trgm_ops");
+			entity.HasIndex(e => e.CombinedAltText, "GIN_TRGM_note_combined_alt_text")
+			      .HasMethod("gin")
+			      .HasOperators("gin_trgm_ops");
+
+			entity.Property(e => e.AttachedFileTypes).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.ChannelId).HasComment("The ID of source channel.");
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the Note.");
+			entity.Property(e => e.Emojis).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.FileIds).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.HasPoll).HasDefaultValue(false);
+			entity.Property(e => e.LikeCount).HasDefaultValue(0);
+			entity.Property(e => e.LocalOnly).HasDefaultValue(false);
+			entity.Property(e => e.MentionedRemoteUsers).HasDefaultValueSql("'[]'::jsonb");
+			entity.Property(e => e.Mentions).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.Reactions).HasDefaultValueSql("'{}'::jsonb");
+			entity.Property(e => e.RenoteCount).HasDefaultValue((short)0);
+			entity.Property(e => e.RenoteId).HasComment("The ID of renote target.");
+			entity.Property(e => e.RenoteUserHost).HasComment("[Denormalized]");
+			entity.Property(e => e.RenoteUserId).HasComment("[Denormalized]");
+			entity.Property(e => e.RepliesCount).HasDefaultValue((short)0);
+			entity.Property(e => e.ReplyId).HasComment("The ID of reply target.");
+			entity.Property(e => e.ReplyUserHost).HasComment("[Denormalized]");
+			entity.Property(e => e.ReplyUserId).HasComment("[Denormalized]");
+			entity.Property(e => e.Score).HasDefaultValue(0);
+			entity.Property(e => e.Tags).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.UpdatedAt).HasComment("The updated date of the Note.");
+			entity.Property(e => e.Uri).HasComment("The URI of a note. it will be null when the note is local.");
+			entity.Property(e => e.Url)
+			      .HasComment("The human readable url of a note. it will be null when the note is local.");
+			entity.Property(e => e.UserHost).HasComment("[Denormalized]");
+			entity.Property(e => e.UserId).HasComment("The ID of author.");
+			entity.Property(e => e.VisibleUserIds).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.ReplyUri)
+			      .HasComment("The URI of the reply target, if it couldn't be resolved at time of ingestion.");
+			entity.Property(e => e.RenoteUri)
+			      .HasComment("The URI of the renote target, if it couldn't be resolved at time of ingestion.");
+
+			entity.HasOne(d => d.Channel)
+			      .WithMany(p => p.Notes)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Renote)
+			      .WithMany(p => p.InverseRenote)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Reply)
+			      .WithMany(p => p.InverseReply)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Notes)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
 	}
 }

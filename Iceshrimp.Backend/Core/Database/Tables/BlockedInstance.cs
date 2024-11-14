@@ -18,12 +18,12 @@ public class BlockedInstance
 	public string? Reason { get; set; }
 
 	[Column("imported")] public bool IsImported { get; set; }
-}
-
-public class BlockedInstanceEntityTypeConfiguration : IEntityTypeConfiguration<BlockedInstance>
-{
-	public void Configure(EntityTypeBuilder<BlockedInstance> builder)
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<BlockedInstance>
 	{
-		builder.Property(p => p.IsImported).HasDefaultValue(false);
+		public void Configure(EntityTypeBuilder<BlockedInstance> builder)
+		{
+			builder.Property(p => p.IsImported).HasDefaultValue(false);
+		}
 	}
 }

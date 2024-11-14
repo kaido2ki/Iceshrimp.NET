@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -81,4 +82,30 @@ public class Channel
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.Channels))]
 	public virtual User? User { get; set; }
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Channel>
+	{
+		public void Configure(EntityTypeBuilder<Channel> entity)
+		{
+			entity.Property(e => e.BannerId).HasComment("The ID of banner Channel.");
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the Channel.");
+			entity.Property(e => e.Description).HasComment("The description of the Channel.");
+			entity.Property(e => e.Name).HasComment("The name of the Channel.");
+			entity.Property(e => e.NotesCount)
+			      .HasDefaultValue(0)
+			      .HasComment("The count of notes.");
+			entity.Property(e => e.UserId).HasComment("The owner ID.");
+			entity.Property(e => e.UsersCount)
+			      .HasDefaultValue(0)
+			      .HasComment("The count of users.");
+
+			entity.HasOne(d => d.Banner)
+			      .WithMany(p => p.Channels)
+			      .OnDelete(DeleteBehavior.SetNull);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.Channels)
+			      .OnDelete(DeleteBehavior.SetNull);
+		}
+	}
 }

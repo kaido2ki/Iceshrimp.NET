@@ -55,18 +55,18 @@ public class Filter
 			User     = user!
 		};
 	}
-}
-
-public class FilterEntityTypeConfiguration : IEntityTypeConfiguration<Filter>
-{
-	public void Configure(EntityTypeBuilder<Filter> entity)
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Filter>
 	{
-		entity.HasOne(p => p.User)
-		      .WithMany(p => p.Filters)
-		      .OnDelete(DeleteBehavior.Cascade)
-		      .HasForeignKey("user_id");
+		public void Configure(EntityTypeBuilder<Filter> entity)
+		{
+			entity.HasOne(p => p.User)
+			      .WithMany(p => p.Filters)
+			      .OnDelete(DeleteBehavior.Cascade)
+			      .HasForeignKey("user_id");
 
-		entity.Property(p => p.Keywords).HasDefaultValueSql("'{}'::varchar[]");
-		entity.Property(p => p.Contexts).HasDefaultValueSql("'{}'::public.filter_context_enum[]");
+			entity.Property(p => p.Keywords).HasDefaultValueSql("'{}'::varchar[]");
+			entity.Property(p => p.Contexts).HasDefaultValueSql("'{}'::public.filter_context_enum[]");
+		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -31,4 +32,20 @@ public class NoteBookmark
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.NoteBookmarks))]
 	public virtual User User { get; set; } = null!;
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<NoteBookmark>
+	{
+		public void Configure(EntityTypeBuilder<NoteBookmark> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the NoteBookmark.");
+
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.NoteBookmarks)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.NoteBookmarks)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

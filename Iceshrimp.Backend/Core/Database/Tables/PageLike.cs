@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -27,4 +28,18 @@ public class PageLike
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.PageLikes))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<PageLike>
+	{
+		public void Configure(EntityTypeBuilder<PageLike> entity)
+		{
+			entity.HasOne(d => d.Page)
+			      .WithMany(p => p.PageLikes)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.PageLikes)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

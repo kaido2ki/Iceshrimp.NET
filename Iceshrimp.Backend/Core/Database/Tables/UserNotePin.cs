@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -31,4 +32,20 @@ public class UserNotePin
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.UserNotePins))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<UserNotePin>
+	{
+		public void Configure(EntityTypeBuilder<UserNotePin> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the UserNotePins.");
+
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.UserNotePins)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.UserNotePins)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

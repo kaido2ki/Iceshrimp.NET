@@ -10,12 +10,12 @@ public class PolicyConfiguration
 {
 	[Key] [Column("name")]               public string Name { get; set; } = null!;
 	[Column("data", TypeName = "jsonb")] public string Data { get; set; } = null!;
-}
-
-public class PolicyConfigurationeEntityTypeConfiguration : IEntityTypeConfiguration<PolicyConfiguration>
-{
-	public void Configure(EntityTypeBuilder<PolicyConfiguration> entity)
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<PolicyConfiguration>
 	{
-		entity.Property(e => e.Data).HasDefaultValueSql("'{}'::jsonb").HasComment("The plugin-specific data object");
+		public void Configure(EntityTypeBuilder<PolicyConfiguration> entity)
+		{
+			entity.Property(e => e.Data).HasDefaultValueSql("'{}'::jsonb").HasComment("The plugin-specific data object");
+		}
 	}
 }

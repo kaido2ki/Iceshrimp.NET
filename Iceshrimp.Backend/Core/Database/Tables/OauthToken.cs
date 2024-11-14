@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -73,4 +74,34 @@ public class OauthToken
 	[Column("isPleroma")]              public bool IsPleroma              { get; set; }
 
 	[Column("lastActiveDate")] public DateTime? LastActiveDate { get; set; }
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<OauthToken>
+	{
+		public void Configure(EntityTypeBuilder<OauthToken> entity)
+		{
+			entity.Property(e => e.Active).HasComment("Whether or not the token has been activated");
+			entity.Property(e => e.Code).HasComment("The auth code for the OAuth token");
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the OAuth token");
+			entity.Property(e => e.RedirectUri).HasComment("The redirect URI of the OAuth token");
+			entity.Property(e => e.Scopes).HasComment("The scopes requested by the OAuth token");
+			entity.Property(e => e.Token).HasComment("The OAuth token");
+			entity.Property(e => e.SupportsHtmlFormatting)
+			      .HasComment("Whether the client supports HTML inline formatting (bold, italic, strikethrough, ...)")
+			      .HasDefaultValue(true);
+			entity.Property(e => e.AutoDetectQuotes)
+			      .HasComment("Whether the backend should automatically detect quote posts coming from this client")
+			      .HasDefaultValue(true);
+			entity.Property(e => e.IsPleroma)
+			      .HasComment("Whether Pleroma or Akkoma specific behavior should be enabled for this client")
+			      .HasDefaultValue(false);
+
+			entity.HasOne(d => d.App)
+			      .WithMany(p => p.OauthTokens)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.OauthTokens)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

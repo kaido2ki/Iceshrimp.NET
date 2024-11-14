@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Iceshrimp.Backend.Core.Configuration;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -67,4 +68,15 @@ public class Emoji
 	public string? GetPublicUriOrNull(Config.InstanceSection config) => Host == null
 		? $"https://{config.WebDomain}/emoji/{Name}"
 		: null;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Emoji>
+	{
+		public void Configure(EntityTypeBuilder<Emoji> entity)
+		{
+			entity.Property(e => e.Aliases).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.Height).HasComment("Image height");
+			entity.Property(e => e.PublicUrl).HasDefaultValueSql("''::character varying");
+			entity.Property(e => e.Width).HasComment("Image width");
+		}
+	}
 }

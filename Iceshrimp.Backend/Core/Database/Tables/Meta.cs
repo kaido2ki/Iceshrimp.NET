@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -283,4 +285,62 @@ public class Meta
 	[Column("autofollowedAccount")]
 	[StringLength(128)]
 	public string? AutofollowedAccount { get; set; }
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Meta>
+	{
+		public void Configure(EntityTypeBuilder<Meta> entity)
+		{
+			entity.Property(e => e.AllowedHosts).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.BlockedHosts).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.CacheRemoteFiles).HasDefaultValue(false);
+			entity.Property(e => e.CustomMotd).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.CustomSplashIcons).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.DeeplIsPro).HasDefaultValue(false);
+			entity.Property(e => e.DefaultReaction).HasDefaultValueSql("'⭐'::character varying");
+			entity.Property(e => e.DisableGlobalTimeline).HasDefaultValue(false);
+			entity.Property(e => e.DisableLocalTimeline).HasDefaultValue(false);
+			entity.Property(e => e.DisableRecommendedTimeline).HasDefaultValue(true);
+			entity.Property(e => e.DisableRegistration).HasDefaultValue(false);
+			entity.Property(e => e.EmailRequiredForSignup).HasDefaultValue(false);
+			entity.Property(e => e.EnableActiveEmailValidation).HasDefaultValue(true);
+			entity.Property(e => e.EnableDiscordIntegration).HasDefaultValue(false);
+			entity.Property(e => e.EnableEmail).HasDefaultValue(false);
+			entity.Property(e => e.EnableGithubIntegration).HasDefaultValue(false);
+			entity.Property(e => e.EnableHcaptcha).HasDefaultValue(false);
+			entity.Property(e => e.EnableIdenticonGeneration).HasDefaultValue(true);
+			entity.Property(e => e.EnableIpLogging).HasDefaultValue(false);
+			entity.Property(e => e.EnableRecaptcha).HasDefaultValue(false);
+			entity.Property(e => e.EnableServerMachineStats).HasDefaultValue(false);
+			entity.Property(e => e.ErrorImageUrl)
+			      .HasDefaultValueSql("'/static-assets/badges/error.png'::character varying");
+			entity.Property(e => e.ExperimentalFeatures).HasDefaultValueSql("'{}'::jsonb");
+			entity.Property(e => e.FeedbackUrl)
+			      .HasDefaultValueSql("'https://iceshrimp.dev/iceshrimp/iceshrimp/issues/new'::character varying");
+			entity.Property(e => e.HiddenTags).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.Langs).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.LocalDriveCapacityMb)
+			      .HasDefaultValue(1024)
+			      .HasComment("Drive capacity of a local user (MB)");
+			entity.Property(e => e.MascotImageUrl)
+			      .HasDefaultValueSql("'/static-assets/badges/info.png'::character varying");
+			entity.Property(e => e.ObjectStorageS3ForcePathStyle).HasDefaultValue(true);
+			entity.Property(e => e.ObjectStorageSetPublicRead).HasDefaultValue(false);
+			entity.Property(e => e.ObjectStorageUseProxy).HasDefaultValue(true);
+			entity.Property(e => e.ObjectStorageUseSsl).HasDefaultValue(true);
+			entity.Property(e => e.PinnedPages)
+			      .HasDefaultValueSql("'{/featured,/channels,/explore,/pages,/about-iceshrimp}'::character varying[]");
+			entity.Property(e => e.PinnedUsers).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.PrivateMode).HasDefaultValue(false);
+			entity.Property(e => e.RecommendedInstances).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.RemoteDriveCapacityMb)
+			      .HasDefaultValue(32)
+			      .HasComment("Drive capacity of a remote user (MB)");
+			entity.Property(e => e.RepositoryUrl)
+			      .HasDefaultValueSql("'https://iceshrimp.dev/iceshrimp/iceshrimp'::character varying");
+			entity.Property(e => e.SecureMode).HasDefaultValue(true);
+			entity.Property(e => e.SilencedHosts).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.SmtpSecure).HasDefaultValue(false);
+			entity.Property(e => e.UseObjectStorage).HasDefaultValue(false);
+		}
+	}
 }

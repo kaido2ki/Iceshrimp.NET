@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -22,4 +23,14 @@ public class UserPublickey
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.UserPublickey))]
 	public virtual User User { get; set; } = null!;
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<UserPublickey>
+	{
+		public void Configure(EntityTypeBuilder<UserPublickey> entity)
+		{
+			entity.HasOne(d => d.User)
+			      .WithOne(p => p.UserPublickey)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

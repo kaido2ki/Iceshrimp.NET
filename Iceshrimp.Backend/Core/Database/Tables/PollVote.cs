@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -35,4 +36,20 @@ public class PollVote
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.PollVotes))]
 	public virtual User User { get; set; } = null!;
+	
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<PollVote>
+	{
+		public void Configure(EntityTypeBuilder<PollVote> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the PollVote.");
+
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.PollVotes)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.PollVotes)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

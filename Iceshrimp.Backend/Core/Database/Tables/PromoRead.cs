@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -31,4 +32,20 @@ public class PromoRead
 	[ForeignKey(nameof(UserId))]
 	[InverseProperty(nameof(Tables.User.PromoReads))]
 	public virtual User User { get; set; } = null!;
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<PromoRead>
+	{
+		public void Configure(EntityTypeBuilder<PromoRead> entity)
+		{
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the PromoRead.");
+
+			entity.HasOne(d => d.Note)
+			      .WithMany(p => p.PromoReads)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.User)
+			      .WithMany(p => p.PromoReads)
+			      .OnDelete(DeleteBehavior.Cascade);
+		}
+	}
 }

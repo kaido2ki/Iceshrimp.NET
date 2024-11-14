@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -14,4 +15,9 @@ public class Hashtag : IEntity
 	[Column("id")]
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Hashtag>
+	{
+		public void Configure(EntityTypeBuilder<Hashtag> entity) { }
+	}
 }
