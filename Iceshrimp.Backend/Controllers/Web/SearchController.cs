@@ -88,9 +88,8 @@ public class SearchController(
 
 		if (target.StartsWith('@') || target.StartsWith(userPrefixAlt))
 		{
-			var hit = await userResolver.ResolveOrNullAsync(target, SearchFlags);
-			if (hit != null) return new RedirectResponse { TargetUrl = $"/users/{hit.Id}" };
-			throw GracefulException.NotFound("No result found");
+			var hit = await userResolver.ResolveAsync(target, SearchFlags);
+			return new RedirectResponse { TargetUrl = $"/users/{hit.Id}" };
 		}
 
 		if (target.StartsWith("https://"))
