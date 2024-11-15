@@ -197,45 +197,53 @@ module private MfmParser =
         }
 
     // Patterns
-    let italicPattern = ((notFollowedBy <| str "**") >>. skipChar '*')
-    let italicPatternAlt = ((notFollowedBy <| str "__") >>. skipChar '_')
-    let codePattern = (notFollowedBy <| str "```") >>. skipChar '`'
+    let italicPatternAsterisk = notFollowedByString "**" >>. skipChar '*'
+    let italicPatternUnderscore = notFollowedByString "__" >>. skipChar '_'
+    let codePattern = notFollowedByString "```" >>. skipChar '`'
 
     // Matchers
     let hashtagMatcher = letter <|> digit <|> anyOf "-_"
     let hashtagSatisfier = attempt hashtagMatcher
 
     // Node parsers
-
-    let italicNode1 =
+    let italicAsteriskNode =
         previousCharSatisfiesNot isNotWhitespace
-        >>. italicPattern
+        >>. italicPatternAsterisk
         >>. pushLine
-        >>. manyTill inlineNode italicPattern
+        >>. manyTill inlineNode italicPatternAsterisk
         .>> assertLine
-
-    let italicNode2 =
-        previousCharSatisfiesNot isNotWhitespace
-        >>. italicPatternAlt
-        >>. pushLine
-        >>. manyTill inlineNode italicPatternAlt
-        .>> assertLine
-
-    let italicNode3 =
-        skipString "<i>" >>. pushLine >>. manyTill inlineNode (skipString "</i>")
-        .>> assertLine
-
-    let italicNode =
-        italicNode1 <|> italicNode2 <|> italicNode3
         |>> fun c -> MfmItalicNode(aggregateTextInline c) :> MfmNode
 
-    let boldNode =
-        (skipString "**" >>. pushLine >>. manyTill inlineNode (skipString "**")
-         .>> assertLine)
-        <|> (skipString "__" >>. pushLine >>. manyTill inlineNode (skipString "__")
-             .>> assertLine)
-        <|> (skipString "<b>" >>. pushLine >>. manyTill inlineNode (skipString "</b>")
-             .>> assertLine)
+    let italicUnderscoreNode =
+        previousCharSatisfiesNot isNotWhitespace
+        >>. italicPatternUnderscore
+        >>. pushLine
+        >>. manyTill inlineNode italicPatternUnderscore
+        .>> assertLine
+        |>> fun c -> MfmItalicNode(aggregateTextInline c) :> MfmNode
+
+    let italicTagNode =
+        skipString "<i>" >>. manyTill inlineNode (skipString "</i>")
+        |>> fun c -> MfmItalicNode(aggregateTextInline c) :> MfmNode
+
+    let boldAsteriskNode =
+        previousCharSatisfiesNot isNotWhitespace
+        >>. skipString "**"
+        >>. pushLine
+        >>. manyTill inlineNode (skipString "**")
+        .>> assertLine
+        |>> fun c -> MfmBoldNode(aggregateTextInline c) :> MfmNode
+
+    let boldUnderscoreNode =
+        previousCharSatisfiesNot isNotWhitespace
+        >>. skipString "__"
+        >>. pushLine
+        >>. manyTill inlineNode (skipString "__")
+        .>> assertLine
+        |>> fun c -> MfmBoldNode(aggregateTextInline c) :> MfmNode
+
+    let boldTagNode =
+        skipString "<b>" >>. manyTill inlineNode (skipString "</b>")
         |>> fun c -> MfmBoldNode(aggregateTextInline c) :> MfmNode
 
     let strikeNode =
@@ -250,6 +258,7 @@ module private MfmParser =
     let codeBlockNode =
         opt skipNewline
         >>. opt skipNewline
+        >>. followedByString "```"
         >>. previousCharSatisfiesNot isNotNewline
         >>. skipString "```"
         >>. opt (many1CharsTill asciiLetter (lookAhead newline))
@@ -317,7 +326,7 @@ module private MfmParser =
         >>. many1CharsTill hashtagMatcher (notFollowedBy hashtagSatisfier)
         |>> fun h -> MfmHashtagNode(h) :> MfmNode
 
-    let urlNodePlain =
+    let urlNode =
         lookAhead (skipString "https://" <|> skipString "http://")
         >>. manyCharsTill anyChar (nextCharSatisfies isWhitespace <|> nextCharSatisfies (isAnyOf "()") <|> eof) //FIXME: this needs significant improvements
         >>= fun uri ->
@@ -341,8 +350,6 @@ module private MfmParser =
                 | "https" -> preturn (MfmUrlNode(uri, true) :> MfmNode)
                 | _ -> fail "invalid scheme"
             | _ -> fail "invalid url"
-
-    let urlNode = urlNodePlain <|> urlNodeBrackets
 
     let linkNode =
         (opt (pchar '?'))
@@ -380,35 +387,48 @@ module private MfmParser =
 
     let charNode = anyChar |>> fun v -> MfmCharNode(v) :> MfmNode
 
-    // Node collection
-    let inlineNodeSeq =
-        [ plainNode
-          smallNode
-          italicNode
-          boldNode
-          strikeNode
-          hashtagNode
-          mentionNode
-          codeNode
-          urlNode
-          linkNode
-          mathNode
-          emojiCodeNode
-          fnNode
-          charNode ]
+    // Custom parser for higher throughput
+    type ParseMode =
+        | Full
+        | Inline
+        | Simple
 
-    let simpleNodeSeq = [ plainNode; emojiCodeNode; charNode ]
+    let parseNode (m: ParseMode) =
+        let prefixedNode (m: ParseMode) : Parser<MfmNode, int64> =
+            fun (stream: CharStream<_>) ->
+                match (stream.Peek(), m) with
+                // Block nodes, ordered by expected frequency
+                | '`', Full -> codeBlockNode <|> codeNode
+                | '\n', Full when stream.Match("\n```") -> codeBlockNode
+                | '\n', Full when stream.Match("\n\n```") -> codeBlockNode
+                | '>', Full -> quoteNode
+                | '<', Full when stream.Match "<center>" -> centerNode
+                | '\\', Full when stream.Match "\\[" -> mathBlockNode
+                // Inline nodes, ordered by expected frequency
+                | '*', (Full | Inline) -> italicAsteriskNode <|> boldAsteriskNode
+                | '_', (Full | Inline) -> italicUnderscoreNode <|> boldUnderscoreNode
+                | '@', (Full | Inline) -> mentionNode
+                | '#', (Full | Inline) -> hashtagNode
+                | '`', Inline -> codeNode
+                | 'h', (Full | Inline) when stream.Match "http" -> urlNode
+                | ':', (Full | Inline | Simple) -> emojiCodeNode
+                | '~', (Full | Inline) when stream.Match "~~" -> strikeNode
+                | '[', (Full | Inline) -> linkNode
+                | '<', (Full | Inline) -> choice [ plainNode; smallNode; italicTagNode; boldTagNode; urlNodeBrackets ]
+                | '<', Simple when stream.Match "<plain>" -> plainNode
+                | '\\', (Full | Inline) when stream.Match "\\(" -> mathNode
+                | '$', (Full | Inline) when stream.Match "$[" -> fnNode
+                | '?', (Full | Inline) when stream.Match "[" -> linkNode
+                // Fallback to char node
+                | _ -> charNode
+                <| stream
 
-    let blockNodeSeq = [ centerNode; codeBlockNode; mathBlockNode; quoteNode ]
-
-    let nodeSeq = [ blockNodeSeq; inlineNodeSeq ]
+        attempt <| prefixedNode m <|> charNode
 
     // Populate references
-    do nodeRef.Value <- choice <| seqAttempt (seqFlatten <| nodeSeq)
-
-    do inlineNodeRef.Value <- choice <| (seqAttempt inlineNodeSeq) |>> fun v -> v :?> MfmInlineNode
-
-    do simpleRef.Value <- choice <| seqAttempt simpleNodeSeq
+    do nodeRef.Value <- parseNode Full
+    do inlineNodeRef.Value <- parseNode Inline |>> fun v -> v :?> MfmInlineNode
+    do simpleRef.Value <- parseNode Simple
 
     // Final parse command
     let parse = spaces >>. manyTill node eof .>> spaces
