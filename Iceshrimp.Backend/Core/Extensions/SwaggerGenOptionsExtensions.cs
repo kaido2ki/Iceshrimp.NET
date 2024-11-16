@@ -318,17 +318,8 @@ public static class SwaggerGenOptionsExtensions
 	{
 		public void Apply(OpenApiOperation operation, OperationFilterContext context)
 		{
-			if (context.MethodInfo.DeclaringType is null)
+			if (context.ApiDescription.ParameterDescriptions.All(p => p.Source != HybridBindingSource.Hybrid))
 				return;
-
-			var consumesHybrid = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                            .OfType<ConsumesHybridAttribute>()
-			                            .Any() ||
-			                     context.MethodInfo.GetCustomAttributes(true)
-			                            .OfType<ConsumesHybridAttribute>()
-			                            .Any();
-
-			if (!consumesHybrid) return;
 
 			operation.RequestBody =
 				GenerateRequestBody(context.ApiDescription, context.SchemaRepository, context.SchemaGenerator);

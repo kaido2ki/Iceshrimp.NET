@@ -38,7 +38,6 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 
 	[HttpPost("/api/v1/apps")]
 	[EnableRateLimiting("auth")]
-	[ConsumesHybrid]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
 	public async Task<RegisterAppResponse> RegisterApp([FromHybrid] RegisterAppRequest request)
@@ -82,7 +81,6 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 	}
 
 	[HttpPost("/oauth/token")]
-	[ConsumesHybrid]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
 	public async Task<OauthTokenResponse> GetOauthToken([FromHybrid] OauthTokenRequest request)
@@ -144,7 +142,6 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 	}
 
 	[HttpPost("/oauth/revoke")]
-	[ConsumesHybrid]
 	[OverrideResultType<object>]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.Forbidden)]

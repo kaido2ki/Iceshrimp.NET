@@ -183,9 +183,6 @@ public class FromHybridAttribute(string? name = null) : Attribute, IBindingSourc
 	public string?       Name          => name;
 }
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class ConsumesHybridAttribute : Attribute;
-
 public sealed class HybridBindingSource() : BindingSource("Hybrid", "Hybrid", true, true)
 {
 	public static readonly HybridBindingSource Hybrid = new();
