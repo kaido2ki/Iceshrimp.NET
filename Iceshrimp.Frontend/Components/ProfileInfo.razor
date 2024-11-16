@@ -5,10 +5,6 @@
 @inject IStringLocalizer<Localization> Loc;
 <div class="profile-info">
     <div class="badges">
-        @if (UserProfile.Relations.HasFlag(Relations.FollowedBy))
-        {
-            <span class="badge">@Loc["Follows you"]</span>
-        }
         @switch (UserProfile.Role)
         {
             case Role.Moderator:

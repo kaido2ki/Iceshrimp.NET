@@ -34,6 +34,10 @@
                                 var host = $"@{UserResponse.Host}";
                                 @host
                             }
+                            @if (Profile != null && Profile.Relations.HasFlag(Relations.FollowedBy))
+                            {
+                                <span class="follows-badge">Follows you</span>
+                            }
                         </div>
                     </div>
                 </div>

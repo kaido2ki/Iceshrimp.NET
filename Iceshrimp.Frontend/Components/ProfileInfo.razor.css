@@ -52,6 +52,7 @@
 }
 
 .badge {
+    display: inline-block;
     padding: 0 0.5rem;
     background-color: var(--highlight-color);
     border-radius: 0.5rem;

@@ -27,6 +27,14 @@
     font-size: 1rem;
 }
 
+.follows-badge {
+    display: inline-block;
+    padding: 0 0.5rem;
+    background-color: var(--highlight-color);
+    border-radius: 0.5rem;
+    margin-left: 0.5rem;
+}
+
 .profile-card {
     margin: auto;
     margin-top: 1rem;
