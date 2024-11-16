@@ -10,6 +10,7 @@ public class UserProfileResponse
 	public required int?                    Followers { get; set; }
 	public required int?                    Following { get; set; }
 	public required Relations               Relations { get; set; }
+	public required Role                    Role      { get; set; }
 }
 
 [Flags]
@@ -23,6 +24,13 @@ public enum Relations
 	RequestedBy = 16,
 	Blocking    = 32,
 	Muting      = 64
+}
+
+public enum Role
+{
+	None      = 0,
+	Moderator = 1,
+	Admin     = 2
 }
 
 public class UserProfileField

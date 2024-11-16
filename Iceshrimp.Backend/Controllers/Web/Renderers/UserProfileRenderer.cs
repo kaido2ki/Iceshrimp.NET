@@ -47,6 +47,12 @@ public class UserProfileRenderer(DatabaseContext db)
 			Verified = p.IsVerified
 		});
 
+		var role = user.IsAdmin
+			? Role.Admin
+			: user.IsModerator
+				? Role.Moderator
+				: Role.None;
+
 		return new UserProfileResponse
 		{
 			Id        = user.Id,
@@ -56,7 +62,8 @@ public class UserProfileRenderer(DatabaseContext db)
 			Location  = user.UserProfile?.Location,
 			Followers = followers,
 			Following = following,
-			Relations = relations
+			Relations = relations,
+			Role      = role
 		};
 	}
 
