@@ -26,6 +26,13 @@
             default:
                 break;
         }
+        @if (User.IsBot)
+        {
+            <span class="badge">
+                <Icon Name="Icons.Robot" Size="1.3em"/>
+                @Loc["Automated"]
+            </span>
+        }
     </div>
     @if (UserProfile.Bio != null)
     {
@@ -85,6 +92,7 @@
 </div>
 
 @code {
+    [Parameter] [EditorRequired] public required UserResponse        User        { get; set; }
     [Parameter] [EditorRequired] public required UserProfileResponse UserProfile { get; set; }
     [Parameter] [EditorRequired] public required List<EmojiResponse> Emojis      { get; set; }
 }
