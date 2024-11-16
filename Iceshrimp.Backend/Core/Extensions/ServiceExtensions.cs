@@ -226,7 +226,7 @@ public static class ServiceExtensions
 		services.TryAdd(new ServiceDescriptor(typeof(T), key, typeof(T), contextLifetime));
 	}
 
-	public static void AddSwaggerGenWithOptions(this IServiceCollection services)
+	public static void AddOpenApiWithOptions(this IServiceCollection services)
 	{
 		services.AddEndpointsApiExplorer();
 		services.AddSwaggerGen(options =>

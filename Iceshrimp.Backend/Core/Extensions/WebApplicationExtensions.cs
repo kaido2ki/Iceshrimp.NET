@@ -32,12 +32,10 @@ public static class WebApplicationExtensions
 		          .UseMiddleware<StripRazorSsrHandoffDataMiddleware>();
 	}
 
-	public static IApplicationBuilder UseSwaggerWithOptions(this WebApplication app)
+	public static IApplicationBuilder UseOpenApiWithOptions(this WebApplication app)
 	{
-		app.UseSwagger(options =>
-		{
-			options.RouteTemplate = "/openapi/{documentName}.{extension:regex(^(json|ya?ml)$)}";
-		});
+		app.MapSwagger("/openapi/{documentName}.{extension:regex(^(json|ya?ml)$)}")
+		   .CacheOutput(p => p.Expire(TimeSpan.FromHours(12)));
 
 		app.UseSwaggerUI(options =>
 		{

@@ -24,7 +24,7 @@ builder.Services
        .AddApiBehaviorOptions()
        .AddPlugins(PluginLoader.Assemblies);
 
-builder.Services.AddSwaggerGenWithOptions();
+builder.Services.AddOpenApiWithOptions();
 builder.Services.AddOutputCacheWithOptions();
 builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
 builder.Services.AddDatabaseContext(builder.Configuration);
@@ -61,7 +61,7 @@ app.UseResponseCompression();
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedProto });
 app.UseRouting();
-app.UseSwaggerWithOptions();
+app.UseOpenApiWithOptions();
 app.UseCors();
 app.UseAuthorization();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
