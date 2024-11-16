@@ -9,6 +9,23 @@
         {
             <span class="badge">@Loc["Follows you"]</span>
         }
+        @switch (UserProfile.Role)
+        {
+            case Role.Moderator:
+                <span class="badge">
+                    <Icon Name="Icons.ShieldWarning" Size="1.3em"/>
+                    @Loc["Moderator"]
+                </span>
+                break;
+            case Role.Admin:
+                <span class="badge">
+                    <Icon Name="Icons.ShieldStar" Size="1.3em"/>
+                    @Loc["Admin"]
+                </span>
+                break;
+            default:
+                break;
+        }
     </div>
     @if (UserProfile.Bio != null)
     {
