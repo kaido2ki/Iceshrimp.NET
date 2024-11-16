@@ -44,6 +44,25 @@
     }
 }
 
+.badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.badge {
+    padding: 0 0.5rem;
+    background-color: var(--highlight-color);
+    border-radius: 0.5rem;
+}
+
+::deep {
+    .badge .ph {
+        vertical-align: text-bottom;
+    }
+}
+
 @media (max-width: 640px) {
     ::deep .field {
         flex-direction: column;

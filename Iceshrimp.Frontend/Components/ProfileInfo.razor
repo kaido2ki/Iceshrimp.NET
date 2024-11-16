@@ -4,8 +4,14 @@
 @using Iceshrimp.Assets.PhosphorIcons
 @inject IStringLocalizer<Localization> Loc;
 <div class="profile-info">
+    <div class="badges">
+        @if (UserProfile.Relations.HasFlag(Relations.FollowedBy))
+        {
+            <span class="badge">@Loc["Follows you"]</span>
+        }
+    </div>
     @if (UserProfile.Bio != null)
-    { 
+    {
         <div class="bio">
             <MfmText Text="@UserProfile.Bio" Emoji="@Emojis"/>
         </div>
