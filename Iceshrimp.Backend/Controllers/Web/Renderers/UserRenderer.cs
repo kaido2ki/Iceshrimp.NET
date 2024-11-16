@@ -31,7 +31,9 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			InstanceName    = instanceName,
 			InstanceIconUrl = instanceIcon,
 			Emojis          = emoji,
-			MovedTo         = user.MovedToUri
+			MovedTo         = user.MovedToUri,
+			IsBot           = user.IsBot,
+			IsCat           = user.IsCat
 		};
 	}
 

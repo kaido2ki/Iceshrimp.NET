@@ -14,6 +14,8 @@ public class UserResponse
 	public required string? InstanceName    { get; set; }
 	public required string? InstanceIconUrl { get; set; }
 
+	public bool                IsBot  { get; set; } = false;
+	public bool                IsCat  { get; set; } = false;
 	public List<EmojiResponse> Emojis { get; set; } = [];
 
 	[JI(Condition = WhenWritingNull)] public string? MovedTo { get; set; }
