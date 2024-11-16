@@ -29,7 +29,7 @@ public static class WebApplicationExtensions
 		          .UseMiddleware<FederationSemaphoreMiddleware>()
 		          .UseMiddleware<AuthorizedFetchMiddleware>()
 		          .UseMiddleware<InboxValidationMiddleware>()
-		          .UseMiddleware<StripRazorSsrHandoffDataMiddleware>();
+		          .UseMiddleware<BlazorSsrHandoffMiddleware>();
 	}
 
 	public static IApplicationBuilder UseOpenApiWithOptions(this WebApplication app)

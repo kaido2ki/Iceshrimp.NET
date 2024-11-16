@@ -17,6 +17,7 @@ using Iceshrimp.Backend.SignalR.Authentication;
 using Iceshrimp.Shared.Configuration;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -108,7 +109,7 @@ public static class ServiceExtensions
 			.AddSingleton<StreamingService>()
 			.AddSingleton<ImageProcessor>()
 			.AddSingleton<RazorViewRenderService>()
-			.AddSingleton<StripRazorSsrHandoffDataMiddleware>()
+			.AddSingleton<BlazorSsrHandoffMiddleware>()
 			.AddSingleton<MfmRenderer>()
 			.AddSingleton<MatcherPolicy, PublicPreviewRouteMatcher>()
 			.AddSingleton<PolicyService>();
@@ -178,6 +179,8 @@ public static class ServiceExtensions
 			foreach (var converter in JsonSerialization.Options.Converters)
 				options.JsonSerializerOptions.Converters.Add(converter);
 		});
+
+		services.PostConfigure<RazorComponentsServiceOptions>(BlazorSsrHandoffMiddleware.DisableBlazorJsInitializers);
 	}
 
 	private static IServiceCollection ConfigureWithValidation<T>(
