@@ -101,6 +101,12 @@ module MfmNodeTypes =
         inherit MfmInlineNode([])
         member val Char = v
 
+    type internal UserState =
+        { ParenthesisStack: char list
+          LastLine: int64 }
+
+        static member Default = { ParenthesisStack = []; LastLine = 0 }
+
 open MfmNodeTypes
 
 module private MfmParser =
@@ -114,6 +120,8 @@ module private MfmParser =
     let isLetterOrNumber c = Char.IsLetterOrDigit c
     let isNewline c = '\n'.Equals(c)
     let isNotNewline c = not (isNewline c)
+
+    let followedByChar c = nextCharSatisfies <| fun ch -> c = ch
 
     let (|CharNode|MfmNode|) (x: MfmNode) =
         if x :? MfmCharNode then
@@ -174,16 +182,36 @@ module private MfmParser =
         | None -> None
         | Some items -> items |> dict |> Some
 
-    let pushLine: Parser<unit, int64> =
+    let pushLine: Parser<unit, UserState> =
         fun stream ->
-            stream.UserState <- stream.Line
+            stream.UserState <-
+                { stream.UserState with
+                    LastLine = stream.Line }
+
             Reply(())
 
-    let assertLine: Parser<unit, int64> =
+    let assertLine: Parser<unit, UserState> =
         fun stream ->
-            match stream.UserState = stream.Line with
+            match stream.UserState.LastLine = stream.Line with
             | true -> Reply(())
             | false -> Reply(Error, messageError "Line changed")
+
+    let assertParen = userStateSatisfies <| fun u -> u.ParenthesisStack.Length > 0
+    let assertNoParen = userStateSatisfies <| fun u -> u.ParenthesisStack.Length = 0
+
+    let pushParen =
+        updateUserState
+        <| fun u ->
+            { u with
+                ParenthesisStack = '(' :: u.ParenthesisStack }
+
+    let popParen =
+        assertParen
+        >>. updateUserState (fun u ->
+            { u with
+                ParenthesisStack = List.tail u.ParenthesisStack })
+
+    let clearParen = updateUserState <| fun u -> { u with ParenthesisStack = [] }
 
     // References
     let node, nodeRef = createParserForwardedToRef ()
@@ -328,7 +356,12 @@ module private MfmParser =
 
     let urlNode =
         lookAhead (skipString "https://" <|> skipString "http://")
-        >>. manyCharsTill anyChar (nextCharSatisfies isWhitespace <|> nextCharSatisfies (isAnyOf "()") <|> eof) //FIXME: this needs significant improvements
+        >>. manyCharsTill
+                ((pchar '(' .>> pushParen) <|> (pchar ')' .>> popParen) <|> anyChar)
+                (nextCharSatisfies isWhitespace
+                 <|> (assertNoParen >>. followedByChar ')')
+                 <|> eof)
+        .>> clearParen
         >>= fun uri ->
             match Uri.TryCreate(uri, UriKind.Absolute) with
             | true, finalUri ->
@@ -356,7 +389,10 @@ module private MfmParser =
         .>>. (pchar '[' >>. manyCharsTill anyChar (pchar ']'))
         .>>. (pchar '('
               >>. lookAhead (skipString "https://" <|> skipString "http://")
-              >>. manyCharsTill anyChar (pchar ')'))
+              >>. manyCharsTill
+                      ((pchar '(' .>> pushParen) <|> (pchar ')' .>> popParen) <|> anyChar)
+                      (assertNoParen >>. skipChar ')'))
+        .>> clearParen
         >>= fun ((silent, text), uri) ->
             match Uri.TryCreate(uri, UriKind.Absolute) with
             | true, finalUri ->
@@ -394,7 +430,7 @@ module private MfmParser =
         | Simple
 
     let parseNode (m: ParseMode) =
-        let prefixedNode (m: ParseMode) : Parser<MfmNode, int64> =
+        let prefixedNode (m: ParseMode) : Parser<MfmNode, UserState> =
             fun (stream: CharStream<_>) ->
                 match (stream.Peek(), m) with
                 // Block nodes, ordered by expected frequency
@@ -439,11 +475,11 @@ open MfmParser
 
 module Mfm =
     let parse str =
-        match runParserOnString parse 0 "" str with
+        match runParserOnString parse UserState.Default "" str with
         | Success(result, _, _) -> aggregateText result
         | Failure(s, _, _) -> failwith $"Failed to parse MFM: {s}"
 
     let parseSimple str =
-        match runParserOnString parseSimple 0 "" str with
+        match runParserOnString parseSimple UserState.Default "" str with
         | Success(result, _, _) -> aggregateText result
         | Failure(s, _, _) -> failwith $"Failed to parse MFM: {s}"
