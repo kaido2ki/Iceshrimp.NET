@@ -5,6 +5,8 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
 @inject ApiService                     Api;
+@if (_buttonType == ButtonType.Self) return;
+
 <span class="follow-button">
     @switch (_buttonType)
         {
@@ -51,7 +53,8 @@
         Unfollow,
         FollowBack,
         FollowLocked,
-        CancelRequest
+        CancelRequest,
+        Self
     }
 
     private void Action()
@@ -109,6 +112,11 @@
         if (UserProfile.Relations.HasFlag(Relations.Requested))
         {
             _buttonType = ButtonType.CancelRequest;
+        }
+
+        if (UserProfile.Relations.HasFlag(Relations.Self))
+        {
+            _buttonType = ButtonType.Self;
         }
     }
 }
