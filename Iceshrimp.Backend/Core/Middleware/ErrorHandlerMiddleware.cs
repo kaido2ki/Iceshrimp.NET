@@ -97,9 +97,9 @@ public class ErrorHandlerMiddleware(
 						StatusCode = ctx.Response.StatusCode,
 						Error      = verbosity >= ExceptionVerbosity.Basic ? ce.Error : ce.StatusCode.ToString(),
 						Message    = verbosity >= ExceptionVerbosity.Basic ? ce.Message : null,
-						Details    = verbosity == ExceptionVerbosity.Full ? ce.Details : null,
-						Errors     = verbosity == ExceptionVerbosity.Full ? (ce as ValidationException)?.Errors : null,
-						Source     = verbosity == ExceptionVerbosity.Full ? type : null,
+						Details    = verbosity >= ExceptionVerbosity.Full ? ce.Details : null,
+						Errors     = verbosity >= ExceptionVerbosity.Full ? (ce as ValidationException)?.Errors : null,
+						Source     = verbosity >= ExceptionVerbosity.Full ? type : null,
 						RequestId  = ctx.TraceIdentifier
 					};
 
@@ -125,7 +125,7 @@ public class ErrorHandlerMiddleware(
 					StatusCode = 500,
 					Error      = "Internal Server Error",
 					Message    = verbosity >= ExceptionVerbosity.Basic ? e.Message : null,
-					Source     = verbosity == ExceptionVerbosity.Full ? type : null,
+					Source     = verbosity >= ExceptionVerbosity.Full ? type : null,
 					RequestId  = ctx.TraceIdentifier
 				};
 
@@ -294,5 +294,6 @@ public enum ExceptionVerbosity
 	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	None = 0,
 	Basic = 1,
-	Full  = 2
+	Full  = 2,
+	Debug = 3,
 }

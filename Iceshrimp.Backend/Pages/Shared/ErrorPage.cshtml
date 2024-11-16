@@ -5,6 +5,7 @@
 @using Microsoft.Extensions.Options
 @model ErrorPageModel
 @inject IOptions<Config.InstanceSection>         Instance
+@inject IOptions<Config.SecuritySection>         Security
 @{
     // Not meant for direct consumption, use with RazorViewRenderService.
     Layout = null;
@@ -41,18 +42,16 @@
 }
 @if (Model.Error.Errors is { Count: > 0 } errors)
 {
-    <p>
-        @foreach (var error in errors)
-        {
-            <strong>@error.Key</strong>
-            <ul>
-                @foreach (var val in error.Value)
-                {
-                    <li>@val</li>
-                }
-            </ul>
-        }
-    </p>
+    @foreach (var error in errors)
+    {
+        <strong>@error.Key</strong>
+        <ul>
+            @foreach (var val in error.Value)
+            {
+                <li>@val</li>
+            }
+        </ul>
+    }
 }
 @if (Model.Error.Source != null)
 {
@@ -65,6 +64,12 @@
     <strong>Request ID:</strong>
     <code>@Model.Error.RequestId</code>
 </p>
+
+@if (Security.Value.ExceptionVerbosity >= ExceptionVerbosity.Debug)
+{
+    <pre><code>@Model.Error.Exception.ToString()</code></pre>
+}
+
 <footer>
     <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
     @if (Model.Error.Exception is PublicPreviewDisabledException)
