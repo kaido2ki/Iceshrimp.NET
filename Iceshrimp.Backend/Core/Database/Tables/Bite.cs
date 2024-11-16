@@ -27,7 +27,7 @@ public class Bite
 
 	[Column("userHost")]
 	[StringLength(512)]
-	public string? UserHost { get; set; } = null!;
+	public string? UserHost { get; set; }
 
 	[Column("targetUserId")]
 	[StringLength(32)]

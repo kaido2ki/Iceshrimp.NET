@@ -19,7 +19,6 @@ public partial class UserPreview(
 	IOptionsSnapshot<Config.SecuritySection> security
 ) : AsyncComponentBase
 {
-	[Parameter] public required string Id   { get; set; }
 	[Parameter] public required string Acct { get; set; }
 
 	private PreviewUser? _user;
