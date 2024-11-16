@@ -6,4 +6,4 @@ If you discover a security vulnerability, you can report it to us via any of the
 
 This will allow us to assess the risk & make a fix available before the vulnerability is disclosed publicly.
 
-Note that in the case of coordinated disclosure, once the severity has been established to be high/critical & patches are ready, we will set a cutoff date (within reason) at which point we'll release the patches regardless of the state of the coordinated disclosure. This is to prevent excessive delays caused by bikeshedding or similar behavior by coordination partners.
+Note that in the case of coordinated disclosure, once the severity has been established to be high/critical & patches are ready, we will set a cutoff date (within reason), at which point we'll release the patches regardless of the state of the coordinated disclosure. This is to prevent excessive delays caused by bikeshedding or similar behavior by coordination partners.
