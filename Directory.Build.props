@@ -27,7 +27,7 @@
     <!-- Version metadata -->
     <PropertyGroup>
         <VersionPrefix>2024.1</VersionPrefix>
-        <VersionSuffix>beta4</VersionSuffix>
+        <VersionSuffix>beta4.security1</VersionSuffix>
     </PropertyGroup>
 
     <ItemGroup>
