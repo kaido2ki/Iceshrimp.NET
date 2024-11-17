@@ -35,11 +35,13 @@ public static class MfmSerializer
 					result.Append(" [search]");
 					break;
 				}
-				case MfmBoldNode:
+				case MfmBoldNode mfmBoldNode:
 				{
-					result.Append("**");
+					var start = mfmBoldNode.Type.IsSymbol ? "**" : "<b>";
+					var end   = mfmBoldNode.Type.IsSymbol ? "**" : "</b>";
+					result.Append(start);
 					result.Append(SerializeInternal(node.Children));
-					result.Append("**");
+					result.Append(end);
 					break;
 				}
 				case MfmCenterNode:
@@ -80,11 +82,13 @@ public static class MfmSerializer
 					result.Append($"`{mfmInlineCodeNode.Code}`");
 					break;
 				}
-				case MfmItalicNode:
+				case MfmItalicNode mfmItalicNode:
 				{
-					result.Append('*');
+					var start = mfmItalicNode.Type.IsSymbol ? "*" : "<i>";
+					var end   = mfmItalicNode.Type.IsSymbol ? "*" : "</i>";
+					result.Append(start);
 					result.Append(SerializeInternal(node.Children));
-					result.Append('*');
+					result.Append(end);
 					break;
 				}
 				case MfmLinkNode mfmLinkNode:
@@ -125,11 +129,13 @@ public static class MfmSerializer
 					result.Append("</small>");
 					break;
 				}
-				case MfmStrikeNode:
+				case MfmStrikeNode mfmStrikeNode:
 				{
-					result.Append("~~");
+					var start = mfmStrikeNode.Type.IsSymbol ? "~~" : "<s>";
+					var end   = mfmStrikeNode.Type.IsSymbol ? "~~" : "</s>";
+					result.Append(start);
 					result.Append(SerializeInternal(node.Children));
-					result.Append("~~");
+					result.Append(end);
 					break;
 				}
 				case MfmTextNode mfmTextNode:

@@ -14,30 +14,73 @@ public class MfmTests
 	[TestMethod]
 	public void TestParseBoldItalic()
 	{
-		List<MfmNode> expected =
+		// @formatter:off
+		List<MfmNode> expected123 =
 		[
 			new MfmItalicNode(ListModule.OfSeq<MfmInlineNode>([
 				new MfmTextNode("italic "),
-				new MfmBoldNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("bold")])),
+				new MfmBoldNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("bold")]), InlineNodeType.Symbol),
 				new MfmTextNode(" italic")
-			]))
+			]), InlineNodeType.Symbol)
 		];
+		
+		List<MfmNode> expected4 =
+		[
+			new MfmItalicNode(ListModule.OfSeq<MfmInlineNode>([
+				new MfmTextNode("italic "),
+				new MfmBoldNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("bold")]), InlineNodeType.HtmlTag),
+				new MfmTextNode(" italic")
+			]), InlineNodeType.HtmlTag)
+		];
+		
+		List<MfmNode> expected5 =
+		[
+			new MfmItalicNode(ListModule.OfSeq<MfmInlineNode>([
+				new MfmTextNode("italic "),
+				new MfmBoldNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("bold")]), InlineNodeType.Symbol),
+				new MfmTextNode(" italic")
+			]), InlineNodeType.HtmlTag)
+		];
+		
+		List<MfmNode> expected6 =
+		[
+			new MfmItalicNode(ListModule.OfSeq<MfmInlineNode>([
+				new MfmTextNode("italic "),
+				new MfmBoldNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("bold")]), InlineNodeType.HtmlTag),
+				new MfmTextNode(" italic")
+			]), InlineNodeType.Symbol)
+		];
+		// @formatter:on
 
-		var res         = Mfm.parse("*italic **bold** italic*").ToList();
-		var resAlt      = Mfm.parse("_italic **bold** italic_").ToList();
-		var resAlt2     = Mfm.parse("_italic __bold__ italic_").ToList();
-		var resAlt3     = Mfm.parse("<i>italic <b>bold</b> italic</i>").ToList();
-		var resMixed    = Mfm.parse("<i>italic **bold** italic</i>").ToList();
-		var resMixedAlt = Mfm.parse("*italic <b>bold</b> italic*").ToList();
+		const string input  = "*italic **bold** italic*";
+		const string input2 = "_italic **bold** italic_";
+		const string input3 = "_italic __bold__ italic_";
+		const string input4 = "<i>italic <b>bold</b> italic</i>";
+		const string input5 = "<i>italic **bold** italic</i>";
+		const string input6 = "*italic <b>bold</b> italic*";
+
+		var res  = Mfm.parse(input).ToList();
+		var res2 = Mfm.parse(input2).ToList();
+		var res3 = Mfm.parse(input3).ToList();
+		var res4 = Mfm.parse(input4).ToList();
+		var res5 = Mfm.parse(input5).ToList();
+		var res6 = Mfm.parse(input6).ToList();
 
 		AssertionOptions.FormattingOptions.MaxDepth = 100;
 
-		res.Should().Equal(expected, MfmNodeEqual);
-		resAlt.Should().Equal(expected, MfmNodeEqual);
-		resAlt2.Should().Equal(expected, MfmNodeEqual);
-		resAlt3.Should().Equal(expected, MfmNodeEqual);
-		resMixed.Should().Equal(expected, MfmNodeEqual);
-		resMixedAlt.Should().Equal(expected, MfmNodeEqual);
+		res.Should().Equal(expected123, MfmNodeEqual);
+		res2.Should().Equal(expected123, MfmNodeEqual);
+		res3.Should().Equal(expected123, MfmNodeEqual);
+		res4.Should().Equal(expected4, MfmNodeEqual);
+		res5.Should().Equal(expected5, MfmNodeEqual);
+		res6.Should().Equal(expected6, MfmNodeEqual);
+
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+		MfmSerializer.Serialize(res2).Should().BeEquivalentTo(input);
+		MfmSerializer.Serialize(res3).Should().BeEquivalentTo(input);
+		MfmSerializer.Serialize(res4).Should().BeEquivalentTo(input4);
+		MfmSerializer.Serialize(res5).Should().BeEquivalentTo(input5);
+		MfmSerializer.Serialize(res6).Should().BeEquivalentTo(input6);
 	}
 
 	[TestMethod]
@@ -58,12 +101,37 @@ public class MfmTests
 		expected =
 		[
 			new MfmTextNode("test "),
-			new MfmItalicNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("test")])),
+			new MfmItalicNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("test")]), InlineNodeType.Symbol),
 			new MfmTextNode("test")
 		];
 
 		Mfm.parse("test *test*test").ToList().Should().Equal(expected, MfmNodeEqual);
 		Mfm.parse("test _test_test").ToList().Should().Equal(expected, MfmNodeEqual);
+	}
+
+	[TestMethod]
+	public void TestStrike()
+	{
+		const string input  = "~~test~~";
+		const string input2 = "<s>test</s>";
+		List<MfmNode> expected =
+		[
+			new MfmStrikeNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("test")]), InlineNodeType.Symbol)
+		];
+
+		List<MfmNode> expected2 =
+		[
+			new MfmStrikeNode(ListModule.OfSeq<MfmInlineNode>([new MfmTextNode("test")]), InlineNodeType.HtmlTag)
+		];
+
+		var res  = Mfm.parse(input).ToList();
+		var res2 = Mfm.parse(input2).ToList();
+
+		res.Should().Equal(expected, MfmNodeEqual);
+		res2.Should().Equal(expected2, MfmNodeEqual);
+
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+		MfmSerializer.Serialize(res2).Should().BeEquivalentTo(input2);
 	}
 
 	[TestMethod]
@@ -511,6 +579,24 @@ public class MfmTests
 		{
 			case MfmTextNode textNode when ((MfmTextNode)b).Text != textNode.Text:
 				return false;
+			case MfmItalicNode ax:
+			{
+				var bx = (MfmItalicNode)b;
+				if (!bx.Type.Equals(ax.Type)) return false;
+				break;
+			}
+			case MfmBoldNode ax:
+			{
+				var bx = (MfmBoldNode)b;
+				if (!bx.Type.Equals(ax.Type)) return false;
+				break;
+			}
+			case MfmStrikeNode ax:
+			{
+				var bx = (MfmStrikeNode)b;
+				if (!bx.Type.Equals(ax.Type)) return false;
+				break;
+			}
 			case MfmMentionNode ax:
 			{
 				var bx = (MfmMentionNode)b;

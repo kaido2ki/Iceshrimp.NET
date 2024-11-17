@@ -19,18 +19,25 @@ module MfmNodeTypes =
         inherit MfmNode()
         do base.Children <- c |> List.map (fun x -> x :> MfmNode)
 
+    type InlineNodeType =
+        | Symbol
+        | HtmlTag
+
     type MfmTextNode(v: string) =
         inherit MfmInlineNode([])
         member val Text = v
 
-    type MfmItalicNode(c) =
+    type MfmItalicNode(c, t) =
         inherit MfmInlineNode(c)
+        member val Type: InlineNodeType = t
 
-    type MfmBoldNode(c) =
+    type MfmBoldNode(c, t) =
         inherit MfmInlineNode(c)
+        member val Type: InlineNodeType = t
 
-    type MfmStrikeNode(c) =
+    type MfmStrikeNode(c, t) =
         inherit MfmInlineNode(c)
+        member val Type: InlineNodeType = t
 
     type MfmInlineCodeNode(v: string) =
         inherit MfmInlineNode([])
@@ -240,7 +247,7 @@ module private MfmParser =
         >>. pushLine
         >>. manyTill inlineNode italicPatternAsterisk
         .>> assertLine
-        |>> fun c -> MfmItalicNode(aggregateTextInline c) :> MfmNode
+        |>> fun c -> MfmItalicNode(aggregateTextInline c, Symbol) :> MfmNode
 
     let italicUnderscoreNode =
         previousCharSatisfiesNot isNotWhitespace
@@ -248,11 +255,11 @@ module private MfmParser =
         >>. pushLine
         >>. manyTill inlineNode italicPatternUnderscore
         .>> assertLine
-        |>> fun c -> MfmItalicNode(aggregateTextInline c) :> MfmNode
+        |>> fun c -> MfmItalicNode(aggregateTextInline c, Symbol) :> MfmNode
 
     let italicTagNode =
         skipString "<i>" >>. manyTill inlineNode (skipString "</i>")
-        |>> fun c -> MfmItalicNode(aggregateTextInline c) :> MfmNode
+        |>> fun c -> MfmItalicNode(aggregateTextInline c, HtmlTag) :> MfmNode
 
     let boldAsteriskNode =
         previousCharSatisfiesNot isNotWhitespace
@@ -260,7 +267,7 @@ module private MfmParser =
         >>. pushLine
         >>. manyTill inlineNode (skipString "**")
         .>> assertLine
-        |>> fun c -> MfmBoldNode(aggregateTextInline c) :> MfmNode
+        |>> fun c -> MfmBoldNode(aggregateTextInline c, Symbol) :> MfmNode
 
     let boldUnderscoreNode =
         previousCharSatisfiesNot isNotWhitespace
@@ -268,16 +275,20 @@ module private MfmParser =
         >>. pushLine
         >>. manyTill inlineNode (skipString "__")
         .>> assertLine
-        |>> fun c -> MfmBoldNode(aggregateTextInline c) :> MfmNode
+        |>> fun c -> MfmBoldNode(aggregateTextInline c, Symbol) :> MfmNode
 
     let boldTagNode =
         skipString "<b>" >>. manyTill inlineNode (skipString "</b>")
-        |>> fun c -> MfmBoldNode(aggregateTextInline c) :> MfmNode
+        |>> fun c -> MfmBoldNode(aggregateTextInline c, HtmlTag) :> MfmNode
 
     let strikeNode =
         skipString "~~" >>. pushLine >>. manyTill inlineNode (skipString "~~")
         .>> assertLine
-        |>> fun c -> MfmStrikeNode(aggregateTextInline c) :> MfmNode
+        |>> fun c -> MfmStrikeNode(aggregateTextInline c, Symbol) :> MfmNode
+
+    let strikeTagNode =
+        skipString "<s>" >>. manyTill inlineNode (skipString "</s>")
+        |>> fun c -> MfmStrikeNode(aggregateTextInline c, HtmlTag) :> MfmNode
 
     let codeNode =
         codePattern >>. pushLine >>. manyCharsTill anyChar codePattern .>> assertLine
@@ -430,6 +441,14 @@ module private MfmParser =
         | Simple
 
     let parseNode (m: ParseMode) =
+        let inlineTagNodes =
+            [ plainNode
+              smallNode
+              italicTagNode
+              boldTagNode
+              strikeTagNode
+              urlNodeBrackets ]
+
         let prefixedNode (m: ParseMode) : Parser<MfmNode, UserState> =
             fun (stream: CharStream<_>) ->
                 match (stream.Peek(), m) with
@@ -450,7 +469,7 @@ module private MfmParser =
                 | ':', (Full | Inline | Simple) -> emojiCodeNode
                 | '~', (Full | Inline) when stream.Match "~~" -> strikeNode
                 | '[', (Full | Inline) -> linkNode
-                | '<', (Full | Inline) -> choice [ plainNode; smallNode; italicTagNode; boldTagNode; urlNodeBrackets ]
+                | '<', (Full | Inline) -> choice inlineTagNodes
                 | '<', Simple when stream.Match "<plain>" -> plainNode
                 | '\\', (Full | Inline) when stream.Match "\\(" -> mathNode
                 | '$', (Full | Inline) when stream.Match "$[" -> fnNode
