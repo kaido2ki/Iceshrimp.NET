@@ -1,7 +1,6 @@
 @page "/settings/about"
 @using System.Text
 @using Iceshrimp.Assets.PhosphorIcons
-@using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Core.InMemoryLogger
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
@@ -16,7 +15,7 @@
 @inject InMemoryLogService             LogSvc;
 @inject UpdateService                  UpdateSvc;
 @inject NavigationManager              Nav;
-@inject GlobalComponentSvc GlobalComponentSvc;
+@inject ILogger<About> Logger;
 
 <div class="body">
     <div class="version">
@@ -64,14 +63,18 @@
                 }
             </div>
             <button class="button" @onclick="@SkipWaiting">@Loc["Load new version"]</button>
-            @if (_skipWaitingRes == CheckState.False)
+            @if (_skipWaitingRes == CheckState.Error)
             {
-                <div>@Loc["Something went wrong, please check the logs."]</div>
+                <div>@Loc["Something went wrong while loading the update, please check the logs."]</div>
             }
         }
         @if (_updateAvailable == CheckState.False)
         {
             <div>@Loc["Already on the newest version!"]</div>
+        }
+        @if (_updateAvailable == CheckState.Error)
+        {
+            <div>@Loc["Failed to check for updates."]</div>
         }
 
     </div>
@@ -101,12 +104,23 @@
     {
         Unknown,
         True,
-        False
+        False,
+        Error
     }
 
     private async void CheckUpdate()
     {
-        await UpdateSvc.ServiceWorkerUpdate();
+        try
+        {
+            await UpdateSvc.ServiceWorkerUpdate();
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e, "Failed to check for updates.");
+            _updateAvailable = CheckState.Error;
+            return;
+        }
+
         var res = await UpdateSvc.ServiceWorkerCheckWaiting();
         _updateAvailable = res ? CheckState.True : CheckState.False;
         _newVersion      = UpdateSvc.BackendVersion;
@@ -116,7 +130,7 @@
     private async void SkipWaiting()
     {
         var res = await UpdateSvc.ServiceWorkerSkipWaiting();
-        _skipWaitingRes = res ? CheckState.True : CheckState.False;
+        _skipWaitingRes = res ? CheckState.True : CheckState.Error;
         if (res)
         {
             Nav.NavigateTo("/", true);
