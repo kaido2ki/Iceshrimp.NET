@@ -1,6 +1,7 @@
 ﻿@using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Core.Services
 @using Microsoft.AspNetCore.Components.Authorization
+@inject IJSRuntime    Js;
 @* ReSharper disable once UnusedMember.Local *@
 @inject UpdateService UpdateSvc;
 <ErrorBoundary>
@@ -28,5 +29,16 @@
     </ErrorContent>
 </ErrorBoundary>
 
+<HeadContent>
+    <meta name="theme-color" content="@_backgroundColor"/>
+</HeadContent>
+
 @code {
+    private string? _backgroundColor;
+
+    protected override void OnInitialized()
+    {
+        _backgroundColor = ((IJSInProcessRuntime)Js).Invoke<string>("eval",
+                                                                   "getComputedStyle(document.documentElement).getPropertyValue('--background-color')");
+    }
 }
