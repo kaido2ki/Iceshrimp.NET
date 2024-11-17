@@ -1,11 +1,14 @@
 using System.Diagnostics;
 using Iceshrimp.Backend.Core.Extensions;
+using JetBrains.Annotations;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
-public class RequestDurationMiddleware : IMiddleware
+[UsedImplicitly]
+public class RequestDurationMiddleware(RequestDelegate next)
 {
-	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
+	[UsedImplicitly]
+	public async Task InvokeAsync(HttpContext ctx)
 	{
 		if (ctx.GetEndpoint()?.Metadata.GetMetadata<HideRequestDuration>() == null)
 		{

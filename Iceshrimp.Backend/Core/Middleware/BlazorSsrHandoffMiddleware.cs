@@ -1,15 +1,16 @@
 using System.Reflection;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
-public class BlazorSsrHandoffMiddleware : IMiddleware
+public class BlazorSsrHandoffMiddleware(RequestDelegate next) : ConditionalMiddleware<BlazorSsrAttribute>
 {
-	public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+	public async Task InvokeAsync(HttpContext context)
 	{
 		var attribute = context.GetEndpoint()
 		                       ?.Metadata.GetMetadata<RootComponentMetadata>()
-		                       ?.Type.GetCustomAttributes<RazorSsrAttribute>()
+		                       ?.Type.GetCustomAttributes<BlazorSsrAttribute>()
 		                       .FirstOrDefault();
 
 		if (attribute != null)
@@ -34,4 +35,4 @@ public class BlazorSsrHandoffMiddleware : IMiddleware
 	}
 }
 
-public class RazorSsrAttribute : Attribute;
+public class BlazorSsrAttribute : Attribute;

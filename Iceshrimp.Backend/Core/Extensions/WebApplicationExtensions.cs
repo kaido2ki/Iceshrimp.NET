@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -31,6 +33,10 @@ public static class WebApplicationExtensions
 		          .UseMiddleware<InboxValidationMiddleware>()
 		          .UseMiddleware<BlazorSsrHandoffMiddleware>();
 	}
+
+	// Prevents conditional middleware from being invoked on non-matching requests
+	private static IApplicationBuilder UseMiddleware<T>(this IApplicationBuilder app) where T : IConditionalMiddleware
+		=> app.UseWhen(T.Predicate, builder => UseMiddlewareExtensions.UseMiddleware<T>(builder));
 
 	public static IApplicationBuilder UseOpenApiWithOptions(this WebApplication app)
 	{
@@ -305,4 +311,32 @@ public static class WebApplicationExtensions
 		[DllImport("libc")]
 		static extern int chmod(string pathname, int mode);
 	}
+}
+
+public interface IConditionalMiddleware
+{
+	public static abstract bool Predicate(HttpContext ctx);
+}
+
+public interface IMiddlewareService : IMiddleware
+{
+	public static abstract ServiceLifetime Lifetime { get; }
+}
+
+public class ConditionalMiddleware<T> : IConditionalMiddleware where T : Attribute
+{
+	[SuppressMessage("ReSharper", "StaticMemberInGenericType", Justification = "Intended behavior")]
+	private static readonly ConcurrentDictionary<Endpoint, bool> Cache = [];
+
+	public static bool Predicate(HttpContext ctx)
+		=> ctx.GetEndpoint() is { } endpoint && Cache.GetOrAdd(endpoint, e => GetAttribute(e) != null);
+
+	private static T? GetAttribute(Endpoint? endpoint)
+		=> endpoint?.Metadata.GetMetadata<T>();
+
+	private static T? GetAttribute(HttpContext ctx)
+		=> GetAttribute(ctx.GetEndpoint());
+
+	protected static T GetAttributeOrFail(HttpContext ctx)
+		=> GetAttribute(ctx) ?? throw new Exception("Failed to get middleware filter attribute");
 }

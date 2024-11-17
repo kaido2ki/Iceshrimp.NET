@@ -37,6 +37,7 @@ builder.Services.AddResponseCompression();
 builder.Services.AddRazorPages();
 builder.Services.AddRazorComponents();
 builder.Services.AddAntiforgery(o => o.Cookie.Name = "CSRF-Token");
+builder.Services.AddMiddleware();
 
 builder.Services.AddServices(builder.Configuration);
 builder.Services.ConfigureServices(builder.Configuration);

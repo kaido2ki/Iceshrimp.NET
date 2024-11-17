@@ -1,16 +1,22 @@
+using Iceshrimp.Backend.Core.Extensions;
+using JetBrains.Annotations;
+
 namespace Iceshrimp.Backend.Core.Middleware;
 
-public class RequestBufferingMiddleware : IMiddleware
+[UsedImplicitly]
+public class RequestBufferingMiddleware(RequestDelegate next) : ConditionalMiddleware<EnableRequestBufferingAttribute>
 {
-	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
+	[UsedImplicitly]
+	public async Task InvokeAsync(HttpContext ctx)
 	{
-		var attribute = ctx.GetEndpoint()?.Metadata.GetMetadata<EnableRequestBufferingAttribute>();
-		if (attribute != null) ctx.Request.EnableBuffering(attribute.MaxLength);
+		var attr = GetAttributeOrFail(ctx);
+		ctx.Request.EnableBuffering(attr.MaxLength);
 		await next(ctx);
 	}
 }
 
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class EnableRequestBufferingAttribute(long maxLength) : Attribute
 {
-	internal long MaxLength = maxLength;
+	internal readonly long MaxLength = maxLength;
 }

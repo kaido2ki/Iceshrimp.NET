@@ -1,43 +1,41 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 
-public class AuthorizationMiddleware : IMiddleware
+public class AuthorizationMiddleware(RequestDelegate next) : ConditionalMiddleware<AuthorizeAttribute>
 {
-	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
+	public async Task InvokeAsync(HttpContext ctx)
 	{
 		var endpoint  = ctx.GetEndpoint();
-		var attribute = endpoint?.Metadata.GetMetadata<AuthorizeAttribute>();
+		var attribute = GetAttributeOrFail(ctx);
 
-		if (attribute != null)
+		ctx.Response.Headers.CacheControl = "private, no-store";
+		var isMastodon = endpoint?.Metadata.GetMetadata<MastodonApiControllerAttribute>() != null;
+
+		if (isMastodon)
 		{
-			ctx.Response.Headers.CacheControl = "private, no-store";
-			var isMastodon = endpoint?.Metadata.GetMetadata<MastodonApiControllerAttribute>() != null;
-
-			if (isMastodon)
-			{
-				var token = ctx.GetOauthToken();
-				if (token is not { Active: true })
-					throw GracefulException.Unauthorized("This method requires an authenticated user");
-				if (attribute.Scopes.Length > 0 &&
-				    attribute.Scopes.Except(MastodonOauthHelpers.ExpandScopes(token.Scopes)).Any())
-					throw GracefulException.Forbidden("This action is outside the authorized scopes");
-				if (attribute.AdminRole && !token.User.IsAdmin)
-					throw GracefulException.Forbidden("This action is outside the authorized scopes");
-				if (attribute.ModeratorRole && token.User is { IsAdmin: false, IsModerator: false })
-					throw GracefulException.Forbidden("This action is outside the authorized scopes");
-			}
-			else
-			{
-				var session = ctx.GetSession();
-				if (session is not { Active: true })
-					throw GracefulException.Unauthorized("This method requires an authenticated user");
-				if (attribute.AdminRole && !session.User.IsAdmin)
-					throw GracefulException.Forbidden("This action is outside the authorized scopes");
-				if (attribute.ModeratorRole && session.User is { IsAdmin: false, IsModerator: false })
-					throw GracefulException.Forbidden("This action is outside the authorized scopes");
-			}
+			var token = ctx.GetOauthToken();
+			if (token is not { Active: true })
+				throw GracefulException.Unauthorized("This method requires an authenticated user");
+			if (attribute.Scopes.Length > 0 &&
+			    attribute.Scopes.Except(MastodonOauthHelpers.ExpandScopes(token.Scopes)).Any())
+				throw GracefulException.Forbidden("This action is outside the authorized scopes");
+			if (attribute.AdminRole && !token.User.IsAdmin)
+				throw GracefulException.Forbidden("This action is outside the authorized scopes");
+			if (attribute.ModeratorRole && token.User is { IsAdmin: false, IsModerator: false })
+				throw GracefulException.Forbidden("This action is outside the authorized scopes");
+		}
+		else
+		{
+			var session = ctx.GetSession();
+			if (session is not { Active: true })
+				throw GracefulException.Unauthorized("This method requires an authenticated user");
+			if (attribute.AdminRole && !session.User.IsAdmin)
+				throw GracefulException.Forbidden("This action is outside the authorized scopes");
+			if (attribute.ModeratorRole && session.User is { IsAdmin: false, IsModerator: false })
+				throw GracefulException.Forbidden("This action is outside the authorized scopes");
 		}
 
 		await next(ctx);

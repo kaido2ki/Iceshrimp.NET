@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Threading.RateLimiting;
 using System.Xml.Linq;
+using Iceshrimp.AssemblyUtils;
 using Iceshrimp.Backend.Components.PublicPreview.Attributes;
 using Iceshrimp.Backend.Components.PublicPreview.Renderers;
 using Iceshrimp.Backend.Controllers.Federation;
@@ -9,6 +11,7 @@ using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
@@ -30,8 +33,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using AuthenticationMiddleware = Iceshrimp.Backend.Core.Middleware.AuthenticationMiddleware;
-using AuthorizationMiddleware = Iceshrimp.Backend.Core.Middleware.AuthorizationMiddleware;
 using NoteRenderer = Iceshrimp.Backend.Controllers.Web.Renderers.NoteRenderer;
 using NotificationRenderer = Iceshrimp.Backend.Controllers.Web.Renderers.NotificationRenderer;
 using UserRenderer = Iceshrimp.Backend.Controllers.Web.Renderers.UserRenderer;
@@ -68,10 +69,6 @@ public static class ServiceExtensions
 			.AddScoped<BiteService>()
 			.AddScoped<ImportExportService>()
 			.AddScoped<UserProfileMentionsResolver>()
-			.AddScoped<AuthorizedFetchMiddleware>()
-			.AddScoped<InboxValidationMiddleware>()
-			.AddScoped<AuthenticationMiddleware>()
-			.AddScoped<ErrorHandlerMiddleware>()
 			.AddScoped<Controllers.Mastodon.Renderers.UserRenderer>()
 			.AddScoped<Controllers.Mastodon.Renderers.NoteRenderer>()
 			.AddScoped<Controllers.Mastodon.Renderers.NotificationRenderer>()
@@ -100,16 +97,10 @@ public static class ServiceExtensions
 			.AddSingleton<QueueService>()
 			.AddSingleton<ObjectStorageService>()
 			.AddSingleton<EventService>()
-			.AddSingleton<RequestBufferingMiddleware>()
-			.AddSingleton<AuthorizationMiddleware>()
-			.AddSingleton<RequestVerificationMiddleware>()
-			.AddSingleton<RequestDurationMiddleware>()
-			.AddSingleton<FederationSemaphoreMiddleware>()
 			.AddSingleton<PushService>()
 			.AddSingleton<StreamingService>()
 			.AddSingleton<ImageProcessor>()
 			.AddSingleton<RazorViewRenderService>()
-			.AddSingleton<BlazorSsrHandoffMiddleware>()
 			.AddSingleton<MfmRenderer>()
 			.AddSingleton<MatcherPolicy, PublicPreviewRouteMatcher>()
 			.AddSingleton<PolicyService>();
@@ -137,6 +128,21 @@ public static class ServiceExtensions
 		services.AddHostedService<CronService>(provider => provider.GetRequiredService<CronService>());
 		services.AddHostedService<QueueService>(provider => provider.GetRequiredService<QueueService>());
 		services.AddHostedService<PushService>(provider => provider.GetRequiredService<PushService>());
+	}
+
+	public static void AddMiddleware(this IServiceCollection services)
+	{
+		var types = PluginLoader
+		            .Assemblies.Prepend(Assembly.GetExecutingAssembly())
+		            .SelectMany(p => AssemblyLoader.GetImplementationsOfInterface(p, typeof(IMiddlewareService)));
+
+		foreach (var type in types)
+		{
+			if (type.GetProperty(nameof(IMiddlewareService.Lifetime))?.GetValue(null) is not ServiceLifetime lifetime)
+				continue;
+
+			services.Add(new ServiceDescriptor(type, type, lifetime));
+		}
 	}
 
 	public static void ConfigureServices(this IServiceCollection services, IConfiguration configuration)

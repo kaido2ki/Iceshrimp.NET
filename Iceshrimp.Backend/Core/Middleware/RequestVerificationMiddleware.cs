@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Middleware;
@@ -7,8 +8,10 @@ public class RequestVerificationMiddleware(
 	IOptions<Config.InstanceSection> config,
 	IHostEnvironment environment,
 	ILogger<RequestVerificationMiddleware> logger
-) : IMiddleware
+) : IMiddlewareService
 {
+	public static ServiceLifetime Lifetime => ServiceLifetime.Singleton;
+
 	private readonly bool _isDevelopment = environment.IsDevelopment();
 
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)

@@ -15,11 +15,13 @@ namespace Iceshrimp.Backend.Core.Middleware;
 
 public class ErrorHandlerMiddleware(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
-	IOptionsSnapshot<Config.SecuritySection> options,
+	IOptionsMonitor<Config.SecuritySection> options,
 	ILoggerFactory loggerFactory,
 	RazorViewRenderService razor
-) : IMiddleware
+) : IMiddlewareService
 {
+	public static ServiceLifetime Lifetime => ServiceLifetime.Singleton;
+	
 	private static readonly XmlSerializer XmlSerializer = new(typeof(ErrorResponse));
 
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
@@ -37,7 +39,7 @@ public class ErrorHandlerMiddleware(
 				type = type[..(type.IndexOf('>') + 1)];
 
 			var logger    = loggerFactory.CreateLogger(type);
-			var verbosity = options.Value.ExceptionVerbosity;
+			var verbosity = options.CurrentValue.ExceptionVerbosity;
 
 			if (ctx.Response.HasStarted)
 			{
