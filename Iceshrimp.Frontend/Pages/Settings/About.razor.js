@@ -1,5 +1,5 @@
 export function DownloadFile(filename, contentType, content) {
-    const file = new File([content], filename, { type: contentType});
+    const file = new File([content], filename, {type: contentType});
     const exportUrl = URL.createObjectURL(file);
 
     const a = document.createElement("a");

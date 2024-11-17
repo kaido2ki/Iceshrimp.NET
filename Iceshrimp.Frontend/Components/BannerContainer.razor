@@ -1,0 +1,24 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<BannerContainer> Loc;
+@if (CurrentBanners.Count > 0)
+{
+    <div class="banner-container">
+        @foreach (var banner in CurrentBanners)
+        {
+            <div class="banner">
+                <div class="banner-body" @onclick="() => { banner.OnTap?.Invoke();}">
+                    @banner.Text
+                </div>
+                <button class="button" @onclick="() => { Close(banner); }">
+                    <Icon Name="Icons.X"/>
+                </button>
+            </div>
+        }
+        @if (Banners.Count > 0 && CurrentBanners.Count >= 5)
+        {
+            <div class="more">@Loc["and {0} more", Banners.Count]</div>
+        }
+    </div>
+}
+

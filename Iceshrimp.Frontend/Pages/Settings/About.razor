@@ -1,9 +1,11 @@
 @page "/settings/about"
 @using System.Text
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Core.InMemoryLogger
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Extensions.Localization
 @attribute [Authorize]
@@ -11,7 +13,10 @@
 @inject VersionService                 Version;
 @inject IStringLocalizer<Localization> Loc;
 @inject IJSRuntime                     Js;
-@inject InMemoryLogService             LogService;
+@inject InMemoryLogService             LogSvc;
+@inject UpdateService                  UpdateSvc;
+@inject NavigationManager              Nav;
+@inject GlobalComponentSvc GlobalComponentSvc;
 
 <div class="body">
     <div class="version">
@@ -36,23 +41,90 @@
             <code>@Environment.Version</code>
         </span>
     </div>
+    <div class="update">
+        <button class="button" @onclick="@CheckUpdate">@Loc["Check for updates"]</button>
+        @if (_updateAvailable == CheckState.True)
+        {
+            <div>New version!</div>
+            <div class="version">
+                <span class="name">Iceshrimp.NET</span>
+                <span class="value">
+                    <code>@_newVersion?.Version</code>
+                </span>
+                <span class="name">Codename</span>
+                <span class="value">
+                    <code>@_newVersion?.Codename</code>
+                </span>
+                @if (_newVersion?.CommitHash != null)
+                {
+                    <span class="name">Commit</span>
+                    <span class="value">
+                        <code>@_newVersion?.CommitHash</code>
+                    </span>
+                }
+            </div>
+            <button class="button" @onclick="@SkipWaiting">@Loc["Load new version"]</button>
+            @if (_skipWaitingRes == CheckState.False)
+            {
+                <div>@Loc["Something went wrong, please check the logs."]</div>
+            }
+        }
+        @if (_updateAvailable == CheckState.False)
+        {
+            <div>@Loc["Already on the newest version!"]</div>
+        }
+
+    </div>
     <div class="logs">
         <h1>@Loc["Logs"]</h1>
         @Loc["These logs may contain sensitive information, please do not post them publicly.\n" + "Providing them to developers upon request may help with debugging."]
-        <button class="button" @onclick="DownloadLogs"><Icon Name="Icons.DownloadSimple"/><span>@Loc["Download Logs"]</span></button>
+        <button class="button" @onclick="DownloadLogs">
+            <Icon Name="Icons.DownloadSimple"/>
+            <span>@Loc["Download Logs"]</span></button>
     </div>
+
 </div>
+
 @code {
-    private IJSInProcessObjectReference _module = null!;
+    private IJSInProcessObjectReference _module          = null!;
+    private CheckState                  _updateAvailable = CheckState.Unknown;
+    private CheckState                  _skipWaitingRes  = CheckState.Unknown;
+    private VersionResponse?            _newVersion;
 
     protected override async Task OnInitializedAsync()
     {
         _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
     }
 
+    private enum CheckState
+    {
+        Unknown,
+        True,
+        False
+    }
+
+    private async void CheckUpdate()
+    {
+        await UpdateSvc.ServiceWorkerUpdate();
+        var res = await UpdateSvc.ServiceWorkerCheckWaiting();
+        _updateAvailable = res ? CheckState.True : CheckState.False;
+        _newVersion      = UpdateSvc.BackendVersion;
+        StateHasChanged();
+    }
+
+    private async void SkipWaiting()
+    {
+        var res = await UpdateSvc.ServiceWorkerSkipWaiting();
+        _skipWaitingRes = res ? CheckState.True : CheckState.False;
+        if (res)
+        {
+            Nav.NavigateTo("/", true);
+        }
+    }
+
     private void DownloadLogs()
     {
-        var logBytes = LogService.GetLogs().SelectMany(p => Encoding.UTF8.GetBytes(p)).ToArray();
+        var logBytes = LogSvc.GetLogs().SelectMany(p => Encoding.UTF8.GetBytes(p)).ToArray();
         _module.InvokeVoid("DownloadFile", "log.txt", "text/plain", logBytes);
     }
 }
