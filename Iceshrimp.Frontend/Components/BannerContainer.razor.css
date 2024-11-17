@@ -1,7 +1,7 @@
 .banner-container {
     position: fixed;
-    bottom: 5rem;
-    right: 5rem;
+    top: 4rem;
+    right: 1rem;
     background-color: var(--background-color);
     border: solid var(--highlight-color) 0.1rem;
     border-radius: 1rem;
