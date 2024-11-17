@@ -6,7 +6,7 @@ jobs:
   build-artifacts:
     runs-on: docker
     container:
-      image: iceshrimp.dev/iceshrimp/ci-env:dotnet-wasm
+      image: iceshrimp.dev/iceshrimp/ci-env:dotnet8-wasm
       options: |
         --volume /opt/iceshrimp-cache/nuget:/root/.nuget
         --volume /root/.docker:/root/.docker
