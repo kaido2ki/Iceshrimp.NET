@@ -4,6 +4,7 @@ using System.Text.Json;
 using Iceshrimp.AssemblyUtils;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Shared.Configuration;
@@ -11,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class PolicyService(IServiceScopeFactory scopeFactory)
+public class PolicyService(IServiceScopeFactory scopeFactory) : ISingletonService
 {
 	private bool             _initialized;
 	private IRejectPolicy[]  _rejectPolicies  = [];

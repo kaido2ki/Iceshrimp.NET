@@ -16,7 +16,7 @@ public class StorageMaintenanceService(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	IOptionsSnapshot<Config.StorageSection> options,
 	ILogger<StorageMaintenanceService> logger
-)
+) : IScopedService
 {
 	public async Task MigrateLocalFiles(bool purge)
 	{

@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using Carbon.Storage;
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.ObjectStorage.Core.Models;
 using Iceshrimp.ObjectStorage.Core.Security;
@@ -11,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpClient httpClient)
+public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpClient httpClient) : ISingletonService
 {
 	private readonly string? _accessUrl = config.Value.ObjectStorage?.AccessUrl;
 

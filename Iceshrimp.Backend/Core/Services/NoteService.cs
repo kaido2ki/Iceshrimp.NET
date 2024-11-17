@@ -19,8 +19,6 @@ using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor",
-                 Justification = "We need IOptionsSnapshot for config hot reload")]
 public class NoteService(
 	ILogger<NoteService> logger,
 	DatabaseContext db,
@@ -43,7 +41,7 @@ public class NoteService(
 	PollService pollSvc,
 	ActivityPub.FederationControlService fedCtrlSvc,
 	PolicyService policySvc
-)
+) : IScopedService
 {
 	private const int DefaultRecursionLimit = 100;
 

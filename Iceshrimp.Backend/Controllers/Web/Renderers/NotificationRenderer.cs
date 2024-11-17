@@ -5,7 +5,7 @@ using static Iceshrimp.Shared.Schemas.Web.NotificationResponse;
 
 namespace Iceshrimp.Backend.Controllers.Web.Renderers;
 
-public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRenderer)
+public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRenderer) : IScopedService
 {
 	private static NotificationResponse Render(Notification notification, NotificationRendererDto data)
 	{

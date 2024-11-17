@@ -8,7 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class InstanceService(DatabaseContext db, HttpClient httpClient, ILogger<InstanceService> logger)
+public class InstanceService(
+	DatabaseContext db,
+	HttpClient httpClient,
+	ILogger<InstanceService> logger
+) : IScopedService
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{

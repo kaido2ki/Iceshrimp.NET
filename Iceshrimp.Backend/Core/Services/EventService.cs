@@ -1,9 +1,10 @@
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Events;
+using Iceshrimp.Backend.Core.Extensions;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class EventService
+public class EventService : ISingletonService
 {
 	public event EventHandler<Note>?            NotePublished;
 	public event EventHandler<Note>?            NoteUpdated;

@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Net;
 using System.Text.Json;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.StaticFiles;
 
@@ -30,7 +31,7 @@ public record EmojiZip(EmojiZipMeta Metadata, ZipArchive Archive);
 public class EmojiImportService(
 	EmojiService emojiSvc,
 	ILogger<EmojiImportService> logger
-)
+) : IScopedService
 {
 	public static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 

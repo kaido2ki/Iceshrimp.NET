@@ -15,7 +15,7 @@ public class ImportExportService(
     CacheService cacheSvc,
     UserService userSvc,
     ActivityPub.UserResolver userResolver
-)
+) : IScopedService
 {
     public async Task<string> ExportFollowingAsync(User user)
     {

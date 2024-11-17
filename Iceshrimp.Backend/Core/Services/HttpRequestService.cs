@@ -3,12 +3,13 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class HttpRequestService(IOptions<Config.InstanceSection> options)
+public class HttpRequestService(IOptions<Config.InstanceSection> options) : ISingletonService
 {
 	private static HttpRequestMessage GenerateRequest(
 		string url, HttpMethod method,

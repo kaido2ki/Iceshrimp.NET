@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.SignalR;
 using Iceshrimp.Backend.SignalR.Helpers;
 using Iceshrimp.Shared.Schemas.SignalR;
@@ -9,7 +10,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public sealed class StreamingService
+public sealed class StreamingService : ISingletonService
 {
 	private readonly ConcurrentDictionary<string, StreamingConnectionAggregate> _connections = [];
 	private readonly EventService                                               _eventSvc;

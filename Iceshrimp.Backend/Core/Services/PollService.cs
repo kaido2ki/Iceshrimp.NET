@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -9,7 +10,7 @@ public class PollService(
 	ActivityPub.ActivityRenderer activityRenderer,
 	ActivityPub.UserRenderer userRenderer,
 	ActivityPub.ActivityDeliverService deliverSvc
-)
+) : IScopedService
 {
 	public async Task RegisterPollVote(PollVote pollVote, Poll poll, Note note, bool updateVotersCount = true)
 	{

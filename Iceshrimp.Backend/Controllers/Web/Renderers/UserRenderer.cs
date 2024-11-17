@@ -1,13 +1,14 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web.Renderers;
 
-public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db)
+public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db) : IScopedService
 {
 	private UserResponse Render(User user, UserRendererDto data)
 	{

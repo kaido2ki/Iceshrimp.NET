@@ -3,19 +3,10 @@ using System.Reflection;
 using System.Threading.RateLimiting;
 using System.Xml.Linq;
 using Iceshrimp.AssemblyUtils;
-using Iceshrimp.Backend.Components.PublicPreview.Attributes;
-using Iceshrimp.Backend.Components.PublicPreview.Renderers;
-using Iceshrimp.Backend.Controllers.Federation;
-using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
-using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
-using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Helpers;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
-using Iceshrimp.Backend.Core.Services;
-using Iceshrimp.Backend.Core.Services.ImageProcessing;
 using Iceshrimp.Backend.SignalR.Authentication;
 using Iceshrimp.Shared.Configuration;
 using Iceshrimp.Shared.Schemas.Web;
@@ -33,9 +24,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using NoteRenderer = Iceshrimp.Backend.Controllers.Web.Renderers.NoteRenderer;
-using NotificationRenderer = Iceshrimp.Backend.Controllers.Web.Renderers.NotificationRenderer;
-using UserRenderer = Iceshrimp.Backend.Controllers.Web.Renderers.UserRenderer;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -43,91 +31,40 @@ public static class ServiceExtensions
 {
 	public static void AddServices(this IServiceCollection services, IConfiguration configuration)
 	{
-		// Transient = instantiated per request and class
+		var config = configuration.Get<Config>() ?? throw new Exception("Failed to read storage config section");
 
-		// Scoped = instantiated per request
-		services
-			.AddScoped<ActivityPub.ActivityRenderer>()
-			.AddScoped<ActivityPub.UserRenderer>()
-			.AddScoped<ActivityPub.NoteRenderer>()
-			.AddScoped<ActivityPub.UserResolver>()
-			.AddScoped<ActivityPub.ObjectResolver>()
-			.AddScoped<ActivityPub.MentionsResolver>()
-			.AddScoped<ActivityPub.ActivityDeliverService>()
-			.AddScoped<ActivityPub.FederationControlService>()
-			.AddScoped<ActivityPub.ActivityHandlerService>()
-			.AddScoped<ActivityPub.ActivityFetcherService>()
-			.AddScoped<UserService>()
-			.AddScoped<NoteService>()
-			.AddScoped<EmojiService>()
-			.AddScoped<EmojiImportService>()
-			.AddScoped<WebFingerService>()
-			.AddScoped<SystemUserService>()
-			.AddScoped<DriveService>()
-			.AddScoped<NotificationService>()
-			.AddScoped<DatabaseMaintenanceService>()
-			.AddScoped<BiteService>()
-			.AddScoped<ImportExportService>()
-			.AddScoped<UserProfileMentionsResolver>()
-			.AddScoped<Controllers.Mastodon.Renderers.UserRenderer>()
-			.AddScoped<Controllers.Mastodon.Renderers.NoteRenderer>()
-			.AddScoped<Controllers.Mastodon.Renderers.NotificationRenderer>()
-			.AddScoped<PollRenderer>()
-			.AddScoped<PollService>()
-			.AddScoped<NoteRenderer>()
-			.AddScoped<UserRenderer>()
-			.AddScoped<NotificationRenderer>()
-			.AddScoped<ActivityPubController>()
-			.AddScoped<FollowupTaskService>()
-			.AddScoped<InstanceService>()
-			.AddScoped<MfmConverter>()
-			.AddScoped<UserProfileRenderer>()
-			.AddScoped<CacheService>()
-			.AddScoped<MetaService>()
-			.AddScoped<StorageMaintenanceService>()
-			.AddScoped<RelayService>()
-			.AddScoped<Components.PublicPreview.Renderers.UserRenderer>()
-			.AddScoped<Components.PublicPreview.Renderers.NoteRenderer>();
+		var serviceTypes = PluginLoader
+		                   .Assemblies.Prepend(Assembly.GetExecutingAssembly())
+		                   .SelectMany(AssemblyLoader.GetImplementationsOfInterface<IService>)
+		                   .OrderBy(type => type.GetInterfaceProperty<IService, int?>(nameof(IService.Priority)) ?? 0)
+		                   .ToArray();
 
-		// Singleton = instantiated once across application lifetime
-		services
-			.AddSingleton<HttpClient, CustomHttpClient>()
-			.AddSingleton<HttpRequestService>()
-			.AddSingleton<CronService>()
-			.AddSingleton<QueueService>()
-			.AddSingleton<ObjectStorageService>()
-			.AddSingleton<EventService>()
-			.AddSingleton<PushService>()
-			.AddSingleton<StreamingService>()
-			.AddSingleton<ImageProcessor>()
-			.AddSingleton<RazorViewRenderService>()
-			.AddSingleton<MfmRenderer>()
-			.AddSingleton<MatcherPolicy, PublicPreviewRouteMatcher>()
-			.AddSingleton<PolicyService>();
-
-		var config = configuration.GetSection("Storage").Get<Config.StorageSection>() ??
-		             throw new Exception("Failed to read storage config section");
-
-		switch (config.MediaProcessing.ImageProcessor)
+		foreach (var type in serviceTypes)
 		{
-			case Enums.ImageProcessor.LibVips:
-				services.AddSingleton<IImageProcessor, VipsProcessor>();
-				services.AddSingleton<IImageProcessor, ImageSharpProcessor>();
-				break;
-			case Enums.ImageProcessor.ImageSharp:
-				services.AddSingleton<IImageProcessor, ImageSharpProcessor>();
-				break;
-			case Enums.ImageProcessor.None:
-				break;
-			default:
-				throw new ArgumentOutOfRangeException();
+			if (type.GetInterfaceProperty<IService, ServiceLifetime?>(nameof(IService.Lifetime)) is not { } lifetime)
+				continue;
+
+			if (type.GetInterface(nameof(IConditionalService)) != null)
+				if (type.CallInterfaceMethod(nameof(IConditionalService.Predicate), config) is not true)
+					continue;
+
+			var serviceType = type.GetInterfaceProperty<IService, Type>(nameof(IService.ServiceType)) ?? type;
+			services.Add(new ServiceDescriptor(serviceType, type, lifetime));
 		}
 
-		// Hosted services = long running background tasks
-		// Note: These need to be added as a singleton as well to ensure data consistency
-		services.AddHostedService<CronService>(provider => provider.GetRequiredService<CronService>());
-		services.AddHostedService<QueueService>(provider => provider.GetRequiredService<QueueService>());
-		services.AddHostedService<PushService>(provider => provider.GetRequiredService<PushService>());
+		var hostedServiceTypes = PluginLoader
+		                         .Assemblies.Prepend(Assembly.GetExecutingAssembly())
+		                         .SelectMany(AssemblyLoader.GetImplementationsOfInterface<IHostedService>)
+		                         .ToArray();
+
+		foreach (var type in hostedServiceTypes)
+		{
+			if (type.GetInterface(nameof(IService)) == null)
+				services.Add(new ServiceDescriptor(type, type, ServiceLifetime.Singleton));
+
+			services.Add(new ServiceDescriptor(typeof(IHostedService), provider => provider.GetRequiredService(type),
+			                                   ServiceLifetime.Singleton));
+		}
 	}
 
 	public static void AddMiddleware(this IServiceCollection services)
@@ -411,6 +348,51 @@ public static partial class HttpContextExtensions
 
 	public static bool ShouldCacheOutput(this HttpContext ctx) =>
 		ctx.Items.TryGetValue(CacheKey, out var s) && s is true;
+}
+
+public interface IService
+{
+	// This should be abstract instead of virtual but the runtime team said https://github.com/dotnet/runtime/issues/79331
+	public static virtual ServiceLifetime Lifetime => throw new Exception("Missing IService.Lifetime override");
+
+	public static virtual Type? ServiceType => null;
+	public static virtual int   Priority    => 0;
+}
+
+/// <summary>
+/// Instantiated per request and class
+/// </summary>
+public interface ITransientService : IService
+{
+	static ServiceLifetime IService.Lifetime => ServiceLifetime.Transient;
+}
+
+/// <summary>
+/// Instantiated per request
+/// </summary>
+public interface IScopedService : IService
+{
+	static ServiceLifetime IService.Lifetime => ServiceLifetime.Scoped;
+}
+
+/// <summary>
+/// Instantiated once across application lifetime
+/// </summary>
+public interface ISingletonService : IService
+{
+	static ServiceLifetime IService.Lifetime => ServiceLifetime.Singleton;
+}
+
+public interface IService<TService> : IService
+{
+	static Type IService.ServiceType => typeof(TService);
+}
+
+public interface IConditionalService : IService
+{
+	// This should be abstract instead of virtual but the runtime team said https://github.com/dotnet/runtime/issues/79331
+	public static virtual bool Predicate(Config ctx) =>
+		throw new Exception("Missing IConditionalService.Predicate override");
 }
 
 #region AsyncDataProtection handlers

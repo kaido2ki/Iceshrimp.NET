@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Web.Renderers;
 
-public class UserProfileRenderer(DatabaseContext db)
+public class UserProfileRenderer(DatabaseContext db) : IScopedService
 {
 	public async Task<UserProfileResponse> RenderOne(User user, User? localUser, UserRendererDto? data = null)
 	{

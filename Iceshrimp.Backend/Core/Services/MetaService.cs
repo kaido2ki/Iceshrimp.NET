@@ -1,10 +1,11 @@
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class MetaService([FromKeyedServices("cache")] DatabaseContext db)
+public class MetaService([FromKeyedServices("cache")] DatabaseContext db) : IScopedService
 {
 	public async Task<T> Get<T>(Meta<T> meta) => meta.ConvertGet(await Fetch(meta.Key));
 

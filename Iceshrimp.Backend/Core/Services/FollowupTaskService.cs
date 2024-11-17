@@ -1,6 +1,11 @@
+using Iceshrimp.Backend.Core.Extensions;
+
 namespace Iceshrimp.Backend.Core.Services;
 
-public class FollowupTaskService(IServiceScopeFactory serviceScopeFactory, ILogger<FollowupTaskService> logger)
+public class FollowupTaskService(
+	IServiceScopeFactory serviceScopeFactory,
+	ILogger<FollowupTaskService> logger
+) : IScopedService
 {
 	public bool IsBackgroundWorker { get; private set; }
 

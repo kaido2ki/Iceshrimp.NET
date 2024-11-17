@@ -23,7 +23,7 @@ public class ActivityFetcherService(
 	DatabaseContext db,
 	ILogger<ActivityFetcherService> logger,
 	FederationControlService fedCtrlSvc
-)
+) : IScopedService
 {
 	private static readonly IReadOnlyCollection<string> AcceptableActivityTypes =
 	[

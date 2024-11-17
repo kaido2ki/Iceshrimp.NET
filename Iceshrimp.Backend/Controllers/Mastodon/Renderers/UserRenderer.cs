@@ -14,7 +14,7 @@ public class UserRenderer(
 	IOptionsSnapshot<Config.SecuritySection> security,
 	MfmConverter mfmConverter,
 	DatabaseContext db
-)
+) : IScopedService
 {
 	private readonly string _transparent = $"https://{config.Value.WebDomain}/assets/transparent.png";
 

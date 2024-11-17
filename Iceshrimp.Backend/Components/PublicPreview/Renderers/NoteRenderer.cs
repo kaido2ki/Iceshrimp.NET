@@ -14,7 +14,7 @@ public class NoteRenderer(
 	MfmRenderer mfm,
 	IOptions<Config.InstanceSection> instance,
 	IOptionsSnapshot<Config.SecuritySection> security
-)
+) : IScopedService
 {
 	public async Task<PreviewNote?> RenderOne(Note? note)
 	{

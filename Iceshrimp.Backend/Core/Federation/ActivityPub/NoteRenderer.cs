@@ -10,7 +10,11 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class NoteRenderer(IOptions<Config.InstanceSection> config, MfmConverter mfmConverter, DatabaseContext db)
+public class NoteRenderer(
+	IOptions<Config.InstanceSection> config,
+	MfmConverter mfmConverter,
+	DatabaseContext db
+) : IScopedService
 {
 	/// <summary>
 	///     This function is meant for compacting a note into the @id form as specified in ActivityStreams

@@ -1,9 +1,10 @@
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class DatabaseMaintenanceService(DatabaseContext db)
+public class DatabaseMaintenanceService(DatabaseContext db) : IScopedService
 {
 	public async Task RecomputeNoteCountersAsync()
 	{

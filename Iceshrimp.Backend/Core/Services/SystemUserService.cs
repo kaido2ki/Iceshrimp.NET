@@ -2,12 +2,13 @@ using System.Security.Cryptography;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContext db)
+public class SystemUserService(ILogger<SystemUserService> logger, DatabaseContext db) : IScopedService
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{

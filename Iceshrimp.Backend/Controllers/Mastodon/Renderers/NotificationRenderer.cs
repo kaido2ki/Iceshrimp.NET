@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
-public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer, UserRenderer userRenderer)
+public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer, UserRenderer userRenderer) : IScopedService
 {
 	public async Task<NotificationEntity> RenderAsync(
 		Notification notification, User user, bool isPleroma, List<AccountEntity>? accounts = null,

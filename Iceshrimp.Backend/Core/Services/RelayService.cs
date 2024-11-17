@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +13,7 @@ public class RelayService(
 	ActivityPub.ActivityRenderer activityRenderer,
 	ActivityPub.ActivityDeliverService deliverSvc,
 	ActivityPub.UserRenderer userRenderer
-)
+) : IScopedService
 {
 	public async Task SubscribeToRelay(string uri)
 	{

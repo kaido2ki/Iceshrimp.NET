@@ -3,12 +3,12 @@ using System.Text.Json.Serialization;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-//TODO: named caches (with prefix)
-public class CacheService([FromKeyedServices("cache")] DatabaseContext db)
+public class CacheService([FromKeyedServices("cache")] DatabaseContext db) : IScopedService
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{

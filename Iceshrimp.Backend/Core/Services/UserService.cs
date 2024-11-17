@@ -22,7 +22,6 @@ using static Iceshrimp.Parsing.MfmNodeTypes;
 namespace Iceshrimp.Backend.Core.Services;
 
 public class UserService(
-	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	IOptionsSnapshot<Config.SecuritySection> security,
 	IOptions<Config.InstanceSection> instance,
 	ILogger<UserService> logger,
@@ -40,7 +39,7 @@ public class UserService(
 	EventService eventSvc,
 	WebFingerService webFingerSvc,
 	ActivityPub.FederationControlService fedCtrlSvc
-)
+) : IScopedService
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{

@@ -1,9 +1,11 @@
 using AngleSharp.Io;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Iceshrimp.Backend.Components.PublicPreview.Attributes;
 
-public class PublicPreviewRouteMatcher : MatcherPolicy, IEndpointSelectorPolicy
+public class PublicPreviewRouteMatcher : MatcherPolicy, IEndpointSelectorPolicy, ISingletonService,
+                                         IService<MatcherPolicy>
 {
 	public override int Order => 99999; // That's ActionConstraintMatcherPolicy - 1
 

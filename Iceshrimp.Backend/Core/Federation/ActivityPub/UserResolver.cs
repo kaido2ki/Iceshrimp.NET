@@ -3,6 +3,7 @@ using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
@@ -20,7 +21,7 @@ public class UserResolver(
 	ActivityFetcherService fetchSvc,
 	IOptions<Config.InstanceSection> config,
 	DatabaseContext db
-)
+) : IScopedService
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{

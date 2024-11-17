@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class CustomHttpClient : HttpClient
+public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonService
 {
 	private static readonly FastFallback FastFallbackHandler = new();
 

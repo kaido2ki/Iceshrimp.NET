@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
-public class PollRenderer(DatabaseContext db)
+public class PollRenderer(DatabaseContext db) : IScopedService
 {
 	public async Task<PollEntity> RenderAsync(Poll poll, User? user, PollRendererDto? data = null)
 	{

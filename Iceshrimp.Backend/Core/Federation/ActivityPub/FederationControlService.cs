@@ -13,7 +13,7 @@ public class FederationControlService(
 	IOptionsSnapshot<Config.SecuritySection> options,
 	IOptions<Config.InstanceSection> instance,
 	DatabaseContext db
-)
+) : IScopedService
 {
 	//TODO: we need some level of caching here
 	public async Task<bool> ShouldBlockAsync(params string?[] hosts)

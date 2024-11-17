@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Parsing;
 using Microsoft.AspNetCore.Components;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Components.PublicPreview.Renderers;
 
-public class MfmRenderer(IOptions<Config.InstanceSection> config)
+public class MfmRenderer(IOptions<Config.InstanceSection> config) : ISingletonService
 {
 	private readonly MfmConverter _converter = new(config);
 

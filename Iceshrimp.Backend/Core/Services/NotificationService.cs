@@ -8,10 +8,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Core.Services;
 
 public class NotificationService(
-	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	DatabaseContext db,
 	EventService eventSvc
-)
+) : IScopedService
 {
 	public async Task GenerateMentionNotifications(Note note, IReadOnlyCollection<string> mentionedLocalUserIds)
 	{

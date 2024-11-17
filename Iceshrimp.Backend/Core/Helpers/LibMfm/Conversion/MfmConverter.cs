@@ -16,7 +16,9 @@ using HtmlParser = AngleSharp.Html.Parser.HtmlParser;
 
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 
-public class MfmConverter(IOptions<Config.InstanceSection> config)
+public class MfmConverter(
+	IOptions<Config.InstanceSection> config
+) : IScopedService // <- this is intentional, see property below
 {
 	public bool SupportsHtmlFormatting { private get; set; } = true;
 

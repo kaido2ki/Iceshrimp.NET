@@ -2,6 +2,7 @@ using AngleSharp.Text;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,11 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
-public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseContext db, MfmConverter mfmConverter)
+public class UserRenderer(
+	IOptions<Config.InstanceSection> config,
+	DatabaseContext db,
+	MfmConverter mfmConverter
+) : IScopedService
 {
 	/// <summary>
 	///     This function is meant for compacting an actor into the @id form as specified in ActivityStreams

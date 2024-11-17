@@ -20,7 +20,7 @@ public class NoteRenderer(
 	MfmConverter mfmConverter,
 	DatabaseContext db,
 	EmojiService emojiSvc
-)
+) : IScopedService
 {
 	private static readonly FilterResultEntity InaccessibleFilter = new()
 	{

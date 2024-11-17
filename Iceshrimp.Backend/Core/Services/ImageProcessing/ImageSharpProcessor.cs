@@ -1,5 +1,6 @@
 using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp;
@@ -13,7 +14,8 @@ using ImageSharpConfig = SixLabors.ImageSharp.Configuration;
 
 namespace Iceshrimp.Backend.Core.Services.ImageProcessing;
 
-public class ImageSharpProcessor : ImageProcessorBase, IImageProcessor
+public class ImageSharpProcessor : ImageProcessorBase, IImageProcessor,
+                                   ISingletonService, IConditionalService, IService<IImageProcessor>
 {
 	private readonly ILogger<ImageSharpProcessor> _logger;
 	private readonly ImageSharpConfig             _sharpConfig;
@@ -21,6 +23,9 @@ public class ImageSharpProcessor : ImageProcessorBase, IImageProcessor
 
 	public bool CanIdentify         => true;
 	public bool CanGenerateBlurhash => true;
+
+	public static bool Predicate(Config ctx) =>
+		ctx.Storage.MediaProcessing.ImageProcessor is Enums.ImageProcessor.ImageSharp or Enums.ImageProcessor.LibVips;
 
 	public ImageSharpProcessor(
 		ILogger<ImageSharpProcessor> logger, IOptions<Config.StorageSection> config

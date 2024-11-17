@@ -12,7 +12,7 @@ public class ActivityRenderer(
 	IOptions<Config.InstanceSection> config,
 	UserRenderer userRenderer,
 	NoteRenderer noteRenderer
-)
+) : IScopedService
 {
 	private string GenerateActivityId() =>
 		$"https://{config.Value.WebDomain}/activities/ephemeral/{Guid.NewGuid().ToStringLower()}";

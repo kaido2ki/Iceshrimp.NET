@@ -1,79 +1,88 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
-public class BiteService(DatabaseContext db, ActivityPub.ActivityRenderer activityRenderer, ActivityPub.ActivityDeliverService deliverSvc, NotificationService notificationSvc, IOptions<Config.InstanceSection> config)
+public class BiteService(
+	DatabaseContext db,
+	ActivityPub.ActivityRenderer activityRenderer,
+	ActivityPub.ActivityDeliverService deliverSvc,
+	NotificationService notificationSvc,
+	IOptions<Config.InstanceSection> config
+) : IScopedService
 {
-    public async Task BiteAsync(User user, Bite target)
-    {
-        var bite = new Bite
-        {
-            Id         = IdHelpers.GenerateSnowflakeId(),
-            CreatedAt  = DateTime.UtcNow,
-            User       = user,
-            TargetBite = target
-        };
-        bite.Uri = bite.GetPublicUri(config.Value);
+	public async Task BiteAsync(User user, Bite target)
+	{
+		var bite = new Bite
+		{
+			Id         = IdHelpers.GenerateSnowflakeId(),
+			CreatedAt  = DateTime.UtcNow,
+			User       = user,
+			TargetBite = target
+		};
+		bite.Uri = bite.GetPublicUri(config.Value);
 
-        await db.Bites.AddAsync(bite);
-        await db.SaveChangesAsync();
+		await db.Bites.AddAsync(bite);
+		await db.SaveChangesAsync();
 
-        if (target.UserHost != null)
-        {
-            var activity = activityRenderer.RenderBite(bite, target.Uri ?? target.GetPublicUri(config.Value), target.User);
-            await deliverSvc.DeliverToAsync(activity, user, target.User);
-        }
+		if (target.UserHost != null)
+		{
+			var activity =
+				activityRenderer.RenderBite(bite, target.Uri ?? target.GetPublicUri(config.Value), target.User);
+			await deliverSvc.DeliverToAsync(activity, user, target.User);
+		}
 
-        await notificationSvc.GenerateBiteNotification(bite);
-    }
-    
-    public async Task BiteAsync(User user, Note target)
-    {
-        var bite = new Bite
-        {
-            Id         = IdHelpers.GenerateSnowflakeId(),
-            CreatedAt  = DateTime.UtcNow,
-            User       = user,
-            TargetNote = target
-        };
-        bite.Uri = bite.GetPublicUri(config.Value);
+		await notificationSvc.GenerateBiteNotification(bite);
+	}
 
-        await db.Bites.AddAsync(bite);
-        await db.SaveChangesAsync();
+	public async Task BiteAsync(User user, Note target)
+	{
+		var bite = new Bite
+		{
+			Id         = IdHelpers.GenerateSnowflakeId(),
+			CreatedAt  = DateTime.UtcNow,
+			User       = user,
+			TargetNote = target
+		};
+		bite.Uri = bite.GetPublicUri(config.Value);
 
-        if (target.UserHost != null)
-        {
-            var activity = activityRenderer.RenderBite(bite, target.Uri ?? target.GetPublicUri(config.Value), target.User);
-            await deliverSvc.DeliverToAsync(activity, user, target.User);
-        }
+		await db.Bites.AddAsync(bite);
+		await db.SaveChangesAsync();
 
-        await notificationSvc.GenerateBiteNotification(bite);
-    }
-    
-    public async Task BiteAsync(User user, User target)
-    {
-        var bite = new Bite
-        {
-            Id         = IdHelpers.GenerateSnowflakeId(),
-            CreatedAt  = DateTime.UtcNow,
-            User       = user,
-            TargetUser = target
-        };
-        bite.Uri = bite.GetPublicUri(config.Value);
+		if (target.UserHost != null)
+		{
+			var activity =
+				activityRenderer.RenderBite(bite, target.Uri ?? target.GetPublicUri(config.Value), target.User);
+			await deliverSvc.DeliverToAsync(activity, user, target.User);
+		}
 
-        await db.Bites.AddAsync(bite);
-        await db.SaveChangesAsync();
+		await notificationSvc.GenerateBiteNotification(bite);
+	}
 
-        if (target.Host != null)
-        {
-            var activity = activityRenderer.RenderBite(bite, target.Uri ?? target.GetPublicUri(config.Value), target);
-            await deliverSvc.DeliverToAsync(activity, user, target);
-        }
+	public async Task BiteAsync(User user, User target)
+	{
+		var bite = new Bite
+		{
+			Id         = IdHelpers.GenerateSnowflakeId(),
+			CreatedAt  = DateTime.UtcNow,
+			User       = user,
+			TargetUser = target
+		};
+		bite.Uri = bite.GetPublicUri(config.Value);
 
-        await notificationSvc.GenerateBiteNotification(bite);
-    }
+		await db.Bites.AddAsync(bite);
+		await db.SaveChangesAsync();
+
+		if (target.Host != null)
+		{
+			var activity = activityRenderer.RenderBite(bite, target.Uri ?? target.GetPublicUri(config.Value), target);
+			await deliverSvc.DeliverToAsync(activity, user, target);
+		}
+
+		await notificationSvc.GenerateBiteNotification(bite);
+	}
 }

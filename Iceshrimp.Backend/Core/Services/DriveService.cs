@@ -27,7 +27,7 @@ public class DriveService(
 	QueueService queueSvc,
 	ILogger<DriveService> logger,
 	ImageProcessor imageProcessor
-)
+) : IScopedService
 {
 	public async Task<DriveFile?> StoreFile(
 		string? uri, User user, bool sensitive, string? description = null, string? mimeType = null,

@@ -29,7 +29,7 @@ public class ActivityHandlerService(
 	EmojiService emojiSvc,
 	EventService eventSvc,
 	RelayService relaySvc
-)
+) : IScopedService
 {
 	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId, string? authenticatedUserId)
 	{

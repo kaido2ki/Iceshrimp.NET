@@ -4,6 +4,7 @@ using System.Text.Encodings.Web;
 using System.Xml;
 using System.Xml.Serialization;
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.Extensions.Options;
@@ -27,7 +28,7 @@ public class WebFingerService(
 	HttpRequestService httpRqSvc,
 	IHostApplicationLifetime appLifetime,
 	IOptions<Config.InstanceSection> config
-)
+) : ISingletonService
 {
 	private static readonly ImmutableArray<string> Accept =
 	[

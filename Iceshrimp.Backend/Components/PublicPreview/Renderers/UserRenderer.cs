@@ -13,7 +13,7 @@ public class UserRenderer(
 	MfmRenderer mfm,
 	IOptions<Config.InstanceSection> instance,
 	IOptionsSnapshot<Config.SecuritySection> security
-)
+) : IScopedService
 {
 	public async Task<PreviewUser?> RenderOne(User? user)
 	{

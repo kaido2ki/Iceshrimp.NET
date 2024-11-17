@@ -29,7 +29,7 @@ public class ActivityPubController(
 	ActivityPub.NoteRenderer noteRenderer,
 	ActivityPub.UserRenderer userRenderer,
 	IOptions<Config.InstanceSection> config
-) : ControllerBase
+) : ControllerBase, IScopedService
 {
 	[HttpGet("/notes/{id}")]
 	[AuthorizedFetch]

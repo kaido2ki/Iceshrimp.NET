@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Encodings.Web;
+using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -15,7 +16,7 @@ public class RazorViewRenderService(
 	ITempDataProvider tempDataProvider,
 	IHttpContextAccessor httpContextAccessor,
 	IRazorPageActivator activator
-)
+) : ISingletonService
 {
 	private async Task RenderAsync<T>(string path, T model, TextWriter writer) where T : PageModel
 	{

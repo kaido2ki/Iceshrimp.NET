@@ -15,7 +15,7 @@ public class NoteRenderer(
 	DatabaseContext db,
 	EmojiService emojiSvc,
 	IOptions<Config.InstanceSection> config
-)
+) : IScopedService
 {
 	public async Task<NoteResponse> RenderOne(
 		Note note, User? user, Filter.FilterContext? filterContext = null, NoteRendererDto? data = null

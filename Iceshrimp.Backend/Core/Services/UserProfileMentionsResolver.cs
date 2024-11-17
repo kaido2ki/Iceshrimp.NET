@@ -14,7 +14,10 @@ namespace Iceshrimp.Backend.Core.Services;
 using MentionTuple = (List<Note.MentionedUser> mentions,
 	Dictionary<(string usernameLower, string webDomain), string> splitDomainMapping);
 
-public class UserProfileMentionsResolver(ActivityPub.UserResolver userResolver, IOptions<Config.InstanceSection> config)
+public class UserProfileMentionsResolver(
+	ActivityPub.UserResolver userResolver,
+	IOptions<Config.InstanceSection> config
+) : IScopedService
 {
 	public async Task<MentionTuple> ResolveMentions(ASActor actor, string? host)
 	{

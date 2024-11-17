@@ -18,7 +18,7 @@ public partial class EmojiService(
 	DriveService driveSvc,
 	SystemUserService sysUserSvc,
 	IOptions<Config.InstanceSection> config
-)
+) : IScopedService
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{

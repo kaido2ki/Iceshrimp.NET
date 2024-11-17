@@ -1,6 +1,7 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,7 @@ public class ObjectResolver(
 	DatabaseContext db,
 	FederationControlService federationCtrl,
 	IOptions<Config.InstanceSection> config
-)
+) : IScopedService
 {
 	public async Task<ASObject?> ResolveObject(
 		ASObjectBase baseObj, string? actorUri = null, int recurse = 5, bool force = false, User? user = null

@@ -1,18 +1,27 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
+using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using NetVips;
 using Iceshrimp.MimeTypes;
 using SixLabors.ImageSharp.PixelFormats;
+using Enums = NetVips.Enums;
 
 namespace Iceshrimp.Backend.Core.Services.ImageProcessing;
 
-public class VipsProcessor : ImageProcessorBase, IImageProcessor
+public class VipsProcessor : ImageProcessorBase, IImageProcessor,
+                             ISingletonService, IConditionalService, IService<IImageProcessor>
 {
 	private readonly ILogger<VipsProcessor> _logger;
 
 	public bool CanIdentify         => true;
 	public bool CanGenerateBlurhash => true;
+
+	static int IService.Priority => -1;
+
+	public static bool Predicate(Config ctx) =>
+		ctx.Storage.MediaProcessing.ImageProcessor == Configuration.Enums.ImageProcessor.LibVips;
 
 	public VipsProcessor(ILogger<VipsProcessor> logger) : base("LibVips", 0)
 	{

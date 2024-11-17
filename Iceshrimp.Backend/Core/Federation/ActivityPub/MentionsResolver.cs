@@ -16,9 +16,7 @@ using SplitDomainMapping = IReadOnlyDictionary<(string usernameLower, string web
 ///     Resolves mentions into their canonical form. This is required for handling split domain mentions correctly, as it
 ///     cannot be guaranteed that remote instances handle split domain users correctly.
 /// </summary>
-public class MentionsResolver(
-	IOptions<Config.InstanceSection> config
-)
+public class MentionsResolver(IOptions<Config.InstanceSection> config) : ISingletonService
 {
 	public string ResolveMentions(
 		string mfm, string? host,
