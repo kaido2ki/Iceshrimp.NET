@@ -5,9 +5,9 @@ namespace Iceshrimp.Backend.Core.Services;
 public class FollowupTaskService(
 	IServiceScopeFactory serviceScopeFactory,
 	ILogger<FollowupTaskService> logger
-) : IScopedService
+) : ISingletonService
 {
-	public bool IsBackgroundWorker { get; private set; }
+	public AsyncLocal<bool> IsBackgroundWorker { get; } = new();
 
 	public Task ExecuteTask(string taskName, Func<IServiceProvider, Task> work)
 	{
@@ -18,7 +18,7 @@ public class FollowupTaskService(
 			try
 			{
 				var instance = scope.ServiceProvider.GetRequiredService<FollowupTaskService>();
-				instance.IsBackgroundWorker = true;
+				instance.IsBackgroundWorker.Value = true;
 				await work(scope.ServiceProvider);
 			}
 			catch (Exception e)

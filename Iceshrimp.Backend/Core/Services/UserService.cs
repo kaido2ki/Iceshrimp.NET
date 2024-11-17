@@ -166,7 +166,7 @@ public class UserService(
 		{
 			Id                  = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt           = DateTime.UtcNow,
-			LastFetchedAt       = followupTaskSvc.IsBackgroundWorker ? null : DateTime.UtcNow,
+			LastFetchedAt       = followupTaskSvc.IsBackgroundWorker.Value ? null : DateTime.UtcNow,
 			DisplayName         = actor.DisplayName,
 			IsLocked            = actor.IsLocked ?? false,
 			IsBot               = actor.IsBot,
@@ -997,7 +997,7 @@ public class UserService(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
 	private void UpdateUserPinnedNotesInBackground(ASActor actor, User user, bool force = false)
 	{
-		if (followupTaskSvc.IsBackgroundWorker && !force) return;
+		if (followupTaskSvc.IsBackgroundWorker.Value && !force) return;
 		if (KeyedLocker.IsInUse($"pinnedNotes:{user.Id}")) return;
 		_ = followupTaskSvc.ExecuteTask("UpdateUserPinnedNotes", async provider =>
 		{
@@ -1017,7 +1017,7 @@ public class UserService(
 	{
 		if (user.Uri == null) return;
 		if (!user.IsRemoteUser) return;
-		if (followupTaskSvc.IsBackgroundWorker && !force) return;
+		if (followupTaskSvc.IsBackgroundWorker.Value && !force) return;
 		if (KeyedLocker.IsInUse($"pinnedNotes:{user.Id}")) return;
 		_ = followupTaskSvc.ExecuteTask("UpdateUserPinnedNotes", async provider =>
 		{
@@ -1039,7 +1039,7 @@ public class UserService(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
 	private async Task<User> UpdateProfileMentions(User user, ASActor? actor, bool force = false, bool wait = false)
 	{
-		if (followupTaskSvc.IsBackgroundWorker && !force) return user;
+		if (followupTaskSvc.IsBackgroundWorker.Value && !force) return user;
 		if (KeyedLocker.IsInUse($"profileMentions:{user.Id}")) return user;
 
 		var success = false;

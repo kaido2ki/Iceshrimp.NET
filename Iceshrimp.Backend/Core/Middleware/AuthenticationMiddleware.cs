@@ -79,7 +79,7 @@ public class AuthenticationMiddleware(
 			userSvc.UpdateOauthTokenMetadata(oauthToken);
 			ctx.SetOauthToken(oauthToken);
 
-			mfmConverter.SupportsHtmlFormatting = oauthToken.SupportsHtmlFormatting;
+			mfmConverter.SupportsHtmlFormatting.Value = oauthToken.SupportsHtmlFormatting;
 		}
 		else
 		{

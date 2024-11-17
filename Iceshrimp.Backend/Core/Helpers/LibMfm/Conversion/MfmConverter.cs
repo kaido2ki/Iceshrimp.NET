@@ -18,9 +18,9 @@ namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 
 public class MfmConverter(
 	IOptions<Config.InstanceSection> config
-) : IScopedService // <- this is intentional, see property below
+) : ISingletonService
 {
-	public bool SupportsHtmlFormatting { private get; set; } = true;
+	public AsyncLocal<bool> SupportsHtmlFormatting { get; } = new();
 
 	public static async Task<string?> FromHtmlAsync(string? html, List<Note.MentionedUser>? mentions = null)
 	{
@@ -339,19 +339,19 @@ public class MfmConverter(
 
 	private IElement CreateInlineFormattingElement(IDocument document, string name)
 	{
-		return document.CreateElement(SupportsHtmlFormatting ? name : "span");
+		return document.CreateElement(SupportsHtmlFormatting.Value ? name : "span");
 	}
 
 	private void AddHtmlMarkup(MfmNode node, string chars)
 	{
-		if (SupportsHtmlFormatting) return;
+		if (SupportsHtmlFormatting.Value) return;
 		var markupNode = new MfmTextNode(chars);
 		node.Children = ListModule.OfSeq(node.Children.Prepend(markupNode).Append(markupNode));
 	}
 
 	private void AddHtmlMarkupStartOnly(MfmNode node, string chars)
 	{
-		if (SupportsHtmlFormatting) return;
+		if (SupportsHtmlFormatting.Value) return;
 		var markupNode = new MfmTextNode(chars);
 		node.Children = ListModule.OfSeq(node.Children.Prepend(markupNode));
 	}
