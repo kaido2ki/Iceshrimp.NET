@@ -135,5 +135,6 @@
         background-color: var(--background-color);
         z-index: +24;
         border-top: 0.1rem var(--highlight-color) solid;
+        padding-bottom: env(safe-area-inset-bottom);
     }
 }
