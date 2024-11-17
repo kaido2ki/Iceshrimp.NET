@@ -94,6 +94,7 @@
     protected override async Task OnInitializedAsync()
     {
         _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
+        CheckUpdate();
     }
 
     private enum CheckState
