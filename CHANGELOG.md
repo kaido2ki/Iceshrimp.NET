@@ -1,3 +1,16 @@
+## v2024.1-beta4.security1
+This is a security hotfix release. It's identical to v2024.1-beta4, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
+
+### Backend
+- ActivityPub actor and note validation has been improved & now protects against cross-origin identifiers in more places, resolving a database pollution vulnerability
+- Cross-origin `url` properties on actor & note objects now get set to null before ingestion, resolving a clickjacking vulnerability
+- User resolution when processing incoming notes is now limited
+
+### Attribution
+This release was made possible by project contributors: Laura Hausmann
+
+Furthermore, I want to give special thanks to Hazel Koehler for the vulnerability disclosure.
+
 ## v2024.1-beta4
 This release contains lots of new features & bug fixes, including security fixes. Upgrading is strongly recommended for all server operators.
 
