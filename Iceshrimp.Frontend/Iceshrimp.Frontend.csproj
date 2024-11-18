@@ -24,12 +24,12 @@
         <PackageReference Include="AngleSharp" Version="1.1.2" />
         <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
         <PackageReference Include="BlazorIntersectionObserver" Version="3.1.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="8.0.10" />
-        <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.10" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.0" />
         <PackageReference Include="TypedSignalR.Client" Version="3.6.0" OutputItemType="Analyzer" ReferenceOutputAssembly="false">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -39,7 +39,7 @@
 
     <!-- Transitive dependency version overrides to patch security vulnerabilities -->
     <ItemGroup>
-        <PackageReference Include="MessagePack" Version="2.5.187" />
+        <PackageReference Include="MessagePack" Version="2.5.192" />
     </ItemGroup>
 
     <ItemGroup>
