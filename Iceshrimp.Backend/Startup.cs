@@ -67,7 +67,6 @@ app.UseAuthorization();
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(30) });
 app.UseCustomMiddleware();
 app.UseAntiforgery();
-app.UseOutputCache();
 
 app.MapStaticAssetsWithTransparentDecompression();
 app.MapControllers();

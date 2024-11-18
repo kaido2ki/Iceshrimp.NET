@@ -31,6 +31,7 @@ public static class WebApplicationExtensions
 		          .UseMiddleware<FederationSemaphoreMiddleware>()
 		          .UseMiddleware<AuthorizedFetchMiddleware>()
 		          .UseMiddleware<InboxValidationMiddleware>()
+		          .UseOutputCache()
 		          .UseMiddleware<BlazorSsrHandoffMiddleware>();
 	}
 
