@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @inject ApiService Api
+@inject NavigationManager Nav;
 
 @if (_init)
 {
@@ -50,7 +51,7 @@
             <div class="notes">
                 @foreach (var note in UserNotes)
                 {
-                    <div class="note-container">
+                    <div class="note-container" @onclick="() => OpenNote(note.RenoteId ?? note.Id)">
                         <Note NoteResponse="note"/>
                     </div>
                 }
@@ -140,6 +141,11 @@
             _loading = false;
             _error   = true;
         }
+    }
+    
+    private void OpenNote(string id)
+    {
+        Nav.NavigateTo($"/notes/{id}");
     }
 
     protected override async Task OnInitializedAsync()
