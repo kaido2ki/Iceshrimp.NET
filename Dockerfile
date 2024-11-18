@@ -32,6 +32,7 @@ COPY Iceshrimp.Backend/ /src/Iceshrimp.Backend/
 COPY Iceshrimp.Parsing/ /src/Iceshrimp.Parsing/
 COPY Iceshrimp.Frontend/ /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/ /src/Iceshrimp.Shared/
+COPY Iceshrimp.Build/ /src/Iceshrimp.Build/
 
 # copy files required for sourcelink
 COPY .git/HEAD /src/.git/HEAD
