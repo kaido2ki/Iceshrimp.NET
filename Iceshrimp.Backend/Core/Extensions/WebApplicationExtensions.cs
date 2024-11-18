@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Options;
+using Scalar.AspNetCore;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -50,6 +51,20 @@ public static class WebApplicationExtensions
 			options.DisplayRequestDuration();
 			options.DefaultModelsExpandDepth(-1);                            // Hide "Schemas" section
 			options.ConfigObject.AdditionalItems.Add("tagsSorter", "alpha"); // Sort tags alphabetically
+		});
+
+		app.MapScalarApiReference(options =>
+		{
+			options.Title               = "Iceshrimp API documentation";
+			options.OpenApiRoutePattern = "/openapi/{documentName}.json";
+			options.EndpointPathPrefix  = "/scalar/{documentName}";
+			options.HideModels          = true;
+
+			options.CustomCss = """
+			                    .open-api-client-button, .darklight-reference-promo { display: none !important; }
+			                    .darklight { height: 14px !important; }
+			                    .darklight-reference { padding: 14px !important; }
+			                    """;
 		});
 
 		return app;

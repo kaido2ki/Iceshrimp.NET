@@ -1,0 +1,25 @@
+@page "/openapi"
+@attribute [Route("/scalar")]
+@using Microsoft.Extensions.Options
+@using Swashbuckle.AspNetCore.SwaggerGen
+@inject IOptions<SwaggerGenOptions> Options;
+
+<h2>OpenAPI definitions</h2>
+<p>Please select a OpenAPI document below.</p>
+<table class="auto-table">
+    <thead>
+    <th class="width0">Document</th>
+    <th>Links</th>
+    </thead>
+    @foreach (var doc in Options.Value.SwaggerGeneratorOptions.SwaggerDocs)
+    {
+        <tr>
+            <td>@doc.Value.Title</td>
+            <td>
+                <a href="/openapi/@(doc.Key).json">JSON</a> -
+                <a href="/swagger/index.html?urls.primaryName=@(doc.Value.Title)">SwaggerUI</a> -
+                <a href="/scalar/@(doc.Key)">ScalarUI</a>
+            </td>
+        </tr>
+    }
+</table>
