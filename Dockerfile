@@ -7,7 +7,7 @@ ARG AOT=false
 ARG IMAGE=${AOT/true/alpine-wasm}
 ARG IMAGE=${IMAGE/false/alpine}
 
-FROM --platform=$BUILDPLATFORM iceshrimp.dev/iceshrimp/dotnet-sdk:8.0-$IMAGE AS builder
+FROM --platform=$BUILDPLATFORM iceshrimp.dev/iceshrimp/dotnet-sdk:9.0-$IMAGE AS builder
 WORKDIR /src
 ARG BUILDPLATFORM
 ARG AOT=false
