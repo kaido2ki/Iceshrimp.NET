@@ -60,7 +60,15 @@
 
 ::deep {
     .badge .ph {
+        display: inline-block;
         vertical-align: text-bottom;
+    }
+}
+
+::deep {
+    /* For some reason ph-lock aligns differently than the other icons. This fixes that */
+    .badge .ph-lock {
+        vertical-align: middle;
     }
 }
 

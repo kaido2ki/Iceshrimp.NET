@@ -29,6 +29,13 @@
                 @Loc["Automated"]
             </span>
         }
+        @if (UserProfile.IsLocked)
+        {
+            <span class="badge">
+                <Icon Name="Icons.Lock" Size="1.3em"/>
+                @Loc["Private"]
+            </span>
+        }
     </div>
     @if (UserProfile.Bio != null)
     {
