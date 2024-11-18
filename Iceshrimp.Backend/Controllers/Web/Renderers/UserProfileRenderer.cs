@@ -63,7 +63,8 @@ public class UserProfileRenderer(DatabaseContext db)
 			Followers = followers,
 			Following = following,
 			Relations = relations,
-			Role      = role
+			Role      = role,
+			IsLocked  = user.IsLocked
 		};
 	}
 

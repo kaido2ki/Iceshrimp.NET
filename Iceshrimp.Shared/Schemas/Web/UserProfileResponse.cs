@@ -11,6 +11,7 @@ public class UserProfileResponse
 	public required int?                    Following { get; set; }
 	public required Relations               Relations { get; set; }
 	public required Role                    Role      { get; set; }
+	public required bool                    IsLocked  { get; set; }
 }
 
 [Flags]
