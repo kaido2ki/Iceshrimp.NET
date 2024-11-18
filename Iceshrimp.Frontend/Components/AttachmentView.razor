@@ -22,7 +22,7 @@
         @foreach (var element in Attachments)
         {
             <div class="container" @ref="@Ref">
-                <img class="attachment" src="@element.Url" alt="@element.AltText"/>
+                <img class="attachment" src="@element.Url" alt="@element.AltText" fetchpriority="low"/>
             </div>
         }
     </div>

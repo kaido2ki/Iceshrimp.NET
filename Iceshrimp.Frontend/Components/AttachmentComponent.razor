@@ -4,7 +4,7 @@
 <div class="wrapper" @onclick="Open" @onclick:stopPropagation="true">
     @if (Attachment.ContentType.StartsWith("image"))
     {
-        <img class="attachment @(BlurImage ? "blur-image" : "")" src="@Attachment.Url" alt="@Attachment.AltText"/>
+        <img class="attachment @(BlurImage ? "blur-image" : "")" src="@Attachment.Url" alt="@Attachment.AltText" fetchpriority="low"/>
     }
 //  else if (Attachment.ContentType == "audio/x-mod")
 //  {
