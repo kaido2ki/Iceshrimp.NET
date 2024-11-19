@@ -18,16 +18,16 @@ public class VersionController : ControllerBase
 {
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
-	public Task<VersionResponse> GetVersion()
+	public VersionResponse GetVersion()
 	{
 		var version = VersionHelpers.VersionInfo.Value;
-		return Task.FromResult(new VersionResponse
+		return new VersionResponse
 		{
 			Codename   = version.Codename,
 			CommitHash = version.CommitHash,
 			Edition    = version.Edition,
 			Version    = version.Version,
 			RawVersion = version.RawVersion
-		});
+		};
 	}
 }
