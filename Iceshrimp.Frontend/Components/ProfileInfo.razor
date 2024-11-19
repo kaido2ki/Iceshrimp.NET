@@ -19,8 +19,10 @@
                     @Loc["Admin"]
                 </span>
                 break;
-            default:
+            case Role.None:
                 break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
         @if (User.IsBot)
         {
