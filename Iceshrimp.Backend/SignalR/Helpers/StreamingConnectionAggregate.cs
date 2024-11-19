@@ -418,20 +418,41 @@ public sealed class StreamingConnectionAggregate : IDisposable
 
 	private async void OnFilterAdded(object? _, Filter filter)
 	{
-		if (filter.User.Id != _userId) return;
-		await _hub.Clients.User(_userId).FilterAddedAsync(FilterRenderer.RenderOne(filter));
+		try
+		{
+			if (filter.User.Id != _userId) return;
+			await _hub.Clients.User(_userId).FilterAddedAsync(FilterRenderer.RenderOne(filter));
+		}
+		catch (Exception e)
+		{
+			_logger.LogError("Event handler {handler} threw exception: {e}", nameof(OnFilterAdded), e);
+		}
 	}
 
 	private async void OnFilterUpdated(object? _, Filter filter)
 	{
-		if (filter.User.Id != _userId) return;
-		await _hub.Clients.User(_userId).FilterUpdatedAsync(FilterRenderer.RenderOne(filter));
+		try
+		{
+			if (filter.User.Id != _userId) return;
+			await _hub.Clients.User(_userId).FilterUpdatedAsync(FilterRenderer.RenderOne(filter));
+		}
+		catch (Exception e)
+		{
+			_logger.LogError("Event handler {handler} threw exception: {e}", nameof(OnFilterUpdated), e);
+		}
 	}
 
 	private async void OnFilterRemoved(object? _, Filter filter)
 	{
-		if (filter.User.Id != _userId) return;
-		await _hub.Clients.User(_userId).FilterRemovedAsync(filter.Id);
+		try
+		{
+			if (filter.User.Id != _userId) return;
+			await _hub.Clients.User(_userId).FilterRemovedAsync(filter.Id);
+		}
+		catch (Exception e)
+		{
+			_logger.LogError("Event handler {handler} threw exception: {e}", nameof(OnFilterRemoved), e);
+		}
 	}
 
 	#endregion
