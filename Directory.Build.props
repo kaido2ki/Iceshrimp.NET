@@ -53,6 +53,6 @@
         <_WasmOptLevel Condition="'$(WasmOptLevel)' == ''">2</_WasmOptLevel>
         <EmccCompileOptimizationFlag>-O$(_EmccOptLevel)</EmccCompileOptimizationFlag>
         <EmccLinkOptimizationFlag>-O$(_WasmOptLevel)</EmccLinkOptimizationFlag>
-        <WasmBitcodeCompileOptimizationFlag>-$(_WasmOptLevel)</WasmBitcodeCompileOptimizationFlag>
+        <WasmBitcodeCompileOptimizationFlag>-O$(_WasmOptLevel)</WasmBitcodeCompileOptimizationFlag>
     </PropertyGroup>
 </Project>
