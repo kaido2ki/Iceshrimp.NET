@@ -8,11 +8,11 @@
 <head>
     <meta charset="utf-8"/>
     <title>@(ViewData["title"] ?? "Iceshrimp.NET")</title>
-    @* ReSharper disable once Html.PathError *@
+    @* ReSharper disable Html.PathError *@
     <link rel="stylesheet" href="~/Iceshrimp.Backend.styles.css"/>
     <link rel="stylesheet" href="~/css/default.css"/>
-    @* ReSharper disable once Html.PathError *@
     <link rel="icon" type="image/png" href="~/_content/Iceshrimp.Assets.Branding/favicon.png"/>
+    @* ReSharper restore Html.PathError *@
     @await RenderSectionAsync("styles", false)
     @await RenderSectionAsync("head", false)
 </head>
