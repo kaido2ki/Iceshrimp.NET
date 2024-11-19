@@ -9,12 +9,12 @@ internal class EmojiService(ApiService api)
 	[Inject] private ApiService           Api    { get; set; } = api;
 	private          List<EmojiResponse>? Emojis { get; set; }
 
-	public async Task<List<EmojiResponse>> GetEmoji()
+	public async Task<List<EmojiResponse>> GetEmojiAsync()
 	{
 		if (Emojis is not null) return Emojis;
 		try
 		{
-			var emoji = await Api.Emoji.GetAllEmoji();
+			var emoji = await Api.Emoji.GetAllEmojiAsync();
 			Emojis = emoji;
 			return Emojis;
 		}

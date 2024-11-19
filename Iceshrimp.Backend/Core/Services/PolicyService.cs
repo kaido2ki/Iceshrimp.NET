@@ -21,7 +21,7 @@ public class PolicyService(IServiceScopeFactory scopeFactory) : ISingletonServic
 	private Type[] _policyTypes              = [];
 	private Type[] _policyConfigurationTypes = [];
 
-	public async Task Initialize()
+	public async Task InitializeAsync()
 	{
 		if (_initialized) return;
 		_initialized = true;
@@ -35,12 +35,12 @@ public class PolicyService(IServiceScopeFactory scopeFactory) : ISingletonServic
 		                                                   _policyTypes.Contains(t)))
 		                            .ToArray();
 
-		await Update();
+		await UpdateAsync();
 	}
 
-	public async Task Update()
+	public async Task UpdateAsync()
 	{
-		if (!_initialized) await Initialize();
+		if (!_initialized) await InitializeAsync();
 		await using var scope = scopeFactory.CreateAsyncScope();
 		var             db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
@@ -95,9 +95,9 @@ public class PolicyService(IServiceScopeFactory scopeFactory) : ISingletonServic
 		foreach (var hook in hooks) hook.Apply(note, actor);
 	}
 
-	public async Task<Type?> GetConfigurationType(string name)
+	public async Task<Type?> GetConfigurationTypeAsync(string name)
 	{
-		await Initialize();
+		await InitializeAsync();
 		var type = _policyTypes.FirstOrDefault(p => p.Name == name);
 		return _policyConfigurationTypes
 			.FirstOrDefault(p => p.GetInterfaces()
@@ -106,17 +106,17 @@ public class PolicyService(IServiceScopeFactory scopeFactory) : ISingletonServic
 			                     type);
 	}
 
-	public async Task<IPolicyConfiguration?> GetConfiguration(string name, string? data)
+	public async Task<IPolicyConfiguration?> GetConfigurationAsync(string name, string? data)
 	{
-		var type = await GetConfigurationType(name);
+		var type = await GetConfigurationTypeAsync(name);
 		if (type == null) return null;
 		if (data == null) return (IPolicyConfiguration?)Activator.CreateInstance(type);
 		return (IPolicyConfiguration?)JsonSerializer.Deserialize(data, type, JsonSerialization.Options);
 	}
 
-	public async Task<List<string>> GetAvailablePolicies()
+	public async Task<List<string>> GetAvailablePoliciesAsync()
 	{
-		await Initialize();
+		await InitializeAsync();
 		return _policyTypes.Select(p => p.Name).ToList();
 	}
 }

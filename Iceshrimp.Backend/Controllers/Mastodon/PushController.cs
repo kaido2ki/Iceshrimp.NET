@@ -150,7 +150,7 @@ public class PushController(DatabaseContext db, MetaService meta) : ControllerBa
 		{
 			Id        = sub.Id,
 			Endpoint  = sub.Endpoint,
-			ServerKey = await meta.Get(MetaEntity.VapidPublicKey),
+			ServerKey = await meta.GetAsync(MetaEntity.VapidPublicKey),
 			Policy    = GetPolicyString(sub.Policy),
 			Alerts = new Alerts
 			{

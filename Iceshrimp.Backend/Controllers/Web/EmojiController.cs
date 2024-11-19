@@ -70,7 +70,7 @@ public class EmojiController(
 	[ProducesErrors(HttpStatusCode.Conflict)]
 	public async Task<EmojiResponse> UploadEmoji(IFormFile file)
 	{
-		var emoji = await emojiSvc.CreateEmojiFromStream(file.OpenReadStream(), file.FileName, file.ContentType);
+		var emoji = await emojiSvc.CreateEmojiFromStreamAsync(file.OpenReadStream(), file.FileName, file.ContentType);
 
 		return new EmojiResponse
 		{
@@ -97,7 +97,7 @@ public class EmojiController(
 		var emojo = await db.Emojis.FirstOrDefaultAsync(e => e.Name == name && e.Host == host);
 		if (emojo == null) throw GracefulException.NotFound("Emoji not found");
 
-		var cloned = await emojiSvc.CloneEmoji(emojo);
+		var cloned = await emojiSvc.CloneEmojiAsync(emojo);
 		return new EmojiResponse
 		{
 			Id        = cloned.Id,
@@ -116,8 +116,8 @@ public class EmojiController(
 	[ProducesResults(HttpStatusCode.Accepted)]
 	public async Task<AcceptedResult> ImportEmoji(IFormFile file)
 	{
-		var zip = await emojiImportSvc.Parse(file.OpenReadStream());
-		await emojiImportSvc.Import(zip); // TODO: run in background. this will take a while
+		var zip = await emojiImportSvc.ParseAsync(file.OpenReadStream());
+		await emojiImportSvc.ImportAsync(zip); // TODO: run in background. this will take a while
 		return Accepted();
 	}
 
@@ -128,7 +128,7 @@ public class EmojiController(
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<EmojiResponse> UpdateEmoji(string id, UpdateEmojiRequest request)
 	{
-		var emoji = await emojiSvc.UpdateLocalEmoji(id, request.Name, request.Aliases, request.Category,
+		var emoji = await emojiSvc.UpdateLocalEmojiAsync(id, request.Name, request.Aliases, request.Category,
 		                                            request.License, request.Sensitive) ??
 		            throw GracefulException.NotFound("Emoji not found");
 
@@ -151,6 +151,6 @@ public class EmojiController(
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task DeleteEmoji(string id)
 	{
-		await emojiSvc.DeleteEmoji(id);
+		await emojiSvc.DeleteEmojiAsync(id);
 	}
 }

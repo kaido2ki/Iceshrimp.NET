@@ -104,10 +104,10 @@
         StateHasChanged();
         try
         {
-            var lookup = await Api.Search.Lookup(SearchString);
+            var lookup = await Api.Search.LookupAsync(SearchString);
             if (lookup is not null && lookup.TargetUrl.Contains("user"))
             {
-                var user = await Api.Users.GetUser(lookup.TargetUrl.Split("users/")[1]);
+                var user = await Api.Users.GetUserAsync(lookup.TargetUrl.Split("users/")[1]);
                 if (user is not null)
                 {
                     var username                    = $"@{user.Username}";
@@ -124,7 +124,7 @@
         {
             if (SearchType == SearchTypeEnum.Note)
             {
-                var searchRes = await Api.Search.SearchNotes(SearchString, new PaginationQuery { Limit = 20 });
+                var searchRes = await Api.Search.SearchNotesAsync(SearchString, new PaginationQuery { Limit = 20 });
                 if (searchRes.Count > 0)
                 {
                     NoteSearchInstance = new NoteSearch(searchString: SearchString, api: Api, noteResponses: searchRes);
@@ -135,7 +135,7 @@
 
             if (SearchType == SearchTypeEnum.User)
             {
-                var searchRes = await Api.Search.SearchUsers(SearchString, new PaginationQuery() { Limit = 20 });
+                var searchRes = await Api.Search.SearchUsersAsync(SearchString, new PaginationQuery() { Limit = 20 });
                 if (searchRes.Count > 0)
                 {
                     UserSearchInstance = new UserSearch(searchString: SearchString, api: Api, userResponses: searchRes);
@@ -196,7 +196,7 @@
         public async Task FetchOlder()
         {
             var pq  = new PaginationQuery { Limit = 15, MaxId = MinId };
-            var res = await Api.Search.SearchUsers(SearchString, pq);
+            var res = await Api.Search.SearchUsersAsync(SearchString, pq);
             switch (res.Count)
             {
                 case > 0:
@@ -223,7 +223,7 @@
         public async Task FetchOlder()
         {
             var pq  = new PaginationQuery { Limit = 15, MaxId = MinId };
-            var res = await Api.Search.SearchNotes(SearchString, pq);
+            var res = await Api.Search.SearchNotesAsync(SearchString, pq);
             switch (res.Count)
             {
                 case > 0:

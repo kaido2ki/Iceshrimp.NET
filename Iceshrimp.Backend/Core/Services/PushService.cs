@@ -26,12 +26,12 @@ public class PushService(
 {
 	protected override Task ExecuteAsync(CancellationToken stoppingToken)
 	{
-		eventSvc.Notification += MastodonPushHandler;
+		eventSvc.Notification += MastodonPushHandlerAsync;
 		//TODO: eventSvc.Notification += WebPushHandler;
 		return Task.CompletedTask;
 	}
 
-	private async void MastodonPushHandler(object? _, Notification notification)
+	private async void MastodonPushHandlerAsync(object? _, Notification notification)
 	{
 		try
 		{
@@ -103,7 +103,7 @@ public class PushService(
 				body = body.Truncate(137).TrimEnd() + "...";
 
 			var meta = scope.ServiceProvider.GetRequiredService<MetaService>();
-			var (priv, pub) = await meta.GetMany(MetaEntity.VapidPrivateKey, MetaEntity.VapidPublicKey);
+			var (priv, pub) = await meta.GetManyAsync(MetaEntity.VapidPrivateKey, MetaEntity.VapidPublicKey);
 
 			var client = new WebPushClient(httpClient);
 			client.SetVapidDetails(new VapidDetails($"https://{config.Value.WebDomain}", pub, priv));

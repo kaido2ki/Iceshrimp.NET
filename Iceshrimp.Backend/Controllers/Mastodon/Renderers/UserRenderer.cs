@@ -26,7 +26,7 @@ public class UserRenderer(
 		if (user.IsRemoteUser)
 			acct += $"@{user.Host}";
 
-		var profileEmoji = emoji?.Where(p => user.Emojis.Contains(p.Id)).ToList() ?? await GetEmoji([user]);
+		var profileEmoji = emoji?.Where(p => user.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([user]);
 		var mentions     = profile?.Mentions ?? [];
 		var fields = profile != null
 			? await profile.Fields
@@ -97,7 +97,7 @@ public class UserRenderer(
 		return res;
 	}
 
-	private async Task<List<EmojiEntity>> GetEmoji(IEnumerable<User> users)
+	private async Task<List<EmojiEntity>> GetEmojiAsync(IEnumerable<User> users)
 	{
 		var ids = users.SelectMany(p => p.Emojis).ToList();
 		if (ids.Count == 0) return [];
@@ -125,7 +125,7 @@ public class UserRenderer(
 	{
 		var userList = users.ToList();
 		if (userList.Count == 0) return [];
-		var emoji = await GetEmoji(userList);
+		var emoji = await GetEmojiAsync(userList);
 		return await userList.Select(p => RenderAsync(p, localUser, emoji)).AwaitAllAsync();
 	}
 }

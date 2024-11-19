@@ -345,7 +345,7 @@ public class UserResolver(
 		return null;
 	}
 
-	public async Task<User> GetUpdatedUser(User user)
+	public async Task<User> GetUpdatedUserAsync(User user)
 	{
 		if (!user.NeedsUpdate) return user;
 
@@ -358,7 +358,7 @@ public class UserResolver(
 
 		try
 		{
-			var task = followupTaskSvc.ExecuteTask("UpdateUserAsync", async provider =>
+			var task = followupTaskSvc.ExecuteTaskAsync("UpdateUserAsync", async provider =>
 			{
 				// Get a fresh UserService instance in a new scope
 				var bgUserSvc = provider.GetRequiredService<UserService>();

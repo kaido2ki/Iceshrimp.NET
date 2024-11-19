@@ -82,7 +82,7 @@ public static class WebApplicationExtensions
 		app.MapFallbackToPage("/@{user}@{host}", page);
 	}
 
-	public static async Task<Config.InstanceSection> Initialize(this WebApplication app, string[] args)
+	public static async Task<Config.InstanceSection> InitializeAsync(this WebApplication app, string[] args)
 	{
 		var instanceConfig = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
 		                     throw new Exception("Failed to read Instance config section");
@@ -135,7 +135,7 @@ public static class WebApplicationExtensions
 		{
 			app.Logger.LogInformation("Initializing migration assistant...");
 			var initialMigration = typeof(Initial).GetCustomAttribute<MigrationAttribute>()?.Id;
-			if (pendingMigration != initialMigration || await db.IsDatabaseEmpty())
+			if (pendingMigration != initialMigration || await db.IsDatabaseEmptyAsync())
 			{
 				app.Logger.LogCritical("Database does not appear to be an iceshrimp-js database.");
 				Environment.Exit(1);
@@ -171,7 +171,7 @@ public static class WebApplicationExtensions
 		if (pendingMigration != null)
 		{
 			var initialMigration = typeof(Initial).GetCustomAttribute<MigrationAttribute>()?.Id;
-			if (pendingMigration == initialMigration && !await db.IsDatabaseEmpty())
+			if (pendingMigration == initialMigration && !await db.IsDatabaseEmptyAsync())
 			{
 				app.Logger.LogCritical("Initial migration is pending but database is not empty.");
 				app.Logger.LogCritical("If you are trying to migrate from iceshrimp-js, please follow the instructions on https://iceshrimp.net/help/migrate.");
@@ -212,19 +212,19 @@ public static class WebApplicationExtensions
 		{
 			app.Logger.LogInformation("Migrating files to object storage, this will take a while...");
 			db.Database.SetCommandTimeout(0);
-			await provider.GetRequiredService<StorageMaintenanceService>().MigrateLocalFiles(args.Contains("--purge"));
+			await provider.GetRequiredService<StorageMaintenanceService>().MigrateLocalFilesAsync(args.Contains("--purge"));
 			Environment.Exit(0);
 		}
 
 		if (args.Contains("--fixup-media"))
 		{
-			await provider.GetRequiredService<StorageMaintenanceService>().FixupMedia(args.Contains("--dry-run"));
+			await provider.GetRequiredService<StorageMaintenanceService>().FixupMediaAsync(args.Contains("--dry-run"));
 			Environment.Exit(0);
 		}
 
 		if (args.Contains("--cleanup-storage"))
 		{
-			await provider.GetRequiredService<StorageMaintenanceService>().CleanupStorage(args.Contains("--dry-run"));
+			await provider.GetRequiredService<StorageMaintenanceService>().CleanupStorageAsync(args.Contains("--dry-run"));
 			Environment.Exit(0);
 		}
 
@@ -271,14 +271,14 @@ public static class WebApplicationExtensions
 
 		app.Logger.LogInformation("Initializing VAPID keys...");
 		var meta = provider.GetRequiredService<MetaService>();
-		await meta.EnsureSet([MetaEntity.VapidPublicKey, MetaEntity.VapidPrivateKey], () =>
+		await meta.EnsureSetAsync([MetaEntity.VapidPublicKey, MetaEntity.VapidPrivateKey], () =>
 		{
 			var keypair = VapidHelper.GenerateVapidKeys();
 			return [keypair.PublicKey, keypair.PrivateKey];
 		});
 
 		app.Logger.LogInformation("Warming up meta cache...");
-		await meta.WarmupCache();
+		await meta.WarmupCacheAsync();
 
 		// Initialize image processing
 		provider.GetRequiredService<ImageProcessor>();

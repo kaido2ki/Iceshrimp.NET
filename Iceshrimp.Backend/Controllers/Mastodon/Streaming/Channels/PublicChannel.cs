@@ -21,7 +21,7 @@ public class PublicChannel(
 	public bool         IsSubscribed { get; private set; }
 	public bool         IsAggregate  => false;
 
-	public Task Subscribe(StreamingRequestMessage _)
+	public Task SubscribeAsync(StreamingRequestMessage _)
 	{
 		if (IsSubscribed) return Task.CompletedTask;
 		IsSubscribed = true;
@@ -32,7 +32,7 @@ public class PublicChannel(
 		return Task.CompletedTask;
 	}
 
-	public Task Unsubscribe(StreamingRequestMessage _)
+	public Task UnsubscribeAsync(StreamingRequestMessage _)
 	{
 		if (!IsSubscribed) return Task.CompletedTask;
 		IsSubscribed = false;
@@ -89,7 +89,7 @@ public class PublicChannel(
 			if (wrapped == null) return;
 			if (connection.IsFiltered(note)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
-			if (await connection.IsMutedThread(note, scope)) return;
+			if (await connection.IsMutedThreadAsync(note, scope)) return;
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
 			var data         = new NoteRenderer.NoteRendererDto { Filters = connection.Filters.ToList() };

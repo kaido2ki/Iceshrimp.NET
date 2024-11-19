@@ -6,15 +6,15 @@ namespace Iceshrimp.Frontend.Core.ControllerModels;
 
 internal class EmojiControllerModel(ApiClient api)
 {
-	public Task<List<EmojiResponse>> GetAllEmoji() =>
-		api.Call<List<EmojiResponse>>(HttpMethod.Get, "/emoji");
+	public Task<List<EmojiResponse>> GetAllEmojiAsync() =>
+		api.CallAsync<List<EmojiResponse>>(HttpMethod.Get, "/emoji");
 
-	public Task<EmojiResponse> UploadEmoji(IBrowserFile file) =>
-		api.Call<EmojiResponse>(HttpMethod.Post, "/emoji", data: file);
+	public Task<EmojiResponse> UploadEmojiAsync(IBrowserFile file) =>
+		api.CallAsync<EmojiResponse>(HttpMethod.Post, "/emoji", data: file);
 
-	public Task<EmojiResponse?> UpdateEmoji(string id, EmojiResponse emoji) =>
-		api.CallNullable<EmojiResponse>(HttpMethod.Patch, $"/emoji/{id}", data: emoji);
+	public Task<EmojiResponse?> UpdateEmojiAsync(string id, EmojiResponse emoji) =>
+		api.CallNullableAsync<EmojiResponse>(HttpMethod.Patch, $"/emoji/{id}", data: emoji);
 
-	public Task<EmojiResponse?> GetEmoji(string id) =>
-		api.CallNullable<EmojiResponse>(HttpMethod.Get, $"/emoji/{id}");
+	public Task<EmojiResponse?> GetEmojiAsync(string id) =>
+		api.CallNullableAsync<EmojiResponse>(HttpMethod.Get, $"/emoji/{id}");
 }

@@ -22,15 +22,15 @@ public class NoteRenderer(
 
 		var allNotes = ((Note?[]) [note, note.Reply, note.Renote]).NotNull().ToList();
 
-		var mentions    = await GetMentions(allNotes);
-		var emoji       = await GetEmoji(allNotes);
-		var users       = await GetUsers(allNotes);
-		var attachments = await GetAttachments(allNotes);
+		var mentions    = await GetMentionsAsync(allNotes);
+		var emoji       = await GetEmojiAsync(allNotes);
+		var users       = await GetUsersAsync(allNotes);
+		var attachments = await GetAttachmentsAsync(allNotes);
 
-		return await Render(note, users, mentions, emoji, attachments);
+		return await RenderAsync(note, users, mentions, emoji, attachments);
 	}
 
-	private async Task<PreviewNote> Render(
+	private async Task<PreviewNote> RenderAsync(
 		Note note, List<PreviewUser> users, Dictionary<string, List<Note.MentionedUser>> mentions,
 		Dictionary<string, List<Emoji>> emoji, Dictionary<string, List<PreviewAttachment>?> attachments
 	)
@@ -38,7 +38,7 @@ public class NoteRenderer(
 		var res = new PreviewNote
 		{
 			User              = users.First(p => p.Id == note.User.Id),
-			Text              = await mfm.Render(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span"),
+			Text              = await mfm.RenderAsync(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span"),
 			Cw                = note.Cw,
 			RawText           = note.Text,
 			QuoteUrl          = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(instance.Value),
@@ -51,7 +51,7 @@ public class NoteRenderer(
 		return res;
 	}
 
-	private async Task<Dictionary<string, List<Note.MentionedUser>>> GetMentions(List<Note> notes)
+	private async Task<Dictionary<string, List<Note.MentionedUser>>> GetMentionsAsync(List<Note> notes)
 	{
 		var mentions = notes.SelectMany(n => n.Mentions).Distinct().ToList();
 		if (mentions.Count == 0) return notes.ToDictionary<Note, string, List<Note.MentionedUser>>(p => p.Id, _ => []);
@@ -69,7 +69,7 @@ public class NoteRenderer(
 		                          p => users.Where(u => p.Mentions.Contains(u.Key)).Select(u => u.Value).ToList());
 	}
 
-	private async Task<Dictionary<string, List<Emoji>>> GetEmoji(List<Note> notes)
+	private async Task<Dictionary<string, List<Emoji>>> GetEmojiAsync(List<Note> notes)
 	{
 		var ids = notes.SelectMany(n => n.Emojis).Distinct().ToList();
 		if (ids.Count == 0) return notes.ToDictionary<Note, string, List<Emoji>>(p => p.Id, _ => []);
@@ -78,13 +78,13 @@ public class NoteRenderer(
 		return notes.ToDictionary(p => p.Id, p => emoji.Where(e => p.Emojis.Contains(e.Id)).ToList());
 	}
 
-	private async Task<List<PreviewUser>> GetUsers(List<Note> notes)
+	private async Task<List<PreviewUser>> GetUsersAsync(List<Note> notes)
 	{
 		if (notes is []) return [];
-		return await userRenderer.RenderMany(notes.Select(p => p.User).Distinct().ToList());
+		return await userRenderer.RenderManyAsync(notes.Select(p => p.User).Distinct().ToList());
 	}
 
-	private async Task<Dictionary<string, List<PreviewAttachment>?>> GetAttachments(List<Note> notes)
+	private async Task<Dictionary<string, List<PreviewAttachment>?>> GetAttachmentsAsync(List<Note> notes)
 	{
 		if (security.Value.PublicPreview is Enums.PublicPreview.RestrictedNoMedia)
 			return notes.ToDictionary<Note, string, List<PreviewAttachment>?>(p => p.Id,
@@ -106,14 +106,14 @@ public class NoteRenderer(
 		                                                                       .ToList());
 	}
 
-	public async Task<List<PreviewNote>> RenderMany(List<Note> notes)
+	public async Task<List<PreviewNote>> RenderManyAsync(List<Note> notes)
 	{
 		if (notes is []) return [];
 		var allNotes    = notes.SelectMany<Note, Note?>(p => [p, p.Renote, p.Reply]).NotNull().Distinct().ToList();
-		var users       = await GetUsers(allNotes);
-		var mentions    = await GetMentions(allNotes);
-		var emoji       = await GetEmoji(allNotes);
-		var attachments = await GetAttachments(allNotes);
-		return await notes.Select(p => Render(p, users, mentions, emoji, attachments)).AwaitAllAsync().ToListAsync();
+		var users       = await GetUsersAsync(allNotes);
+		var mentions    = await GetMentionsAsync(allNotes);
+		var emoji       = await GetEmojiAsync(allNotes);
+		var attachments = await GetAttachmentsAsync(allNotes);
+		return await notes.Select(p => RenderAsync(p, users, mentions, emoji, attachments)).AwaitAllAsync().ToListAsync();
 	}
 }

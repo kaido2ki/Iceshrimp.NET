@@ -16,9 +16,9 @@ internal class ApiClient(HttpClient client)
 
 	public void SetToken(string token) => _token = token;
 
-	public async Task Call(HttpMethod method, string path, QueryString? query = null, object? data = null)
+	public async Task CallAsync(HttpMethod method, string path, QueryString? query = null, object? data = null)
 	{
-		var res = await MakeRequest(method, path, query, data);
+		var res = await MakeRequestAsync(method, path, query, data);
 		if (res.IsSuccessStatusCode)
 			return;
 
@@ -28,11 +28,11 @@ internal class ApiClient(HttpClient client)
 		throw new ApiException(error);
 	}
 
-	public async Task<bool> CallNullable(
+	public async Task<bool> CallNullableAsync(
 		HttpMethod method, string path, QueryString? query = null, object? data = null
 	)
 	{
-		var res = await MakeRequest(method, path, query, data);
+		var res = await MakeRequestAsync(method, path, query, data);
 		if (res.IsSuccessStatusCode)
 			return true;
 
@@ -42,21 +42,21 @@ internal class ApiClient(HttpClient client)
 		throw new ApiException(error);
 	}
 
-	public async Task<T> Call<T>(
+	public async Task<T> CallAsync<T>(
 		HttpMethod method, string path, QueryString? query = null, object? data = null
 	) where T : class
 	{
-		var res = await CallInternal<T>(method, path, query, data);
+		var res = await CallInternalAsync<T>(method, path, query, data);
 		if (res.result != null)
 			return res.result;
 		throw new ApiException(res.error ?? throw new Exception("Deserialized API error was null"));
 	}
 
-	public async Task<T?> CallNullable<T>(
+	public async Task<T?> CallNullableAsync<T>(
 		HttpMethod method, string path, QueryString? query = null, object? data = null
 	) where T : class
 	{
-		var res = await CallInternal<T>(method, path, query, data);
+		var res = await CallInternalAsync<T>(method, path, query, data);
 		if (res.result != null)
 			return res.result;
 
@@ -67,11 +67,11 @@ internal class ApiClient(HttpClient client)
 		throw new ApiException(err);
 	}
 
-	private async Task<(T? result, ErrorResponse? error)> CallInternal<T>(
+	private async Task<(T? result, ErrorResponse? error)> CallInternalAsync<T>(
 		HttpMethod method, string path, QueryString? query, object? data
 	) where T : class
 	{
-		var res = await MakeRequest(method, path, query, data);
+		var res = await MakeRequestAsync(method, path, query, data);
 
 		if (res.IsSuccessStatusCode)
 		{
@@ -87,7 +87,7 @@ internal class ApiClient(HttpClient client)
 		return (null, error);
 	}
 
-	private async Task<HttpResponseMessage> MakeRequest(
+	private async Task<HttpResponseMessage> MakeRequestAsync(
 		HttpMethod method, string path, QueryString? query, object? data
 	)
 	{

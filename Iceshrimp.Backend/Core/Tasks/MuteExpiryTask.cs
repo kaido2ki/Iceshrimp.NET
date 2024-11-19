@@ -8,7 +8,7 @@ namespace Iceshrimp.Backend.Core.Tasks;
 [SuppressMessage("ReSharper", "UnusedType.Global", Justification = "Instantiated at runtime by CronService")]
 public class MuteExpiryTask : ICronTask
 {
-	public async Task Invoke(IServiceProvider provider)
+	public async Task InvokeAsync(IServiceProvider provider)
 	{
 		var db = provider.GetRequiredService<DatabaseContext>();
 		await db.Mutings.Where(p => p.ExpiresAt != null && p.ExpiresAt < DateTime.UtcNow - TimeSpan.FromMinutes(5))

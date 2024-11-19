@@ -26,7 +26,7 @@ public partial class EmojiService(
 		o.PoolInitialFill = 5;
 	});
 
-	public async Task<Emoji> CreateEmojiFromStream(
+	public async Task<Emoji> CreateEmojiFromStreamAsync(
 		Stream input, string fileName, string mimeType, List<string>? aliases = null,
 		string? category = null
 	)
@@ -43,7 +43,7 @@ public partial class EmojiService(
 			MimeType    = mimeType,
 			IsSensitive = false
 		};
-		var driveFile = await driveSvc.StoreFile(input, user, request, true);
+		var driveFile = await driveSvc.StoreFileAsync(input, user, request, true);
 
 		var id = IdHelpers.GenerateSnowflakeId();
 		var emoji = new Emoji
@@ -67,10 +67,10 @@ public partial class EmojiService(
 		return emoji;
 	}
 
-	public async Task<Emoji> CloneEmoji(Emoji existing)
+	public async Task<Emoji> CloneEmojiAsync(Emoji existing)
 	{
 		var user = await sysUserSvc.GetInstanceActorAsync();
-		var driveFile = await driveSvc.StoreFile(existing.OriginalUrl, user, false, forceStore: true,
+		var driveFile = await driveSvc.StoreFileAsync(existing.OriginalUrl, user, false, forceStore: true,
 		                                         skipImageProcessing: false) ??
 		                throw new Exception("Error storing emoji file");
 
@@ -93,13 +93,13 @@ public partial class EmojiService(
 		return emoji;
 	}
 
-	public async Task DeleteEmoji(string id)
+	public async Task DeleteEmojiAsync(string id)
 	{
 		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Host == null && p.Id == id);
 		if (emoji == null) throw GracefulException.NotFound("Emoji not found");
 
 		var driveFile = await db.DriveFiles.FirstOrDefaultAsync(p => p.Url == emoji.OriginalUrl);
-		if (driveFile != null) await driveSvc.RemoveFile(driveFile.Id);
+		if (driveFile != null) await driveSvc.RemoveFileAsync(driveFile.Id);
 
 		db.Remove(emoji);
 		await db.SaveChangesAsync();
@@ -150,7 +150,7 @@ public partial class EmojiService(
 	private const string MisskeyHeart         = "\u2764";
 	private const string EmojiVersionSelector = "\ufe0f";
 
-	public async Task<string> ResolveEmojiName(string name, string? host)
+	public async Task<string> ResolveEmojiNameAsync(string name, string? host)
 	{
 		if (name == MisskeyHeart)
 			return name + EmojiVersionSelector;
@@ -177,7 +177,7 @@ public partial class EmojiService(
 		return hit.Host == null ? $":{hit.Name}:" : $":{hit.Name}@{hit.Host}:";
 	}
 
-	public async Task<Emoji?> ResolveEmoji(string fqn)
+	public async Task<Emoji?> ResolveEmojiAsync(string fqn)
 	{
 		if (!fqn.StartsWith(':')) return null;
 		var split = fqn.Trim(':').Split('@');
@@ -187,7 +187,7 @@ public partial class EmojiService(
 		return await db.Emojis.FirstOrDefaultAsync(p => p.Host == host && p.Name == name);
 	}
 
-	public async Task<List<Emoji>> ResolveEmoji(IEnumerable<MfmNodeTypes.MfmNode> nodes)
+	public async Task<List<Emoji>> ResolveEmojiAsync(IEnumerable<MfmNodeTypes.MfmNode> nodes)
 	{
 		var list = new List<MfmNodeTypes.MfmEmojiCodeNode>();
 		ResolveChildren(nodes, ref list);
@@ -206,7 +206,7 @@ public partial class EmojiService(
 		}
 	}
 
-	public async Task<Emoji?> UpdateLocalEmoji(
+	public async Task<Emoji?> UpdateLocalEmojiAsync(
 		string id, string? name, List<string>? aliases, string? category, string? license, bool? sensitive
 	)
 	{

@@ -18,7 +18,7 @@ public class StorageMaintenanceService(
 	ILogger<StorageMaintenanceService> logger
 ) : IScopedService
 {
-	public async Task MigrateLocalFiles(bool purge)
+	public async Task MigrateLocalFilesAsync(bool purge)
 	{
 		var pathBase      = options.Value.Local?.Path;
 		var pathsToDelete = new ConcurrentBag<string>();
@@ -46,7 +46,7 @@ public class StorageMaintenanceService(
 
 			if (hits.Count == 0) break;
 
-			await Parallel.ForEachAsync(hits, new ParallelOptions { MaxDegreeOfParallelism = 8 }, TryMigrateFile);
+			await Parallel.ForEachAsync(hits, new ParallelOptions { MaxDegreeOfParallelism = 8 }, TryMigrateFileAsync);
 			await db.SaveChangesAsync();
 			foreach (var path in pathsToDelete)
 				File.Delete(path);
@@ -62,16 +62,16 @@ public class StorageMaintenanceService(
 		else if (!purge)
 			logger.LogInformation("Done. Some files could not be migrated successfully. You may retry this process or clean them up by adding --purge to the CLI arguments.");
 		else
-			await PurgeFiles();
+			await PurgeFilesAsync();
 
 		return;
 
 		[SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-		async ValueTask TryMigrateFile(IEnumerable<DriveFile> files, CancellationToken token)
+		async ValueTask TryMigrateFileAsync(IEnumerable<DriveFile> files, CancellationToken token)
 		{
 			try
 			{
-				await MigrateFile(files).WaitAsync(token);
+				await MigrateFileAsync(files).WaitAsync(token);
 			}
 			catch (Exception e)
 			{
@@ -84,7 +84,7 @@ public class StorageMaintenanceService(
 		}
 
 		[SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-		async Task MigrateFile(IEnumerable<DriveFile> files)
+		async Task MigrateFileAsync(IEnumerable<DriveFile> files)
 		{
 			var file = files.FirstOrDefault();
 			if (file == null) return;
@@ -135,7 +135,7 @@ public class StorageMaintenanceService(
 			foreach (var item in deletionQueue) pathsToDelete.Add(item);
 		}
 
-		async Task PurgeFiles()
+		async Task PurgeFilesAsync()
 		{
 			logger.LogInformation("Done. Purging {count} failed files...", failed.Count);
 			foreach (var chunk in failed.Chunk(100))
@@ -144,7 +144,7 @@ public class StorageMaintenanceService(
 		}
 	}
 
-	public async Task FixupMedia(bool dryRun)
+	public async Task FixupMediaAsync(bool dryRun)
 	{
 		var query    = db.DriveFiles.Where(p => !p.IsLink && p.Uri != null && p.CreatedAt < DateTime.UtcNow);
 		var total    = await query.CountAsync();
@@ -153,9 +153,9 @@ public class StorageMaintenanceService(
 		logger.LogInformation("Validating all files, this may take a long time...");
 
 		var localFiles      = driveSvc.GetAllFileNamesFromLocalStorage();
-		var objStorageFiles = await driveSvc.GetAllFileNamesFromObjectStorage();
+		var objStorageFiles = await driveSvc.GetAllFileNamesFromObjectStorageAsync();
 
-		await foreach (var file in query.AsChunkedAsyncEnumerable(50, p => p.Id))
+		await foreach (var file in query.AsChunkedAsyncEnumerableAsync(50, p => p.Id))
 		{
 			if (++progress % 500 == 0)
 				logger.LogInformation("Validating files... ({idx}/{total})", progress, total);
@@ -178,7 +178,7 @@ public class StorageMaintenanceService(
 					continue;
 				}
 
-				await driveSvc.ExpireFile(file);
+				await driveSvc.ExpireFileAsync(file);
 				await db.Users.Where(p => p.AvatarId == file.Id)
 				        .ExecuteUpdateAsync(p => p.SetProperty(u => u.AvatarUrl, file.Uri));
 				await db.Users.Where(p => p.BannerId == file.Id)
@@ -236,7 +236,7 @@ public class StorageMaintenanceService(
 		}
 	}
 
-	public async Task CleanupStorage(bool dryRun)
+	public async Task CleanupStorageAsync(bool dryRun)
 	{
 		var filenames = await db.DriveFiles
 		                        .Where(p => !p.IsLink)
@@ -247,7 +247,7 @@ public class StorageMaintenanceService(
 			                        p.PublicAccessKey
 		                        })
 		                        .ToArrayAsync()
-		                        .ContinueWithResult(res => res.SelectMany(p => new List<string?>
+		                        .ContinueWithResultAsync(res => res.SelectMany(p => new List<string?>
 		                                                      {
 			                                                      p.AccessKey,
 			                                                      p.ThumbnailAccessKey,

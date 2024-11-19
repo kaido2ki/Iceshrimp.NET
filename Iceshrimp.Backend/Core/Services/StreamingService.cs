@@ -60,14 +60,14 @@ public sealed class StreamingService : ISingletonService
 		conn?.Dispose();
 	}
 
-	public Task Subscribe(string userId, string connectionId, StreamingTimeline timeline)
+	public Task SubscribeAsync(string userId, string connectionId, StreamingTimeline timeline)
 	{
 		_connections.TryGetValue(userId, out var conn);
 		conn?.Subscribe(connectionId, timeline);
 		return Task.CompletedTask;
 	}
 
-	public Task Unsubscribe(string userId, string connectionId, StreamingTimeline timeline)
+	public Task UnsubscribeAsync(string userId, string connectionId, StreamingTimeline timeline)
 	{
 		_connections.TryGetValue(userId, out var conn);
 		conn?.Unsubscribe(connectionId, timeline);

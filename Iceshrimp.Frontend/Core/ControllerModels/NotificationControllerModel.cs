@@ -7,18 +7,18 @@ namespace Iceshrimp.Frontend.Core.ControllerModels;
 internal class NotificationControllerModel(ApiClient api)
 {
 	[LinkPagination(20, 80)]
-	public Task<List<NotificationResponse>> GetNotifications(PaginationQuery pq) =>
-		api.Call<List<NotificationResponse>>(HttpMethod.Get, "/notifications", pq);
+	public Task<List<NotificationResponse>> GetNotificationsAsync(PaginationQuery pq) =>
+		api.CallAsync<List<NotificationResponse>>(HttpMethod.Get, "/notifications", pq);
 
-	public Task<bool> MarkNotificationAsRead(string id) =>
-		api.CallNullable(HttpMethod.Post, $"/notifications/{id}/read");
+	public Task<bool> MarkNotificationAsReadAsync(string id) =>
+		api.CallNullableAsync(HttpMethod.Post, $"/notifications/{id}/read");
 
-	public Task MarkAllNotificationsAsRead() =>
-		api.Call(HttpMethod.Post, "/notifications/read");
+	public Task MarkAllNotificationsAsReadAsync() =>
+		api.CallAsync(HttpMethod.Post, "/notifications/read");
 
-	public Task<bool> DeleteNotification(string id) =>
-		api.CallNullable(HttpMethod.Delete, $"/notifications/{id}");
+	public Task<bool> DeleteNotificationAsync(string id) =>
+		api.CallNullableAsync(HttpMethod.Delete, $"/notifications/{id}");
 
-	public Task DeleteAllNotifications() =>
-		api.Call(HttpMethod.Delete, "/notifications");
+	public Task DeleteAllNotificationsAsync() =>
+		api.CallAsync(HttpMethod.Delete, "/notifications");
 }

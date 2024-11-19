@@ -75,7 +75,7 @@
 
     private async void Unfollow()
     {
-        await Api.Users.UnfollowUser(User.Id);
+        await Api.Users.UnfollowUserAsync(User.Id);
         UserProfile.Relations -= (int)Relations.Following;
         ChooseButton();
         StateHasChanged();
@@ -83,11 +83,11 @@
 
     private async void Follow()
     {
-        await Api.Users.FollowUser(User.Id);
+        await Api.Users.FollowUserAsync(User.Id);
         UserProfile.Relations += (int)Relations.Requested;
         ChooseButton();
         StateHasChanged();
-        UserProfile = await Api.Users.GetUserProfile(UserProfile.Id) ?? throw new Exception("How did it stop existing");
+        UserProfile = await Api.Users.GetUserProfileAsync(UserProfile.Id) ?? throw new Exception("How did it stop existing");
         ChooseButton();
         StateHasChanged();
     }

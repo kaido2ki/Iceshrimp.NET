@@ -7,29 +7,29 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class MetaService([FromKeyedServices("cache")] DatabaseContext db) : IScopedService
 {
-	public async Task<T> Get<T>(Meta<T> meta) => meta.ConvertGet(await Fetch(meta.Key));
+	public async Task<T> GetAsync<T>(Meta<T> meta) => meta.ConvertGet(await FetchAsync(meta.Key));
 
-	public async Task<T[]> GetMany<T>(params Meta<T>[] entities)
+	public async Task<T[]> GetManyAsync<T>(params Meta<T>[] entities)
 	{
-		var res = await FetchMany(entities.Select(p => p.Key));
+		var res = await FetchManyAsync(entities.Select(p => p.Key));
 		return entities.Select(p => p.ConvertGet(res.GetValueOrDefault(p.Key, null))).ToArray();
 	}
 
-	public async Task EnsureSet<T>(Meta<T> meta, T value) => await EnsureSet(meta, () => value);
+	public async Task EnsureSetAsync<T>(Meta<T> meta, T value) => await EnsureSetAsync(meta, () => value);
 
-	public async Task EnsureSet<T>(Meta<T> meta, Func<T> value)
+	public async Task EnsureSetAsync<T>(Meta<T> meta, Func<T> value)
 	{
-		if (await Fetch(meta.Key) != null) return;
-		await Set(meta, value());
+		if (await FetchAsync(meta.Key) != null) return;
+		await SetAsync(meta, value());
 	}
 
-	public async Task EnsureSet<T>(Meta<T> meta, Func<Task<T>> value)
+	public async Task EnsureSetAsync<T>(Meta<T> meta, Func<Task<T>> value)
 	{
-		if (await Fetch(meta.Key) != null) return;
-		await Set(meta, await value());
+		if (await FetchAsync(meta.Key) != null) return;
+		await SetAsync(meta, await value());
 	}
 
-	public async Task EnsureSet<T>(IReadOnlyList<Meta<T>> metas, Func<List<T>> values)
+	public async Task EnsureSetAsync<T>(IReadOnlyList<Meta<T>> metas, Func<List<T>> values)
 	{
 		if (await db.MetaStore.CountAsync(p => metas.Select(m => m.Key).Contains(p.Key)) == metas.Count)
 			return;
@@ -39,22 +39,22 @@ public class MetaService([FromKeyedServices("cache")] DatabaseContext db) : ISco
 			throw new Exception("Metas count doesn't match values count");
 
 		for (var i = 0; i < metas.Count; i++)
-			await Set(metas[i], resolvedValues[i]);
+			await SetAsync(metas[i], resolvedValues[i]);
 	}
 
-	public async Task Set<T>(Meta<T> meta, T value) => await Set(meta.Key, meta.ConvertSet(value));
+	public async Task SetAsync<T>(Meta<T> meta, T value) => await SetAsync(meta.Key, meta.ConvertSet(value));
 
 	// Ensures the table is in memory (we could use pg_prewarm for this but that extension requires superuser privileges to install)
-	public async Task WarmupCache() => await db.MetaStore.ToListAsync();
+	public async Task WarmupCacheAsync() => await db.MetaStore.ToListAsync();
 
-	private async Task<string?> Fetch(string key) =>
+	private async Task<string?> FetchAsync(string key) =>
 		await db.MetaStore.Where(p => p.Key == key).Select(p => p.Value).FirstOrDefaultAsync();
 
-	private async Task<Dictionary<string, string?>> FetchMany(IEnumerable<string> keys) =>
+	private async Task<Dictionary<string, string?>> FetchManyAsync(IEnumerable<string> keys) =>
 		await db.MetaStore.Where(p => keys.Contains(p.Key))
 		        .ToDictionaryAsync(p => p.Key, p => p.Value);
 
-	private async Task Set(string key, string? value)
+	private async Task SetAsync(string key, string? value)
 	{
 		var entity = await db.MetaStore.FirstOrDefaultAsync(p => p.Key == key);
 		if (entity != null)

@@ -49,7 +49,7 @@ public class ActivityFetcherService(
 	private async Task<IEnumerable<ASObject>> FetchActivityAsync(string url, User actor, UserKeypair keypair)
 	{
 		logger.LogDebug("Fetching activity {url} as user {id}", url, actor.Id);
-		var (activity, finalUri) = await FetchActivityInternalWrapper(url, actor, keypair);
+		var (activity, finalUri) = await FetchActivityInternalWrapperAsync(url, actor, keypair);
 		if (activity?.Id == null) return [];
 
 		var activityUri = new Uri(activity.Id);
@@ -63,7 +63,7 @@ public class ActivityFetcherService(
 			throw GracefulException.UnprocessableEntity("Activity identifier doesn't match final host");
 
 		logger.LogDebug("Fetching activity {url} as user {id} (attempt 2)", activityIdUri.AbsoluteUri, actor.Id);
-		(activity, finalUri) = await FetchActivityInternalWrapper(activityIdUri.AbsoluteUri, actor, keypair);
+		(activity, finalUri) = await FetchActivityInternalWrapperAsync(activityIdUri.AbsoluteUri, actor, keypair);
 		if (activity?.Id == null) return [];
 
 		activityUri = new Uri(activity.Id);
@@ -79,13 +79,13 @@ public class ActivityFetcherService(
 	///     This abstracts FetchActivityInternal to keep stack traces short in case of HTTP timeouts.
 	/// </summary>
 	/// <exception cref="TimeoutException"></exception>
-	private async Task<(ASObject? obj, Uri finalUri)> FetchActivityInternalWrapper(
+	private async Task<(ASObject? obj, Uri finalUri)> FetchActivityInternalWrapperAsync(
 		string url, User actor, UserKeypair keypair, int recurse = 3
 	)
 	{
 		try
 		{
-			return await FetchActivityInternal(url, actor, keypair, recurse);
+			return await FetchActivityInternalAsync(url, actor, keypair, recurse);
 		}
 		catch (TaskCanceledException e) when (e.Message.Contains("HttpClient.Timeout"))
 		{
@@ -93,7 +93,7 @@ public class ActivityFetcherService(
 		}
 	}
 
-	private async Task<(ASObject? obj, Uri finalUri)> FetchActivityInternal(
+	private async Task<(ASObject? obj, Uri finalUri)> FetchActivityInternalAsync(
 		string url, User actor, UserKeypair keypair, int recurse = 3
 	)
 	{
@@ -115,7 +115,7 @@ public class ActivityFetcherService(
 			var location = response.Headers.Location;
 			if (location == null) throw new Exception("Redirection requested but no location header found");
 			if (recurse <= 0) throw new Exception("Redirection requested but recurse counter is at zero");
-			return await FetchActivityInternal(location.ToString(), actor, keypair, --recurse);
+			return await FetchActivityInternalAsync(location.ToString(), actor, keypair, --recurse);
 		}
 
 		var finalUri = response.RequestMessage?.RequestUri ??

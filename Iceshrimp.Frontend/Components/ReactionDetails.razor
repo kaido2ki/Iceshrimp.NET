@@ -32,7 +32,7 @@
         try
         {
             State     = State.Loading;
-            ReactedBy = await Api.Notes.GetNoteReactions(NoteId, Reaction.Name);
+            ReactedBy = await Api.Notes.GetNoteReactionsAsync(NoteId, Reaction.Name);
             State     = State.Loaded;
         }
         catch (ApiException e)

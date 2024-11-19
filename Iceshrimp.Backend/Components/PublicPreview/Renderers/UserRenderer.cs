@@ -18,11 +18,11 @@ public class UserRenderer(
 	public async Task<PreviewUser?> RenderOne(User? user)
 	{
 		if (user == null) return null;
-		var emoji = await GetEmoji([user]);
-		return await Render(user, emoji);
+		var emoji = await GetEmojiAsync([user]);
+		return await RenderAsync(user, emoji);
 	}
 
-	private async Task<PreviewUser> Render(User user, Dictionary<string, List<Emoji>> emoji)
+	private async Task<PreviewUser> RenderAsync(User user, Dictionary<string, List<Emoji>> emoji)
 	{
 		var mentions = user.UserProfile?.Mentions ?? [];
 
@@ -36,8 +36,8 @@ public class UserRenderer(
 			AvatarUrl      = user.AvatarUrl ?? user.IdenticonUrlPath,
 			BannerUrl      = user.BannerUrl,
 			RawDisplayName = user.DisplayName,
-			DisplayName    = await mfm.Render(user.DisplayName, user.Host, mentions, emoji[user.Id], "span"),
-			Bio            = await mfm.Render(user.UserProfile?.Description, user.Host, mentions, emoji[user.Id], "span"),
+			DisplayName    = await mfm.RenderAsync(user.DisplayName, user.Host, mentions, emoji[user.Id], "span"),
+			Bio            = await mfm.RenderAsync(user.UserProfile?.Description, user.Host, mentions, emoji[user.Id], "span"),
 			MovedToUri     = user.MovedToUri
 		};
 		// @formatter:on
@@ -51,7 +51,7 @@ public class UserRenderer(
 		return res;
 	}
 
-	private async Task<Dictionary<string, List<Emoji>>> GetEmoji(List<User> users)
+	private async Task<Dictionary<string, List<Emoji>>> GetEmojiAsync(List<User> users)
 	{
 		var ids = users.SelectMany(n => n.Emojis).Distinct().ToList();
 		if (ids.Count == 0) return users.ToDictionary<User, string, List<Emoji>>(p => p.Id, _ => []);
@@ -60,9 +60,9 @@ public class UserRenderer(
 		return users.ToDictionary(p => p.Id, p => emoji.Where(e => p.Emojis.Contains(e.Id)).ToList());
 	}
 
-	public async Task<List<PreviewUser>> RenderMany(List<User> users)
+	public async Task<List<PreviewUser>> RenderManyAsync(List<User> users)
 	{
-		var emoji = await GetEmoji(users);
-		return await users.Select(p => Render(p, emoji)).AwaitAllAsync().ToListAsync();
+		var emoji = await GetEmojiAsync(users);
+		return await users.Select(p => RenderAsync(p, emoji)).AwaitAllAsync().ToListAsync();
 	}
 }

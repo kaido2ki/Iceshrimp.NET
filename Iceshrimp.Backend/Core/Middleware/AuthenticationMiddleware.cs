@@ -26,7 +26,7 @@ public class AuthenticationMiddleware(
 		var isBlazorSsr = endpoint?.Metadata.GetMetadata<RootComponentMetadata>() != null;
 		if (isBlazorSsr)
 		{
-			await AuthenticateBlazorSsr(ctx, attribute);
+			await AuthenticateBlazorSsrAsync(ctx, attribute);
 			await next(ctx);
 			return;
 		}
@@ -113,7 +113,7 @@ public class AuthenticationMiddleware(
 		await next(ctx);
 	}
 
-	private async Task AuthenticateBlazorSsr(HttpContext ctx, AuthenticateAttribute attribute)
+	private async Task AuthenticateBlazorSsrAsync(HttpContext ctx, AuthenticateAttribute attribute)
 	{
 		if (!ctx.Request.Cookies.TryGetValue("admin_session", out var token)) return;
 

@@ -22,7 +22,7 @@ public class IndexModel(MetaService meta, IOptionsSnapshot<Config.InstanceSectio
 			return Redirect(dest);
 
 		var (instanceName, instanceDescription, contactEmail) =
-			await meta.GetMany(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
+			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
 
 		InstanceName = instanceName ?? "Iceshrimp.NET";
 		InstanceDescription =

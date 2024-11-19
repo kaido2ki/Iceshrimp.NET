@@ -112,7 +112,7 @@
     {
         try
         {
-            await UpdateSvc.ServiceWorkerUpdate();
+            await UpdateSvc.ServiceWorkerUpdateAsync();
         }
         catch (Exception e)
         {
@@ -121,7 +121,7 @@
             return;
         }
 
-        var res = await UpdateSvc.ServiceWorkerCheckWaiting();
+        var res = await UpdateSvc.ServiceWorkerCheckWaitingAsync();
         _updateAvailable = res ? CheckState.True : CheckState.False;
         _newVersion      = UpdateSvc.BackendVersion;
         StateHasChanged();
@@ -129,7 +129,7 @@
 
     private async void SkipWaiting()
     {
-        var res = await UpdateSvc.ServiceWorkerSkipWaiting();
+        var res = await UpdateSvc.ServiceWorkerSkipWaitingAsync();
         _skipWaitingRes = res ? CheckState.True : CheckState.Error;
         if (res)
         {

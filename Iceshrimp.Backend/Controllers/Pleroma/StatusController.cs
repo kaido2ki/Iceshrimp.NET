@@ -66,7 +66,7 @@ public class StatusController(
 		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		var res = await noteRenderer.GetReactions([note], user);
+		var res = await noteRenderer.GetReactionsAsync([note], user);
 
 		foreach (var item in res)
 		{
@@ -98,7 +98,7 @@ public class StatusController(
 		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		var res = (await noteRenderer.GetReactions([note], user)).Where(r => r.Name.Split("@").First() ==
+		var res = (await noteRenderer.GetReactionsAsync([note], user)).Where(r => r.Name.Split("@").First() ==
 		                                                                     Regex.Unescape(reaction))
 		                                                         .ToArray();
 

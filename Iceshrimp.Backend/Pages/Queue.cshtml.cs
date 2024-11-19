@@ -36,7 +36,7 @@ public class QueueModel(DatabaseContext db, QueueService queueSvc, MetaService m
 			return Redirect("/login");
 
 		Request.HttpContext.HideFooter();
-		InstanceName = await meta.Get(MetaEntity.InstanceName) ?? InstanceName;
+		InstanceName = await meta.GetAsync(MetaEntity.InstanceName) ?? InstanceName;
 
 		if (queue == null)
 		{

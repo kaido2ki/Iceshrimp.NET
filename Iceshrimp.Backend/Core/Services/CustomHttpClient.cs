@@ -14,7 +14,7 @@ public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonServ
 	private static readonly HttpMessageHandler InnerHandler = new SocketsHttpHandler
 	{
 		AutomaticDecompression      = DecompressionMethods.All,
-		ConnectCallback             = FastFallbackHandler.ConnectCallback,
+		ConnectCallback             = FastFallbackHandler.ConnectCallbackAsync,
 		PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
 		PooledConnectionLifetime    = TimeSpan.FromMinutes(60)
 	};
@@ -53,9 +53,9 @@ public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonServ
 		private bool AllowLocalIPv4 => Security?.CurrentValue.AllowLocalIPv4 ?? false;
 		private bool AllowLocalIPv6 => Security?.CurrentValue.AllowLocalIPv6 ?? false;
 
-		public async ValueTask<Stream> ConnectCallback(SocketsHttpConnectionContext context, CancellationToken token)
+		public async ValueTask<Stream> ConnectCallbackAsync(SocketsHttpConnectionContext context, CancellationToken token)
 		{
-			var sortedRecords = await GetSortedAddresses(context.DnsEndPoint.Host, token);
+			var sortedRecords = await GetSortedAddressesAsync(context.DnsEndPoint.Host, token);
 
 			var linkedToken = CancellationTokenSource.CreateLinkedTokenSource(token);
 			var tasks       = new List<Task<(NetworkStream? stream, Exception? exception)>>();
@@ -91,7 +91,7 @@ public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonServ
 
 				delayCts.CancelAfter(connectionBackoff * i);
 
-				var task = AttemptConnection(record, context.DnsEndPoint.Port, linkedToken.Token, delayCts.Token);
+				var task = AttemptConnectionAsync(record, context.DnsEndPoint.Port, linkedToken.Token, delayCts.Token);
 				tasks.Add(task);
 
 				var nextDelayCts = CancellationTokenSource.CreateLinkedTokenSource(linkedToken.Token);
@@ -126,7 +126,7 @@ public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonServ
 			return stream;
 		}
 
-		private static async Task<(NetworkStream? stream, Exception? exception)> AttemptConnection(
+		private static async Task<(NetworkStream? stream, Exception? exception)> AttemptConnectionAsync(
 			IPAddress address, int port, CancellationToken token, CancellationToken delayToken
 		)
 		{
@@ -152,7 +152,7 @@ public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonServ
 			}
 		}
 
-		private static async Task<List<IPAddress>> GetSortedAddresses(string hostname, CancellationToken token)
+		private static async Task<List<IPAddress>> GetSortedAddressesAsync(string hostname, CancellationToken token)
 		{
 			// This method abuses DNS ordering and LINQ a bit. We can normally assume that addresses will be provided in
 			// the order the system wants to use. GroupBy will return its groups *in the order they're discovered*. Meaning,

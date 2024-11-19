@@ -71,12 +71,12 @@ public sealed class StreamingConnectionAggregate : IDisposable
 			if (notification.Notifier != null && IsFiltered(notification.Notifier)) return;
 
 			await using var scope = GetTempScope();
-			if (notification.Note != null && await IsMutedThread(notification.Note, scope, true))
+			if (notification.Note != null && await IsMutedThreadAsync(notification.Note, scope, true))
 				return;
 
 			var renderer = scope.ServiceProvider.GetRequiredService<NotificationRenderer>();
 			var rendered = await renderer.RenderOne(notification, _user);
-			await _hub.Clients.User(_userId).Notification(rendered);
+			await _hub.Clients.User(_userId).NotificationAsync(rendered);
 		}
 		catch (Exception e)
 		{
@@ -96,12 +96,12 @@ public sealed class StreamingConnectionAggregate : IDisposable
 			if (data.note.Reply != null)
 			{
 				await using var scope = _scopeFactory.CreateAsyncScope();
-				if (await IsMutedThread(data.note, scope))
+				if (await IsMutedThreadAsync(data.note, scope))
 					return;
 			}
 
 			var rendered = EnforceRenoteReplyVisibility(await data.rendered.Value, wrapped);
-			await _hub.Clients.Clients(recipients.connectionIds).NotePublished(recipients.timelines, rendered);
+			await _hub.Clients.Clients(recipients.connectionIds).NotePublishedAsync(recipients.timelines, rendered);
 		}
 		catch (Exception e)
 		{
@@ -119,7 +119,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 			if (connectionIds.Count == 0) return;
 
 			var rendered = EnforceRenoteReplyVisibility(await data.rendered.Value, wrapped);
-			await _hub.Clients.Clients(connectionIds).NoteUpdated(rendered);
+			await _hub.Clients.Clients(connectionIds).NoteUpdatedAsync(rendered);
 		}
 		catch (Exception e)
 		{
@@ -136,7 +136,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 			var (connectionIds, _) = FindRecipients(note);
 			if (connectionIds.Count == 0) return;
 
-			await _hub.Clients.Clients(connectionIds).NoteDeleted(note.Id);
+			await _hub.Clients.Clients(connectionIds).NoteDeletedAsync(note.Id);
 		}
 		catch (Exception e)
 		{
@@ -170,7 +170,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		return res is not { Note.IsPureRenote: true, Renote: null } ? res : null;
 	}
 
-	private async Task<bool> IsMutedThread(Note note, AsyncServiceScope scope, bool isNotification = false)
+	private async Task<bool> IsMutedThreadAsync(Note note, AsyncServiceScope scope, bool isNotification = false)
 	{
 		if (!isNotification && note.Reply == null) return false;
 		if (!isNotification && note.User.Id == _userId) return false;
@@ -266,7 +266,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		_eventService.UserFollowed   += OnUserFollow;
 		_eventService.UserUnfollowed += OnUserUnfollow;
 
-		await InitializeRelationships();
+		await InitializeRelationshipsAsync();
 
 		_eventService.Notification      += OnNotification;
 		_streamingService.NotePublished += OnNotePublished;
@@ -278,7 +278,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		_eventService.FilterRemoved += OnFilterRemoved;
 	}
 
-	private async Task InitializeRelationships()
+	private async Task InitializeRelationshipsAsync()
 	{
 		await using var scope = GetTempScope();
 		await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
@@ -419,19 +419,19 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	private async void OnFilterAdded(object? _, Filter filter)
 	{
 		if (filter.User.Id != _userId) return;
-		await _hub.Clients.User(_userId).FilterAdded(FilterRenderer.RenderOne(filter));
+		await _hub.Clients.User(_userId).FilterAddedAsync(FilterRenderer.RenderOne(filter));
 	}
 
 	private async void OnFilterUpdated(object? _, Filter filter)
 	{
 		if (filter.User.Id != _userId) return;
-		await _hub.Clients.User(_userId).FilterUpdated(FilterRenderer.RenderOne(filter));
+		await _hub.Clients.User(_userId).FilterUpdatedAsync(FilterRenderer.RenderOne(filter));
 	}
 
 	private async void OnFilterRemoved(object? _, Filter filter)
 	{
 		if (filter.User.Id != _userId) return;
-		await _hub.Clients.User(_userId).FilterRemoved(filter.Id);
+		await _hub.Clients.User(_userId).FilterRemovedAsync(filter.Id);
 	}
 
 	#endregion

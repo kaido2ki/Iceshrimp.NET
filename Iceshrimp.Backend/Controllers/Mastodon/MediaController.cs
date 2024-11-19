@@ -39,7 +39,7 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 			Comment     = request.Description,
 			MimeType    = request.File.ContentType
 		};
-		var file = await driveSvc.StoreFile(request.File.OpenReadStream(), user, rq);
+		var file = await driveSvc.StoreFileAsync(request.File.OpenReadStream(), user, rq);
 		return RenderAttachment(file);
 	}
 

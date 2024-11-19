@@ -97,7 +97,7 @@
     {
         if (Depth < MaxDepth)
         {
-            var res = await Api.Notes.GetNoteDescendants(Note.Id, MaxDepth - Depth);
+            var res = await Api.Notes.GetNoteDescendantsAsync(Note.Id, MaxDepth - Depth);
             Note.Descendants = res;
             StateHasChanged();
         }

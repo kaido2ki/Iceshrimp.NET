@@ -51,7 +51,7 @@ public class SearchController(
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
 
-		return await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user);
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user);
 	}
 
 	[HttpGet("users")]
@@ -71,7 +71,7 @@ public class SearchController(
 		                    .OrderByDescending(p => p.NotesCount)
 		                    .ToListAsync();
 
-		return await userRenderer.RenderMany(users);
+		return await userRenderer.RenderManyAsync(users);
 	}
 
 	[HttpGet("lookup")]

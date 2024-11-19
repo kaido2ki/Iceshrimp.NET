@@ -29,7 +29,7 @@ public class DriveService(
 	ImageProcessor imageProcessor
 ) : IScopedService
 {
-	public async Task<DriveFile?> StoreFile(
+	public async Task<DriveFile?> StoreFileAsync(
 		string? uri, User user, bool sensitive, string? description = null, string? mimeType = null,
 		bool logExisting = true, bool forceStore = false, bool skipImageProcessing = false
 	)
@@ -120,7 +120,7 @@ public class DriveService(
 				var stream = await GetSafeStreamOrNullAsync(input, maxLength, res.Content.Headers.ContentLength);
 				try
 				{
-					return await StoreFile(stream, user, request, skipImageProcessing);
+					return await StoreFileAsync(stream, user, request, skipImageProcessing);
 				}
 				catch (Exception e)
 				{
@@ -160,7 +160,7 @@ public class DriveService(
 		}
 	}
 
-	public async Task<DriveFile> StoreFile(
+	public async Task<DriveFile> StoreFileAsync(
 		Stream input, User user, DriveFileCreationRequest request, bool skipImageProcessing = false
 	)
 	{
@@ -283,9 +283,9 @@ public class DriveService(
 					blurhash   = res.Blurhash;
 
 					var processed = await res.RequestedFormats
-					                         .Select(p => ProcessAndStoreFileVersion(p.Key, p.Value, request.Filename))
+					                         .Select(p => ProcessAndStoreFileVersionAsync(p.Key, p.Value, request.Filename))
 					                         .AwaitAllNoConcurrencyAsync()
-					                         .ContinueWithResult(p => p.ToImmutableArray());
+					                         .ContinueWithResultAsync(p => p.ToImmutableArray());
 
 					original = processed.FirstOrDefault(p => p?.format.Key == KeyEnum.Original) ??
 					           throw new Exception("Image processing didn't result in an original version");
@@ -359,11 +359,11 @@ public class DriveService(
 	)
 	{
 		var accessKey = GenerateAccessKey(extension: Path.GetExtension(request.Filename).TrimStart('.')).TrimStart('-');
-		var url       = await StoreFileVersion(input, accessKey, request.Filename, request.MimeType);
+		var url       = await StoreFileVersionAsync(input, accessKey, request.Filename, request.MimeType);
 		return (Stub, accessKey, url);
 	}
 
-	private async Task<ImageVerTriple?> ProcessAndStoreFileVersion(
+	private async Task<ImageVerTriple?> ProcessAndStoreFileVersionAsync(
 		ImageVersion version, Func<Task<Stream>>? encode, string fileName
 	)
 	{
@@ -387,7 +387,7 @@ public class DriveService(
 			}
 
 			fileName = GenerateDerivedFileName(fileName, version.Format.Extension);
-			var url = await StoreFileVersion(stream, accessKey, fileName, version.Format.MimeType);
+			var url = await StoreFileVersionAsync(stream, accessKey, fileName, version.Format.MimeType);
 			return (version, accessKey, url);
 		}
 		finally
@@ -397,17 +397,17 @@ public class DriveService(
 		}
 	}
 
-	private Task<string> StoreFileVersion(Stream stream, string accessKey, string fileName, string mimeType)
+	private Task<string> StoreFileVersionAsync(Stream stream, string accessKey, string fileName, string mimeType)
 	{
 		return storageConfig.Value.Provider switch
 		{
-			Enums.FileStorage.Local         => StoreFileVersionLocalStorage(stream, accessKey),
-			Enums.FileStorage.ObjectStorage => StoreFileVersionObjectStorage(stream, accessKey, fileName, mimeType),
+			Enums.FileStorage.Local         => StoreFileVersionLocalStorageAsync(stream, accessKey),
+			Enums.FileStorage.ObjectStorage => StoreFileVersionObjectStorageAsync(stream, accessKey, fileName, mimeType),
 			_                               => throw new ArgumentOutOfRangeException()
 		};
 	}
 
-	private async Task<string> StoreFileVersionLocalStorage(Stream stream, string filename)
+	private async Task<string> StoreFileVersionLocalStorageAsync(Stream stream, string filename)
 	{
 		var pathBase = storageConfig.Value.Local?.Path ??
 		               throw new Exception("Local storage path cannot be null");
@@ -419,7 +419,7 @@ public class DriveService(
 		return $"https://{instanceConfig.Value.WebDomain}/files/{filename}";
 	}
 
-	private async Task<string> StoreFileVersionObjectStorage(
+	private async Task<string> StoreFileVersionObjectStorageAsync(
 		Stream stream, string accessKey, string filename, string mimeType
 	)
 	{
@@ -428,18 +428,18 @@ public class DriveService(
 		return storageSvc.GetFilePublicUrl(accessKey).AbsoluteUri;
 	}
 
-	public async Task RemoveFile(DriveFile file)
+	public async Task RemoveFileAsync(DriveFile file)
 	{
-		await RemoveFile(file.Id);
+		await RemoveFileAsync(file.Id);
 	}
 
-	public async Task RemoveFile(string fileId)
+	public async Task RemoveFileAsync(string fileId)
 	{
 		var job = new DriveFileDeleteJobData { DriveFileId = fileId, Expire = false };
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(job);
 	}
 
-	public async Task ExpireFile(DriveFile file, CancellationToken token = default)
+	public async Task ExpireFileAsync(DriveFile file, CancellationToken token = default)
 	{
 		if (file is not { UserHost: not null, Uri: not null, IsLink: false }) return;
 
@@ -489,10 +489,10 @@ public class DriveService(
 		}
 	}
 
-	public async Task<HashSet<string>> GetAllFileNamesFromObjectStorage()
+	public async Task<HashSet<string>> GetAllFileNamesFromObjectStorageAsync()
 	{
 		return storageConfig.Value.ObjectStorage?.Bucket != null
-			? await storageSvc.EnumerateFilesAsync().ToArrayAsync().AsTask().ContinueWithResult(p => p.ToHashSet())
+			? await storageSvc.EnumerateFilesAsync().ToArrayAsync().AsTask().ContinueWithResultAsync(p => p.ToHashSet())
 			: [];
 	}
 

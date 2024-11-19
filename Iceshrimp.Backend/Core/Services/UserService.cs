@@ -211,11 +211,11 @@ public class UserService(
 		{
 			await db.AddRangeAsync(user, profile, publicKey);
 			await db.SaveChangesAsync();
-			var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
+			var processPendingDeletes = await ResolveAvatarAndBannerAsync(user, actor);
 			await processPendingDeletes();
-			user = await UpdateProfileMentions(user, actor);
+			user = await UpdateProfileMentionsAsync(user, actor);
 			UpdateUserPinnedNotesInBackground(actor, user);
-			_ = followupTaskSvc.ExecuteTask("UpdateInstanceUserCounter", async provider =>
+			_ = followupTaskSvc.ExecuteTaskAsync("UpdateInstanceUserCounter", async provider =>
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
@@ -317,7 +317,7 @@ public class UserService(
 
 		//TODO: update acct host via webfinger here
 
-		var processPendingDeletes = await ResolveAvatarAndBanner(user, actor);
+		var processPendingDeletes = await ResolveAvatarAndBannerAsync(user, actor);
 
 		user.UserProfile.Description = actor.MkSummary ?? await MfmConverter.FromHtmlAsync(actor.Summary);
 		//user.UserProfile.Birthday = TODO;
@@ -334,7 +334,7 @@ public class UserService(
 		db.Update(user);
 		await db.SaveChangesAsync();
 		await processPendingDeletes();
-		user = await UpdateProfileMentions(user, actor, true);
+		user = await UpdateProfileMentionsAsync(user, actor, true);
 		UpdateUserPinnedNotesInBackground(actor, user, true);
 		return user;
 	}
@@ -351,38 +351,38 @@ public class UserService(
 		if (user.UserProfile.Description != null)
 		{
 			var nodes = MfmParser.Parse(user.UserProfile.Description);
-			user.Emojis.AddRange((await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList());
+			user.Emojis.AddRange((await emojiSvc.ResolveEmojiAsync(nodes)).Select(p => p.Id).ToList());
 		}
 
 		if (user.DisplayName != null)
 		{
 			var nodes = MfmParser.Parse(user.DisplayName);
-			user.Emojis.AddRange((await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList());
+			user.Emojis.AddRange((await emojiSvc.ResolveEmojiAsync(nodes)).Select(p => p.Id).ToList());
 		}
 
 		if (user.UserProfile.Fields.Length != 0)
 		{
 			var input = user.UserProfile.Fields.Select(p => $"{p.Name} {p.Value}");
 			var nodes = MfmParser.Parse(string.Join('\n', input));
-			user.Emojis.AddRange((await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList());
+			user.Emojis.AddRange((await emojiSvc.ResolveEmojiAsync(nodes)).Select(p => p.Id).ToList());
 		}
 
 		db.Update(user);
 		db.Update(user.UserProfile);
 		await db.SaveChangesAsync();
 
-		user = await UpdateProfileMentions(user, null, wait: true);
+		user = await UpdateProfileMentionsAsync(user, null, wait: true);
 
 		var activity = activityRenderer.RenderUpdate(await userRenderer.RenderAsync(user));
 		await deliverSvc.DeliverToFollowersAsync(activity, user, []);
 
-		_ = followupTaskSvc.ExecuteTask("UpdateLocalUserAsync", async provider =>
+		_ = followupTaskSvc.ExecuteTaskAsync("UpdateLocalUserAsync", async provider =>
 		{
 			var bgDriveSvc = provider.GetRequiredService<DriveService>();
 			if (prevAvatarId != null && user.Avatar?.Id != prevAvatarId)
-				await bgDriveSvc.RemoveFile(prevAvatarId);
+				await bgDriveSvc.RemoveFileAsync(prevAvatarId);
 			if (prevBannerId != null && user.Banner?.Id != prevBannerId)
-				await bgDriveSvc.RemoveFile(prevBannerId);
+				await bgDriveSvc.RemoveFileAsync(prevBannerId);
 		});
 
 		return user;
@@ -445,11 +445,11 @@ public class UserService(
 		return user;
 	}
 
-	private async Task<Func<Task>> ResolveAvatarAndBanner(User user, ASActor actor)
+	private async Task<Func<Task>> ResolveAvatarAndBannerAsync(User user, ASActor actor)
 	{
-		var avatar = await driveSvc.StoreFile(actor.Avatar?.Url?.Link, user, actor.Avatar?.Sensitive ?? false,
+		var avatar = await driveSvc.StoreFileAsync(actor.Avatar?.Url?.Link, user, actor.Avatar?.Sensitive ?? false,
 		                                      logExisting: false);
-		var banner = await driveSvc.StoreFile(actor.Banner?.Url?.Link, user, actor.Banner?.Sensitive ?? false,
+		var banner = await driveSvc.StoreFileAsync(actor.Banner?.Url?.Link, user, actor.Banner?.Sensitive ?? false,
 		                                      logExisting: false);
 
 		var prevAvatarId = user.AvatarId;
@@ -469,10 +469,10 @@ public class UserService(
 		return async () =>
 		{
 			if (prevAvatarId != null && avatar?.Id != prevAvatarId)
-				await driveSvc.RemoveFile(prevAvatarId);
+				await driveSvc.RemoveFileAsync(prevAvatarId);
 
 			if (prevBannerId != null && banner?.Id != prevBannerId)
-				await driveSvc.RemoveFile(prevBannerId);
+				await driveSvc.RemoveFileAsync(prevBannerId);
 		};
 	}
 
@@ -542,7 +542,7 @@ public class UserService(
 
 		if (token.LastActiveDate != null && token.LastActiveDate > DateTime.UtcNow - TimeSpan.FromHours(1)) return;
 
-		_ = followupTaskSvc.ExecuteTask("UpdateOauthTokenMetadata", async provider =>
+		_ = followupTaskSvc.ExecuteTaskAsync("UpdateOauthTokenMetadata", async provider =>
 		{
 			var bgDb = provider.GetRequiredService<DatabaseContext>();
 			await bgDb.OauthTokens.Where(p => p.Id == token.Id)
@@ -557,7 +557,7 @@ public class UserService(
 		if (session.LastActiveDate != null && session.LastActiveDate > DateTime.UtcNow - TimeSpan.FromMinutes(5))
 			return;
 
-		_ = followupTaskSvc.ExecuteTask("UpdateSessionMetadata", async provider =>
+		_ = followupTaskSvc.ExecuteTaskAsync("UpdateSessionMetadata", async provider =>
 		{
 			var bgDb = provider.GetRequiredService<DatabaseContext>();
 			await bgDb.Sessions.Where(p => p.Id == session.Id)
@@ -570,7 +570,7 @@ public class UserService(
 		if (user.LastActiveDate != null && user.LastActiveDate > DateTime.UtcNow - TimeSpan.FromMinutes(5))
 			return;
 
-		_ = followupTaskSvc.ExecuteTask("UpdateUserLastActive", async provider =>
+		_ = followupTaskSvc.ExecuteTaskAsync("UpdateUserLastActive", async provider =>
 		{
 			var bgDb = provider.GetRequiredService<DatabaseContext>();
 			await bgDb.Users.Where(p => p.Id == user.Id)
@@ -609,7 +609,7 @@ public class UserService(
 
 		if (request.Follower is { IsRemoteUser: true })
 		{
-			_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
+			_ = followupTaskSvc.ExecuteTaskAsync("IncrementInstanceIncomingFollowsCounter", async provider =>
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
@@ -623,7 +623,7 @@ public class UserService(
 		}
 		else if (request.Followee is { IsRemoteUser: true })
 		{
-			_ = followupTaskSvc.ExecuteTask("IncrementInstanceOutgoingFollowsCounter", async provider =>
+			_ = followupTaskSvc.ExecuteTaskAsync("IncrementInstanceOutgoingFollowsCounter", async provider =>
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
@@ -636,8 +636,8 @@ public class UserService(
 		if (request.Followee.IsRemoteUser && request.Follower.IsLocalUser && request.Followee.FollowersCount == 0)
 			UpdateUserPinnedNotesInBackground(request.Followee);
 
-		await notificationSvc.GenerateFollowNotification(request.Follower, request.Followee);
-		await notificationSvc.GenerateFollowRequestAcceptedNotification(request);
+		await notificationSvc.GenerateFollowNotificationAsync(request.Follower, request.Followee);
+		await notificationSvc.GenerateFollowRequestAcceptedNotificationAsync(request);
 
 		// Clean up notifications
 		await db.Notifications
@@ -771,7 +771,7 @@ public class UserService(
 
 						await db.AddAsync(following);
 						await db.SaveChangesAsync();
-						await notificationSvc.GenerateFollowNotification(follower, followee);
+						await notificationSvc.GenerateFollowNotificationAsync(follower, followee);
 
 						await db.Users.Where(p => p.Id == follower.Id)
 						        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount,
@@ -782,7 +782,7 @@ public class UserService(
 
 						if (follower.IsRemoteUser)
 						{
-							_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
+							_ = followupTaskSvc.ExecuteTaskAsync("IncrementInstanceIncomingFollowsCounter", async provider =>
 							{
 								var bgDb          = provider.GetRequiredService<DatabaseContext>();
 								var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
@@ -814,7 +814,7 @@ public class UserService(
 
 					await db.AddAsync(request);
 					await db.SaveChangesAsync();
-					await notificationSvc.GenerateFollowRequestReceivedNotification(request);
+					await notificationSvc.GenerateFollowRequestReceivedNotificationAsync(request);
 				}
 			}
 		}
@@ -840,7 +840,7 @@ public class UserService(
 
 				await db.AddAsync(following);
 				await db.SaveChangesAsync();
-				await notificationSvc.GenerateFollowNotification(follower, followee);
+				await notificationSvc.GenerateFollowNotificationAsync(follower, followee);
 
 				await db.Users.Where(p => p.Id == follower.Id)
 				        .ExecuteUpdateAsync(p => p.SetProperty(i => i.FollowingCount, i => i.FollowingCount + 1));
@@ -849,7 +849,7 @@ public class UserService(
 
 				if (follower.IsRemoteUser)
 				{
-					_ = followupTaskSvc.ExecuteTask("IncrementInstanceIncomingFollowsCounter", async provider =>
+					_ = followupTaskSvc.ExecuteTaskAsync("IncrementInstanceIncomingFollowsCounter", async provider =>
 					{
 						var bgDb          = provider.GetRequiredService<DatabaseContext>();
 						var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
@@ -906,7 +906,7 @@ public class UserService(
 
 			if (follower.IsRemoteUser)
 			{
-				_ = followupTaskSvc.ExecuteTask("DecrementInstanceIncomingFollowsCounter", async provider =>
+				_ = followupTaskSvc.ExecuteTaskAsync("DecrementInstanceIncomingFollowsCounter", async provider =>
 				{
 					var bgDb          = provider.GetRequiredService<DatabaseContext>();
 					var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
@@ -958,7 +958,7 @@ public class UserService(
 
 			if (followee.IsRemoteUser)
 			{
-				_ = followupTaskSvc.ExecuteTask("DecrementInstanceOutgoingFollowsCounter", async provider =>
+				_ = followupTaskSvc.ExecuteTaskAsync("DecrementInstanceOutgoingFollowsCounter", async provider =>
 				{
 					var bgDb          = provider.GetRequiredService<DatabaseContext>();
 					var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
@@ -999,7 +999,7 @@ public class UserService(
 	{
 		if (followupTaskSvc.IsBackgroundWorker.Value && !force) return;
 		if (KeyedLocker.IsInUse($"pinnedNotes:{user.Id}")) return;
-		_ = followupTaskSvc.ExecuteTask("UpdateUserPinnedNotes", async provider =>
+		_ = followupTaskSvc.ExecuteTaskAsync("UpdateUserPinnedNotes", async provider =>
 		{
 			using (await KeyedLocker.LockAsync($"pinnedNotes:{user.Id}"))
 			{
@@ -1019,7 +1019,7 @@ public class UserService(
 		if (!user.IsRemoteUser) return;
 		if (followupTaskSvc.IsBackgroundWorker.Value && !force) return;
 		if (KeyedLocker.IsInUse($"pinnedNotes:{user.Id}")) return;
-		_ = followupTaskSvc.ExecuteTask("UpdateUserPinnedNotes", async provider =>
+		_ = followupTaskSvc.ExecuteTaskAsync("UpdateUserPinnedNotes", async provider =>
 		{
 			using (await KeyedLocker.LockAsync($"pinnedNotes:{user.Id}"))
 			{
@@ -1037,14 +1037,14 @@ public class UserService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "Projectables")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
-	private async Task<User> UpdateProfileMentions(User user, ASActor? actor, bool force = false, bool wait = false)
+	private async Task<User> UpdateProfileMentionsAsync(User user, ASActor? actor, bool force = false, bool wait = false)
 	{
 		if (followupTaskSvc.IsBackgroundWorker.Value && !force) return user;
 		if (KeyedLocker.IsInUse($"profileMentions:{user.Id}")) return user;
 
 		var success = false;
 
-		var task = followupTaskSvc.ExecuteTask("UpdateProfileMentionsInBackground", async provider =>
+		var task = followupTaskSvc.ExecuteTaskAsync("UpdateProfileMentionsInBackground", async provider =>
 		{
 			using (await KeyedLocker.LockAsync($"profileMentions:{user.Id}"))
 			{
@@ -1056,7 +1056,7 @@ public class UserService(
 
 				if (actor != null)
 				{
-					var (mentions, splitDomainMapping) = await bgMentionsResolver.ResolveMentions(actor, bgUser.Host);
+					var (mentions, splitDomainMapping) = await bgMentionsResolver.ResolveMentionsAsync(actor, bgUser.Host);
 					var fields = actor.Attachments != null
 						? await actor.Attachments
 						             .OfType<ASField>()
@@ -1079,7 +1079,7 @@ public class UserService(
 				}
 				else
 				{
-					bgUser.UserProfile.Mentions = await bgMentionsResolver.ResolveMentions(bgUser.UserProfile.Fields,
+					bgUser.UserProfile.Mentions = await bgMentionsResolver.ResolveMentionsAsync(bgUser.UserProfile.Fields,
 						bgUser.UserProfile.Description, bgUser.Host);
 				}
 
@@ -1131,7 +1131,7 @@ public class UserService(
 
 		tags = tags.Distinct().ToList();
 
-		_ = followupTaskSvc.ExecuteTask("UpdateHashtagsTable", async provider =>
+		_ = followupTaskSvc.ExecuteTaskAsync("UpdateHashtagsTable", async provider =>
 		{
 			var bgDb     = provider.GetRequiredService<DatabaseContext>();
 			var existing = await bgDb.Hashtags.Where(p => tags.Contains(p.Name)).Select(p => p.Name).ToListAsync();
@@ -1379,7 +1379,7 @@ public class UserService(
 		var followers = db.Followings
 		                  .Where(p => p.Followee == source && p.Follower.IsLocalUser)
 		                  .Select(p => p.Follower)
-		                  .AsChunkedAsyncEnumerable(50, p => p.Id, hook: p => p.PrecomputeRelationshipData(source));
+		                  .AsChunkedAsyncEnumerableAsync(50, p => p.Id, hook: p => p.PrecomputeRelationshipData(source));
 
 		await foreach (var follower in followers)
 		{
@@ -1407,7 +1407,7 @@ public class UserService(
 		var following = db.Followings
 		                  .Where(p => p.Follower == source)
 		                  .Select(p => p.Follower)
-		                  .AsChunkedAsyncEnumerable(50, p => p.Id, hook: p => p.PrecomputeRelationshipData(source));
+		                  .AsChunkedAsyncEnumerableAsync(50, p => p.Id, hook: p => p.PrecomputeRelationshipData(source));
 
 		await foreach (var followee in following)
 		{

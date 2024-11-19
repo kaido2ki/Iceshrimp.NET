@@ -101,7 +101,7 @@ public class NoteService(
 	{
 		logger.LogDebug("Creating note for user {id}", data.User.Id);
 
-		await policySvc.Initialize();
+		await policySvc.InitializeAsync();
 
 		// @formatter:off
 		if (data.User.IsRemoteUser && policySvc.ShouldReject(data, out var policy))
@@ -215,7 +215,7 @@ public class NoteService(
 
 		if (data.Emoji == null && data.User.IsLocalUser && nodes != null)
 		{
-			data.Emoji = (await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList();
+			data.Emoji = (await emojiSvc.ResolveEmojiAsync(nodes)).Select(p => p.Id).ToList();
 		}
 
 		List<string> visibleUserIds = [];
@@ -295,7 +295,7 @@ public class NoteService(
 
 			await db.AddAsync(data.Poll);
 			note.HasPoll = true;
-			await EnqueuePollExpiryTask(data.Poll);
+			await EnqueuePollExpiryTaskAsync(data.Poll);
 		}
 
 		logger.LogDebug("Inserting created note {noteId} for user {userId} into the database", note.Id, data.User.Id);
@@ -304,15 +304,15 @@ public class NoteService(
 		await db.AddAsync(note);
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotePublished(this, note);
-		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
-		await notificationSvc.GenerateReplyNotifications(note, mentionedLocalUserIds);
-		await notificationSvc.GenerateRenoteNotification(note);
+		await notificationSvc.GenerateMentionNotificationsAsync(note, mentionedLocalUserIds);
+		await notificationSvc.GenerateReplyNotificationsAsync(note, mentionedLocalUserIds);
+		await notificationSvc.GenerateRenoteNotificationAsync(note);
 
 		logger.LogDebug("Note {id} created successfully", note.Id);
 
 		if (data.Uri != null || data.Url != null)
 		{
-			_ = followupTaskSvc.ExecuteTask("ResolvePendingReplyRenoteTargets", async provider =>
+			_ = followupTaskSvc.ExecuteTaskAsync("ResolvePendingReplyRenoteTargets", async provider =>
 			{
 				var bgDb  = provider.GetRequiredService<DatabaseContext>();
 				var count = 0;
@@ -372,7 +372,7 @@ public class NoteService(
 
 		if (data.User.IsRemoteUser)
 		{
-			_ = followupTaskSvc.ExecuteTask("UpdateInstanceNoteCounter", async provider =>
+			_ = followupTaskSvc.ExecuteTaskAsync("UpdateInstanceNoteCounter", async provider =>
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
@@ -510,7 +510,7 @@ public class NoteService(
 
 		if (note.User.IsLocalUser && nodes != null)
 		{
-			data.Emoji = (await emojiSvc.ResolveEmoji(nodes)).Select(p => p.Id).ToList();
+			data.Emoji = (await emojiSvc.ResolveEmojiAsync(nodes)).Select(p => p.Id).ToList();
 		}
 
 		if (data.Emoji != null && !note.Emojis.IsEquivalent(data.Emoji))
@@ -576,7 +576,7 @@ public class NoteService(
 				if (note.Poll.ExpiresAt != poll.ExpiresAt)
 				{
 					note.Poll.ExpiresAt = poll.ExpiresAt;
-					await EnqueuePollExpiryTask(note.Poll);
+					await EnqueuePollExpiryTaskAsync(note.Poll);
 				}
 
 				if (!note.Poll.Choices.SequenceEqual(poll.Choices) || note.Poll.Multiple != poll.Multiple)
@@ -617,7 +617,7 @@ public class NoteService(
 					poll.Votes = poll.Choices.Select(_ => 0).ToList();
 
 				await db.AddAsync(poll);
-				await EnqueuePollExpiryTask(poll);
+				await EnqueuePollExpiryTaskAsync(poll);
 			}
 
 			note.HasPoll = true;
@@ -654,8 +654,8 @@ public class NoteService(
 
 		if (!isEdit) return note;
 
-		await notificationSvc.GenerateMentionNotifications(note, mentionedLocalUserIds);
-		await notificationSvc.GenerateEditNotifications(note);
+		await notificationSvc.GenerateMentionNotificationsAsync(note, mentionedLocalUserIds);
+		await notificationSvc.GenerateEditNotificationsAsync(note);
 
 		if (note.LocalOnly || note.User.IsRemoteUser) return note;
 
@@ -680,7 +680,7 @@ public class NoteService(
 		{
 			if (note.User.Uri != null)
 			{
-				_ = followupTaskSvc.ExecuteTask("UpdateInstanceNoteCounter", async provider =>
+				_ = followupTaskSvc.ExecuteTaskAsync("UpdateInstanceNoteCounter", async provider =>
 				{
 					var bgDb          = provider.GetRequiredService<DatabaseContext>();
 					var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
@@ -842,7 +842,7 @@ public class NoteService(
 			};
 			await db.AddAsync(vote);
 			await db.SaveChangesAsync();
-			await pollSvc.RegisterPollVote(vote, poll, reply);
+			await pollSvc.RegisterPollVoteAsync(vote, poll, reply);
 
 			return null;
 		}
@@ -1062,7 +1062,7 @@ public class NoteService(
 
 		tags = tags.Distinct().ToList();
 
-		_ = followupTaskSvc.ExecuteTask("UpdateHashtagsTable", async provider =>
+		_ = followupTaskSvc.ExecuteTaskAsync("UpdateHashtagsTable", async provider =>
 		{
 			var bgDb     = provider.GetRequiredService<DatabaseContext>();
 			var existing = await bgDb.Hashtags.Where(p => tags.Contains(p.Name)).Select(p => p.Name).ToListAsync();
@@ -1119,7 +1119,7 @@ public class NoteService(
 		var result = await attachments
 		                   .OfType<ASDocument>()
 		                   .Take(10)
-		                   .Select(p => driveSvc.StoreFile(p.Url?.Id, user, p.Sensitive ?? sensitive, p.Description,
+		                   .Select(p => driveSvc.StoreFileAsync(p.Url?.Id, user, p.Sensitive ?? sensitive, p.Description,
 		                                                   p.MediaType, logExisting))
 		                   .AwaitAllNoConcurrencyAsync();
 
@@ -1289,7 +1289,7 @@ public class NoteService(
 			}
 
 			eventSvc.RaiseNoteLiked(this, note, user);
-			await notificationSvc.GenerateLikeNotification(note, user);
+			await notificationSvc.GenerateLikeNotificationAsync(note, user);
 			return true;
 		}
 
@@ -1445,12 +1445,12 @@ public class NoteService(
 		var collection = actor.Featured;
 		if (collection == null) return;
 		if (collection.IsUnresolved)
-			collection = await objectResolver.ResolveObject(collection, force: true) as ASOrderedCollection;
+			collection = await objectResolver.ResolveObjectAsync(collection, force: true) as ASOrderedCollection;
 		if (collection is not { Items: not null }) return;
 
 		// ReSharper disable once EntityFramework.UnsupportedServerSideFunctionCall
 		var followingUser = await db.Users.FirstOrDefaultAsync(p => p.IsFollowing(user));
-		var notes = await objectResolver.IterateCollection(collection)
+		var notes = await objectResolver.IterateCollectionAsync(collection)
 		                                .Take(10)
 		                                .Where(p => p.Id != null)
 		                                .Select(p => ResolveNoteAsync(p.Id!, null, followingUser, true))
@@ -1480,7 +1480,7 @@ public class NoteService(
 		await db.SaveChangesAsync();
 	}
 
-	private async Task EnqueuePollExpiryTask(Poll poll)
+	private async Task EnqueuePollExpiryTaskAsync(Poll poll)
 	{
 		// Skip polls without expiry date
 		if (!poll.ExpiresAt.HasValue) return;
@@ -1496,7 +1496,7 @@ public class NoteService(
 		if (note.IsPureRenote)
 			throw GracefulException.BadRequest("Cannot react to a pure renote");
 
-		name = await emojiSvc.ResolveEmojiName(name, user.Host);
+		name = await emojiSvc.ResolveEmojiNameAsync(name, user.Host);
 		if (await db.NoteReactions.AnyAsync(p => p.Note == note && p.User == user && p.Reaction == name))
 			return (name, false);
 
@@ -1515,7 +1515,7 @@ public class NoteService(
 		await db.AddAsync(reaction);
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNoteReacted(this, reaction);
-		await notificationSvc.GenerateReactionNotification(reaction);
+		await notificationSvc.GenerateReactionNotificationAsync(reaction);
 
 		// @formatter:off
 		await db.Database.ExecuteSqlAsync($"""UPDATE "note" SET "reactions" = jsonb_set("reactions", ARRAY[{name}], (COALESCE("reactions"->>{name}, '0')::int + 1)::text::jsonb) WHERE "id" = {note.Id}""");
@@ -1523,7 +1523,7 @@ public class NoteService(
 
 		if (user.IsLocalUser)
 		{
-			var emoji    = await emojiSvc.ResolveEmoji(reaction.Reaction);
+			var emoji    = await emojiSvc.ResolveEmojiAsync(reaction.Reaction);
 			var activity = activityRenderer.RenderReact(reaction, emoji);
 			await deliverSvc.DeliverToConditionalAsync(activity, user, note);
 		}
@@ -1542,7 +1542,7 @@ public class NoteService(
 
 	public async Task<(string name, bool success)> RemoveReactionFromNoteAsync(Note note, User user, string name)
 	{
-		name = await emojiSvc.ResolveEmojiName(name, user.Host);
+		name = await emojiSvc.ResolveEmojiNameAsync(name, user.Host);
 
 		var reaction =
 			await db.NoteReactions.FirstOrDefaultAsync(p => p.Note == note && p.User == user && p.Reaction == name);
@@ -1558,7 +1558,7 @@ public class NoteService(
 		if (user.IsLocalUser)
 		{
 			var actor    = userRenderer.RenderLite(user);
-			var emoji    = await emojiSvc.ResolveEmoji(reaction.Reaction);
+			var emoji    = await emojiSvc.ResolveEmojiAsync(reaction.Reaction);
 			var activity = activityRenderer.RenderUndo(actor, activityRenderer.RenderReact(reaction, emoji));
 			await deliverSvc.DeliverToConditionalAsync(activity, user, note);
 		}

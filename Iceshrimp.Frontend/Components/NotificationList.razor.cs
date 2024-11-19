@@ -25,7 +25,7 @@ public partial class NotificationList : IAsyncDisposable
 	{
 		try
 		{
-			var res = await Api.Notifications.GetNotifications(new PaginationQuery());
+			var res = await Api.Notifications.GetNotificationsAsync(new PaginationQuery());
 			if (res.Count > 0)
 			{
 				Notifications = res;
@@ -43,7 +43,7 @@ public partial class NotificationList : IAsyncDisposable
 	private async Task LoadMore()
 	{
 		var pq  = new PaginationQuery { MaxId = _minId, Limit = 20 };
-		var res = await Api.Notifications.GetNotifications(pq);
+		var res = await Api.Notifications.GetNotificationsAsync(pq);
 		if (res.Count > 0)
 		{
 			Notifications.AddRange(res);
@@ -55,7 +55,7 @@ public partial class NotificationList : IAsyncDisposable
 	protected override async Task OnInitializedAsync()
 	{
 		StreamingService.Notification += OnNotification;
-		await StreamingService.Connect();
+		await StreamingService.ConnectAsync();
 		await GetNotifications();
 		StateHasChanged();
 	}

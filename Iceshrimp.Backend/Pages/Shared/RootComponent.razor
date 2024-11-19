@@ -62,7 +62,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        _instanceName = await Meta.Get(MetaEntity.InstanceName);
+        _instanceName = await Meta.GetAsync(MetaEntity.InstanceName);
         _user         = Context.GetUser();
 
         if (Context.GetEndpoint()?.Metadata.GetMetadata<RequireAuthorizationAttribute>() == null)

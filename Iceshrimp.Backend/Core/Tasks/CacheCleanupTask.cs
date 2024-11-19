@@ -8,7 +8,7 @@ namespace Iceshrimp.Backend.Core.Tasks;
 [SuppressMessage("ReSharper", "UnusedType.Global", Justification = "Instantiated at runtime by CronService")]
 public class CacheCleanupTask : ICronTask
 {
-	public async Task Invoke(IServiceProvider provider)
+	public async Task InvokeAsync(IServiceProvider provider)
 	{
 		var db = provider.GetRequiredService<DatabaseContext>();
 		await db.CacheStore.Where(p => p.Expiry != null && p.Expiry < DateTime.UtcNow).ExecuteDeleteAsync();

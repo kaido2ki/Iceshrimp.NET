@@ -71,18 +71,18 @@ public class NoteRenderer(
 		var renoted = data?.Renotes?.Contains(note.Id) ??
 		              await db.Notes.AnyAsync(p => p.Renote == note && p.User == user && p.IsPureRenote);
 
-		var noteEmoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmoji([note]);
+		var noteEmoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([note]);
 
 		var mentions = data?.Mentions == null
-			? await GetMentions([note])
+			? await GetMentionsAsync([note])
 			: [..data.Mentions.Where(p => note.Mentions.Contains(p.Id))];
 
 		var attachments = data?.Attachments == null
-			? await GetAttachments([note])
+			? await GetAttachmentsAsync([note])
 			: [..data.Attachments.Where(p => note.FileIds.Contains(p.Id))];
 
 		var reactions = data?.Reactions == null
-			? await GetReactions([note], user)
+			? await GetReactionsAsync([note], user)
 			: [..data.Reactions.Where(p => p.NoteId == note.Id)];
 
 		var mentionedUsers = mentions.Select(p => new Note.MentionedUser
@@ -110,10 +110,10 @@ public class NoteRenderer(
 		              await userRenderer.RenderAsync(note.User, user);
 
 		var poll = note.HasPoll
-			? (data?.Polls ?? await GetPolls([note], user)).FirstOrDefault(p => p.Id == note.Id)
+			? (data?.Polls ?? await GetPollsAsync([note], user)).FirstOrDefault(p => p.Id == note.Id)
 			: null;
 
-		var filters = data?.Filters ?? await GetFilters(user, filterContext);
+		var filters = data?.Filters ?? await GetFiltersAsync(user, filterContext);
 
 		List<FilterResultEntity> filterResult;
 		if (filters.Count > 0 && filterContext == null)
@@ -178,8 +178,8 @@ public class NoteRenderer(
 		var edits = await db.NoteEdits.Where(p => p.Note == note).OrderBy(p => p.Id).ToListAsync();
 		edits.Add(RenderEdit(note));
 
-		var attachments = await GetAttachments(note.FileIds.Concat(edits.SelectMany(p => p.FileIds)));
-		var mentions    = await GetMentions([note]);
+		var attachments = await GetAttachmentsAsync(note.FileIds.Concat(edits.SelectMany(p => p.FileIds)));
+		var mentions    = await GetMentionsAsync([note]);
 		var mentionedUsers = mentions.Select(p => new Note.MentionedUser
 		                             {
 			                             Host     = p.Host ?? config.Value.AccountDomain,
@@ -240,7 +240,7 @@ public class NoteRenderer(
 		return res;
 	}
 
-	private async Task<List<MentionEntity>> GetMentions(List<Note> notes)
+	private async Task<List<MentionEntity>> GetMentionsAsync(List<Note> notes)
 	{
 		if (notes.Count == 0) return [];
 		var ids = notes.SelectMany(n => n.Mentions).Distinct();
@@ -250,7 +250,7 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	private async Task<List<AttachmentEntity>> GetAttachments(List<Note> notes)
+	private async Task<List<AttachmentEntity>> GetAttachmentsAsync(List<Note> notes)
 	{
 		if (notes.Count == 0) return [];
 		var ids = notes.SelectMany(n => n.FileIds).Distinct();
@@ -270,7 +270,7 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	private async Task<List<AttachmentEntity>> GetAttachments(IEnumerable<string> fileIds)
+	private async Task<List<AttachmentEntity>> GetAttachmentsAsync(IEnumerable<string> fileIds)
 	{
 		var ids = fileIds.Distinct().ToList();
 		if (ids.Count == 0) return [];
@@ -290,13 +290,13 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	internal async Task<List<AccountEntity>> GetAccounts(List<User> users, User? localUser)
+	internal async Task<List<AccountEntity>> GetAccountsAsync(List<User> users, User? localUser)
 	{
 		if (users.Count == 0) return [];
 		return (await userRenderer.RenderManyAsync(users.DistinctBy(p => p.Id), localUser)).ToList();
 	}
 
-	private async Task<List<string>> GetLikedNotes(List<Note> notes, User? user)
+	private async Task<List<string>> GetLikedNotesAsync(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
 		if (notes.Count == 0) return [];
@@ -305,7 +305,7 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	public async Task<List<ReactionEntity>> GetReactions(List<Note> notes, User? user)
+	public async Task<List<ReactionEntity>> GetReactionsAsync(List<Note> notes, User? user)
 	{
 		if (notes.Count == 0) return [];
 		var counts = notes.ToDictionary(p => p.Id, p => p.Reactions);
@@ -333,7 +333,7 @@ public class NoteRenderer(
 
 		foreach (var item in res.Where(item => item.Name.StartsWith(':')))
 		{
-			var hit = await emojiSvc.ResolveEmoji(item.Name);
+			var hit = await emojiSvc.ResolveEmojiAsync(item.Name);
 			if (hit == null) continue;
 			item.Url       = hit.PublicUrl;
 			item.StaticUrl = hit.PublicUrl;
@@ -343,7 +343,7 @@ public class NoteRenderer(
 		return res;
 	}
 
-	private async Task<List<string>> GetBookmarkedNotes(List<Note> notes, User? user)
+	private async Task<List<string>> GetBookmarkedNotesAsync(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
 		if (notes.Count == 0) return [];
@@ -352,7 +352,7 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	private async Task<List<string>> GetMutedNotes(List<Note> notes, User? user)
+	private async Task<List<string>> GetMutedNotesAsync(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
 		if (notes.Count == 0) return [];
@@ -362,7 +362,7 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	private async Task<List<string>> GetPinnedNotes(List<Note> notes, User? user)
+	private async Task<List<string>> GetPinnedNotesAsync(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
 		if (notes.Count == 0) return [];
@@ -371,7 +371,7 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	private async Task<List<string>> GetRenotes(List<Note> notes, User? user)
+	private async Task<List<string>> GetRenotesAsync(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
 		if (notes.Count == 0) return [];
@@ -383,7 +383,7 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	private async Task<List<PollEntity>> GetPolls(List<Note> notes, User? user)
+	private async Task<List<PollEntity>> GetPollsAsync(List<Note> notes, User? user)
 	{
 		if (notes.Count == 0) return [];
 		var polls = await db.Polls.Where(p => notes.Contains(p.Note))
@@ -392,7 +392,7 @@ public class NoteRenderer(
 		return await pollRenderer.RenderManyAsync(polls, user).ToListAsync();
 	}
 
-	private async Task<List<EmojiEntity>> GetEmoji(IEnumerable<Note> notes)
+	private async Task<List<EmojiEntity>> GetEmojiAsync(IEnumerable<Note> notes)
 	{
 		var ids = notes.SelectMany(p => p.Emojis).ToList();
 		if (ids.Count == 0) return [];
@@ -411,7 +411,7 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	private async Task<List<Filter>> GetFilters(User? user, Filter.FilterContext? filterContext)
+	private async Task<List<Filter>> GetFiltersAsync(User? user, Filter.FilterContext? filterContext)
 	{
 		return filterContext == null
 			? await db.Filters.Where(p => p.User == user).ToListAsync()
@@ -433,18 +433,18 @@ public class NoteRenderer(
 
 		var data = new NoteRendererDto
 		{
-			Accounts        = accounts ?? await GetAccounts(allNotes.Select(p => p.User).ToList(), user),
-			Mentions        = await GetMentions(allNotes),
-			Attachments     = await GetAttachments(allNotes),
-			Polls           = await GetPolls(allNotes, user),
-			LikedNotes      = await GetLikedNotes(allNotes, user),
-			BookmarkedNotes = await GetBookmarkedNotes(allNotes, user),
-			MutedNotes      = await GetMutedNotes(allNotes, user),
-			PinnedNotes     = await GetPinnedNotes(allNotes, user),
-			Renotes         = await GetRenotes(allNotes, user),
-			Emoji           = await GetEmoji(allNotes),
-			Reactions       = await GetReactions(allNotes, user),
-			Filters         = await GetFilters(user, filterContext)
+			Accounts        = accounts ?? await GetAccountsAsync(allNotes.Select(p => p.User).ToList(), user),
+			Mentions        = await GetMentionsAsync(allNotes),
+			Attachments     = await GetAttachmentsAsync(allNotes),
+			Polls           = await GetPollsAsync(allNotes, user),
+			LikedNotes      = await GetLikedNotesAsync(allNotes, user),
+			BookmarkedNotes = await GetBookmarkedNotesAsync(allNotes, user),
+			MutedNotes      = await GetMutedNotesAsync(allNotes, user),
+			PinnedNotes     = await GetPinnedNotesAsync(allNotes, user),
+			Renotes         = await GetRenotesAsync(allNotes, user),
+			Emoji           = await GetEmojiAsync(allNotes),
+			Reactions       = await GetReactionsAsync(allNotes, user),
+			Filters         = await GetFiltersAsync(user, filterContext)
 		};
 
 		return await noteList.Select(p => RenderAsync(p, user, filterContext, data)).AwaitAllAsync();

@@ -29,7 +29,7 @@ public class CronService(IServiceScopeFactory serviceScopeFactory) : BackgroundS
 				try
 				{
 					await using var scope = serviceScopeFactory.CreateAsyncScope();
-					await task.Invoke(scope.ServiceProvider);
+					await task.InvokeAsync(scope.ServiceProvider);
 				}
 				catch
 				{
@@ -46,7 +46,7 @@ public interface ICronTask
 {
 	public TimeSpan     Trigger { get; }
 	public CronTaskType Type    { get; }
-	public Task         Invoke(IServiceProvider provider);
+	public Task         InvokeAsync(IServiceProvider provider);
 }
 
 public enum CronTaskType

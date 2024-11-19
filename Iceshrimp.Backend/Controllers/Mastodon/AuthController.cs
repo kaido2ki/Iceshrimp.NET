@@ -32,7 +32,7 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 
 		return new VerifyAppCredentialsResponse
 		{
-			App = token.App, VapidKey = await meta.Get(MetaEntity.VapidPublicKey)
+			App = token.App, VapidKey = await meta.GetAsync(MetaEntity.VapidPublicKey)
 		};
 	}
 
@@ -77,7 +77,7 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 		await db.AddAsync(app);
 		await db.SaveChangesAsync();
 
-		return new RegisterAppResponse { App = app, VapidKey = await meta.Get(MetaEntity.VapidPublicKey) };
+		return new RegisterAppResponse { App = app, VapidKey = await meta.GetAsync(MetaEntity.VapidPublicKey) };
 	}
 
 	[HttpPost("/oauth/token")]

@@ -91,7 +91,7 @@ public class SearchController(
 
 				return result switch
 				{
-					not null => [await userRenderer.RenderAsync(await userResolver.GetUpdatedUser(result), user)],
+					not null => [await userRenderer.RenderAsync(await userResolver.GetUpdatedUserAsync(result), user)],
 					_        => []
 				};
 			}
@@ -120,7 +120,7 @@ public class SearchController(
 					var result = await userResolver.ResolveOrNullAsync(GetQuery(username, host), ResolveFlags.Acct);
 					return result switch
 					{
-						not null => [await userRenderer.RenderAsync(await userResolver.GetUpdatedUser(result), user)],
+						not null => [await userRenderer.RenderAsync(await userResolver.GetUpdatedUserAsync(result), user)],
 						_        => []
 					};
 				}

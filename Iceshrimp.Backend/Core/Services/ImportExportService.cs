@@ -48,6 +48,6 @@ public class ImportExportService(
             }
         }
 
-        await QueryableTimelineExtensions.ResetHeuristic(user, cacheSvc);
+        await QueryableTimelineExtensions.ResetHeuristicAsync(user, cacheSvc);
     }
 }

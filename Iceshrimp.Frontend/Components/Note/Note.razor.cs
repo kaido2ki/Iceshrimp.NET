@@ -48,7 +48,7 @@ public partial class Note : IDisposable
 		Broadcast();
 		try
 		{
-			await ApiService.Notes.ReactToNote(target.Id, name);
+			await ApiService.Notes.ReactToNoteAsync(target.Id, name);
 		}
 		catch (ApiException)
 		{
@@ -67,7 +67,7 @@ public partial class Note : IDisposable
 		Broadcast();
 		try
 		{
-			await ApiService.Notes.RemoveReactionFromNote(target.Id, name);
+			await ApiService.Notes.RemoveReactionFromNoteAsync(target.Id, name);
 		}
 		catch (ApiException)
 		{
@@ -79,7 +79,7 @@ public partial class Note : IDisposable
 
 	private void Broadcast()
 	{
-		MessageSvc.UpdateNote(NoteResponse);
+		MessageSvc.UpdateNoteAsync(NoteResponse);
 	}
 
 	public async Task ToggleLike()
@@ -92,7 +92,7 @@ public partial class Note : IDisposable
 				target.Liked = false;
 				target.Likes--;
 				Broadcast();
-				await ApiService.Notes.UnlikeNote(target.Id);
+				await ApiService.Notes.UnlikeNoteAsync(target.Id);
 			}
 			catch (ApiException)
 			{
@@ -108,7 +108,7 @@ public partial class Note : IDisposable
 				target.Liked = true;
 				target.Likes++;
 				Broadcast();
-				await ApiService.Notes.LikeNote(target.Id);
+				await ApiService.Notes.LikeNoteAsync(target.Id);
 			}
 			catch (ApiException)
 			{
@@ -143,7 +143,7 @@ public partial class Note : IDisposable
 		Broadcast();
 		try
 		{
-			await ApiService.Notes.RenoteNote(target.Id, visibility);
+			await ApiService.Notes.RenoteNoteAsync(target.Id, visibility);
 		}
 		catch (ApiException)
 		{
@@ -162,18 +162,18 @@ public partial class Note : IDisposable
 
 	public async void Redraft()
 	{
-		await ApiService.Notes.DeleteNote(NoteResponse.Id);
+		await ApiService.Notes.DeleteNoteAsync(NoteResponse.Id);
 		ComposeService.ComposeDialog?.OpenDialogRedraft(NoteResponse);
 	}
 	
 	public async void Bite()
 	{
-		await ApiService.Notes.BiteNote(NoteResponse.Id);
+		await ApiService.Notes.BiteNoteAsync(NoteResponse.Id);
 	}
 
 	public async void Mute()
 	{
-		await ApiService.Notes.MuteNote(NoteResponse.Id);
+		await ApiService.Notes.MuteNoteAsync(NoteResponse.Id);
 	}
 
 	private void Rerender()
@@ -190,8 +190,8 @@ public partial class Note : IDisposable
 
 	public async Task Delete()
 	{
-		await ApiService.Notes.DeleteNote(NoteResponse.Id);
-		await MessageSvc.DeleteNote(NoteResponse);
+		await ApiService.Notes.DeleteNoteAsync(NoteResponse.Id);
+		await MessageSvc.DeleteNoteAsync(NoteResponse);
 	}
 
 	private void ShowNote()

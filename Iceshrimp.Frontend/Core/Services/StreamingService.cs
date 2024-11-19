@@ -38,7 +38,7 @@ internal class StreamingService(
 	public event EventHandler<long>?                 FilterRemoved;
 	public event EventHandler<HubConnectionState>?   OnConnectionChange;
 
-	public async Task Connect(StoredUser? user = null)
+	public async Task ConnectAsync(StoredUser? user = null)
 	{
 		if (_hubConnection != null)
 		{
@@ -64,7 +64,7 @@ internal class StreamingService(
 		try
 		{
 			await _hubConnection.StartAsync();
-			await _hub.Subscribe(StreamingTimeline.Home);
+			await _hub.SubscribeAsync(StreamingTimeline.Home);
 		}
 		catch (Exception e)
 		{
@@ -78,11 +78,11 @@ internal class StreamingService(
 			options.AccessTokenProvider = () => Task.FromResult<string?>(user.Token);
 	}
 
-	public async Task Reconnect(StoredUser? user = null)
+	public async Task ReconnectAsync(StoredUser? user = null)
 	{
 		if (_hubConnection is null)
 		{
-			await Connect(user);
+			await ConnectAsync(user);
 			return;
 		}
 
@@ -110,44 +110,44 @@ internal class StreamingService(
 			return Task.CompletedTask;
 		}
 
-		public Task Notification(NotificationResponse notification)
+		public Task NotificationAsync(NotificationResponse notification)
 		{
 			streaming.Notification?.Invoke(this, notification);
 			return Task.CompletedTask;
 		}
 
-		public Task NotePublished(List<StreamingTimeline> timelines, NoteResponse note)
+		public Task NotePublishedAsync(List<StreamingTimeline> timelines, NoteResponse note)
 		{
 			foreach (var timeline in timelines)
 				streaming.NotePublished?.Invoke(this, (timeline, note));
 			return Task.CompletedTask;
 		}
 
-		public Task NoteUpdated(NoteResponse note)
+		public Task NoteUpdatedAsync(NoteResponse note)
 		{
 			streaming.NoteUpdated?.Invoke(this, note);
 			return Task.CompletedTask;
 		}
 
-		public Task NoteDeleted(string noteId)
+		public Task NoteDeletedAsync(string noteId)
 		{
 			streaming.NoteDeleted?.Invoke(this, noteId);
 			return Task.CompletedTask;
 		}
 
-		public Task FilterAdded(FilterResponse filter)
+		public Task FilterAddedAsync(FilterResponse filter)
 		{
 			streaming.FilterAdded?.Invoke(this, filter);
 			return Task.CompletedTask;
 		}
 
-		public Task FilterUpdated(FilterResponse filter)
+		public Task FilterUpdatedAsync(FilterResponse filter)
 		{
 			streaming.FilterUpdated?.Invoke(this, filter);
 			return Task.CompletedTask;
 		}
 
-		public Task FilterRemoved(long filterId)
+		public Task FilterRemovedAsync(long filterId)
 		{
 			streaming.FilterRemoved?.Invoke(this, filterId);
 			return Task.CompletedTask;

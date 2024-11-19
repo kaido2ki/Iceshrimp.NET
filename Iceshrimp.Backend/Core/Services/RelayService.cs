@@ -15,7 +15,7 @@ public class RelayService(
 	ActivityPub.UserRenderer userRenderer
 ) : IScopedService
 {
-	public async Task SubscribeToRelay(string uri)
+	public async Task SubscribeToRelayAsync(string uri)
 	{
 		uri = new Uri(uri).AbsoluteUri;
 		if (await db.Relays.AnyAsync(p => p.Inbox == uri)) return;
@@ -35,7 +35,7 @@ public class RelayService(
 		await deliverSvc.DeliverToAsync(activity, actor, uri);
 	}
 
-	public async Task UnsubscribeFromRelay(Relay relay)
+	public async Task UnsubscribeFromRelayAsync(Relay relay)
 	{
 		var actor    = await systemUserSvc.GetRelayActorAsync();
 		var follow   = activityRenderer.RenderFollow(actor, relay);
@@ -46,7 +46,7 @@ public class RelayService(
 		await db.SaveChangesAsync();
 	}
 
-	public async Task HandleAccept(User actor, string id)
+	public async Task HandleAcceptAsync(User actor, string id)
 	{
 		// @formatter:off
 		if (await db.Relays.FirstOrDefaultAsync(p => p.Id == id) is not { } relay)
@@ -60,7 +60,7 @@ public class RelayService(
 		await db.SaveChangesAsync();
 	}
 
-	public async Task HandleReject(User actor, string id)
+	public async Task HandleRejectAsync(User actor, string id)
 	{
 		// @formatter:off
 		if (db.Relays.FirstOrDefault(p => p.Id == id) is not { } relay)

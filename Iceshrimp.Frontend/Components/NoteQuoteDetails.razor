@@ -34,7 +34,7 @@
     {
         try
         {
-            var res = await Api.Notes.GetQuotes(NoteId, new PaginationQuery { Limit = 20 });
+            var res = await Api.Notes.GetQuotesAsync(NoteId, new PaginationQuery { Limit = 20 });
             if (res is null)
             {
                 State = State.NotFound;
@@ -58,7 +58,7 @@
     {
         if (data.Next is null) return null;
         var pq  = new PaginationQuery { MaxId = data.Next?.Split('=')[1], Limit = 20 };
-        var res = await Api.Notes.GetQuotes(NoteId, pq);
+        var res = await Api.Notes.GetQuotesAsync(NoteId, pq);
         return res;
     }
 

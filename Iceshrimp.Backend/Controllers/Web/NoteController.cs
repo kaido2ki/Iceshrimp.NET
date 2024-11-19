@@ -96,7 +96,7 @@ public class NoteController(
 		                   .ToListAsync();
 
 		var notes = hits.EnforceRenoteReplyVisibility();
-		var res   = await noteRenderer.RenderMany(notes, user, Filter.FilterContext.Threads).ToListAsync();
+		var res   = await noteRenderer.RenderManyAsync(notes, user, Filter.FilterContext.Threads).ToListAsync();
 
 		// Strip redundant reply data
 		foreach (var item in res.Where(p => p.Reply != null && res.Any(i => i.Id == p.Reply.Id)))
@@ -131,7 +131,7 @@ public class NoteController(
 		                   .ToListAsync();
 
 		var notes = hits.EnforceRenoteReplyVisibility();
-		var res   = await noteRenderer.RenderMany(notes, user, Filter.FilterContext.Threads).ToListAsync();
+		var res   = await noteRenderer.RenderManyAsync(notes, user, Filter.FilterContext.Threads).ToListAsync();
 
 		// Strip redundant reply data
 		foreach (var item in res.Where(p => p.Reply != null && res.Any(i => i.Id == p.Reply.Id)))
@@ -163,7 +163,7 @@ public class NoteController(
 		                    .Select(p => p.User)
 		                    .ToListAsync();
 
-		return await userRenderer.RenderMany(users);
+		return await userRenderer.RenderManyAsync(users);
 	}
 
 	[HttpPost("{id}/bite")]
@@ -249,7 +249,7 @@ public class NoteController(
 		                    .Wrap(p => p.User)
 		                    .ToListAsync();
 
-		var res = await userRenderer.RenderMany(users.Select(p => p.Entity));
+		var res = await userRenderer.RenderManyAsync(users.Select(p => p.Entity));
 		return HttpContext.CreatePaginationWrapper(pq, users, res);
 	}
 
@@ -315,7 +315,7 @@ public class NoteController(
 		                    .Wrap(p => p.User)
 		                    .ToListAsync();
 
-		var res = await userRenderer.RenderMany(users.Select(p => p.Entity));
+		var res = await userRenderer.RenderManyAsync(users.Select(p => p.Entity));
 		return HttpContext.CreatePaginationWrapper(pq, users, res);
 	}
 
@@ -343,7 +343,7 @@ public class NoteController(
 		                      .Paginate(pq, ControllerContext)
 		                      .ToListAsync();
 
-		var res = await noteRenderer.RenderMany(renotes.EnforceRenoteReplyVisibility(), user,
+		var res = await noteRenderer.RenderManyAsync(renotes.EnforceRenoteReplyVisibility(), user,
 		                                        Filter.FilterContext.Threads);
 		return HttpContext.CreatePaginationWrapper(pq, renotes, res);
 	}

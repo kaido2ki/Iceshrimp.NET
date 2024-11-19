@@ -432,9 +432,9 @@ file sealed class EntityFrameworkCoreXmlRepositoryAsync<TContext> : IXmlReposito
 
 	public IReadOnlyCollection<XElement> GetAllElements()
 	{
-		return GetAllElementsCore().ToBlockingEnumerable().ToList().AsReadOnly();
+		return GetAllElementsCoreAsync().ToBlockingEnumerable().ToList().AsReadOnly();
 
-		async IAsyncEnumerable<XElement> GetAllElementsCore()
+		async IAsyncEnumerable<XElement> GetAllElementsCoreAsync()
 		{
 			using var scope = _services.CreateScope();
 			var @enum = scope.ServiceProvider.GetRequiredService<TContext>()

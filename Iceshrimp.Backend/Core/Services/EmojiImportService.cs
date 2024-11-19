@@ -35,7 +35,7 @@ public class EmojiImportService(
 {
 	public static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
-	public async Task<EmojiZip> Parse(Stream zipStream)
+	public async Task<EmojiZip> ParseAsync(Stream zipStream)
 	{
 		var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
 
@@ -62,7 +62,7 @@ public class EmojiImportService(
 		}
 	}
 
-	public async Task Import(EmojiZip zip)
+	public async Task ImportAsync(EmojiZip zip)
 	{
 		using var archive             = zip.Archive;
 		var       contentTypeProvider = new FileExtensionContentTypeProvider();
@@ -91,7 +91,7 @@ public class EmojiImportService(
 
 			try
 			{
-				await emojiSvc.CreateEmojiFromStream(
+				await emojiSvc.CreateEmojiFromStreamAsync(
 				                                     buffer,
 				                                     name,
 				                                     mimeType,

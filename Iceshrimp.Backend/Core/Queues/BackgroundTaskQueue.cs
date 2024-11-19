@@ -26,30 +26,30 @@ public class BackgroundTaskQueue(int parallelism)
 		switch (jobData)
 		{
 			case DriveFileDeleteJobData { Expire: true } driveFileDeleteJob:
-				await ProcessDriveFileExpire(driveFileDeleteJob, scope, token);
+				await ProcessDriveFileExpireAsync(driveFileDeleteJob, scope, token);
 				break;
 			case DriveFileDeleteJobData driveFileDeleteJob:
-				await ProcessDriveFileDelete(driveFileDeleteJob, scope, token);
+				await ProcessDriveFileDeleteAsync(driveFileDeleteJob, scope, token);
 				break;
 			case PollExpiryJobData pollExpiryJob:
-				await ProcessPollExpiry(pollExpiryJob, scope, token);
+				await ProcessPollExpiryAsync(pollExpiryJob, scope, token);
 				break;
 			case MuteExpiryJobData muteExpiryJob:
-				await ProcessMuteExpiry(muteExpiryJob, scope, token);
+				await ProcessMuteExpiryAsync(muteExpiryJob, scope, token);
 				break;
 			case FilterExpiryJobData filterExpiryJob:
-				await ProcessFilterExpiry(filterExpiryJob, scope, token);
+				await ProcessFilterExpiryAsync(filterExpiryJob, scope, token);
 				break;
 			case UserDeleteJobData userDeleteJob:
-				await ProcessUserDelete(userDeleteJob, scope, token);
+				await ProcessUserDeleteAsync(userDeleteJob, scope, token);
 				break;
 			case UserPurgeJobData userPurgeJob:
-				await ProcessUserPurge(userPurgeJob, scope, token);
+				await ProcessUserPurgeAsync(userPurgeJob, scope, token);
 				break;
 		}
 	}
 
-	private static async Task ProcessDriveFileDelete(
+	private static async Task ProcessDriveFileDeleteAsync(
 		DriveFileDeleteJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
@@ -101,7 +101,7 @@ public class BackgroundTaskQueue(int parallelism)
 		}
 	}
 
-	private static async Task ProcessDriveFileExpire(
+	private static async Task ProcessDriveFileExpireAsync(
 		DriveFileDeleteJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
@@ -114,13 +114,13 @@ public class BackgroundTaskQueue(int parallelism)
 
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == jobData.DriveFileId, token);
 		if (file == null) return;
-		await drive.ExpireFile(file, token);
+		await drive.ExpireFileAsync(file, token);
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery",
 	                 Justification = "IncludeCommonProperties()")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
-	private static async Task ProcessPollExpiry(
+	private static async Task ProcessPollExpiryAsync(
 		PollExpiryJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
@@ -135,7 +135,7 @@ public class BackgroundTaskQueue(int parallelism)
 		if (note == null) return;
 
 		var notificationSvc = scope.GetRequiredService<NotificationService>();
-		await notificationSvc.GeneratePollEndedNotifications(note);
+		await notificationSvc.GeneratePollEndedNotificationsAsync(note);
 		if (note.User.IsLocalUser)
 		{
 			var voters = await db.PollVotes.Where(p => p.Note == note && p.User.IsRemoteUser)
@@ -156,7 +156,7 @@ public class BackgroundTaskQueue(int parallelism)
 		}
 	}
 
-	private static async Task ProcessMuteExpiry(
+	private static async Task ProcessMuteExpiryAsync(
 		MuteExpiryJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
@@ -176,7 +176,7 @@ public class BackgroundTaskQueue(int parallelism)
 		eventSvc.RaiseUserUnmuted(null, muting.Muter, muting.Mutee);
 	}
 
-	private static async Task ProcessFilterExpiry(
+	private static async Task ProcessFilterExpiryAsync(
 		FilterExpiryJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
@@ -192,7 +192,7 @@ public class BackgroundTaskQueue(int parallelism)
 		await db.SaveChangesAsync(token);
 	}
 
-	private static async Task ProcessUserDelete(
+	private static async Task ProcessUserDeleteAsync(
 		UserDeleteJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
@@ -236,7 +236,7 @@ public class BackgroundTaskQueue(int parallelism)
 
 		if (user.IsRemoteUser)
 		{
-			await followupTaskSvc.ExecuteTask("UpdateInstanceUserCounter", async provider =>
+			await followupTaskSvc.ExecuteTaskAsync("UpdateInstanceUserCounter", async provider =>
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
@@ -250,7 +250,7 @@ public class BackgroundTaskQueue(int parallelism)
 		logger.LogDebug("User {id} deleted successfully", jobData.UserId);
 	}
 
-	private static async Task ProcessUserPurge(
+	private static async Task ProcessUserPurgeAsync(
 		UserPurgeJobData jobData,
 		IServiceProvider scope,
 		CancellationToken token
@@ -272,7 +272,7 @@ public class BackgroundTaskQueue(int parallelism)
 
 		var fileIdQ   = db.DriveFiles.Where(p => p.User == user).Select(p => p.Id);
 		var fileIdCnt = await fileIdQ.CountAsync(token);
-		var fileIds   = fileIdQ.AsChunkedAsyncEnumerable(50, p => p);
+		var fileIds   = fileIdQ.AsChunkedAsyncEnumerableAsync(50, p => p);
 		logger.LogDebug("Removing {count} files for user {id}", fileIdCnt, user.Id);
 		await foreach (var id in fileIds)
 		{
@@ -284,7 +284,7 @@ public class BackgroundTaskQueue(int parallelism)
 
 		var noteQ   = db.Notes.Where(p => p.User == user).Select(p => p.Id);
 		var noteCnt = await noteQ.CountAsync(token);
-		var noteIds = noteQ.AsChunkedAsyncEnumerable(50, p => p);
+		var noteIds = noteQ.AsChunkedAsyncEnumerableAsync(50, p => p);
 		logger.LogDebug("Removing {count} notes for user {id}", noteCnt, user.Id);
 		await foreach (var id in noteIds)
 		{

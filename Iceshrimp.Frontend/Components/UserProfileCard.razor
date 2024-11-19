@@ -63,7 +63,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        UserProfile = await Api.Users.GetUserProfile(User.Id);
+        UserProfile = await Api.Users.GetUserProfileAsync(User.Id);
     }
 
     private void Open()

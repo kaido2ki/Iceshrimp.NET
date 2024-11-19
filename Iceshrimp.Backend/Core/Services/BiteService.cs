@@ -36,7 +36,7 @@ public class BiteService(
 			await deliverSvc.DeliverToAsync(activity, user, target.User);
 		}
 
-		await notificationSvc.GenerateBiteNotification(bite);
+		await notificationSvc.GenerateBiteNotificationAsync(bite);
 	}
 
 	public async Task BiteAsync(User user, Note target)
@@ -60,7 +60,7 @@ public class BiteService(
 			await deliverSvc.DeliverToAsync(activity, user, target.User);
 		}
 
-		await notificationSvc.GenerateBiteNotification(bite);
+		await notificationSvc.GenerateBiteNotificationAsync(bite);
 	}
 
 	public async Task BiteAsync(User user, User target)
@@ -83,6 +83,6 @@ public class BiteService(
 			await deliverSvc.DeliverToAsync(activity, user, target);
 		}
 
-		await notificationSvc.GenerateBiteNotification(bite);
+		await notificationSvc.GenerateBiteNotificationAsync(bite);
 	}
 }

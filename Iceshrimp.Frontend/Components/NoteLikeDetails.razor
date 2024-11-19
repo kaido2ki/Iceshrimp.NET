@@ -46,7 +46,7 @@
         try
         {
             var pq  = new PaginationQuery { Limit = 20 };
-            var res = await Api.Notes.GetNoteLikes(NoteId, pq);
+            var res = await Api.Notes.GetNoteLikesAsync(NoteId, pq);
             if (res is null)
             {
                 State = State.NotFound;
@@ -69,7 +69,7 @@
     {
         if (data.Next is null) return null;
         var pq  = new PaginationQuery { MaxId = data.Next?.Split('=')[1], Limit = 20 };
-        var res = await Api.Notes.GetNoteLikes(NoteId, pq);
+        var res = await Api.Notes.GetNoteLikesAsync(NoteId, pq);
         return res;
     }
 

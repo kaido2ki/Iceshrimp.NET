@@ -34,11 +34,11 @@ internal class UpdateService
 																  "import",
 																  "./Core/Services/UpdateService.cs.js")
 																 .AsTask());
-		Timer = new Timer(Callback, null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
-		_     = RegisterUpdateCallback();
+		Timer = new Timer(CallbackAsync, null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
+		_     = RegisterUpdateCallbackAsync();
 	}
 
-	private async Task RegisterUpdateCallback()
+	private async Task RegisterUpdateCallbackAsync()
 	{
 		var module = await _moduleTask.Value;
 		var objRef = DotNetObjectReference.Create(this);
@@ -55,34 +55,34 @@ internal class UpdateService
 		_globalComponentSvc.BannerComponent?.AddBanner(banner);
 	}
 
-	public async Task<bool> ServiceWorkerCheckWaiting()
+	public async Task<bool> ServiceWorkerCheckWaitingAsync()
 	{
 		var module = await _moduleTask.Value;
 		return await module.InvokeAsync<bool>("ServiceWorkerCheckWaiting");
 	}
 
-	public async Task ServiceWorkerUpdate()
+	public async Task ServiceWorkerUpdateAsync()
 	{
 		var module = await _moduleTask.Value;
 		await module.InvokeVoidAsync("ServiceWorkerUpdate");
 	}
 
-	public async Task<bool> ServiceWorkerSkipWaiting()
+	public async Task<bool> ServiceWorkerSkipWaitingAsync()
 	{
 		var module = await _moduleTask.Value;
 		return await module.InvokeAsync<bool>("ServiceWorkerSkipWaiting");
 	}
 
-	private async void Callback(object? _)
+	private async void CallbackAsync(object? _)
 	{
-		await CheckVersion();
+		await CheckVersionAsync();
 	}
 
-	private async Task<VersionResponse?> GetVersion()
+	private async Task<VersionResponse?> GetVersionAsync()
 	{
 		try
 		{
-			var backendVersion = await _api.Version.GetVersion();
+			var backendVersion = await _api.Version.GetVersionAsync();
 			_logger.LogInformation("Successfully fetched backend version.");
 			return backendVersion;
 		}
@@ -93,14 +93,14 @@ internal class UpdateService
 		}
 	}
 
-	private async Task CheckVersion()
+	private async Task CheckVersionAsync()
 	{
-		var version = await GetVersion();
+		var version = await GetVersionAsync();
 		if (version is null) return;
 		BackendVersion = version;
 		if (version.Version != FrontendVersion.Version)
 		{
-			await ServiceWorkerUpdate();
+			await ServiceWorkerUpdateAsync();
 		}
 	}
 }

@@ -36,7 +36,7 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                            .PrecomputeNoteVisibilities(user)
 		                            .ToListAsync();
 
-		return await notificationRenderer.RenderMany(notifications.EnforceRenoteReplyVisibility(p => p.Note), user);
+		return await notificationRenderer.RenderManyAsync(notifications.EnforceRenoteReplyVisibility(p => p.Note), user);
 	}
 
 	[HttpPost("{id}/read")]

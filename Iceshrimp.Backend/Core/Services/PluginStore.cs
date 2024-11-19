@@ -28,24 +28,24 @@ public class PluginStore<TPlugin, TData>(DatabaseContext db) where TPlugin : IPl
 	private readonly IPlugin _plugin = new TPlugin();
 
 	/// <exception cref="SerializationException"></exception>
-	public async Task<TData> GetData()
+	public async Task<TData> GetDataAsync()
 	{
-		return (await GetOrCreateData()).data;
+		return (await GetOrCreateDataAsync()).data;
 	}
 
 	/// <exception cref="SerializationException"></exception>
-	public async Task<TResult> GetData<TResult>(Expression<Func<TData, TResult>> predicate)
+	public async Task<TResult> GetDataAsync<TResult>(Expression<Func<TData, TResult>> predicate)
 	{
-		var (_, data) = await GetOrCreateData();
+		var (_, data) = await GetOrCreateDataAsync();
 		return predicate.Compile().Invoke(data);
 	}
 
 	/// <exception cref="SerializationException"></exception>
-	public async Task UpdateData(Action<TData> updateAction)
+	public async Task UpdateDataAsync(Action<TData> updateAction)
 	{
 		using (await PluginStoreHelpers.KeyedLocker.LockAsync(_plugin.Id))
 		{
-			var (entry, data) = await GetOrCreateData();
+			var (entry, data) = await GetOrCreateDataAsync();
 			updateAction(data);
 			UpdateEntryIfModified(entry, data);
 			await db.SaveChangesAsync();
@@ -60,7 +60,7 @@ public class PluginStore<TPlugin, TData>(DatabaseContext db) where TPlugin : IPl
 	}
 
 	/// <exception cref="SerializationException"></exception>
-	private async Task<(PluginStoreEntry entry, TData data)> GetOrCreateData()
+	private async Task<(PluginStoreEntry entry, TData data)> GetOrCreateDataAsync()
 	{
 		TData data;
 		var   entry = await db.PluginStore.FirstOrDefaultAsync(p => p.Id == _plugin.Id);

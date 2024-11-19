@@ -56,7 +56,7 @@
                 return;
             }
 
-            var res = await Api.Auth.Login(new AuthRequest { Username = Username, Password = Password });
+            var res = await Api.Auth.LoginAsync(new AuthRequest { Username = Username, Password = Password });
             switch (res.Status)
             {
                 case AuthStatusEnum.Authenticated:

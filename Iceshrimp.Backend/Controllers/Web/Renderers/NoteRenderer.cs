@@ -21,15 +21,15 @@ public class NoteRenderer(
 		Note note, User? user, Filter.FilterContext? filterContext = null, NoteRendererDto? data = null
 	)
 	{
-		var res = await RenderBaseInternal(note, user, data);
+		var res = await RenderBaseInternalAsync(note, user, data);
 
 		var renote = note is { Renote: not null, IsPureRenote: true }
-			? await RenderRenote(note.Renote, user, data)
+			? await RenderRenoteAsync(note.Renote, user, data)
 			: null;
-		var quote = note is { Renote: not null, IsQuote: true } ? await RenderBase(note.Renote, user, data) : null;
-		var reply = note.Reply != null ? await RenderBase(note.Reply, user, data) : null;
+		var quote = note is { Renote: not null, IsQuote: true } ? await RenderBaseAsync(note.Renote, user, data) : null;
+		var reply = note.Reply != null ? await RenderBaseAsync(note.Reply, user, data) : null;
 
-		var filters  = data?.Filters ?? await GetFilters(user, filterContext);
+		var filters  = data?.Filters ?? await GetFiltersAsync(user, filterContext);
 		var filtered = FilterHelper.IsFiltered([note, note.Reply, note.Renote, note.Renote?.Renote], filters);
 
 		if (filtered.HasValue)
@@ -54,10 +54,10 @@ public class NoteRenderer(
 		return res;
 	}
 
-	private async Task<NoteWithQuote> RenderRenote(Note note, User? user, NoteRendererDto? data = null)
+	private async Task<NoteWithQuote> RenderRenoteAsync(Note note, User? user, NoteRendererDto? data = null)
 	{
-		var res   = await RenderBaseInternal(note, user, data);
-		var quote = note.Renote is { IsPureRenote: false } ? await RenderBase(note.Renote, user, data) : null;
+		var res   = await RenderBaseInternalAsync(note, user, data);
+		var quote = note.Renote is { IsPureRenote: false } ? await RenderBaseAsync(note.Renote, user, data) : null;
 
 		res.Quote             = quote;
 		res.QuoteId           = note.RenoteId;
@@ -66,17 +66,17 @@ public class NoteRenderer(
 		return res;
 	}
 
-	private async Task<NoteBase> RenderBase(Note note, User? localUser, NoteRendererDto? data = null)
-		=> await RenderBaseInternal(note, localUser, data);
+	private async Task<NoteBase> RenderBaseAsync(Note note, User? localUser, NoteRendererDto? data = null)
+		=> await RenderBaseInternalAsync(note, localUser, data);
 
-	private async Task<NoteResponse> RenderBaseInternal(Note note, User? user, NoteRendererDto? data = null)
+	private async Task<NoteResponse> RenderBaseInternalAsync(Note note, User? user, NoteRendererDto? data = null)
 	{
-		var noteUser    = (data?.Users ?? await GetUsers([note])).First(p => p.Id == note.User.Id);
-		var attachments = (data?.Attachments ?? await GetAttachments([note])).Where(p => note.FileIds.Contains(p.Id));
-		var reactions   = (data?.Reactions ?? await GetReactions([note], user)).Where(p => p.NoteId == note.Id);
+		var noteUser    = (data?.Users ?? await GetUsersAsync([note])).First(p => p.Id == note.User.Id);
+		var attachments = (data?.Attachments ?? await GetAttachmentsAsync([note])).Where(p => note.FileIds.Contains(p.Id));
+		var reactions   = (data?.Reactions ?? await GetReactionsAsync([note], user)).Where(p => p.NoteId == note.Id);
 		var liked = data?.LikedNotes?.Contains(note.Id) ??
 		            await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
-		var emoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmoji([note]);
+		var emoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([note]);
 
 		return new NoteResponse
 		{
@@ -98,14 +98,14 @@ public class NoteRenderer(
 		};
 	}
 
-	private async Task<List<UserResponse>> GetUsers(List<Note> notesList)
+	private async Task<List<UserResponse>> GetUsersAsync(List<Note> notesList)
 	{
 		if (notesList.Count == 0) return [];
 		var users = notesList.Select(p => p.User).DistinctBy(p => p.Id);
-		return await userRenderer.RenderMany(users).ToListAsync();
+		return await userRenderer.RenderManyAsync(users).ToListAsync();
 	}
 
-	private async Task<List<NoteAttachment>> GetAttachments(List<Note> notesList)
+	private async Task<List<NoteAttachment>> GetAttachmentsAsync(List<Note> notesList)
 	{
 		if (notesList.Count == 0) return [];
 		var ids   = notesList.SelectMany(p => p.FileIds).Distinct();
@@ -123,7 +123,7 @@ public class NoteRenderer(
 		            .ToList();
 	}
 
-	private async Task<List<NoteReactionSchema>> GetReactions(List<Note> notes, User? user)
+	private async Task<List<NoteReactionSchema>> GetReactionsAsync(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
 		if (notes.Count == 0) return [];
@@ -146,7 +146,7 @@ public class NoteRenderer(
 
 		foreach (var item in res.Where(item => item.Name.StartsWith(':')))
 		{
-			var hit = await emojiSvc.ResolveEmoji(item.Name);
+			var hit = await emojiSvc.ResolveEmojiAsync(item.Name);
 			if (hit == null) continue;
 			item.Url       = hit.PublicUrl;
 			item.Sensitive = hit.Sensitive;
@@ -155,7 +155,7 @@ public class NoteRenderer(
 		return res;
 	}
 
-	private async Task<List<string>> GetLikedNotes(List<Note> notes, User? user)
+	private async Task<List<string>> GetLikedNotesAsync(List<Note> notes, User? user)
 	{
 		if (user == null) return [];
 		if (notes.Count == 0) return [];
@@ -172,13 +172,13 @@ public class NoteRenderer(
 		            .ToList();
 	}
 
-	private async Task<List<Filter>> GetFilters(User? user, Filter.FilterContext? filterContext)
+	private async Task<List<Filter>> GetFiltersAsync(User? user, Filter.FilterContext? filterContext)
 	{
 		if (filterContext == null) return [];
 		return await db.Filters.Where(p => p.User == user && p.Contexts.Contains(filterContext.Value)).ToListAsync();
 	}
 
-	private async Task<List<EmojiResponse>> GetEmoji(IEnumerable<Note> notes)
+	private async Task<List<EmojiResponse>> GetEmojiAsync(IEnumerable<Note> notes)
 	{
 		var ids = notes.SelectMany(p => p.Emojis).ToList();
 		if (ids.Count == 0) return [];
@@ -199,7 +199,7 @@ public class NoteRenderer(
 		               .ToListAsync();
 	}
 
-	public async Task<IEnumerable<NoteResponse>> RenderMany(
+	public async Task<IEnumerable<NoteResponse>> RenderManyAsync(
 		IEnumerable<Note> notes, User? user, Filter.FilterContext? filterContext = null
 	)
 	{
@@ -208,12 +208,12 @@ public class NoteRenderer(
 		var allNotes = GetAllNotes(notesList);
 		var data = new NoteRendererDto
 		{
-			Users       = await GetUsers(allNotes),
-			Attachments = await GetAttachments(allNotes),
-			Reactions   = await GetReactions(allNotes, user),
-			Filters     = await GetFilters(user, filterContext),
-			LikedNotes  = await GetLikedNotes(allNotes, user),
-			Emoji       = await GetEmoji(allNotes)
+			Users       = await GetUsersAsync(allNotes),
+			Attachments = await GetAttachmentsAsync(allNotes),
+			Reactions   = await GetReactionsAsync(allNotes, user),
+			Filters     = await GetFiltersAsync(user, filterContext),
+			LikedNotes  = await GetLikedNotesAsync(allNotes, user),
+			Emoji       = await GetEmojiAsync(allNotes)
 		};
 
 		return await notesList.Select(p => RenderOne(p, user, filterContext, data)).AwaitAllAsync();

@@ -12,7 +12,7 @@ public class PollService(
 	ActivityPub.ActivityDeliverService deliverSvc
 ) : IScopedService
 {
-	public async Task RegisterPollVote(PollVote pollVote, Poll poll, Note note, bool updateVotersCount = true)
+	public async Task RegisterPollVoteAsync(PollVote pollVote, Poll poll, Note note, bool updateVotersCount = true)
 	{
 		await db.Database
 		        .ExecuteSqlAsync($"""UPDATE "poll" SET "votes"[{pollVote.Choice + 1}] = "votes"[{pollVote.Choice + 1}] + 1 WHERE "noteId" = {note.Id}""");

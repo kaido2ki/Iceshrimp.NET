@@ -142,7 +142,7 @@ public class InstanceService(
 		await db.SaveChangesAsync();
 	}
 
-	public async Task MarkInstanceAsUnresponsive(string host, string webDomain)
+	public async Task MarkInstanceAsUnresponsiveAsync(string host, string webDomain)
 	{
 		var instance = await GetUpdatedInstanceMetadataAsync(host, webDomain);
 		instance.LatestRequestSentAt = DateTime.UtcNow;

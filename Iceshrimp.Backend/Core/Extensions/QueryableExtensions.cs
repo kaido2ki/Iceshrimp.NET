@@ -28,7 +28,7 @@ public static class QueryableExtensions
 	/// The result set as an IAsyncEnumerable. Makes one DB roundtrip at the start of each chunk.
 	/// Successive items in the chunk are yielded instantaneously.
 	/// </returns>
-	public static async IAsyncEnumerable<T> AsChunkedAsyncEnumerable<T>(this IQueryable<T> query, int chunkSize)
+	public static async IAsyncEnumerable<T> AsChunkedAsyncEnumerableAsync<T>(this IQueryable<T> query, int chunkSize)
 	{
 		var offset = 0;
 		while (true)
@@ -41,13 +41,13 @@ public static class QueryableExtensions
 		}
 	}
 
-	/// <inheritdoc cref="AsChunkedAsyncEnumerable{T}(System.Linq.IQueryable{T},int)" select="summary|returns"/>
+	/// <inheritdoc cref="AsChunkedAsyncEnumerableAsync{T}(System.Linq.IQueryable{T},int)" select="summary|returns"/>
 	/// <remarks>
 	/// This overload requires you to pass a predicate to the identifier.
 	/// .OrderBy(<paramref name="idPredicate"/>) is appended to the query.
 	/// Set the <paramref name="hook"/> parameter to append things to the query after pagination, for cases where query translation would fail otherwise.
 	/// </remarks>
-	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerable<TResult>(
+	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerableAsync<TResult>(
 		this IQueryable<TResult> query, int chunkSize, Expression<Func<TResult, string>> idPredicate,
 		Func<IQueryable<TResult>, IQueryable<TResult>>? hook = null
 	)
@@ -70,8 +70,8 @@ public static class QueryableExtensions
 		}
 	}
 
-	/// <inheritdoc cref="AsChunkedAsyncEnumerable{T}(System.Linq.IQueryable{T},int,Expression{Func{T,string}},Func{IQueryable{T},IQueryable{T}})"/>
-	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerable<TResult>(
+	/// <inheritdoc cref="AsChunkedAsyncEnumerableAsync{TResult}(System.Linq.IQueryable{TResult},int,System.Linq.Expressions.Expression{System.Func{TResult,string}},System.Func{System.Linq.IQueryable{TResult},System.Linq.IQueryable{TResult}}?)"/>
+	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerableAsync<TResult>(
 		this IQueryable<TResult> query, int chunkSize, Expression<Func<TResult, Guid>> idPredicate,
 		Func<IQueryable<TResult>, IQueryable<TResult>>? hook = null
 	)
@@ -94,8 +94,8 @@ public static class QueryableExtensions
 		}
 	}
 
-	/// <inheritdoc cref="AsChunkedAsyncEnumerable{T}(System.Linq.IQueryable{T},int,Expression{Func{T,string}},Func{IQueryable{T},IQueryable{T}})"/>
-	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerable<TResult>(
+	/// <inheritdoc cref="AsChunkedAsyncEnumerableAsync{TResult}(System.Linq.IQueryable{TResult},int,System.Linq.Expressions.Expression{System.Func{TResult,string}},System.Func{System.Linq.IQueryable{TResult},System.Linq.IQueryable{TResult}}?)"/>
+	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerableAsync<TResult>(
 		this IQueryable<TResult> query, int chunkSize, Expression<Func<TResult, int>> idPredicate,
 		Func<IQueryable<TResult>, IQueryable<TResult>>? hook = null
 	)

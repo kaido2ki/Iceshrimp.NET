@@ -18,7 +18,7 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 	public bool         IsSubscribed { get; private set; }
 	public bool         IsAggregate  => false;
 
-	public async Task Subscribe(StreamingRequestMessage _)
+	public async Task SubscribeAsync(StreamingRequestMessage _)
 	{
 		if (IsSubscribed) return;
 		IsSubscribed = true;
@@ -30,7 +30,7 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 		connection.EventService.NoteUpdated   += OnNoteUpdated;
 	}
 
-	public Task Unsubscribe(StreamingRequestMessage _)
+	public Task UnsubscribeAsync(StreamingRequestMessage _)
 	{
 		if (!IsSubscribed) return Task.CompletedTask;
 		IsSubscribed = false;
@@ -73,7 +73,7 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 		return rendered;
 	}
 
-	private async Task<ConversationEntity> RenderConversation(
+	private async Task<ConversationEntity> RenderConversationAsync(
 		Note note, NoteWithVisibilities wrapped, AsyncServiceScope scope
 	)
 	{
@@ -107,13 +107,13 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 			if (note.CreatedAt < DateTime.UtcNow - TimeSpan.FromMinutes(5)) return;
 
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
-			if (await connection.IsMutedThread(note, scope)) return;
+			if (await connection.IsMutedThreadAsync(note, scope)) return;
 
 			var message = new StreamingUpdateMessage
 			{
 				Stream  = [Name],
 				Event   = "conversation",
-				Payload = JsonSerializer.Serialize(await RenderConversation(note, wrapped, scope))
+				Payload = JsonSerializer.Serialize(await RenderConversationAsync(note, wrapped, scope))
 			};
 
 			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
@@ -137,7 +137,7 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 			{
 				Stream  = [Name],
 				Event   = "conversation",
-				Payload = JsonSerializer.Serialize(await RenderConversation(note, wrapped, scope))
+				Payload = JsonSerializer.Serialize(await RenderConversationAsync(note, wrapped, scope))
 			};
 
 			await connection.SendMessageAsync(JsonSerializer.Serialize(message));

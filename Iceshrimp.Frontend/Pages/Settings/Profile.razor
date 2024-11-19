@@ -83,7 +83,7 @@
     {
         try
         {
-            UserProfile = await Api.Profile.GetProfile();
+            UserProfile = await Api.Profile.GetProfileAsync();
             State       = State.Loaded;
         }
         catch (ApiException e)
@@ -110,7 +110,7 @@
         try
         {
             SaveButton.State = StateButton.StateEnum.Loading;
-            await Api.Profile.UpdateProfile(UserProfile);
+            await Api.Profile.UpdateProfileAsync(UserProfile);
             SaveButton.State = StateButton.StateEnum.Success;
         }
         catch (ApiException e)

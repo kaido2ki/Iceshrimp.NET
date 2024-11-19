@@ -72,20 +72,20 @@ public class ActivityHandlerService(
 
 		var task = activity switch
 		{
-			ASAccept accept     => HandleAccept(accept, resolvedActor),
-			ASAnnounce announce => HandleAnnounce(announce, resolvedActor),
-			ASBite bite         => HandleBite(bite, resolvedActor, inboxUser),
-			ASBlock block       => HandleBlock(block, resolvedActor),
-			ASCreate create     => HandleCreate(create, resolvedActor, inboxUser),
-			ASDelete delete     => HandleDelete(delete, resolvedActor),
-			ASEmojiReact react  => HandleReact(react, resolvedActor),
-			ASFollow follow     => HandleFollow(follow, resolvedActor),
-			ASLike like         => HandleLike(like, resolvedActor),
-			ASMove move         => HandleMove(move, resolvedActor),
-			ASReject reject     => HandleReject(reject, resolvedActor),
-			ASUndo undo         => HandleUndo(undo, resolvedActor),
-			ASUnfollow unfollow => HandleUnfollow(unfollow, resolvedActor),
-			ASUpdate update     => HandleUpdate(update, resolvedActor),
+			ASAccept accept     => HandleAcceptAsync(accept, resolvedActor),
+			ASAnnounce announce => HandleAnnounceAsync(announce, resolvedActor),
+			ASBite bite         => HandleBiteAsync(bite, resolvedActor, inboxUser),
+			ASBlock block       => HandleBlockAsync(block, resolvedActor),
+			ASCreate create     => HandleCreateAsync(create, resolvedActor, inboxUser),
+			ASDelete delete     => HandleDeleteAsync(delete, resolvedActor),
+			ASEmojiReact react  => HandleReactAsync(react, resolvedActor),
+			ASFollow follow     => HandleFollowAsync(follow, resolvedActor),
+			ASLike like         => HandleLikeAsync(like, resolvedActor),
+			ASMove move         => HandleMoveAsync(move, resolvedActor),
+			ASReject reject     => HandleRejectAsync(reject, resolvedActor),
+			ASUndo undo         => HandleUndoAsync(undo, resolvedActor),
+			ASUnfollow unfollow => HandleUnfollowAsync(unfollow, resolvedActor),
+			ASUpdate update     => HandleUpdateAsync(update, resolvedActor),
 
 			// Separated for readability
 			_ => throw GracefulException.UnprocessableEntity($"Activity type {activity.Type} is unknown")
@@ -96,31 +96,31 @@ public class ActivityHandlerService(
 
 	private void UpdateInstanceMetadataInBackground(string host, string webDomain)
 	{
-		_ = followupTaskSvc.ExecuteTask("UpdateInstanceMetadata", async provider =>
+		_ = followupTaskSvc.ExecuteTaskAsync("UpdateInstanceMetadata", async provider =>
 		{
 			var instanceSvc = provider.GetRequiredService<InstanceService>();
 			await instanceSvc.UpdateInstanceStatusAsync(host, webDomain);
 		});
 	}
 
-	private async Task HandleCreate(ASCreate activity, User actor, User? inboxUser)
+	private async Task HandleCreateAsync(ASCreate activity, User actor, User? inboxUser)
 	{
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Create activity object was null");
 
-		activity.Object = await objectResolver.ResolveObject(activity.Object, actor.Uri) as ASNote ??
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, actor.Uri) as ASNote ??
 		                  throw GracefulException.UnprocessableEntity("Failed to resolve create object");
 
 		using (await NoteService.GetNoteProcessLockAsync(activity.Object.Id))
 			await noteSvc.ProcessNoteAsync(activity.Object, actor, inboxUser);
 	}
 
-	private async Task HandleDelete(ASDelete activity, User resolvedActor)
+	private async Task HandleDeleteAsync(ASDelete activity, User resolvedActor)
 	{
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Delete activity object was null");
 
-		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, resolvedActor.Uri);
 
 		switch (activity.Object)
 		{
@@ -155,12 +155,12 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task HandleFollow(ASFollow activity, User resolvedActor)
+	private async Task HandleFollowAsync(ASFollow activity, User resolvedActor)
 	{
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Follow activity object was null");
 
-		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, resolvedActor.Uri);
 		if (activity.Object is not ASActor obj)
 			throw GracefulException.UnprocessableEntity("Follow activity object is invalid");
 
@@ -171,31 +171,31 @@ public class ActivityHandlerService(
 		await userSvc.FollowUserAsync(resolvedActor, followee, activity.Id);
 	}
 
-	private async Task HandleUnfollow(ASUnfollow activity, User resolvedActor)
+	private async Task HandleUnfollowAsync(ASUnfollow activity, User resolvedActor)
 	{
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Unfollow activity object was null");
 
-		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, resolvedActor.Uri);
 		if (activity.Object is not ASActor obj)
 			throw GracefulException.UnprocessableEntity("Unfollow activity object is invalid");
 
 		await UnfollowAsync(obj, resolvedActor);
 	}
 
-	private async Task HandleAccept(ASAccept activity, User actor)
+	private async Task HandleAcceptAsync(ASAccept activity, User actor)
 	{
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Accept activity object was null");
 
-		activity.Object = await objectResolver.ResolveObject(activity.Object, actor.Uri);
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, actor.Uri);
 		if (activity.Object is not ASFollow obj)
 			throw GracefulException.UnprocessableEntity("Accept activity object is invalid");
 
 		var relayPrefix = $"https://{config.Value.WebDomain}/activities/follow-relay/";
 		if (obj.Id.StartsWith(relayPrefix))
 		{
-			await relaySvc.HandleAccept(actor, obj.Id[relayPrefix.Length..]);
+			await relaySvc.HandleAcceptAsync(actor, obj.Id[relayPrefix.Length..]);
 			return;
 		}
 
@@ -228,21 +228,21 @@ public class ActivityHandlerService(
 		await userSvc.AcceptFollowRequestAsync(request);
 	}
 
-	private async Task HandleReject(ASReject activity, User resolvedActor)
+	private async Task HandleRejectAsync(ASReject activity, User resolvedActor)
 	{
 		if (activity.Actor == null)
 			throw GracefulException.UnprocessableEntity("Reject activity actor was null");
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Reject activity object was null");
 
-		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, resolvedActor.Uri);
 		if (activity.Object is not ASFollow follow)
 			throw GracefulException.UnprocessableEntity("Reject activity object is invalid");
 
 		var relayPrefix = $"https://{config.Value.WebDomain}/activities/follow-relay/";
 		if (follow.Id.StartsWith(relayPrefix))
 		{
-			await relaySvc.HandleReject(resolvedActor, follow.Id[relayPrefix.Length..]);
+			await relaySvc.HandleRejectAsync(resolvedActor, follow.Id[relayPrefix.Length..]);
 			return;
 		}
 
@@ -281,12 +281,12 @@ public class ActivityHandlerService(
 		        .ExecuteDeleteAsync();
 	}
 
-	private async Task HandleUndo(ASUndo activity, User resolvedActor)
+	private async Task HandleUndoAsync(ASUndo activity, User resolvedActor)
 	{
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Undo activity object was null");
 
-		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, resolvedActor.Uri);
 
 		switch (activity.Object)
 		{
@@ -318,14 +318,14 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task HandleLike(ASLike activity, User resolvedActor)
+	private async Task HandleLikeAsync(ASLike activity, User resolvedActor)
 	{
 		if (resolvedActor.Host == null)
 			throw GracefulException.UnprocessableEntity("Cannot process like for local actor");
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Like activity object was null");
 
-		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, resolvedActor.Uri);
 
 		if (activity.Object is not ASNote note)
 		{
@@ -344,14 +344,14 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task HandleUpdate(ASUpdate activity, User resolvedActor)
+	private async Task HandleUpdateAsync(ASUpdate activity, User resolvedActor)
 	{
 		if (activity.Actor == null)
 			throw GracefulException.UnprocessableEntity("Cannot process update for null actor");
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Update activity object was null");
 
-		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, resolvedActor.Uri);
 
 		switch (activity.Object)
 		{
@@ -370,9 +370,9 @@ public class ActivityHandlerService(
 		}
 	}
 
-	private async Task HandleBite(ASBite activity, User resolvedActor, User? inboxUser)
+	private async Task HandleBiteAsync(ASBite activity, User resolvedActor, User? inboxUser)
 	{
-		var target = await objectResolver.ResolveObject(activity.Target, resolvedActor.Uri);
+		var target = await objectResolver.ResolveObjectAsync(activity.Target, resolvedActor.Uri);
 		var dbBite = target switch
 		{
 			ASActor targetActor => new Bite
@@ -431,15 +431,15 @@ public class ActivityHandlerService(
 
 		await db.AddAsync(dbBite);
 		await db.SaveChangesAsync();
-		await notificationSvc.GenerateBiteNotification(dbBite);
+		await notificationSvc.GenerateBiteNotificationAsync(dbBite);
 	}
 
-	private async Task HandleAnnounce(ASAnnounce activity, User resolvedActor)
+	private async Task HandleAnnounceAsync(ASAnnounce activity, User resolvedActor)
 	{
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Announce activity object was null");
 
-		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, resolvedActor.Uri);
 		if (activity.Object is not ASNote note)
 		{
 			logger.LogDebug("Announce activity object is unknown, skipping");
@@ -471,14 +471,14 @@ public class ActivityHandlerService(
 		});
 	}
 
-	private async Task HandleReact(ASEmojiReact activity, User resolvedActor)
+	private async Task HandleReactAsync(ASEmojiReact activity, User resolvedActor)
 	{
 		if (resolvedActor.Host == null)
 			throw GracefulException.UnprocessableEntity("Cannot process EmojiReact for local actor");
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("EmojiReact activity object was null");
 
-		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, resolvedActor.Uri);
 		if (activity.Object is not ASNote note)
 		{
 			logger.LogDebug("EmojiReact activity object is unknown, skipping");
@@ -489,12 +489,12 @@ public class ActivityHandlerService(
 		await noteSvc.ReactToNoteAsync(note, resolvedActor, activity.Content);
 	}
 
-	private async Task HandleBlock(ASBlock activity, User resolvedActor)
+	private async Task HandleBlockAsync(ASBlock activity, User resolvedActor)
 	{
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("EmojiReact activity object was null");
 
-		activity.Object = await objectResolver.ResolveObject(activity.Object, resolvedActor.Uri);
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, resolvedActor.Uri);
 		if (activity.Object is not ASActor blockee)
 		{
 			logger.LogDebug("Block activity object is unknown, skipping");
@@ -509,7 +509,7 @@ public class ActivityHandlerService(
 		await userSvc.BlockUserAsync(resolvedActor, resolvedBlockee);
 	}
 
-	private async Task HandleMove(ASMove activity, User resolvedActor)
+	private async Task HandleMoveAsync(ASMove activity, User resolvedActor)
 	{
 		if (activity.Target.Id is null) throw GracefulException.UnprocessableEntity("Move target must have an ID");
 		var target = await userResolver.ResolveAsync(activity.Target.Id, EnforceUriFlags);
@@ -548,7 +548,7 @@ public class ActivityHandlerService(
 			db.RemoveRange(followings);
 			await db.SaveChangesAsync();
 
-			_ = followupTaskSvc.ExecuteTask("DecrementInstanceIncomingFollowsCounter", async provider =>
+			_ = followupTaskSvc.ExecuteTaskAsync("DecrementInstanceIncomingFollowsCounter", async provider =>
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();

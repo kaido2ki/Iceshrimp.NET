@@ -17,7 +17,7 @@ public class ObjectResolver(
 	IOptions<Config.InstanceSection> config
 ) : IScopedService
 {
-	public async Task<ASObject?> ResolveObject(
+	public async Task<ASObject?> ResolveObjectAsync(
 		ASObjectBase baseObj, string? actorUri = null, int recurse = 5, bool force = false, User? user = null
 	)
 	{
@@ -25,8 +25,8 @@ public class ObjectResolver(
 
 		if (baseObj is ASActivity { Object.IsUnresolved: true } activity && recurse > 0)
 		{
-			activity.Object = await ResolveObject(activity.Object, actorUri, --recurse, force);
-			return await ResolveObject(activity, actorUri, recurse);
+			activity.Object = await ResolveObjectAsync(activity.Object, actorUri, --recurse, force);
+			return await ResolveObjectAsync(activity, actorUri, recurse);
 		}
 
 		if (baseObj is ASObject { IsUnresolved: false } obj && !force)
@@ -90,12 +90,12 @@ public class ObjectResolver(
 		}
 	}
 
-	public async IAsyncEnumerable<ASObject> IterateCollection(ASCollection? collection, User? user = null, int pageLimit = 10)
+	public async IAsyncEnumerable<ASObject> IterateCollectionAsync(ASCollection? collection, User? user = null, int pageLimit = 10)
 	{
 		if (collection == null) yield break;
 
 		if (collection.IsUnresolved)
-			collection = await ResolveObject(collection, force: true, user: user) as ASCollection;
+			collection = await ResolveObjectAsync(collection, force: true, user: user) as ASCollection;
 
 		if (collection == null) yield break;
 
@@ -110,7 +110,7 @@ public class ObjectResolver(
 		while (page != null)
 		{
 			if (page.IsUnresolved)
-				page = await ResolveObject(page, force: true, user: user) as ASCollectionPage;
+				page = await ResolveObjectAsync(page, force: true, user: user) as ASCollectionPage;
 
 			if (page == null) break;
 

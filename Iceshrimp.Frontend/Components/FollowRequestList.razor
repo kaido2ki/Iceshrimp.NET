@@ -42,7 +42,7 @@
         try
         {
             var pq = new PaginationQuery { Limit = 20 };
-            FollowRequests = await Api.FollowRequests.GetFollowRequests(pq);
+            FollowRequests = await Api.FollowRequests.GetFollowRequestsAsync(pq);
             if (FollowRequests.Count == 0)
             {
                 _init = LoadState.Emtpy;
@@ -84,7 +84,7 @@
     private async Task LoadMore()
     {
         var pq  = new PaginationQuery { MaxId = _minId, Limit = 20 };
-        var res = await Api.FollowRequests.GetFollowRequests(pq);
+        var res = await Api.FollowRequests.GetFollowRequestsAsync(pq);
         if (res.Count > 0)
         {
             FollowRequests.AddRange(res);

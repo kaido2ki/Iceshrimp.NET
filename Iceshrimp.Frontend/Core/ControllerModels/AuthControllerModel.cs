@@ -5,15 +5,15 @@ namespace Iceshrimp.Frontend.Core.ControllerModels;
 
 internal class AuthControllerModel(ApiClient api)
 {
-	public Task<AuthResponse> GetAuthStatus() =>
-		api.Call<AuthResponse>(HttpMethod.Get, "/auth");
+	public Task<AuthResponse> GetAuthStatusAsync() =>
+		api.CallAsync<AuthResponse>(HttpMethod.Get, "/auth");
 
-	public Task<AuthResponse> Login(AuthRequest request) =>
-		api.Call<AuthResponse>(HttpMethod.Post, "/auth/login", data: request);
+	public Task<AuthResponse> LoginAsync(AuthRequest request) =>
+		api.CallAsync<AuthResponse>(HttpMethod.Post, "/auth/login", data: request);
 
-	public Task<AuthResponse> Register(RegistrationRequest request) =>
-		api.Call<AuthResponse>(HttpMethod.Post, "/auth/register", data: request);
+	public Task<AuthResponse> RegisterAsync(RegistrationRequest request) =>
+		api.CallAsync<AuthResponse>(HttpMethod.Post, "/auth/register", data: request);
 
-	public Task<AuthResponse> ChangePassword(ChangePasswordRequest request) =>
-		api.Call<AuthResponse>(HttpMethod.Post, "/auth/change-password", data: request);
+	public Task<AuthResponse> ChangePasswordAsync(ChangePasswordRequest request) =>
+		api.CallAsync<AuthResponse>(HttpMethod.Post, "/auth/change-password", data: request);
 }

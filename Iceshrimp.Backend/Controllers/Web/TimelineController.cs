@@ -29,7 +29,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 	public async Task<IEnumerable<NoteResponse>> GetHomeTimeline(PaginationQuery pq)
 	{
 		var user      = HttpContext.GetUserOrFail();
-		var heuristic = await QueryableTimelineExtensions.GetHeuristic(user, db, cache);
+		var heuristic = await QueryableTimelineExtensions.GetHeuristicAsync(user, db, cache);
 		var notes = await db.Notes.IncludeCommonProperties()
 		                    .FilterByFollowingAndOwn(user, db, heuristic)
 		                    .EnsureVisibleFor(user)
@@ -39,6 +39,6 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
 
-		return await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user, Filter.FilterContext.Home);
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user, Filter.FilterContext.Home);
 	}
 }

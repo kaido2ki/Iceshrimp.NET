@@ -7,6 +7,6 @@ namespace Iceshrimp.Frontend.Core.ControllerModels;
 internal class TimelineControllerModel(ApiClient api)
 {
 	[LinkPagination(20, 80)]
-	public Task<List<NoteResponse>> GetHomeTimeline(PaginationQuery pq) =>
-		api.Call<List<NoteResponse>>(HttpMethod.Get, "/timelines/home", pq);
+	public Task<List<NoteResponse>> GetHomeTimelineAsync(PaginationQuery pq) =>
+		api.CallAsync<List<NoteResponse>>(HttpMethod.Get, "/timelines/home", pq);
 }

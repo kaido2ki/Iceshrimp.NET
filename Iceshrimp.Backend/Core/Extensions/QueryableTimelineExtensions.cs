@@ -29,17 +29,17 @@ public static class QueryableTimelineExtensions
 		                         .Concat(new[] { user.Id })
 		                         .Contains(note.UserId));
 
-	public static async Task ResetHeuristic(User user, CacheService cache)
+	public static async Task ResetHeuristicAsync(User user, CacheService cache)
 	{
 		await cache.ClearAsync($"{Prefix}:{user.Id}");
 	}
 
-	public static async Task<int> GetHeuristic(User user, DatabaseContext db, CacheService cache)
+	public static async Task<int> GetHeuristicAsync(User user, DatabaseContext db, CacheService cache)
 	{
-		return await cache.FetchValueAsync($"{Prefix}:{user.Id}", TimeSpan.FromHours(24), FetchHeuristic);
+		return await cache.FetchValueAsync($"{Prefix}:{user.Id}", TimeSpan.FromHours(24), FetchHeuristicAsync);
 
 		[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall")]
-		async Task<int> FetchHeuristic()
+		async Task<int> FetchHeuristicAsync()
 		{
 			var latestNote = await db.Notes.OrderByDescending(p => p.Id)
 			                         .Select(p => new { p.CreatedAt })

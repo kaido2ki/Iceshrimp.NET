@@ -10,7 +10,7 @@ public class UserProfileRenderer(DatabaseContext db) : IScopedService
 {
 	public async Task<UserProfileResponse> RenderOne(User user, User? localUser, UserRendererDto? data = null)
 	{
-		(data?.Relations ?? await GetRelations([user], localUser)).TryGetValue(user.Id, out var relations);
+		(data?.Relations ?? await GetRelationsAsync([user], localUser)).TryGetValue(user.Id, out var relations);
 		relations ??= new RelationData
 		{
 			UserId        = user.Id,
@@ -68,7 +68,7 @@ public class UserProfileRenderer(DatabaseContext db) : IScopedService
 		};
 	}
 
-	private async Task<Dictionary<string, RelationData>> GetRelations(IEnumerable<User> users, User? localUser)
+	private async Task<Dictionary<string, RelationData>> GetRelationsAsync(IEnumerable<User> users, User? localUser)
 	{
 		var ids = users.Select(p => p.Id).ToList();
 		if (ids.Count == 0) return [];
@@ -90,10 +90,10 @@ public class UserProfileRenderer(DatabaseContext db) : IScopedService
 		               .ToDictionaryAsync(p => p.UserId, p => p);
 	}
 
-	public async Task<IEnumerable<UserProfileResponse>> RenderMany(IEnumerable<User> users, User? localUser)
+	public async Task<IEnumerable<UserProfileResponse>> RenderManyAsync(IEnumerable<User> users, User? localUser)
 	{
 		var userList = users.ToList();
-		var data     = new UserRendererDto { Relations = await GetRelations(userList, localUser) };
+		var data     = new UserRendererDto { Relations = await GetRelationsAsync(userList, localUser) };
 		return await userList.Select(p => RenderOne(p, localUser, data)).AwaitAllAsync();
 	}
 

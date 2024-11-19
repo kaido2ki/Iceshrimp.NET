@@ -19,7 +19,7 @@ public class UserProfileMentionsResolver(
 	IOptions<Config.InstanceSection> config
 ) : IScopedService
 {
-	public async Task<MentionTuple> ResolveMentions(ASActor actor, string? host)
+	public async Task<MentionTuple> ResolveMentionsAsync(ASActor actor, string? host)
 	{
 		var fields = actor.Attachments?.OfType<ASField>()
 		                  .Where(p => p is { Name: not null, Value: not null })
@@ -72,7 +72,7 @@ public class UserProfileMentionsResolver(
 		return (mentions, splitDomainMapping);
 	}
 
-	public async Task<List<Note.MentionedUser>> ResolveMentions(UserProfile.Field[]? fields, string? bio, string? host)
+	public async Task<List<Note.MentionedUser>> ResolveMentionsAsync(UserProfile.Field[]? fields, string? bio, string? host)
 	{
 		if (fields is not { Length: > 0 } && bio == null) return [];
 		var input = (fields ?? [])

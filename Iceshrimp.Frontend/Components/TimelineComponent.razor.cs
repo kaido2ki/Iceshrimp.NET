@@ -29,7 +29,7 @@ public partial class TimelineComponent : IAsyncDisposable
 	private async Task<bool> Initialize()
 	{
 		var pq  = new PaginationQuery { Limit = 30 };
-		var res = await ApiService.Timelines.GetHomeTimeline(pq);
+		var res = await ApiService.Timelines.GetHomeTimelineAsync(pq);
 		if (res.Count < 1)
 		{
 			return false;
@@ -49,7 +49,7 @@ public partial class TimelineComponent : IAsyncDisposable
 			if (LockFetch) return true;
 			LockFetch = true;
 			var pq  = new PaginationQuery { Limit = 15, MaxId = State.MinId };
-			var res = await ApiService.Timelines.GetHomeTimeline(pq);
+			var res = await ApiService.Timelines.GetHomeTimelineAsync(pq);
 			switch (res.Count)
 			{
 				case > 0:
@@ -77,7 +77,7 @@ public partial class TimelineComponent : IAsyncDisposable
 			if (LockFetch) return;
 			LockFetch = true;
 			var pq  = new PaginationQuery { Limit = 15, MinId = State.MaxId };
-			var res = await ApiService.Timelines.GetHomeTimeline(pq);
+			var res = await ApiService.Timelines.GetHomeTimelineAsync(pq);
 			if (res.Count > 0)
 			{
 				State.MaxId = res.Last().Id;
@@ -112,7 +112,7 @@ public partial class TimelineComponent : IAsyncDisposable
 	protected override async Task OnInitializedAsync()
 	{
 		StreamingService.NotePublished += OnNotePublished;
-		await StreamingService.Connect();
+		await StreamingService.ConnectAsync();
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)

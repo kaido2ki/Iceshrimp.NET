@@ -68,7 +68,7 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 		var notificationList = notifications.ToList();
 		if (notificationList.Count == 0) return [];
 
-		var accounts = await noteRenderer.GetAccounts(notificationList.Where(p => p.Notifier != null)
+		var accounts = await noteRenderer.GetAccountsAsync(notificationList.Where(p => p.Notifier != null)
 		                                                              .Select(p => p.Notifier)
 		                                                              .Concat(notificationList.Select(p => p.Notifiee))
 		                                                              .Concat(notificationList
@@ -107,7 +107,7 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 			                          Url  = e.PublicUrl
 		                          })
 		                          .ToArrayAsync()
-		                          .ContinueWithResult(res => res.DistinctBy(e => e.Name)
+		                          .ContinueWithResultAsync(res => res.DistinctBy(e => e.Name)
 		                                                        .ToDictionary(e => e.Name, e => e.Url));
 
 		return await notificationList

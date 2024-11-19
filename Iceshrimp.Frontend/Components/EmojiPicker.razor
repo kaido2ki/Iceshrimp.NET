@@ -41,7 +41,7 @@
     protected override async Task OnInitializedAsync()
     {
         GlobalComponentSvc.EmojiPicker = this;
-        EmojiList                      = await EmojiService.GetEmoji();
+        EmojiList                      = await EmojiService.GetEmojiAsync();
         _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import",
                                                                                         "./Components/EmojiPicker.razor.js");
         FilterEmojis();

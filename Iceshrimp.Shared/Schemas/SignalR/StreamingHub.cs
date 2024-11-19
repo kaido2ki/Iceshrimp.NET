@@ -4,20 +4,20 @@ namespace Iceshrimp.Shared.Schemas.SignalR;
 
 public interface IStreamingHubServer
 {
-	public Task Subscribe(StreamingTimeline timeline);
-	public Task Unsubscribe(StreamingTimeline timeline);
+	public Task SubscribeAsync(StreamingTimeline timeline);
+	public Task UnsubscribeAsync(StreamingTimeline timeline);
 }
 
 public interface IStreamingHubClient
 {
-	public Task Notification(NotificationResponse notification);
-	public Task NotePublished(List<StreamingTimeline> timelines, NoteResponse note);
-	public Task NoteUpdated(NoteResponse note);
-	public Task NoteDeleted(string noteId);
+	public Task NotificationAsync(NotificationResponse notification);
+	public Task NotePublishedAsync(List<StreamingTimeline> timelines, NoteResponse note);
+	public Task NoteUpdatedAsync(NoteResponse note);
+	public Task NoteDeletedAsync(string noteId);
 
-	public Task FilterAdded(FilterResponse filter);
-	public Task FilterUpdated(FilterResponse filter);
-	public Task FilterRemoved(long filterId);
+	public Task FilterAddedAsync(FilterResponse filter);
+	public Task FilterUpdatedAsync(FilterResponse filter);
+	public Task FilterRemovedAsync(long filterId);
 }
 
 public enum StreamingTimeline

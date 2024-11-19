@@ -83,10 +83,10 @@ public sealed class WebSocketConnection(
 		EventService.FilterUpdated      += OnFilterUpdated;
 		EventService.ListMembersUpdated += OnListMembersUpdated;
 
-		_ = InitializeRelationships();
+		_ = InitializeRelationshipsAsync();
 	}
 
-	private async Task InitializeRelationships()
+	private async Task InitializeRelationshipsAsync()
 	{
 		await using var db = Scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 		Following.AddRange(await db.Followings.Where(p => p.Follower == Token.User)
@@ -120,7 +120,7 @@ public sealed class WebSocketConnection(
 		                         .Select(p => p.UserId)
 		                         .Distinct()
 		                         .ToArrayAsync()
-		                         .ContinueWithResult(p => p.ToHashSet());
+		                         .ContinueWithResultAsync(p => p.ToHashSet());
 	}
 
 	public async Task HandleSocketMessageAsync(string payload)
@@ -163,14 +163,14 @@ public sealed class WebSocketConnection(
 				if (channel.Scopes.Except(MastodonOauthHelpers.ExpandScopes(Token.Scopes)).Any())
 					await CloseAsync(WebSocketCloseStatus.PolicyViolation);
 				else
-					await channel.Subscribe(message);
+					await channel.SubscribeAsync(message);
 				break;
 			}
 			case "unsubscribe":
 			{
 				var channel =
 					_channels.FirstOrDefault(p => p.Name == message.Stream && (p.IsSubscribed || p.IsAggregate));
-				if (channel != null) await channel.Unsubscribe(message);
+				if (channel != null) await channel.UnsubscribeAsync(message);
 				break;
 			}
 			default:
@@ -350,7 +350,7 @@ public sealed class WebSocketConnection(
 			                         .Where(p => p.UserList.UserId == Token.User.Id && p.UserList.HideFromHomeTl)
 			                         .Select(p => p.UserId)
 			                         .ToArrayAsync()
-			                         .ContinueWithResult(p => p.ToHashSet());
+			                         .ContinueWithResultAsync(p => p.ToHashSet());
 		}
 		catch (Exception e)
 		{
@@ -375,7 +375,7 @@ public sealed class WebSocketConnection(
 	                                      (IsFiltered(note.Renote.Renote.User) ||
 	                                       IsFilteredMentions(note.Renote.Renote.Mentions)));
 
-	public async Task<bool> IsMutedThread(Note note, AsyncServiceScope scope, bool isNotification = false)
+	public async Task<bool> IsMutedThreadAsync(Note note, AsyncServiceScope scope, bool isNotification = false)
 	{
 		if (!isNotification && note.Reply == null) return false;
 		if (!isNotification && note.User.Id == Token.UserId) return false;
@@ -396,7 +396,7 @@ public interface IChannel
 	public List<string> Scopes       { get; }
 	public bool         IsSubscribed { get; }
 	public bool         IsAggregate  { get; }
-	public Task         Subscribe(StreamingRequestMessage message);
-	public Task         Unsubscribe(StreamingRequestMessage message);
+	public Task         SubscribeAsync(StreamingRequestMessage message);
+	public Task         UnsubscribeAsync(StreamingRequestMessage message);
 	public void         Dispose();
 }

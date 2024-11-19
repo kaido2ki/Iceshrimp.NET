@@ -53,19 +53,19 @@ public class QueueService(
 			logger.LogInformation("Queue shutdown complete.");
 		});
 
-		_ = Task.Run(ExecuteHealthchecksWorker, token);
-		await Task.Run(ExecuteBackgroundWorkers, tokenSource.Token);
+		_ = Task.Run(ExecuteHealthchecksWorkerAsync, token);
+		await Task.Run(ExecuteBackgroundWorkersAsync, tokenSource.Token);
 
 		return;
 
-		async Task? ExecuteBackgroundWorkers()
+		async Task? ExecuteBackgroundWorkersAsync()
 		{
 			var tasks = _queues.Select(queue => queue.ExecuteAsync(scopeFactory, tokenSource.Token, queueToken));
 			await Task.WhenAll(tasks);
 			await tokenSource.CancelAsync();
 		}
 
-		async Task ExecuteHealthchecksWorker()
+		async Task ExecuteHealthchecksWorkerAsync()
 		{
 			var first = true;
 			while (!token.IsCancellationRequested)
@@ -261,7 +261,7 @@ public abstract class PostgresJobQueue<T>(
 				await using var scope = GetScope();
 				await using var db    = GetDbContext(scope);
 
-				var queuedCount       = await db.GetJobQueuedCount(name, token);
+				var queuedCount       = await db.GetJobQueuedCountAsync(name, token);
 				var actualParallelism = Math.Min(_semaphore.CurrentCount, queuedCount);
 
 				if (actualParallelism == 0)
@@ -351,7 +351,7 @@ public abstract class PostgresJobQueue<T>(
 				}
 
 				var tokenSource = new CancellationTokenSource();
-				await ScheduleDelayedEvent(tokenSource.Token);
+				await ScheduleDelayedEventAsync(tokenSource.Token);
 				await _delayedChannel.WaitAsync(token);
 				await tokenSource.CancelAsync();
 			}
@@ -367,7 +367,7 @@ public abstract class PostgresJobQueue<T>(
 		}
 	}
 
-	private async Task ScheduleDelayedEvent(CancellationToken token)
+	private async Task ScheduleDelayedEventAsync(CancellationToken token)
 	{
 		await using var scope = GetScope();
 		await using var db    = GetDbContext(scope);

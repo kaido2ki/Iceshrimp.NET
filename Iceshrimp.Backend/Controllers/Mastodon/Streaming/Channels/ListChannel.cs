@@ -25,7 +25,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 	public bool         IsSubscribed => _lists.Count != 0;
 	public bool         IsAggregate  => true;
 
-	public async Task Subscribe(StreamingRequestMessage msg)
+	public async Task SubscribeAsync(StreamingRequestMessage msg)
 	{
 		if (msg.List == null)
 		{
@@ -60,7 +60,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 		}
 	}
 
-	public async Task Unsubscribe(StreamingRequestMessage msg)
+	public async Task UnsubscribeAsync(StreamingRequestMessage msg)
 	{
 		if (msg.List == null)
 		{
@@ -129,7 +129,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 			if (wrapped == null) return;
 			if (connection.IsFiltered(note)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
-			if (await connection.IsMutedThread(note, scope)) return;
+			if (await connection.IsMutedThreadAsync(note, scope)) return;
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
 			var data         = new NoteRenderer.NoteRendererDto { Filters = connection.Filters.ToList() };

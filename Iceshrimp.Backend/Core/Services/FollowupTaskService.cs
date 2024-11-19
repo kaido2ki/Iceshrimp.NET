@@ -9,7 +9,7 @@ public class FollowupTaskService(
 {
 	public AsyncLocal<bool> IsBackgroundWorker { get; } = new();
 
-	public Task ExecuteTask(string taskName, Func<IServiceProvider, Task> work)
+	public Task ExecuteTaskAsync(string taskName, Func<IServiceProvider, Task> work)
 	{
 		return Task.Run(async () =>
 		{

@@ -105,7 +105,7 @@ public class ErrorHandlerMiddleware(
 						RequestId  = ctx.TraceIdentifier
 					};
 
-					await WriteResponse(error);
+					await WriteResponseAsync(error);
 				}
 
 				var level = ce.SuppressLog ? LogLevel.Trace : LogLevel.Debug;
@@ -131,11 +131,11 @@ public class ErrorHandlerMiddleware(
 					RequestId  = ctx.TraceIdentifier
 				};
 
-				await WriteResponse(error);
+				await WriteResponseAsync(error);
 				logger.LogError("Request encountered an unexpected error: {exception}", e);
 			}
 
-			async Task WriteResponse(ErrorResponse payload)
+			async Task WriteResponseAsync(ErrorResponse payload)
 			{
 				var accept  = ctx.Request.Headers.Accept.NotNull().SelectMany(p => p.Split(',')).ToImmutableArray();
 				var resType = ResponseType.Json;

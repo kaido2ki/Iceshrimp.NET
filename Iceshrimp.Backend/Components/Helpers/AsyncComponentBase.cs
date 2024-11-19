@@ -35,14 +35,14 @@ public class AsyncComponentBase : ComponentBase
 	{
 		OnParametersSet();
 		await OnParametersSetAsync();
-		await RunMethodHandler();
+		await RunMethodHandlerAsync();
 		StateHasChanged();
 	}
 
 	protected virtual Task OnPost() => Task.CompletedTask;
 	protected virtual Task OnGet()  => Task.CompletedTask;
 
-	private async Task RunMethodHandler()
+	private async Task RunMethodHandlerAsync()
 	{
 		if (string.Equals(Context.Request.Method, "GET", StringComparison.InvariantCultureIgnoreCase))
 			await OnGet();

@@ -104,7 +104,7 @@ public class AccountController(
 				IsSensitive = false,
 				MimeType    = request.Avatar.ContentType
 			};
-			var avatar = await driveSvc.StoreFile(request.Avatar.OpenReadStream(), user, rq);
+			var avatar = await driveSvc.StoreFileAsync(request.Avatar.OpenReadStream(), user, rq);
 			user.Avatar         = avatar;
 			user.AvatarBlurhash = avatar.Blurhash;
 			user.AvatarUrl      = avatar.AccessUrl;
@@ -118,7 +118,7 @@ public class AccountController(
 				IsSensitive = false,
 				MimeType    = request.Banner.ContentType
 			};
-			var banner = await driveSvc.StoreFile(request.Banner.OpenReadStream(), user, rq);
+			var banner = await driveSvc.StoreFileAsync(request.Banner.OpenReadStream(), user, rq);
 			user.Banner         = banner;
 			user.BannerBlurhash = banner.Blurhash;
 			user.BannerUrl      = banner.AccessUrl;
@@ -144,7 +144,7 @@ public class AccountController(
 
 			db.Update(user);
 			await db.SaveChangesAsync();
-			await driveSvc.RemoveFile(id);
+			await driveSvc.RemoveFileAsync(id);
 		}
 
 		return await VerifyUserCredentials();
@@ -166,7 +166,7 @@ public class AccountController(
 
 			db.Update(user);
 			await db.SaveChangesAsync();
-			await driveSvc.RemoveFile(id);
+			await driveSvc.RemoveFileAsync(id);
 		}
 
 		return await VerifyUserCredentials();
@@ -187,7 +187,7 @@ public class AccountController(
 		if (config.Value.PublicPreview <= Enums.PublicPreview.Restricted && user.IsRemoteUser && localUser == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		return await userRenderer.RenderAsync(await userResolver.GetUpdatedUser(user), localUser);
+		return await userRenderer.RenderAsync(await userResolver.GetUpdatedUserAsync(user), localUser);
 	}
 
 	[HttpPost("{id}/follow")]
@@ -631,7 +631,7 @@ public class AccountController(
 
 		var localUser = HttpContext.GetUser();
 		var user      = await userResolver.ResolveOrNullAsync(acct, flags) ?? throw GracefulException.RecordNotFound();
-		user = await userResolver.GetUpdatedUser(user);
+		user = await userResolver.GetUpdatedUserAsync(user);
 		return await userRenderer.RenderAsync(user, localUser);
 	}
 

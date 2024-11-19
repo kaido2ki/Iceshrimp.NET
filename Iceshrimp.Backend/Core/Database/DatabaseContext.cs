@@ -255,13 +255,13 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		                           RETURNING "jobs".*;
 		                           """);
 
-	public Task<int> GetJobRunningCount(string queue, CancellationToken token) =>
+	public Task<int> GetJobRunningCountAsync(string queue, CancellationToken token) =>
 		Jobs.CountAsync(p => p.Queue == queue && p.Status == Job.JobStatus.Running, token);
 
-	public Task<int> GetJobQueuedCount(string queue, CancellationToken token) =>
+	public Task<int> GetJobQueuedCountAsync(string queue, CancellationToken token) =>
 		Jobs.CountAsync(p => p.Queue == queue && p.Status == Job.JobStatus.Queued, token);
 
-	public async Task<bool> IsDatabaseEmpty()
+	public async Task<bool> IsDatabaseEmptyAsync()
 		=> !await Database.SqlQuery<object>($"""
 		                                     select s.nspname from pg_class c
 		                                     join pg_namespace s on s.oid = c.relnamespace

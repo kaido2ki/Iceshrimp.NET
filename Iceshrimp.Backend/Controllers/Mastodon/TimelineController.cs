@@ -32,7 +32,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 	public async Task<IEnumerable<StatusEntity>> GetHomeTimeline(MastodonPaginationQuery query)
 	{
 		var user      = HttpContext.GetUserOrFail();
-		var heuristic = await QueryableTimelineExtensions.GetHeuristic(user, db, cache);
+		var heuristic = await QueryableTimelineExtensions.GetHeuristicAsync(user, db, cache);
 		return await db.Notes
 		               .IncludeCommonProperties()
 		               .FilterByFollowingAndOwn(user, db, heuristic)

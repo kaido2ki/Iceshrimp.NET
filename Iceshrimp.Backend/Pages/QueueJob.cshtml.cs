@@ -29,7 +29,7 @@ public class QueueJobModel(DatabaseContext db, MetaService meta) : PageModel
 			return Redirect("/login");
 
 		Request.HttpContext.HideFooter();
-		InstanceName = await meta.Get(MetaEntity.InstanceName) ?? InstanceName;
+		InstanceName = await meta.GetAsync(MetaEntity.InstanceName) ?? InstanceName;
 
 		Job = await db.Jobs.FirstOrDefaultAsync(p => p.Id == id) ??
 		      throw GracefulException.NotFound($"Job {id} not found");

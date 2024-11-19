@@ -54,15 +54,15 @@
     protected override async Task OnGet()
     {
         (Model.Name, Model.Description, Model.AdminContact) =
-            await Meta.GetMany(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
+            await Meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
     }
 
     async Task OnSubmit()
     {
         Model.Canonicalize();
-        await Meta.Set(MetaEntity.InstanceName, Model.Name);
-        await Meta.Set(MetaEntity.InstanceDescription, Model.Description);
-        await Meta.Set(MetaEntity.AdminContactEmail, Model.AdminContact);
+        await Meta.SetAsync(MetaEntity.InstanceName, Model.Name);
+        await Meta.SetAsync(MetaEntity.InstanceDescription, Model.Description);
+        await Meta.SetAsync(MetaEntity.AdminContactEmail, Model.AdminContact);
 
         ReloadPage();
     }

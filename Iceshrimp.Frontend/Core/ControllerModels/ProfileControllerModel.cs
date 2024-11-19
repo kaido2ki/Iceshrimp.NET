@@ -5,9 +5,9 @@ namespace Iceshrimp.Frontend.Core.ControllerModels;
 
 internal class ProfileControllerModel(ApiClient api)
 {
-	public Task<UserProfileEntity> GetProfile() =>
-		api.Call<UserProfileEntity>(HttpMethod.Get, "/profile");
+	public Task<UserProfileEntity> GetProfileAsync() =>
+		api.CallAsync<UserProfileEntity>(HttpMethod.Get, "/profile");
 
-	public Task UpdateProfile(UserProfileEntity request) =>
-		api.Call(HttpMethod.Put, "/profile", data: request);
+	public Task UpdateProfileAsync(UserProfileEntity request) =>
+		api.CallAsync(HttpMethod.Put, "/profile", data: request);
 }

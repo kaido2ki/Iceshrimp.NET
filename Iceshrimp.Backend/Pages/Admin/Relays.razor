@@ -80,7 +80,7 @@
         if (Model.InboxUri == null)
             throw GracefulException.BadRequest("Missing host field");
 
-        await RelayService.SubscribeToRelay(Model.InboxUri);
+        await RelayService.SubscribeToRelayAsync(Model.InboxUri);
         ReloadPage();
     }
 }

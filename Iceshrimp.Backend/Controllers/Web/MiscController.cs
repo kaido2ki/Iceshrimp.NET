@@ -61,6 +61,6 @@ public class MiscController(DatabaseContext db, NoteRenderer noteRenderer, BiteS
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
 
-		return await noteRenderer.RenderMany(notes.EnforceRenoteReplyVisibility(), user);
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user);
 	}
 }

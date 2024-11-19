@@ -31,7 +31,7 @@ public partial class UserPreview(
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown)
 			throw new PublicPreviewDisabledException();
 
-		_instanceName = await meta.Get(MetaEntity.InstanceName) ?? _instanceName;
+		_instanceName = await meta.GetAsync(MetaEntity.InstanceName) ?? _instanceName;
 
 		//TODO: user banner
 		//TODO: user note view (respect public preview settings - don't show renotes of remote notes if set to restricted or lower)

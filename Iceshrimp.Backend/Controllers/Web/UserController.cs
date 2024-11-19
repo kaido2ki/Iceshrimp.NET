@@ -43,7 +43,7 @@ public class UserController(
 		                   .FirstOrDefaultAsync(p => p.Id == id) ??
 		           throw GracefulException.NotFound("User not found");
 
-		return await userRenderer.RenderOne(await userResolver.GetUpdatedUser(user));
+		return await userRenderer.RenderOne(await userResolver.GetUpdatedUserAsync(user));
 	}
 
 	[HttpGet("lookup")]
@@ -61,7 +61,7 @@ public class UserController(
 		                   .FirstOrDefaultAsync(p => p.UsernameLower == username && p.Host == host) ??
 		           throw GracefulException.NotFound("User not found");
 
-		return await userRenderer.RenderOne(await userResolver.GetUpdatedUser(user));
+		return await userRenderer.RenderOne(await userResolver.GetUpdatedUserAsync(user));
 	}
 
 	[HttpGet("{id}/profile")]
@@ -74,7 +74,7 @@ public class UserController(
 		                   .FirstOrDefaultAsync(p => p.Id == id) ??
 		           throw GracefulException.NotFound("User not found");
 
-		return await userProfileRenderer.RenderOne(await userResolver.GetUpdatedUser(user), localUser);
+		return await userProfileRenderer.RenderOne(await userResolver.GetUpdatedUserAsync(user), localUser);
 	}
 
 	[HttpGet("{id}/notes")]
@@ -95,9 +95,9 @@ public class UserController(
 		                    .Paginate(pq, ControllerContext)
 		                    .PrecomputeVisibilities(localUser)
 		                    .ToListAsync()
-		                    .ContinueWithResult(res => res.EnforceRenoteReplyVisibility());
+		                    .ContinueWithResultAsync(res => res.EnforceRenoteReplyVisibility());
 
-		return await noteRenderer.RenderMany(notes, localUser, Filter.FilterContext.Accounts);
+		return await noteRenderer.RenderManyAsync(notes, localUser, Filter.FilterContext.Accounts);
 	}
 
 	[HttpPost("{id}/bite")]

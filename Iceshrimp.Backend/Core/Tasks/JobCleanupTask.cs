@@ -11,7 +11,7 @@ namespace Iceshrimp.Backend.Core.Tasks;
 [SuppressMessage("ReSharper", "UnusedType.Global", Justification = "Instantiated at runtime by CronService")]
 public class JobCleanupTask : ICronTask
 {
-	public async Task Invoke(IServiceProvider provider)
+	public async Task InvokeAsync(IServiceProvider provider)
 	{
 		var db        = provider.GetRequiredService<DatabaseContext>();
 		var queue     = provider.GetRequiredService<QueueService>();

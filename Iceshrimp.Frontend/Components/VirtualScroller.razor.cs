@@ -245,6 +245,7 @@ public partial class VirtualScroller : IAsyncDisposable
 		StateHasChanged();
 	}
 
+	// ReSharper disable once InconsistentNaming
 	private ValueTask LocationChangeHandler(LocationChangingContext arg)
 	{
 		SaveState();

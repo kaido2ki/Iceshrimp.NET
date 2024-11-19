@@ -90,7 +90,7 @@
     private async Task GetNotes(string? minId)
     {
         var pq    = new PaginationQuery { Limit = 10, MaxId = minId };
-        var notes = await Api.Users.GetUserNotes(UserResponse.Id, pq);
+        var notes = await Api.Users.GetUserNotesAsync(UserResponse.Id, pq);
         if (notes is not null && notes.Count > 0)
         {
             MinId = notes.Last().Id;
@@ -121,7 +121,7 @@
             {
                 var pattern      = "^@(.[^@]+)@?(.+)?$";
                 var matches      = Regex.Match(User, pattern);
-                var userResponse = await Api.Users.LookupUser(matches.Groups[1].Value, matches.Groups[2].Value);
+                var userResponse = await Api.Users.LookupUserAsync(matches.Groups[1].Value, matches.Groups[2].Value);
                 if (userResponse is null)
                 {
                     _notFound = true;
@@ -129,7 +129,7 @@
                 else
                 {
                     UserResponse = userResponse;
-                    Profile      = await Api.Users.GetUserProfile(UserResponse.Id);
+                    Profile      = await Api.Users.GetUserProfileAsync(UserResponse.Id);
                     await GetNotes(null);
                     _init    = true;
                     _loading = false;

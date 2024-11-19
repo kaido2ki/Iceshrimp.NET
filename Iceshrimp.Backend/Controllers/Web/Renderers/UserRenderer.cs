@@ -40,31 +40,31 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 
 	public async Task<UserResponse> RenderOne(User user)
 	{
-		var instanceData = await GetInstanceData([user]);
-		var emojis       = await GetEmojis([user]);
+		var instanceData = await GetInstanceDataAsync([user]);
+		var emojis       = await GetEmojisAsync([user]);
 		var data         = new UserRendererDto { Emojis = emojis, InstanceData = instanceData };
 
 		return Render(user, data);
 	}
 
-	private async Task<List<Instance>> GetInstanceData(IEnumerable<User> users)
+	private async Task<List<Instance>> GetInstanceDataAsync(IEnumerable<User> users)
 	{
 		var hosts = users.Select(p => p.Host).Where(p => p != null).Distinct().Cast<string>();
 		return await db.Instances.Where(p => hosts.Contains(p.Host)).ToListAsync();
 	}
 
-	public async Task<IEnumerable<UserResponse>> RenderMany(IEnumerable<User> users)
+	public async Task<IEnumerable<UserResponse>> RenderManyAsync(IEnumerable<User> users)
 	{
 		var userList = users.ToList();
 		var data = new UserRendererDto
 		{
-			InstanceData = await GetInstanceData(userList), Emojis = await GetEmojis(userList)
+			InstanceData = await GetInstanceDataAsync(userList), Emojis = await GetEmojisAsync(userList)
 		};
 
 		return userList.Select(p => Render(p, data));
 	}
 
-	private async Task<Dictionary<string, List<EmojiResponse>>> GetEmojis(ICollection<User> users)
+	private async Task<Dictionary<string, List<EmojiResponse>>> GetEmojisAsync(ICollection<User> users)
 	{
 		var ids = users.SelectMany(p => p.Emojis).ToList();
 		if (ids.Count == 0) return users.ToDictionary<User, string, List<EmojiResponse>>(p => p.Id, _ => []);

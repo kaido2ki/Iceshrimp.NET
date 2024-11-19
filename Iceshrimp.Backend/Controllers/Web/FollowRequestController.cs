@@ -39,7 +39,7 @@ public class FollowRequestController(
 		                       .Select(p => new { p.Id, p.Follower })
 		                       .ToListAsync();
 
-		var users = await userRenderer.RenderMany(requests.Select(p => p.Follower));
+		var users = await userRenderer.RenderManyAsync(requests.Select(p => p.Follower));
 		return requests.Select(p => new FollowRequestResponse
 		{
 			Id = p.Id, User = users.First(u => u.Id == p.Follower.Id)

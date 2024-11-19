@@ -227,7 +227,7 @@ public class AdminController(
 	{
 		var jobs = db.Jobs
 		             .Where(p => p.Queue == queue && p.Status == Job.JobStatus.Failed)
-		             .AsChunkedAsyncEnumerable(10, p => p.Id);
+		             .AsChunkedAsyncEnumerableAsync(10, p => p.Id);
 
 		await foreach (var job in jobs)
 			await queueSvc.RetryJobAsync(job);
@@ -240,7 +240,7 @@ public class AdminController(
 		var jobs = db.Jobs
 		             .Where(p => p.Queue == queue && p.Status == Job.JobStatus.Failed)
 		             .Where(p => p.Id >= from && p.Id <= to)
-		             .AsChunkedAsyncEnumerable(10, p => p.Id);
+		             .AsChunkedAsyncEnumerableAsync(10, p => p.Id);
 
 		await foreach (var job in jobs)
 			await queueSvc.RetryJobAsync(job);
@@ -263,7 +263,7 @@ public class AdminController(
 	{
 		return await db.Relays
 		               .ToArrayAsync()
-		               .ContinueWithResult(res => res.Select(p => new RelaySchemas.RelayResponse
+		               .ContinueWithResultAsync(res => res.Select(p => new RelaySchemas.RelayResponse
 		                                             {
 			                                             Id     = p.Id,
 			                                             Inbox  = p.Inbox,
@@ -276,7 +276,7 @@ public class AdminController(
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task SubscribeToRelay(RelaySchemas.RelayRequest rq)
 	{
-		await relaySvc.SubscribeToRelay(rq.Inbox);
+		await relaySvc.SubscribeToRelayAsync(rq.Inbox);
 	}
 
 	[HttpDelete("relays/{id}")]
@@ -286,7 +286,7 @@ public class AdminController(
 	{
 		var relay = await db.Relays.FirstOrDefaultAsync(p => p.Id == id) ??
 		            throw GracefulException.NotFound("Relay not found");
-		await relaySvc.UnsubscribeFromRelay(relay);
+		await relaySvc.UnsubscribeFromRelayAsync(relay);
 	}
 
 	[HttpPost("drive/prune-expired-media")]
@@ -294,12 +294,12 @@ public class AdminController(
 	public async Task PruneExpiredMedia([FromServices] IServiceScopeFactory factory)
 	{
 		await using var scope = factory.CreateAsyncScope();
-		await new MediaCleanupTask().Invoke(scope.ServiceProvider);
+		await new MediaCleanupTask().InvokeAsync(scope.ServiceProvider);
 	}
 
 	[HttpGet("policy")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public async Task<List<string>> GetAvailablePolicies() => await policySvc.GetAvailablePolicies();
+	public async Task<List<string>> GetAvailablePolicies() => await policySvc.GetAvailablePoliciesAsync();
 
 	[HttpGet("policy/{name}")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -307,7 +307,7 @@ public class AdminController(
 	public async Task<IPolicyConfiguration> GetPolicyConfiguration(string name)
 	{
 		var raw = await db.PolicyConfiguration.Where(p => p.Name == name).Select(p => p.Data).FirstOrDefaultAsync();
-		return await policySvc.GetConfiguration(name, raw) ?? throw GracefulException.NotFound("Policy not found");
+		return await policySvc.GetConfigurationAsync(name, raw) ?? throw GracefulException.NotFound("Policy not found");
 	}
 
 	[HttpPut("policy/{name}")]
@@ -317,7 +317,7 @@ public class AdminController(
 		string name, [SwaggerBodyExample("{\n  \"enabled\": true\n}")] JsonDocument body
 	)
 	{
-		var type = await policySvc.GetConfigurationType(name) ?? throw GracefulException.NotFound("Policy not found");
+		var type = await policySvc.GetConfigurationTypeAsync(name) ?? throw GracefulException.NotFound("Policy not found");
 		var data = body.Deserialize(type, JsonSerialization.Options) as IPolicyConfiguration;
 		if (data?.GetType() != type) throw GracefulException.BadRequest("Invalid policy config");
 		var serialized = JsonSerializer.Serialize(data, type, JsonSerialization.Options);
@@ -327,7 +327,7 @@ public class AdminController(
 		        .On(p => new { p.Name })
 		        .RunAsync();
 
-		await policySvc.Update();
+		await policySvc.UpdateAsync();
 	}
 
 	[UseNewtonsoftJson]

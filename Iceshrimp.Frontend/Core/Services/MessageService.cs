@@ -68,7 +68,7 @@ internal class MessageService
 		}
 	}
 
-	public Task UpdateNote(NoteResponse note)
+	public Task UpdateNoteAsync(NoteResponse note)
 	{
 		AnyNoteChanged?.Invoke(this, note);
 		_noteChangedHandlers.TryGetValue((note.Id, Type.Updated), out var xHandler);
@@ -76,7 +76,7 @@ internal class MessageService
 		return Task.CompletedTask;
 	}
 
-	public Task DeleteNote(NoteResponse note)
+	public Task DeleteNoteAsync(NoteResponse note)
 	{
 		AnyNoteDeleted?.Invoke(this, note);
 		_noteChangedHandlers.TryGetValue((note.Id, Type.Deleted), out var xHandler);

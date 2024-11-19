@@ -10,9 +10,9 @@ public class PollRenderer(DatabaseContext db) : IScopedService
 {
 	public async Task<PollEntity> RenderAsync(Poll poll, User? user, PollRendererDto? data = null)
 	{
-		var voted = (data?.Voted ?? await GetVoted([poll], user)).Contains(poll.NoteId);
+		var voted = (data?.Voted ?? await GetVotedAsync([poll], user)).Contains(poll.NoteId);
 
-		var ownVotes = (data?.OwnVotes ?? await GetOwnVotes([poll], user)).Where(p => p.Key == poll.NoteId)
+		var ownVotes = (data?.OwnVotes ?? await GetOwnVotesAsync([poll], user)).Where(p => p.Key == poll.NoteId)
 		                                                                  .Select(p => p.Value)
 		                                                                  .DefaultIfEmpty([])
 		                                                                  .First();
@@ -38,7 +38,7 @@ public class PollRenderer(DatabaseContext db) : IScopedService
 		return res;
 	}
 
-	private async Task<List<string>> GetVoted(IEnumerable<Poll> polls, User? user)
+	private async Task<List<string>> GetVotedAsync(IEnumerable<Poll> polls, User? user)
 	{
 		if (user == null) return [];
 		return await db.PollVotes.Where(p => polls.Select(i => i.NoteId).Any(i => i == p.NoteId) && p.User == user)
@@ -47,7 +47,7 @@ public class PollRenderer(DatabaseContext db) : IScopedService
 		               .ToListAsync();
 	}
 
-	private async Task<Dictionary<string, int[]>> GetOwnVotes(IEnumerable<Poll> polls, User? user)
+	private async Task<Dictionary<string, int[]>> GetOwnVotesAsync(IEnumerable<Poll> polls, User? user)
 	{
 		if (user == null) return [];
 		return await db.PollVotes
@@ -62,7 +62,7 @@ public class PollRenderer(DatabaseContext db) : IScopedService
 
 		var data = new PollRendererDto
 		{
-			OwnVotes = await GetOwnVotes(pollList, user), Voted = await GetVoted(pollList, user)
+			OwnVotes = await GetOwnVotesAsync(pollList, user), Voted = await GetVotedAsync(pollList, user)
 		};
 
 		return await pollList.Select(p => RenderAsync(p, user, data)).AwaitAllAsync();

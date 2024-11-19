@@ -149,9 +149,9 @@
 
         try
         {
-            var rootNoteTask    = ApiService.Notes.GetNote(NoteId);
-            var descendantsTask = ApiService.Notes.GetNoteDescendants(NoteId, _depth);
-            var ascendantsTask  = ApiService.Notes.GetNoteAscendants(NoteId, default);
+            var rootNoteTask    = ApiService.Notes.GetNoteAsync(NoteId);
+            var descendantsTask = ApiService.Notes.GetNoteDescendantsAsync(NoteId, _depth);
+            var ascendantsTask  = ApiService.Notes.GetNoteAscendantsAsync(NoteId, default);
             RootNote    = await rootNoteTask;
             Descendants = await descendantsTask;
             Ascendants  = await ascendantsTask;
@@ -219,11 +219,12 @@
     private async Task Refresh()
     {
         if (NoteId == null) throw new InvalidOperationException("RefreshNote called under impossible circumstances");
-        Descendants = await ApiService.Notes.GetNoteDescendants(NoteId, default);
-        Ascendants  = await ApiService.Notes.GetNoteAscendants(NoteId, default);
+        Descendants = await ApiService.Notes.GetNoteDescendantsAsync(NoteId, default);
+        Ascendants  = await ApiService.Notes.GetNoteAscendantsAsync(NoteId, default);
         StateHasChanged();
     }
 
+    // ReSharper disable once InconsistentNaming
     private ValueTask LocationChangeHandler(LocationChangingContext arg)
     {
         SaveState();

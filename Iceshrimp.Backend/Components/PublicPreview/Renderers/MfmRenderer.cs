@@ -12,7 +12,7 @@ public class MfmRenderer(IOptions<Config.InstanceSection> config) : ISingletonSe
 {
 	private readonly MfmConverter _converter = new(config);
 
-	public async Task<MarkupString?> Render(
+	public async Task<MarkupString?> RenderAsync(
 		string? text, string? host, List<Note.MentionedUser> mentions, List<Emoji> emoji, string rootElement
 	)
 	{

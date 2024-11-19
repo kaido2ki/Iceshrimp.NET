@@ -50,16 +50,16 @@ public class DeliverQueue(int parallelism)
 			}
 			catch
 			{
-				_ = followup.ExecuteTask("UpdateInstanceMetadata", async provider =>
+				_ = followup.ExecuteTaskAsync("UpdateInstanceMetadata", async provider =>
 				{
 					var instanceSvc = provider.GetRequiredService<InstanceService>();
-					await instanceSvc.MarkInstanceAsUnresponsive(jobData.RecipientHost, new Uri(jobData.InboxUrl).Host);
+					await instanceSvc.MarkInstanceAsUnresponsiveAsync(jobData.RecipientHost, new Uri(jobData.InboxUrl).Host);
 				});
 
 				throw;
 			}
 
-			_ = followup.ExecuteTask("UpdateInstanceMetadata", async provider =>
+			_ = followup.ExecuteTaskAsync("UpdateInstanceMetadata", async provider =>
 			{
 				var instanceSvc = provider.GetRequiredService<InstanceService>();
 				await instanceSvc.UpdateInstanceStatusAsync(jobData.RecipientHost, new Uri(jobData.InboxUrl).Host,

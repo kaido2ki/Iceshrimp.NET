@@ -31,7 +31,7 @@ public partial class NotePreview(
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown)
 			throw new PublicPreviewDisabledException();
 
-		_instanceName = await meta.Get(MetaEntity.InstanceName) ?? _instanceName;
+		_instanceName = await meta.GetAsync(MetaEntity.InstanceName) ?? _instanceName;
 
 		//TODO: show publish & edit timestamps
 		//TODO: show quotes inline (enforce visibility by checking VisibilityIsPublicOrHome)

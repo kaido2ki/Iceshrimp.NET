@@ -42,8 +42,8 @@ public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRe
 	{
 		var data = new NotificationRendererDto
 		{
-			Users = await GetUsers([notification]),
-			Notes = await GetNotes([notification], localUser),
+			Users = await GetUsersAsync([notification]),
+			Notes = await GetNotesAsync([notification], localUser),
 			Bites = GetBites([notification])
 		};
 
@@ -71,16 +71,16 @@ public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRe
 		_ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
 	};
 
-	private async Task<List<UserResponse>> GetUsers(IEnumerable<Notification> notifications)
+	private async Task<List<UserResponse>> GetUsersAsync(IEnumerable<Notification> notifications)
 	{
 		var users = notifications.Select(p => p.Notifier).OfType<User>().DistinctBy(p => p.Id);
-		return await userRenderer.RenderMany(users).ToListAsync();
+		return await userRenderer.RenderManyAsync(users).ToListAsync();
 	}
 
-	private async Task<List<NoteResponse>> GetNotes(IEnumerable<Notification> notifications, User user)
+	private async Task<List<NoteResponse>> GetNotesAsync(IEnumerable<Notification> notifications, User user)
 	{
 		var notes = notifications.Select(p => p.Note).OfType<Note>().DistinctBy(p => p.Id);
-		return await noteRenderer.RenderMany(notes, user, Filter.FilterContext.Notifications).ToListAsync();
+		return await noteRenderer.RenderManyAsync(notes, user, Filter.FilterContext.Notifications).ToListAsync();
 	}
 
 	private static List<BiteResponse> GetBites(IEnumerable<Notification> notifications)
@@ -89,13 +89,13 @@ public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRe
 		return bites.Select(p => new BiteResponse { Id = p.Id, BiteBack = p.TargetBiteId != null }).ToList();
 	}
 
-	public async Task<IEnumerable<NotificationResponse>> RenderMany(IEnumerable<Notification> notifications, User user)
+	public async Task<IEnumerable<NotificationResponse>> RenderManyAsync(IEnumerable<Notification> notifications, User user)
 	{
 		var notificationsList = notifications.ToList();
 		var data = new NotificationRendererDto
 		{
-			Users = await GetUsers(notificationsList),
-			Notes = await GetNotes(notificationsList, user),
+			Users = await GetUsersAsync(notificationsList),
+			Notes = await GetNotesAsync(notificationsList, user),
 			Bites = GetBites(notificationsList)
 		};
 

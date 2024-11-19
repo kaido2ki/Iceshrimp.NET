@@ -13,7 +13,7 @@ public static class StreamExtensions
 		{
 			int bytesRead;
 			var totalBytesRead = 0L;
-			while ((maxLength == null || totalBytesRead <= maxLength) && (bytesRead = await DoRead()) != 0)
+			while ((maxLength == null || totalBytesRead <= maxLength) && (bytesRead = await DoReadAsync()) != 0)
 			{
 				totalBytesRead += bytesRead;
 				await destination.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, bytesRead), cancellationToken);
@@ -26,6 +26,6 @@ public static class StreamExtensions
 
 		return;
 
-		ValueTask<int> DoRead() => source.ReadAsync(new Memory<byte>(buffer), cancellationToken);
+		ValueTask<int> DoReadAsync() => source.ReadAsync(new Memory<byte>(buffer), cancellationToken);
 	}
 }

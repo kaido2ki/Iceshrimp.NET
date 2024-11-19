@@ -22,7 +22,7 @@ public abstract class PluginLoader
 	private static IEnumerable<IPlugin>        Plugins    => Loaded.Select(p => p.instance);
 	public static  IEnumerable<Assembly>       Assemblies => Loaded.Select(p => p.assembly);
 
-	public static async Task LoadPlugins()
+	public static async Task LoadPluginsAsync()
 	{
 		if (!Directory.Exists(DllPath)) return;
 		var dlls = Directory.EnumerateFiles(DllPath, "*.dll").ToList();
@@ -33,7 +33,7 @@ public abstract class PluginLoader
 		             .Cast<LoadedPlugin>()
 		             .ToImmutableList();
 
-		await Plugins.Select(i => i.Initialize()).AwaitAllNoConcurrencyAsync();
+		await Plugins.Select(i => i.InitializeAsync()).AwaitAllNoConcurrencyAsync();
 	}
 
 	public static void RunBuilderHooks(WebApplicationBuilder builder)
@@ -74,7 +74,7 @@ public interface IPlugin
 	public string Name    { get; }
 	public string Version { get; }
 
-	public Task                  Initialize()                               => Task.CompletedTask;
+	public Task                  InitializeAsync()                               => Task.CompletedTask;
 	public WebApplicationBuilder BuilderHook(WebApplicationBuilder builder) => builder;
 	public WebApplication        AppHook(WebApplication app)                => app;
 }

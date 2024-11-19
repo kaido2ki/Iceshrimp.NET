@@ -115,7 +115,7 @@ public class PollController(
 		await db.SaveChangesAsync();
 
 		foreach (var vote in votes)
-			await pollSvc.RegisterPollVote(vote, poll, note, votes.IndexOf(vote) == 0);
+			await pollSvc.RegisterPollVoteAsync(vote, poll, note, votes.IndexOf(vote) == 0);
 
 		await db.ReloadEntityAsync(poll);
 		return await pollRenderer.RenderAsync(poll, user);

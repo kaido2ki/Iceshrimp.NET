@@ -12,7 +12,7 @@ public class NotificationService(
 	EventService eventSvc
 ) : IScopedService
 {
-	public async Task GenerateMentionNotifications(Note note, IReadOnlyCollection<string> mentionedLocalUserIds)
+	public async Task GenerateMentionNotificationsAsync(Note note, IReadOnlyCollection<string> mentionedLocalUserIds)
 	{
 		if (mentionedLocalUserIds.Count == 0) return;
 
@@ -40,7 +40,7 @@ public class NotificationService(
 		eventSvc.RaiseNotifications(this, notifications);
 	}
 
-	public async Task GenerateReplyNotifications(Note note, IReadOnlyCollection<string> mentionedLocalUserIds)
+	public async Task GenerateReplyNotificationsAsync(Note note, IReadOnlyCollection<string> mentionedLocalUserIds)
 	{
 		var users = mentionedLocalUserIds
 		            .Concat(note.VisibleUserIds)
@@ -84,7 +84,7 @@ public class NotificationService(
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
 	                 Justification = "Projectable functions are very much translatable")]
-	public async Task GenerateEditNotifications(Note note)
+	public async Task GenerateEditNotificationsAsync(Note note)
 	{
 		var notifications = await db.Users
 		                            .Where(p => p.IsLocalUser && p != note.User && p.HasInteractedWith(note))
@@ -107,7 +107,7 @@ public class NotificationService(
 		eventSvc.RaiseNotifications(this, notifications);
 	}
 
-	public async Task GenerateLikeNotification(Note note, User user)
+	public async Task GenerateLikeNotificationAsync(Note note, User user)
 	{
 		if (note.UserHost != null) return;
 		if (note.User == user) return;
@@ -127,7 +127,7 @@ public class NotificationService(
 		eventSvc.RaiseNotification(this, notification);
 	}
 
-	public async Task GenerateReactionNotification(NoteReaction reaction)
+	public async Task GenerateReactionNotificationAsync(NoteReaction reaction)
 	{
 		if (reaction.Note.User.IsRemoteUser) return;
 		if (reaction.Note.User == reaction.User) return;
@@ -148,7 +148,7 @@ public class NotificationService(
 		eventSvc.RaiseNotification(this, notification);
 	}
 
-	public async Task GenerateFollowNotification(User follower, User followee)
+	public async Task GenerateFollowNotificationAsync(User follower, User followee)
 	{
 		if (followee.IsRemoteUser) return;
 
@@ -167,7 +167,7 @@ public class NotificationService(
 		eventSvc.RaiseUserFollowed(this, follower, followee);
 	}
 
-	public async Task GenerateFollowRequestReceivedNotification(FollowRequest followRequest)
+	public async Task GenerateFollowRequestReceivedNotificationAsync(FollowRequest followRequest)
 	{
 		if (followRequest.FolloweeHost != null) return;
 
@@ -186,7 +186,7 @@ public class NotificationService(
 		eventSvc.RaiseNotification(this, notification);
 	}
 
-	public async Task GenerateFollowRequestAcceptedNotification(FollowRequest followRequest)
+	public async Task GenerateFollowRequestAcceptedNotificationAsync(FollowRequest followRequest)
 	{
 		if (followRequest.FollowerHost != null) return;
 		if (!followRequest.Followee.IsLocked) return;
@@ -206,7 +206,7 @@ public class NotificationService(
 		eventSvc.RaiseUserFollowed(this, followRequest.Follower, followRequest.Followee);
 	}
 
-	public async Task GenerateBiteNotification(Bite bite)
+	public async Task GenerateBiteNotificationAsync(Bite bite)
 	{
 		var notification = new Notification
 		{
@@ -225,7 +225,7 @@ public class NotificationService(
 		eventSvc.RaiseNotification(this, notification);
 	}
 
-	public async Task GeneratePollEndedNotifications(Note note)
+	public async Task GeneratePollEndedNotificationsAsync(Note note)
 	{
 		var notifications = await db.PollVotes
 		                            .Where(p => p.Note == note)
@@ -264,7 +264,7 @@ public class NotificationService(
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
-	public async Task GenerateRenoteNotification(Note note)
+	public async Task GenerateRenoteNotificationAsync(Note note)
 	{
 		if (note.Renote is not { UserHost: null }) return;
 		if (note.RenoteUserId == note.UserId) return;

@@ -1,8 +1,12 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Build.Framework;
+// ReSharper disable UnusedMember.Local
+// ReSharper disable CheckNamespace
+// ReSharper disable ClassNeverInstantiated.Local
+// ReSharper disable ConvertToAutoProperty
+// ReSharper disable PropertyCanBeMadeInitOnly.Local
 
-// ReSharper disable once CheckNamespace
 namespace Iceshrimp.Build.Tasks;
 
 public class RewriteStaticAssetManifest : Microsoft.Build.Utilities.Task

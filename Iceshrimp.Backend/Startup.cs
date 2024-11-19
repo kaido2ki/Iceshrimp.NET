@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(options);
 builder.Configuration.Sources.Clear();
 builder.Configuration.AddCustomConfiguration();
 
-await PluginLoader.LoadPlugins();
+await PluginLoader.LoadPluginsAsync();
 
 builder.Services
        .AddControllersWithOptions()
@@ -47,7 +47,7 @@ builder.WebHost.UseStaticWebAssets();
 PluginLoader.RunBuilderHooks(builder);
 
 var app    = builder.Build();
-var config = await app.Initialize(args);
+var config = await app.InitializeAsync(args);
 
 // This determines the order of middleware execution in the request pipeline
 #if DEBUG

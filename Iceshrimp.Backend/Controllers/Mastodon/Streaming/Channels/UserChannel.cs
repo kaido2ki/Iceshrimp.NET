@@ -17,7 +17,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 	public bool         IsSubscribed { get; private set; }
 	public bool         IsAggregate  => false;
 
-	public async Task Subscribe(StreamingRequestMessage _)
+	public async Task SubscribeAsync(StreamingRequestMessage _)
 	{
 		if (IsSubscribed) return;
 		IsSubscribed = true;
@@ -35,7 +35,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		connection.EventService.Notification += OnNotification;
 	}
 
-	public Task Unsubscribe(StreamingRequestMessage _)
+	public Task UnsubscribeAsync(StreamingRequestMessage _)
 	{
 		if (!IsSubscribed) return Task.CompletedTask;
 		IsSubscribed = false;
@@ -102,7 +102,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			if (connection.IsFiltered(note)) return;
 			if (note.CreatedAt < DateTime.UtcNow - TimeSpan.FromMinutes(5)) return;
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
-			if (await connection.IsMutedThread(note, scope)) return;
+			if (await connection.IsMutedThreadAsync(note, scope)) return;
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
 			var intermediate = await renderer.RenderAsync(note, connection.Token.User);
@@ -175,7 +175,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			if (IsFiltered(notification)) return;
 
 			await using var scope = connection.ScopeFactory.CreateAsyncScope();
-			if (notification.Note != null && await connection.IsMutedThread(notification.Note, scope, true))
+			if (notification.Note != null && await connection.IsMutedThreadAsync(notification.Note, scope, true))
 				return;
 
 			var renderer = scope.ServiceProvider.GetRequiredService<NotificationRenderer>();

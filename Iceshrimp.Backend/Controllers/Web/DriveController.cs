@@ -97,7 +97,7 @@ public class DriveController(
 			MimeType    = file.ContentType,
 			IsSensitive = false
 		};
-		var res = await driveSvc.StoreFile(file.OpenReadStream(), user, request);
+		var res = await driveSvc.StoreFileAsync(file.OpenReadStream(), user, request);
 		return await GetFileById(res.Id);
 	}
 

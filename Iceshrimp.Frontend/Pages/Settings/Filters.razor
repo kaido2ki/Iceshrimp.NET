@@ -200,7 +200,7 @@
     {
         try
         {
-            FilterList = (List<FilterResponse>)await Api.Filters.GetFilters();
+            FilterList = (List<FilterResponse>)await Api.Filters.GetFiltersAsync();
             State      = State.Loaded;
         }
         catch (ApiException)
@@ -213,7 +213,7 @@
     {
         try
         {
-            if (await Api.Filters.DeleteFilter(id))
+            if (await Api.Filters.DeleteFilterAsync(id))
             {
                 var index = FilterList.FindIndex(p => p.Id == id);
                 FilterList.RemoveAt(index);
@@ -267,7 +267,7 @@
             };
             try
             {
-                var filter = await Api.Filters.CreateFilter(newFilterRequest);
+                var filter = await Api.Filters.CreateFilterAsync(newFilterRequest);
                 FilterList.Add(filter);
             }
             catch (ApiException) { }

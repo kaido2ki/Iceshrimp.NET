@@ -246,7 +246,7 @@
 
         try
         {
-            await ApiService.Notes.CreateNote(NoteDraft);
+            await ApiService.Notes.CreateNoteAsync(NoteDraft);
         }
         catch (ApiException)
         {
@@ -256,8 +256,8 @@
 
         if (ReplyOrQuote != null)
         {
-            var res            = await ApiService.Notes.GetNote(ReplyOrQuote.Id);
-            if (res != null) _ = MessageService.UpdateNote(res);
+            var res            = await ApiService.Notes.GetNoteAsync(ReplyOrQuote.Id);
+            if (res != null) _ = MessageService.UpdateNoteAsync(res);
         }
 
         SendButton.State = StateButton.StateEnum.Success;
@@ -274,7 +274,7 @@
 
     private async Task Upload(InputFileChangeEventArgs e)
     {
-        var res = await ApiService.Drive.UploadFile(e.File);
+        var res = await ApiService.Drive.UploadFileAsync(e.File);
         Attachments.Add(res);
     }
 

@@ -6,12 +6,12 @@ namespace Iceshrimp.Frontend.Core.ControllerModels;
 
 internal class FollowRequestControllerModel(ApiClient api)
 {
-	public Task<List<FollowRequestResponse>> GetFollowRequests(PaginationQuery pq) =>
-		api.Call<List<FollowRequestResponse>>(HttpMethod.Get, "/follow_requests", pq);
+	public Task<List<FollowRequestResponse>> GetFollowRequestsAsync(PaginationQuery pq) =>
+		api.CallAsync<List<FollowRequestResponse>>(HttpMethod.Get, "/follow_requests", pq);
 
-	public Task<bool> AcceptFollowRequest(string id) =>
-		api.CallNullable(HttpMethod.Post, $"/follow_requests/{id}/accept");
+	public Task<bool> AcceptFollowRequestAsync(string id) =>
+		api.CallNullableAsync(HttpMethod.Post, $"/follow_requests/{id}/accept");
 
-	public Task<bool> RejectFollowRequest(string id) =>
-		api.CallNullable(HttpMethod.Post, $"/follow_requests/{id}/reject");
+	public Task<bool> RejectFollowRequestAsync(string id) =>
+		api.CallNullableAsync(HttpMethod.Post, $"/follow_requests/{id}/reject");
 }

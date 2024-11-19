@@ -106,7 +106,7 @@
         <tbody>
         @foreach (var job in Model.Jobs)
         {
-            await RenderJob(job, true);
+            await RenderJobAsync(job, true);
         }
         </tbody>
     </table>
@@ -148,7 +148,7 @@ else
         <tbody>
         @foreach (var job in Model.Jobs)
         {
-            await RenderJob(job);
+            await RenderJobAsync(job);
         }
         </tbody>
     </table>
@@ -219,7 +219,7 @@ else
 }
 
 @{
-    async Task RenderJob(Job job, bool withQueue = false)
+    async Task RenderJobAsync(Job job, bool withQueue = false)
     {
         var id = job.Id.ToStringLower();
         var additional = job.Status switch
