@@ -27,7 +27,7 @@ TEST_CMD          = ${TL_ENV} ${DOTNET_CMD} test --no-build --nologo
 BUILD_FLAGS       = -p:EnableLibVips=${VIPS} -p:BundleNativeDeps=${BUNDLE_NATIVE} -p:DependencyVulnsAsError=${DEP_VULN_WERROR}
 PUBLISH_FLAGS     = -p:EnableAOT=${AOT} -p:DeterministicSourcePaths=true -p:ContinuousIntegrationBuild=true ${BUILD_FLAGS}
 PUBLISH_FLAGS_EXT = ${PUBLISH_RIDARG} -o publish/${TARGETRID} ${PUBLISH_FLAGS}
-RELEASE_FLAGS     = -r ${TARGETRID} -o release/${TARGETPLATFORM} ${PUBLISH_FLAGS} -p:WasmOptLevel=z -p:WasmBuildNative=true
+RELEASE_FLAGS     = -r ${TARGETRID} -o release/${TARGETPLATFORM} ${PUBLISH_FLAGS}
 
 TARGETRID         = $(TARGETPLATFORM:linux-glibc-%=linux-%)
 PUBLISH_RIDARG    = $(if $(TARGETRID),-r $(TARGETRID),)
