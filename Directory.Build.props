@@ -49,5 +49,10 @@
     <!-- Enable Blazor AOT compilation when EnableAOT build flag is set -->
     <PropertyGroup Condition="'$(EnableAOT)' == 'true'">
         <RunAOTCompilation>true</RunAOTCompilation>
+        <WasmOptLevel Condition="'$(WasmOptLevel)' == ''">2</WasmOptLevel>
+        <WasmOptFlag>-O$(WasmOptLevel)</WasmOptFlag>
+        <EmccLinkOptimizationFlag>$(WasmOptFlag)</EmccLinkOptimizationFlag>
+        <EmccCompileOptimizationFlag>$(WasmOptFlag)</EmccCompileOptimizationFlag>
+        <WasmBitcodeCompileOptimizationFlag>$(WasmOptFlag)</WasmBitcodeCompileOptimizationFlag>
     </PropertyGroup>
 </Project>
