@@ -6,6 +6,9 @@
         <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
 
+    <Import Project="..\Iceshrimp.Build\Iceshrimp.Build.props"/>
+    <Import Project="..\Iceshrimp.Build\Iceshrimp.Build.targets"/>
+
     <!-- Disables erroneous ILLink warnings. See https://github.com/dotnet/fsharp/issues/15261#issuecomment-1562959640 for more details.-->
     <PropertyGroup>
         <NoWarn>IL2008,IL2040</NoWarn>

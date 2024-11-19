@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Disables static asset compression during regular builds -->
+    <Target Name="DisableBuildCompression" Condition="$(_IsPublishing)' != 'true'">
+        <PropertyGroup>
+            <DisableBuildCompression>true</DisableBuildCompression>
+        </PropertyGroup>
+    </Target>
+
+    <!-- This saves a bunch of disk space by skipping gzip compression during publish. -->
+    <Target Name="OverrideBuildCompressionFormats" BeforeTargets="ResolveBuildCompressedStaticWebAssetsConfiguration">
+        <PropertyGroup>
+            <BuildCompressionFormats>;</BuildCompressionFormats>
+        </PropertyGroup>
+    </Target>
+
+    <!-- This is also neeed to skip gzip compression during publish. -->
+    <Target Name="OverridePublishCompressionFormats" BeforeTargets="ResolvePublishCompressedStaticWebAssetsConfiguration">
+        <PropertyGroup>
+            <PublishCompressionFormats>;brotli</PublishCompressionFormats>
+        </PropertyGroup>
+    </Target>
+
+    <!-- This saves a bunch of disk space by discarding uncompressed static assets. -->
+    <!-- For clients that don't support brotli, transparent stream decompression will be used. -->
+    <Target Name="KeepOnlyBrotliCompressedStaticAssets" AfterTargets="Publish">
+        <ItemGroup>
+            <CompressedFiles Include="$(PublishDir)\wwwroot\**\*.br" />
+            <FilesToClean Include="@(CompressedFiles->'%(RootDir)%(Directory)%(Filename)')" />
+        </ItemGroup>
+
+        <Delete Files="@(FilesToClean->Exists())" />
+    </Target>
+
+    <!-- This rewrites the static asset endpoints JSON file to enable transparent decompression. -->
+    <Target Name="_RewriteStaticAssetManifest" AfterTargets="KeepOnlyBrotliCompressedStaticAssets">
+        <RewriteStaticAssetManifest Manifest="$(StaticWebAssetEndpointsBuildManifestPath)" />
+    </Target>
+
+</Project>

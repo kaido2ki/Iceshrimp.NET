@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <Import Project="..\Iceshrimp.Build\Iceshrimp.Build.props"/>
+    <Import Project="..\Iceshrimp.Build\Iceshrimp.Build.targets"/>
 
     <ItemGroup>
         <ProjectReference Include="..\Iceshrimp.Build\Iceshrimp.Build.csproj" PrivateAssets="all" IncludeAssets="build" />
@@ -79,25 +80,5 @@
     <ItemGroup>
         <None Remove="Core\Database\prune-designer-cs-files.sh" />
     </ItemGroup>
-
-    <!-- This saves a bunch of disk space by discarding the original and gzip-compressed static assets. -->
-    <!-- For clients that don't support brotli, they will be transparently decompressed by the server. -->
-    <Target Name="KeepOnlyBrotliCompressedStaticAssets" AfterTargets="Publish">
-        <ItemGroup>
-            <CompressedFiles Include="$(PublishDir)\wwwroot\**\*.br" />
-            <FilesToClean Include="@(CompressedFiles->'%(RootDir)%(Directory)%(Filename)')" />
-            <FilesToClean Include="@(CompressedFiles->'%(RootDir)%(Directory)%(Filename).gz')" />
-        </ItemGroup>
-
-        <Delete Files="@(FilesToClean->Exists())" />
-    </Target>
-
-    <!-- This runs a task that rewrites the static asset endpoints JSON file to enable transparent decompression. -->
-    <ItemGroup>
-        <ManifestFiles Include="$(PublishDir)\Iceshrimp.Backend.staticwebassets.endpoints.json"/>
-    </ItemGroup>
-    <Target Name="RewriteStaticAssetManifest" AfterTargets="KeepOnlyBrotliCompressedStaticAssets">
-        <RewriteStaticAssetManifest ManifestFiles="@(ManifestFiles)" />
-    </Target>
 
 </Project>
