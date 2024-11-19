@@ -8,7 +8,7 @@ public static class IdHelpers
 
 	public static string GenerateSnowflakeId(DateTime? createdAt = null)
 	{
-		if (createdAt?.Kind is not null and not DateTimeKind.Utc)
+		if (createdAt is { Kind: not DateTimeKind.Utc })
 			createdAt = createdAt.Value.ToUniversalTime();
 
 		createdAt ??= DateTime.UtcNow;
