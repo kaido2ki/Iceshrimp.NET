@@ -37,20 +37,20 @@
         if (profile != null) _followBack = profile.Relations.HasFlag(Relations.None);
     }
 
-    private async void Accept()
+    private async Task Accept()
     {
         await Api.FollowRequests.AcceptFollowRequestAsync(FollowRequest.Id);
         await OnDelete.InvokeAsync(FollowRequest.Id);
     }
 
-    private async void AcceptAndFollowBack()
+    private async Task AcceptAndFollowBack()
     {
         await Api.FollowRequests.AcceptFollowRequestAsync(FollowRequest.Id);
         await Api.Users.FollowUserAsync(FollowRequest.User.Id);
         await OnDelete.InvokeAsync(FollowRequest.Id);
     }
 
-    private async void Reject()
+    private async Task Reject()
     {
         await Api.FollowRequests.RejectFollowRequestAsync(FollowRequest.Id);
         await OnDelete.InvokeAsync(FollowRequest.Id);

@@ -57,23 +57,21 @@
         Self
     }
 
-    private void Action()
+    private async Task Action()
     {
         switch (_buttonType)
         {
             case ButtonType.Follow:
-                Follow();
-                break;
             case ButtonType.FollowBack:
-                Follow();
+                await Follow();
                 break;
             case ButtonType.Unfollow or ButtonType.CancelRequest:
-                Unfollow();
+                await Unfollow();
                 break;
         }
     }
 
-    private async void Unfollow()
+    private async Task Unfollow()
     {
         await Api.Users.UnfollowUserAsync(User.Id);
         UserProfile.Relations -= (int)Relations.Following;
@@ -81,7 +79,7 @@
         StateHasChanged();
     }
 
-    private async void Follow()
+    private async Task Follow()
     {
         await Api.Users.FollowUserAsync(User.Id);
         UserProfile.Relations += (int)Relations.Requested;

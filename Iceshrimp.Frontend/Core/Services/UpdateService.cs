@@ -73,9 +73,9 @@ internal class UpdateService
 		return await module.InvokeAsync<bool>("ServiceWorkerSkipWaiting");
 	}
 
-	private async void CallbackAsync(object? _)
+	private void CallbackAsync(object? caller)
 	{
-		await CheckVersionAsync();
+		_ = CheckVersionAsync();
 	}
 
 	private async Task<VersionResponse?> GetVersionAsync()

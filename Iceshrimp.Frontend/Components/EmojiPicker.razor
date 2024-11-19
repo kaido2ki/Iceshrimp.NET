@@ -47,7 +47,7 @@
         FilterEmojis();
     }
 
-    private async void Select(EmojiResponse emoji)
+    private async Task Select(EmojiResponse emoji)
     {
         await OnEmojiSelect.InvokeAsync(emoji);
         Close();

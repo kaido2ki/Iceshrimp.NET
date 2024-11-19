@@ -43,7 +43,7 @@
     private bool    Loading  { get; set; }
     private bool    Failure  { get; set; }
 
-    private async void Submit()
+    private async Task Submit()
     {
         Loading = true;
         try

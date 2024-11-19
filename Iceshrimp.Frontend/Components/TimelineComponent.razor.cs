@@ -94,18 +94,25 @@ public partial class TimelineComponent : IAsyncDisposable
 
 	private async void OnNotePublished(object? _, (StreamingTimeline timeline, NoteResponse note) data)
 	{
-		State.Timeline.Insert(0, data.note);
-		State.MaxId = data.note.Id;
-		if (ComponentState is Core.Miscellaneous.State.Empty)
+		try
 		{
-			State.MinId    = data.note.Id;
-			ComponentState = Core.Miscellaneous.State.Loaded;
-			StateHasChanged();
+			State.Timeline.Insert(0, data.note);
+			State.MaxId = data.note.Id;
+			if (ComponentState is Core.Miscellaneous.State.Empty)
+			{
+				State.MinId    = data.note.Id;
+				ComponentState = Core.Miscellaneous.State.Loaded;
+				StateHasChanged();
+			}
+			else
+			{
+				StateHasChanged();
+				await VirtualScroller.OnNewNote();
+			}
 		}
-		else
+		catch (Exception e)
 		{
-			StateHasChanged();
-			await VirtualScroller.OnNewNote();
+			Logger.LogError("Uncaught exception in event handler {handler}: {e}", nameof(OnNotePublished), e);
 		}
 	}
 

@@ -181,51 +181,52 @@ public partial class VirtualScroller : IAsyncDisposable
 		}
 	}
 
-	private async void OverscrollCallbackTop(IList<IntersectionObserverEntry> list)
+	private void OverscrollCallbackTop(IList<IntersectionObserverEntry> list)
 	{
 		var entry = list.First();
 		_overscrollTop = entry.IsIntersecting;
 
-		if (_interlock == false)
+		if (_interlock) return;
+
+		var index = NoteResponseList.IndexOf(State.RenderedList.First());
+		if (index == 0)
 		{
-			var index = NoteResponseList.IndexOf(State.RenderedList.First());
-			if (index == 0)
-			{
-				await LoadNewer();
-				return;
-			}
-
-			var updateCount = UpdateCount;
-			if (index < UpdateCount)
-			{
-				updateCount = index;
-			}
-
-			_interlock = true;
-			if (list.First().IsIntersecting)
-
-			{
-				await Up(updateCount);
-			}
-
-			_interlock = false;
+			_ = LoadNewer();
+			return;
 		}
+
+		var updateCount = UpdateCount;
+		if (index < UpdateCount)
+		{
+			updateCount = index;
+		}
+
+		_interlock = true;
+		if (list.First().IsIntersecting)
+		{
+			Up(updateCount).AsTask().ContinueWith(_ => { _interlock = false; });
+			return;
+		}
+
+		_interlock = false;
 	}
 
-	private async void OverscrollCallbackBottom(IList<IntersectionObserverEntry> list)
+	private void OverscrollCallbackBottom(IList<IntersectionObserverEntry> list)
 	{
 		var entry = list.First();
 		_overscrollBottom = entry.IsIntersecting;
-		if (_interlock == false)
-		{
-			_interlock = true;
-			if (list.First().IsIntersecting)
-			{
-				await Down();
-			}
 
-			_interlock = false;
+		if (_interlock) return;
+
+		_interlock = true;
+
+		if (list.First().IsIntersecting)
+		{
+			Down().ContinueWith(_ => { _interlock = false; });
+			return;
 		}
+
+		_interlock = false;
 	}
 
 	private void GetScrollY()

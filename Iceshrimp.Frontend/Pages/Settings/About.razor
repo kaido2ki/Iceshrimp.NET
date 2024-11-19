@@ -97,7 +97,7 @@
     protected override async Task OnInitializedAsync()
     {
         _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
-        CheckUpdate();
+        await CheckUpdate();
     }
 
     private enum CheckState
@@ -108,7 +108,7 @@
         Error
     }
 
-    private async void CheckUpdate()
+    private async Task CheckUpdate()
     {
         try
         {
@@ -127,7 +127,7 @@
         StateHasChanged();
     }
 
-    private async void SkipWaiting()
+    private async Task SkipWaiting()
     {
         var res = await UpdateSvc.ServiceWorkerSkipWaitingAsync();
         _skipWaitingRes = res ? CheckState.True : CheckState.Error;

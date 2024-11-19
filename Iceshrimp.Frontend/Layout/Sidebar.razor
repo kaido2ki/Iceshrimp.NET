@@ -84,7 +84,7 @@
     private bool             _open    = false;
     private ElementReference SidebarElementRef { get; set; }
 
-    private async void Open()
+    private async Task Open()
     {
         await _compose.OpenDialog();
     }

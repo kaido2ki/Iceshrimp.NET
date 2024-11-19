@@ -11,7 +11,7 @@
     [Parameter] [EditorRequired] public required IList<NoteAttachment> Attachments { get; set; }
     private                                      AttachmentView        View        { get; set; } = null!;
 
-    private async void Open()
+    private async Task Open()
     {
         await View.OpenDialog();
     }
