@@ -1,0 +1,14 @@
+# Top-most EditorConfig file
+root = true
+
+[{Iceshrimp.Backend/Controllers/*/*.cs,Iceshrimp.Tests/**.cs,**.razor,**.razor.cs}]
+
+# Override for controller actions. Main rule is configured in ReSharper.
+dotnet_naming_rule.async_methods_end_in_async.symbols = any_async_methods
+dotnet_naming_rule.async_methods_end_in_async.style = camel
+dotnet_naming_rule.async_methods_end_in_async.severity = none
+
+dotnet_naming_symbols.any_async_methods.applicable_kinds = method
+dotnet_naming_symbols.any_async_methods.required_modifiers = async
+
+dotnet_naming_style.camel.capitalization = camel_case
