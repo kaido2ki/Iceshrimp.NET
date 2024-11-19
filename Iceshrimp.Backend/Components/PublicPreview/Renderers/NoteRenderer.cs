@@ -37,15 +37,15 @@ public class NoteRenderer(
 	{
 		var res = new PreviewNote
 		{
-			User              = users.First(p => p.Id == note.User.Id),
-			Text              = await mfm.RenderAsync(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span"),
-			Cw                = note.Cw,
-			RawText           = note.Text,
-			QuoteUrl          = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(instance.Value),
+			User = users.First(p => p.Id == note.User.Id),
+			Text = await mfm.RenderAsync(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span"),
+			Cw = note.Cw,
+			RawText = note.Text,
+			QuoteUrl = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(instance.Value),
 			QuoteInaccessible = note.Renote?.VisibilityIsPublicOrHome == false,
-			Attachments       = attachments[note.Id],
-			CreatedAt         = note.CreatedAt.ToDisplayStringTz(),
-			UpdatedAt         = note.UpdatedAt?.ToDisplayStringTz()
+			Attachments = attachments[note.Id],
+			CreatedAt = note.CreatedAt.ToDisplayStringTz(),
+			UpdatedAt = note.UpdatedAt?.ToDisplayStringTz()
 		};
 
 		return res;
@@ -92,18 +92,19 @@ public class NoteRenderer(
 
 		var ids   = notes.SelectMany(p => p.FileIds).ToList();
 		var files = await db.DriveFiles.Where(p => ids.Contains(p.Id)).ToListAsync();
-		return notes.ToDictionary<Note, string, List<PreviewAttachment>?>(p => p.Id,
-		                                                                  p => files
-		                                                                       .Where(f => p.FileIds.Contains(f.Id))
-		                                                                       .Select(f => new PreviewAttachment
-		                                                                       {
-			                                                                       MimeType  = f.Type,
-			                                                                       Url       = f.AccessUrl,
-			                                                                       Name      = f.Name,
-			                                                                       Alt       = f.Comment,
-			                                                                       Sensitive = f.IsSensitive
-		                                                                       })
-		                                                                       .ToList());
+		return notes
+			.ToDictionary<Note, string, List<PreviewAttachment>?>(p => p.Id,
+			                                                      p => files
+			                                                           .Where(f => p.FileIds.Contains(f.Id))
+			                                                           .Select(f => new PreviewAttachment
+			                                                           {
+				                                                           MimeType  = f.Type,
+				                                                           Url       = f.AccessUrl,
+				                                                           Name      = f.Name,
+				                                                           Alt       = f.Comment,
+				                                                           Sensitive = f.IsSensitive
+			                                                           })
+			                                                           .ToList());
 	}
 
 	public async Task<List<PreviewNote>> RenderManyAsync(List<Note> notes)
@@ -114,6 +115,8 @@ public class NoteRenderer(
 		var mentions    = await GetMentionsAsync(allNotes);
 		var emoji       = await GetEmojiAsync(allNotes);
 		var attachments = await GetAttachmentsAsync(allNotes);
-		return await notes.Select(p => RenderAsync(p, users, mentions, emoji, attachments)).AwaitAllAsync().ToListAsync();
+		return await notes.Select(p => RenderAsync(p, users, mentions, emoji, attachments))
+		                  .AwaitAllAsync()
+		                  .ToListAsync();
 	}
 }

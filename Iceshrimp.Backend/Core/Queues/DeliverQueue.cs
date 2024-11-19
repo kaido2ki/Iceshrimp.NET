@@ -53,7 +53,8 @@ public class DeliverQueue(int parallelism)
 				_ = followup.ExecuteTaskAsync("UpdateInstanceMetadata", async provider =>
 				{
 					var instanceSvc = provider.GetRequiredService<InstanceService>();
-					await instanceSvc.MarkInstanceAsUnresponsiveAsync(jobData.RecipientHost, new Uri(jobData.InboxUrl).Host);
+					var inboxHost   = new Uri(jobData.InboxUrl).Host;
+					await instanceSvc.MarkInstanceAsUnresponsiveAsync(jobData.RecipientHost, inboxHost);
 				});
 
 				throw;

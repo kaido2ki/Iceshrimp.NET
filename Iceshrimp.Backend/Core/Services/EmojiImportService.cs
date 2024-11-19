@@ -91,13 +91,8 @@ public class EmojiImportService(
 
 			try
 			{
-				await emojiSvc.CreateEmojiFromStreamAsync(
-				                                     buffer,
-				                                     name,
-				                                     mimeType,
-				                                     emoji.Emoji.Aliases,
-				                                     emoji.Emoji.Category
-				                                    );
+				await emojiSvc.CreateEmojiFromStreamAsync(buffer, name, mimeType, emoji.Emoji.Aliases,
+				                                          emoji.Emoji.Category);
 
 				logger.LogDebug("Imported emoji {emoji}", name);
 			}

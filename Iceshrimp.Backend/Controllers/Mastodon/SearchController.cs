@@ -118,11 +118,14 @@ public class SearchController(
 					var host     = match.Groups["host"].Value;
 
 					var result = await userResolver.ResolveOrNullAsync(GetQuery(username, host), ResolveFlags.Acct);
+					
+					// @formatter:off
 					return result switch
 					{
 						not null => [await userRenderer.RenderAsync(await userResolver.GetUpdatedUserAsync(result), user)],
 						_        => []
 					};
+					// @formatter:on
 				}
 			}
 		}

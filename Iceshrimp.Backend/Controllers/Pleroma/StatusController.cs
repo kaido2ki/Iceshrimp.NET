@@ -99,8 +99,8 @@ public class StatusController(
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
 		var res = (await noteRenderer.GetReactionsAsync([note], user)).Where(r => r.Name.Split("@").First() ==
-		                                                                     Regex.Unescape(reaction))
-		                                                         .ToArray();
+			                                                                     Regex.Unescape(reaction))
+		                                                              .ToArray();
 
 		foreach (var item in res)
 		{

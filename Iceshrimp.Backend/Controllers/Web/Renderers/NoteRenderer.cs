@@ -71,9 +71,10 @@ public class NoteRenderer(
 
 	private async Task<NoteResponse> RenderBaseInternalAsync(Note note, User? user, NoteRendererDto? data = null)
 	{
-		var noteUser    = (data?.Users ?? await GetUsersAsync([note])).First(p => p.Id == note.User.Id);
-		var attachments = (data?.Attachments ?? await GetAttachmentsAsync([note])).Where(p => note.FileIds.Contains(p.Id));
-		var reactions   = (data?.Reactions ?? await GetReactionsAsync([note], user)).Where(p => p.NoteId == note.Id);
+		var noteUser = (data?.Users ?? await GetUsersAsync([note])).First(p => p.Id == note.User.Id);
+		var attachments =
+			(data?.Attachments ?? await GetAttachmentsAsync([note])).Where(p => note.FileIds.Contains(p.Id));
+		var reactions = (data?.Reactions ?? await GetReactionsAsync([note], user)).Where(p => p.NoteId == note.Id);
 		var liked = data?.LikedNotes?.Contains(note.Id) ??
 		            await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 		var emoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([note]);
@@ -138,8 +139,8 @@ public class NoteRenderer(
 			                  Reacted = db.NoteReactions.Any(i => i.NoteId == p.First().NoteId &&
 			                                                      i.Reaction == p.First().Reaction &&
 			                                                      i.User == user),
-			                  Name = p.First().Reaction,
-			                  Url  = null,
+			                  Name      = p.First().Reaction,
+			                  Url       = null,
 			                  Sensitive = false,
 		                  })
 		                  .ToListAsync();

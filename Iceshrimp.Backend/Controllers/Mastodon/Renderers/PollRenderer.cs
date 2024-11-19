@@ -13,9 +13,9 @@ public class PollRenderer(DatabaseContext db) : IScopedService
 		var voted = (data?.Voted ?? await GetVotedAsync([poll], user)).Contains(poll.NoteId);
 
 		var ownVotes = (data?.OwnVotes ?? await GetOwnVotesAsync([poll], user)).Where(p => p.Key == poll.NoteId)
-		                                                                  .Select(p => p.Value)
-		                                                                  .DefaultIfEmpty([])
-		                                                                  .First();
+		                                                                       .Select(p => p.Value)
+		                                                                       .DefaultIfEmpty([])
+		                                                                       .First();
 
 		var res = new PollEntity
 		{

@@ -71,7 +71,9 @@ public class MigrationController(
 			aliasUri ??= await db.Users.IncludeCommonProperties()
 			                     .Where(p => p.Id == rq.UserId)
 			                     .FirstOrDefaultAsync()
-			                     .ContinueWithResultAsync(p => p is null ? null : p.Uri ?? p.GetPublicUri(config.Value));
+			                     .ContinueWithResultAsync(p => p is null
+				                                              ? null
+				                                              : p.Uri ?? p.GetPublicUri(config.Value));
 		}
 
 		if (aliasUri is null) throw GracefulException.NotFound("Alias user not found");

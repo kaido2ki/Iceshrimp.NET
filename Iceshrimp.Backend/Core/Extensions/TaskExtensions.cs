@@ -64,7 +64,9 @@ public static class TaskExtensions
 		continuation();
 	}
 
-	public static async Task<TNewResult> ContinueWithResultAsync<TNewResult>(this Task task, Func<TNewResult> continuation)
+	public static async Task<TNewResult> ContinueWithResultAsync<TNewResult>(
+		this Task task, Func<TNewResult> continuation
+	)
 	{
 		await task;
 		return continuation();

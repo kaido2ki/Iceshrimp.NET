@@ -53,7 +53,9 @@ public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonServ
 		private bool AllowLocalIPv4 => Security?.CurrentValue.AllowLocalIPv4 ?? false;
 		private bool AllowLocalIPv6 => Security?.CurrentValue.AllowLocalIPv6 ?? false;
 
-		public async ValueTask<Stream> ConnectCallbackAsync(SocketsHttpConnectionContext context, CancellationToken token)
+		public async ValueTask<Stream> ConnectCallbackAsync(
+			SocketsHttpConnectionContext context, CancellationToken token
+		)
 		{
 			var sortedRecords = await GetSortedAddressesAsync(context.DnsEndPoint.Host, token);
 

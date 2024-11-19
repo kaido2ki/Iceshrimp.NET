@@ -74,7 +74,7 @@ public interface IPlugin
 	public string Name    { get; }
 	public string Version { get; }
 
-	public Task                  InitializeAsync()                               => Task.CompletedTask;
+	public Task                  InitializeAsync()                          => Task.CompletedTask;
 	public WebApplicationBuilder BuilderHook(WebApplicationBuilder builder) => builder;
 	public WebApplication        AppHook(WebApplication app)                => app;
 }

@@ -8,7 +8,9 @@ namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
 public static class MfmRenderer
 {
-	public static async Task<MarkupString> RenderStringAsync(string text, List<EmojiResponse> emoji, bool simple = false)
+	public static async Task<MarkupString> RenderStringAsync(
+		string text, List<EmojiResponse> emoji, bool simple = false
+	)
 	{
 		var res         = simple ? Mfm.parseSimple(text) : Mfm.parse(text);
 		var context     = BrowsingContext.New();
@@ -42,7 +44,9 @@ public static class MfmRenderer
 		return el;
 	}
 
-	private static INode RenderNode(MfmNodeTypes.MfmNode node, IDocument document, List<EmojiResponse> emoji, bool simple)
+	private static INode RenderNode(
+		MfmNodeTypes.MfmNode node, IDocument document, List<EmojiResponse> emoji, bool simple
+	)
 	{
 		// Hard wrap makes this impossible to read
 		// @formatter:off

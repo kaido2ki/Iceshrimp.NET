@@ -39,6 +39,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
 
-		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user, Filter.FilterContext.Home);
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user,
+		                                          Filter.FilterContext.Home);
 	}
 }

@@ -448,9 +448,9 @@ public class UserService(
 	private async Task<Func<Task>> ResolveAvatarAndBannerAsync(User user, ASActor actor)
 	{
 		var avatar = await driveSvc.StoreFileAsync(actor.Avatar?.Url?.Link, user, actor.Avatar?.Sensitive ?? false,
-		                                      logExisting: false);
+		                                           logExisting: false);
 		var banner = await driveSvc.StoreFileAsync(actor.Banner?.Url?.Link, user, actor.Banner?.Sensitive ?? false,
-		                                      logExisting: false);
+		                                           logExisting: false);
 
 		var prevAvatarId = user.AvatarId;
 		var prevBannerId = user.BannerId;
@@ -782,15 +782,16 @@ public class UserService(
 
 						if (follower.IsRemoteUser)
 						{
+							// @formatter:off
 							_ = followupTaskSvc.ExecuteTaskAsync("IncrementInstanceIncomingFollowsCounter", async provider =>
 							{
 								var bgDb          = provider.GetRequiredService<DatabaseContext>();
 								var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
 								var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(follower);
 								await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
-								          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows,
-									                              i => i.IncomingFollows + 1));
+								          .ExecuteUpdateAsync(p => p.SetProperty(i => i.IncomingFollows, i => i.IncomingFollows + 1));
 							});
+							// @formatter:on
 						}
 
 						return;
@@ -1037,7 +1038,9 @@ public class UserService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "Projectables")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "Method only makes sense for users")]
-	private async Task<User> UpdateProfileMentionsAsync(User user, ASActor? actor, bool force = false, bool wait = false)
+	private async Task<User> UpdateProfileMentionsAsync(
+		User user, ASActor? actor, bool force = false, bool wait = false
+	)
 	{
 		if (followupTaskSvc.IsBackgroundWorker.Value && !force) return user;
 		if (KeyedLocker.IsInUse($"profileMentions:{user.Id}")) return user;
@@ -1056,7 +1059,8 @@ public class UserService(
 
 				if (actor != null)
 				{
-					var (mentions, splitDomainMapping) = await bgMentionsResolver.ResolveMentionsAsync(actor, bgUser.Host);
+					var (mentions, splitDomainMapping) =
+						await bgMentionsResolver.ResolveMentionsAsync(actor, bgUser.Host);
 					var fields = actor.Attachments != null
 						? await actor.Attachments
 						             .OfType<ASField>()
@@ -1079,8 +1083,9 @@ public class UserService(
 				}
 				else
 				{
-					bgUser.UserProfile.Mentions = await bgMentionsResolver.ResolveMentionsAsync(bgUser.UserProfile.Fields,
-						bgUser.UserProfile.Description, bgUser.Host);
+					bgUser.UserProfile.Mentions =
+						await bgMentionsResolver.ResolveMentionsAsync(bgUser.UserProfile.Fields,
+						                                              bgUser.UserProfile.Description, bgUser.Host);
 				}
 
 				bgUser.UserProfile.MentionsResolved = true;
@@ -1379,7 +1384,8 @@ public class UserService(
 		var followers = db.Followings
 		                  .Where(p => p.Followee == source && p.Follower.IsLocalUser)
 		                  .Select(p => p.Follower)
-		                  .AsChunkedAsyncEnumerableAsync(50, p => p.Id, hook: p => p.PrecomputeRelationshipData(source));
+		                  .AsChunkedAsyncEnumerableAsync(50, p => p.Id,
+		                                                 hook: p => p.PrecomputeRelationshipData(source));
 
 		await foreach (var follower in followers)
 		{
@@ -1407,7 +1413,8 @@ public class UserService(
 		var following = db.Followings
 		                  .Where(p => p.Follower == source)
 		                  .Select(p => p.Follower)
-		                  .AsChunkedAsyncEnumerableAsync(50, p => p.Id, hook: p => p.PrecomputeRelationshipData(source));
+		                  .AsChunkedAsyncEnumerableAsync(50, p => p.Id,
+		                                                 hook: p => p.PrecomputeRelationshipData(source));
 
 		await foreach (var followee in following)
 		{

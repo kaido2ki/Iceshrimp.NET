@@ -47,8 +47,9 @@ public class ObjectResolver(
 			logger.LogDebug("Refusing to resolve object with null id property");
 			return null;
 		}
-		
-		if (!Uri.TryCreate(baseObj.Id, UriKind.Absolute, out var uri) || uri.Scheme != "https"){
+
+		if (!Uri.TryCreate(baseObj.Id, UriKind.Absolute, out var uri) || uri.Scheme != "https")
+		{
 			logger.LogDebug("Refusing to resolve object with invalid id property");
 			return null;
 		}
@@ -61,7 +62,8 @@ public class ObjectResolver(
 				return new ASActor { Id = baseObj.Id };
 			if (uri.AbsolutePath.StartsWith("/follows/"))
 				return new ASFollow { Id = baseObj.Id };
-			throw GracefulException.UnprocessableEntity($"Unable to resolve local object of unknown type: {baseObj.Id}");
+			throw GracefulException
+				.UnprocessableEntity($"Unable to resolve local object of unknown type: {baseObj.Id}");
 		}
 
 		if (await federationCtrl.ShouldBlockAsync(baseObj.Id))
@@ -90,7 +92,9 @@ public class ObjectResolver(
 		}
 	}
 
-	public async IAsyncEnumerable<ASObject> IterateCollectionAsync(ASCollection? collection, User? user = null, int pageLimit = 10)
+	public async IAsyncEnumerable<ASObject> IterateCollectionAsync(
+		ASCollection? collection, User? user = null, int pageLimit = 10
+	)
 	{
 		if (collection == null) yield break;
 

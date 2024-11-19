@@ -33,7 +33,8 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 		var instanceCount = await db.Instances.LongCountAsync();
 
 		var (instanceName, instanceDescription, adminContact) =
-			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
+			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription,
+			                        MetaEntity.AdminContactEmail);
 
 		// can't merge with above call since they're all nullable and this is not.
 		var vapidKey = await meta.GetAsync(MetaEntity.VapidPublicKey);
@@ -55,7 +56,8 @@ public class InstanceController(DatabaseContext db, MetaService meta) : Controll
 		                                                     p.LastActiveDate > cutoff);
 
 		var (instanceName, instanceDescription, adminContact) =
-			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
+			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription,
+			                        MetaEntity.AdminContactEmail);
 
 		return new InstanceInfoV2Response(config.Value, instanceName, instanceDescription, adminContact)
 		{

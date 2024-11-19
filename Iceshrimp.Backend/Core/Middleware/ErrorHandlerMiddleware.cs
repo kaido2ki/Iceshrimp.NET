@@ -21,7 +21,7 @@ public class ErrorHandlerMiddleware(
 ) : IMiddlewareService
 {
 	public static ServiceLifetime Lifetime => ServiceLifetime.Singleton;
-	
+
 	private static readonly XmlSerializer XmlSerializer = new(typeof(ErrorResponse));
 
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)

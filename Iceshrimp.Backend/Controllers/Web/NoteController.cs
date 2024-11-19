@@ -344,7 +344,7 @@ public class NoteController(
 		                      .ToListAsync();
 
 		var res = await noteRenderer.RenderManyAsync(renotes.EnforceRenoteReplyVisibility(), user,
-		                                        Filter.FilterContext.Threads);
+		                                             Filter.FilterContext.Threads);
 		return HttpContext.CreatePaginationWrapper(pq, renotes, res);
 	}
 

@@ -17,24 +17,24 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Produces(MediaTypeNames.Application.Json)]
 public class InstanceController(DatabaseContext db, UserRenderer userRenderer) : ControllerBase
 {
-    [HttpGet("staff")]
-    [Authenticate]
-    [Authorize]
-    [ProducesResults(HttpStatusCode.OK)]
-    public async Task<StaffResponse> GetStaff()
-    {
-        var admins = db.Users
-                       .Where(p => p.IsAdmin == true)
-                       .OrderBy(p => p.UsernameLower);
-        var adminList = await userRenderer.RenderManyAsync(admins)
-                                          .ToListAsync();
+	[HttpGet("staff")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<StaffResponse> GetStaff()
+	{
+		var admins = db.Users
+		               .Where(p => p.IsAdmin == true)
+		               .OrderBy(p => p.UsernameLower);
+		var adminList = await userRenderer.RenderManyAsync(admins)
+		                                  .ToListAsync();
 
-        var moderators = db.Users
-                           .Where(p => p.IsAdmin == false && p.IsModerator == true)
-                           .OrderBy(p => p.UsernameLower);
-        var moderatorList = await userRenderer.RenderManyAsync(moderators)
-                                              .ToListAsync();
+		var moderators = db.Users
+		                   .Where(p => p.IsAdmin == false && p.IsModerator == true)
+		                   .OrderBy(p => p.UsernameLower);
+		var moderatorList = await userRenderer.RenderManyAsync(moderators)
+		                                      .ToListAsync();
 
-        return new StaffResponse { Admins = adminList, Moderators = moderatorList };
-    }
+		return new StaffResponse { Admins = adminList, Moderators = moderatorList };
+	}
 }

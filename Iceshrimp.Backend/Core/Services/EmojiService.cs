@@ -71,7 +71,7 @@ public partial class EmojiService(
 	{
 		var user = await sysUserSvc.GetInstanceActorAsync();
 		var driveFile = await driveSvc.StoreFileAsync(existing.OriginalUrl, user, false, forceStore: true,
-		                                         skipImageProcessing: false) ??
+		                                              skipImageProcessing: false) ??
 		                throw new Exception("Error storing emoji file");
 
 		var emoji = new Emoji

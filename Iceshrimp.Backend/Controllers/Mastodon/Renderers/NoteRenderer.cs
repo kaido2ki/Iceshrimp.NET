@@ -129,7 +129,7 @@ public class NoteRenderer(
 
 		if ((user?.UserSettings?.FilterInaccessible ?? false) && (replyInaccessible || quoteInaccessible))
 			filterResult.Insert(0, InaccessibleFilter);
-		
+
 		if (user == null && security.Value.PublicPreview == Enums.PublicPreview.RestrictedNoMedia) //TODO
 			attachments = [];
 

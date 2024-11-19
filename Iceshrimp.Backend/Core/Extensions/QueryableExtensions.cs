@@ -712,7 +712,7 @@ public static class QueryableExtensions
 	{
 		return query.Include(p => p.UserProfile);
 	}
-	
+
 	public static IQueryable<Bite> IncludeCommonProperties(this IQueryable<Bite> query)
 	{
 		return query.Include(p => p.TargetNote)

@@ -72,7 +72,9 @@ public class UserProfileMentionsResolver(
 		return (mentions, splitDomainMapping);
 	}
 
-	public async Task<List<Note.MentionedUser>> ResolveMentionsAsync(UserProfile.Field[]? fields, string? bio, string? host)
+	public async Task<List<Note.MentionedUser>> ResolveMentionsAsync(
+		UserProfile.Field[]? fields, string? bio, string? host
+	)
 	{
 		if (fields is not { Length: > 0 } && bio == null) return [];
 		var input = (fields ?? [])

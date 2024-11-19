@@ -89,7 +89,9 @@ public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRe
 		return bites.Select(p => new BiteResponse { Id = p.Id, BiteBack = p.TargetBiteId != null }).ToList();
 	}
 
-	public async Task<IEnumerable<NotificationResponse>> RenderManyAsync(IEnumerable<Notification> notifications, User user)
+	public async Task<IEnumerable<NotificationResponse>> RenderManyAsync(
+		IEnumerable<Notification> notifications, User user
+	)
 	{
 		var notificationsList = notifications.ToList();
 		var data = new NotificationRendererDto

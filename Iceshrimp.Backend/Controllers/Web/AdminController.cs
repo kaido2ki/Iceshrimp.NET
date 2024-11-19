@@ -264,12 +264,12 @@ public class AdminController(
 		return await db.Relays
 		               .ToArrayAsync()
 		               .ContinueWithResultAsync(res => res.Select(p => new RelaySchemas.RelayResponse
-		                                             {
-			                                             Id     = p.Id,
-			                                             Inbox  = p.Inbox,
-			                                             Status = (RelaySchemas.RelayStatus)p.Status
-		                                             })
-		                                             .ToList());
+		                                                  {
+			                                                  Id     = p.Id,
+			                                                  Inbox  = p.Inbox,
+			                                                  Status = (RelaySchemas.RelayStatus)p.Status
+		                                                  })
+		                                                  .ToList());
 	}
 
 	[HttpPost("relays")]
@@ -317,7 +317,8 @@ public class AdminController(
 		string name, [SwaggerBodyExample("{\n  \"enabled\": true\n}")] JsonDocument body
 	)
 	{
-		var type = await policySvc.GetConfigurationTypeAsync(name) ?? throw GracefulException.NotFound("Policy not found");
+		var type = await policySvc.GetConfigurationTypeAsync(name) ??
+		           throw GracefulException.NotFound("Policy not found");
 		var data = body.Deserialize(type, JsonSerialization.Options) as IPolicyConfiguration;
 		if (data?.GetType() != type) throw GracefulException.BadRequest("Invalid policy config");
 		var serialized = JsonSerializer.Serialize(data, type, JsonSerialization.Options);

@@ -129,7 +129,7 @@ public class EmojiController(
 	public async Task<EmojiResponse> UpdateEmoji(string id, UpdateEmojiRequest request)
 	{
 		var emoji = await emojiSvc.UpdateLocalEmojiAsync(id, request.Name, request.Aliases, request.Category,
-		                                            request.License, request.Sensitive) ??
+		                                                 request.License, request.Sensitive) ??
 		            throw GracefulException.NotFound("Emoji not found");
 
 		return new EmojiResponse

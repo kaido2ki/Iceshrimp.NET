@@ -212,7 +212,8 @@ public static class WebApplicationExtensions
 		{
 			app.Logger.LogInformation("Migrating files to object storage, this will take a while...");
 			db.Database.SetCommandTimeout(0);
-			await provider.GetRequiredService<StorageMaintenanceService>().MigrateLocalFilesAsync(args.Contains("--purge"));
+			await provider.GetRequiredService<StorageMaintenanceService>()
+			              .MigrateLocalFilesAsync(args.Contains("--purge"));
 			Environment.Exit(0);
 		}
 
@@ -224,7 +225,8 @@ public static class WebApplicationExtensions
 
 		if (args.Contains("--cleanup-storage"))
 		{
-			await provider.GetRequiredService<StorageMaintenanceService>().CleanupStorageAsync(args.Contains("--dry-run"));
+			await provider.GetRequiredService<StorageMaintenanceService>()
+			              .CleanupStorageAsync(args.Contains("--dry-run"));
 			Environment.Exit(0);
 		}
 

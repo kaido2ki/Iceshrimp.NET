@@ -46,7 +46,7 @@ public class MiscController(DatabaseContext db, NoteRenderer noteRenderer, BiteS
 
 		await biteSvc.BiteAsync(user, target);
 	}
-	
+
 	[HttpGet("muted_threads")]
 	[LinkPagination(20, 40)]
 	[ProducesResults(HttpStatusCode.OK)]

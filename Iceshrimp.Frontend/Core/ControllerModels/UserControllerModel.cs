@@ -26,8 +26,11 @@ internal class UserControllerModel(ApiClient api)
 
 	public Task BiteUserAsync(string id) =>
 		api.CallAsync(HttpMethod.Post, $"/users/{id}/bite");
-	
+
 	public Task<bool> FollowUserAsync(string id) => api.CallNullableAsync(HttpMethod.Post, $"/users/{id}/follow");
-	public Task<bool> RemoveUserFromFollowersAsync(string id) => api.CallNullableAsync(HttpMethod.Post, $"/users/{id}/remove_from_followers");
+
+	public Task<bool> RemoveUserFromFollowersAsync(string id) =>
+		api.CallNullableAsync(HttpMethod.Post, $"/users/{id}/remove_from_followers");
+
 	public Task<bool> UnfollowUserAsync(string id) => api.CallNullableAsync(HttpMethod.Post, $"/users/{id}/unfollow");
 }

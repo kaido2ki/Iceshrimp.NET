@@ -31,9 +31,9 @@ internal class UpdateService
 		_nav                = nav;
 
 		_moduleTask = new Lazy<Task<IJSObjectReference>>(() => js.InvokeAsync<IJSObjectReference>(
-																  "import",
-																  "./Core/Services/UpdateService.cs.js")
-																 .AsTask());
+		                                                          "import",
+		                                                          "./Core/Services/UpdateService.cs.js")
+		                                                         .AsTask());
 		Timer = new Timer(CallbackAsync, null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
 		_     = RegisterUpdateCallbackAsync();
 	}

@@ -1119,8 +1119,8 @@ public class NoteService(
 		var result = await attachments
 		                   .OfType<ASDocument>()
 		                   .Take(10)
-		                   .Select(p => driveSvc.StoreFileAsync(p.Url?.Id, user, p.Sensitive ?? sensitive, p.Description,
-		                                                   p.MediaType, logExisting))
+		                   .Select(p => driveSvc.StoreFileAsync(p.Url?.Id, user, p.Sensitive ?? sensitive,
+		                                                        p.Description, p.MediaType, logExisting))
 		                   .AwaitAllNoConcurrencyAsync();
 
 		return result.Where(p => p != null).Cast<DriveFile>().ToList();

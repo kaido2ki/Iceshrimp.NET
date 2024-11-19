@@ -253,14 +253,14 @@ public class AccountController(
 		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
 			throw GracefulException.BadRequest("You cannot unfollow yourself");
-		
+
 		var follower = await db.Followings
 		                       .Where(p => p.FolloweeId == user.Id && p.FollowerId == id)
 		                       .Select(p => p.Follower)
 		                       .PrecomputeRelationshipData(user)
 		                       .FirstOrDefaultAsync() ??
 		               throw GracefulException.RecordNotFound();
-		
+
 		await userSvc.RemoveFromFollowersAsync(user, follower);
 		return RenderRelationship(follower);
 	}

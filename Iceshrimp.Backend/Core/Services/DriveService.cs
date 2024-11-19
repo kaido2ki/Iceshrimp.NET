@@ -283,7 +283,8 @@ public class DriveService(
 					blurhash   = res.Blurhash;
 
 					var processed = await res.RequestedFormats
-					                         .Select(p => ProcessAndStoreFileVersionAsync(p.Key, p.Value, request.Filename))
+					                         .Select(p => ProcessAndStoreFileVersionAsync(p.Key, p.Value,
+						                                 request.Filename))
 					                         .AwaitAllNoConcurrencyAsync()
 					                         .ContinueWithResultAsync(p => p.ToImmutableArray());
 
@@ -399,12 +400,14 @@ public class DriveService(
 
 	private Task<string> StoreFileVersionAsync(Stream stream, string accessKey, string fileName, string mimeType)
 	{
+		// @formatter:off
 		return storageConfig.Value.Provider switch
 		{
 			Enums.FileStorage.Local         => StoreFileVersionLocalStorageAsync(stream, accessKey),
 			Enums.FileStorage.ObjectStorage => StoreFileVersionObjectStorageAsync(stream, accessKey, fileName, mimeType),
 			_                               => throw new ArgumentOutOfRangeException()
 		};
+		// @formatter:on
 	}
 
 	private async Task<string> StoreFileVersionLocalStorageAsync(Stream stream, string filename)

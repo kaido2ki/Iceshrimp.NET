@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
-public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer, UserRenderer userRenderer) : IScopedService
+public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer, UserRenderer userRenderer)
+	: IScopedService
 {
 	public async Task<NotificationEntity> RenderAsync(
 		Notification notification, User user, bool isPleroma, List<AccountEntity>? accounts = null,
@@ -68,24 +69,23 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 		var notificationList = notifications.ToList();
 		if (notificationList.Count == 0) return [];
 
-		var accounts = await noteRenderer.GetAccountsAsync(notificationList.Where(p => p.Notifier != null)
-		                                                              .Select(p => p.Notifier)
-		                                                              .Concat(notificationList.Select(p => p.Notifiee))
-		                                                              .Concat(notificationList
-		                                                                      .Select(p => p.Note?.Renote?.User)
-		                                                                      .Where(p => p != null))
-		                                                              .Cast<User>()
-		                                                              .DistinctBy(p => p.Id)
-		                                                              .ToList(), user);
+		var accounts = await noteRenderer
+			.GetAccountsAsync(notificationList
+			                  .Where(p => p.Notifier != null)
+			                  .Select(p => p.Notifier)
+			                  .Concat(notificationList.Select(p => p.Notifiee))
+			                  .Concat(notificationList.Select(p => p.Note?.Renote?.User).Where(p => p != null))
+			                  .Cast<User>()
+			                  .DistinctBy(p => p.Id)
+			                  .ToList(), user);
 
-		var notes = await noteRenderer.RenderManyAsync(notificationList.Where(p => p.Note != null)
-		                                                               .Select(p => p.Note)
-		                                                               .Concat(notificationList
-		                                                                       .Select(p => p.Note?.Renote)
-		                                                                       .Where(p => p != null))
-		                                                               .Cast<Note>()
-		                                                               .DistinctBy(p => p.Id),
-		                                               user, Filter.FilterContext.Notifications, accounts);
+		var notes = await noteRenderer
+			.RenderManyAsync(notificationList.Where(p => p.Note != null)
+			                                 .Select(p => p.Note)
+			                                 .Concat(notificationList.Select(p => p.Note?.Renote).Where(p => p != null))
+			                                 .Cast<Note>()
+			                                 .DistinctBy(p => p.Id),
+			                 user, Filter.FilterContext.Notifications, accounts);
 
 		var parts = notificationList.Where(p => p.Reaction != null && EmojiService.IsCustomEmoji(p.Reaction))
 		                            .Select(p =>
@@ -108,7 +108,7 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 		                          })
 		                          .ToArrayAsync()
 		                          .ContinueWithResultAsync(res => res.DistinctBy(e => e.Name)
-		                                                        .ToDictionary(e => e.Name, e => e.Url));
+		                                                             .ToDictionary(e => e.Name, e => e.Url));
 
 		return await notificationList
 		             .Select(p => RenderAsync(p, user, isPleroma, accounts, notes, emojiUrls))
