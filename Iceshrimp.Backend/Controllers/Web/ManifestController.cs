@@ -25,5 +25,3 @@ public class ManifestController(IOptions<Config.InstanceSection> config) : Contr
 		};
 	}
 }
-
-

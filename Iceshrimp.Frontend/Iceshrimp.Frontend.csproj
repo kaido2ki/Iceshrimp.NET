@@ -16,7 +16,6 @@
 
     <ItemGroup>
         <None Update="Components/MfmText.razor.css" CssScope="mfm" />
-        <None Include="wwwroot\icon-512.png" />
     </ItemGroup>
 
     <ItemGroup>
