@@ -123,10 +123,11 @@ public class RewriteStaticAssetManifest : Microsoft.Build.Utilities.Task
 		}
 	}
 
-	private sealed class StaticAssetSelector(string name, string value)
+	private sealed class StaticAssetSelector(string name, string value, string quality)
 	{
-		public string Name { get; } = name;
-		public string Value { get; } = value;
+		public string Name    { get; } = name;
+		public string Value   { get; } = value;
+		public string Quality { get; } = quality;
 	}
 
 	private sealed class StaticAssetProperty(string name, string value)

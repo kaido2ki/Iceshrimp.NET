@@ -35,7 +35,7 @@
 
     <!-- This rewrites the static asset endpoints JSON file to enable transparent decompression. -->
     <Target Name="_RewriteStaticAssetManifest" AfterTargets="KeepOnlyBrotliCompressedStaticAssets">
-        <RewriteStaticAssetManifest Manifest="$(StaticWebAssetEndpointsBuildManifestPath)" />
+        <RewriteStaticAssetManifest Manifest="$(PublishDir)\Iceshrimp.Backend.staticwebassets.endpoints.json" />
     </Target>
 
 </Project>
