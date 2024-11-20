@@ -289,7 +289,7 @@ public class StorageMaintenanceService(
 		{
 			logger.LogInformation("Looking for orphaned files in object storage, please wait...");
 
-			await foreach (var key in objectStorageSvc.EnumerateFilesAsync())
+			await foreach (var key in objectStorageSvc.EnumerateFiles())
 			{
 				if (filenames.Contains(key))
 					continue;

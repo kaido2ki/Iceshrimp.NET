@@ -495,7 +495,7 @@ public class DriveService(
 	public async Task<HashSet<string>> GetAllFileNamesFromObjectStorageAsync()
 	{
 		return storageConfig.Value.ObjectStorage?.Bucket != null
-			? await storageSvc.EnumerateFilesAsync().ToArrayAsync().AsTask().ContinueWithResultAsync(p => p.ToHashSet())
+			? await storageSvc.EnumerateFiles().ToArrayAsync().AsTask().ContinueWithResult(p => p.ToHashSet())
 			: [];
 	}
 
