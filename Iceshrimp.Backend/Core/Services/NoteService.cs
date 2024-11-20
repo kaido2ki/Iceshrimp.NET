@@ -401,6 +401,9 @@ public class NoteService(
 				? [note.Renote.User.Id]
 				: [];
 
+		if (note.Reply?.ReplyUserId is { } replyUserId)
+			additionalUserIds.Add(replyUserId);
+
 		var recipientIds = mentionedUserIds.Concat(additionalUserIds);
 		await deliverSvc.DeliverToConditionalAsync(activity, note.User, note, recipientIds);
 
@@ -663,7 +666,17 @@ public class NoteService(
 		var obj      = await noteRenderer.RenderAsync(note, mentions);
 		var activity = ActivityPub.ActivityRenderer.RenderUpdate(obj, actor);
 
-		await deliverSvc.DeliverToConditionalAsync(activity, note.User, note, mentionedUserIds);
+		List<string> additionalUserIds =
+			note is { IsPureRenote: true, Renote: not null, Visibility: < Note.NoteVisibility.Followers }
+				? [note.Renote.User.Id]
+				: [];
+
+		if (note.Reply?.ReplyUserId is { } replyUserId)
+			additionalUserIds.Add(replyUserId);
+
+		var recipientIds = mentionedUserIds.Concat(additionalUserIds);
+
+		await deliverSvc.DeliverToConditionalAsync(activity, note.User, note, recipientIds);
 		return note;
 	}
 
