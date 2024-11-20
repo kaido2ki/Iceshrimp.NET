@@ -96,14 +96,6 @@ public class StatusController(
 		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		var shouldShowContext = await db.Notes
-		                                .Where(p => p.Id == id)
-		                                .FilterHidden(user, db)
-		                                .AnyAsync();
-
-		if (!shouldShowContext)
-			return new StatusContext { Ancestors = [], Descendants = [] };
-
 		// Akkoma-FE calls /context on boosts
 		if (note.IsPureRenote)
 			return await GetStatusContext(note.RenoteId!);
