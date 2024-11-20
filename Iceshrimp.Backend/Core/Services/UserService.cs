@@ -1384,8 +1384,7 @@ public class UserService(
 		var followers = db.Followings
 		                  .Where(p => p.Followee == source && p.Follower.IsLocalUser)
 		                  .Select(p => p.Follower)
-		                  .AsChunkedAsyncEnumerableAsync(50, p => p.Id,
-		                                                 hook: p => p.PrecomputeRelationshipData(source));
+		                  .AsChunkedAsyncEnumerable(50, p => p.Id, hook: p => p.PrecomputeRelationshipData(source));
 
 		await foreach (var follower in followers)
 		{
@@ -1413,8 +1412,7 @@ public class UserService(
 		var following = db.Followings
 		                  .Where(p => p.Follower == source)
 		                  .Select(p => p.Follower)
-		                  .AsChunkedAsyncEnumerableAsync(50, p => p.Id,
-		                                                 hook: p => p.PrecomputeRelationshipData(source));
+		                  .AsChunkedAsyncEnumerable(50, p => p.Id, hook: p => p.PrecomputeRelationshipData(source));
 
 		await foreach (var followee in following)
 		{

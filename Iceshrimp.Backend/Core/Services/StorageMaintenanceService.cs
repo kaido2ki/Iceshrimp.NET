@@ -155,7 +155,7 @@ public class StorageMaintenanceService(
 		var localFiles      = driveSvc.GetAllFileNamesFromLocalStorage();
 		var objStorageFiles = await driveSvc.GetAllFileNamesFromObjectStorageAsync();
 
-		await foreach (var file in query.AsChunkedAsyncEnumerableAsync(50, p => p.Id))
+		await foreach (var file in query.AsChunkedAsyncEnumerable(50, p => p.Id))
 		{
 			if (++progress % 500 == 0)
 				logger.LogInformation("Validating files... ({idx}/{total})", progress, total);

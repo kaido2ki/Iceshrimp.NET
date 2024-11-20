@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Text;
 using Carbon.Storage;
@@ -128,7 +129,8 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 		await _bucket.DeleteAsync(filenames.Select(GetKeyWithPrefix).ToImmutableList());
 	}
 
-	public async IAsyncEnumerable<string> EnumerateFilesAsync()
+	[SuppressMessage("ReSharper", "InconsistentNaming")]
+	public async IAsyncEnumerable<string> EnumerateFiles()
 	{
 		if (_bucket == null)
 			throw new Exception("Refusing to enumerate files from object storage with invalid configuration");

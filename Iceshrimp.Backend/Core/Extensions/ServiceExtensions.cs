@@ -432,9 +432,10 @@ file sealed class EntityFrameworkCoreXmlRepositoryAsync<TContext> : IXmlReposito
 
 	public IReadOnlyCollection<XElement> GetAllElements()
 	{
-		return GetAllElementsCoreAsync().ToBlockingEnumerable().ToList().AsReadOnly();
+		return GetAllElementsCore().ToBlockingEnumerable().ToList().AsReadOnly();
 
-		async IAsyncEnumerable<XElement> GetAllElementsCoreAsync()
+		[SuppressMessage("ReSharper", "InconsistentNaming")]
+		async IAsyncEnumerable<XElement> GetAllElementsCore()
 		{
 			using var scope = _services.CreateScope();
 			var @enum = scope.ServiceProvider.GetRequiredService<TContext>()

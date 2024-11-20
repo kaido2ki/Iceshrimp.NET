@@ -83,7 +83,7 @@ public class BackfillQueue(int parallelism)
 			        .Where(n => n.Id == current.Id)
 			        .ExecuteUpdateAsync(p => p.SetProperty(n => n.RepliesFetchedAt, DateTime.UtcNow), token);
 
-			await foreach (var asNote in objectResolver.IterateCollectionAsync(new ASCollection(current.RepliesCollection), user: user)
+			await foreach (var asNote in objectResolver.IterateCollection(new ASCollection(current.RepliesCollection), user: user)
 			                                             .Take(MaxRepliesPerNote)
 			                                             .Where(p => p.Id != null)
 														 .WithCancellation(token))

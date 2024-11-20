@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -92,7 +93,8 @@ public class ObjectResolver(
 		}
 	}
 
-	public async IAsyncEnumerable<ASObject> IterateCollectionAsync(
+	[SuppressMessage("ReSharper", "InconsistentNaming")]
+	public async IAsyncEnumerable<ASObject> IterateCollection(
 		ASCollection? collection, User? user = null, int pageLimit = 10
 	)
 	{

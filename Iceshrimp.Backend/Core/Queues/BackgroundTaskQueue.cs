@@ -272,7 +272,7 @@ public class BackgroundTaskQueue(int parallelism)
 
 		var fileIdQ   = db.DriveFiles.Where(p => p.User == user).Select(p => p.Id);
 		var fileIdCnt = await fileIdQ.CountAsync(token);
-		var fileIds   = fileIdQ.AsChunkedAsyncEnumerableAsync(50, p => p);
+		var fileIds   = fileIdQ.AsChunkedAsyncEnumerable(50, p => p);
 		logger.LogDebug("Removing {count} files for user {id}", fileIdCnt, user.Id);
 		await foreach (var id in fileIds)
 		{
@@ -284,7 +284,7 @@ public class BackgroundTaskQueue(int parallelism)
 
 		var noteQ   = db.Notes.Where(p => p.User == user).Select(p => p.Id);
 		var noteCnt = await noteQ.CountAsync(token);
-		var noteIds = noteQ.AsChunkedAsyncEnumerableAsync(50, p => p);
+		var noteIds = noteQ.AsChunkedAsyncEnumerable(50, p => p);
 		logger.LogDebug("Removing {count} notes for user {id}", noteCnt, user.Id);
 		await foreach (var id in noteIds)
 		{

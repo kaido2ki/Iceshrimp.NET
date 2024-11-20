@@ -1450,7 +1450,7 @@ public class NoteService(
 
 		// ReSharper disable once EntityFramework.UnsupportedServerSideFunctionCall
 		var followingUser = await db.Users.FirstOrDefaultAsync(p => p.IsFollowing(user));
-		var notes = await objectResolver.IterateCollectionAsync(collection)
+		var notes = await objectResolver.IterateCollection(collection)
 		                                .Take(10)
 		                                .Where(p => p.Id != null)
 		                                .Select(p => ResolveNoteAsync(p.Id!, null, followingUser, true))
