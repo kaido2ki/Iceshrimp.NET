@@ -263,13 +263,13 @@ public class AdminController(
 	{
 		return await db.Relays
 		               .ToArrayAsync()
-		               .ContinueWithResultAsync(res => res.Select(p => new RelaySchemas.RelayResponse
-		                                                  {
-			                                                  Id     = p.Id,
-			                                                  Inbox  = p.Inbox,
-			                                                  Status = (RelaySchemas.RelayStatus)p.Status
-		                                                  })
-		                                                  .ToList());
+		               .ContinueWithResult(res => res.Select(p => new RelaySchemas.RelayResponse
+		                                             {
+			                                             Id     = p.Id,
+			                                             Inbox  = p.Inbox,
+			                                             Status = (RelaySchemas.RelayStatus)p.Status
+		                                             })
+		                                             .ToList());
 	}
 
 	[HttpPost("relays")]

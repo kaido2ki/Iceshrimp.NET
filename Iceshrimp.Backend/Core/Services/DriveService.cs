@@ -286,7 +286,7 @@ public class DriveService(
 					                         .Select(p => ProcessAndStoreFileVersionAsync(p.Key, p.Value,
 						                                 request.Filename))
 					                         .AwaitAllNoConcurrencyAsync()
-					                         .ContinueWithResultAsync(p => p.ToImmutableArray());
+					                         .ContinueWithResult(p => p.ToImmutableArray());
 
 					original = processed.FirstOrDefault(p => p?.format.Key == KeyEnum.Original) ??
 					           throw new Exception("Image processing didn't result in an original version");

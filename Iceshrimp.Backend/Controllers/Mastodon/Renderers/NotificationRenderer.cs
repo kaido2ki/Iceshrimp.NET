@@ -8,8 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
-public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer, UserRenderer userRenderer)
-	: IScopedService
+public class NotificationRenderer(
+	DatabaseContext db,
+	NoteRenderer noteRenderer,
+	UserRenderer userRenderer
+) : IScopedService
 {
 	public async Task<NotificationEntity> RenderAsync(
 		Notification notification, User user, bool isPleroma, List<AccountEntity>? accounts = null,
@@ -107,8 +110,8 @@ public class NotificationRenderer(DatabaseContext db, NoteRenderer noteRenderer,
 			                          Url  = e.PublicUrl
 		                          })
 		                          .ToArrayAsync()
-		                          .ContinueWithResultAsync(res => res.DistinctBy(e => e.Name)
-		                                                             .ToDictionary(e => e.Name, e => e.Url));
+		                          .ContinueWithResult(res => res.DistinctBy(e => e.Name)
+		                                                        .ToDictionary(e => e.Name, e => e.Url));
 
 		return await notificationList
 		             .Select(p => RenderAsync(p, user, isPleroma, accounts, notes, emojiUrls))

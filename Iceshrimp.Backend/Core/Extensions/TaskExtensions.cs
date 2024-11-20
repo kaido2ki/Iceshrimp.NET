@@ -1,5 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Iceshrimp.Backend.Core.Extensions;
 
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 public static class TaskExtensions
 {
 	public static async Task SafeWaitAsync(this Task task, TimeSpan timeSpan)
@@ -58,13 +61,13 @@ public static class TaskExtensions
 		return (await task).ToList();
 	}
 
-	public static async Task ContinueWithResultAsync(this Task task, Action continuation)
+	public static async Task ContinueWithResult(this Task task, Action continuation)
 	{
 		await task;
 		continuation();
 	}
 
-	public static async Task<TNewResult> ContinueWithResultAsync<TNewResult>(
+	public static async Task<TNewResult> ContinueWithResult<TNewResult>(
 		this Task task, Func<TNewResult> continuation
 	)
 	{
@@ -72,25 +75,25 @@ public static class TaskExtensions
 		return continuation();
 	}
 
-	public static async Task ContinueWithResultAsync<TResult>(this Task<TResult> task, Action<TResult> continuation)
+	public static async Task ContinueWithResult<TResult>(this Task<TResult> task, Action<TResult> continuation)
 	{
 		continuation(await task);
 	}
 
-	public static async Task<TNewResult> ContinueWithResultAsync<TResult, TNewResult>(
+	public static async Task<TNewResult> ContinueWithResult<TResult, TNewResult>(
 		this Task<TResult> task, Func<TResult, TNewResult> continuation
 	)
 	{
 		return continuation(await task);
 	}
 
-	public static async Task ContinueWithResultAsync(this Task task, Func<Task> continuation)
+	public static async Task ContinueWithResult(this Task task, Func<Task> continuation)
 	{
 		await task;
 		await continuation();
 	}
 
-	public static async Task<TNewResult> ContinueWithResultAsync<TNewResult>(
+	public static async Task<TNewResult> ContinueWithResult<TNewResult>(
 		this Task task, Func<Task<TNewResult>> continuation
 	)
 	{
@@ -98,12 +101,12 @@ public static class TaskExtensions
 		return await continuation();
 	}
 
-	public static async Task ContinueWithResultAsync<TResult>(this Task<TResult> task, Func<TResult, Task> continuation)
+	public static async Task ContinueWithResult<TResult>(this Task<TResult> task, Func<TResult, Task> continuation)
 	{
 		await continuation(await task);
 	}
 
-	public static async Task<TNewResult> ContinueWithResultAsync<TResult, TNewResult>(
+	public static async Task<TNewResult> ContinueWithResult<TResult, TNewResult>(
 		this Task<TResult> task, Func<TResult, Task<TNewResult>> continuation
 	)
 	{

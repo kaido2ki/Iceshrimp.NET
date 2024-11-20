@@ -247,15 +247,15 @@ public class StorageMaintenanceService(
 			                        p.PublicAccessKey
 		                        })
 		                        .ToArrayAsync()
-		                        .ContinueWithResultAsync(res => res.SelectMany(p => new List<string?>
-		                                                           {
-			                                                           p.AccessKey,
-			                                                           p.ThumbnailAccessKey,
-			                                                           p.PublicAccessKey
-		                                                           })
-		                                                           .NotNull()
-		                                                           .Append(".iceshrimp-test")
-		                                                           .ToHashSet());
+		                        .ContinueWithResult(res => res.SelectMany(p => new List<string?>
+		                                                      {
+			                                                      p.AccessKey,
+			                                                      p.ThumbnailAccessKey,
+			                                                      p.PublicAccessKey
+		                                                      })
+		                                                      .NotNull()
+		                                                      .Append(".iceshrimp-test")
+		                                                      .ToHashSet());
 
 		logger.LogInformation("Loaded {count} files from database.", filenames.Count);
 		var count = 0;

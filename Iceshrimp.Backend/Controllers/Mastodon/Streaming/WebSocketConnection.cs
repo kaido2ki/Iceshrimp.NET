@@ -120,7 +120,7 @@ public sealed class WebSocketConnection(
 		                         .Select(p => p.UserId)
 		                         .Distinct()
 		                         .ToArrayAsync()
-		                         .ContinueWithResultAsync(p => p.ToHashSet());
+		                         .ContinueWithResult(p => p.ToHashSet());
 	}
 
 	public async Task HandleSocketMessageAsync(string payload)
@@ -350,7 +350,7 @@ public sealed class WebSocketConnection(
 			                         .Where(p => p.UserList.UserId == Token.User.Id && p.UserList.HideFromHomeTl)
 			                         .Select(p => p.UserId)
 			                         .ToArrayAsync()
-			                         .ContinueWithResultAsync(p => p.ToHashSet());
+			                         .ContinueWithResult(p => p.ToHashSet());
 		}
 		catch (Exception e)
 		{
