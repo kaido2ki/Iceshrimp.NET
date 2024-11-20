@@ -25,7 +25,7 @@ public class ActivityDeliverService(
 		await queueService.PreDeliverQueue.EnqueueAsync(new PreDeliverJobData
 		{
 			ActorId            = actor.Id,
-			RecipientIds       = recipients.Select(p => p.Id).ToList(),
+			RecipientIds       = recipients.Select(p => p.Id).Distinct().ToList(),
 			SerializedActivity = JsonConvert.SerializeObject(activity, LdHelpers.JsonSerializerSettings),
 			DeliverToFollowers = true
 		});
@@ -41,7 +41,7 @@ public class ActivityDeliverService(
 		await queueService.PreDeliverQueue.EnqueueAsync(new PreDeliverJobData
 		{
 			ActorId            = actor.Id,
-			RecipientIds       = recipients.Select(p => p.Id).ToList(),
+			RecipientIds       = recipients.Select(p => p.Id).Distinct().ToList(),
 			SerializedActivity = JsonConvert.SerializeObject(activity, LdHelpers.JsonSerializerSettings),
 			DeliverToFollowers = false
 		});
