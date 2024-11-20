@@ -225,9 +225,15 @@ public class NoteService(
 		{
 			if (data.ASNote != null)
 			{
-				visibleUserIds = (await data.ASNote.GetRecipients(data.User)
-				                            .Select(p => userResolver.ResolveOrNullAsync(p, EnforceUriFlags))
-				                            .AwaitAllNoConcurrencyAsync())
+				// @formatter:off
+				var recipients = data.ASNote.GetRecipients(data.User);
+				if (recipients.Count > 100)
+					throw GracefulException.UnprocessableEntity("Refusing to process note with more than 100 recipients");
+				// @formatter:on
+
+				visibleUserIds = (await recipients
+				                        .Select(p => userResolver.ResolveOrNullAsync(p, EnforceUriFlags))
+				                        .AwaitAllNoConcurrencyAsync())
 				                 .NotNull()
 				                 .Select(p => p.Id)
 				                 .Concat(mentionedUserIds)
@@ -532,9 +538,15 @@ public class NoteService(
 				var visibleUserIds = mentionedUserIds.ToList();
 				if (data.ASNote != null)
 				{
-					visibleUserIds = (await data.ASNote.GetRecipients(note.User)
-					                            .Select(p => userResolver.ResolveOrNullAsync(p, EnforceUriFlags))
-					                            .AwaitAllNoConcurrencyAsync())
+					// @formatter:off
+					var recipients = data.ASNote.GetRecipients(note.User);
+					if (recipients.Count > 100)
+						throw GracefulException.UnprocessableEntity("Refusing to process note update with more than 100 recipients");
+					// @formatter:on
+
+					visibleUserIds = (await recipients
+					                        .Select(p => userResolver.ResolveOrNullAsync(p, EnforceUriFlags))
+					                        .AwaitAllNoConcurrencyAsync())
 					                 .NotNull()
 					                 .Select(p => p.Id)
 					                 .Concat(visibleUserIds)
@@ -1014,7 +1026,10 @@ public class NoteService(
 
 	private async Task<NoteMentionData> ResolveNoteMentionsAsync(ASNote note)
 	{
-		var mentionTags = note.Tags?.OfType<ASMention>().Where(p => p.Href?.Id != null) ?? [];
+		var mentionTags = note.Tags?.OfType<ASMention>().Where(p => p.Href?.Id != null).ToArray() ?? [];
+		if (mentionTags.Length > 100)
+			throw GracefulException.UnprocessableEntity("Refusing to process note with more than 100 mentions");
+
 		var users = await mentionTags
 		                  .Select(p => userResolver.ResolveOrNullAsync(p.Href!.Id!, EnforceUriFlags))
 		                  .AwaitAllNoConcurrencyAsync();
@@ -1024,14 +1039,19 @@ public class NoteService(
 
 	private async Task<NoteMentionData> ResolveNoteMentionsAsync(string? text)
 	{
-		var users = text != null
-			? await MfmParser.Parse(text)
-			                 .SelectMany(p => p.Children.Append(p))
-			                 .OfType<MfmMentionNode>()
-			                 .DistinctBy(p => p.Acct)
-			                 .Select(p => userResolver.ResolveOrNullAsync($"acct:{p.Acct}", ResolveFlags.Acct))
-			                 .AwaitAllNoConcurrencyAsync()
-			: [];
+		if (text == null)
+			return ResolveNoteMentions([]);
+		var mentions = MfmParser.Parse(text)
+		                        .SelectMany(p => p.Children.Append(p))
+		                        .OfType<MfmMentionNode>()
+		                        .DistinctBy(p => p.Acct)
+		                        .ToArray();
+
+		if (mentions.Length > 100)
+			throw GracefulException.UnprocessableEntity("Refusing to process note with more than 100 mentions");
+
+		var users = await mentions.Select(p => userResolver.ResolveOrNullAsync($"acct:{p.Acct}", ResolveFlags.Acct))
+		                          .AwaitAllNoConcurrencyAsync();
 
 		return ResolveNoteMentions(users.NotNull().ToList());
 	}
