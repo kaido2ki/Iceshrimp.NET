@@ -23,7 +23,7 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 		if (IsSubscribed) return;
 		IsSubscribed = true;
 
-		await using var scope = connection.ScopeFactory.CreateAsyncScope();
+		await using var scope = connection.GetAsyncServiceScope();
 		await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
 		connection.EventService.NotePublished += OnNotePublished;
@@ -106,7 +106,7 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 			if (connection.IsFiltered(note)) return;
 			if (note.CreatedAt < DateTime.UtcNow - TimeSpan.FromMinutes(5)) return;
 
-			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			await using var scope = connection.GetAsyncServiceScope();
 			if (await connection.IsMutedThreadAsync(note, scope)) return;
 
 			var message = new StreamingUpdateMessage
@@ -132,7 +132,7 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 			if (wrapped == null) return;
 			if (connection.IsFiltered(note)) return;
 
-			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			await using var scope = connection.GetAsyncServiceScope();
 			var message = new StreamingUpdateMessage
 			{
 				Stream  = [Name],

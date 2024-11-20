@@ -22,7 +22,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		if (IsSubscribed) return;
 		IsSubscribed = true;
 
-		await using var scope = connection.ScopeFactory.CreateAsyncScope();
+		await using var scope = connection.GetAsyncServiceScope();
 		await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
 		if (!notificationsOnly)
@@ -101,7 +101,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			if (wrapped == null) return;
 			if (connection.IsFiltered(note)) return;
 			if (note.CreatedAt < DateTime.UtcNow - TimeSpan.FromMinutes(5)) return;
-			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			await using var scope = connection.GetAsyncServiceScope();
 			if (await connection.IsMutedThreadAsync(note, scope)) return;
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
@@ -128,7 +128,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			var wrapped = IsApplicable(note);
 			if (wrapped == null) return;
 			if (connection.IsFiltered(note)) return;
-			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			await using var scope = connection.GetAsyncServiceScope();
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
 			var intermediate = await renderer.RenderAsync(note, connection.Token.User);
@@ -174,7 +174,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			if (!IsApplicable(notification)) return;
 			if (IsFiltered(notification)) return;
 
-			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			await using var scope = connection.GetAsyncServiceScope();
 			if (notification.Note != null && await connection.IsMutedThreadAsync(notification.Note, scope, true))
 				return;
 

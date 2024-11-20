@@ -43,7 +43,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 
 		if (_lists.AddIfMissing(msg.List))
 		{
-			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			await using var scope = connection.GetAsyncServiceScope();
 
 			var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 			var list = await db.UserLists.FirstOrDefaultAsync(p => p.UserId == connection.Token.User.Id &&
@@ -128,7 +128,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 			var wrapped = IsApplicable(note);
 			if (wrapped == null) return;
 			if (connection.IsFiltered(note)) return;
-			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			await using var scope = connection.GetAsyncServiceScope();
 			if (await connection.IsMutedThreadAsync(note, scope)) return;
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
@@ -154,7 +154,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 			var wrapped = IsApplicable(note);
 			if (wrapped == null) return;
 			if (connection.IsFiltered(note)) return;
-			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			await using var scope = connection.GetAsyncServiceScope();
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
 			var data         = new NoteRenderer.NoteRendererDto { Filters = connection.Filters.ToList() };
@@ -197,7 +197,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 			if (list.UserId != connection.Token.User.Id) return;
 			if (!_lists.Contains(list.Id)) return;
 
-			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			await using var scope = connection.GetAsyncServiceScope();
 
 			var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 			var members = await db.UserListMembers.Where(p => p.UserListId == list.Id)

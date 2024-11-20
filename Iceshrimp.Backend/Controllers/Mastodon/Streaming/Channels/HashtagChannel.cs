@@ -105,7 +105,7 @@ public class HashtagChannel(WebSocketConnection connection, bool local) : IChann
 			var wrapped = IsApplicable(note);
 			if (wrapped == null) return;
 			if (connection.IsFiltered(note)) return;
-			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			await using var scope = connection.GetAsyncServiceScope();
 			if (await connection.IsMutedThreadAsync(note, scope)) return;
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
@@ -130,7 +130,7 @@ public class HashtagChannel(WebSocketConnection connection, bool local) : IChann
 			var wrapped = IsApplicable(note);
 			if (wrapped == null) return;
 			if (connection.IsFiltered(note)) return;
-			await using var scope = connection.ScopeFactory.CreateAsyncScope();
+			await using var scope = connection.GetAsyncServiceScope();
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
 			var data         = new NoteRenderer.NoteRendererDto { Filters = connection.Filters.ToList() };

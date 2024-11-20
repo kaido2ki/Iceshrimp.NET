@@ -8,6 +8,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Events;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Services;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +33,6 @@ public sealed class WebSocketConnection(
 	public readonly  WriteLockingList<Filter>    Filters        = [];
 	public readonly  EventService                EventService   = eventSvc;
 	public readonly  IServiceScope               Scope          = scopeFactory.CreateScope();
-	public readonly  IServiceScopeFactory        ScopeFactory   = scopeFactory;
 	public readonly  OauthToken                  Token          = token;
 	public           HashSet<string>             HiddenFromHome = [];
 
@@ -57,6 +57,8 @@ public sealed class WebSocketConnection(
 
 	public void InitializeStreamingWorker()
 	{
+		InitializeScopeLocalParameters(Scope);
+
 		_channels.Add(new ListChannel(this));
 		_channels.Add(new DirectChannel(this));
 		_channels.Add(new UserChannel(this, true));
@@ -343,7 +345,7 @@ public sealed class WebSocketConnection(
 			if (list.UserId != Token.User.Id) return;
 			if (!list.HideFromHomeTl) return;
 
-			await using var scope = ScopeFactory.CreateAsyncScope();
+			await using var scope = GetAsyncServiceScope();
 
 			var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 			HiddenFromHome = await db.UserListMembers
@@ -381,6 +383,19 @@ public sealed class WebSocketConnection(
 		if (!isNotification && note.User.Id == Token.UserId) return false;
 		var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 		return await db.NoteThreadMutings.AnyAsync(p => p.UserId == Token.UserId && p.ThreadId == note.ThreadId);
+	}
+
+	public AsyncServiceScope GetAsyncServiceScope()
+	{
+		var scope = scopeFactory.CreateAsyncScope();
+		InitializeScopeLocalParameters(scope);
+		return scope;
+	}
+
+	private void InitializeScopeLocalParameters(IServiceScope scope)
+	{
+		var mfmConverter = scope.ServiceProvider.GetRequiredService<MfmConverter>();
+		mfmConverter.SupportsHtmlFormatting.Value = Token.SupportsHtmlFormatting;
 	}
 
 	public async Task CloseAsync(WebSocketCloseStatus status)
