@@ -404,6 +404,7 @@ public interface IConditionalService : IService
 /// </summary>
 file static class DataProtectionExtensions
 {
+	// ReSharper disable once InconsistentNaming
 	public static IDataProtectionBuilder PersistKeysToDbContextAsync<TContext>(this IDataProtectionBuilder builder)
 		where TContext : DbContext, IDataProtectionKeyContext
 	{
@@ -418,6 +419,7 @@ file static class DataProtectionExtensions
 	}
 }
 
+// ReSharper disable once InconsistentNaming
 file sealed class EntityFrameworkCoreXmlRepositoryAsync<TContext> : IXmlRepository
 	where TContext : DbContext, IDataProtectionKeyContext
 {
