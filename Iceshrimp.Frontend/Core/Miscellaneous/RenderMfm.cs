@@ -9,19 +9,19 @@ namespace Iceshrimp.Frontend.Core.Miscellaneous;
 public static class MfmRenderer
 {
 	public static async Task<MarkupString> RenderStringAsync(
-		string text, List<EmojiResponse> emoji, bool simple = false
+		string text, List<EmojiResponse> emoji, string accountDomain, bool simple = false
 	)
 	{
 		var res         = simple ? Mfm.parseSimple(text) : Mfm.parse(text);
 		var context     = BrowsingContext.New();
 		var document    = await context.OpenNewAsync();
-		var renderedMfm = RenderMultipleNodes(res, document, emoji, simple);
+		var renderedMfm = RenderMultipleNodes(res, document, emoji, accountDomain, simple);
 		var html        = renderedMfm.ToHtml();
 		return new MarkupString(html);
 	}
 
 	private static INode RenderMultipleNodes(
-		IEnumerable<MfmNodeTypes.MfmNode> nodes, IDocument document, List<EmojiResponse> emoji, bool simple
+		IEnumerable<MfmNodeTypes.MfmNode> nodes, IDocument document, List<EmojiResponse> emoji, string accountDomain, bool simple
 	)
 	{
 		var el = document.CreateElement("span");
@@ -31,7 +31,7 @@ public static class MfmRenderer
 		{
 			try
 			{
-				el.AppendNodes(RenderNode(node, document, emoji, simple));
+				el.AppendNodes(RenderNode(node, document, emoji, accountDomain, simple));
 			}
 			catch (NotImplementedException e)
 			{
@@ -45,7 +45,7 @@ public static class MfmRenderer
 	}
 
 	private static INode RenderNode(
-		MfmNodeTypes.MfmNode node, IDocument document, List<EmojiResponse> emoji, bool simple
+		MfmNodeTypes.MfmNode node, IDocument document, List<EmojiResponse> emoji, string accountDomain, bool simple
 	)
 	{
 		// Hard wrap makes this impossible to read
@@ -66,7 +66,7 @@ public static class MfmRenderer
 			MfmNodeTypes.MfmItalicNode mfmItalicNode         => MfmItalicNode(mfmItalicNode, document),
 			MfmNodeTypes.MfmLinkNode mfmLinkNode             => MfmLinkNode(mfmLinkNode, document),
 			MfmNodeTypes.MfmMathInlineNode mfmMathInlineNode => throw new NotImplementedException($"{mfmMathInlineNode.GetType()}"),
-			MfmNodeTypes.MfmMentionNode mfmMentionNode       => MfmMentionNode(mfmMentionNode, document),
+			MfmNodeTypes.MfmMentionNode mfmMentionNode       => MfmMentionNode(mfmMentionNode, document, accountDomain),
 			MfmNodeTypes.MfmPlainNode mfmPlainNode           => MfmPlainNode(mfmPlainNode, document),
 			MfmNodeTypes.MfmSmallNode mfmSmallNode           => MfmSmallNode(mfmSmallNode, document),
 			MfmNodeTypes.MfmStrikeNode mfmStrikeNode         => MfmStrikeNode(mfmStrikeNode, document),
@@ -83,7 +83,7 @@ public static class MfmRenderer
 			{
 				try
 				{
-					rendered.AppendNodes(RenderNode(childNode, document, emoji, simple));
+					rendered.AppendNodes(RenderNode(childNode, document, emoji, accountDomain, simple));
 				}
 				catch (NotImplementedException e)
 				{
@@ -220,16 +220,19 @@ public static class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmMentionNode(MfmNodeTypes.MfmMentionNode node, IDocument document)
+	private static INode MfmMentionNode(MfmNodeTypes.MfmMentionNode node, IDocument document, string accountDomain)
 	{
 		var link = document.CreateElement("a");
-		link.SetAttribute("href", $"/@{node.Acct}");
+		link.SetAttribute("href",
+		                  node.Host != null && node.Host.Value != accountDomain
+			                  ? $"/@{node.Acct}"
+			                  : $"/@{node.Username}");
 		link.ClassName = "mention";
 		var userPart = document.CreateElement("span");
 		userPart.ClassName   = "user";
 		userPart.TextContent = $"@{node.Username}";
 		link.AppendChild(userPart);
-		if (node.Host != null)
+		if (node.Host != null && node.Host.Value != accountDomain)
 		{
 			var hostPart = document.CreateElement("span");
 			hostPart.ClassName   = "host";

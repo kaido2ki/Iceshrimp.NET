@@ -1,5 +1,7 @@
 @using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
+@inject MetadataService MetadataService
 @TextBody
 
 @code {
@@ -12,7 +14,8 @@
     {
         if (Text != null)
         {
-            TextBody = await MfmRenderer.RenderStringAsync(Text, Emoji, Simple);
+            var instance = await MetadataService.Instance.Value;
+            TextBody = await MfmRenderer.RenderStringAsync(Text, Emoji, instance.AccountDomain, Simple);
         }
     }
 
@@ -20,7 +23,8 @@
     {
         if (Text != null)
         {
-            TextBody = await MfmRenderer.RenderStringAsync(Text, Emoji, Simple);
+            var instance = await MetadataService.Instance.Value;
+            TextBody = await MfmRenderer.RenderStringAsync(Text, Emoji, instance.AccountDomain, Simple);
         }
     }
 }
