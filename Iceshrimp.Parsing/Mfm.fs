@@ -473,7 +473,7 @@ module private MfmParser =
                 | '<', Simple when stream.Match "<plain>" -> plainNode
                 | '\\', (Full | Inline) when stream.Match "\\(" -> mathNode
                 | '$', (Full | Inline) when stream.Match "$[" -> fnNode
-                | '?', (Full | Inline) when stream.Match "[" -> linkNode
+                | '?', (Full | Inline) when stream.Match "?[" -> linkNode
                 // Fallback to char node
                 | _ -> charNode
                 <| stream

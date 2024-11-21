@@ -367,6 +367,18 @@ public class MfmTests
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
 		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
 	}
+	
+	[TestMethod]
+	public void TestLinkSilent()
+	{
+		const string  input    = "?[test](https://example.org/path/Name_(test)_asdf)";
+		List<MfmNode> expected = [new MfmLinkNode("https://example.org/path/Name_(test)_asdf", "test", true)];
+		var           res      = Mfm.parse(input);
+
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
+		res.ToList().Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
 
 	[TestMethod]
 	public void TestLinkNeg()
