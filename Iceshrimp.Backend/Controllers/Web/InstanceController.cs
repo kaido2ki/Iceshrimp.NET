@@ -2,12 +2,14 @@ using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Web.Renderers;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
@@ -15,8 +17,19 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/instance")]
 [Produces(MediaTypeNames.Application.Json)]
-public class InstanceController(DatabaseContext db, UserRenderer userRenderer) : ControllerBase
+public class InstanceController(DatabaseContext db, UserRenderer userRenderer, IOptions<Config.InstanceSection> config) : ControllerBase
 {
+	[HttpGet]
+	[ProducesResults(HttpStatusCode.OK)]
+	public InstanceResponse GetInfo()
+	{
+		return new InstanceResponse
+		{
+			AccountDomain = config.Value.AccountDomain,
+			WebDomain     = config.Value.WebDomain,
+		};
+	}
+	
 	[HttpGet("staff")]
 	[Authenticate]
 	[Authorize]

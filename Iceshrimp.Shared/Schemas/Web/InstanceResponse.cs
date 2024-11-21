@@ -1,7 +1,12 @@
 namespace Iceshrimp.Shared.Schemas.Web;
 
-// TODO: Instance Response for /api/iceshrimp/instance
-public class InstanceResponse { }
+public class InstanceResponse
+{
+    public required string AccountDomain { get; set; }
+    public required string WebDomain     { get; set; }
+    
+    // TODO: Add more instance metadata
+}
 
 public class StaffResponse
 {
