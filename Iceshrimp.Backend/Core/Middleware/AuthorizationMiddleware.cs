@@ -30,7 +30,7 @@ public class AuthorizationMiddleware(RequestDelegate next) : ConditionalMiddlewa
 		else
 		{
 			var session = ctx.GetSession();
-			if (session is not { Active: true })
+			if (session == null || (!session.Active && !attribute.AllowInactive))
 				throw GracefulException.Unauthorized("This method requires an authenticated user");
 			if (attribute.AdminRole && !session.User.IsAdmin)
 				throw GracefulException.Forbidden("This action is outside the authorized scopes");
@@ -47,4 +47,6 @@ public class AuthorizeAttribute(params string[] scopes) : Attribute
 	public readonly bool     AdminRole     = scopes.Contains("role:admin");
 	public readonly bool     ModeratorRole = scopes.Contains("role:moderator");
 	public readonly string[] Scopes        = scopes.Where(p => !p.StartsWith("role:")).ToArray();
+
+	public bool AllowInactive { get; init; } = false;
 }

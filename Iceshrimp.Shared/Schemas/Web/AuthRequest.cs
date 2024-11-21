@@ -21,3 +21,8 @@ public class ResetPasswordRequest
 {
 	public required string Password { get; set; }
 }
+
+public class TwoFactorRequest
+{
+	public required string Code { get; set; }
+}

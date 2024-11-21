@@ -30,14 +30,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		var session = HttpContext.GetSession();
 		if (session == null) return new AuthResponse { Status = AuthStatusEnum.Guest };
 
-		return new AuthResponse
-		{
-			Status      = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
-			Token       = session.Token,
-			IsAdmin     = session.User.IsAdmin,
-			IsModerator = session.User.IsModerator,
-			User        = await userRenderer.RenderOne(session.User)
-		};
+		return await GetAuthResponse(session, session.User);
 	}
 
 	[HttpPost("login")]
@@ -77,14 +70,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 			await db.SaveChangesAsync();
 		}
 
-		return new AuthResponse
-		{
-			Status      = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
-			Token       = session.Token,
-			IsAdmin     = session.User.IsAdmin,
-			IsModerator = session.User.IsModerator,
-			User        = await userRenderer.RenderOne(user)
-		};
+		return await GetAuthResponse(session, user);
 	}
 
 	[HttpPost("register")]
@@ -98,6 +84,34 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 
 		await userSvc.CreateLocalUserAsync(request.Username, request.Password, request.Invite);
 		return await Login(request);
+	}
+
+	[HttpPost("2fa")]
+	[Authenticate(AllowInactive = true)]
+	[Authorize(AllowInactive = true)]
+	[EnableRateLimiting("auth")]
+	[Consumes(MediaTypeNames.Application.Json)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.Forbidden)]
+	public async Task<AuthResponse> SubmitTwoFactor([FromBody] TwoFactorRequest request)
+	{
+		var user    = HttpContext.GetUserOrFail();
+		var session = HttpContext.GetSessionOrFail();
+
+		if (session.Active)
+			return await GetAuthResponse(session, user);
+		if (user.UserSettings?.TwoFactorEnabled != true)
+			throw GracefulException.BadRequest("2FA is disabled");
+		if (user.UserSettings?.TwoFactorSecret is not { } secret)
+			throw new Exception("2FA is enabled but no secret is known");
+		if (request.Code is not { Length: 6 } totp)
+			throw GracefulException.Forbidden("Missing or invalid TOTP code");
+		if (!TotpHelper.Validate(secret, totp))
+			throw GracefulException.Forbidden("Invalid TOTP code");
+
+		session.Active = true;
+		await db.SaveChangesAsync();
+		return await GetAuthResponse(session, user);
 	}
 
 	[HttpPost("change-password")]
@@ -123,5 +137,17 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		await db.SaveChangesAsync();
 
 		return await Login(new AuthRequest { Username = user.Username, Password = request.NewPassword });
+	}
+
+	private async Task<AuthResponse> GetAuthResponse(Session session, User user)
+	{
+		return new AuthResponse
+		{
+			Status      = session.Active ? AuthStatusEnum.Authenticated : AuthStatusEnum.TwoFactor,
+			Token       = session.Token,
+			IsAdmin     = session.User.IsAdmin,
+			IsModerator = session.User.IsModerator,
+			User        = await userRenderer.RenderOne(user)
+		};
 	}
 }

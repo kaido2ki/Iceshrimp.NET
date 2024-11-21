@@ -86,7 +86,10 @@ public class AuthenticationMiddleware(
 			var session = await db.Sessions
 			                      .Include(p => p.User.UserProfile)
 			                      .Include(p => p.User.UserSettings)
-			                      .FirstOrDefaultAsync(p => p.Token == token && p.Active);
+			                      .FirstOrDefaultAsync(p => p.Token == token);
+
+			if (session is { Active: false } && !attribute.AllowInactive)
+				session = null;
 
 			if (session?.User.IsSuspended == true)
 				throw GracefulException
@@ -145,6 +148,8 @@ public class AuthenticateAttribute(params string[] scopes) : Attribute
 	public readonly bool     AdminRole     = scopes.Contains("role:admin");
 	public readonly bool     ModeratorRole = scopes.Contains("role:moderator");
 	public readonly string[] Scopes        = scopes.Where(p => !p.StartsWith("role:")).ToArray();
+
+	public bool AllowInactive { get; init; } = false;
 }
 
 public static partial class HttpContextExtensions
@@ -162,6 +167,11 @@ public static partial class HttpContextExtensions
 	{
 		ctx.Items.TryGetValue(Key, out var session);
 		return session as Session;
+	}
+
+	public static Session GetSessionOrFail(this HttpContext ctx)
+	{
+		return ctx.GetSession() ?? throw new Exception("Failed to get session from HttpContext");
 	}
 
 	internal static void SetOauthToken(this HttpContext ctx, OauthToken session)
