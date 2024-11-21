@@ -25,6 +25,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>
 builder.Services.AddSingleton<ComposeService>();
 builder.Services.AddSingleton<StateService>();
 builder.Services.AddSingleton<EmojiService>();
+builder.Services.AddSingleton<MetadataService>();
 builder.Services.AddSingleton<VersionService>();
 builder.Services.AddSingleton<MessageService>();
 builder.Services.AddSingleton<GlobalComponentSvc>();
