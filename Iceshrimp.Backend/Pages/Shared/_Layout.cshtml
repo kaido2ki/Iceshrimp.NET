@@ -20,13 +20,15 @@
 @RenderBody()
 @await RenderSectionAsync("scripts", false)
 <footer>
-    <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
-    @if (!Context.ShouldHideFooter())
-    {
-        <span class="float-right">
-            <a href="/login?rd=@((Context.Request.Path.Value ?? "/").UrlEncode())">Login</a>
+    <div class="footer">
+        <span>
+            <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
         </span>
-    }
+        @if (!Context.ShouldHideFooter())
+        {
+            <a href="/login?rd=@((Context.Request.Path.Value ?? "/").UrlEncode())">Login</a>
+        }
+    </div>
 </footer>
 </body>
 </html>

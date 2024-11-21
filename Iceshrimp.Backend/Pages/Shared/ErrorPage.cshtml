@@ -21,8 +21,11 @@
     <link rel="icon" type="image/png" href="~/_content/Iceshrimp.Assets.Branding/favicon.png"/>
     @* ReSharper restore Html.PathError *@
     <style>
-        .float-right {
-            float: right;
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 4px 8px;
+            flex-wrap: wrap;
         }
     </style>
 </head>
@@ -71,13 +74,15 @@
 }
 
 <footer>
-    <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
-    @if (Model.Error.Exception is PublicPreviewDisabledException)
-    {
-        <span class="float-right">
-            <a href="/login?rd=@(Request.Path.ToString().UrlEncode())">Login</a>
+    <span class="footer">
+        <span>
+            <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
         </span>
-    }
+        @if (Model.Error.Exception is PublicPreviewDisabledException)
+        {
+            <a href="/login?rd=@(Request.Path.ToString().UrlEncode())">Login</a>
+        }
+    </span>
 </footer>
 </body>
 </html>

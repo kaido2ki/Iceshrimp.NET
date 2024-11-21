@@ -30,12 +30,14 @@
             </CascadingValue>
         </CascadingValue>
         <footer>
-            @if (_instanceName != null)
-            {
-                <span>@_instanceName - </span>
-            }
-            <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
-            <span class="float-right">
+            <span class="footer">
+                <span>
+                    @if (_instanceName != null)
+                    {
+                        <span>@_instanceName - </span>
+                    }
+                    <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
+                </span>
                 @if (_user == null)
                 {
                     <a href="/login?rd=@((Context.Request.Path.Value ?? "/").UrlEncode())">Login</a>
