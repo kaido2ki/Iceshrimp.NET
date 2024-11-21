@@ -295,9 +295,9 @@
 
     private async Task AddEmoji(EmojiResponse emoji)
     {
-        var pos         = await _module.InvokeAsync<int>("getSelectionStart");
+        var pos         = await _module.InvokeAsync<int>("getSelectionStart", Textarea);
         var text        = NoteDraft.Text;
-        var emojiString = $":{emoji.Name}";
+        var emojiString = $":{emoji.Name}: ";
         NoteDraft.Text = text.Insert(pos, emojiString);
         StateHasChanged();
     }
