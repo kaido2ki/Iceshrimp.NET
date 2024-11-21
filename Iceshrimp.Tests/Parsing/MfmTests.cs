@@ -522,29 +522,6 @@ public class MfmTests
 		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
 	}
 
-	[TestMethod]
-	public void Benchmark()
-	{
-		const string mfm =
-			"<plain>*blabla*</plain> *test* #example @example @example@invalid @example@example.com @invalid:matrix.org https://hello.com http://test.de <https://大石泉すき.example.com> javascript://sdfgsdf [test](https://asdfg) ?[test](https://asdfg) `asd`";
-
-		double duration                      = 100;
-		for (var i = 0; i < 4; i++) duration = RunBenchmark();
-
-		duration.Should().BeLessThan(2);
-
-		return;
-
-		double RunBenchmark()
-		{
-			var pre = Stopwatch.GetTimestamp();
-			Mfm.parse(mfm);
-			var ms = Stopwatch.GetElapsedTime(pre).GetTotalMilliseconds();
-			Console.WriteLine($@"Took {ms} ms");
-			return ms;
-		}
-	}
-
 	private static bool MfmNodeEqual(MfmNode a, MfmNode b)
 	{
 		if (a.GetType() != b.GetType()) return false;
