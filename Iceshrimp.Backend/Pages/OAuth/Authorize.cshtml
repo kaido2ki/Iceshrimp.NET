@@ -17,52 +17,114 @@
             }
         </ul>
 
-        <form method="post">
-            <div class="margin-bottom-5px">
-                Feature flags:
-            </div>
-            <div>
-                <input type="checkbox" name="supportsHtmlFormatting" id="supportsHtmlFormatting" value="1"/>
-                <label for="supportsHtmlFormatting">This app supports HTML formatting</label>
-            </div>
-            <div>
-                <input type="checkbox" name="autoDetectQuotes" id="autoDetectQuotes" value="1"/>
-                <label for="autoDetectQuotes">Automatically detect quotes</label>
-            </div>
-            <div>
-                <input type="checkbox" name="isPleroma" id="isPleroma" value="1"/>
-                <label for="isPleroma">This app is intended for Pleroma or Akkoma</label>
-            </div>
-            @if (Model.AuthenticatedUsers.Count > 0)
-            {
-                <div class="margin-top-5px">
-                    @foreach (var user in Model.AuthenticatedUsers)
+        @if (Model.TwoFactorFormData is { } data)
+        {
+            <form method="post">
+                <div class="margin-bottom-5px">
+                    Feature flags:
+                </div>
+                <div>
+                    @if (data.SupportsHtmlFormatting)
                     {
-                        <button type="submit" name="userId" value="@user.Id">Log in as @@@user.Username</button>
+                        <input type="checkbox" id="supportsHtmlFormatting" checked disabled/>
+                        <input type="hidden" name="supportsHtmlFormatting" value="1"/>
                     }
+                    else
+                    {
+                        <input type="checkbox" id="supportsHtmlFormatting" disabled/>
+                    }
+                    <label for="supportsHtmlFormatting">This app supports HTML formatting</label>
                 </div>
-                <div class="margin-bottom-5px margin-top-5px">
-                    Alternatively, sign in with to a different account below:
+                <div>
+                    @if (data.AutoDetectQuotes)
+                    {
+                        <input type="checkbox" id="autoDetectQuotes" checked disabled/>
+                        <input type="hidden" name="autoDetectQuotes" value="1"/>
+                    }
+                    else
+                    {
+                        <input type="checkbox" id="autoDetectQuotes" disabled/>
+                    }
+                    <label for="autoDetectQuotes">Automatically detect quotes</label>
                 </div>
-                <input type="text" placeholder="Username" name="username"/>
-                <input type="password" placeholder="Password" name="password"/>
-            }
-            else
-            {
+                <div>
+                    @if (data.IsPleroma)
+                    {
+                        <input type="checkbox" id="isPleroma" checked disabled/>
+                        <input type="hidden" name="isPleroma" value="1"/>
+                    }
+                    else
+                    {
+                        <input type="checkbox" id="isPleroma" disabled/>
+                    }
+                    <label for="isPleroma">This app is intended for Pleroma or Akkoma</label>
+                </div>
                 <div class="margin-bottom-5px margin-top-10px">
                     Log in below to confirm this:
                 </div>
-                <input type="text" placeholder="Username" name="username" required/>
-                <input type="password" placeholder="Password" name="password" required/>
-            }
-            <button type="submit">Submit</button>
-        </form>
+                <input type="text" disabled value="@data.Username"
+                       autocomplete="username"/>
+                <input type="hidden" name="username" value="@data.Username"/>
+                <input type="password" disabled value="@data.Password"/>
+                <input type="hidden" name="password" value="@data.Password"/>
+                <input type="text" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code"
+                       placeholder="TOTP" name="totp" required/>
+                <button type="submit">Submit</button>
+            </form>
+        }
+        else
+        {
+            <form method="post">
+                <div class="margin-bottom-5px">
+                    Feature flags:
+                </div>
+                <div>
+                    <input type="checkbox" name="supportsHtmlFormatting" id="supportsHtmlFormatting" value="1"/>
+                    <label for="supportsHtmlFormatting">This app supports HTML formatting</label>
+                </div>
+                <div>
+                    <input type="checkbox" name="autoDetectQuotes" id="autoDetectQuotes" value="1"/>
+                    <label for="autoDetectQuotes">Automatically detect quotes</label>
+                </div>
+                <div>
+                    <input type="checkbox" name="isPleroma" id="isPleroma" value="1"/>
+                    <label for="isPleroma">This app is intended for Pleroma or Akkoma</label>
+                </div>
+                @if (Model.AuthenticatedUsers.Count > 0)
+                {
+                    <div class="margin-top-5px">
+                        @foreach (var user in Model.AuthenticatedUsers)
+                        {
+                            <button type="submit" name="userId" value="@user.Id">Log in as @@@user.Username</button>
+                        }
+                    </div>
+                    <div class="margin-bottom-5px margin-top-5px">
+                        Alternatively, sign in with to a different account below:
+                    </div>
+                    <input type="text" placeholder="Username" name="username" autocomplete="username"/>
+                    <input type="password" placeholder="Password" name="password" autocomplete="current-password"/>
+                }
+                else
+                {
+                    <div class="margin-bottom-5px margin-top-10px">
+                        Log in below to confirm this:
+                    </div>
+                    <input type="text" placeholder="Username" name="username" autocomplete="username" required/>
+                    <input type="password" placeholder="Password" name="password" autocomplete="current-password"
+                           required/>
+                }
+                <input type="text" autocomplete="one-time-code" placeholder="TOTP" name="totp" class="hidden-input"
+                       tabindex="-1" aria-hidden="true"/>
+                <button type="submit">Submit</button>
+            </form>
+        }
     </div>
 }
 else if (Model.Token.RedirectUri == "urn:ietf:wg:oauth:2.0:oob")
 {
     <div>
-        Your code is: <pre>@Model.Token.Code</pre>
+        Your code is:
+        <pre>@Model.Token.Code</pre>
     </div>
 }
 else

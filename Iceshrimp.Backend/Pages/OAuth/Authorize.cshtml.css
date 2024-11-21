@@ -13,3 +13,14 @@
 .margin-top-10px {
     margin-top: 10px;
 }
+
+.hidden-input {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    height: 0;
+    width: 0;
+    padding: 0;
+    margin: 0;
+    pointer-events: none;
+}
