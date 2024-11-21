@@ -1,5 +1,6 @@
 @page "/"
 @model IndexModel
+@* ReSharper disable Html.PathError *@
 @{
     ViewData["title"] = $"Home - {Model.InstanceName}";
 
@@ -14,7 +15,12 @@
     <meta name="og:site_name" content="@Model.InstanceName">
 }
 
-<h1>@Model.InstanceName</h1>
+<div class="header">
+    <h1>@Model.InstanceName</h1>
+    <div class="wordmark">
+        <img src="~/_content/Iceshrimp.Assets.Branding/welcome-logo.svg" alt="Iceshrimp"/>
+    </div>
+</div>
 <p>@Model.InstanceDescription</p>
 
 @if (Model.ContactEmail != null)

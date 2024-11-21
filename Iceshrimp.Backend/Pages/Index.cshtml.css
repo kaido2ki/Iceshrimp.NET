@@ -1,0 +1,19 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    flex-wrap: wrap-reverse;
+    gap: 0 12px;
+}
+
+.header>h1 {
+    margin: 0;
+}
+
+.header>.wordmark {
+    width: 160px;
+    line-height: 0;
+    padding-bottom: 4px;
+}
