@@ -10,6 +10,7 @@
 @inject ApiService                     ApiService
 @inject ComposeService                 ComposeService
 @inject SessionService                 SessionService
+@inject MetadataService                MetadataService
 @inject IStringLocalizer<Localization> Loc;
 @inject GlobalComponentSvc             GlobalComponentSvc
 @inject MessageService                 MessageService
@@ -157,7 +158,7 @@
     {
         if (replyTo != null)
         {
-            var mentions = EnumerateMentions(replyTo);
+            var mentions = await EnumerateMentions(replyTo);
             ResetState();
             ReplyOrQuote         = replyTo;
             NoteDraft.ReplyId    = replyTo.Id;
@@ -189,7 +190,7 @@
         await _module.InvokeVoidAsync("openDialog", Dialog);
     }
 
-    private List<string> EnumerateMentions(NoteBase noteBase)
+    private async Task<List<string>> EnumerateMentions(NoteBase noteBase)
     {
         List<string> mentions = [];
         if (noteBase.User.Id != SessionService.Current!.Id)
@@ -203,18 +204,18 @@
             mentions.Add(userMention);
         }
 
-        var current  = $"@{SessionService.Current.Username}@{SessionService.Current.Host}";
+        var instance = await MetadataService.Instance.Value;
         var mfmNodes = noteBase.Text != null ? Mfm.parse(noteBase.Text) : [];
         foreach (var node in mfmNodes)
         {
             if (node is MfmNodeTypes.MfmMentionNode mentionNode)
             {
-                mentions.Add(mentionNode.Acct);
+                mentions.Add(mentionNode.Acct.Replace($"@{instance.AccountDomain}", ""));
             }
         }
 
         mentions = mentions.Distinct().ToList();
-        mentions.Remove(current);
+        mentions.Remove(SessionService.Current.Username);
         return mentions;
     }
 
