@@ -1,0 +1,42 @@
+@page "/"
+@inject TimelineStore Store;
+@using Iceshrimp.Shared.Schemas.Web
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services.NoteStore
+@using Iceshrimp.Frontend.Enums
+
+<div class="thing">
+@if (NoteResponses is not null)
+{
+   
+    <NewVirtualScroller InitialItems="NoteResponses" ItemProvider="Provider" StateKey="1234567890" ItemProviderById="ItemProviderById">
+        <ItemTemplate Context="note">
+            <CascadingValue Value="Store" TValue="NoteMessageProvider" Name="Provider">
+                <TimelineNote Note="note"></TimelineNote>
+            </CascadingValue>
+        </ItemTemplate>
+    </NewVirtualScroller>
+   
+}
+</div>
+
+@code {
+   private List<NoteResponse>? NoteResponses { get; set; }
+   protected override async Task OnInitializedAsync()
+   {
+      NoteResponses = await Store.GetHomeTimelineAsync("home", new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
+      StateHasChanged();
+   }
+
+   private async Task<List<NoteResponse>?> Provider(DirectionEnum direction, NoteResponse start)
+   {
+       var res = await Store.GetHomeTimelineAsync("home", new TimelineStore.Cursor { Direction = direction, Count = 10, Id = start.Id });
+       return res;
+   }
+
+   private List<NoteResponse> ItemProviderById(List<string> arg)
+   {
+       return Store.GetIdsFromTimeline("home", arg);
+   }
+}

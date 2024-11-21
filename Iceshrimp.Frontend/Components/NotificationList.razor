@@ -1,10 +1,14 @@
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Shared.Schemas.Web
 @if (_state == State.Init)
 {
     <div class="scroller">
         @foreach (var el in Notifications)
         {
             <div class="wrapper">
-                <NotificationComponent NotificationResponse="el" @key="el.Id"/>
+                <CascadingValue Value="NotificationStore" TValue="NoteMessageProvider" Name="Provider">
+                    <NotificationComponent NotificationResponse="el" @key="el.Id"/>
+                </CascadingValue>
             </div>
         }
         <ScrollEnd ManualLoad="LoadMore" IntersectionChange="LoadMore"></ScrollEnd>

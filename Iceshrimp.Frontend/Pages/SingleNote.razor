@@ -1,18 +1,20 @@
 @page "/notes/{NoteId}"
 @attribute [Authorize]
-@inject ApiService                     ApiService
+@inject NoteStore                      NoteStore;
+@inject RelatedStore                   RelatedStore;
 @inject IJSRuntime                     Js
-@inject MessageService                 MessageService
 @inject StateService                   StateSvc
 @inject NavigationManager              Navigation
 @inject IStringLocalizer<Localization> Loc
 @inject ILogger<SingleNote>            Logger;
+@inject StateSynchronizer              StateSynchronizer;
 
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Core.Services.NoteStore
 @using Iceshrimp.Frontend.Core.Services.StateServicePatterns
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
@@ -27,7 +29,8 @@
         <Icon Name="Icons.Signpost"></Icon>
         @if (RootNote is { User.DisplayName: not null } && RootNote.User.Emojis.Count != 0)
         {
-            <MfmText Text="@Loc["Note by {0}", RootNote.User.DisplayName]" Emoji="@RootNote.User.Emojis" Simple="@true"/>
+            <MfmText Text="@Loc["Note by {0}", RootNote.User.DisplayName]" Emoji="@RootNote.User.Emojis"
+                     Simple="@true"/>
         }
         else
         {
@@ -42,12 +45,16 @@
                     <div class="ascendants">
                         @foreach (var note in Ascendants)
                         {
-                            <AscendedNote Note="note"/>
+                            <CascadingValue Value="RelatedStore" TValue="NoteMessageProvider" Name="Provider">
+                                <AscendedNote Note="note.Value"/>
+                            </CascadingValue>
                         }
                     </div>
                 }
                 <div @ref="RootNoteRef" class="root-note">
-                    <Note NoteResponse="RootNote"></Note>
+                    <CascadingValue Value="NoteStore" TValue="NoteMessageProvider" Name="Provider">
+                        <Note NoteResponse="RootNote"></Note>
+                    </CascadingValue>
                 </div>
                 <div class="details">
                     <TabbedMenu>
@@ -61,7 +68,9 @@
                                     <div class="descendants">
                                         @foreach (var element in Descendants)
                                         {
-                                            <RecursiveNote Note="element" Depth="0" MaxDepth="_depth"/>
+                                            <CascadingValue Value="RelatedStore" TValue="NoteMessageProvider" Name="Provider">
+                                                <RecursiveNote Note="element.Value" Depth="0" MaxDepth="_depth"/>
+                                            </CascadingValue>
                                         }
                                     </div>
                                 }
@@ -125,17 +134,16 @@
 }
 
 @code {
-    [Parameter] public string?                      NoteId      { get; set; }
-    public             NoteResponse?                RootNote    { get; set; }
-    private            IList<NoteResponse>?         Descendants { get; set; }
-    private            IList<NoteResponse>?         Ascendants  { get; set; }
-    private            IJSInProcessObjectReference? Module      { get; set; }
-    private            ElementReference             RootNoteRef { get; set; }
-    private            int                          _depth = 20;
-    private            IDisposable?                 _locationChangingHandlerDisposable;
-    private            IDisposable?                 _noteChangedHandler;
-    private            State                        _componentState;
-    private            bool                         _firstLoad = true;
+    [Parameter] public string?                           NoteId      { get; set; }
+    public             NoteResponse?                     RootNote    { get; set; }
+    private            SortedList<string, NoteResponse>? Descendants { get; set; }
+    private            SortedList<string, NoteResponse>? Ascendants  { get; set; }
+    private            IJSInProcessObjectReference?      Module      { get; set; }
+    private            ElementReference                  RootNoteRef { get; set; }
+    private            int                               _depth = 20;
+    private            IDisposable?                      _locationChangingHandlerDisposable;
+    private            State                             _componentState;
+    private            bool                              _firstLoad = true;
 
     private async Task Load()
     {
@@ -149,9 +157,9 @@
 
         try
         {
-            var rootNoteTask    = ApiService.Notes.GetNoteAsync(NoteId);
-            var descendantsTask = ApiService.Notes.GetNoteDescendantsAsync(NoteId, _depth);
-            var ascendantsTask  = ApiService.Notes.GetNoteAscendantsAsync(NoteId, default);
+            var rootNoteTask    = NoteStore.GetNoteAsync(NoteId);
+            var descendantsTask = RelatedStore.GetDescendantsAsync(NoteId, _depth);
+            var ascendantsTask  = RelatedStore.GetAscendantsAsync(NoteId, default);
             RootNote    = await rootNoteTask;
             Descendants = await descendantsTask;
             Ascendants  = await ascendantsTask;
@@ -191,17 +199,11 @@
 
     protected override void OnInitialized()
     {
-        if (NoteId != null) _noteChangedHandler = MessageService.Register(NoteId, OnNoteChanged, MessageService.Type.Updated);
         _locationChangingHandlerDisposable =  Navigation.RegisterLocationChangingHandler(LocationChangeHandler);
-        MessageService.AnyNoteDeleted      += OnNoteDeleted;
+        StateSynchronizer.NoteDeleted      += OnNoteDeleted;
     }
 
-    private void OnNoteChanged(object? _, NoteResponse note)
-    {
-        var __ = Refresh();
-    }
-
-    private void OnNoteDeleted(object? _, NoteResponse note)
+    private void OnNoteDeleted(object? _, NoteBase note)
     {
         if (NoteId == note.Id)
         {
@@ -209,8 +211,8 @@
         }
         else
         {
-            Ascendants?.Remove(note);
-            Descendants?.Remove(note);
+            Ascendants?.Remove(note.Id);
+            Descendants?.Remove(note.Id);
         }
 
         StateHasChanged();
@@ -219,12 +221,12 @@
     private async Task Refresh()
     {
         if (NoteId == null) throw new InvalidOperationException("RefreshNote called under impossible circumstances");
-        Descendants = await ApiService.Notes.GetNoteDescendantsAsync(NoteId, default);
-        Ascendants  = await ApiService.Notes.GetNoteAscendantsAsync(NoteId, default);
+        Descendants = await RelatedStore.GetDescendantsAsync(NoteId, default);
+        Ascendants  = await RelatedStore.GetAscendantsAsync(NoteId, default);
         StateHasChanged();
     }
 
-    // ReSharper disable once InconsistentNaming
+// ReSharper disable once InconsistentNaming
     private ValueTask LocationChangeHandler(LocationChangingContext arg)
     {
         SaveState();
@@ -235,7 +237,8 @@
     {
         if (firstRender)
         {
-            Module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "/Pages/SingleNote.razor.js");
+            Module = (IJSInProcessObjectReference)await Js.InvokeAsync
+                <IJSObjectReference>("import", "/Pages/SingleNote.razor.js");
         }
 
         if (_componentState == State.Loaded)
@@ -262,16 +265,16 @@
     {
         if (NoteId == null || _componentState != State.Loaded) return;
         var scrollTop = (Module ?? throw new Exception("JS Interop used before init"))
-            .Invoke<float>("GetScrollY");
+            .Invoke
+                <float>("GetScrollY");
         var state = new SingleNoteState { ScrollTop = scrollTop };
         StateSvc.SingleNote.SetState(NoteId, state);
     }
 
     public void Dispose()
     {
-        _noteChangedHandler?.Dispose();
         SaveState();
         _locationChangingHandlerDisposable?.Dispose();
-        MessageService.AnyNoteDeleted -= OnNoteDeleted;
+        StateSynchronizer.NoteDeleted -= OnNoteDeleted;
     }
 }

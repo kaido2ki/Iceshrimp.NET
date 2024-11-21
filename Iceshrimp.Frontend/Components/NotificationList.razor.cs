@@ -1,31 +1,34 @@
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services;
+using Iceshrimp.Frontend.Core.Services.NoteStore;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components;
 
 namespace Iceshrimp.Frontend.Components;
 
-public partial class NotificationList : IAsyncDisposable
+public partial class NotificationList : IDisposable
 {
 	private          string?                    _minId;
 	private          State                      _state = State.Loading;
-	[Inject] private StreamingService           StreamingService { get; set; } = null!;
+	[Inject] private NotificationStore           NotificationStore { get; set; } = null!;
 	[Inject] private ApiService                 Api              { get; set; } = null!;
 	private          List<NotificationResponse> Notifications    { get; set; } = [];
 
-	public async ValueTask DisposeAsync()
+	public void Dispose()
 	{
-		StreamingService.Notification -= OnNotification;
-
-		await StreamingService.DisposeAsync();
-		GC.SuppressFinalize(this);
+		NotificationStore.Notification -= OnNotification;
 	}
 
 	private async Task GetNotifications()
 	{
 		try
 		{
-			var res = await Api.Notifications.GetNotificationsAsync(new PaginationQuery());
+			var res =await NotificationStore.FetchNotificationsAsync(new PaginationQuery());
+			if (res is null)
+			{
+				_state = State.Error;
+				return;
+			}
 			if (res.Count > 0)
 			{
 				Notifications = res;
@@ -43,7 +46,8 @@ public partial class NotificationList : IAsyncDisposable
 	private async Task LoadMore()
 	{
 		var pq  = new PaginationQuery { MaxId = _minId, Limit = 20 };
-		var res = await Api.Notifications.GetNotificationsAsync(pq);
+		var res = await NotificationStore.FetchNotificationsAsync(pq);
+		if (res is null) return;
 		if (res.Count > 0)
 		{
 			Notifications.AddRange(res);
@@ -54,8 +58,8 @@ public partial class NotificationList : IAsyncDisposable
 
 	protected override async Task OnInitializedAsync()
 	{
-		StreamingService.Notification += OnNotification;
-		await StreamingService.ConnectAsync();
+		NotificationStore.Notification += OnNotification;
+		await NotificationStore.InitializeAsync();
 		await GetNotifications();
 		StateHasChanged();
 	}

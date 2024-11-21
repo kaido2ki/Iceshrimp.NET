@@ -1,42 +1,63 @@
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
-@inject ApiService        ApiService;
-@inject NavigationManager NavigationManager
-@inject ComposeService    ComposeService
-@inject SessionService    Session;
-<div class="note-header">
-    <NoteUserInfo User="@Note.User" Indented="Indented"/>
-    <NoteMetadata
-        Visibility="@Note.Visibility"
-        InstanceName="@Note.User.InstanceName"
-        CreatedAt="DateTime.Parse(Note.CreatedAt)">
-    </NoteMetadata>
-</div>
-<NoteBody NoteBase="Note" OverLength="@CheckLen()" Indented="Indented" ReplyInaccessible="ReplyInaccessible"/>
-@if (Quote != null)
-{
-    <div @onclick="OpenQuote" @onclick:stopPropagation="true" class="quote">
-        <NoteComponent Note="Quote" AsQuote="true"></NoteComponent>
+@implements IDisposable
+@inject ApiService            ApiService;
+@inject NavigationManager     NavigationManager
+@inject ComposeService        ComposeService
+@inject SessionService        Session;
+@inject ILogger<NoteComponent> Logger;
+
+<CascadingValue Value="Note">
+    <div class="note-header">
+        <NoteUserInfo User="@Note.User" Indented="Indented"/>
+        <NoteMetadata
+            Visibility="@Note.Visibility"
+            InstanceName="@Note.User.InstanceName"
+            CreatedAt="DateTime.Parse(Note.CreatedAt)">
+        </NoteMetadata>
     </div>
-}
-@if (!AsQuote)
-{
-    <NoteFooter
-        Reactions="Note.Reactions"
-        Likes="Note.Likes"
-        IsLiked="Note.Liked"
-        Renotes="Note.Renotes"
-        Replies="Note.Replies"
-        RenotePossible=
-        "@(Note.Visibility == NoteVisibility.Public || Note.Visibility == NoteVisibility.Home || Session.Current?.Id == Note.User.Id)"/>
-}
+    <NoteBody NoteBase="Note" OverLength="@CheckLen()" Indented="Indented" ReplyInaccessible="ReplyInaccessible"/>
+    @if (Quote != null)
+    {
+        <div @onclick="OpenQuote" @onclick:stopPropagation="true" class="quote">
+            <NoteComponent Note="Quote" AsQuote="true"></NoteComponent>
+        </div>
+    }
+    @if (!AsQuote)
+    {
+        <NoteFooter
+            Reactions="Note.Reactions"
+            Likes="Note.Likes"
+            IsLiked="Note.Liked"
+            Renotes="Note.Renotes"
+            Replies="Note.Replies"
+            RenotePossible=
+            "@(Note.Visibility == NoteVisibility.Public || Note.Visibility == NoteVisibility.Home || Session.Current?.Id == Note.User.Id)"/>
+    }
+</CascadingValue>
 
 @code {
-    [Parameter] [EditorRequired] public required NoteBase  Note              { get; set; }
-    [Parameter]                  public          bool      Indented          { get; set; }
-    [Parameter]                  public          NoteBase? Quote             { get; set; }
-    [Parameter]                  public          bool      AsQuote           { get; set; }
-    [Parameter]                  public          bool      ReplyInaccessible { get; set; }
+    [Parameter] [EditorRequired] public required NoteBase     Note              { get; set; }
+    [Parameter]                  public          bool         Indented          { get; set; }
+    [Parameter]                  public          NoteBase?    Quote             { get; set; }
+    [Parameter]                  public          bool         AsQuote           { get; set; }
+    [Parameter]                  public          bool         ReplyInaccessible { get; set; }
+    private                                      IDisposable? _noteChangedHandler;
+
+    
+    [CascadingParameter(Name="Provider")] NoteMessageProvider? Provider { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _noteChangedHandler = Provider?.Register(Note.Id, HandleNoteChanged);
+    }
+
+    private void HandleNoteChanged(object? _, NoteBase note)
+    {
+        Logger.LogInformation($"{note.Id} updated");
+        StateHasChanged();
+    }
 
     private bool CheckLen()
     {
@@ -46,5 +67,10 @@
     private void OpenQuote()
     {
         NavigationManager.NavigateTo($"/notes/{Quote!.Id}");
+    }
+
+    public void Dispose()
+    {
+        _noteChangedHandler?.Dispose();
     }
 }

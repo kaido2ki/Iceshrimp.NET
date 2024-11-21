@@ -1,9 +1,12 @@
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services;
+using Iceshrimp.Frontend.Core.Services.NoteStore;
 using Iceshrimp.Frontend.Core.Services.StateServicePatterns;
+using Iceshrimp.Frontend.Enums;
 using Iceshrimp.Shared.Schemas.SignalR;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components;
+using TimelineState = Iceshrimp.Frontend.Core.Services.StateServicePatterns.TimelineState;
 
 namespace Iceshrimp.Frontend.Components;
 
@@ -13,6 +16,7 @@ public partial class TimelineComponent : IAsyncDisposable
 	[Inject] private StreamingService           StreamingService { get; set; } = null!;
 	[Inject] private StateService               StateService     { get; set; } = null!;
 	[Inject] private ILogger<TimelineComponent> Logger           { get; set; } = null!;
+	[Inject] private TimelineStore                  Store            { get; set; } = null!;
 
 	private TimelineState   State           { get; set; } = null!;
 	private State           ComponentState  { get; set; } = Core.Miscellaneous.State.Loading;
@@ -28,8 +32,17 @@ public partial class TimelineComponent : IAsyncDisposable
 
 	private async Task<bool> Initialize()
 	{
-		var pq  = new PaginationQuery { Limit = 30 };
-		var res = await ApiService.Timelines.GetHomeTimelineAsync(pq);
+		var cs  = new TimelineStore.Cursor
+		{
+			Direction = DirectionEnum.Older,
+			Count     = 30,
+			Id        = null
+		};
+		var res = await Store.GetHomeTimelineAsync("home", cs);
+		if (res is null)
+		{
+			return false;
+		} 
 		if (res.Count < 1)
 		{
 			return false;
@@ -48,8 +61,12 @@ public partial class TimelineComponent : IAsyncDisposable
 		{
 			if (LockFetch) return true;
 			LockFetch = true;
-			var pq  = new PaginationQuery { Limit = 15, MaxId = State.MinId };
-			var res = await ApiService.Timelines.GetHomeTimelineAsync(pq);
+			var cs = new TimelineStore.Cursor
+			{
+				Direction = DirectionEnum.Older, Count = 15, Id = State.MinId
+			};
+			var res = await Store.GetHomeTimelineAsync("home", cs);
+			if (res is null) return false;
 			switch (res.Count)
 			{
 				case > 0:

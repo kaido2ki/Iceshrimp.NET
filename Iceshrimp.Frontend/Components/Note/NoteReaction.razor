@@ -1,4 +1,6 @@
+@using Iceshrimp.Frontend.Core.Services.NoteStore
 @using Iceshrimp.Shared.Schemas.Web
+@inject NoteActions NoteActions;
 <button @onclick="React" class="reaction @(Reaction.Reacted ? "reacted" : "")" title="@Reaction.Name">
     <InlineEmoji Name="@Reaction.Name" Url="@Reaction.Url" Wide="true"/>
     <span class="count">
@@ -8,11 +10,11 @@
 
 @code {
     [Parameter] [EditorRequired] public required NoteReactionSchema Reaction { get; set; }
-    [CascadingParameter]                         Note               Note     { get; set; } = null!;
+    [CascadingParameter]                         NoteBase               Note     { get; set; } = null!;
 
     private void React()
     {
-        if (Reaction.Reacted) _ = Note.RemoveReact(Reaction.Name);
-        else _                  = Note.AddReact(Reaction.Name, Reaction.Sensitive, Reaction.Url);
+        if (Reaction.Reacted) _ = NoteActions.RemoveReactAsync(Note, Reaction.Name);
+        else _                  = NoteActions.AddReactAsync(Note, Reaction.Name, Reaction.Sensitive, Reaction.Url);
     }
 }

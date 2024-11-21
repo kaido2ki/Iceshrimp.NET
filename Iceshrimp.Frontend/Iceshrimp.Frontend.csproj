@@ -70,4 +70,8 @@
         </Compile>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Core\Services\TimelineStore\" />
+    </ItemGroup>
+
 </Project>

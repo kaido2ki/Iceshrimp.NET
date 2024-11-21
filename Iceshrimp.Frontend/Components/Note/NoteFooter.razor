@@ -1,5 +1,6 @@
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Core.Services.NoteStore
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
@@ -7,6 +8,7 @@
 @inject IJSRuntime                     Js;
 @inject SessionService                 Session;
 @inject GlobalComponentSvc             GlobalComponentSvc
+@inject NoteActions                    NoteActions;
 
 <div class="note-footer">
     @if (Reactions.Count > 0)
@@ -25,12 +27,14 @@
             <span class="reply-count">@Replies</span>
         }
     </button>
-    <button @ref="RenoteButton" class="btn @(RenotePossible ? "" : "disabled")" @onclick="@(RenotePossible ? ToggleRenoteMenu : () => { })" @onclick:stopPropagation="true" aria-label="renote">
+    <button @ref="RenoteButton" class="btn @(RenotePossible ? "" : "disabled")"
+            @onclick="@(RenotePossible ? ToggleRenoteMenu : () => { })" @onclick:stopPropagation="true"
+            aria-label="renote">
         @if (RenotePossible)
         {
             <Icon Name="Icons.Repeat" Size="1.3em"/>
             <Menu @ref="RenoteMenu">
-                @if (Note.NoteResponse.Visibility == NoteVisibility.Public)
+                @if (Note.Visibility == NoteVisibility.Public)
                 {
                     <MenuElement Icon="Icons.Repeat" OnSelect="() => Renote(NoteVisibility.Public)">
                         <Text>@Loc["Renote"]</Text>
@@ -68,7 +72,8 @@
             <span class="like-count">@Likes</span>
         }
     </button>
-    <button @ref="EmojiButton" class="btn" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true" aria-label="emoji picker" >
+    <button @ref="EmojiButton" class="btn" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true"
+            aria-label="emoji picker">
         <Icon Name="Icons.Smiley" Size="1.3em"/>
     </button>
     <button class="btn" @onclick="Quote" @onclick:stopPropagation="true" aria-label="quote">
@@ -77,18 +82,18 @@
     <button @ref="MenuButton" class="btn" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">
         <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
         <Menu @ref="ContextMenu">
-            @if (Note.NoteResponse.User.Id == Session.Current?.Id)
+            @if (Note.User.Id == Session.Current?.Id)
             {
-                <MenuElement Icon="Icons.Trash" OnSelect="Note.Delete">
+                <MenuElement Icon="Icons.Trash" OnSelect="Delete">
                     <Text>@Loc["Delete"]</Text>
                 </MenuElement>
-                <MenuElement Icon="Icons.Eraser" OnSelect="Note.Redraft">
+                <MenuElement Icon="Icons.Eraser" OnSelect="Redraft">
                     <Text>@Loc["Redraft"]</Text>
                 </MenuElement>
             }
             else
             {
-                <MenuElement Icon="Icons.Tooth" OnSelect="Note.Bite">
+                <MenuElement Icon="Icons.Tooth" OnSelect="Bite">
                     <Text>@Loc["Bite"]</Text>
                 </MenuElement>
             }
@@ -98,7 +103,7 @@
             <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
                 <Text>@Loc["Copy link"]</Text>
             </MenuElement>
-            <MenuElement Icon="Icons.SpeakerX" OnSelect="Note.Mute">
+            <MenuElement Icon="Icons.SpeakerX" OnSelect="Mute">
                 <Text>@Loc["Mute Note"]</Text>
             </MenuElement>
             <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>
@@ -119,24 +124,24 @@
     private                                      ElementReference         EmojiButton    { get; set; }
     private                                      ElementReference         MenuButton     { get; set; }
 
-    [CascadingParameter] Note Note { get; set; } = null!;
+    [CascadingParameter] NoteBase Note { get; set; } = null!;
 
     private void ToggleMenu() => ContextMenu.Toggle(MenuButton);
 
-    private void Delete() => _ = Note.Delete();
+    private void Delete() => _ = NoteActions.DeleteAsync(Note);
 
-    private void OpenOriginal() => Js.InvokeVoidAsync("open", Note.NoteResponse.Url, "_blank");
+    private void OpenOriginal() => Js.InvokeVoidAsync("open", Note.Url, "_blank");
 
-    private void CopyLink() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.NoteResponse.Url);
+    private void CopyLink() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.Url);
 
     private void Like()
     {
-        _ = Note.ToggleLike();
+        _ = NoteActions.ToggleLikeAsync(Note);
     }
 
     private void Reply()
     {
-        Note.Reply();
+        NoteActions.Reply(Note);
     }
 
     private void ToggleRenoteMenu()
@@ -146,12 +151,12 @@
 
     private void Renote(NoteVisibility visibility)
     {
-        _ = Note.Renote(visibility);
+        _ = NoteActions.RenoteAsync(Note);
     }
 
     private void Quote()
     {
-        Note.DoQuote();
+        NoteActions.DoQuote(Note);
     }
 
     private void ToggleEmojiPicker()
@@ -161,6 +166,21 @@
 
     private void React(EmojiResponse emoji)
     {
-        Note.React(emoji);
+        NoteActions.React(Note, emoji);
+    }
+
+    private void Redraft()
+    {
+        _ = NoteActions.RedraftAsync(Note);
+    }
+
+    private void Bite()
+    {
+        _ = NoteActions.BiteAsync(Note);
+    }
+
+    private void Mute()
+    {
+        _ = NoteActions.MuteAsync(Note);
     }
 }

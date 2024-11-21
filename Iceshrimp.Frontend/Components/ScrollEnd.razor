@@ -1,8 +1,16 @@
 @using Ljbc1994.Blazor.IntersectionObserver.API
 @using Ljbc1994.Blazor.IntersectionObserver.Components
+@using Iceshrimp.Assets.PhosphorIcons
 <IntersectionObserve OnChange="entry => OnChange(entry)">
-    <div @ref="context.Ref.Current" class="@Class">
-        <button class="button" @onclick="ManualLoad">Load more</button>
+    <div @ref="context.Ref.Current" class="@Class" style="@Style">
+        @if (_state is State.Loading or State.Init)
+        {
+            <Icon Name="Icons.Spinner"/>
+        }
+        else
+        {
+            <button class="button" @onclick="Manual">Load more</button>
+        }
     </div>
 </IntersectionObserve>
 
@@ -10,12 +18,45 @@
     [Parameter] [EditorRequired] public EventCallback IntersectionChange { get; set; }
     [Parameter] [EditorRequired] public EventCallback ManualLoad         { get; set; }
     [Parameter]                  public string?       Class              { get; set; }
+    [Parameter]                  public bool          RequireReset       { get; init; }
+    [Parameter]                  public string?       Style              { get; set; }
+    private                             State         _state;
 
     private async Task OnChange(IntersectionObserverEntry entry)
     {
         if (entry.IsIntersecting)
         {
-            await IntersectionChange.InvokeAsync();
+            switch (_state)
+            {
+                case State.Loading:
+                    return;
+                case State.Waiting or State.Init:
+                    _state = State.Loading;
+                    await IntersectionChange.InvokeAsync();
+                    break;
+            }
+
+            if (!RequireReset)
+            {
+                _state = State.Waiting;
+            }
         }
+    }
+
+    private async Task Manual()
+    {
+        await ManualLoad.InvokeAsync();
+    }
+
+    private enum State
+    {
+        Init,
+        Loading,
+        Waiting
+    }
+
+    public void Reset()
+    {
+        _state = State.Waiting;
     }
 }

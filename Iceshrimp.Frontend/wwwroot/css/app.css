@@ -284,3 +284,9 @@ pre:has(code){
     padding: 0.5rem;
     border-radius: 0.5rem;
 }
+
+.lazy-component-target-internal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
