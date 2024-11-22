@@ -198,6 +198,7 @@ public class MfmConverter(
 					var el    = document.CreateElement("span");
 					var inner = document.CreateElement("img");
 					inner.SetAttribute("src", hit.PublicUrl);
+					inner.SetAttribute("alt", hit.Name);
 					el.AppendChild(inner);
 					el.ClassList.Add("emoji");
 					return el;
