@@ -5,7 +5,6 @@ using AngleSharp.Text;
 using Iceshrimp.Parsing;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components;
-using Microsoft.FSharp.Core;
 
 namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
@@ -248,10 +247,10 @@ public static partial class MfmRenderer
 
 	private static INode MfmFnNode(MfmNodeTypes.MfmFnNode node, IDocument document)
 	{
-		// FSharpOption is a pain to work with in C#, this makes dealing with the args a lot easier
-		var args = FSharpOption<IDictionary<string, FSharpOption<string>>>.get_IsSome(node.Args)
+		// Simplify node.Args structure to make it more readable in below functions
+		var args = node.Args != null
 			? node.Args.Value.ToDictionary(p => p.Key,
-			                               p => FSharpOption<string>.get_IsSome(p.Value) ? p.Value.Value : null)
+			                               p => p.Value?.Value)
 			: new Dictionary<string, string?>();
 		
 		return node.Name switch {
