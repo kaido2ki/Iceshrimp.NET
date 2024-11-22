@@ -1,5 +1,9 @@
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Localization> Loc;
+@inject IJSRuntime                     Js;
 
 <div class="wrapper" @onclick="Open" @onclick:stopPropagation="true">
     @if (Attachment.ContentType.StartsWith("image"))
@@ -29,6 +33,19 @@
             </a>
         </span>
     }
+
+    @if (Attachment.AltText != null)
+    {
+        <button @onclick="DisplayAlt" @onclick:stopPropagation="true" class="alt-btn" title="@Attachment.AltText">
+            <Icon Name="Icons.ClosedCaptioning"/>
+        </button>
+    }
+    else
+    {
+        <button @onclick="DisplayAlt" @onclick:stopPropagation="true" class="alt-btn" title="@Loc["No alt text"]">
+            <Icon Name="Icons.Warning"/>
+        </button>
+    }
 </div>
 
 @code {
@@ -53,5 +70,10 @@
     protected override void OnParametersSet()
     {
         BlurImage = Attachment.IsSensitive;
+    }
+
+    private async Task DisplayAlt()
+    {
+        await Js.InvokeVoidAsync("alert", Attachment.AltText ?? Loc["No alt text"]);
     }
 }

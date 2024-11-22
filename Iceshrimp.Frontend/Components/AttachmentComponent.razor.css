@@ -5,6 +5,21 @@
     aspect-ratio: 3/2;
 }
 
+.alt-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    height: max-content;
+    z-index: +1;
+    background-color: color-mix(in srgb, var(--background-color) 80%, transparent);
+    line-height: 1;
+}
+
+.alt-btn:hover {
+    background-color: color-mix(in srgb, var(--hover-color) 80%, transparent);
+}
+
 audio.attachment {
     width: 100%;
 }
@@ -27,6 +42,7 @@ audio.attachment {
 }
 
 .wrapper {
+    position: relative;
     display: flex;
     justify-content: center;
     overflow: clip;
