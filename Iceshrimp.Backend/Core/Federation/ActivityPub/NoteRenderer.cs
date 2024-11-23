@@ -25,7 +25,7 @@ public class NoteRenderer(
 	{
 		return new ASNote(false) { Id = note.Uri ?? note.GetPublicUri(config.Value) };
 	}
-
+	
 	public async Task<ASNote> RenderAsync(Note note, List<Note.MentionedUser>? mentions = null)
 	{
 		if (note.IsPureRenote)
@@ -109,19 +109,25 @@ public class NoteRenderer(
 		               }))
 		               .ToList();
 
-		var attachments = note.FileIds.Count > 0
-			? await db.DriveFiles
-			          .Where(p => note.FileIds.Contains(p.Id) && p.UserHost == null)
-			          .Select(p => new ASDocument
-			          {
-				          Sensitive   = p.IsSensitive,
-				          Url         = new ASLink(p.AccessUrl),
-				          MediaType   = p.Type,
-				          Description = p.Comment
-			          })
-			          .Cast<ASAttachment>()
-			          .ToListAsync()
-			: null;
+		var driveFiles = note.FileIds.Count > 0
+            			? await db.DriveFiles
+			                      .Where(p => note.FileIds.Contains(p.Id) && p.UserHost == null)
+			                      .ToListAsync()
+						: null;
+
+		var sensitive = note.Cw != null || (driveFiles?.Any(p => p.IsSensitive) ?? false);
+		var attachments = driveFiles?.Select(p => new ASDocument
+		                            {
+			                            Sensitive   = p.IsSensitive,
+			                            Url         = new ASLink(p.AccessUrl),
+			                            MediaType   = p.Type,
+			                            Description = p.Comment
+		                            })
+		                            .Cast<ASAttachment>()
+		                            .ToList();
+		
+		var inlineMedia = driveFiles?.Select(p => new MfmInlineMedia(MfmInlineMedia.GetType(p.Type), p.AccessUrl, p.Comment))
+		                            .ToList();
 
 		var quoteUri = note.IsQuote ? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value) : null;
 		var text     = quoteUri != null ? note.Text + $"\n\nRE: {quoteUri}" : note.Text;
@@ -136,8 +142,6 @@ public class NoteRenderer(
 				MediaType = Constants.ASMime
 			});
 		}
-
-		var sensitive = note.Cw != null || (attachments?.OfType<ASDocument>().Any(p => p.Sensitive == true) ?? false);
 
 		if (note.HasPoll)
 		{
@@ -177,7 +181,7 @@ public class NoteRenderer(
 					To           = to,
 					Tags         = tags,
 					Attachments  = attachments,
-					Content      = text != null ? await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost) : null,
+					Content      = text != null ? (await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost, media: inlineMedia)).Html : null,
 					Summary      = note.Cw,
 					Source = note.Text != null
 						? new ASNoteSource { Content = note.Text, MediaType = "text/x.misskeymarkdown" }
@@ -209,7 +213,7 @@ public class NoteRenderer(
 			To           = to,
 			Tags         = tags,
 			Attachments  = attachments,
-			Content      = text != null ? await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost) : null,
+			Content      = text != null ? (await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost, media: inlineMedia)).Html : null,
 			Summary      = note.Cw,
 			Source = note.Text != null
 				? new ASNoteSource { Content = note.Text, MediaType = "text/x.misskeymarkdown" }

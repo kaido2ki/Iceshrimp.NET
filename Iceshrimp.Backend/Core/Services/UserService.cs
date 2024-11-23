@@ -151,12 +151,12 @@ public class UserService(
 			             .Where(p => p is { Name: not null, Value: not null })
 			             .Select(async p => new UserProfile.Field
 			             {
-				             Name = p.Name!, Value = await MfmConverter.FromHtmlAsync(p.Value) ?? ""
+				             Name = p.Name!, Value = (await MfmConverter.FromHtmlAsync(p.Value)).Mfm
 			             })
 			             .AwaitAllAsync()
 			: null;
 
-		var bio = actor.MkSummary ?? await MfmConverter.FromHtmlAsync(actor.Summary);
+		var bio = actor.MkSummary ?? (await MfmConverter.FromHtmlAsync(actor.Summary)).Mfm;
 
 		var tags = ResolveHashtags(bio, actor);
 
@@ -304,7 +304,7 @@ public class UserService(
 			             .Where(p => p is { Name: not null, Value: not null })
 			             .Select(async p => new UserProfile.Field
 			             {
-				             Name = p.Name!, Value = await MfmConverter.FromHtmlAsync(p.Value) ?? ""
+				             Name = p.Name!, Value = (await MfmConverter.FromHtmlAsync(p.Value)).Mfm
 			             })
 			             .AwaitAllAsync()
 			: null;
@@ -317,7 +317,7 @@ public class UserService(
 
 		var processPendingDeletes = await ResolveAvatarAndBannerAsync(user, actor);
 
-		user.UserProfile.Description = actor.MkSummary ?? await MfmConverter.FromHtmlAsync(actor.Summary);
+		user.UserProfile.Description = actor.MkSummary ?? (await MfmConverter.FromHtmlAsync(actor.Summary)).Mfm;
 		//user.UserProfile.Birthday = TODO;
 		//user.UserProfile.Location = TODO;
 		user.UserProfile.Fields   = fields?.ToArray() ?? [];
@@ -1066,14 +1066,14 @@ public class UserService(
 						             .Select(async p => new UserProfile.Field
 						             {
 							             Name  = p.Name!,
-							             Value = await MfmConverter.FromHtmlAsync(p.Value, mentions) ?? ""
+							             Value = (await MfmConverter.FromHtmlAsync(p.Value, mentions)).Mfm
 						             })
 						             .AwaitAllAsync()
 						: null;
 
 					var description = actor.MkSummary != null
 						? mentionsResolver.ResolveMentions(actor.MkSummary, bgUser.Host, mentions, splitDomainMapping)
-						: await MfmConverter.FromHtmlAsync(actor.Summary, mentions);
+						: (await MfmConverter.FromHtmlAsync(actor.Summary, mentions)).Mfm;
 
 					bgUser.UserProfile.Mentions    = mentions;
 					bgUser.UserProfile.Fields      = fields?.ToArray() ?? [];

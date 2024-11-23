@@ -18,7 +18,7 @@ public class MfmRenderer(MfmConverter converter) : ISingletonService
 		// Ensure we are rendering HTML markup (AsyncLocal)
 		converter.SupportsHtmlFormatting.Value = true;
 
-		var serialized = await converter.ToHtmlAsync(parsed, mentions, host, emoji: emoji, rootElement: rootElement);
+		var serialized = (await converter.ToHtmlAsync(parsed, mentions, host, emoji: emoji, rootElement: rootElement)).Html;
 		return new MarkupString(serialized);
 	}
 }

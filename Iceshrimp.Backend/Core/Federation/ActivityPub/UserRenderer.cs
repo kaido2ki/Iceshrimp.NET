@@ -71,7 +71,7 @@ public class UserRenderer(
 		                         .ToList();
 
 		var summary = profile?.Description != null
-			? await mfmConverter.ToHtmlAsync(profile.Description, profile.Mentions, user.Host)
+			? (await mfmConverter.ToHtmlAsync(profile.Description, profile.Mentions, user.Host)).Html
 			: null;
 
 		return new ASActor
