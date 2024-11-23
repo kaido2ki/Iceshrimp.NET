@@ -4,11 +4,15 @@
     align-items: center;
 }
 
-.login-form {
+.register-form {
     margin-top: 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+input:invalid {
+    border: 0.1rem solid var(--highlight-color);
 }
 
 .logo {

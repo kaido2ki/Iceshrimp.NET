@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -17,16 +18,18 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/instance")]
 [Produces(MediaTypeNames.Application.Json)]
-public class InstanceController(DatabaseContext db, UserRenderer userRenderer, IOptions<Config.InstanceSection> config) : ControllerBase
+public class InstanceController(DatabaseContext db, UserRenderer userRenderer, IOptions<Config.InstanceSection> instanceConfig, IOptions<Config.SecuritySection> securityConfig, MetaService meta) : ControllerBase
 {
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
-	public InstanceResponse GetInfo()
+	public async Task<InstanceResponse> GetInfo()
 	{
 		return new InstanceResponse
 		{
-			AccountDomain = config.Value.AccountDomain,
-			WebDomain     = config.Value.WebDomain,
+			AccountDomain = instanceConfig.Value.AccountDomain,
+			WebDomain     = instanceConfig.Value.WebDomain,
+			Registration = (Registrations)securityConfig.Value.Registrations,
+			Name = await meta.GetAsync(MetaEntity.InstanceName)
 		};
 	}
 	

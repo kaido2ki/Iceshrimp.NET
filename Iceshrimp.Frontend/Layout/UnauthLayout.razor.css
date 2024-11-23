@@ -1,0 +1,10 @@
+.header {
+    display: flex;
+    width: 100%;
+    padding: 1rem;
+}
+
+.logo {
+    object-fit: contain;
+    height: 2rem
+}

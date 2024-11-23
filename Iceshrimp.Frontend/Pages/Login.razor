@@ -6,13 +6,16 @@
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
-@inject ApiService        Api
-@inject SessionService    SessionService
-@inject NavigationManager Navigation
+@inject ApiService                     Api
+@inject SessionService                 SessionService
+@inject NavigationManager              Navigation
 @inject IStringLocalizer<Localization> Loc;
-@layout LoginLayout
+@inject MetadataService Metadata;
+@layout UnauthLayout
 <div class="body">
-    <span><h3>Login</h3></span>
+    <img class="logo" src="/_content/Iceshrimp.Assets.Branding/splash.png"/>
+    <span>
+            <h3>@Loc["Login to {0}", Name ?? "this Iceshrimp.NET Instance."]</h3></span>
     <div class="login-form">
         <input placeholder="@Loc["Username"]" required="required"
             @bind="@Username"/>
@@ -29,9 +32,7 @@
 {
     <span>Authentication Failed</span>
 }
-
-<span><p>A login page is being constructed here.</p></span>
-
+    
 </div>
 @code {
     [SupplyParameterFromQuery(Name = "rd")]
@@ -42,6 +43,7 @@
     private string? Username { get; set; }
     private bool    Loading  { get; set; }
     private bool    Failure  { get; set; }
+    private string? Name     { get; set; }  
 
     private async Task Submit()
     {
@@ -76,7 +78,7 @@
                         MovedTo         = res.User.MovedTo
                     });
                     SessionService.SetSession(res.User.Id);
-                    Navigation.NavigateTo(Uri.TryCreate(Redirect, UriKind.Relative, out _) ? Redirect : "/");
+                    Navigation.NavigateTo(Uri.TryCreate(Redirect, UriKind.Relative, out _) ? Redirect : "/", true);
                     break;
                 case AuthStatusEnum.Guest:
                     Failure = true;
@@ -93,5 +95,11 @@
             Failure = false;
             StateHasChanged(); // Manually triggering a state update, else component will not re-render.
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var metadata = await Metadata.Instance.Value;
+        Name                     = metadata.Name;
     }
 }

@@ -1,0 +1,117 @@
+@page "/register"
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Schemas
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@layout UnauthLayout
+@inject IStringLocalizer<Register> Loc;
+@inject MetadataService          Metadata;
+@inject ApiService               Api;
+@inject SessionService           SessionService;
+@inject NavigationManager        Navigation;
+@if (State is State.Loaded)
+{
+    <div class="body">
+        <img class="logo" src="/_content/Iceshrimp.Assets.Branding/splash.png"/>
+        <span>
+            <h3>@Loc["Register on {0}", Name ?? "this Iceshrimp.NET Instance."]</h3></span>
+        @if (RegistrationAvailability is not Registrations.Closed)
+        {
+            <div class="register-form">
+                <input placeholder="@Loc["Username"]" required="required"
+                       @bind="@Username"/>
+                <input type="password" required="required" placeholder="@Loc["Password"]"
+                       @bind="@Password"/>
+                @if (RegistrationAvailability is Registrations.Invite)
+                {
+                    <input required="required" placeholder="@Loc["Invite"]" @bind="@Invite"/>
+                }
+                <button class="button" @onclick="Submit" disabled="@Loading">@Loc["Register"]</button>
+            </div>
+            @if (Result is RegistrationResult.Failure)
+            {
+                <div>@Loc[RegistrationError ?? string.Empty]</div>
+            }
+        }
+        @if (RegistrationAvailability is Registrations.Closed)
+        {
+            <div>@Loc["Registrations for this instance are closed."]</div>
+        }
+    </div>
+}
+
+@code {
+    private string?            Username                 { get; set; }
+    private string?            Password                 { get; set; }
+    private string?            Invite                   { get; set; }
+    private bool               Loading                  { get; set; }
+    private RegistrationResult Result                   { get; set; }
+    private Registrations      RegistrationAvailability { get; set; }
+    private State              State                    { get; set; } = State.Loading;
+    private string?            RegistrationError        { get; set; }
+    private string?            Name                     { get; set; }
+
+    private async Task Submit()
+    {
+        Loading = true;
+        StateHasChanged();
+        if (Username is null || Password is null)
+        {
+            Result            = RegistrationResult.Failure;
+            RegistrationError = "Please fill out all fields";
+            Loading           = false;
+            return;
+        }
+
+        var registration = new RegistrationRequest { Username = Username, Password = Password, Invite = Invite, };
+        try
+        {
+            var res = await Api.Auth.RegisterAsync(registration);
+            if (res.Status is AuthStatusEnum.Authenticated)
+            {
+                SessionService.AddUser(new StoredUser
+                { // Token nor user will ever be null on an authenticated response
+                    Id              = res.User!.Id,
+                    Username        = res.User.Username,
+                    DisplayName     = res.User.DisplayName,
+                    AvatarUrl       = res.User.AvatarUrl,
+                    BannerUrl       = res.User.BannerUrl,
+                    InstanceName    = res.User.InstanceName,
+                    InstanceIconUrl = res.User.InstanceIconUrl,
+                    Token           = res.Token!,
+                    Host            = res.User.Host,
+                    IsAdmin         = res.IsAdmin ?? false,
+                    Emojis          = res.User.Emojis,
+                    MovedTo         = res.User.MovedTo
+                });
+                SessionService.SetSession(res.User.Id);
+                Navigation.NavigateTo("/");
+            }
+
+            Loading = false;
+        }
+        catch (ApiException e)
+        {
+            RegistrationError = e.Response.Message;
+            Result            = RegistrationResult.Failure;
+            Loading           = false;
+            StateHasChanged();
+        }
+    }
+
+    private enum RegistrationResult
+    {
+        Incomplete,
+        Success,
+        Failure
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var metadata = await Metadata.Instance.Value;
+        RegistrationAvailability = metadata.Registration;
+        State                    = State.Loaded;
+        Name                     = metadata.Name;
+    }
+}
