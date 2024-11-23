@@ -3,6 +3,7 @@
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              NavigationManager
 
@@ -24,45 +25,58 @@
                 @switch (NotificationResponse)
                 {
                     case { Note: not null, Type: "like", User: not null }: 
-                        <span class="notification-text">@Loc["liked your note"]</span> 
+                        <span class="notification-icon"><Icon Name="Icons.Heart" Pack="IconStyle.Fill" Size="0.8em"/></span>
+                        <span class="notification-text">@Loc["liked note"]</span> 
                         break; 
                     case { Note: not null, Type: "reaction" }:
                         <span class="notification-text">@Loc["reacted to your note"]</span>
                         break;
                     case { Type: "follow", User: not null }:
+                        <span class="notification-icon"><Icon Name="Icons.HandWaving" Size="0.9em"/></span>
                         <span class="notification-text">@Loc["followed you"]</span>
                         break;
                     case { Type: "followRequestReceived" }:
+                        <span class="notification-icon"><Icon Name="Icons.Clock" Size="0.9em"/></span>
                         <span class="notification-text">@Loc["requested to follow you"]</span>
                         break;
                     case { Type: "followRequestAccepted" }:
+                        <span class="notification-icon"><Icon Name="Icons.Check" Size="0.9em"/></span>
                         <span class="notification-text">@Loc["accepted your follow request"]</span>
                         break;
                     case { Type: "renote" }:
+                        <span class="notification-icon"><Icon Name="Icons.Repeat" Size="0.9em"/></span>
                         <span class="notification-text">@Loc["renoted your note"]</span>
                         break;
                     case { Type: "quote" }:
+                        <span class="notification-icon"><Icon Name="Icons.Quotes" Size="0.9em"/></span>
                         <span class="notification-text">@Loc["quoted your note"]</span>
                         break;
                     case { Bite: { BiteBack: true }, Type: "bite" }:
+                        <span class="notification-icon"><Icon Name="Icons.Tooth" Size="0.9em"/></span>
                         <span class="notification-text">@Loc["bit you back"]</span>
                         break;
                     case { Note: not null, Type: "bite" }:
+                        <span class="notification-icon"><Icon Name="Icons.Tooth" Size="0.9em"/></span>
                         <span class="notification-text">@Loc["bit your note"]</span>
                         break;
                     case { Type: "bite" }:
+                        <span class="notification-icon"><Icon Name="Icons.Tooth" Size="0.9em"/></span>
                         <span class="notification-text">@Loc["bit you"]</span>
                         break;
                     case { Type: "edit" }:
+                        <span class="notification-icon"><Icon Name="Icons.PencilLine" Size="0.9em"/></span>
                         <span class="notification-text">@Loc["edited a note"]</span>
                         break;
                     case { Type: "pollVote" }:
+                        <span class="notification-icon"><Icon Name="Icons.MicrophoneStage" Size="0.9em"/></span>
                         <span class="notification-text">@Loc["voted on your poll"]</span>
                         break;
                     case { Type: "pollEnded" }:
+                        <span class="notification-icon"><Icon Name="Icons.Timer" Size="0.9em"/></span>
                         <span class="notification-text">@Loc["poll has ended"]</span>
                         break;
                     default:
+                        <span class="notification-icon"><Icon Name="Icons.Question" Size="0.9em"/></span>
                         <span class="notification-text">
                             <i>@Loc["unsupported notification type"]</i>
                         </span>

@@ -1,4 +1,5 @@
 .notification {
+    position: relative;
     display: flex;
     flex-direction: column;
     background-color: var(--foreground-color);
@@ -7,6 +8,27 @@
     margin-bottom: 1rem;
     max-width: 45rem;
     width: 100%;
+}
+
+.notification-icon {
+    display: inline-block;
+    padding: 0.2em 0.22em;
+    height: max-content;
+    background-color: var(--highlight-color);
+    color: var(--notice-color);
+    border-radius: 100%;
+    text-align: center;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.user-avatar + .notification-body {
+    .notification-icon {
+        position: absolute;
+        top: 3em;
+        left: 3em;
+        vertical-align: unset;
+    }
 }
 
 .notification-text {
