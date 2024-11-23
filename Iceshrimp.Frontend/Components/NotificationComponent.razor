@@ -28,7 +28,8 @@
                         <span class="notification-icon"><Icon Name="Icons.Heart" Pack="IconStyle.Fill" Size="0.8em"/></span>
                         <span class="notification-text">@Loc["liked note"]</span> 
                         break; 
-                    case { Note: not null, Type: "reaction" }:
+                    case { Note: not null, Reaction: not null, Type: "reaction" }:
+                        <img class="notification-reaction" src="@NotificationResponse.Reaction.Url" alt="@NotificationResponse.Reaction.Name.Trim(':')" title="@NotificationResponse.Reaction.Name"/>
                         <span class="notification-text">@Loc["reacted to your note"]</span>
                         break;
                     case { Type: "follow", User: not null }:
