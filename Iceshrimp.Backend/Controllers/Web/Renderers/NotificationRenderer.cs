@@ -1,11 +1,12 @@
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using static Iceshrimp.Shared.Schemas.Web.NotificationResponse;
 
 namespace Iceshrimp.Backend.Controllers.Web.Renderers;
 
-public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRenderer) : IScopedService
+public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRenderer, EmojiService emojiSvc) : IScopedService
 {
 	private static NotificationResponse Render(Notification notification, NotificationRendererDto data)
 	{
@@ -24,6 +25,11 @@ public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRe
 			  throw new Exception("DTO didn't contain the bite")
 			: null;
 
+		var reaction = notification.Reaction != null
+			? data.Reactions?.First(p => p.Name == notification.Reaction) ??
+			  throw new Exception("DTO didn't contain the reaction")
+			: null;
+
 		return new NotificationResponse
 		{
 			Id        = notification.Id,
@@ -32,6 +38,7 @@ public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRe
 			User      = user,
 			Note      = note,
 			Bite      = bite,
+			Reaction  = reaction, 
 			Type      = RenderType(notification.Type)
 		};
 	}
@@ -44,7 +51,8 @@ public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRe
 		{
 			Users = await GetUsersAsync([notification]),
 			Notes = await GetNotesAsync([notification], localUser),
-			Bites = GetBites([notification])
+			Bites = GetBites([notification]),
+			Reactions = await GetReactionsAsync([notification])
 		};
 
 		return Render(notification, data);
@@ -88,6 +96,26 @@ public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRe
 		var bites = notifications.Select(p => p.Bite).NotNull().DistinctBy(p => p.Id);
 		return bites.Select(p => new BiteResponse { Id = p.Id, BiteBack = p.TargetBiteId != null }).ToList();
 	}
+	
+	private async Task<List<ReactionResponse>> GetReactionsAsync(IEnumerable<Notification> notifications)
+	{
+		var reactions = notifications.Select(p => p.Reaction).NotNull().ToList();
+
+		var emojis = reactions.Where(p => !p.StartsWith(':')).Select(p => new ReactionResponse { Name = p, Url = null, Sensitive = false }).ToList();
+		var custom  = reactions.Where(p => p.StartsWith(':')).ToAsyncEnumerable();
+
+		await foreach (var s in custom)
+		{
+			var emoji = await emojiSvc.ResolveEmojiAsync(s);
+			var reaction = emoji != null
+				? new ReactionResponse { Name = s, Url = emoji.PublicUrl, Sensitive = emoji.Sensitive }
+				: new ReactionResponse { Name = s, Url = null, Sensitive = false };
+			
+			emojis.Add(reaction);
+		}
+			
+		return emojis;
+	}
 
 	public async Task<IEnumerable<NotificationResponse>> RenderManyAsync(
 		IEnumerable<Notification> notifications, User user
@@ -98,7 +126,8 @@ public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRe
 		{
 			Users = await GetUsersAsync(notificationsList),
 			Notes = await GetNotesAsync(notificationsList, user),
-			Bites = GetBites(notificationsList)
+			Bites = GetBites(notificationsList),
+			Reactions = await GetReactionsAsync(notificationsList)
 		};
 
 		return notificationsList.Select(p => Render(p, data));
@@ -109,5 +138,6 @@ public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRe
 		public List<NoteResponse>? Notes;
 		public List<UserResponse>? Users;
 		public List<BiteResponse>? Bites;
+		public List<ReactionResponse>? Reactions;
 	}
 }

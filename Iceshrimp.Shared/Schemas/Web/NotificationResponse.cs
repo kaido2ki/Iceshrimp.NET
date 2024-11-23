@@ -14,10 +14,20 @@ public class NotificationResponse
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public          BiteResponse? Bite    { get; set; }
 	
+	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public          ReactionResponse? Reaction { get; set; }
+	
 	public class BiteResponse
 	{
 		public required string Id       { get; set; }
 		public required bool   BiteBack { get; set; }
+	}
+
+	public class ReactionResponse
+	{
+		public required string  Name      { get; set; }
+		public required string? Url       { get; set; }
+		public required bool    Sensitive { get; set; }
 	}
 }
 
