@@ -44,7 +44,8 @@ public class QueueModel(DatabaseContext db, QueueService queueSvc, MetaService m
 
 		if (queue == null)
 		{
-			Jobs = await db.Jobs.OrderByDescending(p => p.LastUpdatedAt).Take(15).ToListAsync();
+			// Should be 15, but the table styles look more pleasing with even numbers
+			Jobs = await db.Jobs.OrderByDescending(p => p.LastUpdatedAt).Take(16).ToListAsync();
 			if (Request.Query.TryGetValue("last", out var last) && long.TryParse(last, out var parsed))
 				Last = parsed;
 
