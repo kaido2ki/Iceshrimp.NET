@@ -34,7 +34,7 @@ internal class UpdateService
 		                                                          "import",
 		                                                          "./Core/Services/UpdateService.cs.js")
 		                                                         .AsTask());
-		Timer = new Timer(CallbackAsync, null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
+		Timer = new Timer(Callback, null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
 		_     = RegisterUpdateCallbackAsync();
 	}
 
@@ -73,7 +73,7 @@ internal class UpdateService
 		return await module.InvokeAsync<bool>("ServiceWorkerSkipWaiting");
 	}
 
-	private void CallbackAsync(object? caller)
+	private void Callback(object? caller)
 	{
 		_ = CheckVersionAsync();
 	}

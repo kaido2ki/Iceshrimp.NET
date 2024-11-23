@@ -11,6 +11,6 @@ internal class MetadataService
     public MetadataService(ApiService api)
     {
         Api      = api;
-        Instance = new Lazy<Task<InstanceResponse>>(() => Api.Instance.GetInstance());
+        Instance = new Lazy<Task<InstanceResponse>>(() => Api.Instance.GetInstanceAsync());
     }
 }

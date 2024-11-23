@@ -3,7 +3,6 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
-using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +30,7 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 		[MemberNotNull(nameof(Scopes))] set => Scopes = value.Split(' ').ToList();
 	}
 
-	public LoginData? TwoFactorFormData = null;
+	public LoginData? TwoFactorFormData;
 
 	public async Task OnGet()
 	{

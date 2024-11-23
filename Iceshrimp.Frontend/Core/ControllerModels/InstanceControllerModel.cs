@@ -5,6 +5,6 @@ namespace Iceshrimp.Frontend.Core.ControllerModels;
 
 internal class InstanceControllerModel(ApiClient api)
 {
-    public Task<InstanceResponse> GetInstance() =>
+    public Task<InstanceResponse> GetInstanceAsync() =>
         api.CallAsync<InstanceResponse>(HttpMethod.Get, "/instance");
 }

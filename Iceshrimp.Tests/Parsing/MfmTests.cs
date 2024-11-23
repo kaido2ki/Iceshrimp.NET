@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 using Iceshrimp.Parsing;
 using static Iceshrimp.Parsing.MfmNodeTypes;
