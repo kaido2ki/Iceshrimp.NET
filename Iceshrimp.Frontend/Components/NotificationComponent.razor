@@ -53,6 +53,15 @@
                     case { Type: "bite" }:
                         <span class="notification-text">@Loc["bit you"]</span>
                         break;
+                    case { Type: "edit" }:
+                        <span class="notification-text">@Loc["edited a note"]</span>
+                        break;
+                    case { Type: "pollVote" }:
+                        <span class="notification-text">@Loc["voted on your poll"]</span>
+                        break;
+                    case { Type: "pollEnded" }:
+                        <span class="notification-text">@Loc["poll has ended"]</span>
+                        break;
                     default:
                         <span class="notification-text">
                             <i>@Loc["unsupported notification type"]</i>
