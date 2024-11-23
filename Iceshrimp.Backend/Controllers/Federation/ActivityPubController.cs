@@ -92,6 +92,7 @@ public class ActivityPubController(
 
 		var replies = await db.Notes
 		                      .Where(p => p.ReplyId == id)
+		                      .EnsureVisibleFor(actor)
 		                      .OrderByDescending(p => p.Id)
 		                      .Select(p => new Note { Id = p.Id, Uri = p.Uri })
 		                      .ToListAsync();
