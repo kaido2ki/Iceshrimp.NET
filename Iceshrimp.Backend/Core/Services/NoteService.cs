@@ -532,6 +532,7 @@ public class NoteService(
 		{
 			nodes = MfmParser.Parse(data.Text);
 			mentionsResolver.ResolveMentions(nodes.AsSpan(), note.User.Host, mentions, splitDomainMapping);
+			// todo scan nodes recursively to find inline media and make sure note.fileids has them
 			data.Text = nodes.Serialize();
 		}
 
@@ -942,7 +943,15 @@ public class NoteService(
 		var renote     = quoteUrl != null ? await ResolveNoteAsync(quoteUrl, user: user) : null;
 		var renoteUri  = renote == null ? quoteUrl : null;
 		var visibility = note.GetVisibility(actor);
-		var text       = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions);
+
+		var                   text            = note.MkContent;
+		List<MfmInlineMedia>? htmlInlineMedia = null;
+
+		if (text == null)
+		{
+			(text, htmlInlineMedia) = await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions);
+		}
+
 		var cw         = note.Summary;
 		var url        = note.Url?.Link;
 		var uri        = note.Id;
@@ -969,7 +978,7 @@ public class NoteService(
 		}
 
 		var sensitive = (note.Sensitive ?? false) || !string.IsNullOrWhiteSpace(cw);
-		var files     = await ProcessAttachmentsAsync(note.Attachments, actor, sensitive);
+		var files     = await ProcessAttachmentsAsync(note.Attachments, htmlInlineMedia, actor, sensitive);
 		var emoji = (await emojiSvc.ProcessEmojiAsync(note.Tags?.OfType<ASEmoji>().ToList(), actor.Host))
 		            .Select(p => p.Id)
 		            .ToList();
@@ -1026,7 +1035,14 @@ public class NoteService(
 
 		var mentionData = await ResolveNoteMentionsAsync(note);
 
-		var text = note.MkContent ?? await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions);
+		var                   text            = note.MkContent;
+		List<MfmInlineMedia>? htmlInlineMedia = null;
+
+		if (text == null)
+		{
+			(text, htmlInlineMedia) = await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions);
+		}
+
 		var cw   = note.Summary;
 
 		Poll? poll = null;
@@ -1055,7 +1071,7 @@ public class NoteService(
 		}
 
 		var sensitive = (note.Sensitive ?? false) || !string.IsNullOrWhiteSpace(cw);
-		var files     = await ProcessAttachmentsAsync(note.Attachments, actor, sensitive, false);
+		var files     = await ProcessAttachmentsAsync(note.Attachments, htmlInlineMedia, actor, sensitive, false);
 		var emoji = (await emojiSvc.ProcessEmojiAsync(note.Tags?.OfType<ASEmoji>().ToList(), actor.Host))
 		            .Select(p => p.Id)
 		            .ToList();
@@ -1186,13 +1202,28 @@ public class NoteService(
 	}
 
 	private async Task<List<DriveFile>> ProcessAttachmentsAsync(
-		List<ASAttachment>? attachments, User user, bool sensitive, bool logExisting = true
+		List<ASAttachment>? attachments, List<MfmInlineMedia>? htmlInlineMedia, User user, bool sensitive,
+		bool logExisting = true
 	)
 	{
-		if (attachments is not { Count: > 0 }) return [];
-		var result = await attachments
-		                   .OfType<ASDocument>()
-		                   .Take(10)
+		var allAttachments = attachments?.OfType<ASDocument>().Take(10).ToList() ?? [];
+
+		if (htmlInlineMedia != null)
+		{
+			var inlineUrls     = htmlInlineMedia.Select(p => p.Src);
+			var unattachedUrls = inlineUrls.Except(allAttachments.Select(a => a.Url?.Id)).ToArray();
+
+			allAttachments.AddRange(htmlInlineMedia.Where(p => unattachedUrls.Contains(p.Src))
+			                                       .DistinctBy(p => p.Src)
+			                                       .Select(p => new ASDocument
+			                                       {
+				                                       Url = new ASLink(p.Src),
+				                                       Description = p.Alt,
+			                                       }));
+		}
+
+		if (allAttachments is not { Count: > 0 }) return [];
+		var result = await allAttachments
 		                   .Select(p => driveSvc.StoreFileAsync(p.Url?.Id, user, p.Sensitive ?? sensitive,
 		                                                        p.Description, p.MediaType, logExisting))
 		                   .AwaitAllNoConcurrencyAsync();

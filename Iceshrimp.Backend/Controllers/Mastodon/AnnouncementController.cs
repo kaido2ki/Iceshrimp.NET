@@ -55,7 +55,7 @@ public class AnnouncementController(DatabaseContext db, MfmConverter mfmConverte
 		                             })
 		                             .ToListAsync();
 
-		await res.Select(async p => p.Content = await mfmConverter.ToHtmlAsync(p.Content, [], null)).AwaitAllAsync();
+		await res.Select(async p => p.Content = (await mfmConverter.ToHtmlAsync(p.Content, [], null)).Html).AwaitAllAsync();
 		return res;
 	}
 

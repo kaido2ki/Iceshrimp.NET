@@ -14,15 +14,36 @@ using HtmlParser = AngleSharp.Html.Parser.HtmlParser;
 
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 
+public record MfmInlineMedia(MfmInlineMedia.MediaType Type, string Src, string? Alt)
+{
+	public enum MediaType
+	{
+		Other,
+		Image,
+		Video,
+		Audio
+	}
+	
+	public static MediaType GetType(string mime)
+	{
+		if (mime.StartsWith("image/")) return MediaType.Image;
+		if (mime.StartsWith("video/")) return MediaType.Video;
+		if (mime.StartsWith("audio/")) return MediaType.Audio;
+
+		return MediaType.Other;
+	}
+}
+
 public class MfmConverter(
 	IOptions<Config.InstanceSection> config
 ) : ISingletonService
 {
 	public AsyncLocal<bool> SupportsHtmlFormatting { get; } = new();
 
-	public static async Task<string?> FromHtmlAsync(string? html, List<Note.MentionedUser>? mentions = null)
+	public static async Task<(string Mfm, List<MfmInlineMedia> InlineMedia)> FromHtmlAsync(string? html, List<Note.MentionedUser>? mentions = null)
 	{
-		if (html == null) return null;
+		var media = new List<MfmInlineMedia>();
+		if (html == null) return ("", media);
 
 		// Ensure compatibility with AP servers that send both <br> as well as newlines
 		var regex = new Regex(@"<br\s?\/?>\r?\n", RegexOptions.IgnoreCase);
@@ -32,12 +53,12 @@ public class MfmConverter(
 		html = html.Replace("\u00A0", " ");
 
 		var dom = await new HtmlParser().ParseDocumentAsync(html);
-		if (dom.Body == null) return "";
+		if (dom.Body == null) return ("", media);
 
 		var sb     = new StringBuilder();
-		var parser = new MfmHtmlParser(mentions ?? []);
+		var parser = new MfmHtmlParser(mentions ?? [], media);
 		dom.Body.ChildNodes.Select(parser.ParseNode).ToList().ForEach(s => sb.Append(s));
-		return sb.ToString().Trim();
+		return (sb.ToString().Trim(), media);
 	}
 
 	public static async Task<List<string>> ExtractMentionsFromHtmlAsync(string? html)
@@ -58,10 +79,10 @@ public class MfmConverter(
 		return parser.Mentions;
 	}
 
-	public async Task<string> ToHtmlAsync(
+	public async Task<(string Html, List<MfmInlineMedia> InlineMedia)> ToHtmlAsync(
 		IEnumerable<IMfmNode> nodes, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
 		bool quoteInaccessible = false, bool replyInaccessible = false, string rootElement = "p",
-		List<Emoji>? emoji = null
+		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
 		var context    = BrowsingContext.New();
@@ -86,7 +107,8 @@ public class MfmConverter(
 			element.AppendChild(wrapper);
 		}
 
-		foreach (var node in nodeList) element.AppendNodes(FromMfmNode(document, node, mentions, host, emoji));
+		var usedMedia = new List<MfmInlineMedia>();
+		foreach (var node in nodeList) element.AppendNodes(FromMfmNode(document, node, mentions, host, ref usedMedia, emoji, media));
 
 		if (quoteUri != null)
 		{
@@ -126,45 +148,87 @@ public class MfmConverter(
 
 		await using var sw = new StringWriter();
 		await element.ToHtmlAsync(sw);
-		return sw.ToString();
+		return (sw.ToString(), usedMedia);
 	}
 
-	public async Task<string> ToHtmlAsync(
+	public async Task<(string Html, List<MfmInlineMedia> InlineMedia)> ToHtmlAsync(
 		string mfm, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
 		bool quoteInaccessible = false, bool replyInaccessible = false, string rootElement = "p",
-		List<Emoji>? emoji = null
+		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
 		var nodes = MfmParser.Parse(mfm);
 		return await ToHtmlAsync(nodes, mentions, host, quoteUri, quoteInaccessible,
-		                         replyInaccessible, rootElement, emoji);
+		                         replyInaccessible, rootElement, emoji, media);
 	}
 
 	private INode FromMfmNode(
-		IDocument document, IMfmNode node, List<Note.MentionedUser> mentions, string? host, List<Emoji>? emoji = null
+		IDocument document, IMfmNode node, List<Note.MentionedUser> mentions, string? host, ref List<MfmInlineMedia> usedMedia, 
+		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
 		switch (node)
 		{
+			case MfmFnNode { Name: "media" } fn when media != null:
+			{
+				var urlNode = fn.Children.FirstOrDefault();
+				if (urlNode is MfmUrlNode url)
+				{
+					var current = media.FirstOrDefault(m => m.Src == url.Url);
+					if (current != null)
+					{
+						var nodeName = current.Type switch
+						{
+							MfmInlineMedia.MediaType.Image   => "img",
+							MfmInlineMedia.MediaType.Video   => "video",
+							MfmInlineMedia.MediaType.Audio   => "audio",
+							_                                => "a",
+						};
+						var el = document.CreateElement(nodeName);
+						if (current.Type == MfmInlineMedia.MediaType.Other)
+						{
+							el.SetAttribute("href", current.Src);
+							el.SetAttribute("download", "true");
+							el.TextContent = $"\ud83d\udcbe {current.Alt ?? current.Src}"; // floppy disk emoji
+						}
+						else
+						{
+							el.SetAttribute("src", current.Src);
+							el.SetAttribute("alt", current.Alt);
+						}
+						
+						usedMedia.Add(current);
+						return el;
+					}
+				}
+
+				{
+					var el = CreateInlineFormattingElement(document, "i");
+					AddHtmlMarkup(document, el, "*");
+					AppendChildren(el, document, node, mentions, host, ref usedMedia);
+					AddHtmlMarkup(document, el, "*");
+					return el;
+				}
+			}
 			case MfmBoldNode:
 			{
 				var el = CreateInlineFormattingElement(document, "b");
 				AddHtmlMarkup(document, el, "**");
-				AppendChildren(el, document, node, mentions, host);
+				AppendChildren(el, document, node, mentions, host, ref usedMedia);
 				AddHtmlMarkup(document, el, "**");
 				return el;
 			}
 			case MfmSmallNode:
 			{
 				var el = document.CreateElement("small");
-				AppendChildren(el, document, node, mentions, host);
+				AppendChildren(el, document, node, mentions, host, ref usedMedia);
 				return el;
 			}
 			case MfmStrikeNode:
 			{
 				var el = CreateInlineFormattingElement(document, "del");
 				AddHtmlMarkup(document, el, "~~");
-				AppendChildren(el, document, node, mentions, host);
+				AppendChildren(el, document, node, mentions, host, ref usedMedia);
 				AddHtmlMarkup(document, el, "~~");
 				return el;
 			}
@@ -173,7 +237,7 @@ public class MfmConverter(
 			{
 				var el = CreateInlineFormattingElement(document, "i");
 				AddHtmlMarkup(document, el, "*");
-				AppendChildren(el, document, node, mentions, host);
+				AppendChildren(el, document, node, mentions, host, ref usedMedia);
 				AddHtmlMarkup(document, el, "*");
 				return el;
 			}
@@ -188,7 +252,7 @@ public class MfmConverter(
 			case MfmCenterNode:
 			{
 				var el = document.CreateElement("div");
-				AppendChildren(el, document, node, mentions, host);
+				AppendChildren(el, document, node, mentions, host, ref usedMedia);
 				return el;
 			}
 			case MfmEmojiCodeNode emojiCodeNode:
@@ -278,7 +342,7 @@ public class MfmConverter(
 			{
 				var el = CreateInlineFormattingElement(document, "blockquote");
 				AddHtmlMarkup(document, el, "> ");
-				AppendChildren(el, document, node, mentions, host);
+				AppendChildren(el, document, node, mentions, host, ref usedMedia);
 				el.AppendChild(document.CreateElement("br"));
 				return el;
 			}
@@ -312,7 +376,7 @@ public class MfmConverter(
 			case MfmPlainNode:
 			{
 				var el = document.CreateElement("span");
-				AppendChildren(el, document, node, mentions, host);
+				AppendChildren(el, document, node, mentions, host, ref usedMedia);
 				return el;
 			}
 			default:
@@ -324,10 +388,11 @@ public class MfmConverter(
 
 	private void AppendChildren(
 		INode element, IDocument document, IMfmNode parent,
-		List<Note.MentionedUser> mentions, string? host, List<Emoji>? emoji = null
+		List<Note.MentionedUser> mentions, string? host, ref List<MfmInlineMedia> usedMedia, 
+		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
-		foreach (var node in parent.Children) element.AppendNodes(FromMfmNode(document, node, mentions, host, emoji));
+		foreach (var node in parent.Children) element.AppendNodes(FromMfmNode(document, node, mentions, host, ref usedMedia, emoji, media));
 	}
 
 	private IElement CreateInlineFormattingElement(IDocument document, string name)

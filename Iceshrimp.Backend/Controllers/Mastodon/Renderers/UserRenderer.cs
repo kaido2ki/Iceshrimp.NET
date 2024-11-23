@@ -33,7 +33,7 @@ public class UserRenderer(
 			               .Select(async p => new Field
 			               {
 				               Name  = p.Name,
-				               Value = await mfmConverter.ToHtmlAsync(p.Value, mentions, user.Host),
+				               Value = (await mfmConverter.ToHtmlAsync(p.Value, mentions, user.Host)).Html,
 				               VerifiedAt = p.IsVerified.HasValue && p.IsVerified.Value
 					               ? DateTime.Now.ToStringIso8601Like()
 					               : null
@@ -58,7 +58,7 @@ public class UserRenderer(
 			FollowersCount     = user.FollowersCount,
 			FollowingCount     = user.FollowingCount,
 			StatusesCount      = user.NotesCount,
-			Note               = await mfmConverter.ToHtmlAsync(profile?.Description ?? "", mentions, user.Host),
+			Note               = (await mfmConverter.ToHtmlAsync(profile?.Description ?? "", mentions, user.Host)).Html,
 			Url                = profile?.Url ?? user.Uri ?? user.GetPublicUrl(config.Value),
 			Uri                = user.Uri ?? user.GetPublicUri(config.Value),
 			AvatarStaticUrl    = user.AvatarUrl ?? user.GetIdenticonUrlPng(config.Value), //TODO
