@@ -5,9 +5,9 @@ namespace Iceshrimp.Frontend.Core.ControllerModels;
 
 internal class SettingsControllerModel(ApiClient api)
 {
-	public Task<UserSettingsEntity> GetSettingsAsync() =>
-		api.CallAsync<UserSettingsEntity>(HttpMethod.Get, "/settings");
+	public Task<UserSettingsResponse> GetSettingsAsync() =>
+		api.CallAsync<UserSettingsResponse>(HttpMethod.Get, "/settings");
 
-	public Task<bool> UpdateSettingsAsync(UserSettingsEntity settings) =>
+	public Task<bool> UpdateSettingsAsync(UserSettingsRequest settings) =>
 		api.CallNullableAsync(HttpMethod.Put, "/settings", data: settings);
 }
