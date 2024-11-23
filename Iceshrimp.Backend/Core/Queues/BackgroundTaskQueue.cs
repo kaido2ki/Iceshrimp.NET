@@ -69,8 +69,7 @@ public class BackgroundTaskQueue(int parallelism)
 			var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == jobData.DriveFileId, token);
 			if (file == null) return;
 
-			var deduplicated = file.AccessKey != null &&
-			                   await db.DriveFiles.AnyAsync(p => p.Id != file.Id &&
+			var deduplicated = await db.DriveFiles.AnyAsync(p => p.Id != file.Id &&
 			                                                     p.AccessKey == file.AccessKey &&
 			                                                     !p.IsLink,
 			                                                token);

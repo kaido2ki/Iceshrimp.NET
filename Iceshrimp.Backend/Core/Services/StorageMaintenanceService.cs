@@ -92,7 +92,6 @@ public class StorageMaintenanceService(
 			// defer deletions in case an error occurs
 			List<string> deletionQueue = [];
 
-			if (file.AccessKey != null)
 			{
 				var path   = Path.Join(pathBase, file.AccessKey);
 				var stream = File.OpenRead(path);

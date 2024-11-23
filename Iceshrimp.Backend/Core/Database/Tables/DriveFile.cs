@@ -106,7 +106,7 @@ public class DriveFile : IEntity
 
 	[Column("accessKey")]
 	[StringLength(256)]
-	public string? AccessKey { get; set; }
+	public string AccessKey { get; set; } = null!;
 
 	[Column("thumbnailAccessKey")]
 	[StringLength(256)]

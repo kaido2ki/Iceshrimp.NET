@@ -33,7 +33,7 @@ public class MediaProxyService(
 	public string GetProxyUrl(DriveFile file, bool thumbnail)
 	{
 		var url = thumbnail ? file.RawThumbnailAccessUrl : file.RawAccessUrl;
-		if (file.UserHost is null || !file.IsLink || file.AccessKey == null)
+		if (file.UserHost is null || !file.IsLink)
 			return url;
 
 		return GetProxyUrlInternal($"files/{file.AccessKey}", thumbnail);
