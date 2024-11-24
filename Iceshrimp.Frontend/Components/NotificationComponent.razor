@@ -19,7 +19,9 @@
             <div class="notification-body">
                 @if (NotificationResponse is { User: not null })
                 {
-                    <span @onclick="OpenProfile" class="display-name">@(NotificationResponse.User.DisplayName ?? NotificationResponse.User.Username)</span>
+                    <span @onclick="OpenProfile" class="display-name">
+                        <UserDisplayName User="@NotificationResponse.User" />
+                    </span>
                 }
                 
                 @switch (NotificationResponse)
