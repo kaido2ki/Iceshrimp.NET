@@ -6,10 +6,10 @@
 @using Microsoft.Extensions.Localization
 @layout UnauthLayout
 @inject IStringLocalizer<Register> Loc;
-@inject MetadataService          Metadata;
-@inject ApiService               Api;
-@inject SessionService           SessionService;
-@inject NavigationManager        Navigation;
+@inject MetadataService            Metadata;
+@inject ApiService                 Api;
+@inject SessionService             SessionService;
+@inject NavigationManager          Navigation;
 @if (State is State.Loaded)
 {
     <div class="body">
@@ -19,9 +19,10 @@
         @if (RegistrationAvailability is not Registrations.Closed)
         {
             <div class="register-form">
-                <input placeholder="@Loc["Username"]" required="required"
+                <input placeholder="@Loc["Username"]" autocomplete="username" name="username" required="required"
                        @bind="@Username"/>
-                <input type="password" required="required" placeholder="@Loc["Password"]"
+                <input type="password" autocomplete="new-password" name="new-password" required="required"
+                       placeholder="@Loc["Password"]"
                        @bind="@Password"/>
                 @if (RegistrationAvailability is Registrations.Invite)
                 {
@@ -29,7 +30,7 @@
                 }
                 <button class="button" @onclick="Submit" disabled="@Loading">@Loc["Register"]</button>
             </div>
-            @if (Result is RegistrationResult.Failure)
+            @if (Error)
             {
                 <div>@Loc[RegistrationError ?? string.Empty]</div>
             }
@@ -42,15 +43,15 @@
 }
 
 @code {
-    private string?            Username                 { get; set; }
-    private string?            Password                 { get; set; }
-    private string?            Invite                   { get; set; }
-    private bool               Loading                  { get; set; }
-    private RegistrationResult Result                   { get; set; }
-    private Registrations      RegistrationAvailability { get; set; }
-    private State              State                    { get; set; } = State.Loading;
-    private string?            RegistrationError        { get; set; }
-    private string?            Name                     { get; set; }
+    private string?       Username                 { get; set; }
+    private string?       Password                 { get; set; }
+    private string?       Invite                   { get; set; }
+    private bool          Loading                  { get; set; }
+    private bool          Error                  { get; set; }
+    private Registrations RegistrationAvailability { get; set; }
+    private State         State                    { get; set; } = State.Loading;
+    private string?       RegistrationError        { get; set; }
+    private string?       Name                     { get; set; }
 
     private async Task Submit()
     {
@@ -58,7 +59,7 @@
         StateHasChanged();
         if (Username is null || Password is null)
         {
-            Result            = RegistrationResult.Failure;
+            Error             = true;
             RegistrationError = "Please fill out all fields";
             Loading           = false;
             return;
@@ -94,17 +95,10 @@
         catch (ApiException e)
         {
             RegistrationError = e.Response.Message;
-            Result            = RegistrationResult.Failure;
+            Error             = true;
             Loading           = false;
             StateHasChanged();
         }
-    }
-
-    private enum RegistrationResult
-    {
-        Incomplete,
-        Success,
-        Failure
     }
 
     protected override async Task OnInitializedAsync()

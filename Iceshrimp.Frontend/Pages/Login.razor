@@ -10,40 +10,41 @@
 @inject SessionService                 SessionService
 @inject NavigationManager              Navigation
 @inject IStringLocalizer<Localization> Loc;
-@inject MetadataService Metadata;
+@inject MetadataService                Metadata;
 @layout UnauthLayout
 <div class="body">
     <img class="logo" src="/_content/Iceshrimp.Assets.Branding/splash.png"/>
     <span>
             <h3>@Loc["Login to {0}", Name ?? "this Iceshrimp.NET Instance."]</h3></span>
     <div class="login-form">
-        <input placeholder="@Loc["Username"]" required="required"
-            @bind="@Username"/>
-        <input type="password" placeholder="@Loc["Password"]" required="required"
-                @bind="@Password"/>
+        <input placeholder="@Loc["Username"]" autocomplete="username" name="username" required="required"
+               @bind="@Username"/>
+        <input type="password" placeholder="@Loc["Password"]" autocomplete="current-password" name="current-password" required="required"
+               @bind="@Password"/>
         <button class="button" @onclick="Submit" disabled="@Loading">@Loc["Login"]</button>
     </div>
 
-@if (Loading)
-{
-    <span>Loading!</span>
-}
-@if (Failure)
-{
-    <span>Authentication Failed</span>
-}
-    
+    @if (Loading)
+    {
+        <span>Loading!</span>
+    }
+    @if (Failure)
+    {
+        <span>Authentication Failed</span>
+    }
+
 </div>
+
 @code {
     [SupplyParameterFromQuery(Name = "rd")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
     private string? Redirect { get; set; }
-    
+
     private string? Password { get; set; }
     private string? Username { get; set; }
     private bool    Loading  { get; set; }
     private bool    Failure  { get; set; }
-    private string? Name     { get; set; }  
+    private string? Name     { get; set; }
 
     private async Task Submit()
     {
@@ -100,6 +101,6 @@
     protected override async Task OnInitializedAsync()
     {
         var metadata = await Metadata.Instance.Value;
-        Name                     = metadata.Name;
+        Name = metadata.Name;
     }
 }
