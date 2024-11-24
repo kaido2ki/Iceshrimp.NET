@@ -101,10 +101,10 @@ public class NotificationRenderer(UserRenderer userRenderer, NoteRenderer noteRe
 	{
 		var reactions = notifications.Select(p => p.Reaction).NotNull().ToList();
 
-		var emojis = reactions.Where(p => !p.StartsWith(':')).Select(p => new ReactionResponse { Name = p, Url = null, Sensitive = false }).ToList();
-		var custom  = reactions.Where(p => p.StartsWith(':')).ToAsyncEnumerable();
+		var emojis = reactions.Where(p => !EmojiService.IsCustomEmoji(p)).Select(p => new ReactionResponse { Name = p, Url = null, Sensitive = false }).ToList();
+		var custom  = reactions.Where(EmojiService.IsCustomEmoji).ToArray();
 
-		await foreach (var s in custom)
+		foreach (var s in custom)
 		{
 			var emoji = await emojiSvc.ResolveEmojiAsync(s);
 			var reaction = emoji != null
