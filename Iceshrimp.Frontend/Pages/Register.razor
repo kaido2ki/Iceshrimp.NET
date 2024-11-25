@@ -4,6 +4,7 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
+@using Iceshrimp.Frontend.Components
 @layout UnauthLayout
 @inject IStringLocalizer<Register> Loc;
 @inject MetadataService            Metadata;
@@ -28,7 +29,12 @@
                 {
                     <input required="required" placeholder="@Loc["Invite"]" @bind="@Invite"/>
                 }
-                <button class="button" @onclick="Submit" disabled="@Loading">@Loc["Register"]</button>
+                <StateButton @ref="@LoginButton" ExtraClasses="button" OnClick="Submit">
+                    <Initial>@Loc["Register"]</Initial>
+                    <Success>@Loc["Success!"]</Success>
+                    <Loading>@Loc["Loading"]</Loading>
+                    <Failed>@Loc["Try again"]</Failed>
+                </StateButton>
             </div>
             @if (Error)
             {
@@ -47,19 +53,22 @@
     private string?       Password                 { get; set; }
     private string?       Invite                   { get; set; }
     private bool          Loading                  { get; set; }
-    private bool          Error                  { get; set; }
+    private bool          Error                    { get; set; }
     private Registrations RegistrationAvailability { get; set; }
     private State         State                    { get; set; } = State.Loading;
     private string?       RegistrationError        { get; set; }
     private string?       Name                     { get; set; }
+    private StateButton   LoginButton              { get; set; } = null!;
 
     private async Task Submit()
     {
-        Loading = true;
+        Loading           = true;
+        LoginButton.State = StateButton.StateEnum.Loading;
         StateHasChanged();
         if (Username is null || Password is null)
         {
             Error             = true;
+            LoginButton.State = StateButton.StateEnum.Failed;
             RegistrationError = "Please fill out all fields";
             Loading           = false;
             return;
@@ -87,6 +96,7 @@
                     MovedTo         = res.User.MovedTo
                 });
                 SessionService.SetSession(res.User.Id);
+                LoginButton.State = StateButton.StateEnum.Success;
                 Navigation.NavigateTo("/");
             }
 
@@ -97,6 +107,7 @@
             RegistrationError = e.Response.Message;
             Error             = true;
             Loading           = false;
+            LoginButton.State = StateButton.StateEnum.Failed;
             StateHasChanged();
         }
     }
