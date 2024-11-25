@@ -110,9 +110,13 @@ module MfmNodeTypes =
 
     type internal UserState =
         { ParenthesisStack: char list
-          LastLine: int64 }
+          LastLine: int64
+          Depth: int64 }
 
-        static member Default = { ParenthesisStack = []; LastLine = 0 }
+        static member Default =
+            { ParenthesisStack = []
+              LastLine = 0
+              Depth = 0 }
 
 open MfmNodeTypes
 
@@ -220,10 +224,10 @@ module private MfmParser =
 
     let clearParen = updateUserState <| fun u -> { u with ParenthesisStack = [] }
 
+    let (|GreaterEqualThan|_|) k value = if value >= k then Some() else None
+
     // References
-    let node, nodeRef = createParserForwardedToRef ()
     let inlineNode, inlineNodeRef = createParserForwardedToRef ()
-    let simple, simpleRef = createParserForwardedToRef ()
 
     let seqFlatten items =
         seq {
@@ -451,43 +455,49 @@ module private MfmParser =
 
         let prefixedNode (m: ParseMode) : Parser<MfmNode, UserState> =
             fun (stream: CharStream<_>) ->
-                match (stream.Peek(), m) with
-                // Block nodes, ordered by expected frequency
-                | '`', Full -> codeBlockNode <|> codeNode
-                | '\n', Full when stream.Match("\n```") -> codeBlockNode
-                | '\n', Full when stream.Match("\n\n```") -> codeBlockNode
-                | '>', Full -> quoteNode
-                | '<', Full when stream.Match "<center>" -> centerNode
-                | '\\', Full when stream.Match "\\[" -> mathBlockNode
-                // Inline nodes, ordered by expected frequency
-                | '*', (Full | Inline) -> italicAsteriskNode <|> boldAsteriskNode
-                | '_', (Full | Inline) -> italicUnderscoreNode <|> boldUnderscoreNode
-                | '@', (Full | Inline) -> mentionNode
-                | '#', (Full | Inline) -> hashtagNode
-                | '`', Inline -> codeNode
-                | 'h', (Full | Inline) when stream.Match "http" -> urlNode
-                | ':', (Full | Inline | Simple) -> emojiCodeNode
-                | '~', (Full | Inline) when stream.Match "~~" -> strikeNode
-                | '[', (Full | Inline) -> linkNode
-                | '<', (Full | Inline) -> choice inlineTagNodes
-                | '<', Simple when stream.Match "<plain>" -> plainNode
-                | '\\', (Full | Inline) when stream.Match "\\(" -> mathNode
-                | '$', (Full | Inline) when stream.Match "$[" -> fnNode
-                | '?', (Full | Inline) when stream.Match "?[" -> linkNode
-                // Fallback to char node
-                | _ -> charNode
-                <| stream
+                match stream.UserState.Depth with
+                | GreaterEqualThan 100L -> stream |> charNode
+                | _ ->
+                    match (stream.Peek(), m) with
+                    // Block nodes, ordered by expected frequency
+                    | '`', Full -> codeBlockNode <|> codeNode
+                    | '\n', Full when stream.Match("\n```") -> codeBlockNode
+                    | '\n', Full when stream.Match("\n\n```") -> codeBlockNode
+                    | '>', Full -> quoteNode
+                    | '<', Full when stream.Match "<center>" -> centerNode
+                    | '\\', Full when stream.Match "\\[" -> mathBlockNode
+                    // Inline nodes, ordered by expected frequency
+                    | '*', (Full | Inline) -> italicAsteriskNode <|> boldAsteriskNode
+                    | '_', (Full | Inline) -> italicUnderscoreNode <|> boldUnderscoreNode
+                    | '@', (Full | Inline) -> mentionNode
+                    | '#', (Full | Inline) -> hashtagNode
+                    | '`', Inline -> codeNode
+                    | 'h', (Full | Inline) when stream.Match "http" -> urlNode
+                    | ':', (Full | Inline | Simple) -> emojiCodeNode
+                    | '~', (Full | Inline) when stream.Match "~~" -> strikeNode
+                    | '[', (Full | Inline) -> linkNode
+                    | '<', (Full | Inline) -> choice inlineTagNodes
+                    | '<', Simple when stream.Match "<plain>" -> plainNode
+                    | '\\', (Full | Inline) when stream.Match "\\(" -> mathNode
+                    | '$', (Full | Inline) when stream.Match "$[" -> fnNode
+                    | '?', (Full | Inline) when stream.Match "?[" -> linkNode
+                    // Fallback to char node
+                    | _ -> charNode
+                    <| stream
 
         attempt <| prefixedNode m <|> charNode
 
     // Populate references
-    do nodeRef.Value <- parseNode Full
-    do inlineNodeRef.Value <- parseNode Inline |>> fun v -> v :?> MfmInlineNode
-    do simpleRef.Value <- parseNode Simple
+    let pushDepth = updateUserState (fun u -> { u with Depth = (u.Depth + 1L) })
+    let popDepth = updateUserState (fun u -> { u with Depth = (u.Depth - 1L) })
+    do inlineNodeRef.Value <- pushDepth >>. (parseNode Inline |>> fun v -> v :?> MfmInlineNode) .>> popDepth
+    
+    // Parser abstractions
+    let node = parseNode Full
+    let simple = parseNode Simple
 
     // Final parse command
     let parse = spaces >>. manyTill node eof .>> spaces
-
     let parseSimple = spaces >>. manyTill simple eof .>> spaces
 
 open MfmParser

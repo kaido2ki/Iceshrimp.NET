@@ -1,5 +1,7 @@
+using System.Text;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 using Iceshrimp.Parsing;
+using Microsoft.FSharp.Collections;
 using static Iceshrimp.Parsing.MfmNodeTypes;
 using FSDict = System.Collections.Generic.Dictionary<string, Microsoft.FSharp.Core.FSharpOption<string>?>;
 
@@ -365,7 +367,7 @@ public class MfmTests
 		res.ToList().Should().Equal(expected, MfmNodeEqual);
 		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
 	}
-	
+
 	[TestMethod]
 	public void TestLinkSilent()
 	{
@@ -516,8 +518,48 @@ public class MfmTests
 		                     </center>
 		                     """;
 
+		AssertionOptions.FormattingOptions.MaxDepth = 100;
 		var res = Mfm.parse(input);
 		MfmSerializer.Serialize(res).Should().BeEquivalentTo(input);
+	}
+
+	[TestMethod]
+	public void TestFnRecursionLimit()
+	{
+		const int iterations = 150;
+		const int limit      = 100;
+
+		var input  = GetMfm(iterations);
+		var result = Mfm.parse(input);
+
+		// Closing brackets will be grouped at the end, since fn node parser isn't greedy
+		List<MfmNode> expected = [GetExpected(iterations), new MfmTextNode(new string(']', iterations - limit))];
+
+		AssertionOptions.FormattingOptions.MaxDepth = 300;
+		AssertionOptions.FormattingOptions.MaxLines = 1000;
+		result.ToList().Should().Equal(expected, MfmNodeEqual);
+		MfmSerializer.Serialize(result).Should().BeEquivalentTo(input);
+
+		return;
+
+		string GetMfm(int count)
+		{
+			var sb = new StringBuilder();
+			for (var i = 0; i < count; i++)
+				sb.Append("$[test ");
+			for (var i = 0; i < count; i++)
+				sb.Append(']');
+
+			return sb.ToString();
+		}
+
+		MfmInlineNode GetExpected(int count, int remaining = limit)
+		{
+			if (remaining <= 0)
+				return new MfmTextNode(GetMfm(count).TrimEnd(']'));
+
+			return new MfmFnNode("test", null, [GetExpected(--count, --remaining)]);
+		}
 	}
 
 	private static bool MfmNodeEqual(MfmNode a, MfmNode b)
