@@ -1,0 +1,255 @@
+@page "/settings/account"
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Sections
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Shared.Schemas.Web
+@using Iceshrimp.Frontend.Components
+
+@attribute [Authorize]
+@layout SettingsLayout
+@inject ApiService                     Api;
+@inject ILogger<Profile>               Logger;
+@inject IStringLocalizer<Localization> Loc;
+@inject IJSRuntime                     Js;
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.UserCircleGear"></Icon>
+    @Loc["Account"]
+</SectionContent>
+
+@if (State is State.Loaded)
+{
+    <div class="body">
+        <div class="section">
+            <h1>@Loc["Settings"]</h1>
+            <EditForm OnSubmit="Submit" Model="SettingsForm">
+                <label>
+                    @Loc["Default note visibility"]
+                    <InputSelect @bind-Value="SettingsForm.DefaultNoteVisibility">
+                        <option value="@NoteVisibility.Followers">@Loc["Followers"]</option>
+                        <option value="@NoteVisibility.Home">@Loc["Home"]</option>
+                        <option value="@NoteVisibility.Public">@Loc["Public"]</option>
+                        <option value="@NoteVisibility.Specified">@Loc["Specified"]</option>
+                    </InputSelect>
+                </label>
+                <label>
+                    @Loc["Default renote visibility"]
+                    <InputSelect @bind-Value="SettingsForm.DefaultRenoteVisibility">
+                        <option value="@NoteVisibility.Followers">@Loc["Followers"]</option>
+                        <option value="@NoteVisibility.Home">@Loc["Home"]</option>
+                        <option value="@NoteVisibility.Public">@Loc["Public"]</option>
+                        <option value="@NoteVisibility.Specified">@Loc["Specified"]</option>
+                    </InputSelect>
+                </label>
+                <label>
+                    @Loc["Private Mode"]
+                    <InputCheckbox @bind-Value="SettingsForm.PrivateMode"/>
+                </label>
+                <label>
+                    @Loc["Filter replies to inaccessible notes"]
+                    <InputCheckbox @bind-Value="SettingsForm.FilterInaccessible"/>
+
+                </label>
+                <label>
+                    @Loc["Auto accept follow requests from users you are following"]
+                    <InputCheckbox @bind-Value="SettingsForm.AutoAcceptFollowed"/>
+                </label>
+                <label>
+                    @Loc["Mark all posts as sensitive"]
+                    <InputCheckbox @bind-Value="SettingsForm.AlwaysMarkSensitive"/>
+                </label>
+                <StateButton ExtraClasses="button" @ref="@SaveButton" OnClick="Submit">
+                    <Initial>@Loc["Save changes"]</Initial>
+                    <Success>@Loc["Saved"]</Success>
+                    <Loading>@Loc["Loading"]<Icon Name="Icons.Spinner"/>
+                    </Loading>
+                    <Failed>@Loc["Error"]</Failed>
+                </StateButton>
+            </EditForm>
+        </div>
+
+        <h1>@Loc["Two-Factor Authentication"]</h1>
+        @if (SettingsForm.TwoFactorEnrolled == false)
+        {
+            <button class="button" @onclick="Enroll2FA">@Loc["Enable 2FA"]</button>
+        }
+        @if (SettingsForm.TwoFactorEnrolled)
+        {
+            <button class="button" @onclick="Disable2FAMenu">@Loc["Disable 2FA"]</button>
+        }
+
+        <dialog class="dialog" @ref="EnrollDialog">
+            @if (TwoFactorResponse is not null)
+            {
+                <div class="dialog-content">
+                    <div class="header">
+                        <h2 class="title">@Loc["Two-Factor Authentication"]</h2>
+                        <button class="button close" @onclick="() => CloseDialog(EnrollDialog)">
+                            <Icon Name="Icons.X"></Icon>
+                        </button>
+                    </div>
+                    <img class="qr" src="@TwoFactorResponse.QrPng"/>
+                    <div class="container">
+                        <div class="name">@Loc["Two-Factor secret"]</div>
+                        <div class="item">
+                            <pre><code>@TwoFactorResponse.Secret</code></pre>
+                        </div>
+                        <div class="name">@Loc["Two-Factor URL"]</div>
+                        <div class="item">
+                            <pre><code>@TwoFactorResponse.Url</code></pre>
+                        </div>
+                    </div>
+                    <input class="otp-input" @bind="OtpEnable" autocomplete="one-time-code"/>
+                    <StateButton ExtraClasses="button" @ref="TwoFactorButton" OnClick="Confirm2FA">
+                        <Loading>@Loc["Processing"]</Loading>
+                        <Failed>@Loc["Failed to enroll"]</Failed>
+                        <Success>@Loc["Two-Factor Authentication enabled!"]</Success>
+                        <Initial>@Loc["Confirm 2FA Code"]</Initial>
+                    </StateButton>
+                </div>
+            }
+            <div class="backdrop"></div>
+        </dialog>
+
+        <dialog class="dialog" @ref="DisableDialog">
+            <div class="dialog-content">
+                <div class="header">
+                    <h2 class="title">@Loc["Two-Factor Authentication"]</h2>
+                    <button class="button close" @onclick="() => CloseDialog(DisableDialog)">
+                        <Icon Name="Icons.X"></Icon>
+                    </button>
+                </div>
+                <input class="otp-input" @bind="OtpDisable" autocomplete="one-time-code"/>
+                <StateButton ExtraClasses="button" @ref="DisableButton" OnClick="Disable2FA">
+                    <Loading>@Loc["Processing"]</Loading>
+                    <Failed>@Loc["Failed to disable Two-Factor Authentication"]</Failed>
+                    <Success>@Loc["Two-Factor Authentication disabled!"]</Success>
+                    <Initial>
+                        <Icon Name="Icons.Warning"></Icon>@Loc["Disable Two-Factor Authentication"]</Initial>
+                </StateButton>
+            </div>
+            <div class="backdrop"></div>
+        </dialog>
+    </div>
+}
+
+@code {
+    private          UserSettingsResponse           SettingsForm      { get; set; } = null!;
+    private          State                          State             { get; set; } = State.Loading;
+    private          StateButton                    SaveButton        { get; set; } = null!;
+    private          StateButton                    DisableButton     { get; set; } = null!;
+    private          StateButton                    TwoFactorButton   { get; set; } = null!;
+    private          ElementReference               EnrollDialog      { get; set; }
+    private          ElementReference               DisableDialog     { get; set; }
+    private          TwoFactorEnrollmentResponse?   TwoFactorResponse { get; set; }
+    private          string?                        OtpEnable         { get; set; }
+    private          string?                        OtpDisable        { get; set; }
+    private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
+
+    public Account()
+    {
+        _moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
+                                                             Js.InvokeAsync<IJSObjectReference>(
+                                                                                                "import",
+                                                                                                "./Pages/Settings/Account.razor.js")
+                                                               .AsTask());
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        SettingsForm = await Api.Settings.GetSettingsAsync();
+        State        = State.Loaded;
+    }
+
+    private async Task Submit()
+    {
+        try
+        {
+            var res = await Api.Settings.UpdateSettingsAsync(SettingsForm);
+            SaveButton.State = StateButton.StateEnum.Loading;
+            StateHasChanged();
+            SaveButton.State = res ? StateButton.StateEnum.Success : StateButton.StateEnum.Failed;
+        }
+        catch (ApiException)
+        {
+            SaveButton.State = StateButton.StateEnum.Failed;
+        }
+    }
+
+    private async Task Enroll2FA()
+    {
+        var module = await _moduleTask.Value;
+        TwoFactorResponse = await Api.Settings.EnrollTwoFactorAsync();
+        await module.InvokeVoidAsync("openDialog", EnrollDialog);
+    }
+
+    private async Task Disable2FAMenu()
+    {
+        var module = await _moduleTask.Value;
+        await module.InvokeVoidAsync("openDialog", DisableDialog);
+    }
+
+    private async Task Disable2FA()
+    {
+        var module = await _moduleTask.Value;
+        if (OtpDisable is null)
+        {
+            return;
+        }
+
+        try
+        {
+            DisableButton.State = StateButton.StateEnum.Loading;
+            StateHasChanged();
+            await Api.Settings.DisableTwoFactorAsync(new TwoFactorRequest { Code = OtpDisable });
+            DisableButton.State = StateButton.StateEnum.Success;
+            StateHasChanged();
+            await Task.Delay(1000);
+            SettingsForm = await Api.Settings.GetSettingsAsync();
+            await module.InvokeVoidAsync("closeDialog", DisableDialog);
+        }
+
+        catch (ApiException e)
+        {
+            Logger.LogError(e, "2FA enrollment failed");
+            DisableButton.State = StateButton.StateEnum.Failed;
+        }
+    }
+
+    private async Task Confirm2FA()
+    {
+        var module = await _moduleTask.Value;
+        if (OtpEnable is null)
+        {
+            return;
+        }
+
+        try
+        {
+            TwoFactorButton.State = StateButton.StateEnum.Loading;
+            StateHasChanged();
+            await Api.Settings.ConfirmTwoFactorAsync(new TwoFactorRequest { Code = OtpEnable });
+            TwoFactorButton.State = StateButton.StateEnum.Success;
+            StateHasChanged();
+            await Task.Delay(1000);
+            SettingsForm = await Api.Settings.GetSettingsAsync();
+            await module.InvokeVoidAsync("closeDialog", EnrollDialog);
+        }
+
+        catch (ApiException e)
+        {
+            Logger.LogError(e, "2FA enrollment failed");
+            TwoFactorButton.State = StateButton.StateEnum.Failed;
+        }
+    }
+
+    private async Task CloseDialog(ElementReference dialog)
+    {
+        var module = await _moduleTask.Value;
+        await module.InvokeVoidAsync("closeDialog", dialog);
+    }
+}

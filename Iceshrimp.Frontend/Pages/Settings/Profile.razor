@@ -7,11 +7,17 @@
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Sections
 @attribute [Authorize]
 @layout SettingsLayout
 @inject ApiService                     Api;
 @inject ILogger<Profile>               Logger;
 @inject IStringLocalizer<Localization> Loc;
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.User"></Icon>
+    @Loc["Profile"]
+</SectionContent>
 
 <div class="body">
     @if (State is State.Loaded)

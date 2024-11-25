@@ -1,16 +1,20 @@
 @page "/login"
 @using System.Diagnostics.CodeAnalysis
+@using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Schemas
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
 @inject ApiService                     Api
 @inject SessionService                 SessionService
 @inject NavigationManager              Navigation
 @inject IStringLocalizer<Localization> Loc;
 @inject MetadataService                Metadata;
+@inject IJSRuntime                     Js;
+@inject ILogger<Login>                 Logger;
 @layout UnauthLayout
 <div class="body">
     <img class="logo" src="/_content/Iceshrimp.Assets.Branding/splash.png"/>
@@ -19,7 +23,8 @@
     <div class="login-form">
         <input placeholder="@Loc["Username"]" autocomplete="username" name="username" required="required"
                @bind="@Username"/>
-        <input type="password" placeholder="@Loc["Password"]" autocomplete="current-password" name="current-password" required="required"
+        <input type="password" placeholder="@Loc["Password"]" autocomplete="current-password" name="current-password"
+               required="required"
                @bind="@Password"/>
         <button class="button" @onclick="Submit" disabled="@Loading">@Loc["Login"]</button>
     </div>
@@ -33,6 +38,26 @@
         <span>Authentication Failed</span>
     }
 
+    <dialog class="dialog" @ref="Dialog">
+        <div class="dialog-content">
+            <div class="header">
+                <h2 class="title">@Loc["Two-Factor Code required"]</h2>
+                <button class="button close" @onclick="() => CloseDialog(Dialog)">
+                    <Icon Name="Icons.X"></Icon>
+                </button>
+            </div>
+            <input class="otp-input" @bind="Otp" autocomplete="one-time-code"/>
+            <StateButton ExtraClasses="button" @ref="OtpButton" OnClick="TwoFactorLogin">
+                <Loading>@Loc["Processing"]</Loading>
+                <Failed>@Loc["2FA Failed"]</Failed>
+                <Success>@Loc["Success!"]</Success>
+                <Initial>
+                    @Loc["Login"]</Initial>
+            </StateButton>
+        </div>
+        <div class="backdrop"></div>
+    </dialog>
+
 </div>
 
 @code {
@@ -40,14 +65,28 @@
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
     private string? Redirect { get; set; }
 
-    private string? Password { get; set; }
-    private string? Username { get; set; }
-    private bool    Loading  { get; set; }
-    private bool    Failure  { get; set; }
-    private string? Name     { get; set; }
+    private          string?                        Password    { get; set; }
+    private          string?                        Username    { get; set; }
+    private          bool                           Loading     { get; set; }
+    private          bool                           Failure     { get; set; }
+    private          string?                        Name        { get; set; }
+    private          ElementReference               Dialog      { get; set; }
+    private          string?                        Otp         { get; set; }
+    private          StateButton                    OtpButton   { get; set; } = null!;
+    private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
+
+    public Login()
+    {
+        _moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
+                                                             Js.InvokeAsync<IJSObjectReference>(
+                                                                                                "import",
+                                                                                                "./Pages/Settings/Account.razor.js")
+                                                               .AsTask());
+    }
 
     private async Task Submit()
     {
+        var module = await _moduleTask.Value;
         Loading = true;
         try
         {
@@ -86,7 +125,8 @@
                     Loading = false;
                     break;
                 case AuthStatusEnum.TwoFactor:
-                    //FixMe: Implement Two Factor
+                    await module.InvokeVoidAsync("openDialog", Dialog);
+                    Api.SetBearerToken(res.Token!);
                     break;
             }
         }
@@ -98,9 +138,66 @@
         }
     }
 
+    private async Task TwoFactorLogin()
+    {
+        var module = await _moduleTask.Value;
+        if (Otp is null)
+        {
+            return;
+        }
+
+        try
+        {
+            OtpButton.State = StateButton.StateEnum.Loading;
+            StateHasChanged();
+            var res = await Api.Auth.SubmitTwoFactorAsync(new TwoFactorRequest { Code = Otp });
+            if (res.Status is AuthStatusEnum.Authenticated)
+            {
+                
+                SessionService.AddUser(new StoredUser
+                { 
+                    Id              = res.User!.Id,
+                    Username        = res.User.Username,
+                    DisplayName     = res.User.DisplayName,
+                    AvatarUrl       = res.User.AvatarUrl,
+                    BannerUrl       = res.User.BannerUrl,
+                    InstanceName    = res.User.InstanceName,
+                    InstanceIconUrl = res.User.InstanceIconUrl,
+                    Token           = res.Token!,
+                    Host            = res.User.Host,
+                    IsAdmin         = res.IsAdmin ?? false,
+                    Emojis          = res.User.Emojis,
+                    MovedTo         = res.User.MovedTo
+                });
+                SessionService.SetSession(res.User.Id);
+                Navigation.NavigateTo(Uri.TryCreate(Redirect, UriKind.Relative, out _) ? Redirect : "/", true);
+            }
+            else
+            {
+                Failure         = true;
+                Loading         = false;
+                OtpButton.State = StateButton.StateEnum.Failed;
+                await module.InvokeVoidAsync("closeDialog", Dialog);
+                OtpButton.State = StateButton.StateEnum.Initial;
+            }
+        }
+
+        catch (ApiException e)
+        {
+            Logger.LogError(e, "2FA enrollment failed");
+            OtpButton.State = StateButton.StateEnum.Failed;
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         var metadata = await Metadata.Instance.Value;
         Name = metadata.Name;
+    }
+
+    private async Task CloseDialog(ElementReference dialog)
+    {
+        var module = await _moduleTask.Value;
+        await module.InvokeVoidAsync("closeDialog", dialog);
     }
 }

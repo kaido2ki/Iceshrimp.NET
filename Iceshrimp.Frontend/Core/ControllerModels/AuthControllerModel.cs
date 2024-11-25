@@ -16,4 +16,7 @@ internal class AuthControllerModel(ApiClient api)
 
 	public Task<AuthResponse> ChangePasswordAsync(ChangePasswordRequest request) =>
 		api.CallAsync<AuthResponse>(HttpMethod.Post, "/auth/change-password", data: request);
+
+	public Task<AuthResponse> SubmitTwoFactorAsync(TwoFactorRequest request) =>
+		api.CallAsync<AuthResponse>(HttpMethod.Post, "/auth/2fa", data: request);
 }
