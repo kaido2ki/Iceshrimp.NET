@@ -510,11 +510,11 @@ open MfmParser
 
 module Mfm =
     let parse str =
-        match runParserOnString parse UserState.Default "" str with
+        match runParserOnString parse (UserState.Default()) "" str with
         | Success(result, _, _) -> aggregateText result
-        | Failure(s, _, _) -> failwith $"Failed to parse MFM: {s}"
+        | Failure _ -> [ MfmTextNode(str) ]
 
     let parseSimple str =
-        match runParserOnString parseSimple UserState.Default "" str with
+        match runParserOnString parseSimple (UserState.Default()) "" str with
         | Success(result, _, _) -> aggregateText result
-        | Failure(s, _, _) -> failwith $"Failed to parse MFM: {s}"
+        | Failure _ -> [ MfmTextNode(str) ]
