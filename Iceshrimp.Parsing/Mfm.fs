@@ -121,6 +121,12 @@ module MfmNodeTypes =
 open MfmNodeTypes
 
 module private MfmParser =
+    // Override - prevents O(n!) complexity for recursive grammars where endp applies immediately
+    let many1Till p endp = notFollowedBy endp >>. many1Till p endp
+
+    let skipMany1Till p endp =
+        notFollowedBy endp >>. skipMany1Till p endp
+
     // Abstractions
     let str s = pstring s
     let seqAttempt s = s |> Seq.map attempt
@@ -491,7 +497,7 @@ module private MfmParser =
     let pushDepth = updateUserState (fun u -> { u with Depth = (u.Depth + 1L) })
     let popDepth = updateUserState (fun u -> { u with Depth = (u.Depth - 1L) })
     do inlineNodeRef.Value <- pushDepth >>. (parseNode Inline |>> fun v -> v :?> MfmInlineNode) .>> popDepth
-    
+
     // Parser abstractions
     let node = parseNode Full
     let simple = parseNode Simple
