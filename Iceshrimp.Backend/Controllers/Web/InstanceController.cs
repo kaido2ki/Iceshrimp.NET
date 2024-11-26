@@ -18,7 +18,13 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/instance")]
 [Produces(MediaTypeNames.Application.Json)]
-public class InstanceController(DatabaseContext db, UserRenderer userRenderer, IOptions<Config.InstanceSection> instanceConfig, IOptions<Config.SecuritySection> securityConfig, MetaService meta) : ControllerBase
+public class InstanceController(
+	DatabaseContext db,
+	UserRenderer userRenderer,
+	IOptions<Config.InstanceSection> instanceConfig,
+	IOptions<Config.SecuritySection> securityConfig,
+	MetaService meta
+) : ControllerBase
 {
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -28,11 +34,11 @@ public class InstanceController(DatabaseContext db, UserRenderer userRenderer, I
 		{
 			AccountDomain = instanceConfig.Value.AccountDomain,
 			WebDomain     = instanceConfig.Value.WebDomain,
-			Registration = (Registrations)securityConfig.Value.Registrations,
-			Name = await meta.GetAsync(MetaEntity.InstanceName)
+			Registration  = (Registrations)securityConfig.Value.Registrations,
+			Name          = await meta.GetAsync(MetaEntity.InstanceName)
 		};
 	}
-	
+
 	[HttpGet("staff")]
 	[Authenticate]
 	[Authorize]
@@ -40,16 +46,16 @@ public class InstanceController(DatabaseContext db, UserRenderer userRenderer, I
 	public async Task<StaffResponse> GetStaff()
 	{
 		var admins = db.Users
-		               .Where(p => p.IsAdmin == true)
-		               .OrderBy(p => p.UsernameLower);
+					   .Where(p => p.IsAdmin == true)
+					   .OrderBy(p => p.UsernameLower);
 		var adminList = await userRenderer.RenderManyAsync(admins)
-		                                  .ToListAsync();
+										  .ToListAsync();
 
 		var moderators = db.Users
-		                   .Where(p => p.IsAdmin == false && p.IsModerator == true)
-		                   .OrderBy(p => p.UsernameLower);
+						   .Where(p => p.IsAdmin == false && p.IsModerator == true)
+						   .OrderBy(p => p.UsernameLower);
 		var moderatorList = await userRenderer.RenderManyAsync(moderators)
-		                                      .ToListAsync();
+											  .ToListAsync();
 
 		return new StaffResponse { Admins = adminList, Moderators = moderatorList };
 	}
