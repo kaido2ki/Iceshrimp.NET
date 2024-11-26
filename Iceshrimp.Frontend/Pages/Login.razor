@@ -46,7 +46,7 @@
                     <Icon Name="Icons.X"></Icon>
                 </button>
             </div>
-            <input class="otp-input" @bind="Otp" autocomplete="one-time-code"/>
+            <input class="otp-input" @bind="Otp" autocomplete="one-time-code" autofocus="autofocus"/>
             <StateButton ExtraClasses="button" @ref="OtpButton" OnClick="TwoFactorLogin">
                 <Loading>@Loc["Processing"]</Loading>
                 <Failed>@Loc["2FA Failed"]</Failed>
