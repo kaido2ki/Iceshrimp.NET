@@ -52,7 +52,6 @@
     private string?       Username                 { get; set; }
     private string?       Password                 { get; set; }
     private string?       Invite                   { get; set; }
-    private bool          Loading                  { get; set; }
     private bool          Error                    { get; set; }
     private Registrations RegistrationAvailability { get; set; }
     private State         State                    { get; set; } = State.Loading;
@@ -62,7 +61,6 @@
 
     private async Task Submit()
     {
-        Loading           = true;
         LoginButton.State = StateButton.StateEnum.Loading;
         StateHasChanged();
         if (Username is null || Password is null)
@@ -70,7 +68,6 @@
             Error             = true;
             LoginButton.State = StateButton.StateEnum.Failed;
             RegistrationError = "Please fill out all fields";
-            Loading           = false;
             return;
         }
 
@@ -100,13 +97,11 @@
                 Navigation.NavigateTo("/");
             }
 
-            Loading = false;
         }
         catch (ApiException e)
         {
             RegistrationError = e.Response.Message;
             Error             = true;
-            Loading           = false;
             LoginButton.State = StateButton.StateEnum.Failed;
             StateHasChanged();
         }
