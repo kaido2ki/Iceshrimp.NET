@@ -157,13 +157,14 @@
 
     public async Task OpenDialog(NoteBase? replyTo = null, NoteBase? quote = null)
     {
+        var settings = await Settings.GetUserSettingsAsync();
         if (replyTo != null)
         {
             var mentions = await EnumerateMentions(replyTo);
             await ResetState();
             ReplyOrQuote         = replyTo;
             NoteDraft.ReplyId    = replyTo.Id;
-            NoteDraft.Visibility = replyTo.Visibility;
+            NoteDraft.Visibility = settings.DefaultNoteVisibility > replyTo.Visibility ? settings.DefaultNoteVisibility : replyTo.Visibility;
             NoteDraft.Cw         = replyTo.Cw;
             TextPlaceholder      = AvailablePlaceholders["reply"];
             foreach (var el in mentions)
@@ -176,7 +177,7 @@
             await ResetState();
             ReplyOrQuote         = quote;
             NoteDraft.RenoteId   = quote.Id;
-            NoteDraft.Visibility = quote.Visibility;
+            NoteDraft.Visibility = settings.DefaultNoteVisibility > quote.Visibility ? settings.DefaultNoteVisibility : quote.Visibility;
             TextPlaceholder      = AvailablePlaceholders["quote"];
         }
         else
