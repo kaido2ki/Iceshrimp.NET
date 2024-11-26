@@ -14,6 +14,7 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject GlobalComponentSvc             GlobalComponentSvc
 @inject MessageService                 MessageService
+@inject SettingsService Settings;
 <dialog class="dialog" @ref="Dialog">
     <div class="compose">
         <div class="header">
@@ -143,7 +144,7 @@
 
     public async Task OpenDialogRedraft(NoteResponse note)
     {
-        ResetState();
+        await ResetState();
         NoteDraft.Text       = note.Text ?? "";
         NoteDraft.Cw         = note.Cw;
         NoteDraft.Visibility = note.Visibility;
@@ -159,7 +160,7 @@
         if (replyTo != null)
         {
             var mentions = await EnumerateMentions(replyTo);
-            ResetState();
+            await ResetState();
             ReplyOrQuote         = replyTo;
             NoteDraft.ReplyId    = replyTo.Id;
             NoteDraft.Visibility = replyTo.Visibility;
@@ -169,23 +170,21 @@
             {
                 NoteDraft.Text += $"@{el} ";
             }
-
-            StateHasChanged();
         }
         else if (quote != null)
         {
-            ResetState();
+            await ResetState();
             ReplyOrQuote         = quote;
             NoteDraft.RenoteId   = quote.Id;
             NoteDraft.Visibility = quote.Visibility;
             TextPlaceholder      = AvailablePlaceholders["quote"];
-            StateHasChanged();
         }
         else
         {
-            ResetState();
-            StateHasChanged();
+            await ResetState();
         }
+
+        StateHasChanged();
 
         await _module.InvokeVoidAsync("openDialog", Dialog);
     }
@@ -219,14 +218,15 @@
         return mentions;
     }
 
-    private void ResetState()
+    private async Task ResetState()
     {
+        var settings = await Settings.GetUserSettingsAsync();
         ReplyOrQuote = null;
         Attachments  = new List<DriveFileResponse>();
         NoteDraft = new NoteCreateRequest
         {
             Text       = "",
-            Visibility = NoteVisibility.Followers,
+            Visibility = settings.DefaultNoteVisibility,
             Cw         = null
         };
         TextPlaceholder = AvailablePlaceholders["default"];
