@@ -2,6 +2,8 @@ namespace Iceshrimp.Parsing
 
 open System
 open System.Collections.Generic
+open System.Diagnostics
+open System.Runtime.InteropServices
 open FParsec
 
 module MfmNodeTypes =
@@ -111,12 +113,22 @@ module MfmNodeTypes =
     type internal UserState =
         { ParenthesisStack: char list
           LastLine: int64
-          Depth: int64 }
+          Depth: int64
+          TimeoutAt: int64 }
+
+        member this.TimeoutReached = Stopwatch.GetTimestamp() > this.TimeoutAt
+
+        static member Timeout =
+            match RuntimeInformation.OSArchitecture with
+            | Architecture.Wasm -> Stopwatch.Frequency * 2L // 2000ms
+            | _ -> Stopwatch.Frequency / 2L // 500ms
 
         static member Default =
-            { ParenthesisStack = []
-              LastLine = 0
-              Depth = 0 }
+            fun () ->
+                { ParenthesisStack = []
+                  LastLine = 0
+                  Depth = 0
+                  TimeoutAt = Stopwatch.GetTimestamp() + UserState.Timeout }
 
 open MfmNodeTypes
 
@@ -459,6 +471,13 @@ module private MfmParser =
               strikeTagNode
               urlNodeBrackets ]
 
+        let failIfTimeout: Parser<unit, UserState> =
+            let error = messageError "Timeout exceeded"
+            fun (stream: CharStream<_>) ->
+                match stream.UserState.TimeoutReached with
+                | true -> Reply(FatalError, error)
+                | _ -> Reply(())
+
         let prefixedNode (m: ParseMode) : Parser<MfmNode, UserState> =
             fun (stream: CharStream<_>) ->
                 match stream.UserState.Depth with
@@ -491,7 +510,7 @@ module private MfmParser =
                     | _ -> charNode
                     <| stream
 
-        attempt <| prefixedNode m <|> charNode
+        failIfTimeout >>. (attempt <| prefixedNode m <|> charNode)
 
     // Populate references
     let pushDepth = updateUserState (fun u -> { u with Depth = (u.Depth + 1L) })
