@@ -526,8 +526,8 @@ public class MfmTests
 	[TestMethod]
 	public void TestFnRecursionLimit()
 	{
-		const int iterations = 150;
-		const int limit      = 100;
+		const int iterations = 50;
+		const int limit      = 20;
 
 		var input  = GetMfm(iterations);
 		var result = Mfm.parse(input);

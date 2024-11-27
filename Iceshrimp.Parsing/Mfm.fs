@@ -116,7 +116,7 @@ module MfmNodeTypes =
     type internal UserState =
         { ParenthesisStack: char list
           LastLine: int64
-          Depth: int64
+          Depth: int
           TimeoutAt: int64 }
 
         member this.TimeoutReached = Stopwatch.GetTimestamp() > this.TimeoutAt
@@ -561,7 +561,7 @@ module private MfmParser =
         let prefixedNode (m: ParseMode) : Parser<MfmNode, UserState> =
             fun (stream: CharStream<_>) ->
                 match stream.UserState.Depth with
-                | GreaterEqualThan 100L -> stream |> charNode
+                | GreaterEqualThan 20 -> stream |> charNode
                 | _ ->
                     match (stream.Peek(), m) with
                     // Block nodes, ordered by expected frequency
@@ -593,8 +593,8 @@ module private MfmParser =
         failIfTimeout >>. (attempt <| prefixedNode m <|> charNode)
 
     // Populate references
-    let pushDepth = updateUserState (fun u -> { u with Depth = (u.Depth + 1L) })
-    let popDepth = updateUserState (fun u -> { u with Depth = (u.Depth - 1L) })
+    let pushDepth = updateUserState (fun u -> { u with Depth = (u.Depth + 1) })
+    let popDepth = updateUserState (fun u -> { u with Depth = (u.Depth - 1) })
     do inlineNodeRef.Value <- pushDepth >>. (parseNode Inline |>> fun v -> v :?> MfmInlineNode) .>> popDepth
 
     // Parser abstractions
