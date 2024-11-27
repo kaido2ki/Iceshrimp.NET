@@ -23,6 +23,9 @@
     @if (State is State.Loaded)
     {
         <div class="section">
+            <h3>@Loc["Display Name"]</h3><input class="input" @bind="@DisplayName"></input>
+        </div>
+        <div class="section">
             <h3>@Loc["Profile Description"]</h3><textarea class="input" @bind="@UserProfile.Description"></textarea>
         </div>
         <div class="section">
@@ -84,6 +87,7 @@
     private string            FieldName   { get; set; } = "";
     private string            FieldValue  { get; set; } = "";
     private StateButton       SaveButton  { get; set; } = null!;
+    private string            DisplayName { get; set; } = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -91,6 +95,7 @@
         {
             UserProfile = await Api.Profile.GetProfileAsync();
             State       = State.Loaded;
+            DisplayName = await Api.Profile.GetDisplayNameAsync() ?? "";
         }
         catch (ApiException e)
         {
@@ -117,6 +122,7 @@
         {
             SaveButton.State = StateButton.StateEnum.Loading;
             await Api.Profile.UpdateProfileAsync(UserProfile);
+            await Api.Profile.UpdateDisplayNameAsync(DisplayName);
             SaveButton.State = StateButton.StateEnum.Success;
         }
         catch (ApiException e)
