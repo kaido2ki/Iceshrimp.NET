@@ -23,7 +23,29 @@
     @if (State is State.Loaded)
     {
         <div class="section">
-            <h3>@Loc["Display Name"]</h3><input class="input" @bind="@DisplayName"></input>
+            <h3>@Loc["Banner"]</h3>
+            @if (!string.IsNullOrEmpty(BannerUrl))
+            {
+                <img class="banner" src="@BannerUrl" alt="banner"/>
+                <div>
+                    <input type="checkbox" id="delete-banner" @bind="@DelBanner">
+                    <label for="delete-banner">@Loc["Remove Banner"]</label>
+                </div>
+            }
+        </div>
+        <div class="section">
+            <h3>@Loc["Avatar"]</h3>
+            @if (!string.IsNullOrEmpty(AvatarUrl))
+            {
+                <img class="avatar" src="@AvatarUrl" alt="avatar"/>
+                <div>
+                    <input type="checkbox" id="delete-avatar" @bind="@DelAvatar">
+                    <label for="delete-avatar">@Loc["Remove Avatar"]</label>
+                </div>
+            }
+        </div>
+        <div class="section">
+            <h3>@Loc["Display Name"]</h3><input class="input" @bind="@DisplayName"/>
         </div>
         <div class="section">
             <h3>@Loc["Profile Description"]</h3><textarea class="input" @bind="@UserProfile.Description"></textarea>
@@ -87,6 +109,10 @@
     private string            FieldName   { get; set; } = "";
     private string            FieldValue  { get; set; } = "";
     private StateButton       SaveButton  { get; set; } = null!;
+    private string?           AvatarUrl   { get; set; } = null;
+    private bool              DelAvatar   { get; set; } = false;
+    private string?           BannerUrl   { get; set; } = null;
+    private bool              DelBanner   { get; set; } = false;
     private string            DisplayName { get; set; } = "";
 
     protected override async Task OnInitializedAsync()
@@ -95,6 +121,8 @@
         {
             UserProfile = await Api.Profile.GetProfileAsync();
             State       = State.Loaded;
+            AvatarUrl   = await Api.Profile.GetAvatarUrlAsync();
+            BannerUrl   = await Api.Profile.GetBannerUrlAsync();
             DisplayName = await Api.Profile.GetDisplayNameAsync();
         }
         catch (ApiException e)
@@ -123,6 +151,10 @@
             SaveButton.State = StateButton.StateEnum.Loading;
             await Api.Profile.UpdateProfileAsync(UserProfile);
             await Api.Profile.UpdateDisplayNameAsync(DisplayName);
+            if (DelAvatar)
+                await Api.Profile.DeleteAvatarAsync();
+            if (DelBanner)
+                await Api.Profile.DeleteBannerAsync();
             SaveButton.State = StateButton.StateEnum.Success;
         }
         catch (ApiException e)

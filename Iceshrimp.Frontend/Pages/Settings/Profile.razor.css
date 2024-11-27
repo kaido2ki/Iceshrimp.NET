@@ -19,3 +19,23 @@
 .title {
     font-size: 0.9rem;
 }
+
+input[type="checkbox"] {
+    display: inline-block;
+}
+
+.avatar {
+    border-radius: 8px;
+    object-fit: cover;
+    width: 5em;
+    height: 5em;
+}
+
+.banner {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    aspect-ratio: 21/9;
+    border-radius: 1rem;
+}
