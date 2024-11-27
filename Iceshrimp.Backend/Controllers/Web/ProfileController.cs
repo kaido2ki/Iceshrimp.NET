@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
@@ -167,5 +168,28 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 		user.BannerUrl      = null;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
+	}
+
+	[HttpGet("display_name")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public string? GetDisplayName()
+	{
+		var user = HttpContext.GetUserOrFail();
+		return user.DisplayName;
+	}
+
+	[HttpPost("display_name")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<string?> UpdateDisplayNameAsync([FromHybrid] string displayName)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var prevAvatarId = user.AvatarId;
+		var prevBannerId = user.BannerId;
+
+		user.DisplayName = string.IsNullOrWhiteSpace(displayName) ? null : displayName.Trim();
+		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
+
+		return user.DisplayName;
 	}
 }
