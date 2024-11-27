@@ -317,6 +317,17 @@ module private MfmParser =
                 Reply(c)
             else
                 Reply(Error, error)
+    
+    let anyCharExcept ch: Parser<char, UserState> =
+        let error = messageError "anyCharExcept"
+
+        fun stream ->
+            let c = stream.ReadCharOrNewline()
+
+            if c <> EOS && c <> ch then
+                Reply(c)
+            else
+                Reply(Error, error)
 
     let createParameterizedParserRef () =
         let dummyParser _ =
@@ -438,7 +449,7 @@ module private MfmParser =
 
     let emojiCodeNode =
         skipChar ':'
-        >>. restOfLineContains ":"
+        >>. restOfLineContainsChar ':'
         >>. manyCharsTill (satisfy isAsciiLetter <|> satisfy isDigit <|> anyOf "+-_") (skipChar ':')
         |>> fun e -> MfmEmojiCodeNode(e) :> MfmNode
 
@@ -494,40 +505,41 @@ module private MfmParser =
 
     let urlNode =
         lookAhead (skipString "https://" <|> skipString "http://")
-        >>. manyCharsTill
-                ((pchar '(' .>> pushParen) <|> (pchar ')' .>> popParen) <|> anyChar)
+        >>. previousCharSatisfiesNot (fun c -> c = '<')
+        >>. many1CharsTill
+                ((pchar '(' .>> pushParen) <|> (pchar ')' .>> popParen) <|> anyCharExcept '>')
                 (nextCharSatisfies isWhitespace
                  <|> (assertNoParen >>. followedByChar ')')
                  <|> eof)
         .>> clearParen
-        >>= fun uri ->
+        |>> fun uri ->
             match Uri.TryCreate(uri, UriKind.Absolute) with
             | true, NonNullQuick finalUri ->
                 match finalUri.Scheme with
-                | "http" -> preturn (MfmUrlNode(uri, false) :> MfmNode)
-                | "https" -> preturn (MfmUrlNode(uri, false) :> MfmNode)
-                | _ -> fail "invalid scheme"
-            | _ -> fail "invalid url"
+                | "http" -> MfmUrlNode(uri, false) :> MfmNode
+                | "https" -> MfmUrlNode(uri, false) :> MfmNode
+                | _ -> MfmTextNode(uri) :> MfmNode
+            | _ -> MfmTextNode(uri) :> MfmNode
 
     let urlNodeBrackets =
         skipChar '<'
         >>. lookAhead (skipString "https://" <|> skipString "http://")
-        >>. restOfLineContains ">" // This intentionally breaks compatibility with mfm-js, as there's no reason to allow newlines in urls
-        >>. manyCharsTill anyChar (skipChar '>')
-        >>= fun uri ->
+        >>. restOfLineContainsChar '>' // This intentionally breaks compatibility with mfm-js, as there's no reason to allow newlines in urls
+        >>. many1CharsTill anyChar (skipChar '>')
+        |>> fun uri ->
             match Uri.TryCreate(uri, UriKind.Absolute) with
             | true, NonNullQuick finalUri ->
                 match finalUri.Scheme with
-                | "http" -> preturn (MfmUrlNode(uri, true) :> MfmNode)
-                | "https" -> preturn (MfmUrlNode(uri, true) :> MfmNode)
-                | _ -> fail "invalid scheme"
-            | _ -> fail "invalid url"
+                | "http" -> MfmUrlNode(uri, true) :> MfmNode
+                | "https" -> MfmUrlNode(uri, true) :> MfmNode
+                | _ -> MfmTextNode(uri) :> MfmNode
+            | _ -> MfmTextNode(uri) :> MfmNode
 
     let linkNode =
         (opt (pchar '?'))
-        .>>. (pchar '[' >>. restOfLineContains "]" >>. manyCharsTill anyChar (pchar ']'))
+        .>>. (pchar '[' >>. restOfLineContainsChar ']' >>. manyCharsTill anyChar (pchar ']'))
         .>>. (pchar '('
-              >>. restOfLineContains ")"
+              >>. restOfLineContainsChar ')'
               >>. lookAhead (skipString "https://" <|> skipString "http://")
               >>. manyCharsTill
                       ((pchar '(' .>> pushParen) <|> (pchar ')' .>> popParen) <|> anyCharExceptNewline)
