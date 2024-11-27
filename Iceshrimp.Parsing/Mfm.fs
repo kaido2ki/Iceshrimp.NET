@@ -2,6 +2,8 @@ namespace Iceshrimp.Parsing
 
 open System
 open System.Collections.Generic
+open System.Diagnostics
+open System.Runtime.InteropServices
 open FParsec
 
 module MfmNodeTypes =
@@ -19,18 +21,28 @@ module MfmNodeTypes =
         inherit MfmNode()
         do base.Children <- c |> List.map (fun x -> x :> MfmNode)
 
+    type InlineNodeType =
+        | Symbol
+        | HtmlTag
+
     type MfmTextNode(v: string) =
         inherit MfmInlineNode([])
         member val Text = v
 
-    type MfmItalicNode(c) =
-        inherit MfmInlineNode(c)
+    type MfmTimeoutTextNode(v: string) =
+        inherit MfmTextNode(v)
 
-    type MfmBoldNode(c) =
+    type MfmItalicNode(c, t) =
         inherit MfmInlineNode(c)
+        member val Type: InlineNodeType = t
 
-    type MfmStrikeNode(c) =
+    type MfmBoldNode(c, t) =
         inherit MfmInlineNode(c)
+        member val Type: InlineNodeType = t
+
+    type MfmStrikeNode(c, t) =
+        inherit MfmInlineNode(c)
+        member val Type: InlineNodeType = t
 
     type MfmInlineCodeNode(v: string) =
         inherit MfmInlineNode([])
@@ -101,9 +113,35 @@ module MfmNodeTypes =
         inherit MfmInlineNode([])
         member val Char = v
 
+    type internal UserState =
+        { ParenthesisStack: char list
+          LastLine: int64
+          Depth: int
+          TimeoutAt: int64 }
+
+        member this.TimeoutReached = Stopwatch.GetTimestamp() > this.TimeoutAt
+
+        static member Timeout =
+            match RuntimeInformation.OSArchitecture with
+            | Architecture.Wasm -> Stopwatch.Frequency * 2L // 2000ms
+            | _ -> Stopwatch.Frequency / 2L // 500ms
+
+        static member Default =
+            fun () ->
+                { ParenthesisStack = []
+                  LastLine = 0
+                  Depth = 0
+                  TimeoutAt = Stopwatch.GetTimestamp() + UserState.Timeout }
+
 open MfmNodeTypes
 
 module private MfmParser =
+    // Override - prevents O(n!) complexity for recursive grammars where endp applies immediately
+    let many1Till p endp = notFollowedBy endp >>. many1Till p endp
+
+    let skipMany1Till p endp =
+        notFollowedBy endp >>. skipMany1Till p endp
+
     // Abstractions
     let str s = pstring s
     let seqAttempt s = s |> Seq.map attempt
@@ -112,20 +150,22 @@ module private MfmParser =
 
     let isAsciiLetterOrNumber c = Char.IsAsciiLetter c || Char.IsDigit c
     let isLetterOrNumber c = Char.IsLetterOrDigit c
-    let isNewline c = '\n'.Equals(c)
-    let isNotNewline c = not (isNewline c)
+    let isNewline c = '\n' = c
+    let isNotNewline c = '\n' <> c
 
-    let (|CharNode|MfmNode|) (x: MfmNode) =
-        if x :? MfmCharNode then
-            CharNode(x :?> MfmCharNode)
-        else
-            MfmNode x
+    let followedByChar c = nextCharSatisfies <| fun ch -> c = ch
 
     let folder (current, result) node =
         match (node: MfmNode), (current: char list) with
-        | CharNode node, _ -> node.Char :: current, result
-        | MfmNode node, [] -> current, node :: result
-        | MfmNode node, _ -> [], node :: (MfmTextNode(current |> List.toArray |> String) :: result)
+        | :? MfmCharNode as ch, _ -> ch.Char :: current, result
+        | node, [] -> current, node :: result
+        | node, _ -> [], node :: (MfmTextNode(current |> List.toArray |> String) :: result)
+
+    let inlineFolder (current, result) node =
+        match (node: MfmInlineNode), (current: char list) with
+        | :? MfmCharNode as ch, _ -> ch.Char :: current, result
+        | node, [] -> current, node :: result
+        | node, _ -> [], node :: (MfmTextNode(current |> List.toArray |> String) :: result)
 
     let aggregateText nodes =
         nodes
@@ -136,7 +176,12 @@ module private MfmParser =
             | current, result -> MfmTextNode(current |> List.toArray |> String) :: result
 
     let aggregateTextInline nodes =
-        nodes |> aggregateText |> List.map (fun x -> x :?> MfmInlineNode)
+        nodes
+        |> List.rev
+        |> List.fold inlineFolder ([], [])
+        |> function
+            | [], result -> result
+            | current, result -> MfmTextNode(current |> List.toArray |> String) :: result
 
     let domainComponent =
         many1Chars (
@@ -174,20 +219,126 @@ module private MfmParser =
         | None -> None
         | Some items -> items |> dict |> Some
 
-    let pushLine: Parser<unit, int64> =
+    let pushLine: Parser<unit, UserState> =
         fun stream ->
-            stream.UserState <- stream.Line
+            stream.UserState <-
+                { stream.UserState with
+                    LastLine = stream.Line }
+
             Reply(())
 
-    let assertLine: Parser<unit, int64> =
+    let assertLine: Parser<unit, UserState> =
+        let error = messageError "Line changed"
+
         fun stream ->
-            match stream.UserState = stream.Line with
+            match stream.UserState.LastLine = stream.Line with
             | true -> Reply(())
-            | false -> Reply(Error, messageError "Line changed")
+            | false -> Reply(Error, error)
+
+    let assertParen = userStateSatisfies <| fun u -> u.ParenthesisStack.Length > 0
+    let assertNoParen = userStateSatisfies <| fun u -> u.ParenthesisStack.Length = 0
+
+    let pushParen =
+        updateUserState
+        <| fun u ->
+            { u with
+                ParenthesisStack = '(' :: u.ParenthesisStack }
+
+    let popParen =
+        assertParen
+        >>. updateUserState (fun u ->
+            { u with
+                ParenthesisStack = List.tail u.ParenthesisStack })
+
+    let clearParen = updateUserState <| fun u -> { u with ParenthesisStack = [] }
+
+    let (|GreaterEqualThan|_|) k value = if value >= k then Some() else None
+
+    let restOfLineContains (s: string) : Parser<unit, UserState> =
+        let error = messageError "No match found"
+
+        fun (stream: CharStream<_>) ->
+            let pos = stream.Position
+            let rest = stream.ReadRestOfLine false
+            do stream.Seek pos.Index
+
+            match rest with
+            | c when c.Contains(s) -> Reply(())
+            | _ -> Reply(Error, error)
+
+    let restOfLineContainsChar (c: char) : Parser<unit, UserState> =
+        let error = messageError "No match found"
+        let func ch = ch <> c && isNotNewline ch
+
+        fun (stream: CharStream<_>) ->
+            let pos = stream.Position
+            let _ = stream.SkipCharsOrNewlinesWhile(func)
+            let ch = stream.Read()
+            do stream.Seek pos.Index
+
+            match ch with
+            | m when m = c -> Reply(())
+            | _ -> Reply(Error, error)
+
+    let restOfSegmentContains (s: string, segment: char -> bool) : Parser<unit, UserState> =
+        let error = messageError "No match found"
+
+        fun (stream: CharStream<_>) ->
+            let pos = stream.Position
+            let rest = stream.ReadCharsOrNewlinesWhile(segment, false)
+            do stream.Seek pos.Index
+
+            match rest with
+            | c when c.Contains s -> Reply(())
+            | _ -> Reply(Error, error)
+
+    let restOfStreamContains (s: string) : Parser<unit, UserState> =
+        restOfSegmentContains (s, (fun _ -> true))
+
+    let streamMatches (s: string) : Parser<unit, UserState> =
+        fun stream ->
+            match stream.Match s with
+            | true -> Reply(())
+            | false -> Reply(Error, NoErrorMessages)
+
+    let streamMatchesOrEof (s: string) : Parser<unit, UserState> =
+        fun stream ->
+            match (stream.Match s, stream.IsEndOfStream) with
+            | false, false -> Reply(Error, NoErrorMessages)
+            | _ -> Reply(())
+
+    let anyCharExceptNewline: Parser<char, UserState> =
+        let error = messageError "anyCharExceptNewline"
+
+        fun stream ->
+            let c = stream.ReadCharOrNewline()
+
+            if c <> EOS && isNotNewline c then
+                Reply(c)
+            else
+                Reply(Error, error)
+    
+    let anyCharExcept ch: Parser<char, UserState> =
+        let error = messageError "anyCharExcept"
+
+        fun stream ->
+            let c = stream.ReadCharOrNewline()
+
+            if c <> EOS && c <> ch then
+                Reply(c)
+            else
+                Reply(Error, error)
+
+    let createParameterizedParserRef () =
+        let dummyParser _ =
+            fun _ -> failwith "a parser created with createParameterizedParserRef was not initialized"
+
+        let r = ref dummyParser
+        (fun endp -> (fun stream -> r.Value endp stream)), r
 
     // References
-    let node, nodeRef = createParserForwardedToRef ()
-    let inlineNode, inlineNodeRef = createParserForwardedToRef ()
+    let manyInlineNodesTill, manyInlineNodesTillRef = createParameterizedParserRef ()
+    let many1InlineNodesTill, many1InlineNodesTillRef = createParameterizedParserRef ()
 
     let seqFlatten items =
         seq {
@@ -196,40 +347,84 @@ module private MfmParser =
         }
 
     // Patterns
-    let italicPattern = (notFollowedBy <| str "**") >>. skipChar '*'
-    let codePattern = (notFollowedBy <| str "```") >>. skipChar '`'
+    let italicPatternAsterisk = notFollowedByString "**" >>. skipChar '*'
+    let italicPatternUnderscore = notFollowedByString "__" >>. skipChar '_'
+    let codePattern = notFollowedByString "```" >>. skipChar '`'
 
     // Matchers
     let hashtagMatcher = letter <|> digit <|> anyOf "-_"
     let hashtagSatisfier = attempt hashtagMatcher
 
     // Node parsers
+    let italicAsteriskNode =
+        previousCharSatisfiesNot isNotWhitespace
+        >>. italicPatternAsterisk
+        >>. restOfLineContainsChar '*' // TODO: this doesn't cover the case where a bold node ends before the italic one
+        >>. pushLine // Remove when above TODO is resolved
+        >>. manyInlineNodesTill italicPatternAsterisk
+        .>> assertLine // Remove when above TODO is resolved
+        |>> fun c -> MfmItalicNode(aggregateTextInline c, Symbol) :> MfmNode
 
-    let italicNode =
-        (italicPattern >>. pushLine >>. manyTill inlineNode italicPattern .>> assertLine)
-        <|> (skipString "<i>" >>. pushLine >>. manyTill inlineNode (skipString "</i>")
-             .>> assertLine)
-        |>> fun c -> MfmItalicNode(aggregateTextInline c) :> MfmNode
+    let italicUnderscoreNode =
+        previousCharSatisfiesNot isNotWhitespace
+        >>. italicPatternUnderscore
+        >>. restOfLineContainsChar '_' // TODO: this doesn't cover the case where a bold node ends before the italic one
+        >>. pushLine // Remove when above TODO is resolved
+        >>. manyInlineNodesTill italicPatternUnderscore
+        .>> assertLine // Remove when above TODO is resolved
+        |>> fun c -> MfmItalicNode(aggregateTextInline c, Symbol) :> MfmNode
 
-    let boldNode =
-        (skipString "**" >>. pushLine >>. manyTill inlineNode (skipString "**")
-         .>> assertLine)
-        <|> (skipString "<b>" >>. pushLine >>. manyTill inlineNode (skipString "</b>")
-             .>> assertLine)
-        |>> fun c -> MfmBoldNode(aggregateTextInline c) :> MfmNode
+    let italicTagNode =
+        skipString "<i>"
+        >>. restOfStreamContains "</i>"
+        >>. manyInlineNodesTill (skipString "</i>")
+        |>> fun c -> MfmItalicNode(aggregateTextInline c, HtmlTag) :> MfmNode
+
+    let boldAsteriskNode =
+        previousCharSatisfiesNot isNotWhitespace
+        >>. skipString "**"
+        >>. restOfLineContains "**"
+        >>. manyInlineNodesTill (skipString "**")
+        |>> fun c -> MfmBoldNode(aggregateTextInline c, Symbol) :> MfmNode
+
+    let boldUnderscoreNode =
+        previousCharSatisfiesNot isNotWhitespace
+        >>. skipString "__"
+        >>. restOfLineContains "__"
+        >>. manyInlineNodesTill (skipString "__")
+        |>> fun c -> MfmBoldNode(aggregateTextInline c, Symbol) :> MfmNode
+
+    let boldTagNode =
+        skipString "<b>"
+        >>. restOfStreamContains "</b>"
+        >>. manyInlineNodesTill (skipString "</b>")
+        |>> fun c -> MfmBoldNode(aggregateTextInline c, HtmlTag) :> MfmNode
 
     let strikeNode =
-        skipString "~~" >>. pushLine >>. manyTill inlineNode (skipString "~~")
-        .>> assertLine
-        |>> fun c -> MfmStrikeNode(aggregateTextInline c) :> MfmNode
+        skipString "~~"
+        >>. restOfLineContains "~~"
+        >>. manyInlineNodesTill (skipString "~~")
+        |>> fun c -> MfmStrikeNode(aggregateTextInline c, Symbol) :> MfmNode
+
+    let strikeTagNode =
+        skipString "<s>"
+        >>. restOfStreamContains "</s>"
+        >>. manyInlineNodesTill (skipString "</s>")
+        |>> fun c -> MfmStrikeNode(aggregateTextInline c, HtmlTag) :> MfmNode
 
     let codeNode =
-        codePattern >>. pushLine >>. manyCharsTill anyChar codePattern .>> assertLine
+        codePattern
+        >>. restOfLineContainsChar '`' // TODO: this doesn't cover the case where a code block node ends before the inline one
+        >>. pushLine // Remove when above TODO is resolved
+        >>. manyCharsTill anyChar codePattern
+        .>> assertLine // Remove when above TODO is resolved
         |>> fun v -> MfmInlineCodeNode(v) :> MfmNode
 
     let codeBlockNode =
         opt skipNewline
         >>. opt skipNewline
+        >>. followedByString "```"
+        >>. restOfStreamContains "```"
         >>. previousCharSatisfiesNot isNotNewline
         >>. skipString "```"
         >>. opt (many1CharsTill asciiLetter (lookAhead newline))
@@ -240,38 +435,49 @@ module private MfmParser =
         |>> fun (lang: string option, code: string) -> MfmCodeBlockNode(code, lang) :> MfmNode
 
     let mathNode =
-        skipString "\(" >>. pushLine >>. manyCharsTill anyChar (skipString "\)")
-        .>> assertLine
+        skipString "\("
+        >>. restOfLineContains "\)"
+        >>. manyCharsTill anyChar (skipString "\)")
         |>> fun f -> MfmMathInlineNode(f) :> MfmNode
 
     let mathBlockNode =
         previousCharSatisfiesNot isNotWhitespace
         >>. skipString "\["
+        >>. restOfStreamContains "\]"
         >>. many1CharsTill anyChar (skipString "\]")
         |>> fun f -> MfmMathBlockNode(f) :> MfmNode
 
     let emojiCodeNode =
         skipChar ':'
+        >>. restOfLineContainsChar ':'
         >>. manyCharsTill (satisfy isAsciiLetter <|> satisfy isDigit <|> anyOf "+-_") (skipChar ':')
         |>> fun e -> MfmEmojiCodeNode(e) :> MfmNode
 
     let fnNode =
-        skipString "$[" >>. many1Chars asciiLower
+        skipString "$["
+        >>. restOfStreamContains "]"
+        >>. many1Chars (asciiLower <|> digit)
         .>>. opt (skipChar '.' >>. sepBy1 fnArg (skipChar ','))
         .>> skipChar ' '
-        .>>. many1Till inlineNode (skipChar ']')
+        .>>. many1InlineNodesTill (skipChar ']')
         |>> fun ((n, o), c) -> MfmFnNode(n, fnDict o, aggregateTextInline c) :> MfmNode
 
     let plainNode =
-        skipString "<plain>" >>. manyCharsTill anyChar (skipString "</plain>")
+        skipString "<plain>"
+        >>. restOfStreamContains "</plain>"
+        >>. manyCharsTill anyChar (skipString "</plain>")
         |>> fun v -> MfmPlainNode(v) :> MfmNode
 
     let smallNode =
-        skipString "<small>" >>. manyTill inlineNode (skipString "</small>")
+        skipString "<small>"
+        >>. restOfStreamContains "</small>"
+        >>. manyInlineNodesTill (skipString "</small>")
         |>> fun c -> MfmSmallNode(aggregateTextInline c) :> MfmNode
 
     let centerNode =
-        skipString "<center>" >>. manyTill inlineNode (skipString "</center>")
+        skipString "<center>"
+        >>. restOfStreamContains "</center>"
+        >>. manyInlineNodesTill (skipString "</center>")
         |>> fun c -> MfmCenterNode(aggregateTextInline c) :> MfmNode
 
     let mentionNode =
@@ -297,39 +503,48 @@ module private MfmParser =
         >>. many1CharsTill hashtagMatcher (notFollowedBy hashtagSatisfier)
         |>> fun h -> MfmHashtagNode(h) :> MfmNode
 
-    let urlNodePlain =
+    let urlNode =
         lookAhead (skipString "https://" <|> skipString "http://")
-        >>. manyCharsTill anyChar (nextCharSatisfies isWhitespace <|> nextCharSatisfies (isAnyOf "()") <|> eof) //FIXME: this needs significant improvements
-        >>= fun uri ->
+        >>. previousCharSatisfiesNot (fun c -> c = '<')
+        >>. many1CharsTill
+                ((pchar '(' .>> pushParen) <|> (pchar ')' .>> popParen) <|> anyCharExcept '>')
+                (nextCharSatisfies isWhitespace
+                 <|> (assertNoParen >>. followedByChar ')')
+                 <|> eof)
+        .>> clearParen
+        |>> fun uri ->
             match Uri.TryCreate(uri, UriKind.Absolute) with
             | true, finalUri ->
                 match finalUri.Scheme with
-                | "http" -> preturn (MfmUrlNode(uri, false) :> MfmNode)
-                | "https" -> preturn (MfmUrlNode(uri, false) :> MfmNode)
-                | _ -> fail "invalid scheme"
-            | _ -> fail "invalid url"
+                | "http" -> MfmUrlNode(uri, false) :> MfmNode
+                | "https" -> MfmUrlNode(uri, false) :> MfmNode
+                | _ -> MfmTextNode(uri) :> MfmNode
+            | _ -> MfmTextNode(uri) :> MfmNode
 
     let urlNodeBrackets =
         skipChar '<'
         >>. lookAhead (skipString "https://" <|> skipString "http://")
-        >>. manyCharsTill anyChar (skipChar '>')
-        >>= fun uri ->
+        >>. restOfLineContainsChar '>' // This intentionally breaks compatibility with mfm-js, as there's no reason to allow newlines in urls
+        >>. many1CharsTill anyChar (skipChar '>')
+        |>> fun uri ->
             match Uri.TryCreate(uri, UriKind.Absolute) with
             | true, finalUri ->
                 match finalUri.Scheme with
-                | "http" -> preturn (MfmUrlNode(uri, true) :> MfmNode)
-                | "https" -> preturn (MfmUrlNode(uri, true) :> MfmNode)
-                | _ -> fail "invalid scheme"
-            | _ -> fail "invalid url"
-
-    let urlNode = urlNodePlain <|> urlNodeBrackets
+                | "http" -> MfmUrlNode(uri, true) :> MfmNode
+                | "https" -> MfmUrlNode(uri, true) :> MfmNode
+                | _ -> MfmTextNode(uri) :> MfmNode
+            | _ -> MfmTextNode(uri) :> MfmNode
 
     let linkNode =
         (opt (pchar '?'))
-        .>>. (pchar '[' >>. manyCharsTill anyChar (pchar ']'))
+        .>>. (pchar '[' >>. restOfLineContainsChar ']' >>. manyCharsTill anyChar (pchar ']'))
         .>>. (pchar '('
+              >>. restOfLineContainsChar ')'
               >>. lookAhead (skipString "https://" <|> skipString "http://")
-              >>. manyCharsTill anyChar (pchar ')'))
+              >>. manyCharsTill
+                      ((pchar '(' .>> pushParen) <|> (pchar ')' .>> popParen) <|> anyCharExceptNewline)
+                      (assertNoParen >>. skipChar ')'))
+        .>> clearParen
         >>= fun ((silent, text), uri) ->
             match Uri.TryCreate(uri, UriKind.Absolute) with
             | true, finalUri ->
@@ -344,7 +559,7 @@ module private MfmParser =
         >>. many1 (
             pchar '>'
             >>. (opt <| pchar ' ')
-            >>. (many1Till inlineNode (skipNewline <|> eof))
+            >>. (many1InlineNodesTill (skipNewline <|> eof))
         )
         .>> (opt <| attempt (skipNewline >>. (notFollowedBy <| pchar '>')))
         .>>. (opt <| attempt (skipNewline >>. (followedBy <| pchar '>')) .>>. opt eof)
@@ -360,40 +575,89 @@ module private MfmParser =
 
     let charNode = anyChar |>> fun v -> MfmCharNode(v) :> MfmNode
 
-    // Node collection
-    let inlineNodeSeq =
-        [ italicNode
-          boldNode
-          strikeNode
-          hashtagNode
-          mentionNode
-          codeNode
-          urlNode
-          linkNode
-          mathNode
-          emojiCodeNode
-          fnNode
-          charNode ]
+    // Custom parser for higher throughput
+    type ParseMode =
+        | Full
+        | Inline
+        | Simple
 
-    //TODO: still missing: FnNode
+    let parseNode (m: ParseMode) =
+        let inlineTagNodes =
+            [ plainNode
+              smallNode
+              italicTagNode
+              boldTagNode
+              strikeTagNode
+              urlNodeBrackets ]
 
-    let blockNodeSeq =
-        [ plainNode; centerNode; smallNode; codeBlockNode; mathBlockNode; quoteNode ]
+        let failIfTimeout: Parser<unit, UserState> =
+            let error = messageError "Timeout exceeded"
 
-    let nodeSeq = [ blockNodeSeq; inlineNodeSeq ]
+            fun (stream: CharStream<_>) ->
+                match stream.UserState.TimeoutReached with
+                | true -> Reply(FatalError, error)
+                | _ -> Reply(())
+
+        let prefixedNode (m: ParseMode) : Parser<MfmNode, UserState> =
+            fun (stream: CharStream<_>) ->
+                match stream.UserState.Depth with
+                | GreaterEqualThan 20 -> stream |> charNode
+                | _ ->
+                    match (stream.Peek(), m) with
+                    // Block nodes, ordered by expected frequency
+                    | '`', Full -> codeBlockNode <|> codeNode
+                    | '\n', Full when stream.Match("\n```") -> codeBlockNode
+                    | '\n', Full when stream.Match("\n\n```") -> codeBlockNode
+                    | '>', Full -> quoteNode
+                    | '<', Full when stream.Match "<center>" -> centerNode
+                    | '\\', Full when stream.Match "\\[" -> mathBlockNode
+                    // Inline nodes, ordered by expected frequency
+                    | '*', (Full | Inline) -> italicAsteriskNode <|> boldAsteriskNode
+                    | '_', (Full | Inline) -> italicUnderscoreNode <|> boldUnderscoreNode
+                    | '@', (Full | Inline) -> mentionNode
+                    | '#', (Full | Inline) -> hashtagNode
+                    | '`', Inline -> codeNode
+                    | 'h', (Full | Inline) when stream.Match "http" -> urlNode
+                    | ':', (Full | Inline | Simple) -> emojiCodeNode
+                    | '~', (Full | Inline) when stream.Match "~~" -> strikeNode
+                    | '[', (Full | Inline) -> linkNode
+                    | '<', (Full | Inline) -> choice inlineTagNodes
+                    | '<', Simple when stream.Match "<plain>" -> plainNode
+                    | '\\', (Full | Inline) when stream.Match "\\(" -> mathNode
+                    | '$', (Full | Inline) when stream.Match "$[" -> fnNode
+                    | '?', (Full | Inline) when stream.Match "?[" -> linkNode
+                    // Fallback to char node
+                    | _ -> charNode
+                    <| stream
+
+        failIfTimeout >>. (attempt <| prefixedNode m <|> charNode)
+
+    // Parser abstractions
+    let node = parseNode Full
+    let simple = parseNode Simple
+    let inlinep = parseNode Inline |>> fun v -> v :?> MfmInlineNode
 
     // Populate references
-    do nodeRef.Value <- choice <| seqAttempt (seqFlatten <| nodeSeq)
-
-    do inlineNodeRef.Value <- choice <| (seqAttempt inlineNodeSeq) |>> fun v -> v :?> MfmInlineNode
+    let pushDepth = updateUserState (fun u -> { u with Depth = (u.Depth + 1) })
+    let popDepth = updateUserState (fun u -> { u with Depth = (u.Depth - 1) })
+    do manyInlineNodesTillRef.Value <- fun endp -> pushDepth >>. manyTill inlinep endp .>> popDepth
+    do many1InlineNodesTillRef.Value <- fun endp -> pushDepth >>. many1Till inlinep endp .>> popDepth
 
     // Final parse command
     let parse = spaces >>. manyTill node eof .>> spaces
+    let parseSimple = spaces >>. manyTill simple eof .>> spaces
 
 open MfmParser
 
 module Mfm =
-    let parse str =
-        match runParserOnString parse 0 "" str with
-        | Success(result, _, _) -> aggregateText result
-        | Failure(s, _, _) -> failwith $"Failed to parse MFM: {s}"
+    let internal runParser p str =
+        let state = UserState.Default()
+        let result = runParserOnString p state "" str
+
+        match (result, state.TimeoutReached) with
+        | Success(result, _, _), _ -> aggregateText result
+        | Failure _, true -> [ MfmTimeoutTextNode(str) ]
+        | Failure(s, _, _), false -> failwith $"Failed to parse MFM: {s}"
+
+    let parse str = runParser parse str
+    let parseSimple str = runParser parseSimple str

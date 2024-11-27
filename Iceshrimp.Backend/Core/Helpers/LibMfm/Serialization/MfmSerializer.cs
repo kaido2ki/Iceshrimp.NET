@@ -5,7 +5,9 @@ namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 
 public static class MfmSerializer
 {
-	public static string Serialize(IEnumerable<MfmNode> nodes)
+	public static string Serialize(IEnumerable<MfmNode> nodes) => SerializeInternal(nodes).Trim();
+
+	private static string SerializeInternal(IEnumerable<MfmNode> nodes)
 	{
 		var result = new StringBuilder();
 
@@ -33,17 +35,19 @@ public static class MfmSerializer
 					result.Append(" [search]");
 					break;
 				}
-				case MfmBoldNode:
+				case MfmBoldNode mfmBoldNode:
 				{
-					result.Append("**");
-					result.Append(Serialize(node.Children));
-					result.Append("**");
+					var start = mfmBoldNode.Type.IsSymbol ? "**" : "<b>";
+					var end   = mfmBoldNode.Type.IsSymbol ? "**" : "</b>";
+					result.Append(start);
+					result.Append(SerializeInternal(node.Children));
+					result.Append(end);
 					break;
 				}
 				case MfmCenterNode:
 				{
 					result.Append("<center>");
-					result.Append(Serialize(node.Children));
+					result.Append(SerializeInternal(node.Children));
 					result.Append("</center>");
 					break;
 				}
@@ -64,7 +68,7 @@ public static class MfmSerializer
 					}
 
 					result.Append(' ');
-					result.Append(Serialize(node.Children));
+					result.Append(SerializeInternal(node.Children));
 					result.Append(']');
 					break;
 				}
@@ -78,18 +82,20 @@ public static class MfmSerializer
 					result.Append($"`{mfmInlineCodeNode.Code}`");
 					break;
 				}
-				case MfmItalicNode:
+				case MfmItalicNode mfmItalicNode:
 				{
-					result.Append('*');
-					result.Append(Serialize(node.Children));
-					result.Append('*');
+					var start = mfmItalicNode.Type.IsSymbol ? "*" : "<i>";
+					var end   = mfmItalicNode.Type.IsSymbol ? "*" : "</i>";
+					result.Append(start);
+					result.Append(SerializeInternal(node.Children));
+					result.Append(end);
 					break;
 				}
 				case MfmLinkNode mfmLinkNode:
 				{
 					if (mfmLinkNode.Silent) result.Append('?');
 					result.Append('[');
-					result.Append(Serialize(node.Children));
+					result.Append(SerializeInternal(node.Children));
 					result.Append(']');
 					result.Append($"({mfmLinkNode.Url})");
 					break;
@@ -119,15 +125,27 @@ public static class MfmSerializer
 				case MfmSmallNode:
 				{
 					result.Append("<small>");
-					result.Append(Serialize(node.Children));
+					result.Append(SerializeInternal(node.Children));
 					result.Append("</small>");
 					break;
 				}
-				case MfmStrikeNode:
+				case MfmStrikeNode mfmStrikeNode:
 				{
-					result.Append("~~");
-					result.Append(Serialize(node.Children));
-					result.Append("~~");
+					var start = mfmStrikeNode.Type.IsSymbol ? "~~" : "<s>";
+					var end   = mfmStrikeNode.Type.IsSymbol ? "~~" : "</s>";
+					result.Append(start);
+					result.Append(SerializeInternal(node.Children));
+					result.Append(end);
+					break;
+				}
+				case MfmTimeoutTextNode mfmTimeoutTextNode:
+				{
+					// This mitigates MFM DoS payloads, since every incoming note is parsed & reserialized.
+					// We need to remove all </plain> tags to make sure that the mitigation can't be bypassed by adding </plain> to the payload.
+					// Opening <plain> tags are removed because they are now unnecessary.
+					result.Append("<plain>");
+					result.Append(mfmTimeoutTextNode.Text.Replace("<plain>", "").Replace("</plain>", ""));
+					result.Append("</plain>");
 					break;
 				}
 				case MfmTextNode mfmTextNode:
@@ -145,7 +163,7 @@ public static class MfmSerializer
 				}
 				case MfmQuoteNode mfmQuoteNode:
 				{
-					var serialized = Serialize(node.Children);
+					var serialized = SerializeInternal(node.Children);
 					var split      = serialized.Split('\n');
 
 					for (var i = 0; i < split.Length; i++)
@@ -167,6 +185,6 @@ public static class MfmSerializer
 			}
 		}
 
-		return result.ToString().Trim();
+		return result.ToString();
 	}
 }
