@@ -150,22 +150,22 @@ module private MfmParser =
 
     let isAsciiLetterOrNumber c = Char.IsAsciiLetter c || Char.IsDigit c
     let isLetterOrNumber c = Char.IsLetterOrDigit c
-    let isNewline c = '\n'.Equals(c)
-    let isNotNewline c = not (isNewline c)
+    let isNewline c = '\n' = c
+    let isNotNewline c = '\n' <> c
 
     let followedByChar c = nextCharSatisfies <| fun ch -> c = ch
 
-    let (|CharNode|MfmNode|) (x: MfmNode) =
-        if x :? MfmCharNode then
-            CharNode(x :?> MfmCharNode)
-        else
-            MfmNode x
-
     let folder (current, result) node =
         match (node: MfmNode), (current: char list) with
-        | CharNode node, _ -> node.Char :: current, result
-        | MfmNode node, [] -> current, node :: result
-        | MfmNode node, _ -> [], node :: (MfmTextNode(current |> List.toArray |> String) :: result)
+        | :? MfmCharNode as ch, _ -> ch.Char :: current, result
+        | node, [] -> current, node :: result
+        | node, _ -> [], node :: (MfmTextNode(current |> List.toArray |> String) :: result)
+
+    let inlineFolder (current, result) node =
+        match (node: MfmInlineNode), (current: char list) with
+        | :? MfmCharNode as ch, _ -> ch.Char :: current, result
+        | node, [] -> current, node :: result
+        | node, _ -> [], node :: (MfmTextNode(current |> List.toArray |> String) :: result)
 
     let aggregateText nodes =
         nodes
@@ -176,7 +176,12 @@ module private MfmParser =
             | current, result -> MfmTextNode(current |> List.toArray |> String) :: result
 
     let aggregateTextInline nodes =
-        nodes |> aggregateText |> List.map (fun x -> x :?> MfmInlineNode)
+        nodes
+        |> List.rev
+        |> List.fold inlineFolder ([], [])
+        |> function
+            | [], result -> result
+            | current, result -> MfmTextNode(current |> List.toArray |> String) :: result
 
     let domainComponent =
         many1Chars (
