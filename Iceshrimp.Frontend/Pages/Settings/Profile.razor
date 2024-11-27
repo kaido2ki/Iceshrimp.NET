@@ -95,7 +95,7 @@
         {
             UserProfile = await Api.Profile.GetProfileAsync();
             State       = State.Loaded;
-            DisplayName = await Api.Profile.GetDisplayNameAsync() ?? "";
+            DisplayName = await Api.Profile.GetDisplayNameAsync();
         }
         catch (ApiException e)
         {
