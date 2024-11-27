@@ -68,7 +68,7 @@ public class InstanceAccountsConfiguration
 
 public class InstanceStatusesConfiguration(int maxNoteChars)
 {
-	[J("supported_mime_types")]        public List<string> SupportedMimeTypes  => ["text/x.misskeymarkdown"];
+	[J("supported_mime_types")]        public List<string> SupportedMimeTypes  => ["text/plain", "text/x.misskeymarkdown"];
 	[J("max_characters")]              public int          MaxNoteChars        => maxNoteChars;
 	[J("max_media_attachments")]       public int          MaxMediaAttachments => 16;
 	[J("characters_reserved_per_url")] public int          ReservedUrlChars    => 23;
