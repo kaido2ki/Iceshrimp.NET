@@ -13,13 +13,13 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
-    --background-color: #3b364c;
-    --foreground-color: #423c55;
-    --highlight-color: #544d77;
-    --hover-color: #544f6f;
+    --background-color: #353044;
+    --foreground-color: #3b364c;
+    --highlight-color: #524b6a;
+    --hover-color: #5e5679;
     --accent-color: linear-gradient(to right, #9A92FF, #8372F5);
-    --notice-color: #ffc684;
-    --font-color: rgba(255, 255, 255, 0.87);
+    --notice-color: #ff9a92;
+    --font-color: #e7edff;
     --link: #9E9EFF
 
 }
@@ -272,5 +272,15 @@ textarea {
 }
 
 code {
-    color: #c02d76;
+    background-color: #050507;
+    color: #fff9e7;
+    border-radius: 0.2em;
+    padding: 0.1em;
+}
+
+pre:has(code){
+    background-color: #050507;
+    color: #fff9e7;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
 }
