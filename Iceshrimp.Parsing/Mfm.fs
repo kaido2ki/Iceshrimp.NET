@@ -223,10 +223,11 @@ module private MfmParser =
             Reply(())
 
     let assertLine: Parser<unit, UserState> =
+        let error = messageError "Line changed"
         fun stream ->
             match stream.UserState.LastLine = stream.Line with
             | true -> Reply(())
-            | false -> Reply(Error, messageError "Line changed")
+            | false -> Reply(Error, error)
 
     let assertParen = userStateSatisfies <| fun u -> u.ParenthesisStack.Length > 0
     let assertNoParen = userStateSatisfies <| fun u -> u.ParenthesisStack.Length = 0
@@ -248,6 +249,7 @@ module private MfmParser =
     let (|GreaterEqualThan|_|) k value = if value >= k then Some() else None
 
     let restOfLineContains (s: string) : Parser<unit, UserState> =
+        let error = messageError "No match found"
         fun (stream: CharStream<_>) ->
             let pos = stream.Position
             let rest = stream.ReadRestOfLine false
@@ -255,9 +257,10 @@ module private MfmParser =
 
             match rest with
             | c when c.Contains(s) -> Reply(())
-            | _ -> Reply(Error, messageError "No match found")
+            | _ -> Reply(Error, error)
 
     let restOfSegmentContains (s: string, segment: char -> bool) : Parser<unit, UserState> =
+        let error = messageError "No match found"
         fun (stream: CharStream<_>) ->
             let pos = stream.Position
             let rest = stream.ReadCharsOrNewlinesWhile(segment, false)
@@ -265,7 +268,7 @@ module private MfmParser =
 
             match rest with
             | c when c.Contains s -> Reply(())
-            | _ -> Reply(Error, messageError "No match found")
+            | _ -> Reply(Error, error)
 
     let restOfStreamContains (s: string) : Parser<unit, UserState> =
         restOfSegmentContains (s, (fun _ -> true))
@@ -282,14 +285,15 @@ module private MfmParser =
             | false, false -> Reply(Error, NoErrorMessages)
             | _ -> Reply(())
 
-    let anyCharExceptNewline: Parser<char, 'u> =
+    let anyCharExceptNewline: Parser<char, UserState> =
+        let error = messageError "anyCharExceptNewline"
         fun stream ->
             let c = stream.ReadCharOrNewline()
 
             if c <> EOS && isNotNewline c then
                 Reply(c)
             else
-                Reply(Error, messageError "anyCharExceptNewline")
+                Reply(Error, error)
 
     // References
     let inlineNode, inlineNodeRef = createParserForwardedToRef ()
