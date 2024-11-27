@@ -29,6 +29,9 @@ module MfmNodeTypes =
         inherit MfmInlineNode([])
         member val Text = v
 
+    type MfmTimeoutTextNode(v: string) =
+        inherit MfmTextNode(v)
+
     type MfmItalicNode(c, t) =
         inherit MfmInlineNode(c)
         member val Type: InlineNodeType = t
@@ -611,7 +614,7 @@ module Mfm =
 
         match (result, state.TimeoutReached) with
         | Success(result, _, _), _ -> aggregateText result
-        | Failure _, true -> [ MfmTextNode(str) ]
+        | Failure _, true -> [ MfmTimeoutTextNode(str) ]
         | Failure(s, _, _), false -> failwith $"Failed to parse MFM: {s}"
 
     let parse str = runParser parse str
