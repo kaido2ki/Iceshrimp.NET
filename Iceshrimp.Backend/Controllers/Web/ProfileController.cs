@@ -16,7 +16,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/profile")]
 [Produces(MediaTypeNames.Application.Json)]
-public class ProfileController(UserService userSvc) : ControllerBase
+public class ProfileController(UserService userSvc, DriveService driveSvc) : ControllerBase
 {
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -68,6 +68,55 @@ public class ProfileController(UserService userSvc) : ControllerBase
 
 		var prevAvatarId = user.AvatarId;
 		var prevBannerId = user.BannerId;
+		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
+	}
+
+	[HttpPost("avatar")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task UpdateAvatarAsync(IFormFile file)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var prevAvatarId = user.AvatarId;
+		var prevBannerId = user.BannerId;
+		
+		if (!file.ContentType.StartsWith("image/"))
+			throw GracefulException.BadRequest("Avatar must be an image");
+
+		var rq = new DriveFileCreationRequest
+		{
+			Filename    = file.FileName,
+			IsSensitive = false,
+			MimeType    = file.ContentType
+		};
+
+		var avatar = await driveSvc.StoreFileAsync(file.OpenReadStream(), user, rq);
+
+		user.Avatar         = avatar;
+		user.AvatarBlurhash = avatar.Blurhash;
+		user.AvatarUrl      = avatar.AccessUrl;
+
+		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
+	}
+
+	[HttpDelete("avatar")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task DeleteAvatarAsync()
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var prevAvatarId = user.AvatarId;
+		var prevBannerId = user.BannerId;
+
+		if (prevAvatarId == null)
+			throw GracefulException.NotFound("You do not have an avatar");
+
+		user.Avatar         = null;
+		user.AvatarBlurhash = null;
+		user.AvatarUrl      = null;
+
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
 }
