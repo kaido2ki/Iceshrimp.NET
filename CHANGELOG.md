@@ -1,3 +1,15 @@
+## v2024.1-beta4.security2
+This is a security hotfix release. It's identical to v2024.1-beta4.security1, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
+
+### Backend
+- Several DoS & stack overflow vulnerabilities in the MFM parser were resolved
+
+### Miscellaneous
+- Performance of the MFM parser (and by extension, the frontend) should be significantly improved, as the backport of the security fixes also contains all other performance-related changes since v2024.1-beta4.
+
+### Attribution
+This release was made possible by project contributors: Laura Hausmann
+
 ## v2024.1-beta4.security1
 This is a security hotfix release. It's identical to v2024.1-beta4, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
 
