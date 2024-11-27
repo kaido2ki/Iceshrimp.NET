@@ -74,10 +74,10 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 	
 	[HttpGet("avatar")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public string? GetAvatarUrl()
+	public string GetAvatarUrl()
 	{
 		var user = HttpContext.GetUserOrFail();
-		return user.AvatarUrl;
+		return user.AvatarUrl ?? "";
 	}
 
 	[HttpPost("avatar")]
@@ -131,10 +131,10 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 	
 	[HttpGet("banner")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public string? GetBannerUrl()
+	public string GetBannerUrl()
 	{
 		var user = HttpContext.GetUserOrFail();
-		return user.BannerUrl;
+		return user.BannerUrl ?? "";
 	}
 	
 	[HttpPost("banner")]
@@ -188,10 +188,10 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 
 	[HttpGet("display_name")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public string? GetDisplayName()
+	public string GetDisplayName()
 	{
 		var user = HttpContext.GetUserOrFail();
-		return user.DisplayName;
+		return user.DisplayName ?? "";
 	}
 
 	[HttpPost("display_name")]
