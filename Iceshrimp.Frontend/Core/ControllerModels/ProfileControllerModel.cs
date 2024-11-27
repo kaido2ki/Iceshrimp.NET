@@ -11,6 +11,18 @@ internal class ProfileControllerModel(ApiClient api)
 	public Task UpdateProfileAsync(UserProfileEntity request) =>
 		api.CallAsync(HttpMethod.Put, "/profile", data: request);
 	
+	public Task<string> GetAvatarUrlAsync() =>
+		api.CallAsync<string>(HttpMethod.Get, "/profile/avatar");
+	
+	public Task DeleteAvatarAsync() =>
+		api.CallAsync(HttpMethod.Delete, "/profile/avatar");
+	
+	public Task<string> GetBannerUrlAsync() =>
+		api.CallAsync<string>(HttpMethod.Get, "/profile/banner");
+	
+	public Task DeleteBannerAsync() =>
+		api.CallAsync(HttpMethod.Delete, "/profile/banner");
+	
 	public Task<string> GetDisplayNameAsync() =>
 		api.CallAsync<string>(HttpMethod.Get, "/profile/display_name");
 
