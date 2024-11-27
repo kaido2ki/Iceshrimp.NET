@@ -138,6 +138,16 @@ public static class MfmSerializer
 					result.Append(end);
 					break;
 				}
+				case MfmTimeoutTextNode mfmTimeoutTextNode:
+				{
+					// This mitigates MFM DoS payloads, since every incoming note is parsed & reserialized.
+					// We need to remove all </plain> tags to make sure that the mitigation can't be bypassed by adding </plain> to the payload.
+					// Opening <plain> tags are removed because they are now unnecessary.
+					result.Append("<plain>");
+					result.Append(mfmTimeoutTextNode.Text.Replace("<plain>", "").Replace("</plain>", ""));
+					result.Append("</plain>");
+					break;
+				}
 				case MfmTextNode mfmTextNode:
 				{
 					result.Append(mfmTextNode.Text);
