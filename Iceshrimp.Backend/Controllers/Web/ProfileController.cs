@@ -119,4 +119,53 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
+	
+	[HttpPost("banner")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task UpdateBannerAsync(IFormFile file)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var prevAvatarId = user.AvatarId;
+		var prevBannerId = user.BannerId;
+		
+		if (!file.ContentType.StartsWith("image/"))
+			throw GracefulException.BadRequest("Banner must be an image");
+
+		var rq = new DriveFileCreationRequest
+		{
+			Filename    = file.FileName,
+			IsSensitive = false,
+			MimeType    = file.ContentType
+		};
+
+		var banner = await driveSvc.StoreFileAsync(file.OpenReadStream(), user, rq);
+
+		user.Banner         = banner;
+		user.BannerBlurhash = banner.Blurhash;
+		user.BannerUrl      = banner.AccessUrl;
+
+		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
+	}
+
+	[HttpDelete("banner")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task DeleteBannerAsync()
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var prevAvatarId = user.AvatarId;
+		var prevBannerId = user.BannerId;
+
+		if (prevBannerId == null)
+			throw GracefulException.NotFound("You do not have a banner");
+
+		user.Banner         = null;
+		user.BannerBlurhash = null;
+		user.BannerUrl      = null;
+
+		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
+	}
 }
