@@ -10,6 +10,8 @@ This is a security hotfix release. It's identical to v2024.1-beta4.security1, ex
 ### Attribution
 This release was made possible by project contributors: Laura Hausmann
 
+Furthermore, I want to give special thanks to Natty for helping with investigating this vulnerability.
+
 ## v2024.1-beta4.security1
 This is a security hotfix release. It's identical to v2024.1-beta4, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
 
