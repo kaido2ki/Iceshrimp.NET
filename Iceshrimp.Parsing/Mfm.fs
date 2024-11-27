@@ -224,6 +224,7 @@ module private MfmParser =
 
     let assertLine: Parser<unit, UserState> =
         let error = messageError "Line changed"
+
         fun stream ->
             match stream.UserState.LastLine = stream.Line with
             | true -> Reply(())
@@ -250,6 +251,7 @@ module private MfmParser =
 
     let restOfLineContains (s: string) : Parser<unit, UserState> =
         let error = messageError "No match found"
+
         fun (stream: CharStream<_>) ->
             let pos = stream.Position
             let rest = stream.ReadRestOfLine false
@@ -261,6 +263,7 @@ module private MfmParser =
 
     let restOfSegmentContains (s: string, segment: char -> bool) : Parser<unit, UserState> =
         let error = messageError "No match found"
+
         fun (stream: CharStream<_>) ->
             let pos = stream.Position
             let rest = stream.ReadCharsOrNewlinesWhile(segment, false)
@@ -287,6 +290,7 @@ module private MfmParser =
 
     let anyCharExceptNewline: Parser<char, UserState> =
         let error = messageError "anyCharExceptNewline"
+
         fun stream ->
             let c = stream.ReadCharOrNewline()
 
@@ -295,8 +299,16 @@ module private MfmParser =
             else
                 Reply(Error, error)
 
+    let createParameterizedParserRef () =
+        let dummyParser _ =
+            fun _ -> failwith "a parser created with createParameterizedParserRef was not initialized"
+
+        let r = ref dummyParser
+        (fun endp -> (fun stream -> r.Value endp stream)), r
+
     // References
-    let inlineNode, inlineNodeRef = createParserForwardedToRef ()
+    let manyInlineNodesTill, manyInlineNodesTillRef = createParameterizedParserRef ()
+    let many1InlineNodesTill, many1InlineNodesTillRef = createParameterizedParserRef ()
 
     let seqFlatten items =
         seq {
@@ -319,7 +331,7 @@ module private MfmParser =
         >>. italicPatternAsterisk
         >>. restOfLineContains "*"
         >>. pushLine
-        >>. manyTill inlineNode italicPatternAsterisk
+        >>. manyInlineNodesTill italicPatternAsterisk
         .>> assertLine
         |>> fun c -> MfmItalicNode(aggregateTextInline c, Symbol) :> MfmNode
 
@@ -328,14 +340,14 @@ module private MfmParser =
         >>. italicPatternUnderscore
         >>. restOfLineContains "_"
         >>. pushLine
-        >>. manyTill inlineNode italicPatternUnderscore
+        >>. manyInlineNodesTill italicPatternUnderscore
         .>> assertLine
         |>> fun c -> MfmItalicNode(aggregateTextInline c, Symbol) :> MfmNode
 
     let italicTagNode =
         skipString "<i>"
         >>. restOfStreamContains "</i>"
-        >>. manyTill inlineNode (skipString "</i>")
+        >>. manyInlineNodesTill (skipString "</i>")
         |>> fun c -> MfmItalicNode(aggregateTextInline c, HtmlTag) :> MfmNode
 
     let boldAsteriskNode =
@@ -343,7 +355,7 @@ module private MfmParser =
         >>. skipString "**"
         >>. restOfLineContains "**"
         >>. pushLine
-        >>. manyTill inlineNode (skipString "**")
+        >>. manyInlineNodesTill (skipString "**")
         .>> assertLine
         |>> fun c -> MfmBoldNode(aggregateTextInline c, Symbol) :> MfmNode
 
@@ -352,28 +364,28 @@ module private MfmParser =
         >>. skipString "__"
         >>. restOfLineContains "__"
         >>. pushLine
-        >>. manyTill inlineNode (skipString "__")
+        >>. manyInlineNodesTill (skipString "__")
         .>> assertLine
         |>> fun c -> MfmBoldNode(aggregateTextInline c, Symbol) :> MfmNode
 
     let boldTagNode =
         skipString "<b>"
         >>. restOfStreamContains "</b>"
-        >>. manyTill inlineNode (skipString "</b>")
+        >>. manyInlineNodesTill (skipString "</b>")
         |>> fun c -> MfmBoldNode(aggregateTextInline c, HtmlTag) :> MfmNode
 
     let strikeNode =
         skipString "~~"
         >>. restOfLineContains "~~"
         >>. pushLine
-        >>. manyTill inlineNode (skipString "~~")
+        >>. manyInlineNodesTill (skipString "~~")
         .>> assertLine
         |>> fun c -> MfmStrikeNode(aggregateTextInline c, Symbol) :> MfmNode
 
     let strikeTagNode =
         skipString "<s>"
         >>. restOfStreamContains "</s>"
-        >>. manyTill inlineNode (skipString "</s>")
+        >>. manyInlineNodesTill (skipString "</s>")
         |>> fun c -> MfmStrikeNode(aggregateTextInline c, HtmlTag) :> MfmNode
 
     let codeNode =
@@ -425,7 +437,7 @@ module private MfmParser =
         >>. many1Chars (asciiLower <|> digit)
         .>>. opt (skipChar '.' >>. sepBy1 fnArg (skipChar ','))
         .>> skipChar ' '
-        .>>. many1Till inlineNode (skipChar ']')
+        .>>. many1InlineNodesTill (skipChar ']')
         |>> fun ((n, o), c) -> MfmFnNode(n, fnDict o, aggregateTextInline c) :> MfmNode
 
     let plainNode =
@@ -437,13 +449,13 @@ module private MfmParser =
     let smallNode =
         skipString "<small>"
         >>. restOfStreamContains "</small>"
-        >>. manyTill inlineNode (skipString "</small>")
+        >>. manyInlineNodesTill (skipString "</small>")
         |>> fun c -> MfmSmallNode(aggregateTextInline c) :> MfmNode
 
     let centerNode =
         skipString "<center>"
         >>. restOfStreamContains "</center>"
-        >>. manyTill inlineNode (skipString "</center>")
+        >>. manyInlineNodesTill (skipString "</center>")
         |>> fun c -> MfmCenterNode(aggregateTextInline c) :> MfmNode
 
     let mentionNode =
@@ -524,7 +536,7 @@ module private MfmParser =
         >>. many1 (
             pchar '>'
             >>. (opt <| pchar ' ')
-            >>. (many1Till inlineNode (skipNewline <|> eof))
+            >>. (many1InlineNodesTill (skipNewline <|> eof))
         )
         .>> (opt <| attempt (skipNewline >>. (notFollowedBy <| pchar '>')))
         .>>. (opt <| attempt (skipNewline >>. (followedBy <| pchar '>')) .>>. opt eof)
@@ -557,6 +569,7 @@ module private MfmParser =
 
         let failIfTimeout: Parser<unit, UserState> =
             let error = messageError "Timeout exceeded"
+
             fun (stream: CharStream<_>) ->
                 match stream.UserState.TimeoutReached with
                 | true -> Reply(FatalError, error)
@@ -596,14 +609,16 @@ module private MfmParser =
 
         failIfTimeout >>. (attempt <| prefixedNode m <|> charNode)
 
-    // Populate references
-    let pushDepth = updateUserState (fun u -> { u with Depth = (u.Depth + 1) })
-    let popDepth = updateUserState (fun u -> { u with Depth = (u.Depth - 1) })
-    do inlineNodeRef.Value <- pushDepth >>. (parseNode Inline |>> fun v -> v :?> MfmInlineNode) .>> popDepth
-
     // Parser abstractions
     let node = parseNode Full
     let simple = parseNode Simple
+    let inlinep = parseNode Inline |>> fun v -> v :?> MfmInlineNode
+
+    // Populate references
+    let pushDepth = updateUserState (fun u -> { u with Depth = (u.Depth + 1) })
+    let popDepth = updateUserState (fun u -> { u with Depth = (u.Depth - 1) })
+    do manyInlineNodesTillRef.Value <- fun endp -> pushDepth >>. manyTill inlinep endp .>> popDepth
+    do many1InlineNodesTillRef.Value <- fun endp -> pushDepth >>. many1Till inlinep endp .>> popDepth
 
     // Final parse command
     let parse = spaces >>. manyTill node eof .>> spaces
