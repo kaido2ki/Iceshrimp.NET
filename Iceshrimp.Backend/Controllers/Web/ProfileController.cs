@@ -71,6 +71,14 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 		var prevBannerId = user.BannerId;
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
+	
+	[HttpGet("avatar")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public string? GetAvatarUrl()
+	{
+		var user = HttpContext.GetUserOrFail();
+		return user.AvatarUrl;
+	}
 
 	[HttpPost("avatar")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -119,6 +127,14 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 		user.AvatarUrl      = null;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
+	}
+	
+	[HttpGet("banner")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public string? GetBannerUrl()
+	{
+		var user = HttpContext.GetUserOrFail();
+		return user.BannerUrl;
 	}
 	
 	[HttpPost("banner")]
