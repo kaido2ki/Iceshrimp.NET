@@ -261,6 +261,20 @@ module private MfmParser =
             | c when c.Contains(s) -> Reply(())
             | _ -> Reply(Error, error)
 
+    let restOfLineContainsChar (c: char) : Parser<unit, UserState> =
+        let error = messageError "No match found"
+        let func ch = ch <> c && isNotNewline ch
+
+        fun (stream: CharStream<_>) ->
+            let pos = stream.Position
+            let _ = stream.SkipCharsOrNewlinesWhile(func)
+            let ch = stream.Read()
+            do stream.Seek pos.Index
+
+            match ch with
+            | m when m = c -> Reply(())
+            | _ -> Reply(Error, error)
+
     let restOfSegmentContains (s: string, segment: char -> bool) : Parser<unit, UserState> =
         let error = messageError "No match found"
 
@@ -329,19 +343,19 @@ module private MfmParser =
     let italicAsteriskNode =
         previousCharSatisfiesNot isNotWhitespace
         >>. italicPatternAsterisk
-        >>. restOfLineContains "*"
-        >>. pushLine
+        >>. restOfLineContainsChar '*' // TODO: this doesn't cover the case where a bold node ends before the italic one
+        >>. pushLine // Remove when above TODO is resolved
         >>. manyInlineNodesTill italicPatternAsterisk
-        .>> assertLine
+        .>> assertLine // Remove when above TODO is resolved
         |>> fun c -> MfmItalicNode(aggregateTextInline c, Symbol) :> MfmNode
 
     let italicUnderscoreNode =
         previousCharSatisfiesNot isNotWhitespace
         >>. italicPatternUnderscore
-        >>. restOfLineContains "_"
-        >>. pushLine
+        >>. restOfLineContainsChar '_' // TODO: this doesn't cover the case where a bold node ends before the italic one
+        >>. pushLine // Remove when above TODO is resolved
         >>. manyInlineNodesTill italicPatternUnderscore
-        .>> assertLine
+        .>> assertLine // Remove when above TODO is resolved
         |>> fun c -> MfmItalicNode(aggregateTextInline c, Symbol) :> MfmNode
 
     let italicTagNode =
@@ -354,18 +368,14 @@ module private MfmParser =
         previousCharSatisfiesNot isNotWhitespace
         >>. skipString "**"
         >>. restOfLineContains "**"
-        >>. pushLine
         >>. manyInlineNodesTill (skipString "**")
-        .>> assertLine
         |>> fun c -> MfmBoldNode(aggregateTextInline c, Symbol) :> MfmNode
 
     let boldUnderscoreNode =
         previousCharSatisfiesNot isNotWhitespace
         >>. skipString "__"
         >>. restOfLineContains "__"
-        >>. pushLine
         >>. manyInlineNodesTill (skipString "__")
-        .>> assertLine
         |>> fun c -> MfmBoldNode(aggregateTextInline c, Symbol) :> MfmNode
 
     let boldTagNode =
@@ -377,9 +387,7 @@ module private MfmParser =
     let strikeNode =
         skipString "~~"
         >>. restOfLineContains "~~"
-        >>. pushLine
         >>. manyInlineNodesTill (skipString "~~")
-        .>> assertLine
         |>> fun c -> MfmStrikeNode(aggregateTextInline c, Symbol) :> MfmNode
 
     let strikeTagNode =
@@ -390,10 +398,10 @@ module private MfmParser =
 
     let codeNode =
         codePattern
-        >>. restOfLineContains "`"
-        >>. pushLine
+        >>. restOfLineContainsChar '`' // TODO: this doesn't cover the case where a code block node ends before the inline one
+        >>. pushLine // Remove when above TODO is resolved
         >>. manyCharsTill anyChar codePattern
-        .>> assertLine
+        .>> assertLine // Remove when above TODO is resolved
         |>> fun v -> MfmInlineCodeNode(v) :> MfmNode
 
     let codeBlockNode =
@@ -413,9 +421,7 @@ module private MfmParser =
     let mathNode =
         skipString "\("
         >>. restOfLineContains "\)"
-        >>. pushLine
         >>. manyCharsTill anyChar (skipString "\)")
-        .>> assertLine
         |>> fun f -> MfmMathInlineNode(f) :> MfmNode
 
     let mathBlockNode =
