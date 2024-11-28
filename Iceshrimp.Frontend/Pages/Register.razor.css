@@ -18,3 +18,7 @@ input:invalid {
 .logo {
     height: 3rem;
 }
+
+.login-link {
+    margin-top: 2rem;
+}

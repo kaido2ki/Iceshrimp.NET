@@ -27,6 +27,7 @@
                required="required"
                @bind="@Password"/>
         <button class="button" @onclick="Submit" disabled="@Loading">@Loc["Login"]</button>
+        <a class="register-link" href="/register">@Loc["Register a new account"]</a>
     </div>
 
     @if (Loading)
