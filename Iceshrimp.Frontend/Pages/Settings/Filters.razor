@@ -90,7 +90,7 @@
             </div>
             <div class="action section">
                 <h3>@Loc["Filter Action"]</h3>
-                <button @ref="MenuButton" class="positioned button" @onclick="ToggleMenu">
+                <button @ref="MenuButton" class="button" @onclick="ToggleMenu">
                     @if (FilterAction == FilterResponse.FilterAction.Hide)
                     {
                         <Icon Name="Icons.EyeClosed"/>
@@ -128,7 +128,7 @@
                         </div>
                     }
                 </div>
-                <button @ref="ContextButton" class="positioned button" @onclick="ToggleFilterContextMenu">
+                <button @ref="ContextButton" class="button" @onclick="ToggleFilterContextMenu">
                     <Icon Name="Icons.Plus"/>
                     <span>@Loc["Add Filter Context"]</span>
                     <Menu @ref="MenuFilterContexts">

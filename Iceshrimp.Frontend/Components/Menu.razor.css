@@ -2,7 +2,7 @@
     --top: 0px;
     --left: 0px;
     background-color: var(--foreground-color);
-    position: fixed;
+    position: absolute;
     padding: 0.5rem;
     border-radius: 0.5rem;
     border: var(--highlight-color) solid 0.1rem;
