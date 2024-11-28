@@ -487,6 +487,28 @@ public class NoteService(
 		}
 	}
 
+	private List<string> GetInlineMediaUrls(IEnumerable<MfmNode> mfm)
+	{
+		List<string> urls = [];
+
+		foreach (var node in mfm)
+		{
+			if (node is MfmFnNode { Name: "media" } fn)
+			{
+				var urlNode = fn.Children.HeadOrDefault;
+				if (urlNode is MfmUrlNode url)
+				{
+					urls.Add(url.Url);
+				}
+			}
+			
+			urls.AddRange(GetInlineMediaUrls(node.Children));
+		}
+
+		return urls;
+	}
+		
+
 	public async Task<Note> UpdateNoteAsync(NoteUpdateData data)
 	{
 		logger.LogDebug("Processing note update for note {id}", data.Note.Id);
@@ -534,7 +556,6 @@ public class NoteService(
 		{
 			nodes     = MfmParser.Parse(data.Text).ToList();
 			nodes     = mentionsResolver.ResolveMentions(nodes, note.User.Host, mentions, splitDomainMapping).ToList();
-			// todo scan nodes recursively to find inline media and make sure note.fileids has them
 			data.Text = MfmSerializer.Serialize(nodes);
 		}
 
@@ -608,14 +629,29 @@ public class NoteService(
 			note.Text = mentionsResolver.ResolveMentions(data.Text, note.UserHost, mentions, splitDomainMapping);
 		}
 
+		var attachments = data.Attachments?.ToList() ?? [];
+		
+		var inlineMediaUrls = nodes != null ? GetInlineMediaUrls(nodes) : [];
+		var newMediaUrls    = data.Attachments?.Select(p => p.Url) ?? [];
+		var missingUrls     = inlineMediaUrls.Except(newMediaUrls).ToArray();
+
+		if (missingUrls.Length > 0)
+		{
+			var missingAttachments = await db.DriveFiles
+			                                 .Where(p => missingUrls.Contains(p.PublicUrl ?? p.Url) && p.UserId == note.UserId)
+			                                 .ToArrayAsync();
+
+			attachments.AddRange(missingAttachments);
+		}
+
 		//TODO: handle updated alt text et al
-		var fileIds = data.Attachments?.Select(p => p.Id).ToList() ?? [];
+		var fileIds = attachments?.Select(p => p.Id).ToList() ?? [];
 		if (!note.FileIds.IsEquivalent(fileIds))
 		{
 			note.FileIds           = fileIds;
-			note.AttachedFileTypes = data.Attachments?.Select(p => p.Type).ToList() ?? [];
+			note.AttachedFileTypes = attachments?.Select(p => p.Type).ToList() ?? [];
 
-			var combinedAltText = data.Attachments?.Select(p => p.Comment).Where(c => c != null);
+			var combinedAltText = attachments?.Select(p => p.Comment).Where(c => c != null);
 			note.CombinedAltText = combinedAltText != null ? string.Join(' ', combinedAltText) : null;
 		}
 
