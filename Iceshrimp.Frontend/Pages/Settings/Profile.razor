@@ -49,7 +49,7 @@
             <InputFile class="input" OnChange="OnAvatarFileChange" accept="image/*" disabled="@DelAvatar"/>
         </div>
         <div class="section">
-            <h3>@Loc["Display Name"]</h3><input class="input" @bind="@DisplayName"/>
+            <h3>@Loc["Display Name"]</h3><input class="input" @bind="@UserProfile.DisplayName"/>
         </div>
         <div class="section">
             <h3>@Loc["Profile Description"]</h3><textarea class="input" @ref="Description" @bind="@UserProfile.Description"></textarea>
@@ -139,7 +139,6 @@
     private IBrowserFile?     BannerFile  { get; set; } = null;
     private string?           BannerUrl   { get; set; } = null;
     private bool              DelBanner   { get; set; } = false;
-    private string            DisplayName { get; set; } = "";
     private ElementReference  Description { get; set; }
     private ElementReference  EmojiButton { get; set; }
     
@@ -155,7 +154,6 @@
             State       = State.Loaded;
             AvatarUrl   = await Api.Profile.GetAvatarUrlAsync();
             BannerUrl   = await Api.Profile.GetBannerUrlAsync();
-            DisplayName = await Api.Profile.GetDisplayNameAsync();
         }
         catch (ApiException e)
         {
@@ -182,7 +180,6 @@
         {
             SaveButton.State = StateButton.StateEnum.Loading;
             await Api.Profile.UpdateProfileAsync(UserProfile);
-            await Api.Profile.UpdateDisplayNameAsync(DisplayName);
             if (DelAvatar)
                 await Api.Profile.DeleteAvatarAsync();
             else if (AvatarFile != null)
