@@ -100,3 +100,7 @@
     transition: border-color 250ms;
     border-color: var(--notice-color);
 }
+
+.register-link {
+    margin-top: 2rem;
+}
