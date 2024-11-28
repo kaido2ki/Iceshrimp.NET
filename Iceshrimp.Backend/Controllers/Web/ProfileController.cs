@@ -99,7 +99,7 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 
 		var prevAvatarId = user.AvatarId;
 		var prevBannerId = user.BannerId;
-		
+
 		if (!file.ContentType.StartsWith("image/"))
 			throw GracefulException.BadRequest("Avatar must be an image");
 
@@ -156,7 +156,7 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 
 		var prevAvatarId = user.AvatarId;
 		var prevBannerId = user.BannerId;
-		
+
 		if (!file.ContentType.StartsWith("image/"))
 			throw GracefulException.BadRequest("Banner must be an image");
 
