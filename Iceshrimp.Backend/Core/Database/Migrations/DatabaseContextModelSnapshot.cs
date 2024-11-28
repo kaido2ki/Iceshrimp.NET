@@ -19,7 +19,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "antenna_src_enum", new[] { "home", "all", "users", "list", "group", "instances" });
@@ -297,7 +297,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("userListId");
 
-                    b.Property<List<string>>("Users")
+                    b.PrimitiveCollection<List<string>>("Users")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(1024)[]")
@@ -977,7 +977,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("id");
 
-                    b.Property<List<string>>("Aliases")
+                    b.PrimitiveCollection<List<string>>("Aliases")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(128)[]")
@@ -1072,7 +1072,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("filter_action_enum")
                         .HasColumnName("action");
 
-                    b.Property<List<Filter.FilterContext>>("Contexts")
+                    b.PrimitiveCollection<List<Filter.FilterContext>>("Contexts")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("filter_context_enum[]")
@@ -1083,7 +1083,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expiry");
 
-                    b.Property<List<string>>("Keywords")
+                    b.PrimitiveCollection<List<string>>("Keywords")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text[]")
@@ -1325,7 +1325,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(2048)")
                         .HasColumnName("description");
 
-                    b.Property<List<string>>("FileIds")
+                    b.PrimitiveCollection<List<string>>("FileIds")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(32)[]")
@@ -1345,7 +1345,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("likedCount");
 
-                    b.Property<List<string>>("Tags")
+                    b.PrimitiveCollection<List<string>>("Tags")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(128)[]")
@@ -1698,7 +1698,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("isRead");
 
-                    b.Property<List<string>>("Reads")
+                    b.PrimitiveCollection<List<string>>("Reads")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(32)[]")
@@ -1750,7 +1750,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("id");
 
-                    b.Property<List<string>>("AllowedHosts")
+                    b.PrimitiveCollection<List<string>>("AllowedHosts")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(256)[]")
@@ -1772,7 +1772,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("bannerUrl");
 
-                    b.Property<List<string>>("BlockedHosts")
+                    b.PrimitiveCollection<List<string>>("BlockedHosts")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(256)[]")
@@ -1785,14 +1785,14 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("cacheRemoteFiles");
 
-                    b.Property<List<string>>("CustomMotd")
+                    b.PrimitiveCollection<List<string>>("CustomMotd")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(256)[]")
                         .HasColumnName("customMOTD")
                         .HasDefaultValueSql("'{}'::character varying[]");
 
-                    b.Property<List<string>>("CustomSplashIcons")
+                    b.PrimitiveCollection<List<string>>("CustomSplashIcons")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(256)[]")
@@ -1978,7 +1978,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("hcaptchaSiteKey");
 
-                    b.Property<List<string>>("HiddenTags")
+                    b.PrimitiveCollection<List<string>>("HiddenTags")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(256)[]")
@@ -1990,7 +1990,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("iconUrl");
 
-                    b.Property<List<string>>("Langs")
+                    b.PrimitiveCollection<List<string>>("Langs")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(64)[]")
@@ -2109,14 +2109,14 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("pinnedClipId");
 
-                    b.Property<List<string>>("PinnedPages")
+                    b.PrimitiveCollection<List<string>>("PinnedPages")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(512)[]")
                         .HasColumnName("pinnedPages")
                         .HasDefaultValueSql("'{/featured,/channels,/explore,/pages,/about-iceshrimp}'::character varying[]");
 
-                    b.Property<List<string>>("PinnedUsers")
+                    b.PrimitiveCollection<List<string>>("PinnedUsers")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(256)[]")
@@ -2139,7 +2139,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(64)")
                         .HasColumnName("recaptchaSiteKey");
 
-                    b.Property<List<string>>("RecommendedInstances")
+                    b.PrimitiveCollection<List<string>>("RecommendedInstances")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(256)[]")
@@ -2167,7 +2167,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(true)
                         .HasColumnName("secureMode");
 
-                    b.Property<List<string>>("SilencedHosts")
+                    b.PrimitiveCollection<List<string>>("SilencedHosts")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(256)[]")
@@ -2344,7 +2344,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("id");
 
-                    b.Property<List<string>>("AttachedFileTypes")
+                    b.PrimitiveCollection<List<string>>("AttachedFileTypes")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(256)[]")
@@ -2370,14 +2370,14 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("text")
                         .HasColumnName("cw");
 
-                    b.Property<List<string>>("Emojis")
+                    b.PrimitiveCollection<List<string>>("Emojis")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(128)[]")
                         .HasColumnName("emojis")
                         .HasDefaultValueSql("'{}'::character varying[]");
 
-                    b.Property<List<string>>("FileIds")
+                    b.PrimitiveCollection<List<string>>("FileIds")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(32)[]")
@@ -2414,7 +2414,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("mentionedRemoteUsers")
                         .HasDefaultValueSql("'[]'::jsonb");
 
-                    b.Property<List<string>>("Mentions")
+                    b.PrimitiveCollection<List<string>>("Mentions")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(32)[]")
@@ -2508,7 +2508,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("score");
 
-                    b.Property<List<string>>("Tags")
+                    b.PrimitiveCollection<List<string>>("Tags")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(128)[]")
@@ -2559,7 +2559,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("note_visibility_enum")
                         .HasColumnName("visibility");
 
-                    b.Property<List<string>>("VisibleUserIds")
+                    b.PrimitiveCollection<List<string>>("VisibleUserIds")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(32)[]")
@@ -2687,7 +2687,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("cw");
 
-                    b.Property<List<string>>("FileIds")
+                    b.PrimitiveCollection<List<string>>("FileIds")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(32)[]")
@@ -3128,13 +3128,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("name")
                         .HasComment("The name of the OAuth application");
 
-                    b.Property<List<string>>("RedirectUris")
+                    b.PrimitiveCollection<List<string>>("RedirectUris")
                         .IsRequired()
                         .HasColumnType("character varying(512)[]")
                         .HasColumnName("redirectUris")
                         .HasComment("The redirect URIs of the OAuth application");
 
-                    b.Property<List<string>>("Scopes")
+                    b.PrimitiveCollection<List<string>>("Scopes")
                         .IsRequired()
                         .HasColumnType("character varying(64)[]")
                         .HasColumnName("scopes")
@@ -3209,7 +3209,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("redirectUri")
                         .HasComment("The redirect URI of the OAuth token");
 
-                    b.Property<List<string>>("Scopes")
+                    b.PrimitiveCollection<List<string>>("Scopes")
                         .IsRequired()
                         .HasColumnType("character varying(64)[]")
                         .HasColumnName("scopes")
@@ -3346,7 +3346,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("page_visibility_enum")
                         .HasColumnName("visibility");
 
-                    b.Property<List<string>>("VisibleUserIds")
+                    b.PrimitiveCollection<List<string>>("VisibleUserIds")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(32)[]")
@@ -3494,7 +3494,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("noteId");
 
-                    b.Property<List<string>>("Choices")
+                    b.PrimitiveCollection<List<string>>("Choices")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(256)[]")
@@ -3531,7 +3531,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("votersCount");
 
-                    b.Property<List<int>>("Votes")
+                    b.PrimitiveCollection<List<int>>("Votes")
                         .IsRequired()
                         .HasColumnType("integer[]")
                         .HasColumnName("votes");
@@ -3689,7 +3689,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(128)")
                         .HasColumnName("publickey");
 
-                    b.Property<List<string>>("Types")
+                    b.PrimitiveCollection<List<string>>("Types")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(32)[]")
@@ -3761,7 +3761,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("key")
                         .HasComment("The key of the RegistryItem.");
 
-                    b.Property<List<string>>("Scope")
+                    b.PrimitiveCollection<List<string>>("Scope")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(1024)[]")
@@ -3977,7 +3977,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("id");
 
-                    b.Property<List<string>>("AlsoKnownAs")
+                    b.PrimitiveCollection<List<string>>("AlsoKnownAs")
                         .HasColumnType("text[]")
                         .HasColumnName("alsoKnownAs")
                         .HasComment("URIs the user is known as too");
@@ -4034,7 +4034,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("driveCapacityOverrideMb")
                         .HasComment("Overrides user drive capacity limit");
 
-                    b.Property<List<string>>("Emojis")
+                    b.PrimitiveCollection<List<string>>("Emojis")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(128)[]")
@@ -4190,7 +4190,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("splitDomainResolved");
 
-                    b.Property<List<string>>("Tags")
+                    b.PrimitiveCollection<List<string>>("Tags")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(128)[]")
@@ -4827,7 +4827,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("name")
                         .HasComment("The name of the Antenna.");
 
-                    b.Property<List<string>>("On")
+                    b.PrimitiveCollection<List<string>>("On")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("character varying(128)[]")
