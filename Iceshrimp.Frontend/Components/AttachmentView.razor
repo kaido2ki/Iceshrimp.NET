@@ -81,10 +81,12 @@
         await Module.InvokeVoidAsync("scrollTo", _refs[Focused]);
     }
 
-    public async Task OpenDialog()
+    public async Task OpenDialog(NoteAttachment attachment)
     {
         await Module.InvokeVoidAsync("openDialog", Dialog);
         ScrollWidth = await Module.InvokeAsync<int>("getScrollWidth", Scroller);
+        var index = Attachments.IndexOf(attachment);
+        await Module.InvokeVoidAsync("scrollTo", _refs[index]);
     }
 
     private async Task CloseDialog()
