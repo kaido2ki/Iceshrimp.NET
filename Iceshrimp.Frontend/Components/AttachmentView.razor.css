@@ -55,6 +55,9 @@
     right: 0%;
     background-color: transparent;
     color: white;
+    > i {
+        margin-left: 3rem;
+    }
 }
 
 .prev {
@@ -63,6 +66,9 @@
     left: 0%;
     background-color: transparent;
     color: white;
+    > i {
+        margin-right: 3rem;
+    }
 }
 
 .alt-text {
@@ -76,4 +82,9 @@
     background-color: rgb(0 0 0 / 0.5);
     padding: 1rem;
     border-radius: 0.5rem;
+}
+
+.carousel-btn {
+    width: 6rem;
+    height: 6rem;
 }

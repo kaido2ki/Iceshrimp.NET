@@ -8,14 +8,14 @@
     </button>
     @if (Focused < _refs.Count - 1)
     {
-        <button @onclick="Next" @onclick:stopPropagation="true" class="next">
-            <Icon Name="Icons.ArrowRight" Size="5rem"></Icon>
+        <button @onclick="Next" @onclick:stopPropagation="true" class="carousel-btn next">
+            <Icon Name="Icons.ArrowRight" Size="2rem" />
         </button>
     }
     @if (Focused > 0)
     {
-        <button @onclick="Prev" @onclick:stopPropagation="true" class="prev">
-            <Icon Name="Icons.ArrowLeft" Size="5rem"></Icon>
+        <button @onclick="Prev" @onclick:stopPropagation="true" class="carousel-btn prev">
+            <Icon Name="Icons.ArrowLeft" Size="2rem" />
         </button>
     }
     <div class="wrap" @ref="Scroller" @onscroll="Scroll">
