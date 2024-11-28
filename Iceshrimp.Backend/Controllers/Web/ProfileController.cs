@@ -35,6 +35,7 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 			Birthday     = profile.Birthday,
 			FFVisibility = ffVisibility,
 			Fields       = fields.ToList(),
+			DisplayName  = user.DisplayName ?? "", 
 			IsBot        = user.IsBot,
 			IsCat        = user.IsCat,
 			SpeakAsCat   = user.SpeakAsCat
@@ -69,6 +70,8 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 		profile.Birthday     = birthday;
 		profile.Fields       = fields.ToArray();
 		profile.FFVisibility = (UserProfile.UserProfileFFVisibility)newProfile.FFVisibility;
+
+		user.DisplayName = string.IsNullOrWhiteSpace(newProfile.DisplayName) ? null : newProfile.DisplayName.Trim();
 
 		user.IsBot      = newProfile.IsBot;
 		user.IsCat      = newProfile.IsCat;
@@ -191,28 +194,5 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 		user.BannerUrl      = null;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
-	}
-
-	[HttpGet("display_name")]
-	[ProducesResults(HttpStatusCode.OK)]
-	public string GetDisplayName()
-	{
-		var user = HttpContext.GetUserOrFail();
-		return user.DisplayName ?? "";
-	}
-
-	[HttpPost("display_name")]
-	[ProducesResults(HttpStatusCode.OK)]
-	public async Task<string?> UpdateDisplayNameAsync([FromHybrid] string displayName)
-	{
-		var user = HttpContext.GetUserOrFail();
-
-		var prevAvatarId = user.AvatarId;
-		var prevBannerId = user.BannerId;
-
-		user.DisplayName = string.IsNullOrWhiteSpace(displayName) ? null : displayName.Trim();
-		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
-
-		return user.DisplayName;
 	}
 }
