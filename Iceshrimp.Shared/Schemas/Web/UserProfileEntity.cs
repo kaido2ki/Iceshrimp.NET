@@ -18,7 +18,7 @@ public class UserProfileEntity
 	public required List<Field>      Fields       { get; set; }
 	public required FFVisibilityEnum FFVisibility { get; set; }
 	public required string           DisplayName  { get; set; }
-	
+
 	public required bool IsBot      { get; set; }
 	public required bool IsCat      { get; set; }
 	public required bool SpeakAsCat { get; set; }

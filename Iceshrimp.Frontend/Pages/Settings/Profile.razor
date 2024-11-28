@@ -87,7 +87,7 @@
                 <Icon Name="Icons.Plus"/>
             </button>
         </div>
-        
+
         <div class="section">
             <h3>@Loc["Other"]</h3>
             <div>
@@ -201,12 +201,12 @@
     {
         AvatarFile = e.GetMultipleFiles().First(p => p.ContentType.StartsWith("image/"));
     }
-    
+
     private void OnBannerFileChange(InputFileChangeEventArgs e)
     {
         BannerFile = e.GetMultipleFiles().First(p => p.ContentType.StartsWith("image/"));
     }
-    
+
     private void ToggleEmojiPicker()
     {
         GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji));
