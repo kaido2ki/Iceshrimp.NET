@@ -68,6 +68,36 @@
     margin: 0;
     font-size: 1.2rem;
 }
+
 .otp-input {
     margin-top: 1rem;
+}
+
+.user-picker {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.user {
+    display: flex;
+    flex-direction: column;
+    margin: 0.5rem;
+    border: 0.1rem var(--highlight-color) solid;
+    border-radius: 1rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    align-items: center;
+    .avatar {
+        height: 4rem;
+        border-radius: 0.5rem;
+    }
+
+    .username {
+        margin-top: 0.5rem;
+    }
+}
+
+.user:hover {
+    transition: border-color 250ms;
+    border-color: var(--notice-color);
 }

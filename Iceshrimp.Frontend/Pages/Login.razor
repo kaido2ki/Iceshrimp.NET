@@ -37,6 +37,19 @@
     {
         <span>Authentication Failed</span>
     }
+    @if (SessionService.Users.Count > 0)
+    {
+        <h2>@Loc["Existing sessions"]</h2>
+        <div class="user-picker">
+        @foreach(var user in SessionService.Users.Values)
+        {
+            <div class="user" tabindex="0" @onclick="() => LoginUser(user)">
+                <img class="avatar" src="@user.AvatarUrl"/>
+                <div class="username"><UserDisplayName User="user"></UserDisplayName></div>
+            </div>
+        }
+        </div>
+    }
 
     <dialog class="dialog" @ref="Dialog">
         <div class="dialog-content">
@@ -65,14 +78,14 @@
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
     private string? Redirect { get; set; }
 
-    private          string?                        Password    { get; set; }
-    private          string?                        Username    { get; set; }
-    private          bool                           Loading     { get; set; }
-    private          bool                           Failure     { get; set; }
-    private          string?                        Name        { get; set; }
-    private          ElementReference               Dialog      { get; set; }
-    private          string?                        Otp         { get; set; }
-    private          StateButton                    OtpButton   { get; set; } = null!;
+    private          string?                        Password  { get; set; }
+    private          string?                        Username  { get; set; }
+    private          bool                           Loading   { get; set; }
+    private          bool                           Failure   { get; set; }
+    private          string?                        Name      { get; set; }
+    private          ElementReference               Dialog    { get; set; }
+    private          string?                        Otp       { get; set; }
+    private          StateButton                    OtpButton { get; set; } = null!;
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
 
     public Login()
@@ -153,9 +166,8 @@
             var res = await Api.Auth.SubmitTwoFactorAsync(new TwoFactorRequest { Code = Otp });
             if (res.Status is AuthStatusEnum.Authenticated)
             {
-                
                 SessionService.AddUser(new StoredUser
-                { 
+                {
                     Id              = res.User!.Id,
                     Username        = res.User.Username,
                     DisplayName     = res.User.DisplayName,
@@ -187,6 +199,12 @@
             Logger.LogError(e, "2FA enrollment failed");
             OtpButton.State = StateButton.StateEnum.Failed;
         }
+    }
+
+    private void LoginUser(StoredUser user)
+    {
+        SessionService.SetSession(user.Id);
+        Navigation.NavigateTo(Uri.TryCreate(Redirect, UriKind.Relative, out _) ? Redirect : "/", true);
     }
 
     protected override async Task OnInitializedAsync()
