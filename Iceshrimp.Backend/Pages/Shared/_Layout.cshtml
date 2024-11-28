@@ -1,4 +1,4 @@
-﻿@inject IOptions<Config.InstanceSection> Instance
+﻿@inject IOptions<Config> Config
 @using Iceshrimp.Backend.Core.Configuration
 @using Iceshrimp.Backend.Core.Extensions
 @using Iceshrimp.Backend.Core.Middleware
@@ -22,11 +22,18 @@
 <footer>
     <div class="footer">
         <span>
-            <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
+            <strong>Iceshrimp.NET</strong> v@(Config.Value.Instance.Version)
         </span>
         @if (!Context.ShouldHideFooter())
         {
-            <a href="/login?rd=@((Context.Request.Path.Value ?? "/").UrlEncode())">Login</a>
+            <div>
+                @if (Config.Value.Security.Registrations != Enums.Registrations.Closed)
+                {
+                    <a href="/register">Register</a>
+                    <span aria-hidden="true">&bullet;</span>
+                }
+                <a href="/login?rd=@((Context.Request.Path.Value ?? "/").UrlEncode())">Login</a>
+            </div>
         }
     </div>
 </footer>
