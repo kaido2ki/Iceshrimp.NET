@@ -13,6 +13,8 @@
 @inject ApiService                     Api;
 @inject ILogger<Profile>               Logger;
 @inject IStringLocalizer<Localization> Loc;
+@inject IJSRuntime                     Js
+@inject GlobalComponentSvc             GlobalComponentSvc
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.User"></Icon>
@@ -50,7 +52,11 @@
             <h3>@Loc["Display Name"]</h3><input class="input" @bind="@DisplayName"/>
         </div>
         <div class="section">
-            <h3>@Loc["Profile Description"]</h3><textarea class="input" @bind="@UserProfile.Description"></textarea>
+            <h3>@Loc["Profile Description"]</h3><textarea class="input" @ref="Description" @bind="@UserProfile.Description"></textarea>
+            <button @ref="EmojiButton" class="button" title="@Loc["Emoji"]" @onclick="ToggleEmojiPicker"
+                    aria-label="emoji">
+                <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
+            </button>
         </div>
         <div class="section">
             <h3>@Loc["Birthday"]</h3><input class="input" @bind="@UserProfile.Birthday"/>
@@ -134,9 +140,15 @@
     private string?           BannerUrl   { get; set; } = null;
     private bool              DelBanner   { get; set; } = false;
     private string            DisplayName { get; set; } = "";
+    private ElementReference  Description { get; set; }
+    private ElementReference  EmojiButton { get; set; }
+    
+    private IJSObjectReference _module = null!;
 
     protected override async Task OnInitializedAsync()
     {
+        _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                           "./Pages/Settings/Profile.razor.js");
         try
         {
             UserProfile = await Api.Profile.GetProfileAsync();
@@ -196,5 +208,19 @@
     private void OnBannerFileChange(InputFileChangeEventArgs e)
     {
         BannerFile = e.GetMultipleFiles().First(p => p.ContentType.StartsWith("image/"));
+    }
+    
+    private void ToggleEmojiPicker()
+    {
+        GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji));
+    }
+
+    private async Task AddEmoji(EmojiResponse emoji)
+    {
+        var pos         = await _module.InvokeAsync<int>("getSelectionStart", Description);
+        var text        = UserProfile.Description ?? "";
+        var emojiString = $":{emoji.Name}: ";
+        UserProfile.Description = text.Insert(pos, emojiString);
+        StateHasChanged();
     }
 }
