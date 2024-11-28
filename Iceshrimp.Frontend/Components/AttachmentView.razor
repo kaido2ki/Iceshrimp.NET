@@ -2,7 +2,7 @@
 @using Iceshrimp.Shared.Schemas.Web
 @inject IJSRuntime Js
 
-<dialog class="attachment-view" @ref="Dialog">
+<dialog class="attachment-view" @onkeydown="OnKeyDown" @ref="Dialog">
     <button @onclick="CloseDialog" @onclick:stopPropagation="true" class="close">
         <Icon Name="Icons.X" Size="5rem"></Icon>
     </button>
@@ -38,6 +38,19 @@
     public ElementReference Ref
     {
         set => _refs.Add(value);
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "ArrowRight":
+                await Next();
+                break;
+            case "ArrowLeft":
+                await Prev();
+                break;
+        }
     }
 
     private ElementReference Scroller    { get; set; }
