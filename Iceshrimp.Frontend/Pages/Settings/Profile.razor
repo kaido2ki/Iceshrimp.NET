@@ -81,6 +81,22 @@
                 <Icon Name="Icons.Plus"/>
             </button>
         </div>
+        
+        <div class="section">
+            <h3>@Loc["Other"]</h3>
+            <div>
+                <input type="checkbox" id="is-bot" @bind="@UserProfile.IsBot">
+                <label for="is-bot">@Loc["Mark as an automated (bot) account"]</label>
+            </div>
+            <div>
+                <input type="checkbox" id="is-cat" @bind="@UserProfile.IsCat">
+                <label for="is-cat">@Loc["Mark as a cat"]</label>
+            </div>
+            <div>
+                <input type="checkbox" id="speak-cat" @bind="@UserProfile.SpeakAsCat" disabled="@(!UserProfile.IsCat)">
+                <label for="speak-cat">@Loc["Speak as a cat"]</label>
+            </div>
+        </div>
 
         <div class="section">
             <StateButton OnClick="SaveChanges" ExtraClasses="button" @ref="SaveButton">
