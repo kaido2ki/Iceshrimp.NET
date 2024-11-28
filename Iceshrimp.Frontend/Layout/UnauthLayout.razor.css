@@ -4,6 +4,11 @@
     padding: 1rem;
 }
 
+.page{
+    background-color: var(--background-color);
+    height: 100%;
+}
+
 .logo {
     object-fit: contain;
     height: 2rem
