@@ -32,6 +32,7 @@
                     <label for="delete-banner">@Loc["Remove Banner"]</label>
                 </div>
             }
+            <InputFile class="input" OnChange="OnBannerFileChange" accept="image/*" disabled="@DelBanner"/>
         </div>
         <div class="section">
             <h3>@Loc["Avatar"]</h3>
@@ -43,6 +44,7 @@
                     <label for="delete-avatar">@Loc["Remove Avatar"]</label>
                 </div>
             }
+            <InputFile class="input" OnChange="OnAvatarFileChange" accept="image/*" disabled="@DelAvatar"/>
         </div>
         <div class="section">
             <h3>@Loc["Display Name"]</h3><input class="input" @bind="@DisplayName"/>
@@ -109,8 +111,10 @@
     private string            FieldName   { get; set; } = "";
     private string            FieldValue  { get; set; } = "";
     private StateButton       SaveButton  { get; set; } = null!;
+    private IBrowserFile?     AvatarFile  { get; set; } = null;
     private string?           AvatarUrl   { get; set; } = null;
     private bool              DelAvatar   { get; set; } = false;
+    private IBrowserFile?     BannerFile  { get; set; } = null;
     private string?           BannerUrl   { get; set; } = null;
     private bool              DelBanner   { get; set; } = false;
     private string            DisplayName { get; set; } = "";
@@ -153,8 +157,12 @@
             await Api.Profile.UpdateDisplayNameAsync(DisplayName);
             if (DelAvatar)
                 await Api.Profile.DeleteAvatarAsync();
+            else if (AvatarFile != null)
+                await Api.Profile.UpdateAvatarAsync(AvatarFile);
             if (DelBanner)
                 await Api.Profile.DeleteBannerAsync();
+            else if (BannerFile != null)
+                await Api.Profile.UpdateBannerAsync(BannerFile);
             SaveButton.State = StateButton.StateEnum.Success;
         }
         catch (ApiException e)
@@ -162,5 +170,15 @@
             Logger.LogError($"Failed to update profile: {e.Message}");
             SaveButton.State = StateButton.StateEnum.Failed;
         }
+    }
+
+    private void OnAvatarFileChange(InputFileChangeEventArgs e)
+    {
+        AvatarFile = e.GetMultipleFiles().First(p => p.ContentType.StartsWith("image/"));
+    }
+    
+    private void OnBannerFileChange(InputFileChangeEventArgs e)
+    {
+        BannerFile = e.GetMultipleFiles().First(p => p.ContentType.StartsWith("image/"));
     }
 }
