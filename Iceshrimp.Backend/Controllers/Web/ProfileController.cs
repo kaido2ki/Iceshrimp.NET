@@ -34,7 +34,10 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 			Location     = profile.Location,
 			Birthday     = profile.Birthday,
 			FFVisibility = ffVisibility,
-			Fields       = fields.ToList()
+			Fields       = fields.ToList(),
+			IsBot        = user.IsBot,
+			IsCat        = user.IsCat,
+			SpeakAsCat   = user.SpeakAsCat
 		};
 	}
 
@@ -66,6 +69,10 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 		profile.Birthday     = birthday;
 		profile.Fields       = fields.ToArray();
 		profile.FFVisibility = (UserProfile.UserProfileFFVisibility)newProfile.FFVisibility;
+
+		user.IsBot      = newProfile.IsBot;
+		user.IsCat      = newProfile.IsCat;
+		user.SpeakAsCat = newProfile is { SpeakAsCat: true, IsCat: true };
 
 		var prevAvatarId = user.AvatarId;
 		var prevBannerId = user.BannerId;
