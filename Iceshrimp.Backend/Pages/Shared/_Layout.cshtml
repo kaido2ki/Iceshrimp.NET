@@ -1,4 +1,5 @@
-﻿@inject IOptions<Config> Config
+﻿@inject IOptions<Config.InstanceSection> Instance
+@inject IOptionsSnapshot<Config.SecuritySection> Security
 @using Iceshrimp.Backend.Core.Configuration
 @using Iceshrimp.Backend.Core.Extensions
 @using Iceshrimp.Backend.Core.Middleware
@@ -22,12 +23,12 @@
 <footer>
     <div class="footer">
         <span>
-            <strong>Iceshrimp.NET</strong> v@(Config.Value.Instance.Version)
+            <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
         </span>
         @if (!Context.ShouldHideFooter())
         {
             <div>
-                @if (Config.Value.Security.Registrations != Enums.Registrations.Closed)
+                @if (Security.Value.Registrations != Enums.Registrations.Closed)
                 {
                     <a href="/register">Register</a>
                     <span aria-hidden="true">&bullet;</span>
