@@ -27,7 +27,6 @@
                required="required"
                @bind="@Password"/>
         <button class="button" @onclick="Submit" disabled="@Loading">@Loc["Login"]</button>
-        <a class="register-link" href="/register">@Loc["Register a new account"]</a>
     </div>
 
     @if (Loading)
@@ -50,6 +49,11 @@
             </div>
         }
         </div>
+    }
+    
+    @if (Registration != Registrations.Closed)
+    {
+        <a class="register-link" href="/register">@Loc["Register a new account"]</a>
     }
 
     <dialog class="dialog" @ref="Dialog">
@@ -88,6 +92,7 @@
     private          string?                        Otp       { get; set; }
     private          StateButton                    OtpButton { get; set; } = null!;
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
+    private          Registrations                  Registration { get; set; }
 
     public Login()
     {
@@ -211,7 +216,8 @@
     protected override async Task OnInitializedAsync()
     {
         var metadata = await Metadata.Instance.Value;
-        Name = metadata.Name;
+        Name         = metadata.Name;
+        Registration = metadata.Registration;
     }
 
     private async Task CloseDialog(ElementReference dialog)
