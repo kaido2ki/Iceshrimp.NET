@@ -1,12 +1,14 @@
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web.Renderers;
 
-public class UserProfileRenderer(DatabaseContext db) : IScopedService
+public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSection> instance) : IScopedService
 {
 	public async Task<UserProfileResponse> RenderOne(User user, User? localUser, UserRendererDto? data = null)
 	{
@@ -53,6 +55,8 @@ public class UserProfileRenderer(DatabaseContext db) : IScopedService
 				? Role.Moderator
 				: Role.None;
 
+		var url = user.GetPublicUrl(instance.Value.WebDomain);
+
 		return new UserProfileResponse
 		{
 			Id        = user.Id,
@@ -64,7 +68,8 @@ public class UserProfileRenderer(DatabaseContext db) : IScopedService
 			Following = following,
 			Relations = relations,
 			Role      = role,
-			IsLocked  = user.IsLocked
+			IsLocked  = user.IsLocked,
+			Url       = url
 		};
 	}
 
