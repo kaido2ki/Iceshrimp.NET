@@ -218,7 +218,7 @@
     
     private void ToggleMenu() => ContextMenu.Toggle(MenuButton);
     
-    private void EditProfile() => Js.InvokeVoidAsync("open", "/settings/profile", "_blank");
+    private void EditProfile() => Nav.NavigateTo("/settings/profile");
 
     private void Bite() => Api.Users.BiteUserAsync(UserResponse.Id);
 
