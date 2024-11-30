@@ -6,9 +6,16 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.AspNetCore.Authorization
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
 @attribute [Authorize]
-@inject ApiService Api
-@inject NavigationManager Nav;
+@inject ApiService                     Api
+@inject IJSRuntime                     Js;
+@inject IStringLocalizer<Localization> Loc;
+@inject MetadataService                MetadataService
+@inject NavigationManager              Nav;
+@inject SessionService                 Session
 
 @if (_init)
 {
@@ -43,6 +50,48 @@
                     </div>
                 </div>
                 <FollowButton User="UserResponse" UserProfile="Profile"/>
+                <button @ref="MenuButton" class="btn" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">
+                    <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
+                    <Menu @ref="ContextMenu">
+                        @if (UserResponse.Id == Session.Current?.Id)
+                        {
+                            <MenuElement Icon="Icons.Pencil" OnSelect="EditProfile">
+                                <Text>@Loc["Edit profile"]</Text>
+                            </MenuElement>
+                        }
+                        else
+                        {
+                            <MenuElement Icon="Icons.Tooth" OnSelect="Bite">
+                                <Text>@Loc["Bite"]</Text>
+                            </MenuElement>
+                            @if (Profile != null && Profile.Relations.HasFlag(Relations.FollowedBy))
+                            {
+                                <MenuElement Icon="Icons.LinkBreak" OnSelect="RemoveFromFollowers">
+                                    <Text>@Loc["Remove follower"]</Text>
+                                </MenuElement>
+                            }
+                        }
+                        @if (UserResponse.Host != null && Profile != null)
+                        {
+                            <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
+                                <Text>@Loc["Open original page"]</Text>
+                            </MenuElement>
+                        }
+                        <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
+                            <Text>@Loc["Copy link"]</Text>
+                        </MenuElement>
+                        @if (UserResponse.Host != null)
+                        {
+                            <MenuElement Icon="Icons.ShareNetwork" OnSelect="CopyLinkRemote">
+                                <Text>@Loc["Copy link (remote)"]</Text>
+                            </MenuElement>
+                        }
+                        <MenuElement Icon="Icons.At" OnSelect="CopyUsername">
+                            <Text>@Loc["Copy username"]</Text>
+                        </MenuElement>
+                        <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>
+                    </Menu>
+                </button>
             </div>
             <ProfileInfo Emojis="@UserResponse.Emojis" User="UserResponse" UserProfile="Profile"/>
         </div>
@@ -80,6 +129,9 @@
     private            UserProfileResponse? Profile      { get; set; }
     private            string?              MinId        { get; set; }
     private            List<NoteResponse>   UserNotes    { get; set; } = [];
+    
+    private ElementReference MenuButton  { get; set; }
+    private Menu             ContextMenu { get; set; } = null!;
 
     private bool _loading = true;
     private bool _init;
@@ -163,4 +215,32 @@
         StateHasChanged();
         await LoadProfile();
     }
+    
+    private void ToggleMenu() => ContextMenu.Toggle(MenuButton);
+    
+    private void EditProfile() => Js.InvokeVoidAsync("open", "/settings/profile", "_blank");
+
+    private void Bite() => Api.Users.BiteUserAsync(UserResponse.Id);
+
+    private void RemoveFromFollowers() => Api.Users.RemoveUserFromFollowersAsync(UserResponse.Id);
+
+    private void OpenOriginal()
+    {
+        if (Profile != null)
+            Js.InvokeVoidAsync("open", Profile.Url, "_blank");
+    }
+    
+    private async Task CopyLink()
+    {
+        var instance = await MetadataService.Instance.Value;
+        await Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{instance.WebDomain}/@{UserResponse.Username}" + (UserResponse.Host != null ? $"@{UserResponse.Host}" : ""));
+    }
+    
+    private void CopyLinkRemote()
+    {
+        if (Profile != null)
+            Js.InvokeVoidAsync("navigator.clipboard.writeText", Profile.Url);
+    }
+
+    private void CopyUsername() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"@{UserResponse.Username}" + (UserResponse.Host != null ? $"@{UserResponse.Host}" : ""));
 }
