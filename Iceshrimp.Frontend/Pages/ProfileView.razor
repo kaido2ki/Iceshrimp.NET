@@ -50,7 +50,7 @@
                     </div>
                 </div>
                 <FollowButton User="UserResponse" UserProfile="Profile"/>
-                <button @ref="MenuButton" class="btn" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">
+                <button @ref="MenuButton" class="context-button" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">
                     <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
                     <Menu @ref="ContextMenu">
                         @if (UserResponse.Id == Session.Current?.Id)
