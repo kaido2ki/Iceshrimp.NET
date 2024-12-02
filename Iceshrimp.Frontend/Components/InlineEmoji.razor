@@ -1,14 +1,15 @@
 @using Iceshrimp.Shared.Schemas.Web
 
-@if (Reaction.Url == null)
+@if (Url == null)
 {
-    <span class="unicode-reaction">@Reaction.Name</span>
+    <span class="unicode-reaction">@Name</span>
 }
 else
 {
-    <img class="custom-reaction" src="@Reaction.Url" alt="@Reaction.Name"/>
+    <img class="custom-reaction" src="@Url" alt="@Name"/>
 }
 
 @code {
-    [Parameter, EditorRequired] public required NoteReactionSchema Reaction { get; set; }
+    [Parameter, EditorRequired] public required string  Name { get; set; }
+    [Parameter, EditorRequired] public required string? Url  { get; set; }
 }
