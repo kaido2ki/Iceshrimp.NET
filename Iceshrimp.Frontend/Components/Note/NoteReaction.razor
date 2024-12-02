@@ -1,5 +1,5 @@
 @using Iceshrimp.Shared.Schemas.Web
-<button @onclick="React" class="reaction @(Reaction.Reacted ? "reacted" : "")">
+<button @onclick="React" class="reaction @(Reaction.Reacted ? "reacted" : "")" title="@Reaction.Name">
     <span class="icon">
         @if (Reaction.Url == null)
         {
