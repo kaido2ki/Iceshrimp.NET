@@ -4,12 +4,24 @@
     height: 1em;
     object-fit: contain;
     vertical-align: middle;
-    font-size: 1.5em;
+}
+
+.custom-reaction.hover {
+    transition-duration: 250ms;
+}
+
+.custom-reaction.hover:hover {
+    transform: scale(1.5);
+    z-index: +1;
+}
+
+.custom-reaction.wide {
+    width: auto;
+    object-fit: unset;
 }
 
 .unicode-reaction {
     display: inline-block;
     vertical-align: middle;
-    font-size: 1.5em;
     line-height: 1;
 }

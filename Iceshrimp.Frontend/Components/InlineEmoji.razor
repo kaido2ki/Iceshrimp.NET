@@ -1,15 +1,16 @@
-@using Iceshrimp.Shared.Schemas.Web
-
 @if (Url == null)
 {
-    <span class="unicode-reaction">@Name</span>
+    <span class="unicode-reaction" style="font-size: @Size">@Name</span>
 }
 else
 {
-    <img class="custom-reaction" src="@Url" alt="@Name"/>
+    <img class="custom-reaction @(Hover ? "hover" : "") @(Wide ? "wide" : "")" style="font-size: @Size" src="@Url" alt="@Name"/>
 }
 
 @code {
-    [Parameter, EditorRequired] public required string  Name { get; set; }
-    [Parameter, EditorRequired] public required string? Url  { get; set; }
+    [Parameter, EditorRequired] public required string  Name  { get; set; }
+    [Parameter, EditorRequired] public required string? Url   { get; set; }
+    [Parameter]                 public          bool    Hover { get; set; } = false;
+    [Parameter]                 public          string  Size  { get; set; } = "1.5em";
+    [Parameter]                 public          bool    Wide  { get; set; } = false;
 }
