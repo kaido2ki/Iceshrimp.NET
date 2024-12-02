@@ -31,7 +31,9 @@
                         <span class="notification-text">@Loc["liked note"]</span> 
                         break; 
                     case { Note: not null, Reaction: not null, Type: "reaction" }:
-                        <img class="notification-reaction" src="@NotificationResponse.Reaction.Url" alt="@NotificationResponse.Reaction.Name.Trim(':')" title="@NotificationResponse.Reaction.Name"/>
+                        <span class="notification-reaction" title="@NotificationResponse.Reaction.Name">
+                            <InlineEmoji Name="@NotificationResponse.Reaction.Name" Url="@NotificationResponse.Reaction.Url"/>
+                        </span>
                         <span class="notification-text">@Loc["reacted to your note"]</span>
                         break;
                     case { Type: "follow", User: not null }:
