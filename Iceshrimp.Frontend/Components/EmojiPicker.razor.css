@@ -26,9 +26,13 @@
 
 .emoji {
     > img {
-        object-fit: cover;
+        object-fit: contain;
         height: 2rem;
         width: 2rem;
+    }
+    
+    > img:hover {
+        cursor: pointer;
     }
 }
 
@@ -40,4 +44,18 @@ summary {
 .search {
     margin: 0;
     padding: 0;
+}
+
+@media (max-width: 640px) {
+    .emoji-list {
+        gap: 0.2rem;
+        margin: 0.5rem 0;
+    }
+    
+    .emoji {
+        > img {
+            height: 3rem;
+            width: 3rem;
+        }
+    }
 }
