@@ -1,6 +1,13 @@
 @using Iceshrimp.Shared.Schemas.Web
 
-<img class="custom-reaction" src="@Reaction.Url" alt="@Reaction.Name"/>
+@if (Reaction.Url == null)
+{
+    <span class="unicode-reaction">@Reaction.Name</span>
+}
+else
+{
+    <img class="custom-reaction" src="@Reaction.Url" alt="@Reaction.Name"/>
+}
 
 @code {
     [Parameter, EditorRequired] public required NoteReactionSchema Reaction { get; set; }
