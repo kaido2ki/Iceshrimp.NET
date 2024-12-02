@@ -32,7 +32,7 @@
                         break; 
                     case { Note: not null, Reaction: not null, Type: "reaction" }:
                         <span class="notification-reaction" title="@NotificationResponse.Reaction.Name">
-                            <InlineEmoji Name="@NotificationResponse.Reaction.Name" Url="@NotificationResponse.Reaction.Url"/>
+                            <InlineEmoji Name="@NotificationResponse.Reaction.Name" Url="@NotificationResponse.Reaction.Url" Hover="true" Size="1.25em"/>
                         </span>
                         <span class="notification-text">@Loc["reacted to your note"]</span>
                         break;
