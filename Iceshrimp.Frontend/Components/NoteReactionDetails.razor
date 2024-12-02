@@ -6,7 +6,8 @@
         {
             <TabPage>
                 <Title>
-                    <InlineEmoji Reaction="el"/> (@el.Count)
+                    <InlineEmoji Reaction="el"/>
+                    <span class="reaction-count">@el.Count</span>
                 </Title>
                 <TabContent>
                     <ReactionDetails Reaction="@el" NoteId="@NoteId"/>
