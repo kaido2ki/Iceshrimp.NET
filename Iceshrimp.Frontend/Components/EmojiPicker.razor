@@ -15,8 +15,8 @@
                 <div class="emoji-list">
                     @foreach (var emoji in category.Value)
                     {
-                        <div class="emoji">
-                            <img @onclick="() => Select(emoji)" src="@emoji.PublicUrl" alt="@emoji.Name" title=":@emoji.Name:" loading="lazy"/>
+                        <div @onclick="() => Select(emoji)" class="emoji" title=":@emoji.Name:">
+                            <InlineEmoji Name="@emoji.Name" Url="@emoji.PublicUrl" Size="2rem"/>
                         </div>
                     }
                 </div>
