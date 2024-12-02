@@ -9,7 +9,7 @@
 
 .reacted {
     background-color: color-mix(in srgb, var(--notice-color) 30%, transparent);
-    color: var(--foreground-color);
+    color: var(--font-color);
 }
 
 .count {
