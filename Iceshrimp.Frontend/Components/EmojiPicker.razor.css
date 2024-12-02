@@ -24,16 +24,8 @@
     z-index: +12;
 }
 
-.emoji {
-    > img {
-        object-fit: contain;
-        height: 2rem;
-        width: 2rem;
-    }
-    
-    > img:hover {
-        cursor: pointer;
-    }
+.emoji:hover {
+    cursor: pointer;
 }
 
 summary {
@@ -52,10 +44,11 @@ summary {
         margin: 0.5rem 0;
     }
     
-    .emoji {
-        > img {
-            height: 3rem;
-            width: 3rem;
+    ::deep {
+        .emoji {
+            .custom-reaction, .unicode-reaction {
+                font-size: 3rem !important;
+            }
         }
     }
 }
