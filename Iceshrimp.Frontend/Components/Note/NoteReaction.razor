@@ -1,15 +1,6 @@
 @using Iceshrimp.Shared.Schemas.Web
 <button @onclick="React" class="reaction @(Reaction.Reacted ? "reacted" : "")" title="@Reaction.Name">
-    <span class="icon">
-        @if (Reaction.Url == null)
-        {
-            @Reaction.Name
-        }
-        @if (Reaction.Url != null)
-        {
-            <img class="custom-reaction" src="@Reaction.Url" alt="@Reaction.Name"/>
-        }
-    </span>
+    <InlineEmoji Name="@Reaction.Name" Url="@Reaction.Url" Wide="true"/>
     <span class="count">
         @Reaction.Count
     </span>
