@@ -93,7 +93,7 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 	[HttpPost("avatar")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task UpdateAvatarAsync(IFormFile file)
+	public async Task UpdateAvatar(IFormFile file)
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -122,7 +122,7 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 	[HttpDelete("avatar")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
-	public async Task DeleteAvatarAsync()
+	public async Task DeleteAvatar()
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -150,7 +150,7 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 	[HttpPost("banner")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task UpdateBannerAsync(IFormFile file)
+	public async Task UpdateBanner(IFormFile file)
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -179,7 +179,7 @@ public class ProfileController(UserService userSvc, DriveService driveSvc) : Con
 	[HttpDelete("banner")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
-	public async Task DeleteBannerAsync()
+	public async Task DeleteBanner()
 	{
 		var user = HttpContext.GetUserOrFail();
 
