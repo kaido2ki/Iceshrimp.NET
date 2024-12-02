@@ -3,13 +3,12 @@
     align-items: center;
     line-height: 1;
     padding: 0.2em 0.5em;
-    margin-right: 0.5em;
     border-radius: 0.5em;
     border: 0.1em solid var(--notice-color);
 }
 
 .reacted {
-    background-color: var(--notice-color);
+    background-color: color-mix(in srgb, var(--notice-color) 30%, transparent);
     color: var(--foreground-color);
 }
 
@@ -18,7 +17,10 @@
 }
 
 .custom-reaction {
-    width: 1em;
+    display: inline-block;
+    height: 1em;
+    width: auto;
+    vertical-align: -0.1em;
 }
 
 .icon {
