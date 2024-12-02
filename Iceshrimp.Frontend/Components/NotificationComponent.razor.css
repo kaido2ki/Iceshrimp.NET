@@ -36,16 +36,27 @@
     top: 3em;
     left: 3em;
     display: inline-block;
-    width: 1.25em;
-    height: 1.25em;
-    object-fit: contain;
     filter: drop-shadow(0 0 0.2em rgba(0, 0, 0, 0.7));
-    transition-duration: 250ms;
 }
 
-.notification-reaction:hover {
-    transform: scale(1.5);
-    z-index: +1;
+::deep {
+    .notification-reaction .custom-reaction {
+        font-size: 1.25em;
+        transition-duration: 250ms;
+    }
+}
+
+::deep {
+    .notification-reaction .custom-reaction:hover {
+        transform: scale(1.5);
+        z-index: +1;
+    }
+}
+
+::deep {
+    .notification-reaction .unicode-reaction {
+        font-size: 1.25em;
+    }
 }
 
 .notification-text {
