@@ -39,26 +39,6 @@
     filter: drop-shadow(0 0 0.2em rgba(0, 0, 0, 0.7));
 }
 
-::deep {
-    .notification-reaction .custom-reaction {
-        font-size: 1.25em;
-        transition-duration: 250ms;
-    }
-}
-
-::deep {
-    .notification-reaction .custom-reaction:hover {
-        transform: scale(1.5);
-        z-index: +1;
-    }
-}
-
-::deep {
-    .notification-reaction .unicode-reaction {
-        font-size: 1.25em;
-    }
-}
-
 .notification-text {
     font-size: 0.8em;
 }
