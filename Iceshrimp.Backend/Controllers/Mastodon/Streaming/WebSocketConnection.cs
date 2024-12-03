@@ -396,6 +396,7 @@ public sealed class WebSocketConnection(
 	{
 		var mfmConverter = scope.ServiceProvider.GetRequiredService<MfmConverter>();
 		mfmConverter.SupportsHtmlFormatting.Value = Token.SupportsHtmlFormatting;
+		mfmConverter.SupportsInlineMedia.Value = Token.SupportsInlineMedia;
 	}
 
 	public async Task CloseAsync(WebSocketCloseStatus status)

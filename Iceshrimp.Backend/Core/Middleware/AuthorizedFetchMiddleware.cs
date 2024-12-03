@@ -32,6 +32,7 @@ public class AuthorizedFetchMiddleware(
 	{
 		// Ensure we're rendering HTML markup (AsyncLocal)
 		mfmConverter.SupportsHtmlFormatting.Value = true;
+		mfmConverter.SupportsInlineMedia.Value = true;
 
 		if (!config.Value.AuthorizedFetch)
 		{

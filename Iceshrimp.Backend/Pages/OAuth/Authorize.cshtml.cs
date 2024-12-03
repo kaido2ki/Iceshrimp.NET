@@ -56,7 +56,8 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 
 	public async Task OnPost(
 		[FromForm] string? username, [FromForm] string? password, [FromForm] string? totp, [FromForm] string? userId,
-		[FromForm] bool supportsHtmlFormatting, [FromForm] bool autoDetectQuotes, [FromForm] bool isPleroma
+		[FromForm] bool supportsHtmlFormatting, [FromForm] bool autoDetectQuotes, [FromForm] bool isPleroma, 
+		[FromForm] bool supportsInlineMedia
 	)
 	{
 		// Validate query parameters & populate model first
@@ -113,7 +114,8 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 			RedirectUri            = RedirectUri,
 			AutoDetectQuotes       = autoDetectQuotes,
 			SupportsHtmlFormatting = supportsHtmlFormatting,
-			IsPleroma              = isPleroma
+			IsPleroma              = isPleroma,
+			SupportsInlineMedia    = supportsInlineMedia,
 		};
 
 		await db.AddAsync(token);
@@ -130,7 +132,8 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 				Password               = password,
 				AutoDetectQuotes       = autoDetectQuotes,
 				SupportsHtmlFormatting = supportsHtmlFormatting,
-				IsPleroma              = isPleroma
+				IsPleroma              = isPleroma,
+				SupportsInlineMedia    = supportsInlineMedia,
 			};
 
 			Response.Headers.CacheControl = "private, no-store, no-cache";
@@ -145,5 +148,6 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 		public required bool   SupportsHtmlFormatting;
 		public required bool   AutoDetectQuotes;
 		public required bool   IsPleroma;
+		public required bool   SupportsInlineMedia;
 	}
 }
