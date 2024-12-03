@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -21,13 +22,17 @@ public class AuthorizedFetchMiddleware(
 	SystemUserService systemUserSvc,
 	ActivityPub.FederationControlService fedCtrlSvc,
 	ILogger<AuthorizedFetchMiddleware> logger,
-	IHostApplicationLifetime appLifetime
+	IHostApplicationLifetime appLifetime,
+	MfmConverter mfmConverter
 ) : ConditionalMiddleware<AuthorizedFetchAttribute>, IMiddlewareService
 {
 	public static ServiceLifetime Lifetime => ServiceLifetime.Scoped;
-	
+
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
 	{
+		// Ensure we're rendering HTML markup (AsyncLocal)
+		mfmConverter.SupportsHtmlFormatting.Value = true;
+
 		if (!config.Value.AuthorizedFetch)
 		{
 			await next(ctx);
