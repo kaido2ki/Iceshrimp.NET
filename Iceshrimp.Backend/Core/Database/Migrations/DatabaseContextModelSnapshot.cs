@@ -3222,6 +3222,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("supportsHtmlFormatting")
                         .HasComment("Whether the client supports HTML inline formatting (bold, italic, strikethrough, ...)");
 
+                    b.Property<bool>("SupportsInlineMedia")
+                        .HasColumnType("boolean")
+                        .HasColumnName("supportsInlineMedia");
+
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasMaxLength(64)

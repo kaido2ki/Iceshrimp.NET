@@ -80,6 +80,7 @@ public class AuthenticationMiddleware(
 			ctx.SetOauthToken(oauthToken);
 
 			mfmConverter.SupportsHtmlFormatting.Value = oauthToken.SupportsHtmlFormatting;
+			mfmConverter.SupportsInlineMedia.Value = oauthToken.SupportsInlineMedia;
 		}
 		else
 		{

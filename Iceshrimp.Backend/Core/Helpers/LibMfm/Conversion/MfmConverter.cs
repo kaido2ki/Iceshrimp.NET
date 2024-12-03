@@ -39,6 +39,7 @@ public class MfmConverter(
 ) : ISingletonService
 {
 	public AsyncLocal<bool> SupportsHtmlFormatting { get; } = new();
+	public AsyncLocal<bool> SupportsInlineMedia    { get; } = new();
 
 	public static async Task<(string Mfm, List<MfmInlineMedia> InlineMedia)> FromHtmlAsync(string? html, List<Note.MentionedUser>? mentions = null)
 	{
@@ -177,28 +178,42 @@ public class MfmConverter(
 					var current = media.FirstOrDefault(m => m.Src == url.Url);
 					if (current != null)
 					{
-						var nodeName = current.Type switch
+						usedMedia.Add(current);
+
+						if (!SupportsInlineMedia.Value || current.Type == MfmInlineMedia.MediaType.Other)
 						{
-							MfmInlineMedia.MediaType.Image   => "img",
-							MfmInlineMedia.MediaType.Video   => "video",
-							MfmInlineMedia.MediaType.Audio   => "audio",
-							_                                => "a",
-						};
-						var el = document.CreateElement(nodeName);
-						if (current.Type == MfmInlineMedia.MediaType.Other)
-						{
+							var el = document.CreateElement("a");
 							el.SetAttribute("href", current.Src);
-							el.SetAttribute("download", "true");
-							el.TextContent = $"\ud83d\udcbe {current.Alt ?? current.Src}"; // floppy disk emoji
+
+							if (current.Type == MfmInlineMedia.MediaType.Other)
+								el.SetAttribute("download", "true");
+							
+							var icon = current.Type switch
+							{
+								MfmInlineMedia.MediaType.Image => "\ud83d\uddbc\ufe0f", // framed picture emoji
+								MfmInlineMedia.MediaType.Video => "\ud83c\udfac",       // clapperboard emoji
+								MfmInlineMedia.MediaType.Audio => "\ud83c\udfb5",       // music note emoji
+								_                              => "\ud83d\udcbe",       // floppy disk emoji	
+							};
+
+							el.TextContent = $"[{icon} {current.Alt ?? current.Src}]"; 
+							return el;
 						}
 						else
 						{
+							var nodeName = current.Type switch
+							{
+								MfmInlineMedia.MediaType.Image => "img",
+								MfmInlineMedia.MediaType.Video => "video",
+								MfmInlineMedia.MediaType.Audio => "audio",
+								_                              => throw new ArgumentOutOfRangeException()
+							};
+
+							var el = document.CreateElement(nodeName);
 							el.SetAttribute("src", current.Src);
 							el.SetAttribute("alt", current.Alt);
+							return el;
 						}
-						
-						usedMedia.Add(current);
-						return el;
 					}
 				}
 

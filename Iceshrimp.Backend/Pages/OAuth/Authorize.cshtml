@@ -36,6 +36,18 @@
                     <label for="supportsHtmlFormatting">This app supports HTML formatting</label>
                 </div>
                 <div>
+                    @if (data.SupportsInlineMedia)
+                    {
+                        <input type="checkbox" id="supportsInlineMedia" checked disabled/>
+                        <input type="hidden" name="supportsInlineMedia" value="1"/>
+                    }
+                    else
+                    {
+                        <input type="checkbox" id="supportsInlineMedia" disabled/>
+                    }
+                    <label for="supportsInlineMedia">This app supports inline media</label>
+                </div>
+                <div>
                     @if (data.AutoDetectQuotes)
                     {
                         <input type="checkbox" id="autoDetectQuotes" checked disabled/>
@@ -81,6 +93,10 @@
                 <div>
                     <input type="checkbox" name="supportsHtmlFormatting" id="supportsHtmlFormatting" value="1"/>
                     <label for="supportsHtmlFormatting">This app supports HTML formatting</label>
+                </div>
+                <div>
+                    <input type="checkbox" name="supportsInlineMedia" id="supportsInlineMedia" value="1"/>
+                    <label for="supportsInlineMedia">This app supports inline media</label>
                 </div>
                 <div>
                     <input type="checkbox" name="autoDetectQuotes" id="autoDetectQuotes" value="1"/>
