@@ -7,7 +7,7 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
-using Iceshrimp.Parsing;
+using Iceshrimp.MfmSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -187,21 +187,21 @@ public partial class EmojiService(
 		return await db.Emojis.FirstOrDefaultAsync(p => p.Host == host && p.Name == name);
 	}
 
-	public async Task<List<Emoji>> ResolveEmojiAsync(IEnumerable<MfmNodeTypes.MfmNode> nodes)
+	public async Task<List<Emoji>> ResolveEmojiAsync(IEnumerable<MfmNode> nodes)
 	{
-		var list = new List<MfmNodeTypes.MfmEmojiCodeNode>();
+		var list = new List<MfmEmojiCodeNode>();
 		ResolveChildren(nodes, ref list);
 		return await db.Emojis.Where(p => p.Host == null && list.Select(i => i.Name).Contains(p.Name)).ToListAsync();
 	}
 
 	private static void ResolveChildren(
-		IEnumerable<MfmNodeTypes.MfmNode> nodes, ref List<MfmNodeTypes.MfmEmojiCodeNode> list
+		IEnumerable<MfmNode> nodes, ref List<MfmEmojiCodeNode> list
 	)
 	{
 		foreach (var node in nodes)
 		{
-			if (node is MfmNodeTypes.MfmEmojiCodeNode emojiNode) list.Add(emojiNode);
-			list.AddRange(node.Children.OfType<MfmNodeTypes.MfmEmojiCodeNode>());
+			if (node is MfmEmojiCodeNode emojiNode) list.Add(emojiNode);
+			list.AddRange(node.Children.OfType<MfmEmojiCodeNode>());
 			ResolveChildren(node.Children, ref list);
 		}
 	}

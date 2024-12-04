@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
 using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Html.Parser;
@@ -8,9 +7,8 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
+using Iceshrimp.MfmSharp;
 using Microsoft.Extensions.Options;
-using Microsoft.FSharp.Collections;
-using static Iceshrimp.Parsing.MfmNodeTypes;
 using MfmHtmlParser = Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing.HtmlParser;
 using HtmlParser = AngleSharp.Html.Parser.HtmlParser;
 
@@ -151,7 +149,7 @@ public class MfmConverter(
 			case MfmBoldNode:
 			{
 				var el = CreateInlineFormattingElement(document, "b");
-				AddHtmlMarkup(node, "**");
+				AddHtmlMarkup(document, el, "**");
 				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
@@ -164,7 +162,7 @@ public class MfmConverter(
 			case MfmStrikeNode:
 			{
 				var el = CreateInlineFormattingElement(document, "del");
-				AddHtmlMarkup(node, "~~");
+				AddHtmlMarkup(document, el, "~~");
 				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
@@ -172,7 +170,7 @@ public class MfmConverter(
 			case MfmFnNode:
 			{
 				var el = CreateInlineFormattingElement(document, "i");
-				AddHtmlMarkup(node, "*");
+				AddHtmlMarkup(document, el, "*");
 				AppendChildren(el, document, node, mentions, host);
 				return el;
 			}
@@ -220,10 +218,10 @@ public class MfmConverter(
 				el.TextContent = inlineCodeNode.Code;
 				return el;
 			}
-			case MfmMathInlineNode mathInlineNode:
+			case MfmInlineMathNode inlineMathNode:
 			{
 				var el = CreateInlineFormattingElement(document, "code");
-				el.TextContent = mathInlineNode.Formula;
+				el.TextContent = inlineMathNode.Formula;
 				return el;
 			}
 			case MfmMathBlockNode mathBlockNode:
@@ -244,16 +242,15 @@ public class MfmConverter(
 				var el = document.CreateElement("span");
 
 				// Fall back to object host, as localpart-only mentions are relative to the instance the note originated from
-				var finalHost = mentionNode.Host?.Value ?? host ?? config.Value.AccountDomain;
+				var finalHost = mentionNode.Host ?? host ?? config.Value.AccountDomain;
 
 				if (finalHost == config.Value.WebDomain)
 					finalHost = config.Value.AccountDomain;
 
 				Func<Note.MentionedUser, bool> predicate = finalHost == config.Value.AccountDomain
-					? p => p.Username.EqualsIgnoreCase(mentionNode.Username) &&
-					       (p.Host.EqualsIgnoreCase(finalHost) || p.Host == null)
-					: p => p.Username.EqualsIgnoreCase(mentionNode.Username) &&
-					       p.Host.EqualsIgnoreCase(finalHost);
+					? p => p.Username.EqualsIgnoreCase(mentionNode.User)
+					       && (p.Host.EqualsIgnoreCase(finalHost) || p.Host == null)
+					: p => p.Username.EqualsIgnoreCase(mentionNode.User) && p.Host.EqualsIgnoreCase(finalHost);
 
 				if (mentions.FirstOrDefault(predicate) is not { } mention)
 				{
@@ -277,7 +274,7 @@ public class MfmConverter(
 			case MfmQuoteNode:
 			{
 				var el = CreateInlineFormattingElement(document, "blockquote");
-				AddHtmlMarkupStartOnly(node, "> ");
+				AddHtmlMarkup(document, el, "> ");
 				AppendChildren(el, document, node, mentions, host);
 				el.AppendChild(document.CreateElement("br"));
 				return el;
@@ -309,14 +306,6 @@ public class MfmConverter(
 				el.TextContent = urlNode.Url[length..];
 				return el;
 			}
-			case MfmSearchNode searchNode:
-			{
-				//TODO: get search engine from config
-				var el = document.CreateElement("a");
-				el.SetAttribute("href", $"https://duckduckgo.com?q={HttpUtility.UrlEncode(searchNode.Query)}");
-				el.TextContent = searchNode.Content;
-				return el;
-			}
 			case MfmPlainNode:
 			{
 				var el = document.CreateElement("span");
@@ -343,17 +332,11 @@ public class MfmConverter(
 		return document.CreateElement(SupportsHtmlFormatting.Value ? name : "span");
 	}
 
-	private void AddHtmlMarkup(MfmNode node, string chars)
+	private void AddHtmlMarkup(IDocument document, IElement node, string chars)
 	{
 		if (SupportsHtmlFormatting.Value) return;
-		var markupNode = new MfmTextNode(chars);
-		node.Children = ListModule.OfSeq(node.Children.Prepend(markupNode).Append(markupNode));
-	}
-
-	private void AddHtmlMarkupStartOnly(MfmNode node, string chars)
-	{
-		if (SupportsHtmlFormatting.Value) return;
-		var markupNode = new MfmTextNode(chars);
-		node.Children = ListModule.OfSeq(node.Children.Prepend(markupNode));
+		var el = document.CreateElement("span");
+		el.AppendChild(document.CreateTextNode(chars));
+		node.AppendChild(el);
 	}
 }

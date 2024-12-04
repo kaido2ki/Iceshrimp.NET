@@ -3,7 +3,7 @@
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
-@using Iceshrimp.Parsing
+@using Iceshrimp.MfmSharp
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
 @inject IJSRuntime                     Js
@@ -205,10 +205,10 @@
         }
 
         var instance = await MetadataService.Instance.Value;
-        var mfmNodes = noteBase.Text != null ? Mfm.parse(noteBase.Text) : [];
+        var mfmNodes = noteBase.Text != null ? MfmParser.Parse(noteBase.Text) : [];
         foreach (var node in mfmNodes)
         {
-            if (node is MfmNodeTypes.MfmMentionNode mentionNode)
+            if (node is MfmMentionNode mentionNode)
             {
                 mentions.Add(mentionNode.Acct.Replace($"@{instance.AccountDomain}", ""));
             }

@@ -1,7 +1,7 @@
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
-using Iceshrimp.Parsing;
+using Iceshrimp.MfmSharp;
 using Microsoft.AspNetCore.Components;
 
 namespace Iceshrimp.Backend.Components.PublicPreview.Renderers;
@@ -13,7 +13,7 @@ public class MfmRenderer(MfmConverter converter) : ISingletonService
 	)
 	{
 		if (text is null) return null;
-		var parsed     = Mfm.parse(text);
+		var parsed     = MfmParser.Parse(text);
 		
 		// Ensure we are rendering HTML markup (AsyncLocal)
 		converter.SupportsHtmlFormatting.Value = true;

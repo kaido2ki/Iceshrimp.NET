@@ -8,14 +8,13 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
+using Iceshrimp.MfmSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
-using static Iceshrimp.Parsing.MfmNodeTypes;
+using CommunityToolkit.HighPerformance;
 
 namespace Iceshrimp.Backend.Core.Services;
 
@@ -176,9 +175,9 @@ public class NoteService(
 		}
 		else if (data.Text != null)
 		{
-			nodes     = MfmParser.Parse(data.Text).ToList();
-			nodes     = mentionsResolver.ResolveMentions(nodes, data.User.Host, mentions, splitDomainMapping).ToList();
-			data.Text = MfmSerializer.Serialize(nodes);
+			nodes = MfmParser.Parse(data.Text);
+			mentionsResolver.ResolveMentions(nodes.AsSpan(), data.User.Host, mentions, splitDomainMapping);
+			data.Text = nodes.Serialize();
 		}
 
 		if (data.Cw != null && string.IsNullOrWhiteSpace(data.Cw))
@@ -189,8 +188,8 @@ public class NoteService(
 
 		// Enforce UserSettings.AlwaysMarkSensitive, if configured
 		if (
-			(data.User.UserSettings?.AlwaysMarkSensitive ?? false) &&
-			(data.Attachments?.Any(p => !p.IsSensitive) ?? false)
+			(data.User.UserSettings?.AlwaysMarkSensitive ?? false)
+			&& (data.Attachments?.Any(p => !p.IsSensitive) ?? false)
 		)
 		{
 			foreach (var driveFile in data.Attachments.Where(p => !p.IsSensitive)) driveFile.IsSensitive = true;
@@ -252,14 +251,14 @@ public class NoteService(
 		var noteId   = IdHelpers.GenerateSnowflakeId(data.CreatedAt);
 		var threadId = data.Reply?.ThreadId ?? noteId;
 
-		var context = data.ASNote?.Context;
+		var context   = data.ASNote?.Context;
 		var contextId = context?.Id;
 
 		var thread = contextId != null
 			? await db.NoteThreads.Where(t => t.Uri == contextId || t.Id == threadId).FirstOrDefaultAsync()
 			: await db.NoteThreads.Where(t => t.Id == threadId).FirstOrDefaultAsync();
 
-		var contextOwner      = data.User.IsLocalUser ? data.User : null;
+		var   contextOwner      = data.User.IsLocalUser ? data.User : null;
 		bool? contextResolvable = data.User.IsLocalUser ? null : false;
 
 		if (thread == null && context != null)
@@ -290,10 +289,10 @@ public class NoteService(
 
 		thread ??= new NoteThread
 		{
-			 Id = threadId,
-			 Uri = contextId,
-			 User = contextOwner,
-			 IsResolvable = contextResolvable,
+			Id           = threadId,
+			Uri          = contextId,
+			User         = contextOwner,
+			IsResolvable = contextResolvable,
 		};
 
 		var note = new Note
@@ -411,8 +410,8 @@ public class NoteService(
 					          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RepliesCount,
 					                                                 i => bgDb.Notes.Count(n => n.ReplyId == i.Id))
 					                                    .SetProperty(i => i.RenoteCount,
-					                                                 i => bgDb.Notes.Count(n => n.RenoteId == i.Id &&
-						                                                 n.IsPureRenote)));
+					                                                 i => bgDb.Notes.Count(n => n.RenoteId == i.Id
+						                                                 && n.IsPureRenote)));
 				}
 			});
 		}
@@ -466,9 +465,9 @@ public class NoteService(
 
 		if (note is { Renote.Id: not null, IsPureRenote: true })
 		{
-			if (!await db.Notes.AnyAsync(p => p.UserId == note.User.Id &&
-			                                  p.RenoteId == note.Renote.Id &&
-			                                  p.IsPureRenote))
+			if (!await db.Notes.AnyAsync(p => p.UserId == note.User.Id
+			                                  && p.RenoteId == note.Renote.Id
+			                                  && p.IsPureRenote))
 			{
 				await db.Notes.Where(p => p.Id == note.Renote.Id)
 				        .ExecuteUpdateAsync(p => p.SetProperty(n => n.RenoteCount, n => n.RenoteCount + diff));
@@ -532,9 +531,9 @@ public class NoteService(
 		}
 		else if (data.Text != null)
 		{
-			nodes     = MfmParser.Parse(data.Text).ToList();
-			nodes     = mentionsResolver.ResolveMentions(nodes, note.User.Host, mentions, splitDomainMapping).ToList();
-			data.Text = MfmSerializer.Serialize(nodes);
+			nodes = MfmParser.Parse(data.Text);
+			mentionsResolver.ResolveMentions(nodes.AsSpan(), note.User.Host, mentions, splitDomainMapping);
+			data.Text = nodes.Serialize();
 		}
 
 		if (data.Cw != null && string.IsNullOrWhiteSpace(data.Cw))
@@ -544,8 +543,8 @@ public class NoteService(
 		if (mentionedUserIds.Except(previousMentionedUserIds).Any())
 		{
 			var blockAcct = await db.Users
-			                        .Where(p => mentionedUserIds.Except(previousMentionedUserIds).Contains(p.Id) &&
-			                                    (p.IsBlocking(note.User) || p.IsBlockedBy(note.User)))
+			                        .Where(p => mentionedUserIds.Except(previousMentionedUserIds).Contains(p.Id)
+			                                    && (p.IsBlocking(note.User) || p.IsBlockedBy(note.User)))
 			                        .Select(p => p.Acct)
 			                        .FirstOrDefaultAsync();
 			if (blockAcct != null)
@@ -646,8 +645,8 @@ public class NoteService(
 						? poll.Choices.Select(_ => 0).ToList()
 						: poll.Votes;
 					note.Poll.VotersCount =
-						poll.VotersCount ??
-						(note.Poll.VotersCount == null
+						poll.VotersCount
+						?? (note.Poll.VotersCount == null
 							? null
 							: Math.Max(note.Poll.VotersCount.Value, note.Poll.Votes.Sum()));
 				}
@@ -655,8 +654,8 @@ public class NoteService(
 				{
 					note.Poll.Votes = poll.Votes;
 					note.Poll.VotersCount =
-						poll.VotersCount ??
-						(note.Poll.VotersCount == null
+						poll.VotersCount
+						?? (note.Poll.VotersCount == null
 							? null
 							: Math.Max(note.Poll.VotersCount.Value, note.Poll.Votes.Sum()));
 				}
@@ -690,10 +689,10 @@ public class NoteService(
 			}
 		}
 
-		var isEdit = data.ASNote is not ASQuestion ||
-		             poll == null ||
-		             isPollEdited ||
-		             db.Entry(note).State != EntityState.Unchanged;
+		var isEdit = data.ASNote is not ASQuestion
+		             || poll == null
+		             || isPollEdited
+		             || db.Entry(note).State != EntityState.Unchanged;
 
 		if (isEdit)
 		{
@@ -888,8 +887,8 @@ public class NoteService(
 			if (reply.UserHost != null)
 				throw GracefulException.UnprocessableEntity("Poll vote not destined for this instance");
 
-			poll = await db.Polls.FirstOrDefaultAsync(p => p.Note == reply) ??
-			       throw GracefulException.UnprocessableEntity("Poll does not exist");
+			poll = await db.Polls.FirstOrDefaultAsync(p => p.Note == reply)
+			       ?? throw GracefulException.UnprocessableEntity("Poll does not exist");
 
 			if (poll.Choices.All(p => p != note.Name))
 				throw GracefulException.UnprocessableEntity("Unknown poll option");
@@ -927,19 +926,19 @@ public class NoteService(
 		}
 
 		var mentionData = await ResolveNoteMentionsAsync(note);
-		var createdAt = note.PublishedAt?.ToUniversalTime() ??
-		                throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field");
+		var createdAt = note.PublishedAt?.ToUniversalTime()
+		                ?? throw GracefulException.UnprocessableEntity("Missing or invalid PublishedAt field");
 
-		var quoteUrl = note.MkQuote ??
-		               note.QuoteUri ??
-		               note.QuoteUrl ??
-		               note.Tags?.OfType<ASTagRel>()
-		                   .Where(p => p.MediaType is Constants.APMime or Constants.ASMime)
-		                   .Where(p => p.Rel is $"{Constants.MisskeyNs}#_misskey_quote"
-		                                        or $"{Constants.FedibirdNs}#quoteUri"
-		                                        or $"{Constants.ActivityStreamsNs}#quoteUrl")
-		                   .Select(p => p.Link)
-		                   .FirstOrDefault();
+		var quoteUrl = note.MkQuote
+		               ?? note.QuoteUri
+		               ?? note.QuoteUrl
+		               ?? note.Tags?.OfType<ASTagRel>()
+		                      .Where(p => p.MediaType is Constants.APMime or Constants.ASMime)
+		                      .Where(p => p.Rel is $"{Constants.MisskeyNs}#_misskey_quote"
+		                                           or $"{Constants.FedibirdNs}#quoteUri"
+		                                           or $"{Constants.ActivityStreamsNs}#quoteUrl")
+		                      .Select(p => p.Link)
+		                      .FirstOrDefault();
 
 		var renote     = quoteUrl != null ? await ResolveNoteAsync(quoteUrl, user: user) : null;
 		var renoteUri  = renote == null ? quoteUrl : null;
@@ -954,8 +953,8 @@ public class NoteService(
 			if (question is { AnyOf: not null, OneOf: not null })
 				throw GracefulException.UnprocessableEntity("Polls cannot have both anyOf and oneOf set");
 
-			var choices = (question.AnyOf ?? question.OneOf)?.Where(p => p.Name != null).ToList() ??
-			              throw GracefulException.UnprocessableEntity("Polls must have either anyOf or oneOf set");
+			var choices = (question.AnyOf ?? question.OneOf)?.Where(p => p.Name != null).ToList()
+			              ?? throw GracefulException.UnprocessableEntity("Polls must have either anyOf or oneOf set");
 
 			if (choices.Count == 0)
 				throw GracefulException.UnprocessableEntity("Poll must have at least one option");
@@ -1038,8 +1037,8 @@ public class NoteService(
 			if (question is { AnyOf: not null, OneOf: not null })
 				throw GracefulException.UnprocessableEntity("Polls cannot have both anyOf and oneOf set");
 
-			var choices = (question.AnyOf ?? question.OneOf)?.Where(p => p.Name != null).ToList() ??
-			              throw GracefulException.UnprocessableEntity("Polls must have either anyOf or oneOf set");
+			var choices = (question.AnyOf ?? question.OneOf)?.Where(p => p.Name != null).ToList()
+			              ?? throw GracefulException.UnprocessableEntity("Polls must have either anyOf or oneOf set");
 
 			if (choices.Count == 0)
 				throw GracefulException.UnprocessableEntity("Poll must have at least one option");
@@ -1243,9 +1242,9 @@ public class NoteService(
 				user != null ? await fetchSvc.FetchNoteAsync(uri, user) : await fetchSvc.FetchNoteAsync(uri);
 		}
 		catch (LocalFetchException e) when (
-			Uri.TryCreate(e.Uri, UriKind.Absolute, out var parsed) &&
-			parsed.Host == config.Value.WebDomain &&
-			parsed.AbsolutePath.StartsWith("/notes/")
+			Uri.TryCreate(e.Uri, UriKind.Absolute, out var parsed)
+			&& parsed.Host == config.Value.WebDomain
+			&& parsed.AbsolutePath.StartsWith("/notes/")
 		)
 		{
 			var id = parsed.AbsolutePath["/notes/".Length..];
@@ -1317,10 +1316,10 @@ public class NoteService(
 		if (BackfillQueue.KeyedLocker.IsInUse(note.ThreadId)) return;
 
 		var updatedRows = await db.NoteThreads
-		                          .Where(t => t.Id == note.ThreadId &&
-		                                      t.Notes.Count < BackfillQueue.MaxRepliesPerThread &&
-		                                      (t.BackfilledAt == null ||
-		                                       t.BackfilledAt <= DateTime.UtcNow - cfg.RefreshAfterTimeSpan))
+		                          .Where(t => t.Id == note.ThreadId
+		                                      && t.Notes.Count < BackfillQueue.MaxRepliesPerThread
+		                                      && (t.BackfilledAt == null
+		                                          || t.BackfilledAt <= DateTime.UtcNow - cfg.RefreshAfterTimeSpan))
 		                          .ExecuteUpdateAsync(p => p.SetProperty(t => t.BackfilledAt, DateTime.UtcNow));
 
 		// only queue if the thread's backfill timestamp got updated. if it didn't, it means the cooldown is still in effect
@@ -1391,9 +1390,9 @@ public class NoteService(
 
 		eventSvc.RaiseNoteUnliked(this, note, user);
 		await db.Notifications
-		        .Where(p => p.Type == Notification.NotificationType.Like &&
-		                    p.Notifiee == note.User &&
-		                    p.Notifier == user)
+		        .Where(p => p.Type == Notification.NotificationType.Like
+		                    && p.Notifiee == note.User
+		                    && p.Notifier == user)
 		        .ExecuteDeleteAsync();
 
 		return true;
@@ -1431,16 +1430,16 @@ public class NoteService(
 
 	public async Task LikeNoteAsync(ASNote note, User actor)
 	{
-		var dbNote = await ResolveNoteAsync(note) ??
-		             throw GracefulException.UnprocessableEntity("Cannot register like for unknown note");
+		var dbNote = await ResolveNoteAsync(note)
+		             ?? throw GracefulException.UnprocessableEntity("Cannot register like for unknown note");
 
 		await LikeNoteAsync(dbNote, actor);
 	}
 
 	public async Task UnlikeNoteAsync(ASNote note, User user)
 	{
-		var dbNote = await ResolveNoteAsync(note) ??
-		             throw GracefulException.UnprocessableEntity("Cannot unregister like for unknown note");
+		var dbNote = await ResolveNoteAsync(note)
+		             ?? throw GracefulException.UnprocessableEntity("Cannot unregister like for unknown note");
 
 		await UnlikeNoteAsync(dbNote, user);
 	}
@@ -1534,7 +1533,8 @@ public class NoteService(
 
 		var previousPins = await db.Users.Where(p => p.Id == user.Id)
 		                           .Select(p => p.PinnedNotes.Select(i => i.Id))
-		                           .FirstOrDefaultAsync() ?? [];
+		                           .FirstOrDefaultAsync()
+		                   ?? [];
 
 		if (previousPins.SequenceEqual(notes.Where(p => p != null).Cast<Note>().Select(p => p.Id))) return;
 
@@ -1642,9 +1642,9 @@ public class NoteService(
 		if (note.User.IsLocalUser && note.User != user)
 		{
 			await db.Notifications
-			        .Where(p => p.Note == note &&
-			                    p.Notifier == user &&
-			                    p.Type == Notification.NotificationType.Reaction)
+			        .Where(p => p.Note == note
+			                    && p.Notifier == user
+			                    && p.Type == Notification.NotificationType.Reaction)
 			        .ExecuteDeleteAsync();
 		}
 
