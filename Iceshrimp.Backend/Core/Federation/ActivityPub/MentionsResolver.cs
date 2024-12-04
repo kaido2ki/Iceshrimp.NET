@@ -1,12 +1,9 @@
+using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
+using Iceshrimp.MfmSharp;
 using Microsoft.Extensions.Options;
-using Microsoft.FSharp.Collections;
-using Microsoft.FSharp.Core;
-using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 
@@ -25,32 +22,28 @@ public class MentionsResolver(IOptions<Config.InstanceSection> config) : ISingle
 	)
 	{
 		var nodes = MfmParser.Parse(mfm);
-		nodes = ResolveMentions(nodes, host, mentionCache, splitDomainMapping);
-		return MfmSerializer.Serialize(nodes);
+		ResolveMentions(nodes.AsSpan(), host, mentionCache, splitDomainMapping);
+		return nodes.Serialize();
 	}
 
-	public IEnumerable<MfmNode> ResolveMentions(
-		IEnumerable<MfmNode> nodes, string? host,
+	public void ResolveMentions(
+		Span<MfmNode> nodes, string? host,
 		List<Note.MentionedUser> mentionCache,
 		SplitDomainMapping splitDomainMapping
 	)
 	{
-		var nodesList = nodes.ToList();
-
-		// We need to call .ToList() on this so we can modify the collection in the loop
-		foreach (var node in nodesList.ToList())
+		// We need to call .ToArray() on this so we can modify the collection in the loop
+		foreach (var node in nodes.ToArray())
 		{
 			if (node is not MfmMentionNode mention)
 			{
-				node.Children =
-					ListModule.OfSeq(ResolveMentions(node.Children, host, mentionCache, splitDomainMapping));
+				ResolveMentions(node.Children, host, mentionCache, splitDomainMapping);
 				continue;
 			}
 
-			nodesList[nodesList.IndexOf(node)] = ResolveMention(mention, host, mentionCache, splitDomainMapping);
+			var nodeRef = node;
+			nodes[nodes.IndexOf(ref nodeRef)] = ResolveMention(mention, host, mentionCache, splitDomainMapping);
 		}
-
-		return nodesList;
 	}
 
 	private MfmInlineNode ResolveMention(
@@ -60,24 +53,23 @@ public class MentionsResolver(IOptions<Config.InstanceSection> config) : ISingle
 	)
 	{
 		// Fall back to object host, as localpart-only mentions are relative to the instance the note originated from
-		var finalHost = node.Host?.Value ?? host ?? config.Value.AccountDomain;
+		var finalHost = node.Host ?? host ?? config.Value.AccountDomain;
 
 		if (finalHost == config.Value.WebDomain)
 			finalHost = config.Value.AccountDomain;
 
-		if (finalHost != config.Value.AccountDomain &&
-		    splitDomainMapping.TryGetValue((node.Username.ToLowerInvariant(), finalHost), out var value))
+		if (finalHost != config.Value.AccountDomain
+		    && splitDomainMapping.TryGetValue((node.User.ToLowerInvariant(), finalHost), out var value))
 			finalHost = value;
 
 		var resolvedUser =
-			mentionCache.FirstOrDefault(p => p.Username.EqualsIgnoreCase(node.Username) && p.Host == finalHost);
+			mentionCache.FirstOrDefault(p => p.Username.EqualsIgnoreCase(node.User) && p.Host == finalHost);
 
 		if (resolvedUser != null)
 		{
 			return resolvedUser.Host == null
-				? new MfmMentionNode($"@{resolvedUser.Username}", resolvedUser.Username, FSharpOption<string>.None)
-				: new MfmMentionNode($"@{resolvedUser.Username}@{resolvedUser.Host}", resolvedUser.Username,
-				                     FSharpOption<string>.Some(resolvedUser.Host));
+				? new MfmMentionNode(resolvedUser.Username, null)
+				: new MfmMentionNode(resolvedUser.Username, resolvedUser.Host);
 		}
 
 		return new MfmPlainNode($"@{node.Acct}");

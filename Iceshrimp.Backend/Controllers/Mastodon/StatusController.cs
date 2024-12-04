@@ -11,16 +11,14 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Serialization;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.MfmSharp;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon;
 
@@ -402,7 +400,7 @@ public class StatusController(
 
 		if (token.AutoDetectQuotes && request.Text != null)
 		{
-			var parsed = MfmParser.Parse(request.Text);
+			var parsed = MfmParser.Parse(request.Text).AsEnumerable();
 			quoteUri = MfmParser.Parse(request.Text).LastOrDefault() switch
 			{
 				MfmUrlNode urlNode   => urlNode.Url,
@@ -412,7 +410,7 @@ public class StatusController(
 
 			if (quoteUri != null)
 				parsed = parsed.SkipLast(1);
-			newText = MfmSerializer.Serialize(parsed).Trim();
+			newText = parsed.Serialize();
 		}
 
 		if (request is { Sensitive: true, MediaIds.Count: > 0 })

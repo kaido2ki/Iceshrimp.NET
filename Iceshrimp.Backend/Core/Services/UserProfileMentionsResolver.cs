@@ -4,10 +4,9 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
+using Iceshrimp.MfmSharp;
 using Microsoft.Extensions.Options;
 using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
-using static Iceshrimp.Parsing.MfmNodeTypes;
 
 namespace Iceshrimp.Backend.Core.Services;
 
@@ -23,7 +22,8 @@ public class UserProfileMentionsResolver(
 	{
 		var fields = actor.Attachments?.OfType<ASField>()
 		                  .Where(p => p is { Name: not null, Value: not null })
-		                  .ToList() ?? [];
+		                  .ToList()
+		             ?? [];
 
 		if (fields is not { Count: > 0 } && (actor.MkSummary ?? actor.Summary) == null) return ([], []);
 		var parsedFields = await fields.SelectMany<ASField, string?>(p => [p.Name, p.Value])
@@ -43,7 +43,7 @@ public class UserProfileMentionsResolver(
 
 		var users = await mentionNodes
 		                  .DistinctBy(p => p.Acct)
-		                  .Select(p => userResolver.ResolveOrNullAsync(GetQuery(p.Username, p.Host?.Value ?? host),
+		                  .Select(p => userResolver.ResolveOrNullAsync(GetQuery(p.User, p.Host ?? host),
 		                                                               ResolveFlags.Acct))
 		                  .AwaitAllNoConcurrencyAsync();
 
@@ -84,11 +84,11 @@ public class UserProfileMentionsResolver(
 		            .Cast<string>()
 		            .ToList();
 
-		var nodes        = input.SelectMany(MfmParser.Parse);
+		var nodes        = input.SelectMany(p => MfmParser.Parse(p));
 		var mentionNodes = EnumerateMentions(nodes);
 		var users = await mentionNodes
 		                  .DistinctBy(p => p.Acct)
-		                  .Select(p => userResolver.ResolveOrNullAsync(GetQuery(p.Username, p.Host?.Value ?? host),
+		                  .Select(p => userResolver.ResolveOrNullAsync(GetQuery(p.User, p.Host ?? host),
 		                                                               ResolveFlags.Acct))
 		                  .AwaitAllNoConcurrencyAsync();
 
