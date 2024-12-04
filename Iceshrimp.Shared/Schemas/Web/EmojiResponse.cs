@@ -1,6 +1,8 @@
+using Iceshrimp.Shared.Helpers;
+
 namespace Iceshrimp.Shared.Schemas.Web;
 
-public class EmojiResponse
+public class EmojiResponse : IIdentifiable
 {
 	public required string       Id        { get; set; }
 	public required string       Name      { get; set; }

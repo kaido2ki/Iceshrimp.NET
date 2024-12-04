@@ -1,9 +1,10 @@
+using Iceshrimp.Shared.Helpers;
 using static System.Text.Json.Serialization.JsonIgnoreCondition;
 using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Shared.Schemas.Web;
 
-public class UserResponse
+public class UserResponse : IIdentifiable
 {
 	public required string  Id              { get; set; }
 	public required string  Username        { get; set; }

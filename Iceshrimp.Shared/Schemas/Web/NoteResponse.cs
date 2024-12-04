@@ -1,9 +1,10 @@
 using System.Text.Json.Serialization;
+using Iceshrimp.Shared.Helpers;
 using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Shared.Schemas.Web;
 
-public class NoteResponse : NoteWithQuote, ICloneable
+public class NoteResponse : NoteWithQuote, ICloneable, IIdentifiable
 {
 	// The properties below are only necessary for building a descendants tree
 	[JI] public NoteResponse?       Parent;

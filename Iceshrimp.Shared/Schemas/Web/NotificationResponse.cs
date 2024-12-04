@@ -1,9 +1,10 @@
 using System.Text.Json.Serialization;
+using Iceshrimp.Shared.Helpers;
 using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Shared.Schemas.Web;
 
-public class NotificationResponse
+public class NotificationResponse : IIdentifiable
 {
 	public required string        Id        { get; set; }
 	public required string        Type      { get; set; }

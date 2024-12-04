@@ -1,6 +1,8 @@
+using Iceshrimp.Shared.Helpers;
+
 namespace Iceshrimp.Shared.Schemas.Web;
 
-public class UserProfileResponse
+public class UserProfileResponse : IIdentifiable
 {
 	public required string                  Id        { get; set; }
 	public required string?                 Birthday  { get; set; }

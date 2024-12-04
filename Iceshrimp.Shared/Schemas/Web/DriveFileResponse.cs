@@ -1,6 +1,8 @@
+using Iceshrimp.Shared.Helpers;
+
 namespace Iceshrimp.Shared.Schemas.Web;
 
-public class DriveFileResponse
+public class DriveFileResponse : IIdentifiable
 {
 	public required string  Id           { get; set; }
 	public required string  Url          { get; set; }
