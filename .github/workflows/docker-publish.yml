@@ -5,7 +5,7 @@ on:
   schedule:
     - cron: '23 18 * * *'
   workflow_run:
-    workflows: ["Workflow A"]
+    workflows: [".NET test"]
     types:
       - completed
 
