@@ -10,18 +10,18 @@ on:
   schedule:
     - cron: '23 18 * * *'
   push:
-    branches: [ "dev" ]
+    branches: [ "sync" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ "dev" ]
+    branches: [ "sync" ]
 
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
-  REF: upstream
+  REF: dev
 
 
 jobs:
