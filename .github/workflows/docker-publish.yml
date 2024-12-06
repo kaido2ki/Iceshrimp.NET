@@ -1,14 +1,14 @@
-name: Docker
+name: .Net and Docker
 
 on:
   workflow_dispatch:
   schedule:
     - cron: '23 18 * * *'
   push:
-    branches: [ "sync" ]
+    branches: [ "dev" ]
     tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ "sync" ]
+    branches: [ "dev" ]
 
 env:
   REGISTRY: ghcr.io
@@ -47,11 +47,11 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      # Step 2: Switch to dev branch
+      # Step 2: Switch to upstream branch
       - name: Checkout dev branch
         run: |
-          git fetch origin dev  # Fetch the latest dev branch
-          git checkout dev || git checkout -b dev  # Checkout dev branch or create if it doesn't exist
+          git fetch origin upstream  # Fetch the latest upstream branch
+          git checkout upstream || git checkout -b upstream  # Checkout upstream branch or create if it doesn't exist
 
       # Step 3: Print git log
       - name: Print git log
