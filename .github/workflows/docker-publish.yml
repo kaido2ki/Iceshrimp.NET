@@ -43,7 +43,7 @@ jobs:
           
       - name: Print git log
         run: |
-          git log --oneline --graph --decorate --abbrev-commit -n 10
+          echo $(git log --oneline --graph --decorate --abbrev-commit -n 10)
           
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
