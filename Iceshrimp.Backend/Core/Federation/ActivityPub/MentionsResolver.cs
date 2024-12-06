@@ -32,17 +32,16 @@ public class MentionsResolver(IOptions<Config.InstanceSection> config) : ISingle
 		SplitDomainMapping splitDomainMapping
 	)
 	{
-		// We need to call .ToArray() on this so we can modify the collection in the loop
-		foreach (var node in nodes.ToArray())
+		for (var i = 0; i < nodes.Length; i++)
 		{
+			var node = nodes[i];
 			if (node is not MfmMentionNode mention)
 			{
 				ResolveMentions(node.Children, host, mentionCache, splitDomainMapping);
 				continue;
 			}
 
-			var nodeRef = node;
-			nodes[nodes.IndexOf(ref nodeRef)] = ResolveMention(mention, host, mentionCache, splitDomainMapping);
+			nodes[i] = ResolveMention(mention, host, mentionCache, splitDomainMapping);
 		}
 	}
 
