@@ -32,11 +32,10 @@ jobs:
       # Step 3: 同步上游分支到本地 dev 分支
       - name: Sync upstream branch to dev
         run: |
-          git checkout origin/dev || git checkout -b origin/dev # 确保 dev 分支存在
-          # git merge upstream/${{ inputs.upstream_branch }} --no-edit # 合并上游分支
-          # 如果需要强制覆盖本地 dev 分支，请使用以下替代命令
-          git reset --hard upstream/${{ inputs.upstream_branch }}
-
+          git checkout dev || git checkout -b dev # 确保 dev 分支存在
+          # 使用默认的 upstream_branch 或 'dev'
+          UPSTREAM_BRANCH="${{ inputs.upstream_branch || 'dev' }}"
+          git reset --hard upstream/$UPSTREAM_BRANCH
 
       # Step 4: 推送到远程仓库
       - name: Push updates to origin/dev
