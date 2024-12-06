@@ -1,38 +1,45 @@
-name: Sync Upstream Changes
+name: Sync Upstream to dev
 
 on:
-  push:
-    branches:
-      - sync 
-  schedule:
-    - cron: '0 0 * * *'  # 每天 UTC 时间午夜 12 点执行
-  workflow_dispatch:  # 允许手动触发
+  schedule: # 定时触发
+    - cron: "0 0 * * *" # 每天 00:00 UTC 时间触发
+    
+  workflow_dispatch: # 手动触发
+    inputs:
+      upstream_branch:
+        description: "The upstream branch to sync from"
+        required: true
+        default: "dev"
 
 jobs:
-  sync:
+  sync-upstream:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout current repository
-      uses: actions/checkout@v3
-      with:
-        ref: sync  # 确保操作在 sync 分支上进行
+      # Step 1: 检出当前仓库
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # 拉取完整历史记录以支持所有分支操作
 
-    - name: Set up Git
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
+      # Step 2: 添加上游仓库
+      - name: Add upstream repository
+        run: |
+          git remote add upstream https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git
+          git fetch upstream
 
-    - name: Add upstream remote
-      run: git remote add upstream https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git
+      # Step 3: 同步上游分支到本地 dev 分支
+      - name: Sync upstream branch to dev
+        run: |
+          git checkout dev || git checkout -b dev # 确保 dev 分支存在
+          # git merge upstream/${{ inputs.upstream_branch }} --no-edit # 合并上游分支
+          # 如果需要强制覆盖本地 dev 分支，请使用以下替代命令
+          git reset --hard upstream/${{ inputs.upstream_branch }}
 
-    - name: Fetch upstream changes
-      run: git fetch upstream
 
-    - name: Create or update upstream branch
-      run: |
-        git checkout -B upstream
-        git reset --hard upstream/dev  # 将 upstream/main 的内容同步到 upstream 分支
-        git push origin upstream --force  # 强制推送到 upstream 分支
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Step 4: 推送到远程仓库
+      - name: Push updates to origin/dev
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin dev -f
