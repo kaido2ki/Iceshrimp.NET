@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '23 18 * * *'
-  # push:
-  #   branches: [ "sync" ]
-  #   tags: [ 'v*.*.*' ]
-  # pull_request:
-  #   branches: [ "sync" ]
+  push:
+    branches: [ "sync" ]
+    tags: [ 'v*.*.*' ]
+  pull_request:
+    branches: [ "sync" ]
 
 env:
   REGISTRY: ghcr.io
