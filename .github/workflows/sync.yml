@@ -3,7 +3,8 @@ name: Sync Upstream to dev
 on:
   schedule: # 定时触发
     - cron: "0 0 * * *" # 每天 00:00 UTC 时间触发
-    
+  push:
+    branches: [ "sync" ]
   workflow_dispatch: # 手动触发
     inputs:
       upstream_branch:
