@@ -1,0 +1,38 @@
+name: Sync Upstream Changes
+
+on:
+  push:
+    branches:
+      - sync 
+  schedule:
+    - cron: '0 0 * * *'  # 每天 UTC 时间午夜 12 点执行
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout current repository
+      uses: actions/checkout@v3
+      with:
+        ref: sync  # 确保操作在 sync 分支上进行
+
+    - name: Set up Git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Add upstream remote
+      run: git remote add upstream https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git
+
+    - name: Fetch upstream changes
+      run: git fetch upstream
+
+    - name: Create or update upstream branch
+      run: |
+        git checkout -B upstream
+        git reset --hard upstream/dev  # 将 upstream/main 的内容同步到 upstream 分支
+        git push origin upstream --force  # 强制推送到 upstream 分支
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
