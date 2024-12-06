@@ -39,6 +39,28 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "root", "root", "{A767955F-0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iceshrimp.Build", "Iceshrimp.Build\Iceshrimp.Build.csproj", "{B2598946-03CA-4C6B-8E3E-7F2AC77021E5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ci-workflows", "ci-workflows", "{4E1CA033-7EA0-429C-8744-185B5E4DF62C}"
+	ProjectSection(SolutionItems) = preProject
+		.forgejo\workflows\release-artifacts.yaml = .forgejo\workflows\release-artifacts.yaml
+		.forgejo\workflows\commit.yaml = .forgejo\workflows\commit.yaml
+		.forgejo\workflows\test-build.yaml = .forgejo\workflows\test-build.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{B14D0122-4D42-4D63-9B3E-349DDAED472D}"
+	ProjectSection(SolutionItems) = preProject
+		.docker\ci-env-dotnet8-wasm.Dockerfile = .docker\ci-env-dotnet8-wasm.Dockerfile
+		.docker\dotnet-sdk-8.0-alpine.Dockerfile = .docker\dotnet-sdk-8.0-alpine.Dockerfile
+		.docker\dotnet-sdk-8.0-wasm.Dockerfile = .docker\dotnet-sdk-8.0-wasm.Dockerfile
+		.docker\dotnet-sdk-9.0-alpine.Dockerfile = .docker\dotnet-sdk-9.0-alpine.Dockerfile
+		.docker\dotnet-runner-9.0.Dockerfile = .docker\dotnet-runner-9.0.Dockerfile
+		.docker\dotnet-runner-8.0.Dockerfile = .docker\dotnet-runner-8.0.Dockerfile
+		.docker\ci-env-dotnet8.Dockerfile = .docker\ci-env-dotnet8.Dockerfile
+		.docker\ci-env-dotnet9-wasm.Dockerfile = .docker\ci-env-dotnet9-wasm.Dockerfile
+		.docker\build.sh = .docker\build.sh
+		.docker\dotnet-sdk-9.0-alpine-wasm.Dockerfile = .docker\dotnet-sdk-9.0-alpine-wasm.Dockerfile
+		.docker\ci-env-dotnet9.Dockerfile = .docker\ci-env-dotnet9.Dockerfile
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,5 +96,7 @@ Global
 		{12AC2DB4-4817-4F73-B541-20568AC51685} = {2000A25C-AF38-47BC-9432-D1278C12010B}
 		{5C822E37-61BD-4796-93D3-430186FA39DE} = {2000A25C-AF38-47BC-9432-D1278C12010B}
 		{B2598946-03CA-4C6B-8E3E-7F2AC77021E5} = {12AC2DB4-4817-4F73-B541-20568AC51685}
+		{4E1CA033-7EA0-429C-8744-185B5E4DF62C} = {5C822E37-61BD-4796-93D3-430186FA39DE}
+		{B14D0122-4D42-4D63-9B3E-349DDAED472D} = {5C822E37-61BD-4796-93D3-430186FA39DE}
 	EndGlobalSection
 EndGlobal
