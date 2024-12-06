@@ -20,6 +20,7 @@ env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
+  REF: upstream
 
 
 jobs:
@@ -36,6 +37,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ env.REF }}
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
