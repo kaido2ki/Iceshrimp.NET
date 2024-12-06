@@ -38,7 +38,7 @@ jobs:
       # Step 3: Print git log
       - name: Print git log
         run: |
-          echo $(git log --oneline --graph --decorate --abbrev-commit -n 10)
+          git log --oneline --graph --decorate --abbrev-commit -n 10
           
       # Install cosign tool except on PR
       - name: Install cosign
