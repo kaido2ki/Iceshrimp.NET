@@ -4,10 +4,11 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '23 18 * * *'
-  workflow_run:
-    workflows: [".NET test"]
-    types:
-      - completed
+  # push:
+  #   branches: [ "sync" ]
+  #   tags: [ 'v*.*.*' ]
+  # pull_request:
+  #   branches: [ "sync" ]
 
 env:
   REGISTRY: ghcr.io
