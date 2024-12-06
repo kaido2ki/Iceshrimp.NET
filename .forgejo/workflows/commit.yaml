@@ -4,7 +4,7 @@ on:
       - 'dev'
 jobs:
   test-build-and-push:
-    runs-on: docker
+    runs-on: ubuntu-latest
     container:
       image: iceshrimp.dev/iceshrimp/ci-env:dotnet9
       options: |
