@@ -1,4 +1,4 @@
-name: Sync Upstream to dev
+name: Sync Upstream to upstream
 
 on:
   schedule: # 定时触发
@@ -27,17 +27,17 @@ jobs:
           git remote add upstream https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git
           git fetch upstream
 
-      # Step 3: 同步上游分支到本地 dev 分支
-      - name: Sync upstream branch to dev
+      # Step 3: 同步上游分支到本地 upstream 分支
+      - name: Sync upstream branch to upstream
         run: |
-          git checkout dev || git checkout -b dev # 确保 dev 分支存在
-          # 使用默认的 upstream_branch 或 'dev'
-          UPSTREAM_BRANCH="${{ inputs.upstream_branch || 'dev' }}"
+          git checkout upstream || git checkout -b upstream # 确保 upstream 分支存在
+          # 使用默认的 upstream_branch 或 'upstream'
+          UPSTREAM_BRANCH="${{ inputs.upstream_branch || 'upstream' }}"
           git reset --hard upstream/$UPSTREAM_BRANCH
 
       # Step 4: 推送到远程仓库
-      - name: Push updates to origin/dev
+      - name: Push updates to origin/upstream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git push origin dev -f
+          git push origin upstream -f
