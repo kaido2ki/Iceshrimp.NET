@@ -29,13 +29,13 @@ public class WebSocketController(
 		if (!HttpContext.WebSockets.IsWebSocketRequest)
 			throw GracefulException.BadRequest("Not a WebSocket request");
 
-		var ct = appLifetime.ApplicationStopping;
-		accessToken ??= HttpContext.WebSockets.WebSocketRequestedProtocols.FirstOrDefault() ??
-		                throw GracefulException.BadRequest("Missing WebSocket protocol header");
+		var ct       = appLifetime.ApplicationStopping;
+		var protocol = HttpContext.WebSockets.WebSocketRequestedProtocols.FirstOrDefault();
+		accessToken ??= protocol ?? throw GracefulException.BadRequest("Missing WebSocket protocol header");
 
 		var token = await Authenticate(accessToken);
 
-		using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+		using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync(protocol);
 		try
 		{
 			await WebSocketHandler.HandleConnectionAsync(webSocket, token, eventSvc, scopeFactory,
@@ -57,7 +57,7 @@ public class WebSocketController(
 		               .Include(p => p.User.UserProfile)
 		               .Include(p => p.User.UserSettings)
 		               .Include(p => p.App)
-		               .FirstOrDefaultAsync(p => p.Token == token && p.Active) ??
-		       throw GracefulException.Unauthorized("This method requires an authenticated user");
+		               .FirstOrDefaultAsync(p => p.Token == token && p.Active)
+		       ?? throw GracefulException.Unauthorized("This method requires an authenticated user");
 	}
 }
