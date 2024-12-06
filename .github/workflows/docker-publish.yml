@@ -16,7 +16,6 @@ env:
 
 jobs:
   dotnet:
-
     runs-on: ubuntu-latest
 
     steps:
