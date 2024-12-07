@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -28,6 +29,26 @@ public class MentionsResolver(IOptions<Config.InstanceSection> config) : ISingle
 
 	public void ResolveMentions(
 		Span<IMfmNode> nodes, string? host,
+		List<Note.MentionedUser> mentionCache,
+		SplitDomainMapping splitDomainMapping
+	)
+	{
+		for (var i = 0; i < nodes.Length; i++)
+		{
+			var node = nodes[i];
+			if (node is not MfmMentionNode mention)
+			{
+				ResolveMentions(node.Children, host, mentionCache, splitDomainMapping);
+				continue;
+			}
+
+			nodes[i] = ResolveMention(mention, host, mentionCache, splitDomainMapping);
+		}
+	}
+
+	[OverloadResolutionPriority(1)]
+	private void ResolveMentions(
+		Span<IMfmInlineNode> nodes, string? host,
 		List<Note.MentionedUser> mentionCache,
 		SplitDomainMapping splitDomainMapping
 	)
