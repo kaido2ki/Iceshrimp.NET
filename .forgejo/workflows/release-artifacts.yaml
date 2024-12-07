@@ -12,11 +12,17 @@ jobs:
         --volume /root/.docker:/root/.docker
     steps:
       - name: Clone repository
-        run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 .
+        run: git clone "$REPO" --branch="$BRANCH" --depth=1 .
+        env:
+          REPO: ${{ github.event.repository.clone_url }}
+          BRANCH: ${{ github.ref_name }}
       - name: Print environment info
         run: dotnet --info
       - name: Build release artifacts
-        run: make release-artifacts ARCHIVE_BASENAME=${{ github.event.repository.name }} ARCHIVE_VERSION=${{ github.ref_name }} VERBOSE=true DEP_VULN_WERROR=true
+        run: make release-artifacts "ARCHIVE_BASENAME=$REPO" "ARCHIVE_VERSION=$VERSION" VERBOSE=true DEP_VULN_WERROR=true
+        env:
+          REPO: ${{ github.event.repository.name }}
+          VERSION: ${{ github.ref_name }}
       - name: Upload artifacts
         uses: actions/release-action@main
         with:
@@ -44,7 +50,10 @@ jobs:
           echo "TAGS=$TAGS" >> "${GITHUB_ENV}"
       - name: Build docker image
         run: |
-          docker login iceshrimp.dev -u ${{ github.actor }} -p ${{ secrets.REGISTRY_TOKEN }}
+          docker login iceshrimp.dev -u "$USER" -p "$TOKEN"
           docker buildx create --name iceshrimp-ci 2>&1 &>/dev/null || true
           docker buildx build ${{ env.TAGS }} --provenance=false --platform=linux/amd64,linux/arm64 --push --builder iceshrimp-ci -f ./.docker/dotnet-runner-9.0.Dockerfile ./release
           docker buildx prune --keep-storage 20G --builder iceshrimp-ci
+        env:
+          USER: ${{ github.actor }}
+          TOKEN: ${{ secrets.REGISTRY_TOKEN }}

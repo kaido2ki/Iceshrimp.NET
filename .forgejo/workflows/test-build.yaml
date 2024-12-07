@@ -13,9 +13,12 @@ jobs:
       - name: Clone repository
         run: |
           git init -b test-build
-          git remote add origin ${{ github.event.repository.clone_url }}
-          git fetch origin ${{ github.ref }} --depth=1
+          git remote add origin "$REPO"
+          git fetch origin "$REF" --depth=1
           git checkout --detach FETCH_HEAD
+        env:
+          REPO: ${{ github.event.repository.clone_url }}
+          REF: ${{ github.ref }}
       - name: Print environment info
         run: dotnet --info
       - name: Run unit tests

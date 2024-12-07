@@ -12,7 +12,10 @@ jobs:
         --volume /root/.docker:/root/.docker
     steps:
       - name: Clone repository
-        run: git clone ${{ github.event.repository.clone_url }} --branch=${{ github.ref_name }} --depth=1 .
+        run: git clone "$REPO" --branch="$BRANCH" --depth=1 .
+        env:
+          REPO: ${{ github.event.repository.clone_url }}
+          BRANCH: ${{ github.ref_name }}
       - name: Print environment info
         run: dotnet --info
       - name: Run unit tests
@@ -21,7 +24,10 @@ jobs:
         shell: bash
         run: |
           make cleanall >/dev/null
-          docker login iceshrimp.dev -u ${{ github.actor }} -p ${{ secrets.REGISTRY_TOKEN }}
+          docker login iceshrimp.dev -u "$USER" -p "$TOKEN"
           docker buildx create --name iceshrimp-ci 2>&1 &>/dev/null || true
-          docker buildx build -t iceshrimp.dev/${GITHUB_REPOSITORY@L}:$GITHUB_REF_NAME --provenance=false --platform=linux/amd64,linux/arm64 --push --builder iceshrimp-ci .
+          docker buildx build -t "iceshrimp.dev/${GITHUB_REPOSITORY@L}:$GITHUB_REF_NAME" --provenance=false --platform=linux/amd64,linux/arm64 --push --builder iceshrimp-ci .
           docker buildx prune --keep-storage 20G --builder iceshrimp-ci
+        env:
+          USER: ${{ github.actor }}
+          TOKEN: ${{ secrets.REGISTRY_TOKEN }}
