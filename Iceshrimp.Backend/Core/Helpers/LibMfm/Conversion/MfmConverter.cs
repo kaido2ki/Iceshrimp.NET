@@ -237,7 +237,7 @@ public class MfmConverter(
 			{
 				var el = document.CreateElement("a");
 				el.SetAttribute("href", linkNode.Url);
-				AppendChildren(el, document, node, mentions, host);
+				el.TextContent = linkNode.Text;
 				return el;
 			}
 			case MfmMentionNode mentionNode:
