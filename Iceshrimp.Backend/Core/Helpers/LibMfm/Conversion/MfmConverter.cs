@@ -59,7 +59,7 @@ public class MfmConverter(
 	}
 
 	public async Task<string> ToHtmlAsync(
-		IEnumerable<MfmNode> nodes, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
+		IEnumerable<IMfmNode> nodes, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
 		bool quoteInaccessible = false, bool replyInaccessible = false, string rootElement = "p",
 		List<Emoji>? emoji = null
 	)
@@ -141,7 +141,7 @@ public class MfmConverter(
 	}
 
 	private INode FromMfmNode(
-		IDocument document, MfmNode node, List<Note.MentionedUser> mentions, string? host, List<Emoji>? emoji = null
+		IDocument document, IMfmNode node, List<Note.MentionedUser> mentions, string? host, List<Emoji>? emoji = null
 	)
 	{
 		switch (node)
@@ -320,7 +320,7 @@ public class MfmConverter(
 	}
 
 	private void AppendChildren(
-		INode element, IDocument document, MfmNode parent,
+		INode element, IDocument document, IMfmNode parent,
 		List<Note.MentionedUser> mentions, string? host, List<Emoji>? emoji = null
 	)
 	{

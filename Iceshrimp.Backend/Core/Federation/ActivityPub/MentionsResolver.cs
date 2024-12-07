@@ -27,7 +27,7 @@ public class MentionsResolver(IOptions<Config.InstanceSection> config) : ISingle
 	}
 
 	public void ResolveMentions(
-		Span<MfmNode> nodes, string? host,
+		Span<IMfmNode> nodes, string? host,
 		List<Note.MentionedUser> mentionCache,
 		SplitDomainMapping splitDomainMapping
 	)
@@ -45,7 +45,7 @@ public class MentionsResolver(IOptions<Config.InstanceSection> config) : ISingle
 		}
 	}
 
-	private MfmInlineNode ResolveMention(
+	private IMfmInlineNode ResolveMention(
 		MfmMentionNode node, string? host,
 		IEnumerable<Note.MentionedUser> mentionCache,
 		SplitDomainMapping splitDomainMapping
@@ -65,11 +65,7 @@ public class MentionsResolver(IOptions<Config.InstanceSection> config) : ISingle
 			mentionCache.FirstOrDefault(p => p.Username.EqualsIgnoreCase(node.User) && p.Host == finalHost);
 
 		if (resolvedUser != null)
-		{
-			return resolvedUser.Host == null
-				? new MfmMentionNode(resolvedUser.Username, null)
-				: new MfmMentionNode(resolvedUser.Username, resolvedUser.Host);
-		}
+			return new MfmMentionNode(resolvedUser.Username, resolvedUser.Host);
 
 		return new MfmPlainNode($"@{node.Acct}");
 	}

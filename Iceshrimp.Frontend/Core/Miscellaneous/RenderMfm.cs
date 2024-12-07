@@ -23,7 +23,7 @@ public static partial class MfmRenderer
 	}
 
 	private static INode RenderMultipleNodes(
-		IEnumerable<MfmNode> nodes, IDocument document, List<EmojiResponse> emoji, string accountDomain, bool simple
+		IEnumerable<IMfmNode> nodes, IDocument document, List<EmojiResponse> emoji, string accountDomain, bool simple
 	)
 	{
 		var el = document.CreateElement("span");
@@ -47,7 +47,7 @@ public static partial class MfmRenderer
 	}
 
 	private static INode RenderNode(
-		MfmNode node, IDocument document, List<EmojiResponse> emoji, string accountDomain, bool simple
+		IMfmNode node, IDocument document, List<EmojiResponse> emoji, string accountDomain, bool simple
 	)
 	{
 		// Hard wrap makes this impossible to read
@@ -58,7 +58,7 @@ public static partial class MfmRenderer
 			MfmCodeBlockNode mfmCodeBlockNode   => MfmCodeBlockNode(mfmCodeBlockNode, document),
 			MfmMathBlockNode mfmMathBlockNode   => throw new NotImplementedException($"{mfmMathBlockNode.GetType()}"),
 			MfmQuoteNode mfmQuoteNode           => MfmQuoteNode(mfmQuoteNode, document),
-			MfmBlockNode mfmBlockNode           => throw new NotImplementedException($"{mfmBlockNode.GetType()}"),
+			IMfmBlockNode mfmBlockNode           => throw new NotImplementedException($"{mfmBlockNode.GetType()}"),
 			MfmBoldNode mfmBoldNode             => MfmBoldNode(mfmBoldNode, document),
 			MfmEmojiCodeNode mfmEmojiCodeNode   => MfmEmojiCodeNode(mfmEmojiCodeNode, document, emoji, simple),
 			MfmFnNode mfmFnNode                 => MfmFnNode(mfmFnNode, document),
@@ -73,7 +73,7 @@ public static partial class MfmRenderer
 			MfmStrikeNode mfmStrikeNode         => MfmStrikeNode(mfmStrikeNode, document),
 			MfmTextNode mfmTextNode             => MfmTextNode(mfmTextNode, document),
 			MfmUrlNode mfmUrlNode               => MfmUrlNode(mfmUrlNode, document),
-			MfmInlineNode mfmInlineNode         => throw new NotImplementedException($"{mfmInlineNode.GetType()}"),
+			IMfmInlineNode mfmInlineNode         => throw new NotImplementedException($"{mfmInlineNode.GetType()}"),
 			_ => throw new ArgumentOutOfRangeException(nameof(node))
 		};
 		// @formatter:on
@@ -480,7 +480,7 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static string? GetNodeText(MfmNode node)
+	private static string? GetNodeText(IMfmNode node)
 	{
 		return node switch
 		{

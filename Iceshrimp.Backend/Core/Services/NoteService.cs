@@ -168,7 +168,7 @@ public class NoteService(
 				throw GracefulException.Forbidden($"You're not allowed to interact with @{blockAcct}");
 		}
 
-		List<MfmNode>? nodes = null;
+		IMfmNode[]? nodes = null;
 		if (data.Text != null && string.IsNullOrWhiteSpace(data.Text))
 		{
 			data.Text = null;
@@ -524,7 +524,7 @@ public class NoteService(
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
 			data.ResolvedMentions ?? await ResolveNoteMentionsAsync(data.Text);
 
-		List<MfmNode>? nodes = null;
+		IMfmNode[]? nodes = null;
 		if (data.Text != null && string.IsNullOrWhiteSpace(data.Text))
 		{
 			data.Text = null;

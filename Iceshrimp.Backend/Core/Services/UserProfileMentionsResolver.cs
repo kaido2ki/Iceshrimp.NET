@@ -106,7 +106,7 @@ public class UserProfileMentionsResolver(
 
 	[SuppressMessage("ReSharper", "ReturnTypeCanBeEnumerable.Local",
 	                 Justification = "Roslyn inspection says this hurts performance")]
-	private static List<MfmMentionNode> EnumerateMentions(IEnumerable<MfmNode> nodes)
+	private static List<MfmMentionNode> EnumerateMentions(IEnumerable<IMfmNode> nodes)
 	{
 		var list = new List<MfmMentionNode>();
 
