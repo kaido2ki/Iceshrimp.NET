@@ -151,6 +151,7 @@ public class MfmConverter(
 				var el = CreateInlineFormattingElement(document, "b");
 				AddHtmlMarkup(document, el, "**");
 				AppendChildren(el, document, node, mentions, host);
+				AddHtmlMarkup(document, el, "**");
 				return el;
 			}
 			case MfmSmallNode:
@@ -164,6 +165,7 @@ public class MfmConverter(
 				var el = CreateInlineFormattingElement(document, "del");
 				AddHtmlMarkup(document, el, "~~");
 				AppendChildren(el, document, node, mentions, host);
+				AddHtmlMarkup(document, el, "~~");
 				return el;
 			}
 			case MfmItalicNode:
@@ -172,6 +174,7 @@ public class MfmConverter(
 				var el = CreateInlineFormattingElement(document, "i");
 				AddHtmlMarkup(document, el, "*");
 				AppendChildren(el, document, node, mentions, host);
+				AddHtmlMarkup(document, el, "*");
 				return el;
 			}
 			case MfmCodeBlockNode codeBlockNode:
