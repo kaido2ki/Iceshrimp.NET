@@ -119,7 +119,7 @@
             }
             else
             {
-                var pattern      = "^@(.[^@]+)@?(.+)?$";
+                var pattern      = "^@([^@]+)@?(.+)?$";
                 var matches      = Regex.Match(User, pattern);
                 var userResponse = await Api.Users.LookupUserAsync(matches.Groups[1].Value, matches.Groups[2].Value);
                 if (userResponse is null)
