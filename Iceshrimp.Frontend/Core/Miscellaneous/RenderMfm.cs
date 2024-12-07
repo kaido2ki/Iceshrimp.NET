@@ -150,7 +150,8 @@ public static partial class MfmRenderer
 		var el = document.CreateElement("a");
 		el.SetAttribute("href", node.Url);
 		el.SetAttribute("target", "_blank");
-		el.ClassName = "link-node";
+		el.ClassName   = "link-node";
+		el.TextContent = node.Text;
 		return el;
 	}
 
