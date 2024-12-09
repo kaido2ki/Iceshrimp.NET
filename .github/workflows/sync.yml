@@ -1,6 +1,8 @@
 name: Sync Upstream to upstream
 
 on:
+  push:
+    branches: [ "dev" ]
   schedule: # 定时触发
     - cron: "0 */3 * * *"
   workflow_dispatch: # 手动触发
