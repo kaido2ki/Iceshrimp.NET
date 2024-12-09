@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "dev" ]
   schedule: # 定时触发
-    - cron: "0 */3 * * *"
+    - cron: "0 0 * * *"
   workflow_dispatch: # 手动触发
     inputs:
       upstream_branch:
@@ -24,18 +24,18 @@ jobs:
           fetch-depth: 0 # 拉取完整历史记录以支持所有分支操作
 
       # Step 2: 添加上游仓库
-      - name: Add upstream repository
+      - name: Add ice repository
         run: |
-          git remote add upstream https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git
-          git fetch upstream
+          git remote add ice https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git
+          git fetch ice
 
       # Step 3: 同步上游分支到本地 upstream 分支
-      - name: Sync upstream branch to upstream
+      - name: Sync ice branch to upstream
         run: |
           git checkout upstream || git checkout -b upstream # 确保 upstream 分支存在
           # 使用默认的 upstream_branch 或 'upstream'
-          UPSTREAM_BRANCH="${{ inputs.upstream_branch || 'upstream' }}"
-          git reset --hard upstream/$UPSTREAM_BRANCH
+          UPSTREAM_BRANCH="${{ inputs.upstream_branch || 'dev' }}"
+          git reset --hard ice/$UPSTREAM_BRANCH
 
       # Step 4: 推送到远程仓库
       - name: Push updates to origin/upstream
