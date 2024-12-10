@@ -351,6 +351,7 @@ public static partial class MfmRenderer
 			: $" animation-duration: {defaultSpeed};";
 		style += args.TryGetValue("delay", out var delay) ? $" animation-delay: {delay};" : "";
 		style += args.TryGetValue("loop", out var loop) ? $" animation-iteration-count: {loop};" : "";
+		if (name == "tada") style += " font-size: 150%;";
 
 		el.SetAttribute("style", style.Trim());
 
