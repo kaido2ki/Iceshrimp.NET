@@ -316,7 +316,14 @@ public static partial class MfmRenderer
 	{
 		var el = document.CreateElement("span");
 
-		el.SetAttribute("style", $"display: inline-block; font-size: {name.Replace("x", "")}em;");
+		var size = name switch
+		{
+			"x4" => "600%",
+			"x3" => "400%",
+			_    => "200%"
+		};
+
+		el.SetAttribute("style", $"display: inline-block; font-size: {size};");
 
 		return el;
 	}
