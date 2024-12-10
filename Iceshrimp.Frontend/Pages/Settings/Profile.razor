@@ -52,7 +52,7 @@
             <h3>@Loc["Display Name"]</h3><input class="input" @bind="@UserProfile.DisplayName"/>
         </div>
         <div class="section">
-            <h3>@Loc["Profile Description"]</h3><textarea class="input" @ref="Description" @bind="@UserProfile.Description"></textarea>
+            <h3>@Loc["Bio"]</h3><textarea class="input" @ref="Description" @bind="@UserProfile.Description" rows="5"></textarea>
             <button @ref="EmojiButton" class="button" title="@Loc["Emoji"]" @onclick="ToggleEmojiPicker"
                     aria-label="emoji">
                 <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
@@ -65,7 +65,7 @@
             <h3>@Loc["Location"]</h3><input class="input" @bind="@UserProfile.Location"/>
         </div>
         <div class="user-fields">
-            <h3>@Loc["Fields"]</h3>
+            <h3>@Loc["Additional Fields"]</h3>
             <div class="fields">
                 @foreach (var entry in UserProfile.Fields)
                 {
