@@ -54,7 +54,7 @@ public static partial class MfmRenderer
 		// @formatter:off
 		var rendered = node switch
 		{
-			MfmCenterNode mfmCenterNode         => MfmCenterNode(mfmCenterNode, document),
+			MfmCenterNode _                     => MfmCenterNode(document),
 			MfmCodeBlockNode mfmCodeBlockNode   => MfmCodeBlockNode(mfmCodeBlockNode, document),
 			MfmMathBlockNode mfmMathBlockNode   => throw new NotImplementedException($"{mfmMathBlockNode.GetType()}"),
 			MfmQuoteNode mfmQuoteNode           => MfmQuoteNode(mfmQuoteNode, document),
@@ -69,7 +69,7 @@ public static partial class MfmRenderer
 			MfmInlineMathNode mfmInlineMathNode => throw new NotImplementedException($"{mfmInlineMathNode.GetType()}"),
 			MfmMentionNode mfmMentionNode       => MfmMentionNode(mfmMentionNode, document, accountDomain),
 			MfmPlainNode mfmPlainNode           => MfmPlainNode(mfmPlainNode, document),
-			MfmSmallNode mfmSmallNode           => MfmSmallNode(mfmSmallNode, document),
+			MfmSmallNode _                      => MfmSmallNode(document),
 			MfmStrikeNode mfmStrikeNode         => MfmStrikeNode(mfmStrikeNode, document),
 			MfmTextNode mfmTextNode             => MfmTextNode(mfmTextNode, document),
 			MfmUrlNode mfmUrlNode               => MfmUrlNode(mfmUrlNode, document),
@@ -105,7 +105,7 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmCenterNode(MfmCenterNode _, IDocument document)
+	private static INode MfmCenterNode(IDocument document)
 	{
 		var el = document.CreateElement("div");
 		el.SetAttribute("style", "text-align: center");
@@ -202,7 +202,7 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmSmallNode(MfmSmallNode _, IDocument document)
+	private static INode MfmSmallNode(IDocument document)
 	{
 		var el = document.CreateElement("small");
 		el.SetAttribute("style", "opacity: 0.7;");
@@ -276,6 +276,8 @@ public static partial class MfmRenderer
 			"border"   => MfmFnBorder(args, document),
 			"ruby"     => MfmFnRuby(node, document),
 			"unixtime" => MfmFnUnixtime(node, document),
+			"center"   => MfmCenterNode(document),
+			"small"    => MfmSmallNode(document),
 			_          => throw new NotImplementedException($"{node.Name}")
 		};
 	}
