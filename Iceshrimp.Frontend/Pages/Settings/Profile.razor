@@ -59,7 +59,12 @@
             </button>
         </div>
         <div class="section">
-            <h3>@Loc["Birthday"]</h3><input class="input" @bind="@UserProfile.Birthday" placeholder="YYYY-MM-DD"/>
+            <h3>@Loc["Birthday"]</h3>
+            <div>
+                <input type="checkbox" id="set-birthday" @bind="@SetBirthday">
+                <label for="set-birthday">@Loc["Set birthday"]</label>
+            </div>
+            <input type="date" class="input" @bind="@Birthday" disabled="@(!SetBirthday)"/>
         </div>
         <div class="section">
             <h3>@Loc["Location"]</h3><input class="input" @bind="@UserProfile.Location"/>
@@ -139,6 +144,8 @@
     private IBrowserFile?     BannerFile  { get; set; } = null;
     private string?           BannerUrl   { get; set; } = null;
     private bool              DelBanner   { get; set; } = false;
+    private DateTime          Birthday    { get; set; } = DateTime.Now;
+    private bool              SetBirthday { get; set; } = false;
     private ElementReference  Description { get; set; }
     private ElementReference  EmojiButton { get; set; }
     
@@ -151,6 +158,11 @@
         try
         {
             UserProfile = await Api.Profile.GetProfileAsync();
+            if (UserProfile.Birthday != null)
+            {
+                Birthday    = DateTime.Parse(UserProfile.Birthday);
+                SetBirthday = true;
+            }
             State       = State.Loaded;
             AvatarUrl   = await Api.Profile.GetAvatarUrlAsync();
             BannerUrl   = await Api.Profile.GetBannerUrlAsync();
@@ -179,6 +191,10 @@
         try
         {
             SaveButton.State = StateButton.StateEnum.Loading;
+            if (!SetBirthday)
+                UserProfile.Birthday = null;
+            else
+                UserProfile.Birthday = Birthday.ToString("yyyy-MM-dd");
             await Api.Profile.UpdateProfileAsync(UserProfile);
             if (DelAvatar)
                 await Api.Profile.DeleteAvatarAsync();
