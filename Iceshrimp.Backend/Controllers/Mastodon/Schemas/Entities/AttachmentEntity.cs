@@ -47,7 +47,15 @@ public enum AttachmentType
 	Audio
 }
 
-public class AttachmentMetadata
+public class AttachmentMetadata(int width, int height)
 {
-	//TODO
+	[J("original")] public OriginalAttachmentMetadata Original => new(width, height);
+}
+
+public class OriginalAttachmentMetadata(int width, int height)
+{
+	[J("width")]  public int    Width  => width;
+	[J("height")] public int    Height => height;
+	[J("size")]   public string Size   => $"{width}x{height}";
+	[J("aspect")] public float  Aspect => (float)width / height;
 }

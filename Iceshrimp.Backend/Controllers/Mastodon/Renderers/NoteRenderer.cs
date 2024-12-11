@@ -255,18 +255,7 @@ public class NoteRenderer(
 		if (notes.Count == 0) return [];
 		var ids = notes.SelectMany(n => n.FileIds).Distinct();
 		return await db.DriveFiles.Where(p => ids.Contains(p.Id))
-		               .Select(f => new AttachmentEntity
-		               {
-			               Id          = f.Id,
-			               Url         = f.AccessUrl,
-			               Blurhash    = f.Blurhash,
-			               PreviewUrl  = f.ThumbnailAccessUrl,
-			               Description = f.Comment,
-			               Metadata    = null,
-			               RemoteUrl   = f.Uri,
-			               Type        = AttachmentEntity.GetType(f.Type),
-			               Sensitive   = f.IsSensitive
-		               })
+		               .Select(f => AttachmentRenderer.Render(f))
 		               .ToListAsync();
 	}
 
@@ -275,18 +264,7 @@ public class NoteRenderer(
 		var ids = fileIds.Distinct().ToList();
 		if (ids.Count == 0) return [];
 		return await db.DriveFiles.Where(p => ids.Contains(p.Id))
-		               .Select(f => new AttachmentEntity
-		               {
-			               Id          = f.Id,
-			               Url         = f.AccessUrl,
-			               Blurhash    = f.Blurhash,
-			               PreviewUrl  = f.ThumbnailAccessUrl,
-			               Description = f.Comment,
-			               Metadata    = null,
-			               RemoteUrl   = f.Uri,
-			               Type        = AttachmentEntity.GetType(f.Type),
-			               Sensitive   = f.IsSensitive
-		               })
+		               .Select(f => AttachmentRenderer.Render(f))
 		               .ToListAsync();
 	}
 

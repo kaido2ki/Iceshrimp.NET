@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
+using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
@@ -40,7 +41,7 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 			MimeType    = request.File.ContentType
 		};
 		var file = await driveSvc.StoreFileAsync(request.File.OpenReadStream(), user, rq);
-		return RenderAttachment(file);
+		return AttachmentRenderer.Render(file);
 	}
 
 	[HttpPut("/api/v1/media/{id}")]
@@ -56,7 +57,7 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 		file.Comment = request.Description;
 		await db.SaveChangesAsync();
 
-		return RenderAttachment(file);
+		return AttachmentRenderer.Render(file);
 	}
 
 	[HttpGet("/api/v1/media/{id}")]
@@ -68,7 +69,7 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == id && p.User == user) ??
 		           throw GracefulException.RecordNotFound();
 
-		return RenderAttachment(file);
+		return AttachmentRenderer.Render(file);
 	}
 
 	[HttpPut("/api/v2/media/{id}")]
@@ -76,20 +77,4 @@ public class MediaController(DriveService driveSvc, DatabaseContext db) : Contro
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public IActionResult FallbackMediaRoute([SuppressMessage("ReSharper", "UnusedParameter.Global")] string id) =>
 		throw GracefulException.NotFound("This endpoint is not implemented, but some clients expect a 404 here.");
-
-	private static AttachmentEntity RenderAttachment(DriveFile file)
-	{
-		return new AttachmentEntity
-		{
-			Id          = file.Id,
-			Type        = AttachmentEntity.GetType(file.Type),
-			Url         = file.AccessUrl,
-			Blurhash    = file.Blurhash,
-			Description = file.Comment,
-			PreviewUrl  = file.ThumbnailAccessUrl,
-			RemoteUrl   = file.Uri,
-			Sensitive   = file.IsSensitive
-			//Metadata    = TODO,
-		};
-	}
 }
