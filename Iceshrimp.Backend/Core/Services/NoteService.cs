@@ -14,7 +14,6 @@ using Iceshrimp.MfmSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
-using CommunityToolkit.HighPerformance;
 
 namespace Iceshrimp.Backend.Core.Services;
 
