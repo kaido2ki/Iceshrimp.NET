@@ -79,7 +79,7 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions, ICollection<
 					? $"\n> {string.Join("\n> ", node.TextContent.Split("\n"))}"
 					: null;
 			}
-			
+
 			case "VIDEO":
 			case "AUDIO":
 			case "IMG":
@@ -87,9 +87,9 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions, ICollection<
 				if (node is not HtmlElement el) return node.TextContent;
 
 				var src = el.GetAttribute("src");
-				if (!Uri.IsWellFormedUriString(src, UriKind.Absolute))
+				if (src == null || !Uri.TryCreate(src, UriKind.Absolute, out var uri) && uri is { Scheme: "http" or "https" })
 					return node.TextContent;
-				
+
 				var alt = el.GetAttribute("alt") ?? el.GetAttribute("title");
 
 				var type = node.NodeName switch
@@ -99,10 +99,10 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions, ICollection<
 					"IMG"   => MfmInlineMedia.MediaType.Image,
 					_       => MfmInlineMedia.MediaType.Other,
 				};
-				
+
 				media.Add(new MfmInlineMedia(type, src, alt));
 
-				return $"$[media {src} ]";
+				return $"$[media {src}]";
 			}
 
 			case "P":

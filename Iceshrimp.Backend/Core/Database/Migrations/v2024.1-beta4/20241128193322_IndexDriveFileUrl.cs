@@ -13,13 +13,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("""CREATE INDEX IX_drive_file_accessUrl ON drive_file (COALESCE("webpublicUrl", url));""");
+            migrationBuilder.Sql("""CREATE INDEX "IX_drive_file_accessUrl" ON "drive_file" (COALESCE("webpublicUrl", url));""");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("""DROP INDEX IX_drive_file_accessUrl;""");
+            migrationBuilder.Sql("""DROP INDEX "IX_drive_file_accessUrl";""");
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                 defaultValue: false);
 
             // automatically enable inline media for pleroma clients, as pleroma itself does support it
-            migrationBuilder.Sql("""UPDATE oauth_token SET "supportsInlineMedia"=TRUE WHERE "isPleroma"=TRUE;""");
+            migrationBuilder.Sql("""UPDATE "oauth_token" SET "supportsInlineMedia"=TRUE WHERE "isPleroma"=TRUE;""");
         }
 
         /// <inheritdoc />

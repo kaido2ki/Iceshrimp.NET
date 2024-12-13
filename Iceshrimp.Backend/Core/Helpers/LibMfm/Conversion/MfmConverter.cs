@@ -14,7 +14,7 @@ using HtmlParser = AngleSharp.Html.Parser.HtmlParser;
 
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 
-public record MfmInlineMedia(MfmInlineMedia.MediaType Type, string Src, string? Alt)
+public readonly record struct MfmInlineMedia(MfmInlineMedia.MediaType Type, string Src, string? Alt)
 {
 	public enum MediaType
 	{
@@ -23,7 +23,7 @@ public record MfmInlineMedia(MfmInlineMedia.MediaType Type, string Src, string? 
 		Video,
 		Audio
 	}
-	
+
 	public static MediaType GetType(string mime)
 	{
 		if (mime.StartsWith("image/")) return MediaType.Image;
@@ -34,6 +34,12 @@ public record MfmInlineMedia(MfmInlineMedia.MediaType Type, string Src, string? 
 	}
 }
 
+/// <summary>Resulting data after HTML to MFM conversion</summary>
+public readonly record struct HtmlMfmData(string Mfm, List<MfmInlineMedia> InlineMedia);
+
+/// <summary>Resulting data after MFM to HTML conversion</summary>
+public readonly record struct MfmHtmlData(string Html, List<MfmInlineMedia> InlineMedia);
+
 public class MfmConverter(
 	IOptions<Config.InstanceSection> config
 ) : ISingletonService
@@ -41,10 +47,10 @@ public class MfmConverter(
 	public AsyncLocal<bool> SupportsHtmlFormatting { get; } = new();
 	public AsyncLocal<bool> SupportsInlineMedia    { get; } = new();
 
-	public static async Task<(string Mfm, List<MfmInlineMedia> InlineMedia)> FromHtmlAsync(string? html, List<Note.MentionedUser>? mentions = null)
+	public static async Task<HtmlMfmData> FromHtmlAsync(string? html, List<Note.MentionedUser>? mentions = null)
 	{
 		var media = new List<MfmInlineMedia>();
-		if (html == null) return ("", media);
+		if (html == null) return new HtmlMfmData("", media);
 
 		// Ensure compatibility with AP servers that send both <br> as well as newlines
 		var regex = new Regex(@"<br\s?\/?>\r?\n", RegexOptions.IgnoreCase);
@@ -54,12 +60,12 @@ public class MfmConverter(
 		html = html.Replace("\u00A0", " ");
 
 		var dom = await new HtmlParser().ParseDocumentAsync(html);
-		if (dom.Body == null) return ("", media);
+		if (dom.Body == null) return new HtmlMfmData("", media);
 
 		var sb     = new StringBuilder();
 		var parser = new MfmHtmlParser(mentions ?? [], media);
 		dom.Body.ChildNodes.Select(parser.ParseNode).ToList().ForEach(s => sb.Append(s));
-		return (sb.ToString().Trim(), media);
+		return new HtmlMfmData(sb.ToString().Trim(), media);
 	}
 
 	public static async Task<List<string>> ExtractMentionsFromHtmlAsync(string? html)
@@ -80,7 +86,7 @@ public class MfmConverter(
 		return parser.Mentions;
 	}
 
-	public async Task<(string Html, List<MfmInlineMedia> InlineMedia)> ToHtmlAsync(
+	public async Task<MfmHtmlData> ToHtmlAsync(
 		IEnumerable<IMfmNode> nodes, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
 		bool quoteInaccessible = false, bool replyInaccessible = false, string rootElement = "p",
 		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
@@ -109,7 +115,7 @@ public class MfmConverter(
 		}
 
 		var usedMedia = new List<MfmInlineMedia>();
-		foreach (var node in nodeList) element.AppendNodes(FromMfmNode(document, node, mentions, host, ref usedMedia, emoji, media));
+		foreach (var node in nodeList) element.AppendNodes(FromMfmNode(document, node, mentions, host, usedMedia, emoji, media));
 
 		if (quoteUri != null)
 		{
@@ -149,10 +155,10 @@ public class MfmConverter(
 
 		await using var sw = new StringWriter();
 		await element.ToHtmlAsync(sw);
-		return (sw.ToString(), usedMedia);
+		return new MfmHtmlData(sw.ToString(), usedMedia);
 	}
 
-	public async Task<(string Html, List<MfmInlineMedia> InlineMedia)> ToHtmlAsync(
+	public async Task<MfmHtmlData> ToHtmlAsync(
 		string mfm, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
 		bool quoteInaccessible = false, bool replyInaccessible = false, string rootElement = "p",
 		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
@@ -164,19 +170,19 @@ public class MfmConverter(
 	}
 
 	private INode FromMfmNode(
-		IDocument document, IMfmNode node, List<Note.MentionedUser> mentions, string? host, ref List<MfmInlineMedia> usedMedia, 
+		IDocument document, IMfmNode node, List<Note.MentionedUser> mentions, string? host, List<MfmInlineMedia> usedMedia,
 		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
 		switch (node)
 		{
-			case MfmFnNode { Name: "media" } fn when media != null:
+			case MfmFnNode { Name: "media" } fn when media is { Count: > 0 }:
 			{
 				var urlNode = fn.Children.FirstOrDefault();
 				if (urlNode is MfmUrlNode url)
 				{
-					var current = media.FirstOrDefault(m => m.Src == url.Url);
-					if (current != null)
+					MfmInlineMedia? maybeCurrent = media.FirstOrDefault(m => m.Src == url.Url);
+					if (maybeCurrent is { } current)
 					{
 						usedMedia.Add(current);
 
@@ -187,16 +193,16 @@ public class MfmConverter(
 
 							if (current.Type == MfmInlineMedia.MediaType.Other)
 								el.SetAttribute("download", "true");
-							
+
 							var icon = current.Type switch
 							{
 								MfmInlineMedia.MediaType.Image => "\ud83d\uddbc\ufe0f", // framed picture emoji
 								MfmInlineMedia.MediaType.Video => "\ud83c\udfac",       // clapperboard emoji
 								MfmInlineMedia.MediaType.Audio => "\ud83c\udfb5",       // music note emoji
-								_                              => "\ud83d\udcbe",       // floppy disk emoji	
+								_                              => "\ud83d\udcbe",       // floppy disk emoji
 							};
 
-							el.TextContent = $"[{icon} {current.Alt ?? current.Src}]"; 
+							el.TextContent = $"[{icon} {current.Alt ?? current.Src}]";
 							return el;
 						}
 						else
@@ -220,7 +226,7 @@ public class MfmConverter(
 				{
 					var el = CreateInlineFormattingElement(document, "i");
 					AddHtmlMarkup(document, el, "*");
-					AppendChildren(el, document, node, mentions, host, ref usedMedia);
+					AppendChildren(el, document, node, mentions, host, usedMedia);
 					AddHtmlMarkup(document, el, "*");
 					return el;
 				}
@@ -229,21 +235,21 @@ public class MfmConverter(
 			{
 				var el = CreateInlineFormattingElement(document, "b");
 				AddHtmlMarkup(document, el, "**");
-				AppendChildren(el, document, node, mentions, host, ref usedMedia);
+				AppendChildren(el, document, node, mentions, host, usedMedia);
 				AddHtmlMarkup(document, el, "**");
 				return el;
 			}
 			case MfmSmallNode:
 			{
 				var el = document.CreateElement("small");
-				AppendChildren(el, document, node, mentions, host, ref usedMedia);
+				AppendChildren(el, document, node, mentions, host, usedMedia);
 				return el;
 			}
 			case MfmStrikeNode:
 			{
 				var el = CreateInlineFormattingElement(document, "del");
 				AddHtmlMarkup(document, el, "~~");
-				AppendChildren(el, document, node, mentions, host, ref usedMedia);
+				AppendChildren(el, document, node, mentions, host, usedMedia);
 				AddHtmlMarkup(document, el, "~~");
 				return el;
 			}
@@ -252,7 +258,7 @@ public class MfmConverter(
 			{
 				var el = CreateInlineFormattingElement(document, "i");
 				AddHtmlMarkup(document, el, "*");
-				AppendChildren(el, document, node, mentions, host, ref usedMedia);
+				AppendChildren(el, document, node, mentions, host, usedMedia);
 				AddHtmlMarkup(document, el, "*");
 				return el;
 			}
@@ -267,7 +273,7 @@ public class MfmConverter(
 			case MfmCenterNode:
 			{
 				var el = document.CreateElement("div");
-				AppendChildren(el, document, node, mentions, host, ref usedMedia);
+				AppendChildren(el, document, node, mentions, host, usedMedia);
 				return el;
 			}
 			case MfmEmojiCodeNode emojiCodeNode:
@@ -357,7 +363,7 @@ public class MfmConverter(
 			{
 				var el = CreateInlineFormattingElement(document, "blockquote");
 				AddHtmlMarkup(document, el, "> ");
-				AppendChildren(el, document, node, mentions, host, ref usedMedia);
+				AppendChildren(el, document, node, mentions, host, usedMedia);
 				el.AppendChild(document.CreateElement("br"));
 				return el;
 			}
@@ -391,7 +397,7 @@ public class MfmConverter(
 			case MfmPlainNode:
 			{
 				var el = document.CreateElement("span");
-				AppendChildren(el, document, node, mentions, host, ref usedMedia);
+				AppendChildren(el, document, node, mentions, host, usedMedia);
 				return el;
 			}
 			default:
@@ -403,11 +409,11 @@ public class MfmConverter(
 
 	private void AppendChildren(
 		INode element, IDocument document, IMfmNode parent,
-		List<Note.MentionedUser> mentions, string? host, ref List<MfmInlineMedia> usedMedia, 
+		List<Note.MentionedUser> mentions, string? host, List<MfmInlineMedia> usedMedia,
 		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
-		foreach (var node in parent.Children) element.AppendNodes(FromMfmNode(document, node, mentions, host, ref usedMedia, emoji, media));
+		foreach (var node in parent.Children) element.AppendNodes(FromMfmNode(document, node, mentions, host, usedMedia, emoji, media));
 	}
 
 	private IElement CreateInlineFormattingElement(IDocument document, string name)

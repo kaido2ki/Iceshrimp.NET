@@ -81,7 +81,7 @@ public class NoteRenderer(
 			? await GetAttachmentsAsync([note])
 			: [..data.Attachments.Where(p => note.FileIds.Contains(p.Id))];
 
-		if (user == null && security.Value.PublicPreview == Enums.PublicPreview.RestrictedNoMedia) //TODO
+		if (user == null && security.Value.PublicPreview == Enums.PublicPreview.RestrictedNoMedia)
 			attachments = [];
 
 		var reactions = data?.Reactions == null
@@ -103,9 +103,7 @@ public class NoteRenderer(
 			note.Renote == null && ((note.RenoteId != null && recurse > 0) || note.RenoteUri != null);
 
 		var sensitive = note.Cw != null || attachments.Any(p => p.Sensitive);
-		
-		// TODO: canDisplayInlineMedia oauth_token flag that marks all media as "other" so they end up as links
-		// (and doesn't remove the attachments)
+
 		var inlineMedia = attachments.Select(p => new MfmInlineMedia(p.Type switch
 		{
 			AttachmentType.Audio                       => MfmInlineMedia.MediaType.Audio,
@@ -113,9 +111,10 @@ public class NoteRenderer(
 			AttachmentType.Image or AttachmentType.Gif => MfmInlineMedia.MediaType.Image,
 			_                                          => MfmInlineMedia.MediaType.Other
 		}, p.RemoteUrl ?? p.Url, p.Description)).ToList();
-		
+
 		string? content = null;
 		if (data?.Source != true)
+		{
 			if (text != null || quoteUri != null || quoteInaccessible || replyInaccessible)
 			{
 				(content, inlineMedia) = await mfmConverter.ToHtmlAsync(text ?? "", mentionedUsers, note.UserHost, quoteUri,
@@ -127,7 +126,8 @@ public class NoteRenderer(
 			{
 				content = "";
 			}
-		
+		}
+
 		var account = data?.Accounts?.FirstOrDefault(p => p.Id == note.UserId) ??
 		              await userRenderer.RenderAsync(note.User, user);
 
@@ -215,9 +215,7 @@ public class NoteRenderer(
 		foreach (var edit in edits)
 		{
 			var files   = attachments.Where(p => edit.FileIds.Contains(p.Id)).ToList();
-		
-			// TODO: canDisplayInlineMedia oauth_token flag that marks all media as "other" so they end up as links
-			// (and doesn't remove the attachments)
+
 			var inlineMedia = files.Select(p => new MfmInlineMedia(p.Type switch
 			{
 				AttachmentType.Audio                       => MfmInlineMedia.MediaType.Audio,
@@ -228,7 +226,7 @@ public class NoteRenderer(
 
 			(var content, inlineMedia) = await mfmConverter.ToHtmlAsync(edit.Text ?? "", mentionedUsers, note.UserHost, media: inlineMedia);
 			files.RemoveAll(attachment => inlineMedia.Any(inline => inline.Src == (attachment.RemoteUrl ?? attachment.Url)));
-		
+
 			var entry = new StatusEdit
 			{
 				Account        = account,

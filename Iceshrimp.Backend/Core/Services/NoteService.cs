@@ -494,18 +494,15 @@ public class NoteService(
 			if (node is MfmFnNode { Name: "media" } fn)
 			{
 				var urlNode = fn.Children.FirstOrDefault();
-				if (urlNode is MfmUrlNode url)
-				{
-					urls.Add(url.Url);
-				}
+				if (urlNode is MfmUrlNode url) urls.Add(url.Url);
 			}
-			
+
 			urls.AddRange(GetInlineMediaUrls(node.Children));
 		}
 
 		return urls;
 	}
-		
+
 
 	public async Task<Note> UpdateNoteAsync(NoteUpdateData data)
 	{
@@ -628,7 +625,7 @@ public class NoteService(
 		}
 
 		var attachments = data.Attachments?.ToList() ?? [];
-		
+
 		var inlineMediaUrls = nodes != null ? GetInlineMediaUrls(nodes) : [];
 		var newMediaUrls    = data.Attachments?.Select(p => p.Url) ?? [];
 		var missingUrls     = inlineMediaUrls.Except(newMediaUrls).ToArray();
@@ -1075,9 +1072,7 @@ public class NoteService(
 		List<MfmInlineMedia>? htmlInlineMedia = null;
 
 		if (text == null)
-		{
 			(text, htmlInlineMedia) = await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions);
-		}
 
 		var cw   = note.Summary;
 

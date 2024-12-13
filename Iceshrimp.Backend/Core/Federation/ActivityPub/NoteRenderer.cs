@@ -25,7 +25,7 @@ public class NoteRenderer(
 	{
 		return new ASNote(false) { Id = note.Uri ?? note.GetPublicUri(config.Value) };
 	}
-	
+
 	public async Task<ASNote> RenderAsync(Note note, List<Note.MentionedUser>? mentions = null)
 	{
 		if (note.IsPureRenote)
@@ -125,7 +125,7 @@ public class NoteRenderer(
 		                            })
 		                            .Cast<ASAttachment>()
 		                            .ToList();
-		
+
 		var inlineMedia = driveFiles?.Select(p => new MfmInlineMedia(MfmInlineMedia.GetType(p.Type), p.AccessUrl, p.Comment))
 		                            .ToList();
 
