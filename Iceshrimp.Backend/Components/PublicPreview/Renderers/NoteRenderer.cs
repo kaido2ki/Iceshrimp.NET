@@ -35,15 +35,18 @@ public class NoteRenderer(
 		Dictionary<string, List<Emoji>> emoji, Dictionary<string, List<PreviewAttachment>?> attachments
 	)
 	{
+		var renderedText = await mfm.RenderAsync(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span", attachments[note.Id]);
+		var inlineMediaUrls = renderedText?.InlineMedia.Select(m => m.Src).ToArray() ?? [];
+
 		var res = new PreviewNote
 		{
 			User = users.First(p => p.Id == note.User.Id),
-			Text = await mfm.RenderAsync(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span"),
+			Text = renderedText?.Html,
 			Cw = note.Cw,
 			RawText = note.Text,
 			QuoteUrl = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(instance.Value),
 			QuoteInaccessible = note.Renote?.VisibilityIsPublicOrHome == false,
-			Attachments = attachments[note.Id],
+			Attachments = attachments[note.Id]?.Where(p => !inlineMediaUrls.Contains(p.Url)).ToList(),
 			CreatedAt = note.CreatedAt.ToDisplayStringTz(),
 			UpdatedAt = note.UpdatedAt?.ToDisplayStringTz()
 		};

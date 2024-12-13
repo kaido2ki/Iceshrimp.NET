@@ -36,8 +36,8 @@ public class UserRenderer(
 			AvatarUrl      = user.AvatarUrl ?? user.IdenticonUrlPath,
 			BannerUrl      = user.BannerUrl,
 			RawDisplayName = user.DisplayName,
-			DisplayName    = await mfm.RenderAsync(user.DisplayName, user.Host, mentions, emoji[user.Id], "span"),
-			Bio            = await mfm.RenderAsync(user.UserProfile?.Description, user.Host, mentions, emoji[user.Id], "span"),
+			DisplayName    = await mfm.RenderSimpleAsync(user.DisplayName, user.Host, mentions, emoji[user.Id], "span"),
+			Bio            = await mfm.RenderSimpleAsync(user.UserProfile?.Description, user.Host, mentions, emoji[user.Id], "span"),
 			MovedToUri     = user.MovedToUri
 		};
 		// @formatter:on
