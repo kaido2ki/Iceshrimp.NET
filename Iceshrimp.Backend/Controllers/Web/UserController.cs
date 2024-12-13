@@ -161,6 +161,7 @@ public class UserController(
 	}
 
 	[HttpPost("{id}/unfollow")]
+	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
 	public async Task UnfollowUser(string id)
 	{
