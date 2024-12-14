@@ -43,8 +43,8 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 	                 Justification = "Argon2 is execution time-heavy by design")]
 	public async Task<AuthResponse> Login([FromBody] AuthRequest request)
 	{
-		var user = await db.Users.FirstOrDefaultAsync(p => p.IsLocalUser &&
-		                                                   p.UsernameLower == request.Username.ToLowerInvariant());
+		var user = await db.Users.FirstOrDefaultAsync(p => p.IsLocalUser
+		                                                   && p.UsernameLower == request.Username.ToLowerInvariant());
 		if (user == null)
 			throw GracefulException.Forbidden("Invalid username or password");
 		if (user.IsSystemUser)
@@ -112,6 +112,17 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		session.Active = true;
 		await db.SaveChangesAsync();
 		return await GetAuthResponse(session, user);
+	}
+
+	[HttpPost("logout")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task Logout()
+	{
+		var session = HttpContext.GetSessionOrFail();
+		db.Remove(session);
+		await db.SaveChangesAsync();
 	}
 
 	[HttpPost("change-password")]
