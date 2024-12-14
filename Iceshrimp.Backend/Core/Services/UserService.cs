@@ -101,8 +101,8 @@ public class UserService(
 
 		return await db.Users
 		               .IncludeCommonProperties()
-		               .FirstOrDefaultAsync(p => p.UsernameLower == tuple.Username.ToLowerInvariant() &&
-		                                         p.Host == tuple.Host);
+		               .FirstOrDefaultAsync(p => p.UsernameLower == tuple.Username.ToLowerInvariant()
+		                                         && p.Host == tuple.Host);
 	}
 
 	public async Task<User> CreateUserAsync(string uri, string acct)
@@ -131,8 +131,8 @@ public class UserService(
 
 		actor.NormalizeAndValidate(uri);
 
-		user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == actor.Username!.ToLowerInvariant() &&
-		                                               p.Host == host);
+		user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == actor.Username!.ToLowerInvariant()
+		                                               && p.Host == host);
 		if (user is not null)
 			throw GracefulException
 				.UnprocessableEntity($"A user with acct @{user.UsernameLower}@{user.Host} already exists: {user.Uri}");
@@ -155,16 +155,16 @@ public class UserService(
 			             .AwaitAllAsync()
 			: null;
 
-		var bio = actor.MkSummary ?? (await MfmConverter.FromHtmlAsync(actor.Summary)).Mfm;
-
-		var tags = ResolveHashtags(bio, actor);
+		var bio = actor.MkSummary?.ReplaceLineEndings("\n").Trim()
+		          ?? (await MfmConverter.FromHtmlAsync(actor.Summary)).Mfm;
+		var tags = ResolveHashtags(MfmParser.Parse(bio), actor);
 
 		user = new User
 		{
 			Id                  = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt           = DateTime.UtcNow,
 			LastFetchedAt       = followupTaskSvc.IsBackgroundWorker.Value ? null : DateTime.UtcNow,
-			DisplayName         = actor.DisplayName,
+			DisplayName         = actor.DisplayName?.ReplaceLineEndings("\n").Trim(),
 			IsLocked            = actor.IsLocked ?? false,
 			IsBot               = actor.IsBot,
 			Username            = actor.Username!,
@@ -253,8 +253,8 @@ public class UserService(
 
 	public async Task<User> UpdateUserAsync(string id)
 	{
-		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
-		           throw new Exception("Cannot update nonexistent user");
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id)
+		           ?? throw new Exception("Cannot update nonexistent user");
 		return await UpdateUserAsync(user, force: true);
 	}
 
@@ -283,7 +283,7 @@ public class UserService(
 		user.LastFetchedAt = DateTime.UtcNow; // If we don't do this we'll overwrite the value with the previous one
 		user.Inbox         = actor.Inbox?.Link;
 		user.SharedInbox   = actor.SharedInbox?.Link ?? actor.Endpoints?.SharedInbox?.Id;
-		user.DisplayName   = actor.DisplayName;
+		user.DisplayName   = actor.DisplayName?.ReplaceLineEndings("\n").Trim();
 		user.IsLocked      = actor.IsLocked ?? false;
 		user.IsBot         = actor.IsBot;
 		user.MovedToUri    = actor.MovedTo?.Link;
@@ -294,8 +294,9 @@ public class UserService(
 		user.Featured      = actor.Featured?.Id;
 
 		var emoji = await emojiSvc.ProcessEmojiAsync(actor.Tags?.OfType<ASEmoji>().ToList(),
-		                                             user.Host ??
-		                                             throw new Exception("User host must not be null at this stage"));
+		                                             user.Host
+		                                             ?? throw new
+			                                             Exception("User host must not be null at this stage"));
 
 		var fields = actor.Attachments != null
 			? await actor.Attachments
@@ -316,7 +317,8 @@ public class UserService(
 
 		var processPendingDeletes = await ResolveAvatarAndBannerAsync(user, actor);
 
-		user.UserProfile.Description = actor.MkSummary ?? (await MfmConverter.FromHtmlAsync(actor.Summary)).Mfm;
+		user.UserProfile.Description = actor.MkSummary?.ReplaceLineEndings("\n").Trim()
+		                               ?? (await MfmConverter.FromHtmlAsync(actor.Summary)).Mfm;
 		//user.UserProfile.Birthday = TODO;
 		//user.UserProfile.Location = TODO;
 		user.UserProfile.Fields   = fields?.ToArray() ?? [];
@@ -325,7 +327,7 @@ public class UserService(
 
 		user.UserProfile.MentionsResolved = false;
 
-		user.Tags = ResolveHashtags(user.UserProfile.Description, actor);
+		user.Tags = ResolveHashtags(MfmParser.Parse(user.UserProfile.Description), actor);
 		user.Host = await UpdateUserHostAsync(user);
 
 		db.Update(user);
@@ -341,24 +343,25 @@ public class UserService(
 		if (user.IsRemoteUser) throw new Exception("This method is only valid for local users");
 		if (user.UserProfile == null) throw new Exception("user.UserProfile must not be null at this stage");
 
-		user.Tags = ResolveHashtags(user.UserProfile.Description);
+		user.DisplayName             = user.DisplayName?.ReplaceLineEndings("\n").Trim();
+		user.UserProfile.Description = user.UserProfile.Description?.ReplaceLineEndings("\n").Trim();
 
+		var parsedName = user.DisplayName != null ? MfmParser.Parse(user.DisplayName) : null;
+		var parsedBio  = user.UserProfile.Description != null ? MfmParser.Parse(user.UserProfile.Description) : null;
+
+		user.Tags   = parsedBio != null ? ResolveHashtags(parsedBio) : [];
 		user.Emojis = [];
 
-		if (user.UserProfile.Description != null)
-		{
-			var nodes = MfmParser.Parse(user.UserProfile.Description);
-			user.Emojis.AddRange((await emojiSvc.ResolveEmojiAsync(nodes)).Select(p => p.Id).ToList());
-		}
+		if (parsedBio != null)
+			user.Emojis.AddRange((await emojiSvc.ResolveEmojiAsync(parsedBio)).Select(p => p.Id).ToList());
+		if (parsedName != null)
+			user.Emojis.AddRange((await emojiSvc.ResolveEmojiAsync(parsedName)).Select(p => p.Id).ToList());
 
-		if (user.DisplayName != null)
+		if (user.UserProfile.Fields is { Length: > 0 } fields)
 		{
-			var nodes = MfmParser.Parse(user.DisplayName);
-			user.Emojis.AddRange((await emojiSvc.ResolveEmojiAsync(nodes)).Select(p => p.Id).ToList());
-		}
+			foreach (var field in fields)
+				field.Name = field.Name.ReplaceLineEndings("\n").Trim();
 
-		if (user.UserProfile.Fields.Length != 0)
-		{
 			var input = user.UserProfile.Fields.Select(p => $"{p.Name} {p.Value}");
 			var nodes = MfmParser.Parse(string.Join('\n', input));
 			user.Emojis.AddRange((await emojiSvc.ResolveEmojiAsync(nodes)).Select(p => p.Id).ToList());
@@ -392,8 +395,8 @@ public class UserService(
 			throw new GracefulException(HttpStatusCode.Forbidden, "Registrations are disabled on this server");
 		if (security.Value.Registrations == Enums.Registrations.Invite && invite == null)
 			throw new GracefulException(HttpStatusCode.Forbidden, "Request is missing the invite code");
-		if (security.Value.Registrations == Enums.Registrations.Invite &&
-		    !await db.RegistrationInvites.AnyAsync(p => p.Code == invite))
+		if (security.Value.Registrations == Enums.Registrations.Invite
+		    && !await db.RegistrationInvites.AnyAsync(p => p.Code == invite))
 			throw new GracefulException(HttpStatusCode.Forbidden, "The specified invite code is invalid");
 		if (!Regex.IsMatch(username, @"^\w+$"))
 			throw new GracefulException(HttpStatusCode.BadRequest, "Username must only contain letters and numbers");
@@ -638,9 +641,9 @@ public class UserService(
 
 		// Clean up notifications
 		await db.Notifications
-		        .Where(p => p.Type == Notification.NotificationType.FollowRequestReceived &&
-		                    p.Notifiee == request.Followee &&
-		                    p.Notifier == request.Follower)
+		        .Where(p => p.Type == Notification.NotificationType.FollowRequestReceived
+		                    && p.Notifiee == request.Followee
+		                    && p.Notifier == request.Follower)
 		        .ExecuteDeleteAsync();
 	}
 
@@ -658,13 +661,13 @@ public class UserService(
 
 		// Clean up notifications
 		await db.Notifications
-		        .Where(p => ((p.Type == Notification.NotificationType.FollowRequestReceived ||
-		                      p.Type == Notification.NotificationType.Follow) &&
-		                     p.Notifiee == request.Followee &&
-		                     p.Notifier == request.Follower) ||
-		                    (p.Type == Notification.NotificationType.FollowRequestAccepted &&
-		                     p.Notifiee == request.Follower &&
-		                     p.Notifier == request.Followee))
+		        .Where(p => ((p.Type == Notification.NotificationType.FollowRequestReceived
+		                      || p.Type == Notification.NotificationType.Follow)
+		                     && p.Notifiee == request.Followee
+		                     && p.Notifier == request.Follower)
+		                    || (p.Type == Notification.NotificationType.FollowRequestAccepted
+		                        && p.Notifiee == request.Follower
+		                        && p.Notifier == request.Followee))
 		        .ExecuteDeleteAsync();
 	}
 
@@ -734,11 +737,12 @@ public class UserService(
 				// Otherwise, create a new request and insert it into the database
 				else
 				{
-					var autoAccept = followee.IsLocalUser &&
-					                 await db.Followings.AnyAsync(p => p.Follower == followee &&
-					                                                   p.Followee == follower &&
-					                                                   p.Follower.UserSettings != null &&
-					                                                   p.Follower.UserSettings.AutoAcceptFollowed);
+					var autoAccept = followee.IsLocalUser
+					                 && await db.Followings.AnyAsync(p => p.Follower == followee
+					                                                      && p.Followee == follower
+					                                                      && p.Follower.UserSettings != null
+					                                                      && p.Follower.UserSettings
+					                                                          .AutoAcceptFollowed);
 
 					// Followee has auto accept enabled & is already following the follower user
 					if (autoAccept)
@@ -926,15 +930,15 @@ public class UserService(
 	/// </remarks>
 	public async Task UnfollowUserAsync(User user, User followee)
 	{
-		if (((followee.PrecomputedIsFollowedBy ?? false) || (followee.PrecomputedIsRequestedBy ?? false)) &&
-		    followee.IsRemoteUser)
+		if (((followee.PrecomputedIsFollowedBy ?? false) || (followee.PrecomputedIsRequestedBy ?? false))
+		    && followee.IsRemoteUser)
 		{
 			var relationshipId = await db.Followings.Where(p => p.Follower == user && p.Followee == followee)
 			                             .Select(p => p.RelationshipId)
-			                             .FirstOrDefaultAsync() ??
-			                     await db.FollowRequests.Where(p => p.Follower == user && p.Followee == followee)
-			                             .Select(p => p.RelationshipId)
-			                             .FirstOrDefaultAsync();
+			                             .FirstOrDefaultAsync()
+			                     ?? await db.FollowRequests.Where(p => p.Follower == user && p.Followee == followee)
+			                                .Select(p => p.RelationshipId)
+			                                .FirstOrDefaultAsync();
 
 			var activity = activityRenderer.RenderUnfollow(user, followee, relationshipId);
 			await deliverSvc.DeliverToAsync(activity, user, followee);
@@ -980,12 +984,12 @@ public class UserService(
 
 		// Clean up notifications
 		await db.Notifications
-		        .Where(p => (p.Type == Notification.NotificationType.FollowRequestAccepted &&
-		                     p.Notifiee == user &&
-		                     p.Notifier == followee) ||
-		                    (p.Type == Notification.NotificationType.Follow &&
-		                     p.Notifiee == followee &&
-		                     p.Notifier == user))
+		        .Where(p => (p.Type == Notification.NotificationType.FollowRequestAccepted
+		                     && p.Notifiee == user
+		                     && p.Notifier == followee)
+		                    || (p.Type == Notification.NotificationType.Follow
+		                        && p.Notifiee == followee
+		                        && p.Notifier == user))
 		        .ExecuteDeleteAsync();
 
 		// Clean up user list memberships
@@ -1103,19 +1107,19 @@ public class UserService(
 		return user;
 	}
 
-	private List<string> ResolveHashtags(string? text, ASActor? actor = null)
+	private List<string> ResolveHashtags(IMfmNode[]? parsedText, ASActor? actor = null)
 	{
 		List<string> tags = [];
 
-		if (text != null)
+		if (parsedText != null)
 		{
-			tags = MfmParser.Parse(text)
-			                .SelectMany(p => p.Children.Append(p))
-			                .OfType<MfmHashtagNode>()
-			                .Select(p => p.Hashtag.ToLowerInvariant())
-			                .Select(p => p.Trim('#'))
-			                .Distinct()
-			                .ToList();
+			tags = parsedText
+			       .SelectMany(p => p.Children.Append(p))
+			       .OfType<MfmHashtagNode>()
+			       .Select(p => p.Hashtag.ToLowerInvariant())
+			       .Select(p => p.Trim('#'))
+			       .Distinct()
+			       .ToList();
 		}
 
 		var extracted = actor?.Tags?.OfType<ASHashtag>()
@@ -1220,13 +1224,12 @@ public class UserService(
 		                                  .SetProperty(i => i.FollowingCount, i => i.FollowingCount - cnt1));
 
 		// clean up notifications
-		await db.Notifications.Where(p => ((p.Notifiee == blocker &&
-		                                    p.Notifier == blockee) ||
-		                                   (p.Notifiee == blockee &&
-		                                    p.Notifier == blocker)) &&
-		                                  (p.Type == Notification.NotificationType.Follow ||
-		                                   p.Type == Notification.NotificationType.FollowRequestAccepted ||
-		                                   p.Type == Notification.NotificationType.FollowRequestReceived))
+		await db.Notifications
+		        .Where(p => ((p.Notifiee == blocker && p.Notifier == blockee)
+		                     || (p.Notifiee == blockee && p.Notifier == blocker))
+		                    && (p.Type == Notification.NotificationType.Follow
+		                        || p.Type == Notification.NotificationType.FollowRequestAccepted
+		                        || p.Type == Notification.NotificationType.FollowRequestReceived))
 		        .ExecuteDeleteAsync();
 
 		await db.AddAsync(blocking);

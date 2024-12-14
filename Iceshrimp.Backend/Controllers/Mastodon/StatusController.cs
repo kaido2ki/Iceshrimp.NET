@@ -400,17 +400,15 @@ public class StatusController(
 
 		if (token.AutoDetectQuotes && request.Text != null)
 		{
-			var parsed = MfmParser.Parse(request.Text).AsEnumerable();
-			quoteUri = MfmParser.Parse(request.Text).LastOrDefault() switch
+			var parsed = MfmParser.Parse(request.Text);
+			quoteUri = parsed.LastOrDefault() switch
 			{
 				MfmUrlNode urlNode   => urlNode.Url,
 				MfmLinkNode linkNode => linkNode.Url,
 				_                    => quoteUri
 			};
 
-			if (quoteUri != null)
-				parsed = parsed.SkipLast(1);
-			newText = parsed.Serialize();
+			newText = quoteUri != null ? parsed.SkipLast(1).Serialize() : parsed.Serialize();
 		}
 
 		if (request is { Sensitive: true, MediaIds.Count: > 0 })

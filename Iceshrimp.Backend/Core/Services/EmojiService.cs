@@ -187,7 +187,7 @@ public partial class EmojiService(
 		return await db.Emojis.FirstOrDefaultAsync(p => p.Host == host && p.Name == name);
 	}
 
-	public async Task<List<Emoji>> ResolveEmojiAsync(IEnumerable<IMfmNode> nodes)
+	public async Task<List<Emoji>> ResolveEmojiAsync(IMfmNode[] nodes)
 	{
 		var list = new List<MfmEmojiCodeNode>();
 		ResolveChildren(nodes, ref list);
@@ -195,7 +195,7 @@ public partial class EmojiService(
 	}
 
 	private static void ResolveChildren(
-		IEnumerable<IMfmNode> nodes, ref List<MfmEmojiCodeNode> list
+		Span<IMfmNode> nodes, ref List<MfmEmojiCodeNode> list
 	)
 	{
 		foreach (var node in nodes)

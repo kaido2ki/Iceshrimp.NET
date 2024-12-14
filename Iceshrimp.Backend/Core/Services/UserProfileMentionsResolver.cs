@@ -37,7 +37,7 @@ public class UserProfileMentionsResolver(
 
 		if (actor.MkSummary != null)
 		{
-			var nodes = MfmParser.Parse(actor.MkSummary);
+			var nodes = MfmParser.Parse(actor.MkSummary.ReplaceLineEndings("\n"));
 			mentionNodes = EnumerateMentions(nodes);
 		}
 
@@ -84,7 +84,7 @@ public class UserProfileMentionsResolver(
 		            .Cast<string>()
 		            .ToList();
 
-		var nodes        = input.SelectMany(p => MfmParser.Parse(p));
+		var nodes        = input.SelectMany(p => MfmParser.Parse(p.ReplaceLineEndings("\n"))).ToArray();
 		var mentionNodes = EnumerateMentions(nodes);
 		var users = await mentionNodes
 		                  .DistinctBy(p => p.Acct)
@@ -106,7 +106,7 @@ public class UserProfileMentionsResolver(
 
 	[SuppressMessage("ReSharper", "ReturnTypeCanBeEnumerable.Local",
 	                 Justification = "Roslyn inspection says this hurts performance")]
-	private static List<MfmMentionNode> EnumerateMentions(IEnumerable<IMfmNode> nodes)
+	private static List<MfmMentionNode> EnumerateMentions(Span<IMfmNode> nodes)
 	{
 		var list = new List<MfmMentionNode>();
 

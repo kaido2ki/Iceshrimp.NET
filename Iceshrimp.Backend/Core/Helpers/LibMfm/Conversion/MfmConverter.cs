@@ -59,6 +59,9 @@ public class MfmConverter(
 		// Ensure compatibility with AP servers that send non-breaking space characters instead of regular spaces
 		html = html.Replace("\u00A0", " ");
 
+		// Ensure compatibility with AP servers that send CRLF or CR instead of LF-style newlines
+		html = html.ReplaceLineEndings("\n");
+
 		var dom = await new HtmlParser().ParseDocumentAsync(html);
 		if (dom.Body == null) return new HtmlMfmData("", media);
 
@@ -87,7 +90,7 @@ public class MfmConverter(
 	}
 
 	public async Task<MfmHtmlData> ToHtmlAsync(
-		IEnumerable<IMfmNode> nodes, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
+		IMfmNode[] nodes, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
 		bool quoteInaccessible = false, bool replyInaccessible = false, string rootElement = "p",
 		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
@@ -95,8 +98,7 @@ public class MfmConverter(
 		var context    = BrowsingContext.New();
 		var document   = await context.OpenNewAsync();
 		var element    = document.CreateElement(rootElement);
-		var nodeList   = nodes.ToList();
-		var hasContent = nodeList.Count > 0;
+		var hasContent = nodes.Length > 0;
 
 		if (replyInaccessible)
 		{
@@ -115,7 +117,8 @@ public class MfmConverter(
 		}
 
 		var usedMedia = new List<MfmInlineMedia>();
-		foreach (var node in nodeList) element.AppendNodes(FromMfmNode(document, node, mentions, host, usedMedia, emoji, media));
+		foreach (var node in nodes)
+			element.AppendNodes(FromMfmNode(document, node, mentions, host, usedMedia, emoji, media));
 
 		if (quoteUri != null)
 		{
@@ -170,7 +173,8 @@ public class MfmConverter(
 	}
 
 	private INode FromMfmNode(
-		IDocument document, IMfmNode node, List<Note.MentionedUser> mentions, string? host, List<MfmInlineMedia> usedMedia,
+		IDocument document, IMfmNode node, List<Note.MentionedUser> mentions, string? host,
+		List<MfmInlineMedia> usedMedia,
 		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
@@ -413,7 +417,8 @@ public class MfmConverter(
 		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
-		foreach (var node in parent.Children) element.AppendNodes(FromMfmNode(document, node, mentions, host, usedMedia, emoji, media));
+		foreach (var node in parent.Children)
+			element.AppendNodes(FromMfmNode(document, node, mentions, host, usedMedia, emoji, media));
 	}
 
 	private IElement CreateInlineFormattingElement(IDocument document, string name)

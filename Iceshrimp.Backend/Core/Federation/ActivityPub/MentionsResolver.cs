@@ -21,7 +21,7 @@ public class MentionsResolver(IOptions<Config.InstanceSection> config) : ISingle
 		SplitDomainMapping splitDomainMapping
 	)
 	{
-		var nodes = MfmParser.Parse(mfm);
+		var nodes = MfmParser.Parse(mfm.ReplaceLineEndings("\n"));
 		ResolveMentions(nodes.AsSpan(), host, mentionCache, splitDomainMapping);
 		return nodes.Serialize();
 	}

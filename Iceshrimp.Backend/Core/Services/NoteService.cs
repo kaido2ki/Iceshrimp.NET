@@ -58,6 +58,7 @@ public class NoteService(
 		public required User                            User;
 		public required Note.NoteVisibility             Visibility;
 		public          string?                         Text;
+		public          IMfmNode[]?                     ParsedText;
 		public          string?                         Cw;
 		public          Note?                           Reply;
 		public          Note?                           Renote;
@@ -78,6 +79,7 @@ public class NoteService(
 	{
 		public required Note                            Note;
 		public          string?                         Text;
+		public          IMfmNode[]?                     ParsedText;
 		public          string?                         Cw;
 		public          IReadOnlyCollection<DriveFile>? Attachments;
 		public          Poll?                           Poll;
@@ -126,6 +128,7 @@ public class NoteService(
 		if (data.Poll is { Choices.Count: < 2 })
 			throw GracefulException.UnprocessableEntity("Polls must have at least two options");
 
+		data.ParsedText = data.Text != null ? MfmParser.Parse(data.Text.ReplaceLineEndings("\n")) : null;
 		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PreLogic);
 
 		if (!data.LocalOnly && (data.Renote is { LocalOnly: true } || data.Reply is { LocalOnly: true }))
@@ -154,7 +157,7 @@ public class NoteService(
 		}
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
-			data.ResolvedMentions ?? await ResolveNoteMentionsAsync(data.Text);
+			data.ResolvedMentions ?? await ResolveNoteMentionsAsync(data.ParsedText);
 
 		// ReSharper disable once EntityFramework.UnsupportedServerSideFunctionCall
 		if (mentionedUserIds.Count > 0)
@@ -167,18 +170,17 @@ public class NoteService(
 				throw GracefulException.Forbidden($"You're not allowed to interact with @{blockAcct}");
 		}
 
-		IMfmNode[]? nodes = null;
 		if (data.Text != null && string.IsNullOrWhiteSpace(data.Text))
 		{
-			data.Text = null;
+			data.Text       = null;
+			data.ParsedText = null;
 		}
 		else if (data.Text != null)
 		{
-			nodes = MfmParser.Parse(data.Text);
-			mentionsResolver.ResolveMentions(nodes.AsSpan(), data.User.Host, mentions, splitDomainMapping);
-			data.Text = nodes.Serialize();
+			mentionsResolver.ResolveMentions(data.ParsedText, data.User.Host, mentions, splitDomainMapping);
 		}
 
+		data.Cw = data.Cw?.Trim();
 		if (data.Cw != null && string.IsNullOrWhiteSpace(data.Cw))
 			data.Cw = null;
 
@@ -196,7 +198,7 @@ public class NoteService(
 			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.IsSensitive, _ => true));
 		}
 
-		var tags = ResolveHashtags(data.Text, data.ASNote);
+		var tags = ResolveHashtags(data.ParsedText, data.ASNote);
 		if (tags.Count > 0 && data.Text != null && data.ASNote != null)
 		{
 			// @formatter:off
@@ -211,9 +213,9 @@ public class NoteService(
 			? data.Reply?.UserId
 			: data.Reply.MastoReplyUserId ?? data.Reply.ReplyUserId ?? data.Reply.UserId;
 
-		if (data.Emoji == null && data.User.IsLocalUser && nodes != null)
+		if (data.Emoji == null && data.User.IsLocalUser && data.ParsedText != null)
 		{
-			data.Emoji = (await emojiSvc.ResolveEmojiAsync(nodes)).Select(p => p.Id).ToList();
+			data.Emoji = (await emojiSvc.ResolveEmojiAsync(data.ParsedText)).Select(p => p.Id).ToList();
 		}
 
 		List<string> visibleUserIds = [];
@@ -299,8 +301,8 @@ public class NoteService(
 			Id                   = noteId,
 			Uri                  = data.Uri,
 			Url                  = data.Url,
-			Text                 = data.Text?.Trim(),
-			Cw                   = data.Cw?.Trim(),
+			Text                 = data.ParsedText?.Serialize(),
+			Cw                   = data.Cw,
 			Reply                = data.Reply,
 			ReplyUserId          = data.Reply?.UserId,
 			MastoReplyUserId     = mastoReplyUserId,
@@ -485,7 +487,7 @@ public class NoteService(
 		}
 	}
 
-	private List<string> GetInlineMediaUrls(IEnumerable<IMfmNode> mfm)
+	private List<string> GetInlineMediaUrls(Span<IMfmNode> mfm)
 	{
 		List<string> urls = [];
 
@@ -502,7 +504,6 @@ public class NoteService(
 
 		return urls;
 	}
-
 
 	public async Task<Note> UpdateNoteAsync(NoteUpdateData data)
 	{
@@ -529,6 +530,7 @@ public class NoteService(
 			FileIds   = note.FileIds
 		};
 
+		data.ParsedText = data.Text != null ? MfmParser.Parse(data.Text.ReplaceLineEndings("\n")) : null;
 		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PreLogic);
 
 		var previousMentionedLocalUserIds = await db.Users.Where(p => note.Mentions.Contains(p.Id) && p.IsLocalUser)
@@ -540,20 +542,19 @@ public class NoteService(
 		                                       .ToListAsync();
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
-			data.ResolvedMentions ?? await ResolveNoteMentionsAsync(data.Text);
+			data.ResolvedMentions ?? await ResolveNoteMentionsAsync(data.ParsedText);
 
-		IMfmNode[]? nodes = null;
 		if (data.Text != null && string.IsNullOrWhiteSpace(data.Text))
 		{
-			data.Text = null;
+			data.Text       = null;
+			data.ParsedText = null;
 		}
 		else if (data.Text != null)
 		{
-			nodes = MfmParser.Parse(data.Text);
-			mentionsResolver.ResolveMentions(nodes.AsSpan(), note.User.Host, mentions, splitDomainMapping);
-			data.Text = nodes.Serialize();
+			mentionsResolver.ResolveMentions(data.ParsedText, note.User.Host, mentions, splitDomainMapping);
 		}
 
+		data.Cw = data.Cw?.Trim();
 		if (data.Cw != null && string.IsNullOrWhiteSpace(data.Cw))
 			data.Cw = null;
 
@@ -571,14 +572,10 @@ public class NoteService(
 		// ReSharper restore EntityFramework.UnsupportedServerSideFunctionCall
 
 		mentionedLocalUserIds = mentionedLocalUserIds.Except(previousMentionedLocalUserIds).ToList();
-		note.Text             = data.Text?.Trim();
-		note.Cw               = data.Cw?.Trim();
-		note.Tags             = ResolveHashtags(data.Text, data.ASNote);
+		note.Tags             = ResolveHashtags(data.ParsedText, data.ASNote);
 
-		if (note.User.IsLocalUser && nodes != null)
-		{
-			data.Emoji = (await emojiSvc.ResolveEmojiAsync(nodes)).Select(p => p.Id).ToList();
-		}
+		if (note.User.IsLocalUser && data.ParsedText != null)
+			data.Emoji = (await emojiSvc.ResolveEmojiAsync(data.ParsedText)).Select(p => p.Id).ToList();
 
 		if (data.Emoji != null && !note.Emojis.IsEquivalent(data.Emoji))
 			note.Emojis = data.Emoji;
@@ -621,33 +618,34 @@ public class NoteService(
 					note.VisibleUserIds.AddRange(missing);
 			}
 
-			note.Text = mentionsResolver.ResolveMentions(data.Text, note.UserHost, mentions, splitDomainMapping);
+			mentionsResolver.ResolveMentions(data.ParsedText, note.UserHost, mentions, splitDomainMapping);
 		}
 
 		var attachments = data.Attachments?.ToList() ?? [];
 
-		var inlineMediaUrls = nodes != null ? GetInlineMediaUrls(nodes) : [];
+		var inlineMediaUrls = data.ParsedText != null ? GetInlineMediaUrls(data.ParsedText) : [];
 		var newMediaUrls    = data.Attachments?.Select(p => p.Url) ?? [];
 		var missingUrls     = inlineMediaUrls.Except(newMediaUrls).ToArray();
 
 		if (missingUrls.Length > 0)
 		{
 			var missingAttachments = await db.DriveFiles
-			                                 .Where(p => missingUrls.Contains(p.PublicUrl ?? p.Url) && p.UserId == note.UserId)
+			                                 .Where(p => missingUrls.Contains(p.PublicUrl ?? p.Url)
+			                                             && p.UserId == note.UserId)
 			                                 .ToArrayAsync();
 
 			attachments.AddRange(missingAttachments);
 		}
 
 		//TODO: handle updated alt text et al
-		var fileIds = attachments?.Select(p => p.Id).ToList() ?? [];
+		var fileIds = attachments.Select(p => p.Id).ToList();
 		if (!note.FileIds.IsEquivalent(fileIds))
 		{
 			note.FileIds           = fileIds;
-			note.AttachedFileTypes = attachments?.Select(p => p.Type).ToList() ?? [];
+			note.AttachedFileTypes = attachments.Select(p => p.Type).ToList();
 
-			var combinedAltText = attachments?.Select(p => p.Comment).Where(c => c != null);
-			note.CombinedAltText = combinedAltText != null ? string.Join(' ', combinedAltText) : null;
+			var combinedAltText = attachments.Select(p => p.Comment).Where(c => c != null);
+			note.CombinedAltText = string.Join(' ', combinedAltText);
 		}
 
 		var isPollEdited = false;
@@ -721,6 +719,8 @@ public class NoteService(
 				note.Poll = null;
 			}
 		}
+
+		note.Text = data.Text = data.ParsedText?.Serialize();
 
 		var isEdit = data.ASNote is not ASQuestion
 		             || poll == null
@@ -985,9 +985,9 @@ public class NoteService(
 			(text, htmlInlineMedia) = await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions);
 		}
 
-		var cw         = note.Summary;
-		var url        = note.Url?.Link;
-		var uri        = note.Id;
+		var cw  = note.Summary;
+		var url = note.Url?.Link;
+		var uri = note.Id;
 
 		if (note is ASQuestion question)
 		{
@@ -1074,7 +1074,7 @@ public class NoteService(
 		if (text == null)
 			(text, htmlInlineMedia) = await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions);
 
-		var cw   = note.Summary;
+		var cw = note.Summary;
 
 		Poll? poll = null;
 
@@ -1134,15 +1134,16 @@ public class NoteService(
 		return ResolveNoteMentions(users.NotNull().ToList());
 	}
 
-	private async Task<NoteMentionData> ResolveNoteMentionsAsync(string? text)
+	private async Task<NoteMentionData> ResolveNoteMentionsAsync(IMfmNode[]? parsedText)
 	{
-		if (text == null)
+		if (parsedText == null)
 			return ResolveNoteMentions([]);
-		var mentions = MfmParser.Parse(text)
-		                        .SelectMany(p => p.Children.Append(p))
-		                        .OfType<MfmMentionNode>()
-		                        .DistinctBy(p => p.Acct)
-		                        .ToArray();
+
+		var mentions = parsedText
+		               .SelectMany(p => p.Children.Append(p))
+		               .OfType<MfmMentionNode>()
+		               .DistinctBy(p => p.Acct)
+		               .ToArray();
 
 		if (mentions.Length > 100)
 			throw GracefulException.UnprocessableEntity("Refusing to process note with more than 100 mentions");
@@ -1153,19 +1154,19 @@ public class NoteService(
 		return ResolveNoteMentions(users.NotNull().ToList());
 	}
 
-	private List<string> ResolveHashtags(string? text, ASNote? note = null)
+	private List<string> ResolveHashtags(IMfmNode[]? parsedText, ASNote? note = null)
 	{
 		List<string> tags = [];
 
-		if (text != null)
+		if (parsedText != null)
 		{
-			tags = MfmParser.Parse(text)
-			                .SelectMany(p => p.Children.Append(p))
-			                .OfType<MfmHashtagNode>()
-			                .Select(p => p.Hashtag.ToLowerInvariant())
-			                .Select(p => p.Trim('#'))
-			                .Distinct()
-			                .ToList();
+			tags = parsedText
+			       .SelectMany(p => p.Children.Append(p))
+			       .OfType<MfmHashtagNode>()
+			       .Select(p => p.Hashtag.ToLowerInvariant())
+			       .Select(p => p.Trim('#'))
+			       .Distinct()
+			       .ToList();
 		}
 
 		var extracted = note?.Tags?.OfType<ASHashtag>()
@@ -1174,7 +1175,7 @@ public class NoteService(
 		                    .Cast<string>()
 		                    .Select(p => p.Trim('#'))
 		                    .Distinct()
-		                    .ToList();
+		                    .ToArray();
 
 		if (extracted != null)
 			tags.AddRange(extracted);
@@ -1248,8 +1249,7 @@ public class NoteService(
 			                                       .DistinctBy(p => p.Src)
 			                                       .Select(p => new ASDocument
 			                                       {
-				                                       Url = new ASLink(p.Src),
-				                                       Description = p.Alt,
+				                                       Url = new ASLink(p.Src), Description = p.Alt,
 			                                       }));
 		}
 
