@@ -487,7 +487,7 @@ public class NoteService(
 		}
 	}
 
-	private List<string> GetInlineMediaUrls(Span<IMfmNode> mfm)
+	private static List<string> GetInlineMediaUrls(IEnumerable<IMfmNode> mfm)
 	{
 		List<string> urls = [];
 
