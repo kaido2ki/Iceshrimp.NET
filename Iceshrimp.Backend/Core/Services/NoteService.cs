@@ -180,7 +180,7 @@ public class NoteService(
 			mentionsResolver.ResolveMentions(data.ParsedText, data.User.Host, mentions, splitDomainMapping);
 		}
 
-		data.Cw = data.Cw?.Trim();
+		data.Cw = data.Cw?.ReplaceLineEndings("\n").Trim();
 		if (data.Cw != null && string.IsNullOrWhiteSpace(data.Cw))
 			data.Cw = null;
 
@@ -554,7 +554,7 @@ public class NoteService(
 			mentionsResolver.ResolveMentions(data.ParsedText, note.User.Host, mentions, splitDomainMapping);
 		}
 
-		data.Cw = data.Cw?.Trim();
+		data.Cw = data.Cw?.ReplaceLineEndings("\n").Trim();
 		if (data.Cw != null && string.IsNullOrWhiteSpace(data.Cw))
 			data.Cw = null;
 
@@ -576,7 +576,6 @@ public class NoteService(
 
 		if (note.User.IsLocalUser && data.ParsedText != null)
 			data.Emoji = (await emojiSvc.ResolveEmojiAsync(data.ParsedText)).Select(p => p.Id).ToList();
-
 		if (data.Emoji != null && !note.Emojis.IsEquivalent(data.Emoji))
 			note.Emojis = data.Emoji;
 		else if (data.Emoji == null && note.Emojis.Count != 0)
@@ -621,8 +620,7 @@ public class NoteService(
 			mentionsResolver.ResolveMentions(data.ParsedText, note.UserHost, mentions, splitDomainMapping);
 		}
 
-		var attachments = data.Attachments?.ToList() ?? [];
-
+		var attachments     = data.Attachments?.ToList() ?? [];
 		var inlineMediaUrls = data.ParsedText != null ? GetInlineMediaUrls(data.ParsedText) : [];
 		var newMediaUrls    = data.Attachments?.Select(p => p.Url) ?? [];
 		var missingUrls     = inlineMediaUrls.Except(newMediaUrls).ToArray();
@@ -648,6 +646,9 @@ public class NoteService(
 			note.CombinedAltText = string.Join(' ', combinedAltText);
 		}
 
+		note.Text = data.Text = data.ParsedText?.Serialize();
+		note.Cw   = data.Cw;
+
 		var isPollEdited = false;
 
 		var poll = data.Poll;
@@ -665,7 +666,11 @@ public class NoteService(
 					await EnqueuePollExpiryTaskAsync(note.Poll);
 				}
 
-				if (!note.Poll.Choices.SequenceEqual(poll.Choices) || note.Poll.Multiple != poll.Multiple)
+				if (
+					!note.Poll.Choices.SequenceEqual(poll.Choices)
+					|| note.Poll.Multiple != poll.Multiple
+					|| note.Text != noteEdit.Text
+				)
 				{
 					isPollEdited = true;
 
@@ -719,8 +724,6 @@ public class NoteService(
 				note.Poll = null;
 			}
 		}
-
-		note.Text = data.Text = data.ParsedText?.Serialize();
 
 		var isEdit = data.ASNote is not ASQuestion
 		             || poll == null
