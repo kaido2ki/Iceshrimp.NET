@@ -23,7 +23,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 public class AuthController(DatabaseContext db, UserService userSvc, UserRenderer userRenderer) : ControllerBase
 {
 	[HttpGet]
-	[Authenticate]
+	[Authenticate(AllowInactive = true)]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<AuthResponse> GetAuthStatus()
 	{
