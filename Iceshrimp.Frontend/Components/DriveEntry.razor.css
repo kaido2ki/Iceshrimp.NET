@@ -1,0 +1,42 @@
+.drive-entry {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    width: 10em;
+    text-align: center;
+    text-wrap: wrap;
+    word-break: break-word;
+    border-radius: 0.5rem;
+}
+
+::deep {
+    .ph {
+        display: block;
+        vertical-align: middle;
+        line-height: 1;
+        color: var(--notice-color);
+    }
+}
+
+.labels {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+}
+
+::deep {
+    .labels .ph {
+        display: inline-block;
+        vertical-align: text-top;
+    }
+}
+
+img.thumbnail {
+    display: block;
+    height: 5em;
+    width: auto;
+    aspect-ratio: 3/2;
+    object-fit: contain;
+}

@@ -1,0 +1,54 @@
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
+@inject IStringLocalizer<Localization> Loc;
+
+@if (File != null && Folder == null)
+{
+    <div class="drive-entry">
+        <div class="labels">
+            @if (File.Description != null)
+            {
+                <Icon Name="Icons.ClosedCaptioning" title="@Loc["Has alt text"]"/>
+            }
+            else
+            {
+                <Icon Name="Icons.Warning" title="@Loc["No alt text"]"/>
+            }
+            @if (File.Sensitive)
+            {
+                <Icon Name="Icons.EyeSlash" title="@Loc["Sensitive"]"/>
+            }
+        </div>
+        @if (File.ContentType.StartsWith("image"))
+        {
+            <img class="thumbnail" src="@File.ThumbnailUrl" alt="@File.Description"/>
+        }
+        else if (File.ContentType.StartsWith("audio"))
+        {
+            <Icon Name="Icons.FileAudio" Size="5em"/>
+        }
+        else if (File.ContentType.StartsWith("video"))
+        {
+            <Icon Name="Icons.FileVideo" Size="5em"/>
+        }
+        else
+        {
+            <Icon Name="Icons.File" Size="5em"/>
+        }
+        <span>@File.Filename</span>
+    </div>
+}
+@if (Folder != null && File == null)
+{
+    <div class="drive-entry">
+        <Icon Name="Icons.FolderOpen" Size="5em" Pack="IconStyle.Fill"/>
+        <span>@Folder.Name</span>
+    </div>
+}
+
+@code {
+    [Parameter] public DriveFileResponse?   File   { get; set; } = null;
+    [Parameter] public DriveFolderResponse? Folder { get; set; } = null;
+}

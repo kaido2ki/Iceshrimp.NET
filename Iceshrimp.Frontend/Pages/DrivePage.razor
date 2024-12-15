@@ -9,6 +9,7 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.AspNetCore.Authorization
+@using Iceshrimp.Frontend.Components
 @inject ApiService                     Api;
 @inject IStringLocalizer<Localization> Loc;
 @inject ILogger<DrivePage>             Logger;
@@ -23,45 +24,14 @@
     <ol class="drive-files">
         @foreach (var el in Folder.Folders)
         {
-            <li class="drive-entry">
-                <Icon Name="Icons.FolderOpen" Size="5em" Pack="IconStyle.Fill"/>
-                <span>@el.Name</span>
+            <li>
+                <DriveEntry Folder="el" />
             </li>
         }
         @foreach (var el in Folder.Files)
         {
-            <li class="drive-entry">
-                <div class="labels">
-                    @if (el.Description != null)
-                    {
-                        <Icon Name="Icons.ClosedCaptioning" title="@Loc["Has alt text"]"/>
-                    }
-                    else
-                    {
-                        <Icon Name="Icons.Warning" title="@Loc["No alt text"]"/>
-                    }
-                    @if (el.Sensitive)
-                    {
-                        <Icon Name="Icons.EyeSlash" title="@Loc["Sensitive"]"/>
-                    }
-                </div>
-                @if (el.ContentType.StartsWith("image"))
-                {
-                    <img class="thumbnail" src="@el.ThumbnailUrl" alt="@el.Description"/>
-                }
-                else if (el.ContentType.StartsWith("audio"))
-                {
-                    <Icon Name="Icons.FileAudio" Size="5em"/>
-                }
-                else if (el.ContentType.StartsWith("video"))
-                {
-                    <Icon Name="Icons.FileVideo" Size="5em"/>
-                }
-                else
-                {
-                    <Icon Name="Icons.File" Size="5em"/>
-                }
-                <span>@el.Filename</span>
+            <li>
+                <DriveEntry File="el"/>
             </li>
         }
     </ol>
