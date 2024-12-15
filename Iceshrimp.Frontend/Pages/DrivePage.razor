@@ -4,6 +4,9 @@
 @using Microsoft.AspNetCore.Components.Sections
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas.Web
+@inject ApiService                     Api;
 @inject IStringLocalizer<Localization> Loc;
 
 <SectionContent SectionName="top-bar">
@@ -11,8 +14,47 @@
     @Loc["Drive"]
 </SectionContent>
 
-<span>@(Id ?? "root")</span>
+@if (Folder != null)
+{
+    <ol class="drive-files">
+        @foreach (var el in Folder.Folders)
+        {
+            <li class="drive-entry">
+                <Icon Name="Icons.FolderOpen" Size="5em" Pack="IconStyle.Fill"/>
+                <span>@el.Name</span>
+            </li>
+        }
+        @foreach (var el in Folder.Files)
+        {
+            <li class="drive-entry">
+                @if (el.ContentType.StartsWith("image"))
+                {
+                    <img class="thumbnail" src="@el.ThumbnailUrl"/>
+                }
+                else if (el.ContentType.StartsWith("audio"))
+                {
+                    <Icon Name="Icons.FileAudio" Size="5em"/>
+                }
+                else if (el.ContentType.StartsWith("video"))
+                {
+                    <Icon Name="Icons.FileVideo" Size="5em"/>
+                }
+                else
+                {
+                    <Icon Name="Icons.File" Size="5em"/>
+                }
+                <span>@el.Filename</span>
+            </li>
+        }
+    </ol>
+}
 
 @code {
-    [Parameter] public string? Id { get; set; }
+    [Parameter] public string?              Id     { get; set; }
+    private            DriveFolderResponse? Folder { get; set; } = null;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Folder = await Api.Drive.GetFolderAsync(Id);
+    }
 }
