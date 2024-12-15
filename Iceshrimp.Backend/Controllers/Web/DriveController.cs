@@ -224,6 +224,61 @@ public class DriveController(
 		return StatusCode(StatusCodes.Status202Accepted);
 	}
 
+	[HttpGet("folder")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<DriveFolderResponse> GetRootFolder()
+	{
+		return await GetFolder(null);
+	}
+
+	[HttpGet("folder/{id}")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<DriveFolderResponse> GetFolder(string? id)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var folder = id != null
+			? await db.DriveFolders.FirstOrDefaultAsync(p => p.Id == id && p.UserId == user.Id)
+			  ?? throw GracefulException.RecordNotFound()
+			: null;
+
+		var driveFiles = await db.DriveFiles
+		                         .Where(p => p.FolderId == id && p.UserId == user.Id)
+		                         .Select(p => new DriveFileResponse
+		                         {
+			                         Id           = p.Name,
+			                         Url          = p.AccessUrl,
+			                         ThumbnailUrl = p.ThumbnailAccessUrl,
+			                         Filename     = p.Name,
+			                         ContentType  = p.Type,
+			                         Sensitive    = p.IsSensitive,
+			                         Description  = p.Comment
+		                         })
+		                         .ToListAsync();
+
+		var driveFolders = await db.DriveFolders
+		                           .Where(p => p.ParentId == id && p.UserId == user.Id)
+		                           .Select(p => new DriveFolderResponse
+		                           {
+			                           Id = p.Id, Name = p.Name, ParentId = p.ParentId
+		                           })
+		                           .ToListAsync();
+
+		return new DriveFolderResponse
+		{
+			Id       = folder?.Id,
+			Name     = folder?.Name,
+			ParentId = folder?.ParentId,
+			Files    = driveFiles,
+			Folders  = driveFolders
+		};
+	}
+
 	private async Task<IActionResult> GetFileByAccessKey(string accessKey, string? version, DriveFile? file)
 	{
 		file ??= await db.DriveFiles.FirstOrDefaultAsync(p => p.AccessKey == accessKey
