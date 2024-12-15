@@ -62,7 +62,7 @@
             BlurImage = false;
             StateHasChanged();
         }
-        else
+        else if (Attachment.ContentType.StartsWith("image"))
         {
             OnOpen.InvokeAsync(Attachment);
         }
