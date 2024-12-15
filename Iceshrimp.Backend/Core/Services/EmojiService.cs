@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Configuration;
@@ -71,8 +72,8 @@ public partial class EmojiService(
 	{
 		var user = await sysUserSvc.GetInstanceActorAsync();
 		var driveFile = await driveSvc.StoreFileAsync(existing.OriginalUrl, user, false, forceStore: true,
-		                                              skipImageProcessing: false) ??
-		                throw new Exception("Error storing emoji file");
+		                                              skipImageProcessing: false)
+		                ?? throw new Exception("Error storing emoji file");
 
 		var emoji = new Emoji
 		{
@@ -196,6 +197,19 @@ public partial class EmojiService(
 
 	private static void ResolveChildren(
 		Span<IMfmNode> nodes, ref List<MfmEmojiCodeNode> list
+	)
+	{
+		foreach (var node in nodes)
+		{
+			if (node is MfmEmojiCodeNode emojiNode) list.Add(emojiNode);
+			list.AddRange(node.Children.OfType<MfmEmojiCodeNode>());
+			ResolveChildren(node.Children, ref list);
+		}
+	}
+
+	[OverloadResolutionPriority(1)]
+	private static void ResolveChildren(
+		Span<IMfmInlineNode> nodes, ref List<MfmEmojiCodeNode> list
 	)
 	{
 		foreach (var node in nodes)
