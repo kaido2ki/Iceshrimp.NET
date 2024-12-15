@@ -1,20 +1,24 @@
 @page "/drive"
 @page "/drive/{Id}"
+@attribute [Authorize]
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.AspNetCore.Components.Sections
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.AspNetCore.Authorization
 @inject ApiService                     Api;
 @inject IStringLocalizer<Localization> Loc;
+@inject ILogger<DrivePage>             Logger;
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Cloud"></Icon>
     @Loc["Drive"]
 </SectionContent>
 
-@if (Folder != null)
+@if (_state == State.Loaded && Folder != null)
 {
     <ol class="drive-files">
         @foreach (var el in Folder.Folders)
@@ -29,7 +33,7 @@
             <li class="drive-entry">
                 @if (el.ContentType.StartsWith("image"))
                 {
-                    <img class="thumbnail" src="@el.ThumbnailUrl"/>
+                    <img class="thumbnail" src="@el.ThumbnailUrl" alt="@el.Description"/>
                 }
                 else if (el.ContentType.StartsWith("audio"))
                 {
@@ -48,13 +52,56 @@
         }
     </ol>
 }
+@if (_state == State.Loading)
+{
+    <div>Loading</div>
+}
+@if (_state == State.NotFound)
+{
+    <div>This folder does not exist</div>
+}
+@if (_state == State.Error)
+{
+    <div>An error occured while loading the drive folder. Please inspect logs.</div>
+}
 
 @code {
     [Parameter] public string?              Id     { get; set; }
     private            DriveFolderResponse? Folder { get; set; } = null;
+    private            State                _state { get; set; }
 
+    private async Task Load()
+    {
+        Logger.LogTrace($"Opening drive folder: {Id ?? "root"}");
+        _state = State.Loading;
+
+        try
+        {
+            Folder = await Api.Drive.GetFolderAsync(Id);
+        }
+        catch (ApiException e)
+        {
+            Logger.LogWarning($"Failed to load folder '{Id ?? "root"}' due to API Exception: {e.Message}");
+            _state = State.Error;
+            return;
+        }
+
+        if (Folder == null)
+        {
+            _state = State.NotFound;
+            return;
+        }
+
+        _state = State.Loaded;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+    
     protected override async Task OnParametersSetAsync()
     {
-        Folder = await Api.Drive.GetFolderAsync(Id);
+        await Load();
     }
 }
