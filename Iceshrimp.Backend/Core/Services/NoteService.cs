@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Runtime.CompilerServices;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -487,7 +488,26 @@ public class NoteService(
 		}
 	}
 
-	private static List<string> GetInlineMediaUrls(IEnumerable<IMfmNode> mfm)
+	private static List<string> GetInlineMediaUrls(Span<IMfmNode> mfm)
+	{
+		List<string> urls = [];
+
+		foreach (var node in mfm)
+		{
+			if (node is MfmFnNode { Name: "media" } fn)
+			{
+				var urlNode = fn.Children.FirstOrDefault();
+				if (urlNode is MfmUrlNode url) urls.Add(url.Url);
+			}
+
+			urls.AddRange(GetInlineMediaUrls(node.Children));
+		}
+
+		return urls;
+	}
+
+	[OverloadResolutionPriority(1)]
+	private static List<string> GetInlineMediaUrls(Span<IMfmInlineNode> mfm)
 	{
 		List<string> urls = [];
 
