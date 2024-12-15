@@ -35,7 +35,7 @@
         </span>
     }
 
-    @if (Attachment.AltText != null)
+    @if (!string.IsNullOrWhiteSpace(Attachment.AltText))
     {
         <button @onclick="DisplayAlt" @onclick:stopPropagation="true" class="alt-btn" title="@Attachment.AltText">
             <Icon Name="Icons.ClosedCaptioning"/>
@@ -75,6 +75,6 @@
 
     private async Task DisplayAlt()
     {
-        await Js.InvokeVoidAsync("alert", Attachment.AltText ?? Loc["No alt text"]);
+        await Js.InvokeVoidAsync("alert", string.IsNullOrWhiteSpace(Attachment.AltText) ? Loc["No alt text"] : Attachment.AltText);
     }
 }
