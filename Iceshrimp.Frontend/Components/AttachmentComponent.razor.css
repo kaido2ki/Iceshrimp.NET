@@ -1,6 +1,7 @@
 .attachment {
     max-width: 100%;
     object-fit: contain;
+    min-height: 3rem;
     max-height: 30rem;
     aspect-ratio: 3/2;
 }
@@ -25,19 +26,24 @@ audio.attachment {
 }
 
 .file {
-    display: inline-block;
+    display: block;
+    padding: 1rem;
     white-space: normal;
 
     > a {
         text-decoration: none;
-        color: var(--notice-color)
+        color: var(--notice-color);
+        word-break: break-word;
+        word-wrap: break-word;
     }
 }
 
 ::deep {
     .attachment.file .ph {
-        display: inline-block;
+        display: block;
+        margin-bottom: 0.5rem;
         vertical-align: middle;
+        text-align: center;
     }
 }
 
