@@ -1,0 +1,18 @@
+@page "/drive"
+@page "/drive/{Id}"
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
+@inject IStringLocalizer<Localization> Loc;
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.Cloud"></Icon>
+    @Loc["Drive"]
+</SectionContent>
+
+<span>@(Id ?? "root")</span>
+
+@code {
+    [Parameter] public string? Id { get; set; }
+}
