@@ -13,10 +13,21 @@
 @inject ApiService                     Api;
 @inject IStringLocalizer<Localization> Loc;
 @inject ILogger<DrivePage>             Logger;
+@inject NavigationManager              Nav;
 
 <SectionContent SectionName="top-bar">
-    <Icon Name="Icons.Cloud"></Icon>
-    @Loc["Drive"]
+    @if (_state == State.Loaded && Folder is { Id: not null, Name: not null })
+    {
+        <span class="btn" @onclick="NavigateToParent">
+            <Icon Name="Icons.ArrowLeft"/>
+        </span>
+        @Folder.Name
+    }
+    else
+    {
+        <Icon Name="Icons.Cloud"/>
+        @Loc["Drive"]
+    }
 </SectionContent>
 
 @if (_state == State.Loaded && Folder != null)
@@ -87,5 +98,10 @@
     protected override async Task OnParametersSetAsync()
     {
         await Load();
+    }
+
+    private void NavigateToParent()
+    {
+        Nav.NavigateTo(Folder?.ParentId != null ? $"/drive/{Folder.ParentId}" : "/drive");
     }
 }

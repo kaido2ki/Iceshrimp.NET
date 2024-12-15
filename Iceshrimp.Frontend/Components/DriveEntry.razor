@@ -3,10 +3,11 @@
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
 @inject IStringLocalizer<Localization> Loc;
+@inject NavigationManager              Nav;
 
 @if (File != null && Folder == null)
 {
-    <div class="drive-entry">
+    <div class="drive-entry" @onclick="SelectFile" @onclick:stopPropagation="true">
         <div class="labels">
             @if (File.Description != null)
             {
@@ -42,7 +43,7 @@
 }
 @if (Folder != null && File == null)
 {
-    <div class="drive-entry">
+    <div class="drive-entry" @onclick="SelectFolder" @onclick:stopPropagation="true">
         <Icon Name="Icons.FolderOpen" Size="5em" Pack="IconStyle.Fill"/>
         <span>@Folder.Name</span>
     </div>
@@ -51,4 +52,14 @@
 @code {
     [Parameter] public DriveFileResponse?   File   { get; set; } = null;
     [Parameter] public DriveFolderResponse? Folder { get; set; } = null;
+
+    private void SelectFile()
+    {
+        
+    }
+    
+    private void SelectFolder()
+    {
+        Nav.NavigateTo($"/drive/{Folder!.Id}");
+    }
 }

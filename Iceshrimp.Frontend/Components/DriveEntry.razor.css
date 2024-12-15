@@ -8,7 +8,10 @@
     text-align: center;
     text-wrap: wrap;
     word-break: break-word;
-    border-radius: 0.5rem;
+}
+
+.drive-entry:hover {
+    background-color: var(--hover-color);
 }
 
 ::deep {
@@ -22,14 +25,14 @@
 
 .labels {
     position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
+    top: 0.2rem;
+    right: 0.2rem;
 }
 
 ::deep {
     .labels .ph {
         display: inline-block;
-        vertical-align: text-top;
+        vertical-align: top;
     }
 }
 
