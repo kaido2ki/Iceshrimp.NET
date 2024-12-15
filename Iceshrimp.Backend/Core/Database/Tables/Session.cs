@@ -7,7 +7,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("session")]
 [Index(nameof(Token))]
-public class Session
+public class Session : IEntity
 {
 	[Key]
 	[Column("id")]

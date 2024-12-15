@@ -451,6 +451,7 @@
 	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5FAEF0320AE5E47B3F2B73E55C26611/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
 	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=D5FAEF0320AE5E47B3F2B73E55C26611/Text/@EntryValue">[ProducesErrors(HttpStatusCode.$BadRequest$)]$SELECTION$$END$</s:String>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=blurhash/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=deauthorize/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Iceshrimp/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Identicon/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=litepub/@EntryIndexedValue">True</s:Boolean>
