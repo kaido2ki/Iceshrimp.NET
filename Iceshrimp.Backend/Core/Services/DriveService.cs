@@ -497,6 +497,35 @@ public class DriveService(
 		}
 	}
 
+	public async Task<DriveFolder> CreateFolderAsync(User user, string name, string? parentId)
+	{
+		if (parentId != null)
+		{
+			var parent = await db.DriveFolders
+			                     .FirstOrDefaultAsync(p => p.Id == parentId && p.UserId == user.Id);
+			if (parent == null) throw GracefulException.NotFound("The parent folder does not exist");
+		}
+
+		var existing = await db.DriveFolders
+		                       .FirstOrDefaultAsync(p => p.Name == name
+		                                                 && p.ParentId == parentId
+		                                                 && p.UserId == user.Id);
+		if (existing != null) throw GracefulException.Conflict("A folder with this name already exists");
+
+		var folder = new DriveFolder
+		{
+			Id        = IdHelpers.GenerateSnowflakeId(),
+			CreatedAt = default,
+			Name      = name,
+			UserId    = user.Id,
+			ParentId  = parentId
+		};
+
+		db.Add(folder);
+		await db.SaveChangesAsync();
+		return folder;
+	}
+
 	public async Task<HashSet<string>> GetAllFileNamesFromObjectStorageAsync()
 	{
 		return storageConfig.Value.ObjectStorage?.Bucket != null

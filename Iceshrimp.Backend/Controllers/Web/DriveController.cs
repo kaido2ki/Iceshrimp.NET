@@ -233,6 +233,28 @@ public class DriveController(
 		return await GetFolder(null);
 	}
 
+	[HttpPost("folder")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.Conflict)]
+	public async Task<DriveFolderResponse> CreateFolder(DriveFolderRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		if (string.IsNullOrWhiteSpace(request.Name))
+			throw GracefulException.BadRequest("Folder name cannot be empty");
+
+		var driveFolder = await driveSvc.CreateFolderAsync(user, request.Name.Trim(), request.ParentId);
+
+		return new DriveFolderResponse
+		{
+			Id       = driveFolder.Id,
+			Name     = driveFolder.Name,
+			ParentId = driveFolder.ParentId
+		};
+	}
+
 	[HttpGet("folder/{id}")]
 	[Authenticate]
 	[Authorize]
