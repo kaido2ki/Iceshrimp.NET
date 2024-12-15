@@ -31,6 +31,20 @@
         @foreach (var el in Folder.Files)
         {
             <li class="drive-entry">
+                <div class="labels">
+                    @if (el.Description != null)
+                    {
+                        <Icon Name="Icons.ClosedCaptioning" title="@Loc["Has alt text"]"/>
+                    }
+                    else
+                    {
+                        <Icon Name="Icons.Warning" title="@Loc["No alt text"]"/>
+                    }
+                    @if (el.Sensitive)
+                    {
+                        <Icon Name="Icons.EyeSlash" title="@Loc["Sensitive"]"/>
+                    }
+                </div>
                 @if (el.ContentType.StartsWith("image"))
                 {
                     <img class="thumbnail" src="@el.ThumbnailUrl" alt="@el.Description"/>
