@@ -23,7 +23,7 @@
         {
             <div class="container" @ref="@Ref">
                 <img class="attachment" src="@element.Url" alt="@element.AltText" fetchpriority="low"/>
-                @if (element.AltText is not null)
+                @if (!string.IsNullOrWhiteSpace(element.AltText))
                 {
                     <div class="alt-text">@element.AltText</div>
                 }
