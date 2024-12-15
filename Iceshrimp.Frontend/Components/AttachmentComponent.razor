@@ -27,12 +27,14 @@
     }
     else
     {
-        <span class="attachment file @(BlurImage ? "blur-image" : "")">
-            <Icon Name="Icons.FileArrowDown" Size="3em"/>
-            <a href="@Attachment.Url" target="_blank">
-                @Attachment.Url.Split("/").Last()
-            </a>
-        </span>
+        <div class="attachment file @(BlurImage ? "blur-image" : "")">
+            <div class="contents">
+                <Icon Name="Icons.FileArrowDown" Size="3em"/>
+                <a href="@Attachment.Url" target="_blank">
+                    @Attachment.Url.Split("/").Last()
+                </a>
+            </div>
+        </div>
     }
 
     @if (!string.IsNullOrWhiteSpace(Attachment.AltText))

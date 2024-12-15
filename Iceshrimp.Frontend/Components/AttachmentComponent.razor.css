@@ -26,11 +26,12 @@ audio.attachment {
 }
 
 .file {
-    display: block;
+    display: flex;
+    align-items: center;
     padding: 1rem;
     white-space: normal;
 
-    > a {
+    a {
         text-decoration: none;
         color: var(--notice-color);
         word-break: break-word;
