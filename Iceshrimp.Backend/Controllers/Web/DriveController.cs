@@ -251,7 +251,7 @@ public class DriveController(
 		                         .Where(p => p.FolderId == id && p.UserId == user.Id)
 		                         .Select(p => new DriveFileResponse
 		                         {
-			                         Id           = p.Name,
+			                         Id           = p.Id,
 			                         Url          = p.AccessUrl,
 			                         ThumbnailUrl = p.ThumbnailAccessUrl,
 			                         Filename     = p.Name,
