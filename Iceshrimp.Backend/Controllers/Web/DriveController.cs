@@ -118,7 +118,7 @@ public class DriveController(
 	[Produces(MediaTypeNames.Application.Json)]
 	[ProducesResults(HttpStatusCode.OK)]
 	[MaxRequestSizeIsMaxUploadSize]
-	public async Task<DriveFileResponse> UploadFile(IFormFile file)
+	public async Task<DriveFileResponse> UploadFile(IFormFile file, [FromQuery] string? folderId)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var request = new DriveFileCreationRequest
@@ -127,7 +127,7 @@ public class DriveController(
 			MimeType    = file.ContentType,
 			IsSensitive = false
 		};
-		var res = await driveSvc.StoreFileAsync(file.OpenReadStream(), user, request);
+		var res = await driveSvc.StoreFileAsync(file.OpenReadStream(), user, request, folderId: folderId);
 		return await GetFileById(res.Id);
 	}
 

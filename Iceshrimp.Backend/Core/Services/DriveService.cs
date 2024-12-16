@@ -165,7 +165,7 @@ public class DriveService(
 	}
 
 	public async Task<DriveFile> StoreFileAsync(
-		Stream input, User user, DriveFileCreationRequest request, bool skipImageProcessing = false
+		Stream input, User user, DriveFileCreationRequest request, bool skipImageProcessing = false, string? folderId = null
 	)
 	{
 		if (user.IsLocalUser && input.Length > storageConfig.Value.MaxUploadSizeBytes)
@@ -324,6 +324,14 @@ public class DriveService(
 			request.Filename += $".{fmt.Extension}";
 		}
 
+		// If the requested folder doesn't exist then store it in the root folder
+		if (folderId != null)
+		{
+			var folder = await db.DriveFolders
+			                     .FirstOrDefaultAsync(p => p.Id == folderId && p.UserId == user.Id);
+			if (folder == null) folderId = null;
+		}
+
 		file = new DriveFile
 		{
 			Id                 = IdHelpers.GenerateSnowflakeId(),
@@ -351,7 +359,8 @@ public class DriveService(
 			ThumbnailMimeType  = thumbnail?.format.Format.MimeType,
 			PublicUrl          = @public?.url,
 			PublicAccessKey    = @public?.accessKey,
-			PublicMimeType     = @public?.format.Format.MimeType
+			PublicMimeType     = @public?.format.Format.MimeType,
+			FolderId           = folderId
 		};
 
 		await db.AddAsync(file);
