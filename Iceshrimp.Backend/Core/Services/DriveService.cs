@@ -204,10 +204,18 @@ public class DriveService(
 		var buf = new byte[input.Length];
 		using (var memoryStream = new MemoryStream(buf))
 			await input.CopyToAsync(memoryStream);
+		
+		// If the requested folder doesn't exist then store it in the root folder
+		if (folderId != null)
+		{
+			var folder = await db.DriveFolders
+			                     .FirstOrDefaultAsync(p => p.Id == folderId && p.UserId == user.Id);
+			if (folder == null) folderId = null;
+		}
 
 		var digest = await DigestHelpers.Sha256DigestAsync(buf);
 		logger.LogDebug("Storing file {digest} for user {userId}", digest, user.Id);
-		file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest && (!p.IsLink || p.UserId == user.Id));
+		file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest && p.FolderId == folderId && (!p.IsLink || p.UserId == user.Id));
 		if (file != null)
 		{
 			if (file.UserId == user.Id)
@@ -322,14 +330,6 @@ public class DriveService(
 		{
 			request.MimeType =  fmt.MimeType;
 			request.Filename += $".{fmt.Extension}";
-		}
-
-		// If the requested folder doesn't exist then store it in the root folder
-		if (folderId != null)
-		{
-			var folder = await db.DriveFolders
-			                     .FirstOrDefaultAsync(p => p.Id == folderId && p.UserId == user.Id);
-			if (folder == null) folderId = null;
 		}
 
 		file = new DriveFile
