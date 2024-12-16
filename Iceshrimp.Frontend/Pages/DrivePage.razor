@@ -11,6 +11,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Iceshrimp.Frontend.Components
 @inject ApiService                     Api;
+@inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 @inject ILogger<DrivePage>             Logger;
 @inject NavigationManager              Nav;
@@ -28,7 +29,17 @@
         <Icon Name="Icons.Cloud"/>
         @Loc["Drive"]
     }
+    @if (_state == State.Loaded && Folder is not null)
+    {
+        <span class="action btn" @onclick="OpenUpload" title="@Loc["Upload file"]">
+            <Icon Name="Icons.UploadSimple"/>
+        </span>
+    }
 </SectionContent>
+
+<div class="file-input">
+    <InputFile @ref="UploadInput" OnChange="Upload">Upload!</InputFile>
+</div>
 
 @if (_state == State.Loaded && Folder != null)
 {
@@ -61,9 +72,11 @@
 }
 
 @code {
-    [Parameter] public string?              Id     { get; set; }
-    private            DriveFolderResponse? Folder { get; set; } = null;
-    private            State                _state { get; set; }
+    [Parameter] public string?              Id          { get; set; }
+    private            DriveFolderResponse? Folder      { get; set; } = null;
+    private            State                _state      { get; set; }
+    private            InputFile            UploadInput { get; set; } = null!;
+    private            IJSObjectReference   _module = null!;
 
     private async Task Load()
     {
@@ -93,6 +106,8 @@
     protected override async Task OnInitializedAsync()
     {
         await Load();
+        _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                           "./Pages/DrivePage.razor.js");
     }
     
     protected override async Task OnParametersSetAsync()
@@ -103,5 +118,19 @@
     private void NavigateToParent()
     {
         Nav.NavigateTo(Folder?.ParentId != null ? $"/drive/{Folder.ParentId}" : "/drive");
+    }
+
+    // The <InputFile> Component is hidden, and triggered by a sepperate button.
+    // That way we get it's functionality, without the styling limitations of the InputFile component
+    private async Task OpenUpload()
+    {
+        await _module.InvokeVoidAsync("openUpload", UploadInput.Element);
+    }
+    
+    private async Task Upload(InputFileChangeEventArgs e)
+    {
+        var res = await Api.Drive.UploadFileAsync(e.File);
+        Folder!.Files.Add(res);
+        StateHasChanged();
     }
 }

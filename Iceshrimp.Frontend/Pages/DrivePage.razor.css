@@ -1,3 +1,7 @@
+.file-input {
+    display: none;
+}
+
 .drive-files {
     display: flex;
     flex-wrap: wrap;
