@@ -101,8 +101,8 @@ public class DriveService(
 				var res = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
 				res.EnsureSuccessStatusCode();
 
-				var filename = res.Content.Headers.ContentDisposition?.FileName ??
-				               new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "";
+				var filename = res.Content.Headers.ContentDisposition?.FileName
+				               ?? new Uri(uri).AbsolutePath.Split('/').LastOrDefault() ?? "";
 
 				var request = new DriveFileCreationRequest
 				{
@@ -228,8 +228,8 @@ public class DriveService(
 		var storedInternal = storageConfig.Value.Provider == Enums.FileStorage.Local;
 
 		var shouldCache =
-			storageConfig.Value is { MediaRetentionTimeSpan: not null, MediaProcessing.LocalOnly: false } &&
-			buf.Length <= storageConfig.Value.MaxCacheSizeBytes;
+			storageConfig.Value is { MediaRetentionTimeSpan: not null, MediaProcessing.LocalOnly: false }
+			&& buf.Length <= storageConfig.Value.MaxCacheSizeBytes;
 
 		var shouldStore = user.IsLocalUser || shouldCache;
 
@@ -291,8 +291,8 @@ public class DriveService(
 					                         .AwaitAllNoConcurrencyAsync()
 					                         .ContinueWithResult(p => p.ToImmutableArray());
 
-					original = processed.FirstOrDefault(p => p?.format.Key == KeyEnum.Original) ??
-					           throw new Exception("Image processing didn't result in an original version");
+					original = processed.FirstOrDefault(p => p?.format.Key == KeyEnum.Original)
+					           ?? throw new Exception("Image processing didn't result in an original version");
 
 					thumbnail = processed.FirstOrDefault(p => p?.format.Key == KeyEnum.Thumbnail);
 					@public   = processed.FirstOrDefault(p => p?.format.Key == KeyEnum.Public);
@@ -415,9 +415,8 @@ public class DriveService(
 
 	private async Task<string> StoreFileVersionLocalStorageAsync(Stream stream, string filename)
 	{
-		var pathBase = storageConfig.Value.Local?.Path ??
-		               throw new Exception("Local storage path cannot be null");
-		var path = Path.Combine(pathBase, filename);
+		var pathBase = storageConfig.Value.Local?.Path ?? throw new Exception("Local storage path cannot be null");
+		var path     = Path.Combine(pathBase, filename);
 
 		await using var writer = File.OpenWrite(path);
 		stream.Seek(0, SeekOrigin.Begin);
@@ -480,8 +479,8 @@ public class DriveService(
 
 		if (storedInternal)
 		{
-			var pathBase = storageConfig.Value.Local?.Path ??
-			               throw new Exception("Cannot delete locally stored file: pathBase is null");
+			var pathBase = storageConfig.Value.Local?.Path
+			               ?? throw new Exception("Cannot delete locally stored file: pathBase is null");
 
 			paths.Where(p => p != null)
 			     .Select(p => Path.Combine(pathBase, p!))
