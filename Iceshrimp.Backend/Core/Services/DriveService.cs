@@ -39,6 +39,9 @@ public class DriveService(
 		if (logExisting)
 			logger.LogDebug("Storing file {uri} for user {userId}", uri, user.Id);
 
+		if (string.IsNullOrWhiteSpace(description))
+			description = null;
+
 		try
 		{
 			// Do we already have the file?
