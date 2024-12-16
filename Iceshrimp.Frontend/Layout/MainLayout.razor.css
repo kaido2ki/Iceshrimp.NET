@@ -31,17 +31,18 @@
     display: flex;
     align-items: center;
     padding-left: 1rem;
+    padding-right: 1rem;
     position: sticky;
     top: 0;
     z-index: +2;
 
-    > i {
+    i {
         padding-right: 0.5rem;
     }
 }
 
 .top-bar {
-    > .btn {
+    .btn {
         margin-right: 0.5rem;
         padding: 0.2rem 0.4rem;
         border-radius: 0.5rem;
@@ -50,15 +51,33 @@
 }
 
 .top-bar {
-    > .btn:hover {
+    .btn:hover {
         background-color: var(--hover-color);
     }
 }
 
-::deep .top-bar {
-    > .btn i {
+.top-bar {
+    .btn i {
         display: inline-block;
+        padding-right: 0;
         vertical-align: middle;
-        line-height: 1;
+    }
+}
+
+.top-bar {
+    .action {
+        margin-left: auto;
+    }
+}
+
+.top-bar {
+    .action + .action {
+        margin-left: 0;
+    }
+}
+
+.top-bar {
+    .action:last-child {
+        margin-right: 0;
     }
 }
