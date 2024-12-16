@@ -129,7 +129,7 @@
     
     private async Task Upload(InputFileChangeEventArgs e)
     {
-        var res = await Api.Drive.UploadFileAsync(e.File);
+        var res = Folder?.Id != null ? await Api.Drive.UploadFileToFolderAsync(e.File, Folder.Id) : await Api.Drive.UploadFileAsync(e.File);
         Folder!.Files.Add(res);
         StateHasChanged();
     }

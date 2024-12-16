@@ -1,3 +1,4 @@
+using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components.Forms;
@@ -8,6 +9,9 @@ internal class DriveControllerModel(ApiClient api)
 {
 	public Task<DriveFileResponse> UploadFileAsync(IBrowserFile file) =>
 		api.CallAsync<DriveFileResponse>(HttpMethod.Post, "/drive", data: file);
+
+	public Task<DriveFileResponse> UploadFileToFolderAsync(IBrowserFile file, string folderId) =>
+		api.CallAsync<DriveFileResponse>(HttpMethod.Post, "/drive", QueryString.Create("folderId", folderId), file);
 
 	public Task<DriveFileResponse?> GetFileAsync(string id) =>
 		api.CallNullableAsync<DriveFileResponse>(HttpMethod.Get, $"/drive/{id}");
