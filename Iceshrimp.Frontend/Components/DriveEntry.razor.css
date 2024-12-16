@@ -8,6 +8,8 @@
     text-align: center;
     text-wrap: wrap;
     word-break: break-word;
+    border-radius: 0.5rem;
+    cursor: pointer;
 }
 
 .drive-entry:hover {
