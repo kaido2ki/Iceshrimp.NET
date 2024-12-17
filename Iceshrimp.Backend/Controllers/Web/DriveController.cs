@@ -301,6 +301,74 @@ public class DriveController(
 		};
 	}
 
+	[HttpPut("folder/{id}")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.Conflict)]
+	public async Task<DriveFolderResponse> UpdateFolder(string id, string name)
+	{
+		var user = HttpContext.GetUserOrFail();
+		
+		if (string.IsNullOrWhiteSpace(name))
+			throw GracefulException.BadRequest("Name must not be empty");
+
+		var folder = await db.DriveFolders
+		                     .FirstOrDefaultAsync(p => p.Id == id && p.UserId == user.Id)
+		             ?? throw GracefulException.RecordNotFound();
+
+		var existing = await db.DriveFolders
+		                       #pragma warning disable CA1862
+		                       .FirstOrDefaultAsync(p => p.Name.ToLower() == name.Trim().ToLower()
+		                                                 #pragma warning restore CA1862
+		                                                 && p.ParentId == folder.ParentId
+		                                                 && p.UserId == user.Id);
+		if (existing != null)
+			throw GracefulException.Conflict("A folder with this name already exists");
+
+		folder.Name = name.Trim();
+		await db.SaveChangesAsync();
+
+		return new DriveFolderResponse { Id = folder.Id, Name = folder.Name, ParentId = folder.ParentId };
+	}
+
+	[HttpPut("folder/{id}/move")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.Conflict)]
+	public async Task<DriveFolderResponse> UpdateFolderParent(string id, DriveMoveRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+		
+		if (request.FolderId == id)
+			throw GracefulException.BadRequest("Cannot move a folder into itself");
+
+		var folder = await db.DriveFolders
+		                     .FirstOrDefaultAsync(p => p.Id == id && p.UserId == user.Id)
+		             ?? throw GracefulException.RecordNotFound();
+
+		if (request.FolderId != null)
+		{
+			var parent = await db.DriveFolders
+			                     .FirstOrDefaultAsync(p => p.Id == request.FolderId && p.UserId == user.Id);
+			if (parent == null)
+				throw GracefulException.NotFound("The new parent folder doesn't exist");
+		}
+
+		var existing = await db.DriveFolders
+		                       .FirstOrDefaultAsync(p => p.Name == folder.Name
+		                                                 && p.ParentId == request.FolderId
+		                                                 && p.UserId == user.Id);
+		if (existing != null)
+			throw GracefulException.Conflict("A folder with this name already exists in the new parent folder");
+
+		folder.ParentId = request.FolderId;
+		await db.SaveChangesAsync();
+
+		return new DriveFolderResponse { Id = folder.Id, Name = folder.Name, ParentId = folder.ParentId, };
+	}
+
 	private async Task<IActionResult> GetFileByAccessKey(string accessKey, string? version, DriveFile? file)
 	{
 		file ??= await db.DriveFiles.FirstOrDefaultAsync(p => p.AccessKey == accessKey
