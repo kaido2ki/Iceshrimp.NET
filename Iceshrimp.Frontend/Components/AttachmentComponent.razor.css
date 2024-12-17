@@ -57,6 +57,11 @@ audio.attachment {
     border-radius: 0.5rem;
 }
 
+.wrapper:has(> img) {
+    cursor: pointer;
+}
+
 .blur-image {
     filter: blur(10rem);
+    cursor: pointer;
 }
