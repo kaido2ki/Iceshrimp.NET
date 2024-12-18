@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
+using Iceshrimp.Backend.Controllers.Shared.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -188,6 +189,65 @@ public class ActivityPubController(
 			Id         = $"{user.GetPublicUri(config.Value)}/collections/featured",
 			TotalItems = (ulong)rendered.Count,
 			Items      = rendered.Cast<ASObject>().ToList()
+		};
+
+		return res.Compact();
+	}
+
+	[HttpGet("/users/{id}/outbox")]
+	[AuthorizedFetch]
+	[OutputCache(PolicyName = "federation")]
+	[OverrideResultType<ASOrderedCollectionPage>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<JObject> GetUserOutbox(string id)
+	{
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser);
+		if (user == null) throw GracefulException.NotFound("User not found");
+
+		var res = new ASOrderedCollection
+		{
+			Id = $"{user.GetPublicUri(config.Value)}/outbox",
+			First = new ASOrderedCollectionPage($"{user.GetPublicUri(config.Value)}/outbox/page"),
+		};
+
+		return res.Compact();
+	}
+
+	[HttpGet("/users/{id}/outbox/page")]
+	[AuthorizedFetch]
+	[OutputCache(PolicyName = "federation")]
+	[OverrideResultType<ASOrderedCollectionPage>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<JObject> GetUserOutboxPage(string id, [FromQuery] string? maxId)
+	{
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser);
+		if (user == null) throw GracefulException.NotFound("User not found");
+
+		var actor = HttpContext.GetActor();
+		var notes = await db.Notes.Where(p => p.UserId == id)
+		                    .Include(p => p.User)
+		                    .Include(p => p.Renote)
+		                    .EnsureVisibleFor(actor)
+		                    .Paginate(new PaginationQuery { MaxId = maxId }, 20, 20)
+		                    .ToArrayAsync();
+
+		var noteActor = userRenderer.RenderLite(user);
+		var rendered = notes.Select(note => note is { IsPureRenote: true, Renote: not null }
+			                            ? (ASObject)ActivityPub.ActivityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
+					                             note.GetPublicUri(config.Value), noteActor,
+					                             note.Visibility,
+					                             note.User.GetPublicUri(config.Value) + "/followers")
+			                            : ActivityPub.ActivityRenderer.RenderCreate(noteRenderer.RenderLite(note), noteActor))
+		                    .ToList();
+
+		var last = notes.LastOrDefault();
+		var res = new ASOrderedCollectionPage
+		{
+			Id = $"{user.GetPublicUri(config.Value)}/outbox/page{(maxId != null ? $"?maxId={maxId}" : "")}",
+			Next = last != null ? new ASOrderedCollectionPage($"{user.GetPublicUri(config.Value)}/outbox/page?maxId={last.Id}") : null,
+			Items = rendered
 		};
 
 		return res.Compact();
