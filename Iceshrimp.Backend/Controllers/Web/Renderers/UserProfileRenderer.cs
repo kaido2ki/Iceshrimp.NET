@@ -55,7 +55,7 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 				? Role.Moderator
 				: Role.None;
 
-		var url = user.GetPublicUrl(instance.Value.WebDomain);
+		var url = user.Uri ?? user.GetPublicUrl(instance.Value.WebDomain);
 
 		return new UserProfileResponse
 		{
