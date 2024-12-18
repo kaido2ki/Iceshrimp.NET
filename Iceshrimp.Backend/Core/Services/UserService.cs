@@ -786,6 +786,8 @@ public class UserService(
 
 						if (follower.IsRemoteUser)
 						{
+							await EnqueueBackfillTaskAsync(follower);
+
 							// @formatter:off
 							_ = followupTaskSvc.ExecuteTaskAsync("IncrementInstanceIncomingFollowsCounter", async provider =>
 							{
@@ -820,6 +822,8 @@ public class UserService(
 					await db.AddAsync(request);
 					await db.SaveChangesAsync();
 					await notificationSvc.GenerateFollowRequestReceivedNotificationAsync(request);
+
+					if (follower.IsRemoteUser) await EnqueueBackfillTaskAsync(follower);
 				}
 			}
 		}
@@ -854,6 +858,8 @@ public class UserService(
 
 				if (follower.IsRemoteUser)
 				{
+					await EnqueueBackfillTaskAsync(follower);
+
 					_ = followupTaskSvc.ExecuteTaskAsync("IncrementInstanceIncomingFollowsCounter", async provider =>
 					{
 						var bgDb          = provider.GetRequiredService<DatabaseContext>();
@@ -886,17 +892,13 @@ public class UserService(
 		if (!cfg.Enabled) return;
 
 		// don't try to schedule a backfill for local users
-		if (user.Host == null) return;
+		if (user.IsLocalUser) return;
 
 		// we don't need to backfill anyone we have followers for since we'll get their posts delivered to us
-		var needBackfill = await db.Users
-		                           .AnyAsync(u => u.Id == user.Id
-		                                          && !u.Followers.Any()
-		                                          && u.Outbox != null
-		                                          && (u.OutboxFetchedAt == null || u.OutboxFetchedAt <= DateTime.UtcNow - cfg.RefreshAfterTimeSpan));
-
-		// only queue if the user's backfill timestamp got updated. if it didn't, it means this user doesn't need backfilling
-		// (or the thread doesn't exist, which shouldn't be possible)
+		var needBackfill = await db.Users.AnyAsync(u => u.Id == user.Id
+													&& !u.Followers.Any()
+													&& u.Outbox != null
+													&& (u.OutboxFetchedAt == null || u.OutboxFetchedAt <= DateTime.UtcNow - cfg.RefreshAfterTimeSpan));
 		if (!needBackfill) return;
 
 		var jobData = new BackfillUserJobData
