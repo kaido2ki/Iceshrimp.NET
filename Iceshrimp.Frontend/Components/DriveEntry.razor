@@ -2,12 +2,15 @@
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
+@inject ApiService                     Api;
+@inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              Nav;
 
 @if (File != null && Folder == null)
 {
-    <div class="drive-entry" @onclick="SelectFile" @onclick:stopPropagation="true">
+    <div @ref="FileButton" class="drive-entry" @onclick="SelectFile" @onclick:stopPropagation="true">
         <div class="labels">
             @if (File.Description != null)
             {
@@ -39,6 +42,36 @@
             <Icon Name="Icons.File" Size="5em"/>
         }
         <span>@File.Filename</span>
+        <Menu @ref="FileMenu">
+            <MenuElement Icon="Icons.CursorText" OnSelect="RenameFile">
+                <Text>@Loc["Rename"]</Text>
+            </MenuElement>
+            @if (File.Sensitive)
+            {
+                <MenuElement Icon="Icons.Eye" OnSelect="MarkFileNotSensitive">
+                    <Text>@Loc["Mark as not sensitive"]</Text>
+                </MenuElement>
+            }
+            else
+            {
+                <MenuElement Icon="Icons.EyeSlash" OnSelect="MarkFileAsSensitive">
+                    <Text>@Loc["Mark as sensitive"]</Text>
+                </MenuElement>
+            }
+            <MenuElement Icon="Icons.ClosedCaptioning" OnSelect="SetFileAltText">
+                <Text>@Loc["Set alt text"]</Text>
+            </MenuElement>
+            <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenFile">
+                <Text>@Loc["Open"]</Text>
+            </MenuElement>
+            <MenuElement Icon="Icons.Share" OnSelect="CopyFileLink">
+                <Text>@Loc["Copy link"]</Text>
+            </MenuElement>
+            <MenuElement Icon="Icons.Trash" OnSelect="DeleteFile">
+                <Text>@Loc["Delete"]</Text>
+            </MenuElement>
+            <ClosingBackdrop OnClose="FileMenu.Close"></ClosingBackdrop>
+        </Menu>
     </div>
 }
 @if (Folder != null && File == null)
@@ -50,12 +83,62 @@
 }
 
 @code {
-    [Parameter] public DriveFileResponse?   File   { get; set; } = null;
-    [Parameter] public DriveFolderResponse? Folder { get; set; } = null;
+    [Parameter] public DriveFileResponse?   File         { get; set; } = null;
+    [Parameter] public DriveFolderResponse? Folder       { get; set; } = null;
+    private            Menu                 FileMenu     { get; set; } = null!;
+    private            ElementReference     FileButton   { get; set; }
 
-    private void SelectFile()
+    private void SelectFile() => FileMenu.Toggle(FileButton);
+
+    private async Task RenameFile()
     {
-        
+        var filename = await Js.InvokeAsync<string?>("prompt", "Rename file", File!.Filename);
+        if (string.IsNullOrWhiteSpace(filename)) return;
+
+        var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Filename = filename.Trim() });
+        if (res != null)
+        {
+            File.Filename = res.Filename;
+            StateHasChanged();
+        }
+    }
+
+    private async Task MarkFileSensitive(bool sensitive)
+    {
+        var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Sensitive = sensitive});
+        if (res != null)
+        {
+            File.Sensitive = res.Sensitive;
+            StateHasChanged();
+        }
+    }
+
+    private async Task MarkFileNotSensitive() => await MarkFileSensitive(false);
+    
+    private async Task MarkFileAsSensitive() => await MarkFileSensitive(true);
+    
+    private async Task SetFileAltText()
+    {
+        var alt = await Js.InvokeAsync<string?>("prompt", "Set alt text", File!.Description);
+        if (alt == null) return;
+
+        var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Description = string.IsNullOrWhiteSpace(alt) ? null : alt.Trim() });
+        if (res != null)
+        {
+            File.Description = res.Description;
+            StateHasChanged();
+        }
+    }
+
+    private void OpenFile() => Js.InvokeVoidAsync("open", File!.Url, "_blank");
+    
+    private void CopyFileLink() => Js.InvokeVoidAsync("navigator.clipboard.writeText", File!.Url);
+
+    private async Task DeleteFile()
+    {
+        await Api.Drive.DeleteFileAsync(File!.Id);
+        File = null;
+        StateHasChanged();
     }
     
     private void SelectFolder()
