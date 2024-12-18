@@ -130,7 +130,7 @@
 
     private async Task SetFileAltText()
     {
-        var alt = await Js.InvokeAsync<string?>("prompt", "Set alt text", File!.Description);
+        var alt = await Js.InvokeAsync<string?>("prompt", "Set alt text", File!.Description ?? "");
         if (alt == null) return;
 
         var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Description = string.IsNullOrWhiteSpace(alt) ? null : alt.Trim() });
