@@ -53,7 +53,7 @@ public static class LdHelpers
 		NullValueHandling = NullValueHandling.Ignore, DateTimeZoneHandling = DateTimeZoneHandling.Utc
 	};
 
-	private static IEnumerable<string> ASForceArray => ["tag", "attachment", "to", "cc", "bcc", "bto"];
+	private static IEnumerable<string> ASForceArray => ["tag", "attachment", "to", "cc", "bcc", "bto", "alsoKnownAs"];
 
 	private static JToken GetPreloadedDocument(string filename) =>
 		JToken.Parse(AssemblyHelpers.GetEmbeddedResource($"contexts.{filename}"));
