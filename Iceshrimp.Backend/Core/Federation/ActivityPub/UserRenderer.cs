@@ -111,10 +111,10 @@ public class UserRenderer(
 			MovedTo          = user.MovedToUri is not null ? new ASLink(user.MovedToUri) : null,
 			Featured         = new ASOrderedCollection($"{id}/collections/featured"),
 			Avatar = user.Avatar != null
-				? new ASImage { Url = new ASLink(user.Avatar.RawAccessUrl) }
+				? new ASImage { Url = new ASLink(user.Avatar.RawAccessUrl), Description = user.Avatar?.Comment }
 				: null,
 			Banner = user.Banner != null
-				? new ASImage { Url = new ASLink(user.Banner.RawAccessUrl) }
+				? new ASImage { Url = new ASLink(user.Banner.RawAccessUrl), Description = user.Banner?.Comment }
 				: null,
 			Endpoints = new ASEndpoints { SharedInbox = new ASObjectBase($"https://{config.Value.WebDomain}/inbox") },
 			PublicKey = new ASPublicKey
