@@ -52,19 +52,6 @@
         }
         <textarea @ref="Textarea" @bind="NoteDraft.Text" @bind:event="oninput" class="textarea" placeholder="@TextPlaceholder" rows="5"
                   cols="35" autofocus="autofocus" aria-label="note text"></textarea>
-        @if (Preview)
-        {
-            <div class="preview">
-                @if (string.IsNullOrWhiteSpace(NoteDraft.Text))
-                {
-                    <span>@Loc["Nothing to preview"]</span>
-                }
-                else
-                {
-                    <MfmText Text="@NoteDraft.Text" Emoji="EmojiList"/>
-                }
-            </div>
-        }
         <div class="footer">
             <div class="buttons">
                 <button class="btn" title="@Loc["Upload file"]" @onclick="OpenUpload" aria-label="upload">
@@ -88,6 +75,19 @@
                 </button>
             </div>
         </div>
+        @if (Preview)
+        {
+            <div class="preview">
+                @if (string.IsNullOrWhiteSpace(NoteDraft.Text))
+                {
+                    <span>@Loc["Nothing to preview"]</span>
+                }
+                else
+                {
+                    <MfmText Text="@NoteDraft.Text" Emoji="EmojiList"/>
+                }
+            </div>
+        }
         <div @onclick="CloseDialog" class="backdrop"></div>
     </div>
 </dialog>
