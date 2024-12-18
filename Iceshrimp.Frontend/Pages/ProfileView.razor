@@ -22,7 +22,9 @@
     <div class="scroller">
         @if (UserResponse.BannerUrl != null)
         {
-            <img class="banner" src="@UserResponse.BannerUrl" alt="banner for @UserResponse.DisplayName"/>
+            <img class="banner" src="@UserResponse.BannerUrl"
+                 alt="@(UserResponse.BannerAlt ?? Loc["{0}'s banner", UserResponse.DisplayName ?? UserResponse.Username])"
+                 title="@(UserResponse.BannerAlt ?? Loc["{0}'s banner", UserResponse.DisplayName ?? UserResponse.Username])"/>
         }
 
         <div class="profile-card">
