@@ -332,6 +332,34 @@ public class DriveController(
 		return new DriveFolderResponse { Id = folder.Id, Name = folder.Name, ParentId = folder.ParentId };
 	}
 
+	[HttpDelete("folder/{id}")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.Conflict)]
+	public async Task DeleteFolder(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		
+		if (string.IsNullOrWhiteSpace(id))
+			throw GracefulException.BadRequest("Cannot delete root folder");
+
+		var folder = await db.DriveFolders
+		                     .FirstOrDefaultAsync(p => p.Id == id && p.UserId == user.Id)
+		             ?? throw GracefulException.RecordNotFound();
+
+		var driveFiles = await db.DriveFiles
+		                         .CountAsync(p => p.FolderId == id);
+		var driveFolders = await db.DriveFolders
+		                           .CountAsync(p => p.ParentId == id);
+		
+		if (driveFiles != 0 || driveFolders != 0)
+			throw GracefulException.Conflict("Cannot delete a non-empty folder");
+
+		db.Remove(folder);
+		await db.SaveChangesAsync();
+	}
+
 	[HttpPut("folder/{id}/move")]
 	[Authenticate]
 	[Authorize]
