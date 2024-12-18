@@ -76,9 +76,18 @@
 }
 @if (Folder != null && File == null)
 {
-    <div class="drive-entry" @onclick="SelectFolder" @onclick:stopPropagation="true">
+    <div @ref="FolderButton" class="drive-entry" @onclick="SelectFolder" @onclick:stopPropagation="true">
         <Icon Name="Icons.FolderOpen" Size="5em" Pack="IconStyle.Fill"/>
         <span>@Folder.Name</span>
+        <Menu @ref="FolderMenu">
+            <MenuElement Icon="Icons.FolderOpen" OnSelect="OpenFolder">
+                <Text>@Loc["Open"]</Text>
+            </MenuElement>
+            <MenuElement Icon="Icons.CursorText" OnSelect="RenameFolder">
+                <Text>@Loc["Rename"]</Text>
+            </MenuElement>
+            <ClosingBackdrop OnClose="FolderMenu.Close"></ClosingBackdrop>
+        </Menu>
     </div>
 }
 
@@ -86,7 +95,9 @@
     [Parameter] public DriveFileResponse?   File         { get; set; } = null;
     [Parameter] public DriveFolderResponse? Folder       { get; set; } = null;
     private            Menu                 FileMenu     { get; set; } = null!;
+    private            Menu                 FolderMenu   { get; set; } = null!;
     private            ElementReference     FileButton   { get; set; }
+    private            ElementReference     FolderButton { get; set; }
 
     private void SelectFile() => FileMenu.Toggle(FileButton);
 
@@ -114,9 +125,9 @@
     }
 
     private async Task MarkFileNotSensitive() => await MarkFileSensitive(false);
-    
+
     private async Task MarkFileAsSensitive() => await MarkFileSensitive(true);
-    
+
     private async Task SetFileAltText()
     {
         var alt = await Js.InvokeAsync<string?>("prompt", "Set alt text", File!.Description);
@@ -131,7 +142,7 @@
     }
 
     private void OpenFile() => Js.InvokeVoidAsync("open", File!.Url, "_blank");
-    
+
     private void CopyFileLink() => Js.InvokeVoidAsync("navigator.clipboard.writeText", File!.Url);
 
     private async Task DeleteFile()
@@ -140,9 +151,23 @@
         File = null;
         StateHasChanged();
     }
-    
-    private void SelectFolder()
+
+    private void SelectFolder() => FolderMenu.Toggle(FolderButton);
+
+    private async Task RenameFolder()
     {
-        Nav.NavigateTo($"/drive/{Folder!.Id}");
+        if (Folder is not { Id: not null, Name: not null }) return;
+
+        var name = await Js.InvokeAsync<string?>("prompt", "Rename folder", Folder.Name);
+        if (string.IsNullOrWhiteSpace(name)) return;
+
+        var res = await Api.Drive.UpdateFolderAsync(Folder.Id, name.Trim());
+        if (res != null)
+        {
+            Folder.Name = res.Name;
+            StateHasChanged();
+        }
     }
+    
+    private void OpenFolder() => Nav.NavigateTo($"/drive/{Folder!.Id}");
 }
