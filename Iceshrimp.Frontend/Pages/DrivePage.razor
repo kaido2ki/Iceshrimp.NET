@@ -31,6 +31,9 @@
     }
     @if (_state == State.Loaded && Folder is not null)
     {
+        <span class="action btn" @onclick="CreateFolder" title="@Loc["Create folder"]">
+            <Icon Name="Icons.FolderPlus"/>
+        </span>
         <span class="action btn" @onclick="OpenUpload" title="@Loc["Upload file"]">
             <Icon Name="Icons.UploadSimple"/>
         </span>
@@ -124,6 +127,26 @@
     private void NavigateToParent()
     {
         Nav.NavigateTo(Folder?.ParentId != null ? $"/drive/{Folder.ParentId}" : "/drive");
+    }
+
+    private async Task CreateFolder()
+    {
+        var name = await Js.InvokeAsync<string?>("prompt", "Create folder");
+        if (string.IsNullOrWhiteSpace(name)) return;
+
+        try
+        {
+            var res = await Api.Drive.CreateFolderAsync(new DriveFolderRequest { Name = name, ParentId = Folder!.Id });
+            if (res != null)
+            {
+                Folder.Folders.Add(res);
+                StateHasChanged();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Js.InvokeVoidAsync("alert", e.Response.Message);
+        }
     }
 
     // The <InputFile> Component is hidden, and triggered by a sepperate button.
