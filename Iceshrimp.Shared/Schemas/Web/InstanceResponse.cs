@@ -6,6 +6,7 @@ public class InstanceResponse
     public required string        WebDomain     { get; set; }
     public required Registrations Registration  { get; set; } 
     public required string?       Name          { get; set; }
+    public required Limitations   Limits        { get; set; }
 }
 
 public class StaffResponse
@@ -19,4 +20,9 @@ public enum Registrations
     Closed = 0,
     Invite = 1,
     Open   = 2
+}
+
+public class Limitations
+{
+    public required int NoteLength { get; set; }
 }

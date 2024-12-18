@@ -30,12 +30,15 @@ public class InstanceController(
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<InstanceResponse> GetInfo()
 	{
+		var limits = new Limitations { NoteLength = instanceConfig.Value.CharacterLimit };
+
 		return new InstanceResponse
 		{
 			AccountDomain = instanceConfig.Value.AccountDomain,
 			WebDomain     = instanceConfig.Value.WebDomain,
 			Registration  = (Registrations)securityConfig.Value.Registrations,
-			Name          = await meta.GetAsync(MetaEntity.InstanceName)
+			Name          = await meta.GetAsync(MetaEntity.InstanceName),
+			Limits        = limits
 		};
 	}
 
