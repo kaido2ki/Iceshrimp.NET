@@ -43,6 +43,12 @@
         }
         <span>@File.Filename</span>
         <Menu @ref="FileMenu">
+            <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenFile">
+                <Text>@Loc["Open"]</Text>
+            </MenuElement>
+            <MenuElement Icon="Icons.Share" OnSelect="CopyFileLink">
+                <Text>@Loc["Copy link"]</Text>
+            </MenuElement>
             <MenuElement Icon="Icons.CursorText" OnSelect="RenameFile">
                 <Text>@Loc["Rename"]</Text>
             </MenuElement>
@@ -60,12 +66,6 @@
             }
             <MenuElement Icon="Icons.ClosedCaptioning" OnSelect="SetFileAltText">
                 <Text>@Loc["Set alt text"]</Text>
-            </MenuElement>
-            <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenFile">
-                <Text>@Loc["Open"]</Text>
-            </MenuElement>
-            <MenuElement Icon="Icons.Share" OnSelect="CopyFileLink">
-                <Text>@Loc["Copy link"]</Text>
             </MenuElement>
             <MenuElement Icon="Icons.Trash" OnSelect="DeleteFile">
                 <Text>@Loc["Delete"]</Text>
