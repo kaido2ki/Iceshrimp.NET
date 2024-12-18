@@ -26,9 +26,9 @@
     {
         <div class="section">
             <h3>@Loc["Banner"]</h3>
-            @if (!string.IsNullOrEmpty(BannerUrl))
+            @if (Banner != null)
             {
-                <img class="banner" src="@BannerUrl" alt="banner"/>
+                <img class="banner" src="@Banner.Url" alt="@Banner.Description" title="@Banner.Description"/>
                 <div>
                     <input type="checkbox" id="delete-banner" @bind="@DelBanner">
                     <label for="delete-banner">@Loc["Remove Banner"]</label>
@@ -38,9 +38,9 @@
         </div>
         <div class="section">
             <h3>@Loc["Avatar"]</h3>
-            @if (!string.IsNullOrEmpty(AvatarUrl))
+            @if (Avatar != null)
             {
-                <img class="avatar" src="@AvatarUrl" alt="avatar"/>
+                <img class="avatar" src="@Avatar.Url" alt="@Avatar.Description" title="@Avatar.Description"/>
                 <div>
                     <input type="checkbox" id="delete-avatar" @bind="@DelAvatar">
                     <label for="delete-avatar">@Loc["Remove Avatar"]</label>
@@ -138,17 +138,18 @@
     private string            FieldName   { get; set; } = "";
     private string            FieldValue  { get; set; } = "";
     private StateButton       SaveButton  { get; set; } = null!;
-    private IBrowserFile?     AvatarFile  { get; set; }
-    private string?           AvatarUrl   { get; set; }
-    private bool              DelAvatar   { get; set; }
-    private IBrowserFile?     BannerFile  { get; set; }
-    private string?           BannerUrl   { get; set; }
-    private bool              DelBanner   { get; set; }
+    private IBrowserFile?     AvatarFile  { get; set; } = null;
+    private bool              DelAvatar   { get; set; } = false;
+    private IBrowserFile?     BannerFile  { get; set; } = null;
+    private bool              DelBanner   { get; set; } = false;
     private DateTime          Birthday    { get; set; } = DateTime.Now;
-    private bool              SetBirthday { get; set; }
+    private bool              SetBirthday { get; set; } = false;
     private ElementReference  Description { get; set; }
     private ElementReference  EmojiButton { get; set; }
-    
+
+    private DriveFileResponse? Avatar { get; set; }
+    private DriveFileResponse? Banner { get; set; }
+
     private IJSObjectReference _module = null!;
 
     protected override async Task OnInitializedAsync()
@@ -163,9 +164,10 @@
                 Birthday    = DateTime.Parse(UserProfile.Birthday);
                 SetBirthday = true;
             }
-            State       = State.Loaded;
-            AvatarUrl   = await Api.Profile.GetAvatarUrlAsync();
-            BannerUrl   = await Api.Profile.GetBannerUrlAsync();
+
+            State  = State.Loaded;
+            Avatar = await Api.Profile.GetAvatarAsync();
+            Banner = await Api.Profile.GetBannerAsync();
         }
         catch (ApiException e)
         {
