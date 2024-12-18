@@ -11,7 +11,9 @@ public class UserResponse : IIdentifiable
 	public required string? Host            { get; set; }
 	public required string? DisplayName     { get; set; }
 	public required string? AvatarUrl       { get; set; }
+	public          string? AvatarAlt       { get; set; }
 	public required string? BannerUrl       { get; set; }
+	public          string? BannerAlt       { get; set; }
 	public required string? InstanceName    { get; set; }
 	public required string? InstanceIconUrl { get; set; }
 
