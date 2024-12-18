@@ -471,9 +471,9 @@ public class UserService(
 	private async Task<Func<Task>> ResolveAvatarAndBannerAsync(User user, ASActor actor)
 	{
 		var avatar = await driveSvc.StoreFileAsync(actor.Avatar?.Url?.Link, user, actor.Avatar?.Sensitive ?? false,
-		                                           logExisting: false);
+		                                           actor.Avatar?.Description, logExisting: false);
 		var banner = await driveSvc.StoreFileAsync(actor.Banner?.Url?.Link, user, actor.Banner?.Sensitive ?? false,
-		                                           logExisting: false);
+		                                           actor.Banner?.Description, logExisting: false);
 
 		var prevAvatarId = user.AvatarId;
 		var prevBannerId = user.BannerId;
