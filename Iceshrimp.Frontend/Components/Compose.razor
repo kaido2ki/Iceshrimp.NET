@@ -23,7 +23,7 @@
                 <Icon Name="Icons.X"/>
             </button>
             <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
-            <StateButton OnClick="SendNote" @ref="SendButton" ExtraClasses="post-btn" AriaLabel="post">
+            <StateButton OnClick="SendNote" @ref="SendButton" ExtraClasses="post-btn" AriaLabel="post" Disabled="@(NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length) < 0)">
                 <Initial>
                     @Loc["ComposeNote"]<Icon Name="Icons.PaperPlaneRight"/>
                 </Initial>
@@ -46,7 +46,7 @@
         }
         @if (NoteDraft.Cw != null)
         {
-            <input @bind="NoteDraft.Cw" class="input cw-field" placeholder="Content Warning"
+            <input @bind="NoteDraft.Cw" @bind:event="oninput" class="input cw-field" placeholder="Content Warning"
                    aria-label="content warning"/>
             <hr class="separator"/>
         }
@@ -69,6 +69,7 @@
                 </button>
             </div>
             <div class="buttons">
+                <span title="@Loc["Character limit"]" aria-label="character limit">@(NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length))</span>
                 <button class="btn" title="@Loc["Preview"]" @onclick="() => Preview = !Preview"
                         aria-label="preview">
                     <Icon Name="Icons.Binoculars" Size="1.3rem"></Icon>
@@ -105,6 +106,7 @@
     private StateButton              SendButton      { get; set; } = null!;
     private bool                     Preview         { get; set; }
     private List<EmojiResponse>      EmojiList       { get; set; } = [];
+    private int                      NoteLength      { get; set; }
 
     private NoteCreateRequest NoteDraft { get; set; } = new()
     {
@@ -311,6 +313,10 @@
             _module = await Js.InvokeAsync<IJSObjectReference>("import",
                                                                "./Components/Compose.razor.js");
             EmojiList = await EmojiService.GetEmojiAsync();
+            
+            var instance = await MetadataService.Instance.Value;
+            NoteLength = instance.Limits.NoteLength;
+            
             ComposeService.ComposeDialog = this;
         }
     }

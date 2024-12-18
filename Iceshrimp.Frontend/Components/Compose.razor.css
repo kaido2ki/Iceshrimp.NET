@@ -89,6 +89,13 @@
     }
 }
 
+::deep {
+    .post-btn[disabled] {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
 .btn {
     padding: 0.5rem 0.75rem;
     height: max-content;
