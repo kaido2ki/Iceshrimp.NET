@@ -9,6 +9,12 @@
     color: var(--font-color);
 }
 
+.compose .preview {
+    margin: 1rem 0.5em 0.5rem;
+    width: 100%;
+    overflow: hidden;
+}
+
 .dialog {
     width: 100vw;
     height: 100vh;
@@ -34,6 +40,13 @@
 }
 
 .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.2rem;
+}
+
+.footer .buttons {
     display: flex;
     align-items: center;
     gap: 0.2rem;

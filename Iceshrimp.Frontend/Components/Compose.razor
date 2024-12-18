@@ -9,12 +9,13 @@
 @inject IJSRuntime                     Js
 @inject ApiService                     ApiService
 @inject ComposeService                 ComposeService
+@inject EmojiService                   EmojiService
 @inject SessionService                 SessionService
 @inject MetadataService                MetadataService
 @inject IStringLocalizer<Localization> Loc;
 @inject GlobalComponentSvc             GlobalComponentSvc
 @inject MessageService                 MessageService
-@inject SettingsService Settings;
+@inject SettingsService                Settings;
 <dialog class="dialog" @ref="Dialog">
     <div class="compose">
         <div class="header">
@@ -37,7 +38,7 @@
                 </Failed>
             </StateButton>
         </div>
-        @if (ReplyOrQuote != null)
+        @if (ReplyOrQuote != null && !Preview)
         {
             <div class="reply-or-quote">
                 <NoteComponent Note="ReplyOrQuote" AsQuote="true"/>
@@ -49,21 +50,42 @@
                    aria-label="content warning"/>
             <hr class="separator"/>
         }
-        <textarea @ref="Textarea" @bind="NoteDraft.Text" class="textarea" placeholder="@TextPlaceholder" rows="5"
+        <textarea @ref="Textarea" @bind="NoteDraft.Text" @bind:event="oninput" class="textarea" placeholder="@TextPlaceholder" rows="5"
                   cols="35" autofocus="autofocus" aria-label="note text"></textarea>
+        @if (Preview)
+        {
+            <div class="preview">
+                @if (string.IsNullOrWhiteSpace(NoteDraft.Text))
+                {
+                    <span>@Loc["Nothing to preview"]</span>
+                }
+                else
+                {
+                    <MfmText Text="@NoteDraft.Text" Emoji="EmojiList"/>
+                }
+            </div>
+        }
         <div class="footer">
-            <button class="btn" title="@Loc["Upload file"]" @onclick="OpenUpload" aria-label="upload">
-                <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
-            </button>
-            <button class="btn" title="@Loc["Content warning"]" @onclick="ToggleCw" aria-label="content warning">
-                <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
-            </button>
-            <button @ref="EmojiButton" class="btn" title="@Loc["Emoji"]" @onclick="ToggleEmojiPicker"
-                    aria-label="emoji">
-                <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
-            </button>
-            <div class="file-input">
-                <InputFile @ref="UploadInput" OnChange="Upload">Upload!</InputFile>
+            <div class="buttons">
+                <button class="btn" title="@Loc["Upload file"]" @onclick="OpenUpload" aria-label="upload">
+                    <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
+                </button>
+                <div class="file-input">
+                    <InputFile @ref="UploadInput" OnChange="Upload">Upload!</InputFile>
+                </div>
+                <button class="btn" title="@Loc["Content warning"]" @onclick="ToggleCw" aria-label="content warning">
+                    <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
+                </button>
+                <button @ref="EmojiButton" class="btn" title="@Loc["Emoji"]" @onclick="ToggleEmojiPicker"
+                        aria-label="emoji">
+                    <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
+                </button>
+            </div>
+            <div class="buttons">
+                <button class="btn" title="@Loc["Preview"]" @onclick="() => Preview = !Preview"
+                        aria-label="preview">
+                    <Icon Name="Icons.Binoculars" Size="1.3rem"></Icon>
+                </button>
             </div>
         </div>
         <div @onclick="CloseDialog" class="backdrop"></div>
@@ -81,6 +103,8 @@
     private ElementReference         Textarea        { get; set; }
     private ElementReference         EmojiButton     { get; set; }
     private StateButton              SendButton      { get; set; } = null!;
+    private bool                     Preview         { get; set; }
+    private List<EmojiResponse>      EmojiList       { get; set; } = [];
 
     private NoteCreateRequest NoteDraft { get; set; } = new()
     {
@@ -286,6 +310,7 @@
         {
             _module = await Js.InvokeAsync<IJSObjectReference>("import",
                                                                "./Components/Compose.razor.js");
+            EmojiList = await EmojiService.GetEmojiAsync();
             ComposeService.ComposeDialog = this;
         }
     }
