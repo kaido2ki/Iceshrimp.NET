@@ -39,6 +39,8 @@ public class User : IEntity
 
 	[Column("lastFetchedAt")] public DateTime? LastFetchedAt { get; set; }
 
+	[Column("outboxFetchedAt")] public DateTime? OutboxFetchedAt { get; set; }
+
 	[NotMapped]
 	[Projectable]
 	public bool NeedsUpdate =>
@@ -165,6 +167,13 @@ public class User : IEntity
 	[Column("inbox")]
 	[StringLength(512)]
 	public string? Inbox { get; set; }
+
+	/// <summary>
+	///     The outbox URL of the User. It will be null if the origin of the user is local, or if no outbox is present.
+	/// </summary>
+	[Column("outbox")]
+	[StringLength(512)]
+	public string? Outbox { get; set; }
 
 	/// <summary>
 	///     The sharedInbox URL of the User. It will be null if the origin of the user is local.

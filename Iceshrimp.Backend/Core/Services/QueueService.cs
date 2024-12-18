@@ -26,6 +26,7 @@ public class QueueService(
 	public readonly  InboxQueue              InboxQueue          = new(queueConcurrency.Value.Inbox);
 	public readonly  PreDeliverQueue         PreDeliverQueue     = new(queueConcurrency.Value.PreDeliver);
 	public readonly  BackfillQueue           BackfillQueue       = new(queueConcurrency.Value.Backfill);
+	public readonly  BackfillUserQueue       BackfillUserQueue   = new(queueConcurrency.Value.BackfillUser);
 
 	public IEnumerable<string> QueueNames => _queues.Select(p => p.Name);
 
@@ -35,6 +36,9 @@ public class QueueService(
 
 		if (backfill.Value.Replies.Enabled)
 			_queues.Add(BackfillQueue);
+
+		if (backfill.Value.User.Enabled)
+			_queues.Add(BackfillUserQueue);
 
 		var tokenSource      = new CancellationTokenSource();
 		var queueTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token, lifetime.ApplicationStopping);

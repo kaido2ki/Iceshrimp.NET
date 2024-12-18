@@ -332,6 +332,7 @@ public sealed class Config
 		[Range(1, int.MaxValue)] public int PreDeliver     { get; init; } = 4;
 		[Range(1, int.MaxValue)] public int BackgroundTask { get; init; } = 4;
 		[Range(1, int.MaxValue)] public int Backfill       { get; init; } = 10;
+		[Range(1, int.MaxValue)] public int BackfillUser   { get; init; } = 10;
 	}
 
 	public sealed class QueueSection
@@ -348,6 +349,7 @@ public sealed class Config
 	public sealed class BackfillSection
 	{
 		public BackfillRepliesSection Replies { get; init; } = new();
+		public BackfillUserSection    User    { get; init; } = new();
 	}
 
 	public sealed class BackfillRepliesSection
@@ -371,6 +373,22 @@ public sealed class Config
 
 		public TimeSpan NewNoteDelayTimeSpan = TimeSpan.FromMinutes(5);
 		public TimeSpan RefreshAfterTimeSpan = TimeSpan.FromMinutes(15);
+	}
+
+	public sealed class BackfillUserSection
+	{
+		public bool Enabled { get; init; } = false;
+
+		[Range(0, int.MaxValue)] public int MaxItems { get; init; } = 100;
+
+		public string? RefreshAfter
+		{
+			get => RefreshAfterTimeSpan.ToString();
+			init => RefreshAfterTimeSpan =
+				ParseNaturalDuration(value, "refresh outbox after duration") ?? TimeSpan.FromDays(30);
+		}
+
+		public TimeSpan RefreshAfterTimeSpan = TimeSpan.FromDays(30);
 	}
 
 	private static readonly char[] Digits = [..Enumerable.Range(0, 10).Select(p => p.ToString()[0])];

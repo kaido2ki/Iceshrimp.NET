@@ -23,6 +23,7 @@ namespace Iceshrimp.Backend.Core.Services;
 public class UserService(
 	IOptionsSnapshot<Config.SecuritySection> security,
 	IOptions<Config.InstanceSection> instance,
+	IOptionsSnapshot<Config.BackfillSection> backfillConfig,
 	ILogger<UserService> logger,
 	DatabaseContext db,
 	ActivityPub.ActivityFetcherService fetchSvc,
@@ -174,6 +175,7 @@ public class UserService(
 			AlsoKnownAs         = actor.AlsoKnownAs?.Where(p => p.Link != null).Select(p => p.Link!).ToList(),
 			IsExplorable        = actor.IsDiscoverable ?? false,
 			Inbox               = actor.Inbox?.Link,
+			Outbox              = actor.Outbox?.Id,
 			SharedInbox         = actor.SharedInbox?.Link ?? actor.Endpoints?.SharedInbox?.Id,
 			FollowersUri        = actor.Followers?.Id,
 			Uri                 = actor.Id,
@@ -282,6 +284,7 @@ public class UserService(
 
 		user.LastFetchedAt = DateTime.UtcNow; // If we don't do this we'll overwrite the value with the previous one
 		user.Inbox         = actor.Inbox?.Link;
+		user.Outbox        = actor.Outbox?.Id;
 		user.SharedInbox   = actor.SharedInbox?.Link ?? actor.Endpoints?.SharedInbox?.Id;
 		user.DisplayName   = actor.DisplayName?.ReplaceLineEndings("\n").Trim();
 		user.IsLocked      = actor.IsLocked ?? false;
@@ -873,6 +876,35 @@ public class UserService(
 				await deliverSvc.DeliverToAsync(activity, followee, follower);
 			}
 		}
+	}
+
+	public async Task EnqueueBackfillTaskAsync(User user)
+	{
+		var cfg = backfillConfig.Value.User;
+
+		// return immediately if backfilling is not enabled
+		if (!cfg.Enabled) return;
+
+		// don't try to schedule a backfill for local users
+		if (user.Host == null) return;
+
+		// we don't need to backfill anyone we have followers for since we'll get their posts delivered to us
+		var needBackfill = await db.Users
+		                           .AnyAsync(u => u.Id == user.Id
+		                                          && !u.Followers.Any()
+		                                          && u.Outbox != null
+		                                          && (u.OutboxFetchedAt == null || u.OutboxFetchedAt <= DateTime.UtcNow - cfg.RefreshAfterTimeSpan));
+
+		// only queue if the user's backfill timestamp got updated. if it didn't, it means this user doesn't need backfilling
+		// (or the thread doesn't exist, which shouldn't be possible)
+		if (!needBackfill) return;
+
+		var jobData = new BackfillUserJobData
+		{
+			UserId = user.Id
+		};
+
+		await queueSvc.BackfillUserQueue.EnqueueAsync(jobData, mutex: $"backfill-user:{user.Id}");
 	}
 
 	/// <remarks>

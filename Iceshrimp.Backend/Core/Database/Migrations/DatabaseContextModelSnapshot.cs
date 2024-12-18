@@ -4175,6 +4175,15 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("notesCount")
                         .HasComment("The count of notes.");
 
+                    b.Property<string>("Outbox")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("outbox");
+
+                    b.Property<DateTime?>("OutboxFetchedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("outboxFetchedAt");
+
                     b.Property<string>("SharedInbox")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
