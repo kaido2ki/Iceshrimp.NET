@@ -27,4 +27,7 @@ internal class DriveControllerModel(ApiClient api)
 
 	public Task<DriveFolderResponse?> UpdateFolderAsync(string id, string name) =>
 		api.CallNullableAsync<DriveFolderResponse>(HttpMethod.Put, $"/drive/folder/{id}", QueryString.Create("name", name));
+
+	public Task DeleteFolderAsync(string id) =>
+		api.CallNullableAsync(HttpMethod.Delete, $"/drive/folder/{id}");
 }

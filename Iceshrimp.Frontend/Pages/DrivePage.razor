@@ -34,6 +34,12 @@
         <span class="action btn" @onclick="OpenUpload" title="@Loc["Upload file"]">
             <Icon Name="Icons.UploadSimple"/>
         </span>
+        @if (Folder is { Id: not null, Files: [], Folders: [] })
+        {
+            <span class="action btn" @onclick="DeleteFolder" title="@Loc["Delete folder"]">
+                <Icon Name="Icons.FolderMinus"/>
+            </span>
+        }
     }
 </SectionContent>
 
@@ -132,5 +138,13 @@
         var res = Folder?.Id != null ? await Api.Drive.UploadFileToFolderAsync(e.File, Folder.Id) : await Api.Drive.UploadFileAsync(e.File);
         Folder!.Files.Add(res);
         StateHasChanged();
+    }
+
+    private async Task DeleteFolder()
+    {
+        if (Folder is not { Id: not null, Files: [], Folders: [] }) return;
+
+        await Api.Drive.DeleteFolderAsync(Folder.Id);
+        NavigateToParent();
     }
 }
