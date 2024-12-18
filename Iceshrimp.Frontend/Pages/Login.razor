@@ -44,7 +44,7 @@
         @foreach(var user in SessionService.Users.Values)
         {
             <div class="user" tabindex="0" @onclick="() => LoginUser(user)">
-                <img class="avatar" src="@user.AvatarUrl"/>
+                <UserAvatar User="@user" Size="4rem"/>
                 <div class="username"><UserDisplayName User="user"></UserDisplayName></div>
             </div>
         }

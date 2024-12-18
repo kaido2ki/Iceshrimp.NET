@@ -42,13 +42,6 @@
     width: 100%;
 }
 
-.user-avatar {
-    border-radius: 8px;
-    object-fit: cover;
-    width: 3em;
-    height: 3em;
-}
-
 .note-container {
     display: flex;
     width: 100%;

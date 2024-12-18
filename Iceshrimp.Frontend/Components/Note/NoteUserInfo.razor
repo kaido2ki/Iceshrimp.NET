@@ -4,7 +4,7 @@
 
 @if (Indented == false)
 {
-    <img @onclick="OpenProfile" class="user-avatar" src="@(User.AvatarUrl ?? $"/identicon/{User.Id}")" alt="@(User.DisplayName ?? User.Username)" role="link"/>
+    <UserAvatar User="@User" OnClick="@OpenProfile" Role="link"/>
 }
 <div class="name-section">
     <span class="display-name"><UserDisplayName User="@User"/></span>

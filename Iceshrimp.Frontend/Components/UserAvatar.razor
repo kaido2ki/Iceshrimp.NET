@@ -1,0 +1,25 @@
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Localization> Loc;
+
+<img class="avatar"
+     style="--size: @Size;"
+     src="@(LoadError ? $"/identicon/{User.Id}" : User.AvatarUrl ?? $"/identicon/{User.Id}")"
+     alt="@(User.AvatarAlt ?? FallbackAlt())"
+     title="@(Title ? User.AvatarAlt ?? FallbackAlt() : "")"
+     role="@Role"
+     loading="lazy"
+     @onclick="OnClick"
+     @onerror="() => LoadError = true"/>
+
+@code {
+    [Parameter, EditorRequired] public required UserResponse  User      { get; set; }
+    [Parameter]                 public          bool          Title     { get; set; }
+    [Parameter]                 public          string        Size      { get; set; } = "3em";
+    [Parameter]                 public          EventCallback OnClick   { get; set; }
+    [Parameter]                 public          string?       Role      { get; set; }
+    private                                     bool          LoadError { get; set; }
+
+    private string FallbackAlt() => Loc["{0}'s avatar", User.DisplayName ?? User.Username];
+}

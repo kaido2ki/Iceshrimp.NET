@@ -14,13 +14,6 @@
     align-items: center;
 }
 
-.user-avatar {
-    border-radius: 8px;
-    object-fit: cover;
-    width: 3em;
-    height: 3em;
-}
-
 .note-container {
     display: flex;
     max-width: 45rem;

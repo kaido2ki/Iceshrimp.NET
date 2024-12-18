@@ -34,11 +34,7 @@
         margin: 0.75rem 0.25rem;
         cursor: pointer;
         
-        .icon {
-            border-radius: 8px;
-            object-fit: cover;
-            width: 3em;
-            height: 3em;
+        .avatar {
             align-self: center;
             margin-right: 0.5rem;
         }

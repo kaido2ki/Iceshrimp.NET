@@ -86,10 +86,6 @@
     padding: 0.5rem;
     cursor: pointer;
     align-items: center;
-    .avatar {
-        height: 4rem;
-        border-radius: 0.5rem;
-    }
 
     .username {
         margin-top: 0.5rem;

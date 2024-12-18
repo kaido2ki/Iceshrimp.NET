@@ -19,13 +19,6 @@
     align-items: center;
 }
 
-.user-avatar {
-    border-radius: 8px;
-    object-fit: cover;
-    width: 3em;
-    height: 3em;
-}
-
 .ancestor-wrapper {
     display: flex
 }

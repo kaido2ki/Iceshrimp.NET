@@ -70,13 +70,6 @@
     border-top-right-radius: 0;
 }
 
-.avatar {
-    border-radius: 8px;
-    object-fit: cover;
-    width: 5em;
-    height: 5em;
-}
-
 .banner {
     display: block;
     width: 100%;

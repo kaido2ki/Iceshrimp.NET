@@ -14,7 +14,7 @@
             @if (_indented)
             {
                 <div class="note-indent">
-                    <img class="user-avatar" src="@Note.User.AvatarUrl"/>
+                    <UserAvatar User="@Note.User"/>
                     @if (Note.Descendants?.Count > 0)
                     {
                         <Line></Line>

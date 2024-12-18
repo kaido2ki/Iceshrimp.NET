@@ -22,7 +22,7 @@
     vertical-align: middle;
 }
 
-.user-avatar + .notification-body {
+.avatar + .notification-body {
     .notification-icon {
         position: absolute;
         top: 3em;
@@ -55,11 +55,7 @@
     margin-top: 1rem;
 }
 
-.user-avatar {
-    border-radius: 8px;
-    object-fit: cover;
-    width: 3em;
-    height: 3em;
+::deep .notification-header .avatar {
     margin-right: 0.75em;
 }
 

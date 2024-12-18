@@ -11,7 +11,7 @@
         @foreach (var el in RenotedBy)
         {
             <div @onclick="() => OpenProfile(el.Username, el.Host)" class="detail-entry">
-                <img class="icon" src="@el.AvatarUrl"/>
+                <UserAvatar User="@el"/>
                 <div class="name-section">
                     <div class="displayname"><UserDisplayName User="@el"/></div>
                     <div class="username">@@@el.Username@(el.Host != null ? $"@{el.Host}" : "")</div>

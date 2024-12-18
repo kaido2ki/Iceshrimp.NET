@@ -66,10 +66,3 @@
     padding-top: 0.5rem;
     margin-top: 0.5rem;
 }
-
-.avatar {
-    border-radius: 8px;
-    object-fit: cover;
-    width: 5em;
-    height: 5em;
-}

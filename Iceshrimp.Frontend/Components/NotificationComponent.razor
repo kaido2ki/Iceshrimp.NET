@@ -13,7 +13,7 @@
         <div class="notification-header">
             @if (NotificationResponse is { User: not null })
             {
-                <img @onclick="OpenProfile" class="user-avatar" src="@NotificationResponse.User.AvatarUrl"/>
+                <UserAvatar User="@NotificationResponse.User" OnClick="@OpenProfile"/>
             }
 
             <div class="notification-body">
