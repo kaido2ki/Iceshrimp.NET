@@ -2,12 +2,14 @@ using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web;
@@ -21,7 +23,8 @@ namespace Iceshrimp.Backend.Controllers.Web;
 public class ProfileController(
 	IOptions<Config.InstanceSection> instance,
 	UserService userSvc,
-	DriveService driveSvc
+	DriveService driveSvc,
+	DatabaseContext db
 ) : ControllerBase
 {
 	[HttpGet]
@@ -89,10 +92,28 @@ public class ProfileController(
 
 	[HttpGet("avatar")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public string GetAvatarUrl()
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<DriveFileResponse> GetAvatar()
 	{
 		var user = HttpContext.GetUserOrFail();
-		return user.AvatarId != null ? user.GetAvatarUrl(instance.Value) : "";
+
+		var file = await db.Users
+		                   .IncludeCommonProperties()
+		                   .Where(p => p.Id == user.Id)
+		                   .Select(p => p.Avatar)
+		                   .FirstOrDefaultAsync()
+		           ?? throw GracefulException.RecordNotFound();
+
+		return new DriveFileResponse
+		{
+			Id           = file.Id,
+			Url          = file.AccessUrl,
+			ThumbnailUrl = file.ThumbnailAccessUrl,
+			Filename     = file.Name,
+			ContentType  = file.Type,
+			Sensitive    = file.IsSensitive,
+			Description  = file.Comment
+		};
 	}
 
 	[HttpPost("avatar")]
@@ -144,10 +165,28 @@ public class ProfileController(
 
 	[HttpGet("banner")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public string GetBannerUrl()
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<DriveFileResponse> GetBanner()
 	{
 		var user = HttpContext.GetUserOrFail();
-		return user.GetBannerUrl(instance.Value) ?? "";
+
+		var file = await db.Users
+		                   .IncludeCommonProperties()
+		                   .Where(p => p.Id == user.Id)
+		                   .Select(p => p.Banner)
+		                   .FirstOrDefaultAsync()
+		           ?? throw GracefulException.RecordNotFound();
+
+		return new DriveFileResponse
+		{
+			Id           = file.Id,
+			Url          = file.AccessUrl,
+			ThumbnailUrl = file.ThumbnailAccessUrl,
+			Filename     = file.Name,
+			ContentType  = file.Type,
+			Sensitive    = file.IsSensitive,
+			Description  = file.Comment
+		};
 	}
 
 	[HttpPost("banner")]
