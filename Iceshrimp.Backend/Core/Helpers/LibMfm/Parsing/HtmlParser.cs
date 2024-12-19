@@ -47,7 +47,7 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions, ICollection<
 			case "B":
 			case "STRONG":
 			{
-				return $"**{ParseChildren(node)}**";
+				return $"<b>{ParseChildren(node)}</b>";
 			}
 			case "SMALL":
 			{
@@ -56,12 +56,12 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions, ICollection<
 			case "S":
 			case "DEL":
 			{
-				return $"~~{ParseChildren(node)}~~";
+				return $"<s>{ParseChildren(node)}</s>";
 			}
 			case "I":
 			case "EM":
 			{
-				return $"*{ParseChildren(node)}*";
+				return $"<i>{ParseChildren(node)}</i>";
 			}
 			case "PRE":
 			{
