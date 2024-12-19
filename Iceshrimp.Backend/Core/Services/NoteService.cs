@@ -1365,7 +1365,7 @@ public class NoteService(
 
 		var actor = await userResolver.ResolveAsync(attrTo.Id, EnforceUriFlags);
 
-		using (await KeyedLocker.LockAsync(uri))
+		using (await KeyedLocker.LockAsync(fetchedNote.Id))
 		{
 			try
 			{
