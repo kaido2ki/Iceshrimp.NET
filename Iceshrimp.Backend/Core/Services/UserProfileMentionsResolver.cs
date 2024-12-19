@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -107,6 +108,24 @@ public class UserProfileMentionsResolver(
 	[SuppressMessage("ReSharper", "ReturnTypeCanBeEnumerable.Local",
 	                 Justification = "Roslyn inspection says this hurts performance")]
 	private static List<MfmMentionNode> EnumerateMentions(Span<IMfmNode> nodes)
+	{
+		var list = new List<MfmMentionNode>();
+
+		foreach (var node in nodes)
+		{
+			if (node is MfmMentionNode mention)
+				list.Add(mention);
+			else
+				list.AddRange(EnumerateMentions(node.Children));
+		}
+
+		return list;
+	}
+	
+	[SuppressMessage("ReSharper", "ReturnTypeCanBeEnumerable.Local",
+	                 Justification = "Roslyn inspection says this hurts performance")]
+	[OverloadResolutionPriority(1)]
+	private static List<MfmMentionNode> EnumerateMentions(Span<IMfmInlineNode> nodes)
 	{
 		var list = new List<MfmMentionNode>();
 
