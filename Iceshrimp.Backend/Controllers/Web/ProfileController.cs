@@ -127,11 +127,8 @@ public class ProfileController(
 	{
 		var user = HttpContext.GetUserOrFail();
 
-		var file = await db.Users
-		                   .IncludeCommonProperties()
-		                   .Where(p => p.Id == user.Id)
-		                   .Select(p => p.Avatar)
-		                   .FirstOrDefaultAsync()
+		var file = await db.DriveFiles
+		                   .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserAvatar != null)
 		           ?? throw GracefulException.RecordNotFound();
 
 		return new DriveFileResponse
@@ -200,11 +197,8 @@ public class ProfileController(
 	{
 		var user = HttpContext.GetUserOrFail();
 
-		var file = await db.Users
-		                   .IncludeCommonProperties()
-		                   .Where(p => p.Id == user.Id)
-		                   .Select(p => p.Banner)
-		                   .FirstOrDefaultAsync()
+		var file = await db.DriveFiles
+		                   .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserBanner != null)
 		           ?? throw GracefulException.RecordNotFound();
 
 		return new DriveFileResponse

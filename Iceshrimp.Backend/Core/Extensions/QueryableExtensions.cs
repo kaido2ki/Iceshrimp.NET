@@ -714,9 +714,7 @@ public static class QueryableExtensions
 
 	public static IQueryable<User> IncludeCommonProperties(this IQueryable<User> query)
 	{
-		return query.Include(p => p.UserProfile)
-		            .Include(p => p.Avatar)
-		            .Include(p => p.Banner);
+		return query.Include(p => p.UserProfile);
 	}
 
 	public static IQueryable<Bite> IncludeCommonProperties(this IQueryable<Bite> query)
