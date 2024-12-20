@@ -28,6 +28,10 @@ input[type="checkbox"] {
     color: color-mix(in srgb, var(--font-color) 50%, transparent);
 }
 
+.input.alt-text {
+    resize: none;
+}
+
 .avatar {
     border-radius: 8px;
     object-fit: cover;

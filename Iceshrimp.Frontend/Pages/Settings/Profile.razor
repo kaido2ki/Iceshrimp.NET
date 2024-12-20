@@ -35,6 +35,11 @@
                 </div>
             }
             <InputFile class="input" OnChange="OnBannerFileChange" accept="image/*" disabled="@DelBanner"/>
+            @if (Banner != null || BannerFile != null)
+            {
+                <label for="banner-alt">@(BannerFile != null ? Loc["Set alt text for your new banner"] : Loc["Set alt text for your banner"])</label>
+                <textarea class="input alt-text" @bind="BannerAlt" id="banner-alt" rows="3" placeholder="@Loc["Alt text"]" disabled="@DelBanner"></textarea>
+            }
         </div>
         <div class="section">
             <h3>@Loc["Avatar"]</h3>
@@ -47,6 +52,11 @@
                 </div>
             }
             <InputFile class="input" OnChange="OnAvatarFileChange" accept="image/*" disabled="@DelAvatar"/>
+            @if (Avatar != null || AvatarFile != null)
+            {
+                <label for="avatar-alt">@(AvatarFile != null ? Loc["Set alt text for your new avatar"] : Loc["Set alt text for your avatar"])</label>
+                <textarea class="input alt-text" @bind="AvatarAlt" id="avatar-alt" rows="3" placeholder="@Loc["Alt text"]" disabled="@DelAvatar"></textarea>
+            }
         </div>
         <div class="section">
             <h3>@Loc["Display Name"]</h3><input class="input" @bind="@UserProfile.DisplayName"/>
@@ -139,8 +149,10 @@
     private string            FieldValue  { get; set; } = "";
     private StateButton       SaveButton  { get; set; } = null!;
     private IBrowserFile?     AvatarFile  { get; set; } = null;
+    private string?           AvatarAlt   { get; set; }
     private bool              DelAvatar   { get; set; } = false;
     private IBrowserFile?     BannerFile  { get; set; } = null;
+    private string?           BannerAlt   { get; set; }
     private bool              DelBanner   { get; set; } = false;
     private DateTime          Birthday    { get; set; } = DateTime.Now;
     private bool              SetBirthday { get; set; } = false;
@@ -168,6 +180,9 @@
             State  = State.Loaded;
             Avatar = await Api.Profile.GetAvatarAsync();
             Banner = await Api.Profile.GetBannerAsync();
+
+            AvatarAlt = Avatar.Description;
+            BannerAlt = Banner.Description;
         }
         catch (ApiException e)
         {
@@ -193,19 +208,35 @@
         try
         {
             SaveButton.State = StateButton.StateEnum.Loading;
+
             if (!SetBirthday)
                 UserProfile.Birthday = null;
             else
                 UserProfile.Birthday = Birthday.ToString("yyyy-MM-dd");
-            await Api.Profile.UpdateProfileAsync(UserProfile);
+
             if (DelAvatar)
+            {
                 await Api.Profile.DeleteAvatarAsync();
+                AvatarAlt = null;
+            }
             else if (AvatarFile != null)
-                await Api.Profile.UpdateAvatarAsync(AvatarFile);
+            {
+                await Api.Profile.UpdateAvatarAsync(AvatarFile, AvatarAlt);
+                AvatarAlt = null;
+            }
+
             if (DelBanner)
+            {
                 await Api.Profile.DeleteBannerAsync();
+                BannerAlt = null;
+            }
             else if (BannerFile != null)
-                await Api.Profile.UpdateBannerAsync(BannerFile);
+            {
+                await Api.Profile.UpdateBannerAsync(BannerFile, BannerAlt);
+                BannerAlt = null;
+            }
+
+            await Api.Profile.UpdateProfileAsync(UserProfile, AvatarAlt, BannerAlt);
             SaveButton.State = StateButton.StateEnum.Success;
         }
         catch (ApiException e)
@@ -218,11 +249,13 @@
     private void OnAvatarFileChange(InputFileChangeEventArgs e)
     {
         AvatarFile = e.GetMultipleFiles().First(p => p.ContentType.StartsWith("image/"));
+        AvatarAlt  = "";
     }
 
     private void OnBannerFileChange(InputFileChangeEventArgs e)
     {
         BannerFile = e.GetMultipleFiles().First(p => p.ContentType.StartsWith("image/"));
+        BannerAlt  = "";
     }
 
     private void ToggleEmojiPicker()
