@@ -53,9 +53,7 @@ public class ProfileController(
 	[HttpPut]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResults(HttpStatusCode.OK)]
-	public async Task UpdateProfile(
-		UserProfileEntity newProfile, [FromQuery] string? newAvatarAlt, [FromQuery] string? newBannerAlt
-	)
+	public async Task UpdateProfile(UserProfileEntity newProfile)
 	{
 		var     user     = HttpContext.GetUserOrFail();
 		var     profile  = user.UserProfile ?? throw new Exception("Local user must have profile");
@@ -87,7 +85,7 @@ public class ProfileController(
 		user.IsCat      = newProfile.IsCat;
 		user.SpeakAsCat = newProfile is { SpeakAsCat: true, IsCat: true };
 
-		if (newAvatarAlt != null)
+		if (newProfile.AvatarAlt != null)
 		{
 			var avatar = await db.DriveFiles
 			                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserAvatar != null);
@@ -95,10 +93,10 @@ public class ProfileController(
 			if (avatar != null)
 			{
 				user.Avatar         = avatar;
-				user.Avatar.Comment = string.IsNullOrWhiteSpace(newAvatarAlt) ? null : newAvatarAlt.Trim();
+				user.Avatar.Comment = string.IsNullOrWhiteSpace(newProfile.AvatarAlt) ? null : newProfile.AvatarAlt.Trim();
 			}
 		}
-		if (newBannerAlt != null)
+		if (newProfile.BannerAlt != null)
 		{
 			var banner = await db.DriveFiles
 			                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserBanner != null);
@@ -106,7 +104,7 @@ public class ProfileController(
 			if (banner != null)
 			{
 				user.Banner         = banner;
-				user.Banner.Comment = string.IsNullOrWhiteSpace(newBannerAlt) ? null : newBannerAlt.Trim();
+				user.Banner.Comment = string.IsNullOrWhiteSpace(newProfile.BannerAlt) ? null : newProfile.BannerAlt.Trim();
 			}
 		}
 		var prevAvatarId = user.AvatarId;
