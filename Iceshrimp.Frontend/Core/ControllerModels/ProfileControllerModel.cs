@@ -10,12 +10,8 @@ internal class ProfileControllerModel(ApiClient api)
 	public Task<UserProfileEntity> GetProfileAsync() =>
 		api.CallAsync<UserProfileEntity>(HttpMethod.Get, "/profile");
 
-	public Task UpdateProfileAsync(UserProfileEntity request, string? newAvatarAlt, string? newBannerAlt) =>
-		api.CallAsync(HttpMethod.Put, "/profile",
-		              QueryString.Create(new Dictionary<string, string?>
-		              {
-			              { "newAvatarAlt", newAvatarAlt }, { "newBannerAlt", newBannerAlt }
-		              }), request);
+	public Task UpdateProfileAsync(UserProfileEntity request) =>
+		api.CallAsync(HttpMethod.Put, "/profile", data: request);
 
 	public Task<DriveFileResponse> GetAvatarAsync() =>
 		api.CallAsync<DriveFileResponse>(HttpMethod.Get, "/profile/avatar");
