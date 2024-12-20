@@ -99,7 +99,6 @@ public class ProfileController(
 			{
 				user.Avatar         = avatar;
 				user.Avatar.Comment = string.IsNullOrWhiteSpace(newAvatarAlt) ? null : newAvatarAlt.Trim();
-				Console.WriteLine($"{newAvatarAlt} {user.Avatar.Comment}");
 			}
 		}
 		if (newBannerAlt != null)
@@ -114,7 +113,6 @@ public class ProfileController(
 			{
 				user.Banner         = banner;
 				user.Banner.Comment = string.IsNullOrWhiteSpace(newBannerAlt) ? null : newBannerAlt.Trim();
-				Console.WriteLine($"{newBannerAlt} {user.Banner.Comment}");
 			}
 		}
 		var prevAvatarId = user.AvatarId;
