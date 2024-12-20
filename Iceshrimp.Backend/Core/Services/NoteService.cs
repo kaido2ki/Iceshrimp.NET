@@ -1601,6 +1601,14 @@ public class NoteService(
 			await db.UserNotePins.AddAsync(pin);
 			await db.SaveChangesAsync();
 
+			var avatar = await db.DriveFiles
+			                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserAvatar != null);
+			var banner = await db.DriveFiles
+			                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserBanner != null);
+
+			user.Avatar = avatar;
+			user.Banner = banner;
+
 			var activity = activityRenderer.RenderUpdate(await userRenderer.RenderAsync(user));
 			await deliverSvc.DeliverToFollowersAsync(activity, user, []);
 		}
@@ -1612,6 +1620,14 @@ public class NoteService(
 
 		var count = await db.UserNotePins.Where(p => p.Note == note && p.User == user).ExecuteDeleteAsync();
 		if (count == 0) return;
+
+		var avatar = await db.DriveFiles
+		                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserAvatar != null);
+		var banner = await db.DriveFiles
+		                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserBanner != null);
+
+		user.Avatar = avatar;
+		user.Banner = banner;
 
 		var activity = activityRenderer.RenderUpdate(await userRenderer.RenderAsync(user));
 		await deliverSvc.DeliverToFollowersAsync(activity, user, []);
