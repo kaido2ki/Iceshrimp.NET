@@ -89,11 +89,8 @@ public class ProfileController(
 
 		if (newAvatarAlt != null)
 		{
-			var avatar = await db.Users
-			                     .Where(p => p.Id == user.Id)
-			                     .Include(p => p.Avatar)
-			                     .Select(p => p.Avatar)
-			                     .FirstOrDefaultAsync();
+			var avatar = await db.DriveFiles
+			                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserAvatar != null);
 
 			if (avatar != null)
 			{
@@ -103,11 +100,8 @@ public class ProfileController(
 		}
 		if (newBannerAlt != null)
 		{
-			var banner = await db.Users
-			                     .Where(p => p.Id == user.Id)
-			                     .Include(p => p.Banner)
-			                     .Select(p => p.Banner)
-			                     .FirstOrDefaultAsync();
+			var banner = await db.DriveFiles
+			                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserBanner != null);
 
 			if (banner != null)
 			{
