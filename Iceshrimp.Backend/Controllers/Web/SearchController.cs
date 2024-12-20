@@ -94,11 +94,15 @@ public class SearchController(
 
 		if (target.StartsWith("https://"))
 		{
+			var user  = HttpContext.GetUserOrFail();
+			var notes = db.Notes.EnsureVisibleFor(user);
+
 			Note? noteHit = null;
 			User? userHit = null;
 			if (target.StartsWith(notePrefix))
 			{
-				noteHit = await db.Notes.FirstOrDefaultAsync(p => p.Id == target.Substring(notePrefix.Length));
+				noteHit = await notes.FirstOrDefaultAsync(p => p.Id == target.Substring(notePrefix.Length));
+
 				if (noteHit == null)
 					throw GracefulException.NotFound("No result found");
 			}
@@ -114,15 +118,15 @@ public class SearchController(
 					throw GracefulException.NotFound("No result found");
 			}
 
-			noteHit ??= await db.Notes.FirstOrDefaultAsync(p => p.Uri == target || p.Url == target);
+			noteHit ??= await notes.FirstOrDefaultAsync(p => p.Uri == target || p.Url == target);
 			if (noteHit != null) return new RedirectResponse { TargetUrl = $"/notes/{noteHit.Id}" };
 
-			userHit ??= await db.Users.FirstOrDefaultAsync(p => p.Uri == target ||
-			                                                    (p.UserProfile != null &&
-			                                                     p.UserProfile.Url == target));
+			userHit ??= await db.Users.FirstOrDefaultAsync(p => p.Uri == target
+			                                                    || (p.UserProfile != null
+			                                                        && p.UserProfile.Url == target));
 			if (userHit != null) return new RedirectResponse { TargetUrl = $"/users/{userHit.Id}" };
 
-			noteHit = await noteSvc.ResolveNoteAsync(target);
+			noteHit = await noteSvc.ResolveNoteAsync(target, user: user);
 			if (noteHit != null) return new RedirectResponse { TargetUrl = $"/notes/{noteHit.Id}" };
 
 			userHit = await userResolver.ResolveOrNullAsync(target, ResolveFlags.Uri | ResolveFlags.MatchUrl);
