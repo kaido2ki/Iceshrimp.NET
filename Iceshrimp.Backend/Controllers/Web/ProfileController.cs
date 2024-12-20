@@ -53,7 +53,9 @@ public class ProfileController(
 	[HttpPut]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResults(HttpStatusCode.OK)]
-	public async Task UpdateProfile(UserProfileEntity newProfile)
+	public async Task UpdateProfile(
+		UserProfileEntity newProfile, [FromQuery] string? newAvatarAlt, [FromQuery] string? newBannerAlt
+	)
 	{
 		var     user     = HttpContext.GetUserOrFail();
 		var     profile  = user.UserProfile ?? throw new Exception("Local user must have profile");
@@ -85,6 +87,36 @@ public class ProfileController(
 		user.IsCat      = newProfile.IsCat;
 		user.SpeakAsCat = newProfile is { SpeakAsCat: true, IsCat: true };
 
+		if (newAvatarAlt != null)
+		{
+			var avatar = await db.Users
+			                     .Where(p => p.Id == user.Id)
+			                     .Include(p => p.Avatar)
+			                     .Select(p => p.Avatar)
+			                     .FirstOrDefaultAsync();
+
+			if (avatar != null)
+			{
+				user.Avatar         = avatar;
+				user.Avatar.Comment = string.IsNullOrWhiteSpace(newAvatarAlt) ? null : newAvatarAlt.Trim();
+				Console.WriteLine($"{newAvatarAlt} {user.Avatar.Comment}");
+			}
+		}
+		if (newBannerAlt != null)
+		{
+			var banner = await db.Users
+			                     .Where(p => p.Id == user.Id)
+			                     .Include(p => p.Banner)
+			                     .Select(p => p.Banner)
+			                     .FirstOrDefaultAsync();
+
+			if (banner != null)
+			{
+				user.Banner         = banner;
+				user.Banner.Comment = string.IsNullOrWhiteSpace(newBannerAlt) ? null : newBannerAlt.Trim();
+				Console.WriteLine($"{newBannerAlt} {user.Banner.Comment}");
+			}
+		}
 		var prevAvatarId = user.AvatarId;
 		var prevBannerId = user.BannerId;
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
@@ -119,7 +151,7 @@ public class ProfileController(
 	[HttpPost("avatar")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task UpdateAvatar(IFormFile file)
+	public async Task UpdateAvatar(IFormFile file, [FromQuery] string? altText)
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -133,12 +165,14 @@ public class ProfileController(
 		{
 			Filename    = file.FileName,
 			IsSensitive = false,
-			MimeType    = file.ContentType
+			MimeType    = file.ContentType,
+			Comment     = altText 
 		};
 
 		var avatar = await driveSvc.StoreFileAsync(file.OpenReadStream(), user, rq);
 
 		user.Avatar         = avatar;
+		user.AvatarId       = avatar.Id;
 		user.AvatarBlurhash = avatar.Blurhash;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
@@ -146,7 +180,6 @@ public class ProfileController(
 
 	[HttpDelete("avatar")]
 	[ProducesResults(HttpStatusCode.OK)]
-	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task DeleteAvatar()
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -154,8 +187,7 @@ public class ProfileController(
 		var prevAvatarId = user.AvatarId;
 		var prevBannerId = user.BannerId;
 
-		if (prevAvatarId == null)
-			throw GracefulException.NotFound("You do not have an avatar");
+		if (prevAvatarId == null) return;
 
 		user.Avatar         = null;
 		user.AvatarBlurhash = null;
@@ -192,7 +224,7 @@ public class ProfileController(
 	[HttpPost("banner")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task UpdateBanner(IFormFile file)
+	public async Task UpdateBanner(IFormFile file, [FromQuery] string? altText)
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -206,12 +238,14 @@ public class ProfileController(
 		{
 			Filename    = file.FileName,
 			IsSensitive = false,
-			MimeType    = file.ContentType
+			MimeType    = file.ContentType,
+			Comment     = altText
 		};
 
 		var banner = await driveSvc.StoreFileAsync(file.OpenReadStream(), user, rq);
 
 		user.Banner         = banner;
+		user.BannerId       = banner.Id;
 		user.BannerBlurhash = banner.Blurhash;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
@@ -219,7 +253,6 @@ public class ProfileController(
 
 	[HttpDelete("banner")]
 	[ProducesResults(HttpStatusCode.OK)]
-	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task DeleteBanner()
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -227,8 +260,7 @@ public class ProfileController(
 		var prevAvatarId = user.AvatarId;
 		var prevBannerId = user.BannerId;
 
-		if (prevBannerId == null)
-			throw GracefulException.NotFound("You do not have a banner");
+		if (prevBannerId == null) return;
 
 		user.Banner         = null;
 		user.BannerBlurhash = null;
