@@ -1,6 +1,12 @@
 <p><img src="/iceshrimp/iceshrimp/media/branch/dev/assets/logo.png" alt="Iceshrimp" width="400px"></p>
 <p><strong>Iceshrimp</strong> is a decentralized and federated social networking service, implementing the <strong>ActivityPub</strong> standard.</p>
 
+> **Note**
+> We're currently in winter holiday break - unless security issues or other catastrophic bugs are discovered, no releases will be made,
+> and no issues will be responded to until the first week of january. Support is limited to community support until then.
+> 
+> Happy holidays!
+
 - Highlighted features:
   - All-new, blazingly fast & resource-efficient backend, powered by .NET
   - All-new frontend, powered by Blazor WASM
