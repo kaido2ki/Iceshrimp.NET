@@ -13,6 +13,14 @@
 {
     <div @ref="FileButton" class="drive-entry" @onclick="SelectFile" @onclick:stopPropagation="true">
         <div class="labels">
+            @if (File.IsAvatar)
+            {
+                <Icon Name="Icons.UserCircle" title="@Loc["Avatar"]"/>
+            }
+            @if (File.IsBanner)
+            {
+                <Icon Name="Icons.Image" title="@Loc["Banner"]"/>
+            }
             @if (File.Description != null)
             {
                 <Icon Name="Icons.ClosedCaptioning" title="@File.Description"/>
