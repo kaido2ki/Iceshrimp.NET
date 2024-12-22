@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
@@ -318,7 +319,7 @@ public class DriveController(
 	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.Conflict)]
-	public async Task<DriveFolderResponse> UpdateFolder(string id, string name)
+	public async Task<DriveFolderResponse> UpdateFolder(string id, [FromHybrid] string name)
 	{
 		var user = HttpContext.GetUserOrFail();
 		
