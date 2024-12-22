@@ -140,7 +140,10 @@ public class DriveController(
 	public async Task<DriveFileResponse> GetFileById(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Id == id)
+		var file = await db.DriveFiles
+		                   .Include(p => p.UserAvatar)
+		                   .Include(p => p.UserBanner)
+		                   .FirstOrDefaultAsync(p => p.User == user && p.Id == id)
 		           ?? throw GracefulException.NotFound("File not found");
 
 		return new DriveFileResponse
@@ -151,7 +154,9 @@ public class DriveController(
 			Filename     = file.Name,
 			ContentType  = file.Type,
 			Description  = file.Comment,
-			Sensitive    = file.IsSensitive
+			Sensitive    = file.IsSensitive,
+			IsAvatar     = file.UserAvatar != null,
+			IsBanner     = file.UserBanner != null
 		};
 	}
 
@@ -164,7 +169,10 @@ public class DriveController(
 	public async Task<DriveFileResponse> GetFileByHash(string sha256)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.User == user && p.Sha256 == sha256)
+		var file = await db.DriveFiles
+		                   .Include(p => p.UserAvatar)
+		                   .Include(p => p.UserBanner)
+		                   .FirstOrDefaultAsync(p => p.User == user && p.Sha256 == sha256)
 		           ?? throw GracefulException.NotFound("File not found");
 
 		return new DriveFileResponse
@@ -175,7 +183,9 @@ public class DriveController(
 			Filename     = file.Name,
 			ContentType  = file.Type,
 			Description  = file.Comment,
-			Sensitive    = file.IsSensitive
+			Sensitive    = file.IsSensitive,
+			IsAvatar     = file.UserAvatar != null,
+			IsBanner     = file.UserBanner != null 
 		};
 	}
 
@@ -279,7 +289,9 @@ public class DriveController(
 			                         Filename     = p.Name,
 			                         ContentType  = p.Type,
 			                         Sensitive    = p.IsSensitive,
-			                         Description  = p.Comment
+			                         Description  = p.Comment,
+			                         IsAvatar     = p.UserAvatar != null,
+			                         IsBanner     = p.UserBanner != null 
 		                         })
 		                         .ToListAsync();
 

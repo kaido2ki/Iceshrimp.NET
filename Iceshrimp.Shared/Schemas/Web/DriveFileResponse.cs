@@ -11,6 +11,8 @@ public class DriveFileResponse : IIdentifiable
 	public required string  ContentType  { get; set; }
 	public required bool    Sensitive    { get; set; }
 	public required string? Description  { get; set; }
+	public required bool    IsAvatar     { get; set; }
+	public required bool    IsBanner     { get; set; }
 }
 
 public class DriveFolderResponse
