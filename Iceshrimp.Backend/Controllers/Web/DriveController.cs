@@ -309,6 +309,8 @@ public class DriveController(
 
 		var driveFiles = await db.DriveFiles
 		                         .Where(p => p.FolderId == id && p.UserId == user.Id)
+		                         .OrderByDescending(p => p.CreatedAt)
+		                         .ThenBy(p => p.Id)
 		                         .Select(p => new DriveFileResponse
 		                         {
 			                         Id           = p.Id,
@@ -325,6 +327,8 @@ public class DriveController(
 
 		var driveFolders = await db.DriveFolders
 		                           .Where(p => p.ParentId == id && p.UserId == user.Id)
+		                           .OrderBy(p => p.Name)
+		                           .ThenBy(p => p.Id)
 		                           .Select(p => new DriveFolderResponse
 		                           {
 			                           Id = p.Id, Name = p.Name, ParentId = p.ParentId
