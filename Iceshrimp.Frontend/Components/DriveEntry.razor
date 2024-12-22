@@ -2,6 +2,7 @@
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @inject ApiService                     Api;
 @inject IJSRuntime                     Js;
@@ -106,11 +107,18 @@
         var filename = await Js.InvokeAsync<string?>("prompt", "Rename file", File!.Filename);
         if (string.IsNullOrWhiteSpace(filename)) return;
 
-        var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Filename = filename.Trim() });
-        if (res != null)
+        try
         {
-            File.Filename = res.Filename;
-            StateHasChanged();
+            var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Filename = filename.Trim() });
+            if (res != null)
+            {
+                File.Filename = res.Filename;
+                StateHasChanged();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Js.InvokeVoidAsync("alert", e.Response.Message);
         }
     }
 
@@ -161,11 +169,18 @@
         var name = await Js.InvokeAsync<string?>("prompt", "Rename folder", Folder.Name);
         if (string.IsNullOrWhiteSpace(name)) return;
 
-        var res = await Api.Drive.UpdateFolderAsync(Folder.Id, name.Trim());
-        if (res != null)
+        try
         {
-            Folder.Name = res.Name;
-            StateHasChanged();
+            var res = await Api.Drive.UpdateFolderAsync(Folder.Id, name.Trim());
+            if (res != null)
+            {
+                Folder.Name = res.Name;
+                StateHasChanged();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Js.InvokeVoidAsync("alert", e.Response.Message);
         }
     }
     
