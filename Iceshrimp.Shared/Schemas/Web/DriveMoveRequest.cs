@@ -1,6 +1,6 @@
 namespace Iceshrimp.Shared.Schemas.Web;
 
-public class DriveMoveRequest(string? folderId)
+public class DriveMoveRequest
 {
-    public required string? FolderId { get; set; } = folderId;
+    public required string? FolderId { get; set; }
 }

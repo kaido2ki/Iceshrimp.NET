@@ -22,6 +22,9 @@ internal class DriveControllerModel(ApiClient api)
 	public Task DeleteFileAsync(string id) =>
 		api.CallNullableAsync(HttpMethod.Delete, $"/drive/{id}");
 
+	public Task<DriveFileResponse?> UpdateFileParentAsync(string id, string? folderId) =>
+		api.CallNullableAsync<DriveFileResponse>(HttpMethod.Post, $"/drive/{id}/move", data: new DriveMoveRequest { FolderId = folderId });
+
 	public Task<DriveFolderResponse?> CreateFolderAsync(DriveFolderRequest request) =>
 		api.CallNullableAsync<DriveFolderResponse>(HttpMethod.Post, $"/drive/folder", data: request);
 
@@ -33,4 +36,7 @@ internal class DriveControllerModel(ApiClient api)
 
 	public Task DeleteFolderAsync(string id) =>
 		api.CallNullableAsync(HttpMethod.Delete, $"/drive/folder/{id}");
+
+	public Task<DriveFolderResponse?> UpdateFolderParentAsync(string id, string? folderId) =>
+		api.CallNullableAsync<DriveFolderResponse>(HttpMethod.Post, $"/drive/folder/{id}/move", data: new DriveMoveRequest { FolderId = folderId });
 }

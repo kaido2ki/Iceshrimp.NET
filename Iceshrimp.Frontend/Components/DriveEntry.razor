@@ -76,6 +76,9 @@
             <MenuElement Icon="Icons.ClosedCaptioning" OnSelect="SetFileAltText">
                 <Text>@Loc["Set alt text"]</Text>
             </MenuElement>
+            <MenuElement Icon="Icons.FolderDashed" OnSelect="MoveFile">
+                <Text>@Loc["Move"]</Text>
+            </MenuElement>
             <MenuElement Icon="Icons.Trash" OnSelect="DeleteFile">
                 <Text>@Loc["Delete"]</Text>
             </MenuElement>
@@ -95,6 +98,9 @@
             <MenuElement Icon="Icons.CursorText" OnSelect="RenameFolder">
                 <Text>@Loc["Rename"]</Text>
             </MenuElement>
+            <MenuElement Icon="Icons.FolderDashed" OnSelect="MoveFolder">
+                <Text>@Loc["Move"]</Text>
+            </MenuElement>
             <ClosingBackdrop OnClose="FolderMenu.Close"></ClosingBackdrop>
         </Menu>
     </div>
@@ -107,6 +113,8 @@
     private            Menu                 FolderMenu   { get; set; } = null!;
     private            ElementReference     FileButton   { get; set; }
     private            ElementReference     FolderButton { get; set; }
+
+    [Parameter, EditorRequired] public required List<DriveFolderResponse> FolderList { get; set; }
 
     private void SelectFile() => FileMenu.Toggle(FileButton);
 
@@ -157,6 +165,27 @@
         }
     }
 
+    private async Task MoveFile()
+    {
+        // TODO: Move this to a proper prompt dialog once we have that
+        var folderId = await Js.InvokeAsync<string?>("prompt", "Move to folder by ID: " + string.Join(", ", FolderList.Select(p => $"{p.Name} ({p.Id})")) + " or blank for root");
+        if (folderId == null) return;
+
+        try
+        {
+            var res = await Api.Drive.UpdateFileParentAsync(File!.Id, string.IsNullOrWhiteSpace(folderId) ? null : folderId.Trim());
+            if (res != null)
+            {
+                File = null;
+                StateHasChanged();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Js.InvokeVoidAsync("alert", e.Response.Message);
+        }
+    }
+
     private void OpenFile() => Js.InvokeVoidAsync("open", File!.Url, "_blank");
 
     private void CopyFileLink() => Js.InvokeVoidAsync("navigator.clipboard.writeText", File!.Url);
@@ -191,6 +220,29 @@
             await Js.InvokeVoidAsync("alert", e.Response.Message);
         }
     }
-    
+
+    private async Task MoveFolder()
+    {
+        if (Folder is not { Id: not null, Name: not null }) return;
+
+        // TODO: Move this to a proper prompt dialog once we have that
+        var folderId = await Js.InvokeAsync<string?>("prompt", "Move to folder by ID: " + string.Join(", ", FolderList.FindAll(p => p.Id != Folder.Id).Select(p => $"{p.Name} ({p.Id})")) + " or blank for root");
+        if (folderId == null) return;
+
+        try
+        {
+            var res = await Api.Drive.UpdateFolderParentAsync(Folder.Id, string.IsNullOrWhiteSpace(folderId) ? null : folderId.Trim());
+            if (res != null)
+            {
+                Folder = null;
+                StateHasChanged();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Js.InvokeVoidAsync("alert", e.Response.Message);
+        }
+    }
+
     private void OpenFolder() => Nav.NavigateTo($"/drive/{Folder!.Id}");
 }
