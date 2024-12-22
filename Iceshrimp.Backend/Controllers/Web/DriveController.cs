@@ -234,6 +234,33 @@ public class DriveController(
 
 		return StatusCode(StatusCodes.Status202Accepted);
 	}
+	
+	[HttpPost("{id}/move")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<DriveFileResponse> UpdateFileParent(string id, DriveMoveRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var file = await db.DriveFiles
+		                     .FirstOrDefaultAsync(p => p.Id == id && p.UserId == user.Id)
+		             ?? throw GracefulException.RecordNotFound();
+
+		if (request.FolderId != null)
+		{
+			var parent = await db.DriveFolders
+			                     .FirstOrDefaultAsync(p => p.Id == request.FolderId && p.UserId == user.Id);
+			if (parent == null)
+				throw GracefulException.NotFound("The new parent folder doesn't exist");
+		}
+
+		file.FolderId = request.FolderId;
+		await db.SaveChangesAsync();
+
+		return await GetFileById(file.Id);
+	}
 
 	[HttpGet("folder")]
 	[Authenticate]
@@ -373,7 +400,7 @@ public class DriveController(
 		await db.SaveChangesAsync();
 	}
 
-	[HttpPut("folder/{id}/move")]
+	[HttpPost("folder/{id}/move")]
 	[Authenticate]
 	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -381,7 +408,7 @@ public class DriveController(
 	public async Task<DriveFolderResponse> UpdateFolderParent(string id, DriveMoveRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
-		
+
 		if (request.FolderId == id)
 			throw GracefulException.BadRequest("Cannot move a folder into itself");
 
