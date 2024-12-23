@@ -8,7 +8,7 @@
     border: var(--highlight-color) solid 0.1rem;
     width: 15rem;
     max-width: 20rem;
-    top: calc(var(--top) + 2.5rem);
-    left: calc(var(--left) - 5.5rem);
+    top: var(--top);
+    left: calc(var(--left) - 7.5rem);
     z-index: +2;
 }

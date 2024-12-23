@@ -1,5 +1,4 @@
 .drive-entry {
-    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -26,9 +25,10 @@
 }
 
 .labels {
-    position: absolute;
-    top: 0.2rem;
-    right: 0.2rem;
+    width: 100%;
+    margin-bottom: -1.5rem;
+    z-index: +1;
+    text-align: right;
 }
 
 ::deep {
