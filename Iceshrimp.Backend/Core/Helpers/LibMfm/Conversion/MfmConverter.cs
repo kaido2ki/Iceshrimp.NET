@@ -235,6 +235,36 @@ public class MfmConverter(
 					return el;
 				}
 			}
+			case MfmFnNode { Name: "unixtime" } fn:
+			{
+				var el = CreateInlineFormattingElement(document, "i");
+
+				if (fn.Children.Length != 1 || fn.Children.FirstOrDefault() is not MfmTextNode textNode)
+					return Fallback();
+
+				double timestamp;
+				try
+				{
+					timestamp = double.Parse(textNode.Text);
+				}
+				catch
+				{
+					return Fallback();
+				}
+
+				var date = DateTime.UnixEpoch.AddSeconds(timestamp);
+				el.TextContent = date.ToLocalTime().ToString("HH:mm, d MMM yyyy zzzz");
+
+				return el;
+
+				IElement Fallback()
+				{
+					AddHtmlMarkup(document, el, "*");
+					AppendChildren(el, document, node, mentions, host, usedMedia);
+					AddHtmlMarkup(document, el, "*");
+					return el;
+				}
+			}
 			case MfmBoldNode:
 			{
 				var el = CreateInlineFormattingElement(document, "b");
