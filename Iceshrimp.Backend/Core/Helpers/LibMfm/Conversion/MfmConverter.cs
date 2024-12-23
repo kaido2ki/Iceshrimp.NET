@@ -253,7 +253,7 @@ public class MfmConverter(
 				}
 
 				var date = DateTime.UnixEpoch.AddSeconds(timestamp);
-				el.TextContent = date.ToLocalTime().ToString("HH:mm, d MMM yyyy zzzz");
+				el.TextContent = date.ToString("HH:mm, d MMM yyyy") + " UTC";
 
 				return el;
 
