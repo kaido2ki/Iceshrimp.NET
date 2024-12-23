@@ -546,8 +546,8 @@ public static partial class MfmRenderer
 		}
 
 		var date = DateTime.UnixEpoch.AddSeconds(timestamp);
-		el.SetAttribute("datetime", date.ToString("O"));
-		el.TextContent = date.ToString("G");
+		el.SetAttribute("datetime", date.ToLocalTime().ToString("O"));
+		el.TextContent = date.ToLocalTime().ToString("G");
 
 		return el;
 	}
