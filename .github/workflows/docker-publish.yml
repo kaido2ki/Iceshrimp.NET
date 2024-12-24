@@ -95,7 +95,7 @@ jobs:
           ref: ${{ github.ref }}
 
       # Step 2: Switch to upstream branch
-      - name: Checkout dev branch
+      - name: Checkout upstream branch
         run: |
           git fetch origin upstream  # Fetch the latest upstream branch
           git checkout upstream || git checkout -b upstream  # Checkout upstream branch or create if it doesn't exist
@@ -137,7 +137,11 @@ jobs:
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
           context: .
-          build-args: AOT=true
+          build-args: |
+            AOT=true
+          platforms: |
+            linux/amd64
+            linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
