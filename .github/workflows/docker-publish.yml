@@ -27,6 +27,8 @@ jobs:
           git remote add ice https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git
           git fetch ice
       - name: Sync ice branch to upstream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git checkout upstream || git checkout -b upstream #
           UPSTREAM_BRANCH="${{ inputs.upstream_branch || 'dev' }}"
