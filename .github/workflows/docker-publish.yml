@@ -30,7 +30,7 @@ jobs:
         run: |
           git checkout upstream || git checkout -b upstream #
           UPSTREAM_BRANCH="${{ inputs.upstream_branch || 'dev' }}"
-          git merge ice/$UPSTREAM_BRANCH -X ours
+          git merge ice/$UPSTREAM_BRANCH -X ours --allow-unrelated-histories
       - name: Push updates to origin/upstream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
