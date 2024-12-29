@@ -65,7 +65,7 @@ public class EmojiController(
 	}
 
 	[HttpPost]
-	[Authorize("role:admin")]
+	[Authorize("role:moderator")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.Conflict)]
 	public async Task<EmojiResponse> UploadEmoji(IFormFile file)
@@ -86,7 +86,7 @@ public class EmojiController(
 	}
 
 	[HttpPost("clone/{name}@{host}")]
-	[Authorize("role:admin")]
+	[Authorize("role:moderator")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound, HttpStatusCode.Conflict)]
 	public async Task<EmojiResponse> CloneEmoji(string name, string host)
@@ -112,7 +112,7 @@ public class EmojiController(
 	}
 
 	[HttpPost("import")]
-	[Authorize("role:admin")]
+	[Authorize("role:moderator")]
 	[DisableRequestSizeLimit]
 	[ProducesResults(HttpStatusCode.Accepted)]
 	public async Task<AcceptedResult> ImportEmoji(IFormFile file)
@@ -123,7 +123,7 @@ public class EmojiController(
 	}
 
 	[HttpPatch("{id}")]
-	[Authorize("role:admin")]
+	[Authorize("role:moderator")]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -147,7 +147,7 @@ public class EmojiController(
 	}
 
 	[HttpDelete("{id}")]
-	[Authorize("role:admin")]
+	[Authorize("role:moderator")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task DeleteEmoji(string id)
