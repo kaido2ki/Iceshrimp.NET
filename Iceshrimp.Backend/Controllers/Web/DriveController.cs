@@ -363,11 +363,11 @@ public class DriveController(
 
 		var existing = await db.DriveFolders
 		                       #pragma warning disable CA1862
-		                       .FirstOrDefaultAsync(p => p.Name.ToLower() == name.Trim().ToLower()
-		                                                 #pragma warning restore CA1862
-		                                                 && p.ParentId == folder.ParentId
-		                                                 && p.UserId == user.Id);
-		if (existing != null)
+		                       .AnyAsync(p => p.Name.ToLower() == name.Trim().ToLower()
+		                                      #pragma warning restore CA1862
+		                                      && p.ParentId == folder.ParentId
+		                                      && p.UserId == user.Id);
+		if (existing)
 			throw GracefulException.Conflict("A folder with this name already exists");
 
 		folder.Name = name.Trim();
@@ -429,10 +429,12 @@ public class DriveController(
 		}
 
 		var existing = await db.DriveFolders
-		                       .FirstOrDefaultAsync(p => p.Name == folder.Name
-		                                                 && p.ParentId == request.FolderId
-		                                                 && p.UserId == user.Id);
-		if (existing != null)
+		                       #pragma warning disable CA1862
+		                       .AnyAsync(p => p.Name.ToLower() == folder.Name.ToLower()
+		                                      #pragma warning restore CA1862
+		                                      && p.ParentId == request.FolderId
+		                                      && p.UserId == user.Id);
+		if (existing)
 			throw GracefulException.Conflict("A folder with this name already exists in the new parent folder");
 
 		folder.ParentId = request.FolderId;
