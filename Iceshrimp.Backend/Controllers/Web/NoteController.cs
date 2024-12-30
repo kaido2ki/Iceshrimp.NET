@@ -618,10 +618,13 @@ public class NoteController(
 			? await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id)).ToListAsync()
 			: null;
 
+		var minPollExpire = DateTime.UtcNow.AddMinutes(5);
 		var poll = request.Poll != null
 			? new Poll
 			{
-				ExpiresAt = request.Poll.ExpiresAt,
+				ExpiresAt = request.Poll.ExpiresAt != null
+					? request.Poll.ExpiresAt <= minPollExpire ? minPollExpire : request.Poll.ExpiresAt
+					: null,
 				Multiple  = request.Poll.Multiple,
 				Choices   = request.Poll.Choices,
 			}
