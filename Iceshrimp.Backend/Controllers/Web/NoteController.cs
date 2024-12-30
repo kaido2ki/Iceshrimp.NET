@@ -527,14 +527,11 @@ public class NoteController(
 			throw GracefulException.NotFound("Poll has expired");
 
 		var voted = await db.PollVotes
-		                    .Where(p => p.NoteId == id && p.UserId == user.Id)
-		                    .ToListAsync();
-		if (!target.Poll.Multiple && voted.Count != 0)
+		                    .AnyAsync(p => p.NoteId == id && p.UserId == user.Id);
+		if (voted)
 			throw GracefulException.BadRequest("You have already voted");
 
-		if (target.Poll.Multiple)
-			request.Choices.RemoveAll(p => voted.Any(v => v.Choice == p));
-		else
+		if (!target.Poll.Multiple)
 			request.Choices.RemoveRange(1, request.Choices.Count - 1);
 
 		List<PollVote> votes = [];
