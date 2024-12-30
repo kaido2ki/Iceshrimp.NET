@@ -29,7 +29,8 @@ public class NoteController(
 	NoteRenderer noteRenderer,
 	UserRenderer userRenderer,
 	CacheService cache,
-	BiteService biteSvc
+	BiteService biteSvc,
+	PollService pollSvc
 ) : ControllerBase
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -498,6 +499,68 @@ public class NoteController(
 		             throw GracefulException.NotFound("Note not found");
 
 		await db.NoteThreadMutings.Where(p => p.User == user && p.ThreadId == target).ExecuteDeleteAsync();
+	}
+
+	[HttpPost("{id}/vote")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task<NotePollSchema> AddPollVote(string id, NotePollRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		request.Choices.RemoveAll(p => p < 0);
+		if (request.Choices.Count == 0)
+			throw GracefulException.BadRequest("At least one vote must be included");
+
+		var target = await db.Notes
+		                     .Where(p => p.Id == id)
+		                     .EnsureVisibleFor(user)
+		                     .Include(p => p.Poll)
+		                     .FirstOrDefaultAsync()
+		             ?? throw GracefulException.NotFound("Note not found");
+		if (target.Poll == null)
+			throw GracefulException.NotFound("Poll not found");
+
+		if (target.Poll.ExpiresAt != null && target.Poll.ExpiresAt < DateTime.UtcNow)
+			throw GracefulException.NotFound("Poll has expired");
+
+		var voted = await db.PollVotes
+		                    .Where(p => p.NoteId == id && p.UserId == user.Id)
+		                    .ToListAsync();
+		if (!target.Poll.Multiple && voted.Count != 0)
+			throw GracefulException.BadRequest("You have already voted");
+
+		if (target.Poll.Multiple)
+			request.Choices.RemoveAll(p => voted.Any(v => v.Choice == p));
+		else
+			request.Choices.RemoveRange(1, request.Choices.Count - 1);
+
+		List<PollVote> votes = [];
+		foreach (var choice in request.Choices)
+		{
+			var vote = new PollVote
+			{
+				Id        = IdHelpers.GenerateSnowflakeId(),
+				CreatedAt = DateTime.UtcNow,
+				UserId    = user.Id,
+				NoteId    = id,
+				Choice    = choice
+			};
+			await db.AddAsync(vote);
+			votes.Add(vote);
+		}
+
+		await db.SaveChangesAsync();
+
+		foreach (var vote in votes)
+			await pollSvc.RegisterPollVoteAsync(vote, target.Poll, target);
+
+		await db.ReloadEntityAsync(target.Poll);
+
+		var res = await GetNote(id);
+		return res.Poll!;
 	}
 
 	[HttpPost]
