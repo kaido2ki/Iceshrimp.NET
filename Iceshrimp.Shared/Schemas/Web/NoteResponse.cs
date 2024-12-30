@@ -61,11 +61,11 @@ public class NoteAttachment
 
 public class NotePollSchema
 {
-	[JI] public required string               NoteId;
-	public required      DateTime?            ExpiresAt   { get; set; }
-	public required      bool                 Multiple    { get; set; }
-	public required      List<NotePollChoice> Choices     { get; set; }
-	public required      int?                 VotersCount { get; set; }
+	public required string               NoteId      { get; set; }
+	public required DateTime?            ExpiresAt   { get; set; }
+	public required bool                 Multiple    { get; set; }
+	public required List<NotePollChoice> Choices     { get; set; }
+	public required int?                 VotersCount { get; set; }
 }
 
 public class NotePollChoice

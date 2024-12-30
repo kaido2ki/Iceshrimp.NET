@@ -1,0 +1,92 @@
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@inject ApiService                     Api;
+@inject IStringLocalizer<Localization> Loc;
+
+<div class="poll">
+    @if (CanVote())
+    {
+        <div class="poll-options">
+            @foreach (var (choice, i) in Poll.Choices.Select((c, i) => (c, i)))
+            {
+                <span class="poll-option">
+                    @if (Poll.Multiple)
+                    {
+                        <input type="checkbox" @onchange="() => SelectMultiple(i)" id="option-@i" name="poll" checked="@choice.Voted" disabled="@choice.Voted"/>
+                    }
+                    else
+                    {
+                        <input type="radio" @onchange="() => SelectSingle(i)" id="option-@i" name="poll"/>
+                    }
+                    <label for="option-@i">
+                        <MfmText Text="@choice.Value" Emoji="@Emoji" Simple="true"/>
+                    </label>
+                </span>
+            }
+            <button class="btn vote-btn" @onclick="Vote">@Loc["Vote"]</button>
+        </div>
+    }
+    else
+    {
+        <div class="poll-results">
+            @{ var total = Poll.Choices.Sum(p => p.Votes); }
+            @foreach (var choice in Poll.Choices)
+            {
+                <span class="poll-result @(choice.Voted ? "voted" : "")" style="--percentage: @(choice.Votes / total * 100)%;">
+                    <span class="poll-value">
+                        <MfmText Text="@choice.Value" Emoji="@Emoji" Simple="true"/>
+                    </span>
+                    <span class="poll-info"><span class="vote-count">@Loc["{0} votes", choice.Votes]</span><span class="vote-percentage">@(choice.Votes / total * 100)%</span></span>
+                </span>
+            }
+        </div>
+    }
+    @{
+        List<string> footerText = [];
+        @if (Poll.Multiple)
+            footerText.Add(Loc["Multiple choice"]);
+        @if (Poll.VotersCount != null)
+            footerText.Add(Loc["{0} users voted", Poll.VotersCount]);
+        @if (Poll.ExpiresAt != null)
+            footerText.Add(Poll.ExpiresAt <= DateTime.UtcNow ? Loc["Ended"] : Loc["Ends at {0}", Poll.ExpiresAt.Value.ToLocalTime().ToString("G")]);
+    }
+    <span class="poll-footer">@string.Join(" - ", footerText)</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required NotePollSchema      Poll    { get; set; }
+    [Parameter, EditorRequired] public required List<EmojiResponse> Emoji   { get; set; }
+    private                                     List<int>           Choices { get; set; } = [];
+
+    private bool CanVote()
+    {
+        return (Poll.Multiple && !Poll.Choices.All(p => p.Voted) || !Poll.Choices.Any(p => p.Voted)) && (Poll.ExpiresAt == null || Poll.ExpiresAt > DateTime.UtcNow);
+    }
+    
+    private void SelectMultiple(int choice)
+    {
+        if (Choices.Contains(choice))
+            Choices.RemoveAll(p => p == choice);
+        else
+            Choices.Add(choice);
+    }
+
+    private void SelectSingle(int choice)
+    {
+        Choices = [choice];
+    }
+
+    private async Task Vote()
+    {
+        if (!CanVote()) return;
+
+        var res = await Api.Notes.AddPollVoteAsync(Poll.NoteId, Choices);
+        if (res != null)
+        {
+            Poll = res;
+            StateHasChanged();
+        }
+    }
+}

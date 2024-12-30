@@ -71,6 +71,10 @@ internal class NoteControllerModel(ApiClient api)
 	public Task<NoteRefetchResponse?> RefetchNoteAsync(string id) =>
 		api.CallNullableAsync<NoteRefetchResponse>(HttpMethod.Get, $"/notes/{id}/refetch");
 
+	public Task<NotePollSchema?> AddPollVoteAsync(string id, List<int> choices) =>
+		api.CallNullableAsync<NotePollSchema>(HttpMethod.Post, $"/notes/{id}/vote",
+		                                      data: new NotePollRequest { Choices = choices });
+
 	public Task MuteNoteAsync(string id) =>
 		api.CallAsync(HttpMethod.Post, $"/notes/{id}/mute");
 }

@@ -17,7 +17,9 @@
     --foreground-color: #17151e;
     --highlight-color: #2e2b4c;
     --hover-color: #3d3a66;
-    --accent-color: linear-gradient(to right, #9A92FF, #8372F5);
+    --accent-primary-color: #9A92FF;
+    --accent-secondary-color: #8372F5;
+    --accent-color: linear-gradient(to right, var(--accent-primary-color), var(--accent-secondary-color));
     --notice-color: #92c1ff;
     --font-color: #e7edff;
     --link: #9E9EFF;

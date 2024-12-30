@@ -50,6 +50,10 @@
             }
             <MfmText Text="@NoteBase.Text" Emoji="@NoteBase.Emoji"/>
         </span>
+        @if (NoteBase.Poll != null)
+        {
+            <NotePoll Poll="@NoteBase.Poll" Emoji="@NoteBase.Emoji"/>
+        }
         @if (NoteBase.Attachments.Count > 0)
         {
             <NoteAttachments Attachments="NoteBase.Attachments"/>
