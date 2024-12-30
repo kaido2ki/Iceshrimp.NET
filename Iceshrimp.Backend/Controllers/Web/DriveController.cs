@@ -283,6 +283,15 @@ public class DriveController(
 		if (string.IsNullOrWhiteSpace(request.Name))
 			throw GracefulException.BadRequest("Folder name cannot be empty");
 
+		var existing = await db.DriveFolders
+		                       #pragma warning disable CA1862
+		                       .AnyAsync(p => p.Name.ToLower() == request.Name.Trim().ToLower()
+		                                      #pragma warning restore CA1862
+		                                      && p.ParentId == request.ParentId
+		                                      && p.UserId == user.Id);
+		if (existing)
+			throw GracefulException.Conflict("A folder with this name already exists");
+
 		var driveFolder = await driveSvc.CreateFolderAsync(user, request.Name.Trim(), request.ParentId);
 
 		return new DriveFolderResponse
