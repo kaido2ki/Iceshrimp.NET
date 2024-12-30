@@ -79,7 +79,7 @@ public class NoteRenderer(
 		var liked = data?.LikedNotes?.Contains(note.Id) ??
 		            await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 		var emoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([note]);
-		var poll  = (data?.Polls ?? await GetPollsAsync([note], user)).First(p => p.NoteId == note.Id);
+		var poll  = (data?.Polls ?? await GetPollsAsync([note], user)).FirstOrDefault(p => p.NoteId == note.Id);
 
 		return new NoteResponse
 		{
