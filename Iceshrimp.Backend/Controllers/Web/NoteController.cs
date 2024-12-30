@@ -555,6 +555,15 @@ public class NoteController(
 			? await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id)).ToListAsync()
 			: null;
 
+		var poll = request.Poll != null
+			? new Poll
+			{
+				ExpiresAt = request.Poll.ExpiresAt,
+				Multiple  = request.Poll.Multiple,
+				Choices   = request.Poll.Choices,
+			}
+			: null;
+
 		var note = await noteSvc.CreateNoteAsync(new NoteService.NoteCreationData
 		{
 			User        = user,
@@ -563,7 +572,8 @@ public class NoteController(
 			Cw          = request.Cw,
 			Reply       = reply,
 			Renote      = renote,
-			Attachments = attachments
+			Attachments = attachments,
+			Poll        = poll
 		});
 
 		if (request.IdempotencyKey != null)

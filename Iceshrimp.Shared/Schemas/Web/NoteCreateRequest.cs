@@ -9,4 +9,12 @@ public class NoteCreateRequest
 	public          List<string>?  MediaIds       { get; set; }
 	public required NoteVisibility Visibility     { get; set; }
 	public          string?        IdempotencyKey { get; set; }
+	public          PollRequest?   Poll           { get; set; }
+}
+
+public class PollRequest
+{
+	public required DateTime?    ExpiresAt { get; set; }
+	public required bool         Multiple  { get; set; }
+	public required List<string> Choices   { get; set; }
 }
