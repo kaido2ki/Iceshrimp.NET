@@ -62,7 +62,7 @@
 
     private bool CanVote()
     {
-        return (Poll.Multiple && !Poll.Choices.All(p => p.Voted) || !Poll.Choices.Any(p => p.Voted)) && (Poll.ExpiresAt == null || Poll.ExpiresAt > DateTime.UtcNow);
+        return !Poll.Choices.Any(p => p.Voted) && (Poll.ExpiresAt == null || Poll.ExpiresAt > DateTime.UtcNow);
     }
     
     private void SelectMultiple(int choice)
