@@ -34,11 +34,11 @@
             @{ var total = Poll.Choices.Sum(p => p.Votes); }
             @foreach (var choice in Poll.Choices)
             {
-                <span class="poll-result @(choice.Voted ? "voted" : "")" style="--percentage: @(choice.Votes / total * 100)%;">
+                <span class="poll-result @(choice.Voted ? "voted" : "")" style="--percentage: @(choice.Votes / (double)total * 100)%;">
                     <span class="poll-value">
                         <MfmText Text="@choice.Value" Emoji="@Emoji" Simple="true"/>
                     </span>
-                    <span class="poll-info"><span class="vote-count">@Loc["{0} votes", choice.Votes]</span><span class="vote-percentage">@(choice.Votes / total * 100)%</span></span>
+                    <span class="poll-info"><span class="vote-count">@Loc["{0} votes", choice.Votes]</span><span class="vote-percentage">@(choice.Votes / (double)total * 100)%</span></span>
                 </span>
             }
         </div>
@@ -64,7 +64,7 @@
     {
         return !Poll.Choices.Any(p => p.Voted) && (Poll.ExpiresAt == null || Poll.ExpiresAt > DateTime.UtcNow);
     }
-    
+
     private void SelectMultiple(int choice)
     {
         if (Choices.Contains(choice))
