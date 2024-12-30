@@ -45,6 +45,7 @@ public class NoteBase
 	public required UserResponse             User        { get; set; }
 	public required List<NoteAttachment>     Attachments { get; set; }
 	public required List<NoteReactionSchema> Reactions   { get; set; }
+	public required NotePollSchema?          Poll        { get; set; }
 }
 
 public class NoteAttachment
@@ -56,6 +57,22 @@ public class NoteAttachment
 	public required      bool    IsSensitive  { get; set; }
 	public required      string? Blurhash     { get; set; }
 	public required      string? AltText      { get; set; }
+}
+
+public class NotePollSchema
+{
+	[JI] public required string               NoteId;
+	public required      DateTime?            ExpiresAt   { get; set; }
+	public required      bool                 Multiple    { get; set; }
+	public required      List<NotePollChoice> Choices     { get; set; }
+	public required      int?                 VotersCount { get; set; }
+}
+
+public class NotePollChoice
+{
+	public required string Value { get; set; }
+	public required int    Votes { get; set; }
+	public required bool   Voted { get; set; }
 }
 
 public class NoteReactionSchema
