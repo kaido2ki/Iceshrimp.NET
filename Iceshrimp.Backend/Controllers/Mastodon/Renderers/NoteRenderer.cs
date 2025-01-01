@@ -262,7 +262,7 @@ public class NoteRenderer(
 	{
 		var res = new List<FilterResultEntity>();
 
-		foreach (var entry in filtered)
+		foreach (var entry in filtered.DistinctBy(p => p.filter.Id))
 		{
 			var (filter, keyword) = entry;
 			res.Add(new FilterResultEntity { Filter = FilterRenderer.RenderOne(filter), KeywordMatches = [keyword] });
