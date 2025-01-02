@@ -113,6 +113,7 @@ public class EmojiController(
 
 	[HttpPost("import")]
 	[Authorize("role:admin")]
+	[DisableRequestSizeLimit]
 	[ProducesResults(HttpStatusCode.Accepted)]
 	public async Task<AcceptedResult> ImportEmoji(IFormFile file)
 	{
