@@ -11,6 +11,7 @@
 @using Microsoft.Extensions.Localization
 @attribute [Authorize]
 @inject ApiService                     Api
+@inject GlobalComponentSvc             GlobalComponentSvc;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 @inject MetadataService                MetadataService
@@ -222,9 +223,27 @@
     
     private void EditProfile() => Nav.NavigateTo("/settings/profile");
 
-    private void Bite() => Api.Users.BiteUserAsync(UserResponse.Id);
+    private async Task Bite()
+    {
+        await Api.Users.BiteUserAsync(UserResponse.Id);
+        await GlobalComponentSvc.NoticeDialog?.Display(Loc["Bit {0}", UserResponse.DisplayName ?? UserResponse.Username])!;
+    }
 
-    private void RemoveFromFollowers() => Api.Users.RemoveUserFromFollowersAsync(UserResponse.Id);
+    private async Task RemoveFromFollowersAction(bool confirm)
+    {
+        if (!confirm) return;
+
+        var removed = await Api.Users.RemoveUserFromFollowersAsync(UserResponse.Id);
+        if (!removed) return;
+
+        await GlobalComponentSvc.NoticeDialog?.Display(Loc["Removed {0} from followers", UserResponse.DisplayName ?? UserResponse.Username])!;
+
+        Profile!.Relations &= ~Relations.FollowedBy;
+        StateHasChanged();
+    }
+
+    private void RemoveFromFollowers() =>
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RemoveFromFollowersAction), Loc["Remove {0} from followers?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Remove follower"]);
 
     private void OpenOriginal()
     {
