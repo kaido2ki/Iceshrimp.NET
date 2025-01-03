@@ -1,0 +1,63 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject GlobalComponentSvc             GlobalComponentSvc;
+@inject IJSRuntime                     Js;
+@inject IStringLocalizer<Localization> Loc;
+
+<dialog class="dialog" @ref="Dialog">
+    <div class="confirm">
+        <span class="confirm-icon"><Icon Name="@(ConfirmIcon ?? Icons.Question)" Size="3em"/></span>
+        <span>@Question</span>
+        <div class="buttons">
+            <button class="btn confirm-btn" @onclick="ConfirmAction">@(ButtonText ?? Loc["OK"])</button>
+            <button class="btn" @onclick="CancelAction">@Loc["Cancel"]</button>
+        </div>
+    </div>
+</dialog>
+
+@code {
+    private ElementReference    Dialog { get; set; }
+    private IJSObjectReference  _module = null!;
+    private EventCallback<bool> Action      { get; set; }
+    private string              Question    { get; set; } = "";
+    private IconName?           ConfirmIcon { get; set; }
+    private string?             ButtonText  { get; set; }
+
+    private async Task CloseDialog()
+    {
+        await _module.InvokeVoidAsync("closeDialog", Dialog);
+    }
+
+    public async Task Confirm(EventCallback<bool> action, string question, IconName? icon = null, string? buttonText = null)
+    {
+        Action      = action;
+        Question    = question;
+        ConfirmIcon = icon;
+        ButtonText  = buttonText;
+
+        StateHasChanged();
+
+        await _module.InvokeVoidAsync("openDialog", Dialog);
+    }
+
+    private async Task ConfirmAction()
+    {
+        await Action.InvokeAsync(true);
+        await CloseDialog();
+    }
+
+    private async Task CancelAction()
+    {
+        await Action.InvokeAsync(false);
+        await CloseDialog();
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                           "./Components/ConfirmDialog.razor.js");
+        GlobalComponentSvc.ConfirmDialog = this;
+    }
+}
