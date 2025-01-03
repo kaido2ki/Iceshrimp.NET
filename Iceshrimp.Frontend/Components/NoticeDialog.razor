@@ -1,0 +1,66 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject GlobalComponentSvc             GlobalComponentSvc;
+@inject IJSRuntime                     Js;
+@inject IStringLocalizer<Localization> Loc;
+
+<dialog class="dialog" @ref="Dialog">
+    <div class="notice">
+        <span class="notice-icon">
+            @switch (Type)
+            {
+                case NoticeType.Warning:
+                    <Icon Name="Icons.WarningCircle" Size="3em"/>
+                    break;
+                case NoticeType.Error:
+                    <Icon Name="Icons.Warning" Size="3em"/>
+                    break;
+                case NoticeType.Notice:
+                    <Icon Name="Icons.Info" Size="3em"/>
+                    break;
+                default:
+                    break;
+            }
+        </span>
+        <span>@Text</span>
+        <button class="btn confirm-btn" @onclick="CloseDialog">@Loc["OK"]</button>
+    </div>
+</dialog>
+
+@code {
+    private ElementReference   Dialog { get; set; }
+    private IJSObjectReference _module = null!;
+    private NoticeType         Type { get; set; }
+    private string             Text { get; set; } = "";
+
+    public enum NoticeType
+    {
+        Notice,
+        Warning,
+        Error
+    }
+
+    private async Task CloseDialog()
+    {
+        await _module.InvokeVoidAsync("closeDialog", Dialog);
+    }
+
+    public async Task Display(string text, NoticeType type = NoticeType.Notice)
+    {
+        Type = type;
+        Text = text;
+
+        StateHasChanged();
+        
+        await _module.InvokeVoidAsync("openDialog", Dialog);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                           "./Components/NoticeDialog.razor.js");
+        GlobalComponentSvc.NoticeDialog = this;
+    }
+}

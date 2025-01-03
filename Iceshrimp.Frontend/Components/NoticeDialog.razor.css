@@ -7,7 +7,7 @@
     background-color: black;
 }
 
-.confirm {
+.notice {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -25,12 +25,7 @@
     word-break: break-word;
 }
 
-.buttons {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.confirm-icon {
+.notice-icon {
     color: var(--notice-color);
 }
 
