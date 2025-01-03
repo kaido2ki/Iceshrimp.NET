@@ -1,0 +1,69 @@
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject GlobalComponentSvc             GlobalComponentSvc;
+@inject IJSRuntime                     Js;
+@inject IStringLocalizer<Localization> Loc;
+
+<dialog class="dialog" @ref="Dialog">
+    <div class="select">
+        <span>@Text</span>
+        <select class="input" @bind="Selected">
+            @foreach (var option in Options.Select((o, i) => new { o.Label, i }))
+            {
+                <option value="@option.i">@option.Label</option>
+            }
+        </select>
+        <div class="buttons">
+            <button class="btn submit-btn" @onclick="ConfirmAction">@(ButtonText ?? Loc["Submit"])</button>
+            <button class="btn" @onclick="CancelAction">@Loc["Cancel"]</button>
+        </div>
+    </div>
+</dialog>
+
+@code {
+    private ElementReference                   Dialog { get; set; }
+    private IJSObjectReference                 _module = null!;
+    private EventCallback<object?>             Action     { get; set; }
+    private string                             Text       { get; set; } = "";
+    private List<(string Label, object Value)> Options    { get; set; } = [];
+    private string?                            ButtonText { get; set; }
+    private int                                Selected   { get; set; }
+
+    private async Task CloseDialog()
+    {
+        await _module.InvokeVoidAsync("closeDialog", Dialog);
+    }
+
+    public async Task Select(EventCallback<object?> action, string text, List<(string, object)> options, string? buttonText = null)
+    {
+        Action     = action;
+        Text       = text;
+        Options    = options;
+        ButtonText = buttonText;
+        Selected   = 0;
+
+        StateHasChanged();
+
+        await _module.InvokeVoidAsync("openDialog", Dialog);
+    }
+
+    private async Task ConfirmAction()
+    {
+        await Action.InvokeAsync(Options[Selected].Value);
+        await CloseDialog();
+    }
+
+    private async Task CancelAction()
+    {
+        await Action.InvokeAsync(null);
+        await CloseDialog();
+    }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                           "./Components/SelectDialog.razor.js");
+        GlobalComponentSvc.SelectDialog = this;
+    }
+}

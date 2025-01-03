@@ -9,4 +9,5 @@ public class GlobalComponentSvc
     public ConfirmDialog?   ConfirmDialog   { get; set; }
     public NoticeDialog?    NoticeDialog    { get; set; }
     public PromptDialog?    PromptDialog    { get; set; }
+    public SelectDialog?    SelectDialog    { get; set; }
 }
