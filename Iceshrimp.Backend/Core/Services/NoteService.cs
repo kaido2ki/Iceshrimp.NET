@@ -1399,6 +1399,10 @@ public class NoteService(
 		// don't try to schedule a backfill when we're actively backfilling the thread
 		if (BackfillQueue.KeyedLocker.IsInUse(note.ThreadId)) return;
 
+		// don't try to schedule a backfill without UserId on a followers-only or private notes
+		if (!cfg.FetchAsUser
+		    && note.Visibility is Note.NoteVisibility.Followers or Note.NoteVisibility.Specified) return;
+
 		var updatedRows = await db.NoteThreads
 		                          .Where(t => t.Id == note.ThreadId
 		                                      && t.Notes.Count < BackfillQueue.MaxRepliesPerThread
