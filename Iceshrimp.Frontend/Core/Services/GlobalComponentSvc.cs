@@ -8,4 +8,5 @@ public class GlobalComponentSvc
     public BannerContainer? BannerComponent { get; set; }
     public ConfirmDialog?   ConfirmDialog   { get; set; }
     public NoticeDialog?    NoticeDialog    { get; set; }
+    public PromptDialog?    PromptDialog    { get; set; }
 }

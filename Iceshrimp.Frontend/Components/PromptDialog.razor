@@ -1,0 +1,74 @@
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject GlobalComponentSvc             GlobalComponentSvc;
+@inject IJSRuntime                     Js;
+@inject IStringLocalizer<Localization> Loc;
+
+<dialog class="dialog" @ref="Dialog">
+    <div class="prompt">
+        <span>@Text</span>
+        @if (MultiLine)
+        {
+            <textarea class="input" @bind="Input" @bind:event="oninput" rows="5" placeholder="@Placeholder"></textarea>
+        }
+        else
+        {
+            <input type="text" class="input" @bind="Input" @bind:event="oninput" placeholder="@Placeholder"/>
+        }
+        <div class="buttons">
+            <button class="btn submit-btn" @onclick="ConfirmAction"
+                    disabled="@string.IsNullOrWhiteSpace(Input)">@(ButtonText ?? Loc["Submit"])</button>
+            <button class="btn" @onclick="CancelAction">@Loc["Cancel"]</button>
+        </div>
+    </div>
+</dialog>
+
+@code {
+    private ElementReference       Dialog { get; set; }
+    private IJSObjectReference     _module = null!;
+    private EventCallback<string?> Action      { get; set; }
+    private string                 Text        { get; set; } = "";
+    private string                 Placeholder { get; set; } = "";
+    private bool                   MultiLine   { get; set; }
+    private string?                ButtonText  { get; set; }
+    private string                 Input       { get; set; } = "";
+
+    private async Task CloseDialog()
+    {
+        await _module.InvokeVoidAsync("closeDialog", Dialog);
+    }
+
+    public async Task Prompt(EventCallback<string?> action, string text, string placeholder, bool multiLine = false, string? buttonText = null)
+    {
+        Action      = action;
+        Text        = text;
+        Placeholder = placeholder;
+        MultiLine   = multiLine;
+        ButtonText  = buttonText;
+        Input       = "";
+
+        StateHasChanged();
+
+        await _module.InvokeVoidAsync("openDialog", Dialog);
+    }
+
+    private async Task ConfirmAction()
+    {
+        await Action.InvokeAsync(MultiLine ? Input.ReplaceLineEndings("\n").Trim() : Input.ReplaceLineEndings(" ").Trim());
+        await CloseDialog();
+    }
+
+    private async Task CancelAction()
+    {
+        await Action.InvokeAsync(null);
+        await CloseDialog();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                           "./Components/PromptDialog.razor.js");
+        GlobalComponentSvc.PromptDialog = this;
+    }
+}
