@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
@@ -32,17 +33,20 @@ public class UserResolver(
 	/*
 	 * The full web finger algorithm:
 	 *
-	 * 1. WebFinger(input_uri), find the rel=self type=application/activity+json entry, that's ap_uri
+	 * 1. WebFinger(query), find the rel=self type=application/activity+json entry, that's apUri
 	 * 1.1 Failing this, fetch the actor
-	 * 1.1.1 If the actor uri differs from the query, recurse (once!) with the new uri
-	 * 1.1.2 Otherwise, Perform reverse discovery for the actor uri
-	 * 2. WebFinger(ap_uri), find the first acct: URI in [subject] + aliases, that's candidate_acct_uri
-	 * 2.1 Failing this, perform reverse discovery for ap_uri
-	 * 3. WebFinger(candidate_acct_uri), validate it also points to ap_uri. If so, you have acct_uri
-	 * 3.1 Failing this, acct_uri = "acct:" + preferredUsername from AP actor + "@" + hostname from ap_uri
+	 * 1.1.1 If the actor uri differs from the query, recurse (once!) with the actor uri as the new query
+	 * 1.1.2 Otherwise, Perform reverse discovery for apUri
+	 * 2. WebFinger(apUri), find the first acct: URI in [subject] + aliases, that's candidateAcctUri
+	 * 2.1 If no such URI exists, attempt to fetch the actor & assemble candidateAcctUri from preferredUsername and apUri host
+	 * 2.2 If WebFinger returns null:
+	 * 2.2.1 If already in reverse discovery, abort
+	 * 2.2.2 Otherwise, perform reverse discovery for apUri
+	 * 3. WebFinger(candidateAcctUri), validate it also points to apUri. If so, you have finalAcct
+	 * 3.1 If no such URI exists, attempt to fetch the actor & assemble finalAcct from preferredUsername and apUri host
 	 *
 	 * Avoid repeating WebFinger's with same URI for performance, optimize away validation checks when the domain matches.
-	 * Skip step 2 when performing reverse discovery & ap_uri matches the actor uri.
+	 * Skip step 2 when performing reverse discovery & apUri matches the actor uri.
 	 */
 
 	private async Task<(string Acct, string Uri)> WebFingerAsync(
@@ -58,6 +62,8 @@ public class UserResolver(
 
 		responses ??= [];
 
+		ASActor? actor = null;
+
 		var fingerRes = await webFingerSvc.ResolveAsync(query);
 		if (fingerRes == null)
 		{
@@ -66,7 +72,7 @@ public class UserResolver(
 				logger.LogDebug("WebFinger returned null, fetching actor as fallback");
 				try
 				{
-					var actor = await fetchSvc.FetchActorAsync(query);
+					actor = await fetchSvc.FetchActorAsync(query);
 					if (query != actor.Id)
 					{
 						logger.LogDebug("Actor ID differs from query, retrying...");
@@ -95,15 +101,40 @@ public class UserResolver(
 		                     ?.Href;
 
 		if (apUri == null)
-			throw new GracefulException($"WebFinger response for '{query}' didn't contain a candidate link");
-		var subjectUri = GetAcctUri(fingerRes) ??
-		                 throw new Exception($"WebFinger response for '{apUri}' didn't contain any acct uris");
+			throw new GracefulException($"WebFinger response for '{query}' didn't contain a candidate apUri");
+		var candidateAcctUri = GetAcctUri(fingerRes);
+		if (candidateAcctUri == null)
+		{
+			if (Uri.TryCreate(apUri, UriKind.Absolute, out var parsedApUri))
+			{
+				// @formatter:off
+				logger.LogDebug("WebFinger response for {apUri} didn't contain any acct uris, fetching actor as fallback", apUri);
+
+				if (actor != null && actor.Id != apUri)
+					actor = await fetchSvc.FetchActorAsync(apUri);
+				else
+					actor ??= await fetchSvc.FetchActorAsync(apUri);
+
+				if (actor.Username is null)
+					throw new GracefulException($"WebFinger response for '{apUri}' didn't contain any acct uris & actor doesn't have a preferredUsername");
+				if (apUri != actor.Id)
+					throw new GracefulException("WebFinger fallback fallback failed: actor uri mismatch");
+				
+				actor.NormalizeAndValidate(apUri);
+				candidateAcctUri = $"acct:{actor.Username}@{parsedApUri.Host}";
+				// @formatter:on
+			}
+			else
+			{
+				throw new Exception($"WebFinger response for '{apUri}' didn't contain any acct uris");
+			}
+		}
 
 		var queryHost   = WebFingerService.ParseQuery(query).domain;
-		var subjectHost = WebFingerService.ParseQuery(subjectUri).domain;
+		var subjectHost = WebFingerService.ParseQuery(candidateAcctUri).domain;
 		var apUriHost   = new Uri(apUri).Host;
 		if (subjectHost == apUriHost && subjectHost == queryHost)
-			return (subjectUri, apUri);
+			return (candidateAcctUri, apUri);
 
 		// We need to skip this step when performing reverse discovery & the uris match
 		if (apUri != actorUri)
@@ -119,14 +150,17 @@ public class UserResolver(
 					logger.LogDebug("Failed to validate apUri, falling back to reverse discovery");
 					try
 					{
-						var actor = await fetchSvc.FetchActorAsync(apUri);
+						if (actor != null && actor.Id != apUri)
+							actor = await fetchSvc.FetchActorAsync(apUri);
+						else
+							actor ??= await fetchSvc.FetchActorAsync(apUri);
 						if (apUri != actor.Id)
 							throw new Exception("Reverse discovery fallback failed: uri mismatch");
 
 						logger.LogDebug("Actor ID matches apUri, performing reverse discovery...");
 						actor.NormalizeAndValidate(apUri);
 						var domain   = new Uri(actor.Id).Host;
-						var username = new Uri(actor.Username!).Host;
+						var username = actor.Username!;
 						return await WebFingerAsync(actor.WebfingerAddress ?? $"acct:{username}@{domain}", false,
 						                            apUri, responses);
 					}
@@ -141,8 +175,34 @@ public class UserResolver(
 			}
 		}
 
-		var acctUri = GetAcctUri(fingerRes) ??
-		              throw new Exception($"WebFinger response for '{apUri}' didn't contain any acct uris");
+		var acctUri = GetAcctUri(fingerRes);
+
+		if (acctUri == null)
+		{
+			if (Uri.TryCreate(apUri, UriKind.Absolute, out var parsedApUri))
+			{
+				// @formatter:off
+				logger.LogDebug("WebFinger response for {apUri} didn't contain any acct uris, fetching actor as fallback", apUri);
+				
+				if (actor != null && actor.Id != apUri)
+					actor = await fetchSvc.FetchActorAsync(apUri);
+				else
+					actor ??= await fetchSvc.FetchActorAsync(apUri);
+
+				if (actor.Username is null)
+					throw new GracefulException($"WebFinger response for '{apUri}' didn't contain any acct uris & actor doesn't have a preferredUsername");
+				if (actor.Id != apUri)
+					throw new GracefulException("WebFinger fallback fallback failed: actor uri mismatch");
+
+				actor.NormalizeAndValidate(apUri);
+				acctUri = $"acct:{actor.Username}@{parsedApUri.Host}";
+				// @formatter:on
+			}
+			else
+			{
+				throw new Exception($"WebFinger response for '{acctUri}' didn't contain any acct uris");
+			}
+		}
 
 		if (WebFingerService.ParseQuery(acctUri).domain == apUriHost)
 			return (acctUri, apUri);
@@ -158,11 +218,29 @@ public class UserResolver(
 			responses.Add(acctUri, fingerRes);
 		}
 
-		var finalAcct = GetAcctUri(fingerRes) ??
-		                throw new Exception($"WebFinger response for '{acctUri}' didn't contain any acct uris");
 		var finalUri = fingerRes.Links.FirstOrDefault(p => p is { Rel: "self", Type: "application/activity+json" })
-		                        ?.Href ??
-		               throw new Exception("Final AP URI was null");
+		                        ?.Href
+		               ?? throw new Exception("Final AP URI was null");
+
+		var finalAcct = GetAcctUri(fingerRes);
+
+		if (finalAcct == null)
+		{
+			if (actor?.Id != finalUri)
+				actor = await fetchSvc.FetchActorAsync(finalUri);
+
+			// @formatter:off
+			if (actor.Username is null)
+				throw new GracefulException($"WebFinger response for '{finalUri}' didn't contain any acct uris & actor doesn't have a preferredUsername");
+			if (actor.Id != finalUri)
+				throw new GracefulException("WebFinger fallback fallback failed: actor uri mismatch");
+
+			actor.NormalizeAndValidate(apUri);
+			finalAcct = $"acct:{actor.Username}@{new Uri(finalUri).Host}";
+			if (finalAcct != acctUri)
+				throw new GracefulException("Failed too build fallback acct: finalAcct doesn't match acctUri");
+			// @formatter:on
+		}
 
 		if (apUri != finalUri)
 		{
@@ -187,9 +265,7 @@ public class UserResolver(
 		// AodeRelay doesn't prefix its actor's subject with acct, so we have to fall back to guessing here
 		acct = (fingerRes.Aliases ?? [])
 		       .Prepend(fingerRes.Subject)
-		       .FirstOrDefault(p => !p.Contains(':') &&
-		                            !p.Contains(' ') &&
-		                            p.Split("@").Length == 2);
+		       .FirstOrDefault(p => !p.Contains(':') && !p.Contains(' ') && p.Split("@").Length == 2);
 		return acct is not null ? $"acct:{acct}" : acct;
 	}
 
