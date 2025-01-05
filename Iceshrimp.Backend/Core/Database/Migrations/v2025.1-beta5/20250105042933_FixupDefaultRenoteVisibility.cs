@@ -14,7 +14,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
 	        migrationBuilder.Sql("""UPDATE "user_settings" SET "defaultRenoteVisibility" = 'followers' WHERE "defaultRenoteVisibility" = 'specified';""");
-        }b
+        }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
