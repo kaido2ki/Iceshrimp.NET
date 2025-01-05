@@ -30,18 +30,18 @@
                 <label>
                     @Loc["Default note visibility"]
                     <InputSelect @bind-Value="SettingsForm.DefaultNoteVisibility">
-                        <option value="@NoteVisibility.Followers">@Loc["Followers"]</option>
-                        <option value="@NoteVisibility.Home">@Loc["Home"]</option>
                         <option value="@NoteVisibility.Public">@Loc["Public"]</option>
-                        <option value="@NoteVisibility.Specified">@Loc["Specified"]</option>
+                        <option value="@NoteVisibility.Home">@Loc["Home"]</option>
+                        <option value="@NoteVisibility.Followers">@Loc["Followers"]</option>
+                        <option value="@NoteVisibility.Specified">@Loc["Direct"]</option>
                     </InputSelect>
                 </label>
                 <label>
                     @Loc["Default renote visibility"]
                     <InputSelect @bind-Value="SettingsForm.DefaultRenoteVisibility">
-                        <option value="@NoteVisibility.Followers">@Loc["Followers"]</option>
-                        <option value="@NoteVisibility.Home">@Loc["Home"]</option>
                         <option value="@NoteVisibility.Public">@Loc["Public"]</option>
+                        <option value="@NoteVisibility.Home">@Loc["Home"]</option>
+                        <option value="@NoteVisibility.Followers">@Loc["Followers"]</option>
                     </InputSelect>
                 </label>
                 <label>
