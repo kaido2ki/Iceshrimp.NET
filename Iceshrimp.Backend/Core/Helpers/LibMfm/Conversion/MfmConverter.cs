@@ -368,7 +368,6 @@ public class MfmConverter(
 				var el = CreateInlineFormattingElement(document, "blockquote");
 				AddHtmlMarkup(document, el, "> ");
 				AppendChildren(el, document, node, mentions, host, usedMedia);
-				el.AppendChild(document.CreateElement("br"));
 				return el;
 			}
 			case MfmTextNode textNode:
