@@ -131,6 +131,7 @@ public class NoteRenderer(
 
 		var quoteUri = note.IsQuote ? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value) : null;
 		var text     = quoteUri != null ? note.Text + $"\n\nRE: {quoteUri}" : note.Text;
+		var rawText  = note.Text ?? (note.IsQuote ? "" : null);
 
 		if (quoteUri != null)
 		{
@@ -170,7 +171,7 @@ public class NoteRenderer(
 				{
 					Id           = id,
 					AttributedTo = [new ASObjectBase(userId)],
-					MkContent    = note.Text,
+					MkContent    = rawText,
 					PublishedAt  = note.CreatedAt,
 					UpdatedAt    = note.UpdatedAt,
 					Sensitive    = sensitive,
@@ -183,8 +184,8 @@ public class NoteRenderer(
 					Attachments  = attachments,
 					Content      = text != null ? (await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost, media: inlineMedia)).Html : null,
 					Summary      = note.Cw,
-					Source = note.Text != null
-						? new ASNoteSource { Content = note.Text, MediaType = "text/x.misskeymarkdown" }
+					Source = rawText != null
+						? new ASNoteSource { Content = rawText, MediaType = "text/x.misskeymarkdown" }
 						: null,
 					MkQuote     = quoteUri,
 					QuoteUri    = quoteUri,
@@ -202,7 +203,7 @@ public class NoteRenderer(
 		{
 			Id           = id,
 			AttributedTo = [new ASObjectBase(userId)],
-			MkContent    = note.Text,
+			MkContent    = rawText,
 			PublishedAt  = note.CreatedAt,
 			UpdatedAt    = note.UpdatedAt,
 			Sensitive    = sensitive,
@@ -215,8 +216,8 @@ public class NoteRenderer(
 			Attachments  = attachments,
 			Content      = text != null ? (await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost, media: inlineMedia)).Html : null,
 			Summary      = note.Cw,
-			Source = note.Text != null
-				? new ASNoteSource { Content = note.Text, MediaType = "text/x.misskeymarkdown" }
+			Source = rawText != null
+				? new ASNoteSource { Content = rawText, MediaType = "text/x.misskeymarkdown" }
 				: null,
 			MkQuote  = quoteUri,
 			QuoteUri = quoteUri,
