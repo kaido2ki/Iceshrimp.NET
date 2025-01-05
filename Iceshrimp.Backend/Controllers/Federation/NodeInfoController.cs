@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,8 @@ namespace Iceshrimp.Backend.Controllers.Federation;
 public class NodeInfoController(
 	IOptions<Config.InstanceSection> instanceConfig,
 	IOptions<Config.StorageSection> storageConfig,
-	DatabaseContext db
+	DatabaseContext db,
+	MetaService meta
 ) : ControllerBase
 {
 	[HttpGet("2.1")]
@@ -74,8 +76,8 @@ public class NodeInfoController(
 			Metadata = new NodeInfoResponse.NodeInfoMetadata
 			{
 				//FIXME Implement members
-				NodeName                   = "Iceshrimp.NET",
-				NodeDescription            = "An Iceshrimp.NET instance",
+				NodeName                   = await meta.GetAsync(MetaEntity.InstanceName),
+				NodeDescription            = await meta.GetAsync(MetaEntity.InstanceDescription),
 				Maintainer                 = new NodeInfoResponse.Maintainer { Name = "todo", Email = "todo" },
 				Languages                  = [],
 				TosUrl                     = "todo",
