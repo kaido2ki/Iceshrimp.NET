@@ -18,6 +18,7 @@ public static class LdHelpers
 		["https://purl.archive.org/socialweb/webfinger"] = GetPreloadedContext("wf.json"),
 		["https://www.w3.org/ns/activitystreams"]        = GetPreloadedContext("as.json"),
 		["https://w3id.org/security/v1"]                 = GetPreloadedContext("security.json"),
+		["https://w3id.org/identity/v1"]                 = GetPreloadedContext("identity.json"),
 		["http://joinmastodon.org/ns"]                   = GetPreloadedContext("toot.json"),
 		["https://gotosocial.org/ns"]                    = GetPreloadedContext("gts.json"),
 		["http://schema.org/"]                           = GetPreloadedContext("schema.json"),
