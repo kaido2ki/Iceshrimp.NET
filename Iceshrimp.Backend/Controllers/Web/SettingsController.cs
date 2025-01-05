@@ -56,6 +56,9 @@ public class SettingsController(
 	{
 		var settings = await GetOrInitUserSettings();
 
+		if (newSettings.DefaultRenoteVisibility == NoteVisibility.Specified)
+			throw GracefulException.BadRequest("Default renote visibility cannot be 'specified'");
+
 		settings.FilterInaccessible      = newSettings.FilterInaccessible;
 		settings.PrivateMode             = newSettings.PrivateMode;
 		settings.AlwaysMarkSensitive     = newSettings.AlwaysMarkSensitive;
