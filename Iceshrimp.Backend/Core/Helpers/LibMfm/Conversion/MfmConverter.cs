@@ -53,7 +53,7 @@ public class MfmConverter(
 		if (html == null) return new HtmlMfmData("", media);
 
 		// Ensure compatibility with AP servers that send both <br> as well as newlines
-		var regex = new Regex(@"<br\s?\/?>\r?\n", RegexOptions.IgnoreCase);
+		var regex = new Regex(@"<br\s?\/?>(?:\r?\n)?", RegexOptions.IgnoreCase);
 		html = regex.Replace(html, "\n");
 
 		// Ensure compatibility with AP servers that send non-breaking space characters instead of regular spaces
