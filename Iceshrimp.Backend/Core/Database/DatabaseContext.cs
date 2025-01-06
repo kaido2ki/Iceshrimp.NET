@@ -65,6 +65,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<RegistryItem>         RegistryItems         { get; init; } = null!;
 	public virtual DbSet<Relay>                Relays                { get; init; } = null!;
 	public virtual DbSet<RenoteMuting>         RenoteMutings         { get; init; } = null!;
+	public virtual DbSet<Rule>                 Rules                 { get; set; }
 	public virtual DbSet<Session>              Sessions              { get; init; } = null!;
 	public virtual DbSet<SwSubscription>       SwSubscriptions       { get; init; } = null!;
 	public virtual DbSet<PushSubscription>     PushSubscriptions     { get; init; } = null!;

@@ -3870,6 +3870,33 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.ToTable("renote_muting");
                 });
 
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Rule", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("description");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer")
+                        .HasColumnName("order");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("rule");
+                });
+
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Session", b =>
                 {
                     b.Property<string>("Id")
