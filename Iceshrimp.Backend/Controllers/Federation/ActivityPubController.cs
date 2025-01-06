@@ -29,7 +29,8 @@ public class ActivityPubController(
 	QueueService queues,
 	ActivityPub.NoteRenderer noteRenderer,
 	ActivityPub.UserRenderer userRenderer,
-	IOptions<Config.InstanceSection> config
+	IOptions<Config.InstanceSection> config,
+	IOptionsSnapshot<Config.SecuritySection> security
 ) : ControllerBase, IScopedService
 {
 	[HttpGet("/notes/{id}")]
@@ -226,6 +227,9 @@ public class ActivityPubController(
 		if (user == null) throw GracefulException.NotFound("User not found");
 
 		var actor = HttpContext.GetActor();
+		if (actor == null && security.Value.PublicPreview == Enums.PublicPreview.Lockdown)
+			throw new PublicPreviewDisabledException();
+
 		var notes = await db.Notes.Where(p => p.UserId == id)
 		                    .Include(p => p.User)
 		                    .Include(p => p.Renote)
