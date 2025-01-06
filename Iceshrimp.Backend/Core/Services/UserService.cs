@@ -396,10 +396,8 @@ public class UserService(
 
 		user = await UpdateProfileMentionsAsync(user, null, wait: true);
 
-		var avatar = await db.DriveFiles
-		                     .FirstOrDefaultAsync(p => p.Id == user.AvatarId);
-		var banner = await db.DriveFiles
-		                     .FirstOrDefaultAsync(p => p.Id == user.BannerId);
+		var avatar = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == user.AvatarId);
+		var banner = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == user.BannerId);
 
 		user.Avatar = avatar;
 		user.Banner = banner;

@@ -1601,10 +1601,8 @@ public class NoteService(
 			await db.UserNotePins.AddAsync(pin);
 			await db.SaveChangesAsync();
 
-			var avatar = await db.DriveFiles
-			                     .FirstOrDefaultAsync(p => p.Id == user.AvatarId);
-			var banner = await db.DriveFiles
-			                     .FirstOrDefaultAsync(p => p.Id == user.BannerId);
+			var avatar = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == user.AvatarId);
+			var banner = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == user.BannerId);
 
 			user.Avatar = avatar;
 			user.Banner = banner;
@@ -1621,10 +1619,8 @@ public class NoteService(
 		var count = await db.UserNotePins.Where(p => p.Note == note && p.User == user).ExecuteDeleteAsync();
 		if (count == 0) return;
 
-		var avatar = await db.DriveFiles
-		                     .FirstOrDefaultAsync(p => p.Id == user.AvatarId);
-		var banner = await db.DriveFiles
-		                     .FirstOrDefaultAsync(p => p.Id == user.BannerId);
+		var avatar = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == user.AvatarId);
+		var banner = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == user.BannerId);
 
 		user.Avatar = avatar;
 		user.Banner = banner;
