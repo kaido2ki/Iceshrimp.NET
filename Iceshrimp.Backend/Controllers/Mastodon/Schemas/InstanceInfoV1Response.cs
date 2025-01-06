@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
@@ -36,6 +37,8 @@ public class InstanceInfoV1Response(
 	[J("configuration")] public InstanceConfigurationV1 Configuration => new(config.Instance);
 
 	[J("pleroma")] public required PleromaInstanceExtensions Pleroma { get; set; }
+
+	[J("rules")] public required List<RuleEntity> Rules { get; set; }
 
 	//TODO: add the rest
 }

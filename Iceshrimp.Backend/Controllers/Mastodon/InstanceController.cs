@@ -46,7 +46,8 @@ public class InstanceController(
 		return new InstanceInfoV1Response(config.Value, instanceName, instanceDescription, adminContact)
 		{
 			Stats   = new InstanceStats(userCount, noteCount, instanceCount),
-			Pleroma = new PleromaInstanceExtensions { VapidPublicKey = vapidKey, Metadata = new InstanceMetadata() }
+			Pleroma = new PleromaInstanceExtensions { VapidPublicKey = vapidKey, Metadata = new InstanceMetadata() },
+			Rules   = await GetRules()
 		};
 	}
 
@@ -66,7 +67,8 @@ public class InstanceController(
 
 		return new InstanceInfoV2Response(config.Value, instanceName, instanceDescription, adminContact)
 		{
-			Usage = new InstanceUsage { Users = new InstanceUsersUsage { ActiveMonth = activeMonth } }
+			Usage = new InstanceUsage { Users = new InstanceUsersUsage { ActiveMonth = activeMonth } },
+			Rules = await GetRules()
 		};
 	}
 
@@ -84,6 +86,17 @@ public class InstanceController(
 			               VisibleInPicker = true,
 			               Category        = p.Category
 		               })
+		               .ToListAsync();
+	}
+
+	[HttpGet("/api/v1/instance/rules")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<List<RuleEntity>> GetRules()
+	{
+		return await db.Rules
+		               .OrderBy(p => p.Order)
+		               .ThenBy(p => p.Id)
+		               .Select(p => new RuleEntity { Id = p.Id, Text = p.Text, Hint = p.Description })
 		               .ToListAsync();
 	}
 

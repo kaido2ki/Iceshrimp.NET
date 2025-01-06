@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
@@ -25,6 +26,8 @@ public class InstanceInfoV2Response(
 	[J("configuration")] public InstanceConfigurationV2 Configuration => new(config.Instance);
 
 	[J("usage")] public required InstanceUsage Usage { get; set; }
+
+	[J("rules")] public required List<RuleEntity> Rules { get; set; }
 
 	//TODO: add the rest
 }
