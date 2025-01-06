@@ -58,7 +58,7 @@ public class InstanceController(
 
 	[HttpPost("rules")]
 	[Authenticate]
-	[Authorize("role:moderator")]
+	[Authorize("role:admin")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<RuleResponse> CreateRule(RuleCreateRequest request)
 	{
@@ -80,7 +80,7 @@ public class InstanceController(
 
 	[HttpPatch("rules/{id}")]
 	[Authenticate]
-	[Authorize("role:moderator")]
+	[Authorize("role:admin")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<RuleResponse> UpdateRule(string id, RuleUpdateRequest request)
@@ -135,7 +135,7 @@ public class InstanceController(
 
 	[HttpDelete("rules/{id}")]
 	[Authenticate]
-	[Authorize("role:moderator")]
+	[Authorize("role:admin")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task DeleteRule(string id)
