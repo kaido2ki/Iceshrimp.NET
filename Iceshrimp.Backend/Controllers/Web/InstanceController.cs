@@ -4,9 +4,7 @@ using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
-using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
-using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
@@ -26,7 +24,8 @@ public class InstanceController(
 	UserRenderer userRenderer,
 	IOptions<Config.InstanceSection> instanceConfig,
 	IOptions<Config.SecuritySection> securityConfig,
-	MetaService meta
+	MetaService meta,
+	InstanceService instanceSvc
 ) : ControllerBase
 {
 	[HttpGet]
@@ -62,18 +61,7 @@ public class InstanceController(
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<RuleResponse> CreateRule(RuleCreateRequest request)
 	{
-		var count = await db.Rules.CountAsync();
-
-		var rule = new Rule
-		{
-			Id          = IdHelpers.GenerateSnowflakeId(),
-			Order       = count + 1,
-			Text        = request.Text,
-			Description = request.Description
-		};
-
-		db.Add(rule);
-		await db.SaveChangesAsync();
+		var rule = await instanceSvc.CreateRuleAsync(request.Text.Trim(), request.Description?.Trim());
 
 		return new RuleResponse { Id = rule.Id, Text = rule.Text, Description = rule.Description };
 	}
@@ -88,49 +76,17 @@ public class InstanceController(
 		var rule = await db.Rules.FirstOrDefaultAsync(p => p.Id == id)
 		           ?? throw GracefulException.RecordNotFound();
 
-		var count = await db.Rules.CountAsync();
-		// order is defined here because I don't know why but request.Order is still nullable even if the if statement checks it isn't null
 		var order = request.Order ?? 0;
-		if (order > 0 && order != rule.Order && count != 1)
-		{
-			request.Order = Math.Min(order, count);
-			
-			if (order > rule.Order)
-			{
-				var rules = await db.Rules
-				              .Where(p => rule.Order < p.Order && p.Order <= order)
-				              .ToListAsync();
+		var text  = request.Text?.Trim() ?? rule.Text;
+		var description = request.Description != null
+			? string.IsNullOrWhiteSpace(request.Description)
+				? null
+				: request.Description.Trim()
+			: rule.Description;
 
-				foreach (var r in rules)
-					r.Order -= 1;
+		var res = await instanceSvc.UpdateRuleAsync(rule, order, text, description);
 
-				db.UpdateRange(rules);
-			}
-			else
-			{
-				var rules = await db.Rules
-				                    .Where(p => order <= p.Order && p.Order < rule.Order)
-				                    .ToListAsync();
-
-				foreach (var r in rules)
-					r.Order += 1;
-
-				db.UpdateRange(rules);
-			}
-			
-			rule.Order = order;
-		}
-
-		if (request.Text != null)
-			rule.Text = request.Text.Trim();
-
-		if (request.Description != null)
-			rule.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
-
-		db.Update(rule);
-		await db.SaveChangesAsync();
-
-		return new RuleResponse { Id = rule.Id, Text = rule.Text, Description = rule.Description };
+		return new RuleResponse { Id = res.Id, Text = res.Text, Description = res.Description };
 	}
 
 	[HttpDelete("rules/{id}")]

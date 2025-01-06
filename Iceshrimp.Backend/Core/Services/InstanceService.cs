@@ -149,4 +149,64 @@ public class InstanceService(
 		instance.IsNotResponding     = true;
 		await db.SaveChangesAsync();
 	}
+
+	public async Task<Rule> CreateRuleAsync(string text, string? description)
+	{
+		var count = await db.Rules.CountAsync();
+
+		var rule = new Rule
+		{
+			Id          = IdHelpers.GenerateSnowflakeId(),
+			Order       = count + 1,
+			Text        = text,
+			Description = description
+		};
+
+		db.Add(rule);
+		await db.SaveChangesAsync();
+
+		return rule;
+	}
+
+	public async Task<Rule> UpdateRuleAsync(Rule rule, int order, string text, string? description)
+	{
+		var count = await db.Rules.CountAsync();
+		
+		if (order > 0 && order != rule.Order && count != 1)
+		{
+			order = Math.Min(order, count);
+			
+			if (order > rule.Order)
+			{
+				var rules = await db.Rules
+				                    .Where(p => rule.Order < p.Order && p.Order <= order)
+				                    .ToListAsync();
+
+				foreach (var r in rules)
+					r.Order -= 1;
+
+				db.UpdateRange(rules);
+			}
+			else
+			{
+				var rules = await db.Rules
+				                    .Where(p => order <= p.Order && p.Order < rule.Order)
+				                    .ToListAsync();
+
+				foreach (var r in rules)
+					r.Order += 1;
+
+				db.UpdateRange(rules);
+			}
+			
+			rule.Order = order;
+		}
+
+		rule.Text        = text;
+		rule.Description = description;
+
+		await db.SaveChangesAsync();
+
+		return rule;
+	}
 }
