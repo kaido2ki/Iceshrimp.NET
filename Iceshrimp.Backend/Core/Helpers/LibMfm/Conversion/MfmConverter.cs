@@ -243,14 +243,7 @@ public class MfmConverter(
 					return Fallback();
 
 				double timestamp;
-				try
-				{
-					timestamp = double.Parse(textNode.Text);
-				}
-				catch
-				{
-					return Fallback();
-				}
+				if (!double.TryParse(textNode.Text, out timestamp)) return Fallback();
 
 				var date = DateTime.UnixEpoch.AddSeconds(timestamp);
 				el.TextContent = date.ToString("HH:mm, d MMM yyyy") + " UTC";
