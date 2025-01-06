@@ -1,0 +1,77 @@
+@page "/admin/rules"
+@using Iceshrimp.Backend.Components.Admin
+@using Iceshrimp.Backend.Core.Database.Tables
+@using Iceshrimp.Backend.Core.Services
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.EntityFrameworkCore
+@inherits AdminComponentBase
+<AdminPageHeader Title="Rules"/>
+
+<p>Here you can adjust instance rules. They get displayed to all users, including guests.</p>
+
+<table class="tableauto">
+    <thead>
+    <th>#</th>
+    <th>Text & Description</th>
+    </thead>
+    @foreach (var rule in _rules)
+    {
+        <tr>
+            <td>@rule.Order</td>
+            <td>
+                @rule.Text
+                <br>
+                @if (rule.Description != null)
+                {
+                    @rule.Description
+                }
+                else
+                {
+                    <i>No description</i>
+                }
+            </td>
+        </tr>
+    }
+</table>
+
+@if (_rules is [])
+{
+    <i>No rules configured.</i>
+}
+
+<EditForm FormName="add-rule" Model="Model" OnSubmit="OnSubmit">
+    <label for="text">Text</label>
+    <InputText @bind-Value="@Model.Text" id="text" class="width30" placeholder="Short rule" required/>
+    <label for="description">Description</label>
+    <InputText @bind-Value="@Model.Description" id="description" class="width30" placeholder="Longer rule description"/>
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    [Inject]                  public required InstanceService Instance { get; set; }
+    [SupplyParameterFromForm] private         RuleModel       Model    { get; set; } = null!;
+
+    private List<Rule> _rules = [];
+
+    private class RuleModel
+    {
+        public string? Text        { get; set; }
+        public string? Description { get; set; }
+    }
+
+    protected override void OnParametersSet()
+    {
+        Model ??= new RuleModel();
+    }
+
+    protected override async Task OnGet()
+    {
+        _rules = await Database.Rules.OrderBy(p => p.Order).ThenBy(p => p.Id).ToListAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        await Instance.CreateRuleAsync(Model.Text!.Trim(), Model.Description?.Trim());
+        ReloadPage();
+    }
+}
