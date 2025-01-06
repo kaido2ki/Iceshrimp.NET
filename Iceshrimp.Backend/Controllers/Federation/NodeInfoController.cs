@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
@@ -45,6 +46,10 @@ public class NodeInfoController(
 		var localPosts    = await db.Notes.LongCountAsync(p => p.UserHost == null);
 		var maxUploadSize = storageConfig.Value.MaxUploadSizeBytes;
 
+		var (instanceName, instanceDescription, adminContact) =
+			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription,
+			                        MetaEntity.AdminContactEmail);
+		
 		return new NodeInfoResponse
 		{
 			Version = Request.Path.Value?.EndsWith("2.1") ?? false ? "2.1" : "2.0",
@@ -76,9 +81,9 @@ public class NodeInfoController(
 			Metadata = new NodeInfoResponse.NodeInfoMetadata
 			{
 				//FIXME Implement members
-				NodeName                   = await meta.GetAsync(MetaEntity.InstanceName),
-				NodeDescription            = await meta.GetAsync(MetaEntity.InstanceDescription),
-				Maintainer                 = new NodeInfoResponse.Maintainer { Name = "todo", Email = "todo" },
+				NodeName                   = instanceName,
+				NodeDescription            = instanceDescription,
+				Maintainer                 = new NodeInfoResponse.Maintainer { Name = "todo", Email = adminContact },
 				Languages                  = [],
 				TosUrl                     = "todo",
 				RepositoryUrl              = new Uri(Constants.RepositoryUrl),
