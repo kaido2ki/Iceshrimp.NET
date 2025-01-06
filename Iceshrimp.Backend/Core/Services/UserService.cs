@@ -395,11 +395,11 @@ public class UserService(
 		await db.SaveChangesAsync();
 
 		user = await UpdateProfileMentionsAsync(user, null, wait: true);
-		
+
 		var avatar = await db.DriveFiles
-		                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserAvatar != null);
+		                     .FirstOrDefaultAsync(p => p.Id == user.AvatarId);
 		var banner = await db.DriveFiles
-		                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserBanner != null);
+		                     .FirstOrDefaultAsync(p => p.Id == user.BannerId);
 
 		user.Avatar = avatar;
 		user.Banner = banner;

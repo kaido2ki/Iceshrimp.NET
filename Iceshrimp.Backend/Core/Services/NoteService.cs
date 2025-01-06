@@ -1602,9 +1602,9 @@ public class NoteService(
 			await db.SaveChangesAsync();
 
 			var avatar = await db.DriveFiles
-			                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserAvatar != null);
+			                     .FirstOrDefaultAsync(p => p.Id == user.AvatarId);
 			var banner = await db.DriveFiles
-			                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserBanner != null);
+			                     .FirstOrDefaultAsync(p => p.Id == user.BannerId);
 
 			user.Avatar = avatar;
 			user.Banner = banner;
@@ -1622,9 +1622,9 @@ public class NoteService(
 		if (count == 0) return;
 
 		var avatar = await db.DriveFiles
-		                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserAvatar != null);
+		                     .FirstOrDefaultAsync(p => p.Id == user.AvatarId);
 		var banner = await db.DriveFiles
-		                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserBanner != null);
+		                     .FirstOrDefaultAsync(p => p.Id == user.BannerId);
 
 		user.Avatar = avatar;
 		user.Banner = banner;
