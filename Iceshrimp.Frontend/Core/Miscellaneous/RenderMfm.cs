@@ -536,14 +536,7 @@ public static partial class MfmRenderer
 		if (childText == null) return el;
 
 		double timestamp;
-		try
-		{
-			timestamp = double.Parse(childText);
-		}
-		catch
-		{
-			return el;
-		}
+		if (!double.TryParse(childText, out timestamp)) return el;
 
 		var date = DateTime.UnixEpoch.AddSeconds(timestamp);
 		el.SetAttribute("datetime", date.ToLocalTime().ToString("O"));
