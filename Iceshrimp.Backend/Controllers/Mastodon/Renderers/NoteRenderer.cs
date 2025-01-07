@@ -111,6 +111,23 @@ public class NoteRenderer(
 			AttachmentType.Image or AttachmentType.Gif => MfmInlineMedia.MediaType.Image,
 			_                                          => MfmInlineMedia.MediaType.Other
 		}, p.RemoteUrl ?? p.Url, p.Description)).ToList();
+		
+		var filters = data?.Filters ?? await GetFiltersAsync(user, filterContext);
+
+		List<FilterResultEntity> filterResult;
+		if (filters.Count > 0 && filterContext == null)
+		{
+			var filtered = FilterHelper.CheckFilters([note, note.Reply, note.Renote, note.Renote?.Renote], filters);
+			filterResult = GetFilterResult(filtered);
+		}
+		else
+		{
+			var filtered = FilterHelper.IsFiltered([note, note.Reply, note.Renote, note.Renote?.Renote], filters);
+			filterResult = GetFilterResult(filtered.HasValue ? [filtered.Value] : []);
+		}
+
+		if ((user?.UserSettings?.FilterInaccessible ?? false) && (replyInaccessible || quoteInaccessible))
+			filterResult.Insert(0, InaccessibleFilter);
 
 		var cw = note.Cw;
 		if (replyInaccessible && !string.IsNullOrEmpty(cw))
@@ -145,23 +162,6 @@ public class NoteRenderer(
 			? (data?.Polls ?? await GetPollsAsync([note], user)).FirstOrDefault(p => p.Id == note.Id)
 			: null;
 
-		var filters = data?.Filters ?? await GetFiltersAsync(user, filterContext);
-
-		List<FilterResultEntity> filterResult;
-		if (filters.Count > 0 && filterContext == null)
-		{
-			var filtered = FilterHelper.CheckFilters([note, note.Reply, note.Renote, note.Renote?.Renote], filters);
-			filterResult = GetFilterResult(filtered);
-		}
-		else
-		{
-			var filtered = FilterHelper.IsFiltered([note, note.Reply, note.Renote, note.Renote?.Renote], filters);
-			filterResult = GetFilterResult(filtered.HasValue ? [filtered.Value] : []);
-		}
-
-		if ((user?.UserSettings?.FilterInaccessible ?? false) && (replyInaccessible || quoteInaccessible))
-			filterResult.Insert(0, InaccessibleFilter);
-
 		var res = new StatusEntity
 		{
 			Id               = note.Id,
@@ -185,7 +185,7 @@ public class NoteRenderer(
 			IsBookmarked     = bookmarked,
 			IsMuted          = muted,
 			IsSensitive      = sensitive,
-			ContentWarning   = note.Cw ?? "",
+			ContentWarning   = cw ?? "",
 			Visibility       = StatusEntity.EncodeVisibility(note.Visibility),
 			Content          = content,
 			Text             = text,
