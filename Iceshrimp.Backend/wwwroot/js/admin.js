@@ -34,6 +34,10 @@ async function removeRelay(id, target) {
     await confirm(target, () => callApiMethod(`/api/iceshrimp/admin/relays/${id}`, 'DELETE'));
 }
 
+async function removeRule(id, target) {
+    await confirm(target, () => callApiMethod(`/api/iceshrimp/instance/rules/${id}`, 'DELETE'));
+}
+
 async function suspendUser(id, target) {
     await confirm(target, () => callApiMethod(`/api/iceshrimp/moderation/users/${id}/suspend`));
 }

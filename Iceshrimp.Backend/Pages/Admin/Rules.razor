@@ -34,6 +34,7 @@
             </td>
             <td>
                 <NavLink href="@($"/admin/rules/{rule.Id}")">Edit</NavLink>
+                <a class="fake-link" onclick="removeRule('@rule.Id', event.target)">Remove</a>
             </td>
         </tr>
     }
