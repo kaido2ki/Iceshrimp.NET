@@ -19,23 +19,47 @@
             <h3>@Loc["Register on {0}", Name ?? "this Iceshrimp.NET Instance."]</h3></span>
         @if (RegistrationAvailability is not Registrations.Closed)
         {
-            <div class="register-form">
-                <input placeholder="@Loc["Username"]" autocomplete="username" name="username" required="required"
-                       @bind="@Username"/>
-                <input type="password" autocomplete="new-password" name="new-password" required="required"
-                       placeholder="@Loc["Password"]"
-                       @bind="@Password"/>
-                @if (RegistrationAvailability is Registrations.Invite)
-                {
-                    <input required="required" placeholder="@Loc["Invite"]" @bind="@Invite"/>
-                }
-                <StateButton @ref="@LoginButton" ExtraClasses="button" OnClick="Submit">
-                    <Initial>@Loc["Register"]</Initial>
-                    <Success>@Loc["Success!"]</Success>
-                    <Loading>@Loc["Loading"]</Loading>
-                    <Failed>@Loc["Try again"]</Failed>
-                </StateButton>
-            </div>
+            @if (Rules.Count != 0 && AcceptedRules == false)
+            {
+                <div class="rules">
+                    <span>@Loc["To register you must accept the following rules"]</span>
+                    <ol>
+                        @foreach (var rule in Rules)
+                        {
+                            <li>
+                                @rule.Text
+                                @if (rule.Description != null)
+                                {
+                                    <br>
+                                    <i>@rule.Description</i>
+                                }
+                            </li>
+                        }
+                    </ol>
+                    <button class="button" @onclick="() => { AcceptedRules = true; }">@Loc["Accept"]</button>
+                </div>
+            }
+            else
+            {
+                <div class="register-form">
+                    <input placeholder="@Loc["Username"]" autocomplete="username" name="username" required="required"
+                           @bind="@Username"/>
+                    <input type="password" autocomplete="new-password" name="new-password" required="required"
+                           placeholder="@Loc["Password"]"
+                           @bind="@Password"/>
+                    @if (RegistrationAvailability is Registrations.Invite)
+                    {
+                        <input required="required" placeholder="@Loc["Invite"]" @bind="@Invite"/>
+                    }
+                    <StateButton @ref="@LoginButton" ExtraClasses="button" OnClick="Submit">
+                        <Initial>@Loc["Register"]</Initial>
+                        <Success>@Loc["Success!"]</Success>
+                        <Loading>@Loc["Loading"]</Loading>
+                        <Failed>@Loc["Try again"]</Failed>
+                    </StateButton>
+                </div>
+            }
+
             @if (Error)
             {
                 <div>@Loc[RegistrationError ?? string.Empty]</div>
@@ -59,6 +83,9 @@
     private string?       RegistrationError        { get; set; }
     private string?       Name                     { get; set; }
     private StateButton   LoginButton              { get; set; } = null!;
+    private bool          AcceptedRules            { get; set; }
+
+    private List<RuleResponse> Rules { get; set; } = [];
 
     private async Task Submit()
     {
@@ -114,5 +141,6 @@
         RegistrationAvailability = metadata.Registration;
         State                    = State.Loaded;
         Name                     = metadata.Name;
+        Rules                    = await Api.Instance.GetRulesAsync();
     }
 }

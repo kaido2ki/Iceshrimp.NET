@@ -22,3 +22,11 @@ input:invalid {
 .login-link {
     margin-top: 2rem;
 }
+
+.rules ol li {
+    list-style: decimal;
+}
+
+.rules button {
+    margin: 0 auto;
+}
