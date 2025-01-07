@@ -112,6 +112,16 @@ public class NoteRenderer(
 			_                                          => MfmInlineMedia.MediaType.Other
 		}, p.RemoteUrl ?? p.Url, p.Description)).ToList();
 
+		var cw = note.Cw;
+		if (replyInaccessible && !string.IsNullOrEmpty(cw))
+		{
+			// prefix with lock emoji
+			cw = "RE: \ud83d\udd12, " + cw;
+
+			// prevent duplicating inaccessible marker in the body
+			replyInaccessible = false;
+		}
+
 		string? content = null;
 		if (data?.Source != true)
 		{
