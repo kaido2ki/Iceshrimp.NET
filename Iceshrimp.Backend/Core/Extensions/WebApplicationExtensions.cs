@@ -271,6 +271,18 @@ public static class WebApplicationExtensions
 			}
 		}
 
+		var tempPath = Environment.GetEnvironmentVariable("ASPNETCORE_TEMP") ?? Path.GetTempPath();
+		try
+		{
+			await using var stream = File.OpenWrite(Path.Combine(tempPath, ".iceshrimp-test"));
+		}
+		catch
+		{
+			app.Logger.LogCritical("Temporary directory {dir} is not writable. Please adjust permissions or set the ASPNETCORE_TEMP environment variable to a writable directory.",
+			                       tempPath);
+			Environment.Exit(1);
+		}
+
 		app.Logger.LogInformation("Initializing VAPID keys...");
 		var meta = provider.GetRequiredService<MetaService>();
 		await meta.EnsureSetAsync([MetaEntity.VapidPublicKey, MetaEntity.VapidPrivateKey], () =>
