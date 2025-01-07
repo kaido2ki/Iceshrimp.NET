@@ -57,4 +57,65 @@ public class SessionController(DatabaseContext db) : ControllerBase
 		db.Remove(session);
 		await db.SaveChangesAsync();
 	}
+
+	[HttpGet("mastodon")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<List<MastodonSessionResponse>> GetMastodonSessions(int page = 0)
+	{
+		const int pageSize = 20;
+
+		return await db.OauthTokens
+		               .Include(p => p.App)
+		               .Where(p => p.User == HttpContext.GetUserOrFail())
+		               .OrderByDescending(p => p.LastActiveDate ?? p.CreatedAt)
+		               .Skip(page * pageSize)
+		               .Take(pageSize)
+		               .Select(p => new MastodonSessionResponse
+		               {
+			               Id         = p.Id,
+			               Active     = p.Active,
+			               CreatedAt  = p.CreatedAt,
+			               LastActive = p.LastActiveDate,
+			               App        = p.App.Name,
+			               Scopes     = p.Scopes,
+			               Flags = new MastodonSessionFlags
+			               {
+				               SupportsHtmlFormatting = p.SupportsHtmlFormatting,
+				               AutoDetectQuotes       = p.AutoDetectQuotes,
+				               IsPleroma              = p.IsPleroma,
+				               SupportsInlineMedia    = p.SupportsInlineMedia
+			               }
+		               })
+		               .ToListAsync();
+	}
+
+	[HttpPatch("mastodon/{id}")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task UpdateMastodonSession(string id, [FromBody] MastodonSessionFlags flags)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var token = await db.OauthTokens.FirstOrDefaultAsync(p => p.Id == id && p.User == user)
+		            ?? throw GracefulException.NotFound("Session not found");
+
+		token.SupportsHtmlFormatting = flags.SupportsHtmlFormatting;
+		token.AutoDetectQuotes       = flags.AutoDetectQuotes;
+		token.IsPleroma              = flags.IsPleroma;
+		token.SupportsInlineMedia    = flags.SupportsInlineMedia;
+
+		await db.SaveChangesAsync();
+	}
+
+	[HttpDelete("mastodon/{id}")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task TerminateMastodonSession(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var token = await db.OauthTokens.FirstOrDefaultAsync(p => p.Id == id && p.User == user)
+		            ?? throw GracefulException.NotFound("Session not found");
+
+		db.Remove(token);
+		await db.SaveChangesAsync();
+	}
 }
