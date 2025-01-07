@@ -369,13 +369,15 @@ public class UserResolver(
 				return GracefulException.BadRequest($"User with acct {acct} is known, but Acct flag is not set");
 		}
 
-		if (flags.HasFlag(ResolveFlags.EnforceUri) && user != null && user.GetUriOrPublicUri(config.Value) != query)
+		// @formatter:off
+		if (flags.HasFlag(ResolveFlags.EnforceUri) && user != null && new Uri(user.GetUriOrPublicUri(config.Value)) != new Uri(query))
 			return GracefulException.BadRequest("Refusing to return user with mismatching uri with EnforceUri flag");
+		// @formatter:on
 
 		if (user != null)
 			return user;
 
-		if (flags.HasFlag(ResolveFlags.EnforceUri) && uri != query)
+		if (flags.HasFlag(ResolveFlags.EnforceUri) && new Uri(uri) != new Uri(query))
 			return GracefulException.BadRequest("Refusing to create user with mismatching uri with EnforceUri flag");
 
 		// All checks passed & we still don't know the user, so we pass the job on to userSvc, which will create it
