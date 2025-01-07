@@ -88,6 +88,7 @@ public class NoteService(
 		public          NoteMentionData?                ResolvedMentions;
 		public          ASNote?                         ASNote;
 		public          List<string>?                   Emoji;
+		public          bool                            IsRefetch;
 	}
 
 	public record struct NoteMentionData(
@@ -750,6 +751,9 @@ public class NoteService(
 		             || isPollEdited
 		             || db.Entry(note).State != EntityState.Unchanged;
 
+		if (isEdit && data.IsRefetch && note.UpdatedAt == data.UpdatedAt)
+			isEdit = false;
+
 		if (isEdit)
 		{
 			note.UpdatedAt = data.UpdatedAt ?? DateTime.UtcNow;
@@ -1066,7 +1070,7 @@ public class NoteService(
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage",
 	                 Justification = "Inspection doesn't understand IncludeCommonProperties()")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "See above")]
-	public async Task<Note?> ProcessNoteUpdateAsync(ASNote note, User actor, User? user = null)
+	public async Task<Note?> ProcessNoteUpdateAsync(ASNote note, User actor, User? user = null, bool isRefetch = false)
 	{
 		var dbNote = await db.Notes.IncludeCommonProperties()
 		                     .Include(p => p.Poll)
@@ -1140,7 +1144,8 @@ public class NoteService(
 			UpdatedAt        = updatedAt,
 			ResolvedMentions = mentionData,
 			ASNote           = note,
-			Emoji            = emoji
+			Emoji            = emoji,
+			IsRefetch        = isRefetch
 		});
 	}
 
@@ -1370,7 +1375,7 @@ public class NoteService(
 			try
 			{
 				return forceRefresh
-					? await ProcessNoteUpdateAsync(fetchedNote, actor, user)
+					? await ProcessNoteUpdateAsync(fetchedNote, actor, user, isRefetch: true)
 					: await ProcessNoteAsync(fetchedNote, actor, user);
 			}
 			catch (Exception e)
