@@ -391,6 +391,7 @@ public class MfmConverter(
 				var el = CreateInlineFormattingElement(document, "blockquote");
 				AddHtmlMarkup(document, el, "> ");
 				AppendChildren(el, document, node, mentions, host, usedMedia);
+				AddHtmlMarkupTag(document, el, "br");
 				return el;
 			}
 			case MfmTextNode textNode:
@@ -453,6 +454,13 @@ public class MfmConverter(
 		if (SupportsHtmlFormatting.Value) return;
 		var el = document.CreateElement("span");
 		el.AppendChild(document.CreateTextNode(chars));
+		node.AppendChild(el);
+	}
+	
+	private void AddHtmlMarkupTag(IDocument document, IElement node, string tag)
+	{
+		if (SupportsHtmlFormatting.Value) return;
+		var el = document.CreateElement(tag);
 		node.AppendChild(el);
 	}
 }
