@@ -184,7 +184,7 @@ public class InboxValidationMiddleware(
 				logger.LogDebug("Trying LD signature next...");
 			try
 			{
-				var contentType = new MediaTypeHeaderValue(request.ContentType);
+				var contentType = MediaTypeHeaderValue.Parse(request.ContentType);
 				if (!ActivityPub.ActivityFetcherService.IsValidActivityContentType(contentType))
 					throw new Exception("Request body is not an activity");
 
