@@ -392,6 +392,7 @@ public class MfmConverter(
 				AddHtmlMarkup(document, el, "> ");
 				AppendChildren(el, document, node, mentions, host, usedMedia);
 				AddHtmlMarkupTag(document, el, "br");
+				AddHtmlMarkupTag(document, el, "br");
 				return el;
 			}
 			case MfmTextNode textNode:
