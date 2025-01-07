@@ -28,13 +28,15 @@ public class NoteRenderer(
 		var emoji       = await GetEmojiAsync(allNotes);
 		var users       = await GetUsersAsync(allNotes);
 		var attachments = await GetAttachmentsAsync(allNotes);
+		var polls       = await GetPollsAsync(allNotes);
 
-		return await RenderAsync(note, users, mentions, emoji, attachments);
+		return await RenderAsync(note, users, mentions, emoji, attachments, polls);
 	}
 
 	private async Task<PreviewNote> RenderAsync(
 		Note note, List<PreviewUser> users, Dictionary<string, List<Note.MentionedUser>> mentions,
-		Dictionary<string, List<Emoji>> emoji, Dictionary<string, List<PreviewAttachment>?> attachments
+		Dictionary<string, List<Emoji>> emoji, Dictionary<string, List<PreviewAttachment>?> attachments,
+		Dictionary<string, PreviewPoll> polls
 	)
 	{
 		var renderedText = await mfm.RenderAsync(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span", attachments[note.Id]);
@@ -49,6 +51,7 @@ public class NoteRenderer(
 			QuoteUrl = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(instance.Value),
 			QuoteInaccessible = note.Renote?.VisibilityIsPublicOrHome == false,
 			Attachments = attachments[note.Id]?.Where(p => !inlineMediaUrls.Contains(p.Url)).ToList(),
+			Poll = polls.GetValueOrDefault(note.Id),
 			CreatedAt = note.CreatedAt.ToDisplayStringTz(),
 			UpdatedAt = note.UpdatedAt?.ToDisplayStringTz()
 		};
@@ -112,6 +115,24 @@ public class NoteRenderer(
 			                                                           .ToList());
 	}
 
+	private async Task<Dictionary<string, PreviewPoll>> GetPollsAsync(List<Note> notes)
+	{
+		if (notes is []) return new Dictionary<string, PreviewPoll>();
+		var ids = notes.Select(p => p.Id).ToList();
+		var polls = await db.Polls
+		                    .Where(p => ids.Contains(p.NoteId))
+		                    .ToListAsync();
+
+		return polls.ToDictionary(p => p.NoteId,
+		                          p => new PreviewPoll
+		                          {
+			                          ExpiresAt   = p.ExpiresAt,
+			                          Multiple    = p.Multiple,
+			                          Choices     = p.Choices.Zip(p.Votes).Select(c => (c.First, c.Second)).ToList(),
+			                          VotersCount = p.VotersCount
+		                          });
+	}
+
 	public async Task<List<PreviewNote>> RenderManyAsync(List<Note> notes)
 	{
 		if (notes is []) return [];
@@ -120,7 +141,8 @@ public class NoteRenderer(
 		var mentions    = await GetMentionsAsync(allNotes);
 		var emoji       = await GetEmojiAsync(allNotes);
 		var attachments = await GetAttachmentsAsync(allNotes);
-		return await notes.Select(p => RenderAsync(p, users, mentions, emoji, attachments))
+		var polls       = await GetPollsAsync(allNotes);
+		return await notes.Select(p => RenderAsync(p, users, mentions, emoji, attachments, polls))
 		                  .AwaitAllAsync()
 		                  .ToListAsync();
 	}

@@ -1,0 +1,49 @@
+.poll-results {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.5em;
+}
+
+.poll-result {
+    --percentage: 0%;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.5rem;
+    background: linear-gradient(to right, var(--selection) var(--percentage), var(--background) var(--percentage), var(--background));
+}
+
+.poll-value {
+    flex-grow: 1;
+    text-wrap: wrap;
+    word-break: break-word;
+}
+
+.poll-info {
+    flex-shrink: 0;
+}
+
+.vote-count, .vote-percentage {
+    display: inline-block;
+    vertical-align: middle;
+    text-wrap: nowrap;
+}
+
+.vote-count {
+    margin-right: 0.5rem;
+    font-size: 0.7em;
+}
+
+@media (max-width: 768px) {
+    .poll-result {
+        flex-direction: column;
+        align-items: start;
+    }
+
+    .vote-count {
+        font-size: 1em;
+    }
+}

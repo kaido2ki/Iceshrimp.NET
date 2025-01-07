@@ -30,6 +30,33 @@ else
         </p>
     }
 
+    if (_note.Poll != null)
+    {
+        var total = _note.Poll.Choices.Sum(p => p.Votes);
+
+        <div class="poll-results">
+            @foreach (var choice in _note.Poll.Choices)
+            {
+                var percentage = Math.Floor(choice.Votes / (double)total * 100);
+
+                <span class="poll-result" style="--percentage: @percentage%;">
+                    <span class="poll-value">@choice.Value</span>
+                    <span class="poll-info"><span class="vote-count">@choice.Votes votes</span><span class="vote-percentage">@percentage%</span></span>
+                </span>
+            }
+        </div>
+        
+        List<string> footerText = [];
+        @if (_note.Poll.Multiple)
+            footerText.Add("Multiple choice");
+        @if (_note.Poll.VotersCount != null)
+            footerText.Add($"{_note.Poll.VotersCount} users voted");
+        @if (_note.Poll.ExpiresAt != null)
+            footerText.Add(_note.Poll.ExpiresAt <= DateTime.UtcNow ? "Ended" : $"Ends at {_note.Poll.ExpiresAt.Value.ToLocalTime():G}");
+
+        <span>@string.Join(" - ", footerText)</span>
+    }
+
     if (!ShowMedia && _note.Attachments != null)
     {
         <p>
