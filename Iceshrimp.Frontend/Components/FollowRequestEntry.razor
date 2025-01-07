@@ -34,7 +34,7 @@
     protected override async Task OnInitializedAsync()
     {
         var profile                      = await Api.Users.GetUserProfileAsync(FollowRequest.User.Id);
-        if (profile != null) _followBack = profile.Relations.HasFlag(Relations.None);
+        if (profile != null) _followBack = profile.Relations == Relations.RequestedBy;
     }
 
     private async Task Accept()
