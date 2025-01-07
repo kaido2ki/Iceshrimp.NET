@@ -140,6 +140,8 @@ public class InboxValidationMiddleware(
 			// If we still don't have the key, something went wrong and we need to throw an exception
 			if (key == null) throw new GracefulException($"Failed to fetch key of signature user ({sig.KeyId})");
 
+			if (key.User.IsSuspended)
+				throw GracefulException.Forbidden("User is suspended");
 			if (key.User.IsLocalUser)
 				throw new Exception("Remote user must have a host");
 
