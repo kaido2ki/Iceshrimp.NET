@@ -23,6 +23,26 @@
 </div>
 <p>@Model.InstanceDescription</p>
 
+@if (Model.Rules.Count != 0)
+{
+    <details>
+        <summary>Rules</summary>
+        <ol>
+            @foreach (var rule in Model.Rules)
+            {
+                <li>
+                    @rule.Text
+                    @if (rule.Description != null)
+                    {
+                        <br>
+                        <i>@rule.Description</i>
+                    }
+                </li>
+            }
+        </ol>
+    </details>
+}
+
 @if (Model.ContactEmail != null)
 {
     <span>| <a href="mailto:@Model.ContactEmail">Contact instance administrators</a></span>

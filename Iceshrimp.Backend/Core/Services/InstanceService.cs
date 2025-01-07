@@ -150,6 +150,11 @@ public class InstanceService(
 		await db.SaveChangesAsync();
 	}
 
+	public async Task<List<Rule>> GetRules()
+	{
+		return await db.Rules.OrderBy(p => p.Order).ThenBy(p => p.Id).ToListAsync();
+	}
+
 	public async Task<Rule> CreateRuleAsync(string text, string? description)
 	{
 		var count = await db.Rules.CountAsync();

@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -7,11 +8,12 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Pages;
 
-public class IndexModel(MetaService meta, IOptionsSnapshot<Config.InstanceSection> config) : PageModel
+public class IndexModel(MetaService meta, InstanceService instance, IOptionsSnapshot<Config.InstanceSection> config) : PageModel
 {
-	public string? ContactEmail;
-	public string  InstanceDescription = null!;
-	public string  InstanceName        = null!;
+	public string?    ContactEmail;
+	public string     InstanceDescription = null!;
+	public string     InstanceName        = null!;
+	public List<Rule> Rules = [];
 
 	public async Task<IActionResult> OnGet()
 	{
@@ -29,6 +31,8 @@ public class IndexModel(MetaService meta, IOptionsSnapshot<Config.InstanceSectio
 		InstanceDescription =
 			instanceDescription ?? "This Iceshrimp.NET instance does not appear to have a description";
 		ContactEmail = contactEmail;
+
+		Rules = await instance.GetRules();
 
 		return Page();
 	}
