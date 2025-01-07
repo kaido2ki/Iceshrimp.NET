@@ -1,0 +1,65 @@
+@page "/admin/rules/{Id}"
+@using Iceshrimp.Backend.Components.Admin
+@using Iceshrimp.Backend.Core.Database.Tables
+@using Iceshrimp.Backend.Core.Middleware
+@using Iceshrimp.Backend.Core.Services
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Nav;
+@inherits AdminComponentBase
+<AdminPageHeader Title="Edit Rule"/>
+
+<EditForm FormName="edit-rule" Model="Model" OnSubmit="OnSubmit">
+    <label for="order">Order</label>
+    <InputSelect @bind-Value="@Model.Order" id="order" disabled="@(_count == 1)">
+        @for (var i = 1; i <= _count; i++)
+        {
+            <option value="@i">@i</option>
+        }
+    </InputSelect>
+    <label for="text">Text</label>
+    <InputText @bind-Value="@Model.Text" id="text" class="width30" placeholder="Short rule" required/>
+    <label for="description">Description</label>
+    <InputText @bind-Value="@Model.Description" id="description" class="width30" placeholder="Longer rule description"/>
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    [Inject]                  public required InstanceService Instance { get; set; }
+    [Parameter]               public required string          Id       { get; set; }
+    [SupplyParameterFromForm] private         RuleModel       Model    { get; set; } = null!;
+
+    private int   _count;
+    private Rule? _rule;
+
+    private class RuleModel
+    {
+        public int    Order       { get; set; }
+        public string Text        { get; set; } = "";
+        public string Description { get; set; } = "";
+    }
+
+    protected override void OnParametersSet()
+    {
+        Model ??= new RuleModel();
+    }
+
+    protected override async Task OnGet()
+    {
+        _rule  = await Database.Rules.FirstOrDefaultAsync(p => p.Id == Id)
+                 ?? throw GracefulException.RecordNotFound();
+        _count = await Database.Rules.CountAsync();
+
+        Model.Order       = _rule.Order;
+        Model.Text        = _rule.Text;
+        Model.Description = _rule.Description ?? "";
+    }
+
+    private async Task OnSubmit()
+    {
+        _rule = await Database.Rules.FirstOrDefaultAsync(p => p.Id == Id)
+                ?? throw GracefulException.RecordNotFound();
+        await Instance.UpdateRuleAsync(_rule, Model.Order, Model.Text, string.IsNullOrWhiteSpace(Model.Description) ? null : Model.Description);
+        Nav.NavigateTo("/admin/rules");
+    }
+}
