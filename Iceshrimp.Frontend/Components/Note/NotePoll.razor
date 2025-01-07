@@ -25,7 +25,7 @@
                     </label>
                 </span>
             }
-            <button class="button" @onclick="Vote">@Loc["Vote"]</button>
+            <button class="button" @onclick="Vote" disabled="@(Choices.Count == 0)">@Loc["Vote"]</button>
         </div>
     }
     else
