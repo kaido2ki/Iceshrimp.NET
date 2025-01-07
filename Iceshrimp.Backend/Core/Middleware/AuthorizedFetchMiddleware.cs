@@ -28,11 +28,14 @@ public class AuthorizedFetchMiddleware(
 {
 	public static ServiceLifetime Lifetime => ServiceLifetime.Scoped;
 
+	private static string? _instanceActorUri;
+	private static string? _relayActorUri;
+
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
 	{
 		// Ensure we're rendering HTML markup (AsyncLocal)
 		mfmConverter.SupportsHtmlFormatting.Value = true;
-		mfmConverter.SupportsInlineMedia.Value = true;
+		mfmConverter.SupportsInlineMedia.Value    = true;
 
 		if (!config.Value.AuthorizedFetch)
 		{
@@ -45,9 +48,9 @@ public class AuthorizedFetchMiddleware(
 		var request = ctx.Request;
 		var ct      = appLifetime.ApplicationStopping;
 
-		//TODO: cache this somewhere
-		var instanceActorUri = $"/users/{(await systemUserSvc.GetInstanceActorAsync()).Id}";
-		if (request.Path.Value == instanceActorUri)
+		_instanceActorUri ??= $"/users/{(await systemUserSvc.GetInstanceActorAsync()).Id}";
+		_relayActorUri    ??= $"/users/{(await systemUserSvc.GetRelayActorAsync()).Id}";
+		if (request.Path.Value == _instanceActorUri || request.Path.Value == _relayActorUri)
 		{
 			await next(ctx);
 			return;
