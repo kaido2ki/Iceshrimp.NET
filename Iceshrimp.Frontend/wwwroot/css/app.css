@@ -119,6 +119,11 @@ button {
     background-color: var(--hover-color);
 }
 
+.button[disabled] {
+    opacity: 40%;
+    cursor: not-allowed;
+}
+
 input, textarea, select {
     display: block;
     background-color: var(--foreground-color);
