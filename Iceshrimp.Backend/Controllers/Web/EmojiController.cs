@@ -68,9 +68,10 @@ public class EmojiController(
 	[Authorize("role:moderator")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.Conflict)]
-	public async Task<EmojiResponse> UploadEmoji(IFormFile file)
+	public async Task<EmojiResponse> UploadEmoji(IFormFile file, [FromQuery] string name)
 	{
-		var emoji = await emojiSvc.CreateEmojiFromStreamAsync(file.OpenReadStream(), file.FileName, file.ContentType);
+		var ext   = Path.HasExtension(file.FileName) ? Path.GetExtension(file.FileName) : "";
+		var emoji = await emojiSvc.CreateEmojiFromStreamAsync(file.OpenReadStream(), name + ext, file.ContentType);
 
 		return new EmojiResponse
 		{
