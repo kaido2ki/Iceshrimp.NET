@@ -12,10 +12,10 @@ WORKDIR /src
 ARG BUILDPLATFORM
 ARG AOT=false
 
-# copy csproj/fsproj & nuget config, then restore as distinct layers
+# copy csproj files & nuget config, then restore as distinct layers
 COPY NuGet.Config /src
 COPY Iceshrimp.Backend/*.csproj /src/Iceshrimp.Backend/
-COPY Iceshrimp.Parsing/*.fsproj /src/Iceshrimp.Parsing/
+COPY Iceshrimp.Parsing/*.csproj /src/Iceshrimp.Parsing/
 COPY Iceshrimp.Frontend/*.csproj /src/Iceshrimp.Frontend/
 COPY Iceshrimp.Shared/*.csproj /src/Iceshrimp.Shared/
 COPY Iceshrimp.Build/*.csproj /src/Iceshrimp.Build/

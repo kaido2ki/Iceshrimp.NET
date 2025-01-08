@@ -7,7 +7,6 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Parsing;
 using Microsoft.EntityFrameworkCore;
-using static Iceshrimp.Parsing.SearchQueryFilters;
 
 namespace Iceshrimp.Backend.Core.Extensions;
 
@@ -17,7 +16,7 @@ public static class QueryableFtsExtensions
 		this IQueryable<Note> query, string input, User user, Config.InstanceSection config, DatabaseContext db
 	)
 	{
-		var parsed          = SearchQuery.parse(input);
+		var parsed          = SearchQueryParser.Parse(input);
 		var caseSensitivity = parsed.OfType<CaseFilter>().LastOrDefault()?.Value ?? CaseFilterType.Insensitive;
 		var matchType       = parsed.OfType<MatchFilter>().LastOrDefault()?.Value ?? MatchFilterType.Substring;
 
@@ -106,8 +105,8 @@ public static class QueryableFtsExtensions
 
 	private static IQueryable<Note> ApplyReplyFilter(
 		this IQueryable<Note> query, ReplyFilter filter, Config.InstanceSection config, DatabaseContext db
-	) => query.Where(p => p.Reply != null &&
-	                      p.Reply.User.UserSubqueryMatches(filter.Value, filter.Negated, config, db));
+	) => query.Where(p => p.Reply != null
+	                      && p.Reply.User.UserSubqueryMatches(filter.Value, filter.Negated, config, db));
 
 	private static IQueryable<Note> ApplyInFilter(
 		this IQueryable<Note> query, InFilter filter, User user, DatabaseContext db
@@ -115,11 +114,11 @@ public static class QueryableFtsExtensions
 	{
 		return filter.Value switch
 		{
-			{ IsLikes: true }        => query.ApplyInLikesFilter(user, filter.Negated, db),
-			{ IsBookmarks: true }    => query.ApplyInBookmarksFilter(user, filter.Negated, db),
-			{ IsReactions: true }    => query.ApplyInReactionsFilter(user, filter.Negated, db),
-			{ IsInteractions: true } => query.ApplyInInteractionsFilter(user, filter.Negated, db),
-			_                        => throw new ArgumentOutOfRangeException(nameof(filter), filter.Value, null)
+			InFilterType.Likes        => query.ApplyInLikesFilter(user, filter.Negated, db),
+			InFilterType.Bookmarks    => query.ApplyInBookmarksFilter(user, filter.Negated, db),
+			InFilterType.Reactions    => query.ApplyInReactionsFilter(user, filter.Negated, db),
+			InFilterType.Interactions => query.ApplyInInteractionsFilter(user, filter.Negated, db),
+			_                         => throw new ArgumentOutOfRangeException(nameof(filter), filter.Value, null)
 		};
 	}
 
@@ -155,11 +154,11 @@ public static class QueryableFtsExtensions
 	{
 		return filter.Value switch
 		{
-			{ IsFollowers: true } => query.ApplyFollowersFilter(user, filter.Negated),
-			{ IsFollowing: true } => query.ApplyFollowingFilter(user, filter.Negated),
-			{ IsRenotes: true }   => query.ApplyBoostsFilter(filter.Negated),
-			{ IsReplies: true }   => query.ApplyRepliesFilter(filter.Negated),
-			_                     => throw new ArgumentOutOfRangeException(nameof(filter))
+			MiscFilterType.Followers => query.ApplyFollowersFilter(user, filter.Negated),
+			MiscFilterType.Following => query.ApplyFollowingFilter(user, filter.Negated),
+			MiscFilterType.Renotes   => query.ApplyBoostsFilter(filter.Negated),
+			MiscFilterType.Replies   => query.ApplyRepliesFilter(filter.Negated),
+			_                        => throw new ArgumentOutOfRangeException(nameof(filter))
 		};
 	}
 
@@ -182,26 +181,26 @@ public static class QueryableFtsExtensions
 
 	private static IQueryable<Note> ApplyRegularAttachmentFilter(this IQueryable<Note> query, AttachmentFilter filter)
 	{
-		if (filter.Value.IsMedia)
+		if (filter.Value is AttachmentFilterType.Media)
 			return query.Where(p => p.AttachedFileTypes.Count != 0);
-		if (filter.Value.IsPoll)
+		if (filter.Value is AttachmentFilterType.Poll)
 			return query.Where(p => p.HasPoll);
 
-		if (filter.Value.IsImage || filter.Value.IsVideo || filter.Value.IsAudio)
+		if (filter.Value is AttachmentFilterType.Image or AttachmentFilterType.Video or AttachmentFilterType.Audio)
 		{
-			return query.Where(p => p.AttachedFileTypes.Count != 0 &&
-			                        EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)));
+			return query.Where(p => p.AttachedFileTypes.Count != 0
+			                        && EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)));
 		}
 
-		if (filter.Value.IsFile)
+		if (filter.Value is AttachmentFilterType.File)
 		{
-			return query.Where(p => p.AttachedFileTypes.Count != 0 &&
-			                        (!EF.Functions.ILike(p.RawAttachments,
-			                                             GetAttachmentILikeQuery(AttachmentFilterType.Image)) ||
-			                         !EF.Functions.ILike(p.RawAttachments,
-			                                             GetAttachmentILikeQuery(AttachmentFilterType.Video)) ||
-			                         !EF.Functions.ILike(p.RawAttachments,
-			                                             GetAttachmentILikeQuery(AttachmentFilterType.Audio))));
+			return query.Where(p => p.AttachedFileTypes.Count != 0
+			                        && (!EF.Functions.ILike(p.RawAttachments,
+			                                                GetAttachmentILikeQuery(AttachmentFilterType.Image))
+			                            || !EF.Functions.ILike(p.RawAttachments,
+			                                                   GetAttachmentILikeQuery(AttachmentFilterType.Video))
+			                            || !EF.Functions.ILike(p.RawAttachments,
+			                                                   GetAttachmentILikeQuery(AttachmentFilterType.Audio))));
 		}
 
 		throw new ArgumentOutOfRangeException(nameof(filter), filter.Value, null);
@@ -209,21 +208,21 @@ public static class QueryableFtsExtensions
 
 	private static IQueryable<Note> ApplyNegatedAttachmentFilter(this IQueryable<Note> query, AttachmentFilter filter)
 	{
-		if (filter.Value.IsMedia)
+		if (filter.Value is AttachmentFilterType.Media)
 			return query.Where(p => p.AttachedFileTypes.Count == 0);
-		if (filter.Value.IsPoll)
+		if (filter.Value is AttachmentFilterType.Poll)
 			return query.Where(p => !p.HasPoll);
-		if (filter.Value.IsImage || filter.Value.IsVideo || filter.Value.IsAudio)
+		if (filter.Value is AttachmentFilterType.Image or AttachmentFilterType.Video or AttachmentFilterType.Audio)
 			return query.Where(p => !EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)));
 
-		if (filter.Value.IsFile)
+		if (filter.Value is AttachmentFilterType.File)
 		{
 			return query.Where(p => EF.Functions
-			                          .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Image)) ||
-			                        EF.Functions
-			                          .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Video)) ||
-			                        EF.Functions
-			                          .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Audio)));
+			                          .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Image))
+			                        || EF.Functions
+			                             .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Video))
+			                        || EF.Functions
+			                             .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Audio)));
 		}
 
 		throw new ArgumentOutOfRangeException(nameof(filter), filter.Value, null);
@@ -235,10 +234,10 @@ public static class QueryableFtsExtensions
 	{
 		return filter switch
 		{
-			{ IsImage: true } => "%image/%",
-			{ IsVideo: true } => "%video/%",
-			{ IsAudio: true } => "%audio/%",
-			_                 => throw new ArgumentOutOfRangeException(nameof(filter), filter, null)
+			AttachmentFilterType.Image => "%image/%",
+			AttachmentFilterType.Video => "%video/%",
+			AttachmentFilterType.Audio => "%audio/%",
+			_                          => throw new ArgumentOutOfRangeException(nameof(filter), filter, null)
 		};
 	}
 
@@ -264,8 +263,8 @@ public static class QueryableFtsExtensions
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
 	                 Justification = "Projectable chain must have consistent visibility")]
 	internal static IQueryable<User> UserSubquery((string username, string? host) filter, DatabaseContext db) =>
-		db.Users.Where(p => p.UsernameLower == filter.username &&
-		                    p.Host == (filter.host != null ? filter.host.ToPunycodeLower() : null));
+		db.Users.Where(p => p.UsernameLower == filter.username
+		                    && p.Host == (filter.host != null ? filter.host.ToPunycodeLower() : null));
 
 	[Projectable]
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
@@ -275,34 +274,34 @@ public static class QueryableFtsExtensions
 	) => matchType.Equals(MatchFilterType.Substring)
 		? caseSensitivity.Equals(CaseFilterType.Sensitive)
 			? negated
-				? !EF.Functions.Like(note.Text!, "%" + query + "%", @"\") &&
-				  !EF.Functions.Like(note.Cw!, "%" + query + "%", @"\") &&
-				  !EF.Functions.Like(note.CombinedAltText!, "%" + query + "%", @"\")
-				: EF.Functions.Like(note.Text!, "%" + query + "%", @"\") ||
-				  EF.Functions.Like(note.Cw!, "%" + query + "%", @"\") ||
-				  EF.Functions.Like(note.CombinedAltText!, "%" + query + "%", @"\")
+				? !EF.Functions.Like(note.Text!, "%" + query + "%", @"\")
+				  && !EF.Functions.Like(note.Cw!, "%" + query + "%", @"\")
+				  && !EF.Functions.Like(note.CombinedAltText!, "%" + query + "%", @"\")
+				: EF.Functions.Like(note.Text!, "%" + query + "%", @"\")
+				  || EF.Functions.Like(note.Cw!, "%" + query + "%", @"\")
+				  || EF.Functions.Like(note.CombinedAltText!, "%" + query + "%", @"\")
 			: negated
-				? !EF.Functions.ILike(note.Text!, "%" + query + "%", @"\") &&
-				  !EF.Functions.ILike(note.Cw!, "%" + query + "%", @"\") &&
-				  !EF.Functions.ILike(note.CombinedAltText!, "%" + query + "%", @"\")
-				: EF.Functions.ILike(note.Text!, "%" + query + "%", @"\") ||
-				  EF.Functions.ILike(note.Cw!, "%" + query + "%", @"\") ||
-				  EF.Functions.ILike(note.CombinedAltText!, "%" + query + "%", @"\")
+				? !EF.Functions.ILike(note.Text!, "%" + query + "%", @"\")
+				  && !EF.Functions.ILike(note.Cw!, "%" + query + "%", @"\")
+				  && !EF.Functions.ILike(note.CombinedAltText!, "%" + query + "%", @"\")
+				: EF.Functions.ILike(note.Text!, "%" + query + "%", @"\")
+				  || EF.Functions.ILike(note.Cw!, "%" + query + "%", @"\")
+				  || EF.Functions.ILike(note.CombinedAltText!, "%" + query + "%", @"\")
 		: caseSensitivity.Equals(CaseFilterType.Sensitive)
 			? negated
-				? !Regex.IsMatch(note.Text!, "\\y" + query + "\\y") &&
-				  !Regex.IsMatch(note.Cw!, "\\y" + query + "\\y") &&
-				  !Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y")
-				: Regex.IsMatch(note.Text!, "\\y" + query + "\\y") ||
-				  Regex.IsMatch(note.Cw!, "\\y" + query + "\\y") ||
-				  Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y")
+				? !Regex.IsMatch(note.Text!, "\\y" + query + "\\y")
+				  && !Regex.IsMatch(note.Cw!, "\\y" + query + "\\y")
+				  && !Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y")
+				: Regex.IsMatch(note.Text!, "\\y" + query + "\\y")
+				  || Regex.IsMatch(note.Cw!, "\\y" + query + "\\y")
+				  || Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y")
 			: negated
-				? !Regex.IsMatch(note.Text!, "\\y" + query + "\\y", RegexOptions.IgnoreCase) &&
-				  !Regex.IsMatch(note.Cw!, "\\y" + query + "\\y", RegexOptions.IgnoreCase) &&
-				  !Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y", RegexOptions.IgnoreCase)
-				: Regex.IsMatch(note.Text!, "\\y" + query + "\\y", RegexOptions.IgnoreCase) ||
-				  Regex.IsMatch(note.Cw!, "\\y" + query + "\\y", RegexOptions.IgnoreCase) ||
-				  Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y", RegexOptions.IgnoreCase);
+				? !Regex.IsMatch(note.Text!, "\\y" + query + "\\y", RegexOptions.IgnoreCase)
+				  && !Regex.IsMatch(note.Cw!, "\\y" + query + "\\y", RegexOptions.IgnoreCase)
+				  && !Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y", RegexOptions.IgnoreCase)
+				: Regex.IsMatch(note.Text!, "\\y" + query + "\\y", RegexOptions.IgnoreCase)
+				  || Regex.IsMatch(note.Cw!, "\\y" + query + "\\y", RegexOptions.IgnoreCase)
+				  || Regex.IsMatch(note.CombinedAltText!, "\\y" + query + "\\y", RegexOptions.IgnoreCase);
 
 	[Projectable]
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",

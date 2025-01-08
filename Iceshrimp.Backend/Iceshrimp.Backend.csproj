@@ -13,7 +13,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Iceshrimp.Build\Iceshrimp.Build.csproj" PrivateAssets="all" Private="false" />
         <ProjectReference Include="..\Iceshrimp.Frontend\Iceshrimp.Frontend.csproj" />
-        <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.fsproj" />
+        <ProjectReference Include="..\Iceshrimp.Parsing\Iceshrimp.Parsing.csproj" />
         <ProjectReference Include="..\Iceshrimp.Shared\Iceshrimp.Shared.csproj" />
     </ItemGroup>
 

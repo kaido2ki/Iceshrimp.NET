@@ -1,15 +1,14 @@
 using Iceshrimp.Parsing;
-using static Iceshrimp.Parsing.SearchQueryFilters;
 
 namespace Iceshrimp.Tests.Parsing;
 
 [TestClass]
 public class SearchQueryTests
 {
-	private static List<Filter> GetCandidatesByUsername(IEnumerable<string> candidates) =>
-		candidates.Select(p => $"{p}:username").SelectMany(SearchQuery.parse).ToList();
+	private static List<ISearchQueryFilter> GetCandidatesByUsername(IEnumerable<string> candidates) =>
+		candidates.Select(p => $"{p}:username").SelectMany(p => SearchQueryParser.Parse(p)).ToList();
 
-	private static void Validate(ICollection<Filter> results, object expectedResult, int count)
+	private static void Validate(ICollection<ISearchQueryFilter> results, object expectedResult, int count)
 	{
 		results.Count.Should().Be(count);
 		foreach (var res in results) res.Should().BeEquivalentTo(expectedResult);
@@ -20,7 +19,7 @@ public class SearchQueryTests
 	[DataRow(true)]
 	public void TestParseCw(bool negated)
 	{
-		var result         = SearchQuery.parse(negated ? "-cw:meta" : "cw:meta").ToList();
+		var result         = SearchQueryParser.Parse(negated ? "-cw:meta" : "cw:meta").ToList();
 		var expectedResult = new CwFilter(negated, "meta");
 		Validate(result, expectedResult, 1);
 	}
@@ -35,6 +34,17 @@ public class SearchQueryTests
 		var results             = GetCandidatesByUsername(candidates);
 		var expectedResult      = new FromFilter(negated, "username");
 		Validate(results, expectedResult, candidates.Count);
+	}
+
+	[TestMethod]
+	[DataRow(false)]
+	[DataRow(true)]
+	public void TestParseInvalid(bool negated)
+	{
+		var prefix = negated ? "-" : "";
+		//SearchQueryParser.Parse($"{prefix}from:");
+		//SearchQueryParser.Parse($"{prefix}:");
+		SearchQueryParser.Parse($"{prefix}asd {prefix}:");
 	}
 
 	[TestMethod]
@@ -68,26 +78,26 @@ public class SearchQueryTests
 	{
 		List<string> candidates = ["instance", "domain", "host"];
 		if (negated) candidates = candidates.Select(p => "-" + p).ToList();
-		var results             = candidates.Select(p => $"{p}:instance.tld").SelectMany(SearchQuery.parse).ToList();
-		var expectedResult      = new InstanceFilter(negated, "instance.tld");
+		var results = candidates.Select(p => $"{p}:instance.tld").SelectMany(p => SearchQueryParser.Parse(p)).ToList();
+		var expectedResult = new InstanceFilter(negated, "instance.tld");
 		Validate(results, expectedResult, candidates.Count);
 	}
 
 	[TestMethod]
 	public void TestParseAfter()
 	{
-		List<string> candidates     = ["after", "since"];
-		var          results        = candidates.Select(p => $"{p}:2024-03-01").SelectMany(SearchQuery.parse).ToList();
-		var          expectedResult = new AfterFilter(DateOnly.ParseExact("2024-03-01", "O"));
+		List<string> candidates = ["after", "since"];
+		var results = candidates.Select(p => $"{p}:2024-03-01").SelectMany(p => SearchQueryParser.Parse(p)).ToList();
+		var expectedResult = new AfterFilter(DateOnly.ParseExact("2024-03-01", "O"));
 		Validate(results, expectedResult, candidates.Count);
 	}
 
 	[TestMethod]
 	public void TestParseBefore()
 	{
-		List<string> candidates     = ["before", "until"];
-		var          results        = candidates.Select(p => $"{p}:2024-03-01").SelectMany(SearchQuery.parse).ToList();
-		var          expectedResult = new BeforeFilter(DateOnly.ParseExact("2024-03-01", "O"));
+		List<string> candidates = ["before", "until"];
+		var results = candidates.Select(p => $"{p}:2024-03-01").SelectMany(p => SearchQueryParser.Parse(p)).ToList();
+		var expectedResult = new BeforeFilter(DateOnly.ParseExact("2024-03-01", "O"));
 		Validate(results, expectedResult, candidates.Count);
 	}
 
@@ -100,16 +110,18 @@ public class SearchQueryTests
 		if (negated) keyCandidates = keyCandidates.Select(p => "-" + p).ToList();
 		List<string> candidates    = ["any", "media", "image", "video", "audio", "file", "poll"];
 		var results =
-			keyCandidates.Select(k => candidates.Select(v => $"{k}:{v}").SelectMany(SearchQuery.parse).ToList());
-		List<Filter> expectedResults =
+			keyCandidates.Select(k => candidates.Select(v => $"{k}:{v}")
+			                                    .SelectMany(p => SearchQueryParser.Parse(p))
+			                                    .ToList());
+		List<ISearchQueryFilter> expectedResults =
 		[
-			new AttachmentFilter(negated, "any"),
-			new AttachmentFilter(negated, "media"),
-			new AttachmentFilter(negated, "image"),
-			new AttachmentFilter(negated, "video"),
-			new AttachmentFilter(negated, "audio"),
-			new AttachmentFilter(negated, "file"),
-			new AttachmentFilter(negated, "poll")
+			new AttachmentFilter(negated, AttachmentFilterType.Media),
+			new AttachmentFilter(negated, AttachmentFilterType.Media),
+			new AttachmentFilter(negated, AttachmentFilterType.Image),
+			new AttachmentFilter(negated, AttachmentFilterType.Video),
+			new AttachmentFilter(negated, AttachmentFilterType.Audio),
+			new AttachmentFilter(negated, AttachmentFilterType.File),
+			new AttachmentFilter(negated, AttachmentFilterType.Poll)
 		];
 		results.Should()
 		       .HaveCount(keyCandidates.Count)
@@ -119,10 +131,13 @@ public class SearchQueryTests
 	[TestMethod]
 	public void TestParseCase()
 	{
-		const string key             = "case";
-		List<string> candidates      = ["sensitive", "insensitive"];
-		var          results         = candidates.Select(v => $"{key}:{v}").SelectMany(SearchQuery.parse).ToList();
-		List<Filter> expectedResults = [new CaseFilter("sensitive"), new CaseFilter("insensitive")];
+		const string key = "case";
+		List<string> candidates = ["sensitive", "insensitive"];
+		var results = candidates.Select(v => $"{key}:{v}").SelectMany(p => SearchQueryParser.Parse(p)).ToList();
+		List<ISearchQueryFilter> expectedResults =
+		[
+			new CaseFilter(CaseFilterType.Sensitive), new CaseFilter(CaseFilterType.Insensitive)
+		];
 		results.Should()
 		       .HaveCount(expectedResults.Count)
 		       .And.BeEquivalentTo(expectedResults, opts => opts.RespectingRuntimeTypes());
@@ -131,12 +146,15 @@ public class SearchQueryTests
 	[TestMethod]
 	public void TestParseMatch()
 	{
-		const string key        = "match";
+		const string key = "match";
 		List<string> candidates = ["words", "word", "substr", "substring"];
-		var          results    = candidates.Select(v => $"{key}:{v}").SelectMany(SearchQuery.parse).ToList();
-		List<Filter> expectedResults =
+		var results = candidates.Select(v => $"{key}:{v}").SelectMany(p => SearchQueryParser.Parse(p)).ToList();
+		List<ISearchQueryFilter> expectedResults =
 		[
-			new MatchFilter("words"), new MatchFilter("words"), new MatchFilter("substr"), new MatchFilter("substr")
+			new MatchFilter(MatchFilterType.Words),
+			new MatchFilter(MatchFilterType.Words),
+			new MatchFilter(MatchFilterType.Substring),
+			new MatchFilter(MatchFilterType.Substring)
 		];
 		results.Should()
 		       .HaveCount(expectedResults.Count)
@@ -148,17 +166,17 @@ public class SearchQueryTests
 	[DataRow(true)]
 	public void TestParseIn(bool negated)
 	{
-		var          key        = negated ? "-in" : "in";
+		var key = negated ? "-in" : "in";
 		List<string> candidates = ["bookmarks", "likes", "favorites", "favourites", "reactions", "interactions"];
-		var          results    = candidates.Select(v => $"{key}:{v}").SelectMany(SearchQuery.parse).ToList();
-		List<Filter> expectedResults =
+		var results = candidates.Select(v => $"{key}:{v}").SelectMany(p => SearchQueryParser.Parse(p)).ToList();
+		List<ISearchQueryFilter> expectedResults =
 		[
-			new InFilter(negated, "bookmarks"),
-			new InFilter(negated, "likes"),
-			new InFilter(negated, "likes"),
-			new InFilter(negated, "likes"),
-			new InFilter(negated, "reactions"),
-			new InFilter(negated, "interactions")
+			new InFilter(negated, InFilterType.Bookmarks),
+			new InFilter(negated, InFilterType.Likes),
+			new InFilter(negated, InFilterType.Likes),
+			new InFilter(negated, InFilterType.Likes),
+			new InFilter(negated, InFilterType.Reactions),
+			new InFilter(negated, InFilterType.Interactions)
 		];
 		results.Should()
 		       .HaveCount(expectedResults.Count)
@@ -175,17 +193,17 @@ public class SearchQueryTests
 		[
 			"followers", "following", "replies", "reply", "renote", "renotes", "boosts", "boost"
 		];
-		var results = candidates.Select(v => $"{key}:{v}").SelectMany(SearchQuery.parse).ToList();
-		List<Filter> expectedResults =
+		var results = candidates.Select(v => $"{key}:{v}").SelectMany(p => SearchQueryParser.Parse(p)).ToList();
+		List<ISearchQueryFilter> expectedResults =
 		[
-			new MiscFilter(negated, "followers"),
-			new MiscFilter(negated, "following"),
-			new MiscFilter(negated, "replies"),
-			new MiscFilter(negated, "replies"),
-			new MiscFilter(negated, "renotes"),
-			new MiscFilter(negated, "renotes"),
-			new MiscFilter(negated, "renotes"),
-			new MiscFilter(negated, "renotes")
+			new MiscFilter(negated, MiscFilterType.Followers),
+			new MiscFilter(negated, MiscFilterType.Following),
+			new MiscFilter(negated, MiscFilterType.Replies),
+			new MiscFilter(negated, MiscFilterType.Replies),
+			new MiscFilter(negated, MiscFilterType.Renotes),
+			new MiscFilter(negated, MiscFilterType.Renotes),
+			new MiscFilter(negated, MiscFilterType.Renotes),
+			new MiscFilter(negated, MiscFilterType.Renotes)
 		];
 		results.Should()
 		       .HaveCount(expectedResults.Count)
@@ -199,8 +217,8 @@ public class SearchQueryTests
 	{
 		List<string> candidates = ["test", "word", "since:2023-10-10invalid", "in:bookmarkstypo"];
 		if (negated) candidates = candidates.Select(p => "-" + p).ToList();
-		var results             = candidates.Select(v => $"{v}").SelectMany(SearchQuery.parse).ToList();
-		List<Filter> expectedResults =
+		var results             = candidates.Select(v => $"{v}").SelectMany(p => SearchQueryParser.Parse(p)).ToList();
+		List<ISearchQueryFilter> expectedResults =
 		[
 			new WordFilter(negated, "test"),
 			new WordFilter(negated, "word"),
@@ -216,7 +234,7 @@ public class SearchQueryTests
 	public void TestParseMultiWord()
 	{
 		const string input   = "(word OR word2 OR word3)";
-		var          results = SearchQuery.parse(input).ToList();
+		var          results = SearchQueryParser.Parse(input).ToList();
 		results.Should().HaveCount(1);
 		results[0].Should().BeOfType<MultiWordFilter>();
 		((MultiWordFilter)results[0]).Values.ToList().Should().BeEquivalentTo(["word", "word2", "word3"]);
@@ -226,7 +244,7 @@ public class SearchQueryTests
 	public void TestParseLiteralString()
 	{
 		const string input   = "\"literal string with spaces $# and has:image before:2023-10-10 other things\"";
-		var          results = SearchQuery.parse(input).ToList();
+		var          results = SearchQueryParser.Parse(input).ToList();
 		results.Should().HaveCount(1);
 		results[0].Should().BeOfType<WordFilter>();
 		((WordFilter)results[0]).Value.Should()
