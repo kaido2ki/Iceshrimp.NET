@@ -302,8 +302,8 @@ public static class WebApplicationExtensions
 
 	public static void SetKestrelUnixSocketPermissions(this WebApplication app)
 	{
-		var config = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
-		             throw new Exception("Failed to read instance config");
+		var config = app.Configuration.GetSection("Instance").Get<Config.InstanceSection>()
+		             ?? throw new Exception("Failed to read instance config");
 		if (config.ListenSocket == null) return;
 		using var scope = app.Services.CreateScope();
 		var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
@@ -312,14 +312,30 @@ public static class WebApplicationExtensions
 		if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS() && !OperatingSystem.IsFreeBSD())
 			throw new Exception("Can't set unix socket permissions on a non-UNIX system");
 
-		var perms    = "660";
-		var exitCode = chmod(config.ListenSocket, Convert.ToInt32(perms, 8));
+		int perms;
+		try
+		{
+			perms = Convert.ToInt32(config.ListenSocketPerms, 8);
+		}
+		catch
+		{
+			logger.LogError("Failed to set Kestrel unix socket permissions to {SocketPerms}: failed to parse octal digits",
+			                config.ListenSocketPerms);
+			Environment.Exit(1);
+			return;
+		}
 
+		var exitCode = chmod(config.ListenSocket, perms);
 		if (exitCode < 0)
+		{
 			logger.LogError("Failed to set Kestrel unix socket permissions to {SocketPerms}, return code: {ExitCode}",
-			                perms, exitCode);
+			                config.ListenSocketPerms, exitCode);
+		}
 		else
-			logger.LogInformation("Kestrel unix socket permissions were set to {SocketPerms}", perms);
+		{
+			logger.LogInformation("Kestrel unix socket permissions were set to {SocketPerms}",
+			                      config.ListenSocketPerms);
+		}
 
 		return;
 
