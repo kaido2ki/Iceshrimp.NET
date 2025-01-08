@@ -76,6 +76,7 @@
 
 .fake-link {
     cursor: pointer;
+    tab-index: 0;
 }
 
 .justify-right {

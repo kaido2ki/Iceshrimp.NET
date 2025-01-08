@@ -71,7 +71,7 @@ else
         @if (Options.Value.Registrations == Enums.Registrations.Invite)
         {
             <i>Registrations are invite-only. </i>
-            <a class="fake-link" id="gen-invite" onclick="generateInviteAndCopy()">Generate invite!</a>
+            <a class="fake-link" id="gen-invite" role="button" onclick="generateInviteAndCopy()">Generate invite!</a>
         }
         else if (Options.Value.Registrations == Enums.Registrations.Open)
         {

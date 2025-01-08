@@ -62,7 +62,11 @@ async function generateInviteAndCopy() {
     const elem = document.getElementById("gen-invite");
     const old = elem.innerText;
     elem.innerText += " (copied!)";
-    setTimeout(() => elem.innerText = old, 1000);
+    elem.role = "alert";
+    setTimeout(() => {
+        elem.role = "button";
+        elem.innerText = old;
+    }, 2500);
 }
 
 async function callApiMethod(route, method) {

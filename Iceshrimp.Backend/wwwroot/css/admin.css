@@ -9,6 +9,7 @@ p {
 
 .fake-link {
     cursor: pointer;
+    tab-index: 0;
 }
 
 .width30 {
