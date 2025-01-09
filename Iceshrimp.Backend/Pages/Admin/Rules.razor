@@ -10,7 +10,7 @@
 
 <p>Here you can adjust instance rules. They get displayed to all users, including guests.</p>
 
-<table class="tableauto">
+<table class="auto-table">
     <thead>
     <th>#</th>
     <th>Text & Description</th>
@@ -34,7 +34,7 @@
             </td>
             <td>
                 <NavLink href="@($"/admin/rules/{rule.Id}")">Edit</NavLink>
-                <a class="fake-link" onclick="removeRule('@rule.Id', event.target)">Remove</a>
+                | <a class="fake-link" onclick="removeRule('@rule.Id', event.target)">Remove</a>
             </td>
         </tr>
     }
