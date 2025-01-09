@@ -7,6 +7,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     /// <inheritdoc />
     [DbContext(typeof(DatabaseContext))]
+    // The migration should be called "20250109095535_RemoveUserAvatarBannerUrlColumns" instead,
+    // but the typo was only spotted after the migration had already been deployed by several users.
     [Migration("20250109095535_RemoteUserAvatarBannerUrlColumns")]
     public partial class RemoteUserAvatarBannerUrlColumns : Migration
     {
