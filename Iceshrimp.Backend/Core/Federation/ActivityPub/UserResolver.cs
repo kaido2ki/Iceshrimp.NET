@@ -366,7 +366,11 @@ public class UserResolver(
 		{
 			user = await userSvc.GetUserFromQueryAsync(new Uri(acct), allowUrl: false);
 			if (user != null && user.Uri != uri && !flags.HasFlag(ResolveFlags.Acct))
-				return GracefulException.BadRequest($"User with acct {acct} is known, but Acct flag is not set");
+				return GracefulException.BadRequest($"User with acct {acct} is known, but Acct flag is not set."
+				                                    + $"This likely means that the domain was reused without"
+				                                    + $"preserving user data, and a user that previously existed"
+				                                    + $"was recreated with a new URI. To fix this, have your instance"
+				                                    + $"administrator delete the old user from the database.");
 		}
 
 		// @formatter:off
