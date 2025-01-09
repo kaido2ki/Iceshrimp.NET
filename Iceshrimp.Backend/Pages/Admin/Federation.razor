@@ -81,23 +81,33 @@
     </p>
 }
 
-@if (Offset is > 0)
-{
-    <button role="link" data-target="/admin/federation?offset=@(Math.Max(0, Offset.Value - 50))" onclick="navigate(event)">❮ Previous page</button>
-}
-else
-{
-    <button disabled>❮ Previous page</button>
-}
+<div class="flex">
+    @if (Offset is > 0)
+    {
+        <button role="link" data-target="/admin/federation?offset=@(Math.Max(0, Offset.Value - 50))"
+                onclick="navigate(event)">❮ Previous page
+        </button>
+    }
+    else
+    {
+        <button disabled>❮ Previous page</button>
+    }
 
-@if (_blockedInstances.Length == 50 || _allowedInstances.Length == 50)
-{
-    <button role="link" data-target="/admin/federation?offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">Next page ❯</button>
-}
-else
-{
-    <button disabled>Next page ❯</button>
-}
+    @if (_blockedInstances.Length == 50 || _allowedInstances.Length == 50)
+    {
+        <button role="link" data-target="/admin/federation?offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">
+            Next page
+            ❯
+        </button>
+    }
+    else
+    {
+        <button disabled>Next page ❯</button>
+    }
+    <form method="get" class="inline-flex flex-grow">
+        <input type="text" id="search" name="q" placeholder="Search..." class="flex-grow" value="@(Query ?? "")"/>
+    </form>
+</div>
 
 <h3>Add @ModeString.ToLowerInvariant() instance</h3>
 @if (IsBlocklist)
@@ -122,8 +132,9 @@ else
 @code {
     [Inject] public required IOptionsSnapshot<Config.SecuritySection> Options { get; set; }
 
-    [SupplyParameterFromQuery] public  int?            Offset { get; set; }
-    [SupplyParameterFromForm]  private FederationModel Model  { get; set; } = null!;
+    [SupplyParameterFromQuery(Name = "q")] public  string?         Query  { get; set; }
+    [SupplyParameterFromQuery]             public  int?            Offset { get; set; }
+    [SupplyParameterFromForm]              private FederationModel Model  { get; set; } = null!;
 
     private bool              IsBlocklist => Options.Value.FederationMode == FederationMode.BlockList;
     private string            ModeString  => IsBlocklist ? "Blocked" : "Allowed";
@@ -156,9 +167,9 @@ else
     protected override async Task OnGet()
     {
         if (IsBlocklist)
-            _blockedInstances = await Database.BlockedInstances.OrderBy(p => p.Host).Skip(Offset ?? 0).Take(50).ToArrayAsync();
+            _blockedInstances = await Database.BlockedInstances.Where(p => p.Host.ToLower().Contains((Query ?? "").ToLower())).OrderBy(p => p.Host).Skip(Offset ?? 0).Take(50).ToArrayAsync();
         else
-            _allowedInstances = await Database.AllowedInstances.OrderBy(p => p.Host).Skip(Offset ?? 0).Take(50).ToArrayAsync();
+            _allowedInstances = await Database.AllowedInstances.Where(p => p.Host.ToLower().Contains((Query ?? "").ToLower())).OrderBy(p => p.Host).Skip(Offset ?? 0).Take(50).ToArrayAsync();
     }
 
     private async Task OnSubmit()

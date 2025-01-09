@@ -15,3 +15,15 @@ p {
 .width30 {
     width: 30ch;
 }
+
+.flex {
+    display: flex;
+}
+
+.inline-flex {
+    display: inline-flex;
+}
+
+.flex-grow {
+    flex-grow: 1;
+}
