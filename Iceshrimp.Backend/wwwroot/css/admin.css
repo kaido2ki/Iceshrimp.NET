@@ -27,3 +27,15 @@ p {
 .flex-grow {
     flex-grow: 1;
 }
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+.text-dim {
+    color: var(--text-dim);
+}
+
+.auto-table {
+    table-layout: auto;
+}

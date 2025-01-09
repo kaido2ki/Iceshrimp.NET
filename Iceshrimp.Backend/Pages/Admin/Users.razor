@@ -7,7 +7,7 @@
 @inherits AdminComponentBase
 <AdminPageHeader Title="Users"/>
 
-<table>
+<table class="auto-table">
     <thead>
     <th>Username</th>
     <th>Status</th>
@@ -17,7 +17,14 @@
     @foreach (var user in _users)
     {
         <tr>
-            <td>@@@user.Username</td>
+            @if (Remote)
+            {
+                <td>@@@user.Username<span class="text-dim">@@@user.Host</span></td>
+            }
+            else
+            {
+                <td>@@@user.Username</td>
+            }
             <td>
                 @{
                     var text = "Active";
@@ -66,55 +73,86 @@
 else
 {
     <p>
-        <i>Listing @_count local users. </i>
+        @if (!Remote)
+        {
+            <i>Listing @_count <a href="/admin/users?remote=true">local</a> users. </i>
 
-        @if (Options.Value.Registrations == Enums.Registrations.Invite)
-        {
-            <i>Registrations are invite-only. </i>
-            <a class="fake-link" id="gen-invite" role="button" onclick="generateInviteAndCopy()">Generate invite!</a>
-        }
-        else if (Options.Value.Registrations == Enums.Registrations.Open)
-        {
-            <i>Registrations are open.</i>
+            @if (Options.Value.Registrations == Enums.Registrations.Invite)
+            {
+                <i>Registrations are invite-only. </i>
+                <a class="fake-link" id="gen-invite" role="button" onclick="generateInviteAndCopy()">Generate
+                    invite!</a>
+            }
+            else if (Options.Value.Registrations == Enums.Registrations.Open)
+            {
+                <i>Registrations are open.</i>
+            }
+            else
+            {
+                <i>Registrations are closed.</i>
+            }
         }
         else
         {
-            <i>Registrations are closed.</i>
+            <i>Listing @_count <a href="/admin/users">remote</a> users.</i>
         }
     </p>
 }
 
-@if (Offset is > 0)
-{
-    <button role="link" data-target="/admin/users?offset=@(Math.Max(0, Offset.Value - 50))" onclick="navigate(event)">❮ Previous page</button>
-}
-else
-{
-    <button disabled>❮ Previous page</button>
-}
+<div class="flex">
+    @if (Offset is > 0)
+    {
+        <button role="link" data-target="/admin/users?offset=@(Math.Max(0, Offset.Value - 50))" onclick="navigate(event)">
+            ❮ Previous page
+        </button>
+    }
+    else
+    {
+        <button disabled>❮ Previous page</button>
+    }
 
-@if (_users.Length == 50)
-{
-    <button role="link" data-target="/admin/users?offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">Next page ❯</button>
-}
-else
-{
-    <button disabled>Next page ❯</button>
-}
+    @if (_users.Length == 50)
+    {
+        <button role="link" data-target="/admin/users?offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">
+            Next page ❯
+        </button>
+    }
+    else
+    {
+        <button disabled>Next page ❯</button>
+    }
+
+    <form method="get" class="inline-flex flex-grow">
+        <input type="text" id="search" name="q" placeholder="Search..." class="flex-grow" value="@(Query ?? "")"/>
+        @if (Remote)
+        {
+            <input type="hidden" name="remote" value="true"/>
+        }
+    </form>
+</div>
 
 @code {
     [Inject] public required IOptionsSnapshot<Config.SecuritySection> Options { get; set; }
 
-    [CascadingParameter]       public required User AuthUser { get; set; }
-    [SupplyParameterFromQuery] public          int? Offset   { get; set; }
+    [CascadingParameter]                   public required User    AuthUser { get; set; }
+    [SupplyParameterFromQuery]             public          int?    Offset   { get; set; }
+    [SupplyParameterFromQuery]             public          bool    Remote   { get; set; }
+    [SupplyParameterFromQuery(Name = "q")] public          string? Query    { get; set; }
 
     private User[] _users = [];
     private int    _count;
 
     protected override async Task OnGet()
     {
-        var query = Database.Users.Where(p => p.IsLocalUser && !p.IsSystemUser);
-        _users = await query.OrderBy(p => p.Id).Skip(Offset ?? 0).Take(50).ToArrayAsync();
+        var query = Remote
+            ? Database.Users.Where(p => p.IsRemoteUser)
+                      .Where(p => ("@" + p.Username + "@" + p.Host).ToLower().Contains((Query ?? "").ToLower()))
+                      .OrderBy(p => p.Username + "@" + p.Host)
+            : Database.Users.Where(p => p.IsLocalUser && !p.IsSystemUser)
+                      .Where(p => ("@" + p.Username.ToLower()).Contains((Query ?? "").ToLower()))
+                      .OrderBy(p => p.Username);
+        
+        _users = await query.Skip(Offset ?? 0).Take(50).ToArrayAsync();
         _count = await query.CountAsync();
     }
 }
