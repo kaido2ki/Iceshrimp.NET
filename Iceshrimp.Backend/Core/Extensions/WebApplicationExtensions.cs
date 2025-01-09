@@ -274,7 +274,7 @@ public static class WebApplicationExtensions
 		var tempPath = Environment.GetEnvironmentVariable("ASPNETCORE_TEMP") ?? Path.GetTempPath();
 		try
 		{
-			await using var stream = File.OpenWrite(Path.Combine(tempPath, ".iceshrimp-test"));
+			await using var stream = File.Create(Path.Combine(tempPath, ".iceshrimp-test"), 1, FileOptions.DeleteOnClose);
 		}
 		catch
 		{
