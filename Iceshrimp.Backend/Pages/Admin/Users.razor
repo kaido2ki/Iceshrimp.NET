@@ -102,7 +102,7 @@ else
 <div class="flex">
     @if (Offset is > 0)
     {
-        <button role="link" data-target="/admin/users?offset=@(Math.Max(0, Offset.Value - 50))" onclick="navigate(event)">
+        <button role="link" data-target="/admin/users?@(Remote ? "remote=true&" : "")offset=@(Math.Max(0, Offset.Value - 50))" onclick="navigate(event)">
             ❮ Previous page
         </button>
     }
@@ -113,7 +113,7 @@ else
 
     @if (_users.Length == 50)
     {
-        <button role="link" data-target="/admin/users?offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">
+        <button role="link" data-target="/admin/users?@(Remote ? "remote=true&" : "")offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">
             Next page ❯
         </button>
     }
