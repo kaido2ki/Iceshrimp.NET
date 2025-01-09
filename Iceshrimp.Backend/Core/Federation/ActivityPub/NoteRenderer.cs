@@ -120,7 +120,7 @@ public class NoteRenderer(
 		                            {
 			                            Sensitive   = p.IsSensitive,
 			                            Url         = new ASLink(p.RawAccessUrl),
-			                            MediaType   = p.Type,
+			                            MediaType   = p.PublicMimeType ?? p.Type,
 			                            Description = p.Comment
 		                            })
 		                            .Cast<ASAttachment>()
