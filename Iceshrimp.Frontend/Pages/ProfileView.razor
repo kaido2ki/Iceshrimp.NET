@@ -80,7 +80,7 @@
                         <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
                             <Text>@Loc["Copy link"]</Text>
                         </MenuElement>
-                        @if (UserResponse.Host != null)
+                        @if (UserResponse.Host != null && Profile?.Url != null)
                         {
                             <MenuElement Icon="Icons.ShareNetwork" OnSelect="CopyLinkRemote">
                                 <Text>@Loc["Copy link (remote)"]</Text>
