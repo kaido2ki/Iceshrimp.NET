@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using AngleSharp.Html.Parser;
 using AsyncKeyedLock;
 using EntityFramework.Exceptions.Common;
 using Iceshrimp.Backend.Core.Configuration;
@@ -39,7 +40,8 @@ public class UserService(
 	QueueService queueSvc,
 	EventService eventSvc,
 	WebFingerService webFingerSvc,
-	ActivityPub.FederationControlService fedCtrlSvc
+	ActivityPub.FederationControlService fedCtrlSvc,
+	HttpClient httpClient
 ) : IScopedService
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -224,6 +226,7 @@ public class UserService(
 			var processPendingDeletes = await ResolveAvatarAndBannerAsync(user, actor);
 			await processPendingDeletes();
 			user = await UpdateProfileMentionsAsync(user, actor);
+			UpdateProfileFieldsInBackground(user);
 			UpdateUserPinnedNotesInBackground(actor, user);
 			_ = followupTaskSvc.ExecuteTaskAsync("UpdateInstanceUserCounter", async provider =>
 			{
@@ -358,6 +361,7 @@ public class UserService(
 		await db.SaveChangesAsync();
 		await processPendingDeletes();
 		user = await UpdateProfileMentionsAsync(user, actor, true);
+		UpdateProfileFieldsInBackground(user);
 		UpdateUserPinnedNotesInBackground(actor, user, true);
 		return user;
 	}
@@ -396,6 +400,7 @@ public class UserService(
 		await db.SaveChangesAsync();
 
 		user = await UpdateProfileMentionsAsync(user, null, wait: true);
+		UpdateProfileFieldsInBackground(user);
 
 		var avatar = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == user.AvatarId);
 		var banner = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == user.BannerId);
@@ -1163,6 +1168,48 @@ public class UserService(
 			await db.ReloadEntityRecursivelyAsync(user);
 
 		return user;
+	}
+	
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "Projectables")]
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
+	private void UpdateProfileFieldsInBackground(User user)
+	{
+		if (KeyedLocker.IsInUse($"profileFields:{user.Id}")) return;
+
+		_ = followupTaskSvc.ExecuteTaskAsync("UpdateProfileFieldsInBackground", async provider =>
+		{
+			using (await KeyedLocker.LockAsync($"profileFields:{user.Id}"))
+			{
+				var bgDbContext = provider.GetRequiredService<DatabaseContext>();
+				var userId = user.Id;
+				var bgUser = await bgDbContext.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == userId);
+				if (bgUser?.UserProfile == null) return;
+				var profileUrl = user.Host != null ? user.UserProfile?.Url : bgUser.GetPublicUrl(instance.Value);
+				if (profileUrl == null) return;
+
+				foreach (var userProfileField in bgUser.UserProfile.Fields)
+				{
+					if (!userProfileField.Value.StartsWith("https://") || !Uri.TryCreate(userProfileField.Value, UriKind.Absolute, out var uri))
+						continue;
+
+					var res = await httpClient.GetAsync(uri);
+
+					if (!res.IsSuccessStatusCode || res.Content.Headers.ContentType?.MediaType != "text/html")
+						continue;
+
+					var html = await res.Content.ReadAsStringAsync();
+					var document = await new HtmlParser().ParseDocumentAsync(html);
+
+					userProfileField.IsVerified =
+						document.Links.Any(a => a.GetAttribute("href") == profileUrl
+						                        && (a.GetAttribute("rel")?.Contains("me")
+						                            ?? false));
+				}
+
+				bgDbContext.Update(bgUser.UserProfile);
+				await bgDbContext.SaveChangesAsync();
+			}
+		});
 	}
 
 	private List<string> ResolveHashtags(IMfmNode[]? parsedText, ASActor? actor = null)
