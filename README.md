@@ -34,6 +34,3 @@
 >
 > If everything goes well, we estimate that there'll be a stable release by the end of Q1 2025.
 
----
-
-Shoutouts to [JetBrains](https://jb.gg/OpenSourceSupport) for providing us with free access to their awesome developer tools.
