@@ -71,7 +71,7 @@
                                 </MenuElement>
                             }
                         }
-                        @if (UserResponse.Host != null && Profile != null)
+                        @if (UserResponse.Host != null && Profile?.Url != null)
                         {
                             <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
                                 <Text>@Loc["Open original page"]</Text>
