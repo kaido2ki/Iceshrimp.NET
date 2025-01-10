@@ -51,7 +51,7 @@ public class DriveController(
 		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id)
 		            ?? throw GracefulException.NotFound("Emoji not found");
 
-		if (!options.Value.ProxyRemoteMedia)
+		if (!options.Value.ProxyRemoteMedia || emoji.Host == null)
 			return Redirect(emoji.RawPublicUrl);
 
 		return await ProxyAsync(emoji.RawPublicUrl, null, null);
