@@ -226,7 +226,7 @@
 
     private void OpenOriginal()
     {
-        if (Profile != null)
+        if (Profile?.Url != null)
             Js.InvokeVoidAsync("open", Profile.Url, "_blank");
     }
     
@@ -238,7 +238,7 @@
     
     private void CopyLinkRemote()
     {
-        if (Profile != null)
+        if (Profile?.Url != null)
             Js.InvokeVoidAsync("navigator.clipboard.writeText", Profile.Url);
     }
 
