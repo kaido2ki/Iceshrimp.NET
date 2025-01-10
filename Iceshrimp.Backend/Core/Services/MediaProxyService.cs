@@ -7,18 +7,21 @@ using Microsoft.Extensions.Options;
 namespace Iceshrimp.Backend.Core.Services;
 
 [UsedImplicitly]
-public class MediaProxyService(IOptions<Config.InstanceSection> instance) : ISingletonService
+public class MediaProxyService(
+	IOptions<Config.InstanceSection> instance,
+	IOptionsMonitor<Config.StorageSection> storage
+) : ISingletonService
 {
 	private string GetProxyUrl(DriveFile file, bool thumbnail)
 	{
 		var url = thumbnail ? file.RawThumbnailAccessUrl : file.RawAccessUrl;
-		if (file.UserHost is null || !file.IsLink)
+		if (!storage.CurrentValue.ProxyRemoteMedia || file.UserHost is null || !file.IsLink)
 			return url;
 
 		return GetProxyUrlInternal($"files/{file.AccessKey}", thumbnail && file.ThumbnailUrl != null);
 	}
 
-	public string GetProxyUrl(Emoji emoji) => emoji.Host is null
+	public string GetProxyUrl(Emoji emoji) => !storage.CurrentValue.ProxyRemoteMedia || emoji.Host is null
 		? emoji.RawPublicUrl
 		: GetProxyUrlInternal($"emoji/{emoji.Id}", thumbnail: false);
 

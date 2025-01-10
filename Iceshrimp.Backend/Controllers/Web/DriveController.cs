@@ -34,7 +34,7 @@ public class DriveController(
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/files/{accessKey}/{version?}")]
-	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.NoContent)]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.Redirect)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<IActionResult> GetFileByAccessKey(string accessKey, string? version)
 	{
@@ -44,7 +44,7 @@ public class DriveController(
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/media/emoji/{id}")]
-	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.NoContent)]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.Redirect)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<IActionResult> GetEmojiById(string id)
 	{
@@ -60,7 +60,7 @@ public class DriveController(
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/avatars/{userId}/{version}")]
-	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.NoContent)]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.Redirect)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<IActionResult> GetAvatarByUserId(string userId, string? version)
 	{
@@ -83,7 +83,7 @@ public class DriveController(
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/banners/{userId}/{version}")]
-	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.NoContent)]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.NoContent, HttpStatusCode.Redirect)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<IActionResult> GetBannerByUserId(string userId, string? version)
 	{
@@ -224,15 +224,15 @@ public class DriveController(
 
 		if (file.IsLink)
 		{
+			var fetchUrl = version is "thumbnail"
+				? file.RawThumbnailAccessUrl
+				: file.RawAccessUrl;
+
 			if (!options.Value.ProxyRemoteMedia)
-				return NoContent();
+				return Redirect(fetchUrl);
 
 			try
 			{
-				var fetchUrl = version is "thumbnail"
-					? file.RawThumbnailAccessUrl
-					: file.RawAccessUrl;
-
 				var filename = file.AccessKey == accessKey || file.Name.EndsWith(".webp")
 					? file.Name
 					: $"{file.Name}.webp";
