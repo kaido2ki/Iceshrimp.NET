@@ -18,7 +18,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     outputs:
-      should_rebuild: ${{ steps.set_should_rebuild.outputs.should_rebuild }}
+      should_rebuild: ${{ steps.check.outputs.SHOULD_BUILD }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -65,13 +65,10 @@ jobs:
           CURRENT_HASH=$(git rev-parse HEAD)
           if [ "$CURRENT_HASH" = "$PREVIOUS_HASH" ]; then
             echo "No changes detected. Skipping build."
-            echo "SHOULD_BUILD=false" >> $GITHUB_ENV
-            echo "::set-output name=should_rebuild::false"
+            echo "SHOULD_BUILD=false" >> $GITHUB_OUTPUT
           else
             echo "Changes detected. Proceeding with build."
-            echo "SHOULD_BUILD=true" >> $GITHUB_ENV
-            echo "should build = true"
-            echo "::set-output name=should_rebuild::true"
+            echo "SHOULD_BUILD=true" >> $GITHUB_OUTPUT
           fi
             
       - name: Checkout repository
@@ -79,7 +76,7 @@ jobs:
         
       # Step 4: Save the current commit hash for future runs
       - name: Save current commit hash
-        if: env.SHOULD_BUILD == 'true'
+        if: ${{ steps.check.outputs.SHOULD_BUILD == true }}
         run: |
           echo $(git rev-parse HEAD) > .previous_commit_hash
           git add .previous_commit_hash
@@ -88,8 +85,8 @@ jobs:
       
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'pull_request' && needs.check_rebuild.outputs.should_rebuild == 'true' }}
     needs: sync
+    if: ${{ github.event_name != 'pull_request' && needs.check.outputs.should_rebuild == 'true' }}
     permissions:
       contents: read
       packages: write
