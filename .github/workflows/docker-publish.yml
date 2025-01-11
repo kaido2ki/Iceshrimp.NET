@@ -18,7 +18,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     outputs:
-      should_rebuild: ${{ steps.check.outputs.SHOULD_BUILD }}
+      should_rebuild: ${{ steps.check.outputs.should_rebuild }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,40 +45,48 @@ jobs:
           
       - name: Checkout repository
         uses: actions/checkout@v4
-        
-      # Step 2: Fetch previous build commit hash (if exists)
+
+      # Step 2: Fetch previous commit hash (if exists)
       - name: Fetch previous commit hash
         id: get-previous-hash
         run: |
-          echo "PREVIOUS_HASH=$(cat .previous_commit_hash 2>/dev/null || echo '')" >> $GITHUB_ENV
+          # 如果文件存在，读取 .previous_commit_hash，否则设置为空
+          PREVIOUS_HASH=$(cat .previous_commit_hash 2>/dev/null || echo '')
+          echo "PREVIOUS_HASH=${PREVIOUS_HASH}" >> $GITHUB_ENV
         continue-on-error: true
-        
-      - name: Checkout repository
+
+      # Step 3: Checkout upstream branch to compare
+      - name: Checkout upstream branch
         uses: actions/checkout@v4
         with:
           ref: upstream
-          
-      # Step 3: Check if there are updates in the branch
+
+      # Step 4: Check if there are updates in the branch
       - name: Check for branch updates
         id: check
         run: |
           CURRENT_HASH=$(git rev-parse HEAD)
           if [ "$CURRENT_HASH" = "$PREVIOUS_HASH" ]; then
             echo "No changes detected. Skipping build."
-            echo "SHOULD_BUILD=false" >> $GITHUB_OUTPUT
+            echo "SHOULD_BUILD=false" >> $GITHUB_ENV
           else
             echo "Changes detected. Proceeding with build."
-            echo "SHOULD_BUILD=true" >> $GITHUB_OUTPUT
+            echo "SHOULD_BUILD=true" >> $GITHUB_ENV
+            echo "should_rebuild=true" >> $GITHUB_OUTPUT
           fi
-            
-      - name: Checkout repository
+
+      # Step 5: Checkout dev branch and commit the current hash
+      - name: Checkout dev branch
+        if: env.SHOULD_BUILD == 'true'
         uses: actions/checkout@v4
-        
-      # Step 4: Save the current commit hash for future runs
+        with:
+          ref: dev
+
       - name: Save current commit hash
-        if: ${{ steps.check.outputs.SHOULD_BUILD == true }}
+        if: env.SHOULD_BUILD == 'true'
         run: |
-          echo $(git rev-parse HEAD) > .previous_commit_hash
+          CURRENT_HASH=$(git rev-parse HEAD)
+          echo $CURRENT_HASH > .previous_commit_hash
           git add .previous_commit_hash
           git commit -m "Save commit hash for future runs"
           git push origin dev
