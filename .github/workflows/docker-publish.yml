@@ -17,7 +17,8 @@ env:
 jobs:
   sync:
     runs-on: ubuntu-latest
-
+    outputs:
+      should_rebuild: ${{ steps.set_should_rebuild.outputs.should_rebuild }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -49,7 +50,7 @@ jobs:
       - name: Fetch previous commit hash
         id: get-previous-hash
         run: |
-          echo "PREVIOUS_HASH=$(cat .previous_commit_hash 2>/dev/null || echo '123')" >> $GITHUB_ENV
+          echo "PREVIOUS_HASH=$(cat .previous_commit_hash 2>/dev/null || echo '')" >> $GITHUB_ENV
         continue-on-error: true
         
       - name: Checkout repository
@@ -59,17 +60,19 @@ jobs:
           
       # Step 3: Check if there are updates in the branch
       - name: Check for branch updates
-        id: check-updates
+        id: check
         run: |
           CURRENT_HASH=$(git rev-parse HEAD)
           if [ "$CURRENT_HASH" = "$PREVIOUS_HASH" ]; then
             echo "No changes detected. Skipping build."
             echo "SHOULD_BUILD=false" >> $GITHUB_ENV
+            echo "::set-output name=should_rebuild::false"
           else
             echo "Changes detected. Proceeding with build."
             echo "SHOULD_BUILD=true" >> $GITHUB_ENV
+            echo "should build = true"
+            echo "::set-output name=should_rebuild::true"
           fi
-          echo "should build = $SHOULD_BUILD"
             
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -95,27 +98,27 @@ jobs:
     steps:
       # Step 1: Checkout repository (sync branch)
       - name: Checkout repository
-        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
+        if: ${{ github.event_name != 'pull_request' && needs.check_rebuild.outputs.should_rebuild == 'true' }}
         uses: actions/checkout@v4
         with:
           ref: upstream
 
       # Step 2: Switch to upstream branch
       - name: Checkout upstream branch
-        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
+        if: ${{ github.event_name != 'pull_request' && needs.check_rebuild.outputs.should_rebuild == 'true' }}
         run: |
           git fetch origin upstream  # Fetch the latest upstream branch
           git checkout upstream || git checkout -b upstream  # Checkout upstream branch or create if it doesn't exist
           
       # Step 3: Print git log
       - name: Print git log
-        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
+        if: ${{ github.event_name != 'pull_request' && needs.check_rebuild.outputs.should_rebuild == 'true' }}
         run: |
           git log --oneline --graph --decorate --abbrev-commit -n 10
           
       # Install cosign tool except on PR
       - name: Install cosign
-        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
+        if: ${{ github.event_name != 'pull_request' && needs.check_rebuild.outputs.should_rebuild == 'true' }}
         uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # v3.5.0
         with:
           cosign-release: 'v2.2.4'
@@ -124,12 +127,12 @@ jobs:
       # multi-platform images and export cache
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
-        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
+        if: ${{ github.event_name != 'pull_request' && needs.check_rebuild.outputs.should_rebuild == 'true' }}
         uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
         
       # Log into registry
       - name: Log into registry ${{ env.REGISTRY }}
-        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
+        if: ${{ github.event_name != 'pull_request' && needs.check_rebuild.outputs.should_rebuild == 'true' }}
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
           registry: ${{ env.REGISTRY }}
@@ -138,7 +141,7 @@ jobs:
 
       # Extract metadata for Docker
       - name: Extract Docker metadata
-        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
+        if: ${{ github.event_name != 'pull_request' && needs.check_rebuild.outputs.should_rebuild == 'true' }}
         id: meta
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
         with:
@@ -146,7 +149,7 @@ jobs:
 
       # Build and push Docker image
       - name: Build and push Docker image
-        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
+        if: ${{ github.event_name != 'pull_request' && needs.check_rebuild.outputs.should_rebuild == 'true' }}
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
@@ -161,7 +164,7 @@ jobs:
 
       # Sign the Docker image (skip on PR)
       - name: Sign the published Docker image
-        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
+        if: ${{ github.event_name != 'pull_request' && needs.check_rebuild.outputs.should_rebuild == 'true' }}
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
