@@ -26,7 +26,6 @@ jobs:
         run: |
           git remote add ice https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git
           git fetch ice
-
       - name: Sync ice branch to upstream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -35,8 +34,7 @@ jobs:
           git config --global user.email "actions@github.com"
           git checkout upstream || git checkout -b upstream
           UPSTREAM_BRANCH="${{ inputs.upstream_branch || 'dev' }}"
-          git merge ice/$UPSTREAM_BRANCH --allow-unrelated-histories
-
+          git reset --hard ice/$UPSTREAM_BRANCH
       - name: Push updates to origin/upstream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -53,43 +51,15 @@ jobs:
       id-token: write
 
     steps:
-      # Step 1: Checkout repository (sync branch)
+      #  Checkout repository (sync branch)
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: upstream
           
-      # Step 2: Fetch previous build commit hash (if exists)
-      - name: Fetch previous commit hash
-        id: get-previous-hash
-        run: |
-          echo "PREVIOUS_HASH=$(cat .previous_commit_hash || echo '')" >> $GITHUB_ENV
-        continue-on-error: true
-
-      # Step 3: Check if there are updates in the branch
-      - name: Check for branch updates
-        id: check-updates
-        run: |
-          CURRENT_HASH=$(git rev-parse HEAD)
-          if [ "$CURRENT_HASH" = "$PREVIOUS_HASH" ]; then
-            echo "No changes detected. Skipping build."
-            echo "SHOULD_BUILD=false" >> $GITHUB_ENV
-          else
-            echo "Changes detected. Proceeding with build."
-            echo "SHOULD_BUILD=true" >> $GITHUB_ENV
-
-      # Step 4: Save the current commit hash for future runs
-      - name: Save current commit hash
-        if: ${{ github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true' }}
-        run: |
-          echo $(git rev-parse HEAD) > .previous_commit_hash
-          git add .previous_commit_hash
-          git commit -m "Save commit hash for future runs"
-          git push origin upstream
-
       # Install cosign tool except on PR
       - name: Install cosign
-        if: ${{ github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true' }}
+        if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # v3.5.0
         with:
           cosign-release: 'v2.2.4'
@@ -102,7 +72,7 @@ jobs:
         
       # Log into registry
       - name: Log into registry ${{ env.REGISTRY }}
-        if: ${{ github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true' }}
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
           registry: ${{ env.REGISTRY }}
@@ -112,7 +82,6 @@ jobs:
       # Extract metadata for Docker
       - name: Extract Docker metadata
         id: meta
-        if: ${{ github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true' }}
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
@@ -120,7 +89,6 @@ jobs:
       # Build and push Docker image
       - name: Build and push Docker image
         id: build-and-push
-        if: ${{ github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true' }}
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
           context: .
@@ -128,13 +96,12 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          provenance: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       # Sign the Docker image (skip on PR)
       - name: Sign the published Docker image
-        if: ${{ github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true' }}
+        if: ${{ github.event_name != 'pull_request' }}
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
