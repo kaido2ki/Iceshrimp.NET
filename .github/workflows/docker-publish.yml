@@ -35,25 +35,43 @@ jobs:
           git checkout upstream || git checkout -b upstream
           UPSTREAM_BRANCH="${{ inputs.upstream_branch || 'dev' }}"
           git reset --hard ice/$UPSTREAM_BRANCH
+          
       - name: Push updates to origin/upstream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git push origin upstream -f
           
-      - name: Check for changes between upstream/dev and origin/upstream
-        id: check_changes
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      # Step 2: Fetch previous build commit hash (if exists)
+      - name: Fetch previous commit hash
+        id: get-previous-hash
         run: |
-          git fetch origin  # 获取远程 origin 信息
-          # 比较 upstream/dev 和 origin/upstream 分支的差异
-          changes=$(git diff --name-only upstream/dev..origin/upstream)
-          if [ -z "$changes" ]; then
-            echo "No changes detected. Skipping Docker build."
-            echo "should_build=false" >> $GITHUB_ENV  # 设置 should_build 环境变量以跳过构建
+          echo "PREVIOUS_HASH=$(cat .previous_commit_hash || echo '')" >> $GITHUB_ENV
+        continue-on-error: true
+
+      # Step 3: Check if there are updates in the branch
+      - name: Check for branch updates
+        id: check-updates
+        run: |
+          CURRENT_HASH=$(git rev-parse upstream)
+          if [ "$CURRENT_HASH" = "$PREVIOUS_HASH" ]; then
+            echo "No changes detected. Skipping build."
+            echo "SHOULD_BUILD=false" >> $GITHUB_ENV
           else
-            echo "Changes detected. Proceeding with Docker build."
-            echo "should_build=true" >> $GITHUB_ENV  # 设置 should_build 为 true，继续构建
-          fi
+            echo "Changes detected. Proceeding with build."
+            echo "SHOULD_BUILD=true" >> $GITHUB_ENV
+
+      # Step 4: Save the current commit hash for future runs
+      - name: Save current commit hash
+        if: env.SHOULD_BUILD == 'true'
+        run: |
+          echo $(git rev-parse upstream) > .previous_commit_hash
+          git add .previous_commit_hash
+          git commit -m "Save commit hash for future runs"
+          git push origin dev
       
   build:
     runs-on: ubuntu-latest
@@ -67,27 +85,27 @@ jobs:
     steps:
       # Step 1: Checkout repository (sync branch)
       - name: Checkout repository
-        if: github.event_name != 'pull_request' && env.should_build == 'true'
+        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
         uses: actions/checkout@v4
         with:
           ref: upstream
 
       # Step 2: Switch to upstream branch
       - name: Checkout upstream branch
-        if: github.event_name != 'pull_request' && env.should_build == 'true'
+        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
         run: |
           git fetch origin upstream  # Fetch the latest upstream branch
           git checkout upstream || git checkout -b upstream  # Checkout upstream branch or create if it doesn't exist
           
       # Step 3: Print git log
       - name: Print git log
-        if: github.event_name != 'pull_request' && env.should_build == 'true'
+        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
         run: |
           git log --oneline --graph --decorate --abbrev-commit -n 10
           
       # Install cosign tool except on PR
       - name: Install cosign
-        if: github.event_name != 'pull_request' && env.should_build == 'true'
+        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
         uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 # v3.5.0
         with:
           cosign-release: 'v2.2.4'
@@ -96,11 +114,12 @@ jobs:
       # multi-platform images and export cache
       # https://github.com/docker/setup-buildx-action
       - name: Set up Docker Buildx
+        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
         uses: docker/setup-buildx-action@f95db51fddba0c2d1ec667646a06c2ce06100226 # v3.0.0
         
       # Log into registry
       - name: Log into registry ${{ env.REGISTRY }}
-        if: github.event_name != 'pull_request' && env.should_build == 'true'
+        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
           registry: ${{ env.REGISTRY }}
@@ -109,7 +128,7 @@ jobs:
 
       # Extract metadata for Docker
       - name: Extract Docker metadata
-        if: github.event_name != 'pull_request' && env.should_build == 'true'
+        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
         id: meta
         uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
         with:
@@ -117,7 +136,7 @@ jobs:
 
       # Build and push Docker image
       - name: Build and push Docker image
-        if: github.event_name != 'pull_request' && env.should_build == 'true'
+        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
         id: build-and-push
         uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 # v5.0.0
         with:
@@ -132,7 +151,7 @@ jobs:
 
       # Sign the Docker image (skip on PR)
       - name: Sign the published Docker image
-        if: github.event_name != 'pull_request' && env.should_build == 'true'
+        if: github.event_name != 'pull_request' && env.SHOULD_BUILD == 'true'
         env:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
