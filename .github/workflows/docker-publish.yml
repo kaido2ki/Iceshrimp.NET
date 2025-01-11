@@ -51,24 +51,32 @@ jobs:
         run: |
           echo "PREVIOUS_HASH=$(cat .previous_commit_hash || echo '')" >> $GITHUB_ENV
         continue-on-error: true
-
+        
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: upstream
+          
       # Step 3: Check if there are updates in the branch
       - name: Check for branch updates
         id: check-updates
         run: |
-          CURRENT_HASH=$(git rev-parse origin/upstream)
+          CURRENT_HASH=$(git rev-parse HEAD)
           if [ "$CURRENT_HASH" = "$PREVIOUS_HASH" ]; then
             echo "No changes detected. Skipping build."
             echo "SHOULD_BUILD=false" >> $GITHUB_ENV
           else
             echo "Changes detected. Proceeding with build."
             echo "SHOULD_BUILD=true" >> $GITHUB_ENV
-
+            
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
       # Step 4: Save the current commit hash for future runs
       - name: Save current commit hash
         if: env.SHOULD_BUILD == 'true'
         run: |
-          echo $(git rev-parse origin/upstream) > .previous_commit_hash
+          echo $(git rev-parse HEAD) > .previous_commit_hash
           git add .previous_commit_hash
           git commit -m "Save commit hash for future runs"
           git push origin dev
