@@ -69,6 +69,7 @@ jobs:
             echo "Changes detected. Proceeding with build."
             echo "SHOULD_BUILD=true" >> $GITHUB_ENV
           fi
+          echo "should build = $SHOULD_BUILD"
             
       - name: Checkout repository
         uses: actions/checkout@v4
