@@ -95,7 +95,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: sync
-    if: ${{ github.event_name != 'pull_request' && needs.check.outputs.should_rebuild == 'true' }}
+    if: ${{ github.event_name != 'pull_request' && needs.sync.outputs.should_rebuild == 'true' }}
     permissions:
       contents: read
       packages: write
