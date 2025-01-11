@@ -49,7 +49,7 @@ jobs:
       - name: Fetch previous commit hash
         id: get-previous-hash
         run: |
-          echo "PREVIOUS_HASH=$(cat .previous_commit_hash || echo '')" >> $GITHUB_ENV
+          echo "PREVIOUS_HASH=$(cat .previous_commit_hash 2>/dev/null || echo '123')" >> $GITHUB_ENV
         continue-on-error: true
         
       - name: Checkout repository
