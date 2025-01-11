@@ -66,6 +66,7 @@ jobs:
         id: check
         run: |
           CURRENT_HASH=$(git rev-parse HEAD)
+          echo "CURRENT=$CURRENT_HASH" >> $GITHUB_ENV
           if [ "$CURRENT_HASH" = "$PREVIOUS_HASH" ]; then
             echo "No changes detected. Skipping build."
             echo "SHOULD_BUILD=false" >> $GITHUB_ENV
@@ -85,8 +86,8 @@ jobs:
       - name: Save current commit hash
         if: env.SHOULD_BUILD == 'true'
         run: |
-          CURRENT_HASH=$(git rev-parse HEAD)
-          echo $CURRENT_HASH > .previous_commit_hash
+          echo CURRENT UPSTREAM HASH = ${{ env.CURRENT }}
+          echo ${{ env.CURRENT }} > .previous_commit_hash
           git add .previous_commit_hash
           git commit -m "Save commit hash for future runs"
           git push origin dev
