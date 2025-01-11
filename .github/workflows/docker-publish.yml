@@ -26,15 +26,17 @@ jobs:
         run: |
           git remote add ice https://iceshrimp.dev/iceshrimp/Iceshrimp.NET.git
           git fetch ice
+
       - name: Sync ice branch to upstream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.name "GitHub Actions" 
           git config --global user.email "actions@github.com"
-          git checkout upstream || git checkout -b upstream #
+          git checkout upstream || git checkout -b upstream
           UPSTREAM_BRANCH="${{ inputs.upstream_branch || 'dev' }}"
-          git merge ice/$UPSTREAM_BRANCH -X ours --allow-unrelated-histories
+          git reset --hard ice/$UPSTREAM_BRANCH
+
       - name: Push updates to origin/upstream
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,7 +57,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: upstream
 
       # Step 2: Switch to upstream branch
       - name: Checkout upstream branch
