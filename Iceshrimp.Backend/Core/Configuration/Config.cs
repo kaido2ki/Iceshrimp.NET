@@ -17,6 +17,7 @@ public sealed class Config
 	public required InstanceSection    Instance    { get; init; } = new();
 	public required DatabaseSection    Database    { get; init; } = new();
 	public required SecuritySection    Security    { get; init; } = new();
+	public required NetworkSection     Network     { get; init; } = new();
 	public required StorageSection     Storage     { get; init; } = new();
 	public required PerformanceSection Performance { get; init; } = new();
 	public required QueueSection       Queue       { get; init; } = new();
@@ -65,6 +66,11 @@ public sealed class Config
 		public Enums.ItemVisibility ExposeFederationList { get; init; } = Enums.ItemVisibility.Registered;
 		public Enums.ItemVisibility ExposeBlockReasons   { get; init; } = Enums.ItemVisibility.Registered;
 		public Enums.PublicPreview  PublicPreview        { get; init; } = Enums.PublicPreview.Public;
+	}
+
+	public sealed class NetworkSection
+	{
+		public string? HttpProxy { get; init; } = null;
 	}
 
 	public sealed class DatabaseSection

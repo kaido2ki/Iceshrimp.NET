@@ -3,32 +3,23 @@ using System.Net;
 using System.Net.Sockets;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
+[UsedImplicitly]
 public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonService
 {
-	private static readonly FastFallback FastFallbackHandler = new();
-
-	private static readonly HttpMessageHandler InnerHandler = new SocketsHttpHandler
-	{
-		AutomaticDecompression      = DecompressionMethods.All,
-		ConnectCallback             = FastFallbackHandler.ConnectCallbackAsync,
-		PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
-		PooledConnectionLifetime    = TimeSpan.FromMinutes(60)
-	};
-
-	private static readonly HttpMessageHandler Handler = new RedirectHandler(InnerHandler);
-
 	public CustomHttpClient(
-		IOptions<Config.InstanceSection> options,
+		IOptions<Config.InstanceSection> instance,
+		IOptions<Config.NetworkSection> network,
 		IOptionsMonitor<Config.SecuritySection> security,
 		ILoggerFactory loggerFactory
-	) : base(Handler)
+	) : base(BuildHandler(network, security, loggerFactory))
 	{
 		// Configure HTTP client options
-		DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", options.Value.UserAgent);
+		DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", instance.Value.UserAgent);
 		Timeout = TimeSpan.FromSeconds(30);
 
 		// Default to HTTP/2, but allow for down-negotiation to HTTP/1.1 or HTTP/1.0
@@ -37,21 +28,41 @@ public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonServ
 
 		// Protect against DoS attacks
 		MaxResponseContentBufferSize = 1024 * 1024; // 1MiB
+	}
 
-		// Configure FastFallback
-		FastFallbackHandler.Logger   = loggerFactory.CreateLogger<FastFallback>();
-		FastFallbackHandler.Security = security;
+	// This needs to be a static method so we can call the base constructor with varying input based on the configuration
+	private static RedirectHandler BuildHandler(
+		IOptions<Config.NetworkSection> network,
+		IOptionsMonitor<Config.SecuritySection> security,
+		ILoggerFactory loggerFactory
+	)
+	{
+		var proxy        = network.Value.HttpProxy != null ? new WebProxy(network.Value.HttpProxy) : null;
+		var fastFallback = new FastFallback(loggerFactory.CreateLogger<FastFallback>(), security, proxy != null);
+		var innerHandler = new SocketsHttpHandler
+		{
+			AutomaticDecompression      = DecompressionMethods.All,
+			ConnectCallback             = fastFallback.ConnectCallbackAsync,
+			PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
+			PooledConnectionLifetime    = TimeSpan.FromMinutes(60),
+			UseProxy                    = proxy != null,
+			Proxy                       = proxy,
+		};
+
+		return new RedirectHandler(innerHandler);
 	}
 
 	// Adapted from https://github.com/KazWolfe/Dalamud/blob/767cc49ecb80e29dbdda2fa8329d3c3341c964fe/Dalamud/Networking/Http/HappyEyeballsCallback.cs
-	private class FastFallback(int connectionBackoff = 75)
+	private class FastFallback(
+		ILogger<FastFallback> logger,
+		IOptionsMonitor<Config.SecuritySection> security,
+		bool proxy,
+		int connectionBackoff = 75
+	)
 	{
-		public ILogger<FastFallback>?                   Logger   { private get; set; }
-		public IOptionsMonitor<Config.SecuritySection>? Security { private get; set; }
-
-		private bool AllowLoopback  => Security?.CurrentValue.AllowLoopback ?? false;
-		private bool AllowLocalIPv4 => Security?.CurrentValue.AllowLocalIPv4 ?? false;
-		private bool AllowLocalIPv6 => Security?.CurrentValue.AllowLocalIPv6 ?? false;
+		private bool AllowLoopback  => security.CurrentValue.AllowLoopback || proxy;
+		private bool AllowLocalIPv4 => security.CurrentValue.AllowLocalIPv4 || proxy;
+		private bool AllowLocalIPv6 => security.CurrentValue.AllowLocalIPv6 || proxy;
 
 		public async ValueTask<Stream> ConnectCallbackAsync(
 			SocketsHttpConnectionContext context, CancellationToken token
@@ -72,22 +83,22 @@ public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonServ
 
 				if (!AllowLoopback && record.IsLoopback())
 				{
-					Logger?.LogWarning("Refusing to connect to loopback address {address} due to possible SSRF",
-					                   record.ToString());
+					logger.LogWarning("Refusing to connect to loopback address {address} due to possible SSRF",
+					                  record.ToString());
 					continue;
 				}
 
 				if (!AllowLocalIPv6 && record.IsLocalIPv6())
 				{
-					Logger?.LogWarning("Refusing to connect to local IPv6 address {address} due to possible SSRF",
-					                   record.ToString());
+					logger.LogWarning("Refusing to connect to local IPv6 address {address} due to possible SSRF",
+					                  record.ToString());
 					continue;
 				}
 
 				if (!AllowLocalIPv4 && record.IsLocalIPv4())
 				{
-					Logger?.LogWarning("Refusing to connect to local IPv4 address {address} due to possible SSRF",
-					                   record.ToString());
+					logger.LogWarning("Refusing to connect to local IPv4 address {address} due to possible SSRF",
+					                  record.ToString());
 					continue;
 				}
 
@@ -118,8 +129,8 @@ public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonServ
 
 			if (stream == null)
 			{
-				throw lastException ??
-				      new Exception("An unknown exception occured during fast fallback connection attempt");
+				throw lastException
+				      ?? new Exception("An unknown exception occured during fast fallback connection attempt");
 			}
 
 			await linkedToken.CancelAsync();
@@ -279,9 +290,9 @@ public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonServ
 			//Manual Redirect
 			//https://github.com/dotnet/runtime/blob/ccfe21882e4a2206ce49cd5b32d3eb3cab3e530f/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/RedirectHandler.cs
 			Uri? redirectUri;
-			while (IsRedirect(response) &&
-			       IsRedirectAllowed(request) &&
-			       (redirectUri = GetUriForRedirect(request.RequestUri!, response)) != null)
+			while (IsRedirect(response)
+			       && IsRedirectAllowed(request)
+			       && (redirectUri = GetUriForRedirect(request.RequestUri!, response)) != null)
 			{
 				redirectCount++;
 				if (redirectCount > MaxAutomaticRedirections)

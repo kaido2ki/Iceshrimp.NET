@@ -88,6 +88,7 @@ public static class ServiceExtensions
 		services.ConfigureWithValidation<Config>(configuration)
 		        .ConfigureWithValidation<Config.InstanceSection>(configuration, "Instance")
 		        .ConfigureWithValidation<Config.SecuritySection>(configuration, "Security")
+		        .ConfigureWithValidation<Config.NetworkSection>(configuration, "Network")
 		        .ConfigureWithValidation<Config.PerformanceSection>(configuration, "Performance")
 		        .ConfigureWithValidation<Config.QueueConcurrencySection>(configuration, "Performance:QueueConcurrency")
 		        .ConfigureWithValidation<Config.BackfillSection>(configuration, "Backfill")
