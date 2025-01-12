@@ -49,7 +49,9 @@ public class MfmConverter(
 	public AsyncLocal<bool> SupportsHtmlFormatting { get; } = new();
 	public AsyncLocal<bool> SupportsInlineMedia    { get; } = new();
 
-	public static async Task<HtmlMfmData> FromHtmlAsync(string? html, List<Note.MentionedUser>? mentions = null)
+	public static async Task<HtmlMfmData> FromHtmlAsync(
+		string? html, List<Note.MentionedUser>? mentions = null, List<string>? hashtags = null
+	)
 	{
 		var media = new List<MfmInlineMedia>();
 		if (html == null) return new HtmlMfmData("", media);
@@ -68,7 +70,7 @@ public class MfmConverter(
 		if (dom.Body == null) return new HtmlMfmData("", media);
 
 		var sb     = new StringBuilder();
-		var parser = new MfmHtmlParser(mentions ?? [], media);
+		var parser = new MfmHtmlParser(mentions ?? [], hashtags ?? [], media);
 		dom.Body.ChildNodes.Select(parser.ParseNode).ToList().ForEach(s => sb.Append(s));
 		return new HtmlMfmData(sb.ToString().Trim(), media);
 	}

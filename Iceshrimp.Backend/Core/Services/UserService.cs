@@ -156,8 +156,18 @@ public class UserService(
 			             .AwaitAllAsync()
 			: null;
 
-		var bio = actor.MkSummary?.ReplaceLineEndings("\n").Trim()
-		          ?? (await MfmConverter.FromHtmlAsync(actor.Summary)).Mfm;
+		var bio = actor.MkSummary?.ReplaceLineEndings("\n").Trim();
+		if (bio == null)
+		{
+			var asHashtags = actor.Tags?.OfType<ASHashtag>()
+			                      .Select(p => p.Name?.ToLowerInvariant().TrimStart('#'))
+			                      .NotNull()
+			                      .ToList()
+			                 ?? [];
+
+			bio = (await MfmConverter.FromHtmlAsync(actor.Summary, hashtags: asHashtags)).Mfm;
+		}
+
 		var tags = ResolveHashtags(MfmParser.Parse(bio), actor);
 
 		user = new User
@@ -320,8 +330,18 @@ public class UserService(
 
 		var processPendingDeletes = await ResolveAvatarAndBannerAsync(user, actor);
 
-		user.UserProfile.Description = actor.MkSummary?.ReplaceLineEndings("\n").Trim()
-		                               ?? (await MfmConverter.FromHtmlAsync(actor.Summary)).Mfm;
+		user.UserProfile.Description = actor.MkSummary?.ReplaceLineEndings("\n").Trim();
+		if (user.UserProfile.Description == null)
+		{
+			var asHashtags = actor.Tags?.OfType<ASHashtag>()
+			                      .Select(p => p.Name?.ToLowerInvariant().TrimStart('#'))
+			                      .NotNull()
+			                      .ToList()
+			                 ?? [];
+
+			user.UserProfile.Description = (await MfmConverter.FromHtmlAsync(actor.Summary, hashtags: asHashtags)).Mfm;
+		}
+
 		//user.UserProfile.Birthday = TODO;
 		//user.UserProfile.Location = TODO;
 		user.UserProfile.Fields   = fields?.ToArray() ?? [];

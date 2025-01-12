@@ -5,7 +5,11 @@ using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 
-internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions, ICollection<MfmInlineMedia> media)
+internal class HtmlParser(
+	IEnumerable<Note.MentionedUser> mentions,
+	IEnumerable<string> hashtags,
+	ICollection<MfmInlineMedia> media
+)
 {
 	internal string? ParseNode(INode node)
 	{
@@ -33,6 +37,14 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions, ICollection<
 					return mention != null
 						? $"@{mention.Username}@{mention.Host}"
 						: $"<plain>{el.TextContent}</plain>";
+				}
+
+				// Hubzilla marks tags as class="zrl", so we have to account for that here
+				if ((el.GetAttribute("rel") is "tag" || el.ClassList.Contains("zrl")) && el.HasAttribute("href"))
+				{
+					var text = el.TextContent;
+					if (hashtags.Contains((text.StartsWith('#') ? text[1..] : text).ToLowerInvariant()))
+						return text;
 				}
 
 				if (el.TextContent == href && (href.StartsWith("http://") || href.StartsWith("https://")))
@@ -87,7 +99,8 @@ internal class HtmlParser(IEnumerable<Note.MentionedUser> mentions, ICollection<
 				if (node is not HtmlElement el) return node.TextContent;
 
 				var src = el.GetAttribute("src");
-				if (src == null || !Uri.TryCreate(src, UriKind.Absolute, out var uri) && uri is { Scheme: "http" or "https" })
+				if (src == null
+				    || !Uri.TryCreate(src, UriKind.Absolute, out var uri) && uri is { Scheme: "http" or "https" })
 					return node.TextContent;
 
 				var alt = el.GetAttribute("alt") ?? el.GetAttribute("title");

@@ -201,16 +201,6 @@ public class NoteService(
 		}
 
 		var tags = ResolveHashtags(data.ParsedText, data.ASNote);
-		if (tags.Count > 0 && data.Text != null && data.ASNote != null)
-		{
-			// @formatter:off
-			var match = data.ASNote.Tags?.OfType<ASHashtag>().Where(p => p.Name != null && p.Href != null) ?? [];
-			//TODO: refactor this to use the nodes object instead of matching on text
-			data.Text = match.Aggregate(data.Text, (current, tag) => current.Replace($"[#{tag.Name!.TrimStart('#')}]({tag.Href})", $"#{tag.Name!.TrimStart('#')}")
-			                                                      .Replace($"#[{tag.Name!.TrimStart('#')}]({tag.Href})", $"#{tag.Name!.TrimStart('#')}"));
-			// @formatter:on
-		}
-
 		var mastoReplyUserId = data.Reply?.UserId != data.User.Id
 			? data.Reply?.UserId
 			: data.Reply.MastoReplyUserId ?? data.Reply.ReplyUserId ?? data.Reply.UserId;
@@ -1009,7 +999,13 @@ public class NoteService(
 
 		if (text == null)
 		{
-			(text, htmlInlineMedia) = await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions);
+			var hashtags = note.Tags?.OfType<ASHashtag>()
+			                   .Select(p => p.Name?.ToLowerInvariant().TrimStart('#'))
+			                   .NotNull()
+			                   .ToList()
+			               ?? [];
+
+			(text, htmlInlineMedia) = await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions, hashtags);
 		}
 
 		var cw  = note.Summary;
@@ -1099,7 +1095,15 @@ public class NoteService(
 		List<MfmInlineMedia>? htmlInlineMedia = null;
 
 		if (text == null)
-			(text, htmlInlineMedia) = await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions);
+		{
+			var hashtags = note.Tags?.OfType<ASHashtag>()
+			                   .Select(p => p.Name?.ToLowerInvariant().TrimStart('#'))
+			                   .NotNull()
+			                   .ToList()
+			               ?? [];
+
+			(text, htmlInlineMedia) = await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions, hashtags);
+		}
 
 		var cw = note.Summary;
 
