@@ -130,6 +130,7 @@
     border: solid var(--highlight-color) 0.1rem;
     border-radius: 0.75rem;
     padding: 0.75rem;
+    overflow: clip;
 }
 
 .backdrop {
