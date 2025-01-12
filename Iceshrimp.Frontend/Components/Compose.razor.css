@@ -25,6 +25,7 @@
     margin: auto;
     background-color: unset;
     z-index: +11;
+    overflow-y: scroll;
 }
 
 .backdrop {
@@ -138,4 +139,28 @@
     top: 0;
     left: 0;
     z-index: -2
+}
+
+@media (max-width: 1000px) {
+    .dialog {
+        z-index: +25;
+    }
+
+    .compose {
+        top: 0;
+        width: 100%;
+        max-width: unset;
+        min-height: 100vh;
+        padding-top: 0;
+        border-radius: 0;
+    }
+    
+    .header {
+        position: sticky;
+        top: 0;
+        margin-bottom: 0;
+        padding: 1rem 0 0.5rem;
+        z-index: +2;
+        background-color: var(--background-color);
+    }
 }
