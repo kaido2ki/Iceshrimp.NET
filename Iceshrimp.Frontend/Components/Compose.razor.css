@@ -129,6 +129,7 @@
 ::deep {
     .dropdown-root, .dropdown-menu {
         color: var(--notice-color);
+        z-index: +2;
     }
 }
 
