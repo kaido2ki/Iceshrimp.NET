@@ -37,7 +37,16 @@ public class CustomHttpClient : HttpClient, IService<HttpClient>, ISingletonServ
 		ILoggerFactory loggerFactory
 	)
 	{
-		var proxy        = network.Value.HttpProxy != null ? new WebProxy(network.Value.HttpProxy) : null;
+		// Configure HTTP proxy, if enabled
+		WebProxy? proxy = null;
+		if (network.Value.HttpProxy != null)
+		{
+			var creds = network.Value.HttpProxyUser != null || network.Value.HttpProxyPass != null
+				? new NetworkCredential(network.Value.HttpProxyUser, network.Value.HttpProxyPass)
+				: null;
+			proxy = new WebProxy(network.Value.HttpProxy, false, null, creds);
+		}
+
 		var fastFallback = new FastFallback(loggerFactory.CreateLogger<FastFallback>(), security, proxy != null);
 		var innerHandler = new SocketsHttpHandler
 		{

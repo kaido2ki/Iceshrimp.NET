@@ -70,7 +70,9 @@ public sealed class Config
 
 	public sealed class NetworkSection
 	{
-		public string? HttpProxy { get; init; } = null;
+		public string? HttpProxy     { get; init; } = null;
+		public string? HttpProxyUser { get; init; } = null!;
+		public string? HttpProxyPass { get; init; } = null!;
 	}
 
 	public sealed class DatabaseSection
