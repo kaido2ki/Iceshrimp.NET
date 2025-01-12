@@ -45,13 +45,19 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 0.2rem;
 }
 
 .footer .buttons {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.2rem;
+}
+
+.footer .buttons:last-of-type {
+    margin-left: auto;
 }
 
 .textarea {
