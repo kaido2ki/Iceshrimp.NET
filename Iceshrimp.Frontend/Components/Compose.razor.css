@@ -9,10 +9,21 @@
     color: var(--font-color);
 }
 
+.compose input {
+    margin: 0;
+    padding: 0.5em;
+}
+
+.compose textarea {
+    margin: 0;
+    padding: 0.5em;
+    resize: vertical;
+}
+
 .compose .preview {
-    margin: 0.5rem 0.5em 0;
+    padding: 0.5rem 0.5em 0;
     width: 100%;
-    overflow: hidden;
+    overflow: clip;
     white-space: pre-wrap;
 }
 
