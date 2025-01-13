@@ -96,11 +96,11 @@ public class CacheService([FromKeyedServices("cache")] DatabaseContext db) : ISc
 		where T : class? => await FetchAsync(key, ttl, () => Task.FromResult(fetcher()), renew);
 
 	public async Task<T> FetchValueAsync<T>(
-		string key, TimeSpan ttl, Func<Task<T>> fetcher, bool renew = false
+		string key, TimeSpan ttl, Func<Task<T>> fetcher, bool renew = false, bool forceUpdate = false
 	) where T : struct
 	{
 		var hit = await GetValueAsync<T>(key, renew);
-		if (hit.HasValue) return hit.Value;
+		if (hit.HasValue && !forceUpdate) return hit.Value;
 
 		var refetch = KeyedLocker.IsInUse(key);
 

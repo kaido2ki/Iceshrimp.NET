@@ -29,22 +29,33 @@ public static class QueryableTimelineExtensions
 		                         .Concat(new[] { user.Id })
 		                         .Contains(note.UserId));
 
+	public static IQueryable<User> NeedsTimelineHeuristicUpdate(
+		this IQueryable<User> query, DatabaseContext db, TimeSpan maxRemainingTtl
+	)
+	{
+		var cutoff = DateTime.UtcNow + maxRemainingTtl;
+		return query.Where(u => !db.CacheStore.Any(c => c.Key == Prefix + ':' + u.Id && c.Expiry > cutoff));
+	}
+
 	public static async Task ResetHeuristicAsync(User user, CacheService cache)
 	{
 		await cache.ClearAsync($"{Prefix}:{user.Id}");
 	}
 
-	public static async Task<int> GetHeuristicAsync(User user, DatabaseContext db, CacheService cache)
+	public static async Task<int> GetHeuristicAsync(
+		User user, DatabaseContext db, CacheService cache, bool forceUpdate = false
+	)
 	{
-		return await cache.FetchValueAsync($"{Prefix}:{user.Id}", TimeSpan.FromHours(24), FetchHeuristicAsync);
+		return await cache.FetchValueAsync($"{Prefix}:{user.Id}", TimeSpan.FromHours(24), FetchHeuristicAsync,
+		                                   forceUpdate: forceUpdate);
 
 		[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall")]
 		async Task<int> FetchHeuristicAsync()
 		{
 			var latestNote = await db.Notes.OrderByDescending(p => p.Id)
 			                         .Select(p => new { p.CreatedAt })
-			                         .FirstOrDefaultAsync() ??
-			                 new { CreatedAt = DateTime.UtcNow };
+			                         .FirstOrDefaultAsync()
+			                 ?? new { CreatedAt = DateTime.UtcNow };
 
 			//TODO: maybe we should express this as a ratio between matching and non-matching posts
 			return await db.Notes
