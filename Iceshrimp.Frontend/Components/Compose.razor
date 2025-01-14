@@ -16,7 +16,7 @@
 @inject GlobalComponentSvc             GlobalComponentSvc
 @inject MessageService                 MessageService
 @inject SettingsService                Settings;
-<dialog class="dialog" @ref="Dialog">
+<dialog @onkeydown="HandleKeyDown" class="dialog" @ref="Dialog">
     <div class="compose">
         <div class="header">
             <button class="btn" title="@Loc["Close"]" @onclick="CloseDialog" aria-label="close">
@@ -121,6 +121,14 @@
         { "reply", "Reply goes here!" },
         { "quote", "Quote this post!" }
     };
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e is { Code: "Enter", CtrlKey: true } or {Code: "Enter", MetaKey: true})
+        {
+            await SendNote();
+        }
+    }
 
     RenderFragment DropdownIcon(NoteVisibility vis)
     {
