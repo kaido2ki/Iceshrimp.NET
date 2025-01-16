@@ -329,6 +329,7 @@ public class MfmConverter(
 				el.SetAttribute("href", $"https://{config.Value.WebDomain}/tags/{hashtagNode.Hashtag}");
 				el.TextContent = $"#{hashtagNode.Hashtag}";
 				el.SetAttribute("rel", "tag");
+				el.ClassList.Add("hashtag");
 				return el;
 			}
 			case MfmInlineCodeNode inlineCodeNode:
