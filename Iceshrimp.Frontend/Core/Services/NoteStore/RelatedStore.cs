@@ -44,23 +44,35 @@ internal class RelatedStore : NoteMessageProvider, IDisposable
 
 		foreach (var container in Descendants)
 		{
-			if (container.Value.Notes.TryGetValue(noteResponse.Id, out var note))
+			foreach (var note in container.Value.Notes)
 			{
-				note.Text        = noteResponse.Text;
-				note.Cw          = noteResponse.Cw;
-				note.Emoji       = noteResponse.Emoji;
-				note.Liked       = noteResponse.Liked;
-				note.Likes       = noteResponse.Likes;
-				note.Renotes     = noteResponse.Renotes;
-				note.Replies     = noteResponse.Replies;
-				note.Attachments = noteResponse.Attachments;
-				note.Reactions   = noteResponse.Reactions;
-
-				// container.Value.Notes[noteResponse.Id] = note;
-				NoteChangedHandlers.First(p => p.Key == note.Id).Value.Invoke(this, note);
-				NoteChanged?.Invoke(this, note);
+				RecursivelyUpdate(note.Value, noteResponse);
 			}
 		}
+	}
+
+	private void RecursivelyUpdate(NoteResponse input, NoteBase updated)
+	{
+		if (input.Id == updated.Id)
+		{
+			input.Text        = updated.Text;
+			input.Cw          = updated.Cw;
+			input.Emoji       = updated.Emoji;
+			input.Liked       = updated.Liked;
+			input.Likes       = updated.Likes;
+			input.Renotes     = updated.Renotes;
+			input.Replies     = updated.Replies;
+			input.Attachments = updated.Attachments;
+			input.Reactions   = updated.Reactions;
+			NoteChangedHandlers.First(p => p.Key == input.Id).Value.Invoke(this, input);
+			NoteChanged?.Invoke(this, input);
+		}
+
+		if (input.Descendants != null)
+			foreach (var descendant in input.Descendants)
+			{
+				RecursivelyUpdate(descendant, updated);
+			}
 	}
 
 	public async Task<SortedList<string, NoteResponse>?> GetAscendantsAsync(string id, int? limit)
