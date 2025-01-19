@@ -964,8 +964,11 @@ public class NoteService(
 			return null;
 		}
 
-		if (note.PublishedAt is null or { Year: < 2007 } || note.PublishedAt > DateTime.Now + TimeSpan.FromDays(3))
+		if (note.PublishedAt is null or { Year: < 2007 } || note.PublishedAt > DateTime.Now + TimeSpan.FromMinutes(5))
 			throw GracefulException.UnprocessableEntity("Note.PublishedAt is nonsensical");
+
+		if (note.PublishedAt > DateTime.Now)
+			note.PublishedAt = DateTime.Now;
 
 		if (replyUri != null)
 		{
@@ -1084,10 +1087,13 @@ public class NoteService(
 			throw GracefulException.Forbidden("User is suspended");
 		if (dbNote.UpdatedAt != null && dbNote.UpdatedAt > updatedAt)
 			throw GracefulException.UnprocessableEntity("Note update is older than last known version");
-		if (updatedAt.Year < 2007 || updatedAt > DateTime.Now + TimeSpan.FromDays(3))
+		if (updatedAt.Year < 2007 || updatedAt > DateTime.Now + TimeSpan.FromMinutes(5))
 			throw GracefulException.UnprocessableEntity("updatedAt is nonsensical");
 		if (actor.Host == null)
 			throw GracefulException.UnprocessableEntity("User.Host is null");
+
+		if (note.UpdatedAt > DateTime.Now)
+			note.UpdatedAt = DateTime.Now;
 
 		var mentionData = await ResolveNoteMentionsAsync(note);
 
