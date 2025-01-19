@@ -218,15 +218,7 @@
         StateHasChanged();
     }
 
-    private async Task Refresh()
-    {
-        if (NoteId == null) throw new InvalidOperationException("RefreshNote called under impossible circumstances");
-        Descendants = await RelatedStore.GetDescendantsAsync(NoteId, default);
-        Ascendants  = await RelatedStore.GetAscendantsAsync(NoteId, default);
-        StateHasChanged();
-    }
-
-// ReSharper disable once InconsistentNaming
+    // ReSharper disable once InconsistentNaming
     private ValueTask LocationChangeHandler(LocationChangingContext arg)
     {
         SaveState();

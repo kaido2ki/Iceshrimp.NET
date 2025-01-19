@@ -1,5 +1,3 @@
-using System.Collections;
-
 namespace Iceshrimp.Frontend.Core.Services.StateServicePatterns;
 
 internal class NewVirtualScroller

@@ -1,4 +1,3 @@
-using AngleSharp.Dom;
 using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Frontend.Core.Services.StateServicePatterns;
 using Iceshrimp.Frontend.Enums;
@@ -30,7 +29,7 @@ public class NewVirtualScroller<T> : ComponentBase, IDisposable where T : IIdent
 	private                                      Dictionary<string, LazyComponent> Children { get; set; } = new();
 
 	private SortedDictionary<string, T> Items { get; init; }
-		= new(Comparer<string>.Create((x, y) => y.CompareTo(x)));
+		= new(Comparer<string>.Create((x, y) => String.Compare(y, x, StringComparison.Ordinal)));
 
 	private IJSInProcessObjectReference      _module = null!;
 	private SortedDictionary<string, Child>? _stateItems;
@@ -50,12 +49,8 @@ public class NewVirtualScroller<T> : ComponentBase, IDisposable where T : IIdent
 	private void ReRender()
 	{
 		_shouldRender = true;
-		var start = DateTime.Now;
 		StateHasChanged();
-		var end = DateTime.Now;
 		_shouldRender = false;
-		var diff = end - start;
-		Console.WriteLine($"Rendering took {diff.TotalMilliseconds}ms");
 	}
 
 	protected override async Task OnInitializedAsync()
@@ -106,7 +101,6 @@ public class NewVirtualScroller<T> : ComponentBase, IDisposable where T : IIdent
 
 	protected override void BuildRenderTree(RenderTreeBuilder builder)
 	{
-		var start = DateTime.Now;
 		builder.OpenRegion(1);
 		builder.OpenComponent<ScrollEnd>(1);
 		builder.AddComponentParameter(2, "IntersectionChange", new EventCallback(this, CallbackBeforeAsync));
@@ -157,21 +151,16 @@ public class NewVirtualScroller<T> : ComponentBase, IDisposable where T : IIdent
 														 ?? throw new InvalidOperationException());
 		builder.CloseElement();
 		builder.CloseRegion();
-		var end        = DateTime.Now;
-		var difference = end - start;
-		Console.WriteLine($"Building render tree took {difference.TotalMilliseconds}ms");
 	}
 
 	private async Task CallbackBeforeAsync()
 	{
 		if (!_initialized)
 		{
-			Console.WriteLine("callback before rejected");
 			Before.Reset();
 			return;
 		}
 
-		Console.WriteLine("callback before running");
 		var heightBefore = _module.Invoke<float>("GetDocumentHeight");
 		var res          = await ItemProvider(DirectionEnum.Newer, Items.First().Value);
 		if (res is not null && res.Count > 0)
@@ -196,12 +185,10 @@ public class NewVirtualScroller<T> : ComponentBase, IDisposable where T : IIdent
 	{
 		if (!_initialized)
 		{
-			Console.WriteLine("callback after rejected");
 			After.Reset();
 			return;
 		}
 
-		Console.WriteLine("callback after running");
 		var res = await ItemProvider(DirectionEnum.Older, Items.Last().Value);
 		if (res is not null && res.Count > 0)
 		{
@@ -225,25 +212,9 @@ public class NewVirtualScroller<T> : ComponentBase, IDisposable where T : IIdent
 
 	private void RestoreOffset(float scrollY)
 	{
-		Console.WriteLine($"Restoring offeset to {scrollY}");
 		_module.InvokeVoid("SetScrollY", scrollY);
 	}
-
-	private void SaveVisible()
-	{
-		var scrollY = GetScrollY();
-		var visible = Children.Where(p => p.Value.Visible);
-		var before  = Children.TakeWhile(p => p.Value.Visible == false);
-		var after   = Children.Skip(before.Count() + visible.Count());
-		var childrenVisible =
-			new SortedDictionary<string, Child>(visible.ToDictionary(p => p.Key,
-																	 p => new Child
-																	 {
-																		 Id = p.Key, Height = p.Value.GetHeight()
-																	 }));
-		
-	}
-
+	
 	private void Save()
 	{
 		var scrollY = GetScrollY();
@@ -265,7 +236,6 @@ public class NewVirtualScroller<T> : ComponentBase, IDisposable where T : IIdent
 
 	public void Dispose()
 	{
-		Console.WriteLine("Disposing of virtual scroller");
 		_locationChangeHandlerDisposable?.Dispose();
 	}
 }

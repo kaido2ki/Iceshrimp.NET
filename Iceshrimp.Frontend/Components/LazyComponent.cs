@@ -23,7 +23,6 @@ public class LazyComponent : ComponentBase, IAsyncDisposable
 		if (InitialHeight is not null)
 		{
 			Height = InitialHeight;
-			Console.WriteLine($"Set Initial height to {InitialHeight}");
 		}
 	}
 
