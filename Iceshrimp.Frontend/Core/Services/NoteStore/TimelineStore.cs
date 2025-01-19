@@ -1,22 +1,28 @@
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Enums;
+using Iceshrimp.Shared.Schemas.SignalR;
 using Iceshrimp.Shared.Schemas.Web;
+using NoteEvent = (Iceshrimp.Shared.Schemas.SignalR.StreamingTimeline timeline, Iceshrimp.Shared.Schemas.Web.NoteResponse note);
 
 namespace Iceshrimp.Frontend.Core.Services.NoteStore;
 
-internal class TimelineStore : NoteMessageProvider, IDisposable
+internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreamingItemProvider<NoteResponse>
 {
+	public event EventHandler<NoteResponse>?           ItemPublished;
 	private          Dictionary<string, TimelineState> Timelines { get; set; } = new();
 	private readonly ApiService                        _api;
 	private readonly ILogger<TimelineStore>            _logger;
 	private readonly StateSynchronizer                 _stateSynchronizer;
+	private readonly StreamingService                  _streamingService;
 
-	public TimelineStore(ApiService api, ILogger<TimelineStore> logger, StateSynchronizer stateSynchronizer)
+	public TimelineStore(ApiService api, ILogger<TimelineStore> logger, StateSynchronizer stateSynchronizer, StreamingService streamingService)
 	{
-		_api                           =  api;
-		_logger                        =  logger;
-		_stateSynchronizer             =  stateSynchronizer;
-		_stateSynchronizer.NoteChanged += OnNoteChanged;
+		_api                            =  api;
+		_logger                         =  logger;
+		_stateSynchronizer              =  stateSynchronizer;
+		_streamingService               =  streamingService;
+		_stateSynchronizer.NoteChanged  += OnNoteChanged;
+		_streamingService.NotePublished += OnNotePublished;
 	}
 
 	private void OnNoteChanged(object? _, NoteBase changedNote)
@@ -152,6 +158,21 @@ internal class TimelineStore : NoteMessageProvider, IDisposable
 		return list;
 	}
 
+	private void OnNotePublished(object? sender, NoteEvent valueTuple)
+	{
+		var (timeline, response) = valueTuple;
+		if (timeline == StreamingTimeline.Home)
+		{
+			var success = Timelines.TryGetValue("home", out var home);
+			if (success)
+			{
+				var add = home!.Timeline.TryAdd(response.Id, response);
+				if (add is false) _logger.LogError($"Duplicate note: {response.Id}");
+			}
+			ItemPublished?.Invoke(this, response);
+		}
+	}
+
 	public class Cursor
 	{
 		public required DirectionEnum Direction { get; set; }
@@ -163,4 +184,11 @@ internal class TimelineStore : NoteMessageProvider, IDisposable
 	{
 		_stateSynchronizer.NoteChanged -= OnNoteChanged;
 	}
+
+	public async ValueTask DisposeAsync()
+	{
+		await _stateSynchronizer.DisposeAsync();
+		await _streamingService.DisposeAsync();
+	}
+
 }

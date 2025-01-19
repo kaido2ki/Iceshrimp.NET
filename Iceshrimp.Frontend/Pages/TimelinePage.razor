@@ -21,7 +21,7 @@
     @if (NoteResponses is not null)
     {
    
-        <VirtualScroller InitialItems="NoteResponses" ItemProvider="Provider" StateKey="1234567890" ItemProviderById="ItemProviderById">
+        <VirtualScroller InitialItems="NoteResponses" ItemProvider="Provider" StateKey="1234567890" ItemProviderById="ItemProviderById" StreamingItemProvider="Store">
             <ItemTemplate Context="note">
                 <CascadingValue Value="Store" TValue="NoteMessageProvider" Name="Provider">
                     <TimelineNote Note="note"></TimelineNote>
@@ -33,10 +33,10 @@
 </div>
 
 @code {
-    private List<NoteResponse>? NoteResponses { get; set; }
+    private List<NoteResponse>?            NoteResponses   { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        NoteResponses = await Store.GetHomeTimelineAsync("home", new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
+        NoteResponses             =  await Store.GetHomeTimelineAsync("home", new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
         StateHasChanged();
     }
 

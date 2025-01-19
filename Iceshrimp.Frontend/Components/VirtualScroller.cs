@@ -1,3 +1,4 @@
+using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Frontend.Core.Services.StateServicePatterns;
 using Iceshrimp.Frontend.Enums;
@@ -24,6 +25,7 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 	[Parameter] [EditorRequired] public required Func<DirectionEnum, T, Task<List<T>?>> ItemProvider { get; set; }
 	[Parameter] [EditorRequired] public required string StateKey { get; set; }
 	[Parameter] [EditorRequired] public required Func<List<string>, List<T>> ItemProviderById { get; set; }
+	[Parameter]                  public          IStreamingItemProvider<T>? StreamingItemProvider { get; set; }
 	private                                      ScrollEnd Before { get; set; } = null!;
 	private                                      ScrollEnd After { get; set; } = null!;
 	private                                      Dictionary<string, LazyComponent> Children { get; set; } = new();
@@ -79,6 +81,8 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 			_scrollY   = value.ScrollY;
 			_setScroll = true;
 		}
+
+		if (StreamingItemProvider != null) StreamingItemProvider.ItemPublished += OnNewItem;
 
 		ReRender();
 		_initialized = true;
@@ -183,6 +187,17 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 		Before.Reset();
 	}
 
+	public void OnNewItem(object? _, T item)
+	{
+		var height = GetScrollY();
+		if (height == 0)
+		{
+			var add = Items.TryAdd(item.Id, item);
+			if (add is false) Logger.LogError($"Duplicate notification: {item.Id}");
+		}
+		ReRender();
+	}
+
 	private async Task CallbackAfterAsync()
 	{
 		if (!_initialized)
@@ -216,7 +231,7 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 	{
 		_module.InvokeVoid("SetScrollY", scrollY);
 	}
-	
+
 	private void Save()
 	{
 		var scrollY = GetScrollY();
@@ -239,5 +254,6 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 	public void Dispose()
 	{
 		_locationChangeHandlerDisposable?.Dispose();
+		if (StreamingItemProvider != null) StreamingItemProvider.ItemPublished -= OnNewItem;
 	}
 }
