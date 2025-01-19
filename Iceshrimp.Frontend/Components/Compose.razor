@@ -107,6 +107,7 @@
     private bool                     Preview         { get; set; }
     private List<EmojiResponse>      EmojiList       { get; set; } = [];
     private int                      NoteLength      { get; set; }
+    private bool                     SendLock        { get; set; } = false;
 
     private NoteCreateRequest NoteDraft { get; set; } = new()
     {
@@ -274,6 +275,8 @@
 
     private async Task SendNote()
     {
+        if (SendLock) return;
+        SendLock         = true;
         SendButton.State = StateButton.StateEnum.Loading;
         if (Attachments.Count > 0)
         {
@@ -298,8 +301,8 @@
 
         SendButton.State = StateButton.StateEnum.Success;
         await CloseDialog();
+        SendLock         = false;
         SendButton.State = StateButton.StateEnum.Success;
-
         // FIXME: Implement timeline refresh and call it here.
     }
 
