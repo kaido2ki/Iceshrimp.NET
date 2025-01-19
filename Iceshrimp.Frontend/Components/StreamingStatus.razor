@@ -1,0 +1,45 @@
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.Extensions.Localization
+@inject StreamingService               StreamingService
+@inject GlobalComponentSvc             GlobalComponentSvc
+@inject IStringLocalizer<Localization> Loc
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await StreamingService.ConnectAsync();
+        StreamingService.OnConnectionChange += HandleConnectionChange;
+    }
+
+    private void HandleConnectionChange(object? _, HubConnectionState hubConnectionState)
+    {
+        switch (hubConnectionState)
+        {
+            case HubConnectionState.Disconnected:
+            {
+                var banner = new BannerContainer.Banner { Text = @Loc["Connection lost, tap to reconnect."], OnClose = null, OnTap = Reconnect };
+                GlobalComponentSvc.BannerComponent?.AddBanner(banner);
+                break;
+            }
+            case HubConnectionState.Reconnecting:
+            {
+                var banner = new BannerContainer.Banner { Text = @Loc["Reconnecting"], OnClose = null, OnTap = null };
+                GlobalComponentSvc.BannerComponent?.AddBanner(banner);
+                break;
+            }
+            case HubConnectionState.Connected:
+            {
+                var banner = new BannerContainer.Banner { Text = @Loc["Connected"], OnClose = null, OnTap = null };
+                GlobalComponentSvc.BannerComponent?.AddBanner(banner);
+                break;
+            }
+        }
+    }
+
+    private void Reconnect()
+    {
+        _ = StreamingService.ReconnectAsync();
+    }
+}
