@@ -1,10 +1,15 @@
-@page "/OldScroller"
-@using Iceshrimp.Assets.PhosphorIcons
-@using Iceshrimp.Frontend.Components
+@page "/"
+@inject TimelineStore                  Store;
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Shared.Schemas.Web
+@using Iceshrimp.Frontend.Core.Services.NoteStore
+@using Iceshrimp.Frontend.Enums
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Sections
 @using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Sections
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Assets.PhosphorIcons
 @attribute [Authorize]
 @inject IStringLocalizer<Localization> Loc;
 
@@ -12,7 +17,37 @@
     <Icon Name="Icons.House"></Icon>
     @Loc["Timeline"]
 </SectionContent>
-<TimelineComponent/>
+<div class="timeline">
+    @if (NoteResponses is not null)
+    {
+   
+        <NewVirtualScroller InitialItems="NoteResponses" ItemProvider="Provider" StateKey="1234567890" ItemProviderById="ItemProviderById">
+            <ItemTemplate Context="note">
+                <CascadingValue Value="Store" TValue="NoteMessageProvider" Name="Provider">
+                    <TimelineNote Note="note"></TimelineNote>
+                </CascadingValue>
+            </ItemTemplate>
+        </NewVirtualScroller>
+   
+    }
+</div>
 
 @code {
+    private List<NoteResponse>? NoteResponses { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        NoteResponses = await Store.GetHomeTimelineAsync("home", new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
+        StateHasChanged();
+    }
+
+    private async Task<List<NoteResponse>?> Provider(DirectionEnum direction, NoteResponse start)
+    {
+        var res = await Store.GetHomeTimelineAsync("home", new TimelineStore.Cursor { Direction = direction, Count = 10, Id = start.Id });
+        return res;
+    }
+
+    private List<NoteResponse> ItemProviderById(List<string> arg)
+    {
+        return Store.GetIdsFromTimeline("home", arg);
+    }
 }

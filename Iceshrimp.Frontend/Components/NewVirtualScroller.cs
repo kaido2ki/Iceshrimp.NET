@@ -203,7 +203,7 @@ public class NewVirtualScroller<T> : ComponentBase, IDisposable where T : IIdent
 		ReRender();
 	}
 
-	private float GetScrollY()
+	private float GetScrollY() // ^-^ grblll mrrp
 	{
 		var js      = (IJSInProcessRuntime)Js;
 		var scrollY = js.Invoke<float>("GetScrollY");
