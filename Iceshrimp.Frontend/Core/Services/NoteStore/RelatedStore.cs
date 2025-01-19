@@ -139,7 +139,7 @@ internal class RelatedStore : NoteMessageProvider, IDisposable
 
 	private class NoteContainer
 	{
-		public SortedList<string, NoteResponse> Notes { get; } = new(Comparer<string>.Create((x, y) => y.CompareTo(x)));
+		public SortedList<string, NoteResponse> Notes { get; } = new();
 	}
 
 	public void Dispose()
