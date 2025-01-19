@@ -290,3 +290,9 @@ pre:has(code){
     flex-direction: column;
     align-items: center;
 }
+
+.virtual-scroller-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

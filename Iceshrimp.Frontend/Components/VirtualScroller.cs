@@ -106,6 +106,7 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 		builder.AddComponentParameter(2, "IntersectionChange", new EventCallback(this, CallbackBeforeAsync));
 		builder.AddComponentParameter(3, "ManualLoad", new EventCallback(this, CallbackBeforeAsync));
 		builder.AddComponentParameter(4, "RequireReset", true);
+		builder.AddComponentParameter(5, "Class", "virtual-scroller-button");
 		builder.AddComponentReferenceCapture(6,
 											 reference =>
 												 Before = reference as ScrollEnd
@@ -145,7 +146,8 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 		builder.AddComponentParameter(2, "IntersectionChange", new EventCallback(this, CallbackAfterAsync));
 		builder.AddComponentParameter(3, "ManualLoad", new EventCallback(this, CallbackAfterAsync));
 		builder.AddComponentParameter(4, "RequireReset", true);
-		builder.AddComponentReferenceCapture(5,
+		builder.AddComponentParameter(5, "Class", "virtual-scroller-button");
+		builder.AddComponentReferenceCapture(6,
 											 reference =>
 												 After = reference as ScrollEnd
 														 ?? throw new InvalidOperationException());
