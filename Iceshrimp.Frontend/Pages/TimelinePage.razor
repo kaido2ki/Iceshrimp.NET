@@ -21,13 +21,13 @@
     @if (NoteResponses is not null)
     {
    
-        <NewVirtualScroller InitialItems="NoteResponses" ItemProvider="Provider" StateKey="1234567890" ItemProviderById="ItemProviderById">
+        <VirtualScroller InitialItems="NoteResponses" ItemProvider="Provider" StateKey="1234567890" ItemProviderById="ItemProviderById">
             <ItemTemplate Context="note">
                 <CascadingValue Value="Store" TValue="NoteMessageProvider" Name="Provider">
                     <TimelineNote Note="note"></TimelineNote>
                 </CascadingValue>
             </ItemTemplate>
-        </NewVirtualScroller>
+        </VirtualScroller>
    
     }
 </div>

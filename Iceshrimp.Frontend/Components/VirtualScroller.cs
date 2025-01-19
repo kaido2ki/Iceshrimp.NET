@@ -10,7 +10,7 @@ using Microsoft.JSInterop;
 
 namespace Iceshrimp.Frontend.Components;
 
-public class NewVirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifiable
+public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifiable
 
 {
 	[Inject] private IIntersectionObserverService ObserverService { get; set; } = null!;
