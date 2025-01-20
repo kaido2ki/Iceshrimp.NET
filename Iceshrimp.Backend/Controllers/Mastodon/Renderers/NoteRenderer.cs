@@ -89,6 +89,13 @@ public class NoteRenderer(
 			? await GetReactionsAsync([note], user)
 			: [..data.Reactions.Where(p => p.NoteId == note.Id)];
 
+		var tags = note.Tags.Select(tag => new StatusTags
+		               {
+			               Name = tag,
+			               Url  = $"https://{config.Value.WebDomain}/tags/{tag}"
+		               })
+		               .ToList();
+
 		var mentionedUsers = mentions.Select(p => new Note.MentionedUser
 		                             {
 			                             Host     = p.Host ?? config.Value.AccountDomain,
@@ -196,6 +203,7 @@ public class NoteRenderer(
 			Emojis           = noteEmoji,
 			Poll             = poll,
 			Reactions        = reactions,
+			Tags             = tags,
 			Filtered         = filterResult,
 			Pleroma          = new PleromaStatusExtensions { Reactions = reactions, ConversationId = note.ThreadId }
 		};

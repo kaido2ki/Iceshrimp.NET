@@ -46,10 +46,10 @@ public class StatusEntity : IEntity, ICloneable
 	[J("media_attachments")] public required List<AttachmentEntity>   Attachments { get; set; }
 	[J("emojis")]            public required List<EmojiEntity>        Emojis      { get; set; }
 	[J("reactions")]         public required List<ReactionEntity>     Reactions   { get; set; }
+	[J("tags")]              public required List<StatusTags>         Tags        { get; set; }
 
-	[J("tags")]        public object[] Tags        => [];   //FIXME
-	[J("card")]        public object?  Card        => null; //FIXME
-	[J("application")] public object?  Application => null; //FIXME
+	[J("card")]        public object?      Card        => null; //FIXME
+	[J("application")] public object?      Application => null; //FIXME
 
 	[J("language")] public string? Language => null; //FIXME
 
@@ -106,4 +106,10 @@ public class StatusEdit
 	[J("poll")]              public required PollEntity?            Poll           { get; set; }
 	[J("media_attachments")] public required List<AttachmentEntity> Attachments    { get; set; }
 	[J("emojis")]            public required List<EmojiEntity>      Emojis         { get; set; }
+}
+
+public class StatusTags
+{
+	[J("name")] public required string Name { get; set; }
+	[J("url")]  public required string Url  { get; set; }
 }
