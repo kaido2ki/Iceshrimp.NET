@@ -54,7 +54,7 @@
         <PackageReference Include="Iceshrimp.Assets.Branding" Version="1.0.1" />
         <PackageReference Include="Iceshrimp.AssemblyUtils" Version="1.0.3" />
         <PackageReference Include="Iceshrimp.MfmSharp" Version="1.2.17" />
-        <PackageReference Include="Iceshrimp.Utils.Common" Version="1.0.0" />
+        <PackageReference Include="Iceshrimp.Utils.Common" Version="1.1.0" />
         <PackageReference Include="Iceshrimp.MimeTypes" Version="1.0.1" />
         <PackageReference Include="Iceshrimp.WebPush" Version="2.1.0" />
         <PackageReference Include="NetVips" Version="3.0.0" />
