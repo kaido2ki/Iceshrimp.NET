@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Mime;
 using AsyncKeyedLock;
@@ -75,7 +76,7 @@ public class StatusController(
 	[Authenticate("read:statuses")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.Forbidden)]
-	public async Task<IEnumerable<StatusEntity>> GetManyNotes([FromQuery(Name = "id")] List<string> ids)
+	public async Task<IEnumerable<StatusEntity>> GetManyNotes([FromQuery(Name = "id")] [MaxLength(20)] HashSet<string> ids)
 	{
 		var user = HttpContext.GetUser();
 		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)

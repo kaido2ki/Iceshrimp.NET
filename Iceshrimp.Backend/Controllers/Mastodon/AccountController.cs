@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Mime;
@@ -171,7 +172,7 @@ public class AccountController(
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.Forbidden)]
-	public async Task<IEnumerable<AccountEntity>> GetManyUsers([FromQuery(Name = "id")] List<string> ids)
+	public async Task<IEnumerable<AccountEntity>> GetManyUsers([FromQuery(Name = "id")] [MaxLength(40)] HashSet<string> ids)
 	{
 		var localUser = HttpContext.GetUser();
 		if (config.Value.PublicPreview == Enums.PublicPreview.Lockdown && localUser == null)
