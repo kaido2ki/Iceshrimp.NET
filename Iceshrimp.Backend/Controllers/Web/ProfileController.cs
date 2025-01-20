@@ -21,7 +21,6 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Route("/api/iceshrimp/profile")]
 [Produces(MediaTypeNames.Application.Json)]
 public class ProfileController(
-	IOptions<Config.InstanceSection> instance,
 	UserService userSvc,
 	DriveService driveSvc,
 	DatabaseContext db
@@ -126,8 +125,8 @@ public class ProfileController(
 		return new DriveFileResponse
 		{
 			Id           = file.Id,
-			Url          = file.AccessUrl,
-			ThumbnailUrl = file.ThumbnailAccessUrl,
+			Url          = file.RawAccessUrl,
+			ThumbnailUrl = file.RawThumbnailAccessUrl,
 			Filename     = file.Name,
 			ContentType  = file.Type,
 			Sensitive    = file.IsSensitive,
@@ -196,8 +195,8 @@ public class ProfileController(
 		return new DriveFileResponse
 		{
 			Id           = file.Id,
-			Url          = file.AccessUrl,
-			ThumbnailUrl = file.ThumbnailAccessUrl,
+			Url          = file.RawAccessUrl,
+			ThumbnailUrl = file.RawThumbnailAccessUrl,
 			Filename     = file.Name,
 			ContentType  = file.Type,
 			Sensitive    = file.IsSensitive,
