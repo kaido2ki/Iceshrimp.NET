@@ -5,13 +5,12 @@
 
 <img class="avatar"
      style="--size: @Size;"
-     src="@(LoadError ? $"/identicon/{User.Id}" : User.AvatarUrl ?? $"/identicon/{User.Id}")"
+     src="@User.AvatarUrl"
      alt="@(User.AvatarAlt ?? FallbackAlt())"
      title="@(Title ? User.AvatarAlt ?? FallbackAlt() : "")"
      role="@Role"
      loading="lazy"
-     @onclick="OnClick"
-     @onerror="() => LoadError = true"/>
+     @onclick="OnClick"/>
 
 @code {
     [Parameter, EditorRequired] public required UserResponse  User      { get; set; }
