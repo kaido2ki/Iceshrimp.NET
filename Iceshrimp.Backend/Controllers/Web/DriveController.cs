@@ -323,8 +323,8 @@ public class DriveController(
 		                         .Select(p => new DriveFileResponse
 		                         {
 			                         Id           = p.Id,
-			                         Url          = p.AccessUrl,
-			                         ThumbnailUrl = p.ThumbnailAccessUrl,
+			                         Url          = p.RawAccessUrl,
+			                         ThumbnailUrl = p.RawThumbnailAccessUrl,
 			                         Filename     = p.Name,
 			                         ContentType  = p.Type,
 			                         Sensitive    = p.IsSensitive,
