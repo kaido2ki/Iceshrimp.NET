@@ -167,6 +167,23 @@ public class AccountController(
 
 		return await VerifyUserCredentials();
 	}
+	
+	[HttpGet]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Forbidden)]
+	public async Task<IEnumerable<AccountEntity>> GetManyUsers([FromQuery(Name = "id")] List<string> ids)
+	{
+		var localUser = HttpContext.GetUser();
+		if (config.Value.PublicPreview == Enums.PublicPreview.Lockdown && localUser == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
+		var query = db.Users.IncludeCommonProperties().Where(p => ids.Contains(p.Id));
+
+		if (config.Value.PublicPreview <= Enums.PublicPreview.Restricted && localUser == null)
+			query = query.Where(p => p.IsLocalUser);
+
+		return await userRenderer.RenderManyAsync(await query.ToArrayAsync(), localUser);
+	}
 
 	[HttpGet("{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
