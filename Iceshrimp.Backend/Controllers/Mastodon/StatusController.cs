@@ -69,6 +69,32 @@ public class StatusController(
 
 		return await noteRenderer.RenderAsync(note.EnforceRenoteReplyVisibility(), user);
 	}
+	
+	
+	[HttpGet]
+	[Authenticate("read:statuses")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Forbidden)]
+	public async Task<IEnumerable<StatusEntity>> GetManyNotes([FromQuery(Name = "id")] List<string> ids)
+	{
+		var user = HttpContext.GetUser();
+		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
+		var query = db.Notes.Where(p => ids.Contains(p.Id));
+
+		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && user == null)
+			query = query.Where(p => p.User.IsLocalUser);
+
+		var notes = await query.IncludeCommonProperties()
+		                 .FilterHidden(user, db, false, false,
+		                               filterMentions: false)
+		                 .EnsureVisibleFor(user)
+		                 .PrecomputeVisibilities(user)
+		                 .ToArrayAsync();
+
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user);
+	}
 
 	[HttpGet("{id}/context")]
 	[Authenticate("read:statuses")]
