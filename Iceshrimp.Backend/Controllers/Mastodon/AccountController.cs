@@ -168,11 +168,13 @@ public class AccountController(
 
 		return await VerifyUserCredentials();
 	}
-	
+
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.Forbidden)]
-	public async Task<IEnumerable<AccountEntity>> GetManyUsers([FromQuery(Name = "id")] [MaxLength(40)] HashSet<string> ids)
+	public async Task<IEnumerable<AccountEntity>> GetManyUsers(
+		[FromQuery(Name = "id")] [MaxLength(40)] HashSet<string> ids
+	)
 	{
 		var localUser = HttpContext.GetUser();
 		if (config.Value.PublicPreview == Enums.PublicPreview.Lockdown && localUser == null)
@@ -195,8 +197,8 @@ public class AccountController(
 		if (config.Value.PublicPreview == Enums.PublicPreview.Lockdown && localUser == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
 
-		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id) ??
-		           throw GracefulException.RecordNotFound();
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id)
+		           ?? throw GracefulException.RecordNotFound();
 
 		if (config.Value.PublicPreview <= Enums.PublicPreview.Restricted && user.IsRemoteUser && localUser == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
@@ -218,8 +220,8 @@ public class AccountController(
 		var followee = await db.Users.IncludeCommonProperties()
 		                       .Where(p => p.Id == id)
 		                       .PrecomputeRelationshipData(user)
-		                       .FirstOrDefaultAsync() ??
-		               throw GracefulException.RecordNotFound();
+		                       .FirstOrDefaultAsync()
+		               ?? throw GracefulException.RecordNotFound();
 
 		if ((followee.PrecomputedIsBlockedBy ?? true) || (followee.PrecomputedIsBlocking ?? true))
 			throw GracefulException.Forbidden("This action is not allowed");
@@ -251,8 +253,8 @@ public class AccountController(
 		                       .Where(p => p.Id == id)
 		                       .IncludeCommonProperties()
 		                       .PrecomputeRelationshipData(user)
-		                       .FirstOrDefaultAsync() ??
-		               throw GracefulException.RecordNotFound();
+		                       .FirstOrDefaultAsync()
+		               ?? throw GracefulException.RecordNotFound();
 
 		await userSvc.UnfollowUserAsync(user, followee);
 		return RenderRelationship(followee);
@@ -272,8 +274,8 @@ public class AccountController(
 		                       .Where(p => p.FolloweeId == user.Id && p.FollowerId == id)
 		                       .Select(p => p.Follower)
 		                       .PrecomputeRelationshipData(user)
-		                       .FirstOrDefaultAsync() ??
-		               throw GracefulException.RecordNotFound();
+		                       .FirstOrDefaultAsync()
+		               ?? throw GracefulException.RecordNotFound();
 
 		await userSvc.RemoveFromFollowersAsync(user, follower);
 		return RenderRelationship(follower);
@@ -293,8 +295,8 @@ public class AccountController(
 		                    .Where(p => p.Id == id)
 		                    .IncludeCommonProperties()
 		                    .PrecomputeRelationshipData(user)
-		                    .FirstOrDefaultAsync() ??
-		            throw GracefulException.RecordNotFound();
+		                    .FirstOrDefaultAsync()
+		            ?? throw GracefulException.RecordNotFound();
 
 		//TODO: handle notifications parameter
 		DateTime? expiration = request.Duration == 0 ? null : DateTime.UtcNow + TimeSpan.FromSeconds(request.Duration);
@@ -316,8 +318,8 @@ public class AccountController(
 		                    .Where(p => p.Id == id)
 		                    .IncludeCommonProperties()
 		                    .PrecomputeRelationshipData(user)
-		                    .FirstOrDefaultAsync() ??
-		            throw GracefulException.RecordNotFound();
+		                    .FirstOrDefaultAsync()
+		            ?? throw GracefulException.RecordNotFound();
 
 		await userSvc.UnmuteUserAsync(user, mutee);
 		return RenderRelationship(mutee);
@@ -337,8 +339,8 @@ public class AccountController(
 		                      .Where(p => p.Id == id)
 		                      .IncludeCommonProperties()
 		                      .PrecomputeRelationshipData(user)
-		                      .FirstOrDefaultAsync() ??
-		              throw GracefulException.RecordNotFound();
+		                      .FirstOrDefaultAsync()
+		              ?? throw GracefulException.RecordNotFound();
 
 		await userSvc.BlockUserAsync(user, blockee);
 		return RenderRelationship(blockee);
@@ -358,8 +360,8 @@ public class AccountController(
 		                      .Where(p => p.Id == id)
 		                      .IncludeCommonProperties()
 		                      .PrecomputeRelationshipData(user)
-		                      .FirstOrDefaultAsync() ??
-		              throw GracefulException.RecordNotFound();
+		                      .FirstOrDefaultAsync()
+		              ?? throw GracefulException.RecordNotFound();
 
 		await userSvc.UnblockUserAsync(user, blockee);
 		return RenderRelationship(blockee);
@@ -417,8 +419,8 @@ public class AccountController(
 
 		var account = await db.Users
 		                      .Include(p => p.UserProfile)
-		                      .FirstOrDefaultAsync(p => p.Id == id) ??
-		              throw GracefulException.RecordNotFound();
+		                      .FirstOrDefaultAsync(p => p.Id == id)
+		              ?? throw GracefulException.RecordNotFound();
 
 		if (config.Value.PublicPreview <= Enums.PublicPreview.Restricted && account.IsRemoteUser && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
@@ -453,8 +455,8 @@ public class AccountController(
 
 		var account = await db.Users
 		                      .Include(p => p.UserProfile)
-		                      .FirstOrDefaultAsync(p => p.Id == id) ??
-		              throw GracefulException.RecordNotFound();
+		                      .FirstOrDefaultAsync(p => p.Id == id)
+		              ?? throw GracefulException.RecordNotFound();
 
 		if (config.Value.PublicPreview <= Enums.PublicPreview.Restricted && account.IsRemoteUser && user == null)
 			throw GracefulException.Forbidden("Public preview is disabled on this instance");
@@ -483,8 +485,8 @@ public class AccountController(
 	{
 		_ = await db.Users
 		            .Include(p => p.UserProfile)
-		            .FirstOrDefaultAsync(p => p.Id == id) ??
-		    throw GracefulException.RecordNotFound();
+		            .FirstOrDefaultAsync(p => p.Id == id)
+		    ?? throw GracefulException.RecordNotFound();
 
 		return [];
 	}
@@ -608,8 +610,8 @@ public class AccountController(
 		               .IncludeCommonProperties()
 		               .PrecomputeRelationshipData(user)
 		               .Select(u => RenderRelationship(u))
-		               .FirstOrDefaultAsync() ??
-		       throw GracefulException.RecordNotFound();
+		               .FirstOrDefaultAsync()
+		       ?? throw GracefulException.RecordNotFound();
 	}
 
 	[HttpPost("/api/v1/follow_requests/{id}/reject")]
@@ -631,8 +633,8 @@ public class AccountController(
 		               .IncludeCommonProperties()
 		               .PrecomputeRelationshipData(user)
 		               .Select(u => RenderRelationship(u))
-		               .FirstOrDefaultAsync() ??
-		       throw GracefulException.RecordNotFound();
+		               .FirstOrDefaultAsync()
+		       ?? throw GracefulException.RecordNotFound();
 	}
 
 	[HttpGet("lookup")]
