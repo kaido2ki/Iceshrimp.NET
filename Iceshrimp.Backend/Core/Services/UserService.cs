@@ -1458,6 +1458,28 @@ public class UserService(
 			}
 		}
 
+		var blocks = db.Blockings
+		               .Where(p => p.Blockee == source)
+		               .Select(p => p.Blocker)
+		               .AsChunkedAsyncEnumerable(50, p => p.Id, p => p.PrecomputeRelationshipData(source));
+
+		await foreach (var blocker in blocks)
+		{
+			try
+			{
+				if (blocker.Id == target.Id) continue;
+
+				// We need to transfer the precomputed properties to the target user for each blocker so that the block method works correctly
+				target.PrecomputedIsBlockedBy = blocker.PrecomputedIsBlocking;
+				await BlockUserAsync(blocker, target);
+			}
+			catch (Exception e)
+			{
+				logger.LogWarning("Failed to process move ({sourceUri} -> {targetUri}) for blocker {id}: {error}",
+				                  sourceUri, targetUri, blocker.Id, e);
+			}
+		}
+
 		if (source.IsRemoteUser || target.IsRemoteUser) return;
 
 		var following = db.Followings
@@ -1476,6 +1498,25 @@ public class UserService(
 			{
 				logger.LogWarning("Failed to process move ({sourceUri} -> {targetUri}) for followee {id}: {error}",
 				                  sourceUri, targetUri, followee.Id, e);
+			}
+		}
+
+		blocks = db.Blockings
+		           .Where(p => p.Blocker == source)
+		           .Select(p => p.Blockee)
+		           .AsChunkedAsyncEnumerable(50, p => p.Id, p => p.PrecomputeRelationshipData(source));
+
+		await foreach (var blockee in blocks)
+		{
+			try
+			{
+				if (blockee.Id == target.Id) continue;
+				await BlockUserAsync(blockee, target);
+			}
+			catch (Exception e)
+			{
+				logger.LogWarning("Failed to process move ({sourceUri} -> {targetUri}) for blockee {id}: {error}",
+				                  sourceUri, targetUri, blockee.Id, e);
 			}
 		}
 	}
