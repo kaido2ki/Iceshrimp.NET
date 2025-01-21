@@ -1017,7 +1017,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("originalUrl");
 
-                    b.Property<string>("PublicUrl")
+                    b.Property<string>("RawPublicUrl")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(512)
@@ -1056,6 +1056,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex("Name", "Host")
                         .IsUnique();
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Name", "Host"), false);
 
                     b.ToTable("emoji");
                 });

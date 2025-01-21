@@ -1,3 +1,11 @@
+## v2025.1-beta5
+
+> **Note**
+> This is an incomplete changelog for an unreleased version. See below for the released versions.
+
+### Breaking changes
+- We now require PostgreSQL version 15 or higher. If you need assistance upgrading, please reach out to the [support chat](https://chat.iceshrimp.dev).
+
 ## v2024.1-beta4.security2
 This is a security hotfix release. It's identical to v2024.1-beta4.security1, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
 

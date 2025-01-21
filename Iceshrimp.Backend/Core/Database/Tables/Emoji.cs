@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("emoji")]
-[Index(nameof(Name), nameof(Host), IsUnique = true)]
 [Index(nameof(Host))]
 [Index(nameof(Name))]
 public class Emoji
@@ -80,6 +79,9 @@ public class Emoji
 			entity.Property(e => e.Height).HasComment("Image height");
 			entity.Property(e => e.RawPublicUrl).HasDefaultValueSql("''::character varying");
 			entity.Property(e => e.Width).HasComment("Image width");
+
+			// This index must be NULLS NOT DISTINCT to make having multiple local emoji with the same name cause a constraint failure
+			entity.HasIndex(nameof(Name), nameof(Host)).IsUnique().AreNullsDistinct(false);
 		}
 	}
 }
