@@ -173,7 +173,8 @@ public class AccountController(
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.Forbidden)]
 	public async Task<IEnumerable<AccountEntity>> GetManyUsers(
-		[FromQuery(Name = "id")] [MaxLength(40)] HashSet<string> ids
+		[FromQuery(Name = "id")] [MaxLength(40)]
+		HashSet<string> ids
 	)
 	{
 		var localUser = HttpContext.GetUser();
@@ -392,7 +393,10 @@ public class AccountController(
 		string id, AccountSchemas.AccountStatusesRequest request, MastodonPaginationQuery query
 	)
 	{
-		var user    = HttpContext.GetUserOrFail();
+		var user = HttpContext.GetUser();
+		if (config.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
 		var account = await db.Users.FirstOrDefaultAsync(p => p.Id == id) ?? throw GracefulException.RecordNotFound();
 
 		return await db.Notes
