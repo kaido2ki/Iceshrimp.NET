@@ -9,8 +9,10 @@ internal class CustomAuthStateProvider(SessionService sessionService) : Authenti
 	{
 		if (sessionService.Current != null)
 		{
-			var identity = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, sessionService.Current.Username) },
-			                                  "Custom Authentication");
+			var userClaim = new Claim(ClaimTypes.Name, sessionService.Current.Username);
+			var identity = new ClaimsIdentity(sessionService.Current.IsAdmin || sessionService.Current.IsModerator
+				                                  ? [userClaim, new Claim(ClaimTypes.Role, "moderator")]
+				                                  : [userClaim], "Custom Authentication");
 			var user = new ClaimsPrincipal(identity);
 			return Task.FromResult(new AuthenticationState(user));
 		}

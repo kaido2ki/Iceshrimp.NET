@@ -117,6 +117,7 @@
                     Token           = res.Token!,
                     Host            = res.User.Host,
                     IsAdmin         = res.IsAdmin ?? false,
+                    IsModerator     = res.IsModerator ?? false,
                     Emojis          = res.User.Emojis,
                     MovedTo         = res.User.MovedTo
                 });
