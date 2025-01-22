@@ -18,7 +18,7 @@
         }
         <div class="buttons">
             <button class="btn submit-btn" @onclick="ConfirmAction"
-                    disabled="@string.IsNullOrWhiteSpace(Input)">@(ButtonText ?? Loc["Submit"])</button>
+                    disabled="@(Required && string.IsNullOrWhiteSpace(Input))">@(ButtonText ?? Loc["Submit"])</button>
             <button class="btn" @onclick="CancelAction">@Loc["Cancel"]</button>
         </div>
     </div>
@@ -30,6 +30,7 @@
     private EventCallback<string?> Action      { get; set; }
     private string                 Text        { get; set; } = "";
     private string                 Placeholder { get; set; } = "";
+    private bool                   Required    { get; set; }
     private bool                   MultiLine   { get; set; }
     private string?                ButtonText  { get; set; }
     private string                 Input       { get; set; } = "";
@@ -39,11 +40,12 @@
         await _module.InvokeVoidAsync("closeDialog", Dialog);
     }
 
-    public async Task Prompt(EventCallback<string?> action, string text, string placeholder, bool multiLine = false, string? buttonText = null)
+    public async Task Prompt(EventCallback<string?> action, string text, string placeholder, bool allowEmpty = false, bool multiLine = false, string? buttonText = null)
     {
         Action      = action;
         Text        = text;
         Placeholder = placeholder;
+        Required    = !allowEmpty;
         MultiLine   = multiLine;
         ButtonText  = buttonText;
         Input       = "";
