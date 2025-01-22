@@ -1201,9 +1201,11 @@ public class UserService(
 					var document = await new HtmlParser().ParseDocumentAsync(html);
 
 					userProfileField.IsVerified =
-						document.Links.Any(a => a.GetAttribute("href") == profileUrl
-						                        && (a.GetAttribute("rel")?.Contains("me")
-						                            ?? false));
+						document.Links.Any(a => (a.GetAttribute("rel")?.Contains("me")
+						                         ?? false)
+						                        && a.GetAttribute("href") == profileUrl
+						                        || user.Uri != null
+						                        && a.GetAttribute("href") == user.Uri);
 				}
 
 				bgDbContext.Update(bgUser.UserProfile);
