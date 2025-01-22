@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
@@ -276,6 +277,7 @@ public class DriveController(
 	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.Conflict)]
+	[SuppressMessage("Performance", "CA1862", Justification = "string.Equals() cannot be used in DbSet LINQ operations")]
 	public async Task<DriveFolderResponse> CreateFolder(DriveFolderRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -284,9 +286,7 @@ public class DriveController(
 			throw GracefulException.BadRequest("Folder name cannot be empty");
 
 		var existing = await db.DriveFolders
-		                       #pragma warning disable CA1862
 		                       .AnyAsync(p => p.Name.ToLower() == request.Name.Trim().ToLower()
-		                                      #pragma warning restore CA1862
 		                                      && p.ParentId == request.ParentId
 		                                      && p.UserId == user.Id);
 		if (existing)
@@ -359,6 +359,7 @@ public class DriveController(
 	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.Conflict)]
+	[SuppressMessage("Performance", "CA1862", Justification = "string.Equals() cannot be used in DbSet LINQ operations")]
 	public async Task<DriveFolderResponse> UpdateFolder(string id, [FromHybrid] string name)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -371,9 +372,7 @@ public class DriveController(
 		             ?? throw GracefulException.RecordNotFound();
 
 		var existing = await db.DriveFolders
-		                       #pragma warning disable CA1862
 		                       .AnyAsync(p => p.Name.ToLower() == name.Trim().ToLower()
-		                                      #pragma warning restore CA1862
 		                                      && p.ParentId == folder.ParentId
 		                                      && p.UserId == user.Id);
 		if (existing)
@@ -418,6 +417,7 @@ public class DriveController(
 	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound, HttpStatusCode.Conflict)]
+	[SuppressMessage("Performance", "CA1862", Justification = "string.Equals() cannot be used in DbSet LINQ operations")]
 	public async Task<DriveFolderResponse> UpdateFolderParent(string id, DriveMoveRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -438,9 +438,7 @@ public class DriveController(
 		}
 
 		var existing = await db.DriveFolders
-		                       #pragma warning disable CA1862
 		                       .AnyAsync(p => p.Name.ToLower() == folder.Name.ToLower()
-		                                      #pragma warning restore CA1862
 		                                      && p.ParentId == request.FolderId
 		                                      && p.UserId == user.Id);
 		if (existing)
