@@ -1,0 +1,22 @@
+@page "/mod"
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.Extensions.Localization
+@attribute [Authorize(Roles = "moderator")]
+@layout ModerationLayout
+@inject IStringLocalizer<Localization> Loc;
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.Shield"></Icon>
+    @Loc["Moderation"]
+</SectionContent>
+
+<div class="body">
+    <i>Moderation overview</i>
+</div>
+
+@code {
+}

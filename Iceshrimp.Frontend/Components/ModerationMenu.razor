@@ -1,0 +1,33 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject NavigationManager              Nav;
+@inject IStringLocalizer<Localization> Loc;
+@inject SessionService                 Session;
+<div class="nav">
+    @if (Session?.Current?.IsAdmin ?? false)
+    {
+        <a href="/admin" target="_blank">
+            <div class="sidebar-btn">
+                <Icon Name="Icons.ArrowSquareOut"/>
+                <span class="text">@Loc["Admin Dashboard"]</span>
+            </div>
+        </a>
+        <a href="/queue" target="_blank">
+            <div class="sidebar-btn">
+                <Icon Name="Icons.ArrowSquareOut"/>
+                <span class="text">@Loc["Queue Dashboard"]</span>
+            </div>
+        </a>
+    }
+    <NavLink Match="NavLinkMatch.All" href="/mod">
+        <div class="sidebar-btn">
+            <Icon Name="Icons.ChartLine"/>
+            <span class="text">@Loc["Overview"]</span>
+        </div>
+    </NavLink>
+</div>
+
+@code {
+}

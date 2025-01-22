@@ -1,10 +1,12 @@
 @inject IStringLocalizer<Localization> Loc;
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
 @implements IDisposable
 @inject NavigationManager              Navigation;
+@inject SessionService Session;
 
 <GlobalComponents></GlobalComponents>
 <div @ref="SidebarElementRef" class="sidebar @(_open ? "open" : "")" tabindex="0">
@@ -48,6 +50,15 @@
                 <span class="text">@Loc["Settings"]</span>
             </div>
         </NavLink>
+        @if ((Session?.Current?.IsAdmin ?? false) || (Session?.Current?.IsModerator ?? false))
+        {
+            <NavLink href="/mod">
+                <div class="sidebar-btn">
+                    <Icon Name="Icons.Shield"></Icon>
+                    <span class="text">@Loc["Moderation"]</span>
+                </div>
+            </NavLink>
+        }
     <hr class="rule"/>
     <button class="sidebar-btn post-btn" @onclick="Open">
         <Icon Name="Icons.Pencil"></Icon>@Loc["Note"]

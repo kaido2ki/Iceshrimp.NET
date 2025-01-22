@@ -1,0 +1,21 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.Extensions.Localization
+@inherits LayoutComponentBase
+@layout MainLayout
+@inject IStringLocalizer<Localization> Loc;
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.Shield"></Icon>
+    @Loc["Moderation"]
+</SectionContent>
+<div class="layout">
+    <div class="sidebar">
+        <ModerationMenu/>
+    </div>
+    <div class="body">
+        @Body
+    </div>
+</div>

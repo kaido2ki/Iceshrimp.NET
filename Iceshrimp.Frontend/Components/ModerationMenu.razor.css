@@ -1,0 +1,39 @@
+.sidebar-btn {
+    display: flex;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: start;
+    border-radius: 1.25rem;
+    padding-inline: 1rem;
+    margin-bottom: 0.5rem;
+    margin-inline: 1rem;
+    color: white;
+    font-size: 0.9em;
+    background: var(--foreground-color);
+
+    > i {
+        padding-right: 0.5rem;
+    }
+}
+.sidebar-btn:hover {
+    background-color: var(--hover-color);
+}
+
+.nav {
+    padding-top: 1rem;
+    width: 15rem;
+}
+
+::deep {
+    .active {
+        > .sidebar-btn {
+            background: var(--highlight-color);
+        }
+    }
+}
+::deep {
+    a {
+        text-decoration: none;
+        color: white;
+    }
+}
