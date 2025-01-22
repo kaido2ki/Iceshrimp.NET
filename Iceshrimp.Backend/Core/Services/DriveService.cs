@@ -165,7 +165,7 @@ public class DriveService(
 	}
 
 	public async Task<DriveFile> StoreFileAsync(
-		Stream input, User user, DriveFileCreationRequest request, bool skipImageProcessing = false, string? folderId = null
+		Stream input, User user, DriveFileCreationRequest request, bool skipImageProcessing = false
 	)
 	{
 		if (user.IsLocalUser && input.Length > storageConfig.Value.MaxUploadSizeBytes)
@@ -206,19 +206,19 @@ public class DriveService(
 			await input.CopyToAsync(memoryStream);
 		
 		// If the requested folder doesn't exist then store it in the root folder
-		if (folderId != null)
+		if (request.FolderId != null)
 		{
 			var folder = await db.DriveFolders
-			                     .FirstOrDefaultAsync(p => p.Id == folderId && p.UserId == user.Id);
-			if (folder == null) folderId = null;
+			                     .FirstOrDefaultAsync(p => p.Id == request.FolderId && p.UserId == user.Id);
+			if (folder == null) request.FolderId = null;
 		}
 
 		var digest = await DigestHelpers.Sha256DigestAsync(buf);
 		logger.LogDebug("Storing file {digest} for user {userId}", digest, user.Id);
-		file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest && p.FolderId == folderId && (!p.IsLink || p.UserId == user.Id));
+		file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest && (!p.IsLink || p.UserId == user.Id));
 		if (file != null)
 		{
-			if (file.UserId == user.Id)
+			if (file.UserId == user.Id && file.FolderId == request.FolderId)
 			{
 				logger.LogDebug("File {digest} is already registered for user, returning existing file {id}",
 				                digest, file.Id);
@@ -227,7 +227,7 @@ public class DriveService(
 
 			var clonedFile = file.Clone(user, request);
 
-			logger.LogDebug("File {digest} is already registered for different user, returning clone of existing file {id}, stored as {cloneId}",
+			logger.LogDebug("File {digest} is already registered for different user or folder, returning clone of existing file {id}, stored as {cloneId}",
 			                digest, file.Id, clonedFile.Id);
 
 			await db.AddAsync(clonedFile);
@@ -360,7 +360,7 @@ public class DriveService(
 			PublicUrl          = @public?.url,
 			PublicAccessKey    = @public?.accessKey,
 			PublicMimeType     = @public?.format.Format.MimeType,
-			FolderId           = folderId
+			FolderId           = request.FolderId
 		};
 
 		await db.AddAsync(file);
@@ -672,6 +672,7 @@ public class DriveFileCreationRequest
 	public          string?                     RequestIp;
 	public          string?                     Source;
 	public          string?                     Uri;
+	public          string?                     FolderId;
 }
 
 file static class DriveFileExtensions
@@ -707,7 +708,8 @@ file static class DriveFileExtensions
 			Comment            = request.Comment,
 			RequestHeaders     = request.RequestHeaders,
 			RequestIp          = request.RequestIp,
-			ThumbnailAccessKey = file.ThumbnailAccessKey
+			ThumbnailAccessKey = file.ThumbnailAccessKey,
+			FolderId           = request.FolderId 
 		};
 	}
 }
