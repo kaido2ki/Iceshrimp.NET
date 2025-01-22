@@ -47,6 +47,9 @@ public class BackgroundTaskQueue(int parallelism)
 			case UserPurgeJobData userPurgeJob:
 				await ProcessUserPurgeAsync(userPurgeJob, scope, token);
 				break;
+			case ProfileFieldUpdateJobData profileFieldUpdateJob:
+				await ProcessProfileFieldUpdateAsync(profileFieldUpdateJob, scope, token);
+				break;
 		}
 	}
 
@@ -299,6 +302,46 @@ public class BackgroundTaskQueue(int parallelism)
 
 		logger.LogDebug("User {id} purged successfully", jobData.UserId);
 	}
+
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery", Justification = "Projectables")]
+	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
+	private static async Task ProcessProfileFieldUpdateAsync(
+		ProfileFieldUpdateJobData jobData,
+		IServiceProvider scope,
+		CancellationToken token
+	)
+	{
+		var db      = scope.GetRequiredService<DatabaseContext>();
+		var userSvc = scope.GetRequiredService<UserService>();
+		var logger  = scope.GetRequiredService<ILogger<BackgroundTaskQueue>>();
+
+		logger.LogDebug("Processing profile field update for user {id}", jobData.UserId);
+
+		var user = await db.Users.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == jobData.UserId, token);
+		if (user == null)
+		{
+			logger.LogDebug("Failed to update profile fields for user {id}: user not found in database", jobData.UserId);
+			return;
+		}
+		if (user.UserProfile == null)
+		{
+			logger.LogDebug("Failed to update profile fields for user {id}: user profile not found in database", jobData.UserId);
+			return;
+		}
+
+		var profileUrl = user.Host != null ? user.UserProfile.Url : null;
+		if (user.Host != null && profileUrl == null)
+		{
+			logger.LogDebug("Failed to update profile fields for user {id}: profile URL not found in database", jobData.UserId);
+			return;
+		}
+
+		user = await userSvc.VerifyProfileFieldsAsync(user, profileUrl);
+		db.Update(user.UserProfile!);
+		await db.SaveChangesAsync(token);
+
+		logger.LogDebug("Profile fields for user {id} updated successfully", jobData.UserId);
+	}
 }
 
 [JsonDerivedType(typeof(DriveFileDeleteJobData), "driveFileDelete")]
@@ -307,6 +350,7 @@ public class BackgroundTaskQueue(int parallelism)
 [JsonDerivedType(typeof(FilterExpiryJobData), "filterExpiry")]
 [JsonDerivedType(typeof(UserDeleteJobData), "userDelete")]
 [JsonDerivedType(typeof(UserPurgeJobData), "userPurge")]
+[JsonDerivedType(typeof(ProfileFieldUpdateJobData), "profileFieldUpdate")]
 public abstract class BackgroundTaskJobData;
 
 public class DriveFileDeleteJobData : BackgroundTaskJobData
@@ -336,6 +380,11 @@ public class UserDeleteJobData : BackgroundTaskJobData
 }
 
 public class UserPurgeJobData : BackgroundTaskJobData
+{
+	[JR] [J("userId")] public required string UserId { get; set; }
+}
+
+public class ProfileFieldUpdateJobData : BackgroundTaskJobData
 {
 	[JR] [J("userId")] public required string UserId { get; set; }
 }
