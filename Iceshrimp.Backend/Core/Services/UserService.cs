@@ -1204,8 +1204,7 @@ public class UserService(
 						document.Links.Any(a => (a.GetAttribute("rel")?.Contains("me")
 						                         ?? false)
 						                        && a.GetAttribute("href") == profileUrl
-						                        || user.Uri != null
-						                        && a.GetAttribute("href") == user.Uri);
+						                        || a.GetAttribute("href") == user.GetUriOrPublicUri(instance.Value));
 				}
 
 				bgDbContext.Update(bgUser.UserProfile);
