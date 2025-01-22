@@ -1,5 +1,6 @@
 .dialog {
     margin: auto;
+    overflow-y: scroll;
 }
 
 .dialog::backdrop {
