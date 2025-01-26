@@ -1,8 +1,11 @@
+using System.Text.Json.Serialization;
 using Iceshrimp.Backend.Core.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
+using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
+using JsonConverter = Newtonsoft.Json.JsonConverter;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
@@ -48,6 +51,21 @@ public class ASField : ASAttachment
 	public string? Value;
 
 	public ASField() => Type = $"{Constants.SchemaNs}#PropertyValue";
+}
+
+public class ASPronouns : ASAttachment
+{
+	public ASPronouns() => Type = $"{Constants.PancakesNs}#Pronouns";
+
+	[J($"{Constants.ActivityStreamsNs}#name")]
+	[JC(typeof(ValueObjectConverter))]
+	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? Name { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#nameMap")]
+	[JC(typeof(ValueObjectConverter))]
+	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public Dictionary<string, string>? NameMap { get; set; }
 }
 
 public class ASImageConverter : ASSerializer.ListSingleObjectConverter<ASImage>;
@@ -99,6 +117,7 @@ public sealed class ASAttachmentConverter : JsonConverter
 			$"{Constants.ActivityStreamsNs}#Document" => obj.ToObject<ASDocument?>(),
 			$"{Constants.ActivityStreamsNs}#Image"    => obj.ToObject<ASImage?>(),
 			$"{Constants.SchemaNs}#PropertyValue"     => obj.ToObject<ASField?>(),
+			$"{Constants.PancakesNs}#Pronouns"        => obj.ToObject<ASPronouns?>(),
 			_                                         => attachment
 		};
 	}

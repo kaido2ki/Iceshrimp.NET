@@ -43,7 +43,8 @@
 
       "Bite": "https://ns.mia.jetzt/as#Bite",
       "quoteUri": "http://fedibird.com/ns#quoteUri",
-      "EmojiReact": "http://litepub.social/ns#EmojiReact"
+      "EmojiReact": "http://litepub.social/ns#EmojiReact",
+      "Pronouns": "https://ns.pancakes.gay/as/#Pronouns"
     }
   ]
 }

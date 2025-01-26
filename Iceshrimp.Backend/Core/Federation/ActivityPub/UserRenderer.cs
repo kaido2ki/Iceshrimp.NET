@@ -80,7 +80,14 @@ public class UserRenderer(
 
 		var attachments = profile?.Fields
 		                         .Select(p => new ASField { Name = p.Name, Value = RenderFieldValue(p.Value) })
-		                         .Cast<ASAttachment>()
+		                         .Concat<ASAttachment>(profile.Pronouns != null && profile.Pronouns.Count != 0
+			                                               ?
+			                                               [
+				                                               profile.Pronouns.TryGetValue("", out var pronouns)
+					                                               ? new ASPronouns { Name    = pronouns }
+					                                               : new ASPronouns { NameMap = profile.Pronouns }
+			                                               ]
+			                                               : [])
 		                         .ToList();
 
 		var summary = profile?.Description != null

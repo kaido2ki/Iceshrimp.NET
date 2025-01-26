@@ -158,6 +158,15 @@ public class UserService(
 			             })
 			             .AwaitAllAsync()
 			: null;
+		
+		var pronounsAttachment = actor.Attachments?.OfType<ASPronouns>()
+		                              .FirstOrDefault(p => p is { Name: not null } or { NameMap: not null });
+		var pronouns = pronounsAttachment switch
+		{
+			{ Name: not null }    => new Dictionary<string, string> { { "", pronounsAttachment.Name } },
+			{ NameMap: not null } => pronounsAttachment.NameMap,
+			_                     => null
+		};
 
 		var bio = actor.MkSummary?.ReplaceLineEndings("\n").Trim();
 		if (bio == null)
@@ -209,7 +218,8 @@ public class UserService(
 			//Location = TODO,
 			Fields   = fields?.ToArray() ?? [],
 			UserHost = user.Host,
-			Url      = actor.Url?.Link
+			Url      = actor.Url?.Link,
+			Pronouns = pronouns
 		};
 
 		var publicKey = new UserPublickey
@@ -326,6 +336,15 @@ public class UserService(
 			             .AwaitAllAsync()
 			: null;
 
+		var pronounsAttachment = actor.Attachments?.OfType<ASPronouns>()
+		                              .FirstOrDefault(p => p is { Name: not null } or { NameMap: not null });
+		var pronouns = pronounsAttachment switch
+		{
+			{ Name: not null }    => new Dictionary<string, string> { { "", pronounsAttachment.Name } },
+			{ NameMap: not null } => pronounsAttachment.NameMap,
+			_                     => null
+		};
+
 		user.Emojis = emoji.Select(p => p.Id).ToList();
 		//TODO: FollowersCount
 		//TODO: FollowingCount
@@ -351,6 +370,7 @@ public class UserService(
 		user.UserProfile.Fields   = fields?.ToArray() ?? [];
 		user.UserProfile.UserHost = user.Host;
 		user.UserProfile.Url      = actor.Url?.Link;
+		user.UserProfile.Pronouns = pronouns;
 
 		user.UserProfile.MentionsResolved = false;
 
