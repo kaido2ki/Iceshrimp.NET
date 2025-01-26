@@ -5,6 +5,10 @@
 @inject IStringLocalizer<Localization> Loc;
 <div class="profile-info">
     <div class="badges">
+        @if (UserProfile.Pronouns != null)
+        {
+            <span class="badge">@UserProfile.Pronouns</span>
+        }
         @switch (UserProfile.Role)
         {
             case Role.Moderator:
@@ -64,6 +68,16 @@
                     @Loc["Location"]
                 </span>
                 <span class="field-value">@UserProfile.Location</span>
+            </div>
+        }
+        @if (UserProfile.Pronouns != null)
+        {
+            <div class="pronouns field">
+                <span class="field-name">
+                    <Icon Name="Icons.IdentificationCard" Size="1.3em"/>
+                    @Loc["Pronouns"]
+                </span>
+                <span class="field-value">@UserProfile.Pronouns</span>
             </div>
         }
     </div>
