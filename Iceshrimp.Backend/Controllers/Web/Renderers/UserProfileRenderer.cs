@@ -69,7 +69,8 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 			Relations = relations,
 			Role      = role,
 			IsLocked  = user.IsLocked,
-			Url       = url
+			Url       = url,
+			Pronouns  = user.UserProfile?.Pronouns?.GetValueOrDefault("")
 		};
 	}
 

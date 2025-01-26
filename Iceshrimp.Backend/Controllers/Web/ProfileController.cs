@@ -43,7 +43,8 @@ public class ProfileController(
 			DisplayName  = user.DisplayName ?? "",
 			IsBot        = user.IsBot,
 			IsCat        = user.IsCat,
-			SpeakAsCat   = user.SpeakAsCat
+			SpeakAsCat   = user.SpeakAsCat,
+			Pronouns     = profile.Pronouns?.GetValueOrDefault("")
 		};
 	}
 
@@ -75,6 +76,12 @@ public class ProfileController(
 		profile.Birthday     = birthday;
 		profile.Fields       = fields.ToArray();
 		profile.FFVisibility = (UserProfile.UserProfileFFVisibility)newProfile.FFVisibility;
+
+		profile.Pronouns ??= new Dictionary<string, string>();
+		if (string.IsNullOrWhiteSpace(newProfile.Pronouns))
+			profile.Pronouns.Remove("");
+		else
+			profile.Pronouns[""] = newProfile.Pronouns.Trim();
 
 		user.DisplayName = string.IsNullOrWhiteSpace(newProfile.DisplayName) ? null : newProfile.DisplayName.Trim();
 

@@ -25,6 +25,8 @@ public class UserProfileEntity
 	public required bool IsCat      { get; set; }
 	public required bool SpeakAsCat { get; set; }
 
+	[MaxLength(128)] public required string? Pronouns { get; set; }
+
 	[SuppressMessage("ReSharper", "UnusedMember.Global")]
 	public enum FFVisibilityEnum
 	{
