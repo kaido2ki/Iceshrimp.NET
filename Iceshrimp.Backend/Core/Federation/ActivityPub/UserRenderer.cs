@@ -84,8 +84,8 @@ public class UserRenderer(
 			                                               ?
 			                                               [
 				                                               profile.Pronouns.TryGetValue("", out var pronouns)
-					                                               ? new ASPronouns { Name    = pronouns }
-					                                               : new ASPronouns { NameMap = profile.Pronouns }
+					                                               ? new ASPronouns { Name = new LDLocalizedString(null, pronouns) }
+					                                               : new ASPronouns { Name = new LDLocalizedString { Values = profile.Pronouns! } }
 			                                               ]
 			                                               : [])
 		                         .ToList();

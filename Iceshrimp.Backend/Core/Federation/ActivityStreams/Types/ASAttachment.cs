@@ -58,14 +58,9 @@ public class ASPronouns : ASAttachment
 	public ASPronouns() => Type = $"{Constants.PancakesNs}#Pronouns";
 
 	[J($"{Constants.ActivityStreamsNs}#name")]
-	[JC(typeof(ValueObjectConverter))]
+	[JC(typeof(LocalizedValueObjectConverter))]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public string? Name { get; set; }
-
-	[J($"{Constants.ActivityStreamsNs}#nameMap")]
-	[JC(typeof(ValueObjectConverter))]
-	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public Dictionary<string, string>? NameMap { get; set; }
+	public LDLocalizedString? Name { get; set; }
 }
 
 public class ASImageConverter : ASSerializer.ListSingleObjectConverter<ASImage>;
