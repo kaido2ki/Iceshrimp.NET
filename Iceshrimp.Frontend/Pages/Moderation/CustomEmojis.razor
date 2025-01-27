@@ -38,32 +38,7 @@
             <div class="emoji-list">
                 @foreach (var emoji in category.Value)
                 {
-                    <div class="emoji-entry">
-                        <InlineEmoji Name="@emoji.Name" Url="@emoji.PublicUrl" Size="3rem"/>
-                        <div class="emoji-details">
-                            <span class="emoji-name">@emoji.Name</span>
-                            <span>
-                                @foreach (var alias in emoji.Aliases)
-                                {
-                                    <span class="emoji-alias">@alias</span>
-                                }
-                            </span>
-                            <span class="labels">
-                                @if (Source == "remote")
-                                {
-                                    <Icon Name="Icons.ArrowSquareOut" title="@Loc["Remote"]"/>
-                                }
-                                @if (emoji.Sensitive)
-                                {
-                                    <Icon Name="Icons.EyeSlash" title="@Loc["Sensitive"]"/>
-                                }
-                                @if (!string.IsNullOrWhiteSpace(emoji.License))
-                                {
-                                    <Icon Name="Icons.Article" title="@emoji.License"/>
-                                }
-                            </span>
-                        </div>
-                    </div>
+                    <EmojiManagementEntry Emoji="@emoji" Source="@Source"/>
                 }
             </div>
         }

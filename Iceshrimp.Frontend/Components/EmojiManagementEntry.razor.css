@@ -1,0 +1,46 @@
+.emoji-entry {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: var(--foreground-color);
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.emoji-entry:hover {
+    background-color: var(--hover-color);
+}
+
+.emoji-details {
+    display: flex;
+    flex-direction: column;
+    text-wrap: wrap;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+
+.emoji-name::before,
+.emoji-name::after {
+    display: inline;
+    content: ":";
+    opacity: 0.7;
+}
+
+.emoji-alias {
+    opacity: 0.7;
+    font-size: 0.8em;
+}
+
+.emoji-alias::before,
+.emoji-alias::after {
+    display: inline;
+    content: ":";
+}
+
+::deep {
+    .labels .ph {
+        display: inline-block;
+        line-height: 1;
+        color: var(--notice-color);
+    }
+}

@@ -1,0 +1,37 @@
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
+@inject IStringLocalizer<Localization> Loc;
+
+<div class="emoji-entry">
+    <InlineEmoji Name="@Emoji.Name" Url="@Emoji.PublicUrl" Size="3rem"/>
+    <div class="emoji-details">
+        <span class="emoji-name">@Emoji.Name</span>
+        <span>
+            @foreach (var alias in Emoji.Aliases)
+            {
+                <span class="emoji-alias">@alias</span>
+            }
+        </span>
+        <span class="labels">
+            @if (Source == "remote")
+            {
+                <Icon Name="Icons.ArrowSquareOut" title="@Loc["Remote"]"/>
+            }
+            @if (Emoji.Sensitive)
+            {
+                <Icon Name="Icons.EyeSlash" title="@Loc["Sensitive"]"/>
+            }
+            @if (!string.IsNullOrWhiteSpace(Emoji.License))
+            {
+                <Icon Name="Icons.Article" title="@Emoji.License"/>
+            }
+        </span>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required EmojiResponse Emoji  { get; set; }
+    [Parameter, EditorRequired] public required string        Source { get; set; }
+}
