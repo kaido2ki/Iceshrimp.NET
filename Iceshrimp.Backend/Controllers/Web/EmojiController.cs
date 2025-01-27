@@ -46,6 +46,27 @@ public class EmojiController(
 		               .ToListAsync();
 	}
 
+	[HttpGet("remote")]
+	[Authorize("role:moderator")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<EmojiResponse>> GetRemoteEmoji()
+	{
+		return await db.Emojis
+		               .Where(p => p.Host != null)
+		               .Select(p => new EmojiResponse
+		               {
+			               Id        = p.Id,
+			               Name      = p.Name,
+			               Uri       = p.Uri,
+			               Aliases   = p.Aliases,
+			               Category  = p.Host,
+			               PublicUrl = p.GetAccessUrl(instance.Value),
+			               License   = p.License,
+			               Sensitive = p.Sensitive
+		               })
+		               .ToListAsync();
+	}
+
 	[HttpGet("{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
