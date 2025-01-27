@@ -177,7 +177,7 @@ public class StorageMaintenanceService(
 					continue;
 				}
 
-				await driveSvc.ExpireFileAsync(file);
+				await driveSvc.ExpireFileAsync(file, ignoreDeletionFailures: true);
 				continue;
 			}
 

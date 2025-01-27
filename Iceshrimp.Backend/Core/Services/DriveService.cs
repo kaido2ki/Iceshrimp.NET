@@ -446,7 +446,9 @@ public class DriveService(
 		await queueSvc.BackgroundTaskQueue.EnqueueAsync(job);
 	}
 
-	public async Task ExpireFileAsync(DriveFile file, CancellationToken token = default)
+	public async Task ExpireFileAsync(
+		DriveFile file, bool ignoreDeletionFailures = false, CancellationToken token = default
+	)
 	{
 		if (file is not { UserHost: not null, Uri: not null, IsLink: false }) return;
 
@@ -471,20 +473,27 @@ public class DriveService(
 		if (deduplicated)
 			return;
 
-		if (storedInternal)
+		try
 		{
-			var pathBase = storageConfig.Value.Local?.Path
-			               ?? throw new Exception("Cannot delete locally stored file: pathBase is null");
+			if (storedInternal)
+			{
+				var pathBase = storageConfig.Value.Local?.Path
+				               ?? throw new Exception("Cannot delete locally stored file: pathBase is null");
 
-			paths.Where(p => p != null)
-			     .Select(p => Path.Combine(pathBase, p!))
-			     .Where(File.Exists)
-			     .ToList()
-			     .ForEach(File.Delete);
+				paths.Where(p => p != null)
+				     .Select(p => Path.Combine(pathBase, p!))
+				     .Where(File.Exists)
+				     .ToList()
+				     .ForEach(File.Delete);
+			}
+			else
+			{
+				await storageSvc.RemoveFilesAsync(paths.Where(p => p != null).Select(p => p!).ToArray());
+			}
 		}
-		else
+		catch when (ignoreDeletionFailures)
 		{
-			await storageSvc.RemoveFilesAsync(paths.Where(p => p != null).Select(p => p!).ToArray());
+			// ignored
 		}
 	}
 

@@ -113,7 +113,7 @@ public class BackgroundTaskQueue(int parallelism)
 
 		var file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == jobData.DriveFileId, token);
 		if (file == null) return;
-		await drive.ExpireFileAsync(file, token);
+		await drive.ExpireFileAsync(file, token: token);
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery",
