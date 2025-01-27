@@ -23,6 +23,7 @@ public partial class UserPreview(
 
 	private PreviewUser? _user;
 	private string       _instanceName = "Iceshrimp.NET";
+	private string?      _pronouns;
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage")]
@@ -57,6 +58,9 @@ public partial class UserPreview(
 			return;
 		}
 
-		_user = await renderer.RenderOne(user);
+		_user     = await renderer.RenderOne(user);
+		_pronouns = user?.UserProfile?.Pronouns != null
+			? string.Join(", ", user.UserProfile.Pronouns.Select(p => $"{p.Value} ({p.Key.ToUpper()})"))
+			: null;
 	}
 }

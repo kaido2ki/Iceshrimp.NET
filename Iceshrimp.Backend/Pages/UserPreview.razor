@@ -16,6 +16,12 @@ else
 {
     <div class="user">
         <UserComponent User="_user"/>
+        @if (_pronouns != null)
+        {
+            <div class="pronouns">
+                @_pronouns
+            </div>
+        }
         <div class="bio">
             @(_user.Bio ?? new MarkupString("<i>This user hasn't added a bio yet.</i>"))
         </div>
