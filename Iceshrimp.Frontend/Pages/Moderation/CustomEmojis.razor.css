@@ -1,0 +1,74 @@
+.emoji-search {
+    display: flex;
+    margin-top: 1rem;
+}
+
+.search {
+    display: inline-block;
+    width: 100%;
+}
+
+.search-from {
+    display: inline-block;
+}
+
+.category-name {
+    display: inline-block;
+    margin: 1rem 0 0.5rem;
+    font-weight: bold;
+}
+
+.emoji-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.emoji-entry {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: var(--foreground-color);
+    border-radius: 0.5rem;
+}
+
+.emoji-details {
+    display: flex;
+    flex-direction: column;
+    text-wrap: wrap;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+
+.emoji-name::before,
+.emoji-name::after {
+    display: inline;
+    content: ":";
+    opacity: 0.7;
+}
+
+.emoji-alias {
+    opacity: 0.7;
+    font-size: 0.8em;
+}
+
+.emoji-alias::before,
+.emoji-alias::after {
+    display: inline;
+    content: ":";
+}
+
+::deep {
+    .labels .ph {
+        display: inline-block;
+        line-height: 1;
+        color: var(--notice-color);
+    }
+}
+
+@media (max-width: 1000px) {
+    .emoji-list {
+        grid-template-columns: 1fr;
+    }
+}

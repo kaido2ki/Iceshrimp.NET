@@ -1,0 +1,120 @@
+@page "/mod/emojis"
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Sections
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Shared.Schemas.Web
+@using Iceshrimp.Frontend.Components
+@attribute [Authorize(Roles = "moderator")]
+@layout ModerationLayout
+@inject ApiService                     Api;
+@inject IStringLocalizer<Localization> Loc;
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.Smiley"></Icon>
+    @Loc["Custom Emojis"]
+</SectionContent>
+
+@if (State is State.Loaded)
+{
+    <div class="body">
+        <div class="emoji-search">
+            <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Search" aria-label="search"/>
+            @if (Source == "remote")
+            {
+                <input @bind="HostFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Host" aria-label="host"/>
+            }
+            <select class="search-from" @bind="Source" @bind:after="GetEmojis">
+                <option value="local">@Loc["Local"]</option>
+                <option value="remote">@Loc["Remote"]</option>
+            </select>
+        </div>
+        @foreach (var category in Categories)
+        {
+            <span class="category-name">@category.Key</span>
+            <div class="emoji-list">
+                @foreach (var emoji in category.Value)
+                {
+                    <div class="emoji-entry">
+                        <InlineEmoji Name="@emoji.Name" Url="@emoji.PublicUrl" Size="3rem"/>
+                        <div class="emoji-details">
+                            <span class="emoji-name">@emoji.Name</span>
+                            <span>
+                                @foreach (var alias in emoji.Aliases)
+                                {
+                                    <span class="emoji-alias">@alias</span>
+                                }
+                            </span>
+                            <span class="labels">
+                                @if (Source == "remote")
+                                {
+                                    <Icon Name="Icons.ArrowSquareOut" title="@Loc["Remote"]"/>
+                                }
+                                @if (emoji.Sensitive)
+                                {
+                                    <Icon Name="Icons.EyeSlash" title="@Loc["Sensitive"]"/>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(emoji.License))
+                                {
+                                    <Icon Name="Icons.Article" title="@emoji.License"/>
+                                }
+                            </span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+@if (State is State.Empty)
+{
+    <div class="body">
+        <i>This instance has no emojis</i>
+    </div>
+}
+
+@code {
+    private List<EmojiResponse>                     Emojis      { get; set; } = [];
+    private Dictionary<string, List<EmojiResponse>> Categories  { get; set; } = new();
+    private string                                  EmojiFilter { get; set; } = "";
+    private string                                  HostFilter  { get; set; } = "";
+    private string                                  Source      { get; set; } = "local";
+    private State                                   State       { get; set; }
+
+    private void FilterEmojis()
+    {
+        Categories = Emojis
+                     .Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Aliases.Count(a => a.Contains(EmojiFilter.Trim())) != 0)
+                     .OrderBy(p => p.Name)
+                     .ThenBy(p => p.Id)
+                     .GroupBy(p => p.Category)
+                     .Where(p => Source == "local" || (Source == "remote" && (p.Key?.Contains(HostFilter) ?? false)))
+                     .OrderBy(p => string.IsNullOrEmpty(p.Key))
+                     .ThenBy(p => p.Key)
+                     .ToDictionary(p => p.Key ?? "Other", p => p.ToList());
+    }
+
+    private async Task GetEmojis()
+    {
+        State = State.Loading;
+
+        Emojis = Source == "remote" ? await Api.Emoji.GetRemoteEmojiAsync() : await Api.Emoji.GetAllEmojiAsync();
+        if (Emojis.Count == 0)
+        {
+            State = State.Empty;
+        }
+        else
+        {
+            FilterEmojis();
+            State = State.Loaded;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetEmojis();
+    }
+}
