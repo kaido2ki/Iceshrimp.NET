@@ -38,7 +38,7 @@
             <div class="emoji-list">
                 @foreach (var emoji in category.Value)
                 {
-                    <EmojiManagementEntry Emoji="@emoji" Source="@Source"/>
+                    <EmojiManagementEntry Emoji="@emoji" Source="@Source" GetEmojis="GetEmojis"/>
                 }
             </div>
         }

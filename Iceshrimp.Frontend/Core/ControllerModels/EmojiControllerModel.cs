@@ -15,8 +15,14 @@ internal class EmojiControllerModel(ApiClient api)
 	public Task<EmojiResponse> UploadEmojiAsync(IBrowserFile file) =>
 		api.CallAsync<EmojiResponse>(HttpMethod.Post, "/emoji", data: file);
 
-	public Task<EmojiResponse?> UpdateEmojiAsync(string id, EmojiResponse emoji) =>
-		api.CallNullableAsync<EmojiResponse>(HttpMethod.Patch, $"/emoji/{id}", data: emoji);
+	public Task<EmojiResponse?> CloneEmojiAsync(string name, string host) =>
+		api.CallNullableAsync<EmojiResponse>(HttpMethod.Post, $"/emoji/clone/{name}@{host}");
+
+	public Task<EmojiResponse?> UpdateEmojiAsync(string id, UpdateEmojiRequest request) =>
+		api.CallNullableAsync<EmojiResponse>(HttpMethod.Patch, $"/emoji/{id}", data: request);
+
+	public Task<bool> DeleteEmojiAsync(string id) =>
+		api.CallNullableAsync(HttpMethod.Delete, $"/emoji/{id}");
 
 	public Task<EmojiResponse?> GetEmojiAsync(string id) =>
 		api.CallNullableAsync<EmojiResponse>(HttpMethod.Get, $"/emoji/{id}");
