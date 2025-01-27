@@ -15,7 +15,9 @@ public class UserProfileResponse : IIdentifiable
 	public required Role                    Role      { get; set; }
 	public required bool                    IsLocked  { get; set; }
 	public required string?                 Url       { get; set; }
-	public required string?                 Pronouns  { get; set; }
+	public required string?                 Lang      { get; set; }
+
+	public required Dictionary<string, string>? Pronouns { get; set; }
 }
 
 [Flags]

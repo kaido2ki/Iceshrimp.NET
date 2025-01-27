@@ -57,16 +57,6 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 
 		var url = user.Host != null ? user.UserProfile?.Url ?? user.Uri : user.GetPublicUrl(instance.Value);
 
-		// 1. Try to get language mapped (NameMap) pronouns that match the local user's language
-		// 2. Try to get language mapped (NameMap) pronouns that match the requested user's profile language
-		// 3. Try to get the generic language (Name) pronouns
-		string? pronouns = null;
-		if (!string.IsNullOrWhiteSpace(localUser?.UserProfile?.Lang))
-			pronouns = user.UserProfile?.Pronouns?.GetValueOrDefault(localUser.UserProfile.Lang);
-		if (!string.IsNullOrWhiteSpace(user.UserProfile?.Lang))
-			pronouns ??= user.UserProfile.Pronouns?.GetValueOrDefault(user.UserProfile.Lang);
-		pronouns ??= user.UserProfile?.Pronouns?.GetValueOrDefault("");
-
 		return new UserProfileResponse
 		{
 			Id        = user.Id,
@@ -80,7 +70,8 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 			Role      = role,
 			IsLocked  = user.IsLocked,
 			Url       = url,
-			Pronouns  = pronouns
+			Lang      = user.UserProfile?.Lang,
+			Pronouns  = user.UserProfile?.Pronouns
 		};
 	}
 
