@@ -333,10 +333,10 @@ public class ActivityHandlerService(
 			return;
 		}
 
-		if (activity.MisskeyReaction != null)
+		if ((activity.Content ?? activity.MisskeyReaction) is { } reaction)
 		{
 			await emojiSvc.ProcessEmojiAsync(activity.Tags?.OfType<ASEmoji>().ToList(), resolvedActor.Host);
-			await noteSvc.ReactToNoteAsync(note, resolvedActor, activity.MisskeyReaction);
+			await noteSvc.ReactToNoteAsync(note, resolvedActor, reaction);
 		}
 		else
 		{
