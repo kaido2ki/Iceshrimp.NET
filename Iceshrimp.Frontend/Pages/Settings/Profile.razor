@@ -79,9 +79,32 @@
         <div class="section">
             <h3>@Loc["Location"]</h3><input class="input" @bind="@UserProfile.Location"/>
         </div>
-        <div class="section">
-            <h3>@Loc["Pronouns"]</h3><input class="input" @bind="@UserProfile.Pronouns"/>
+        <div class="user-fields">
+            <h3>@Loc["Pronouns"]</h3>
+            <div class="fields">
+                @foreach (var entry in Pronouns)
+                {
+                    <div class="field">
+                        <label class="language-label">@(_languages.GetValueOrDefault(entry.Language) ?? entry.Language.ToUpper())</label>
+                        <input class="input" placeholder="@Loc["Pronouns"]" @bind="@entry.Value"/>
+                    </div>
+                }
+            </div>
         </div>
+
+        <div class="new-field">
+            <InputSelect @bind-Value="@PronounsLanguage">
+                @foreach (var language in _languages.Where(l => !Pronouns.Select(p => p.Language).Contains(l.Key)))
+                {
+                    <option value="@language.Key">@language.Value</option>
+                }
+            </InputSelect>
+            <input class="input" placeholder="@Loc["Pronouns"]" @bind="@PronounsValue"/>
+            <button class="button" title="@Loc["Add Pronouns"]" @onclick="AddPronouns">
+                <Icon Name="Icons.Plus"/>
+            </button>
+        </div>
+
         <div class="user-fields">
             <h3>@Loc["Additional Fields"]</h3>
             <div class="fields">
@@ -163,7 +186,18 @@
     private DriveFileResponse? Avatar { get; set; }
     private DriveFileResponse? Banner { get; set; }
 
+    private List<UserPronouns>         Pronouns         { get; set; } = [];
+    private string                     PronounsLanguage { get; set; } = "";
+    private string                     PronounsValue    { get; set; } = "";
+    private Dictionary<string, string> _languages = LanguageHelper.Bcp47Languages;
+    
     private IJSObjectReference _module = null!;
+
+    private class UserPronouns
+    {
+        public required string Language { get; set; }
+        public required string Value    { get; set; }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -179,6 +213,9 @@
             }
 
             State  = State.Loaded;
+
+            Pronouns = UserProfile.Pronouns.Select(p => new UserPronouns { Language = p.Key, Value = p.Value }).ToList();
+
             Avatar = await Api.Profile.GetAvatarAsync();
             Banner = await Api.Profile.GetBannerAsync();
 
@@ -204,6 +241,14 @@
         UserProfile.Fields.Remove(field);
     }
 
+    private void AddPronouns()
+    {
+        Pronouns.Add(new UserPronouns { Language = PronounsLanguage, Value = PronounsValue });
+        PronounsLanguage = "";
+        PronounsValue    = "";
+        Pronouns = Pronouns.OrderBy(p => p.Language).ToList();
+    }
+
     private async Task SaveChanges()
     {
         try
@@ -214,6 +259,8 @@
                 UserProfile.Birthday = null;
             else
                 UserProfile.Birthday = Birthday.ToString("yyyy-MM-dd");
+
+            UserProfile.Pronouns = Pronouns.Where(p => !string.IsNullOrWhiteSpace(p.Value)).ToDictionary(p => p.Language, p => p.Value.Trim());
 
             if (DelAvatar)
             {

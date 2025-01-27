@@ -16,6 +16,10 @@
     
 }
 
+.language-label {
+    text-wrap: nowrap;
+}
+
 .title {
     font-size: 0.9rem;
 }

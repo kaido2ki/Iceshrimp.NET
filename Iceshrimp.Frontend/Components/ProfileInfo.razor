@@ -2,12 +2,13 @@
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @inject IStringLocalizer<Localization> Loc;
 <div class="profile-info">
     <div class="badges">
-        @if (UserProfile.Pronouns != null)
+        @if (UserProfile.Lang != null && (UserProfile.Pronouns?.TryGetValue(UserProfile.Lang, out var pronouns) ?? false))
         {
-            <span class="badge">@UserProfile.Pronouns</span>
+            <span class="badge">@pronouns</span>
         }
         @switch (UserProfile.Role)
         {
@@ -77,7 +78,7 @@
                     <Icon Name="Icons.IdentificationCard" Size="1.3em"/>
                     @Loc["Pronouns"]
                 </span>
-                <span class="field-value">@UserProfile.Pronouns</span>
+                <span class="field-value">@string.Join(", ", UserProfile.Pronouns.Select(p => $"{p.Value} ({_languages.GetValueOrDefault(p.Key) ?? p.Key.ToUpper()})"))</span>
             </div>
         }
     </div>
@@ -114,4 +115,6 @@
     [Parameter] [EditorRequired] public required UserResponse        User        { get; set; }
     [Parameter] [EditorRequired] public required UserProfileResponse UserProfile { get; set; }
     [Parameter] [EditorRequired] public required List<EmojiResponse> Emojis      { get; set; }
+
+    private Dictionary<string, string> _languages = LanguageHelper.Bcp47Languages;
 }
