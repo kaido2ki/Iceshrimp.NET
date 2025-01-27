@@ -33,7 +33,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "push_subscription_policy_enum", new[] { "all", "followed", "follower", "none" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "relay_status_enum", new[] { "requesting", "accepted", "rejected" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "user_profile_ffvisibility_enum", new[] { "public", "followers", "private" });
-            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "hstore");
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pg_trgm");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
@@ -4656,11 +4655,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
                         .HasColumnName("pinnedPageId");
-
-                    b.Property<Dictionary<string, string>>("Pronouns")
-                        .HasMaxLength(128)
-                        .HasColumnType("hstore")
-                        .HasColumnName("pronouns");
 
                     b.Property<string>("Url")
                         .HasMaxLength(512)
