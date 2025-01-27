@@ -53,16 +53,6 @@ public class ASField : ASAttachment
 	public ASField() => Type = $"{Constants.SchemaNs}#PropertyValue";
 }
 
-public class ASPronouns : ASAttachment
-{
-	public ASPronouns() => Type = $"{Constants.PancakesNs}#Pronouns";
-
-	[J($"{Constants.ActivityStreamsNs}#name")]
-	[JC(typeof(LocalizedValueObjectConverter))]
-	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public LDLocalizedString? Name { get; set; }
-}
-
 public class ASImageConverter : ASSerializer.ListSingleObjectConverter<ASImage>;
 
 public sealed class ASAttachmentConverter : JsonConverter
@@ -112,7 +102,6 @@ public sealed class ASAttachmentConverter : JsonConverter
 			$"{Constants.ActivityStreamsNs}#Document" => obj.ToObject<ASDocument?>(),
 			$"{Constants.ActivityStreamsNs}#Image"    => obj.ToObject<ASImage?>(),
 			$"{Constants.SchemaNs}#PropertyValue"     => obj.ToObject<ASField?>(),
-			$"{Constants.PancakesNs}#Pronouns"        => obj.ToObject<ASPronouns?>(),
 			_                                         => attachment
 		};
 	}

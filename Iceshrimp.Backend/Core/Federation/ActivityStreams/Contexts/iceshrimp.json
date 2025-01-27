@@ -44,7 +44,11 @@
       "Bite": "https://ns.mia.jetzt/as#Bite",
       "quoteUri": "http://fedibird.com/ns#quoteUri",
       "EmojiReact": "http://litepub.social/ns#EmojiReact",
-      "Pronouns": "https://ns.pancakes.gay/as/#Pronouns"
+      "pancakes": "https://ns.pancakes.gay/as#",
+      "pancakes:pronouns": {
+        "@id": "https://ns.pancakes.gay/as#pronouns",
+        "@container": "@language"
+      }
     }
   ]
 }

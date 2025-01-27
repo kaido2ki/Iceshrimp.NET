@@ -80,19 +80,14 @@ public class UserRenderer(
 
 		var attachments = profile?.Fields
 		                         .Select(p => new ASField { Name = p.Name, Value = RenderFieldValue(p.Value) })
-		                         .Concat<ASAttachment>(profile.Pronouns != null && profile.Pronouns.Count != 0
-			                                               ?
-			                                               [
-				                                               profile.Pronouns.TryGetValue("", out var pronouns)
-					                                               ? new ASPronouns { Name = new LDLocalizedString(null, pronouns) }
-					                                               : new ASPronouns { Name = new LDLocalizedString { Values = profile.Pronouns! } }
-			                                               ]
-			                                               : [])
+		                         .Cast<ASAttachment>()
 		                         .ToList();
 
 		var summary = profile?.Description != null
 			? (await mfmConverter.ToHtmlAsync(profile.Description, profile.Mentions, user.Host)).Html
 			: null;
+
+		var pronouns = profile?.Pronouns != null ? new LDLocalizedString { Values = profile.Pronouns! } : null;
 
 		return new ASActor
 		{
@@ -141,7 +136,8 @@ public class UserRenderer(
 				PublicKey = keypair.PublicKey
 			},
 			Tags        = tags,
-			Attachments = attachments
+			Attachments = attachments,
+			Pronouns    = pronouns
 		};
 	}
 

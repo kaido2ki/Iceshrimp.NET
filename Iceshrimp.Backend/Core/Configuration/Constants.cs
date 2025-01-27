@@ -21,7 +21,7 @@ public static class Constants
 	public const           string   MastodonNs        = "http://joinmastodon.org/ns";
 	public const           string   MisskeyNs         = "https://misskey-hub.net/ns";
 	public const           string   FedibirdNs        = "http://fedibird.com/ns";
-	public const           string   PancakesNs        = "https://ns.pancakes.gay/as/";
+	public const           string   PancakesNs        = "https://ns.pancakes.gay/as";
 	public static readonly string[] SystemUsers       = ["instance.actor", "relay.actor"];
 
 	public const string APMime = "application/activity+json";

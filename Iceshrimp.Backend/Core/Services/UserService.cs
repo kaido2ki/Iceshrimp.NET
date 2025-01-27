@@ -159,11 +159,7 @@ public class UserService(
 			             .AwaitAllAsync()
 			: null;
 
-		var pronouns = actor.Attachments?.OfType<ASPronouns>()
-		                    .FirstOrDefault(p => p.Name?.Values.Count != 0)
-		                    ?.Name?.Values
-		                    .Where(p => p.Value != null)
-		                    .ToDictionary(p => p.Key, p => p.Value ?? "");
+		var pronouns = actor.Pronouns?.Values.ToDictionary(p => p.Key, p => p.Value ?? "");
 
 		var bio = actor.MkSummary?.ReplaceLineEndings("\n").Trim();
 		if (bio == null)
@@ -333,11 +329,7 @@ public class UserService(
 			             .AwaitAllAsync()
 			: null;
 
-		var pronouns = actor.Attachments?.OfType<ASPronouns>()
-		                    .FirstOrDefault(p => p.Name?.Values.Count != 0)
-		                    ?.Name?.Values
-		                    .Where(p => p.Value != null)
-		                    .ToDictionary(p => p.Key, p => p.Value ?? "");
+		var pronouns = actor.Pronouns?.Values.ToDictionary(p => p.Key, p => p.Value ?? "");
 
 		user.Emojis = emoji.Select(p => p.Id).ToList();
 		//TODO: FollowersCount

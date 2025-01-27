@@ -131,6 +131,10 @@ public class ASActor : ASObjectWithId
 	[JC(typeof(VC))]
 	private XsdString? WebfingerAddressXsd { get; set; }
 
+	[J($"{Constants.PancakesNs}#pronouns")]
+	[JC(typeof(LocalizedValueObjectConverter))]
+	public LDLocalizedString? Pronouns { get; set; }
+
 	[JI]
 	public string? WebfingerAddress
 	{
