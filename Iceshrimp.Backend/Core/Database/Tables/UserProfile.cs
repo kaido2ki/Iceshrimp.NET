@@ -70,6 +70,9 @@ public class UserProfile
 
 	[Column("mentions", TypeName = "jsonb")]
 	public List<Note.MentionedUser> Mentions { get; set; } = null!;
+	
+	[Column("pronouns", TypeName = "jsonb")]
+	public Dictionary<string, string>? Pronouns { get; set; }
 
 	[ForeignKey(nameof(PinnedPageId))]
 	[InverseProperty(nameof(Page.UserProfile))]

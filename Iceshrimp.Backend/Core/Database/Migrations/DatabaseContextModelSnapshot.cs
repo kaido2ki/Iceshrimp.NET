@@ -4656,6 +4656,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("pinnedPageId");
 
+                    b.Property<Dictionary<string, string>>("Pronouns")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("pronouns");
+
                     b.Property<string>("Url")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
