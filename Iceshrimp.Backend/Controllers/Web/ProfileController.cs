@@ -44,7 +44,7 @@ public class ProfileController(
 			IsBot        = user.IsBot,
 			IsCat        = user.IsCat,
 			SpeakAsCat   = user.SpeakAsCat,
-			Pronouns     = profile.Pronouns ?? new Dictionary<string, string>()
+			Pronouns     = profile.Pronouns ?? []
 		};
 	}
 
