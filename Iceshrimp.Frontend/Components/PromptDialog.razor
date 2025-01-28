@@ -40,7 +40,7 @@
         await _module.InvokeVoidAsync("closeDialog", Dialog);
     }
 
-    public async Task Prompt(EventCallback<string?> action, string text, string placeholder, bool allowEmpty = false, bool multiLine = false, string? buttonText = null)
+    public async Task Prompt(EventCallback<string?> action, string text, string placeholder, string? defaultValue, bool allowEmpty = false, bool multiLine = false, string? buttonText = null)
     {
         Action      = action;
         Text        = text;
@@ -48,7 +48,7 @@
         Required    = !allowEmpty;
         MultiLine   = multiLine;
         ButtonText  = buttonText;
-        Input       = "";
+        Input       = defaultValue ?? "";
 
         StateHasChanged();
 
