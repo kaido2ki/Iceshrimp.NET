@@ -1,10 +1,8 @@
-using System.Text.Json.Serialization;
 using Iceshrimp.Backend.Core.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
 using JC = Newtonsoft.Json.JsonConverterAttribute;
-using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 using JsonConverter = Newtonsoft.Json.JsonConverter;
 
 namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
