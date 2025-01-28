@@ -17,9 +17,9 @@
             <input type="text" class="input" @bind="Input" @bind:event="oninput" placeholder="@Placeholder"/>
         }
         <div class="buttons">
-            <button class="btn submit-btn" @onclick="ConfirmAction"
+            <button class="button submit-btn" @onclick="ConfirmAction"
                     disabled="@(Required && string.IsNullOrWhiteSpace(Input))">@(ButtonText ?? Loc["Submit"])</button>
-            <button class="btn" @onclick="CancelAction">@Loc["Cancel"]</button>
+            <button class="button" @onclick="CancelAction">@Loc["Cancel"]</button>
         </div>
     </div>
 </dialog>

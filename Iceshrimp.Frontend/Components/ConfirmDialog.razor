@@ -11,8 +11,8 @@
         <span class="confirm-icon"><Icon Name="@(ConfirmIcon ?? Icons.Question)" Size="3em"/></span>
         <span>@Question</span>
         <div class="buttons">
-            <button class="btn confirm-btn" @onclick="ConfirmAction">@(ButtonText ?? Loc["OK"])</button>
-            <button class="btn" @onclick="CancelAction">@Loc["Cancel"]</button>
+            <button class="button confirm-btn" @onclick="ConfirmAction">@(ButtonText ?? Loc["OK"])</button>
+            <button class="button" @onclick="CancelAction">@Loc["Cancel"]</button>
         </div>
     </div>
 </dialog>
