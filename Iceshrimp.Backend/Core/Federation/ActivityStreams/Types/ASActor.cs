@@ -131,7 +131,7 @@ public class ASActor : ASObjectWithId
 	[JC(typeof(VC))]
 	private XsdString? WebfingerAddressXsd { get; set; }
 
-	[J($"{Constants.PancakesNs}#pronouns")]
+	[J("https://ns.pancakes.gay/as#pronouns")]
 	[JC(typeof(LocalizedValueObjectConverter))]
 	public LDLocalizedString? Pronouns { get; set; }
 
