@@ -1183,7 +1183,9 @@ public class UserService(
 
 			var res = await httpClient.GetAsync(uri);
 
-			if (!res.IsSuccessStatusCode || res.Content.Headers.ContentType?.MediaType != "text/html")
+			if (!res.IsSuccessStatusCode
+			    || res.Content.Headers.ContentType?.MediaType != "text/html"
+			    || res.Content.Headers.ContentLength > 1000000)
 				continue;
 
 			var html     = await res.Content.ReadAsStringAsync();
