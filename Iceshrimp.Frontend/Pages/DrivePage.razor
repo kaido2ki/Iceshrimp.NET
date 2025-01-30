@@ -11,6 +11,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Iceshrimp.Frontend.Components
 @inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 @inject ILogger<DrivePage>             Logger;
@@ -129,9 +130,11 @@
         Nav.NavigateTo(Folder?.ParentId != null ? $"/drive/{Folder.ParentId}" : "/drive");
     }
 
-    private async Task CreateFolder()
+    private async Task CreateFolder() =>
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, CreateFolderCallback), Loc["Create folder"], Loc["Folder name"], null, buttonText: Loc["Create"])!;
+
+    private async Task CreateFolderCallback(string? name)
     {
-        var name = await Js.InvokeAsync<string?>("prompt", "Create folder");
         if (string.IsNullOrWhiteSpace(name)) return;
 
         try
@@ -145,7 +148,7 @@
         }
         catch (ApiException e)
         {
-            await Js.InvokeVoidAsync("alert", e.Response.Message);
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
@@ -166,8 +169,22 @@
     private async Task DeleteFolder()
     {
         if (Folder is not { Id: not null, Files: [], Folders: [] }) return;
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteFolderCallback), Loc["Delete {0}?", Folder.Name ?? ""], Icons.Trash, Loc["Delete"])!;
+    }
 
-        await Api.Drive.DeleteFolderAsync(Folder.Id);
-        NavigateToParent();
+    private async Task DeleteFolderCallback(bool delete)
+    {
+        if (Folder is not { Id: not null, Files: [], Folders: [] }) return;
+        if (!delete) return;
+
+        try
+        {
+            await Api.Drive.DeleteFolderAsync(Folder.Id);
+            NavigateToParent();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
     }
 }
