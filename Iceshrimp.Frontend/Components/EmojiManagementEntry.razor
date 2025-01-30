@@ -5,7 +5,7 @@
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @inject ApiService                     Api;
-@inject IJSRuntime                     Js;
+@inject GlobalComponentSvc             Global;
 @inject IStringLocalizer<Localization> Loc;
 
 <div @ref="EmojiButton" class="emoji-entry" @onclick="SelectEmoji" @onclick:stopPropagation="true">
@@ -91,22 +91,24 @@
         {
             // Remote emojis endpoint sets EmojiResponse.Category to the emoji's host
             var res = await Api.Emoji.CloneEmojiAsync(Emoji.Name, Emoji.Category);
-            if (res != null) await Js.InvokeVoidAsync("alert", $"Cloned {Emoji.Name}");
+            if (res != null) await Global.NoticeDialog?.Display(Loc["Cloned {0} from {1}", Emoji.Name, Emoji.Category])!;
         }
         catch (ApiException e)
         {
-            await Js.InvokeVoidAsync("alert", e.Response.Message);
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
-    private async Task Rename()
+    private async Task Rename() =>
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameCallback), Loc["Rename emoji"], "", Emoji.Name, buttonText: Loc["Rename"])!;
+
+    private async Task RenameCallback(string? name)
     {
-        var name = await Js.InvokeAsync<string?>("prompt", "Rename emoji", Emoji.Name);
         if (string.IsNullOrWhiteSpace(name)) return;
 
         try
         {
-            var res = await Api.Emoji.UpdateEmojiAsync(Emoji.Id, new UpdateEmojiRequest { Name = name.Trim() });
+            var res = await Api.Emoji.UpdateEmojiAsync(Emoji.Id, new UpdateEmojiRequest { Name = name });
             if (res != null)
             {
                 Emoji.Name = res.Name;
@@ -115,17 +117,24 @@
         }
         catch (ApiException e)
         {
-            await Js.InvokeVoidAsync("alert", e.Response.Message);
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
     
     private async Task MarkSensitive(bool sensitive)
     {
-        var res = await Api.Emoji.UpdateEmojiAsync(Emoji.Id, new UpdateEmojiRequest { Sensitive = sensitive });
-        if (res != null)
+        try
         {
-            Emoji.Sensitive = res.Sensitive;
-            StateHasChanged();
+            var res = await Api.Emoji.UpdateEmojiAsync(Emoji.Id, new UpdateEmojiRequest { Sensitive = sensitive });
+            if (res != null)
+            {
+                Emoji.Sensitive = res.Sensitive;
+                StateHasChanged();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
@@ -133,48 +142,86 @@
 
     private async Task MarkAsSensitive() => await MarkSensitive(true);
 
-    private async Task SetAliases()
+    private async Task SetAliases() =>
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetAliasesCallback), Loc["Set aliases (separated by new line)"], "one\ntwo\nthree", string.Join("\n", Emoji.Aliases), true, true)!;
+
+    private async Task SetAliasesCallback(string? aliases)
     {
-        var aliases = await Js.InvokeAsync<string?>("prompt", "Set aliases (separated by comma , )", Emoji.License ?? "");
         if (aliases == null) return;
 
-        var res = await Api.Emoji.UpdateEmojiAsync(Emoji.Id, new UpdateEmojiRequest { Aliases = string.IsNullOrWhiteSpace(aliases) ? null : aliases.Replace(" ", "").Split(",").ToList() });
-        if (res != null)
+        try
         {
-            Emoji.Aliases = res.Aliases;
-            StateHasChanged();
+            var res = await Api.Emoji.UpdateEmojiAsync(Emoji.Id, new UpdateEmojiRequest { Aliases = string.IsNullOrWhiteSpace(aliases) ? [] : aliases.Replace(" ", "").Split("\n").ToList() });
+            if (res != null)
+            {
+                Emoji.Aliases = res.Aliases;
+                StateHasChanged();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
-    private async Task SetCategory()
+    private async Task SetCategory() =>
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetCategoryCallback), Loc["Set category"], "", Emoji.Category, true)!;
+
+    private async Task SetCategoryCallback(string? category)
     {
-        var category = await Js.InvokeAsync<string?>("prompt", "Set category", Emoji.Category ?? "");
         if (category == null) return;
 
-        var res = await Api.Emoji.UpdateEmojiAsync(Emoji.Id, new UpdateEmojiRequest { Category = category.Trim() });
-        if (res != null)
+        try
         {
-            Emoji.Category = res.Category;
-            await GetEmojis.InvokeAsync();
+            var res = await Api.Emoji.UpdateEmojiAsync(Emoji.Id, new UpdateEmojiRequest { Category = category });
+            if (res != null)
+            {
+                Emoji.Category = res.Category;
+                await GetEmojis.InvokeAsync();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
-    private async Task SetLicense()
+    private async Task SetLicense() =>
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetLicenseCallback), Loc["Set license"], "", Emoji.License, true, true)!;
+
+    private async Task SetLicenseCallback(string? license)
     {
-        var license = await Js.InvokeAsync<string?>("prompt", "Set license", Emoji.License ?? "");
         if (license == null) return;
 
-        var res = await Api.Emoji.UpdateEmojiAsync(Emoji.Id, new UpdateEmojiRequest { License = string.IsNullOrWhiteSpace(license) ? null : license.Trim() });
-        if (res != null)
+        try
         {
-            Emoji.License = res.License;
-            StateHasChanged();
+            var res = await Api.Emoji.UpdateEmojiAsync(Emoji.Id, new UpdateEmojiRequest { License = license });
+            if (res != null)
+            {
+                Emoji.License = res.License;
+                StateHasChanged();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
-    private async Task Delete()
+    private async Task Delete() =>
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteCallback), Loc["Delete {0}?", Emoji.Name], Icons.Trash, Loc["Delete"])!;
+
+    private async Task DeleteCallback(bool delete)
     {
-        var res = await Api.Emoji.DeleteEmojiAsync(Emoji.Id);
-        if (res) await GetEmojis.InvokeAsync();
+        if (!delete) return;
+        try
+        {
+            var res = await Api.Emoji.DeleteEmojiAsync(Emoji.Id);
+            if (res) await GetEmojis.InvokeAsync();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
     }
 }
