@@ -3,7 +3,9 @@
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 
@@ -91,11 +93,18 @@
 
     private async Task MarkSensitive(bool sensitive)
     {
-        var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Sensitive = sensitive});
-        if (res != null)
+        try
         {
-            File.Sensitive = res.Sensitive;
-            StateHasChanged();
+            var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Sensitive = sensitive });
+            if (res != null)
+            {
+                File.Sensitive = res.Sensitive;
+                StateHasChanged();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
@@ -103,18 +112,33 @@
 
     private async Task MarkAsSensitive() => await MarkSensitive(true);
 
-    private async Task SetAltText()
+    private async Task SetAltText() =>
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetAltTextCallback), Loc["Set alt text"], "", File.Description, true, true)!;
+
+    private async Task SetAltTextCallback(string? alt)
     {
-        var alt = await Js.InvokeAsync<string?>("prompt", "Set alt text", File!.Description ?? "");
         if (alt == null) return;
 
-        var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Description = string.IsNullOrWhiteSpace(alt) ? null : alt.Trim() });
-        if (res != null)
+        try
         {
-            File.Description = res.Description;
-            StateHasChanged();
+            var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Description = string.IsNullOrWhiteSpace(alt) ? null : alt });
+            if (res != null)
+            {
+                File.Description = res.Description;
+                StateHasChanged();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
-    private async Task Remove() => await RemoveAttachment.InvokeAsync(File.Id);
+    private async Task Remove() =>
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RemoveCallback), Loc["Remove attachment?"], buttonText: Loc["Remove"])!;
+
+    private async Task RemoveCallback(bool remove)
+    {
+        if (remove) await RemoveAttachment.InvokeAsync(File.Id);
+    }
 }
