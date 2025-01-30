@@ -245,7 +245,7 @@
     private async Task RenameFolder()
     {
         if (Folder is not { Id: not null, Name: not null }) return;
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFileCallback), Loc["Rename folder"], Loc["Folder name"], Folder!.Name, buttonText: Loc["Rename"])!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFolderCallback), Loc["Rename folder"], Loc["Folder name"], Folder!.Name, buttonText: Loc["Rename"])!;
     }
 
     private async Task RenameFolderCallback(string? name)
