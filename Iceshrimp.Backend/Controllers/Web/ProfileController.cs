@@ -128,7 +128,9 @@ public class ProfileController(
 			Filename     = file.Name,
 			ContentType  = file.Type,
 			Sensitive    = file.IsSensitive,
-			Description  = file.Comment
+			Description  = file.Comment,
+			IsAvatar     = true,
+			IsBanner     = false
 		};
 	}
 
@@ -198,7 +200,9 @@ public class ProfileController(
 			Filename     = file.Name,
 			ContentType  = file.Type,
 			Sensitive    = file.IsSensitive,
-			Description  = file.Comment
+			Description  = file.Comment,
+			IsAvatar     = false,
+			IsBanner     = true
 		};
 	}
 
