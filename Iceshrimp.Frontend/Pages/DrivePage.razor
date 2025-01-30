@@ -56,13 +56,13 @@
         @foreach (var el in Folder.Folders)
         {
             <li>
-                <DriveEntry Folder="el" FolderList="@Folder.Folders"/>
+                <DriveEntry Folder="el" FolderList="@Folder.Folders" ParentId="@Id"/>
             </li>
         }
         @foreach (var el in Folder.Files)
         {
             <li>
-                <DriveEntry File="el" FolderList="@Folder.Folders"/>
+                <DriveEntry File="el" FolderList="@Folder.Folders" ParentId="@Id"/>
             </li>
         }
     </ol>

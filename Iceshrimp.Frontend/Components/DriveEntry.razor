@@ -5,6 +5,7 @@
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              Nav;
@@ -76,9 +77,12 @@
             <MenuElement Icon="Icons.ClosedCaptioning" OnSelect="SetFileAltText">
                 <Text>@Loc["Set alt text"]</Text>
             </MenuElement>
-            <MenuElement Icon="Icons.FolderDashed" OnSelect="MoveFile">
-                <Text>@Loc["Move"]</Text>
-            </MenuElement>
+            @if (ParentId != null || FolderList.Count != 0)
+            {
+                <MenuElement Icon="Icons.FolderDashed" OnSelect="MoveFile">
+                    <Text>@Loc["Move"]</Text>
+                </MenuElement>
+            }
             <MenuElement Icon="Icons.Trash" OnSelect="DeleteFile">
                 <Text>@Loc["Delete"]</Text>
             </MenuElement>
@@ -98,9 +102,12 @@
             <MenuElement Icon="Icons.CursorText" OnSelect="RenameFolder">
                 <Text>@Loc["Rename"]</Text>
             </MenuElement>
-            <MenuElement Icon="Icons.FolderDashed" OnSelect="MoveFolder">
-                <Text>@Loc["Move"]</Text>
-            </MenuElement>
+            @if (ParentId != null || FolderList.Count > 1)
+            {
+                <MenuElement Icon="Icons.FolderDashed" OnSelect="MoveFolder">
+                    <Text>@Loc["Move"]</Text>
+                </MenuElement>
+            }
             <ClosingBackdrop OnClose="FolderMenu.Close"></ClosingBackdrop>
         </Menu>
     </div>
@@ -114,18 +121,21 @@
     private            ElementReference     FileButton   { get; set; }
     private            ElementReference     FolderButton { get; set; }
 
+    [Parameter, EditorRequired] public required string?                   ParentId   { get; set; }
     [Parameter, EditorRequired] public required List<DriveFolderResponse> FolderList { get; set; }
 
     private void SelectFile() => FileMenu.Toggle(FileButton);
 
-    private async Task RenameFile()
+    private async Task RenameFile() =>
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFileCallback), Loc["Rename file"], Loc["File name"], File!.Filename, buttonText: Loc["Rename"])!;
+
+    private async Task RenameFileCallback(string? filename)
     {
-        var filename = await Js.InvokeAsync<string?>("prompt", "Rename file", File!.Filename);
         if (string.IsNullOrWhiteSpace(filename)) return;
 
         try
         {
-            var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Filename = filename.Trim() });
+            var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Filename = filename });
             if (res != null)
             {
                 File.Filename = res.Filename;
@@ -134,17 +144,24 @@
         }
         catch (ApiException e)
         {
-            await Js.InvokeVoidAsync("alert", e.Response.Message);
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
     private async Task MarkFileSensitive(bool sensitive)
     {
-        var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Sensitive = sensitive});
-        if (res != null)
+        try
         {
-            File.Sensitive = res.Sensitive;
-            StateHasChanged();
+            var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Sensitive = sensitive });
+            if (res != null)
+            {
+                File.Sensitive = res.Sensitive;
+                StateHasChanged();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
@@ -152,28 +169,42 @@
 
     private async Task MarkFileAsSensitive() => await MarkFileSensitive(true);
 
-    private async Task SetFileAltText()
+    private async Task SetFileAltText() =>
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetFileAltTextCallback), Loc["Set alt text"], "", File!.Description ?? "", true, true)!;
+
+    private async Task SetFileAltTextCallback(string? alt)
     {
-        var alt = await Js.InvokeAsync<string?>("prompt", "Set alt text", File!.Description ?? "");
         if (alt == null) return;
 
-        var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Description = string.IsNullOrWhiteSpace(alt) ? null : alt.Trim() });
-        if (res != null)
+        try
         {
-            File.Description = res.Description;
-            StateHasChanged();
+            var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Description = string.IsNullOrWhiteSpace(alt) ? null : alt });
+            if (res != null)
+            {
+                File.Description = res.Description;
+                StateHasChanged();
+            }
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
     private async Task MoveFile()
     {
-        // TODO: Move this to a proper prompt dialog once we have that
-        var folderId = await Js.InvokeAsync<string?>("prompt", "Move to folder by ID: " + string.Join(", ", FolderList.Select(p => $"{p.Name} ({p.Id})")) + " or blank for root");
-        if (folderId == null) return;
+        var folders = FolderList.Select(f => (f.Name ?? "/", (object)(f.Id ?? ""))).OrderBy(f => f.Item1).ToList();
+        if (ParentId != null) folders.Insert(0, ("/", ""));
+        await Global.SelectDialog?.Select(new EventCallback<object?>(this, MoveFileCallback), Loc["Move to folder"], folders)!;
+    }
+
+    private async Task MoveFileCallback(object? folderId)
+    {
+        if (folderId is not string id) return;
 
         try
         {
-            var res = await Api.Drive.UpdateFileParentAsync(File!.Id, string.IsNullOrWhiteSpace(folderId) ? null : folderId.Trim());
+            var res = await Api.Drive.UpdateFileParentAsync(File!.Id, string.IsNullOrWhiteSpace(id) ? null : id);
             if (res != null)
             {
                 File = null;
@@ -182,7 +213,7 @@
         }
         catch (ApiException e)
         {
-            await Js.InvokeVoidAsync("alert", e.Response.Message);
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
@@ -190,11 +221,23 @@
 
     private void CopyFileLink() => Js.InvokeVoidAsync("navigator.clipboard.writeText", File!.Url);
 
-    private async Task DeleteFile()
+    private async Task DeleteFile() =>
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteFileCallback), Loc["Delete {0}?", File!.Filename], Icons.Trash, Loc["Delete"])!;
+
+    private async Task DeleteFileCallback(bool delete)
     {
-        await Api.Drive.DeleteFileAsync(File!.Id);
-        File = null;
-        StateHasChanged();
+        if (!delete) return;
+
+        try
+        {
+            await Api.Drive.DeleteFileAsync(File!.Id);
+            File = null;
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
     }
 
     private void SelectFolder() => FolderMenu.Toggle(FolderButton);
@@ -202,13 +245,17 @@
     private async Task RenameFolder()
     {
         if (Folder is not { Id: not null, Name: not null }) return;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFileCallback), Loc["Rename folder"], Loc["Folder name"], Folder!.Name, buttonText: Loc["Rename"])!;
+    }
 
-        var name = await Js.InvokeAsync<string?>("prompt", "Rename folder", Folder.Name);
+    private async Task RenameFolderCallback(string? name)
+    {
+        if (Folder is not { Id: not null, Name: not null }) return;
         if (string.IsNullOrWhiteSpace(name)) return;
 
         try
         {
-            var res = await Api.Drive.UpdateFolderAsync(Folder.Id, name.Trim());
+            var res = await Api.Drive.UpdateFolderAsync(Folder.Id, name);
             if (res != null)
             {
                 Folder.Name = res.Name;
@@ -217,21 +264,25 @@
         }
         catch (ApiException e)
         {
-            await Js.InvokeVoidAsync("alert", e.Response.Message);
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
     private async Task MoveFolder()
     {
-        if (Folder is not { Id: not null, Name: not null }) return;
+        var folders = FolderList.Where(f => f.Id != Folder!.Id).Select(f => (f.Name ?? "/", (object)(f.Id ?? ""))).OrderBy(f => f.Item1).ToList();
+        if (ParentId != null) folders.Insert(0, ("/", ""));
+        await Global.SelectDialog?.Select(new EventCallback<object?>(this, MoveFolderCallback), Loc["Move to folder"], folders)!;
+    }
 
-        // TODO: Move this to a proper prompt dialog once we have that
-        var folderId = await Js.InvokeAsync<string?>("prompt", "Move to folder by ID: " + string.Join(", ", FolderList.FindAll(p => p.Id != Folder.Id).Select(p => $"{p.Name} ({p.Id})")) + " or blank for root");
-        if (folderId == null) return;
+    private async Task MoveFolderCallback(object? folderId)
+    {
+        if (Folder is not { Id: not null, Name: not null }) return;
+        if (folderId is not string id) return;
 
         try
         {
-            var res = await Api.Drive.UpdateFolderParentAsync(Folder.Id, string.IsNullOrWhiteSpace(folderId) ? null : folderId.Trim());
+            var res = await Api.Drive.UpdateFolderParentAsync(Folder.Id, string.IsNullOrWhiteSpace(id) ? null : id);
             if (res != null)
             {
                 Folder = null;
@@ -240,7 +291,7 @@
         }
         catch (ApiException e)
         {
-            await Js.InvokeVoidAsync("alert", e.Response.Message);
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
