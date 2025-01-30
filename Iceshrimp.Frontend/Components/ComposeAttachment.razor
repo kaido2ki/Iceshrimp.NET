@@ -1,0 +1,120 @@
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
+@inject ApiService                     Api;
+@inject IJSRuntime                     Js;
+@inject IStringLocalizer<Localization> Loc;
+
+<div @ref="Attachment" class="attachment" @onclick="Select" @onclick:stopPropagation="true">
+    @if (File.ContentType.StartsWith("image"))
+    {
+        <img class="thumbnail" src="@File.ThumbnailUrl" alt="@File.Description"/>
+    }
+    else if (File.ContentType.StartsWith("audio"))
+    {
+        <Icon Name="Icons.FileAudio" Size="5em"/>
+    }
+    else if (File.ContentType.StartsWith("video"))
+    {
+        <Icon Name="Icons.FileVideo" Size="5em"/>
+    }
+    else
+    {
+        <Icon Name="Icons.File" Size="5em"/>
+    }
+    <div class="labels">
+        @if (File.Description != null)
+        {
+            <Icon Name="Icons.ClosedCaptioning" title="@File.Description"/>
+        }
+        else
+        {
+            <Icon Name="Icons.Warning" title="@Loc["No alt text"]"/>
+        }
+        @if (File.Sensitive)
+        {
+            <Icon Name="Icons.EyeSlash" title="@Loc["Sensitive"]"/>
+        }
+    </div>
+    <Menu @ref="AttachmentMenu">
+        <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="Open">
+            <Text>@Loc["Open"]</Text>
+        </MenuElement>
+        @* TODO: Uncomment when FE supports media node *@
+        @* @if (File.ContentType.StartsWith("image")) *@
+        @* { *@
+        @*     <MenuElement Icon="Icons.Paperclip" OnSelect="InsertInline"> *@
+        @*         <Text>@Loc["Insert inline"]</Text> *@
+        @*     </MenuElement> *@
+        @* } *@
+        @if (File.Sensitive)
+        {
+            <MenuElement Icon="Icons.Eye" OnSelect="MarkNotSensitive">
+                <Text>@Loc["Mark as not sensitive"]</Text>
+            </MenuElement>
+        }
+        else
+        {
+            <MenuElement Icon="Icons.EyeSlash" OnSelect="MarkAsSensitive">
+                <Text>@Loc["Mark as sensitive"]</Text>
+            </MenuElement>
+        }
+        <MenuElement Icon="Icons.ClosedCaptioning" OnSelect="SetAltText">
+            <Text>@Loc["Set alt text"]</Text>
+        </MenuElement>
+        <MenuElement Icon="Icons.Trash" OnSelect="Remove">
+            <Text>@Loc["Remove"]</Text>
+        </MenuElement>
+        <ClosingBackdrop OnClose="AttachmentMenu.Close"></ClosingBackdrop>
+    </Menu>
+</div>
+
+@code {
+    [Parameter, EditorRequired]  public required DriveFileResponse     File             { get; set; }
+    [Parameter] [EditorRequired] public required EventCallback<string> AddInlineMedia   { get; set; }
+    [Parameter, EditorRequired]  public required EventCallback<string> RemoveAttachment { get; set; }
+    private                                      ElementReference      Attachment       { get; set; }
+    private                                      Menu                  AttachmentMenu   { get; set; } = null!;
+
+    private void Select() => AttachmentMenu.Toggle(Attachment);
+
+    private void Open() => Js.InvokeVoidAsync("open", File.Url, "_blank");
+
+    // TODO: Uncomment when FE supports media node
+    // private async Task InsertInline()
+    // {
+    //     if (!File.ContentType.StartsWith("image/")) return;
+    //     await AddInlineMedia.InvokeAsync(File.Url);
+    // }
+
+    private async Task MarkSensitive(bool sensitive)
+    {
+        var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Sensitive = sensitive});
+        if (res != null)
+        {
+            File.Sensitive = res.Sensitive;
+            StateHasChanged();
+        }
+    }
+
+    private async Task MarkNotSensitive() => await MarkSensitive(false);
+
+    private async Task MarkAsSensitive() => await MarkSensitive(true);
+
+    private async Task SetAltText()
+    {
+        var alt = await Js.InvokeAsync<string?>("prompt", "Set alt text", File!.Description ?? "");
+        if (alt == null) return;
+
+        var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Description = string.IsNullOrWhiteSpace(alt) ? null : alt.Trim() });
+        if (res != null)
+        {
+            File.Description = res.Description;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Remove() => await RemoveAttachment.InvokeAsync(File.Id);
+}

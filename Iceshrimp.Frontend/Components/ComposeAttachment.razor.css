@@ -1,0 +1,37 @@
+.attachment {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    position: relative;
+    padding: 0.5rem 0.5rem 0;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.attachment:hover {
+    background-color: var(--hover-color);
+}
+
+::deep {
+    .ph {
+        display: block;
+        vertical-align: middle;
+        line-height: 1;
+        color: var(--notice-color);
+    }
+}
+
+::deep {
+    .labels .ph {
+        display: inline-block;
+        vertical-align: top;
+    }
+}
+
+img.thumbnail {
+    display: block;
+    height: 5em;
+    width: 5em;
+    object-fit: contain;
+}

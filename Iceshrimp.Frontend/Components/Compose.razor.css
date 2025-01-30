@@ -20,6 +20,12 @@
     resize: vertical;
 }
 
+.compose .attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
 .compose .preview {
     padding: 0.5rem 0.5em 0;
     width: 100%;

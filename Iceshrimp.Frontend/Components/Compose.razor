@@ -80,6 +80,15 @@
                 </button>
             </div>
         </div>
+        @if (Attachments.Count != 0)
+        {
+            <div class="attachments">
+                @foreach (var attachment in Attachments)
+                {
+                    <ComposeAttachment File="@attachment" AddInlineMedia="AddInlineMedia" RemoveAttachment="RemoveAttachment"/>
+                }
+            </div>
+        }
         @if (Preview)
         {
             <div class="preview">
@@ -308,6 +317,14 @@
         Attachments.Add(res);
     }
 
+    private void RemoveAttachment(string id)
+    {
+        var attachment = Attachments.FirstOrDefault(p => p.Id == id);
+        if (attachment == null) return;
+        Attachments.Remove(attachment);
+        StateHasChanged();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -334,6 +351,15 @@
         var text        = NoteDraft.Text;
         var emojiString = $":{emoji.Name}: ";
         NoteDraft.Text = text.Insert(pos, emojiString);
+        StateHasChanged();
+    }
+
+    private async Task AddInlineMedia(string url)
+    {
+        var pos         = await _module.InvokeAsync<int>("getSelectionStart", Textarea);
+        var text        = NoteDraft.Text;
+        var mediaString = $"$[media {url} ] ";
+        NoteDraft.Text = text.Insert(pos, mediaString);
         StateHasChanged();
     }
 
