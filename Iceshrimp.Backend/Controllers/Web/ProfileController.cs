@@ -117,6 +117,8 @@ public class ProfileController(
 		var user = HttpContext.GetUserOrFail();
 
 		var file = await db.DriveFiles
+		                   .Include(p => p.UserAvatar)
+		                   .Include(p => p.UserBanner)
 		                   .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserAvatar != null)
 		           ?? throw GracefulException.RecordNotFound();
 
@@ -129,8 +131,8 @@ public class ProfileController(
 			ContentType  = file.Type,
 			Sensitive    = file.IsSensitive,
 			Description  = file.Comment,
-			IsAvatar     = true,
-			IsBanner     = false
+			IsAvatar     = file.UserAvatar != null,
+			IsBanner     = file.UserBanner != null
 		};
 	}
 
@@ -189,6 +191,8 @@ public class ProfileController(
 		var user = HttpContext.GetUserOrFail();
 
 		var file = await db.DriveFiles
+		                   .Include(p => p.UserAvatar)
+		                   .Include(p => p.UserBanner)
 		                   .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserBanner != null)
 		           ?? throw GracefulException.RecordNotFound();
 
@@ -201,8 +205,8 @@ public class ProfileController(
 			ContentType  = file.Type,
 			Sensitive    = file.IsSensitive,
 			Description  = file.Comment,
-			IsAvatar     = false,
-			IsBanner     = true
+			IsAvatar     = file.UserAvatar != null,
+			IsBanner     = file.UserBanner != null
 		};
 	}
 
