@@ -241,8 +241,7 @@ public class DriveController(
 	[Authenticate]
 	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
-	[ProducesErrors(HttpStatusCode.NotFound, HttpStatusCode.Conflict)]
-	[SuppressMessage("Performance", "CA1862", Justification = "string.Equals() cannot be used in DbSet LINQ operations")]
+	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<DriveFileResponse> UpdateFileParent(string id, DriveMoveRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -258,13 +257,6 @@ public class DriveController(
 			if (parent == null)
 				throw GracefulException.NotFound("The new parent folder doesn't exist");
 		}
-
-		var existing = await db.DriveFiles
-		                       .AnyAsync(p => p.Name.ToLower() == file.Name.ToLower()
-		                                      && p.FolderId == request.FolderId
-		                                      && p.UserId == user.Id);
-		if (existing)
-			throw GracefulException.Conflict("A file with this name already exists in this folder");
 
 		file.FolderId = request.FolderId;
 		await db.SaveChangesAsync();
