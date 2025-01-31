@@ -5,6 +5,10 @@
     font-size: 0.9em;
     white-space: nowrap;
     margin-left: auto;
+    min-width: 0;
+    overflow: clip;
+    flex-basis: 50%;
+    flex-shrink: 2;
 
     .info {
         display: block;
@@ -22,5 +26,7 @@
     }
     .instance {
         font-size: 0.9em;
+        text-overflow: ellipsis;
+        overflow: clip;
     }
 }

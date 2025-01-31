@@ -8,8 +8,6 @@
         text-overflow: ellipsis;
         overflow: clip;
     }
-
-    flex-shrink: 1;
     min-width: 2rem;
     overflow: clip;
     margin-right: 1rem;
