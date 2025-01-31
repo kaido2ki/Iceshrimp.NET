@@ -35,7 +35,11 @@
 .cw-button {
     font-size: 0.75em;
     margin-left: 0.5em;
-    padding: 0.2em;
+    padding: 0.1em 0.25em;
+}
+
+.cw-button:hover {
+    background-color: var(--hover-color);
 }
 
 .truncate-btn {

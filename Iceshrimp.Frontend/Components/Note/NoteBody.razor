@@ -10,7 +10,16 @@
     {
         <div class="cw">
             <span class="cw-field"><MfmText Text="@NoteBase.Cw" Emoji="@NoteBase.Emoji" Simple="@true"/></span>
-            <button class="cw-button" @onclick="ToggleCw" @onclick:stopPropagation="true">Toggle CW</button>
+            <button class="cw-button" @onclick="ToggleCw" @onclick:stopPropagation="true">
+                @if (NoteBase.Text != null)
+                {
+                    @Loc["Toggle CW ({0} Characters)", NoteBase.Text.Length]
+                }
+                else
+                {
+                    @Loc["Toggle CW"]
+                }
+            </button>
         </div>
     }
     @if (_overHeight & !_showFull)
