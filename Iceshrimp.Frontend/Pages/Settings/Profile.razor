@@ -148,12 +148,12 @@
     private string            FieldName   { get; set; } = "";
     private string            FieldValue  { get; set; } = "";
     private StateButton       SaveButton  { get; set; } = null!;
-    private IBrowserFile?     AvatarFile  { get; set; } = null;
-    private bool              DelAvatar   { get; set; } = false;
-    private IBrowserFile?     BannerFile  { get; set; } = null;
-    private bool              DelBanner   { get; set; } = false;
+    private IBrowserFile?     AvatarFile  { get; set; }
+    private bool              DelAvatar   { get; set; }
+    private IBrowserFile?     BannerFile  { get; set; }
+    private bool              DelBanner   { get; set; }
     private DateTime          Birthday    { get; set; } = DateTime.Now;
-    private bool              SetBirthday { get; set; } = false;
+    private bool              SetBirthday { get; set; }
     private ElementReference  Description { get; set; }
     private ElementReference  EmojiButton { get; set; }
 

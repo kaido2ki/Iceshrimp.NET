@@ -150,7 +150,7 @@ public class InstanceService(
 		await db.SaveChangesAsync();
 	}
 
-	public async Task<List<Rule>> GetRules()
+	public async Task<List<Rule>> GetRulesAsync()
 	{
 		return await db.Rules.OrderBy(p => p.Order).ThenBy(p => p.Id).ToListAsync();
 	}

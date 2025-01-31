@@ -32,7 +32,7 @@ public class IndexModel(MetaService meta, InstanceService instance, IOptionsSnap
 			instanceDescription ?? "This Iceshrimp.NET instance does not appear to have a description";
 		ContactEmail = contactEmail;
 
-		Rules = await instance.GetRules();
+		Rules = await instance.GetRulesAsync();
 
 		return Page();
 	}

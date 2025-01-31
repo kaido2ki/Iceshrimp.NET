@@ -41,6 +41,7 @@
 
     protected override void OnParametersSet()
     {
+        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
         Model ??= new RuleModel();
     }
 
