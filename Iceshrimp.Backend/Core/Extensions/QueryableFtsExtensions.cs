@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.EntityFrameworkCore.Extensions;
 using Iceshrimp.Parsing;
 using Microsoft.EntityFrameworkCore;
 

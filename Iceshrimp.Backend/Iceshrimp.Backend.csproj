@@ -26,6 +26,7 @@
         <PackageReference Include="EntityFrameworkCore.Projectables" Version="4.0.0" />
         <PackageReference Include="FlexLabs.EntityFrameworkCore.Upsert" Version="8.1.2" />
         <PackageReference Include="Iceshrimp.Assets.Fonts" Version="1.0.0" />
+        <PackageReference Include="Iceshrimp.EntityFrameworkCore.Extensions" Version="1.0.0" />
         <PackageReference Include="Iceshrimp.ObjectStorage.S3" Version="0.34.3" />
         <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />

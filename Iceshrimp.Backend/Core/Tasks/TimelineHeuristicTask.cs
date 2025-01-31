@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.EntityFrameworkCore.Extensions;
 
 namespace Iceshrimp.Backend.Core.Tasks;
 

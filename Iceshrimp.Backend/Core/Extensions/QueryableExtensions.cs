@@ -9,6 +9,7 @@ using Iceshrimp.Backend.Controllers.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.EntityFrameworkCore.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,112 +17,6 @@ namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class QueryableExtensions
 {
-	/// <summary>
-	/// This helper method allows consumers to obtain the performance &amp; memory footprint benefits of chunked DB transactions,
-	/// while not requiring them to work with chunks instead of a regular enumerator.
-	/// </summary>
-	/// <remarks>
-	/// Make sure to call .OrderBy() on the query, otherwise the results will be unpredictable.
-	/// Furthermore, this method is unsuitable for cases where the consumer removes elements from the original collection.
-	/// </remarks>
-	/// <returns>
-	/// The result set as an IAsyncEnumerable. Makes one DB roundtrip at the start of each chunk.
-	/// Successive items in the chunk are yielded instantaneously.
-	/// </returns>
-	[SuppressMessage("ReSharper", "InconsistentNaming")]
-	public static async IAsyncEnumerable<T> AsChunkedAsyncEnumerable<T>(this IQueryable<T> query, int chunkSize)
-	{
-		var offset = 0;
-		while (true)
-		{
-			var res = await query.Skip(offset).Take(chunkSize).ToArrayAsync();
-			if (res.Length == 0) break;
-			foreach (var item in res) yield return item;
-			if (res.Length < chunkSize) break;
-			offset += chunkSize;
-		}
-	}
-
-	/// <inheritdoc cref="AsChunkedAsyncEnumerable{T}(System.Linq.IQueryable{T},int)" select="summary|returns"/>
-	/// <remarks>
-	/// This overload requires you to pass a predicate to the identifier.
-	/// .OrderBy(<paramref name="idPredicate"/>) is appended to the query.
-	/// Set the <paramref name="hook"/> parameter to append things to the query after pagination, for cases where query translation would fail otherwise.
-	/// </remarks>
-	[SuppressMessage("ReSharper", "InconsistentNaming")]
-	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerable<TResult>(
-		this IQueryable<TResult> query, int chunkSize, Expression<Func<TResult, string>> idPredicate,
-		Func<IQueryable<TResult>, IQueryable<TResult>>? hook = null
-	)
-	{
-		var pred = idPredicate.Compile();
-		query = query.OrderBy(idPredicate);
-
-		string? last = null;
-		while (true)
-		{
-			// ReSharper disable once AccessToModifiedClosure
-			var final = last is not null ? query.Where(idPredicate.Compose(p => p.IsGreaterThan(last))) : query;
-			if (hook != null)
-				final = hook(final);
-			var res = await final.Take(chunkSize).ToArrayAsync();
-			if (res.Length == 0) break;
-			foreach (var item in res) yield return item;
-			if (res.Length < chunkSize) break;
-			last = pred.Invoke(res.Last());
-		}
-	}
-
-	/// <inheritdoc cref="AsChunkedAsyncEnumerable{TResult}(System.Linq.IQueryable{TResult},int,System.Linq.Expressions.Expression{System.Func{TResult,string}},System.Func{System.Linq.IQueryable{TResult},System.Linq.IQueryable{TResult}}?)"/>
-	[SuppressMessage("ReSharper", "InconsistentNaming")]
-	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerable<TResult>(
-		this IQueryable<TResult> query, int chunkSize, Expression<Func<TResult, Guid>> idPredicate,
-		Func<IQueryable<TResult>, IQueryable<TResult>>? hook = null
-	)
-	{
-		var pred = idPredicate.Compile();
-		query = query.OrderBy(idPredicate);
-
-		Guid? last = null;
-		while (true)
-		{
-			// ReSharper disable once AccessToModifiedClosure
-			var final = last is not null ? query.Where(idPredicate.Compose(p => p > last)) : query;
-			if (hook != null)
-				final = hook(final);
-			var res = await final.Take(chunkSize).ToArrayAsync();
-			if (res.Length == 0) break;
-			foreach (var item in res) yield return item;
-			if (res.Length < chunkSize) break;
-			last = pred.Invoke(res.Last());
-		}
-	}
-
-	/// <inheritdoc cref="AsChunkedAsyncEnumerable{TResult}(System.Linq.IQueryable{TResult},int,System.Linq.Expressions.Expression{System.Func{TResult,string}},System.Func{System.Linq.IQueryable{TResult},System.Linq.IQueryable{TResult}}?)"/>
-	[SuppressMessage("ReSharper", "InconsistentNaming")]
-	public static async IAsyncEnumerable<TResult> AsChunkedAsyncEnumerable<TResult>(
-		this IQueryable<TResult> query, int chunkSize, Expression<Func<TResult, int>> idPredicate,
-		Func<IQueryable<TResult>, IQueryable<TResult>>? hook = null
-	)
-	{
-		var pred = idPredicate.Compile();
-		query = query.OrderBy(idPredicate);
-
-		int? last = null;
-		while (true)
-		{
-			// ReSharper disable once AccessToModifiedClosure
-			var final = last is not null ? query.Where(idPredicate.Compose(p => p > last)) : query;
-			if (hook != null)
-				final = hook(final);
-			var res = await final.Take(chunkSize).ToArrayAsync();
-			if (res.Length == 0) break;
-			foreach (var item in res) yield return item;
-			if (res.Length < chunkSize) break;
-			last = pred.Invoke(res.Last());
-		}
-	}
-
 	public static IQueryable<T> Paginate<T>(
 		this IQueryable<T> query,
 		MastodonPaginationQuery pq,
