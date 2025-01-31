@@ -63,8 +63,11 @@ audio.attachment {
     cursor: pointer;
 }
 
+.blur-image {
+    cursor: pointer;
+}
+
 img.blur-image {
     filter: blur(10rem);
     object-fit: cover;
-    cursor: pointer;
 }
