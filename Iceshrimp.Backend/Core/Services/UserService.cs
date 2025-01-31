@@ -1185,7 +1185,7 @@ public class UserService(
 
 			if (!res.IsSuccessStatusCode
 			    || res.Content.Headers.ContentType?.MediaType != "text/html"
-			    || res.Content.Headers.ContentLength > 1000000)
+			    || res.Content.Headers.ContentLength > 1_000_000)
 				continue;
 
 			var html     = await res.Content.ReadAsStringAsync();
