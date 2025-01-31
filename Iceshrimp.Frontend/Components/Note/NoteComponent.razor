@@ -17,7 +17,7 @@
             CreatedAt="DateTime.Parse(Note.CreatedAt)">
         </NoteMetadata>
     </div>
-    <NoteBody NoteBase="Note" OverLength="@CheckLen()" Indented="Indented" ReplyInaccessible="ReplyInaccessible"/>
+    <NoteBody NoteBase="Note" Indented="Indented" ReplyInaccessible="ReplyInaccessible"/>
     @if (Quote != null)
     {
         <div @onclick="OpenQuote" @onclick:stopPropagation="true" class="quote">
@@ -57,11 +57,6 @@
     {
         Logger.LogInformation($"{note.Id} updated");
         StateHasChanged();
-    }
-
-    private bool CheckLen()
-    {
-        return Note.Text?.Length > 500;
     }
 
     private void OpenQuote()

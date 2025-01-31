@@ -4,12 +4,24 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
 @inject IJSRuntime                     Js;
-@if (NoteBase.Cw != null)
-{
-    <div class="cw">
-        <span class="cw-field"><MfmText Text="@NoteBase.Cw" Emoji="@NoteBase.Emoji" Simple="@true"/></span><button class="cw-button" @onclick="ToggleCw" @onclick:stopPropagation="true">Toggle CW</button>
-    </div>
-    <div hidden="@_cwToggle" class="note-body @(_cwToggle ? "hidden" : "") @(Indented ? "indent" : "")" @ref="Body">
+
+<div class="note-content @(!_showFull ? "collapsed" : "")">
+    @if (NoteBase.Cw != null)
+    {
+        <div class="cw">
+            <span class="cw-field"><MfmText Text="@NoteBase.Cw" Emoji="@NoteBase.Emoji" Simple="@true"/></span>
+            <button class="cw-button" @onclick="ToggleCw" @onclick:stopPropagation="true">Toggle CW</button>
+        </div>
+    }
+    @if (_overHeight & !_showFull)
+    {
+        <button class="truncate-btn" @onclick="ToggleTruncate" @onclick:stopPropagation="true">
+            <span>@Loc["Show more"]</span>
+        </button>
+    }
+    <div
+         class="note-body @(_overHeight ? "too-long" : "") @(Indented ? "indent" : "") @(_showFull ? "show-full" : "") @(_cwToggle ? "hidden" : "")"
+         @ref="Body">
         <span>
             @if (ReplyInaccessible)
             {
@@ -24,63 +36,40 @@
             <NoteAttachments Attachments="NoteBase.Attachments"/>
         }
     </div>
-}
-@if (NoteBase.Cw == null)
-{
-    <div class="note-content @(!_showFull ? "collapsed" : "")">
-        @if (_overHeight & !_showFull)
-        {
-        <button class="truncate-btn" @onclick="ToggleTruncate" @onclick:stopPropagation="true">
-            <span>@Loc["Show more"]</span>
-        </button>
-        }
-        <div
-            class="note-body @(_overHeight ? "too-long" : "") @(Indented ? "indent" : "") @(_showFull ? "show-full" : "")" @ref="Body">
-            <span>
-                @if (ReplyInaccessible)
-                {
-                    <span class="reply-inaccessible">
-                        <Icon Name="Icons.ArrowBendLeftUp"/><Icon Name="Icons.Lock"/>
-                    </span>
-                }
-                <MfmText Text="@NoteBase.Text" Emoji="@NoteBase.Emoji"/>
-            </span>
-            @if (NoteBase.Attachments.Count > 0)
-            {
-                <NoteAttachments Attachments="NoteBase.Attachments"/>
-            }
-        </div>
-        @if (_overHeight & _showFull)
-        {
+    @if (_overHeight & _showFull)
+    {
         <button class="truncate-btn show-less" @onclick="ToggleTruncate" @onclick:stopPropagation="true">
             <span>@Loc["Show less"]</span>
         </button>
-        }
-    </div>
-}
+    }
+</div>
+
 
 
 @code {
     [Parameter] public required NoteBase NoteBase          { get; set; }
-    [Parameter] public required bool     OverLength        { get; set; }
     [Parameter] public          bool     Indented          { get; set; }
     [Parameter] public          bool     ReplyInaccessible { get; set; }
 
     private IJSObjectReference? Module { get; set; }
     private ElementReference    Body   { get; set; }
-    private bool                _showFull    = false;
-    private bool                _cwToggle    = true;
+    private bool                _showFull   = false;
+    private bool                _cwToggle   = true;
     private bool                _overHeight = false;
-    private bool                _flag         = false;
+    private bool                _flag       = false;
 
     protected override async Task OnInitializedAsync()
     {
         Module = await Js.InvokeAsync<IJSObjectReference>("import", "./Components/Note/NoteBody.razor.js");
+        if (NoteBase.Cw == null)
+        {
+            _cwToggle = false;
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender == false)
+        if (!firstRender)
         {
             if (Module != null && _flag == false)
             {
@@ -90,7 +79,13 @@
                     _overHeight = true;
                     StateHasChanged();
                 }
-                _flag         = true;
+                else
+                {
+                    _overHeight = false;
+                    StateHasChanged();
+                }
+
+                _flag = true;
             }
         }
     }
@@ -99,6 +94,7 @@
     {
         _cwToggle = !_cwToggle;
         StateHasChanged();
+        _flag = false;
     }
 
     private void ToggleTruncate()
