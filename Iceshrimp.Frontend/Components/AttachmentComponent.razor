@@ -11,29 +11,35 @@
         <img class="attachment @(BlurImage ? "blur-image" : "")" src="@Attachment.Url" alt="@Attachment.AltText"
              fetchpriority="low"/>
     }
+    else if (BlurImage)
+    {
+        <div class="attachment contents">
+            <Icon Name="Icons.Warning" Size="3em"/>
+            <span>@Loc["Sensitive media"]</span>
+            <span>@Loc["Click to reveal"]</span>
+        </div>
+    }
     //  else if (Attachment.ContentType == "audio/x-mod")
     //  {
     //      TODO: Module player
-    //  }                
+    //  }
     else if (Attachment.ContentType.StartsWith("audio"))
     {
-        <audio controls class="attachment @(BlurImage ? "blur-image" : "")" src="@Attachment.Url"></audio>
+        <audio controls class="attachment" src="@Attachment.Url"></audio>
     }
     else if (Attachment.ContentType.StartsWith("video"))
     {
-        <video controls class="attachment @(BlurImage ? "blur-image" : "")">
+        <video controls class="attachment">
             <source src="@Attachment.Url"/>
         </video>
     }
     else
     {
-        <div class="attachment file @(BlurImage ? "blur-image" : "")">
-            <div class="contents">
-                <Icon Name="Icons.FileArrowDown" Size="3em"/>
-                <a href="@Attachment.Url" target="_blank">
-                    @Attachment.Url.Split("/").Last()
-                </a>
-            </div>
+        <div class="attachment contents">
+            <Icon Name="Icons.FileArrowDown" Size="3em"/>
+            <a href="@Attachment.Url" target="_blank">
+                @Attachment.Url.Split("/").Last()
+            </a>
         </div>
     }
 
