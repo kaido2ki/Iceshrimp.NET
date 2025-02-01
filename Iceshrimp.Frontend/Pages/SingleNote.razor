@@ -8,7 +8,7 @@
 @inject IStringLocalizer<Localization> Loc
 @inject ILogger<SingleNote>            Logger;
 @inject StateSynchronizer              StateSynchronizer;
-
+@inherits ChildNoteController
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Components.Note
@@ -36,6 +36,15 @@
         {
             @Loc["Note by {0}", (RootNote?.User.DisplayName ?? RootNote?.User.Username) ?? string.Empty]
         }
+        <button class="cw-button button" @onclick="ToggleCw">@if (_cwState)
+            {
+                <Icon Name="Icons.EyeClosed"/>
+            }
+            else
+            {
+                <Icon Name="Icons.Eye"/>
+            }
+        </button>
     </SectionContent>
     <div class="scroller">
         <div class="wrapper">
@@ -45,15 +54,19 @@
                     <div class="ascendants">
                         @foreach (var note in Ascendants)
                         {
-                            <CascadingValue Value="RelatedStore" TValue="NoteMessageProvider" Name="Provider">
-                                <AscendedNote Note="note.Value"/>
+                            <CascadingValue Value="this" Name="Controller">
+                                <CascadingValue Value="RelatedStore" TValue="NoteMessageProvider" Name="Provider">
+                                    <AscendedNote Note="note.Value"/>
+                                </CascadingValue>
                             </CascadingValue>
                         }
                     </div>
                 }
                 <div @ref="RootNoteRef" class="root-note">
-                    <CascadingValue Value="NoteStore" TValue="NoteMessageProvider" Name="Provider">
-                        <Note NoteResponse="RootNote"></Note>
+                    <CascadingValue Value="this" Name="Controller">
+                        <CascadingValue Value="NoteStore" TValue="NoteMessageProvider" Name="Provider">
+                            <Note NoteResponse="RootNote"></Note>
+                        </CascadingValue>
                     </CascadingValue>
                 </div>
                 <div class="details">
@@ -68,8 +81,11 @@
                                     <div class="descendants">
                                         @foreach (var element in Descendants)
                                         {
-                                            <CascadingValue Value="RelatedStore" TValue="NoteMessageProvider" Name="Provider">
-                                                <RecursiveNote Note="element.Value" Depth="0" MaxDepth="_depth"/>
+                                            <CascadingValue Value="this" Name="Controller">
+                                                <CascadingValue Value="RelatedStore" TValue="NoteMessageProvider"
+                                                                Name="Provider">
+                                                    <RecursiveNote Note="element.Value" Depth="0" MaxDepth="_depth"/>
+                                                </CascadingValue>
                                             </CascadingValue>
                                         }
                                     </div>
@@ -144,6 +160,7 @@
     private            IDisposable?                      _locationChangingHandlerDisposable;
     private            State                             _componentState;
     private            bool                              _firstLoad = true;
+    private            bool                              _cwState;
 
     private async Task Load()
     {
@@ -250,6 +267,43 @@
             {
                 Module.InvokeVoid("ScrollIntoView", RootNoteRef);
             }
+        }
+
+        if (_cwState)
+        {
+            foreach (var note in NoteChildren)
+            {
+                note.OpenCw();
+            }
+        }
+        else
+        {
+            foreach (var note in NoteChildren)
+            {
+                note.CloseCw();
+            }
+        }
+    }
+
+    private void ToggleCw()
+    {
+        if (_cwState)
+        {
+            foreach (var note in NoteChildren)
+            {
+                note.CloseCw();
+            }
+
+            _cwState = false;
+        }
+        else
+        {
+            foreach (var note in NoteChildren)
+            {
+                note.OpenCw();
+            }
+
+            _cwState = true;
         }
     }
 

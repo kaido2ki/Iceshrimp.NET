@@ -1,7 +1,9 @@
 @using Iceshrimp.Shared.Schemas.Web
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
+@implements IDisposable
 @inject IStringLocalizer<Localization> Loc;
 @inject IJSRuntime                     Js;
 
@@ -29,8 +31,8 @@
         </button>
     }
     <div
-         class="note-body @(_overHeight ? "too-long" : "") @(Indented ? "indent" : "") @(_showFull ? "show-full" : "") @(_cwToggle ? "hidden" : "")"
-         @ref="Body">
+        class="note-body @(_overHeight ? "too-long" : "") @(Indented ? "indent" : "") @(_showFull ? "show-full" : "") @(_cwToggle ? "hidden" : "")"
+        @ref="Body">
         <span>
             @if (ReplyInaccessible)
             {
@@ -56,6 +58,9 @@
 
 
 @code {
+    [CascadingParameter(Name = "Controller")]
+    ChildNoteController? Controller { get; set; }
+
     [Parameter] public required NoteBase NoteBase          { get; set; }
     [Parameter] public          bool     Indented          { get; set; }
     [Parameter] public          bool     ReplyInaccessible { get; set; }
@@ -69,6 +74,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        Controller?.Register(this);
         Module = await Js.InvokeAsync<IJSObjectReference>("import", "./Components/Note/NoteBody.razor.js");
         if (NoteBase.Cw == null)
         {
@@ -106,8 +112,28 @@
         _flag = false;
     }
 
+    public void OpenCw()
+    {
+        _cwToggle = false;
+        _flag = false;
+    }
+
+    public void CloseCw()
+    {
+        if (NoteBase.Cw != null)
+        {
+            _cwToggle = true;
+            _flag     = false;
+        }
+    }
+
     private void ToggleTruncate()
     {
         _showFull = !_showFull;
+    }
+
+    public void Dispose()
+    {
+        Controller?.Unregister(this);
     }
 }
