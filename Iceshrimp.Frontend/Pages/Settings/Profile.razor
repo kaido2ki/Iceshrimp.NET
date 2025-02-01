@@ -179,8 +179,8 @@
             Avatar = await Api.Profile.GetAvatarAsync();
             Banner = await Api.Profile.GetBannerAsync();
 
-            UserProfile.AvatarAlt = Avatar.Description;
-            UserProfile.BannerAlt = Banner.Description;
+            UserProfile.AvatarAlt = Avatar?.Description;
+            UserProfile.BannerAlt = Banner?.Description;
         }
         catch (ApiException e)
         {
