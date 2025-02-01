@@ -58,18 +58,16 @@ public static class WebApplicationExtensions
 			options.ConfigObject.AdditionalItems.Add("tagsSorter", "alpha"); // Sort tags alphabetically
 		});
 
-		app.MapScalarApiReference(options =>
+		app.MapScalarApiReference("/scalar", options =>
 		{
-			options.Title               = "Iceshrimp API documentation";
-			options.OpenApiRoutePattern = "/openapi/{documentName}.json";
-			options.EndpointPathPrefix  = "/scalar/{documentName}";
-			options.HideModels          = true;
-
-			options.CustomCss = """
-			                    .open-api-client-button, .darklight-reference-promo { display: none !important; }
-			                    .darklight { height: 14px !important; }
-			                    .darklight-reference { padding: 14px !important; }
-			                    """;
+			options.WithTitle("Iceshrimp API documentation")
+			       .WithOpenApiRoutePattern("/openapi/{documentName}.json")
+			       .WithModels(false)
+			       .WithCustomCss("""
+			                      .open-api-client-button, .darklight-reference > .flex > .text-sm { display: none !important; }
+			                      .darklight-reference > .flex > button > div:nth-child(1) { height: 14px !important; }
+			                      .darklight-reference { padding: 15px 14px !important; }
+			                      """);
 		});
 
 		return app;
