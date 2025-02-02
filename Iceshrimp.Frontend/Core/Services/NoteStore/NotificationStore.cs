@@ -31,6 +31,7 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 	{
 		if (_initialized) return;
 		await _streamingService.ConnectAsync();
+		_initialized = true;
 	}
 
 	public async ValueTask DisposeAsync()

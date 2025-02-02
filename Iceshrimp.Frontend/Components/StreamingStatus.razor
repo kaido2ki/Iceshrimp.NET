@@ -6,7 +6,36 @@
 @inject GlobalComponentSvc             GlobalComponentSvc
 @inject IStringLocalizer<Localization> Loc
 
+<div class="connection-status @(_hubConnectionState == HubConnectionState.Connected ? "fadeout" : "")">
+    @switch (_hubConnectionState)
+    {
+        case HubConnectionState.Connected:
+            <div class="state">
+                @Loc["Connected"]
+            </div>
+            break;
+        case HubConnectionState.Connecting:
+            <div class="state">
+                <svg class="animate-spin" viewBox="0 0 24 24"></svg> @Loc["Connecting"]
+            </div>
+            break;
+        case HubConnectionState.Disconnected:
+            <div @onclick="Reconnect" class="state disconnected">
+                @Loc["Disconnected"]
+            </div>
+            break;
+        case HubConnectionState.Reconnecting:
+            <div class="state">
+                <svg class="animate-spin" viewBox="0 0 24 24"></svg> @Loc["Reconnecting"]
+            </div>
+            break;
+    }
+
+</div>
+
 @code {
+    private HubConnectionState _hubConnectionState = HubConnectionState.Connected;
+
     protected override async Task OnInitializedAsync()
     {
         await StreamingService.ConnectAsync();
@@ -15,31 +44,12 @@
 
     private void HandleConnectionChange(object? _, HubConnectionState hubConnectionState)
     {
-        switch (hubConnectionState)
-        {
-            case HubConnectionState.Disconnected:
-            {
-                var banner = new BannerContainer.Banner { Text = @Loc["Connection lost, tap to reconnect."], OnClose = null, OnTap = Reconnect };
-                GlobalComponentSvc.BannerComponent?.AddBanner(banner);
-                break;
-            }
-            case HubConnectionState.Reconnecting:
-            {
-                var banner = new BannerContainer.Banner { Text = @Loc["Reconnecting"], OnClose = null, OnTap = null };
-                GlobalComponentSvc.BannerComponent?.AddBanner(banner);
-                break;
-            }
-            case HubConnectionState.Connected:
-            {
-                var banner = new BannerContainer.Banner { Text = @Loc["Connected"], OnClose = null, OnTap = null };
-                GlobalComponentSvc.BannerComponent?.AddBanner(banner);
-                break;
-            }
-        }
+        _hubConnectionState = hubConnectionState;
+        StateHasChanged();
     }
 
-    private void Reconnect()
+    private async Task Reconnect()
     {
-        _ = StreamingService.ReconnectAsync();
+        await StreamingService.ReconnectAsync();
     }
 }
