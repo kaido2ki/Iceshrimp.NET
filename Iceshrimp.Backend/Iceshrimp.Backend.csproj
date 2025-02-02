@@ -88,4 +88,9 @@
         <None Remove="Core\Database\prune-designer-cs-files.sh" />
     </ItemGroup>
 
+    <!-- We don't want the assets LICENSE.md to be served as a file -->
+    <ItemGroup>
+        <Content Remove="wwwroot\assets\LICENSE.md" />
+    </ItemGroup>
+
 </Project>
