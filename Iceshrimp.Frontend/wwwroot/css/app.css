@@ -22,7 +22,7 @@
     --font-color: #e7edff;
     --link: #9E9EFF;
     
-    overscroll-behavior: none;
+    overscroll-behavior-y: none;
 }
 
 
