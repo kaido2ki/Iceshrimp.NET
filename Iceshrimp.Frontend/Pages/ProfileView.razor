@@ -92,6 +92,12 @@
                         <MenuElement Icon="Icons.At" OnSelect="CopyUsername">
                             <Text>@Loc["Copy username"]</Text>
                         </MenuElement>
+                        @if (UserResponse.Host != null)
+                        {
+                            <MenuElement Icon="Icons.ArrowsClockwise" OnSelect="RefetchUser">
+                                <Text>@Loc["Refetch"]</Text>
+                            </MenuElement>
+                        }
                         <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>
                     </Menu>
                 </button>
@@ -264,4 +270,30 @@
     }
 
     private void CopyUsername() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"@{UserResponse.Username}" + (UserResponse.Host != null ? $"@{UserResponse.Host}" : ""));
+
+    private async Task RefetchUser() =>
+        await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RefetchUserCallback), Loc["Refetch {0}'s profile?", UserResponse.DisplayName ?? UserResponse.Username])!;
+
+    private async Task RefetchUserCallback(bool refetch)
+    {
+        if (!refetch) return;
+
+        try
+        {
+            var res = await Api.Users.RefetchUserAsync(UserResponse.Id);
+            if (res != null)
+            {
+                UserResponse = res;
+                var newProfile = await Api.Users.GetUserProfileAsync(UserResponse.Id);
+                if (newProfile != null)
+                    Profile = newProfile;
+                StateHasChanged();
+                await GlobalComponentSvc.NoticeDialog?.Display(Loc["Successfully refetched {0}'s profile", UserResponse.DisplayName ?? UserResponse.Username])!;
+            }
+        }
+        catch (ApiException e)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
 }
