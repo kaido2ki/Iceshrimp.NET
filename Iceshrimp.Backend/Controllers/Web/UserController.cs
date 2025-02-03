@@ -141,6 +141,29 @@ public class UserController(
 			await userSvc.FollowUserAsync(user, followee);
 	}
 
+	[HttpPost("{id}/refetch")]
+	[Authenticate]
+	[Authorize]
+	[EnableRateLimiting("strict")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<UserResponse> RefetchUser(string id)
+	{
+		var user = await db.Users.IncludeCommonProperties()
+		                   .FirstOrDefaultAsync(p => p.Id == id && p.Host != null && p.Uri != null)
+		           ?? throw GracefulException.NotFound("User not found");
+
+		await userSvc.UpdateUserAsync(user, force: true);
+
+		db.ChangeTracker.Clear();
+
+		user = await db.Users.IncludeCommonProperties()
+		               .FirstOrDefaultAsync(p => p.Id == id && p.Host != null && p.Uri != null)
+		       ?? throw new Exception("User disappeared during refetch");
+
+		return await userRenderer.RenderOne(user);
+	}
+
 	[HttpPost("{id}/remove_from_followers")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
