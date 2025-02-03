@@ -11,11 +11,22 @@
 @attribute [Authorize(Roles = "moderator")]
 @layout ModerationLayout
 @inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
+@inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Smiley"></Icon>
     @Loc["Custom Emojis"]
+    @if (State is State.Empty or State.Loaded && Source == "local")
+    {
+        <span class="action btn" @onclick="OpenUpload" title="@Loc["Upload emoji"]">
+            <Icon Name="Icons.Upload"/>
+        </span>
+        <span class="action btn" @onclick="OpenImport" title="@Loc["Import emoji pack"]">
+            <Icon Name="Icons.FileArrowUp"/>
+        </span>
+    }
 </SectionContent>
 
 @if (State is State.Loaded)
@@ -59,6 +70,11 @@
     </div>
 }
 
+<div class="file-input">
+    <InputFile @ref="UploadInput" OnChange="Upload" accept="image/*">Upload</InputFile>
+    <InputFile @ref="ImportInput" OnChange="Import" accept=".zip">Import</InputFile>
+</div>
+
 @code {
     private List<EmojiResponse>                     Emojis      { get; set; } = [];
     private Dictionary<string, List<EmojiResponse>> Categories  { get; set; } = new();
@@ -66,6 +82,12 @@
     private string                                  HostFilter  { get; set; } = "";
     private string                                  Source      { get; set; } = "local";
     private State                                   State       { get; set; }
+    private InputFile                               UploadInput { get; set; } = null!;
+    private IBrowserFile                            UploadFile  { get; set; } = null!;
+    private string                                  UploadName  { get; set; } = "";
+    private InputFile                               ImportInput { get; set; } = null!;
+    private IBrowserFile                            ImportFile  { get; set; } = null!;
+    private IJSObjectReference                      _module = null!;
 
     private void FilterEmojis()
     {
@@ -96,8 +118,68 @@
         }
     }
 
+    // The <InputFile> Component is hidden, and triggered by a sepperate button.
+    // That way we get it's functionality, without the styling limitations of the InputFile component
+    private async Task OpenUpload()
+    {
+        await _module.InvokeVoidAsync("openUpload", UploadInput.Element);
+    }
+
+    private async Task OpenImport()
+    {
+        await _module.InvokeVoidAsync("openUpload", ImportInput.Element);
+    }
+
+    private async Task Upload(InputFileChangeEventArgs e)
+    {
+        if (!e.File.ContentType.StartsWith("image/")) return;
+        UploadFile = e.File;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, UploadCallback), Loc["Set emoji name"], "", e.File.Name.Split(".")[0], buttonText: Loc["Upload"])!;
+    }
+
+    private async Task UploadCallback(string? name)
+    {
+        if (name == null) return;
+
+        try
+        {
+            await Api.Emoji.UploadEmojiAsync(UploadFile, name);
+            await Global.NoticeDialog?.Display(Loc["Successfully uploaded {0}", name])!;
+            await GetEmojis();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
+
+    private async Task Import(InputFileChangeEventArgs e)
+    {
+        if (e.File.ContentType != "application/zip") return;
+        ImportFile = e.File;
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, ImportCallback), Loc["Import {0}?", e.File.Name], Icons.FileArrowUp, Loc["Import"])!;
+    }
+
+    private async Task ImportCallback(bool import)
+    {
+        if (!import) return;
+
+        try
+        {
+            await Api.Emoji.ImportEmojiAsync(ImportFile);
+            await Global.NoticeDialog?.Display(Loc["Successfully imported emoji pack"])!;
+            await GetEmojis();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                           "./Pages/Moderation/CustomEmojis.razor.js");
         await GetEmojis();
     }
 }
