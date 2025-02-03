@@ -1,26 +1,35 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
 @inject GlobalComponentSvc             GlobalComponentSvc;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 
 <dialog class="dialog" @ref="Dialog">
-    <div class="prompt">
-        <span>@Text</span>
-        @if (MultiLine)
+    <div class="prompt @(Waiting ? "waiting" : "")">
+        @if (Waiting)
         {
-            <textarea class="input" @bind="Input" @bind:event="oninput" rows="5" placeholder="@Placeholder"></textarea>
+            <Icon Name="Icons.Spinner" Size="3rem"/>
         }
         else
         {
-            <input type="text" class="input" @bind="Input" @bind:event="oninput" placeholder="@Placeholder"/>
+            <span>@Text</span>
+            @if (MultiLine)
+            {
+                <textarea class="input" @bind="Input" @bind:event="oninput" rows="5" placeholder="@Placeholder"></textarea>
+            }
+            else
+            {
+                <input type="text" class="input" @bind="Input" @bind:event="oninput" placeholder="@Placeholder"/>
+            }
+
+            <div class="buttons">
+                <button class="button submit-btn" @onclick="ConfirmAction"
+                        disabled="@(Required && string.IsNullOrWhiteSpace(Input))">@(ButtonText ?? Loc["Submit"])</button>
+                <button class="button" @onclick="CancelAction">@Loc["Cancel"]</button>
+            </div>
         }
-        <div class="buttons">
-            <button class="button submit-btn" @onclick="ConfirmAction"
-                    disabled="@(Required && string.IsNullOrWhiteSpace(Input))">@(ButtonText ?? Loc["Submit"])</button>
-            <button class="button" @onclick="CancelAction">@Loc["Cancel"]</button>
-        </div>
     </div>
 </dialog>
 
@@ -34,6 +43,7 @@
     private bool                   MultiLine   { get; set; }
     private string?                ButtonText  { get; set; }
     private string                 Input       { get; set; } = "";
+    private bool                   Waiting     { get; set; }
 
     private async Task CloseDialog()
     {
@@ -49,6 +59,7 @@
         MultiLine   = multiLine;
         ButtonText  = buttonText;
         Input       = defaultValue ?? "";
+        Waiting     = false;
 
         StateHasChanged();
 
@@ -57,7 +68,9 @@
 
     private async Task ConfirmAction()
     {
+        Waiting = true;
         await Action.InvokeAsync(MultiLine ? Input.ReplaceLineEndings("\n").Trim() : Input.ReplaceLineEndings(" ").Trim());
+        Waiting = false;
         await CloseDialog();
     }
 

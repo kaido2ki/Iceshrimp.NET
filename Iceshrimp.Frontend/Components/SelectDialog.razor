@@ -1,23 +1,31 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
 @inject GlobalComponentSvc             GlobalComponentSvc;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 
 <dialog class="dialog" @ref="Dialog">
-    <div class="select">
-        <span>@Text</span>
-        <select class="input" @bind="Selected">
-            @foreach (var option in Options.Select((o, i) => new { o.Label, i }))
-            {
-                <option value="@option.i">@option.Label</option>
-            }
-        </select>
-        <div class="buttons">
-            <button class="button submit-btn" @onclick="ConfirmAction">@(ButtonText ?? Loc["Submit"])</button>
-            <button class="button" @onclick="CancelAction">@Loc["Cancel"]</button>
-        </div>
+    <div class="select @(Waiting ? "waiting" : "")">
+        @if (Waiting)
+        {
+            <Icon Name="Icons.Spinner" Size="3rem"/>
+        }
+        else
+        {
+            <span>@Text</span>
+            <select class="input" @bind="Selected">
+                @foreach (var option in Options.Select((o, i) => new { o.Label, i }))
+                {
+                    <option value="@option.i">@option.Label</option>
+                }
+            </select>
+            <div class="buttons">
+                <button class="button submit-btn" @onclick="ConfirmAction">@(ButtonText ?? Loc["Submit"])</button>
+                <button class="button" @onclick="CancelAction">@Loc["Cancel"]</button>
+            </div>
+        }
     </div>
 </dialog>
 
@@ -29,6 +37,7 @@
     private List<(string Label, object Value)> Options    { get; set; } = [];
     private string?                            ButtonText { get; set; }
     private int                                Selected   { get; set; }
+    private bool                               Waiting    { get; set; }
 
     private async Task CloseDialog()
     {
@@ -42,6 +51,7 @@
         Options    = options;
         ButtonText = buttonText;
         Selected   = 0;
+        Waiting    = false;
 
         StateHasChanged();
 
@@ -50,7 +60,9 @@
 
     private async Task ConfirmAction()
     {
+        Waiting = true;
         await Action.InvokeAsync(Options[Selected].Value);
+        Waiting = false;
         await CloseDialog();
     }
 

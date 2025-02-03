@@ -7,13 +7,20 @@
 @inject IStringLocalizer<Localization> Loc;
 
 <dialog class="dialog" @ref="Dialog">
-    <div class="confirm">
-        <span class="confirm-icon"><Icon Name="@(ConfirmIcon ?? Icons.Question)" Size="3em"/></span>
-        <span>@Question</span>
-        <div class="buttons">
-            <button class="button confirm-btn" @onclick="ConfirmAction">@(ButtonText ?? Loc["OK"])</button>
-            <button class="button" @onclick="CancelAction">@Loc["Cancel"]</button>
-        </div>
+    <div class="confirm @(Waiting ? "waiting" : "")">
+        @if (Waiting)
+        {
+            <Icon Name="Icons.Spinner" Size="3rem"/>
+        }
+        else
+        {
+            <span class="confirm-icon"><Icon Name="@(ConfirmIcon ?? Icons.Question)" Size="3em"/></span>
+            <span>@Question</span>
+            <div class="buttons">
+                <button class="button confirm-btn" @onclick="ConfirmAction">@(ButtonText ?? Loc["OK"])</button>
+                <button class="button" @onclick="CancelAction">@Loc["Cancel"]</button>
+            </div>
+        }
     </div>
 </dialog>
 
@@ -24,6 +31,7 @@
     private string              Question    { get; set; } = "";
     private IconName?           ConfirmIcon { get; set; }
     private string?             ButtonText  { get; set; }
+    private bool                Waiting     { get; set; }
 
     private async Task CloseDialog()
     {
@@ -36,6 +44,7 @@
         Question    = question;
         ConfirmIcon = icon;
         ButtonText  = buttonText;
+        Waiting     = false;
 
         StateHasChanged();
 
@@ -44,7 +53,9 @@
 
     private async Task ConfirmAction()
     {
+        Waiting = true;
         await Action.InvokeAsync(true);
+        Waiting = false;
         await CloseDialog();
     }
 

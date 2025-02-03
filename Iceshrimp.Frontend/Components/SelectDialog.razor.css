@@ -17,13 +17,16 @@
     border-radius: 1rem;
     margin: auto;
     padding: 1rem;
-    min-width: 12rem;
     width: max-content;
     max-width: 45rem;
     color: var(--font-color);
     text-align: center;
     text-wrap: wrap;
     word-break: break-word;
+}
+
+.select:not(.waiting) {
+    min-width: 12rem;
 }
 
 .buttons {

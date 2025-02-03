@@ -298,3 +298,19 @@ pre:has(code){
     align-items: center;
     height: 3rem;
 }
+
+@keyframes spinner {
+    0% {
+        rotate: 0deg;
+    }
+    50% {
+        rotate: 180deg;
+    }
+    100% {
+        rotate: 360deg;
+    }
+}
+
+.ph.ph-spinner {
+    animation: 3s spinner infinite;
+}
