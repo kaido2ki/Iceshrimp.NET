@@ -25,6 +25,12 @@
     width: 100%;
 }
 
+.loading {
+    display: flex;
+    justify-content: center;
+    margin-top: 5rem;
+}
+
 @media (max-width: 1000px) {
     .emoji-list {
         grid-template-columns: 1fr;

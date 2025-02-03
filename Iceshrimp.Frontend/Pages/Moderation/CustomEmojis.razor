@@ -50,6 +50,14 @@
         <i>This instance has no emojis</i>
     </div>
 }
+@if (State is State.Loading)
+{
+    <div class="body">
+        <div class="loading">
+            <Icon Name="Icons.Spinner" Size="3rem"/>
+        </div>
+    </div>
+}
 
 @code {
     private List<EmojiResponse>                     Emojis      { get; set; } = [];
