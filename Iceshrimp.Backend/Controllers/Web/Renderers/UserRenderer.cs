@@ -21,6 +21,9 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		if (!data.Emojis.TryGetValue(user.Id, out var emoji))
 			throw new Exception("DTO didn't contain emoji for user");
 
+		var avatarAlt = data.AvatarAlt.GetValueOrDefault(user.Id);
+		var bannerAlt = data.BannerAlt.GetValueOrDefault(user.Id);
+
 		return new UserResponse
 		{
 			Id              = user.Id,
@@ -28,9 +31,9 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			Host            = user.Host,
 			DisplayName     = user.DisplayName,
 			AvatarUrl       = user.GetAvatarUrl(config.Value),
-			AvatarAlt       = user.Avatar?.Comment,
+			AvatarAlt       = avatarAlt,
 			BannerUrl       = user.GetBannerUrl(config.Value),
-			BannerAlt       = user.Banner?.Comment,
+			BannerAlt       = bannerAlt,
 			InstanceName    = instanceName,
 			InstanceIconUrl = instanceIcon,
 			Emojis          = emoji,
@@ -44,7 +47,12 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 	{
 		var instanceData = await GetInstanceDataAsync([user]);
 		var emojis       = await GetEmojisAsync([user]);
-		var data         = new UserRendererDto { Emojis = emojis, InstanceData = instanceData };
+		var avatarAlt    = await GetAvatarAltAsync([user]);
+		var bannerAlt    = await GetBannerAltAsync([user]);
+		var data = new UserRendererDto
+		{
+			Emojis = emojis, InstanceData = instanceData, AvatarAlt = avatarAlt, BannerAlt = bannerAlt
+		};
 
 		return Render(user, data);
 	}
@@ -55,12 +63,33 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		return await db.Instances.Where(p => hosts.Contains(p.Host)).ToListAsync();
 	}
 
+	private async Task<Dictionary<string, string?>> GetAvatarAltAsync(IEnumerable<User> users)
+	{
+		var ids = users.Select(p => p.Id).ToList();
+		return await db.Users
+		               .Where(p => ids.Contains(p.Id))
+		               .Include(p => p.Avatar)
+		               .ToDictionaryAsync(p => p.Id, p => p.Avatar?.Comment);
+	}
+	
+	private async Task<Dictionary<string, string?>> GetBannerAltAsync(IEnumerable<User> users)
+	{
+		var ids = users.Select(p => p.Id).ToList();
+		return await db.Users
+		               .Where(p => ids.Contains(p.Id))
+		               .Include(p => p.Banner)
+		               .ToDictionaryAsync(p => p.Id, p => p.Banner?.Comment);
+	}
+
 	public async Task<IEnumerable<UserResponse>> RenderManyAsync(IEnumerable<User> users)
 	{
 		var userList = users.ToList();
 		var data = new UserRendererDto
 		{
-			InstanceData = await GetInstanceDataAsync(userList), Emojis = await GetEmojisAsync(userList)
+			InstanceData = await GetInstanceDataAsync(userList),
+			Emojis       = await GetEmojisAsync(userList),
+			AvatarAlt    = await GetAvatarAltAsync(userList),
+			BannerAlt    = await GetBannerAltAsync(userList)
 		};
 
 		return userList.Select(p => Render(p, data));
@@ -93,5 +122,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 	{
 		public required List<Instance>                          InstanceData;
 		public required Dictionary<string, List<EmojiResponse>> Emojis;
+		public required Dictionary<string, string?>             AvatarAlt;
+		public required Dictionary<string, string?>             BannerAlt;
 	}
 }
