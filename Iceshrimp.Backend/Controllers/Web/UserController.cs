@@ -155,7 +155,7 @@ public class UserController(
 
 		await userSvc.UpdateUserAsync(user, force: true);
 
-		db.ChangeTracker.Clear();
+		await db.ReloadEntityRecursivelyAsync(user);
 
 		user = await db.Users.IncludeCommonProperties()
 		               .FirstOrDefaultAsync(p => p.Id == id && p.Host != null && p.Uri != null)
