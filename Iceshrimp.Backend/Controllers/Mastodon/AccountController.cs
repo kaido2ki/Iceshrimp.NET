@@ -174,7 +174,7 @@ public class AccountController(
 	[ProducesErrors(HttpStatusCode.Forbidden)]
 	public async Task<IEnumerable<AccountEntity>> GetManyUsers(
 		[FromQuery(Name = "id")] [MaxLength(40)]
-		HashSet<string> ids
+		List<string> ids
 	)
 	{
 		var localUser = HttpContext.GetUser();
