@@ -29,7 +29,6 @@ builder.Services.AddSingleton<StateService>();
 builder.Services.AddSingleton<EmojiService>();
 builder.Services.AddSingleton<MetadataService>();
 builder.Services.AddSingleton<VersionService>();
-builder.Services.AddSingleton<MessageService>();
 builder.Services.AddSingleton<GlobalComponentSvc>();
 builder.Services.AddSingleton<UpdateService>();
 builder.Services.AddSingleton<SettingsService>();

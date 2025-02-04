@@ -11,7 +11,7 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 	private readonly ApiService                               _api;
 	private readonly ILogger<NotificationStore>               _logger;
 	private          StreamingService                         _streamingService;
-	private          bool                                     _initialized = false;
+	private          bool                                     _initialized;
 	private          SortedList<string, NotificationResponse> Notifications { get; set; } = new();
 
 	public NotificationStore(
