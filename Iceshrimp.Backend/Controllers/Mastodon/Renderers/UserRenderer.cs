@@ -45,6 +45,15 @@ public class UserRenderer(
 			? profile?.Fields.Select(p => new Field { Name = p.Name, Value = p.Value }).ToList() ?? []
 			: [];
 
+		user.Avatar ??= await db.Users.Where(p => p.Id == user.Id)
+		                        .Include(p => p.Avatar)
+		                        .Select(p => p.Avatar)
+		                        .FirstOrDefaultAsync();
+		user.Banner ??= await db.Users.Where(p => p.Id == user.Id)
+		                        .Include(p => p.Banner)
+		                        .Select(p => p.Banner)
+		                        .FirstOrDefaultAsync();
+
 		var res = new AccountEntity
 		{
 			Id                 = user.Id,
@@ -62,8 +71,10 @@ public class UserRenderer(
 			Url                = profile?.Url ?? user.Uri ?? user.GetPublicUrl(config.Value),
 			Uri                = user.Uri ?? user.GetPublicUri(config.Value),
 			AvatarStaticUrl    = user.GetAvatarUrl(config.Value), //TODO
+			AvatarDescription  = user.Avatar?.Comment ?? "", 
 			HeaderUrl          = user.GetBannerUrl(config.Value) ?? _transparent,
 			HeaderStaticUrl    = user.GetBannerUrl(config.Value) ?? _transparent, //TODO
+			HeaderDescription  = user.Banner?.Comment ?? "", 
 			MovedToAccount     = null,                           //TODO
 			IsBot              = user.IsBot,
 			IsDiscoverable     = user.IsExplorable,

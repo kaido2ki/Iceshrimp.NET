@@ -28,6 +28,9 @@ public class AccountEntity : IEntity
 	[J("source")]          public          AccountSource?    Source             { get; set; }
 	[J("emojis")]          public required List<EmojiEntity> Emoji              { get; set; }
 	[J("id")]              public required string            Id                 { get; set; }
+
+	[J("avatar_description")] public required string AvatarDescription { get; set; }
+	[J("header_description")] public required string HeaderDescription { get; set; }
 }
 
 public class Field
