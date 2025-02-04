@@ -159,7 +159,6 @@ public class NoteController(
 
 		var users = await db.NoteReactions
 		                    .Where(p => p.Note == note && p.Reaction == $":{name.Trim(':')}:")
-		                    .Include(p => p.User.Avatar)
 		                    .Include(p => p.User.UserProfile)
 		                    .Select(p => p.User)
 		                    .ToListAsync();
@@ -245,7 +244,6 @@ public class NoteController(
 
 		var users = await db.NoteLikes
 		                    .Where(p => p.Note == note)
-		                    .Include(p => p.User.Avatar)
 		                    .Include(p => p.User.UserProfile)
 		                    .Paginate(pq, ControllerContext)
 		                    .Wrap(p => p.User)
@@ -311,7 +309,6 @@ public class NoteController(
 		var users = await db.Notes
 		                    .Where(p => p.Renote == note && p.IsPureRenote)
 		                    .EnsureVisibleFor(user)
-		                    .Include(p => p.User.Avatar)
 		                    .Include(p => p.User.UserProfile)
 		                    .FilterHidden(user, db)
 		                    .Paginate(pq, ControllerContext)

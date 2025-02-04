@@ -601,13 +601,9 @@ public static class QueryableExtensions
 
 	public static IQueryable<Note> IncludeCommonProperties(this IQueryable<Note> query)
 	{
-		return query.Include(p => p.User.Avatar)
-		            .Include(p => p.User.UserProfile)
-		            .Include(p => p.Renote.User.Avatar)
+		return query.Include(p => p.User.UserProfile)
 		            .Include(p => p.Renote.User.UserProfile)
-		            .Include(p => p.Renote.Renote.User.Avatar)
 		            .Include(p => p.Renote.Renote.User.UserProfile)
-		            .Include(p => p.Reply.User.Avatar)
 		            .Include(p => p.Reply.User.UserProfile);
 	}
 
@@ -625,9 +621,7 @@ public static class QueryableExtensions
 
 	public static IQueryable<FollowRequest> IncludeCommonProperties(this IQueryable<FollowRequest> query)
 	{
-		return query.Include(p => p.Follower.Avatar)
-					.Include(p => p.Follower.UserProfile)
-		            .Include(p => p.Followee.Avatar)
+		return query.Include(p => p.Follower.UserProfile)
 		            .Include(p => p.Followee.UserProfile);
 	}
 
@@ -649,21 +643,13 @@ public static class QueryableExtensions
 
 	public static IQueryable<Notification> IncludeCommonProperties(this IQueryable<Notification> query)
 	{
-		return query.Include(p => p.Notifiee.Avatar)
-		            .Include(p => p.Notifiee.UserProfile)
-		            .Include(p => p.Notifier.Avatar)
+		return query.Include(p => p.Notifiee.UserProfile)
 		            .Include(p => p.Notifier.UserProfile)
-		            .Include(p => p.Note.User.Avatar)
 		            .Include(p => p.Note.User.UserProfile)
-		            .Include(p => p.Note.Renote.User.Avatar)
 		            .Include(p => p.Note.Renote.User.UserProfile)
-		            .Include(p => p.Note.Renote.Renote.User.Avatar)
 		            .Include(p => p.Note.Renote.Renote.User.UserProfile)
-		            .Include(p => p.Note.Reply.User.Avatar)
 		            .Include(p => p.Note.Reply.User.UserProfile)
-		            .Include(p => p.FollowRequest.Follower.Avatar)
 		            .Include(p => p.FollowRequest.Follower.UserProfile)
-		            .Include(p => p.FollowRequest.Followee.Avatar)
 		            .Include(p => p.FollowRequest.Followee.UserProfile)
 		            .Include(p => p.Bite);
 	}
