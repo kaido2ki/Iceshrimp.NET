@@ -496,7 +496,8 @@ public class AdminController(
 		                                  note.GetPublicUri(config.Value),
 		                                  userRenderer.RenderLite(note.User),
 		                                  note.Visibility,
-		                                  note.User.GetPublicUri(config.Value) + "/followers")
+		                                  note.User.GetPublicUri(config.Value) + "/followers",
+		                                  note.CreatedAt)
 		                  .Compact();
 	}
 

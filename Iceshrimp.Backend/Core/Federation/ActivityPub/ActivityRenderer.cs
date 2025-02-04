@@ -200,18 +200,19 @@ public class ActivityRenderer(
 		$"https://{config.Value.WebDomain}/follows/{follower.Id}/{followee.Id}/{(relationshipId ?? Guid.NewGuid()).ToStringLower()}";
 
 	private static ASAnnounce RenderAnnounce(
-		ASNote note, ASActor actor, List<ASObjectBase> to, List<ASObjectBase> cc, string uri
+		ASNote note, ASActor actor, List<ASObjectBase> to, List<ASObjectBase> cc, string uri, DateTime publishedAt
 	) => new()
 	{
 		Id     = uri,
 		Actor  = actor.Compact(),
 		Object = note,
+		PublishedAt = publishedAt,
 		To     = to,
 		Cc     = cc
 	};
 
 	public static ASAnnounce RenderAnnounce(
-		ASNote note, string renoteUri, ASActor actor, Note.NoteVisibility visibility, string followersUri
+		ASNote note, string renoteUri, ASActor actor, Note.NoteVisibility visibility, string followersUri, DateTime publishedAt
 	)
 	{
 		List<ASObjectBase> to = visibility switch
@@ -228,7 +229,7 @@ public class ActivityRenderer(
 			_                        => []
 		};
 
-		return RenderAnnounce(note, actor, to, cc, $"{renoteUri}/activity");
+		return RenderAnnounce(note, actor, to, cc, $"{renoteUri}/activity", publishedAt);
 	}
 
 	public ASNote RenderVote(PollVote vote, Poll poll, Note note) => new()

@@ -91,6 +91,10 @@ public class ASAnnounce : ASActivity
 
 	[J($"{Constants.ActivityStreamsNs}#cc")]
 	public List<ASObjectBase>? Cc { get; set; }
+	
+	[J($"{Constants.ActivityStreamsNs}#published")]
+	[JC(typeof(VC))]
+	public DateTime? PublishedAt { get; set; }
 
 	public Note.NoteVisibility GetVisibility(User actor)
 	{

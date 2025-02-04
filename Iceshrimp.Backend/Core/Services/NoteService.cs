@@ -481,7 +481,8 @@ public class NoteService(
 				                                              : noteRenderer.RenderLite(note.Renote),
 			                                              note.GetPublicUri(config.Value), actor,
 			                                              note.Visibility,
-			                                              data.User.GetPublicUri(config.Value) + "/followers")
+			                                              data.User.GetPublicUri(config.Value) + "/followers",
+			                                              note.CreatedAt)
 			: ActivityPub.ActivityRenderer.RenderCreate(await noteRenderer.RenderAsync(note, mentions), actor);
 
 		List<string> additionalUserIds =
@@ -899,7 +900,8 @@ public class NoteService(
 			? activityRenderer.RenderUndo(actor, ActivityPub.ActivityRenderer.RenderAnnounce(
 			                               noteRenderer.RenderLite(note.Renote ?? throw new Exception("Refusing to undo renote without renote")),
 			                               note.GetPublicUri(config.Value), actor, note.Visibility,
-			                               note.User.GetPublicUri(config.Value) + "/followers"))
+			                               note.User.GetPublicUri(config.Value) + "/followers",
+			                              note.CreatedAt))
 			: ActivityPub.ActivityRenderer.RenderDelete(actor, new ASTombstone { Id = note.GetPublicUri(config.Value) });
 		// @formatter:on
 

@@ -75,7 +75,8 @@ public class ActivityPubController(
 		ASActivity activity = note is { IsPureRenote: true, Renote: not null }
 			? ActivityPub.ActivityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
 			                                              note.GetPublicUri(config.Value), noteActor, note.Visibility,
-			                                              note.User.GetPublicUri(config.Value) + "/followers")
+			                                              note.User.GetPublicUri(config.Value) + "/followers",
+			                                              note.CreatedAt)
 			: ActivityPub.ActivityRenderer.RenderCreate(await noteRenderer.RenderAsync(note), noteActor);
 
 		return activity.Compact();
@@ -249,7 +250,7 @@ public class ActivityPubController(
 			                            ? (ASObject)ActivityPub.ActivityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
 					                             note.GetPublicUri(config.Value), noteActor,
 					                             note.Visibility,
-					                             note.User.GetPublicUri(config.Value) + "/followers")
+					                             note.User.GetPublicUri(config.Value) + "/followers", note.CreatedAt)
 			                            : ActivityPub.ActivityRenderer.RenderCreate(noteRenderer.RenderLite(note), noteActor))
 		                    .ToList();
 
