@@ -119,12 +119,16 @@ public class InstanceController(
 	{
 		var admins = db.Users
 					   .Where(p => p.IsAdmin == true)
+					   .Include(p => p.Avatar)
+					   .Include(p => p.Banner)
 					   .OrderBy(p => p.UsernameLower);
 		var adminList = await userRenderer.RenderManyAsync(admins)
 										  .ToListAsync();
 
 		var moderators = db.Users
 						   .Where(p => p.IsAdmin == false && p.IsModerator == true)
+						   .Include(p => p.Avatar)
+						   .Include(p => p.Banner)
 						   .OrderBy(p => p.UsernameLower);
 		var moderatorList = await userRenderer.RenderManyAsync(moderators)
 											  .ToListAsync();

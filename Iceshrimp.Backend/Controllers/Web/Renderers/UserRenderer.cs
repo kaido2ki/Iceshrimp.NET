@@ -46,6 +46,15 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		var emojis       = await GetEmojisAsync([user]);
 		var data         = new UserRendererDto { Emojis = emojis, InstanceData = instanceData };
 
+		user.Avatar ??= await db.Users.Where(p => p.Id == user.Id)
+		                        .Include(p => p.Avatar)
+		                        .Select(p => p.Avatar)
+		                        .FirstOrDefaultAsync();
+		user.Banner ??= await db.Users.Where(p => p.Id == user.Id)
+		                        .Include(p => p.Banner)
+		                        .Select(p => p.Banner)
+		                        .FirstOrDefaultAsync();
+
 		return Render(user, data);
 	}
 
