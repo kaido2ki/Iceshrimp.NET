@@ -98,6 +98,19 @@ public class DriveController(
 
 		return await GetFileByAccessKey(user.Banner.AccessKey, "thumbnail", user.Banner);
 	}
+	
+	[EnableCors("drive")]
+	[HttpGet("/identicon/{userId}")]
+	[HttpGet("/identicon/{userId}.png")]
+	[Produces(MediaTypeNames.Image.Png)]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.Redirect)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IActionResult> GetIdenticonByUserId(string userId)
+	{
+		var stream = await IdenticonHelper.GetIdenticonAsync(userId);
+		Response.Headers.CacheControl = CacheControl;
+		return new InlineFileStreamResult(stream, "image/png", $"{userId}.png", false);
+	}
 
 	[HttpPost]
 	[Authenticate]
