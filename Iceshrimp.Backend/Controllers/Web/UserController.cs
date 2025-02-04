@@ -157,10 +157,6 @@ public class UserController(
 
 		await db.ReloadEntityRecursivelyAsync(user);
 
-		user = await db.Users.IncludeCommonProperties()
-		               .FirstOrDefaultAsync(p => p.Id == id && p.Host != null && p.Uri != null)
-		       ?? throw new Exception("User disappeared during refetch");
-
 		return await userRenderer.RenderOne(user);
 	}
 
