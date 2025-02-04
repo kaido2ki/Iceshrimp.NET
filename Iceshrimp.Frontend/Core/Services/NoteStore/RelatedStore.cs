@@ -36,7 +36,6 @@ internal class RelatedStore : NoteMessageProvider, IDisposable
 				note.Attachments = noteResponse.Attachments;
 				note.Reactions   = noteResponse.Reactions;
 
-				// container.Value.Notes[noteResponse.Id] = note;
 				NoteChangedHandlers.First(p => p.Key == note.Id).Value.Invoke(this, note);
 				NoteChanged?.Invoke(this, note);
 			}
@@ -64,7 +63,8 @@ internal class RelatedStore : NoteMessageProvider, IDisposable
 			input.Replies     = updated.Replies;
 			input.Attachments = updated.Attachments;
 			input.Reactions   = updated.Reactions;
-			NoteChangedHandlers.First(p => p.Key == input.Id).Value.Invoke(this, input);
+			var handler = NoteChangedHandlers.FirstOrDefault(p => p.Key == input.Id);
+			handler.Value?.Invoke(this, input);
 			NoteChanged?.Invoke(this, input);
 		}
 
@@ -82,10 +82,14 @@ internal class RelatedStore : NoteMessageProvider, IDisposable
 		return await FetchAscendantsAsync(id, limit);
 	}
 
-	public async Task<SortedList<string, NoteResponse>?> GetDescendantsAsync(string id, int? limit)
+	public async Task<SortedList<string, NoteResponse>?> GetDescendantsAsync(
+		string id, int? limit, bool refresh = false
+	)
 	{
+		if (refresh) return await FetchDescendantsAsync(id, limit);
 		var success = Descendants.TryGetValue(id, out var value);
-		if (success) return value?.Notes ?? throw new InvalidOperationException("Key somehow had no associated value.");
+		if (success)
+			return value?.Notes ?? throw new InvalidOperationException("Key somehow had no associated value.");
 		return await FetchDescendantsAsync(id, limit);
 	}
 

@@ -57,7 +57,8 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 				note.Attachments = changedNote.Attachments;
 				note.Reactions   = changedNote.Reactions;
 
-				NoteChangedHandlers.First(p => p.Key == note.Id).Value.Invoke(this, note);
+				var handler = NoteChangedHandlers.FirstOrDefault(p => p.Key == note.Id);
+				handler.Value?.Invoke(this, note);
 			}
 		}
 	}

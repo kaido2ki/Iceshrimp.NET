@@ -218,6 +218,7 @@
     {
         _locationChangingHandlerDisposable =  Navigation.RegisterLocationChangingHandler(LocationChangeHandler);
         StateSynchronizer.NoteDeleted      += OnNoteDeleted;
+        NoteStore.AnyNoteChanged           += OnNoteChanged;
     }
 
     private void OnNoteDeleted(object? _, NoteBase note)
@@ -232,6 +233,20 @@
             Descendants?.Remove(note.Id);
         }
 
+        StateHasChanged();
+    }
+
+    private void OnNoteChanged(object? _, NoteResponse note)
+    {
+        if (note.Id == NoteId)
+        {
+            var __ = Refresh();
+        }
+    }
+
+    private async Task Refresh()
+    {
+        if (NoteId != null) Descendants = await RelatedStore.GetDescendantsAsync(NoteId, _depth, true);
         StateHasChanged();
     }
 
@@ -322,5 +337,6 @@
         SaveState();
         _locationChangingHandlerDisposable?.Dispose();
         StateSynchronizer.NoteDeleted -= OnNoteDeleted;
+        NoteStore.AnyNoteChanged      -= OnNoteChanged;
     }
 }

@@ -1,10 +1,12 @@
 @* ReSharper disable once RedundantUsingDirective *@
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Core.Services.NoteStore
 @using Iceshrimp.Shared.Schemas.Web
 @inject NavigationManager NavigationManager
 @inject MessageService    MessageService
 @inject ApiService        Api
+@inject RelatedStore      Store
 @implements IDisposable
 
 @if (_hidden == false)
@@ -69,12 +71,11 @@
     [Parameter] [EditorRequired] public required int          Depth    { get; set; }
     [Parameter] [EditorRequired] public required int          MaxDepth { get; set; }
     private                                      bool         _indented           = false;
-    private                                      IDisposable  _noteChangedHandler = null!;
     private                                      bool         _hidden             = false;
 
     protected override void OnInitialized()
     {
-        _noteChangedHandler = MessageService.Register(Note.Id, OnNoteChanged, MessageService.Type.Updated);
+        Store.NoteChanged += OnNoteChanged;
         if (Depth > 0 || Note.Descendants?.Count > 0)
         {
             _indented = true;
@@ -90,15 +91,19 @@
 
     private void OnNoteChanged(object? _, NoteResponse note)
     {
-        var __ = Refresh();
+        if (note.Id == Note.Id)
+        {
+            var __ = Refresh();
+        }
     }
 
     private async Task Refresh()
     {
         if (Depth < MaxDepth)
         {
-            var res = await Api.Notes.GetNoteDescendantsAsync(Note.Id, MaxDepth - Depth);
-            Note.Descendants = res;
+            var res = await Store.GetDescendantsAsync(Note.Id, MaxDepth - Depth, true);
+            if (res == null) return;
+            Note.Descendants = res.Select(p => p.Value).ToList();
             StateHasChanged();
         }
     }
@@ -110,6 +115,6 @@
 
     public void Dispose()
     {
-        _noteChangedHandler.Dispose();
+        Store.NoteChanged -= OnNoteChanged;
     }
 }

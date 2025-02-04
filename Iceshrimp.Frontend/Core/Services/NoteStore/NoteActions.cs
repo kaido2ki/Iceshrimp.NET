@@ -15,6 +15,20 @@ internal class NoteActions(
 		stateSynchronizer.Broadcast(note);
 	}
 
+	public async Task RefetchNoteAsync(NoteBase note)
+	{
+		try
+		{
+			var res = await api.Notes.GetNoteAsync(note.Id);
+			if (res == null) return;
+			Broadcast(res);
+		}
+		catch (ApiException e)
+		{
+			logger.LogError(e, "Failed to fetch note.");
+		}
+	}
+
 	public async Task ToggleLikeAsync(NoteBase note)
 	{
 		if (note.Liked)

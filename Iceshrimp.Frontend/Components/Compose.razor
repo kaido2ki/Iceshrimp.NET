@@ -2,6 +2,7 @@
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Core.Services.NoteStore
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.MfmSharp
 @using Iceshrimp.Shared.Schemas.Web
@@ -16,6 +17,7 @@
 @inject GlobalComponentSvc             GlobalComponentSvc
 @inject MessageService                 MessageService
 @inject SettingsService                Settings;
+@inject NoteActions                    NoteActions;
 <dialog @onkeydown="HandleKeyDown" class="dialog" @ref="Dialog">
     <div class="compose">
         <div class="header">
@@ -23,7 +25,8 @@
                 <Icon Name="Icons.X"/>
             </button>
             <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
-            <StateButton OnClick="SendNote" @ref="SendButton" ExtraClasses="post-btn" AriaLabel="post" Disabled="@(NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length) < 0)">
+            <StateButton OnClick="SendNote" @ref="SendButton" ExtraClasses="post-btn" AriaLabel="post"
+                         Disabled="@(NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length) < 0)">
                 <Initial>
                     @Loc["ComposeNote"]<Icon Name="Icons.PaperPlaneRight"/>
                 </Initial>
@@ -50,7 +53,8 @@
                    aria-label="content warning"/>
             <hr class="separator"/>
         }
-        <textarea @ref="Textarea" @bind="NoteDraft.Text" @bind:event="oninput" class="textarea" placeholder="@TextPlaceholder" rows="5"
+        <textarea @ref="Textarea" @bind="NoteDraft.Text" @bind:event="oninput" class="textarea"
+                  placeholder="@TextPlaceholder" rows="5"
                   cols="35" autofocus="autofocus" aria-label="note text"></textarea>
         <div class="footer">
             <div class="buttons">
@@ -69,7 +73,8 @@
                 </button>
             </div>
             <div class="buttons">
-                <span title="@Loc["Character limit"]" aria-label="character limit">@(NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length))</span>
+                <span title="@Loc["Character limit"]"
+                      aria-label="character limit">@(NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length))</span>
                 <button class="btn" title="@Loc["Preview"]" @onclick="() => Preview = !Preview"
                         aria-label="preview">
                     <Icon Name="Icons.Binoculars" Size="1.3rem"></Icon>
@@ -116,16 +121,11 @@
         Cw         = null
     };
 
-    private Dictionary<string, string> AvailablePlaceholders { get; set; } = new()
-    {
-        { "default", "What's on your mind?" },
-        { "reply", "Reply goes here!" },
-        { "quote", "Quote this post!" }
-    };
+    private Dictionary<string, string> AvailablePlaceholders { get; set; } = new() { { "default", "What's on your mind?" }, { "reply", "Reply goes here!" }, { "quote", "Quote this post!" } };
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
-        if (e is { Code: "Enter", CtrlKey: true } or {Code: "Enter", MetaKey: true})
+        if (e is { Code: "Enter", CtrlKey: true } or { Code: "Enter", MetaKey: true })
         {
             await SendNote();
         }
@@ -162,9 +162,7 @@
                                new DropdownElement<NoteVisibility>
                                {
                                    #pragma warning disable BL0005 // Setting this outside the component is fine until this is reworked
-                                   Icon      = DropdownIcon(vis),
-                                   Content   = DropdownContent(vis),
-                                   Selection = vis
+                                   Icon = DropdownIcon(vis), Content = DropdownContent(vis), Selection = vis
                                    #pragma warning restore BL0005
                                })
                    .ToList();
@@ -257,14 +255,9 @@
     private async Task ResetState()
     {
         var settings = await Settings.GetUserSettingsAsync();
-        ReplyOrQuote = null;
-        Attachments  = new List<DriveFileResponse>();
-        NoteDraft = new NoteCreateRequest
-        {
-            Text       = "",
-            Visibility = settings.DefaultNoteVisibility,
-            Cw         = null
-        };
+        ReplyOrQuote    = null;
+        Attachments     = new List<DriveFileResponse>();
+        NoteDraft       = new NoteCreateRequest { Text = "", Visibility = settings.DefaultNoteVisibility, Cw = null };
         TextPlaceholder = AvailablePlaceholders["default"];
     }
 
@@ -295,8 +288,7 @@
 
         if (ReplyOrQuote != null)
         {
-            var res            = await ApiService.Notes.GetNoteAsync(ReplyOrQuote.Id);
-            if (res != null) _ = MessageService.UpdateNoteAsync(res);
+            await NoteActions.RefetchNoteAsync(ReplyOrQuote);
         }
 
         SendButton.State = StateButton.StateEnum.Success;
@@ -324,10 +316,10 @@
             _module = await Js.InvokeAsync<IJSObjectReference>("import",
                                                                "./Components/Compose.razor.js");
             EmojiList = await EmojiService.GetEmojiAsync();
-            
+
             var instance = await MetadataService.Instance.Value;
             NoteLength = instance.Limits.NoteLength;
-            
+
             ComposeService.ComposeDialog = this;
         }
     }
