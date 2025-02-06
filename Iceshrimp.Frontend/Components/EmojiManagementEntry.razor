@@ -9,7 +9,7 @@
 @inject IStringLocalizer<Localization> Loc;
 
 <div @ref="EmojiButton" class="emoji-entry" @onclick="SelectEmoji" @onclick:stopPropagation="true">
-    <InlineEmoji Name="@Emoji.Name" Url="@Emoji.PublicUrl" Size="3rem"/>
+    <InlineEmoji Name="@Emoji.Name" Url="@Emoji.PublicUrl" Hover="@true" Size="3rem"/>
     <div class="emoji-details">
         <span class="emoji-name">@Emoji.Name</span>
         <span>

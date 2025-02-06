@@ -31,10 +31,14 @@
     font-size: 0.8em;
 }
 
-.emoji-alias::before,
-.emoji-alias::after {
+.emoji-alias::before {
     display: inline;
     content: ":";
+}
+
+.emoji-alias::after {
+    display: inline;
+    content: ": ";
 }
 
 ::deep {
