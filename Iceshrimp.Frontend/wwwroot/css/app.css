@@ -13,10 +13,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
-    --background-color: #353044;
-    --foreground-color: #3b364c;
-    --highlight-color: #524b6a;
-    --hover-color: #5e5679;
+    --background-color: #0b0a0f;
+    --foreground-color: #17151e;
+    --highlight-color: #2e2b4c;
+    --hover-color: #3d3a66;
     --accent-color: linear-gradient(to right, #9A92FF, #8372F5);
     --notice-color: #92c1ff;
     --font-color: #e7edff;
