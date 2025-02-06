@@ -1,6 +1,6 @@
-export function getPosition(ref){
+export function getPosition(ref, scrollY){
     let rect = ref.getBoundingClientRect()
     let x = rect.right - (rect.width / 2) + window.scrollX;
-    let y = rect.bottom + window.scrollY;
+    let y = scrollY ? rect.bottom + window.scrollY : rect.bottom;
     return [x, y]
 }

@@ -1,10 +1,8 @@
 .compose {
     background-color: var(--background-color);
     border-radius: 1rem;
-    margin: 0 auto;
-    top: 10%;
+    margin: 10% auto 0;
     padding: 1rem;
-    position: relative;
     max-width: 45rem;
     color: var(--font-color);
 }
@@ -172,10 +170,10 @@
     }
 
     .compose {
-        top: 0;
         width: 100%;
         max-width: unset;
         min-height: 100vh;
+        margin-top: 0;
         padding-top: 0;
         border-radius: 0;
     }

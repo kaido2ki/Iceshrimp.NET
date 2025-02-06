@@ -20,11 +20,11 @@
                                                                                         "./Components/Menu.razor.js");
     }
     
-    public void Toggle(ElementReference root)
+    public void Toggle(ElementReference root, bool scrollY = true)
     {
         if (!_display)
         {
-            var pos = _module.Invoke<List<float>>("getPosition", root);
+            var pos = _module.Invoke<List<float>>("getPosition", root, scrollY);
             _left = pos[0];
             _top  = pos[1];
         }

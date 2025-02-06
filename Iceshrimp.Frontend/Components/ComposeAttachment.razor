@@ -80,7 +80,7 @@
     private                                      ElementReference      Attachment       { get; set; }
     private                                      Menu                  AttachmentMenu   { get; set; } = null!;
 
-    private void Select() => AttachmentMenu.Toggle(Attachment);
+    private void Select() => AttachmentMenu.Toggle(Attachment, false);
 
     private void Open() => Js.InvokeVoidAsync("open", File.Url, "_blank");
 
