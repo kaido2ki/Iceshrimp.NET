@@ -14,3 +14,9 @@
 .menu-element:hover {
     background-color: var(--hover-color);
 }
+
+@media (max-width: 1000px) {
+    .menu-element + .menu-element {
+        margin-top: 1rem;
+    }
+}

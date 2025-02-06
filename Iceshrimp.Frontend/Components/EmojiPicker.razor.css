@@ -38,7 +38,20 @@ summary {
     padding: 0;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1000px) {
+    .emoji-picker {
+        top: unset;
+        left: 0;
+        bottom: 0;
+        position: fixed;
+        width: 100vw;
+        max-width: 100vw;
+        max-height: 30rem;
+        border-bottom: none;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
     .emoji-list {
         gap: 0.2rem;
         margin: 0.5rem 0;
