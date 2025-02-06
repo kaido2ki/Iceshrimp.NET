@@ -209,6 +209,12 @@ public class NoteRenderer(
 		               .Where(p => notes.Contains(p.Note))
 		               .ToListAsync();
 
+		var votes = user != null
+			? await db.PollVotes
+			          .Where(p => notes.Contains(p.Note) && p.UserId == user.Id)
+			          .ToListAsync()
+			: [];
+
 		return polls
 		       .Select(p => new NotePollSchema
 		       {
@@ -221,9 +227,7 @@ public class NoteRenderer(
 				                  Value = c.First,
 				                  Votes = c.Second,
 				                  Voted = user != null
-				                          && db.PollVotes.Any(v => v.NoteId == p.NoteId
-				                                                   && v.Choice == i
-				                                                   && v.User == user)
+				                          && votes.Any(v => v.NoteId == p.NoteId && v.Choice == i)
 			                  })
 			                  .ToList(),
 			       VotersCount = p.VotersCount
