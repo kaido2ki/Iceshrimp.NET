@@ -29,20 +29,25 @@
     }
 </SectionContent>
 
-@if (State is State.Loaded)
-{
-    <div class="body">
+<div class="body">
+    @if (State is State.Empty or State.Error or State.Loaded)
+    {
         <div class="emoji-search">
-            <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Search" aria-label="search"/>
+            <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text"
+                   placeholder="Search" aria-label="search"/>
             @if (Source == "remote")
             {
-                <input @bind="HostFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Host" aria-label="host"/>
+                <input @bind="HostFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text"
+                       placeholder="Host" aria-label="host"/>
             }
             <select class="search-from" @bind="Source" @bind:after="GetEmojis">
                 <option value="local">@Loc["Local"]</option>
                 <option value="remote">@Loc["Remote"]</option>
             </select>
         </div>
+    }
+    @if (State is State.Loaded)
+    {
         @foreach (var category in Categories)
         {
             <span class="category-name">@category.Key</span>
@@ -53,26 +58,22 @@
                 }
             </div>
         }
-    </div>
-}
-@if (State is State.Empty)
-{
-    <div class="body">
+    }
+    @if (State is State.Empty)
+    {
         <i>This instance has no emojis</i>
-    </div>
-}
-@if (State is State.Loading)
-{
-    <div class="body">
+    }
+    @if (State is State.Loading)
+    {
         <div class="loading">
             <Icon Name="Icons.Spinner" Size="3rem"/>
         </div>
-    </div>
-}
+    }
 
-<div class="file-input">
-    <InputFile @ref="UploadInput" OnChange="Upload" accept="image/*">Upload</InputFile>
-    <InputFile @ref="ImportInput" OnChange="Import" accept=".zip">Import</InputFile>
+    <div class="file-input">
+        <InputFile @ref="UploadInput" OnChange="Upload" accept="image/*">Upload</InputFile>
+        <InputFile @ref="ImportInput" OnChange="Import" accept=".zip">Import</InputFile>
+    </div>
 </div>
 
 @code {
