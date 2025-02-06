@@ -1,8 +1,10 @@
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
+using Iceshrimp.Backend.Controllers.Shared.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
@@ -46,25 +48,28 @@ public class EmojiController(
 		               .ToListAsync();
 	}
 
-	[HttpGet("remote")]
+	[HttpGet("remote/{host?}")]
 	[Authorize("role:moderator")]
+	[RestPagination(100, 500)]
 	[ProducesResults(HttpStatusCode.OK)]
-	public async Task<IEnumerable<EmojiResponse>> GetRemoteEmoji()
+	public async Task<PaginationWrapper<List<EmojiResponse>>> GetRemoteEmoji(string? host, PaginationQuery pq)
 	{
-		return await db.Emojis
-		               .Where(p => p.Host != null)
-		               .Select(p => new EmojiResponse
-		               {
-			               Id        = p.Id,
-			               Name      = p.Name,
-			               Uri       = p.Uri,
-			               Aliases   = p.Aliases,
-			               Category  = p.Host,
-			               PublicUrl = p.GetAccessUrl(instance.Value),
-			               License   = p.License,
-			               Sensitive = p.Sensitive
-		               })
-		               .ToListAsync();
+		var res = await db.Emojis
+		                  .Where(p => host == null ? p.Host != null : p.Host == host)
+		                  .Select(p => new EmojiResponse
+		                  {
+			                  Id        = p.Id,
+			                  Name      = p.Name,
+			                  Uri       = p.Uri,
+			                  Aliases   = p.Aliases,
+			                  Category  = p.Host,
+			                  PublicUrl = p.GetAccessUrl(instance.Value),
+			                  License   = p.License,
+			                  Sensitive = p.Sensitive
+		                  })
+		                  .ToListAsync();
+
+		return HttpContext.CreatePaginationWrapper(pq, res);
 	}
 
 	[HttpGet("{id}")]
@@ -72,8 +77,8 @@ public class EmojiController(
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<EmojiResponse> GetEmoji(string id)
 	{
-		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id) ??
-		            throw GracefulException.NotFound("Emoji not found");
+		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id)
+		            ?? throw GracefulException.NotFound("Emoji not found");
 
 		return new EmojiResponse
 		{
@@ -155,8 +160,8 @@ public class EmojiController(
 	public async Task<EmojiResponse> UpdateEmoji(string id, UpdateEmojiRequest request)
 	{
 		var emoji = await emojiSvc.UpdateLocalEmojiAsync(id, request.Name, request.Aliases, request.Category,
-		                                                 request.License, request.Sensitive) ??
-		            throw GracefulException.NotFound("Emoji not found");
+		                                                 request.License, request.Sensitive)
+		            ?? throw GracefulException.NotFound("Emoji not found");
 
 		return new EmojiResponse
 		{

@@ -2,6 +2,7 @@ using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Schemas;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Http.Extensions;
 
@@ -10,7 +11,7 @@ namespace Iceshrimp.Backend.Core.Extensions;
 public static partial class HttpContextExtensions
 {
 	public static PaginationWrapper<TData> CreatePaginationWrapper<TData>(
-		this HttpContext ctx, PaginationQuery query, IEnumerable<IEntity> paginationData, TData data
+		this HttpContext ctx, PaginationQuery query, IEnumerable<IIdentifiable> paginationData, TData data
 	)
 	{
 		var attr = ctx.GetEndpoint()?.Metadata.GetMetadata<RestPaginationAttribute>();
@@ -37,7 +38,7 @@ public static partial class HttpContextExtensions
 
 	public static PaginationWrapper<TData> CreatePaginationWrapper<TData>(
 		this HttpContext ctx, PaginationQuery query, TData data
-	) where TData : IEnumerable<IEntity>
+	) where TData : IEnumerable<IIdentifiable>
 	{
 		return CreatePaginationWrapper(ctx, query, data, data);
 	}

@@ -1,9 +1,8 @@
+using Iceshrimp.Shared.Helpers;
+
 namespace Iceshrimp.Backend.Core.Database;
 
-public interface IEntity
-{
-	public string Id { get; }
-}
+public interface IEntity : IIdentifiable;
 
 public class EntityWrapper<T> : IEntity
 {

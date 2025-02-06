@@ -106,7 +106,17 @@
     {
         State = State.Loading;
 
-        Emojis = Source == "remote" ? await Api.Emoji.GetRemoteEmojiAsync() : await Api.Emoji.GetAllEmojiAsync();
+        if (Source == "remote")
+        {
+            //TODO: impolement proper pagination
+            var res = await Api.Emoji.GetRemoteEmojiAsync(new PaginationQuery());
+            Emojis = res.Data;
+        }
+        else
+        {
+            Emojis = await Api.Emoji.GetAllEmojiAsync();
+        }
+
         if (Emojis.Count == 0)
         {
             State = State.Empty;
