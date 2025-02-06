@@ -82,6 +82,7 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 			el.Value.Note.Replies     = noteResponse.Replies;
 			el.Value.Note.Attachments = noteResponse.Attachments;
 			el.Value.Note.Reactions   = noteResponse.Reactions;
+			el.Value.Note.Poll        = noteResponse.Poll;
 			NoteChangedHandlers.First(p => p.Key == noteResponse.Id).Value.Invoke(this, el.Value.Note);
 		}
 	}

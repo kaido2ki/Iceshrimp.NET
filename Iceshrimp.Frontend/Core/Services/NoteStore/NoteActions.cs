@@ -15,11 +15,11 @@ internal class NoteActions(
 		stateSynchronizer.Broadcast(note);
 	}
 
-	public async Task RefetchNoteAsync(NoteBase note)
+	public async Task RefetchNoteAsync(string id)
 	{
 		try
 		{
-			var res = await api.Notes.GetNoteAsync(note.Id);
+			var res = await api.Notes.GetNoteAsync(id);
 			if (res == null) return;
 			Broadcast(res);
 		}
@@ -175,6 +175,16 @@ internal class NoteActions(
 			else target.Reactions.Add(rollback);
 			Broadcast(target);
 		}
+	}
+
+	public async Task AddPollVoteAsync(NotePollSchema target, List<int> choices)
+	{
+		var res = await api.Notes.AddPollVoteAsync(target.NoteId, choices);
+		if (res != null)
+		{
+			await RefetchNoteAsync(target.NoteId);
+		}
+
 	}
 	
 	public async Task DeleteAsync(NoteBase note)

@@ -42,7 +42,8 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 				el.Value.Reply.Replies     = changedNote.Replies;
 				el.Value.Reply.Attachments = changedNote.Attachments;
 				el.Value.Reply.Reactions   = changedNote.Reactions;
-				
+				el.Value.Reply.Poll        = changedNote.Poll;
+
 			}
 				
 			if (timeline.Value.Timeline.TryGetValue(changedNote.Id, out var note))
@@ -56,6 +57,7 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 				note.Replies     = changedNote.Replies;
 				note.Attachments = changedNote.Attachments;
 				note.Reactions   = changedNote.Reactions;
+				note.Poll        = changedNote.Poll;
 
 				var handler = NoteChangedHandlers.FirstOrDefault(p => p.Key == note.Id);
 				handler.Value?.Invoke(this, note);

@@ -33,7 +33,8 @@ internal class NoteStore : NoteMessageProvider, IDisposable
 			note.Replies     = noteResponse.Replies;
 			note.Attachments = noteResponse.Attachments;
 			note.Reactions   = noteResponse.Reactions;
-
+			note.Poll        = noteResponse.Poll;
+			
 			AnyNoteChanged?.Invoke(this, note);
 			NoteChangedHandlers.First(p => p.Key == note.Id).Value.Invoke(this, note);
 		}

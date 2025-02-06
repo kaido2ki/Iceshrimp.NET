@@ -35,6 +35,7 @@ internal class RelatedStore : NoteMessageProvider, IDisposable
 				note.Replies     = noteResponse.Replies;
 				note.Attachments = noteResponse.Attachments;
 				note.Reactions   = noteResponse.Reactions;
+				note.Poll        = noteResponse.Poll;
 
 				NoteChangedHandlers.First(p => p.Key == note.Id).Value.Invoke(this, note);
 				NoteChanged?.Invoke(this, note);
@@ -63,6 +64,7 @@ internal class RelatedStore : NoteMessageProvider, IDisposable
 			input.Replies     = updated.Replies;
 			input.Attachments = updated.Attachments;
 			input.Reactions   = updated.Reactions;
+			input.Poll        = updated.Poll;
 			var handler = NoteChangedHandlers.FirstOrDefault(p => p.Key == input.Id);
 			handler.Value?.Invoke(this, input);
 			NoteChanged?.Invoke(this, input);

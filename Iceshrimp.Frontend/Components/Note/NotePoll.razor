@@ -1,8 +1,9 @@
 @using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Core.Services.NoteStore
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
-@inject ApiService                     Api;
+@inject NoteActions NoteActions;
 @inject IStringLocalizer<Localization> Loc;
 
 <div class="poll">
@@ -82,11 +83,6 @@
     {
         if (!CanVote()) return;
 
-        var res = await Api.Notes.AddPollVoteAsync(Poll.NoteId, Choices);
-        if (res != null)
-        {
-            Poll = res;
-            StateHasChanged();
-        }
+        await NoteActions.AddPollVoteAsync(Poll, Choices);
     }
 }

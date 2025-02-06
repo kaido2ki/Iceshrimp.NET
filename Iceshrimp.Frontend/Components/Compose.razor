@@ -296,7 +296,7 @@
 
         if (ReplyOrQuote != null)
         {
-            await NoteActions.RefetchNoteAsync(ReplyOrQuote);
+            await NoteActions.RefetchNoteAsync(ReplyOrQuote.Id);
         }
 
         SendButton.State = StateButton.StateEnum.Success;
