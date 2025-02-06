@@ -16,5 +16,5 @@ internal class NewVirtualScrollerState
 public class Child
 {
 	public required string     Id   { get; set; }
-	public required long? Height { get; set; }
+	public required float? Height { get; set; }
 }

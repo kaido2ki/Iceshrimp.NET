@@ -12,11 +12,12 @@ public class LazyComponent : ComponentBase, IAsyncDisposable
 	[Inject]                     private         IJSInProcessRuntime          Js              { get; set; } = null!;
 	[Inject]                     private         ILogger<LazyComponent>       Logger          { get; set; } = null!;
 	[Parameter] [EditorRequired] public required RenderFragment               ChildContent    { get; set; } = default!;
-	[Parameter] public long?                        InitialHeight   { get; set; }
+	[Parameter]                  public          float?                       InitialHeight   { get; set; }
 	private                                      IntersectionObserver?        Observer        { get; set; }
 	public                                       ElementReference             Target          { get; private set; }
 	public                                       bool                         Visible         { get; private set; }
-	private                                       long?                        Height          { get; set; }
+	private                                      float?                       Height          { get; set; }
+	// private                                      bool                         minHeightSet = false;
 
 	protected override void OnInitialized()
 	{
@@ -26,10 +27,10 @@ public class LazyComponent : ComponentBase, IAsyncDisposable
 		}
 	}
 
-	public long? GetHeight()
+	public float? GetHeight()
 	{
 		if (Height != null) return Height.Value;
-		if (Visible) return Js.Invoke<long>("getHeight", Target);
+		if (Visible) return Js.Invoke<float>("getHeight", Target);
 		else
 		{
 			Logger.LogError("Invisible, no height available");
@@ -41,7 +42,11 @@ public class LazyComponent : ComponentBase, IAsyncDisposable
 	{
 		builder.OpenElement(1, "div");
 		builder.AddAttribute(2, "class", "target lazy-component-target-internal");
-		builder.AddElementReferenceCapture(3, elementReference => Target = elementReference);
+		if (Height is not null && Visible)
+		{
+			builder.AddAttribute(3, "style", $"min-height: {Height}px");
+		}
+		builder.AddElementReferenceCapture(4, elementReference => Target = elementReference);
 
 		builder.OpenRegion(10);
 		if (Visible)
@@ -82,7 +87,7 @@ public class LazyComponent : ComponentBase, IAsyncDisposable
 		var entry = entries.First();
 		if (Visible && entry.IsIntersecting is false)
 		{
-			Height  = Js.Invoke<long>("getHeight", Target);
+			Height  = Js.Invoke<float>("getHeight", Target);
 			Visible = false;
 			StateHasChanged();
 		}
