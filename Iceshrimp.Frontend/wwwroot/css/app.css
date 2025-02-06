@@ -314,3 +314,20 @@ pre:has(code){
 .ph.ph-spinner {
     animation: 3s spinner infinite;
 }
+
+.lazy-component-target-internal.visible{
+    transition: min-height 1s ease-in;
+    min-height: 0;
+}
+
+.lazy-component-target-internal {
+    min-height: var(--height);
+}
+/*@Is supported in all browsers*/
+/*noinspection CssInvalidAtRule*/
+@starting-style {
+    .lazy-component-target-internal.visible{
+        --height: 0px;
+        min-height: var(--height);
+    }
+}

@@ -41,12 +41,14 @@ public class LazyComponent : ComponentBase, IAsyncDisposable
 	protected override void BuildRenderTree(RenderTreeBuilder builder)
 	{
 		builder.OpenElement(1, "div");
-		builder.AddAttribute(2, "class", "target lazy-component-target-internal");
-		if (Height is not null && Visible)
+		var classnames          = "target lazy-component-target-internal";
+		if (Visible) classnames = "target lazy-component-target-internal visible";
+		builder.AddAttribute(2, "class", classnames);
+		if (Height is not null)
 		{
-			builder.AddAttribute(3, "style", $"min-height: {Height}px");
+			builder.AddAttribute(4, "style", $"--height: {Height}px");
 		}
-		builder.AddElementReferenceCapture(4, elementReference => Target = elementReference);
+		builder.AddElementReferenceCapture(5, elementReference => Target = elementReference);
 
 		builder.OpenRegion(10);
 		if (Visible)
