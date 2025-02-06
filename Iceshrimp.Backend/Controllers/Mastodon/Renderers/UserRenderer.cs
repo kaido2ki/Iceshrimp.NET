@@ -18,15 +18,18 @@ public class UserRenderer(
 {
 	private readonly string _transparent = $"https://{config.Value.WebDomain}/assets/transparent.png";
 
-	public async Task<AccountEntity> RenderAsync(
-		User user, UserProfile? profile, User? localUser, IEnumerable<EmojiEntity>? emoji = null, bool source = false
+	public Task<AccountEntity> RenderAsync(User user, UserProfile? profile, User? localUser, bool source = false)
+		=> RenderAsync(user, profile, localUser, null, source);
+
+	private async Task<AccountEntity> RenderAsync(
+		User user, UserProfile? profile, User? localUser, UserRendererDto? data = null, bool source = false
 	)
 	{
 		var acct = user.Username;
 		if (user.IsRemoteUser)
 			acct += $"@{user.Host}";
 
-		var profileEmoji = emoji?.Where(p => user.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([user]);
+		var profileEmoji = data?.Emoji.Where(p => user.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([user]);
 		var mentions     = profile?.Mentions ?? [];
 		var fields = profile != null
 			? await profile.Fields
@@ -45,14 +48,8 @@ public class UserRenderer(
 			? profile?.Fields.Select(p => new Field { Name = p.Name, Value = p.Value }).ToList() ?? []
 			: [];
 
-		user.Avatar ??= await db.Users.Where(p => p.Id == user.Id)
-		                        .Include(p => p.Avatar)
-		                        .Select(p => p.Avatar)
-		                        .FirstOrDefaultAsync();
-		user.Banner ??= await db.Users.Where(p => p.Id == user.Id)
-		                        .Include(p => p.Banner)
-		                        .Select(p => p.Banner)
-		                        .FirstOrDefaultAsync();
+		var avatarAlt = data?.AvatarAlt.GetValueOrDefault(user.Id);
+		var bannerAlt = data?.BannerAlt.GetValueOrDefault(user.Id);
 
 		var res = new AccountEntity
 		{
@@ -71,11 +68,11 @@ public class UserRenderer(
 			Url                = profile?.Url ?? user.Uri ?? user.GetPublicUrl(config.Value),
 			Uri                = user.Uri ?? user.GetPublicUri(config.Value),
 			AvatarStaticUrl    = user.GetAvatarUrl(config.Value), //TODO
-			AvatarDescription  = user.Avatar?.Comment ?? "", 
+			AvatarDescription  = avatarAlt ?? "",
 			HeaderUrl          = user.GetBannerUrl(config.Value) ?? _transparent,
 			HeaderStaticUrl    = user.GetBannerUrl(config.Value) ?? _transparent, //TODO
-			HeaderDescription  = user.Banner?.Comment ?? "", 
-			MovedToAccount     = null,                           //TODO
+			HeaderDescription  = bannerAlt ?? "",
+			MovedToAccount     = null, //TODO
 			IsBot              = user.IsBot,
 			IsDiscoverable     = user.IsExplorable,
 			Fields             = fields?.ToList() ?? [],
@@ -98,8 +95,9 @@ public class UserRenderer(
 				Fields   = fieldsSource,
 				Language = "",
 				Note     = profile?.Description ?? "",
-				Privacy = StatusEntity.EncodeVisibility(user.UserSettings?.DefaultNoteVisibility ??
-				                                        Note.NoteVisibility.Public),
+				Privacy =
+					StatusEntity.EncodeVisibility(user.UserSettings?.DefaultNoteVisibility
+					                              ?? Note.NoteVisibility.Public),
 				Sensitive          = false,
 				FollowRequestCount = await db.FollowRequests.CountAsync(p => p.Followee == user)
 			};
@@ -127,16 +125,55 @@ public class UserRenderer(
 		               .ToListAsync();
 	}
 
+	private async Task<Dictionary<string, string?>> GetAvatarAltAsync(IEnumerable<User> users)
+	{
+		var ids = users.Select(p => p.Id).ToList();
+		return await db.Users
+		               .Where(p => ids.Contains(p.Id))
+		               .Include(p => p.Avatar)
+		               .ToDictionaryAsync(p => p.Id, p => p.Avatar?.Comment);
+	}
+
+	private async Task<Dictionary<string, string?>> GetBannerAltAsync(IEnumerable<User> users)
+	{
+		var ids = users.Select(p => p.Id).ToList();
+		return await db.Users
+		               .Where(p => ids.Contains(p.Id))
+		               .Include(p => p.Banner)
+		               .ToDictionaryAsync(p => p.Id, p => p.Banner?.Comment);
+	}
+
 	public async Task<AccountEntity> RenderAsync(User user, User? localUser, List<EmojiEntity>? emoji = null)
 	{
-		return await RenderAsync(user, user.UserProfile, localUser, emoji);
+		var data = new UserRendererDto
+		{
+			Emoji     = emoji ?? await GetEmojiAsync([user]),
+			AvatarAlt = await GetAvatarAltAsync([user]),
+			BannerAlt = await GetBannerAltAsync([user])
+		};
+
+		return await RenderAsync(user, user.UserProfile, localUser, data);
 	}
 
 	public async Task<IEnumerable<AccountEntity>> RenderManyAsync(IEnumerable<User> users, User? localUser)
 	{
 		var userList = users.ToList();
 		if (userList.Count == 0) return [];
-		var emoji = await GetEmojiAsync(userList);
-		return await userList.Select(p => RenderAsync(p, localUser, emoji)).AwaitAllAsync();
+
+		var data = new UserRendererDto
+		{
+			Emoji     = await GetEmojiAsync(userList),
+			AvatarAlt = await GetAvatarAltAsync(userList),
+			BannerAlt = await GetBannerAltAsync(userList)
+		};
+
+		return await userList.Select(p => RenderAsync(p, p.UserProfile, localUser, data)).AwaitAllAsync();
+	}
+
+	private class UserRendererDto
+	{
+		public required List<EmojiEntity>           Emoji;
+		public required Dictionary<string, string?> AvatarAlt;
+		public required Dictionary<string, string?> BannerAlt;
 	}
 }
