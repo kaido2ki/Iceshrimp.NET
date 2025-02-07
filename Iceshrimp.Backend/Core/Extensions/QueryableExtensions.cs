@@ -10,6 +10,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.EntityFrameworkCore.Extensions;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,7 +23,7 @@ public static class QueryableExtensions
 		MastodonPaginationQuery pq,
 		int defaultLimit,
 		int maxLimit
-	) where T : IEntity
+	) where T : IIdentifiable
 	{
 		if (pq.Limit is < 1)
 			throw GracefulException.BadRequest("Limit cannot be less than 1");
@@ -56,7 +57,7 @@ public static class QueryableExtensions
 		MastodonPaginationQuery pq,
 		int defaultLimit,
 		int maxLimit
-	) where T : IEntity
+	) where T : IIdentifiable
 	{
 		if (pq.Limit is < 1)
 			throw GracefulException.BadRequest("Limit cannot be less than 1");
@@ -90,7 +91,7 @@ public static class QueryableExtensions
 		MastodonPaginationQuery pq,
 		int defaultLimit,
 		int maxLimit
-	) where T : IEntity
+	) where T : IIdentifiable
 	{
 		if (pq.Limit is < 1)
 			throw GracefulException.BadRequest("Limit cannot be less than 1");
@@ -148,7 +149,7 @@ public static class QueryableExtensions
 		PaginationQuery pq,
 		int defaultLimit,
 		int maxLimit
-	) where T : IEntity
+	) where T : IIdentifiable
 	{
 		if (pq.Limit is < 1)
 			throw GracefulException.BadRequest("Limit cannot be less than 1");
@@ -173,7 +174,7 @@ public static class QueryableExtensions
 		this IQueryable<T> query,
 		MastodonPaginationQuery pq,
 		ControllerContext context
-	) where T : IEntity
+	) where T : IIdentifiable
 	{
 		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
 		if (attr == null)
@@ -187,7 +188,7 @@ public static class QueryableExtensions
 		MastodonPaginationQuery pq,
 		int defaultLimit,
 		int maxLimit
-	) where T : IEntity
+	) where T : IIdentifiable
 	{
 		if (pq.Limit is < 1)
 			throw GracefulException.BadRequest("Limit cannot be less than 1");
@@ -199,7 +200,7 @@ public static class QueryableExtensions
 		this IQueryable<T> query,
 		MastodonPaginationQuery pq,
 		ControllerContext context
-	) where T : IEntity
+	) where T : IIdentifiable
 	{
 		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
 		if (attr == null)
@@ -213,7 +214,7 @@ public static class QueryableExtensions
 		Expression<Func<T, string>> predicate,
 		MastodonPaginationQuery pq,
 		ControllerContext context
-	) where T : IEntity
+	) where T : IIdentifiable
 	{
 		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
 		if (attr == null)
@@ -227,7 +228,7 @@ public static class QueryableExtensions
 		Expression<Func<T, long>> predicate,
 		MastodonPaginationQuery pq,
 		ControllerContext context
-	) where T : IEntity
+	) where T : IIdentifiable
 	{
 		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
 		if (attr == null)
@@ -240,7 +241,7 @@ public static class QueryableExtensions
 		this IQueryable<T> query,
 		PaginationQuery pq,
 		ControllerContext context
-	) where T : IEntity
+	) where T : IIdentifiable
 	{
 		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
 		if (attr == null)
@@ -251,7 +252,7 @@ public static class QueryableExtensions
 
 	public static IQueryable<EntityWrapper<TResult>> Wrap<TSource, TResult>(
 		this IQueryable<TSource> query, Expression<Func<TSource, TResult>> predicate
-	) where TSource : IEntity
+	) where TSource : IIdentifiable
 	{
 		return query.Select(p => new EntityWrapper<TResult> { Id = p.Id, Entity = predicate.Compile().Invoke(p) });
 	}
