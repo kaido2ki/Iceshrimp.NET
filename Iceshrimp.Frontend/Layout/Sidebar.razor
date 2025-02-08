@@ -11,7 +11,10 @@
 <GlobalComponents></GlobalComponents>
 <div @ref="SidebarElementRef" class="sidebar @(_open ? "open" : "")" tabindex="0">
     <div class="header">
-        <account-dropdown/>
+        @*ToDo: account dropdown*@
+        <div class="avatar">
+            <UserAvatar User="Session.Current" OnClick="OpenProfile" />
+        </div>
     </div>
     <div class="nav">
         <NavLink href="/" Match="NavLinkMatch.All">
@@ -104,6 +107,11 @@
     private async Task Open()
     {
         await _compose.OpenDialog();
+    }
+
+    private void OpenProfile()
+    {
+        if (Session.Current != null) Navigation.NavigateTo($"/@{Session.Current.Username}");
     }
 
     private void ToggleSidebar()

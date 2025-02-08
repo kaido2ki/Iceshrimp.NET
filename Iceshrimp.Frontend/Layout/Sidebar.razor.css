@@ -114,11 +114,20 @@
         width: 15rem;
         position: sticky;
         top: 0;
-        background-color: var(--foreground-color);
+        background-color: var(--background-color);
+        border-right: var(--highlight-color) solid 0.05rem;
     }
 
     .bottom-bar {
         display: none;
+    }
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .avatar {
+        cursor: pointer;
     }
 }
 
