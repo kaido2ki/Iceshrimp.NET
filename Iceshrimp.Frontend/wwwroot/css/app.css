@@ -23,7 +23,7 @@
     --notice-color: #92c1ff;
     --font-color: #e7edff;
     --link: #9E9EFF;
-    
+
     overscroll-behavior-y: none;
 }
 
@@ -115,6 +115,7 @@ button {
     padding-inline: 1em;
     align-items: center;
 }
+
 .button:hover {
     background-color: var(--hover-color);
 }
@@ -127,7 +128,7 @@ button {
 input, textarea, select {
     display: block;
     background-color: var(--foreground-color);
-    border: solid var(--highlight-color) 0.05rem ;
+    border: solid var(--highlight-color) 0.05rem;
     outline: none;
     max-width: 50em;
     border-radius: 0.5em;
@@ -286,7 +287,7 @@ code {
     padding: 0.1em;
 }
 
-pre:has(code){
+pre:has(code) {
     background-color: #050507;
     color: #fff9e7;
     padding: 0.5rem;
@@ -304,7 +305,24 @@ pre:has(code){
     flex-direction: column;
     align-items: center;
     height: 3rem;
+    transition: height ease-out 250ms;
 }
+
+.virtual-scroller-button.hidden {
+    height: 0;
+    overflow: clip;
+    /*transition: height ease-out 250ms;*/
+    opacity: 0;
+}
+
+/*@Is supported in all browsers*/
+/*noinspection CssInvalidAtRule*/
+@starting-style {
+    .virtual-scroller-button {
+        height: 0;
+    }
+}
+
 
 @keyframes spinner {
     0% {
@@ -322,7 +340,7 @@ pre:has(code){
     animation: 3s spinner infinite;
 }
 
-.lazy-component-target-internal.visible{
+.lazy-component-target-internal.visible {
     transition: min-height 1s ease-in;
     min-height: 0;
 }
@@ -330,10 +348,11 @@ pre:has(code){
 .lazy-component-target-internal {
     min-height: var(--height);
 }
+
 /*@Is supported in all browsers*/
 /*noinspection CssInvalidAtRule*/
 @starting-style {
-    .lazy-component-target-internal.visible{
+    .lazy-component-target-internal.visible {
         --height: 0px;
         min-height: var(--height);
     }

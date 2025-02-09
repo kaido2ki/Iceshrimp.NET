@@ -2,7 +2,7 @@
 @using Ljbc1994.Blazor.IntersectionObserver.Components
 @using Iceshrimp.Assets.PhosphorIcons
 <IntersectionObserve OnChange="entry => OnChange(entry)">
-    <div @ref="context.Ref.Current" class="@Class" style="@Style">
+    <div @ref="context.Ref.Current" class="@Class @(Hide ? "hidden" : "")" style="@Style">
         @if (_state is State.Loading or State.Init)
         {
             <LoadingSpinner />
@@ -20,12 +20,15 @@
     [Parameter]                  public string?       Class              { get; set; }
     [Parameter]                  public bool          RequireReset       { get; init; }
     [Parameter]                  public string?       Style              { get; set; }
+    [Parameter]                  public bool          Hide               { get; set; } = false;
+    public                              bool          Visible            { get; private set; }
     private                             State         _state;
 
     private async Task OnChange(IntersectionObserverEntry entry)
     {
         if (entry.IsIntersecting)
         {
+            Visible = true;
             switch (_state)
             {
                 case State.Loading:
@@ -40,6 +43,9 @@
             {
                 _state = State.Waiting;
             }
+        } else if (entry.IsIntersecting == false)
+        {
+            Visible = false;
         }
     }
 

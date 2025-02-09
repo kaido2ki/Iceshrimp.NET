@@ -40,6 +40,7 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 	private bool  _setScroll    = false;
 	private bool  _shouldRender = false;
 	private bool  _initialized  = false;
+	private bool  _hideBefore   = true;
 
 	private IDisposable? _locationChangeHandlerDisposable;
 
@@ -111,7 +112,8 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 		builder.AddComponentParameter(3, "ManualLoad", new EventCallback(this, CallbackBeforeAsync));
 		builder.AddComponentParameter(4, "RequireReset", true);
 		builder.AddComponentParameter(5, "Class", "virtual-scroller-button");
-		builder.AddComponentReferenceCapture(6,
+		builder.AddComponentParameter(6, "Hide", _hideBefore);
+		builder.AddComponentReferenceCapture(7,
 											 reference =>
 												 Before = reference as ScrollEnd
 														  ?? throw new InvalidOperationException());
@@ -166,9 +168,20 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 			Before.Reset();
 			return;
 		}
-
+		
 		var heightBefore = _module.Invoke<float>("GetDocumentHeight");
-		var res          = await ItemProvider(DirectionEnum.Newer, Items.First().Value);
+		var resTask          = ItemProvider(DirectionEnum.Newer, Items.First().Value);
+		// Only show the spinner if ItemProvider takes more than 500ms to load, and the spinner is actually visible on screen.
+		await Task.WhenAny(Task.Delay(TimeSpan.FromMilliseconds(500)), resTask);
+		if (resTask.IsCompleted == false)
+		{
+			if (Before.Visible)
+			{
+				_hideBefore = false;
+				ReRender();
+			}
+		}
+		var res = await resTask;
 		if (res is not null && res.Count > 0)
 		{
 			foreach (var el in res)
@@ -183,6 +196,12 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 			var scroll      = _module.Invoke<float>("GetScrollY");
 			_module.InvokeVoid("SetScrollY", scroll + diff);
 		}
+		else if (res?.Count == 0)
+		{
+			_hideBefore = true;
+			Logger.LogInformation("Hiding before");
+			ReRender();
+		}
 
 		Before.Reset();
 	}
@@ -195,6 +214,7 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 			var add = Items.TryAdd(item.Id, item);
 			if (add is false) Logger.LogError($"Duplicate notification: {item.Id}");
 		}
+
 		ReRender();
 	}
 
