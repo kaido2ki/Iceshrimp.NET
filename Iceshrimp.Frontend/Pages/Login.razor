@@ -209,9 +209,10 @@
         }
     }
 
-    private void LoginUser(StoredUser user)
+    private async Task LoginUser(StoredUser user)
     {
         SessionService.SetSession(user.Id);
+        await SessionService.UpdateCurrentUserAsync();
         Navigation.NavigateTo(Uri.TryCreate(Redirect, UriKind.Relative, out _) ? Redirect : "/", true);
     }
 
