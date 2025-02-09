@@ -81,8 +81,6 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 				if (add is false) _logger.LogError($"Duplicate note: {note.Id}");
 			}
 
-			Timelines[timeline].MaxId = Timelines[timeline].Timeline.First().Value.Id;
-			Timelines[timeline].MinId = Timelines[timeline].Timeline.Last().Value.Id;
 			return res;
 		}
 		catch (ApiException e)

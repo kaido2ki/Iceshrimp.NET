@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.JSInterop;
+using Microsoft.Extensions.Localization;
 
 namespace Iceshrimp.Frontend.Components;
 
@@ -15,10 +16,11 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 
 {
 	[Inject] private IIntersectionObserverService ObserverService { get; set; } = null!;
-	[Inject] private StateService                 State           { get; set; } = null!;
-	[Inject] private NavigationManager            Navigation      { get; set; } = null!;
-	[Inject] private ILogger<NewVirtualScroller>  Logger          { get; set; } = null!;
-	[Inject] private IJSRuntime                   Js              { get; set; } = null!;
+	[Inject] private StateService State { get; set; } = null!;
+	[Inject] private NavigationManager Navigation { get; set; } = null!;
+	[Inject] private ILogger<NewVirtualScroller> Logger { get; set; } = null!;
+	[Inject] private IJSRuntime Js { get; set; } = null!;
+	[Inject] private IStringLocalizer<Iceshrimp.Frontend.Localization.Localization> Loc { get; set; } = null!;
 
 	[Parameter] [EditorRequired] public required RenderFragment<T> ItemTemplate { get; set; } = default!;
 	[Parameter] [EditorRequired] public required IReadOnlyList<T> InitialItems { get; set; } = default!;
@@ -41,6 +43,7 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 	private bool  _shouldRender = false;
 	private bool  _initialized  = false;
 	private bool  _hideBefore   = true;
+	private bool  _hideAfter    = true;
 
 	private IDisposable? _locationChangeHandlerDisposable;
 
@@ -120,7 +123,17 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 		builder.CloseComponent();
 		builder.CloseRegion();
 
-		builder.OpenRegion(2);
+		if (Items.Count == 0)
+		{
+			builder.OpenRegion(2);
+			builder.OpenElement(1, "div");
+			builder.AddAttribute(2, "class", "placeholder");
+			builder.AddContent(3,@Loc["Nothing here, yet!"]);
+			builder.CloseElement();
+			builder.CloseRegion();
+		}
+
+		builder.OpenRegion(3);
 		foreach (var item in Items)
 		{
 			builder.OpenElement(2, "div");
@@ -147,13 +160,14 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 
 		builder.CloseRegion();
 
-		builder.OpenRegion(3);
+		builder.OpenRegion(4);
 		builder.OpenComponent<ScrollEnd>(1);
 		builder.AddComponentParameter(2, "IntersectionChange", new EventCallback(this, CallbackAfterAsync));
 		builder.AddComponentParameter(3, "ManualLoad", new EventCallback(this, CallbackAfterAsync));
 		builder.AddComponentParameter(4, "RequireReset", true);
 		builder.AddComponentParameter(5, "Class", "virtual-scroller-button");
-		builder.AddComponentReferenceCapture(6,
+		builder.AddComponentParameter(6, "Hide", _hideAfter);
+		builder.AddComponentReferenceCapture(7,
 											 reference =>
 												 After = reference as ScrollEnd
 														 ?? throw new InvalidOperationException());
@@ -163,14 +177,15 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 
 	private async Task CallbackBeforeAsync()
 	{
-		if (!_initialized)
+		// Cannot call item provider when there are no existing items.
+		if (Items.Count == 0 || !_initialized)
 		{
 			Before.Reset();
 			return;
 		}
-		
+
 		var heightBefore = _module.Invoke<float>("GetDocumentHeight");
-		var resTask          = ItemProvider(DirectionEnum.Newer, Items.First().Value);
+		var resTask      = ItemProvider(DirectionEnum.Newer, Items.First().Value);
 		// Only show the spinner if ItemProvider takes more than 500ms to load, and the spinner is actually visible on screen.
 		await Task.WhenAny(Task.Delay(TimeSpan.FromMilliseconds(500)), resTask);
 		if (resTask.IsCompleted == false)
@@ -181,6 +196,7 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 				ReRender();
 			}
 		}
+
 		var res = await resTask;
 		if (res is not null && res.Count > 0)
 		{
@@ -220,13 +236,26 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 
 	private async Task CallbackAfterAsync()
 	{
-		if (!_initialized)
+		// Cannot call item provider when there are no existing items.
+		if (Items.Count == 0 || !_initialized)
 		{
 			After.Reset();
 			return;
 		}
 
-		var res = await ItemProvider(DirectionEnum.Older, Items.Last().Value);
+		var resTask = ItemProvider(DirectionEnum.Older, Items.Last().Value);
+		// Only show the spinner if ItemProvider takes more than 500ms to load, and the spinner is actually visible on screen.
+		await Task.WhenAny(Task.Delay(TimeSpan.FromMilliseconds(500)), resTask);
+		if (resTask.IsCompleted == false)
+		{
+			if (After.Visible)
+			{
+				_hideAfter = false;
+				ReRender();
+			}
+		}
+
+		var res = await resTask;
 		if (res is not null && res.Count > 0)
 		{
 			foreach (var el in res)
