@@ -19,7 +19,7 @@
 
 ::deep {
     .bottom-bar-icon {
-        font-size: 20px !important; 
+        font-size: 20px !important;
     }
 }
 
@@ -55,6 +55,13 @@
 
 .header {
     height: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar {
+    cursor: pointer;
 }
 
 .sidebar-btn {
@@ -71,7 +78,7 @@
     color: white;
     font-size: 0.9em;
     background: var(--foreground-color);
-    
+
     > i {
         padding-right: 0.5rem;
     }
@@ -120,14 +127,6 @@
 
     .bottom-bar {
         display: none;
-    }
-    .header {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .avatar {
-        cursor: pointer;
     }
 }
 

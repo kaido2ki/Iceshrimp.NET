@@ -12,7 +12,7 @@
 }
 
 input:invalid {
-    border: 0.1rem solid var(--highlight-color);
+    border: 0.05rem solid var(--highlight-color);
 }
 
 .logo {

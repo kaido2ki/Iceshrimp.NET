@@ -34,7 +34,7 @@
     padding-right: 1rem;
     position: sticky;
     top: 0;
-    z-index: +2;
+    z-index: +6;
 
     i {
         padding-right: 0.5rem;

@@ -127,7 +127,7 @@ button {
 input, textarea, select {
     display: block;
     background-color: var(--foreground-color);
-    border: none;
+    border: solid var(--highlight-color) 0.05rem ;
     outline: none;
     max-width: 50em;
     border-radius: 0.5em;

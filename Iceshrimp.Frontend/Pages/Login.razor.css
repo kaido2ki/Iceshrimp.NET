@@ -16,13 +16,13 @@
 }
 
 .dialog {
+    background-color: unset;
     width: 100vw;
     height: 100vh;
     top: 0;
     left: 0;
     position: fixed;
     margin: auto;
-    background-color: unset;
     z-index: +11;
 }
 
@@ -34,7 +34,7 @@
     height: 100vh;
     top: 0;
     left: 0;
-    z-index: -2
+    z-index: -2;
 }
 
 .dialog-content {
@@ -48,6 +48,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    background-color: var(--background-color);
+    border: solid var(--highlight-color) 0.05rem;
 }
 
 .header {

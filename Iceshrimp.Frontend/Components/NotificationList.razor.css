@@ -5,6 +5,7 @@
     width: 100%;
     overflow-x: auto;
     overscroll-behavior-y: contain;
+    padding-top: 0.5rem;
 }
 
 .wrapper {
