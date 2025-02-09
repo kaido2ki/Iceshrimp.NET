@@ -15,6 +15,7 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject IJSRuntime                     Js
 @inject GlobalComponentSvc             GlobalComponentSvc
+@inject SessionService                 Session;
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.User"></Icon>
@@ -285,6 +286,9 @@
             }
 
             await Api.Profile.UpdateProfileAsync(UserProfile);
+            await Session.UpdateCurrentUserAsync();
+            StateHasChanged();
+
             SaveButton.State = StateButton.StateEnum.Success;
         }
         catch (ApiException e)
