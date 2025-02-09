@@ -16,7 +16,7 @@
             break;
         case HubConnectionState.Connecting:
             <div class="state">
-                <svg class="animate-spin" viewBox="0 0 24 24"></svg> @Loc["Connecting"]
+                <LoadingSpinner/> @Loc["Connecting"]
             </div>
             break;
         case HubConnectionState.Disconnected:
@@ -26,7 +26,7 @@
             break;
         case HubConnectionState.Reconnecting:
             <div class="state">
-                <svg class="animate-spin" viewBox="0 0 24 24"></svg> @Loc["Reconnecting"]
+                <LoadingSpinner /> @Loc["Reconnecting"]
             </div>
             break;
     }

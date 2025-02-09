@@ -151,7 +151,7 @@
                     <Icon Name="Icons.FloppyDisk"/>@Loc["Save"]
                 </Initial>
                 <Loading>
-                    <Icon Name="Icons.Spinner"/>
+                    <LoadingSpinner />
                 </Loading>
                 <Failed>
                     <Icon Name="Icons.X"/>@Loc["Error"]
@@ -164,7 +164,7 @@
     }
     @if (State is State.Loading)
     {
-        <div>Loading!</div>
+        <div class="loading"><LoadingSpinner Scale="2" /></div>
     }
 </div>
 

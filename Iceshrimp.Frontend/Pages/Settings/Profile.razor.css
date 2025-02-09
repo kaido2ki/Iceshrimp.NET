@@ -4,6 +4,13 @@
     align-items: center;
 }
 
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 25vh;
+}
+
 .button {
     padding: 0.75rem;
     margin: 0.2rem;

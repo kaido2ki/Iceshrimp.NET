@@ -5,7 +5,7 @@
     <div @ref="context.Ref.Current" class="@Class" style="@Style">
         @if (_state is State.Loading or State.Init)
         {
-            <Icon Name="Icons.Spinner"/>
+            <LoadingSpinner />
         }
         else
         {

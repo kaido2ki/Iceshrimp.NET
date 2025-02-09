@@ -2,6 +2,13 @@
     display: none;
 }
 
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 25vh;
+}
+
 .drive-files {
     display: flex;
     flex-wrap: wrap;

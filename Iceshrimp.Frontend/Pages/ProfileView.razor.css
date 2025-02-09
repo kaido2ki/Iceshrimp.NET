@@ -4,6 +4,13 @@
     overflow-x: clip;
 }
 
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 25vh;
+}
+
 .header {
     display: flex;
     justify-content: space-between;

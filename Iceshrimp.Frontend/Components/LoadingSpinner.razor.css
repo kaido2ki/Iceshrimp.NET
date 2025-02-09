@@ -1,0 +1,25 @@
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+    margin-block: auto;
+}
+
+svg {
+    --scale: 1;
+    display: inline;
+    height: calc(1rem * var(--scale));
+    width: calc(1rem * var(--scale));
+    border-radius: 9999px;
+    border-width: calc(2px * var(--scale));
+    border-color: transparent;
+    background-color: transparent;
+    border-right-color: white;
+    border-top-color: white;
+    border-style: solid;
+    margin-right: 0.5rem;
+}

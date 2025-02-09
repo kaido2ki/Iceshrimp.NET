@@ -26,6 +26,13 @@
     z-index: +11;
 }
 
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 25vh;
+}
+
 .backdrop {
     opacity: 50%;
     background-color: black;

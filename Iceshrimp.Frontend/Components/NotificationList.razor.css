@@ -15,3 +15,11 @@
     padding-right: 0.5rem;
     width: 100%;
 }
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 25vh;
+    margin: auto;
+}

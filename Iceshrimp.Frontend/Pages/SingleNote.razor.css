@@ -10,6 +10,13 @@
     border-radius: 0.75rem;
 }
 
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 25vh;
+}
+
 .descendants {
     display: flex;
     flex-direction: column;
