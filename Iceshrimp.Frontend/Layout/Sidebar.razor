@@ -12,8 +12,9 @@
 <div @ref="SidebarElementRef" class="sidebar @(_open ? "open" : "")" tabindex="0">
     <div class="header">
         @*ToDo: account dropdown*@
-        <div class="avatar">
-            <UserAvatar User="Session.Current" OnClick="OpenProfile" />
+        <div @ref="_avatar" @onclick="OpenAccountDropdown" class="avatar" @onclick:stopPropagation="true" >
+            <UserAvatar User="Session.Current"/>
+            <AccountDropdown @ref="_accountDropdown" />
         </div>
     </div>
     <div class="nav">
@@ -103,15 +104,17 @@
     private Compose          _compose = null!;
     private bool             _open    = false;
     private ElementReference SidebarElementRef { get; set; }
+    private AccountDropdown  _accountDropdown = null!;
+    private ElementReference _avatar;
+
+    private void OpenAccountDropdown()
+    {
+        _accountDropdown.Menu.Toggle(_avatar);
+    }
 
     private async Task Open()
     {
         await _compose.OpenDialog();
-    }
-
-    private void OpenProfile()
-    {
-        if (Session.Current != null) Navigation.NavigateTo($"/@{Session.Current.Username}");
     }
 
     private void ToggleSidebar()

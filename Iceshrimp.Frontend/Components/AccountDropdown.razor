@@ -1,0 +1,43 @@
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
+@inject IStringLocalizer<Localization> Loc;
+@inject NavigationManager              Nav;
+@inject SessionService                 Session;
+
+<Menu @ref="Menu">
+    <MenuElement OnSelect="OpenProfile">
+        <Text>
+            <Icon Name="Icons.User"/>@Loc["Profile"]</Text>
+    </MenuElement>
+    <MenuElement OnSelect="ChangeAccount">
+        <Text>
+            <Icon Name="Icons.Users"/>@Loc["Change Account"]</Text>
+    </MenuElement>
+    <MenuElement OnSelect="Logout">
+        <Text>
+            <Icon Name="Icons.SignOut"/>@Loc["Logout"]</Text>
+    </MenuElement>
+</Menu>
+
+@code {
+    public Menu Menu { get; private set; } = null!;
+
+    private void OpenProfile()
+    {
+        if (Session.Current != null) Nav.NavigateTo($"/@{Session.Current.Username}");
+    }
+
+    private void ChangeAccount()
+        => Nav.NavigateTo("/login");
+
+    private void Logout()
+    {
+        if (Session.Current is null) return;
+        var current = Session.Current;
+        Session.EndSession();
+        Session.DeleteUser(current.Id);
+        Nav.NavigateTo("/login");
+    }
+}
