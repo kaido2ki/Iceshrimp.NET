@@ -13,7 +13,7 @@
 <div class="note-footer">
     @if (Reactions.Count > 0)
     {
-        <div class="reactions">
+        <div class="reactions @(Indented ? "indent" : "")">
             @foreach (var reaction in Reactions)
             {
                 <NoteReaction Reaction="reaction"/>
@@ -118,6 +118,7 @@
     [Parameter] [EditorRequired] public required int                      Renotes        { get; set; }
     [Parameter] [EditorRequired] public required int                      Replies        { get; set; }
     [Parameter]                  public          bool                     RenotePossible { get; set; }
+    [Parameter]                  public          bool                     Indented       { get; set; }
     private                                      Menu                     ContextMenu    { get; set; } = null!;
     private                                      Menu                     RenoteMenu     { get; set; } = null!;
     private                                      ElementReference         RenoteButton   { get; set; }

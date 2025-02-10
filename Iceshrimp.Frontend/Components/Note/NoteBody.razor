@@ -7,7 +7,7 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject IJSRuntime                     Js;
 
-<div class="note-content @(!_showFull ? "collapsed" : "")">
+<div class="note-content @(!_showFull ? "collapsed" : "") @(Indented ? "indent" : "")">
     @if (NoteBase.Cw != null)
     {
         <div class="cw">
@@ -39,7 +39,7 @@
         </button>
     }
     <div
-        class="note-body @(_overHeight ? "too-long" : "") @(Indented ? "indent" : "") @(_showFull ? "show-full" : "") @(_cwToggle ? "hidden" : "")"
+        class="note-body @(_overHeight ? "too-long" : "") @(_showFull ? "show-full" : "") @(_cwToggle ? "hidden" : "")"
         @ref="Body">
         <span>
             @if (ReplyInaccessible)
