@@ -1,3 +1,7 @@
+.mfm {
+    line-height: 1.6;
+}
+
 /*These must apply to all child attributes*/
 ::deep {
     .mention {
