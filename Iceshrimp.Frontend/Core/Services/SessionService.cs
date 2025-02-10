@@ -95,16 +95,17 @@ internal class SessionService
 
 	public void EndSession()
 	{
+		if (Current is { IsAdmin: true })
+		{
+			((IJSInProcessRuntime)Js).InvokeVoid("eval",
+												 "document.cookie = \"admin_session=; path=/ ; Fri, 31 Dec 1000 23:59:59 GMT SameSite=Lax\"");
+		}
 		Current = null;
 		LocalStorage.RemoveItem("last_user");
-		((IJSInProcessRuntime)Js).InvokeVoid("eval",
-											 "document.cookie = \"admin_session=; path=/ ; Fri, 31 Dec 1000 23:59:59 GMT SameSite=Lax\"");
 	}
-
+	
 	public void SetSession(string id)
 	{
-		((IJSInProcessRuntime)Js).InvokeVoid("eval",
-											 "document.cookie = \"admin_session=; path=/; expires=Fri, 31 Dec 1000 23:59:59 GMT SameSite=Lax\"");
 		var user = GetUserById(id);
 		if (user == null) throw new Exception("Did not find User in Local Storage");
 		ApiService.SetBearerToken(user.Token);
