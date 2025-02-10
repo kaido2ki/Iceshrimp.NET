@@ -8,6 +8,7 @@
     margin-bottom: 1rem;
     max-width: 45rem;
     width: 100%;
+    overflow: hidden;
 }
 
 .notification-icon {
