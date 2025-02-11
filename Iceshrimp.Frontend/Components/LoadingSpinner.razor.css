@@ -22,4 +22,5 @@ svg {
     border-top-color: white;
     border-style: solid;
     margin-right: 0.5rem;
+    vertical-align: text-bottom;
 }

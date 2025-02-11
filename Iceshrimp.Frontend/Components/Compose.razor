@@ -80,6 +80,10 @@
                 </button>
             </div>
         </div>
+        @if (UploadingFiles != 0)
+        {
+            <span><LoadingSpinner/> @(UploadingFiles == 1 ? Loc["Uploading file"] : Loc["Uploading {0} files", UploadingFiles])</span>
+        }
         @if (Attachments.Count != 0)
         {
             <div class="attachments">
@@ -121,6 +125,7 @@
     private List<EmojiResponse>      EmojiList       { get; set; } = [];
     private int                      NoteLength      { get; set; }
     private bool                     SendLock        { get; set; } = false;
+    private int                      UploadingFiles  { get; set; }
 
     private NoteCreateRequest NoteDraft { get; set; } = new()
     {
@@ -192,6 +197,7 @@
         NoteDraft.MediaIds   = note.Attachments.Select(p => p.Id).ToList();
         NoteDraft.RenoteId   = note.RenoteId;
         NoteDraft.ReplyId    = note.ReplyId;
+        UploadingFiles       = 0;
         StateHasChanged();
         await _module.InvokeVoidAsync("openDialog", Dialog);
     }
@@ -313,8 +319,10 @@
 
     private async Task Upload(InputFileChangeEventArgs e)
     {
+        UploadingFiles += 1;
         var res = await ApiService.Drive.UploadFileAsync(e.File);
         Attachments.Add(res);
+        UploadingFiles -= 1;
     }
 
     private void RemoveAttachment(string id)
