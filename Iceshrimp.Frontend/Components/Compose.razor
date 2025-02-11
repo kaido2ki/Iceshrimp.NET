@@ -25,7 +25,7 @@
             </button>
             <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
             <StateButton OnClick="SendNote" @ref="SendButton" ExtraClasses="post-btn" AriaLabel="post"
-                         Disabled="@(NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length) < 0)">
+                         Disabled="@SendingDisabled()">
                 <Initial>
                     @Loc["ComposeNote"]<Icon Name="Icons.PaperPlaneRight"/>
                 </Initial>
@@ -136,11 +136,14 @@
 
     private Dictionary<string, string> AvailablePlaceholders { get; set; } = new() { { "default", "What's on your mind?" }, { "reply", "Reply goes here!" }, { "quote", "Quote this post!" } };
 
+    private bool SendingDisabled() =>
+        NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length) < 0 || UploadingFiles != 0;
+
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (e is { Code: "Enter", CtrlKey: true } or { Code: "Enter", MetaKey: true })
         {
-            await SendNote();
+            if (!SendingDisabled()) await SendNote();
         }
     }
 
