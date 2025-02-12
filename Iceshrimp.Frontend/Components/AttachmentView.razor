@@ -58,8 +58,8 @@
     }
 
     private ElementReference Scroller    { get; set; }
-    private int              ScrollWidth { get; set; }
-    private int              ScrollLeft  { get; set; }
+    private double              ScrollWidth { get; set; }
+    private double              ScrollLeft  { get; set; }
 
     protected override void OnParametersSet()
     {
@@ -68,12 +68,10 @@
 
     private async Task Scroll()
     {
-        // This should probably be moved to floating point.
-        // So the state transition happens sooner, i.e. at 2.5 vs 3?
-        ScrollLeft = await Module.InvokeAsync<int>("getScrollLeft", Scroller);
+        ScrollLeft = await Module.InvokeAsync<double>("getScrollLeft", Scroller);
         var fraction = ScrollWidth / _refs.Count;
         var section  = ScrollLeft / fraction;
-        Focused = section;
+        Focused = Convert.ToInt32(section); //ToInt32 rounds
     }
 
     private async Task Next()
