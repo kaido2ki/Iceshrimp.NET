@@ -1187,7 +1187,7 @@ public class UserService(
 			    || !Uri.TryCreate(userProfileField.Value, UriKind.Absolute, out var uri))
 				continue;
 
-			var res = await httpClient.GetAsync(uri);
+			var res = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
 
 			if (!res.IsSuccessStatusCode
 			    || res.Content.Headers.ContentType?.MediaType != "text/html"
