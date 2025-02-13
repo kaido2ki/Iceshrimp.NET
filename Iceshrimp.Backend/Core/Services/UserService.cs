@@ -1175,7 +1175,7 @@ public class UserService(
 
 		return user;
 	}
-	
+
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage", Justification = "Same as above")]
 	public async Task<User> VerifyProfileFieldsAsync(User user, string? profileUrl)
 	{
@@ -1183,25 +1183,49 @@ public class UserService(
 
 		foreach (var userProfileField in user.UserProfile!.Fields)
 		{
-			if (!userProfileField.Value.StartsWith("https://")
-			    || !Uri.TryCreate(userProfileField.Value, UriKind.Absolute, out var uri))
+			if (
+				!userProfileField.Value.StartsWith("https://")
+				|| !Uri.TryCreate(userProfileField.Value, UriKind.Absolute, out var uri)
+				|| uri is not { Scheme: "https" }
+			)
+			{
+				userProfileField.IsVerified = false;
 				continue;
+			}
 
-			var res = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
+			try
+			{
+				var res = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
 
-			if (!res.IsSuccessStatusCode
-			    || res.Content.Headers.ContentType?.MediaType != "text/html"
-			    || res.Content.Headers.ContentLength > 1_000_000)
-				continue;
+				if (
+					res is not
+					{
+						IsSuccessStatusCode: true,
+						Content.Headers: { ContentType.MediaType: "text/html", ContentLength: <= 1_000_000 }
+					}
+				)
+				{
+					logger.LogDebug("Skipping profile field link verification of {url} for user {userId}: precondition failed",
+					                uri, user.Id);
 
-			var html     = await res.Content.ReadAsStringAsync();
-			var document = await new HtmlParser().ParseDocumentAsync(html);
+					userProfileField.IsVerified = false;
+					continue;
+				}
 
-			userProfileField.IsVerified =
-				document.Links.Any(a => (a.GetAttribute("rel")?.Contains("me")
-				                         ?? false)
-				                        && a.GetAttribute("href") == profileUrl
-				                        || a.GetAttribute("href") == user.GetUriOrPublicUri(instance.Value));
+				var html     = await res.Content.ReadAsStringAsync();
+				var document = await new HtmlParser().ParseDocumentAsync(html);
+
+				userProfileField.IsVerified =
+					document.Links.Any(a => (a.GetAttribute("rel")?.Contains("me")
+					                         ?? false)
+					                        && a.GetAttribute("href") == profileUrl
+					                        || a.GetAttribute("href") == user.GetUriOrPublicUri(instance.Value));
+			}
+			catch (Exception e)
+			{
+				logger.LogDebug("Failed to verify profile field url {url} for user {userId}: {e}", uri, user.Id, e);
+				userProfileField.IsVerified = false;
+			}
 		}
 
 		return user;
