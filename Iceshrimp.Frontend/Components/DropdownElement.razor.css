@@ -12,4 +12,8 @@
     .dropdown-element {
         margin: 0.5em 0.25em;
     }
+    
+    .dropdown-element + .dropdown-element {
+        margin-top: 1rem;
+    }
 }
