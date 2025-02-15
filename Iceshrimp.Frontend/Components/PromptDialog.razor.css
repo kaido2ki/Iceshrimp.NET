@@ -46,3 +46,9 @@
     opacity: 0.4;
     cursor: not-allowed;
 }
+
+@media (max-width: 1000px) {
+    .prompt {
+        max-width: 100%;
+    }
+}

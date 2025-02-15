@@ -34,3 +34,9 @@
     background: var(--accent-color);
     color: var(--font-color);
 }
+
+@media (max-width: 1000px) {
+    .notice {
+        max-width: 100%;
+    }
+}
