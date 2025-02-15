@@ -1,9 +1,10 @@
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
+@inject GlobalComponentSvc             Global;
 @inject IStringLocalizer<Localization> Loc;
-@inject IJSRuntime                     Js;
 
 <div class="wrapper" @onclick="Open" @onclick:stopPropagation="true">
     @if (Attachment.ContentType.StartsWith("image"))
@@ -83,6 +84,9 @@
 
     private async Task DisplayAlt()
     {
-        await Js.InvokeVoidAsync("alert", string.IsNullOrWhiteSpace(Attachment.AltText) ? Loc["No alt text"] : Attachment.AltText);
+        if (string.IsNullOrWhiteSpace(Attachment.AltText))
+            await Global.NoticeDialog?.Display(Loc["No alt text"], NoticeDialog.NoticeType.Error)!;
+        else
+            await Global.NoticeDialog?.Display(Attachment.AltText)!;
     }
 }
