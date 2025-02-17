@@ -43,7 +43,7 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 	private void OnNotification(object? _, NotificationResponse notificationResponse)
 	{
 		var add = Notifications.TryAdd(notificationResponse.Id, notificationResponse);
-		if (add is false) _logger.LogError($"Duplicate notification: {notificationResponse.Id}");
+		if (add is false) _logger.LogWarning($"Duplicate notification: {notificationResponse.Id}");
 		Notification?.Invoke(this, notificationResponse);
 	}
 
@@ -55,7 +55,7 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 			foreach (var notification in res)
 			{
 				var add = Notifications.TryAdd(notification.Id, notification);
-				if (add is false) _logger.LogError($"Duplicate notification: {notification.Id}");
+				if (add is false) _logger.LogWarning($"Duplicate notification: {notification.Id}");
 			}
 
 			return res;

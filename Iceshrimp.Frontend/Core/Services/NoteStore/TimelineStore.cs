@@ -78,7 +78,7 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 			foreach (var note in res)
 			{
 				var add = Timelines[timeline].Timeline.TryAdd(note.Id, note);
-				if (add is false) _logger.LogError($"Duplicate note: {note.Id}");
+				if (add is false) _logger.LogWarning($"Duplicate note: {note.Id}");
 			}
 
 			return res;
@@ -168,7 +168,7 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 			if (success)
 			{
 				var add = home!.Timeline.TryAdd(response.Id, response);
-				if (add is false) _logger.LogError($"Duplicate note: {response.Id}");
+				if (add is false) _logger.LogWarning($"Duplicate note: {response.Id}");
 			}
 			ItemPublished?.Invoke(this, response);
 		}

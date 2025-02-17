@@ -33,7 +33,7 @@ public class LazyComponent : ComponentBase, IAsyncDisposable
 		if (Visible) return Js.Invoke<float>("getHeight", Target);
 		else
 		{
-			Logger.LogError("Invisible, no height available");
+			Logger.LogWarning("Invisible, no height available");
 			return null;
 		}
 	}

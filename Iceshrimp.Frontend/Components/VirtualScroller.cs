@@ -228,7 +228,7 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 		if (height == 0)
 		{
 			var add = Items.TryAdd(item.Id, item);
-			if (add is false) Logger.LogError($"Duplicate notification: {item.Id}");
+			if (add is false) Logger.LogWarning($"Duplicate notification: {item.Id}");
 		}
 
 		ReRender();
