@@ -333,7 +333,7 @@ public class ActivityPubController(
 		var rendered = new ASEmoji
 		{
 			Id    = emoji.GetPublicUri(config.Value),
-			Name  = emoji.Name,
+			Name  = $":{emoji.Name}:",
 			Image = new ASImage { Url = new ASLink(emoji.RawPublicUrl), MediaType = emoji.Type }
 		};
 

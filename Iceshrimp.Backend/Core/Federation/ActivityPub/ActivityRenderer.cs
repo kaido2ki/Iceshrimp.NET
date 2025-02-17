@@ -91,7 +91,7 @@ public class ActivityRenderer(
 		var e = new ASEmoji
 		{
 			Id    = emoji.GetPublicUriOrNull(config.Value),
-			Name  = name,
+			Name  = $":{name}:",
 			Image = new ASImage { Url = new ASLink(emoji.RawPublicUrl), MediaType = emoji.Type }
 		};
 

@@ -73,7 +73,7 @@ public class UserRenderer(
 		               .Concat<ASTag>(emoji.Select(e => new ASEmoji
 		               {
 			               Id    = e.GetPublicUri(config.Value),
-			               Name  = e.Name,
+			               Name  = $":{e.Name}:",
 			               Image = new ASImage { Url = new ASLink(e.RawPublicUrl), MediaType = e.Type }
 		               }))
 		               .ToList();
