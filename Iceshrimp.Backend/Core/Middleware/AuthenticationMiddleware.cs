@@ -62,8 +62,8 @@ public class AuthenticationMiddleware(
 			}
 
 			if ((attribute.AdminRole && !oauthToken.User.IsAdmin) ||
-			    (attribute.ModeratorRole &&
-			     oauthToken.User is { IsAdmin: false, IsModerator: false }))
+			    (attribute.ModeratorRole && oauthToken.User is { IsAdmin: false, IsModerator: false }) ||
+			    (attribute.Scopes.Any(p => p is "admin" || p.StartsWith("admin:")) && !oauthToken.User.IsAdmin))
 			{
 				await next(ctx);
 				return;

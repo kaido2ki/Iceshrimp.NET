@@ -26,6 +26,8 @@ public class AuthorizationMiddleware(RequestDelegate next) : ConditionalMiddlewa
 				throw GracefulException.Forbidden("This action is outside the authorized scopes");
 			if (attribute.ModeratorRole && token.User is { IsAdmin: false, IsModerator: false })
 				throw GracefulException.Forbidden("This action is outside the authorized scopes");
+			if (attribute.Scopes.Any(p => p is "admin" || p.StartsWith("admin:") && !token.User.IsAdmin))
+				throw GracefulException.Forbidden("This action is outside the authorized scopes");
 		}
 		else
 		{
