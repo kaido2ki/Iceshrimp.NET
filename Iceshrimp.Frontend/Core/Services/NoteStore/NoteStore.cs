@@ -19,7 +19,7 @@ internal class NoteStore : NoteMessageProvider, IDisposable
 		_stateSynchronizer             =  stateSynchronizer;
 		_stateSynchronizer.NoteChanged += OnNoteChanged;
 	}
-
+	//ToDo: This and similar implementations are functional but not performant, and need to be refactored
 	private void OnNoteChanged(object? _, NoteBase noteResponse)
 	{
 		if (Notes.TryGetValue(noteResponse.Id, out var note))
@@ -37,6 +37,44 @@ internal class NoteStore : NoteMessageProvider, IDisposable
 			
 			AnyNoteChanged?.Invoke(this, note);
 			NoteChangedHandlers.First(p => p.Key == note.Id).Value.Invoke(this, note);
+		}
+
+		var hasReply = Notes.Where(p => p.Value.Reply?.Id == noteResponse.Id);
+		foreach (var el in hasReply)
+		{
+			if (el.Value.Reply != null)
+			{
+				el.Value.Reply.Text        = noteResponse.Text;
+				el.Value.Reply.Cw          = noteResponse.Cw;
+				el.Value.Reply.Emoji       = noteResponse.Emoji;
+				el.Value.Reply.Liked       = noteResponse.Liked;
+				el.Value.Reply.Likes       = noteResponse.Likes;
+				el.Value.Reply.Renotes     = noteResponse.Renotes;
+				el.Value.Reply.Replies     = noteResponse.Replies;
+				el.Value.Reply.Attachments = noteResponse.Attachments;
+				el.Value.Reply.Reactions   = noteResponse.Reactions;
+				el.Value.Reply.Poll        = noteResponse.Poll;
+				NoteChangedHandlers.FirstOrDefault(p => p.Key == el.Value.Reply.Id).Value?.Invoke(this, el.Value.Reply);
+			}
+		}
+
+		var hasRenote = Notes.Where(p => p.Value.Renote?.Id == noteResponse.Id);
+		foreach (var el in hasRenote)
+		{
+			if (el.Value.Renote != null)
+			{
+				el.Value.Renote.Text        = noteResponse.Text;
+				el.Value.Renote.Cw          = noteResponse.Cw;
+				el.Value.Renote.Emoji       = noteResponse.Emoji;
+				el.Value.Renote.Liked       = noteResponse.Liked;
+				el.Value.Renote.Likes       = noteResponse.Likes;
+				el.Value.Renote.Renotes     = noteResponse.Renotes;
+				el.Value.Renote.Replies     = noteResponse.Replies;
+				el.Value.Renote.Attachments = noteResponse.Attachments;
+				el.Value.Renote.Reactions   = noteResponse.Reactions;
+				el.Value.Renote.Poll        = noteResponse.Poll;
+				NoteChangedHandlers.FirstOrDefault(p => p.Key == el.Value.Renote.Id).Value?.Invoke(this, el.Value.Renote);
+			}
 		}
 	}
 	public void Delete(string id)
