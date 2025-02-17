@@ -22,6 +22,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 			                            AND ("drive_file"."webpublicUrl" = "emoji"."publicUrl"
 			                                     OR "drive_file"."url" = "emoji"."publicUrl"
 			                                )
+			                          LIMIT 1
 			                          )
 			                     WHERE "host" IS NULL
 			                       AND EXISTS
