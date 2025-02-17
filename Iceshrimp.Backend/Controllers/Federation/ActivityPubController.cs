@@ -334,7 +334,7 @@ public class ActivityPubController(
 		{
 			Id    = emoji.GetPublicUri(config.Value),
 			Name  = emoji.Name,
-			Image = new ASImage { Url = new ASLink(emoji.RawPublicUrl) }
+			Image = new ASImage { Url = new ASLink(emoji.RawPublicUrl), MediaType = emoji.Type }
 		};
 
 		return LdHelpers.Compact(rendered);

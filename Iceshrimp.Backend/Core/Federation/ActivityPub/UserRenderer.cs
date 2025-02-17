@@ -74,7 +74,7 @@ public class UserRenderer(
 		               {
 			               Id    = e.GetPublicUri(config.Value),
 			               Name  = e.Name,
-			               Image = new ASImage { Url = new ASLink(e.RawPublicUrl) }
+			               Image = new ASImage { Url = new ASLink(e.RawPublicUrl), MediaType = e.Type }
 		               }))
 		               .ToList();
 

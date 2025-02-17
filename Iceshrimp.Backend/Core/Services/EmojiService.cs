@@ -49,16 +49,17 @@ public partial class EmojiService(
 		var id = IdHelpers.GenerateSnowflakeId();
 		var emoji = new Emoji
 		{
-			Id          = id,
-			Name        = name,
-			Aliases     = aliases ?? [],
-			Category    = category,
-			UpdatedAt   = DateTime.UtcNow,
-			OriginalUrl = driveFile.Url,
-			RawPublicUrl   = driveFile.RawAccessUrl,
-			Width       = driveFile.Properties.Width,
-			Height      = driveFile.Properties.Height,
-			Sensitive   = false
+			Id           = id,
+			Name         = name,
+			Aliases      = aliases ?? [],
+			Category     = category,
+			UpdatedAt    = DateTime.UtcNow,
+			OriginalUrl  = driveFile.Url,
+			RawPublicUrl = driveFile.RawAccessUrl,
+			Type         = driveFile.PublicMimeType ?? driveFile.Type,
+			Width        = driveFile.Properties.Width,
+			Height       = driveFile.Properties.Height,
+			Sensitive    = false
 		};
 		emoji.Uri = emoji.GetPublicUri(config.Value);
 
@@ -77,14 +78,15 @@ public partial class EmojiService(
 
 		var emoji = new Emoji
 		{
-			Id          = IdHelpers.GenerateSnowflakeId(),
-			Name        = existing.Name,
-			UpdatedAt   = DateTime.UtcNow,
-			OriginalUrl = driveFile.Url,
-			RawPublicUrl   = driveFile.RawAccessUrl,
-			Width       = driveFile.Properties.Width,
-			Height      = driveFile.Properties.Height,
-			Sensitive   = existing.Sensitive
+			Id           = IdHelpers.GenerateSnowflakeId(),
+			Name         = existing.Name,
+			UpdatedAt    = DateTime.UtcNow,
+			OriginalUrl  = driveFile.Url,
+			RawPublicUrl = driveFile.RawAccessUrl,
+			Type         = driveFile.PublicMimeType ?? driveFile.Type,
+			Width        = driveFile.Properties.Width,
+			Height       = driveFile.Properties.Height,
+			Sensitive    = existing.Sensitive
 		};
 		emoji.Uri = emoji.GetPublicUri(config.Value);
 
@@ -127,14 +129,15 @@ public partial class EmojiService(
 				{
 					dbEmojo = new Emoji
 					{
-						Id          = IdHelpers.GenerateSnowflakeId(),
-						Host        = host,
-						Name        = emojo.Name ?? throw new Exception("emojo.Name must not be null at this stage"),
-						UpdatedAt   = DateTime.UtcNow,
-						OriginalUrl = emojo.Image?.Url?.Link ?? throw new Exception("Emoji.Image has no url"),
-						RawPublicUrl   = emojo.Image.Url.Link,
-						Uri         = emojo.Id,
-						Sensitive   = false
+						Id           = IdHelpers.GenerateSnowflakeId(),
+						Host         = host,
+						Name         = emojo.Name ?? throw new Exception("emojo.Name must not be null at this stage"),
+						UpdatedAt    = DateTime.UtcNow,
+						OriginalUrl  = emojo.Image?.Url?.Link ?? throw new Exception("Emoji.Image has no url"),
+						RawPublicUrl = emojo.Image.Url.Link,
+						Type         = emojo.Image.MediaType,
+						Uri          = emojo.Id,
+						Sensitive    = false
 					};
 					await db.AddAsync(dbEmojo);
 					await db.SaveChangesAsync();
