@@ -239,10 +239,7 @@ public partial class EmojiService(
 		}
 
 		if (aliases != null)
-		{
-			aliases.RemoveAll(string.IsNullOrWhiteSpace);
-			emoji.Aliases = aliases;
-		}
+			emoji.Aliases = aliases.Select(p => p.Trim()).Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
 
 		// If category is provided but empty reset to null
 		if (category != null) emoji.Category = string.IsNullOrEmpty(category) ? null : category;
