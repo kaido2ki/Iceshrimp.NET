@@ -18,7 +18,7 @@
 @inject NavigationManager              Nav;
 
 <SectionContent SectionName="top-bar">
-    @if (_state == State.Loaded && Folder is { Id: not null, Name: not null })
+    @if (State == State.Loaded && Folder is { Id: not null, Name: not null })
     {
         <span class="btn" @onclick="NavigateToParent">
             <Icon Name="Icons.ArrowLeft"/>
@@ -30,7 +30,7 @@
         <Icon Name="Icons.Cloud"/>
         @Loc["Drive"]
     }
-    @if (_state == State.Loaded && Folder is not null)
+    @if (State == State.Loaded && Folder is not null)
     {
         <span class="action btn" @onclick="CreateFolder" title="@Loc["Create folder"]">
             <Icon Name="Icons.FolderPlus"/>
@@ -51,7 +51,7 @@
     <InputFile @ref="UploadInput" OnChange="Upload">Upload!</InputFile>
 </div>
 
-@if (_state == State.Loaded && Folder != null)
+@if (State == State.Loaded && Folder != null)
 {
     <ol class="drive-files">
         @foreach (var el in Folder.Folders)
@@ -68,30 +68,30 @@
         }
     </ol>
 }
-@if (_state == State.Loading)
+@if (State == State.Loading)
 {
     <div class="loading"><LoadingSpinner Scale="2"/></div>
 }
-@if (_state == State.NotFound)
+@if (State == State.NotFound)
 {
     <div>This folder does not exist</div>
 }
-@if (_state == State.Error)
+@if (State == State.Error)
 {
     <div>An error occured while loading the drive folder. Please inspect logs.</div>
 }
 
 @code {
     [Parameter] public string?              Id          { get; set; }
-    private            DriveFolderResponse? Folder      { get; set; } = null;
-    private            State                _state      { get; set; }
+    private            DriveFolderResponse? Folder      { get; set; }
+    private            State                State      { get; set; }
     private            InputFile            UploadInput { get; set; } = null!;
     private            IJSObjectReference   _module = null!;
 
     private async Task Load()
     {
         Logger.LogTrace($"Opening drive folder: {Id ?? "root"}");
-        _state = State.Loading;
+        State = State.Loading;
 
         try
         {
@@ -100,17 +100,17 @@
         catch (ApiException e)
         {
             Logger.LogWarning($"Failed to load folder '{Id ?? "root"}' due to API Exception: {e.Message}");
-            _state = State.Error;
+            State = State.Error;
             return;
         }
 
         if (Folder == null)
         {
-            _state = State.NotFound;
+            State = State.NotFound;
             return;
         }
 
-        _state = State.Loaded;
+        State = State.Loaded;
     }
 
     protected override async Task OnInitializedAsync()

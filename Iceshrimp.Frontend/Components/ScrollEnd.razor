@@ -1,6 +1,5 @@
 @using Ljbc1994.Blazor.IntersectionObserver.API
 @using Ljbc1994.Blazor.IntersectionObserver.Components
-@using Iceshrimp.Assets.PhosphorIcons
 <IntersectionObserve OnChange="entry => OnChange(entry)">
     <div @ref="context.Ref.Current" class="@Class @(Hide ? "hidden" : "")" style="@Style">
         @if (_state is State.Loading or State.Init)

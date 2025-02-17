@@ -95,7 +95,7 @@
     {
         try
         {
-            var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Sensitive = sensitive });
+            var res = await Api.Drive.UpdateFileAsync(File.Id, new UpdateDriveFileRequest { Sensitive = sensitive });
             if (res != null)
             {
                 File.Sensitive = res.Sensitive;
@@ -121,7 +121,7 @@
 
         try
         {
-            var res = await Api.Drive.UpdateFileAsync(File!.Id, new UpdateDriveFileRequest { Description = string.IsNullOrWhiteSpace(alt) ? null : alt });
+            var res = await Api.Drive.UpdateFileAsync(File.Id, new UpdateDriveFileRequest { Description = string.IsNullOrWhiteSpace(alt) ? null : alt });
             if (res != null)
             {
                 File.Description = res.Description;

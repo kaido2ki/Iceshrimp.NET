@@ -1,7 +1,6 @@
 using Blazored.LocalStorage;
 using Iceshrimp.Frontend.Core.Schemas;
 using Iceshrimp.Shared.Schemas.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Iceshrimp.Frontend.Core.Services;

@@ -23,3 +23,8 @@
     padding-top: 25vh;
     margin: auto;
 }
+::deep {
+    .scroll-end {
+        height: 3rem;
+    }
+}
