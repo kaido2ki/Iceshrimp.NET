@@ -1,6 +1,5 @@
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Schemas;
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.Web;
