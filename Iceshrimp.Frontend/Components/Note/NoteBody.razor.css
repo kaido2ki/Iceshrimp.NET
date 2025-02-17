@@ -75,3 +75,12 @@
     vertical-align: middle;
     margin-right: 0.25em;
 }
+
+.quote {
+    border-style: solid;
+    border-color: var(--highlight-color);
+    border-width: 0.2rem;
+    border-radius: 1.25rem;
+    padding: 1rem;
+    margin: 0.5rem;
+}

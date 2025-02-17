@@ -6,6 +6,7 @@
 @implements IDisposable
 @inject IStringLocalizer<Localization> Loc;
 @inject IJSRuntime                     Js;
+@inject NavigationManager Nav;
 
 <div class="note-content @(!_showFull ? "collapsed" : "") @(Indented ? "indent" : "")">
     @if (NoteBase.Cw != null)
@@ -58,6 +59,12 @@
         {
             <NoteAttachments Attachments="NoteBase.Attachments"/>
         }
+        @if (Quote != null)
+        {
+            <div @onclick="OpenQuote" @onclick:stopPropagation="true" class="quote">
+                <NoteComponent Note="Quote" AsQuote="true"></NoteComponent>
+            </div>
+        }
     </div>
     @if (_overHeight & _showFull)
     {
@@ -73,9 +80,10 @@
     [CascadingParameter(Name = "Controller")]
     ChildNoteController? Controller { get; set; }
 
-    [Parameter] public required NoteBase NoteBase          { get; set; }
-    [Parameter] public          bool     Indented          { get; set; }
-    [Parameter] public          bool     ReplyInaccessible { get; set; }
+    [Parameter] public required NoteBase  NoteBase          { get; set; }
+    [Parameter] public          bool      Indented          { get; set; }
+    [Parameter] public          bool      ReplyInaccessible { get; set; }
+    [Parameter] public          NoteBase? Quote             { get; set; }
 
     private IJSObjectReference? Module { get; set; }
     private ElementReference    Body   { get; set; }
@@ -147,5 +155,10 @@
     public void Dispose()
     {
         Controller?.Unregister(this);
+    }
+    
+    private void OpenQuote()
+    {
+        Nav.NavigateTo($"/notes/{Quote!.Id}");
     }
 }

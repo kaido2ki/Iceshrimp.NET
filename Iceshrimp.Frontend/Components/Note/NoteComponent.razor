@@ -3,7 +3,6 @@
 @using Iceshrimp.Shared.Schemas.Web
 @implements IDisposable
 @inject ApiService            ApiService;
-@inject NavigationManager     NavigationManager
 @inject ComposeService        ComposeService
 @inject SessionService        Session;
 @inject ILogger<NoteComponent> Logger;
@@ -17,13 +16,7 @@
             CreatedAt="DateTime.Parse(Note.CreatedAt)">
         </NoteMetadata>
     </div>
-    <NoteBody NoteBase="Note" Indented="Indented" ReplyInaccessible="ReplyInaccessible"/>
-    @if (Quote != null)
-    {
-        <div @onclick="OpenQuote" @onclick:stopPropagation="true" class="quote">
-            <NoteComponent Note="Quote" AsQuote="true"></NoteComponent>
-        </div>
-    }
+    <NoteBody NoteBase="Note" Indented="Indented" ReplyInaccessible="ReplyInaccessible" Quote="Quote"/>
     @if (!AsQuote)
     {
         <NoteFooter
@@ -58,11 +51,6 @@
     {
         Logger.LogInformation($"{note.Id} updated");
         StateHasChanged();
-    }
-
-    private void OpenQuote()
-    {
-        NavigationManager.NavigateTo($"/notes/{Quote!.Id}");
     }
 
     public void Dispose()
