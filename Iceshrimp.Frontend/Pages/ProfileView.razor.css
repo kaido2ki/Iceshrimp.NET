@@ -1,9 +1,3 @@
-.scroller {
-    height: 100vh;
-    overflow-y: auto;
-    overflow-x: clip;
-}
-
 .loading {
     display: flex;
     align-items: center;
