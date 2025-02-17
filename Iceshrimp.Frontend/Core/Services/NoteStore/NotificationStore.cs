@@ -24,7 +24,7 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 		_stateSynchronizer             =  stateSynchronizer;
 		_streamingService              =  streamingService;
 		_stateSynchronizer.NoteChanged += OnNoteChanged;
-		_streamingService.Notification -= OnNotification;
+		_streamingService.Notification += OnNotification;
 	}
 
 	public async Task InitializeAsync()
