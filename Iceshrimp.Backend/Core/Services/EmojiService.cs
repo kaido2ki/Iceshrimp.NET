@@ -238,7 +238,11 @@ public partial class EmojiService(
 			emoji.Uri  = emoji.GetPublicUri(config.Value);
 		}
 
-		if (aliases != null) emoji.Aliases = aliases;
+		if (aliases != null)
+		{
+			aliases.RemoveAll(string.IsNullOrWhiteSpace);
+			emoji.Aliases = aliases;
+		}
 
 		// If category is provided but empty reset to null
 		if (category != null) emoji.Category = string.IsNullOrEmpty(category) ? null : category;
