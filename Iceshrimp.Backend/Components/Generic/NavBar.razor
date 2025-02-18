@@ -15,13 +15,12 @@
         }
         @if (OverflowsLg)
         {
-            var offset = Links.Count - MaxItemsLg;
             <li class="dropdown">
                 <a class="dropdown-button" tabindex="0">
                     <Icon Name="Icons.DotsThree" Size="20pt"/>
                 </a>
                 <ul class="dropdown-menu">
-                    @foreach (var link in Links[offset..])
+                    @foreach (var link in Links[MaxItemsLg..])
                     {
                         <li>
                             <NavBarLink Link="link"/>
@@ -29,7 +28,10 @@
                     }
                     @if (Right is { Count: > 0 })
                     {
-                        <li class="dropdown-spacer"></li>
+                        if (MaxItemsLg != Links.Count)
+                        {
+                            <li class="dropdown-spacer"></li>
+                        }
                         @foreach (var link in Right)
                         {
                             <li>
@@ -71,13 +73,12 @@
         }
         @if (OverflowsMd)
         {
-            var offset = Links.Count - MaxItemsMd;
             <li class="dropdown">
                 <a class="dropdown-button" tabindex="0">
                     <Icon Name="Icons.DotsThree" Size="20pt"/>
                 </a>
                 <ul class="dropdown-menu">
-                    @foreach (var link in Links[offset..])
+                    @foreach (var link in Links[MaxItemsMd..])
                     {
                         <li>
                             <NavBarLink Link="link"/>
@@ -85,7 +86,10 @@
                     }
                     @if (Right is { Count: > 0 })
                     {
-                        <li class="dropdown-spacer"></li>
+                        if (MaxItemsMd != Links.Count)
+                        {
+                            <li class="dropdown-spacer"></li>
+                        }
                         @foreach (var link in Right)
                         {
                             <li>
