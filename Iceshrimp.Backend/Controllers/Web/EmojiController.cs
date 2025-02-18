@@ -7,6 +7,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -33,19 +34,19 @@ public class EmojiController(
 	public async Task<IEnumerable<EmojiResponse>> GetAllEmoji()
 	{
 		return await db.Emojis
-		               .Where(p => p.Host == null)
-		               .Select(p => new EmojiResponse
-		               {
-			               Id        = p.Id,
-			               Name      = p.Name,
-			               Uri       = p.Uri,
-			               Aliases   = p.Aliases,
-			               Category  = p.Category,
-			               PublicUrl = p.GetAccessUrl(instance.Value),
-			               License   = p.License,
-			               Sensitive = p.Sensitive
-		               })
-		               .ToListAsync();
+					   .Where(p => p.Host == null)
+					   .Select(p => new EmojiResponse
+					   {
+						   Id        = p.Id,
+						   Name      = p.Name,
+						   Uri       = p.Uri,
+						   Aliases   = p.Aliases,
+						   Category  = p.Category,
+						   PublicUrl = p.GetAccessUrl(instance.Value),
+						   License   = p.License,
+						   Sensitive = p.Sensitive
+					   })
+					   .ToListAsync();
 	}
 
 	[HttpGet("remote")]
@@ -55,20 +56,20 @@ public class EmojiController(
 	public async Task<PaginationWrapper<List<EmojiResponse>>> GetRemoteEmoji(PaginationQuery pq)
 	{
 		var res = await db.Emojis
-		                  .Where(p => p.Host != null)
-		                  .Select(p => new EmojiResponse
-		                  {
-			                  Id        = p.Id,
-			                  Name      = p.Name,
-			                  Uri       = p.Uri,
-			                  Aliases   = p.Aliases,
-			                  Category  = p.Host,
-			                  PublicUrl = p.GetAccessUrl(instance.Value),
-			                  License   = p.License,
-			                  Sensitive = p.Sensitive
-		                  })
-		                  .Paginate(pq, ControllerContext)
-		                  .ToListAsync();
+						  .Where(p => p.Host != null)
+						  .Select(p => new EmojiResponse
+						  {
+							  Id        = p.Id,
+							  Name      = p.Name,
+							  Uri       = p.Uri,
+							  Aliases   = p.Aliases,
+							  Category  = p.Host,
+							  PublicUrl = p.GetAccessUrl(instance.Value),
+							  License   = p.License,
+							  Sensitive = p.Sensitive
+						  })
+						  .Paginate(pq, ControllerContext)
+						  .ToListAsync();
 
 		return HttpContext.CreatePaginationWrapper(pq, res);
 	}
@@ -80,22 +81,39 @@ public class EmojiController(
 	public async Task<PaginationWrapper<List<EmojiResponse>>> GetRemoteEmojiByHost(string host, PaginationQuery pq)
 	{
 		var res = await db.Emojis
-		                  .Where(p => p.Host == host)
-		                  .Select(p => new EmojiResponse
-		                  {
-			                  Id        = p.Id,
-			                  Name      = p.Name,
-			                  Uri       = p.Uri,
-			                  Aliases   = p.Aliases,
-			                  Category  = p.Host,
-			                  PublicUrl = p.GetAccessUrl(instance.Value),
-			                  License   = p.License,
-			                  Sensitive = p.Sensitive
-		                  })
-		                  .Paginate(pq, ControllerContext)
-		                  .ToListAsync();
+						  .Where(p => p.Host == host)
+						  .Select(p => new EmojiResponse
+						  {
+							  Id        = p.Id,
+							  Name      = p.Name,
+							  Uri       = p.Uri,
+							  Aliases   = p.Aliases,
+							  Category  = p.Host,
+							  PublicUrl = p.GetAccessUrl(instance.Value),
+							  License   = p.License,
+							  Sensitive = p.Sensitive
+						  })
+						  .Paginate(pq, ControllerContext)
+						  .ToListAsync();
 
 		return HttpContext.CreatePaginationWrapper(pq, res);
+	}
+
+	[HttpGet("remote/hosts")]
+	[Authorize("role:moderator")]
+	[LinkPagination(20, 250)]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<EntityWrapper<string>>> GetEmojiHostsAsync(PaginationQuery pq)
+	{
+		pq.MinId ??= "";
+		var res = await db.Emojis.Where(p => p.Host != null)
+						  .Select(p => new EntityWrapper<string> { Entity = p.Host!, Id = p.Host! })
+						  .Distinct()
+						  .Paginate(pq, ControllerContext)
+						  .ToListAsync()
+						  .ContinueWithResult(p => p.NotNull());
+
+		return res;
 	}
 
 	[HttpGet("{id}")]
@@ -104,7 +122,7 @@ public class EmojiController(
 	public async Task<EmojiResponse> GetEmoji(string id)
 	{
 		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id)
-		            ?? throw GracefulException.NotFound("Emoji not found");
+					?? throw GracefulException.NotFound("Emoji not found");
 
 		return new EmojiResponse
 		{
@@ -186,8 +204,8 @@ public class EmojiController(
 	public async Task<EmojiResponse> UpdateEmoji(string id, UpdateEmojiRequest request)
 	{
 		var emoji = await emojiSvc.UpdateLocalEmojiAsync(id, request.Name, request.Aliases, request.Category,
-		                                                 request.License, request.Sensitive)
-		            ?? throw GracefulException.NotFound("Emoji not found");
+														 request.License, request.Sensitive)
+					?? throw GracefulException.NotFound("Emoji not found");
 
 		return new EmojiResponse
 		{
