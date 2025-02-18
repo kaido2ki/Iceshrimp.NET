@@ -34,11 +34,13 @@
             @{ var total = Poll.Choices.Sum(p => p.Votes); }
             @foreach (var choice in Poll.Choices)
             {
-                <span class="poll-result @(choice.Voted ? "voted" : "")" style="--percentage: @(Math.Floor(choice.Votes / (double)total * 100))%;">
+                var percentage = total == 0 ? 0 : Math.Floor(choice.Votes / (double)total * 100);
+
+                <span class="poll-result @(choice.Voted ? "voted" : "")" style="--percentage: @percentage%;">
                     <span class="poll-value">
                         <MfmText Text="@choice.Value" Emoji="@Emoji" Simple="true"/>
                     </span>
-                    <span class="poll-info"><span class="vote-count">@Loc["{0} votes", choice.Votes]</span><span class="vote-percentage">@(Math.Floor(choice.Votes / (double)total * 100))%</span></span>
+                    <span class="poll-info"><span class="vote-count">@Loc["{0} votes", choice.Votes]</span><span class="vote-percentage">@percentage%</span></span>
                 </span>
             }
         </div>
