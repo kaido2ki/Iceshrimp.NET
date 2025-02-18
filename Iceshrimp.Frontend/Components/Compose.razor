@@ -321,9 +321,10 @@
         {
             await ApiService.Notes.CreateNoteAsync(NoteDraft);
         }
-        catch (ApiException)
+        catch (ApiException e)
         {
             SendButton.State = StateButton.StateEnum.Failed;
+            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred while posting"], NoticeDialog.NoticeType.Error)!;
             return;
         }
 
