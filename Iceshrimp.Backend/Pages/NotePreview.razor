@@ -37,7 +37,7 @@ else
         <div class="poll-results">
             @foreach (var choice in _note.Poll.Choices)
             {
-                var percentage = Math.Floor(choice.Votes / (double)total * 100);
+                var percentage = total == 0 ? 0 : Math.Floor(choice.Votes / (double)total * 100);
 
                 <span class="poll-result" style="--percentage: @percentage%;">
                     <span class="poll-value">@choice.Value</span>
