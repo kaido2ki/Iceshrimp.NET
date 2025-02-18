@@ -1,0 +1,22 @@
+.category-name {
+    display: block;
+    margin: 1rem 0 0.5rem;
+    font-weight: bold;
+    max-width: 25rem;
+    text-overflow: ellipsis;
+    overflow: clip;
+    min-width: 0;
+}
+
+.emoji-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+}
+
+::deep {
+    i {
+        vertical-align: middle;
+    }
+}

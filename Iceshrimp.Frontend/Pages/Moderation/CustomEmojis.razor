@@ -14,6 +14,7 @@
 @inject GlobalComponentSvc             Global;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
+@inject ILogger<CustomEmojis>          Logger;
 
 <HeadTitle Text="@Loc["Custom Emojis"]"/>
 
@@ -37,28 +38,55 @@
         <div class="emoji-search">
             <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text"
                    placeholder="Search" aria-label="search"/>
-            @if (Source == "remote")
-            {
-                <input @bind="HostFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text"
-                       placeholder="Host" aria-label="host"/>
-            }
             <select class="search-from" @bind="Source" @bind:after="GetEmojis">
                 <option value="local">@Loc["Local"]</option>
                 <option value="remote">@Loc["Remote"]</option>
             </select>
+                <select class="display-type" @bind=_displayType @bind:after="GetEmojis">
+                    <option value="@DisplayType.All">@Loc["List"]</option>
+                    <option value="@DisplayType.Categories">@Loc["Categories"]</option>
+                </select>
         </div>
     }
     @if (State is State.Loaded)
     {
-        @foreach (var category in Categories)
+        @if (_displayType is DisplayType.All )
         {
-            <span class="category-name">@category.Key</span>
             <div class="emoji-list">
-                @foreach (var emoji in category.Value)
+                @foreach (var emoji in DisplayedEmojis)
                 {
                     <EmojiManagementEntry Emoji="@emoji" Source="@Source" GetEmojis="GetEmojis"/>
                 }
             </div>
+            @if (PaginationData is { Next: not null } && Source == "remote")
+            {
+                <ScrollEnd ManualLoad="FetchMore" IntersectionChange="FetchMore"></ScrollEnd>
+            }
+        }
+        
+        @if (_displayType is DisplayType.Categories && Source == "local")
+        {
+            foreach (var el in LocalEmojiCategories)
+            {
+                <span class="category-name">@el.Key</span>
+                <div class="emoji-list">
+                    @foreach (var emoji in el.Value)
+                    {
+                        <EmojiManagementEntry Emoji="emoji" Source="remote"/>
+                    }
+                </div>
+            }
+           
+        }
+
+        @if (_displayType is DisplayType.Categories && Source == "remote")
+        {
+            @foreach (var category in DisplayedCategories)
+            {
+                <HostEmojiEntry Host="@category"/>
+            }
+
+            <ScrollEnd IntersectionChange="FetchHosts" ManualLoad="FetchHosts"/>
         }
     }
     @if (State is State.Empty)
@@ -68,7 +96,7 @@
     @if (State is State.Loading)
     {
         <div class="loading">
-            <LoadingSpinner Scale="2" />
+            <LoadingSpinner Scale="2"/>
         </div>
     }
 
@@ -79,56 +107,121 @@
 </div>
 
 @code {
-    private List<EmojiResponse>                     Emojis      { get; set; } = [];
-    private Dictionary<string, List<EmojiResponse>> Categories  { get; set; } = new();
-    private string                                  EmojiFilter { get; set; } = "";
-    private string                                  HostFilter  { get; set; } = "";
-    private string                                  Source      { get; set; } = "local";
-    private State                                   State       { get; set; }
-    private InputFile                               UploadInput { get; set; } = null!;
-    private IBrowserFile                            UploadFile  { get; set; } = null!;
-    private string                                  UploadName  { get; set; } = "";
-    private InputFile                               ImportInput { get; set; } = null!;
-    private IBrowserFile                            ImportFile  { get; set; } = null!;
-    private IJSObjectReference                      _module = null!;
+    private List<EmojiResponse>                     DisplayedEmojis      { get; set; } = [];
+    private List<EmojiResponse>                     StoredLocalEmojis    { get; set; } = [];
+    private List<EmojiResponse>                     StoredRemoteEmojis   { get; set; } = [];
+    private Dictionary<string, List<EmojiResponse>> LocalEmojiCategories { get; set; } = new();
+    private HashSet<string>                         Categories           { get; set; } = [];
+    private HashSet<string>                         DisplayedCategories  { get; set; } = [];
+    private string                                  EmojiFilter          { get; set; } = "";
+    private string                                  Source               { get; set; } = "local";
+    private State                                   State                { get; set; }
+    private InputFile                               UploadInput          { get; set; } = null!;
+    private IBrowserFile                            UploadFile           { get; set; } = null!;
+    private InputFile                               ImportInput          { get; set; } = null!;
+    private IBrowserFile                            ImportFile           { get; set; } = null!;
+    private PaginationData?                         PaginationData       { get; set; }
+    private IJSObjectReference                      _module      = null!;
+    private DisplayType                             _displayType = DisplayType.All;
 
     private void FilterEmojis()
     {
-        Categories = Emojis
-                     .Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Aliases.Count(a => a.Contains(EmojiFilter.Trim())) != 0)
-                     .OrderBy(p => p.Name)
-                     .ThenBy(p => p.Id)
-                     .GroupBy(p => p.Category)
-                     .Where(p => Source == "local" || (Source == "remote" && (p.Key?.Contains(HostFilter) ?? false)))
-                     .OrderBy(p => string.IsNullOrEmpty(p.Key))
-                     .ThenBy(p => p.Key)
-                     .ToDictionary(p => p.Key ?? "Other", p => p.ToList());
+        if (Source == "remote" && _displayType == DisplayType.All || Source == "local")
+        {
+            DisplayedEmojis = StoredRemoteEmojis.Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Aliases.Count(a => a.Contains(EmojiFilter.Trim())) > 0).ToList();
+        }
+
+        if (Source == "remote" && _displayType == DisplayType.Categories)
+        {
+            DisplayedCategories = Categories.Where(p => p.Contains(EmojiFilter.Trim())).ToHashSet();
+        }
+
+        if (Source == "local" && _displayType == DisplayType.Categories)
+        {
+            LocalEmojiCategories = StoredLocalEmojis
+            .Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Aliases.Count(a => a.Contains(EmojiFilter.Trim())) != 0)
+            .OrderBy(p => p.Name)
+            .ThenBy(p => p.Id)
+            .GroupBy(p => p.Category)
+            .OrderBy(p => string.IsNullOrEmpty(p.Key))
+            .ThenBy(p => p.Key)
+            .ToDictionary(p => p.Key ?? "Other", p => p.ToList());
+        }
+    }
+
+    private enum DisplayType
+    {
+        Categories,
+        All
     }
 
     private async Task GetEmojis()
     {
-        State = State.Loading;
+        if (Source == "local")
+        {
+            State = State.Loading;
+
+            StoredLocalEmojis = await Api.Emoji.GetAllEmojiAsync();
+            FilterEmojis();
+
+            State = StoredLocalEmojis.Count == 0 ? State.Empty : State.Loaded;
+        }
 
         if (Source == "remote")
         {
-            //TODO: impolement proper pagination
-            var res = await Api.Emoji.GetRemoteEmojiAsync(new PaginationQuery());
-            Emojis = res.Data;
-        }
-        else
-        {
-            Emojis = await Api.Emoji.GetAllEmojiAsync();
+            if (_displayType is DisplayType.Categories)
+            {
+                await FetchHosts();
+            }
+            else
+            {
+                var res = await Api.Emoji.GetRemoteEmojiAsync(new PaginationQuery());
+                PaginationData     = res.Links;
+                StoredRemoteEmojis = res.Data;
+            }
         }
 
-        if (Emojis.Count == 0)
+        if (EmojiFilter.Length == 0)
         {
-            State = State.Empty;
+            switch (Source)
+            {
+                case "remote":
+                    DisplayedEmojis = StoredRemoteEmojis;
+                    break;
+                case "local":
+                    DisplayedEmojis = StoredLocalEmojis;
+                    break;
+            }
         }
-        else
+    }
+
+    private async Task FetchHosts()
+    {
+        // Due to query weirdness, MinID and MaxID are reversed here
+        var pq  = new PaginationQuery { MinId = Categories.LastOrDefault(), Limit = 250 };
+        var res = await Api.Emoji.GetRemoteEmojiHostsAsync(pq);
+        foreach (var el in res)
         {
-            FilterEmojis();
-            State = State.Loaded;
+           var op = Categories.Add(el.Entity);
+           if (!op) Logger.LogWarning($"Duplicate host entry: {el.Entity}");
         }
+
+        if (EmojiFilter.Length == 0) DisplayedCategories = Categories;
+    }
+
+    private async Task FetchMore()
+    {
+        if (PaginationData?.Next == null) return;
+        var pq  = new PaginationQuery { MaxId = PaginationData.Next?.Split('=')[1], Limit = PaginationData.Limit };
+        var res = await Api.Emoji.GetRemoteEmojiAsync(pq);
+        PaginationData = res.Links;
+        StoredRemoteEmojis.AddRange(res.Data);
+        if (EmojiFilter.Length == 0)
+        {
+            DisplayedEmojis = StoredRemoteEmojis;
+        }
+
+        StateHasChanged();
     }
 
     // The <InputFile> Component is hidden, and triggered by a sepperate button.

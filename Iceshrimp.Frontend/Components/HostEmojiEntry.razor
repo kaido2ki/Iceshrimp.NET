@@ -1,0 +1,47 @@
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas.Web
+@using Iceshrimp.Assets.PhosphorIcons
+@inject ApiService Api;
+
+<span @onclick="() => _visible = !_visible" class="category-name">
+    @Host
+    @if (_visible)
+    {
+        <Icon Name="Icons.CaretDown"/>
+    }
+    else
+    {
+        <Icon Name="Icons.CaretRight"/>
+    }
+</span>
+@if (_visible)
+{
+    <div class="emoji-list">
+        @foreach (var emoji in Emojis)
+        {
+            <EmojiManagementEntry Emoji="@emoji" Source="remote"/>
+        }
+    </div>
+    @if (Pd is { Next: not null } or null)
+    {
+        <ScrollEnd ManualLoad="FetchHostEmoji" IntersectionChange="FetchHostEmoji"/>
+    }
+}
+
+
+@code {
+    [Parameter, EditorRequired] public required string              Host   { get; set; }
+    private                                     PaginationData?     Pd     { get; set; }
+    private                                     List<EmojiResponse> Emojis { get; } = [];
+    private                                     bool                _visible = false;
+
+    private async Task FetchHostEmoji()
+    {
+        if (Pd is { Next: null }) return;
+        var pq  = new PaginationQuery { MaxId = Pd?.Next?.Split('=')[1], Limit = Pd?.Limit };
+        var res = await Api.Emoji.GetRemoteEmojiAsync(Host, pq);
+        Pd = res.Links;
+        Emojis.AddRange(res.Data);
+    }
+}

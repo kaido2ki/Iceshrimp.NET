@@ -57,6 +57,7 @@
                     <Text>@Loc["Mark as sensitive"]</Text>
                 </MenuElement>
             }
+
             <MenuElement Icon="Icons.TextAa" OnSelect="SetAliases">
                 <Text>@Loc["Set aliases"]</Text>
             </MenuElement>
@@ -77,7 +78,7 @@
 @code {
     [Parameter, EditorRequired] public required EmojiResponse    Emoji       { get; set; }
     [Parameter, EditorRequired] public required string           Source      { get; set; }
-    [Parameter, EditorRequired] public required EventCallback    GetEmojis   { get; set; }
+    [Parameter]                 public          EventCallback    GetEmojis   { get; set; }
     private                                     ElementReference EmojiButton { get; set; }
     private                                     Menu             EmojiMenu   { get; set; } = null!;
 
@@ -120,7 +121,7 @@
             await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
-    
+
     private async Task MarkSensitive(bool sensitive)
     {
         try
