@@ -50,7 +50,8 @@ public class RewriteStaticAssetManifest : Microsoft.Build.Utilities.Task
 		// Get a list of constrained routes
 		var brotliRoutes = manifest.Endpoints
 		                           .Where(p => p.Selectors is [{ Name: "Content-Encoding", Value: "br" }])
-		                           .ToDictionary(p => p.Route,
+		                           .DistinctBy(p => p.AssetPath)
+		                           .ToDictionary(p => p.AssetPath,
 		                                         p => p.ResponseHeaders
 		                                               .FirstOrDefault(i => i.Name == "Content-Length"));
 
@@ -60,7 +61,9 @@ public class RewriteStaticAssetManifest : Microsoft.Build.Utilities.Task
 		foreach (var endpoint in arr)
 		{
 			if (endpoint.Selectors.Count > 0) continue;
-			if (!brotliRoutes.TryGetValue(endpoint.AssetPath, out var len)) continue;
+			if (!brotliRoutes.TryGetValue(endpoint.AssetPath + ".br", out var len))
+				continue;
+
 			if (len is null) throw new Exception($"Couldn't find content-length for route ${endpoint.Route}");
 			var origLen = endpoint.ResponseHeaders.First(p => p.Name == len.Name);
 			endpoint.Properties.Add(new StaticAssetProperty("Uncompressed-Length", origLen.Value));
