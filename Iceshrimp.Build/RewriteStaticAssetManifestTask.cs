@@ -1,6 +1,8 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Build.Framework;
+
 // ReSharper disable UnusedMember.Local
 // ReSharper disable CheckNamespace
 // ReSharper disable ClassNeverInstantiated.Local
@@ -52,8 +54,10 @@ public class RewriteStaticAssetManifest : Microsoft.Build.Utilities.Task
 		                                         p => p.ResponseHeaders
 		                                               .FirstOrDefault(i => i.Name == "Content-Length"));
 
+		var arr = manifest.Endpoints.ToArray();
+
 		// Rewrite uncompressed versions to reference brotli-compressed asset instead
-		foreach (var endpoint in manifest.Endpoints.ToArray())
+		foreach (var endpoint in arr)
 		{
 			if (endpoint.Selectors.Count > 0) continue;
 			if (!brotliRoutes.TryGetValue(endpoint.AssetPath, out var len)) continue;
@@ -63,6 +67,32 @@ public class RewriteStaticAssetManifest : Microsoft.Build.Utilities.Task
 			endpoint.ResponseHeaders.Remove(origLen);
 			endpoint.ResponseHeaders.Add(len);
 			endpoint.AssetPath += ".br";
+		}
+
+		// Fixup assets without a corresponding compressed selector entry
+		foreach (var endpoint in arr)
+		{
+			if (endpoint.Route == endpoint.AssetPath) continue;
+			if (endpoint.Selectors is not []) continue;
+			if (!endpoint.AssetPath.EndsWith(".br")) continue;
+			if (endpoint.Route.EndsWith(".br")) continue;
+			if (endpoint.ResponseHeaders.FirstOrDefault(p => p.Name == "Content-Length") is not { } lenHdr)
+				continue;
+			if (!long.TryParse(lenHdr.Value, out var len))
+				continue;
+			if (arr.Any(p => p.Route == endpoint.Route && p.AssetPath == endpoint.AssetPath && endpoint.Selectors is not []))
+				continue;
+
+			var quality = Math.Round(1.0 / (len + 1), 12).ToString("F12", CultureInfo.InvariantCulture);
+
+			manifest.Endpoints.Add(new StaticAssetDescriptor
+			{
+				Route           = endpoint.Route,
+				AssetPath       = endpoint.AssetPath,
+				Properties      = endpoint.Properties,
+				ResponseHeaders = [..endpoint.ResponseHeaders, new StaticAssetResponseHeader("Content-Encoding", "br")],
+				Selectors       = [new StaticAssetSelector("Content-Encoding", "br", quality)]
+			});
 		}
 
 		// Remove explicit routes
@@ -136,13 +166,13 @@ public class RewriteStaticAssetManifest : Microsoft.Build.Utilities.Task
 
 	private sealed class StaticAssetProperty(string name, string value)
 	{
-		public string Name { get; } = name;
+		public string Name  { get; } = name;
 		public string Value { get; } = value;
 	}
 
 	private sealed class StaticAssetResponseHeader(string name, string value)
 	{
-		public string Name { get; } = name;
+		public string Name  { get; } = name;
 		public string Value { get; } = value;
 	}
 }
