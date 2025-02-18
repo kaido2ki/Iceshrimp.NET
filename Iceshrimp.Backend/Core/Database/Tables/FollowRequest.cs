@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,7 +10,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(FolloweeId))]
 [Index(nameof(FollowerId))]
 [Index(nameof(FollowerId), nameof(FolloweeId), IsUnique = true)]
-public class FollowRequest : IEntity
+public class FollowRequest : IIdentifiable
 {
 	/// <summary>
 	///     The created date of the FollowRequest.

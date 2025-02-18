@@ -1,6 +1,6 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -36,7 +36,7 @@ public class LinkPaginationAttribute(
 
 		var entities = context.HttpContext.GetPaginationData();
 		if (entities == null && context.Result is ObjectResult { StatusCode: null or >= 200 and <= 299 } result)
-			entities = result.Value as IEnumerable<IEntity>;
+			entities = result.Value as IEnumerable<IIdentifiable>;
 
 		if (entities is null) return;
 		var ids = entities.Select(p => p.Id).ToList();
@@ -89,15 +89,15 @@ public static class HttpContextExtensions
 {
 	private const string Key = "link-pagination";
 
-	internal static void SetPaginationData(this HttpContext ctx, IEnumerable<IEntity> entities)
+	internal static void SetPaginationData(this HttpContext ctx, IEnumerable<IIdentifiable> entities)
 	{
 		ctx.Items.Add(Key, entities);
 	}
 
-	public static IEnumerable<IEntity>? GetPaginationData(this HttpContext ctx)
+	public static IEnumerable<IIdentifiable>? GetPaginationData(this HttpContext ctx)
 	{
 		ctx.Items.TryGetValue(Key, out var entities);
-		return entities as IEnumerable<IEntity>;
+		return entities as IEnumerable<IIdentifiable>;
 	}
 }
 

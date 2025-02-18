@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using EntityFrameworkCore.Projectables;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -23,7 +24,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(AvatarId), IsUnique = true)]
 [Index(nameof(BannerId), IsUnique = true)]
 [Index(nameof(IsSuspended))]
-public class User : IEntity
+public class User : IIdentifiable
 {
 	/// <summary>
 	///     The created date of the User.

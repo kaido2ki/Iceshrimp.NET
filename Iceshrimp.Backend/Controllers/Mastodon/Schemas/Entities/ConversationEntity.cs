@@ -1,9 +1,9 @@
-using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Shared.Helpers;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class ConversationEntity : IEntity
+public class ConversationEntity : IIdentifiable
 {
 	[J("unread")]      public required bool                Unread     { get; set; }
 	[J("accounts")]    public required List<AccountEntity> Accounts   { get; set; }

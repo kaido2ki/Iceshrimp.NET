@@ -1,14 +1,14 @@
 using System.Text.Json.Serialization;
 using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Shared.Helpers;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class StatusEntity : IEntity, ICloneable
+public class StatusEntity : IIdentifiable, ICloneable
 {
 	[JI]                          public          string?       MastoReplyUserId;
 	[J("text")]                   public required string?       Text           { get; set; }

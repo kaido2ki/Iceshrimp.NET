@@ -1,11 +1,11 @@
 using System.Text.Json.Serialization;
-using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Shared.Helpers;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class RelationshipEntity : IEntity
+public class RelationshipEntity : IIdentifiable
 {
 	[J("following")]            public required bool   Following           { get; set; }
 	[J("followed_by")]          public required bool   FollowedBy          { get; set; }

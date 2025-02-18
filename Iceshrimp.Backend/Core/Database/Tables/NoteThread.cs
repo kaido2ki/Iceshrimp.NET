@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using EntityFrameworkCore.Projectables;
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,7 +11,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("note_thread")]
 [Index(nameof(Uri), IsUnique = true)]
-public class NoteThread : IEntity
+public class NoteThread : IIdentifiable
 {
 	[Column("id")]
 	[StringLength(256)]

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NpgsqlTypes;
@@ -15,7 +16,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(AppAccessTokenId))]
 [Index(nameof(MastoId))]
 [Index(nameof(NoteId))]
-public class Notification : IEntity
+public class Notification : IIdentifiable
 {
 	[PgName("notification_type_enum")]
 	public enum NotificationType

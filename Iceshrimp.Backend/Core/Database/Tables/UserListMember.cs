@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,7 +10,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(UserListId))]
 [Index(nameof(UserId), nameof(UserListId), IsUnique = true)]
 [Index(nameof(UserId))]
-public class UserListMember : IEntity
+public class UserListMember : IIdentifiable
 {
 	/// <summary>
 	///     The created date of the UserListMember.

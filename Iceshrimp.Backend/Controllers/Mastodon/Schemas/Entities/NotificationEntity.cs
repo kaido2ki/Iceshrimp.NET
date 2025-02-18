@@ -1,12 +1,12 @@
 using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Shared.Helpers;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 using static Iceshrimp.Backend.Core.Database.Tables.Notification;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class NotificationEntity : IEntity
+public class NotificationEntity : IIdentifiable
 {
 	[J("created_at")] public required string                        CreatedAt { get; set; }
 	[J("type")]       public required string                        Type      { get; set; }

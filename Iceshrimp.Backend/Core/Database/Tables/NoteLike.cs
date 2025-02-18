@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,7 +10,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(UserId))]
 [Index(nameof(NoteId))]
 [Index(nameof(UserId), nameof(NoteId), IsUnique = true)]
-public class NoteLike : IEntity
+public class NoteLike : IIdentifiable
 {
 	[Key]
 	[Column("id")]

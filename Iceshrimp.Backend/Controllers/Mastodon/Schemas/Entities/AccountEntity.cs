@@ -1,9 +1,9 @@
-using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Shared.Helpers;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class AccountEntity : IEntity
+public class AccountEntity : IIdentifiable
 {
 	[J("username")]        public required string            Username           { get; set; }
 	[J("acct")]            public required string            Acct               { get; set; }

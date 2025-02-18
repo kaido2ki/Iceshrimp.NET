@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using EntityFrameworkCore.Projectables;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NpgsqlTypes;
@@ -32,7 +33,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(Visibility))]
 [Index(nameof(ReplyUri))]
 [Index(nameof(RenoteUri))]
-public class Note : IEntity
+public class Note : IIdentifiable
 {
 	[PgName("note_visibility_enum")]
 	public enum NoteVisibility

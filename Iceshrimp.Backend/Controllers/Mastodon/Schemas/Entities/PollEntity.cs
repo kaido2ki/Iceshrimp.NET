@@ -1,9 +1,9 @@
-using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Shared.Helpers;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class PollEntity : IEntity
+public class PollEntity : IIdentifiable
 {
 	[J("expires_at")]   public required string? ExpiresAt   { get; set; }
 	[J("expired")]      public required bool    Expired     { get; set; }

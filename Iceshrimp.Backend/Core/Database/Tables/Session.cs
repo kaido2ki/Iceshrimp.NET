@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -7,7 +8,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("session")]
 [Index(nameof(Token))]
-public class Session : IEntity
+public class Session : IIdentifiable
 {
 	[Key]
 	[Column("id")]

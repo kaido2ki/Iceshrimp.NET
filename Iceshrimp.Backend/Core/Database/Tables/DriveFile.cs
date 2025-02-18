@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
@@ -20,7 +21,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(AccessKey))]
 [Index(nameof(Uri))]
 [Index(nameof(ThumbnailAccessKey))]
-public class DriveFile : IEntity
+public class DriveFile : IIdentifiable
 {
 	/// <summary>
 	///     The created date of the DriveFile.
