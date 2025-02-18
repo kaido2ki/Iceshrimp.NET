@@ -241,7 +241,7 @@
     }
 
     private bool SendingDisabled() =>
-        NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length) < 0 || UploadingFiles != 0;
+        NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length) < 0 || UploadingFiles != 0 || NoteDraft.Poll != null && PollChoices.Count(p => !string.IsNullOrWhiteSpace(p.Value)) < 2;
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
@@ -403,7 +403,7 @@
 
         if (NoteDraft.Poll != null)
         {
-            NoteDraft.Poll.Choices = PollChoices.Select(p => p.Value).ToList();
+            NoteDraft.Poll.Choices = PollChoices.Select(p => p.Value).Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
             NoteDraft.Poll.ExpiresAt = PollExpires switch
             {
                 PollExpire.ExpiresAt => PollExpireTime.ToUniversalTime(),
@@ -487,6 +487,7 @@
 
     private void AddPollChoice()
     {
+        if (string.IsNullOrWhiteSpace(PollEntry)) return;
         PollChoices.Add(new Choice { Value = PollEntry });
         PollEntry = "";
     }
