@@ -1,7 +1,4 @@
 .scroller {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
     width: 100%;
     overflow-x: auto;
     overscroll-behavior-y: contain;
@@ -14,6 +11,7 @@
     padding-left: 0.5rem;
     padding-right: 0.5rem;
     width: 100%;
+    margin: auto;
 }
 
 .loading {
@@ -26,5 +24,9 @@
 ::deep {
     .scroll-end {
         height: 3rem;
+        margin: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
