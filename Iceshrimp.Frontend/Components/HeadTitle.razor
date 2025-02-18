@@ -1,0 +1,24 @@
+@using Iceshrimp.Frontend.Core.Services
+@inject MetadataService Metadata;
+
+@if (string.IsNullOrWhiteSpace(Text))
+{
+    <PageTitle>@InstanceName</PageTitle>
+}
+else
+{
+    <PageTitle>@Text | @InstanceName</PageTitle>
+}
+
+@code {
+    [Parameter] public string? Text         { get; set; }
+    private            string  InstanceName { get; set; } = "Iceshrimp.NET";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var metadata = await Metadata.Instance.Value;
+
+        if (metadata.Name != null)
+            InstanceName = metadata.Name;
+    }
+}
