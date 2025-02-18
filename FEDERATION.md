@@ -22,7 +22,7 @@ This document **MAY** alias JSON-LD namespace IRIs to their well-known aliases. 
     + See [here](https://iceshrimp.dev/iceshrimp/Iceshrimp.NET/src/branch/dev/Iceshrimp.Backend/Core/Federation/ActivityStreams/LdHelpers.cs#L16-L24) and [here](https://iceshrimp.dev/iceshrimp/Iceshrimp.NET/src/branch/dev/Iceshrimp.Backend/Core/Federation/ActivityStreams/Contexts) to see all preloaded LD contexts we ship.
   - Outgoing activities are compacted against our well-known LD context ([iceshrimp.json](https://iceshrimp.dev/iceshrimp/Iceshrimp.NET/src/branch/dev/Iceshrimp.Backend/Core/Federation/ActivityStreams/Contexts/iceshrimp.json)).
     + For compatibility with implementors that are not doing full LD processing, we force some attributes to be an array:
-      * `tag`, `attachment`, `to`, `cc`, `bcc`, `bto` (all in the `https://www.w3.org/ns/activitystreams` namespace)
+      * `tag`, `attachment`, `to`, `cc`, `bcc`, `bto`, `alsoKnownAs` (all in the `https://www.w3.org/ns/activitystreams` namespace)
     + For the same reason, we forcibly keep `https://www.w3.org/ns/activitystreams#Public` as the full IRI, instead of compacting it to `as:Public`.
     + We trim unused inline properties from the context. For technical reasons, unused namespace aliases are currently not trimmed, but this is subject to change.
 - [WebFinger](https://webfinger.net/)
@@ -34,12 +34,14 @@ This document **MAY** alias JSON-LD namespace IRIs to their well-known aliases. 
   - We support WebFinger over `application/jrd+json` as well as `application/xrd+xml` (both incoming and outgoing).
     + However, we do not ask for `xrd+xml` in our `Accept` header for outgoing WebFinger requests due to [compatibility issues](https://github.com/friendica/friendica/issues/14370) with Friendica.
     + Responses **MUST** have their `Content-Type` set to `application/jrd+json`, `application/xrd+xml`, `application/json`, or `application/xml`.
+    + Responses **MUST** contain a link with the attributes `rel='self'` and `type='application/activity+json'`.
+        * `application/ld+json; profile="https://www.w3.org/ns/activitystreams"` is treated interchangably with `application/activity+json`.
+    + Responses **SHOULD** contain the `acct:` URI of the actor in the `subject` or `aliases` fields.
+      * If no such URI is found, we attempt to fetch the actor via ActivityPub and assemble the link from the actor's `preferredUsername` and `@id` host.
   - We support host-meta over `application/jrd+json` as well as `application/xrd+xml` (both incoming and outgoing).
     + The json representation is also accessible under `/.well-known/host-meta.json`.
     + Implementors **SHOULD** advertise the WebFinger `Content-Type` in the `type` attribute of the WebFinger template in the host-meta response.
-      * However, since major implementors either omit the attribute, or incorrectly advertise `jrd+json` as `xrd+xml`, we presently ignore this property.
-    + Implementors **MUST** return a link with the attributes `rel='self'` and `type='application/activity+json'` in the response.
-      * `application/ld+json; profile="https://www.w3.org/ns/activitystreams"` is treated interchangably with `application/activity+json`.
+      * However, since major implementors either omit the attribute, or incorrectly advertise `jrd+json` as `xrd+xml`, we presently ignore this property. 
 - [HTTP Signatures](https://datatracker.ietf.org/doc/html/draft-cavage-http-signatures)
   - Incoming activities sent to the shared inbox or actor inbox **MUST** carry a valid HTTP signature, unless LD Signatures are explicitly enabled in the configuration, and the activity carries a valid LD signature.
   - Incoming federation requests **MUST** carry a valid HTTP signature, unless authorized fetch is explicitly disabled in the configuration.

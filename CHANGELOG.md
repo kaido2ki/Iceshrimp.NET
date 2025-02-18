@@ -1,10 +1,232 @@
 ## v2025.1-beta5
+This release contains lots of new features & bug fixes. Upgrading is recommended for all server operators.
 
-> **Note**
-> This is an incomplete changelog for an unreleased version. See below for the released versions.
+### Release notes
+This release contains a **breaking change** - we now require PostgreSQL version 15 or higher. If you need assistance upgrading, please reach out to the [support chat](https://chat.iceshrimp.dev).
 
-### Breaking changes
-- We now require PostgreSQL version 15 or higher. If you need assistance upgrading, please reach out to the [support chat](https://chat.iceshrimp.dev).
+### Highlights
+- The MFM parser has been completely rewritten, improving frontend performance by several orders of magnitude, as well as fixing countless bugs, slowdowns & edge cases.
+- TOTP 2FA is now supported and can be configured in the user settings
+- Instance rules can now be configured and displayed
+- Links in user profile fields are now verified
+- Full drive file management has been added
+- Federated user pronouns have been added
+- Remote media is now proxied by default
+- The project and all in-house libraries now target .NET 9.0
+
+### Blazor frontend
+- Custom emoji in user bios, user fields, user display names, & note content warnings are now rendered correctly
+- Display names & fields now only render their respective first line
+- The note display now only breaks words break when necessary
+- The font used on the frontend is now downloaded if it's not available on the client system
+- The Iceshrimp.NET frontend can now be installed as a PWA (Offline support is not enabled yet)
+- The frontend will automatically check for and notify about new versions
+- Better emoji picker with categories and search support
+- Follow button will no longer show up for your own profile
+- User profiles now have badges that indicate if a user is following you, as well as badges for moderators, administrators, and automated accounts
+- Notes by automated accounts are tagged as such
+- Improved rendering of notifications
+- Accounts that require follow approval are tagged appropriately
+- Notes in the profile view can now be opened correctly
+- The emoji picker now works correctly when composing a note
+- Composing a reply no longer adds a mention for yourself
+- The host part of local mentions is now hidden
+- Alt text can now easily be viewed for note attachments
+- More notification types are now supported, and feature appropriate icons and emoji
+- A registration page has been added
+- The login page has been reworked and now features an account selector for existing sessions
+- TOTP 2FA enrollment and authentication are now possible
+- Buttons that have a state now reflect their state better
+- Default note visiblity is respected when composing new notes
+- MfM rendering now supports many many more functions and should render most MfM art correctly (flip, font, x2/3/4, blur, rotate, crop, position, scale, fg, bg, fn, jelly, tada, jump, bounce, spin, shake, twitch, rainbow, fade, ruby, unixtime, center, small)
+- All popover menus are now improved
+- The attachment viewer now supports keyboard navigation and displays alt text
+- Single character profiles can now be opened correctly
+- When composing a note, attached files are now listed and have a preview
+- Improved display of note reaction details
+- User profile now has a menu for contextual actions
+- Look of all buttons has been improved
+- Full profile customization is now possible, including changing banners, profile pictures, tags, etc.
+- The follow back button now renders correctly
+- The note composer now has a preview of what your note will look like
+- Note composer now features character count
+- Posts can be submitted with ctrl/cmd + enter
+- Virtual scroller was completely rewritten to be more performant
+- Fetched note data is now cached
+- You can now create rules that will be displayed on the registration page and the instances about page
+- Support for setting profile avatar and banner alt text
+- New better looking dialog system for prompts, notices, etc.
+- Button to open/close all content warnings in a thread
+- The cw button now shows how long the post behind the CW is
+- Removed overscroll in places where it looks bad
+- Added status indicator for notification and timeline streaming
+- Refetch profile option for the profile page
+- Drive management has been added, including folder support, upload, and deletion, and modification
+- Added a dedicated pronoun field on the profile page
+- Menus take up more of the screen on the mobile UI and are easier to navigate
+- Management page for local and remote emoji (Upload, modification, cloning)
+- Completely reworked default theme
+- Style improvements to go with the new default theme
+- Support for poll rendering and voting
+- Improved loading spinners
+- Menu to change accounts or log out
+- Settings pages no longer exceed screen height unless needed
+- Notification content is limited to a reasonable size
+- Improved rendering of cw and reactions in indented notes
+- Admin cookie persists unless you log out the admin account
+- Fixed a crash in the attachment viewer on chrome
+- Content warnings now correctly hide quotes
+- Added indicator when attachments are uploading
+- Disabled posting note while attachments are uploading or note is empty
+- Blurred images are now easier to deblur
+- Many z-index issues have been fixed
+- Page title now reflects instance name and current page
+
+### Razor (public preview, admin panel, queue dashboard, etc.)
+- The admin dashboard now has a responsive navigation bar
+- Constructor dependency injection is now used where applicable
+- Static assets are now collected, compressed & fingerprinted at build time
+- The favicon is now correctly set to the project logo
+- The index page now displays the Iceshrimp project wordmark
+- The page footer is now more responsive
+- Emoji now have their name set as alt text
+- The queue dashboard index page now has a "top delayed" section
+- The page footer now shows a registration link when registrations are open or invite-only
+- The generate invite button on the admin panel is now accessible to screen-reader users
+- The federation management page of the admin panel now has a search box
+- The admin panel now supports remote user management & user search
+- Polls are now displayed in public preview
+
+### Backend
+- Fork information in the version string is now handled correctly
+- Version information is now only computed once
+- Failed user resolutions no longer break the follow list import process
+- Command line output referencing help pages now uses shortlinks, to prevent link rot
+- Note backfilling now uses a stack instead of a queue
+- MIME type & file extension are now being set correctly for converted images
+- Locally originating create activities can now be fetched by their URI
+- User responses now contain any emoji used in their display name or bio
+- A DbContext race condition in UserRenderer has been fixed, resolving transient concurrency errors
+- The search query parser now supports the has:media query
+- User publickeys now have any extra whitespace removed before being added to the database
+- Instance staff endpoints have been added
+- User lookup error messages are now more specific
+- User profile responses now include user roles, as well as the IsBot, IsCat and IsLocked fields
+- Uploading files with long unicode names now works correctly
+- Lock statements now use lock objects for improved performance
+- GeneratedRegex partial methods have been converted to partial properties
+- All params methods have been converted to take `IEnumerable<T>` as parameters
+- The `dotnet ef database update` command now works as expected with multiplexing enabled
+- An alternative OpenAPI UI - Scalar - has been added (accessible under `/scalar` & `/openapi`)
+- Unauthenticated federation endpoints now cache their outputs for a short duration, easing database load during request bursts
+- Release builds now use compiled EF models, reducing startup time by ~500ms
+- The startup duration is now logged to console
+- Entity model configuration has been moved into the respective entity classes
+- The OpenAPI schema is now only generated once
+- Usages of the `ConsumesHybrid` attribute have been replaced with `FromHybrid`
+- `BlazorSsrHandoffMiddleware` now uses reflection instead of modifying the response
+- A new exception verbosity option `Debug` has been added
+- The error page title now contain the status code
+- Middleware is now invoked conditionally, improving performance, simplifying stack traces and allowing plugins to add middleware to the stack
+- Services are now runtime-discoverable, greatly improving readability
+- Scoped services with request-specific properties have been converted to singletons using `AsyncLocal<T>`
+- Unneeded compressed assets are no longer generated during build, improving build times
+- The solution file now has virtual folders for build assets & project root files
+- Version & web manifest endpoints have been added to support frontend PWA features
+- Exceptions in StreamingConnectionAggregate no longer crash the backend
+- Note creates & updates now get delivered to the author of note being replied to even if they're not mentioned
+- Note recipients now get deduplicated
+- Instance info endpoints have been added
+- Support for note context collections has been added
+- Reaction notifications now contain more information about the received reaction
+- Note inline media is now supported using the `$[media <uri>]` MFM tag
+- Session management endpoints have been added
+- Line endings now get canonicalized during note/user ingest/update for improved frontend performance
+- Empty & whitespace alt text now gets treated as no alt text
+- User profile responses now contain the public URL of the user
+- Endpoints related to user avatar, banner & display name have been added
+- The user settings endpoints now allow for configuring the `isBot`, `isCat` and `speakAsCat` properties
+- HTML markup tags are now deserialized to their corresponding MFM tag equivalent, instead of using symbol tags
+- The note resolution lock now uses the fetched object `@id` property as its key
+- Note lookups are now authenticated with the requesting user & don't attempt to redirect to inaccessible notes
+- The batch emoji import endpoint is now excluded from the request size limit
+- The emoji management endpoints now require moderator permissions instead of administrator ones
+- Quotes without text no longer federate incorrectly to quote-aware implementations
+- Notes from implementations sending HTML line breaks not followed by newline characters now get parsed correctly
+- Quote blocks now aren't surrounded by extraneous line breaks
+- The default renote visibility user setting can no longer be set to `specified`
+- The user resolver now falls back to building the username/host tuple from the actor URI when it's not contained in the WebFinger response
+- Reply backfill jobs now don't get scheduled for followers-only posts when authenticated user backfill is disabled
+- The `w3id/identity-v1` JSON-LD context definition is now preloaded
+- Outgoing unixtime MFM nodes now get converted to human-readable HTML
+- Nodeinfo responses now return the configured instance name, description & admin contact email
+- Support for backfilling user profiles has been added
+- The exposed outbox collection is now functional
+- Transient LD signature validation errors due to use of the wrong media type parser have been resolved
+- Note refetches no longer wrongly mark notes as edited
+- Fetching the relay actor now bypasses authorized fetch
+- A startup error is now raised if the `ASPNETCORE_TEMP` is not writable
+- Requests sent by suspended remote users are now rejected early during authorized fetch / inbox validation
+- The unix socket permissions are now customizable
+- The rewrite policy `CollapseWhitespace` was added
+- Single emoji can now be given a name before uploading them
+- The search query parser has been rewritten in C#, dropping the `FSharp.Core` dependency
+- The UserResolver acct/uri mismatch message has been significantly improved
+- Processed images now federate with the correct content type
+- Negated search parameters now work with `match:words`
+- The instance info response now contains the note length limit
+- HTTP proxy configurations are now supported
+- Hashtags are now handled more correctly, improving federation compatibility
+- The home timeline heuristic now gets updated automatically for recently active users
+- Hashtags now get the correct class set in when serialized to HTML
+- Notes with `publishedAt`/`updatedAt` set to timestamps from the future will now get clamped to the current time
+- The `Result<T>` helper type is now provided by `Iceshrimp.Utils.Common`
+- User migration events now also transfer incoming and outgoing blocks to the new account
+- The emoji table now correctly enforces unique names for local emoji (duplicates get fixed automatically, the newest entry is preserved)
+- Like activities with `content` property now get correctly processed as reactions
+- Deletion failures during media fixup are now ignored
+- Avatar & banner alt text now federates bidirectionally, is returned in corresponding API responses & can be set
+- `ExpressionExtensions` and `QueryableExtensions.AsChunkedAsyncEnumerable<T>` are now provided by `Iceshrimp.EntityFrameworkCore.Extensions`
+- The license of assets included in the repository has been clarified to be `CC BY-SA 4.0`
+- A refetch user endpoint has been added
+- Remote emoji management endpoints have been added
+- Polls can now be created, retrieved & voted on via the Web API
+- Emoji media types now get populated & federated as appropriate
+- Emoji entity names now get wrapped in colons for federation, resolving an interoperability issue with NodeBB
+
+### Akkoma client API
+- Local-only visibility is now respected
+
+### Mastodon client API
+- Admin scopes are now considered valid, allowing clients who request these to authenticate
+- The confusing status context logic has been removed, matching -js & web api behavior
+- The specified WebSocket protocol is now echoed back for streaming connections, fixing compatibility issues with some clients
+- Attachment metadata is now returned when available
+- Filter matches are now deduplicated, preventing duplicate filter match mesages
+- The "reply inaccessible" marker now gets moved into the content warning (if any) and is more consistent
+- Blockquotes now get rendered correctly when `supportsHtmlFormatting` is disabled
+- Multiple accounts can now be fetched in one go via `/api/v1/accounts`
+- Multiple statuses can now be fetched in one go via `/api/v1/statuses`
+- The status response now correctly lists all hashtags
+- The `/api/v1/accounts/{id}/statuses` endpoint no longer requires authentication, matching Mastodon's behavior
+
+### Unit tests
+- Tests now take less time to run due to higher parallelization
+- The testing platform has been changed from `VSTest` to `Microsoft.Testing.Platform`
+- The assertions library has been changed from `FluentAssertions` to `Iceshrimp.Assertions` due to a license change
+
+### Build tasks
+- Compressed razor class library assets now have corresponding static asset selector routes
+- Pre-fingerprinted static assets collected from razor class libraries now get mapped correctly
+
+### Miscellaneous
+- The README has been updated
+- The Dockerfile has been updated
+- The security policy has been updated
+- The OpenAPI documentation has been improved
+
+### Attribution
+This release was made possible by project contributors: blueb, Jeder, Kopper, Laura Hausmann, Lilian, notfire, pancakes & Tamara Schmitz
 
 ## v2024.1-beta4.security2
 This is a security hotfix release. It's identical to v2024.1-beta4.security1, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
