@@ -17,6 +17,8 @@
 @inject ILogger<DrivePage>             Logger;
 @inject NavigationManager              Nav;
 
+<HeadTitle Text="@Loc["Drive"]"/>
+
 <SectionContent SectionName="top-bar">
     @if (State == State.Loaded && Folder is { Id: not null, Name: not null })
     {

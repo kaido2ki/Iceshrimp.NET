@@ -25,6 +25,8 @@
 
 @if (_componentState == State.Loaded)
 {
+    <HeadTitle Text="@Loc["Note by {0}", RootNote?.User.DisplayName ?? RootNote?.User.Username ?? ""]"/>
+
     <SectionContent SectionName="top-bar">
         <Icon Name="Icons.Signpost"></Icon>
         @if (RootNote is { User.DisplayName: not null } && RootNote.User.Emojis.Count != 0)
@@ -134,18 +136,26 @@
 }
 @if (_componentState == State.Loading)
 {
+    <HeadTitle Text="@Loc["Loading"]"/>
+
     <div class="loading"><LoadingSpinner Scale="2" /></div>
 }
 @if (_componentState == State.NotFound)
 {
+    <HeadTitle Text="@Loc["Note not found"]"/>
+
     <div>This note does not exist!</div>
 }
 @if (_componentState == State.Empty)
 {
+    <HeadTitle Text="@Loc["Deleted"]"/>
+
     <div>@Loc["This post has been deleted"]</div>
 }
 @if (_componentState == State.Error)
 {
+    <HeadTitle Text="@Loc["Error"]"/>
+
     <div>An error occured loading the notes. Please inspect logs.</div>
 }
 

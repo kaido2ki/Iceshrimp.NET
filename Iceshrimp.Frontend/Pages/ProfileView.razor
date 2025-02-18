@@ -20,6 +20,8 @@
 
 @if (_init)
 {
+    <HeadTitle Text="@(UserResponse.DisplayName ?? UserResponse.Username)"/>
+
     <div class="container">
         @if (UserResponse.BannerUrl != null)
         {
@@ -120,14 +122,20 @@
 }
 @if (_loading)
 {
+    <HeadTitle Text="@Loc["Loading"]"/>
+
     <div class="loading"><LoadingSpinner Scale="2" /></div>
 }
 @if (_notFound)
 {
+    <HeadTitle Text="@Loc["User not found"]"/>
+
     <div>User does not exist!</div>
 }
 @if (_error)
 {
+    <HeadTitle Text="@Loc["Error"]"/>
+
     <div>Failure</div>
 }
 

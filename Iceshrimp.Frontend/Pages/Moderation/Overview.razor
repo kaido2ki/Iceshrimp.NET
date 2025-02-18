@@ -6,7 +6,10 @@
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
 @using Microsoft.AspNetCore.Authorization
+@using Iceshrimp.Frontend.Components
 @inject IStringLocalizer<Localization> Loc;
+
+<HeadTitle Text="@Loc["Moderation"]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Shield"></Icon>
