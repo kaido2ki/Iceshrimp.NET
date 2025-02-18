@@ -63,6 +63,9 @@
                 <div class="file-input">
                     <InputFile @ref="UploadInput" OnChange="Upload">Upload!</InputFile>
                 </div>
+                <button class="btn" title="@Loc["Poll"]" @onclick="TogglePoll" aria-label="poll">
+                    <Icon Name="Icons.MicrophoneStage" Size="1.3rem"></Icon>
+                </button>
                 <button class="btn" title="@Loc["Content warning"]" @onclick="ToggleCw" aria-label="content warning">
                     <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
                 </button>
@@ -113,6 +116,61 @@
                 }
             </div>
         }
+        @if (NoteDraft.Poll != null)
+        {
+            <div class="poll">
+                <div class="choices">
+                    @foreach (var entry in PollChoices)
+                    {
+                        <div class="choice">
+                            <input class="input" placeholder="@Loc["Choice"]" @bind="@entry.Value"/>
+                            <button class="button" title="@Loc["Delete Choice"]" @onclick="() => DeletePollChoice(entry)">
+                                <Icon Name="Icons.Trash"/>
+                            </button>
+                        </div>
+                    }
+                    @if (PollChoices.Count < 10)
+                    {
+                        <div class="choice">
+                            <input class="input" placeholder="@Loc["Choice"]" @bind="@PollEntry"/>
+                            <button class="button" title="@Loc["Add Choice"]" @onclick="AddPollChoice">
+                                <Icon Name="Icons.Plus"/>
+                            </button>
+                        </div>
+                    }
+                </div>
+                <input type="checkbox" id="poll-multiple" @bind="NoteDraft.Poll.Multiple"/>
+                <label for="poll-multiple">@Loc["Multiple choice"]</label>
+                <div class="expire">
+                    <div>
+                        <label for="poll-expires">@Loc["End poll"]</label>
+                        <select @bind="PollExpires" id="poll-expires">
+                            <option value="@PollExpire.Never">@Loc["Never"]</option>
+                            <option value="@PollExpire.ExpiresAt">@Loc["End at"]</option>
+                            <option value="@PollExpire.ExpiresAfter">@Loc["End after"]</option>
+                        </select>
+                    </div>
+                    @switch (PollExpires)
+                    {
+                        case PollExpire.Never:
+                            break;
+                        case PollExpire.ExpiresAt:
+                            <input type="datetime-local" class="input" @bind="PollExpireTime"/>
+                            break;
+                        case PollExpire.ExpiresAfter:
+                            <input type="number" class="input" placeholder="@Loc["Duration"]" min="@(PollExpiresAft == PollExpireAfter.Minutes ? 5 : 1)" @bind="PollExpireLen"/>
+                            <select @bind="PollExpiresAft">
+                                <option value="@PollExpireAfter.Minutes">@Loc["Minutes"]</option>
+                                <option value="@PollExpireAfter.Hours">@Loc["Hours"]</option>
+                                <option value="@PollExpireAfter.Days">@Loc["Days"]</option>
+                            </select>
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                </div>
+            </div>
+        }
         @if (Preview)
         {
             <div class="preview">
@@ -147,6 +205,12 @@
     private bool                     SendLock        { get; set; } = false;
     private int                      UploadingFiles  { get; set; }
     private string?                  AttachedQuote   { get; set; }
+    private List<Choice>             PollChoices     { get; set; } = [];
+    private string                   PollEntry       { get; set; } = "";
+    private PollExpire               PollExpires     { get; set; }
+    private DateTime                 PollExpireTime  { get; set; }
+    private int                      PollExpireLen   { get; set; }
+    private PollExpireAfter          PollExpiresAft  { get; set; }
 
     private NoteCreateRequest NoteDraft { get; set; } = new()
     {
@@ -156,6 +220,25 @@
     };
 
     private Dictionary<string, string> AvailablePlaceholders { get; set; } = new() { { "default", "What's on your mind?" }, { "reply", "Reply goes here!" }, { "quote", "Quote this post!" } };
+
+    private class Choice
+    {
+        public required string Value { get; set; }
+    }
+
+    private enum PollExpire
+    {
+        Never,
+        ExpiresAt,
+        ExpiresAfter
+    }
+
+    private enum PollExpireAfter
+    {
+        Minutes,
+        Hours,
+        Days,
+    }
 
     private bool SendingDisabled() =>
         NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length) < 0 || UploadingFiles != 0;
@@ -317,6 +400,24 @@
         }
 
         NoteDraft.RenoteId ??= AttachedQuote;
+
+        if (NoteDraft.Poll != null)
+        {
+            NoteDraft.Poll.Choices = PollChoices.Select(p => p.Value).ToList();
+            NoteDraft.Poll.ExpiresAt = PollExpires switch
+            {
+                PollExpire.ExpiresAt => PollExpireTime.ToUniversalTime(),
+                PollExpire.ExpiresAfter => PollExpiresAft switch
+                {
+                    PollExpireAfter.Minutes => DateTime.UtcNow.AddMinutes(Math.Min(PollExpireLen, 5)),
+                    PollExpireAfter.Hours   => DateTime.UtcNow.AddHours(Math.Min(PollExpireLen, 1)),
+                    PollExpireAfter.Days    => DateTime.UtcNow.AddDays(Math.Min(PollExpireLen, 1)),
+                    _                       => throw new ArgumentOutOfRangeException()
+                },
+                _ => null
+            };
+        }
+
         try
         {
             await ApiService.Notes.CreateNoteAsync(NoteDraft);
@@ -339,6 +440,29 @@
         SendButton.State = StateButton.StateEnum.Initial;
         // FIXME: Implement timeline refresh and call it here.
     }
+    
+    private void TogglePoll()
+    {
+        if (NoteDraft.Poll != null)
+        {
+            NoteDraft.Poll = null;
+        }
+        else
+        {
+            NoteDraft.Poll = new PollRequest
+            {
+                ExpiresAt = null,
+                Multiple  = false,
+                Choices   = []
+            };
+            PollChoices    = [];
+            PollEntry      = "";
+            PollExpires    = PollExpire.Never;
+            PollExpireTime = DateTime.Now;
+            PollExpireLen  = 7;
+            PollExpiresAft = PollExpireAfter.Days;
+        }
+    }
 
     private void ToggleCw()
     {
@@ -359,6 +483,17 @@
         if (attachment == null) return;
         Attachments.Remove(attachment);
         StateHasChanged();
+    }
+
+    private void AddPollChoice()
+    {
+        PollChoices.Add(new Choice { Value = PollEntry });
+        PollEntry = "";
+    }
+
+    private void DeletePollChoice(Choice choice)
+    {
+        PollChoices.Remove(choice);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
