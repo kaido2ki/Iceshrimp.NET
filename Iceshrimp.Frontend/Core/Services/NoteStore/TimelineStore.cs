@@ -2,7 +2,8 @@ using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Enums;
 using Iceshrimp.Shared.Schemas.SignalR;
 using Iceshrimp.Shared.Schemas.Web;
-using NoteEvent = (Iceshrimp.Shared.Schemas.SignalR.StreamingTimeline timeline, Iceshrimp.Shared.Schemas.Web.NoteResponse note);
+using NoteEvent =
+	(Iceshrimp.Shared.Schemas.SignalR.StreamingTimeline timeline, Iceshrimp.Shared.Schemas.Web.NoteResponse note);
 
 namespace Iceshrimp.Frontend.Core.Services.NoteStore;
 
@@ -15,7 +16,10 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 	private readonly StateSynchronizer                 _stateSynchronizer;
 	private readonly StreamingService                  _streamingService;
 
-	public TimelineStore(ApiService api, ILogger<TimelineStore> logger, StateSynchronizer stateSynchronizer, StreamingService streamingService)
+	public TimelineStore(
+		ApiService api, ILogger<TimelineStore> logger, StateSynchronizer stateSynchronizer,
+		StreamingService streamingService
+	)
 	{
 		_api                            =  api;
 		_logger                         =  logger;
@@ -43,9 +47,29 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 				el.Value.Reply.Attachments = changedNote.Attachments;
 				el.Value.Reply.Reactions   = changedNote.Reactions;
 				el.Value.Reply.Poll        = changedNote.Poll;
-
+				NoteChangedHandlers.FirstOrDefault(p => p.Key == el.Value.Reply.Id).Value?.Invoke(this, el.Value.Reply);
 			}
-				
+
+			var hasRenote = timeline.Value.Timeline.Where(p => p.Value.Renote?.Id == changedNote.Id);
+			foreach (var el in hasRenote)
+			{
+				if (el.Value.Renote != null)
+				{
+					el.Value.Renote.Text        = changedNote.Text;
+					el.Value.Renote.Cw          = changedNote.Cw;
+					el.Value.Renote.Emoji       = changedNote.Emoji;
+					el.Value.Renote.Liked       = changedNote.Liked;
+					el.Value.Renote.Likes       = changedNote.Likes;
+					el.Value.Renote.Renotes     = changedNote.Renotes;
+					el.Value.Renote.Replies     = changedNote.Replies;
+					el.Value.Renote.Attachments = changedNote.Attachments;
+					el.Value.Renote.Reactions   = changedNote.Reactions;
+					el.Value.Renote.Poll        = changedNote.Poll;
+					NoteChangedHandlers.FirstOrDefault(p => p.Key == el.Value.Renote.Id)
+									   .Value?.Invoke(this, el.Value.Renote);
+				}
+			}
+
 			if (timeline.Value.Timeline.TryGetValue(changedNote.Id, out var note))
 			{
 				note.Cw          = changedNote.Cw;
@@ -170,6 +194,7 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 				var add = home!.Timeline.TryAdd(response.Id, response);
 				if (add is false) _logger.LogWarning($"Duplicate note: {response.Id}");
 			}
+
 			ItemPublished?.Invoke(this, response);
 		}
 	}
@@ -191,5 +216,4 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 		await _stateSynchronizer.DisposeAsync();
 		await _streamingService.DisposeAsync();
 	}
-
 }
