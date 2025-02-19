@@ -43,7 +43,11 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 	private void OnNotification(object? _, NotificationResponse notificationResponse)
 	{
 		var add = Notifications.TryAdd(notificationResponse.Id, notificationResponse);
-		if (add is false) _logger.LogWarning($"Duplicate notification: {notificationResponse.Id}");
+		if (add is false)
+		{
+			_logger.LogWarning($"Duplicate notification: {notificationResponse.Id}");
+			return;
+		}
 		Notification?.Invoke(this, notificationResponse);
 	}
 
