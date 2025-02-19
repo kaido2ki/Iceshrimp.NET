@@ -1,3 +1,19 @@
+## v2025.1-beta5.patch1
+This is a hotfix release. It's identical to v2025.1-beta5, except for a bunch of bugfixes. Upgrading is strongly recommended for all server operators running v2025.1-beta5.
+
+### Blazor frontend
+- Notifications no longer get randomly duplicated
+- The moderation page now works correctly on mobile
+- Style issues related to icons have been resolved
+- The account dropdown now get positioned correctly when the page scroll position is not at the top
+
+### Backend
+- Pure renote replies now get rejected no matter which method of creating them is used
+- Security configuration changes now apply in real-time everywhere, resolving an issue where the frontend would not offer invite registration despite it being enabled
+
+### Attribution
+This release was made possible by project contributors: Laura Hausmann, Lilian & pancakes
+
 ## v2025.1-beta5
 This release contains lots of new features & bug fixes. Upgrading is recommended for all server operators.
 
