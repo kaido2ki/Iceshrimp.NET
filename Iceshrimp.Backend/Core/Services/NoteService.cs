@@ -241,6 +241,18 @@ public class NoteService(
 		var combinedAltText = data.Attachments?.Select(p => p.Comment).Where(c => c != null);
 		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PostLogic);
 
+		if (
+			(data.Renote != null || data.RenoteUri != null)
+			&& (data.Reply != null || data.ReplyUri != null)
+			&& data.ParsedText is not { Length: > 0 }
+			&& data.Cw == null
+			&& data.Poll == null
+			&& data.Attachments is not { Count: > 0 }
+		)
+		{
+			throw GracefulException.UnprocessableEntity("Refusing to create a pure renote reply");
+		}
+
 		var noteId   = IdHelpers.GenerateSnowflakeId(data.CreatedAt);
 		var threadId = data.Reply?.ThreadId ?? noteId;
 
@@ -754,6 +766,10 @@ public class NoteService(
 			note.RepliesCollection = data.ASNote.Replies?.Id;
 
 		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PostLogic);
+
+		if (note.IsPureRenote && (note.ReplyId != null || note.ReplyUri != null))
+			throw GracefulException.UnprocessableEntity("Refusing to update note to a pure renote reply");
+
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNoteUpdated(this, note);
 

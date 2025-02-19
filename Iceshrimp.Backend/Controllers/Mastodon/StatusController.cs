@@ -437,6 +437,17 @@ public class StatusController(
 			};
 
 			newText = quoteUri != null ? parsed.SkipLast(1).Serialize() : parsed.Serialize();
+
+			if (
+				newText.AsSpan().Trim().Length == 0
+				&& request.Cw?.AsSpan().Trim().Length is null or 0
+				&& request.Poll is null or { Options.Count: 0 }
+				&& attachments?.Count is null or 0
+			)
+			{
+				quoteUri = null;
+				newText  = null;
+			}
 		}
 
 		if (request is { Sensitive: true, MediaIds.Count: > 0 })
