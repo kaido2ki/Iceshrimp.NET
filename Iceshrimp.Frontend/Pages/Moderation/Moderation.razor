@@ -4,14 +4,21 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Sections
 @using Microsoft.Extensions.Localization
+@using Iceshrimp.Frontend.Components
 @attribute [Authorize(Roles = "moderator")]
-@layout ModerationLayout
 @inject IStringLocalizer<Localization> Loc;
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Shield"></Icon>
     @Loc["Moderation"]
 </SectionContent>
+<div class="layout">
+    <div class="sidebar">
+        <ModerationMenu/>
+    </div>
+    <div class="body">
+    </div>
+</div>
 
 @code {
 }
