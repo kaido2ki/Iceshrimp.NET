@@ -23,7 +23,7 @@ public class InstanceController(
 	DatabaseContext db,
 	UserRenderer userRenderer,
 	IOptions<Config.InstanceSection> instanceConfig,
-	IOptions<Config.SecuritySection> securityConfig,
+	IOptionsSnapshot<Config.SecuritySection> securityConfig,
 	MetaService meta,
 	InstanceService instanceSvc
 ) : ControllerBase

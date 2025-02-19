@@ -5,7 +5,7 @@
 @using Microsoft.Extensions.Options
 @model ErrorPageModel
 @inject IOptions<Config.InstanceSection>         Instance
-@inject IOptions<Config.SecuritySection>         Security
+@inject IOptionsSnapshot<Config.SecuritySection> Security
 @{
     // Not meant for direct consumption, use with RazorViewRenderService.
     Layout = null;
