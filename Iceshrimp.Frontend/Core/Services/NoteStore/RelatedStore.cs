@@ -29,6 +29,7 @@ internal class RelatedStore : NoteMessageProvider, IDisposable
 				note.Text        = noteResponse.Text;
 				note.Cw          = noteResponse.Cw;
 				note.Emoji       = noteResponse.Emoji;
+				note.Bookmarked  = noteResponse.Bookmarked;
 				note.Liked       = noteResponse.Liked;
 				note.Likes       = noteResponse.Likes;
 				note.Renotes     = noteResponse.Renotes;
@@ -58,6 +59,7 @@ internal class RelatedStore : NoteMessageProvider, IDisposable
 			input.Text        = updated.Text;
 			input.Cw          = updated.Cw;
 			input.Emoji       = updated.Emoji;
+			input.Bookmarked  = updated.Bookmarked;
 			input.Liked       = updated.Liked;
 			input.Likes       = updated.Likes;
 			input.Renotes     = updated.Renotes;

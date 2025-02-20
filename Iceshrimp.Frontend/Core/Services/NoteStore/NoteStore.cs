@@ -27,6 +27,7 @@ internal class NoteStore : NoteMessageProvider, IDisposable
 			note.Text        = noteResponse.Text;
 			note.Cw          = noteResponse.Cw;
 			note.Emoji       = noteResponse.Emoji;
+			note.Bookmarked  = noteResponse.Bookmarked;
 			note.Liked       = noteResponse.Liked;
 			note.Likes       = noteResponse.Likes;
 			note.Renotes     = noteResponse.Renotes;

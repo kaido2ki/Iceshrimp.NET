@@ -80,6 +80,7 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 			el.Value.Note.Cw          = noteResponse.Cw;
 			el.Value.Note.Text        = noteResponse.Text;
 			el.Value.Note.Emoji       = noteResponse.Emoji;
+			el.Value.Note.Bookmarked  = noteResponse.Bookmarked;
 			el.Value.Note.Liked       = noteResponse.Liked;
 			el.Value.Note.Likes       = noteResponse.Likes;
 			el.Value.Note.Renotes     = noteResponse.Renotes;

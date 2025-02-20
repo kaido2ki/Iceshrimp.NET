@@ -40,6 +40,7 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 				el.Value.Reply.Cw          = changedNote.Cw;
 				el.Value.Reply.Text        = changedNote.Text;
 				el.Value.Reply.Emoji       = changedNote.Emoji;
+				el.Value.Reply.Bookmarked  = changedNote.Bookmarked;
 				el.Value.Reply.Liked       = changedNote.Liked;
 				el.Value.Reply.Likes       = changedNote.Likes;
 				el.Value.Reply.Renotes     = changedNote.Renotes;
@@ -58,6 +59,7 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 					el.Value.Renote.Text        = changedNote.Text;
 					el.Value.Renote.Cw          = changedNote.Cw;
 					el.Value.Renote.Emoji       = changedNote.Emoji;
+					el.Value.Renote.Bookmarked  = changedNote.Bookmarked;
 					el.Value.Renote.Liked       = changedNote.Liked;
 					el.Value.Renote.Likes       = changedNote.Likes;
 					el.Value.Renote.Renotes     = changedNote.Renotes;
@@ -75,6 +77,7 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 				note.Cw          = changedNote.Cw;
 				note.Text        = changedNote.Text;
 				note.Emoji       = changedNote.Emoji;
+				note.Bookmarked  = changedNote.Bookmarked;
 				note.Liked       = changedNote.Liked;
 				note.Likes       = changedNote.Likes;
 				note.Renotes     = changedNote.Renotes;
