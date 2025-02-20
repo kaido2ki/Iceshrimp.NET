@@ -42,9 +42,6 @@ ARTIFACT_CMD      = tar caf ${ARTIFACT_DIR}/${ARCHIVE_FILENAME} --transform 's,^
 .PHONY            : --release-pre --release-post --workload-restore --release-% artifact-% publish build test publish-aot release-artifacts help
 
 --release-pre:
-	@echo 'Compiling database model...'
-	@dotnet tool install --tool-path ./bin dotnet-ef > /dev/null
-	@./bin/dotnet-ef -p Iceshrimp.Backend dbcontext optimize -o Core/Database/Model --suffix '.g' > /dev/null
 	@echo 'Building release artifacts for targets: ${RELEASE_TARGETS}'
 	@echo 'This will take a while.'
 	@echo
