@@ -52,6 +52,40 @@ internal class NoteActions(
 		}
 	}
 
+	public async Task ToggleBookmarkAsync(NoteBase note)
+	{
+		if (note.Bookmarked)
+		{
+			try
+			{
+				note.Bookmarked = false;
+				Broadcast(note);
+				await api.Notes.UnbookmarkNoteAsync(note.Id);
+			}
+			catch (ApiException e)
+			{
+				logger.LogError(e, "Failed to unbookmark note");
+				note.Bookmarked = true;
+				Broadcast(note);
+			}
+		}
+		else
+		{
+			try
+			{
+				note.Bookmarked = true;
+				Broadcast(note);
+				await api.Notes.BookmarkNoteAsync(note.Id);
+			}
+			catch (ApiException e)
+			{
+				logger.LogError(e, "Failed to bookmark note");
+				note.Bookmarked = false;
+				Broadcast(note);
+			}
+		}
+	}
+
 	public async Task ToggleLikeAsync(NoteBase note)
 	{
 		if (note.Liked)
