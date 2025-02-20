@@ -191,6 +191,42 @@ public class NoteController(
 		await biteSvc.BiteAsync(user, target);
 	}
 
+	[HttpPost("{id}/bookmark")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task BookmarkNote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes
+		                   .Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
+		
+		await noteSvc.BookmarkNoteAsync(note, user);
+	}
+
+	[HttpPost("{id}/unbookmark")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task UnbookmarkNote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes
+		                   .Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .EnsureVisibleFor(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.NotFound("Note not found");
+		
+		await noteSvc.UnbookmarkNoteAsync(note, user);
+	}
+
 	[HttpPost("{id}/like")]
 	[Authenticate]
 	[Authorize]
