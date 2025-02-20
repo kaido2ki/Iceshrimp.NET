@@ -99,6 +99,9 @@
                     <Text>@Loc["Refetch"]</Text>
                 </MenuElement>
             }
+            <MenuElement Icon="Icons.BookmarkSimple" OnSelect="Bookmark">
+                <Text>@(Note.Bookmarked ? Loc["Remove bookmark"] : Loc["Add bookmark"])</Text>
+            </MenuElement>
             <MenuElement Icon="Icons.SpeakerX" OnSelect="Mute">
                 <Text>@Loc["Mute thread"]</Text>
             </MenuElement>
@@ -167,6 +170,11 @@
     private void CopyLinkRemote() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.Url);
 
     private void CopyContents() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.Text);
+
+    private void Bookmark()
+    {
+        _ = NoteActions.ToggleBookmarkAsync(Note);
+    }
 
     private void Like()
     {
