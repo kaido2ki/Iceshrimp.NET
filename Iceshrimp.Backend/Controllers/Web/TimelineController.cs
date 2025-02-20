@@ -125,6 +125,22 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                                          Filter.FilterContext.Public);
 	}
 
+	[HttpGet("bookmarks")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<NoteResponse>> GetBookmarksTimeline(PaginationQuery pq)
+	{
+		var user  = HttpContext.GetUserOrFail();
+		var notes = await db.NoteBookmarks
+		                    .Where(p => p.User == user)
+		                    .IncludeCommonProperties()
+		                    .Select(p => p.Note)
+		                    .Paginate(pq, ControllerContext)
+		                    .PrecomputeVisibilities(user)
+		                    .ToListAsync();
+
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user);
+	}
+
 	[HttpGet("remote/{instance}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IEnumerable<NoteResponse>> GetRemoteTimeline(string instance, PaginationQuery pq)
