@@ -79,6 +79,8 @@ public class NoteRenderer(
 		var reactions = (data?.Reactions ?? await GetReactionsAsync([note], user)).Where(p => p.NoteId == note.Id);
 		var liked = data?.LikedNotes?.Contains(note.Id)
 		            ?? await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
+		var bookmarked = data?.BookmarkedNotes?.Contains(note.Id)
+		                 ?? await db.NoteBookmarks.AnyAsync(p => p.Note == note && p.User == user);
 		var emoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([note]);
 		var poll  = (data?.Polls ?? await GetPollsAsync([note], user)).FirstOrDefault(p => p.NoteId == note.Id);
 
@@ -98,6 +100,7 @@ public class NoteRenderer(
 			Likes       = note.LikeCount,
 			Renotes     = note.RenoteCount,
 			Replies     = note.RepliesCount,
+			Bookmarked  = bookmarked, 
 			Liked       = liked,
 			Emoji       = emoji,
 			Poll        = poll
@@ -162,6 +165,15 @@ public class NoteRenderer(
 		}
 
 		return res;
+	}
+
+	private async Task<List<string>> GetBookmarkedNotesAsync(List<Note> notes, User? user)
+	{
+		if (user == null) return [];
+		if (notes.Count == 0) return [];
+		return await db.NoteBookmarks.Where(p => p.User == user && notes.Contains(p.Note))
+		               .Select(p => p.NoteId)
+		               .ToListAsync();
 	}
 
 	private async Task<List<string>> GetLikedNotesAsync(List<Note> notes, User? user)
@@ -249,13 +261,14 @@ public class NoteRenderer(
 		var allNotes = GetAllNotes(notesList);
 		var data = new NoteRendererDto
 		{
-			Users       = await GetUsersAsync(allNotes),
-			Attachments = await GetAttachmentsAsync(allNotes),
-			Reactions   = await GetReactionsAsync(allNotes, user),
-			Filters     = await GetFiltersAsync(user, filterContext),
-			LikedNotes  = await GetLikedNotesAsync(allNotes, user),
-			Emoji       = await GetEmojiAsync(allNotes),
-			Polls       = await GetPollsAsync(allNotes, user)
+			Users           = await GetUsersAsync(allNotes),
+			Attachments     = await GetAttachmentsAsync(allNotes),
+			Reactions       = await GetReactionsAsync(allNotes, user),
+			Filters         = await GetFiltersAsync(user, filterContext),
+			BookmarkedNotes = await GetBookmarkedNotesAsync(allNotes, user),
+			LikedNotes      = await GetLikedNotesAsync(allNotes, user),
+			Emoji           = await GetEmojiAsync(allNotes),
+			Polls           = await GetPollsAsync(allNotes, user)
 		};
 
 		return await notesList.Select(p => RenderOne(p, user, filterContext, data)).AwaitAllAsync();
@@ -266,6 +279,7 @@ public class NoteRenderer(
 		public List<NoteAttachment>?     Attachments;
 		public List<EmojiResponse>?      Emoji;
 		public List<Filter>?             Filters;
+		public List<string>?             BookmarkedNotes;
 		public List<string>?             LikedNotes;
 		public List<NoteReactionSchema>? Reactions;
 		public List<UserResponse>?       Users;

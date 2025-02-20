@@ -39,6 +39,7 @@ public class NoteBase
 	public required List<EmojiResponse>      Emoji       { get; set; }
 	public required NoteVisibility           Visibility  { get; set; }
 	public required bool                     LocalOnly   { get; set; }
+	public required bool                     Bookmarked  { get; set; }
 	public required bool                     Liked       { get; set; }
 	public required int                      Likes       { get; set; }
 	public required int                      Renotes     { get; set; }
