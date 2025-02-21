@@ -39,7 +39,12 @@ public class InstanceConfigurationV2(Config.InstanceSection config)
 	[J("media_attachments")] public InstanceMediaConfiguration    Media     => new();
 	[J("polls")]             public InstancePollConfiguration     Polls     => new();
 	[J("reactions")]         public InstanceReactionConfiguration Reactions => new();
-	[J("urls")]              public InstanceUrls                  Urls      => new(config);
+	[J("urls")]              public InstanceUrlsV2                Urls      => new(config);
+}
+
+public class InstanceUrlsV2(Config.InstanceSection config)
+{
+	[J("streaming")] public string StreamingApi => $"wss://{config.WebDomain}";
 }
 
 public class InstanceRegistrations(Config.SecuritySection config)

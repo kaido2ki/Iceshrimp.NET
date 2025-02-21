@@ -33,7 +33,7 @@ public class InstanceInfoV1Response(
 	[J("invites_enabled")]   public bool RegsInvite => config.Security.Registrations == Enums.Registrations.Invite;
 	[J("approval_required")] public bool RegsClosed => config.Security.Registrations == Enums.Registrations.Closed;
 
-	[J("urls")]          public InstanceUrls            Urls          => new(config.Instance);
+	[J("urls")]          public InstanceUrlsV1          Urls          => new(config.Instance);
 	[J("configuration")] public InstanceConfigurationV1 Configuration => new(config.Instance);
 
 	[J("pleroma")] public required PleromaInstanceExtensions Pleroma { get; set; }
@@ -43,7 +43,7 @@ public class InstanceInfoV1Response(
 	//TODO: add the rest
 }
 
-public class InstanceUrls(Config.InstanceSection config)
+public class InstanceUrlsV1(Config.InstanceSection config)
 {
 	[J("streaming_api")] public string StreamingApi => $"wss://{config.WebDomain}";
 }
