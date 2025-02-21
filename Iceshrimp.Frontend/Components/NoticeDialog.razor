@@ -6,7 +6,7 @@
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 
-<dialog class="dialog" @ref="Dialog">
+<dialog @onkeydown="HandleKeyDown" class="dialog" @ref="Dialog">
     <div class="notice">
         <span class="notice-icon">
             @switch (Type)
@@ -55,6 +55,14 @@
         StateHasChanged();
         
         await _module.InvokeVoidAsync("openDialog", Dialog);
+    }
+    
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e is { Code: "Enter" or "Escape" })
+        {
+            await CloseDialog();
+        }
     }
 
     protected override async Task OnInitializedAsync()
