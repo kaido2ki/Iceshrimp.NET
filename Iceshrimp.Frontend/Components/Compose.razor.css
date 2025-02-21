@@ -44,6 +44,10 @@
     }
 }
 
+input[type="number"] {
+    width: 6em;
+}
+
 input[type="checkbox"] {
     display: inline-block;
 }
