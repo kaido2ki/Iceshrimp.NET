@@ -115,6 +115,7 @@
 }
 
 ::deep {
+    .btn[disabled],
     .post-btn[disabled] {
         opacity: 0.4;
         cursor: not-allowed;

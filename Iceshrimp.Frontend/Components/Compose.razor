@@ -20,7 +20,7 @@
 <dialog @onkeydown="HandleKeyDown" class="dialog" @ref="Dialog">
     <div class="compose">
         <div class="header">
-            <button class="btn" title="@Loc["Close"]" @onclick="CloseDialog" aria-label="close">
+            <button class="btn" title="@Loc["Close"]" @onclick="CloseDialog" aria-label="close" disabled="@(SendLock || UploadingFiles != 0)">
                 <Icon Name="Icons.X"/>
             </button>
             <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
