@@ -5,7 +5,7 @@
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 
-<dialog class="dialog" @ref="Dialog">
+<dialog @onkeydown="HandleKeyDown" class="dialog" @ref="Dialog">
     <div class="select @(Waiting ? "waiting" : "")">
         @if (Waiting)
         {
@@ -69,6 +69,19 @@
     {
         await Action.InvokeAsync(null);
         await CloseDialog();
+    }
+    
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e is { Code: "Enter" })
+        {
+            if (!Waiting) await ConfirmAction();
+        }
+
+        if (e is { Code: "Escape" })
+        {
+            if (!Waiting) await CancelAction();
+        }
     }
     
     protected override async Task OnInitializedAsync()
