@@ -272,10 +272,11 @@
     private async Task ResetState()
     {
         var settings = await Settings.GetUserSettingsAsync();
-        ReplyOrQuote    = null;
-        Attachments     = new List<DriveFileResponse>();
-        NoteDraft       = new NoteCreateRequest { Text = "", Visibility = settings.DefaultNoteVisibility, Cw = null };
-        TextPlaceholder = AvailablePlaceholders["default"];
+        ReplyOrQuote     = null;
+        Attachments      = new List<DriveFileResponse>();
+        NoteDraft        = new NoteCreateRequest { Text = "", Visibility = settings.DefaultNoteVisibility, Cw = null };
+        TextPlaceholder  = AvailablePlaceholders["default"];
+        SendButton.State = StateButton.StateEnum.Initial;
     }
 
     private async Task CloseDialog()
@@ -311,7 +312,7 @@
         SendButton.State = StateButton.StateEnum.Success;
         await CloseDialog();
         SendLock         = false;
-        SendButton.State = StateButton.StateEnum.Success;
+        SendButton.State = StateButton.StateEnum.Initial;
         // FIXME: Implement timeline refresh and call it here.
     }
 
