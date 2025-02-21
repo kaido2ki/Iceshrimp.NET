@@ -1215,11 +1215,14 @@ public class UserService(
 				var html     = await res.Content.ReadAsStringAsync();
 				var document = await new HtmlParser().ParseDocumentAsync(html);
 
+				var headLinks = document.Head?.Children.Where(el => el.NodeName.ToLower() == "link").ToList() ?? [];
+
 				userProfileField.IsVerified =
-					document.Links.Any(a => (a.GetAttribute("rel")?.Contains("me")
-					                         ?? false)
-					                        && a.GetAttribute("href") == profileUrl
-					                        || a.GetAttribute("href") == user.GetUriOrPublicUri(instance.Value));
+					headLinks.Concat(document.Links)
+					         .Any(a => (a.GetAttribute("rel")?.Contains("me")
+					                    ?? false)
+					                   && a.GetAttribute("href") == profileUrl
+					                   || a.GetAttribute("href") == user.GetUriOrPublicUri(instance.Value));
 			}
 			catch (Exception e)
 			{
