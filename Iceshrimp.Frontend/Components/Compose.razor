@@ -249,6 +249,11 @@
         {
             if (!SendingDisabled()) await SendNote();
         }
+
+        if (e is { Code: "Escape" })
+        {
+            if (!SendLock && UploadingFiles == 0) await CloseDialog();
+        }
     }
 
     RenderFragment DropdownIcon(NoteVisibility vis)
