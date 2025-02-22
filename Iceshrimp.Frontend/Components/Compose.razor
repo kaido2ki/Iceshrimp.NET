@@ -70,6 +70,9 @@
                 <button class="btn" title="@Loc["Content warning"]" @onclick="ToggleCw" aria-label="content warning">
                     <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
                 </button>
+                <button class="btn" title="@Loc["Mention"]" @onclick="AddMention" aria-label="add mention">
+                    <Icon Name="Icons.At" Size="1.3rem"></Icon>
+                </button>
                 <button @ref="EmojiButton" class="btn" title="@Loc["Emoji"]" @onclick="ToggleEmojiPicker"
                         aria-label="emoji">
                     <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
@@ -590,6 +593,20 @@
     private async Task ToggleEmojiPicker()
     {
         await GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji))!;
+    }
+
+    private async Task AddMention() =>
+        await GlobalComponentSvc.UserDialog?.Select(new EventCallback<UserResponse?>(this, AddMentionCallback), Loc["Select user"])!;
+
+    private async Task AddMentionCallback(UserResponse? user)
+    {
+        if (user == null) return;
+        
+        var pos           = await _module.InvokeAsync<int>("getSelectionStart", Textarea);
+        var text          = NoteDraft.Text;
+        var mentionString = user.Host != null ? $"@{user.Username}@{user.Host} " : $"@{user.Username} ";
+        NoteDraft.Text = text.Insert(pos, mentionString);
+        StateHasChanged();
     }
 
     private async Task AddQuote() =>
