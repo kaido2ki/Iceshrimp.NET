@@ -137,4 +137,24 @@ public class SearchController(
 
 		throw GracefulException.BadRequest("Invalid lookup target");
 	}
+
+	[HttpGet("acct")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<UserResponse>> SearchUserByMention(
+		[FromQuery] string? username, [FromQuery] string? host
+	)
+	{
+		var user = HttpContext.GetUser();
+
+		var users = await db.Users
+		                    .IncludeCommonProperties()
+		                    .Where(p => p != user
+		                                && (username == null || p.UsernameLower.StartsWith(username.ToLower()))
+		                                && (host == null || p.Host != null && p.Host.StartsWith(host.ToLower())))
+		                    .OrderByDescending(p => p.NotesCount)
+		                    .Take(10)
+		                    .ToListAsync();
+
+		return await userRenderer.RenderManyAsync(users);
+	}
 }
