@@ -5,7 +5,7 @@
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 
-<dialog @onkeydown="HandleKeyDown" class="dialog" @ref="Dialog">
+<dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
     <div class="prompt @(Waiting ? "waiting" : "")">
         @if (Waiting)
         {
@@ -79,7 +79,7 @@
         await CloseDialog();
     }
     
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    private async Task HandleKeys(KeyboardEventArgs e)
     {
         if (MultiLine && e is { Code: "Enter", CtrlKey: true } or { Code: "Enter", MetaKey: true } || !MultiLine && e is { Code: "Enter" })
         {
