@@ -5,12 +5,13 @@
 
 <img class="avatar"
      style="--size: @Size;"
-     src="@User.AvatarUrl"
+     src="@(LoadError ? "ImageFallback.png" : User.AvatarUrl)"
      alt="@(User.AvatarAlt ?? FallbackAlt())"
-     title="@(Title ? User.AvatarAlt ?? FallbackAlt() : "")"
+     title="@(LoadError ? Loc["Avatar failed to load"] : Title ? User.AvatarAlt ?? FallbackAlt() : "")"
      role="@Role"
      loading="lazy"
-     @onclick="OnClick"/>
+     @onclick="OnClick"
+     @onerror="() => { LoadError = true; }"/>
 
 @code {
     [Parameter, EditorRequired] public required UserResponse  User      { get; set; }
