@@ -1,0 +1,82 @@
+.dialog {
+    margin: auto;
+    overflow-y: scroll;
+}
+
+.dialog::backdrop {
+    opacity: 50%;
+    background-color: black;
+}
+
+.select {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--background-color);
+    border-radius: 1rem;
+    margin: auto;
+    padding: 1rem;
+    width: max-content;
+    max-width: 45rem;
+    color: var(--font-color);
+    text-align: center;
+    text-wrap: wrap;
+    word-break: break-word;
+}
+
+.select:not(.waiting) {
+    min-width: 12rem;
+}
+
+.select .search {
+    display: flex;
+    align-items: center;
+}
+
+.user-entry {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.user-entry.selected {
+    background-color: var(--hover-color);
+}
+
+.user-entry .name-section {
+    display: flex;
+    flex-direction: column;
+    overflow: clip;
+    text-overflow: ellipsis;
+
+    .identifier {
+        font-size: 0.8em;
+        text-overflow: ellipsis;
+        overflow: clip;
+    }
+}
+
+.buttons {
+    display: flex;
+}
+
+.submit-btn {
+    background: var(--accent-color);
+    color: var(--font-color);
+}
+
+@media (max-width: 1000px) {
+    .select {
+        max-width: 100%;
+    }
+    
+    .select .search {
+        flex-direction: column;
+    }
+}

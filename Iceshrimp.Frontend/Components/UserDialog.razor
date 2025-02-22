@@ -1,0 +1,149 @@
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@inject ApiService                     Api;
+@inject GlobalComponentSvc             GlobalComponentSvc;
+@inject IJSRuntime                     Js;
+@inject IStringLocalizer<Localization> Loc;
+
+<dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
+    <div class="select @(Waiting ? "waiting" : "")">
+        @if (Waiting)
+        {
+            <LoadingSpinner Scale="1.5"/>
+        }
+        else
+        {
+            <span>@Text</span>
+            <div class="search">
+                <input type="text" class="input" id="username" @bind="Username" @bind:event="oninput" @bind:after="Search" placeholder="@Loc["Username"]" aria-label="username"/>
+                <input type="text" class="input" id="host" @bind="Host" @bind:event="oninput" @bind:after="Search" placeholder="@Loc["Host"]" aria-label="host"/>
+            </div>
+            
+            @foreach (var user in Users)
+            {
+                <div @onclick="() => { Selected = user; }" class="user-entry @(user == Selected ? "selected" : "")">
+                    <UserAvatar User="@user"/>
+                    <div class="name-section">
+                        <span class="display-name"><UserDisplayName User="@user"/></span>
+                        <span class="identifier">
+                            @@@user.Username@(user.Host != null ? $"@{user.Host}" : "")
+                        </span>
+                    </div>
+                </div>
+            }
+
+            <div class="buttons">
+                <button class="button submit-btn" @onclick="ConfirmAction" disabled="@(Selected == null)">@(ButtonText ?? Loc["Submit"])</button>
+                <button class="button" @onclick="CancelAction">@Loc["Cancel"]</button>
+            </div>
+        }
+    </div>
+</dialog>
+
+@code {
+    private ElementReference             Dialog { get; set; }
+    private IJSObjectReference           _module = null!;
+    private EventCallback<UserResponse?> Action      { get; set; }
+    private string                       Text        { get; set; } = "";
+    private List<UserResponse>           Users       { get; set; } = [];
+    private UserResponse?                Selected    { get; set; }
+    private string?                      ButtonText  { get; set; }
+    private string                       Username    { get; set; } = "";
+    private string                       Host        { get; set; } = "";
+    private bool                         Waiting     { get; set; }
+    private bool                         Searching   { get; set; }
+    private bool                         SearchQueue { get; set; }
+
+    private async Task CloseDialog()
+    {
+        await _module.InvokeVoidAsync("closeDialog", Dialog);
+    }
+
+    public async Task Select(EventCallback<UserResponse?> action, string text, string? buttonText = null)
+    {
+        Action      = action;
+        Text        = text;
+        Users       = [];
+        Selected    = null;
+        ButtonText  = buttonText;
+        Username    = "";
+        Host        = "";
+        Waiting     = false;
+        Searching   = false;
+        SearchQueue = false;
+
+        StateHasChanged();
+
+        await _module.InvokeVoidAsync("openDialog", Dialog);
+        await Search();
+    }
+
+    private async Task ConfirmAction()
+    {
+        if (Selected == null) return;
+        Waiting = true;
+        await Action.InvokeAsync(Selected);
+        Waiting = false;
+        await CloseDialog();
+    }
+
+    private async Task CancelAction()
+    {
+        await Action.InvokeAsync(null);
+        await CloseDialog();
+    }
+
+    private async Task Search()
+    {
+        if (Searching)
+        {
+            SearchQueue = true;
+            return;
+        }
+
+        do
+        {
+            Searching   = true;
+            SearchQueue = false;
+
+            try
+            {
+                var res = await Api.Search.SearchAcctsAsync(string.IsNullOrWhiteSpace(Username) ? null : Username.Trim(), string.IsNullOrWhiteSpace(Host) ? null : Host.Trim());
+                Users = res;
+
+                if (Selected != null && Users.All(p => p.Id != Selected.Id))
+                {
+                    Selected = null;
+                }
+            }
+            catch (ApiException) { }
+
+            Searching = false;
+        } while (SearchQueue);
+
+        StateHasChanged();
+    }
+
+    private async Task HandleKeys(KeyboardEventArgs e)
+    {
+        if (e is { Code: "Enter" })
+        {
+            if (!Waiting && Selected != null) await ConfirmAction();
+        }
+
+        if (e is { Code: "Escape" })
+        {
+            if (!Waiting) await CancelAction();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                           "./Components/UserDialog.razor.js");
+        GlobalComponentSvc.UserDialog = this;
+    }
+}
