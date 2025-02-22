@@ -1183,9 +1183,17 @@ public class UserService(
 
 		foreach (var userProfileField in user.UserProfile!.Fields)
 		{
+			var url = userProfileField.Value;
+			if (url.StartsWith('[') && url.EndsWith(')'))
+			{
+				var idx = url.IndexOf("](", StringComparison.Ordinal);
+				if (idx != -1 && url.Length >= idx + "https://".Length)
+					url = url[(idx + 2)..^1];
+			}
+
 			if (
-				!userProfileField.Value.StartsWith("https://")
-				|| !Uri.TryCreate(userProfileField.Value, UriKind.Absolute, out var uri)
+				!url.StartsWith("https://")
+				|| !Uri.TryCreate(url, UriKind.Absolute, out var uri)
 				|| uri is not { Scheme: "https" }
 			)
 			{
