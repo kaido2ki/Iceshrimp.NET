@@ -515,15 +515,14 @@ public class NoteController(
 			throw GracefulException.BadRequest("At least one vote must be included");
 
 		var target = await db.Notes
-		                     .Where(p => p.Id == id)
-		                     .EnsureVisibleFor(user)
+		                     .IncludeCommonProperties()
 		                     .Include(p => p.Poll)
+		                     .Where(p => p.Id == id && p.Poll != null)
+		                     .EnsureVisibleFor(user)
 		                     .FirstOrDefaultAsync()
-		             ?? throw GracefulException.NotFound("Note not found");
-		if (target.Poll == null)
-			throw GracefulException.NotFound("Poll not found");
+		             ?? throw GracefulException.NotFound("Poll not found");
 
-		if (target.Poll.ExpiresAt != null && target.Poll.ExpiresAt < DateTime.UtcNow)
+		if (target.Poll!.ExpiresAt != null && target.Poll.ExpiresAt < DateTime.UtcNow)
 			throw GracefulException.NotFound("Poll has expired");
 
 		var voted = await db.PollVotes
