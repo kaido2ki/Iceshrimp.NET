@@ -5,7 +5,7 @@
 
 <img class="avatar"
      style="--size: @Size;"
-     src="@(LoadError ? "ImageFallback.png" : User.AvatarUrl)"
+     src="@(LoadError ? $"/identicon/{User.Id}" : User.AvatarUrl)"
      alt="@(User.AvatarAlt ?? FallbackAlt())"
      title="@(LoadError ? Loc["Avatar failed to load"] : Title ? User.AvatarAlt ?? FallbackAlt() : "")"
      role="@Role"
