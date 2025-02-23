@@ -183,6 +183,51 @@ public class UserController(
 			await userSvc.FollowUserAsync(user, followee);
 	}
 
+	[HttpPost("{id}/mute")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task MuteUser(string id, [FromQuery] DateTime? expires)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot mute yourself");
+
+		if (expires?.ToUniversalTime() <= DateTime.UtcNow.AddMinutes(1))
+			throw GracefulException.BadRequest("Mute expiration must be in the future");
+
+		var mutee = await db.Users
+		                    .Where(p => p.Id == id)
+		                    .IncludeCommonProperties()
+		                    .PrecomputeRelationshipData(user)
+		                    .FirstOrDefaultAsync()
+		            ?? throw GracefulException.RecordNotFound();
+
+		await userSvc.MuteUserAsync(user, mutee, expires?.ToUniversalTime());
+	}
+
+	[HttpPost("{id}/unmute")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task UnmuteUser(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot unmute yourself");
+
+		var mutee = await db.Users
+		                    .Where(p => p.Id == id)
+		                    .IncludeCommonProperties()
+		                    .PrecomputeRelationshipData(user)
+		                    .FirstOrDefaultAsync()
+		            ?? throw GracefulException.RecordNotFound();
+
+		await userSvc.UnmuteUserAsync(user, mutee);
+	}
+
 	[HttpPost("{id}/refetch")]
 	[Authenticate]
 	[Authorize]
