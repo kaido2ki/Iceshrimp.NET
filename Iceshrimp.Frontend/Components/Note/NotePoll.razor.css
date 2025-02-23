@@ -45,7 +45,7 @@
     width: 100%;
     padding: 0.2rem 0.5rem;
     border-radius: 0.5rem;
-    background: linear-gradient(to right, var(--notice-color) var(--percentage), var(--highlight-color) var(--percentage), var(--highlight-color));
+    background: linear-gradient(to right, var(--hover-color) var(--percentage), var(--highlight-color) var(--percentage), var(--highlight-color));
 }
 
 .poll-result.voted {
