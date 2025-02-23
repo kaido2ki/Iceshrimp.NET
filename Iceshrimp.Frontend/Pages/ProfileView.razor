@@ -80,6 +80,18 @@
                                     <Text>@Loc["Remove follower"]</Text>
                                 </MenuElement>
                             }
+                            @if (Profile != null && Profile.Relations.HasFlag(Relations.Blocking))
+                            {
+                                <MenuElement Icon="Icons.Prohibit" OnSelect="Unblock">
+                                    <Text>@Loc["Unblock"]</Text>
+                                </MenuElement>
+                            }
+                            else
+                            {
+                                <MenuElement Icon="Icons.Prohibit" OnSelect="Block">
+                                    <Text>@Loc["Block"]</Text>
+                                </MenuElement>
+                            }
                         }
                         @if (UserResponse.Host != null && Profile?.Url != null)
                         {
@@ -258,6 +270,50 @@
 
     private void RemoveFromFollowers() =>
         GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RemoveFromFollowersAction), Loc["Remove {0} from followers?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Remove follower"]);
+
+    private void Block() =>
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, BlockCallback), Loc["Block {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Block"]);
+
+    private async Task BlockCallback(bool confirm)
+    {
+        if (!confirm) return;
+
+        try
+        {
+            await Api.Users.BlockUserAsync(UserResponse.Id);
+
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Blocked {0}", UserResponse.DisplayName ?? UserResponse.Username])!;
+
+            Profile!.Relations += (int)Relations.Blocking;
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
+
+    private void Unblock() =>
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnblockCallback), Loc["Unblock {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Unblock"]);
+
+    private async Task UnblockCallback(bool confirm)
+    {
+        if (!confirm) return;
+
+        try
+        {
+            await Api.Users.UnblockUserAsync(UserResponse.Id);
+
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Unblocked {0}", UserResponse.DisplayName ?? UserResponse.Username])!;
+
+            Profile!.Relations -= (int)Relations.Blocking;
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
 
     private void OpenOriginal()
     {

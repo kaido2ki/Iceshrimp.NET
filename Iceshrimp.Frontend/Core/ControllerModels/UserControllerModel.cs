@@ -27,6 +27,12 @@ internal class UserControllerModel(ApiClient api)
 	public Task BiteUserAsync(string id) =>
 		api.CallAsync(HttpMethod.Post, $"/users/{id}/bite");
 
+	public Task BlockUserAsync(string id) =>
+		api.CallAsync(HttpMethod.Post, $"/users/{id}/block");
+
+	public Task UnblockUserAsync(string id) =>
+		api.CallAsync(HttpMethod.Post, $"/users/{id}/unblock");
+
 	public Task<bool> FollowUserAsync(string id) => api.CallNullableAsync(HttpMethod.Post, $"/users/{id}/follow");
 
 	public Task<UserResponse?> RefetchUserAsync(string id) =>
