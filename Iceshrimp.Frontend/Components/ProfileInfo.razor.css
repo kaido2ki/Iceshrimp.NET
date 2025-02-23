@@ -20,15 +20,21 @@
 ::deep {
     .field {
         display: flex;
+        column-gap: 0.5rem;
         margin: 0.2rem 0;
     
         .field-name {
             font-weight: 600;
             width: 10rem;
+            word-wrap: break-word;
             
             .ph {
                 vertical-align: text-bottom;
             }
+        }
+        
+        .field-value {
+            word-wrap: break-word;
         }
     }
 }
@@ -78,6 +84,12 @@
         
         .field-name {
             width: auto;
+        }
+    }
+    
+    ::deep {
+        .field + .field {
+            margin-top: 0.5rem;
         }
     }
 }
