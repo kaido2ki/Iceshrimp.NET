@@ -287,7 +287,7 @@
         GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RemoveFromFollowersAction), Loc["Remove {0} from followers?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Remove follower"]);
 
     private void Mute() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, MuteCallback), Loc["Mute {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Block"]);
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, MuteCallback), Loc["Mute {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Mute"]);
 
     private async Task MuteCallback(bool confirm)
     {
@@ -331,7 +331,7 @@
     }
 
     private void Unmute() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnmuteCallback), Loc["Unmute {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Unblock"]);
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnmuteCallback), Loc["Unmute {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Unmute"]);
 
     private async Task UnmuteCallback(bool confirm)
     {
