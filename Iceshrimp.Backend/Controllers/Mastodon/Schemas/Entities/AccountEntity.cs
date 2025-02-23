@@ -28,6 +28,7 @@ public class AccountEntity : IIdentifiable
 	[J("source")]          public          AccountSource?    Source             { get; set; }
 	[J("emojis")]          public required List<EmojiEntity> Emoji              { get; set; }
 	[J("id")]              public required string            Id                 { get; set; }
+	[J("last_status_at")]  public          string?           LastStatusAt       { get; set; }
 
 	[J("avatar_description")] public required string AvatarDescription { get; set; }
 	[J("header_description")] public required string HeaderDescription { get; set; }

@@ -61,6 +61,7 @@ public class UserRenderer(
 			FullyQualifiedName = $"{user.Username}@{user.Host ?? config.Value.AccountDomain}",
 			IsLocked           = user.IsLocked,
 			CreatedAt          = user.CreatedAt.ToStringIso8601Like(),
+			LastStatusAt       = user.LastNoteAt?.ToStringIso8601Like(),
 			FollowersCount     = user.FollowersCount,
 			FollowingCount     = user.FollowingCount,
 			StatusesCount      = user.NotesCount,

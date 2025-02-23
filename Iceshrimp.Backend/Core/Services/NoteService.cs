@@ -480,8 +480,12 @@ public class NoteService(
 		}
 		else
 		{
+			var updateLastNoteTimestamp = create && (note.User.LastNoteAt == null || note.CreatedAt > note.User.LastNoteAt);
+
 			await db.Users.Where(p => p.Id == note.User.Id)
-			        .ExecuteUpdateAsync(p => p.SetProperty(u => u.NotesCount, u => u.NotesCount + diff));
+			        .ExecuteUpdateAsync(p => p
+			                                 .SetProperty(u => u.NotesCount, u => u.NotesCount + diff)
+			                                 .SetProperty(u => u.LastNoteAt, u => updateLastNoteTimestamp ? note.CreatedAt : u.LastNoteAt));
 		}
 
 		if (note.Reply != null)

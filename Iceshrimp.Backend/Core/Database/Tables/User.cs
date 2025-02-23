@@ -41,6 +41,7 @@ public class User : IIdentifiable
 	[Column("lastFetchedAt")] public DateTime? LastFetchedAt { get; set; }
 
 	[Column("outboxFetchedAt")] public DateTime? OutboxFetchedAt { get; set; }
+	[Column("lastNoteAt")] public DateTime? LastNoteAt { get; set; }
 
 	[NotMapped]
 	[Projectable]

@@ -4180,6 +4180,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("lastFetchedAt");
 
+                    b.Property<DateTime?>("LastNoteAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lastNoteAt");
+
                     b.Property<string>("MovedToUri")
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
