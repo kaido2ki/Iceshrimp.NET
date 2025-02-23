@@ -32,11 +32,12 @@
                 vertical-align: text-bottom;
             }
         }
-        
-        .field-value {
-            word-wrap: break-word;
-        }
     }
+}
+
+::deep .field .field-value {
+    width: calc(100% - 10.5rem);
+    word-wrap: break-word;
 }
 
 .fields {
@@ -85,6 +86,10 @@
         .field-name {
             width: auto;
         }
+    }
+    
+    ::deep .field .field-value {
+        width: auto;
     }
     
     ::deep {
