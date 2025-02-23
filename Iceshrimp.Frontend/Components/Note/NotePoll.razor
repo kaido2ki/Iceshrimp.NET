@@ -1,8 +1,11 @@
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Core.Services.NoteStore
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
-@inject NoteActions NoteActions;
+@inject GlobalComponentSvc             Global;
+@inject NoteActions                    NoteActions;
 @inject IStringLocalizer<Localization> Loc;
 
 <div class="poll">
@@ -84,6 +87,13 @@
     {
         if (!CanVote()) return;
 
-        await NoteActions.AddPollVoteAsync(Poll, Choices);
+        try
+        {
+            await NoteActions.AddPollVoteAsync(Poll, Choices);
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred while voting"], NoticeDialog.NoticeType.Error)!;
+        }
     }
 }
