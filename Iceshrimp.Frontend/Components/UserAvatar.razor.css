@@ -4,5 +4,8 @@
     object-fit: cover;
     width: var(--size);
     height: var(--size);
+    min-width: var(--size);
+    min-height: var(--size);
     overflow: clip;
+    color: transparent;
 }
