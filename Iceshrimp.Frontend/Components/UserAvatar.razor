@@ -7,7 +7,7 @@
      style="--size: @Size;"
      src="@(LoadError ? $"/identicon/{User.Id}" : User.AvatarUrl)"
      alt="@(User.AvatarAlt ?? FallbackAlt())"
-     title="@(LoadError ? Loc["Avatar failed to load"] : Title ? User.AvatarAlt ?? FallbackAlt() : "")"
+     title="@(Title ? User.AvatarAlt ?? FallbackAlt() : "")"
      role="@Role"
      loading="lazy"
      @onclick="OnClick"
