@@ -1,10 +1,12 @@
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
 @inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
 @if (_buttonType == ButtonType.Self) return;
 
 <span class="follow-button">
@@ -34,6 +36,12 @@
                     <Icon Name="Icons.X" class="icon"/>
                 </button>
                 break;
+            case ButtonType.Blocking:
+                <button @onclick="Action" class="btn">
+                    <span class="text">@Loc["Unblock"]</span>
+                    <Icon Name="Icons.Prohibit" class="icon"/>
+                </button>
+                break;
         }
 </span>
 
@@ -54,20 +62,31 @@
         FollowBack,
         FollowLocked,
         CancelRequest,
+        Blocking,
         Self
     }
 
     private async Task Action()
     {
-        switch (_buttonType)
+        try
         {
-            case ButtonType.Follow:
-            case ButtonType.FollowBack:
-                await Follow();
-                break;
-            case ButtonType.Unfollow or ButtonType.CancelRequest:
-                await Unfollow();
-                break;
+            switch (_buttonType)
+            {
+                case ButtonType.Follow:
+                case ButtonType.FollowBack:
+                    await Follow();
+                    break;
+                case ButtonType.Unfollow or ButtonType.CancelRequest:
+                    await Unfollow();
+                    break;
+                case ButtonType.Blocking:
+                    await Unblock();
+                    break;
+            }
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
@@ -86,6 +105,14 @@
         ChooseButton();
         StateHasChanged();
         UserProfile = await Api.Users.GetUserProfileAsync(UserProfile.Id) ?? throw new Exception("How did it stop existing");
+        ChooseButton();
+        StateHasChanged();
+    }
+
+    private async Task Unblock()
+    {
+        await Api.Users.UnblockUserAsync(User.Id);
+        UserProfile.Relations -= (int)Relations.Blocking;
         ChooseButton();
         StateHasChanged();
     }
@@ -110,6 +137,11 @@
         if (UserProfile.Relations.HasFlag(Relations.Requested))
         {
             _buttonType = ButtonType.CancelRequest;
+        }
+
+        if (UserProfile.Relations.HasFlag(Relations.Blocking))
+        {
+            _buttonType = ButtonType.Blocking;
         }
 
         if (UserProfile.Relations.HasFlag(Relations.Self))
