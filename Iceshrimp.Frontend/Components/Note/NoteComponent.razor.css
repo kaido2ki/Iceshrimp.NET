@@ -1,3 +1,7 @@
+.note-wrapper {
+    display: flex;
+}
+
 .note-header {
     display: flex;
     padding-bottom: 0.5em;

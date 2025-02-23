@@ -8,27 +8,29 @@
 @inject ILogger<NoteComponent> Logger;
 
 <CascadingValue Value="Note">
-    <div class="note-header">
-        <NoteUserInfo User="@Note.User" Indented="Indented"/>
-        <NoteMetadata
-            Visibility="@Note.Visibility"
-            InstanceName="@Note.User.InstanceName"
-            CreatedAt="DateTime.Parse(Note.CreatedAt)">
-        </NoteMetadata>
+    <div class="note-wrapper">
+        <div class="note-header">
+            <NoteUserInfo User="@Note.User" Indented="Indented"/>
+            <NoteMetadata
+                Visibility="@Note.Visibility"
+                InstanceName="@Note.User.InstanceName"
+                CreatedAt="DateTime.Parse(Note.CreatedAt)"
+            />
+        </div>
+        <NoteBody NoteBase="Note" Indented="Indented" ReplyInaccessible="ReplyInaccessible" Quote="Quote"/>
+        @if (!AsQuote)
+        {
+            <NoteFooter
+                Reactions="Note.Reactions"
+                Likes="Note.Likes"
+                IsLiked="Note.Liked"
+                Renotes="Note.Renotes"
+                Replies="Note.Replies"
+                Indented="Indented"
+                RenotePossible="@(Note.Visibility == NoteVisibility.Public || Note.Visibility == NoteVisibility.Home || Session.Current?.Id == Note.User.Id)"
+            />
+        }
     </div>
-    <NoteBody NoteBase="Note" Indented="Indented" ReplyInaccessible="ReplyInaccessible" Quote="Quote"/>
-    @if (!AsQuote)
-    {
-        <NoteFooter
-            Reactions="Note.Reactions"
-            Likes="Note.Likes"
-            IsLiked="Note.Liked"
-            Renotes="Note.Renotes"
-            Replies="Note.Replies"
-            Indented="Indented"
-            RenotePossible=
-            "@(Note.Visibility == NoteVisibility.Public || Note.Visibility == NoteVisibility.Home || Session.Current?.Id == Note.User.Id)"/>
-    }
 </CascadingValue>
 
 @code {
