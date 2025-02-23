@@ -35,6 +35,15 @@ internal class UserControllerModel(ApiClient api)
 
 	public Task<bool> FollowUserAsync(string id) => api.CallNullableAsync(HttpMethod.Post, $"/users/{id}/follow");
 
+	public Task MuteUserAsync(string id, DateTime? expires) =>
+		api.CallAsync(HttpMethod.Post, $"/users/{id}/mute",
+		              expires != null
+			              ? QueryString.Create("expires", expires.Value.ToUniversalTime().ToString("O"))
+			              : QueryString.Empty);
+
+	public Task UnmuteUserAsync(string id) =>
+		api.CallAsync(HttpMethod.Post, $"/users/{id}/unmute");
+
 	public Task<UserResponse?> RefetchUserAsync(string id) =>
 		api.CallNullableAsync<UserResponse>(HttpMethod.Post, $"/users/{id}/refetch");
 

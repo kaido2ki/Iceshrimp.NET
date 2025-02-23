@@ -80,6 +80,18 @@
                                     <Text>@Loc["Remove follower"]</Text>
                                 </MenuElement>
                             }
+                            @if (Profile != null && Profile.Relations.HasFlag(Relations.Muting))
+                            {
+                                <MenuElement Icon="Icons.Eye" OnSelect="Unmute">
+                                    <Text>@Loc["Unmute"]</Text>
+                                </MenuElement>
+                            }
+                            else
+                            {
+                                <MenuElement Icon="Icons.EyeSlash" OnSelect="Mute">
+                                    <Text>@Loc["Mute"]</Text>
+                                </MenuElement>
+                            }
                             @if (Profile != null && Profile.Relations.HasFlag(Relations.Blocking))
                             {
                                 <MenuElement Icon="Icons.Prohibit" OnSelect="Unblock">
@@ -270,6 +282,50 @@
 
     private void RemoveFromFollowers() =>
         GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RemoveFromFollowersAction), Loc["Remove {0} from followers?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Remove follower"]);
+
+    private void Mute() =>
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, MuteCallback), Loc["Mute {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Block"]);
+
+    private async Task MuteCallback(bool confirm)
+    {
+        if (!confirm) return;
+
+        try
+        {
+            await Api.Users.MuteUserAsync(UserResponse.Id, null);
+
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Muted {0}", UserResponse.DisplayName ?? UserResponse.Username])!;
+
+            Profile!.Relations += (int)Relations.Muting;
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
+
+    private void Unmute() =>
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnmuteCallback), Loc["Unmute {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Unblock"]);
+
+    private async Task UnmuteCallback(bool confirm)
+    {
+        if (!confirm) return;
+
+        try
+        {
+            await Api.Users.UnmuteUserAsync(UserResponse.Id);
+
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Unmuted {0}", UserResponse.DisplayName ?? UserResponse.Username])!;
+
+            Profile!.Relations -= (int)Relations.Muting;
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
 
     private void Block() =>
         GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, BlockCallback), Loc["Block {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Block"]);
