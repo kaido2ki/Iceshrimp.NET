@@ -117,6 +117,48 @@ public class UserController(
 		await biteSvc.BiteAsync(user, target);
 	}
 
+	[HttpPost("{id}/block")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task BlockUser(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot block yourself");
+
+		var blockee = await db.Users
+		                      .Where(p => p.Id == id)
+		                      .IncludeCommonProperties()
+		                      .PrecomputeRelationshipData(user)
+		                      .FirstOrDefaultAsync()
+		              ?? throw GracefulException.RecordNotFound();
+
+		await userSvc.BlockUserAsync(user, blockee);
+	}
+	
+	[HttpPost("{id}/unblock")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task UnblockUser(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot unblock yourself");
+
+		var blockee = await db.Users
+		                      .Where(p => p.Id == id)
+		                      .IncludeCommonProperties()
+		                      .PrecomputeRelationshipData(user)
+		                      .FirstOrDefaultAsync()
+		              ?? throw GracefulException.RecordNotFound();
+
+		await userSvc.UnblockUserAsync(user, blockee);
+	}
+
 	[HttpPost("{id}/follow")]
 	[Authenticate]
 	[Authorize]
