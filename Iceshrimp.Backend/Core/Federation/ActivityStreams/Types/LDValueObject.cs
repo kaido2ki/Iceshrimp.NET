@@ -24,6 +24,8 @@ public class LDLocalizedString
 	{
 		Values = [];
 
+		if (value == null) return;
+
 		// this is required to create a non-Map field for non-JsonLD remotes.
 		Values.Add("", value);
 
@@ -31,7 +33,7 @@ public class LDLocalizedString
 		{
 			language = NormalizeLanguageCode(language);
 
-			if (language != null && language != "")
+			if (!string.IsNullOrEmpty(language))
 				Values.Add(language, value);
 		}
 	}
@@ -284,7 +286,7 @@ public class LocalizedValueObjectConverter : JsonConverter<LDLocalizedString>
 
     public override void WriteJson(JsonWriter writer, LDLocalizedString? value, JsonSerializer serializer)
     {
-		if (value == null)
+		if (value == null || value.Values.Count < 1)
 		{
 			writer.WriteNull();
 			return;
