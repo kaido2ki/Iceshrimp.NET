@@ -109,6 +109,12 @@
                     <Text>@Loc["Copy link (remote)"]</Text>
                 </MenuElement>
             }
+            @if (!string.IsNullOrWhiteSpace(Note.Text))
+            {
+                <MenuElement Icon="Icons.Copy" OnSelect="CopyContents">
+                    <Text>@Loc["Copy contents"]</Text>
+                </MenuElement>
+            }
             @if (Note.User.Id == Session.Current?.Id)
             {
                 <hr class="rule"/>
@@ -151,8 +157,10 @@
         var instance = await MetadataSvc.Instance.Value;
         await Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{instance.WebDomain}/notes/{Note.Id}");
     }
-    
+
     private void CopyLinkRemote() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.Url);
+
+    private void CopyContents() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.Text);
 
     private void Like()
     {
