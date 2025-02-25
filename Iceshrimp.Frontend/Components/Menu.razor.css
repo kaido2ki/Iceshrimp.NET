@@ -13,6 +13,13 @@
     z-index: +2;
 }
 
+::deep .rule {
+    width: 90%;
+    color: var(--highlight-color);
+    border-style: solid;
+    cursor: auto;
+}
+
 @media (max-width: 1000px) {
     .menu {
         top: unset;
