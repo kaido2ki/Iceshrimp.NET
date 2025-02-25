@@ -21,7 +21,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Sections
 @using Microsoft.Extensions.Localization
-@implements IDisposable
+@implements IAsyncDisposable
 
 @if (_componentState == State.Loaded)
 {
@@ -138,7 +138,9 @@
 {
     <HeadTitle Text="@Loc["Loading"]"/>
 
-    <div class="loading"><LoadingSpinner Scale="2" /></div>
+    <div class="loading">
+        <LoadingSpinner Scale="2"/>
+    </div>
 }
 @if (_componentState == State.NotFound)
 {
@@ -165,6 +167,7 @@
     private            SortedList<string, NoteResponse>? Descendants { get; set; }
     private            SortedList<string, NoteResponse>? Ascendants  { get; set; }
     private            IJSInProcessObjectReference?      Module      { get; set; }
+    private readonly   Lazy<Task<IJSObjectReference>>    _moduleTask;
     private            ElementReference                  RootNoteRef { get; set; }
     private            int                               _depth = 20;
     private            IDisposable?                      _locationChangingHandlerDisposable;
@@ -175,6 +178,8 @@
     private async Task Load()
     {
         Logger.LogTrace($"Opening NoteID: {NoteId}");
+        Module          = (IJSInProcessObjectReference?)await _moduleTask.Value;
+        Logger.LogInformation("Loaded Module");
         _componentState = State.Loading;
         if (NoteId == null)
         {
@@ -261,20 +266,22 @@
     }
 
     // ReSharper disable once InconsistentNaming
-    private ValueTask LocationChangeHandler(LocationChangingContext arg)
+    private async ValueTask LocationChangeHandler(LocationChangingContext arg)
     {
-        SaveState();
-        return ValueTask.CompletedTask;
+        await SaveState();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    public SingleNote()
     {
-        if (firstRender)
-        {
-            Module = (IJSInProcessObjectReference)await Js.InvokeAsync
-                <IJSObjectReference>("import", "/Pages/SingleNote.razor.js");
-        }
+        _moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
+                                                             Js.InvokeAsync<IJSObjectReference>(
+                                                                                                "import",
+                                                                                                "./Pages/SingleNote.razor.js")
+                                                               .AsTask());
+    }
 
+    protected override void OnAfterRender(bool firstRender)
+    {
         if (_componentState == State.Loaded)
         {
             var state = StateSvc.SingleNote.GetState(NoteId!);
@@ -332,19 +339,18 @@
         }
     }
 
-    private void SaveState()
+    private async Task SaveState()
     {
         if (NoteId == null || _componentState != State.Loaded) return;
-        var scrollTop = (Module ?? throw new Exception("JS Interop used before init"))
-            .Invoke
-                <float>("GetScrollY");
-        var state = new SingleNoteState { ScrollTop = scrollTop };
+        var module    = await _moduleTask.Value;
+        var scrollTop = await module.InvokeAsync<float>("GetScrollY");
+        var state     = new SingleNoteState { ScrollTop = scrollTop };
         StateSvc.SingleNote.SetState(NoteId, state);
     }
-
-    public void Dispose()
+    
+    public async ValueTask DisposeAsync()
     {
-        SaveState();
+        await SaveState();
         _locationChangingHandlerDisposable?.Dispose();
         StateSynchronizer.NoteDeleted -= OnNoteDeleted;
         NoteStore.AnyNoteChanged      -= OnNoteChanged;
