@@ -1,3 +1,34 @@
+## v2025.1-beta5.patch2
+This is a hotfix release. It's identical to v2025.1-beta5.patch1, except for a bunch of bugfixes. Upgrading is strongly recommended for all server operators running v2025.1-beta5 or v2025.1-beta5.patch1.
+
+### Blazor Frontend
+- The compose dialog send button no longer gets stuck on "Sent!"
+- The compose dialog can no longer be closed while files are uploading or the composed note is being created
+- Alt text no longer overflows the avatar box when the avatar fails to load
+- Firefox no longer displays the avatar alt text while the image is loading
+- If an avatar fails to load, the user's identicon is loaded as a fallback image
+- Avatars now take up the same amount of space while they're loading
+- The contrast of poll results has been improved
+- An error dialog is displayed when poll voting fails
+- Quotes no longer have extraneous whitespace above their content
+- A frontend crash related to early JSInterop use has been fixed
+- Profile fields now get rendered with an improved layout which no longer breaks on overflow
+
+### Backend
+- Link verification now works with `rel="me"` links in the `<head>` section, and works with MFM/aliased links
+- Voting on a poll using the Web API no longer fails
+- A bug related to LDLocalizedString serialization has been resolved
+
+### Mastodon client API
+- `/api/v2/instance` now returns the streaming API URL in the correct format
+
+### Miscellaneous
+- Release builds no longer use compiled EF models, fixing API errors & frontend page load issues
+- Docker builds are getting tagged as :latest again
+
+### Attribution
+This release was made possible by project contributors: Kopper, Laura Hausmann, Lilian & pancakes
+
 ## v2025.1-beta5.patch1
 This is a hotfix release. It's identical to v2025.1-beta5, except for a bunch of bugfixes. Upgrading is strongly recommended for all server operators running v2025.1-beta5.
 

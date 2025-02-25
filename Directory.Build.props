@@ -27,7 +27,7 @@
     <!-- Version metadata -->
     <PropertyGroup>
         <VersionPrefix>2025.1</VersionPrefix>
-        <VersionSuffix>beta5.patch1</VersionSuffix>
+        <VersionSuffix>beta5.patch2</VersionSuffix>
     </PropertyGroup>
 
     <ItemGroup>
