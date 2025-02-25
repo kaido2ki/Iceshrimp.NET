@@ -86,30 +86,32 @@
     <button @ref="MenuButton" class="btn" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">
         <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
         <Menu @ref="ContextMenu">
-            @if (Note.User.Id == Session.Current?.Id)
-            {
-                <MenuElement Icon="Icons.Trash" OnSelect="Delete">
-                    <Text>@Loc["Delete"]</Text>
-                </MenuElement>
-                <MenuElement Icon="Icons.Eraser" OnSelect="Redraft">
-                    <Text>@Loc["Redraft"]</Text>
-                </MenuElement>
-            }
-            else
+            @if (Note.User.Id != Session.Current?.Id)
             {
                 <MenuElement Icon="Icons.Tooth" OnSelect="Bite">
                     <Text>@Loc["Bite"]</Text>
                 </MenuElement>
             }
+            <MenuElement Icon="Icons.SpeakerX" OnSelect="Mute">
+                <Text>@Loc["Mute thread"]</Text>
+            </MenuElement>
+            <hr class="rule"/>
             <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
                 <Text>@Loc["Open original page"]</Text>
             </MenuElement>
             <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
                 <Text>@Loc["Copy link"]</Text>
             </MenuElement>
-            <MenuElement Icon="Icons.SpeakerX" OnSelect="Mute">
-                <Text>@Loc["Mute Note"]</Text>
-            </MenuElement>
+            @if (Note.User.Id == Session.Current?.Id)
+            {
+                <hr class="rule"/>
+                <MenuElement Icon="Icons.Eraser" OnSelect="Redraft" Danger>
+                    <Text>@Loc["Delete & redraft"]</Text>
+                </MenuElement>
+                <MenuElement Icon="Icons.Trash" OnSelect="Delete" Danger>
+                    <Text>@Loc["Delete"]</Text>
+                </MenuElement>
+            }
             <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>
         </Menu>
     </button>
