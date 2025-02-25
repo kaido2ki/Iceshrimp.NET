@@ -8,6 +8,7 @@
 @inject IJSRuntime                     Js;
 @inject SessionService                 Session;
 @inject GlobalComponentSvc             GlobalComponentSvc
+@inject MetadataService                MetadataSvc;
 @inject NoteActions                    NoteActions;
 
 <div class="note-footer">
@@ -102,6 +103,12 @@
             <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
                 <Text>@Loc["Copy link"]</Text>
             </MenuElement>
+            @if (Note.User.Host != null)
+            {
+                <MenuElement Icon="Icons.ShareNetwork" OnSelect="CopyLinkRemote">
+                    <Text>@Loc["Copy link (remote)"]</Text>
+                </MenuElement>
+            }
             @if (Note.User.Id == Session.Current?.Id)
             {
                 <hr class="rule"/>
@@ -139,7 +146,13 @@
 
     private void OpenOriginal() => Js.InvokeVoidAsync("open", Note.Url, "_blank");
 
-    private void CopyLink() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.Url);
+    private async Task CopyLink()
+    {
+        var instance = await MetadataSvc.Instance.Value;
+        await Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{instance.WebDomain}/notes/{Note.Id}");
+    }
+    
+    private void CopyLinkRemote() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.Url);
 
     private void Like()
     {
