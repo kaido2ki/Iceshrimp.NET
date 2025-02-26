@@ -35,15 +35,15 @@
                 <Icon Name="Icons.EyeSlash" title="@Loc["Sensitive"]"/>
             }
         </div>
-        @if (File.ContentType.StartsWith("image"))
+        @if (File.ContentType.StartsWith("image") || Constants.CommonImageExtensions.Any(e => File.Filename.EndsWith(e)))
         {
             <img class="thumbnail" src="@File.ThumbnailUrl" alt="@File.Description"/>
         }
-        else if (File.ContentType.StartsWith("audio"))
+        else if (File.ContentType.StartsWith("audio") || Constants.CommonAudioExtensions.Any(e => File.Filename.EndsWith(e)))
         {
             <Icon Name="Icons.FileAudio" Size="5em"/>
         }
-        else if (File.ContentType.StartsWith("video"))
+        else if (File.ContentType.StartsWith("video") || Constants.CommonVideoExtensions.Any(e => File.Filename.EndsWith(e)))
         {
             <Icon Name="Icons.FileVideo" Size="5em"/>
         }
