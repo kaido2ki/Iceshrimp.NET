@@ -41,15 +41,21 @@
         }
         else if (File.ContentType.StartsWith("audio") || Constants.CommonAudioExtensions.Any(e => File.Filename.EndsWith(e)))
         {
-            <Icon Name="Icons.FileAudio" Size="5em"/>
+            <span class="icon">
+                <Icon Name="Icons.FileAudio" Size="5em"/>
+            </span>
         }
         else if (File.ContentType.StartsWith("video") || Constants.CommonVideoExtensions.Any(e => File.Filename.EndsWith(e)))
         {
-            <Icon Name="Icons.FileVideo" Size="5em"/>
+            <span class="icon">
+                <Icon Name="Icons.FileVideo" Size="5em"/>
+            </span>
         }
         else
         {
-            <Icon Name="Icons.File" Size="5em"/>
+            <span class="icon">
+                <Icon Name="Icons.File" Size="5em"/>
+            </span>
         }
         <span>@File.Filename</span>
         <Menu @ref="FileMenu">
@@ -93,7 +99,9 @@
 @if (Folder != null && File == null)
 {
     <div @ref="FolderButton" class="drive-entry" @onclick="SelectFolder" @onclick:stopPropagation="true">
-        <Icon Name="Icons.FolderOpen" Size="5em" Pack="IconStyle.Fill"/>
+        <span class="icon">
+            <Icon Name="Icons.FolderOpen" Size="5em" Pack="IconStyle.Fill"/>
+        </span>
         <span>@Folder.Name</span>
         <Menu @ref="FolderMenu">
             <MenuElement Icon="Icons.FolderOpen" OnSelect="OpenFolder">
