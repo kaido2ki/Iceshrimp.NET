@@ -65,6 +65,7 @@
             <MenuElement Icon="Icons.Share" OnSelect="CopyFileLink">
                 <Text>@Loc["Copy link"]</Text>
             </MenuElement>
+            <hr class="rule"/>
             <MenuElement Icon="Icons.CursorText" OnSelect="RenameFile">
                 <Text>@Loc["Rename"]</Text>
             </MenuElement>
@@ -83,13 +84,14 @@
             <MenuElement Icon="Icons.ClosedCaptioning" OnSelect="SetFileAltText">
                 <Text>@Loc["Set alt text"]</Text>
             </MenuElement>
+            <hr class="rule"/>
             @if (ParentId != null || FolderList.Count != 0)
             {
                 <MenuElement Icon="Icons.FolderDashed" OnSelect="MoveFile">
                     <Text>@Loc["Move"]</Text>
                 </MenuElement>
             }
-            <MenuElement Icon="Icons.Trash" OnSelect="DeleteFile">
+            <MenuElement Icon="Icons.Trash" OnSelect="DeleteFile" Danger>
                 <Text>@Loc["Delete"]</Text>
             </MenuElement>
             <ClosingBackdrop OnClose="FileMenu.Close"></ClosingBackdrop>
@@ -107,11 +109,13 @@
             <MenuElement Icon="Icons.FolderOpen" OnSelect="OpenFolder">
                 <Text>@Loc["Open"]</Text>
             </MenuElement>
+            <hr class="rule"/>
             <MenuElement Icon="Icons.CursorText" OnSelect="RenameFolder">
                 <Text>@Loc["Rename"]</Text>
             </MenuElement>
             @if (ParentId != null || FolderList.Count > 1)
             {
+                <hr class="rule"/>
                 <MenuElement Icon="Icons.FolderDashed" OnSelect="MoveFolder">
                     <Text>@Loc["Move"]</Text>
                 </MenuElement>

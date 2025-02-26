@@ -5,6 +5,7 @@
     padding-inline: 0.5rem;
     border-radius: 0.5rem;
     align-items: center;
+    color: var(--notice-color);
 
     > i {
         padding-right: 0.5rem;
