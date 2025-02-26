@@ -16,15 +16,19 @@
     }
     else if (File.ContentType.StartsWith("audio") || Constants.CommonAudioExtensions.Any(e => File.Filename.EndsWith(e)))
     {
-        <Icon Name="Icons.FileAudio" Size="5em"/>
+        <Icon Name="Icons.FileAudio" Size="3em"/>
     }
     else if (File.ContentType.StartsWith("video") || Constants.CommonVideoExtensions.Any(e => File.Filename.EndsWith(e)))
     {
-        <Icon Name="Icons.FileVideo" Size="5em"/>
+        <Icon Name="Icons.FileVideo" Size="3em"/>
     }
     else
     {
-        <Icon Name="Icons.File" Size="5em"/>
+        <Icon Name="Icons.File" Size="3em"/>
+    }
+    @if (!File.ContentType.StartsWith("image") && Constants.CommonImageExtensions.All(e => !File.Filename.EndsWith(e)))
+    {
+        <span class="file-name">@File.Filename</span>
     }
     <div class="labels">
         @if (File.Description != null)
