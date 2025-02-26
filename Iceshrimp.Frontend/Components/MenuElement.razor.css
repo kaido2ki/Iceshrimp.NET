@@ -19,11 +19,6 @@
     color: var(--danger-color);
 }
 
-.menu-element.danger:hover {
-    background-color: var(--danger-color);
-    color: var(--foreground-color);
-}
-
 @media (max-width: 1000px) {
     .menu-element + .menu-element {
         margin-top: 1rem;

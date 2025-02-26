@@ -16,6 +16,7 @@
 ::deep .rule {
     width: 90%;
     color: var(--highlight-color);
+    border-width: 0.05rem;
     border-style: solid;
     cursor: auto;
 }
