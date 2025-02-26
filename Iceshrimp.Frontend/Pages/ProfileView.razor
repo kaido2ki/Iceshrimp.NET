@@ -16,7 +16,6 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject MetadataService                MetadataService
 @inject NavigationManager              Nav;
-@inject SessionService                 Session
 
 @if (_init)
 {
@@ -63,7 +62,7 @@
                 <button @ref="MenuButton" class="context-button" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">
                     <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
                     <Menu @ref="ContextMenu">
-                        @if (UserResponse.Id == Session.Current?.Id)
+                        @if (Profile != null && Profile.Relations.HasFlag(Relations.Self))
                         {
                             <MenuElement Icon="Icons.Pencil" OnSelect="EditProfile">
                                 <Text>@Loc["Edit profile"]</Text>
@@ -74,9 +73,38 @@
                             <MenuElement Icon="Icons.Tooth" OnSelect="Bite">
                                 <Text>@Loc["Bite"]</Text>
                             </MenuElement>
+                        }
+                        @if (UserResponse.Host != null)
+                        {
+                            <MenuElement Icon="Icons.ArrowsClockwise" OnSelect="RefetchUser">
+                                <Text>@Loc["Refetch"]</Text>
+                            </MenuElement>
+                        }
+                        <hr class="rule"/>
+                        @if (UserResponse.Host != null && Profile?.Url != null)
+                        {
+                            <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
+                                <Text>@Loc["Open original page"]</Text>
+                            </MenuElement>
+                        }
+                        <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
+                            <Text>@Loc["Copy link"]</Text>
+                        </MenuElement>
+                        @if (UserResponse.Host != null && Profile?.Url != null)
+                        {
+                            <MenuElement Icon="Icons.ShareNetwork" OnSelect="CopyLinkRemote">
+                                <Text>@Loc["Copy link (remote)"]</Text>
+                            </MenuElement>
+                        }
+                        <MenuElement Icon="Icons.At" OnSelect="CopyUsername">
+                            <Text>@Loc["Copy username"]</Text>
+                        </MenuElement>
+                        @if (Profile != null && !Profile.Relations.HasFlag(Relations.Self))
+                        {
+                            <hr class="rule"/>
                             @if (Profile != null && Profile.Relations.HasFlag(Relations.FollowedBy))
                             {
-                                <MenuElement Icon="Icons.LinkBreak" OnSelect="RemoveFromFollowers">
+                                <MenuElement Icon="Icons.LinkBreak" OnSelect="RemoveFromFollowers" Danger>
                                     <Text>@Loc["Remove follower"]</Text>
                                 </MenuElement>
                             }
@@ -107,30 +135,6 @@
                                     <Text>@Loc["Block"]</Text>
                                 </MenuElement>
                             }
-                        }
-                        @if (UserResponse.Host != null && Profile?.Url != null)
-                        {
-                            <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
-                                <Text>@Loc["Open original page"]</Text>
-                            </MenuElement>
-                        }
-                        <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
-                            <Text>@Loc["Copy link"]</Text>
-                        </MenuElement>
-                        @if (UserResponse.Host != null && Profile?.Url != null)
-                        {
-                            <MenuElement Icon="Icons.ShareNetwork" OnSelect="CopyLinkRemote">
-                                <Text>@Loc["Copy link (remote)"]</Text>
-                            </MenuElement>
-                        }
-                        <MenuElement Icon="Icons.At" OnSelect="CopyUsername">
-                            <Text>@Loc["Copy username"]</Text>
-                        </MenuElement>
-                        @if (UserResponse.Host != null)
-                        {
-                            <MenuElement Icon="Icons.ArrowsClockwise" OnSelect="RefetchUser">
-                                <Text>@Loc["Refetch"]</Text>
-                            </MenuElement>
                         }
                         <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>
                     </Menu>
