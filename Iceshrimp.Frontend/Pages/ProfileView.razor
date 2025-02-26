@@ -268,11 +268,7 @@
     
     private void EditProfile() => Nav.NavigateTo("/settings/profile");
 
-    private async Task Bite()
-    {
-        await Api.Users.BiteUserAsync(UserResponse.Id);
-        await GlobalComponentSvc.NoticeDialog?.Display(Loc["Bit {0}", UserResponse.DisplayName ?? UserResponse.Username])!;
-    }
+    private void Bite() => Api.Users.BiteUserAsync(UserResponse.Id);
 
     private async Task RemoveFromFollowersAction(bool confirm)
     {
