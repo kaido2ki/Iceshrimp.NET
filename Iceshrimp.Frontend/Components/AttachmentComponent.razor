@@ -1,4 +1,5 @@
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
@@ -7,7 +8,7 @@
 @inject IStringLocalizer<Localization> Loc;
 
 <div class="wrapper" @onclick="Open" @onclick:stopPropagation="true">
-    @if (Attachment.ContentType.StartsWith("image"))
+    @if (Attachment.ContentType.StartsWith("image") || Constants.CommonImageExtensions.Any(e => Attachment.FileName.EndsWith(e)))
     {
         <img class="attachment @(BlurImage ? "blur-image" : "")" src="@Attachment.Url" alt="@Attachment.AltText"
              fetchpriority="low"/>
@@ -24,11 +25,11 @@
     //  {
     //      TODO: Module player
     //  }
-    else if (Attachment.ContentType.StartsWith("audio"))
+    else if (Attachment.ContentType.StartsWith("audio") || Constants.CommonAudioExtensions.Any(e => Attachment.FileName.EndsWith(e)))
     {
         <audio controls class="attachment" src="@Attachment.Url"></audio>
     }
-    else if (Attachment.ContentType.StartsWith("video"))
+    else if (Attachment.ContentType.StartsWith("video") || Constants.CommonVideoExtensions.Any(e => Attachment.FileName.EndsWith(e)))
     {
         <video controls class="attachment">
             <source src="@Attachment.Url"/>
