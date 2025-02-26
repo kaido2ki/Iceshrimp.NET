@@ -21,6 +21,17 @@ public class StorageMaintenanceService(
 {
 	public async Task MigrateLocalFilesAsync(bool purge)
 	{
+		try
+		{
+			await objectStorageSvc.VerifyCredentialsAsync();
+		}
+		catch (Exception e)
+		{
+			logger.LogCritical("Failed to initialize object storage: {message}", e.Message);
+			Environment.Exit(1);
+			return;
+		}
+		
 		var pathBase      = options.Value.Local?.Path;
 		var pathsToDelete = new ConcurrentBag<string>();
 		var failed        = new ConcurrentBag<string>();
