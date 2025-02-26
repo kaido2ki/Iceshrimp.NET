@@ -58,6 +58,7 @@ public class NoteAttachment
 	public required      bool    IsSensitive  { get; set; }
 	public required      string? Blurhash     { get; set; }
 	public required      string? AltText      { get; set; }
+	public required      string  FileName     { get; set; }
 }
 
 public class NotePollSchema

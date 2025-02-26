@@ -124,7 +124,8 @@ public class NoteRenderer(
 			            ContentType  = p.Type,
 			            Blurhash     = p.Blurhash,
 			            AltText      = p.Comment,
-			            IsSensitive  = p.IsSensitive
+			            IsSensitive  = p.IsSensitive,
+			            FileName     = p.Name
 		            })
 		            .ToList();
 	}
