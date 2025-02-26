@@ -104,7 +104,10 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 
 	public Uri GetFilePublicUrl(string filename)
 	{
-		var baseUri = new Uri(_accessUrl ?? throw new Exception("Invalid object storage access url"));
+		var accessUrl = _accessUrl ?? throw new Exception("Invalid object storage access url");
+		if (!accessUrl.EndsWith('/'))
+			accessUrl += '/';
+		var baseUri = new Uri(accessUrl);
 		return new Uri(baseUri, GetKeyWithPrefix(filename));
 	}
 
