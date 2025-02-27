@@ -17,14 +17,15 @@
     --foreground-color: #17151e;
     --highlight-color: #2e2b4c;
     --hover-color: #3d3a66;
-    --accent-primary-color: #7b74cc;
-    --accent-secondary-color: #685bc4;
+    --accent-primary-color: #685bc4;
+    --accent-secondary-color: #7b74cc;
     --accent-color: linear-gradient(to right, var(--accent-primary-color), var(--accent-secondary-color));
     --notice-color: #92c1ff;
     --warning-color: #ffdf91;
     --danger-color: #ff9191;
     --font-color: #e7edff;
     --link: #9E9EFF;
+    --btn-radius: 1.25rem;
 
     overscroll-behavior-y: none;
 }

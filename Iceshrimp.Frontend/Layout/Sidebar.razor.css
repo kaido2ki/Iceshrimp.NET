@@ -7,11 +7,12 @@
 
 ::deep {
     .active {
-        > .sidebar-btn {
+        >.sidebar-btn {
             background: var(--highlight-color);
+            color: var(--link);
         }
 
-        > .bottom-bar-btn {
+        >.bottom-bar-btn {
             background: var(--highlight-color);
         }
     }
@@ -71,16 +72,17 @@
     height: 2.5rem;
     align-items: center;
     justify-content: start;
-    border-radius: 1.25rem;
+    border-radius: var(--btn-radius);
     padding-inline: 1rem;
     margin-bottom: 0.5rem;
     margin-inline: 1rem;
-    color: white;
+    color: var(--font-color);
     font-size: 0.9em;
-    background: var(--foreground-color);
 
     > .icon-wrapper {
         padding-right: 0.5rem;
+        font-size: 1.5em !important;
+        /* why is there a style=“font-size: 16px” in the DOM? remove it !important when it's fixed */
     }
 }
 
@@ -90,6 +92,22 @@
 
 .post-btn {
     background: var(--accent-color);
+    color: var(--foreground-color);
+}
+
+.sidebar {
+    .post-btn {
+        display: flex;
+        justify-content: center;
+        padding: 2rem;
+        font-weight: bold;
+        position: relative;
+
+        i {
+            left: 1em;
+            position: absolute;
+        }
+    }
 }
 
 .rule {
