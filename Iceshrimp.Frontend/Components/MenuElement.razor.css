@@ -19,9 +19,3 @@
 .menu-element.danger {
     color: var(--danger-color);
 }
-
-@media (max-width: 1000px) {
-    .menu-element + .menu-element {
-        margin-top: 1rem;
-    }
-}
