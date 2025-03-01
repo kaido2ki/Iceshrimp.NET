@@ -90,8 +90,11 @@
         {
             <div>
                 <span>
-                    <Icon Name="Icons.Quotes"/> Quoting
-                    <a href="@($"/notes/{AttachedQuote}")" target="_blank">/notes/@AttachedQuote</a>
+                    <Icon Name="Icons.Quotes"/>
+                    <a href="@($"/notes/{AttachedQuote}")" target="_blank">@Loc["Attached quote"]</a>
+                    <button class="btn" title="@Loc["Remove quote"]" @onclick="RemoveQuote" aria-label="remove quote">
+                        <Icon Name="Icons.Trash" Size="1rem"></Icon>
+                    </button>
                 </span>
             </div>
         }
@@ -402,6 +405,11 @@
         {
             await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
+    }
+
+    private void RemoveQuote()
+    {
+        AttachedQuote = null;
     }
 
     private async Task AddEmoji(EmojiResponse emoji)

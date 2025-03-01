@@ -127,6 +127,7 @@
     height: max-content;
     background-color: var(--background-color);
     line-height: 1;
+    vertical-align: middle;
 }
 
 .btn:hover {
