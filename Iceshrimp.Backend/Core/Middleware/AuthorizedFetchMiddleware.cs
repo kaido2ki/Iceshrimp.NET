@@ -39,6 +39,13 @@ public class AuthorizedFetchMiddleware(
 		mfmConverter.SupportsHtmlFormatting.Value = true;
 		mfmConverter.SupportsInlineMedia.Value    = true;
 
+		// Short-circuit fetches when signature validation is disabled
+		if (config.Value is { AuthorizedFetch: false, ValidateRequestSignatures: false })
+		{
+			await next(ctx);
+			return;
+		}
+
 		// Short-circuit instance & relay actor fetches
 		_instanceActorUri ??= $"/users/{(await systemUserSvc.GetInstanceActorAsync()).Id}";
 		_relayActorUri    ??= $"/users/{(await systemUserSvc.GetRelayActorAsync()).Id}";

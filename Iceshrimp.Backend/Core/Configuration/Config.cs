@@ -54,18 +54,19 @@ public sealed class Config
 
 	public sealed class SecuritySection
 	{
-		public bool                 AuthorizedFetch      { get; init; } = true;
-		public bool                 AttachLdSignatures   { get; init; } = false;
-		public bool                 AcceptLdSignatures   { get; init; } = false;
-		public bool                 AllowLoopback        { get; init; } = false;
-		public bool                 AllowLocalIPv6       { get; init; } = false;
-		public bool                 AllowLocalIPv4       { get; init; } = false;
-		public ExceptionVerbosity   ExceptionVerbosity   { get; init; } = ExceptionVerbosity.Basic;
-		public Enums.Registrations  Registrations        { get; init; } = Enums.Registrations.Closed;
-		public Enums.FederationMode FederationMode       { get; init; } = Enums.FederationMode.BlockList;
-		public Enums.ItemVisibility ExposeFederationList { get; init; } = Enums.ItemVisibility.Registered;
-		public Enums.ItemVisibility ExposeBlockReasons   { get; init; } = Enums.ItemVisibility.Registered;
-		public Enums.PublicPreview  PublicPreview        { get; init; } = Enums.PublicPreview.Public;
+		public bool                 AuthorizedFetch           { get; init; } = true;
+		public bool                 ValidateRequestSignatures { get; init; } = true;
+		public bool                 AttachLdSignatures        { get; init; } = false;
+		public bool                 AcceptLdSignatures        { get; init; } = false;
+		public bool                 AllowLoopback             { get; init; } = false;
+		public bool                 AllowLocalIPv6            { get; init; } = false;
+		public bool                 AllowLocalIPv4            { get; init; } = false;
+		public ExceptionVerbosity   ExceptionVerbosity        { get; init; } = ExceptionVerbosity.Basic;
+		public Enums.Registrations  Registrations             { get; init; } = Enums.Registrations.Closed;
+		public Enums.FederationMode FederationMode            { get; init; } = Enums.FederationMode.BlockList;
+		public Enums.ItemVisibility ExposeFederationList      { get; init; } = Enums.ItemVisibility.Registered;
+		public Enums.ItemVisibility ExposeBlockReasons        { get; init; } = Enums.ItemVisibility.Registered;
+		public Enums.PublicPreview  PublicPreview             { get; init; } = Enums.PublicPreview.Public;
 	}
 
 	public sealed class NetworkSection
