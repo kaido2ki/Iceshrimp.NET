@@ -70,6 +70,12 @@
                         aria-label="emoji">
                     <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
                 </button>
+                @if (NoteDraft.RenoteId == null && AttachedQuote == null)
+                {
+                    <button class="btn" title="@Loc["Add quote"]" @onclick="AddQuote" aria-label="add quote">
+                        <Icon Name="Icons.Quotes" Size="1.3rem"></Icon>
+                    </button>
+                }
             </div>
             <div class="buttons">
                 <span title="@Loc["Character limit"]"
@@ -80,9 +86,20 @@
                 </button>
             </div>
         </div>
+        @if (AttachedQuote != null)
+        {
+            <div>
+                <span>
+                    <Icon Name="Icons.Quotes"/> Quoting
+                    <a href="@($"/notes/{AttachedQuote}")" target="_blank">/notes/@AttachedQuote</a>
+                </span>
+            </div>
+        }
         @if (UploadingFiles != 0)
         {
-            <span><LoadingSpinner/> @(UploadingFiles == 1 ? Loc["Uploading file"] : Loc["Uploading {0} files", UploadingFiles])</span>
+            <div>
+                <span><LoadingSpinner/> @(UploadingFiles == 1 ? Loc["Uploading file"] : Loc["Uploading {0} files", UploadingFiles])</span>
+            </div>
         }
         @if (Attachments.Count != 0)
         {
@@ -126,6 +143,7 @@
     private int                      NoteLength      { get; set; }
     private bool                     SendLock        { get; set; } = false;
     private int                      UploadingFiles  { get; set; }
+    private string?                  AttachedQuote   { get; set; }
 
     private NoteCreateRequest NoteDraft { get; set; } = new()
     {
@@ -277,6 +295,7 @@
         NoteDraft        = new NoteCreateRequest { Text = "", Visibility = settings.DefaultNoteVisibility, Cw = null };
         TextPlaceholder  = AvailablePlaceholders["default"];
         SendButton.State = StateButton.StateEnum.Initial;
+        AttachedQuote    = null;
     }
 
     private async Task CloseDialog()
@@ -294,6 +313,7 @@
             NoteDraft.MediaIds = Attachments.Select(x => x.Id).ToList();
         }
 
+        NoteDraft.RenoteId ??= AttachedQuote;
         try
         {
             await ApiService.Notes.CreateNoteAsync(NoteDraft);
@@ -355,6 +375,33 @@
     private void ToggleEmojiPicker()
     {
         GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji));
+    }
+
+    private async Task AddQuote() =>
+        await GlobalComponentSvc.PromptDialog?.Prompt(new EventCallback<string?>(this, AddQuoteCallback), Loc["Add quote"], Loc["Link to note"], "")!;
+
+    private async Task AddQuoteCallback(string? url)
+    {
+        if (url == null) return;
+
+        try
+        {
+            var res = await ApiService.Search.LookupAsync(url);
+            if (res != null)
+            {
+                if (!res.TargetUrl.StartsWith("/notes/"))
+                {
+                    await GlobalComponentSvc.NoticeDialog?.Display(Loc["You cannot quote a user profile"], NoticeDialog.NoticeType.Error)!;
+                    return;
+                }
+
+                AttachedQuote = res.TargetUrl[7..];
+            }
+        }
+        catch (ApiException e)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
     }
 
     private async Task AddEmoji(EmojiResponse emoji)
