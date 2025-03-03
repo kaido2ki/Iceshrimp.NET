@@ -757,6 +757,10 @@ details > :last-child {
     margin-bottom: 0;
 }
 
+details summary {
+    width: 100%;
+}
+
 details[open] summary {
     margin-bottom: 10px;
 }
