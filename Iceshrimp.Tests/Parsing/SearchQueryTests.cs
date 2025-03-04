@@ -213,6 +213,33 @@ public class SearchQueryTests
 	[TestMethod]
 	[DataRow(false)]
 	[DataRow(true)]
+	public void TestParseVisibility(bool negated)
+	{
+		var key = negated ? "-visibility" : "visibility";
+		List<string> candidates =
+		[
+			"public", "home", "unlisted", "followers", "direct", "specified", "private", "local"
+		];
+		var results = candidates.Select(v => $"{key}:{v}").SelectMany(p => SearchQueryParser.Parse(p)).ToList();
+		List<ISearchQueryFilter> expectedResults =
+		[
+			new VisibilityFilter(negated, VisibilityFilterType.Public),
+			new VisibilityFilter(negated, VisibilityFilterType.Home),
+			new VisibilityFilter(negated, VisibilityFilterType.Home),
+			new VisibilityFilter(negated, VisibilityFilterType.Followers),
+			new VisibilityFilter(negated, VisibilityFilterType.Specified),
+			new VisibilityFilter(negated, VisibilityFilterType.Specified),
+			new VisibilityFilter(negated, VisibilityFilterType.Specified),
+			new VisibilityFilter(negated, VisibilityFilterType.Local)
+		];
+		results.Should()
+		       .HaveCount(expectedResults.Count)
+		       .And.BeEquivalentTo(expectedResults, opts => opts.RespectingRuntimeTypes());
+	}
+
+	[TestMethod]
+	[DataRow(false)]
+	[DataRow(true)]
 	public void TestParseWord(bool negated)
 	{
 		List<string> candidates = ["test", "word", "since:2023-10-10invalid", "in:bookmarkstypo"];
@@ -231,13 +258,16 @@ public class SearchQueryTests
 	}
 
 	[TestMethod]
-	public void TestParseMultiWord()
+	[DataRow(false)]
+	[DataRow(true)]
+	public void TestParseMultiWord(bool negated)
 	{
 		const string input   = "(word OR word2 OR word3)";
-		var          results = SearchQueryParser.Parse(input).ToList();
+		var          results = SearchQueryParser.Parse((negated ? "-" : "") + input).ToList();
 		results.Should().HaveCount(1);
 		results[0].Should().BeOfType<MultiWordFilter>();
 		((MultiWordFilter)results[0]).Values.ToList().Should().BeEquivalentTo(["word", "word2", "word3"]);
+		((MultiWordFilter)results[0]).Negated.Should().Be(negated);
 	}
 
 	[TestMethod]
