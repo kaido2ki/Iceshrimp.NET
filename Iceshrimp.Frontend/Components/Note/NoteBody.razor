@@ -42,15 +42,18 @@
     <div
         class="note-body @(_overHeight ? "too-long" : "") @(_showFull ? "show-full" : "") @(_cwToggle ? "hidden" : "")"
         @ref="Body">
-        <span @onclick="OpenNote" class="@(ClickOpenNote ? "clickable" : "")">
-            @if (ReplyInaccessible)
-            {
-                <span class="reply-inaccessible">
-                    <Icon Name="Icons.ArrowBendLeftUp"/><Icon Name="Icons.Lock"/>
-                </span>
-            }
-            <MfmText Text="@NoteBase.Text" Emoji="@NoteBase.Emoji"/>
-        </span>
+        @if (ReplyInaccessible || !string.IsNullOrWhiteSpace(NoteBase.Text))
+        {
+            <span @onclick="OpenNote" class="@(ClickOpenNote ? "clickable" : "")">
+                @if (ReplyInaccessible)
+                {
+                    <span class="reply-inaccessible">
+                        <Icon Name="Icons.ArrowBendLeftUp"/><Icon Name="Icons.Lock"/>
+                    </span>
+                }
+                <MfmText Text="@NoteBase.Text" Emoji="@NoteBase.Emoji"/>
+            </span>
+        }
         @if (NoteBase.Poll != null)
         {
             <NotePoll Poll="@NoteBase.Poll" Emoji="@NoteBase.Emoji"/>
