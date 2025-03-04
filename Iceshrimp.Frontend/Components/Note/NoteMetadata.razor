@@ -7,7 +7,14 @@
 
 <div class="metadata">
     <span class="info">
-        <span class="time"><Timestamp Date="CreatedAt"/></span>
+        @if (OpenNoteId != null)
+        {
+            <a class="time" href="@($"/notes/{OpenNoteId}")"><Timestamp Date="CreatedAt"/></a>
+        }
+        else
+        {
+            <span class="time"><Timestamp Date="CreatedAt"/></span>
+        }       
         <span class="visibility">
             @switch (Visibility)
             {
@@ -38,6 +45,7 @@
     [Parameter] [EditorRequired] public required DateTime       CreatedAt    { get; set; }
     [Parameter] [EditorRequired] public required NoteVisibility Visibility   { get; set; }
     [Parameter] [EditorRequired] public required string?        InstanceName { get; set; }
+    [Parameter]                  public          string?        OpenNoteId   { get; set; }
 
     protected override void OnInitialized()
     {

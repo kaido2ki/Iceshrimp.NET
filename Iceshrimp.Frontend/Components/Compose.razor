@@ -43,7 +43,7 @@
         @if (ReplyOrQuote != null && !Preview)
         {
             <div class="reply-or-quote">
-                <NoteComponent Note="ReplyOrQuote" AsQuote="true"/>
+                <NoteComponent Note="ReplyOrQuote" AsQuote="true" OpenNote="false"/>
             </div>
         }
         @if (NoteDraft.Cw != null)

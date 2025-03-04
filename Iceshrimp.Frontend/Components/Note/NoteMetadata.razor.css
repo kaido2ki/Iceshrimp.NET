@@ -18,6 +18,10 @@
             margin-right: 0.5em;
         }
 
+        a.time {
+            color: var(--font-color);
+        }
+
         .visibility {
             display: inline-block;
             vertical-align: middle;

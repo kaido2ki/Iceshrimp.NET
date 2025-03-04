@@ -100,19 +100,14 @@
 
     @if (NotificationResponse is { Note: not null })
     {
-        <div @onclick="OpenNote" class="@(NotificationResponse is not { Type: "mention" } or { Type: "reply" } ? "notification-note" : "")">
-            <NoteComponent Note="NotificationResponse.Note" AsQuote="@(NotificationResponse is not { Type: "mention" } or { Type: "reply" })"/>
+        <div class="@(NotificationResponse is not { Type: "mention" } or { Type: "reply" } ? "notification-note" : "")">
+            <NoteComponent Note="NotificationResponse.Note" AsQuote="@(NotificationResponse is not { Type: "mention" } or { Type: "reply" })" OpenNote="true"/>
         </div>
     }
 </div>
 
 @code {
     [Parameter] public required NotificationResponse NotificationResponse { get; set; }
-
-    private void OpenNote()
-    {
-        NavigationManager.NavigateTo($"/notes/{NotificationResponse.Note!.Id}");
-    }
 
     private void OpenFollowRequests()
     {

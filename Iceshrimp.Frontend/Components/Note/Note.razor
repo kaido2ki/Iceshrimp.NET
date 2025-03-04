@@ -12,7 +12,7 @@
                     <NoteMetadata Visibility="NoteResponse.Visibility" InstanceName="@null" CreatedAt="DateTime.Parse(NoteResponse.CreatedAt)"/>
                 </span>
             </div>
-            <NoteComponent Note="NoteResponse.Renote" Quote="NoteResponse.Quote" Indented="Indented"/>
+            <NoteComponent Note="NoteResponse.Renote" Quote="NoteResponse.Quote" Indented="Indented" OpenNote="@OpenNote"/>
         </div>
     }
     else
@@ -38,6 +38,6 @@
 
         @if (_overrideHide || NoteResponse.Filtered == null)
         {
-            <NoteComponent Note="NoteResponse" Quote="NoteResponse.Quote" Indented="Indented" ReplyInaccessible="NoteResponse.ReplyInaccessible"/>
+            <NoteComponent Note="NoteResponse" Quote="NoteResponse.Quote" Indented="Indented" ReplyInaccessible="NoteResponse.ReplyInaccessible" OpenNote="@OpenNote"/>
         }
     }

@@ -12,7 +12,7 @@
     @if (NoteBase.Cw != null)
     {
         <div class="cw">
-            <span class="cw-field"><MfmText Text="@NoteBase.Cw" Emoji="@NoteBase.Emoji" Simple="@true"/></span>
+            <span @onclick="OpenNote" class="cw-field @(ClickOpenNote ? "clickable" : "")"><MfmText Text="@NoteBase.Cw" Emoji="@NoteBase.Emoji" Simple="@true"/></span>
             <button class="cw-button" @onclick="ToggleCw" @onclick:stopPropagation="true">
                 @if (_cwToggle)
                 {
@@ -42,7 +42,7 @@
     <div
         class="note-body @(_overHeight ? "too-long" : "") @(_showFull ? "show-full" : "") @(_cwToggle ? "hidden" : "")"
         @ref="Body">
-        <span>
+        <span @onclick="OpenNote" class="@(ClickOpenNote ? "clickable" : "")">
             @if (ReplyInaccessible)
             {
                 <span class="reply-inaccessible">
@@ -62,7 +62,7 @@
         @if (Quote != null)
         {
             <div @onclick="OpenQuote" @onclick:stopPropagation="true" class="quote">
-                <NoteComponent Note="Quote" AsQuote="true"></NoteComponent>
+                <NoteComponent Note="Quote" AsQuote="true" OpenNote="false"></NoteComponent>
             </div>
         }
     </div>
@@ -84,6 +84,7 @@
     [Parameter] public          bool      Indented          { get; set; }
     [Parameter] public          bool      ReplyInaccessible { get; set; }
     [Parameter] public          NoteBase? Quote             { get; set; }
+    [Parameter] public          bool      ClickOpenNote     { get; set; }
 
     private IJSObjectReference? Module { get; set; }
     private ElementReference    Body   { get; set; }
@@ -156,7 +157,12 @@
     {
         Controller?.Unregister(this);
     }
-    
+
+    private void OpenNote()
+    {
+        if (ClickOpenNote) Nav.NavigateTo($"/notes/{NoteBase.Id}");
+    }
+
     private void OpenQuote()
     {
         Nav.NavigateTo($"/notes/{Quote!.Id}");

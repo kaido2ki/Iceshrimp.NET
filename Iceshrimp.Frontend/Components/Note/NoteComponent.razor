@@ -15,9 +15,10 @@
                 Visibility="@Note.Visibility"
                 InstanceName="@Note.User.InstanceName"
                 CreatedAt="DateTime.Parse(Note.CreatedAt)"
+                OpenNoteId="@(OpenNote ? Note.Id : null)"
             />
         </div>
-        <NoteBody NoteBase="Note" Indented="Indented" ReplyInaccessible="ReplyInaccessible" Quote="Quote"/>
+        <NoteBody NoteBase="Note" Indented="Indented" ReplyInaccessible="ReplyInaccessible" Quote="Quote" ClickOpenNote="OpenNote"/>
         @if (!AsQuote)
         {
             <NoteFooter
@@ -35,6 +36,7 @@
 
 @code {
     [Parameter] [EditorRequired] public required NoteBase     Note              { get; set; }
+    [Parameter] [EditorRequired] public required bool         OpenNote          { get; set; }
     [Parameter]                  public          bool         Indented          { get; set; }
     [Parameter]                  public          NoteBase?    Quote             { get; set; }
     [Parameter]                  public          bool         AsQuote           { get; set; }

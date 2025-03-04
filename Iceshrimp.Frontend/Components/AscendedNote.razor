@@ -8,8 +8,8 @@
             <UserAvatar User="@Note.User"/>
             <Line></Line>
         </div>
-        <div class="note" @onclick="OpenNote">
-            <Note Indented="true" NoteResponse="Note"/>
+        <div class="note">
+            <Note Indented="true" NoteResponse="Note" OpenNote="true"/>
         </div>
     </div>
 </div>
@@ -17,9 +17,4 @@
 
 @code {
     [Parameter] [EditorRequired] public required NoteResponse Note { get; set; }
-
-    private void OpenNote()
-    {
-        NavigationManager.NavigateTo($"/notes/{Note.Id}");
-    }
 }

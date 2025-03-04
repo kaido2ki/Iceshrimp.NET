@@ -8,27 +8,22 @@ else
     <div class="note-container" id="@Note.Id">
         @if (Note.Reply is not null)
         {
-            <div class="ancestor-wrapper" @onclick="() => OpenNote(Note.Reply.Id)">
+            <div class="ancestor-wrapper">
                 <div class="note-indent">
                     <UserAvatar User="@Note.Reply.User"/>
                     <Line></Line>
                 </div>
                 <div class="note">
-                    <NoteComponent Note="Note.Reply" Indented="true"/>
+                    <NoteComponent Note="Note.Reply" Indented="true" OpenNote="true"/>
                 </div>
             </div>
         }
-        <div class="link-wrapper" @onclick="() => OpenNote(Note.RenoteId ?? Note.Id)">
-            <Note NoteResponse="Note"/>
+        <div class="link-wrapper">
+            <Note NoteResponse="Note" OpenNote="true"/>
         </div>
     </div>
 }
 
 @code {
     [Parameter] [EditorRequired] public required NoteResponse Note { get; set; }
-
-    private void OpenNote(string id)
-    {
-        Navigation.NavigateTo($"/notes/{id}");
-    }
 }
