@@ -128,7 +128,7 @@
     {
         if (Source == "remote" && _displayType == DisplayType.All || Source == "local")
         {
-            DisplayedEmojis = StoredRemoteEmojis.Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Aliases.Count(a => a.Contains(EmojiFilter.Trim())) > 0).ToList();
+            DisplayedEmojis = StoredRemoteEmojis.Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Tags.Count(a => a.Contains(EmojiFilter.Trim())) > 0).ToList();
         }
 
         if (Source == "remote" && _displayType == DisplayType.Categories)
@@ -139,7 +139,7 @@
         if (Source == "local" && _displayType == DisplayType.Categories)
         {
             LocalEmojiCategories = StoredLocalEmojis
-            .Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Aliases.Count(a => a.Contains(EmojiFilter.Trim())) != 0)
+            .Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Tags.Count(a => a.Contains(EmojiFilter.Trim())) != 0)
             .OrderBy(p => p.Name)
             .ThenBy(p => p.Id)
             .GroupBy(p => p.Category)

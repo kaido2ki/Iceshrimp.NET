@@ -34,19 +34,19 @@ public class EmojiController(
 	public async Task<IEnumerable<EmojiResponse>> GetAllEmoji()
 	{
 		return await db.Emojis
-					   .Where(p => p.Host == null)
-					   .Select(p => new EmojiResponse
-					   {
-						   Id        = p.Id,
-						   Name      = p.Name,
-						   Uri       = p.Uri,
-						   Aliases   = p.Aliases,
-						   Category  = p.Category,
-						   PublicUrl = p.GetAccessUrl(instance.Value),
-						   License   = p.License,
-						   Sensitive = p.Sensitive
-					   })
-					   .ToListAsync();
+		               .Where(p => p.Host == null)
+		               .Select(p => new EmojiResponse
+		               {
+			               Id        = p.Id,
+			               Name      = p.Name,
+			               Uri       = p.Uri,
+			               Tags      = p.Tags,
+			               Category  = p.Category,
+			               PublicUrl = p.GetAccessUrl(instance.Value),
+			               License   = p.License,
+			               Sensitive = p.Sensitive
+		               })
+		               .ToListAsync();
 	}
 
 	[HttpGet("remote")]
@@ -56,20 +56,20 @@ public class EmojiController(
 	public async Task<PaginationWrapper<List<EmojiResponse>>> GetRemoteEmoji(PaginationQuery pq)
 	{
 		var res = await db.Emojis
-						  .Where(p => p.Host != null)
-						  .Select(p => new EmojiResponse
-						  {
-							  Id        = p.Id,
-							  Name      = p.Name,
-							  Uri       = p.Uri,
-							  Aliases   = p.Aliases,
-							  Category  = p.Host,
-							  PublicUrl = p.GetAccessUrl(instance.Value),
-							  License   = p.License,
-							  Sensitive = p.Sensitive
-						  })
-						  .Paginate(pq, ControllerContext)
-						  .ToListAsync();
+		                  .Where(p => p.Host != null)
+		                  .Select(p => new EmojiResponse
+		                  {
+			                  Id        = p.Id,
+			                  Name      = p.Name,
+			                  Uri       = p.Uri,
+			                  Tags      = p.Tags,
+			                  Category  = p.Host,
+			                  PublicUrl = p.GetAccessUrl(instance.Value),
+			                  License   = p.License,
+			                  Sensitive = p.Sensitive
+		                  })
+		                  .Paginate(pq, ControllerContext)
+		                  .ToListAsync();
 
 		return HttpContext.CreatePaginationWrapper(pq, res);
 	}
@@ -81,20 +81,20 @@ public class EmojiController(
 	public async Task<PaginationWrapper<List<EmojiResponse>>> GetRemoteEmojiByHost(string host, PaginationQuery pq)
 	{
 		var res = await db.Emojis
-						  .Where(p => p.Host == host)
-						  .Select(p => new EmojiResponse
-						  {
-							  Id        = p.Id,
-							  Name      = p.Name,
-							  Uri       = p.Uri,
-							  Aliases   = p.Aliases,
-							  Category  = p.Host,
-							  PublicUrl = p.GetAccessUrl(instance.Value),
-							  License   = p.License,
-							  Sensitive = p.Sensitive
-						  })
-						  .Paginate(pq, ControllerContext)
-						  .ToListAsync();
+		                  .Where(p => p.Host == host)
+		                  .Select(p => new EmojiResponse
+		                  {
+			                  Id        = p.Id,
+			                  Name      = p.Name,
+			                  Uri       = p.Uri,
+			                  Tags      = p.Tags,
+			                  Category  = p.Host,
+			                  PublicUrl = p.GetAccessUrl(instance.Value),
+			                  License   = p.License,
+			                  Sensitive = p.Sensitive
+		                  })
+		                  .Paginate(pq, ControllerContext)
+		                  .ToListAsync();
 
 		return HttpContext.CreatePaginationWrapper(pq, res);
 	}
@@ -107,11 +107,11 @@ public class EmojiController(
 	{
 		pq.MinId ??= "";
 		var res = await db.Emojis.Where(p => p.Host != null)
-						  .Select(p => new EntityWrapper<string> { Entity = p.Host!, Id = p.Host! })
-						  .Distinct()
-						  .Paginate(pq, ControllerContext)
-						  .ToListAsync()
-						  .ContinueWithResult(p => p.NotNull());
+		                  .Select(p => new EntityWrapper<string> { Entity = p.Host!, Id = p.Host! })
+		                  .Distinct()
+		                  .Paginate(pq, ControllerContext)
+		                  .ToListAsync()
+		                  .ContinueWithResult(p => p.NotNull());
 
 		return res;
 	}
@@ -122,14 +122,14 @@ public class EmojiController(
 	public async Task<EmojiResponse> GetEmoji(string id)
 	{
 		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id)
-					?? throw GracefulException.NotFound("Emoji not found");
+		            ?? throw GracefulException.NotFound("Emoji not found");
 
 		return new EmojiResponse
 		{
 			Id        = emoji.Id,
 			Name      = emoji.Name,
 			Uri       = emoji.Uri,
-			Aliases   = emoji.Aliases,
+			Tags      = emoji.Tags,
 			Category  = emoji.Category,
 			PublicUrl = emoji.GetAccessUrl(instance.Value),
 			License   = emoji.License,
@@ -151,7 +151,7 @@ public class EmojiController(
 			Id        = emoji.Id,
 			Name      = emoji.Name,
 			Uri       = emoji.Uri,
-			Aliases   = [],
+			Tags      = [],
 			Category  = null,
 			PublicUrl = emoji.GetAccessUrl(instance.Value),
 			License   = null,
@@ -177,7 +177,7 @@ public class EmojiController(
 			Id        = cloned.Id,
 			Name      = cloned.Name,
 			Uri       = cloned.Uri,
-			Aliases   = [],
+			Tags      = [],
 			Category  = null,
 			PublicUrl = cloned.GetAccessUrl(instance.Value),
 			License   = null,
@@ -203,16 +203,16 @@ public class EmojiController(
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<EmojiResponse> UpdateEmoji(string id, UpdateEmojiRequest request)
 	{
-		var emoji = await emojiSvc.UpdateLocalEmojiAsync(id, request.Name, request.Aliases, request.Category,
-														 request.License, request.Sensitive)
-					?? throw GracefulException.NotFound("Emoji not found");
+		var emoji = await emojiSvc.UpdateLocalEmojiAsync(id, request.Name, request.Tags, request.Category,
+		                                                 request.License, request.Sensitive)
+		            ?? throw GracefulException.NotFound("Emoji not found");
 
 		return new EmojiResponse
 		{
 			Id        = emoji.Id,
 			Name      = emoji.Name,
 			Uri       = emoji.Uri,
-			Aliases   = emoji.Aliases,
+			Tags      = emoji.Tags,
 			Category  = emoji.Category,
 			PublicUrl = emoji.GetAccessUrl(instance.Value),
 			License   = emoji.License,

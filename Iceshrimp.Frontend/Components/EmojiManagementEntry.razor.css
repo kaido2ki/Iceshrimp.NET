@@ -27,19 +27,9 @@
     opacity: 0.7;
 }
 
-.emoji-alias {
+.emoji-tag {
     opacity: 0.7;
     font-size: 0.8em;
-}
-
-.emoji-alias::before {
-    display: inline;
-    content: ":";
-}
-
-.emoji-alias::after {
-    display: inline;
-    content: ": ";
 }
 
 ::deep {

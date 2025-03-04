@@ -51,7 +51,10 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		var bannerAlt    = await GetBannerAltAsync([user]);
 		var data = new UserRendererDto
 		{
-			Emojis = emojis, InstanceData = instanceData, AvatarAlt = avatarAlt, BannerAlt = bannerAlt
+			Emojis       = emojis,
+			InstanceData = instanceData,
+			AvatarAlt    = avatarAlt,
+			BannerAlt    = bannerAlt
 		};
 
 		return Render(user, data);
@@ -71,7 +74,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		               .Include(p => p.Avatar)
 		               .ToDictionaryAsync(p => p.Id, p => p.Avatar?.Comment);
 	}
-	
+
 	private async Task<Dictionary<string, string?>> GetBannerAltAsync(IEnumerable<User> users)
 	{
 		var ids = users.Select(p => p.Id).ToList();
@@ -107,7 +110,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			                    Id        = p.Id,
 			                    Name      = p.Name,
 			                    Uri       = p.Uri,
-			                    Aliases   = p.Aliases,
+			                    Tags      = p.Tags,
 			                    Category  = p.Category,
 			                    PublicUrl = p.GetAccessUrl(config.Value),
 			                    License   = p.License,

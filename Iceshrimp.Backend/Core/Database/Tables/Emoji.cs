@@ -30,8 +30,8 @@ public class Emoji
 
 	[Column("type")] [StringLength(64)] public string? Type { get; set; }
 
-	[Column("aliases", TypeName = "character varying(128)[]")]
-	public List<string> Aliases { get; set; } = [];
+	[Column("tags", TypeName = "character varying(128)[]")]
+	public List<string> Tags { get; set; } = [];
 
 	[Column("category")]
 	[StringLength(128)]
@@ -75,7 +75,7 @@ public class Emoji
 	{
 		public void Configure(EntityTypeBuilder<Emoji> entity)
 		{
-			entity.Property(e => e.Aliases).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.Tags).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.Height).HasComment("Image height");
 			entity.Property(e => e.RawPublicUrl).HasDefaultValueSql("''::character varying");
 			entity.Property(e => e.Width).HasComment("Image width");

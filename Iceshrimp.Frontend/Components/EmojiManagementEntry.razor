@@ -13,9 +13,9 @@
     <div class="emoji-details">
         <span class="emoji-name">@Emoji.Name</span>
         <span>
-            @foreach (var alias in Emoji.Aliases)
+            @foreach (var tag in Emoji.Tags)
             {
-                <span class="emoji-alias">@alias</span>
+                <span class="emoji-tag">@tag</span>
             }
         </span>
         <span class="labels">
@@ -58,8 +58,8 @@
                 </MenuElement>
             }
 
-            <MenuElement Icon="Icons.TextAa" OnSelect="SetAliases">
-                <Text>@Loc["Set aliases"]</Text>
+            <MenuElement Icon="Icons.TextAa" OnSelect="SetTags">
+                <Text>@Loc["Set tags"]</Text>
             </MenuElement>
             <MenuElement Icon="Icons.Folder" OnSelect="SetCategory">
                 <Text>@Loc["Set category"]</Text>
@@ -143,19 +143,19 @@
 
     private async Task MarkAsSensitive() => await MarkSensitive(true);
 
-    private async Task SetAliases() =>
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetAliasesCallback), Loc["Set aliases (separated by new line)"], "one\ntwo\nthree", string.Join("\n", Emoji.Aliases), true, true)!;
+    private async Task SetTags() =>
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetTagsCallback), Loc["Set tags (separated by new line)"], "one\ntwo\nthree", string.Join("\n", Emoji.Tags), true, true)!;
 
-    private async Task SetAliasesCallback(string? aliases)
+    private async Task SetTagsCallback(string? tags)
     {
-        if (aliases == null) return;
+        if (tags == null) return;
 
         try
         {
-            var res = await Api.Emoji.UpdateEmojiAsync(Emoji.Id, new UpdateEmojiRequest { Aliases = string.IsNullOrWhiteSpace(aliases) ? [] : aliases.Replace(" ", "").Split("\n").ToList() });
+            var res = await Api.Emoji.UpdateEmojiAsync(Emoji.Id, new UpdateEmojiRequest { Tags = string.IsNullOrWhiteSpace(tags) ? [] : tags.Replace(" ", "").Split("\n").ToList() });
             if (res != null)
             {
-                Emoji.Aliases = res.Aliases;
+                Emoji.Tags = res.Tags;
                 StateHasChanged();
             }
         }

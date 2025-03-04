@@ -76,8 +76,8 @@ public class NoteRenderer(
 		var attachments =
 			(data?.Attachments ?? await GetAttachmentsAsync([note])).Where(p => note.FileIds.Contains(p.Id));
 		var reactions = (data?.Reactions ?? await GetReactionsAsync([note], user)).Where(p => p.NoteId == note.Id);
-		var liked = data?.LikedNotes?.Contains(note.Id) ??
-		            await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
+		var liked = data?.LikedNotes?.Contains(note.Id)
+		            ?? await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 		var emoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([note]);
 		var poll  = (data?.Polls ?? await GetPollsAsync([note], user)).FirstOrDefault(p => p.NoteId == note.Id);
 
@@ -138,10 +138,12 @@ public class NoteRenderer(
 		                  .Select(p => new NoteReactionSchema
 		                  {
 			                  NoteId = p.First().NoteId,
-			                  Count  = (int)counts[p.First().NoteId].GetValueOrDefault(p.First().Reaction, 1),
-			                  Reacted = db.NoteReactions.Any(i => i.NoteId == p.First().NoteId &&
-			                                                      i.Reaction == p.First().Reaction &&
-			                                                      i.User == user),
+			                  Count =
+				                  (int)counts[p.First().NoteId].GetValueOrDefault(p.First().Reaction, 1),
+			                  Reacted =
+				                  db.NoteReactions.Any(i => i.NoteId == p.First().NoteId
+				                                            && i.Reaction == p.First().Reaction
+				                                            && i.User == user),
 			                  Name      = p.First().Reaction,
 			                  Url       = null,
 			                  Sensitive = false
@@ -194,7 +196,7 @@ public class NoteRenderer(
 			               Id        = p.Id,
 			               Name      = p.Name,
 			               Uri       = p.Uri,
-			               Aliases   = p.Aliases,
+			               Tags      = p.Tags,
 			               Category  = p.Category,
 			               PublicUrl = p.GetAccessUrl(config.Value),
 			               License   = p.License,
@@ -206,8 +208,8 @@ public class NoteRenderer(
 	private async Task<List<NotePollSchema>> GetPollsAsync(IEnumerable<Note> notes, User? user)
 	{
 		var polls = await db.Polls
-		               .Where(p => notes.Contains(p.Note))
-		               .ToListAsync();
+		                    .Where(p => notes.Contains(p.Note))
+		                    .ToListAsync();
 
 		var votes = user != null
 			? await db.PollVotes

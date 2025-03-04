@@ -28,7 +28,7 @@ public partial class EmojiService(
 	});
 
 	public async Task<Emoji> CreateEmojiFromStreamAsync(
-		Stream input, string fileName, string mimeType, List<string>? aliases = null,
+		Stream input, string fileName, string mimeType, List<string>? tags = null,
 		string? category = null
 	)
 	{
@@ -51,7 +51,7 @@ public partial class EmojiService(
 		{
 			Id           = id,
 			Name         = name,
-			Aliases      = aliases ?? [],
+			Tags         = tags ?? [],
 			Category     = category,
 			UpdatedAt    = DateTime.UtcNow,
 			OriginalUrl  = driveFile.Url,
@@ -224,7 +224,7 @@ public partial class EmojiService(
 	}
 
 	public async Task<Emoji?> UpdateLocalEmojiAsync(
-		string id, string? name, List<string>? aliases, string? category, string? license, bool? sensitive
+		string id, string? name, List<string>? tags, string? category, string? license, bool? sensitive
 	)
 	{
 		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id);
@@ -241,8 +241,8 @@ public partial class EmojiService(
 			emoji.Uri  = emoji.GetPublicUri(config.Value);
 		}
 
-		if (aliases != null)
-			emoji.Aliases = aliases.Select(p => p.Trim()).Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
+		if (tags != null)
+			emoji.Tags = tags.Select(p => p.Trim()).Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
 
 		// If category is provided but empty reset to null
 		if (category != null) emoji.Category = string.IsNullOrEmpty(category) ? null : category;

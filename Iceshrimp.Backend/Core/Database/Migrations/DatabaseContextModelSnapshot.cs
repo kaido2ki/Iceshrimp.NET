@@ -19,7 +19,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.1")
+                .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "antenna_src_enum", new[] { "home", "all", "users", "list", "group", "instances" });
@@ -978,13 +978,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("id");
 
-                    b.PrimitiveCollection<List<string>>("Aliases")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("character varying(128)[]")
-                        .HasColumnName("aliases")
-                        .HasDefaultValueSql("'{}'::character varying[]");
-
                     b.Property<string>("Category")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
@@ -1028,6 +1021,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Property<bool>("Sensitive")
                         .HasColumnType("boolean")
                         .HasColumnName("sensitive");
+
+                    b.PrimitiveCollection<List<string>>("Tags")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("character varying(128)[]")
+                        .HasColumnName("tags")
+                        .HasDefaultValueSql("'{}'::character varying[]");
 
                     b.Property<string>("Type")
                         .HasMaxLength(64)
