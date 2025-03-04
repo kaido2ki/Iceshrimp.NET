@@ -136,7 +136,8 @@ public enum VisibilityFilterType
 	Public,
 	Home,
 	Followers,
-	Specified
+	Specified,
+	Local
 }
 
 public record VisibilityFilter(bool Negated, VisibilityFilterType Value) : ISearchQueryFilter
@@ -154,6 +155,7 @@ public record VisibilityFilter(bool Negated, VisibilityFilterType Value) : ISear
 			"specified" => VisibilityFilterType.Specified,
 			"direct"    => VisibilityFilterType.Specified,
 			"private"   => VisibilityFilterType.Specified,
+			"local"     => VisibilityFilterType.Local,
 			_           => null
 		};
 

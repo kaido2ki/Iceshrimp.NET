@@ -168,6 +168,9 @@ public static class QueryableFtsExtensions
 
 	private static IQueryable<Note> ApplyVisibilityFilter(this IQueryable<Note> query, VisibilityFilter filter)
 	{
+		if (filter.Value is VisibilityFilterType.Local)
+			return query.Where(p => p.LocalOnly == !filter.Negated);
+
 		var visibility = filter.Value switch
 		{
 			VisibilityFilterType.Public    => Note.NoteVisibility.Public,
