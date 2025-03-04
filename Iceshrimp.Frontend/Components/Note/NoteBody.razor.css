@@ -5,7 +5,7 @@
     white-space: pre-wrap;
     max-height: 40em;
     height: auto;
-    overflow-y: hidden;
+    overflow: hidden;
     overflow-wrap: break-word;
 }
 
@@ -30,6 +30,8 @@
 
 .cw {
     display: inline-block;
+    overflow-x: hidden;
+    overflow-wrap: break-word;
 }
 
 .cw-button {
