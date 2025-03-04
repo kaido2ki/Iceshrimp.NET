@@ -82,7 +82,9 @@ public static class QueryableFtsExtensions
 
 	private static IQueryable<Note> ApplyMultiWordFilter(
 		this IQueryable<Note> query, MultiWordFilter filter, CaseFilterType caseSensitivity, MatchFilterType matchType
-	) => query.Where(p => p.FtsQueryOneOf(filter.Values, caseSensitivity, matchType));
+	) => filter.Negated
+		? query.Where(p => !p.FtsQueryOneOf(filter.Values, caseSensitivity, matchType))
+		: query.Where(p => p.FtsQueryOneOf(filter.Values, caseSensitivity, matchType));
 
 	private static IQueryable<Note> ApplyFromFilters(
 		this IQueryable<Note> query, List<FromFilter> filters, Config.InstanceSection config, DatabaseContext db
