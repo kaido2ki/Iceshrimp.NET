@@ -82,8 +82,9 @@ public static class SearchQueryParser
 			"reply" or "replying" or "to"           => new ReplyFilter(negated, value.ToString()),
 			"instance" or "domain" or "host"        => new InstanceFilter(negated, value.ToString()),
 
-			"filter" when MiscFilter.TryParse(negated, value, out var parsed) => parsed,
-			"in" when InFilter.TryParse(negated, value, out var parsed)       => parsed,
+			"filter" when MiscFilter.TryParse(negated, value, out var parsed)           => parsed,
+			"in" when InFilter.TryParse(negated, value, out var parsed)                 => parsed,
+			"visibility" when VisibilityFilter.TryParse(negated, value, out var parsed) => parsed,
 			"has" or "attachment" or "attached" when AttachmentFilter.TryParse(negated, value, out var parsed)
 				=> parsed,
 

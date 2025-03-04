@@ -131,6 +131,43 @@ public record AfterFilter(DateOnly Value) : ISearchQueryFilter;
 
 public record BeforeFilter(DateOnly Value) : ISearchQueryFilter;
 
+public enum VisibilityFilterType
+{
+	Public,
+	Home,
+	Followers,
+	Specified
+}
+
+public record VisibilityFilter(bool Negated, VisibilityFilterType Value) : ISearchQueryFilter
+{
+	public static bool TryParse(
+		bool negated, ReadOnlySpan<char> value, [NotNullWhen(true)] out VisibilityFilter? result
+	)
+	{
+		VisibilityFilterType? type = value switch
+		{
+			"public"    => VisibilityFilterType.Public,
+			"home"      => VisibilityFilterType.Home,
+			"unlisted"  => VisibilityFilterType.Home,
+			"followers" => VisibilityFilterType.Followers,
+			"specified" => VisibilityFilterType.Specified,
+			"direct"    => VisibilityFilterType.Specified,
+			"private"   => VisibilityFilterType.Specified,
+			_           => null
+		};
+
+		if (!type.HasValue)
+		{
+			result = null;
+			return false;
+		}
+
+		result = new VisibilityFilter(negated, type.Value);
+		return true;
+	}
+}
+
 public enum CaseFilterType
 {
 	Sensitive,

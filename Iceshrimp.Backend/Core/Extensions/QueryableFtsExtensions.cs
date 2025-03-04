@@ -35,6 +35,7 @@ public static class QueryableFtsExtensions
 			InstanceFilter instanceFilter     => current.ApplyInstanceFilter(instanceFilter, config),
 			MentionFilter mentionFilter       => current.ApplyMentionFilter(mentionFilter, config, db),
 			MiscFilter miscFilter             => current.ApplyMiscFilter(miscFilter, user),
+			VisibilityFilter visibilityFilter => current.ApplyVisibilityFilter(visibilityFilter),
 			ReplyFilter replyFilter           => current.ApplyReplyFilter(replyFilter, config, db),
 			CwFilter cwFilter                 => current.ApplyCwFilter(cwFilter, caseSensitivity, matchType),
 			WordFilter wordFilter             => current.ApplyWordFilter(wordFilter, caseSensitivity, matchType),
@@ -161,6 +162,22 @@ public static class QueryableFtsExtensions
 			MiscFilterType.Replies   => query.ApplyRepliesFilter(filter.Negated),
 			_                        => throw new ArgumentOutOfRangeException(nameof(filter))
 		};
+	}
+
+	private static IQueryable<Note> ApplyVisibilityFilter(this IQueryable<Note> query, VisibilityFilter filter)
+	{
+		var visibility = filter.Value switch
+		{
+			VisibilityFilterType.Public    => Note.NoteVisibility.Public,
+			VisibilityFilterType.Home      => Note.NoteVisibility.Home,
+			VisibilityFilterType.Followers => Note.NoteVisibility.Followers,
+			VisibilityFilterType.Specified => Note.NoteVisibility.Specified,
+			_                              => throw new ArgumentOutOfRangeException()
+		};
+
+		return filter.Negated
+			? query.Where(p => p.Visibility != visibility)
+			: query.Where(p => p.Visibility == visibility);
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
