@@ -1564,6 +1564,28 @@ public class UserService(
 			}
 		}
 
+		var mutes = db.Mutings
+		               .Where(p => p.Mutee == source && p.ExpiresAt == null)
+		               .Select(p => p.Muter)
+		               .AsChunkedAsyncEnumerable(50, p => p.Id, p => p.PrecomputeRelationshipData(source));
+
+		await foreach (var muter in mutes)
+		{
+			try
+			{
+				if (muter.Id == target.Id) continue;
+
+				// We need to transfer the precomputed properties to the target user for each muter so that the block method works correctly
+				target.PrecomputedIsMutedBy = muter.PrecomputedIsMuting;
+				await MuteUserAsync(muter, target, null);
+			}
+			catch (Exception e)
+			{
+				logger.LogWarning("Failed to process move ({sourceUri} -> {targetUri}) for muter {id}: {error}",
+				                  sourceUri, targetUri, muter.Id, e);
+			}
+		}
+
 		if (source.IsRemoteUser || target.IsRemoteUser) return;
 
 		var following = db.Followings
@@ -1601,6 +1623,25 @@ public class UserService(
 			{
 				logger.LogWarning("Failed to process move ({sourceUri} -> {targetUri}) for blockee {id}: {error}",
 				                  sourceUri, targetUri, blockee.Id, e);
+			}
+		}
+		
+		mutes = db.Mutings
+		           .Where(p => p.Muter == source && p.ExpiresAt == null)
+		           .Select(p => p.Mutee)
+		           .AsChunkedAsyncEnumerable(50, p => p.Id, p => p.PrecomputeRelationshipData(source));
+
+		await foreach (var mutee in mutes)
+		{
+			try
+			{
+				if (mutee.Id == target.Id) continue;
+				await MuteUserAsync(mutee, target, null);
+			}
+			catch (Exception e)
+			{
+				logger.LogWarning("Failed to process move ({sourceUri} -> {targetUri}) for mutee {id}: {error}",
+				                  sourceUri, targetUri, mutee.Id, e);
 			}
 		}
 	}
