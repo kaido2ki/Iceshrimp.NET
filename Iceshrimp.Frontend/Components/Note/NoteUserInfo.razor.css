@@ -14,7 +14,7 @@
 }
 
 .display-name {
-    white-space: wrap;
+    white-space: nowrap;
     text-overflow: ellipsis;
     overflow: clip;
 }
