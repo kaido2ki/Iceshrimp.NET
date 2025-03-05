@@ -21,6 +21,12 @@
         <NoteBody NoteBase="Note" Indented="Indented" ReplyInaccessible="ReplyInaccessible" Quote="Quote" ClickOpenNote="OpenNote"/>
         @if (!AsQuote)
         {
+            @if (RootNote)
+            {
+                <span class="date">
+                    @DateTime.Parse(Note.CreatedAt).ToLocalTime().ToString("G")
+                </span>
+            }
             <NoteFooter
                 Reactions="Note.Reactions"
                 Likes="Note.Likes"
@@ -41,6 +47,7 @@
     [Parameter]                  public          NoteBase?    Quote             { get; set; }
     [Parameter]                  public          bool         AsQuote           { get; set; }
     [Parameter]                  public          bool         ReplyInaccessible { get; set; }
+    [Parameter]                  public          bool         RootNote          { get; set; }
     private                                      IDisposable? _noteChangedHandler;
 
     

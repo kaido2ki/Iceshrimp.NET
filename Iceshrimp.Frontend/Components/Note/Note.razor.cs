@@ -11,6 +11,7 @@ public partial class Note
 	[Parameter] [EditorRequired] public required NoteResponse NoteResponse { get; set; }
 	[Parameter]                  public          bool         Indented     { get; set; }
 	[Parameter] [EditorRequired] public required bool         OpenNote     { get; set; }
+	[Parameter]                  public          bool         RootNote     { get; set; }
 	private                                      bool         _overrideHide       = false;
 	
 	
