@@ -159,7 +159,7 @@ public class NoteController(
 		           throw GracefulException.NotFound("Note not found");
 
 		var users = await db.NoteReactions
-		                    .Where(p => p.Note == note && p.Reaction == $":{name.Trim(':')}:")
+		                    .Where(p => p.Note == note && p.Reaction == name)
 		                    .Include(p => p.User.UserProfile)
 		                    .Select(p => p.User)
 		                    .ToListAsync();
