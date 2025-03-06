@@ -1203,13 +1203,14 @@ public class UserService(
 
 			try
 			{
-				var res = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
+				const int maxLength = 1_000_000;
+				var       res       = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
 
 				if (
 					res is not
 					{
 						IsSuccessStatusCode: true,
-						Content.Headers: { ContentType.MediaType: "text/html", ContentLength: <= 1_000_000 }
+						Content.Headers: { ContentType.MediaType: "text/html", ContentLength: null or <= maxLength }
 					}
 				)
 				{
@@ -1220,9 +1221,13 @@ public class UserService(
 					continue;
 				}
 
-				var html     = await res.Content.ReadAsStringAsync();
-				var document = await new HtmlParser().ParseDocumentAsync(html);
+				var contentLength = res.Content.Headers.ContentLength;
+				var stream = await res.Content.ReadAsStreamAsync()
+				                      .ContinueWithResult(p => p.GetSafeStreamOrNullAsync(maxLength, contentLength));
 
+				if (stream == Stream.Null) throw new Exception("Response size limit exceeded");
+
+				var document = await new HtmlParser().ParseDocumentAsync(stream);
 				var headLinks = document.Head?.Children.Where(el => el.NodeName.ToLower() == "link").ToList() ?? [];
 
 				userProfileField.IsVerified =
