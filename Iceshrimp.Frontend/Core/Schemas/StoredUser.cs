@@ -9,3 +9,9 @@ public class StoredUser : UserResponse
 	public                                      bool   IsAdmin     { get; set; }
 	public                                      bool   IsModerator { get; set; }
 }
+
+public class MinimalStoredUser {
+	[JsonPropertyName("token")] public required string Token       { get; set; }
+	public required                             string Id          { get; set; }
+	public required                             string Username    { get; set; }
+}

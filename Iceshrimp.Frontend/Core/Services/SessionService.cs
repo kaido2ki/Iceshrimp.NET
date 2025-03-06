@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Blazored.LocalStorage;
 using Iceshrimp.Frontend.Core.Schemas;
 using Iceshrimp.Shared.Schemas.Web;
@@ -15,7 +16,15 @@ internal class SessionService
 		LocalStorage = localStorage;
 		Js           = js;
 		Logger       = logger;
-		Users        = LocalStorage.GetItem<Dictionary<string, StoredUser>>("Users") ?? [];
+		try
+		{
+			Users = LocalStorage.GetItem<Dictionary<string, StoredUser>>("Users") ?? [];
+		}
+		catch (JsonException e)
+		{
+			Logger.LogError($"Stored users are malformed, reconstructing to a minimal form: {e.Message}");
+			Users = ReconstructUsers();
+		}
 		var lastUser = LocalStorage.GetItem<string?>("last_user");
 		if (lastUser != null)
 		{
@@ -77,6 +86,51 @@ internal class SessionService
 			Current = user;
 			Logger.LogInformation($"Updated current user {user.Id}");
 		}
+	}
+
+	private Dictionary<string, StoredUser> ReconstructUsers()
+	{
+		var newUsers = new Dictionary<string, StoredUser>();
+
+		var users = new Dictionary<string, MinimalStoredUser>();
+		try
+		{
+			users = LocalStorage.GetItem<Dictionary<string, MinimalStoredUser>>("Users") ?? [];
+		}
+		catch (JsonException e)
+		{
+			Logger.LogWarning($"Users couldn't be reconstructed to a minimum state: {e.Message}");
+		}
+
+		foreach (var user in users.Values)
+		{
+			var stored = new StoredUser
+			{
+				Id              = user.Id,
+				Username        = user.Username,
+				Host            = null,
+				DisplayName     = null,
+				AvatarUrl       = $"/identicon/{user.Id}",
+				AvatarAlt       = null,
+				BannerUrl       = null,
+				BannerAlt       = null,
+				InstanceName    = null,
+				InstanceIconUrl = null,
+				IsBot           = false,
+				IsCat           = false,
+				Emojis          = [],
+				MovedTo         = null,
+				Token           = user.Token,
+				IsAdmin         = false,
+				IsModerator     = false
+			};
+
+			newUsers.Add(user.Id, stored);
+		}
+
+		LocalStorage.SetItem("Users", newUsers);
+		LocalStorage.RemoveItem("last_user");
+		return newUsers;
 	}
 
 	public void DeleteUser(string id)
