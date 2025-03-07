@@ -11,8 +11,15 @@ internal class EmojiControllerModel(ApiClient api)
 	public Task<List<EmojiResponse>> GetAllEmojiAsync() =>
 		api.CallAsync<List<EmojiResponse>>(HttpMethod.Get, "/emoji");
 
-	public Task<PaginationWrapper<List<EmojiResponse>>> GetRemoteEmojiAsync(PaginationQuery pq) =>
-		api.CallAsync<PaginationWrapper<List<EmojiResponse>>>(HttpMethod.Get, "/emoji/remote", pq);
+	public Task<PaginationWrapper<List<EmojiResponse>>> GetRemoteEmojiAsync(string? name, string? host, PaginationQuery pq) =>
+		api.CallAsync<PaginationWrapper<List<EmojiResponse>>>(HttpMethod.Get, "/emoji/remote",
+		                                                      (name != null
+			                                                      ? QueryString.Create("name", name)
+			                                                      : QueryString.Empty)
+		                                                      + (host != null
+			                                                      ? QueryString.Create("host", host)
+			                                                      : QueryString.Empty)
+		                                                      + pq);
 
 	public Task<PaginationWrapper<List<EmojiResponse>>> GetRemoteEmojiAsync(string instance, PaginationQuery pq) =>
 		api.CallAsync<PaginationWrapper<List<EmojiResponse>>>(HttpMethod.Get, $"/emoji/remote/{instance}", pq);

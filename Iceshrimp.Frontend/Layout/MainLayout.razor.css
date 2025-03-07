@@ -70,6 +70,7 @@
 .top-bar {
     .action {
         margin-left: auto;
+        color: var(--notice-color);
     }
 }
 

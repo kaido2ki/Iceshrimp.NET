@@ -1,0 +1,22 @@
+.emoji-search {
+    display: flex;
+    margin-top: 1rem;
+}
+
+.search {
+    display: inline-block;
+    width: 100%;
+}
+
+.emoji-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    margin-top: 5rem;
+}

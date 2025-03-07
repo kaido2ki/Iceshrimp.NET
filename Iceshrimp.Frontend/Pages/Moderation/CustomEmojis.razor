@@ -30,6 +30,12 @@
             <Icon Name="Icons.FileArrowUp"/>
         </span>
     }
+    @if (State is not State.Loading)
+    {
+        <a class="action btn" href="/mod/emojis/remote" title="@Loc["Remote emojis"]">
+            <Icon Name="Icons.ArrowSquareOut"/>
+        </a>
+    }
 </SectionContent>
 
 <div class="body">
@@ -175,7 +181,7 @@
             }
             else
             {
-                var res = await Api.Emoji.GetRemoteEmojiAsync(new PaginationQuery());
+                var res = await Api.Emoji.GetRemoteEmojiAsync(null, null, new PaginationQuery());
                 PaginationData     = res.Links;
                 StoredRemoteEmojis = res.Data;
             }
@@ -213,7 +219,7 @@
     {
         if (PaginationData?.Next == null) return;
         var pq  = new PaginationQuery { MaxId = PaginationData.Next?.Split('=')[1], Limit = PaginationData.Limit };
-        var res = await Api.Emoji.GetRemoteEmojiAsync(pq);
+        var res = await Api.Emoji.GetRemoteEmojiAsync(null, null, pq);
         PaginationData = res.Links;
         StoredRemoteEmojis.AddRange(res.Data);
         if (EmojiFilter.Length == 0)

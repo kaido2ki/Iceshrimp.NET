@@ -1,0 +1,99 @@
+@page "/mod/emojis/remote"
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@using Iceshrimp.Frontend.Components
+@using Microsoft.AspNetCore.Components.Sections
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Shared.Schemas.Web
+@attribute [Authorize(Roles = "moderator")]
+@layout ModerationLayout
+@inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
+@inject IJSRuntime                     Js;
+@inject IStringLocalizer<Localization> Loc;
+@inject ILogger<CustomEmojis>          Logger;
+
+<HeadTitle Text="@Loc["Remote Emojis"]"/>
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.Smiley"></Icon>
+    @Loc["Remote Emojis"]
+    @if (State is not State.Loading)
+    {
+        <a class="action btn" href="/mod/emojis" title="@Loc["Local emojis"]">
+            <Icon Name="Icons.ArrowSquareIn"/>
+        </a>
+    }
+</SectionContent>
+
+<div class="body">
+    @if (State is State.Empty or State.Error or State.Loaded)
+    {
+        <div class="emoji-search">
+            <input @bind="EmojiFilter" class="search" type="text" placeholder="@Loc["Name"]" aria-label="search name"/>
+            <input @bind="HostFilter" class="search" type="text" placeholder="@Loc["Host"]" aria-label="search host"/>
+            <button @onclick="Search" class="button">@Loc["Search"]</button>
+        </div>
+    }
+    @if (State is State.Loaded)
+    {
+        <div class="emoji-list">
+            @foreach (var emoji in Emojis)
+            {
+                <EmojiManagementEntry Emoji="@emoji" Source="remote" GetEmojis="Search"/>
+            }
+        </div>
+        @if (PaginationData is { Next: not null })
+        {
+            <ScrollEnd ManualLoad="FetchMore" IntersectionChange="FetchMore"></ScrollEnd>
+        }
+    }
+    @if (State is State.Empty)
+    {
+        <i>This instance hasn't received remote emojis</i>
+    }
+    @if (State is State.Loading)
+    {
+        <div class="loading">
+            <LoadingSpinner Scale="2"/>
+        </div>
+    }
+</div>
+
+@code {
+    private List<EmojiResponse> Emojis         { get; set; } = [];
+    private string              EmojiFilter    { get; set; } = "";
+    private string              HostFilter     { get; set; } = "";
+    private State               State          { get; set; }
+    private PaginationData?     PaginationData { get; set; }
+
+    private async Task Search()
+    {
+        State = State.Loading;
+
+        var res = await Api.Emoji.GetRemoteEmojiAsync(string.IsNullOrWhiteSpace(EmojiFilter) ? null : EmojiFilter.ToLower().Replace(" ", ""), string.IsNullOrWhiteSpace(HostFilter) ? null : HostFilter.ToLower().Replace(" ", ""), new PaginationQuery());
+        PaginationData = res.Links;
+        Emojis         = res.Data;
+
+        State = State.Loaded;
+        StateHasChanged();
+    }
+
+    private async Task FetchMore()
+    {
+        if (PaginationData?.Next == null) return;
+        var pq  = new PaginationQuery { MaxId = PaginationData.Next?.Split('=')[1], Limit = PaginationData.Limit };
+        var res = await Api.Emoji.GetRemoteEmojiAsync(string.IsNullOrWhiteSpace(EmojiFilter) ? null : EmojiFilter.ToLower().Replace(" ", ""), string.IsNullOrWhiteSpace(HostFilter) ? null : HostFilter.ToLower().Replace(" ", ""), pq);
+        PaginationData = res.Links;
+        Emojis.AddRange(res.Data);
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Search();
+    }
+}
