@@ -57,9 +57,9 @@
         </div>
     }
 }
-@if (State is State.Empty)
+@if (State is State.Empty || (State is State.Loaded && Categories.Count == 0))
 {
-    <i>This instance has no emojis</i>
+    @Loc["No emojis were found"]
 }
 @if (State is State.Loading)
 {

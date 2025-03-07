@@ -49,7 +49,7 @@
 }
 @if (State is State.Empty)
 {
-    <i>This instance hasn't received remote emojis</i>
+    <i>@Loc["No emojis were found"]</i>
 }
 @if (State is State.Loading)
 {
@@ -73,7 +73,7 @@
         PaginationData = res.Links;
         Emojis         = res.Data;
 
-        State = State.Loaded;
+        State = Emojis.Count == 0 ? State.Empty : State.Loaded;
         StateHasChanged();
     }
 
