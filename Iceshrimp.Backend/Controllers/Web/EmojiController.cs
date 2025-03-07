@@ -59,10 +59,8 @@ public class EmojiController(
 	{
 		var res = await db.Emojis
 		                  .Where(p => p.Host != null
-		                              && (!string.IsNullOrWhiteSpace(host) && p.Host.ToLower().Contains(host.ToLower())
-		                                  || string.IsNullOrWhiteSpace(host))
-		                              && (!string.IsNullOrWhiteSpace(name) && p.Name.ToLower().Contains(name.ToLower())
-		                                  || string.IsNullOrWhiteSpace(name)))
+		                              && (string.IsNullOrWhiteSpace(host) || p.Host.ToLower().Contains(host.ToLower()))
+		                              && (string.IsNullOrWhiteSpace(name) || p.Name.ToLower().Contains(name.ToLower())))
 		                  .Select(p => new EmojiResponse
 		                  {
 			                  Id        = p.Id,
