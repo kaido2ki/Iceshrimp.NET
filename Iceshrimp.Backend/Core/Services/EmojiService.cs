@@ -229,7 +229,19 @@ public partial class EmojiService(
 	{
 		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id);
 		if (emoji == null) return null;
-		if (emoji.Host != null) return null;
+
+		if (emoji.Host != null)
+		{
+			// Only allow changing remote emoji sensitive status
+			if (!sensitive.HasValue)
+				throw GracefulException.BadRequest("Only sensitive can be updated on remote emojis");
+
+			emoji.Sensitive = sensitive.Value;
+			emoji.UpdatedAt = DateTime.UtcNow;
+			await db.SaveChangesAsync();
+
+			return emoji;
+		}
 
 		emoji.UpdatedAt = DateTime.UtcNow;
 

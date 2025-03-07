@@ -206,7 +206,7 @@ public class EmojiController(
 	[Authorize("role:moderator")]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResults(HttpStatusCode.OK)]
-	[ProducesErrors(HttpStatusCode.NotFound)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
 	public async Task<EmojiResponse> UpdateEmoji(string id, UpdateEmojiRequest request)
 	{
 		var emoji = await emojiSvc.UpdateLocalEmojiAsync(id, request.Name, request.Tags, request.Category,
