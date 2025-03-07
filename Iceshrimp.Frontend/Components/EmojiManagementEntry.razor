@@ -89,9 +89,12 @@
 
     private void SelectEmoji() => EmojiMenu.Toggle(EmojiButton);
 
-    private async Task Clone()
+    private async Task Clone() =>
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, CloneCallback), @Loc["Clone {0} from {1}?", Emoji.Name, Emoji.Category ?? ""], Icons.Copy, @Loc["Clone"])!;
+
+    private async Task CloneCallback(bool confirm)
     {
-        if (!Remote || Emoji.Category == null) return;
+        if (!confirm || !Remote || Emoji.Category == null) return;
 
         try
         {
