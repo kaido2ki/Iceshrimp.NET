@@ -69,9 +69,16 @@
 }
 
 .top-bar {
+    .btn span {
+        font-size: 0.9em;
+    }
+}
+
+.top-bar {
     .action {
         margin-left: auto;
         color: var(--notice-color);
+        text-decoration: none;
     }
 }
 
@@ -84,5 +91,13 @@
 .top-bar {
     .action:last-child {
         margin-right: 0;
+    }
+}
+
+@media (max-width: 1000px) {
+    .top-bar {
+        .btn span {
+            display: none;
+        }
     }
 }

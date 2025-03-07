@@ -20,8 +20,9 @@
     @Loc["Remote Emojis"]
     @if (State is not State.Loading)
     {
-        <a class="action btn" href="/mod/emojis" title="@Loc["Local emojis"]">
+        <a class="action btn" href="/mod/emojis">
             <Icon Name="Icons.ArrowSquareIn"/>
+            <span>@Loc["Local"]</span>
         </a>
     }
 </SectionContent>

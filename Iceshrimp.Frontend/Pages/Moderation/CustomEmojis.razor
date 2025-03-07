@@ -22,17 +22,20 @@
     @Loc["Custom Emojis"]
     @if (State is State.Empty or State.Loaded)
     {
-        <span class="action btn" @onclick="OpenUpload" title="@Loc["Upload emoji"]">
+        <span class="action btn" @onclick="OpenUpload">
             <Icon Name="Icons.Upload"/>
+            <span>@Loc["Upload"]</span>
         </span>
-        <span class="action btn" @onclick="OpenImport" title="@Loc["Import emoji pack"]">
+        <span class="action btn" @onclick="OpenImport">
             <Icon Name="Icons.FileArrowUp"/>
+            <span>@Loc["Import pack"]</span>
         </span>
     }
     @if (State is not State.Loading)
     {
-        <a class="action btn" href="/mod/emojis/remote" title="@Loc["Remote emojis"]">
+        <a class="action btn" href="/mod/emojis/remote">
             <Icon Name="Icons.ArrowSquareOut"/>
+            <span>@Loc["Remote"]</span>
         </a>
     }
 </SectionContent>
