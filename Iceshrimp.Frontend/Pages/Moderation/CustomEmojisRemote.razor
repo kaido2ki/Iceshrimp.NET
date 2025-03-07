@@ -43,7 +43,7 @@
         <div class="emoji-list">
             @foreach (var emoji in Emojis)
             {
-                <EmojiManagementEntry Emoji="@emoji" Source="remote" GetEmojis="Search"/>
+                <EmojiManagementEntry Emoji="@emoji" Remote="true"/>
             }
         </div>
         @if (PaginationData is { Next: not null })
