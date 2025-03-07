@@ -101,7 +101,7 @@
     private void FilterEmojis()
     {
         Categories = Emojis
-                     .Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Aliases.Count(a => a.Contains(EmojiFilter.Trim())) != 0)
+                     .Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Tags.Count(a => a.Contains(EmojiFilter.Trim())) != 0)
                      .OrderBy(p => p.Name)
                      .ThenBy(p => p.Id)
                      .GroupBy(p => p.Category)
