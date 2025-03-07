@@ -20,7 +20,7 @@
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Smiley"></Icon>
     @Loc["Custom Emojis"]
-    @if (State is State.Empty or State.Loaded && Source == "local")
+    @if (State is State.Empty or State.Loaded)
     {
         <span class="action btn" @onclick="OpenUpload" title="@Loc["Upload emoji"]">
             <Icon Name="Icons.Upload"/>
@@ -43,15 +43,6 @@
         <div class="emoji-search">
             <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text"
                    placeholder="Search" aria-label="search"/>
-            @if (Source == "remote")
-            {
-                <input @bind="HostFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text"
-                       placeholder="Host" aria-label="host"/>
-            }
-            <select class="search-from" @bind="Source" @bind:after="GetEmojis">
-                <option value="local">@Loc["Local"]</option>
-                <option value="remote">@Loc["Remote"]</option>
-            </select>
         </div>
     }
     @if (State is State.Loaded)
@@ -62,7 +53,7 @@
             <div class="emoji-list">
                 @foreach (var emoji in category.Value)
                 {
-                    <EmojiManagementEntry Emoji="@emoji" Source="@Source" GetEmojis="GetEmojis"/>
+                    <EmojiManagementEntry Emoji="@emoji" Source="local" GetEmojis="GetEmojis"/>
                 }
             </div>
         }
@@ -88,12 +79,9 @@
     private List<EmojiResponse>                     Emojis      { get; set; } = [];
     private Dictionary<string, List<EmojiResponse>> Categories  { get; set; } = new();
     private string                                  EmojiFilter { get; set; } = "";
-    private string                                  HostFilter  { get; set; } = "";
-    private string                                  Source      { get; set; } = "local";
     private State                                   State       { get; set; }
     private InputFile                               UploadInput { get; set; } = null!;
     private IBrowserFile                            UploadFile  { get; set; } = null!;
-    private string                                  UploadName  { get; set; } = "";
     private InputFile                               ImportInput { get; set; } = null!;
     private IBrowserFile                            ImportFile  { get; set; } = null!;
     private IJSObjectReference                      _module = null!;
@@ -105,7 +93,6 @@
                      .OrderBy(p => p.Name)
                      .ThenBy(p => p.Id)
                      .GroupBy(p => p.Category)
-                     .Where(p => Source == "local" || (Source == "remote" && (p.Key?.Contains(HostFilter) ?? false)))
                      .OrderBy(p => string.IsNullOrEmpty(p.Key))
                      .ThenBy(p => p.Key)
                      .ToDictionary(p => p.Key ?? "Other", p => p.ToList());
@@ -115,16 +102,7 @@
     {
         State = State.Loading;
 
-        if (Source == "remote")
-        {
-            //TODO: impolement proper pagination
-            var res = await Api.Emoji.GetRemoteEmojiAsync(new PaginationQuery());
-            Emojis = res.Data;
-        }
-        else
-        {
-            Emojis = await Api.Emoji.GetAllEmojiAsync();
-        }
+        Emojis = await Api.Emoji.GetAllEmojiAsync();
 
         if (Emojis.Count == 0)
         {
