@@ -1,9 +1,12 @@
 @using AngleSharp.Text
 @using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
 @inject EmojiService       EmojiService
 @inject GlobalComponentSvc GlobalComponentSvc
 @inject IJSRuntime         Js
+@inject IStringLocalizer<Localization> Loc;
 
 <dialog class="dialog" @ref="EmojiPickerRef">
     <div class="emoji-picker" style="--top: @(_top)px; --left: @(_left)px">
@@ -77,6 +80,6 @@
             .GroupBy(p => p.Category)
             .OrderBy(p => string.IsNullOrEmpty(p.Key))
             .ThenBy(p => p.Key)
-            .ToDictionary(p => p.Key ?? "Other", p => p.ToList());
+            .ToDictionary(p => p.Key ?? Loc["Other"], p => p.ToList());
     }
 }
