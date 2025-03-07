@@ -53,10 +53,16 @@ public class EmojiController(
 	[Authorize("role:moderator")]
 	[RestPagination(100, 500)]
 	[ProducesResults(HttpStatusCode.OK)]
-	public async Task<PaginationWrapper<List<EmojiResponse>>> GetRemoteEmoji(PaginationQuery pq)
+	public async Task<PaginationWrapper<List<EmojiResponse>>> GetRemoteEmoji(
+		[FromQuery] string? name, [FromQuery] string? host, PaginationQuery pq
+	)
 	{
 		var res = await db.Emojis
-		                  .Where(p => p.Host != null)
+		                  .Where(p => p.Host != null
+		                              && (!string.IsNullOrWhiteSpace(host) && p.Host.ToLower().Contains(host.ToLower())
+		                                  || string.IsNullOrWhiteSpace(host))
+		                              && (!string.IsNullOrWhiteSpace(name) && p.Name.ToLower().Contains(name.ToLower())
+		                                  || string.IsNullOrWhiteSpace(name)))
 		                  .Select(p => new EmojiResponse
 		                  {
 			                  Id        = p.Id,
