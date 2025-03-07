@@ -1,6 +1,5 @@
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services;
-using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -23,9 +22,6 @@ internal class EmojiControllerModel(ApiClient api)
 
 	public Task<PaginationWrapper<List<EmojiResponse>>> GetRemoteEmojiAsync(string instance, PaginationQuery pq) =>
 		api.CallAsync<PaginationWrapper<List<EmojiResponse>>>(HttpMethod.Get, $"/emoji/remote/{instance}", pq);
-
-	public Task<List<EntityWrapper<string>>> GetRemoteEmojiHostsAsync(PaginationQuery pq) =>
-		api.CallAsync<List<EntityWrapper<string>>>(HttpMethod.Get, "/emoji/remote/hosts", pq);
 
 	public Task<EmojiResponse> UploadEmojiAsync(IBrowserFile file, string? name) =>
 		api.CallAsync<EmojiResponse>(HttpMethod.Post, "/emoji",
