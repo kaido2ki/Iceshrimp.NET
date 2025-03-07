@@ -37,42 +37,40 @@
     }
 </SectionContent>
 
-<div class="body">
-    @if (State is State.Empty or State.Error or State.Loaded)
-    {
-        <div class="emoji-search">
-            <input @bind="EmojiFilter" class="search" type="text" placeholder="@Loc["Name"]" aria-label="search name"/>
-            <button @onclick="FilterEmojis" class="button">@Loc["Search"]</button>
-        </div>
-    }
-    @if (State is State.Loaded)
-    {
-        @foreach (var category in Categories)
-        {
-            <span class="category-name">@category.Key</span>
-            <div class="emoji-list">
-                @foreach (var emoji in category.Value)
-                {
-                    <EmojiManagementEntry Emoji="@emoji" GetEmojis="GetEmojis"/>
-                }
-            </div>
-        }
-    }
-    @if (State is State.Empty)
-    {
-        <i>This instance has no emojis</i>
-    }
-    @if (State is State.Loading)
-    {
-        <div class="loading">
-            <LoadingSpinner Scale="2" />
-        </div>
-    }
-
-    <div class="file-input">
-        <InputFile @ref="UploadInput" OnChange="Upload" accept="image/*">Upload</InputFile>
-        <InputFile @ref="ImportInput" OnChange="Import" accept=".zip">Import</InputFile>
+@if (State is State.Empty or State.Error or State.Loaded)
+{
+    <div class="emoji-search">
+        <input @bind="EmojiFilter" class="search" type="text" placeholder="@Loc["Name"]" aria-label="search name"/>
+        <button @onclick="FilterEmojis" class="button">@Loc["Search"]</button>
     </div>
+}
+@if (State is State.Loaded)
+{
+    @foreach (var category in Categories)
+    {
+        <span class="category-name">@category.Key</span>
+        <div class="emoji-list">
+            @foreach (var emoji in category.Value)
+            {
+                <EmojiManagementEntry Emoji="@emoji" GetEmojis="GetEmojis"/>
+            }
+        </div>
+    }
+}
+@if (State is State.Empty)
+{
+    <i>This instance has no emojis</i>
+}
+@if (State is State.Loading)
+{
+    <div class="loading">
+        <LoadingSpinner Scale="2"/>
+    </div>
+}
+
+<div class="file-input">
+    <InputFile @ref="UploadInput" OnChange="Upload" accept="image/*">Upload</InputFile>
+    <InputFile @ref="ImportInput" OnChange="Import" accept=".zip">Import</InputFile>
 </div>
 
 @code {

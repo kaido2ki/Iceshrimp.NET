@@ -11,10 +11,7 @@
 @attribute [Authorize(Roles = "moderator")]
 @layout ModerationLayout
 @inject ApiService                     Api;
-@inject GlobalComponentSvc             Global;
-@inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
-@inject ILogger<CustomEmojis>          Logger;
 
 <HeadTitle Text="@Loc["Remote Emojis"]"/>
 
@@ -29,39 +26,37 @@
     }
 </SectionContent>
 
-<div class="body">
-    @if (State is State.Empty or State.Error or State.Loaded)
-    {
-        <div class="emoji-search">
-            <input @bind="EmojiFilter" class="search" type="text" placeholder="@Loc["Name"]" aria-label="search name"/>
-            <input @bind="HostFilter" class="search" type="text" placeholder="@Loc["Host"]" aria-label="search host"/>
-            <button @onclick="Search" class="button">@Loc["Search"]</button>
-        </div>
-    }
-    @if (State is State.Loaded)
-    {
-        <div class="emoji-list">
-            @foreach (var emoji in Emojis)
-            {
-                <EmojiManagementEntry Emoji="@emoji" Remote="true"/>
-            }
-        </div>
-        @if (PaginationData is { Next: not null })
+@if (State is State.Empty or State.Error or State.Loaded)
+{
+    <div class="emoji-search">
+        <input @bind="EmojiFilter" class="search" type="text" placeholder="@Loc["Name"]" aria-label="search name"/>
+        <input @bind="HostFilter" class="search" type="text" placeholder="@Loc["Host"]" aria-label="search host"/>
+        <button @onclick="Search" class="button">@Loc["Search"]</button>
+    </div>
+}
+@if (State is State.Loaded)
+{
+    <div class="emoji-list">
+        @foreach (var emoji in Emojis)
         {
-            <ScrollEnd ManualLoad="FetchMore" IntersectionChange="FetchMore"></ScrollEnd>
+            <EmojiManagementEntry Emoji="@emoji" Remote="true"/>
         }
-    }
-    @if (State is State.Empty)
+    </div>
+    @if (PaginationData is { Next: not null })
     {
-        <i>This instance hasn't received remote emojis</i>
+        <ScrollEnd ManualLoad="FetchMore" IntersectionChange="FetchMore"></ScrollEnd>
     }
-    @if (State is State.Loading)
-    {
-        <div class="loading">
-            <LoadingSpinner Scale="2"/>
-        </div>
-    }
-</div>
+}
+@if (State is State.Empty)
+{
+    <i>This instance hasn't received remote emojis</i>
+}
+@if (State is State.Loading)
+{
+    <div class="loading">
+        <LoadingSpinner Scale="2"/>
+    </div>
+}
 
 @code {
     private List<EmojiResponse> Emojis         { get; set; } = [];
