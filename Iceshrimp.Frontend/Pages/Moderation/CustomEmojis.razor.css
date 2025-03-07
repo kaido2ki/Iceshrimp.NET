@@ -1,15 +1,16 @@
 .emoji-search {
     display: flex;
     margin-top: 1rem;
+
+    button {
+        margin-right: 0;
+    }
 }
 
 .search {
     display: inline-block;
     width: 100%;
-}
-
-.search-from {
-    display: inline-block;
+    margin-left: 0;
 }
 
 .category-name {
@@ -19,8 +20,8 @@
 }
 
 .emoji-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     width: 100%;
 }
@@ -37,6 +38,6 @@
 
 @media (max-width: 1000px) {
     .emoji-list {
-        grid-template-columns: 1fr;
+        flex-direction: column;
     }
 }

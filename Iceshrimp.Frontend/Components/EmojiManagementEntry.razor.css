@@ -3,6 +3,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem;
+    width: 25rem;
     background-color: var(--foreground-color);
     border-radius: 0.5rem;
     cursor: pointer;
@@ -37,5 +38,11 @@
         display: inline-block;
         line-height: 1;
         color: var(--notice-color);
+    }
+}
+
+@media (max-width: 1000px) {
+    .emoji-entry {
+        width: 100%;
     }
 }
