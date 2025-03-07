@@ -981,6 +981,16 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("Name", "Host"), false);
 
+                    b.HasIndex(new[] { "Host" }, "GIN_TRGM_emoji_host");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "Host" }, "GIN_TRGM_emoji_host"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "Host" }, "GIN_TRGM_emoji_host"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex(new[] { "Name" }, "GIN_TRGM_emoji_name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "Name" }, "GIN_TRGM_emoji_name"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "Name" }, "GIN_TRGM_emoji_name"), new[] { "gin_trgm_ops" });
+
                     b.ToTable("emoji");
                 });
 

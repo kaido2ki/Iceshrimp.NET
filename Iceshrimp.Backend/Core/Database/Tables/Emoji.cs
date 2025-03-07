@@ -80,6 +80,13 @@ public class Emoji
 			entity.Property(e => e.RawPublicUrl).HasDefaultValueSql("''::character varying");
 			entity.Property(e => e.Width).HasComment("Image width");
 
+			entity.HasIndex(e => e.Name, "GIN_TRGM_emoji_name")
+			      .HasMethod("gin")
+			      .HasOperators("gin_trgm_ops");
+			entity.HasIndex(e => e.Host, "GIN_TRGM_emoji_host")
+			      .HasMethod("gin")
+			      .HasOperators("gin_trgm_ops");
+
 			// This index must be NULLS NOT DISTINCT to make having multiple local emoji with the same name cause a constraint failure
 			entity.HasIndex(nameof(Name), nameof(Host)).IsUnique().AreNullsDistinct(false);
 		}
