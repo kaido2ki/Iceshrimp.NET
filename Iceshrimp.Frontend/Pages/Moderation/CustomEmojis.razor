@@ -41,8 +41,8 @@
     @if (State is State.Empty or State.Error or State.Loaded)
     {
         <div class="emoji-search">
-            <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text"
-                   placeholder="Search" aria-label="search"/>
+            <input @bind="EmojiFilter" class="search" type="text" placeholder="@Loc["Name"]" aria-label="search name"/>
+            <button @onclick="FilterEmojis" class="button">@Loc["Search"]</button>
         </div>
     }
     @if (State is State.Loaded)
