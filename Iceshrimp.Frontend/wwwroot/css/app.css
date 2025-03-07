@@ -21,6 +21,7 @@
     --accent-secondary-color: #685bc4;
     --accent-color: linear-gradient(to right, var(--accent-primary-color), var(--accent-secondary-color));
     --notice-color: #92c1ff;
+    --warning-color: #ffdf91;
     --font-color: #e7edff;
     --link: #9E9EFF;
 

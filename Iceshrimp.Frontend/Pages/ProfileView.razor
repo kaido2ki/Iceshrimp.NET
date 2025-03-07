@@ -23,6 +23,11 @@
     <HeadTitle Text="@(UserResponse.DisplayName ?? UserResponse.Username)"/>
 
     <div class="container">
+        @if (UserResponse.Host != null)
+        {
+            <RemoteUserBanner OriginalPageUrl="@Profile?.Url"/>
+        }
+
         @if (UserResponse.BannerUrl != null)
         {
             <img class="banner" src="@UserResponse.BannerUrl"

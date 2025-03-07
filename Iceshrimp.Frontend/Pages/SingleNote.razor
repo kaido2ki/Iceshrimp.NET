@@ -48,6 +48,10 @@
             }
         </button>
     </SectionContent>
+    @if (RootNote?.User.Host != null)
+    {
+        <RemoteUserBanner OriginalPageUrl="@RootNote?.Url"/>
+    }
     <div class="scroller">
         <div class="wrapper">
             <div class="container">

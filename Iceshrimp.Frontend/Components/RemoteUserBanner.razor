@@ -1,0 +1,14 @@
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Localization> Loc;
+
+<div class="remote-user-notice">
+    <span>
+        @Loc["Information from remote users may be incomplete."]
+        <a href="@OriginalPageUrl" target="_blank">@Loc["Open original page"]</a>
+    </span>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required string OriginalPageUrl { get; set; }
+}
