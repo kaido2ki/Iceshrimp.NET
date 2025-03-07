@@ -93,7 +93,7 @@
                      .GroupBy(p => p.Category)
                      .OrderBy(p => string.IsNullOrEmpty(p.Key))
                      .ThenBy(p => p.Key)
-                     .ToDictionary(p => p.Key ?? "Other", p => p.ToList());
+                     .ToDictionary(p => p.Key ?? Loc["Other"], p => p.ToList());
     }
 
     private async Task GetEmojis()
