@@ -1,3 +1,4 @@
+@using AngleSharp.Dom
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Frontend.Core.Miscellaneous
@@ -204,13 +205,9 @@
     private int                      NoteLength      { get; set; }
     private bool                     SendLock        { get; set; } = false;
     private int                      UploadingFiles  { get; set; }
-    private string?                  AttachedQuote   { get; set; }
-    private List<Choice>             PollChoices     { get; set; } = [];
-    private string                   PollEntry       { get; set; } = "";
-    private PollExpire               PollExpires     { get; set; }
-    private DateTime                 PollExpireTime  { get; set; }
-    private int                      PollExpireLen   { get; set; }
-    private PollExpireAfter          PollExpiresAft  { get; set; }
+    private (string, string)?        PastedText      { get; set; }
+
+    private DotNetObjectReference<Compose> _objRef = null!;
 
     private NoteCreateRequest NoteDraft { get; set; } = new()
     {
@@ -385,6 +382,7 @@
         Attachments      = new List<DriveFileResponse>();
         NoteDraft        = new NoteCreateRequest { Text = "", Visibility = settings.DefaultNoteVisibility, Cw = null };
         TextPlaceholder  = AvailablePlaceholders["default"];
+        PastedText       = null;
         SendButton.State = StateButton.StateEnum.Initial;
         AttachedQuote    = null;
 
@@ -510,6 +508,56 @@
         PollChoices.Remove(choice);
     }
 
+    public async Task InsertPastedText()
+    {
+        var pos  = await _module.InvokeAsync<int>("getSelectionStart", Textarea);
+        var text = NoteDraft.Text;
+        NoteDraft.Text = text.Insert(pos, PastedText?.Item1 ?? "");
+        PastedText     = null;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public async Task PasteQuote(string pastedText)
+    {
+        PastedText = (pastedText, "");
+
+        if (!new Url(pastedText).IsAbsolute)
+        {
+            await InsertPastedText();
+            return;
+        }
+
+        try
+        {
+            var res = await ApiService.Search.LookupAsync(pastedText);
+            if (res == null || !res.TargetUrl.StartsWith("/notes/"))
+            {
+                await InsertPastedText();
+                return;
+            }
+
+            PastedText = (pastedText, res.TargetUrl.Split('/').Last());
+            await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, PasteQuoteCallback), Loc["Attach as quote?"], Icons.Quotes)!;
+        }
+        catch (ApiException)
+        {
+            await InsertPastedText();
+        }
+    }
+
+    private async Task PasteQuoteCallback(bool confirm)
+    {
+        if (!confirm)
+        {
+            await InsertPastedText();
+            return;
+        }
+
+        // TODO: Add quote attachment
+        Console.WriteLine(PastedText?.Item2);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -519,6 +567,8 @@
 
             var instance = await MetadataService.Instance.Value;
             NoteLength = instance.Limits.NoteLength;
+
+            await _module.InvokeVoidAsync("setupPaste", _objRef, Textarea, UploadInput.Element);
 
             ComposeService.ComposeDialog = this;
         }
@@ -582,5 +632,7 @@
     protected override void OnInitialized()
     {
         TextPlaceholder = AvailablePlaceholders["default"];
+
+        _objRef = DotNetObjectReference.Create(this);
     }
 }
