@@ -29,6 +29,10 @@
         }
     }
     .instance {
+        /*Left align so the right side is truncated*/
+        align-self: start;
+        /*Margin on the left so non truncated names are aligned to the right*/
+        margin-left: auto;
         font-size: 0.9em;
         text-overflow: ellipsis;
         overflow: clip;
