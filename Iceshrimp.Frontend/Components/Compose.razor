@@ -61,7 +61,7 @@
                     <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
                 </button>
                 <div class="file-input">
-                    <InputFile @ref="UploadInput" OnChange="Upload">Upload!</InputFile>
+                    <InputFile @ref="UploadInput" OnChange="Upload" multiple>Upload!</InputFile>
                 </div>
                 <button class="btn" title="@Loc["Poll"]" @onclick="TogglePoll" aria-label="poll">
                     <Icon Name="Icons.MicrophoneStage" Size="1.3rem"></Icon>
@@ -404,7 +404,7 @@
         SendButton.State = StateButton.StateEnum.Loading;
         if (Attachments.Count > 0)
         {
-            NoteDraft.MediaIds = Attachments.Select(x => x.Id).ToList();
+            NoteDraft.MediaIds = Attachments.Select(x => x.Id).Distinct().ToList();
         }
 
         NoteDraft.RenoteId ??= AttachedQuote;
@@ -479,10 +479,15 @@
 
     private async Task Upload(InputFileChangeEventArgs e)
     {
-        UploadingFiles += 1;
-        var res = await ApiService.Drive.UploadFileAsync(e.File);
-        Attachments.Add(res);
-        UploadingFiles -= 1;
+        UploadingFiles += e.FileCount;
+        foreach (var file in e.GetMultipleFiles())
+        {
+            var res = await ApiService.Drive.UploadFileAsync(file);
+            Attachments.Add(res);
+            UploadingFiles -= 1;
+        }
+
+        Attachments = Attachments.DistinctBy(a => a.Id).ToList();
     }
 
     private void RemoveAttachment(string id)
