@@ -75,6 +75,10 @@
     <button @ref="EmojiButton" class="btn" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true"
             aria-label="emoji picker">
         <Icon Name="Icons.Smiley" Size="1.3em"/>
+        @if (Reactions.Count > 0)
+        {
+            <span class="like-count">@Reactions.Sum(r => r.Count)</span>
+        }
     </button>
     <button class="btn" @onclick="Quote" @onclick:stopPropagation="true" aria-label="quote">
         <Icon Name="Icons.Quotes" Size="1.3em"/>
