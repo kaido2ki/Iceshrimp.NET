@@ -102,7 +102,7 @@ else
 <div class="flex">
     @if (Offset is > 0)
     {
-        <button role="link" data-target="/admin/users?@(Remote ? "remote=true&" : "")offset=@(Math.Max(0, Offset.Value - 50))" onclick="navigate(event)">
+        <button role="link" data-target="/admin/users?@(_prevPageParams)" onclick="navigate(event)">
             ❮ Previous page
         </button>
     }
@@ -113,7 +113,7 @@ else
 
     @if (_users.Length == 50)
     {
-        <button role="link" data-target="/admin/users?@(Remote ? "remote=true&" : "")offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">
+        <button role="link" data-target="/admin/users?@(_nextPageParams)" onclick="navigate(event)">
             Next page ❯
         </button>
     }
@@ -141,18 +141,27 @@ else
 
     private User[] _users = [];
     private int    _count;
-
+    
+    private string _prevPageParams = "";
+    private string _nextPageParams = "";
+    
     protected override async Task OnGet()
     {
         var query = Remote
-            ? Database.Users.Where(p => p.IsRemoteUser)
-                      .Where(p => ("@" + p.Username + "@" + p.Host).ToLower().Contains((Query ?? "").ToLower()))
-                      .OrderBy(p => p.Username + "@" + p.Host)
-            : Database.Users.Where(p => p.IsLocalUser && !p.IsSystemUser)
-                      .Where(p => ("@" + p.Username.ToLower()).Contains((Query ?? "").ToLower()))
-                      .OrderBy(p => p.Username);
+                ? Database.Users.Where(p => p.IsRemoteUser)
+                          .Where(p => ("@" + p.Username + "@" + p.Host).ToLower().Contains((Query ?? "").ToLower()))
+                          .OrderBy(p => p.Username + "@" + p.Host)
+                : Database.Users.Where(p => p.IsLocalUser && !p.IsSystemUser)
+                          .Where(p => ("@" + p.Username.ToLower()).Contains((Query ?? "").ToLower()))
+                          .OrderBy(p => p.Username);
+
+            _users = await query.Skip(Offset ?? 0).Take(50).ToArrayAsync();
+            _count = await query.CountAsync();
+            
+        if (Offset > 0)
+            _prevPageParams = (Query is { Length: > 0 } ? $"q={Query}&" : "") + (Remote ? "remote=true&" : "") + "offset=" + (Math.Max(0, Offset.Value - 50));
         
-        _users = await query.Skip(Offset ?? 0).Take(50).ToArrayAsync();
-        _count = await query.CountAsync();
+        if (_users.Length == 50)
+            _nextPageParams = (Query is { Length: > 0 } ? $"q={Query}&" : "") + (Remote ? "remote=true&" : "") + "offset=" + ((Offset ?? 0) + 50);
     }
 }
