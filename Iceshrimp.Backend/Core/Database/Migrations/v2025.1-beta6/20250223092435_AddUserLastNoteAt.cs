@@ -20,7 +20,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                 type: "timestamp with time zone",
                 nullable: true);
 
-            migrationBuilder.Sql("""UPDATE "user" SET "lastNoteAt" = (SELECT note."createdAt" FROM "note" WHERE "note"."userId" = "user"."id" ORDER BY "note"."createdAt" DESC LIMIT 1);""");
+            migrationBuilder.Sql("""UPDATE "user" SET "lastNoteAt" = (SELECT note."createdAt" FROM "note" WHERE "note"."userId" = "user"."id" ORDER BY "note"."id" DESC LIMIT 1);""");
         }
 
         /// <inheritdoc />
