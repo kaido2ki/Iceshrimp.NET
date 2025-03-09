@@ -67,7 +67,7 @@ file class DailyTrigger : ICronTrigger, IDisposable
 		TriggerTime       = triggerTime;
 		CancellationToken = cancellationToken;
 
-		RunningTask = Task.Run(async () =>
+		RunningTask = Task.Factory.StartNew(async () =>
 		{
 			while (!CancellationToken.IsCancellationRequested)
 			{
@@ -77,7 +77,7 @@ file class DailyTrigger : ICronTrigger, IDisposable
 				await Task.Delay(nextTrigger, CancellationToken);
 				OnTrigger?.Invoke();
 			}
-		}, CancellationToken);
+		}, CancellationToken, TaskCreationOptions.DenyChildAttach | TaskCreationOptions.LongRunning, TaskScheduler.Default);
 	}
 
 	private TimeSpan          TriggerTime       { get; }
@@ -103,14 +103,14 @@ file class IntervalTrigger : ICronTrigger, IDisposable
 		TriggerInterval   = triggerInterval;
 		CancellationToken = cancellationToken;
 
-		RunningTask = Task.Run(async () =>
+		RunningTask = Task.Factory.StartNew(async () =>
 		{
 			while (!CancellationToken.IsCancellationRequested)
 			{
 				await Task.Delay(TriggerInterval, CancellationToken);
 				OnTrigger?.Invoke();
 			}
-		}, CancellationToken);
+		}, CancellationToken, TaskCreationOptions.DenyChildAttach | TaskCreationOptions.LongRunning, TaskScheduler.Default);
 	}
 
 	private TimeSpan          TriggerInterval   { get; }

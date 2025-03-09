@@ -57,8 +57,8 @@ public class QueueService(
 			logger.LogInformation("Queue shutdown complete.");
 		});
 
-		_ = Task.Run(ExecuteHealthchecksWorkerAsync, token);
-		await Task.Run(ExecuteBackgroundWorkersAsync, tokenSource.Token);
+		_ = Task.Factory.StartNew(ExecuteHealthchecksWorkerAsync, token, TaskCreationOptions.DenyChildAttach | TaskCreationOptions.LongRunning, TaskScheduler.Default);
+		await Task.Factory.StartNew(ExecuteBackgroundWorkersAsync, tokenSource.Token, TaskCreationOptions.DenyChildAttach | TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
 		return;
 
