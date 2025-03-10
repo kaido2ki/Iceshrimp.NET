@@ -29,6 +29,29 @@ internal class NoteActions(
 		}
 	}
 
+	public async Task RefetchRemoteNoteAsync(string id)
+	{
+		try
+		{
+			var res = await api.Notes.RefetchNoteAsync(id);
+
+			if (res != null)
+			{
+				if (res.Errors.Count != 0)
+				{
+					logger.LogError($"Failed to refetch note. {string.Join(", ", res.Errors)}");
+					return;
+				}
+
+				Broadcast(res.Note);
+			}
+		}
+		catch (ApiException e)
+		{
+			logger.LogError(e, "Failed to refetch note.");
+		}
+	}
+
 	public async Task ToggleLikeAsync(NoteBase note)
 	{
 		if (note.Liked)

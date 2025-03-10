@@ -93,6 +93,12 @@
                     <Text>@Loc["Bite"]</Text>
                 </MenuElement>
             }
+            @if (Note.User.Host != null)
+            {
+                <MenuElement Icon="Icons.ArrowsClockwise" OnSelect="RefetchNote">
+                    <Text>@Loc["Refetch"]</Text>
+                </MenuElement>
+            }
             <MenuElement Icon="Icons.SpeakerX" OnSelect="Mute">
                 <Text>@Loc["Mute thread"]</Text>
             </MenuElement>
@@ -210,5 +216,14 @@
     private void Mute()
     {
         _ = NoteActions.MuteAsync(Note);
+    }
+
+    private async Task RefetchNote() =>
+        await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RefetchNoteCallback), Loc["Refetch note?"])!;
+
+    private async Task RefetchNoteCallback(bool refetch)
+    {
+        if (!refetch) return;
+        await NoteActions.RefetchRemoteNoteAsync(Note.Id);
     }
 }
