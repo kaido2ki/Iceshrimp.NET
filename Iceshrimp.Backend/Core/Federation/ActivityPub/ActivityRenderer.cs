@@ -239,4 +239,20 @@ public class ActivityRenderer(
 		PublishedAt = bite.CreatedAt,
 		To          = userRenderer.RenderLite(fallbackTo)
 	};
+
+	public ASFlag RenderFlag(User actor, IEnumerable<Note> notes, string comment) => new()
+	{
+		Id      = GenerateActivityId(),
+		Actor   = userRenderer.RenderLite(actor),
+		Object  = notes.Select(noteRenderer.RenderLite).ToArray<ASObject>(),
+		Content = comment
+	};
+
+	public ASFlag RenderFlag(User actor, User user, string comment) => new()
+	{
+		Id      = GenerateActivityId(),
+		Actor   = userRenderer.RenderLite(actor),
+		Object  = [userRenderer.RenderLite(user)],
+		Content = comment
+	};
 }

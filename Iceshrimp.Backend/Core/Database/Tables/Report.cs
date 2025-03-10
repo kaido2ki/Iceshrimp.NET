@@ -1,18 +1,19 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Iceshrimp.EntityFrameworkCore.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
-[Table("abuse_user_report")]
+[Table("report")]
 [Index(nameof(ReporterId))]
 [Index(nameof(Resolved))]
 [Index(nameof(TargetUserHost))]
 [Index(nameof(TargetUserId))]
 [Index(nameof(CreatedAt))]
 [Index(nameof(ReporterHost))]
-public class AbuseUserReport
+public class Report
 {
 	[Key]
 	[Column("id")]
@@ -20,7 +21,7 @@ public class AbuseUserReport
 	public string Id { get; set; } = null!;
 
 	/// <summary>
-	///     The created date of the AbuseUserReport.
+	///     The created date of the Report.
 	/// </summary>
 	[Column("createdAt")]
 	public DateTime CreatedAt { get; set; }
@@ -70,12 +71,14 @@ public class AbuseUserReport
 	[ForeignKey(nameof(TargetUserId))]
 	[InverseProperty(nameof(User.AbuseUserReportTargetUsers))]
 	public virtual User TargetUser { get; set; } = null!;
-	
-	private class EntityTypeConfiguration : IEntityTypeConfiguration<AbuseUserReport>
+
+	public virtual ICollection<Note> Notes { get; set; } = new List<Note>();
+
+	private class EntityTypeConfiguration : IEntityTypeConfiguration<Report>
 	{
-		public void Configure(EntityTypeBuilder<AbuseUserReport> entity)
+		public void Configure(EntityTypeBuilder<Report> entity)
 		{
-			entity.Property(e => e.CreatedAt).HasComment("The created date of the AbuseUserReport.");
+			entity.Property(e => e.CreatedAt).HasComment("The created date of the Report.");
 			entity.Property(e => e.Forwarded).HasDefaultValue(false);
 			entity.Property(e => e.ReporterHost).HasComment("[Denormalized]");
 			entity.Property(e => e.Resolved).HasDefaultValue(false);
@@ -92,6 +95,10 @@ public class AbuseUserReport
 			entity.HasOne(d => d.TargetUser)
 			      .WithMany(p => p.AbuseUserReportTargetUsers)
 			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasMany(p => p.Notes)
+			      .WithMany()
+			      .UsingEntity("reported_note", "report_id", "note_id", DeleteBehavior.Cascade);
 		}
 	}
 }

@@ -35,10 +35,28 @@ public class ASActivity : ASObjectWithId
 		public const string Like     = $"{Ns}#Like";
 		public const string Block    = $"{Ns}#Block";
 		public const string Move     = $"{Ns}#Move";
+		public const string Flag     = $"{Ns}#Flag";
 
 		// Extensions
 		public const string Bite       = "https://ns.mia.jetzt/as#Bite";
 		public const string EmojiReact = "http://litepub.social/ns#EmojiReact";
+	}
+}
+
+public class ASActivityWithObjectArray : ASActivity
+{
+	private ASObject[]? _object;
+
+	[J($"{Constants.ActivityStreamsNs}#object")]
+	[JC(typeof(ASObjectArrayConverter))]
+	public new ASObject[]? Object
+	{
+		get => _object;
+		set
+		{
+			_object     = value;
+			base.Object = value?.FirstOrDefault();
+		}
 	}
 }
 
@@ -126,6 +144,15 @@ public class ASUndo : ASActivity
 public class ASBlock : ASActivity
 {
 	public ASBlock() => Type = Types.Block;
+}
+
+public class ASFlag : ASActivityWithObjectArray
+{
+	public ASFlag() => Type = Types.Flag;
+
+	[J($"{Constants.ActivityStreamsNs}#content")]
+	[JC(typeof(VC))]
+	public string? Content { get; set; }
 }
 
 public class ASLike : ASActivity

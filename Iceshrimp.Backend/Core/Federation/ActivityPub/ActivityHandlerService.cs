@@ -86,6 +86,7 @@ public class ActivityHandlerService(
 			ASUndo undo         => HandleUndoAsync(undo, resolvedActor),
 			ASUnfollow unfollow => HandleUnfollowAsync(unfollow, resolvedActor),
 			ASUpdate update     => HandleUpdateAsync(update, resolvedActor),
+			ASFlag flag         => HandleFlagAsync(flag, resolvedActor),
 
 			// Separated for readability
 			_ => throw GracefulException.UnprocessableEntity($"Activity type {activity.Type} is unknown")
@@ -525,6 +526,50 @@ public class ActivityHandlerService(
 		source.MovedToUri = targetUri;
 		await db.SaveChangesAsync();
 		await userSvc.MoveRelationshipsAsync(source, target, sourceUri, targetUri);
+	}
+
+	private async Task HandleFlagAsync(ASFlag flag, User resolvedActor)
+	{
+		if (resolvedActor.IsLocalUser)
+			throw GracefulException.UnprocessableEntity("Refusing to process locally originating report via AP");
+		if (flag.Object is not { Length: > 0 })
+			throw GracefulException.UnprocessableEntity("ASFlag activity does not reference any objects");
+
+		var candidates = flag.Object.Take(25)
+		                     .Select(p => p.Id)
+		                     .NotNull()
+		                     .Where(p => p.StartsWith($"https://{config.Value.WebDomain}/users/")
+		                                 || p.StartsWith($"https://{config.Value.WebDomain}/notes/"))
+		                     .Select(p => p[$"https://{config.Value.WebDomain}/notes/".Length..])
+		                     .ToArray();
+
+		var userMatch = await db.Users.FirstOrDefaultAsync(p => p.IsLocalUser && candidates.Contains(p.Id));
+		var noteMatches = await db.Notes.Where(p => p.UserHost == null && candidates.Contains(p.Id))
+		                          .Include(note => note.User)
+		                          .ToListAsync();
+
+		if (userMatch == null && noteMatches.Count == 0)
+			throw GracefulException.UnprocessableEntity("ASFlag activity object resolution yielded zero results");
+
+		userMatch ??= noteMatches[0].User;
+
+		if (noteMatches.Count != 0 && noteMatches.Any(p => p.User != userMatch))
+			throw GracefulException.UnprocessableEntity("Refusing to process ASFlag: note author mismatch");
+
+		var report = new Report
+		{
+			Id             = IdHelpers.GenerateSnowflakeId(),
+			CreatedAt      = DateTime.UtcNow,
+			TargetUser     = userMatch,
+			TargetUserHost = userMatch.Host,
+			Reporter       = resolvedActor,
+			ReporterHost   = resolvedActor.Host,
+			Notes          = noteMatches,
+			Comment        = flag.Content ?? ""
+		};
+
+		db.Add(report);
+		await db.SaveChangesAsync();
 	}
 
 	private async Task UnfollowAsync(ASActor followeeActor, User follower)

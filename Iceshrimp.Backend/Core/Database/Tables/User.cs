@@ -260,14 +260,14 @@ public class User : IIdentifiable
 
 	[Column("splitDomainResolved")] public bool SplitDomainResolved { get; set; }
 
-	[InverseProperty(nameof(AbuseUserReport.Assignee))]
-	public virtual ICollection<AbuseUserReport> AbuseUserReportAssignees { get; set; } = new List<AbuseUserReport>();
+	[InverseProperty(nameof(Report.Assignee))]
+	public virtual ICollection<Report> AbuseUserReportAssignees { get; set; } = new List<Report>();
 
-	[InverseProperty(nameof(AbuseUserReport.Reporter))]
-	public virtual ICollection<AbuseUserReport> AbuseUserReportReporters { get; set; } = new List<AbuseUserReport>();
+	[InverseProperty(nameof(Report.Reporter))]
+	public virtual ICollection<Report> AbuseUserReportReporters { get; set; } = new List<Report>();
 
-	[InverseProperty(nameof(AbuseUserReport.TargetUser))]
-	public virtual ICollection<AbuseUserReport> AbuseUserReportTargetUsers { get; set; } = new List<AbuseUserReport>();
+	[InverseProperty(nameof(Report.TargetUser))]
+	public virtual ICollection<Report> AbuseUserReportTargetUsers { get; set; } = new List<Report>();
 
 	[InverseProperty(nameof(AnnouncementRead.User))]
 	public virtual ICollection<AnnouncementRead> AnnouncementReads { get; set; } = new List<AnnouncementRead>();

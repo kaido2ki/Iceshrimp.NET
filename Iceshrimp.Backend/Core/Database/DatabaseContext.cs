@@ -16,7 +16,7 @@ namespace Iceshrimp.Backend.Core.Database;
 public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	: DbContext(options), IDataProtectionKeyContext
 {
-	public virtual DbSet<AbuseUserReport>      AbuseUserReports      { get; init; } = null!;
+	public virtual DbSet<Report>               Reports               { get; init; } = null!;
 	public virtual DbSet<Announcement>         Announcements         { get; init; } = null!;
 	public virtual DbSet<AnnouncementRead>     AnnouncementReads     { get; init; } = null!;
 	public virtual DbSet<Antenna>              Antennas              { get; init; } = null!;

@@ -36,84 +36,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pg_trgm");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.AbuseUserReport", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("id");
-
-                    b.Property<string>("AssigneeId")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("assigneeId");
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasMaxLength(2048)
-                        .HasColumnType("character varying(2048)")
-                        .HasColumnName("comment");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("createdAt")
-                        .HasComment("The created date of the AbuseUserReport.");
-
-                    b.Property<bool>("Forwarded")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("forwarded");
-
-                    b.Property<string>("ReporterHost")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("reporterHost")
-                        .HasComment("[Denormalized]");
-
-                    b.Property<string>("ReporterId")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("reporterId");
-
-                    b.Property<bool>("Resolved")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("resolved");
-
-                    b.Property<string>("TargetUserHost")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("targetUserHost")
-                        .HasComment("[Denormalized]");
-
-                    b.Property<string>("TargetUserId")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("targetUserId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AssigneeId");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("ReporterHost");
-
-                    b.HasIndex("ReporterId");
-
-                    b.HasIndex("Resolved");
-
-                    b.HasIndex("TargetUserHost");
-
-                    b.HasIndex("TargetUserId");
-
-                    b.ToTable("abuse_user_report");
-                });
-
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.AllowedInstance", b =>
                 {
                     b.Property<string>("Host")
@@ -3870,6 +3792,84 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.ToTable("renote_muting");
                 });
 
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Report", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AssigneeId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("assigneeId");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("comment");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("createdAt")
+                        .HasComment("The created date of the Report.");
+
+                    b.Property<bool>("Forwarded")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("forwarded");
+
+                    b.Property<string>("ReporterHost")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("reporterHost")
+                        .HasComment("[Denormalized]");
+
+                    b.Property<string>("ReporterId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("reporterId");
+
+                    b.Property<bool>("Resolved")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("resolved");
+
+                    b.Property<string>("TargetUserHost")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("targetUserHost")
+                        .HasComment("[Denormalized]");
+
+                    b.Property<string>("TargetUserId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("targetUserId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssigneeId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("ReporterHost");
+
+                    b.HasIndex("ReporterId");
+
+                    b.HasIndex("Resolved");
+
+                    b.HasIndex("TargetUserHost");
+
+                    b.HasIndex("TargetUserId");
+
+                    b.ToTable("report");
+                });
+
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Rule", b =>
                 {
                     b.Property<string>("Id")
@@ -4922,30 +4922,19 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.ToTable("data_protection_keys", (string)null);
                 });
 
-            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.AbuseUserReport", b =>
+            modelBuilder.Entity("reported_note", b =>
                 {
-                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Assignee")
-                        .WithMany("AbuseUserReportAssignees")
-                        .HasForeignKey("AssigneeId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                    b.Property<string>("note_id")
+                        .HasColumnType("character varying(32)");
 
-                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Reporter")
-                        .WithMany("AbuseUserReportReporters")
-                        .HasForeignKey("ReporterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Property<string>("report_id")
+                        .HasColumnType("character varying(32)");
 
-                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "TargetUser")
-                        .WithMany("AbuseUserReportTargetUsers")
-                        .HasForeignKey("TargetUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasKey("note_id", "report_id");
 
-                    b.Navigation("Assignee");
+                    b.HasIndex("report_id");
 
-                    b.Navigation("Reporter");
-
-                    b.Navigation("TargetUser");
+                    b.ToTable("reported_note");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.AnnouncementRead", b =>
@@ -5720,6 +5709,32 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Navigation("Muter");
                 });
 
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Report", b =>
+                {
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Assignee")
+                        .WithMany("AbuseUserReportAssignees")
+                        .HasForeignKey("AssigneeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "Reporter")
+                        .WithMany("AbuseUserReportReporters")
+                        .HasForeignKey("ReporterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "TargetUser")
+                        .WithMany("AbuseUserReportTargetUsers")
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Assignee");
+
+                    b.Navigation("Reporter");
+
+                    b.Navigation("TargetUser");
+                });
+
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Session", b =>
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "User")
@@ -5928,6 +5943,21 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("reported_note", b =>
+                {
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Note", null)
+                        .WithMany()
+                        .HasForeignKey("note_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Report", null)
+                        .WithMany()
+                        .HasForeignKey("report_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Announcement", b =>

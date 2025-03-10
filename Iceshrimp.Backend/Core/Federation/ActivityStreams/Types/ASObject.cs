@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
@@ -54,6 +55,7 @@ public class ASObject : ASObjectBase
 						ASActivity.Types.EmojiReact        => token.ToObject<ASEmojiReact>(),
 						ASActivity.Types.Block             => token.ToObject<ASBlock>(),
 						ASActivity.Types.Move              => token.ToObject<ASMove>(),
+						ASActivity.Types.Flag              => token.ToObject<ASFlag>(),
 						_                                  => token.ToObject<ASObject>()
 					};
 				case JTokenType.Array:
@@ -121,6 +123,43 @@ internal sealed class ASObjectConverter : JsonConverter
 		{
 			var obj = JObject.Load(reader);
 			return ASObject.Deserialize(obj);
+		}
+
+		throw new Exception("this shouldn't happen");
+	}
+
+	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
+	{
+		throw new NotImplementedException();
+	}
+}
+
+internal sealed class ASObjectArrayConverter : JsonConverter
+{
+	public override bool CanWrite => false;
+
+	public override bool CanConvert(Type objectType)
+	{
+		return true;
+	}
+
+	public override object? ReadJson(
+		JsonReader reader, Type objectType, object? existingValue,
+		JsonSerializer serializer
+	)
+	{
+		if (reader.TokenType == JsonToken.StartArray)
+		{
+			var obj = JArray.Load(reader);
+			var arr = obj.Select(ASObject.Deserialize).NotNull().ToArray();
+			return arr.Length > 0 ? arr : null;
+		}
+
+		if (reader.TokenType == JsonToken.StartObject)
+		{
+			var obj          = JObject.Load(reader);
+			var deserialized = ASObject.Deserialize(obj);
+			return deserialized != null ? new[]{ deserialized } : null;
 		}
 
 		throw new Exception("this shouldn't happen");
