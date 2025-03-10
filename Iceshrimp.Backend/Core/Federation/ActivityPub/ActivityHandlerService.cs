@@ -108,8 +108,8 @@ public class ActivityHandlerService(
 		if (activity.Object == null)
 			throw GracefulException.UnprocessableEntity("Create activity object was null");
 
-		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, actor.Uri) as ASNote ??
-		                  throw GracefulException.UnprocessableEntity("Failed to resolve create object");
+		activity.Object = await objectResolver.ResolveObjectAsync(activity.Object, actor.Uri) as ASNote
+		                  ?? throw GracefulException.UnprocessableEntity("Failed to resolve create object");
 
 		using (await NoteService.GetNoteProcessLockAsync(activity.Object.Id))
 			await noteSvc.ProcessNoteAsync(activity.Object, actor, inboxUser);
@@ -221,8 +221,8 @@ public class ActivityHandlerService(
 			if (await db.Followings.AnyAsync(p => p.Followee == actor && p.FollowerId == ids[0]))
 				return;
 
-			throw GracefulException.UnprocessableEntity($"No follow or follow request matching follower '{ids[0]}'" +
-			                                            $"and followee '{actor.Id}' found");
+			throw GracefulException.UnprocessableEntity($"No follow or follow request matching follower '{ids[0]}'"
+			                                            + $"and followee '{actor.Id}' found");
 		}
 
 		await userSvc.AcceptFollowRequestAsync(request);
@@ -272,8 +272,7 @@ public class ActivityHandlerService(
 
 		await db.Notifications
 		        .Where(p => p.Type == Notification.NotificationType.FollowRequestAccepted)
-		        .Where(p => p.Notifiee == resolvedFollower &&
-		                    p.Notifier == resolvedActor)
+		        .Where(p => p.Notifiee == resolvedFollower && p.Notifier == resolvedActor)
 		        .ExecuteDeleteAsync();
 
 		await db.UserListMembers
@@ -401,8 +400,8 @@ public class ActivityHandlerService(
 				User      = resolvedActor,
 				UserHost  = resolvedActor.Host,
 				TargetBite =
-					await db.Bites.FirstAsync(p => p.UserHost == null &&
-					                               p.Id == Bite.GetIdFromPublicUri(targetBite.Id, config.Value))
+					await db.Bites.FirstAsync(p => p.UserHost == null
+					                               && p.Id == Bite.GetIdFromPublicUri(targetBite.Id, config.Value))
 			},
 			null => throw GracefulException.UnprocessableEntity($"Failed to resolve bite target {activity.Target.Id}"),
 			_ when activity.To?.Id != null => new Bite
@@ -419,9 +418,9 @@ public class ActivityHandlerService(
 			//TODO: more fallback
 		};
 
-		if ((dbBite.TargetUser?.IsRemoteUser ?? false) ||
-		    (dbBite.TargetNote?.User.IsRemoteUser ?? false) ||
-		    (dbBite.TargetBite?.User.IsRemoteUser ?? false))
+		if ((dbBite.TargetUser?.IsRemoteUser ?? false)
+		    || (dbBite.TargetNote?.User.IsRemoteUser ?? false)
+		    || (dbBite.TargetBite?.User.IsRemoteUser ?? false))
 			throw GracefulException.Accepted("Ignoring bite for remote user");
 
 		var finalTarget = dbBite.TargetUser ?? dbBite.TargetNote?.User ?? dbBite.TargetBite?.User;
@@ -520,8 +519,8 @@ public class ActivityHandlerService(
 		var targetUri = target.Uri ?? target.GetPublicUri(config.Value.WebDomain);
 		var aliases   = target.AlsoKnownAs ?? [];
 		if (!aliases.Contains(sourceUri))
-			throw GracefulException.UnprocessableEntity("Refusing to process move activity:" +
-			                                            "source uri not listed in target aliases");
+			throw GracefulException.UnprocessableEntity("Refusing to process move activity:"
+			                                            + "source uri not listed in target aliases");
 
 		source.MovedToUri = targetUri;
 		await db.SaveChangesAsync();
@@ -558,9 +557,9 @@ public class ActivityHandlerService(
 			});
 
 			await db.Notifications
-			        .Where(p => p.Type == Notification.NotificationType.Follow &&
-			                    p.Notifiee == followee &&
-			                    p.Notifier == follower)
+			        .Where(p => p.Type == Notification.NotificationType.Follow
+			                    && p.Notifiee == followee
+			                    && p.Notifier == follower)
 			        .ExecuteDeleteAsync();
 
 			eventSvc.RaiseUserUnfollowed(this, follower, followee);
