@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Iceshrimp.EntityFrameworkCore.Extensions;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -13,7 +14,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(TargetUserId))]
 [Index(nameof(CreatedAt))]
 [Index(nameof(ReporterHost))]
-public class Report
+public class Report : IIdentifiable
 {
 	[Key]
 	[Column("id")]

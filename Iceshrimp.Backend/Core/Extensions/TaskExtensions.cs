@@ -61,6 +61,11 @@ public static class TaskExtensions
 		return (await task).ToList();
 	}
 
+	public static async Task<T[]> ToArrayAsync<T>(this Task<IEnumerable<T>> task)
+	{
+		return (await task).ToArray();
+	}
+
 	public static async Task ContinueWithResult(this Task task, Action continuation)
 	{
 		await task;

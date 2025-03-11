@@ -655,5 +655,14 @@ public static class QueryableExtensions
 		            .Include(p => p.Bite);
 	}
 
+	public static IQueryable<Report> IncludeCommonProperties(this IQueryable<Report> query)
+	{
+		return query.Include(p => p.Reporter.UserProfile)
+		            .Include(p => p.TargetUser.UserProfile)
+		            .Include(p => p.Assignee.UserProfile)
+		            .Include(p => p.Notes)
+		            .ThenInclude(p => p.User.UserProfile);
+	}
+
 	#pragma warning restore CS8602 // Dereference of a possibly null reference.
 }
