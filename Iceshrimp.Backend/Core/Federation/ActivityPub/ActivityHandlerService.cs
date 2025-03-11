@@ -28,7 +28,8 @@ public class ActivityHandlerService(
 	FollowupTaskService followupTaskSvc,
 	EmojiService emojiSvc,
 	EventService eventSvc,
-	RelayService relaySvc
+	RelayService relaySvc,
+	ReportService reportSvc
 ) : IScopedService
 {
 	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId, string? authenticatedUserId)
@@ -556,20 +557,7 @@ public class ActivityHandlerService(
 		if (noteMatches.Count != 0 && noteMatches.Any(p => p.User != userMatch))
 			throw GracefulException.UnprocessableEntity("Refusing to process ASFlag: note author mismatch");
 
-		var report = new Report
-		{
-			Id             = IdHelpers.GenerateSnowflakeId(),
-			CreatedAt      = DateTime.UtcNow,
-			TargetUser     = userMatch,
-			TargetUserHost = userMatch.Host,
-			Reporter       = resolvedActor,
-			ReporterHost   = resolvedActor.Host,
-			Notes          = noteMatches,
-			Comment        = flag.Content ?? ""
-		};
-
-		db.Add(report);
-		await db.SaveChangesAsync();
+		await reportSvc.CreateReportAsync(resolvedActor, userMatch, noteMatches, flag.Content ?? "");
 	}
 
 	private async Task UnfollowAsync(ASActor followeeActor, User follower)

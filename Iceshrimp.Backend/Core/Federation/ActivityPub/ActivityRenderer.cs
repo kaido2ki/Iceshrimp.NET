@@ -240,19 +240,11 @@ public class ActivityRenderer(
 		To          = userRenderer.RenderLite(fallbackTo)
 	};
 
-	public ASFlag RenderFlag(User actor, IEnumerable<Note> notes, string comment) => new()
+	public ASFlag RenderFlag(User actor, User user, IEnumerable<Note> notes, string comment) => new()
 	{
 		Id      = GenerateActivityId(),
 		Actor   = userRenderer.RenderLite(actor),
-		Object  = notes.Select(noteRenderer.RenderLite).ToArray<ASObject>(),
-		Content = comment
-	};
-
-	public ASFlag RenderFlag(User actor, User user, string comment) => new()
-	{
-		Id      = GenerateActivityId(),
-		Actor   = userRenderer.RenderLite(actor),
-		Object  = [userRenderer.RenderLite(user)],
+		Object  = notes.Select(noteRenderer.RenderLite).Prepend<ASObject>(userRenderer.RenderLite(user)).ToArray(),
 		Content = comment
 	};
 }

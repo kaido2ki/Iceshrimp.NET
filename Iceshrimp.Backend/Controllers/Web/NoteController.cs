@@ -30,7 +30,8 @@ public class NoteController(
 	UserRenderer userRenderer,
 	CacheService cache,
 	BiteService biteSvc,
-	PollService pollSvc
+	PollService pollSvc,
+	ReportService reportSvc
 ) : ControllerBase
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -644,5 +645,19 @@ public class NoteController(
 			await cache.SetAsync($"idempotency:{user.Id}:{request.IdempotencyKey}", note.Id, TimeSpan.FromHours(24));
 
 		return await noteRenderer.RenderOne(note, user);
+	}
+
+	[HttpPost("{id}/report")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task ReportNote(string id, [FromBody] NoteReportRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes.Include(p => p.User).EnsureVisibleFor(user).FirstOrDefaultAsync(p => p.Id == id)
+		           ?? throw GracefulException.NotFound("Note not found");
+
+		await reportSvc.CreateReportAsync(user, note.User, [note], request.Comment);
 	}
 }
