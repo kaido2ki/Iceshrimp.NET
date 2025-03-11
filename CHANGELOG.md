@@ -1,3 +1,12 @@
+## v2025.1-beta5.patch2.security1
+This is a security hotfix release. It's identical to v2025.1-beta5.patch2, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
+
+### Backend
+- Updated SixLabors.ImageSharp to 3.1.7 (addressing [GHSA-2cmq-823j-5qj8](https://github.com/advisories/GHSA-2cmq-823j-5qj8))
+
+### Attribution
+This release was made possible by project contributors: Laura Hausmann
+
 ## v2025.1-beta5.patch2
 This is a hotfix release. It's identical to v2025.1-beta5.patch1, except for a bunch of bugfixes. Upgrading is strongly recommended for all server operators running v2025.1-beta5 or v2025.1-beta5.patch1.
 
