@@ -108,9 +108,11 @@ public class ModerationController(
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task ResolveReport(string id)
 	{
+		var user = HttpContext.GetUserOrFail();
 		var report = await db.Reports.FirstOrDefaultAsync(p => p.Id == id)
 		             ?? throw GracefulException.NotFound("Report not found");
 
+		report.Assignee = user;
 		report.Resolved = true;
 		await db.SaveChangesAsync();
 	}
