@@ -12,12 +12,14 @@ namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
 public static partial class MfmRenderer
 {
-	public static MarkupString RenderString(
-		string text, List<EmojiResponse> emoji, string accountDomain, bool simple = false
+	public static async Task<MarkupString> RenderStringAsync(
+		string text, List<EmojiResponse> emoji, string accountDomain, bool simple = false, bool speakAsCat = false
 	)
 	{
 		var res         = MfmParser.Parse(text, simple);
-		var renderedMfm = RenderMultipleNodes(res, emoji, accountDomain, simple);
+		var context     = BrowsingContext.New();
+		var document    = await context.OpenNewAsync();
+		var renderedMfm = RenderMultipleNodes(res, document, emoji, accountDomain, simple, speakAsCat);
 		var html        = renderedMfm.ToHtml();
 		return new MarkupString(html);
 	}
@@ -28,7 +30,8 @@ public static partial class MfmRenderer
 	private static IElement CreateElement(string name)  => OwnerDocument.Value.CreateElement(name);
 
 	private static INode RenderMultipleNodes(
-		IEnumerable<IMfmNode> nodes, List<EmojiResponse> emoji, string accountDomain, bool simple
+		IEnumerable<IMfmNode> nodes, IDocument document, List<EmojiResponse> emoji, string accountDomain, bool simple,
+		bool speakAsCat
 	)
 	{
 		var el = CreateElement("span");
@@ -36,14 +39,14 @@ public static partial class MfmRenderer
 		el.ClassName = "mfm";
 		foreach (var node in nodes)
 		{
-			el.AppendNodes(RenderNode(node, emoji, accountDomain, simple));
+			el.AppendNodes(RenderNode(node, emoji, accountDomain, simple, speakAsCat));
 		}
 
 		return el;
 	}
 
 	private static INode RenderNode(
-		IMfmNode node, List<EmojiResponse> emoji, string accountDomain, bool simple
+		IMfmNode node, IDocument document, List<EmojiResponse> emoji, string accountDomain, bool simple, bool speakAsCat
 	)
 	{
 		// Hard wrap makes this impossible to read
@@ -66,7 +69,7 @@ public static partial class MfmRenderer
 			MfmPlainNode mfmPlainNode           => MfmPlainNode(mfmPlainNode),
 			MfmSmallNode _                      => MfmSmallNode(),
 			MfmStrikeNode mfmStrikeNode         => MfmStrikeNode(mfmStrikeNode),
-			MfmTextNode mfmTextNode             => MfmTextNode(mfmTextNode),
+			MfmTextNode mfmTextNode             => MfmTextNode(mfmTextNode, speakAsCat),
 			MfmUrlNode mfmUrlNode               => MfmUrlNode(mfmUrlNode),
 			_ => MfmFallbackNode(nameof(node))
 		};
@@ -76,7 +79,7 @@ public static partial class MfmRenderer
 		{
 			foreach (var childNode in node.Children)
 			{
-				rendered.AppendNodes(RenderNode(childNode, emoji, accountDomain, simple));
+				rendered.AppendNodes(RenderNode(childNode, emoji, accountDomain, simple, speakAsCat));
 			}
 		}
 
@@ -209,10 +212,31 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmTextNode(MfmTextNode node)
+	[GeneratedRegex(@"(?<=n)a", RegexOptions.IgnoreCase)]
+	private static partial Regex CatRegEn1();
+
+	[GeneratedRegex(@"(?<=mor)ning", RegexOptions.IgnoreCase)]
+	private static partial Regex CatRegEn2();
+
+	[GeneratedRegex(@"(?<=every)one", RegexOptions.IgnoreCase)]
+	private static partial Regex CatRegEn3();
+	
+	[GeneratedRegex(@"non(?=[bcdfghjklmnpqrstvwxyz])", RegexOptions.IgnoreCase)]
+	private static partial Regex CatRegEn4();
+
+	private static string MakeCatText(string text)
 	{
-		var el = CreateElement("span");
-		el.TextContent = node.Text;
+		text = CatRegEn1().Replace(text, m => m.Value == "A" ? "YA" : "ya");
+		text = CatRegEn2().Replace(text, m => m.Value == "NING" ? "NYAN" : "nyan");
+		text = CatRegEn3().Replace(text, m => m.Value == "ONE" ? "NYAN" : "nyan");
+		text = CatRegEn4().Replace(text, m => m.Value == "NON" ? "NYAN" : "nyan");
+		return text;
+	}
+
+	private static INode MfmTextNode(MfmTextNode node, IDocument document, bool speakAsCat)
+	{
+		var el = document.CreateElement("span");
+		el.TextContent = speakAsCat ? MakeCatText(node.Text) : node.Text;
 		return el;
 	}
 
