@@ -118,6 +118,7 @@ internal class SessionService
 				InstanceIconUrl = null,
 				IsBot           = false,
 				IsCat           = false,
+				SpeakAsCat      = false,
 				Emojis          = [],
 				MovedTo         = null,
 				Token           = user.Token,
