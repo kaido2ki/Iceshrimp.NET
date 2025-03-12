@@ -212,6 +212,7 @@ public static partial class MfmRenderer
 		return el;
 	}
 
+	// Cat regex is adapted from Misskey for interoperability
 	[GeneratedRegex(@"(?<=n)a", RegexOptions.IgnoreCase)]
 	private static partial Regex CatRegEn1();
 
