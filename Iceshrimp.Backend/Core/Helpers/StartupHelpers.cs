@@ -10,6 +10,8 @@ public static class StartupHelpers
 		{
 			Console.WriteLine($"""
 			                   Usage: ./{typeof(Program).Assembly.GetName().Name} [options...]
+			                   
+			                   General options & commands:
 			                    -h, -?, --help        Prints information on available command line arguments.
 			                    --migrate             Applies pending migrations.
 			                    --migrate-and-start   Applies pending migrations, then starts the application.
@@ -26,6 +28,15 @@ public static class StartupHelpers
 			                                          instead of http on the specified port.
 			                    --environment <env>   Specifies the ASP.NET Core environment. Available options
 			                                          are 'Development' and 'Production'.
+			                   
+			                   User management commands:
+			                    --create-user <username>        Creates a new user with the specified username
+			                                                    and a randomly generated password.
+			                    --create-admin-user <username>  Creates a new admin user with the specified
+			                                                    username and a randomly generated password.
+			                    --reset-password <username>     Resets the password of the specified user.
+			                    --grant-admin <username>        Grants admin privileges to the specified user.
+			                    --revoke-admin <username>       Revokes admin privileges of the specified user.
 			                   """);
 			Environment.Exit(0);
 		}

@@ -429,15 +429,16 @@ public class UserService(
 		return user;
 	}
 
-	public async Task<User> CreateLocalUserAsync(string username, string password, string? invite)
+	public async Task<User> CreateLocalUserAsync(string username, string password, string? invite, bool force = false)
 	{
 		//TODO: invite system should allow multi-use invites & time limited invites
-		if (security.Value.Registrations == Enums.Registrations.Closed)
+		if (security.Value.Registrations == Enums.Registrations.Closed && !force)
 			throw new GracefulException(HttpStatusCode.Forbidden, "Registrations are disabled on this server");
-		if (security.Value.Registrations == Enums.Registrations.Invite && invite == null)
+		if (security.Value.Registrations == Enums.Registrations.Invite && invite == null && !force)
 			throw new GracefulException(HttpStatusCode.Forbidden, "Request is missing the invite code");
 		if (security.Value.Registrations == Enums.Registrations.Invite
-		    && !await db.RegistrationInvites.AnyAsync(p => p.Code == invite))
+		    && !await db.RegistrationInvites.AnyAsync(p => p.Code == invite)
+		    && !force)
 			throw new GracefulException(HttpStatusCode.Forbidden, "The specified invite code is invalid");
 		if (!Regex.IsMatch(username, @"^\w+$"))
 			throw new GracefulException(HttpStatusCode.BadRequest, "Username must only contain letters and numbers");
@@ -472,7 +473,7 @@ public class UserService(
 
 		var usedUsername = new UsedUsername { CreatedAt = DateTime.UtcNow, Username = username.ToLowerInvariant() };
 
-		if (security.Value.Registrations == Enums.Registrations.Invite)
+		if (security.Value.Registrations == Enums.Registrations.Invite && !force)
 		{
 			var ticket = await db.RegistrationInvites.FirstOrDefaultAsync(p => p.Code == invite);
 			if (ticket == null)

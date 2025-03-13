@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Migrations;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Backend.Core.Services.ImageProcessing;
@@ -228,13 +229,106 @@ public static class WebApplicationExtensions
 			Environment.Exit(0);
 		}
 
+		string[] userMgmtCommands =
+		[
+			"--create-user", "--create-admin-user", "--reset-password", "--grant-admin", "--revoke-admin"
+		];
+
+		if (args.FirstOrDefault(userMgmtCommands.Contains) is { } cmd)
+		{
+			if (args is not [not null, var username])
+			{
+				app.Logger.LogError("Invalid syntax. Usage: {cmd} <username>", cmd);
+				Environment.Exit(1);
+				return null!;
+			}
+
+			if (cmd is "--create-user" or "--create-admin-user")
+			{
+				var password = CryptographyHelpers.GenerateRandomString(16);
+				app.Logger.LogInformation("Creating user {username}...", username);
+				var userSvc = provider.GetRequiredService<UserService>();
+				await userSvc.CreateLocalUserAsync(username, password, null, force: true);
+
+				if (args[0] is "--create-admin-user")
+				{
+					await db.Users.Where(p => p.Username == username)
+					        .ExecuteUpdateAsync(p => p.SetProperty(i => i.IsAdmin, true));
+
+					app.Logger.LogInformation("Successfully created admin user.");
+				}
+				else
+				{
+					app.Logger.LogInformation("Successfully created user.");
+				}
+
+				app.Logger.LogInformation("Username: {username}", username);
+				app.Logger.LogInformation("Password: {password}", password);
+				Environment.Exit(0);
+			}
+
+			if (cmd is "--reset-password")
+			{
+				var settings = await db.UserSettings
+				                       .FirstOrDefaultAsync(p => p.User.UsernameLower == username.ToLowerInvariant());
+
+				if (settings == null)
+				{
+					app.Logger.LogError("User {username} not found.", username);
+					Environment.Exit(1);
+				}
+
+				app.Logger.LogInformation("Resetting password for user {username}...", username);
+
+				var password = CryptographyHelpers.GenerateRandomString(16);
+				settings.Password = AuthHelpers.HashPassword(password);
+				await db.SaveChangesAsync();
+
+				app.Logger.LogInformation("Password for user {username} was reset to: {password}", username, password);
+				Environment.Exit(0);
+			}
+
+			if (cmd is "--grant-admin")
+			{
+				var user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant());
+				if (user == null)
+				{
+					app.Logger.LogError("User {username} not found.", username);
+					Environment.Exit(1);
+				}
+				else
+				{
+					user.IsAdmin = true;
+					await db.SaveChangesAsync();
+					app.Logger.LogInformation("Granted admin privileges to user {username}.", username);
+					Environment.Exit(0);
+				}
+			}
+
+			if (cmd is "--revoke-admin")
+			{
+				var user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant());
+				if (user == null)
+				{
+					app.Logger.LogError("User {username} not found.", username);
+					Environment.Exit(1);
+				}
+				else
+				{
+					user.IsAdmin = false;
+					await db.SaveChangesAsync();
+					app.Logger.LogInformation("Revoked admin privileges of user {username}.", username);
+					Environment.Exit(0);
+				}
+			}
+		}
+
 		var storageConfig = app.Configuration.GetSection("Storage").Get<Config.StorageSection>() ??
 		                    throw new Exception("Failed to read Storage config section");
 
 		if (storageConfig.Provider == Enums.FileStorage.Local)
 		{
-			if (string.IsNullOrWhiteSpace(storageConfig.Local?.Path) ||
-			    !Directory.Exists(storageConfig.Local.Path))
+			if (string.IsNullOrWhiteSpace(storageConfig.Local?.Path) || !Directory.Exists(storageConfig.Local.Path))
 			{
 				app.Logger.LogCritical("Local storage path does not exist");
 				Environment.Exit(1);
