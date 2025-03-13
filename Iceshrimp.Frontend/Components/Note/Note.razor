@@ -20,7 +20,8 @@
         @if (NoteResponse.Filtered is not null && NoteResponse.Filtered.Hide == false)
         {
             <div>
-                @Loc["This note contains the filter keyword '{0}'", NoteResponse.Filtered.Keyword]
+                @Loc["This note is hidden by your filter"]
+                <span class="filter-name">@NoteResponse.Filtered.Name</span>
                 <button
                     @onclick="@ShowNote"
                     @onclick:stopPropagation="true">

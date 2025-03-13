@@ -11,3 +11,13 @@
 .user {
     color: var(--notice-color);
 }
+
+.filter-name {
+    filter: blur(0.2rem);
+    transition-duration: 0.2s;
+    transition-property: filter;
+}
+
+.filter-name:hover {
+    filter: blur(0);
+}
