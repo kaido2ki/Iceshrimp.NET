@@ -38,6 +38,7 @@ public class NoteRenderer(
 			res.Filtered = new NoteFilteredSchema
 			{
 				Id      = filtered.Value.filter.Id,
+				Name    = filtered.Value.filter.Name, 
 				Keyword = filtered.Value.keyword,
 				Hide    = filtered.Value.filter.Action == Filter.FilterAction.Hide
 			};

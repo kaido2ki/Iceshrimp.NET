@@ -89,6 +89,7 @@ public class NoteReactionSchema
 public class NoteFilteredSchema
 {
 	public required long   Id      { get; set; }
+	public required string Name    { get; set; }
 	public required string Keyword { get; set; }
 	public required bool   Hide    { get; set; }
 }
