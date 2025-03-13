@@ -100,14 +100,15 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		{
 			ConnectionStringBuilder =
 			{
-				Host         = config.Host,
-				Port         = config.Port,
-				Username     = config.Username,
-				Password     = config.Password,
-				Database     = config.Database,
-				MaxPoolSize  = config.MaxConnections,
-				Multiplexing = config.Multiplexing,
-				Options      = "-c jit=off"
+				Host            = config.Host,
+				Port            = config.Port,
+				Username        = config.Username,
+				Password        = config.Password,
+				Database        = config.Database,
+				MaxPoolSize     = config.MaxConnections,
+				Multiplexing    = config.Multiplexing,
+				Options         = "-c jit=off",
+				ApplicationName = "Iceshrimp.NET"
 			}
 		};
 
