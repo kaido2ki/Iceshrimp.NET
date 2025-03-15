@@ -35,13 +35,13 @@ else
     <PageTitle>@@@_user.Username - @_instanceName</PageTitle>
     <HeadContent>
         <meta name="twitter:card" content="summary">
-        <meta name="og:site_name" content="@_instanceName">
-        <meta name="og:title" content="@@@_user.Username">
+        <meta property="og:site_name" content="@_instanceName">
+        <meta property="og:title" content="@@@_user.Username">
         @if (_user.Bio is { } bio)
         {
-            <meta name="og:description" content="@bio">
+            <meta property="og:description" content="@bio">
         }
-        <meta name="og:image" content="@_user.AvatarUrl">
+        <meta property="og:image" content="@_user.AvatarUrl">
         <link rel="alternate" type="application/activity+json" href="@_user.Uri">
         <VersionedLink rel="stylesheet" href="/css/public-preview.css"/>
     </HeadContent>
