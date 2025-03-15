@@ -51,14 +51,14 @@ public partial class NotePreview(
 			             note.Renote?.GetPublicUriOrNull(config.Value) ??
 			             throw new Exception("Note is remote but has no uri");
 
-			Context.Response.Redirect(target, permanent: true);
+			Redirect(target);
 			return;
 		}
 
 		if (note is { User.Host: not null })
 		{
 			var target = note.Url ?? note.Uri ?? throw new Exception("Note is remote but has no uri");
-			Context.Response.Redirect(target, permanent: true);
+			Redirect(target);
 			return;
 		}
 

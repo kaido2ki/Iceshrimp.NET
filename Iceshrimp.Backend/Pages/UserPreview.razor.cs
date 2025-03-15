@@ -54,7 +54,7 @@ public partial class UserPreview(
 		if (user is { IsRemoteUser: true })
 		{
 			var target = user.UserProfile?.Url ?? user.Uri ?? throw new Exception("User is remote but has no uri");
-			Context.Response.Redirect(target, permanent: true);
+			Redirect(target);
 			return;
 		}
 
