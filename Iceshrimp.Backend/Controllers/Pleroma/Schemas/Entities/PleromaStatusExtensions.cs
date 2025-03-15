@@ -7,4 +7,5 @@ public class PleromaStatusExtensions
 {
 	[J("emoji_reactions")] public required List<ReactionEntity> Reactions      { get; set; }
 	[J("conversation_id")] public required string               ConversationId { get; set; }
+	[J("local")]           public required bool                 LocalOnly      { get; set; }
 }

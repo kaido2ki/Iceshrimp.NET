@@ -205,7 +205,12 @@ public class NoteRenderer(
 			Reactions        = reactions,
 			Tags             = tags,
 			Filtered         = filterResult,
-			Pleroma          = new PleromaStatusExtensions { Reactions = reactions, ConversationId = note.ThreadId }
+			Pleroma          = new PleromaStatusExtensions
+			{
+				LocalOnly      = note.LocalOnly,
+				Reactions      = reactions,
+				ConversationId = note.ThreadId
+			}
 		};
 
 		return res;
