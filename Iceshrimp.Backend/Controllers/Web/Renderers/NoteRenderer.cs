@@ -90,6 +90,7 @@ public class NoteRenderer(
 			Text        = note.Text,
 			Cw          = note.Cw,
 			Visibility  = (NoteVisibility)note.Visibility,
+			LocalOnly   = note.LocalOnly,
 			User        = noteUser,
 			Attachments = attachments.ToList(),
 			Reactions   = reactions.ToList(),
