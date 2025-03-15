@@ -192,6 +192,7 @@ public class UserService(
 			FollowersUri        = actor.Followers?.Id,
 			Uri                 = actor.Id,
 			IsCat               = actor.IsCat ?? false,
+			SpeakAsCat          = actor.SpeakAsCat ?? actor.IsCat ?? false,
 			Featured            = actor.Featured?.Id,
 			SplitDomainResolved = true,
 			//TODO: FollowersCount
@@ -308,6 +309,7 @@ public class UserService(
 		user.IsExplorable  = actor.IsDiscoverable ?? false;
 		user.FollowersUri  = actor.Followers?.Id;
 		user.IsCat         = actor.IsCat ?? false;
+		user.SpeakAsCat    = actor.SpeakAsCat ?? actor.IsCat ?? false;
 		user.Featured      = actor.Featured?.Id;
 
 		var emoji = await emojiSvc.ProcessEmojiAsync(actor.Tags?.OfType<ASEmoji>().ToList(),

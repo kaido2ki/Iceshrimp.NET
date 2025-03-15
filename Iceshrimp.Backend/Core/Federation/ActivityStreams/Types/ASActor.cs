@@ -56,6 +56,10 @@ public class ASActor : ASObjectWithId
 	[JC(typeof(VC))]
 	public bool? IsCat { get; set; }
 
+	[J("https://joinfirefish.org/ns#speakAsCat")]
+	[JC(typeof(VC))]
+	public bool? SpeakAsCat { get; set; }
+
 	[J("http://www.w3.org/2006/vcard/ns#Address")]
 	[JC(typeof(VC))]
 	public string? Location { get; set; }

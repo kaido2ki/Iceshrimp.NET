@@ -110,6 +110,7 @@ public class UserRenderer(
 			Summary          = summary,
 			MkSummary        = profile?.Description,
 			IsCat            = user.IsCat,
+			SpeakAsCat       = user.SpeakAsCat,
 			IsDiscoverable   = user.IsExplorable,
 			IsLocked         = user.IsLocked,
 			Location         = profile?.Location,

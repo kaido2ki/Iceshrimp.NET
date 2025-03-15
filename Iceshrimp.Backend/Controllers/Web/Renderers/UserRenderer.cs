@@ -42,7 +42,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			MovedTo         = user.MovedToUri,
 			IsBot           = user.IsBot,
 			IsCat           = user.IsCat,
-			SpeakAsCat      = user.Host != null ? user.IsCat : user is { IsCat: true, SpeakAsCat: true }
+			SpeakAsCat      = user is { IsCat: true, SpeakAsCat: true }
 		};
 	}
 
