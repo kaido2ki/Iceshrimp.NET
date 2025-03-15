@@ -27,7 +27,7 @@ public class ReportService(
 		await deliverSvc.DeliverToAsync(activity, actor, inbox);
 	}
 
-	public async Task CreateReportAsync(User reporter, User target, IEnumerable<Note> notes, string comment)
+	public async Task<Report> CreateReportAsync(User reporter, User target, IEnumerable<Note> notes, string comment)
 	{
 		var report = new Report
 		{
@@ -43,5 +43,7 @@ public class ReportService(
 
 		db.Add(report);
 		await db.SaveChangesAsync();
+		await db.ReloadEntityRecursivelyAsync(report);
+		return report;
 	}
 }
