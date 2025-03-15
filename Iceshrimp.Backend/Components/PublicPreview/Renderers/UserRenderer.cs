@@ -32,6 +32,7 @@ public class UserRenderer(
 			Id             = user.Id,
 			Username       = user.Username,
 			Host           = user.Host ?? instance.Value.AccountDomain,
+			Uri            = user.GetUriOrPublicUri(instance.Value),
 			Url            = user.UserProfile?.Url ?? user.Uri ?? user.PublicUrlPath,
 			AvatarUrl      = user.GetAvatarUrl(instance.Value),
 			BannerUrl      = user.GetBannerUrl(instance.Value),

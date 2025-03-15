@@ -11,6 +11,7 @@ public class PreviewUser
 	public required string        Username;
 	public required string        Host;
 	public required string        Url;
+	public required string        Uri;
 	public required string        AvatarUrl;
 	public required string?       BannerUrl;
 	public required string?       MovedToUri;

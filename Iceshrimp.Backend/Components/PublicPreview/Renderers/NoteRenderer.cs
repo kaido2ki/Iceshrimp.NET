@@ -48,6 +48,7 @@ public class NoteRenderer(
 			Text = renderedText?.Html,
 			Cw = note.Cw,
 			RawText = note.Text,
+			Uri = note.Uri ?? note.GetPublicUri(instance.Value),
 			QuoteUrl = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(instance.Value),
 			QuoteInaccessible = note.Renote?.VisibilityIsPublicOrHome == false,
 			Attachments = attachments[note.Id]?.Where(p => !inlineMediaUrls.Contains(p.Url)).ToList(),

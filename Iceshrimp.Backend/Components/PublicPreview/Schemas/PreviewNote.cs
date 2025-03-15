@@ -8,6 +8,7 @@ public class PreviewNote
 	public required string?                  RawText;
 	public required MarkupString?            Text;
 	public required string?                  Cw;
+	public required string?                  Uri;
 	public required string?                  QuoteUrl;
 	public required bool                     QuoteInaccessible;
 	public required List<PreviewAttachment>? Attachments;
