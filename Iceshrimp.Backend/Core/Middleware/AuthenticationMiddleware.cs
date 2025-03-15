@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
+using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -13,7 +14,8 @@ namespace Iceshrimp.Backend.Core.Middleware;
 public class AuthenticationMiddleware(
 	DatabaseContext db,
 	UserService userSvc,
-	MfmConverter mfmConverter
+	MfmConverter mfmConverter,
+	NoteRenderer mastoNoteRenderer
 ) : ConditionalMiddleware<AuthenticateAttribute>, IMiddlewareService
 {
 	public static ServiceLifetime Lifetime => ServiceLifetime.Scoped;
@@ -80,7 +82,8 @@ public class AuthenticationMiddleware(
 			ctx.SetOauthToken(oauthToken);
 
 			mfmConverter.SupportsHtmlFormatting.Value = oauthToken.SupportsHtmlFormatting;
-			mfmConverter.SupportsInlineMedia.Value = oauthToken.SupportsInlineMedia;
+			mfmConverter.SupportsInlineMedia.Value    = oauthToken.SupportsInlineMedia;
+			mastoNoteRenderer.IsPleroma               = oauthToken.IsPleroma;
 		}
 		else
 		{

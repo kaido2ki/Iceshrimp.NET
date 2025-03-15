@@ -23,6 +23,8 @@ public class NoteRenderer(
 	AttachmentRenderer attachmentRenderer
 ) : IScopedService
 {
+	public bool IsPleroma;
+
 	private static readonly FilterResultEntity InaccessibleFilter = new()
 	{
 		Filter = new FilterEntity
@@ -170,6 +172,8 @@ public class NoteRenderer(
 			? (data?.Polls ?? await GetPollsAsync([note], user)).FirstOrDefault(p => p.Id == note.Id)
 			: null;
 
+		var visibility = IsPleroma && note.LocalOnly ? "local" : StatusEntity.EncodeVisibility(note.Visibility);
+
 		var res = new StatusEntity
 		{
 			Id               = note.Id,
@@ -194,7 +198,7 @@ public class NoteRenderer(
 			IsMuted          = muted,
 			IsSensitive      = sensitive,
 			ContentWarning   = cw ?? "",
-			Visibility       = StatusEntity.EncodeVisibility(note.Visibility),
+			Visibility       = visibility,
 			Content          = content,
 			Text             = text,
 			Mentions         = mentions,
