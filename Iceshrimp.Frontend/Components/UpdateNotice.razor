@@ -1,0 +1,90 @@
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject UpdateService                  UpdateSvc;
+@inject IJSRuntime                     Js;
+@inject IStringLocalizer<Localization> Loc;
+@inject NavigationManager              Nav;
+@implements IDisposable
+
+<dialog class="dialog" @ref="Dialog">
+    <div class="notice">
+    @Loc["Update required!"]
+    <div class="version">
+        <span class="name">Iceshrimp.NET</span>
+        <span class="value">
+            <code>@UpdateSvc.BackendVersion?.Version</code>
+        </span>
+        <span class="name">Codename</span>
+        <span class="value">
+            <code>@UpdateSvc.BackendVersion?.Codename</code>
+        </span>
+        @if (UpdateSvc.BackendVersion?.CommitHash != null)
+        {
+            <span class="name">Commit</span>
+            <span class="value">
+                <code>@UpdateSvc.BackendVersion?.CommitHash</code>
+            </span>
+        }
+    </div>
+    <StateButton @ref="UpdateButton" OnClick="SwitchVersion" ExtraClasses="button">
+        <Success>@Loc["Reloading..."]</Success>
+        <Initial>@Loc["Switch to new version"]</Initial>
+        <Loading>@Loc["Update loading"]<LoadingSpinner/>
+        </Loading>
+        <Failed>@Loc["Failed to install update"]</Failed>
+    </StateButton>
+    </div>
+</dialog>
+
+@code {
+    private ElementReference   Dialog { get; set; }
+    private IJSObjectReference _module = null!;
+    private StateButton        UpdateButton { get; set; } = null!;
+
+    private void OnUpdateStatusChange(object? _, UpdateService.UpdateStates newState)
+    {
+        if (newState != UpdateService.UpdateStates.NoUpdate)
+        {
+            OpenDialog();
+        }
+
+        if (newState == UpdateService.UpdateStates.UpdateInstalling) UpdateButton.State = StateButton.StateEnum.Loading;
+        if (newState == UpdateService.UpdateStates.UpdateInstalled) UpdateButton.State  = StateButton.StateEnum.Initial;
+        StateHasChanged();
+    }
+
+    private void CloseDialog()
+    {
+        var module = (IJSInProcessObjectReference)_module;
+        module.InvokeVoid("closeDialog", Dialog);
+    }
+
+    private void OpenDialog()
+    {
+        var module = (IJSInProcessObjectReference)_module;
+        module.InvokeVoid("openDialog", Dialog);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                           "./Components/UpdateNotice.razor.js");
+        UpdateSvc.UpdateStatusEvent += OnUpdateStatusChange;
+        await UpdateSvc.ServiceWorkerUpdateAsync();
+    }
+
+    public void Dispose()
+    {
+        UpdateSvc.UpdateStatusEvent -= OnUpdateStatusChange;
+    }
+
+    private async Task SwitchVersion()
+    {
+        if (UpdateSvc.UpdateState == UpdateService.UpdateStates.UpdateInstalled)
+        {
+            await UpdateSvc.ServiceWorkerSkipWaitingAsync();
+            Nav.NavigateTo("/", true);
+        }
+    }
+}

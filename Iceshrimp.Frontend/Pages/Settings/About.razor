@@ -19,6 +19,8 @@
 @inject NavigationManager              Nav;
 @inject ILogger<About>                 Logger;
 
+@implements IDisposable;
+
 <HeadTitle Text="@Loc["About"]"/>
 
 <SectionContent SectionName="top-bar">
@@ -50,8 +52,14 @@
         </span>
     </div>
     <div class="update">
-        <button class="button" @onclick="@CheckUpdate">@Loc["Check for updates"]</button>
-        @if (_updateAvailable == CheckState.True)
+        <StateButton OnClick="@CheckUpdate" @ref="UpdateButton" ExtraClasses="button">
+            <Success>@Loc["No Update available"]</Success>
+            <Initial>@Loc["Check for updates"]</Initial>
+            <Loading>@Loc["Update Loading"]<LoadingSpinner/>
+            </Loading>
+            <Failed>@Loc["Failed to check for updates"]</Failed>
+        </StateButton>
+        @if (_updateState == UpdateState.Installed)
         {
             <div>New version!</div>
             <div class="version">
@@ -72,18 +80,10 @@
                 }
             </div>
             <button class="button" @onclick="@SkipWaiting">@Loc["Load new version"]</button>
-            @if (_skipWaitingRes == CheckState.Error)
-            {
-                <div>@Loc["Something went wrong while loading the update, please check the logs."]</div>
-            }
         }
-        @if (_updateAvailable == CheckState.False)
+        @if (_updateState == UpdateState.NoUpdate)
         {
             <div>@Loc["Already on the newest version!"]</div>
-        }
-        @if (_updateAvailable == CheckState.Error)
-        {
-            <div>@Loc["Failed to check for updates."]</div>
         }
 
     </div>
@@ -98,25 +98,54 @@
 </div>
 
 @code {
-    private IJSInProcessObjectReference _module          = null!;
-    private CheckState                  _updateAvailable = CheckState.Unknown;
-    private CheckState                  _skipWaitingRes  = CheckState.Unknown;
+    private IJSInProcessObjectReference _module      = null!;
+    private UpdateState                 _updateState = UpdateState.Unknown;
     private VersionResponse?            _newVersion;
+    private StateButton                 UpdateButton { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
-        _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
+        _module                     =  (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
+        UpdateSvc.UpdateStatusEvent += OnUpdateStatusChange;
+        UpdateStatusSwitch(UpdateSvc.UpdateState);
         await CheckUpdate();
     }
 
-    private enum CheckState
+    private enum UpdateState
     {
         Unknown,
-        True,
-        False,
-        Error
+        Available,
+        Installing,
+        Installed,
+        NoUpdate
     }
 
+    private void OnUpdateStatusChange(object? _, UpdateService.UpdateStates newState)
+    {
+        UpdateStatusSwitch(newState);
+        StateHasChanged();
+    }
+
+    private void UpdateStatusSwitch(UpdateService.UpdateStates newState)
+    {
+        switch (newState)
+        {
+            case UpdateService.UpdateStates.UpdateInstalled:
+                _updateState = UpdateState.Installed;
+                break;
+            case UpdateService.UpdateStates.UpdateInstalling:
+                _updateState       = UpdateState.Installing;
+                UpdateButton.State = StateButton.StateEnum.Loading;
+                break;
+            case UpdateService.UpdateStates.UpdateAvailable:
+                _updateState = UpdateState.Available;
+                break;
+            case UpdateService.UpdateStates.NoUpdate:
+                _updateState       = UpdateState.NoUpdate;
+                UpdateButton.State = StateButton.StateEnum.Success;
+                break;
+        }
+    }
     private async Task CheckUpdate()
     {
         try
@@ -126,20 +155,17 @@
         catch (Exception e)
         {
             Logger.LogError(e, "Failed to check for updates.");
-            _updateAvailable = CheckState.Error;
             return;
         }
 
-        var res = await UpdateSvc.ServiceWorkerCheckWaitingAsync();
-        _updateAvailable = res ? CheckState.True : CheckState.False;
-        _newVersion      = UpdateSvc.BackendVersion;
+        _newVersion = UpdateSvc.BackendVersion;
         StateHasChanged();
     }
 
     private async Task SkipWaiting()
     {
         var res = await UpdateSvc.ServiceWorkerSkipWaitingAsync();
-        _skipWaitingRes = res ? CheckState.True : CheckState.Error;
+        if (!res) return;
         if (res)
         {
             Nav.NavigateTo("/", true);
@@ -150,5 +176,10 @@
     {
         var logBytes = LogSvc.GetLogs().SelectMany(p => Encoding.UTF8.GetBytes(p)).ToArray();
         _module.InvokeVoid("DownloadFile", "log.txt", "text/plain", logBytes);
+    }
+
+    public void Dispose()
+    {
+        UpdateSvc.UpdateStatusEvent -= OnUpdateStatusChange;
     }
 }

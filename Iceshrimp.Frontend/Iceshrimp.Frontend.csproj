@@ -74,4 +74,9 @@
       <Folder Include="Core\Services\TimelineStore\" />
     </ItemGroup>
 
+    <PropertyGroup>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+
 </Project>

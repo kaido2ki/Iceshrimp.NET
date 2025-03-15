@@ -1,7 +1,6 @@
-using Iceshrimp.Frontend.Components;
+using System.Diagnostics;
 using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Iceshrimp.Frontend.Core.Services;
@@ -10,72 +9,115 @@ internal class UpdateService
 {
 	private readonly ApiService                     _api;
 	private readonly ILogger<UpdateService>         _logger;
-	private readonly GlobalComponentSvc             _globalComponentSvc;
 	private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
-	private readonly NavigationManager              _nav;
+	private          UpdateStates                   _updateState;
+
+	public EventHandler<UpdateStates>? UpdateStatusEvent { get; set; }
+
+	public UpdateStates UpdateState
+	{
+		get => _updateState;
+		private set
+		{
+			UpdateStatusEvent?.Invoke(this, value);
+			_logger.LogInformation($"Invoked Update Status Event: {value}");
+			_updateState = value;
+		}
+	}
 
 	private VersionInfo      FrontendVersion { get; } = VersionHelpers.VersionInfo.Value;
 	public  VersionResponse? BackendVersion  { get; private set; }
 
 	// ReSharper disable once UnusedAutoPropertyAccessor.Local
-	private Timer Timer { get; set; }
+	private Timer  CheckUpdateTimer  { get; set; }
+	private Timer? CheckWaitingTimer { get; set; }
 
 	public UpdateService(
-		ApiService api, ILogger<UpdateService> logger, GlobalComponentSvc globalComponentSvc, IJSRuntime js,
-		NavigationManager nav
+		ApiService api, ILogger<UpdateService> logger, IJSRuntime js
 	)
 	{
-		_api                = api;
-		_logger             = logger;
-		_globalComponentSvc = globalComponentSvc;
-		_nav                = nav;
+		_api    = api;
+		_logger = logger;
 
 		_moduleTask = new Lazy<Task<IJSObjectReference>>(() => js.InvokeAsync<IJSObjectReference>(
-		                                                          "import",
-		                                                          "./Core/Services/UpdateService.cs.js")
-		                                                         .AsTask());
-		Timer = new Timer(Callback, null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
-		_     = RegisterUpdateCallbackAsync();
+																	  "import",
+																	  "./Core/Services/UpdateService.cs.js")
+																 .AsTask());
+		CheckUpdateTimer = new Timer(UpdateCheckCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(60));
+		_                = RegisterSwUpdateCallbackAsync();
 	}
 
-	private async Task RegisterUpdateCallbackAsync()
+	private async Task RegisterSwUpdateCallbackAsync()
 	{
 		var module = await _moduleTask.Value;
 		var objRef = DotNetObjectReference.Create(this);
-		await module.InvokeAsync<string>("RegisterUpdateCallback", objRef);
+		await module.InvokeAsync<string>("RegisterSWUpdateCallback", objRef);
 	}
 
 	[JSInvokable]
-	public void OnUpdateFound()
+	public void NewServiceWorker()
 	{
-		var banner = new BannerContainer.Banner
-		{
-			Text = "New version available", OnTap = () => { _nav.NavigateTo("/settings/about"); }
-		};
-		_globalComponentSvc.BannerComponent?.AddBanner(banner);
+		UpdateState       = UpdateStates.UpdateInstalling;
+		CheckWaitingTimer = new Timer(CheckWaitingCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(2));
 	}
 
-	public async Task<bool> ServiceWorkerCheckWaitingAsync()
+	private async Task ServiceWorkerCheckWaitingAsync()
 	{
-		var module = await _moduleTask.Value;
-		return await module.InvokeAsync<bool>("ServiceWorkerCheckWaiting");
+		var res = await ServiceWorkerCheckStateAsync();
+		if (res == ServiceWorkerState.Waiting)
+		{
+			CheckWaitingTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+			CheckWaitingTimer?.Dispose();
+			UpdateState = UpdateStates.UpdateInstalled;
+		}
+	}
+
+	private void UpdateCheckCallback(object? caller)
+	{
+		_ = CheckVersionAsync();
+	}
+
+	private void CheckWaitingCallback(object? caller)
+	{
+		_ = ServiceWorkerCheckWaitingAsync();
 	}
 
 	public async Task ServiceWorkerUpdateAsync()
 	{
 		var module = await _moduleTask.Value;
-		await module.InvokeVoidAsync("ServiceWorkerUpdate");
+		var res    = await module.InvokeAsync<string?>("ServiceWorkerUpdate");
+		if (res is null) return;
+		UpdateState = res switch
+		{
+			"installing" => UpdateStates.UpdateInstalling,
+			"waiting"    => UpdateStates.UpdateInstalled,
+			"active"     => UpdateStates.NoUpdate,
+			null         => UpdateStates.Error,
+			_            => throw new UnreachableException()
+		};
+	}
+
+	private async Task<ServiceWorkerState> ServiceWorkerCheckStateAsync()
+	{
+		var module = await _moduleTask.Value;
+		var res    = await module.InvokeAsync<string>("ServiceWorkerCheckRegistration");
+		_logger.LogTrace($"aService worker state: {res}");
+		return res switch
+		{
+			"installing" => ServiceWorkerState.Installing,
+			"waiting"    => ServiceWorkerState.Waiting,
+			"active"     => ServiceWorkerState.Active,
+			null         => ServiceWorkerState.Error,
+			_            => throw new UnreachableException()
+		};
 	}
 
 	public async Task<bool> ServiceWorkerSkipWaitingAsync()
 	{
 		var module = await _moduleTask.Value;
-		return await module.InvokeAsync<bool>("ServiceWorkerSkipWaiting");
-	}
-
-	private void Callback(object? caller)
-	{
-		_ = CheckVersionAsync();
+		var res = await module.InvokeAsync<bool?>("ServiceWorkerSkipWaiting");
+		if (res is null) throw new Exception("Error occured while updating service worker.");
+		return (bool)res;
 	}
 
 	private async Task<VersionResponse?> GetVersionAsync()
@@ -100,7 +142,25 @@ internal class UpdateService
 		BackendVersion = version;
 		if (version.Version != FrontendVersion.Version)
 		{
+			UpdateState = UpdateStates.UpdateAvailable;
 			await ServiceWorkerUpdateAsync();
 		}
+	}
+
+	internal enum UpdateStates
+	{
+		NoUpdate,
+		UpdateAvailable,
+		UpdateInstalling,
+		UpdateInstalled,
+		Error
+	}
+
+	private enum ServiceWorkerState
+	{
+		Installing,
+		Waiting,
+		Active,
+		Error
 	}
 }
