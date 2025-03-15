@@ -54,6 +54,10 @@ async function purgeUser(id, target) {
     await confirm(target, () => callApiMethod(`/api/iceshrimp/moderation/users/${id}/purge`));
 }
 
+async function runCronTask(id, target) {
+    await confirm(target, () => callApiMethod(`/api/iceshrimp/admin/tasks/${id}/run`));
+}
+
 async function generateInvite() {
     const res = await callApiMethod(`/api/iceshrimp/admin/invites/generate`);
     const json = await res.json();

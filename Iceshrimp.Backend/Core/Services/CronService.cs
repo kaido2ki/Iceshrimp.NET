@@ -6,16 +6,27 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class CronService(IServiceScopeFactory serviceScopeFactory) : BackgroundService
 {
+	public ICronTask[] Tasks { get; private set; } = [];
+
+	public async Task RunCronTaskAsync(ICronTask task)
+	{
+		await using var scope = serviceScopeFactory.CreateAsyncScope();
+		await task.InvokeAsync(scope.ServiceProvider);
+	}
+
 	protected override Task ExecuteAsync(CancellationToken token)
 	{
-		var tasks = PluginLoader
+		Tasks = PluginLoader
 		            .Assemblies.Prepend(Assembly.GetExecutingAssembly())
 		            .SelectMany(AssemblyLoader.GetImplementationsOfInterface<ICronTask>)
+		            .OrderBy(p => p.AssemblyQualifiedName)
+		            .ThenBy(p => p.Name)
 		            .Select(p => Activator.CreateInstance(p) as ICronTask)
 		            .Where(p => p != null)
-		            .Cast<ICronTask>();
+		            .Cast<ICronTask>()
+		            .ToArray();
 
-		foreach (var task in tasks)
+		foreach (var task in Tasks)
 		{
 			ICronTrigger trigger = task.Type switch
 			{
@@ -28,8 +39,7 @@ public class CronService(IServiceScopeFactory serviceScopeFactory) : BackgroundS
 			{
 				try
 				{
-					await using var scope = serviceScopeFactory.CreateAsyncScope();
-					await task.InvokeAsync(scope.ServiceProvider);
+					await RunCronTaskAsync(task);
 				}
 				catch
 				{

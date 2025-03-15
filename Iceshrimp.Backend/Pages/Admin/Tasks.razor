@@ -1,0 +1,37 @@
+@page "/admin/tasks"
+@using Iceshrimp.Backend.Components.Admin
+@using Iceshrimp.Backend.Core.Extensions
+@using Iceshrimp.Backend.Core.Services
+@inherits AdminComponentBase
+@inject CronService CronSvc
+<AdminPageHeader Title="Cron tasks"/>
+
+<table>
+    <thead>
+    <th>Name</th>
+    <th>Assembly</th>
+    <th>Schedule</th>
+    <th>Actions</th>
+    </thead>
+    <tbody>
+    @foreach (var task in CronSvc.Tasks)
+    {
+        var type = task.GetType();
+        var schedule = task.Type switch
+        {
+            CronTaskType.Daily when task.Trigger == TimeSpan.Zero => "daily at midnight",
+            //
+            CronTaskType.Daily    => $"daily at {((int)task.Trigger.TotalHours).ToString().PadLeft(2, '0')}:{((int)task.Trigger.TotalMinutes).ToString().PadLeft(2, '0')}",
+            CronTaskType.Interval => $"every {task.Trigger.ToDisplayString(singleNumber: false)}",
+            _                     => throw new ArgumentOutOfRangeException()
+        };
+
+        <tr>
+            <td>@type.Name</td>
+            <td>@type.Assembly.GetName().Name</td>
+            <td>@schedule</td>
+            <td><a class="fake-link" onclick="runCronTask('@type.FullName', event.target)">Run now</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

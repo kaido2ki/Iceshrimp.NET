@@ -298,6 +298,17 @@ public class AdminController(
 		await new MediaCleanupTask().InvokeAsync(scope.ServiceProvider);
 	}
 
+	[HttpPost("tasks/{id}/run")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public void RunCronTask([FromServices] CronService cronSvc, string id)
+	{
+		var task = cronSvc.Tasks.FirstOrDefault(p => p.GetType().FullName == id)
+		           ?? throw GracefulException.NotFound("Task not found");
+
+		_ = cronSvc.RunCronTaskAsync(task);
+	}
+
 	[HttpGet("policy")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<string>> GetAvailablePolicies() => await policySvc.GetAvailablePoliciesAsync();
