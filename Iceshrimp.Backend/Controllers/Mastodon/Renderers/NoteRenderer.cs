@@ -174,6 +174,15 @@ public class NoteRenderer(
 
 		var visibility = IsPleroma && note.LocalOnly ? "local" : StatusEntity.EncodeVisibility(note.Visibility);
 
+		var pleromaExtensions = IsPleroma
+			? new PleromaStatusExtensions
+			{
+				LocalOnly      = note.LocalOnly,
+				Reactions      = reactions,
+				ConversationId = note.ThreadId
+			}
+			: null;
+
 		var res = new StatusEntity
 		{
 			Id               = note.Id,
@@ -209,12 +218,7 @@ public class NoteRenderer(
 			Reactions        = reactions,
 			Tags             = tags,
 			Filtered         = filterResult,
-			Pleroma          = new PleromaStatusExtensions
-			{
-				LocalOnly      = note.LocalOnly,
-				Reactions      = reactions,
-				ConversationId = note.ThreadId
-			}
+			Pleroma          = pleromaExtensions
 		};
 
 		return res;

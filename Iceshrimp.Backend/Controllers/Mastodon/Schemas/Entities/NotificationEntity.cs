@@ -1,21 +1,25 @@
+using System.Text.Json.Serialization;
 using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Shared.Helpers;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 using static Iceshrimp.Backend.Core.Database.Tables.Notification;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 public class NotificationEntity : IIdentifiable
 {
-	[J("created_at")] public required string                        CreatedAt { get; set; }
-	[J("type")]       public required string                        Type      { get; set; }
-	[J("account")]    public required AccountEntity                 Notifier  { get; set; }
-	[J("status")]     public required StatusEntity?                 Note      { get; set; }
-	[J("id")]         public required string                        Id        { get; set; }
-	[J("pleroma")]    public required PleromaNotificationExtensions Pleroma   { get; set; }
-	[J("emoji")]      public          string?                       Emoji     { get; set; }
-	[J("emoji_url")]  public          string?                       EmojiUrl  { get; set; }
+	[J("created_at")] public required string                         CreatedAt { get; set; }
+	[J("type")]       public required string                         Type      { get; set; }
+	[J("account")]    public required AccountEntity                  Notifier  { get; set; }
+	[J("status")]     public required StatusEntity?                  Note      { get; set; }
+	[J("id")]         public required string                         Id        { get; set; }
+	[J("emoji")]      public          string?                        Emoji     { get; set; }
+	[J("emoji_url")]  public          string?                        EmojiUrl  { get; set; }
+
+	[J("pleroma")] [JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public required PleromaNotificationExtensions? Pleroma   { get; set; }
 
 	public static string EncodeType(NotificationType type, bool isPleroma)
 	{

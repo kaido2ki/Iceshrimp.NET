@@ -62,7 +62,7 @@ public class NotificationRenderer(
 			CreatedAt = notification.CreatedAt.ToStringIso8601Like(),
 			Emoji     = notification.Reaction,
 			EmojiUrl  = emojiUrl,
-			Pleroma   = new PleromaNotificationExtensions { IsSeen = notification.IsRead }
+			Pleroma   = noteRenderer.IsPleroma ? new PleromaNotificationExtensions { IsSeen = notification.IsRead } : null
 		};
 
 		return res;

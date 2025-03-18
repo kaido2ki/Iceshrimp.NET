@@ -56,7 +56,8 @@ public class StatusEntity : IIdentifiable, ICloneable
 	public                    object Clone() => MemberwiseClone();
 	[J("id")] public required string Id      { get; set; }
 
-	[J("pleroma")] public required PleromaStatusExtensions Pleroma { get; set; }
+	[J("pleroma")] [JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public required PleromaStatusExtensions? Pleroma { get; set; }
 
 	public static string EncodeVisibility(Note.NoteVisibility visibility)
 	{
