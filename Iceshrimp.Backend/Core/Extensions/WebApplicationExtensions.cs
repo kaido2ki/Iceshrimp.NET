@@ -62,6 +62,9 @@ public static class WebApplicationExtensions
 		app.MapScalarApiReference("/scalar", options =>
 		{
 			options.WithTitle("Iceshrimp API documentation")
+			       .AddDocument("iceshrimp", "Iceshrimp.NET")
+			       .AddDocument("federation", "Federation")
+			       .AddDocument("mastodon", "Mastodon")
 			       .WithOpenApiRoutePattern("/openapi/{documentName}.json")
 			       .WithModels(false)
 			       .WithCustomCss("""

@@ -1,5 +1,4 @@
 @page "/openapi"
-@attribute [Route("/scalar")]
 @using Microsoft.Extensions.Options
 @using Swashbuckle.AspNetCore.SwaggerGen
 @inject IOptions<SwaggerGenOptions> Options;
@@ -18,7 +17,7 @@
             <td>
                 <a href="/openapi/@(doc.Key).json">JSON</a> -
                 <a href="/swagger/index.html?urls.primaryName=@(doc.Value.Title)">SwaggerUI</a> -
-                <a href="/scalar/@(doc.Key)">ScalarUI</a>
+                <a href="/scalar/?api=@(doc.Key)">ScalarUI</a>
             </td>
         </tr>
     }
