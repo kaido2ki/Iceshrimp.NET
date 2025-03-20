@@ -98,5 +98,5 @@ public class InstancePollConfiguration
 
 public class InstanceReactionConfiguration
 {
-	[J("max_reactions")] public int MaxOptions => 1;
+	[J("max_reactions")] public int MaxOptions => 100;
 }
