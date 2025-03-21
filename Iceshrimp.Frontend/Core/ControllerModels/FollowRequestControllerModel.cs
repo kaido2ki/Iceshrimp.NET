@@ -9,6 +9,9 @@ internal class FollowRequestControllerModel(ApiClient api)
 	public Task<List<FollowRequestResponse>> GetFollowRequestsAsync(PaginationQuery pq) =>
 		api.CallAsync<List<FollowRequestResponse>>(HttpMethod.Get, "/follow_requests", pq);
 
+	public Task<List<FollowRequestResponse>> GetOutgoingFollowRequestsAsync(PaginationQuery pq) =>
+		api.CallAsync<List<FollowRequestResponse>>(HttpMethod.Get, "/follow_requests/outgoing", pq);
+
 	public Task<bool> AcceptFollowRequestAsync(string id) =>
 		api.CallNullableAsync(HttpMethod.Post, $"/follow_requests/{id}/accept");
 

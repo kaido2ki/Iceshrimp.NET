@@ -12,7 +12,7 @@
     <div class="scroller">
         @foreach (var el in FollowRequests)
         {
-            <FollowRequestEntry FollowRequest="el" OnDelete="Delete"/>
+            <FollowRequestEntry FollowRequest="el" OnDelete="Delete" Outgoing="Outgoing"/>
         }
         <ScrollEnd IntersectionChange="LoadMore" ManualLoad="LoadMore"/>
 
@@ -28,9 +28,10 @@
 }
 
 @code {
-    private List<FollowRequestResponse> FollowRequests { get; set; } = [];
-    private LoadState                   _init;
-    private string?                     _minId;
+    [Parameter] [EditorRequired] public required bool                        Outgoing       { get; set; }
+    private                                      List<FollowRequestResponse> FollowRequests { get; set; } = [];
+    private                                      LoadState                   _init;
+    private                                      string?                     _minId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -42,7 +43,7 @@
         try
         {
             var pq = new PaginationQuery { Limit = 20 };
-            FollowRequests = await Api.FollowRequests.GetFollowRequestsAsync(pq);
+            FollowRequests = Outgoing ? await Api.FollowRequests.GetOutgoingFollowRequestsAsync(pq) : await Api.FollowRequests.GetFollowRequestsAsync(pq);
             if (FollowRequests.Count == 0)
             {
                 _init = LoadState.Emtpy;
@@ -84,7 +85,7 @@
     private async Task LoadMore()
     {
         var pq  = new PaginationQuery { MaxId = _minId, Limit = 20 };
-        var res = await Api.FollowRequests.GetFollowRequestsAsync(pq);
+        var res = Outgoing ? await Api.FollowRequests.GetOutgoingFollowRequestsAsync(pq) : await Api.FollowRequests.GetFollowRequestsAsync(pq);
         if (res.Count > 0)
         {
             FollowRequests.AddRange(res);

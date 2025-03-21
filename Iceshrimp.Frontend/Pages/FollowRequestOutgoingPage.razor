@@ -1,4 +1,4 @@
-@page "/follow-requests"
+@page "/follow-requests/sent"
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Localization
@@ -8,18 +8,18 @@
 @attribute [Authorize]
 @inject IStringLocalizer<Localization> Loc;
 
-<HeadTitle Text="@Loc["Follow requests"]"/>
+<HeadTitle Text="@Loc["Sent follow requests"]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.HandWaving"></Icon>
-    @Loc["Follow requests"]
-    <a class="action btn" href="/follow-requests/sent">
-        <Icon Name="Icons.ArrowSquareOut"/>
-        <span>@Loc["Sent"]</span>
+    @Loc["Sent follow requests"]
+    <a class="action btn" href="/follow-requests">
+        <Icon Name="Icons.ArrowSquareIn"/>
+        <span>@Loc["Received"]</span>
     </a>
 </SectionContent>
 
-<FollowRequestList Outgoing="false"/>
+<FollowRequestList Outgoing="true"/>
 
 @code {
 }

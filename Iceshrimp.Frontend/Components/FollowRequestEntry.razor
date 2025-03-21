@@ -10,32 +10,46 @@
 
 <div class="follow-request-card">
     <UserProfileCard User="FollowRequest.User" ShowBio="false"></UserProfileCard>
-    <span class="date">@Loc["Received at {0}", FollowRequest.CreatedAt.ToString("G")]</span>
+    <span class="date">@Loc[Outgoing ? "Sent at {0}" : "Received at {0}", FollowRequest.CreatedAt.ToString("G")]</span>
     <div class="buttons">
-        @if (_followBack)
+        @if (Outgoing)
         {
-            <button @onclick="AcceptAndFollowBack" class="button accept">
-                <Icon Name="Icons.ArrowsLeftRight"/>@Loc["Accept and follow back"]
+            <button @onclick="Cancel" class="button decline">
+                <Icon Name="Icons.X"/>@Loc["Cancel"]
             </button>
         }
-        <button @onclick="Accept" class="button accept">
-            <Icon Name="Icons.Check"/>@Loc["Accept"]
-        </button>
-        <button @onclick="Reject" class="button decline">
-            <Icon Name="Icons.X"/>@Loc["Decline"]
-        </button>
+        else
+        {
+            @if (_followBack)
+            {
+                <button @onclick="AcceptAndFollowBack" class="button accept">
+                    <Icon Name="Icons.ArrowsLeftRight"/>@Loc["Accept and follow back"]
+                </button>
+            }
+
+            <button @onclick="Accept" class="button accept">
+                <Icon Name="Icons.Check"/>@Loc["Accept"]
+            </button>
+            <button @onclick="Reject" class="button decline">
+                <Icon Name="Icons.X"/>@Loc["Decline"]
+            </button>
+        }
     </div>
 </div>
 
 @code {
     [Parameter] [EditorRequired] public required FollowRequestResponse FollowRequest { get; set; }
     [Parameter] [EditorRequired] public required EventCallback<string> OnDelete      { get; set; }
+    [Parameter] [EditorRequired] public required bool                  Outgoing      { get; set; }
     private                                      bool                  _followBack = false;
 
     protected override async Task OnInitializedAsync()
     {
-        var profile                      = await Api.Users.GetUserProfileAsync(FollowRequest.User.Id);
-        if (profile != null) _followBack = profile.Relations == Relations.RequestedBy;
+        if (!Outgoing)
+        {
+            var profile                      = await Api.Users.GetUserProfileAsync(FollowRequest.User.Id);
+            if (profile != null) _followBack = profile.Relations == Relations.RequestedBy;
+        }
     }
 
     private async Task Accept()
@@ -54,6 +68,12 @@
     private async Task Reject()
     {
         await Api.FollowRequests.RejectFollowRequestAsync(FollowRequest.Id);
+        await OnDelete.InvokeAsync(FollowRequest.Id);
+    }
+
+    private async Task Cancel()
+    {
+        await Api.Users.UnfollowUserAsync(FollowRequest.User.Id);
         await OnDelete.InvokeAsync(FollowRequest.Id);
     }
 }
