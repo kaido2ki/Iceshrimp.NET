@@ -529,7 +529,7 @@
     {
         PastedText = (pastedText, "");
 
-        if (!new Url(pastedText).IsAbsolute)
+        if (NoteDraft.RenoteId != null || AttachedQuote != null || !new Url(pastedText).IsAbsolute)
         {
             await InsertPastedText();
             return;
