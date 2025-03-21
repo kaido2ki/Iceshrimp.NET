@@ -42,7 +42,8 @@ summary {
     .emoji-picker {
         top: unset;
         left: 0;
-        bottom: 0;
+        /*Display emoji picker above keyboard (currently only on Chrome)*/
+        bottom: env(keyboard-inset-height, 0);
         position: fixed;
         width: 100vw;
         max-width: 100vw;
