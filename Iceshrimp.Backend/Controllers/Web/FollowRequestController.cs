@@ -36,13 +36,37 @@ public class FollowRequestController(
 		                       .IncludeCommonProperties()
 		                       .Where(p => p.Followee == user)
 		                       .Paginate(pq, ControllerContext)
-		                       .Select(p => new { p.Id, p.Follower })
+		                       .Select(p => new { p.Id, p.Follower, p.CreatedAt })
 		                       .ToListAsync();
 
 		var users = await userRenderer.RenderManyAsync(requests.Select(p => p.Follower));
 		return requests.Select(p => new FollowRequestResponse
 		{
-			Id = p.Id, User = users.First(u => u.Id == p.Follower.Id)
+			Id        = p.Id,
+			User      = users.First(u => u.Id == p.Follower.Id),
+			CreatedAt = p.CreatedAt
+		});
+	}
+
+	[HttpGet("outgoing")]
+	[LinkPagination(20, 40)]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<FollowRequestResponse>> GetOutgoingFollowRequests(PaginationQuery pq)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var requests = await db.FollowRequests
+		                       .IncludeCommonProperties()
+		                       .Where(p => p.Follower == user)
+		                       .Paginate(pq, ControllerContext)
+		                       .Select(p => new { p.Id, p.Followee, p.CreatedAt })
+		                       .ToListAsync();
+
+		var users = await userRenderer.RenderManyAsync(requests.Select(p => p.Followee));
+		return requests.Select(p => new FollowRequestResponse
+		{
+			Id        = p.Id,
+			User      = users.First(u => u.Id == p.Followee.Id),
+			CreatedAt = p.CreatedAt
 		});
 	}
 
