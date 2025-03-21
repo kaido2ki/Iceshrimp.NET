@@ -10,6 +10,7 @@
 
 <div class="follow-request-card">
     <UserProfileCard User="FollowRequest.User" ShowBio="false"></UserProfileCard>
+    <span class="date">@Loc["Received at {0}", FollowRequest.CreatedAt.ToString("G")]</span>
     <div class="buttons">
         @if (_followBack)
         {
