@@ -102,12 +102,6 @@
                         @if (Profile != null && !Profile.Relations.HasFlag(Relations.Self))
                         {
                             <hr class="rule"/>
-                            @if (Profile != null && Profile.Relations.HasFlag(Relations.FollowedBy))
-                            {
-                                <MenuElement Icon="Icons.LinkBreak" OnSelect="RemoveFromFollowers" Danger>
-                                    <Text>@Loc["Remove follower"]</Text>
-                                </MenuElement>
-                            }
                             @if (Profile != null && Profile.Relations.HasFlag(Relations.Muting))
                             {
                                 <MenuElement Icon="Icons.Eye" OnSelect="Unmute">
@@ -119,19 +113,25 @@
                                 <MenuElement Icon="Icons.EyeSlash" OnSelect="Mute">
                                     <Text>@Loc["Mute"]</Text>
                                 </MenuElement>
-                                <MenuElement Icon="Icons.EyeSlash" OnSelect="TemporaryMute">
+                                <MenuElement Icon="Icons.Timer" OnSelect="TemporaryMute">
                                     <Text>@Loc["Temporary mute"]</Text>
+                                </MenuElement>
+                            }
+                            @if (Profile != null && Profile.Relations.HasFlag(Relations.FollowedBy))
+                            {
+                                <MenuElement Icon="Icons.LinkBreak" OnSelect="RemoveFromFollowers" Danger>
+                                    <Text>@Loc["Remove follower"]</Text>
                                 </MenuElement>
                             }
                             @if (Profile != null && Profile.Relations.HasFlag(Relations.Blocking))
                             {
-                                <MenuElement Icon="Icons.Prohibit" OnSelect="Unblock">
+                                <MenuElement Icon="Icons.Prohibit" OnSelect="Unblock" Danger>
                                     <Text>@Loc["Unblock"]</Text>
                                 </MenuElement>
                             }
                             else
                             {
-                                <MenuElement Icon="Icons.Prohibit" OnSelect="Block">
+                                <MenuElement Icon="Icons.Prohibit" OnSelect="Block" Danger>
                                     <Text>@Loc["Block"]</Text>
                                 </MenuElement>
                             }
