@@ -487,8 +487,15 @@
         UploadingFiles += e.FileCount;
         foreach (var file in e.GetMultipleFiles())
         {
-            var res = await ApiService.Drive.UploadFileAsync(file);
-            Attachments.Add(res);
+            try {
+                var res = await ApiService.Drive.UploadFileAsync(file);
+                Attachments.Add(res);
+            }
+            catch (IOException exception)
+            {
+                await GlobalComponentSvc.NoticeDialog?.Display(exception.Message, NoticeDialog.NoticeType.Error)!;
+            }
+
             UploadingFiles -= 1;
         }
 
