@@ -245,7 +245,7 @@
     }
 
     private bool SendingDisabled() =>
-        NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length) < 0 || UploadingFiles != 0 || NoteDraft.Poll != null && PollChoices.Count(p => !string.IsNullOrWhiteSpace(p.Value)) < 2;
+        NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length) < 0 || UploadingFiles != 0 || NoteDraft.Poll != null && PollChoices.Count(p => !string.IsNullOrWhiteSpace(p.Value)) < 2 || AttachedQuote != null && string.IsNullOrWhiteSpace(NoteDraft.Cw) && string.IsNullOrWhiteSpace(NoteDraft.Text) && Attachments.Count == 0 && NoteDraft.Poll == null;
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
