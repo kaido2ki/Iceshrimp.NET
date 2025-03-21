@@ -561,8 +561,7 @@
             return;
         }
 
-        // TODO: Add quote attachment
-        Console.WriteLine(PastedText?.Item2);
+        AttachedQuote = PastedText?.Item2;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
