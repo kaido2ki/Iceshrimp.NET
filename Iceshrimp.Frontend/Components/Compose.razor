@@ -205,6 +205,13 @@
     private int                      NoteLength      { get; set; }
     private bool                     SendLock        { get; set; } = false;
     private int                      UploadingFiles  { get; set; }
+    private string?                  AttachedQuote   { get; set; }
+    private List<Choice>             PollChoices     { get; set; } = [];
+    private string                   PollEntry       { get; set; } = "";
+    private PollExpire               PollExpires     { get; set; }
+    private DateTime                 PollExpireTime  { get; set; }
+    private int                      PollExpireLen   { get; set; }
+    private PollExpireAfter          PollExpiresAft  { get; set; }
     private (string, string)?        PastedText      { get; set; }
 
     private DotNetObjectReference<Compose> _objRef = null!;
