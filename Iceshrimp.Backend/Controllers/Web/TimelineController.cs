@@ -42,4 +42,94 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user,
 		                                          Filter.FilterContext.Home);
 	}
+
+	[HttpGet("local")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<NoteResponse>> GetLocalTimeline(PaginationQuery pq)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var notes = await db.Notes.IncludeCommonProperties()
+		                    .Where(p => p.UserHost == null)
+		                    .EnsureVisibleFor(user)
+		                    .FilterHidden(user, db)
+		                    .FilterMutedThreads(user, db)
+		                    .Paginate(pq, ControllerContext)
+		                    .PrecomputeVisibilities(user)
+		                    .ToListAsync();
+
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user,
+		                                          Filter.FilterContext.Public);
+	}
+
+	[HttpGet("social")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<NoteResponse>> GetSocialTimeline(PaginationQuery pq)
+	{
+		var user      = HttpContext.GetUserOrFail();
+		var heuristic = await QueryableTimelineExtensions.GetHeuristicAsync(user, db, cache);
+		var notes = await db.Notes.IncludeCommonProperties()
+		                    .FilterByFollowingOwnAndLocal(user, db, heuristic)
+		                    .EnsureVisibleFor(user)
+		                    .FilterHidden(user, db, filterHiddenListMembers: true)
+		                    .FilterMutedThreads(user, db)
+		                    .Paginate(pq, ControllerContext)
+		                    .PrecomputeVisibilities(user)
+		                    .ToListAsync();
+
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user,
+		                                          Filter.FilterContext.Public);
+	}
+
+	[HttpGet("recommended")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<NoteResponse>> GetRecommendedTimeline(PaginationQuery pq)
+	{
+		var user  = HttpContext.GetUserOrFail();
+		var notes = await db.Notes.IncludeCommonProperties()
+		                    .Where(p => db.RecommendedInstances.Any(i => i.Host == p.UserHost))
+		                    .EnsureVisibleFor(user)
+		                    .FilterHidden(user, db, filterHiddenListMembers: true)
+		                    .FilterMutedThreads(user, db)
+		                    .Paginate(pq, ControllerContext)
+		                    .PrecomputeVisibilities(user)
+		                    .ToListAsync();
+
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user,
+		                                          Filter.FilterContext.Public);
+	}
+
+	[HttpGet("global")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<NoteResponse>> GetGlobalTimeline(PaginationQuery pq)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var notes = await db.Notes.IncludeCommonProperties()
+		                    .EnsureVisibleFor(user)
+		                    .FilterHidden(user, db)
+		                    .FilterMutedThreads(user, db)
+		                    .Paginate(pq, ControllerContext)
+		                    .PrecomputeVisibilities(user)
+		                    .ToListAsync();
+
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user,
+		                                          Filter.FilterContext.Public);
+	}
+
+	[HttpGet("remote/{instance}")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<NoteResponse>> GetRemoteTimeline(string instance, PaginationQuery pq)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var notes = await db.Notes.IncludeCommonProperties()
+		                    .Where(p => p.UserHost == instance)
+		                    .EnsureVisibleFor(user)
+		                    .FilterHidden(user, db)
+		                    .FilterMutedThreads(user, db)
+		                    .Paginate(pq, ControllerContext)
+		                    .PrecomputeVisibilities(user)
+		                    .ToListAsync();
+
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user,
+		                                          Filter.FilterContext.Public);
+	}
 }

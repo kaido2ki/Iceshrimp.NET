@@ -9,4 +9,24 @@ internal class TimelineControllerModel(ApiClient api)
 	[LinkPagination(20, 80)]
 	public Task<List<NoteResponse>> GetHomeTimelineAsync(PaginationQuery pq) =>
 		api.CallAsync<List<NoteResponse>>(HttpMethod.Get, "/timelines/home", pq);
+
+	[LinkPagination(20, 80)]
+	public Task<List<NoteResponse>> GetLocalTimelineAsync(PaginationQuery pq) =>
+		api.CallAsync<List<NoteResponse>>(HttpMethod.Get, "/timelines/local", pq);
+
+	[LinkPagination(20, 80)]
+	public Task<List<NoteResponse>> GetSocialTimelineAsync(PaginationQuery pq) =>
+		api.CallAsync<List<NoteResponse>>(HttpMethod.Get, "/timelines/social", pq);
+
+	[LinkPagination(20, 80)]
+	public Task<List<NoteResponse>> GetRecommendedTimelineAsync(PaginationQuery pq) =>
+		api.CallAsync<List<NoteResponse>>(HttpMethod.Get, "/timelines/recommended", pq);
+
+	[LinkPagination(20, 80)]
+	public Task<List<NoteResponse>> GetGlobalTimelineAsync(PaginationQuery pq) =>
+		api.CallAsync<List<NoteResponse>>(HttpMethod.Get, "/timelines/global", pq);
+
+	[LinkPagination(20, 80)]
+	public Task<List<NoteResponse>> GetRemoteTimelineAsync(string instance, PaginationQuery pq) =>
+		api.CallAsync<List<NoteResponse>>(HttpMethod.Get, $"/timelines/remote/{instance}", pq);
 }

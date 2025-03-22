@@ -3651,6 +3651,18 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.ToTable("push_subscription");
                 });
 
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.RecommendedInstance", b =>
+                {
+                    b.Property<string>("Host")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("host");
+
+                    b.HasKey("Host");
+
+                    b.ToTable("recommended_instance");
+                });
+
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.RegistrationInvite", b =>
                 {
                     b.Property<string>("Id")

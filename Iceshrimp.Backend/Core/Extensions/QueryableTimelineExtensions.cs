@@ -1,7 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.EntityFrameworkCore.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Extensions;
@@ -18,16 +20,25 @@ public static class QueryableTimelineExtensions
 	)
 	{
 		return heuristic < Cutoff
-			? query.FollowingAndOwnLowFreq(user, db)
+			? query.Where(FollowingAndOwnLowFreqExpr(user, db))
 			: query.Where(note => note.User == user || note.User.IsFollowedBy(user));
 	}
 
-	private static IQueryable<Note> FollowingAndOwnLowFreq(this IQueryable<Note> query, User user, DatabaseContext db)
-		=> query.Where(note => db.Followings
-		                         .Where(p => p.Follower == user)
-		                         .Select(p => p.FolloweeId)
-		                         .Concat(new[] { user.Id })
-		                         .Contains(note.UserId));
+	public static IQueryable<Note> FilterByFollowingOwnAndLocal(
+		this IQueryable<Note> query, User user, DatabaseContext db, int heuristic
+	)
+	{
+		return heuristic < Cutoff
+			? query.Where(FollowingAndOwnLowFreqExpr(user, db).Or(p => p.UserHost == null))
+			: query.Where(note => note.User == user || note.User.IsFollowedBy(user));
+	}
+
+	private static Expression<Func<Note,bool>> FollowingAndOwnLowFreqExpr(User user, DatabaseContext db)
+		=> note => db.Followings
+		             .Where(p => p.Follower == user)
+		             .Select(p => p.FolloweeId)
+		             .Concat(new[] { user.Id })
+		             .Contains(note.UserId);
 
 	public static IQueryable<User> NeedsTimelineHeuristicUpdate(
 		this IQueryable<User> query, DatabaseContext db, TimeSpan maxRemainingTtl
@@ -60,7 +71,7 @@ public static class QueryableTimelineExtensions
 			//TODO: maybe we should express this as a ratio between matching and non-matching posts
 			return await db.Notes
 			               .Where(p => p.CreatedAt > latestNote.CreatedAt - TimeSpan.FromDays(7))
-			               .FollowingAndOwnLowFreq(user, db)
+			               .Where(FollowingAndOwnLowFreqExpr(user, db))
 			               .OrderByDescending(p => p.Id)
 			               .Take(Cutoff + 1)
 			               .CountAsync();
