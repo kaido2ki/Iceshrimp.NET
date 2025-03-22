@@ -19,7 +19,7 @@ public static class TimeSpanExtensions
 		if (timeSpan.Ticks < Minutes)
 		{
 			var minutes = (int)timeSpan.TotalMinutes;
-			return minutes == 1 ? singleNumber ? "1 minute" : "minute" : $"{timeSpan.TotalMinutes} minutes";
+			return minutes == 1 ? singleNumber ? "1 minute" : "minute" : $"{minutes} minutes";
 		}
 
 		if (timeSpan.Ticks < Hours)
@@ -29,6 +29,6 @@ public static class TimeSpanExtensions
 		}
 
 		var days = (int)timeSpan.TotalDays;
-		return days == 1 ? singleNumber ? "1 day" : "day" : $"{timeSpan.TotalDays} days";
+		return days == 1 ? singleNumber ? "1 day" : "day" : $"{days} days";
 	}
 }

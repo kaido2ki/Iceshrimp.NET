@@ -303,10 +303,13 @@ public class AdminController(
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public void RunCronTask([FromServices] CronService cronSvc, string id)
 	{
-		var task = cronSvc.Tasks.FirstOrDefault(p => p.GetType().FullName == id)
+		var task = cronSvc.Tasks.FirstOrDefault(p => p.Task.GetType().FullName == id)
 		           ?? throw GracefulException.NotFound("Task not found");
 
-		_ = cronSvc.RunCronTaskAsync(task);
+		Task.Factory.StartNew(async () => await cronSvc.RunCronTaskAsync(task.Task, task.Trigger),
+		                      CancellationToken.None,
+		                      TaskCreationOptions.DenyChildAttach | TaskCreationOptions.LongRunning,
+		                      TaskScheduler.Default);
 	}
 
 	[HttpGet("policy")]

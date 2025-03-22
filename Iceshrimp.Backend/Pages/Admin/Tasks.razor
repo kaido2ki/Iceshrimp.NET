@@ -6,30 +6,56 @@
 @inject CronService CronSvc
 <AdminPageHeader Title="Cron tasks"/>
 
-<table>
+<table class="auto-table">
     <thead>
     <th>Name</th>
     <th>Assembly</th>
     <th>Schedule</th>
+    <th>Last run</th>
+    <th>Next run</th>
     <th>Actions</th>
     </thead>
     <tbody>
     @foreach (var task in CronSvc.Tasks)
     {
-        var type = task.GetType();
-        var schedule = task.Type switch
+        var type = task.Task.GetType();
+        var schedule = task.Task.Type switch
         {
-            CronTaskType.Daily when task.Trigger == TimeSpan.Zero => "daily at midnight",
+            CronTaskType.Daily when task.Task.Trigger == TimeSpan.Zero => "daily at midnight",
             //
-            CronTaskType.Daily    => $"daily at {((int)task.Trigger.TotalHours).ToString().PadLeft(2, '0')}:{((int)task.Trigger.TotalMinutes).ToString().PadLeft(2, '0')}",
-            CronTaskType.Interval => $"every {task.Trigger.ToDisplayString(singleNumber: false)}",
+            CronTaskType.Daily    => $"daily at {((int)task.Task.Trigger.TotalHours).ToString().PadLeft(2, '0')}:{((int)task.Task.Trigger.TotalMinutes).ToString().PadLeft(2, '0')}",
+            CronTaskType.Interval => $"every {task.Task.Trigger.ToDisplayString(singleNumber: false)}",
             _                     => throw new ArgumentOutOfRangeException()
         };
+
+        var last = task.Trigger.IsRunning
+            ? "now"
+            : task.Trigger.LastRun.HasValue
+                ? (DateTime.UtcNow - task.Trigger.LastRun.Value).ToDisplayString() + " ago"
+                : "never";
+
+        if (task.Trigger.LastRun.HasValue)
+        {
+            last += task.Trigger.Error is null ? " (OK)" : " (Error)";
+        }
+
+        var next = task.Trigger.IsRunning
+            ? "now"
+            : "in " + (task.Trigger.NextTrigger - DateTime.UtcNow).ToDisplayString();
 
         <tr>
             <td>@type.Name</td>
             <td>@type.Assembly.GetName().Name</td>
             <td>@schedule</td>
+            @if (task.Trigger is { LastRun: not null, Error: { } e })
+            {
+                <td title="@e.ToString()">@last</td>
+            }
+            else
+            {
+                <td>@last</td>
+            }
+            <td>@next</td>
             <td><a class="fake-link" onclick="runCronTask('@type.FullName', event.target)">Run now</a></td>
         </tr>
     }
