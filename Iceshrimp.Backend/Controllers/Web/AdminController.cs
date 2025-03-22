@@ -306,7 +306,11 @@ public class AdminController(
 		var task = cronSvc.Tasks.FirstOrDefault(p => p.Task.GetType().FullName == id)
 		           ?? throw GracefulException.NotFound("Task not found");
 
-		Task.Factory.StartNew(async () => await cronSvc.RunCronTaskAsync(task.Task, task.Trigger),
+		Task.Factory.StartNew(async () =>
+		                      {
+			                      await cronSvc.RunCronTaskAsync(task.Task, task.Trigger);
+			                      task.Trigger.UpdateNextTrigger();
+		                      },
 		                      CancellationToken.None,
 		                      TaskCreationOptions.DenyChildAttach | TaskCreationOptions.LongRunning,
 		                      TaskScheduler.Default);
