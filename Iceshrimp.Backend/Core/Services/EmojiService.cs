@@ -118,10 +118,39 @@ public partial class EmojiService(
 
 		var resolved = await db.Emojis.Where(p => p.Host == host && emoji.Select(e => e.Name).Contains(p.Name))
 		                       .ToListAsync();
+		var existing = emoji.Where(p => resolved.Any(i => i.Name == p.Name))
+		                    .ToDictionary(p => p, p => resolved.First(i => i.Name == p.Name));
 
-		//TODO: handle updated emoji
-		foreach (var emojo in emoji.Where(emojo => resolved.All(p => p.Name != emojo.Name)))
+		foreach (var emojo in emoji)
 		{
+			// Update emoji entry if modified
+			if (existing.TryGetValue(emojo, out var hit))
+			{
+				var url = emojo.Image?.Url?.Link;
+				if (emojo.Image == null || string.IsNullOrWhiteSpace(url))
+					continue;
+
+				if (
+					hit.OriginalUrl != url
+					|| hit.RawPublicUrl != url
+					|| hit.Type != emojo.Image.MediaType
+					|| hit.Uri != emojo.Id
+				)
+				{
+					using (await KeyedLocker.LockAsync($"emoji:{host}:{emojo.Name}"))
+					{
+						await db.ReloadEntityAsync(hit);
+						hit.OriginalUrl = url;
+						hit.RawPublicUrl = url;
+						hit.Type = emojo.Image.MediaType;
+						hit.Uri = emojo.Id;
+						await db.SaveChangesAsync();
+					}
+				}
+
+				continue;
+			}
+
 			using (await KeyedLocker.LockAsync($"emoji:{host}:{emojo.Name}"))
 			{
 				var dbEmojo = await db.Emojis.FirstOrDefaultAsync(p => p.Host == host && p.Name == emojo.Name);
