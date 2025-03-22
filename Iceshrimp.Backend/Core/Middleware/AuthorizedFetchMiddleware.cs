@@ -5,7 +5,6 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Utils.Common;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +24,7 @@ public class AuthorizedFetchMiddleware(
 	ActivityPub.FederationControlService fedCtrlSvc,
 	ILogger<AuthorizedFetchMiddleware> logger,
 	IHostApplicationLifetime appLifetime,
-	MfmConverter mfmConverter
+	FlagService flags
 ) : ConditionalMiddleware<AuthorizedFetchAttribute>, IMiddlewareService
 {
 	public static ServiceLifetime Lifetime => ServiceLifetime.Scoped;
@@ -36,8 +35,8 @@ public class AuthorizedFetchMiddleware(
 	public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
 	{
 		// Ensure we're rendering HTML markup (AsyncLocal)
-		mfmConverter.SupportsHtmlFormatting.Value = true;
-		mfmConverter.SupportsInlineMedia.Value    = true;
+		flags.SupportsHtmlFormatting.Value = true;
+		flags.SupportsInlineMedia.Value    = true;
 
 		// Short-circuit fetches when signature validation is disabled
 		if (config.Value is { AuthorizedFetch: false, ValidateRequestSignatures: false })

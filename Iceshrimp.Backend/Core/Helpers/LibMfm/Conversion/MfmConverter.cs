@@ -43,12 +43,10 @@ public readonly record struct MfmHtmlData(string Html, List<MfmInlineMedia> Inli
 
 public class MfmConverter(
 	IOptions<Config.InstanceSection> config,
-	MediaProxyService mediaProxy
+	MediaProxyService mediaProxy,
+	FlagService flags
 ) : ISingletonService
 {
-	public AsyncLocal<bool> SupportsHtmlFormatting { get; } = new();
-	public AsyncLocal<bool> SupportsInlineMedia    { get; } = new();
-
 	public static async Task<HtmlMfmData> FromHtmlAsync(
 		string? html, List<Note.MentionedUser>? mentions = null, List<string>? hashtags = null
 	)
@@ -194,7 +192,7 @@ public class MfmConverter(
 					{
 						usedMedia.Add(current);
 
-						if (!SupportsInlineMedia.Value || current.Type == MfmInlineMedia.MediaType.Other)
+						if (!flags.SupportsInlineMedia.Value || current.Type == MfmInlineMedia.MediaType.Other)
 						{
 							var el = document.CreateElement("a");
 							el.SetAttribute("href", current.Src);
@@ -452,12 +450,12 @@ public class MfmConverter(
 
 	private IElement CreateInlineFormattingElement(IDocument document, string name)
 	{
-		return document.CreateElement(SupportsHtmlFormatting.Value ? name : "span");
+		return document.CreateElement(flags.SupportsHtmlFormatting.Value ? name : "span");
 	}
 
 	private void AddHtmlMarkup(IDocument document, IElement node, string chars)
 	{
-		if (SupportsHtmlFormatting.Value) return;
+		if (flags.SupportsHtmlFormatting.Value) return;
 		var el = document.CreateElement("span");
 		el.AppendChild(document.CreateTextNode(chars));
 		node.AppendChild(el);
@@ -465,7 +463,7 @@ public class MfmConverter(
 	
 	private void AddHtmlMarkupTag(IDocument document, IElement node, string tag)
 	{
-		if (SupportsHtmlFormatting.Value) return;
+		if (flags.SupportsHtmlFormatting.Value) return;
 		var el = document.CreateElement(tag);
 		node.AppendChild(el);
 	}

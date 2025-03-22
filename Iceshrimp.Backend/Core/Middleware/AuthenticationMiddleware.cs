@@ -1,10 +1,8 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
-using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.EntityFrameworkCore;
@@ -14,8 +12,7 @@ namespace Iceshrimp.Backend.Core.Middleware;
 public class AuthenticationMiddleware(
 	DatabaseContext db,
 	UserService userSvc,
-	MfmConverter mfmConverter,
-	NoteRenderer mastoNoteRenderer
+	FlagService flags
 ) : ConditionalMiddleware<AuthenticateAttribute>, IMiddlewareService
 {
 	public static ServiceLifetime Lifetime => ServiceLifetime.Scoped;
@@ -81,9 +78,9 @@ public class AuthenticationMiddleware(
 			userSvc.UpdateOauthTokenMetadata(oauthToken);
 			ctx.SetOauthToken(oauthToken);
 
-			mfmConverter.SupportsHtmlFormatting.Value = oauthToken.SupportsHtmlFormatting;
-			mfmConverter.SupportsInlineMedia.Value    = oauthToken.SupportsInlineMedia;
-			mastoNoteRenderer.IsPleroma               = oauthToken.IsPleroma;
+			flags.SupportsHtmlFormatting.Value = oauthToken.SupportsHtmlFormatting;
+			flags.SupportsInlineMedia.Value    = oauthToken.SupportsInlineMedia;
+			flags.IsPleroma.Value              = oauthToken.IsPleroma;
 		}
 		else
 		{

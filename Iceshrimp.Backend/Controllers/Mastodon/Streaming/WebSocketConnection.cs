@@ -8,7 +8,6 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Events;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Services;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
@@ -394,9 +393,10 @@ public sealed class WebSocketConnection(
 
 	private void InitializeScopeLocalParameters(IServiceScope scope)
 	{
-		var mfmConverter = scope.ServiceProvider.GetRequiredService<MfmConverter>();
-		mfmConverter.SupportsHtmlFormatting.Value = Token.SupportsHtmlFormatting;
-		mfmConverter.SupportsInlineMedia.Value = Token.SupportsInlineMedia;
+		var flags = scope.ServiceProvider.GetRequiredService<FlagService>();
+		flags.SupportsHtmlFormatting.Value = Token.SupportsHtmlFormatting;
+		flags.SupportsInlineMedia.Value    = Token.SupportsInlineMedia;
+		flags.IsPleroma.Value              = Token.IsPleroma;
 	}
 
 	public async Task CloseAsync(WebSocketCloseStatus status)
