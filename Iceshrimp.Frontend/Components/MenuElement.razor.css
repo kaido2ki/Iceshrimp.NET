@@ -5,6 +5,8 @@
     border-radius: 0.5rem;
     align-items: center;
     color: var(--notice-color);
+    line-height: 1;
+    cursor: pointer;
 
     > .icon-wrapper {
         padding-right: 0.5rem;
