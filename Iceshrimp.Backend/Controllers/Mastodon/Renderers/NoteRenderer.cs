@@ -20,11 +20,10 @@ public class NoteRenderer(
 	MfmConverter mfmConverter,
 	DatabaseContext db,
 	EmojiService emojiSvc,
-	AttachmentRenderer attachmentRenderer
+	AttachmentRenderer attachmentRenderer,
+	FlagService flags
 ) : IScopedService
 {
-	public bool IsPleroma;
-
 	private static readonly FilterResultEntity InaccessibleFilter = new()
 	{
 		Filter = new FilterEntity
@@ -172,9 +171,11 @@ public class NoteRenderer(
 			? (data?.Polls ?? await GetPollsAsync([note], user)).FirstOrDefault(p => p.Id == note.Id)
 			: null;
 
-		var visibility = IsPleroma && note.LocalOnly ? "local" : StatusEntity.EncodeVisibility(note.Visibility);
+		var visibility = flags.IsPleroma.Value && note.LocalOnly
+			? "local"
+			: StatusEntity.EncodeVisibility(note.Visibility);
 
-		var pleromaExtensions = IsPleroma
+		var pleromaExtensions = flags.IsPleroma.Value
 			? new PleromaStatusExtensions
 			{
 				LocalOnly      = note.LocalOnly,

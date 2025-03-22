@@ -14,7 +14,8 @@ public class NotificationRenderer(
 	IOptions<Config.InstanceSection> instance,
 	DatabaseContext db,
 	NoteRenderer noteRenderer,
-	UserRenderer userRenderer
+	UserRenderer userRenderer,
+	FlagService flags
 ) : IScopedService
 {
 	public async Task<NotificationEntity> RenderAsync(
@@ -62,7 +63,7 @@ public class NotificationRenderer(
 			CreatedAt = notification.CreatedAt.ToStringIso8601Like(),
 			Emoji     = notification.Reaction,
 			EmojiUrl  = emojiUrl,
-			Pleroma   = noteRenderer.IsPleroma ? new PleromaNotificationExtensions { IsSeen = notification.IsRead } : null
+			Pleroma   = flags.IsPleroma.Value ? new PleromaNotificationExtensions { IsSeen = notification.IsRead } : null
 		};
 
 		return res;
