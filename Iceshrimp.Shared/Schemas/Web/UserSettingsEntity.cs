@@ -13,4 +13,5 @@ public class UserSettingsRequest
 	public bool           FilterInaccessible      { get; set; }
 	public bool           AutoAcceptFollowed      { get; set; }
 	public bool           AlwaysMarkSensitive     { get; set; }
+	public bool           ManuallyAcceptFollows   { get; set; }
 }
