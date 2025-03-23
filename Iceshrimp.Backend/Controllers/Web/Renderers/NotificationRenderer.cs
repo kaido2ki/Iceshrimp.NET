@@ -1,8 +1,11 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.EntityFrameworkCore.Extensions;
 using Iceshrimp.Shared.Schemas.Web;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using static Iceshrimp.Shared.Schemas.Web.NotificationResponse;
 
@@ -12,7 +15,7 @@ public class NotificationRenderer(
 	IOptions<Config.InstanceSection> instance,
 	UserRenderer userRenderer,
 	NoteRenderer noteRenderer,
-	EmojiService emojiSvc
+	DatabaseContext db
 ) : IScopedService
 {
 	private static NotificationResponse Render(Notification notification, NotificationRendererDto data)
@@ -114,21 +117,44 @@ public class NotificationRenderer(
 			                      Sensitive = false
 		                      })
 		                      .ToList();
-		var custom = reactions.Where(EmojiService.IsCustomEmoji).ToArray();
+
+		var custom = reactions.Where(EmojiService.IsCustomEmoji)
+		                      .Select(p =>
+		                      {
+			                      var parts = p.Trim(':').Split('@');
+			                      return (name: parts[0], host: parts.Length > 1 ? parts[1] : null);
+		                      })
+		                      .Distinct()
+		                      .ToArray();
+
+		var expr = ExpressionExtensions.False<Emoji>();
+		expr = custom.Aggregate(expr, (current, part) => current.Or(p => p.Name == part.name && p.Host == part.host));
+
+		// https://github.com/dotnet/efcore/issues/31492
+		var emojiUrls = await db.Emojis
+		                        .Where(expr)
+		                        .Select(e => new
+		                        {
+			                        Name = $":{e.Name}{(e.Host != null ? "@" + e.Host : "")}:",
+			                        Url  = e.GetAccessUrl(instance.Value),
+			                        e.Sensitive
+		                        })
+		                        .ToDictionaryAsync(e => e.Name, e => new { e.Url, e.Sensitive });
 
 		foreach (var s in custom)
 		{
-			var emoji = await emojiSvc.ResolveEmojiAsync(s);
+			var name = s.host != null ? $":{s.name}@{s.host}:" : $":{s.name}:";
+			emojiUrls.TryGetValue(name, out var emoji);
 			var reaction = emoji != null
 				? new ReactionResponse
 				{
-					Name      = s,
-					Url       = emoji.GetAccessUrl(instance.Value),
+					Name      = name,
+					Url       = emoji.Url,
 					Sensitive = emoji.Sensitive
 				}
 				: new ReactionResponse
 				{
-					Name      = s,
+					Name      = name,
 					Url       = null,
 					Sensitive = false
 				};
