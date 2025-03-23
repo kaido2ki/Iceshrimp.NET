@@ -5,6 +5,13 @@
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @inject IStringLocalizer<Localization> Loc;
 <div class="profile-info">
+    @if (User.MovedTo != null)
+    {
+        <WarningBanner>
+            @Loc["This account has been migrated to another account."]
+            <a href="@User.MovedTo" target="_blank">@Loc["Go to account"]</a>
+        </WarningBanner>
+    }
     <div class="badges">
         @if (UserProfile.Lang != null && (UserProfile.Pronouns?.TryGetValue(UserProfile.Lang, out var pronouns) ?? false))
         {
