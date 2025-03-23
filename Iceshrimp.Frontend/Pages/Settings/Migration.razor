@@ -1,0 +1,121 @@
+@page "/settings/migration"
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Sections
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Shared.Schemas.Web
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Miscellaneous
+
+@attribute [Authorize]
+@layout SettingsLayout
+@inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
+@inject IStringLocalizer<Localization> Loc;
+@inject NavigationManager              Nav;
+
+<HeadTitle Text="@Loc["Migration"]"/>
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.AirplaneTakeoff"></Icon>
+    @Loc["Migration"]
+</SectionContent>
+
+@if (State is State.Loaded)
+{
+    <div class="body">
+        <div class="section">
+            <h3>@Loc["Move to this account from an older account"]</h3>
+            <div class="aliases">
+                @foreach (var alias in Status.Aliases)
+                {
+                    <div class="alias">
+                        <a href="@alias" target="_blank">@alias</a>
+                        <button class="button" title="@Loc["Remove alias"]" @onclick="() => DeleteAlias(alias)">
+                            <Icon Name="Icons.Trash"/>
+                        </button>
+                    </div>
+                }
+            </div>
+            <div class="new-alias">
+                <input class="input" placeholder="@("@old@example.com")" autocomplete="off" @bind="@Alias" @oninput="ResetAliasButtonState"/>
+                <StateButton OnClick="AddAlias" ExtraClasses="button" @ref="AliasButton">
+                    <Initial>
+                        <Icon Name="Icons.Plus"/>
+                    </Initial>
+                    <Loading>
+                        <LoadingSpinner />
+                    </Loading>
+                    <Failed>
+                        <Icon Name="Icons.Warning"/>
+                    </Failed>
+                    <Success>
+                        <Icon Name="Icons.Check"/>
+                    </Success>
+                </StateButton>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private MigrationSchemas.MigrationStatusResponse Status      { get; set; } = null!;
+    private State                                    State       { get; set; } = State.Loading;
+    private StateButton                              AliasButton { get; set; } = null!;
+    private string                                   Alias       { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Status = await Api.Migrations.GetMigrationStatusAsync();
+        State  = State.Loaded;
+    }
+
+    private async Task AddAlias()
+    {
+        if (string.IsNullOrWhiteSpace(Alias)) return;
+
+        var acct = Alias.Trim().TrimStart('@').Split('@');
+        if (string.IsNullOrWhiteSpace(acct[0])) return;
+
+        AliasButton.State = StateButton.StateEnum.Loading;
+
+        try
+        {
+            var user = await Api.Users.LookupUserAsync(acct[0], acct.Length > 1 ? acct[1] : null);
+            await Api.Migrations.AddAliasAsync(new MigrationSchemas.MigrationRequest { UserId = user?.Id });
+
+            Status = await Api.Migrations.GetMigrationStatusAsync();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred while adding an alias"], NoticeDialog.NoticeType.Error)!;
+            AliasButton.State = StateButton.StateEnum.Failed;
+            return;
+        }
+
+        Alias             = "";
+        AliasButton.State = StateButton.StateEnum.Success;
+    }
+
+    private async Task DeleteAlias(string uri)
+    {
+        try
+        {
+            await Api.Migrations.RemoveAliasAsync(new MigrationSchemas.MigrationRequest { UserUri = uri });
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred while removing an alias"], NoticeDialog.NoticeType.Error)!;
+        }
+
+        Status = await Api.Migrations.GetMigrationStatusAsync();
+    }
+
+    private void ResetAliasButtonState()
+    {
+        if (AliasButton.State is StateButton.StateEnum.Failed or StateButton.StateEnum.Success)
+            AliasButton.State = StateButton.StateEnum.Initial;
+    }
+}
