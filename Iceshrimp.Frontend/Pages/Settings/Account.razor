@@ -56,6 +56,10 @@
 
                 </label>
                 <label>
+                    @Loc["Manually accept follow requests"]
+                    <InputCheckbox @bind-Value="SettingsForm.ManuallyAcceptFollows"/>
+                </label>
+                <label>
                     @Loc["Auto accept follow requests from users you are following"]
                     <InputCheckbox @bind-Value="SettingsForm.AutoAcceptFollowed"/>
                 </label>
