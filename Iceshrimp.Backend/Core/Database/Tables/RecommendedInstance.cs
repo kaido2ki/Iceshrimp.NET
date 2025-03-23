@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
-[Table("recommended_instance")]
-public class RecommendedInstance
+[Table("bubble_instance")]
+public class BubbleInstance
 {
 	[Key]
 	[Column("host")]

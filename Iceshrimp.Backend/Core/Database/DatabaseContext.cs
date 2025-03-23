@@ -92,7 +92,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<Filter>               Filters               { get; init; } = null!;
 	public virtual DbSet<PluginStoreEntry>     PluginStore           { get; init; } = null!;
 	public virtual DbSet<PolicyConfiguration>  PolicyConfiguration   { get; init; } = null!;
-	public virtual DbSet<RecommendedInstance>  RecommendedInstances  { get; init; } = null!;
+	public virtual DbSet<BubbleInstance>       BubbleInstances       { get; init; } = null!;
 	public virtual DbSet<DataProtectionKey>    DataProtectionKeys    { get; init; } = null!;
 
 	public static NpgsqlDataSource GetDataSource(Config.DatabaseSection config)

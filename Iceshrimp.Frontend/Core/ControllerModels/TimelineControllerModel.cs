@@ -19,8 +19,8 @@ internal class TimelineControllerModel(ApiClient api)
 		api.CallAsync<List<NoteResponse>>(HttpMethod.Get, "/timelines/social", pq);
 
 	[LinkPagination(20, 80)]
-	public Task<List<NoteResponse>> GetRecommendedTimelineAsync(PaginationQuery pq) =>
-		api.CallAsync<List<NoteResponse>>(HttpMethod.Get, "/timelines/recommended", pq);
+	public Task<List<NoteResponse>> GetBubbleTimelineAsync(PaginationQuery pq) =>
+		api.CallAsync<List<NoteResponse>>(HttpMethod.Get, "/timelines/bubble", pq);
 
 	[LinkPagination(20, 80)]
 	public Task<List<NoteResponse>> GetGlobalTimelineAsync(PaginationQuery pq) =>

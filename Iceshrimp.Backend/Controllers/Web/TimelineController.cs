@@ -80,13 +80,13 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                                          Filter.FilterContext.Public);
 	}
 
-	[HttpGet("recommended")]
+	[HttpGet("bubble")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public async Task<IEnumerable<NoteResponse>> GetRecommendedTimeline(PaginationQuery pq)
+	public async Task<IEnumerable<NoteResponse>> GetBubbleTimeline(PaginationQuery pq)
 	{
 		var user  = HttpContext.GetUserOrFail();
 		var notes = await db.Notes.IncludeCommonProperties()
-		                    .Where(p => db.RecommendedInstances.Any(i => i.Host == p.UserHost))
+		                    .Where(p => db.BubbleInstances.Any(i => i.Host == p.UserHost))
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db, filterHiddenListMembers: true)
 		                    .FilterMutedThreads(user, db)
