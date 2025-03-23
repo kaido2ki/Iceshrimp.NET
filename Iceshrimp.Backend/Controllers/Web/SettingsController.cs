@@ -37,10 +37,8 @@ public class SettingsController(
 	public async Task<UserSettingsResponse> GetSettings()
 	{
 		var settings = await GetOrInitUserSettings();
-
 		var user     = HttpContext.GetUserOrFail();
-		var isLocked = await db.Users.Where(p => p.Id == user.Id).Select(p => p.IsLocked).FirstAsync();
-		
+
 		return new UserSettingsResponse
 		{
 			FilterInaccessible      = settings.FilterInaccessible,
@@ -50,7 +48,7 @@ public class SettingsController(
 			DefaultNoteVisibility   = (NoteVisibility)settings.DefaultNoteVisibility,
 			DefaultRenoteVisibility = (NoteVisibility)settings.DefaultNoteVisibility,
 			TwoFactorEnrolled       = settings.TwoFactorEnabled,
-			ManuallyAcceptFollows   = isLocked
+			ManuallyAcceptFollows   = user.IsLocked
 		};
 	}
 
@@ -71,9 +69,10 @@ public class SettingsController(
 		settings.DefaultNoteVisibility   = (Note.NoteVisibility)newSettings.DefaultNoteVisibility;
 		settings.DefaultRenoteVisibility = (Note.NoteVisibility)newSettings.DefaultRenoteVisibility;
 
-		var user   = HttpContext.GetUserOrFail();
-		var dbUser = await db.Users.FirstAsync(p => p.Id == user.Id);
-		dbUser.IsLocked = newSettings.ManuallyAcceptFollows || newSettings.PrivateMode;
+		var user = HttpContext.GetUserOrFail();
+		await db.Users.Where(p => p.Id == user.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.IsLocked,
+		                                               newSettings.ManuallyAcceptFollows || newSettings.PrivateMode));
 
 		await db.SaveChangesAsync();
 	}
