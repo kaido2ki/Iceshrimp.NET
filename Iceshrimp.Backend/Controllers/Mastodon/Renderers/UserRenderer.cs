@@ -1,3 +1,5 @@
+using System.Configuration;
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -18,11 +20,11 @@ public class UserRenderer(
 {
 	private readonly string _transparent = $"https://{config.Value.WebDomain}/assets/transparent.png";
 
-	public Task<AccountEntity> RenderAsync(User user, UserProfile? profile, User? localUser, bool source = false)
-		=> RenderAsync(user, profile, localUser, null, source);
+	public Task<AccountEntity> RenderAsync(User user, UserProfile? profile, User? localUser, bool source = false, bool isPleroma = false)
+		=> RenderAsync(user, profile, localUser, null, source, isPleroma);
 
 	private async Task<AccountEntity> RenderAsync(
-		User user, UserProfile? profile, User? localUser, UserRendererDto? data = null, bool source = false
+		User user, UserProfile? profile, User? localUser, UserRendererDto? data = null, bool source = false, bool isPleroma = false
 	)
 	{
 		var acct = user.Username;
@@ -47,7 +49,7 @@ public class UserRenderer(
 
 		var avatarAlt = data?.AvatarAlt.GetValueOrDefault(user.Id);
 		var bannerAlt = data?.BannerAlt.GetValueOrDefault(user.Id);
-
+		
 		var res = new AccountEntity
 		{
 			Id                 = user.Id,
@@ -74,7 +76,11 @@ public class UserRenderer(
 			IsBot              = user.IsBot,
 			IsDiscoverable     = user.IsExplorable,
 			Fields             = fields?.ToList() ?? [],
-			Emoji              = profileEmoji
+			Emoji              = profileEmoji,
+			Akkoma			   = isPleroma
+				? new AkkomaInfo()
+					{ PermitFollowback = user.UserSettings?.AutoAcceptFollowed }
+				: null
 		};
 
 		if (localUser is null && security.Value.PublicPreview == Enums.PublicPreview.RestrictedNoMedia) //TODO

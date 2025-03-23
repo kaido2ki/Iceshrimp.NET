@@ -40,6 +40,10 @@ public abstract class AccountSchemas
 		[J("fields_attributes")]
 		[B(Name = "fields_attributes")]
 		public List<AccountUpdateField>? Fields { get; set; }
+		
+		[J("permit_followback")]
+		[B(Name = "permit_followback")]
+		public bool? PermitFollowback { get; set; }
 
 		[J("source")] [B(Name = "source")] public AccountUpdateSource? Source { get; set; }
 

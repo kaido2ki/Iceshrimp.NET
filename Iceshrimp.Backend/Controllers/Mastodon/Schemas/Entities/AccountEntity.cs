@@ -29,6 +29,7 @@ public class AccountEntity : IIdentifiable
 	[J("emojis")]          public required List<EmojiEntity> Emoji              { get; set; }
 	[J("id")]              public required string            Id                 { get; set; }
 	[J("last_status_at")]  public          string?           LastStatusAt       { get; set; }
+	[J("akkoma")]          public          AkkomaInfo?       Akkoma             { get; set; }
 
 	[J("avatar_description")] public required string AvatarDescription { get; set; }
 	[J("header_description")] public required string HeaderDescription { get; set; }
@@ -49,4 +50,9 @@ public class AccountSource
 	[J("sensitive")]             public required bool        Sensitive          { get; set; }
 	[J("fields")]                public required List<Field> Fields             { get; set; }
 	[J("follow_requests_count")] public required int         FollowRequestCount { get; set; }
+}
+
+public class AkkomaInfo
+{
+	[J("permit_followback")] public required bool? PermitFollowback { get; set; }
 }

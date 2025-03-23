@@ -45,7 +45,7 @@ public class AccountController(
 	public async Task<AccountEntity> VerifyUserCredentials()
 	{
 		var user = HttpContext.GetUserOrFail();
-		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true);
+		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true, isPleroma: HttpContext.GetOauthToken()!.IsPleroma);
 	}
 
 	[HttpPatch("update_credentials")]
@@ -82,6 +82,8 @@ public class AccountController(
 			user.UserSettings.DefaultNoteVisibility = StatusEntity.DecodeVisibility(request.Source.Privacy);
 		if (request.Source?.Sensitive.HasValue ?? false)
 			user.UserSettings.AlwaysMarkSensitive = request.Source.Sensitive.Value;
+		if (request.PermitFollowback.HasValue)
+			user.UserSettings.AutoAcceptFollowed = request.PermitFollowback.Value;
 
 		if (request.Fields?.Where(p => p is { Name: not null, Value: not null }).ToList() is { Count: > 0 } fields)
 		{
@@ -125,7 +127,7 @@ public class AccountController(
 		}
 
 		user = await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
-		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true);
+		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true, isPleroma: HttpContext.GetOauthToken()!.IsPleroma);
 	}
 
 	[HttpDelete("/api/v1/profile/avatar")]
