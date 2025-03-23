@@ -1,0 +1,7 @@
+.warning-banner {
+    padding: 0.5rem 1rem;
+    margin: 1rem auto auto;
+    border: 1px solid var(--warning-color);
+    color: var(--warning-color);
+    border-radius: 0.5rem;
+}

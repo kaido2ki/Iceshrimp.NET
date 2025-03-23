@@ -3,10 +3,10 @@
 @inject IStringLocalizer<Localization> Loc;
 
 <div class="remote-user-notice">
-    <span>
+    <WarningBanner>
         @Loc["Information from remote users may be incomplete."]
         <a href="@OriginalPageUrl" target="_blank">@Loc["Open original page"]</a>
-    </span>
+    </WarningBanner>
 </div>
 
 @code {
