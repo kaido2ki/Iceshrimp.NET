@@ -16,4 +16,7 @@ internal class MigrationControllerModel(ApiClient api)
 
     public Task MigrateAsync(MigrationSchemas.MigrationRequest request) =>
         api.CallAsync(HttpMethod.Post, "/migration/move", data: request);
+
+    public Task UndoAsync() =>
+        api.CallAsync(HttpMethod.Delete, "/migration/move");
 }

@@ -32,6 +32,23 @@
                 @Loc["This account has been migrated to another account."]
                 <a href="@Status.MovedTo" target="_blank">@Loc["Go to account"]</a>
             </span>
+            <WarningBanner>
+                @Loc["Undoing a migration does not move your followers back to this account. To move your followers back you will need to migrate back to this account manually."]
+            </WarningBanner>
+            <StateButton OnClick="UndoMigrate" ExtraClasses="button" @ref="UndoButton">
+                <Initial>
+                    @Loc["Undo migration"]
+                </Initial>
+                <Loading>
+                    <LoadingSpinner/>
+                </Loading>
+                <Failed>
+                    <Icon Name="Icons.Warning"/>
+                </Failed>
+                <Success>
+                    <Icon Name="Icons.Check"/>
+                </Success>
+            </StateButton>
         }
         else
         {
@@ -101,6 +118,7 @@
 @code {
     private MigrationSchemas.MigrationStatusResponse Status      { get; set; } = null!;
     private State                                    State       { get; set; } = State.Loading;
+    private StateButton                              UndoButton  { get; set; } = null!;
     private StateButton                              MoveButton  { get; set; } = null!;
     private StateButton                              AliasButton { get; set; } = null!;
     private string                                   MoveTo      { get; set; } = "";
@@ -125,6 +143,23 @@
         {
             var user = await Api.Users.LookupUserAsync(acct[0], acct.Length > 1 ? acct[1] : null);
             await Api.Migrations.MigrateAsync(new MigrationSchemas.MigrationRequest { UserId = user?.Id });
+
+            Status = await Api.Migrations.GetMigrationStatusAsync();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred while migrating"], NoticeDialog.NoticeType.Error)!;
+            MoveButton.State = StateButton.StateEnum.Failed;
+        }
+    }
+    
+    private async Task UndoMigrate()
+    {
+        UndoButton.State = StateButton.StateEnum.Loading;
+
+        try
+        {
+            await Api.Migrations.UndoAsync();
 
             Status = await Api.Migrations.GetMigrationStatusAsync();
         }
