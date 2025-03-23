@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -13,16 +14,17 @@ public class UserRenderer(
 	IOptions<Config.InstanceSection> config,
 	IOptionsSnapshot<Config.SecuritySection> security,
 	MfmConverter mfmConverter,
-	DatabaseContext db
+	DatabaseContext db,
+	FlagService flags
 ) : IScopedService
 {
 	private readonly string _transparent = $"https://{config.Value.WebDomain}/assets/transparent.png";
 
-	public Task<AccountEntity> RenderAsync(User user, UserProfile? profile, User? localUser, bool source = false, bool isPleroma = false)
-		=> RenderAsync(user, profile, localUser, null, source, isPleroma);
+	public Task<AccountEntity> RenderAsync(User user, UserProfile? profile, User? localUser, bool source = false)
+		=> RenderAsync(user, profile, localUser, null, source);
 
 	private async Task<AccountEntity> RenderAsync(
-		User user, UserProfile? profile, User? localUser, UserRendererDto? data = null, bool source = false, bool isPleroma = false
+		User user, UserProfile? profile, User? localUser, UserRendererDto? data = null, bool source = false
 	)
 	{
 		var acct = user.Username;
@@ -75,7 +77,7 @@ public class UserRenderer(
 			IsDiscoverable     = user.IsExplorable,
 			Fields             = fields?.ToList() ?? [],
 			Emoji              = profileEmoji,
-			Akkoma			   = isPleroma
+			Akkoma			   = flags?.IsPleroma.Value == true
 				? new AkkomaInfo()
 					{ PermitFollowback = user.UserSettings?.AutoAcceptFollowed }
 				: null

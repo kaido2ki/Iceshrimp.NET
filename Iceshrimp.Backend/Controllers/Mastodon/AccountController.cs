@@ -45,7 +45,7 @@ public class AccountController(
 	public async Task<AccountEntity> VerifyUserCredentials()
 	{
 		var user = HttpContext.GetUserOrFail();
-		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true, isPleroma: HttpContext.GetOauthToken()!.IsPleroma);
+		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true);
 	}
 
 	[HttpPatch("update_credentials")]
@@ -127,7 +127,7 @@ public class AccountController(
 		}
 
 		user = await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
-		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true, isPleroma: HttpContext.GetOauthToken()!.IsPleroma);
+		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true);
 	}
 
 	[HttpDelete("/api/v1/profile/avatar")]
