@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.EntityFrameworkCore.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -28,13 +29,13 @@ public class NotificationRenderer(
 		var targetNote = notification.Note;
 
 		var note = targetNote != null
-			? statuses?.FirstOrDefault(p => p.Id == targetNote.Id) ??
-			  await noteRenderer.RenderAsync(targetNote, user, Filter.FilterContext.Notifications,
-			                                 new NoteRenderer.NoteRendererDto { Accounts = accounts })
+			? statuses?.FirstOrDefault(p => p.Id == targetNote.Id)
+			  ?? await noteRenderer.RenderAsync(targetNote, user, Filter.FilterContext.Notifications,
+			                                    new NoteRenderer.NoteRendererDto { Accounts = accounts })
 			: null;
 
-		var notifier = accounts?.FirstOrDefault(p => p.Id == dbNotifier.Id) ??
-		               await userRenderer.RenderAsync(dbNotifier, user);
+		var notifier = accounts?.FirstOrDefault(p => p.Id == dbNotifier.Id)
+		               ?? await userRenderer.RenderAsync(dbNotifier, user);
 
 		string? emojiUrl = null;
 		if (notification.Reaction != null)
@@ -63,7 +64,9 @@ public class NotificationRenderer(
 			CreatedAt = notification.CreatedAt.ToStringIso8601Like(),
 			Emoji     = notification.Reaction,
 			EmojiUrl  = emojiUrl,
-			Pleroma   = flags.IsPleroma.Value ? new PleromaNotificationExtensions { IsSeen = notification.IsRead } : null
+			Pleroma = flags.IsPleroma.Value
+				? new PleromaNotificationExtensions { IsSeen = notification.IsRead }
+				: null
 		};
 
 		return res;
@@ -98,27 +101,28 @@ public class NotificationRenderer(
 		                            .Select(p =>
 		                            {
 			                            var parts = p.Reaction!.Trim(':').Split('@');
-			                            return new { Name = parts[0], Host = parts.Length > 1 ? parts[1] : null };
-		                            });
+			                            return (name: parts[0], host: parts.Length > 1 ? parts[1] : null);
+		                            })
+		                            .Distinct()
+		                            .ToArray();
+
+		var expr = ExpressionExtensions.False<Emoji>();
+		expr = parts.Aggregate(expr, (current, part) => current.Or(p => p.Name == part.name && p.Host == part.host));
 
 		// https://github.com/dotnet/efcore/issues/31492
-		//TODO: is there a better way of expressing this using LINQ?
-		IQueryable<Emoji> urlQ = db.Emojis;
-		foreach (var part in parts)
-			urlQ = urlQ.Concat(db.Emojis.Where(e => e.Name == part.Name && e.Host == part.Host));
+		var emojiUrls = await db.Emojis
+		                        .Where(expr)
+		                        .Select(e => new
+		                        {
+			                        Name = $":{e.Name}{(e.Host != null ? "@" + e.Host : "")}:",
+			                        Url  = e.GetAccessUrl(instance.Value)
+		                        })
+		                        .ToDictionaryAsync(e => e.Name, e => e.Url);
 
-		//TODO: can we somehow optimize this to do the dedupe database side?
-		var emojiUrls = await urlQ.Select(e => new
-		                          {
-			                          Name = $":{e.Name}{(e.Host != null ? "@" + e.Host : "")}:",
-			                          Url  = e.GetAccessUrl(instance.Value)
-		                          })
-		                          .ToArrayAsync()
-		                          .ContinueWithResult(res => res.DistinctBy(e => e.Name)
-		                                                        .ToDictionary(e => e.Name, e => e.Url));
+		var res = await notificationList
+		                .Select(p => RenderAsync(p, user, isPleroma, accounts, notes, emojiUrls))
+		                .AwaitAllAsync();
 
-		return await notificationList
-		             .Select(p => RenderAsync(p, user, isPleroma, accounts, notes, emojiUrls))
-		             .AwaitAllAsync();
+		return res;
 	}
 }
