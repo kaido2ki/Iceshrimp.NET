@@ -73,7 +73,7 @@ public class SettingsController(
 
 		var user   = HttpContext.GetUserOrFail();
 		var dbUser = await db.Users.FirstAsync(p => p.Id == user.Id);
-		dbUser.IsLocked = newSettings.ManuallyAcceptFollows;
+		dbUser.IsLocked = newSettings.ManuallyAcceptFollows || newSettings.PrivateMode;
 
 		await db.SaveChangesAsync();
 	}
