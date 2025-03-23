@@ -13,4 +13,7 @@ internal class MigrationControllerModel(ApiClient api)
 
     public Task RemoveAliasAsync(MigrationSchemas.MigrationRequest request) =>
         api.CallAsync(HttpMethod.Delete, "/migration/aliases", data: request);
+
+    public Task MigrateAsync(MigrationSchemas.MigrationRequest request) =>
+        api.CallAsync(HttpMethod.Post, "/migration/move", data: request);
 }

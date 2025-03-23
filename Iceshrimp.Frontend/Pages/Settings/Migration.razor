@@ -27,6 +27,25 @@
 {
     <div class="body">
         <div class="section">
+            <h3>@Loc["Move current account to new account"]</h3>
+            <input class="input" placeholder="@("@new@example.com")" autocomplete="off" @bind="@MoveTo" @oninput="() => ResetButtonState(MoveButton)"/>
+            <StateButton OnClick="Migrate" ExtraClasses="button" @ref="MoveButton">
+                <Initial>
+                    <Icon Name="Icons.AirplaneTakeoff"/>
+                    @Loc["Migrate"]
+                </Initial>
+                <Loading>
+                    <LoadingSpinner/>
+                </Loading>
+                <Failed>
+                    <Icon Name="Icons.Warning"/>
+                </Failed>
+                <Success>
+                    <Icon Name="Icons.Check"/>
+                </Success>
+            </StateButton>
+        </div>
+        <div class="section">
             <h3>@Loc["Move to this account from an older account"]</h3>
             <div class="aliases">
                 @foreach (var alias in Status.Aliases)
@@ -40,13 +59,13 @@
                 }
             </div>
             <div class="new-alias">
-                <input class="input" placeholder="@("@old@example.com")" autocomplete="off" @bind="@Alias" @oninput="ResetAliasButtonState"/>
+                <input class="input" placeholder="@("@old@example.com")" autocomplete="off" @bind="@Alias" @oninput="() => ResetButtonState(AliasButton)"/>
                 <StateButton OnClick="AddAlias" ExtraClasses="button" @ref="AliasButton">
                     <Initial>
                         <Icon Name="Icons.Plus"/>
                     </Initial>
                     <Loading>
-                        <LoadingSpinner />
+                        <LoadingSpinner/>
                     </Loading>
                     <Failed>
                         <Icon Name="Icons.Warning"/>
@@ -63,13 +82,38 @@
 @code {
     private MigrationSchemas.MigrationStatusResponse Status      { get; set; } = null!;
     private State                                    State       { get; set; } = State.Loading;
+    private StateButton                              MoveButton  { get; set; } = null!;
     private StateButton                              AliasButton { get; set; } = null!;
+    private string                                   MoveTo      { get; set; } = "";
     private string                                   Alias       { get; set; } = "";
 
     protected override async Task OnInitializedAsync()
     {
         Status = await Api.Migrations.GetMigrationStatusAsync();
         State  = State.Loaded;
+    }
+
+    private async Task Migrate()
+    {
+        if (string.IsNullOrWhiteSpace(MoveTo)) return;
+
+        var acct = MoveTo.Trim().TrimStart('@').Split('@');
+        if (string.IsNullOrWhiteSpace(acct[0])) return;
+
+        MoveButton.State = StateButton.StateEnum.Loading;
+
+        try
+        {
+            var user = await Api.Users.LookupUserAsync(acct[0], acct.Length > 1 ? acct[1] : null);
+            await Api.Migrations.MigrateAsync(new MigrationSchemas.MigrationRequest { UserId = user?.Id });
+
+            Status = await Api.Migrations.GetMigrationStatusAsync();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred while migrating"], NoticeDialog.NoticeType.Error)!;
+            MoveButton.State = StateButton.StateEnum.Failed;
+        }
     }
 
     private async Task AddAlias()
@@ -113,9 +157,9 @@
         Status = await Api.Migrations.GetMigrationStatusAsync();
     }
 
-    private void ResetAliasButtonState()
+    private void ResetButtonState(StateButton button)
     {
-        if (AliasButton.State is StateButton.StateEnum.Failed or StateButton.StateEnum.Success)
-            AliasButton.State = StateButton.StateEnum.Initial;
+        if (button.State is StateButton.StateEnum.Failed or StateButton.StateEnum.Success)
+            button.State = StateButton.StateEnum.Initial;
     }
 }
