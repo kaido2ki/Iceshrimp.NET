@@ -14,6 +14,7 @@ export async function ServiceWorkerCheckRegistration(){
     if (registration.installing) return "installing";
     if (registration.waiting) return "waiting";
     if (registration.active) return "active";
+    else return null
 }
 
 export async function ServiceWorkerUpdate(){
@@ -22,7 +23,8 @@ export async function ServiceWorkerUpdate(){
     var res = await registration.update();
     if (res.installing) return "installing";
     if (res.waiting) return "waiting";
-    if (res.active) return "active";return !!(res.installing || res.waiting);
+    if (res.active) return "active";
+    else return null;
 }
 
 export async function ServiceWorkerSkipWaiting(){
