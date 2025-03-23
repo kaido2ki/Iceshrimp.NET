@@ -26,43 +26,22 @@
 @if (State is State.Loaded)
 {
     <div class="body">
-        <div class="section">
-            <h3>@Loc["Move current account to new account"]</h3>
-            <input class="input" placeholder="@("@new@example.com")" autocomplete="off" @bind="@MoveTo" @oninput="() => ResetButtonState(MoveButton)"/>
-            <StateButton OnClick="Migrate" ExtraClasses="button" @ref="MoveButton">
-                <Initial>
-                    <Icon Name="Icons.AirplaneTakeoff"/>
-                    @Loc["Migrate"]
-                </Initial>
-                <Loading>
-                    <LoadingSpinner/>
-                </Loading>
-                <Failed>
-                    <Icon Name="Icons.Warning"/>
-                </Failed>
-                <Success>
-                    <Icon Name="Icons.Check"/>
-                </Success>
-            </StateButton>
-        </div>
-        <div class="section">
-            <h3>@Loc["Move to this account from an older account"]</h3>
-            <div class="aliases">
-                @foreach (var alias in Status.Aliases)
-                {
-                    <div class="alias">
-                        <a href="@alias" target="_blank">@alias</a>
-                        <button class="button" title="@Loc["Remove alias"]" @onclick="() => DeleteAlias(alias)">
-                            <Icon Name="Icons.Trash"/>
-                        </button>
-                    </div>
-                }
-            </div>
-            <div class="new-alias">
-                <input class="input" placeholder="@("@old@example.com")" autocomplete="off" @bind="@Alias" @oninput="() => ResetButtonState(AliasButton)"/>
-                <StateButton OnClick="AddAlias" ExtraClasses="button" @ref="AliasButton">
+        @if (Status.MovedTo != null)
+        {
+            <span>
+                @Loc["This account has been migrated to another account."]
+                <a href="@Status.MovedTo" target="_blank">@Loc["Go to account"]</a>
+            </span>
+        }
+        else
+        {
+            <div class="section">
+                <h3>@Loc["Move current account to new account"]</h3>
+                <input class="input" placeholder="@("@new@example.com")" autocomplete="off" @bind="@MoveTo" @oninput="() => ResetButtonState(MoveButton)"/>
+                <StateButton OnClick="Migrate" ExtraClasses="button" @ref="MoveButton">
                     <Initial>
-                        <Icon Name="Icons.Plus"/>
+                        <Icon Name="Icons.AirplaneTakeoff"/>
+                        @Loc["Migrate"]
                     </Initial>
                     <Loading>
                         <LoadingSpinner/>
@@ -75,7 +54,38 @@
                     </Success>
                 </StateButton>
             </div>
-        </div>
+            <div class="section">
+                <h3>@Loc["Move to this account from an older account"]</h3>
+                <div class="aliases">
+                    @foreach (var alias in Status.Aliases)
+                    {
+                        <div class="alias">
+                            <a href="@alias" target="_blank">@alias</a>
+                            <button class="button" title="@Loc["Remove alias"]" @onclick="() => DeleteAlias(alias)">
+                                <Icon Name="Icons.Trash"/>
+                            </button>
+                        </div>
+                    }
+                </div>
+                <div class="new-alias">
+                    <input class="input" placeholder="@("@old@example.com")" autocomplete="off" @bind="@Alias" @oninput="() => ResetButtonState(AliasButton)"/>
+                    <StateButton OnClick="AddAlias" ExtraClasses="button" @ref="AliasButton">
+                        <Initial>
+                            <Icon Name="Icons.Plus"/>
+                        </Initial>
+                        <Loading>
+                            <LoadingSpinner/>
+                        </Loading>
+                        <Failed>
+                            <Icon Name="Icons.Warning"/>
+                        </Failed>
+                        <Success>
+                            <Icon Name="Icons.Check"/>
+                        </Success>
+                    </StateButton>
+                </div>
+            </div>
+        }
     </div>
 }
 
