@@ -35,8 +35,14 @@
         }
         else
         {
+            <WarningBanner>
+                @Loc["Migrating your account will only move your followers from the old account to the new account. No other user data such as notes or bookmarks will be moved."]
+            </WarningBanner>
             <div class="section">
-                <h3>@Loc["Move current account to new account"]</h3>
+                <h3>@Loc["Migrate current account to new account"]</h3>
+                <WarningBanner>
+                    @Loc["Make sure you've set up an alias for this account on your new account before migrating."]
+                </WarningBanner>
                 <input class="input" placeholder="@("@new@example.com")" autocomplete="off" @bind="@MoveTo" @oninput="() => ResetButtonState(MoveButton)"/>
                 <StateButton OnClick="Migrate" ExtraClasses="button" @ref="MoveButton">
                     <Initial>
@@ -55,7 +61,10 @@
                 </StateButton>
             </div>
             <div class="section">
-                <h3>@Loc["Move to this account from an older account"]</h3>
+                <h3>@Loc["Migrate to this account from an older account"]</h3>
+                <WarningBanner>
+                    @Loc["This will set an alias of your old account so that you can move from that account to this current one. Do this BEFORE migrating from your older account."]
+                </WarningBanner>
                 <div class="aliases">
                     @foreach (var alias in Status.Aliases)
                     {
