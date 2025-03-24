@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using Iceshrimp.MfmSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -79,7 +80,11 @@ public class UserRenderer(
 		               .ToList();
 
 		var attachments = profile?.Fields
-		                         .Select(p => new ASField { Name = p.Name, Value = RenderFieldValue(p.Value) })
+		                         .Select(p => new ASField
+		                         {
+			                         Name  = p.Name,
+			                         Value = RenderFieldValue(p.Value, profile.Mentions, user.Host)
+		                         })
 		                         .Cast<ASAttachment>()
 		                         .ToList();
 
@@ -141,13 +146,11 @@ public class UserRenderer(
 		};
 	}
 
-	private static string RenderFieldValue(string value)
+	private string RenderFieldValue(string value, List<Note.MentionedUser> mentions, string? host)
 	{
-		if (!value.StartsWith("http://") && !value.StartsWith("https://")) return value;
-		if (!Uri.TryCreate(value, UriKind.Absolute, out var uri))
-			return value;
-
-		var displayUri = uri.Host + uri.PathAndQuery + uri.Fragment;
-		return $"<a href=\"{uri.ToString()}\" rel=\"me nofollow noopener\" target=\"_blank\">{displayUri}</a>";
+		var parsed = MfmParser.Parse(value);
+		return parsed is [MfmUrlNode urlNode]
+			? mfmConverter.ProfileFieldToHtml(urlNode)
+			: mfmConverter.ToHtml(parsed, mentions, host, rootElement: "span").Html;
 	}
 }
