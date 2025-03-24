@@ -140,7 +140,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		var settings = await db.UserSettings.FirstOrDefaultAsync(p => p.User == user);
 		if (settings is not { Password: not null }) throw new Exception("settings?.Password was null");
 		if (!AuthHelpers.ComparePassword(request.OldPassword, settings.Password))
-			throw GracefulException.BadRequest("old_password is invalid");
+			throw GracefulException.BadRequest("Old password is incorrect");
 		if (request.NewPassword.Length < 8)
 			throw GracefulException.BadRequest("Password must be at least 8 characters long");
 
