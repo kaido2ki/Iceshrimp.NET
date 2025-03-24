@@ -15,7 +15,7 @@
         if (Text != null)
         {
             var instance = await MetadataService.Instance.Value;
-            TextBody = await MfmRenderer.RenderStringAsync(Text, Emoji, instance.AccountDomain, Simple);
+            TextBody = MfmRenderer.RenderString(Text, Emoji, instance.AccountDomain, Simple);
         }
     }
 
@@ -24,7 +24,7 @@
         if (Text != null)
         {
             var instance = await MetadataService.Instance.Value;
-            TextBody = await MfmRenderer.RenderStringAsync(Text, Emoji, instance.AccountDomain, Simple);
+            TextBody = MfmRenderer.RenderString(Text, Emoji, instance.AccountDomain, Simple);
         }
     }
 }

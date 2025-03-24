@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Dom;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 using AngleSharp.Text;
 using Iceshrimp.MfmSharp;
 using Iceshrimp.Shared.Schemas.Web;
@@ -10,34 +12,37 @@ namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
 public static partial class MfmRenderer
 {
-	public static async Task<MarkupString> RenderStringAsync(
+	public static MarkupString RenderString(
 		string text, List<EmojiResponse> emoji, string accountDomain, bool simple = false
 	)
 	{
 		var res         = MfmParser.Parse(text, simple);
-		var context     = BrowsingContext.New();
-		var document    = await context.OpenNewAsync();
-		var renderedMfm = RenderMultipleNodes(res, document, emoji, accountDomain, simple);
+		var renderedMfm = RenderMultipleNodes(res, emoji, accountDomain, simple);
 		var html        = renderedMfm.ToHtml();
 		return new MarkupString(html);
 	}
 
+	private static readonly Lazy<IHtmlDocument> OwnerDocument =
+		new(() => new HtmlParser().ParseDocument(ReadOnlyMemory<char>.Empty));
+
+	private static IElement CreateElement(string name)  => OwnerDocument.Value.CreateElement(name);
+
 	private static INode RenderMultipleNodes(
-		IEnumerable<IMfmNode> nodes, IDocument document, List<EmojiResponse> emoji, string accountDomain, bool simple
+		IEnumerable<IMfmNode> nodes, List<EmojiResponse> emoji, string accountDomain, bool simple
 	)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 		el.SetAttribute("mfm", "mfm");
 		el.ClassName = "mfm";
 		foreach (var node in nodes)
 		{
 			try
 			{
-				el.AppendNodes(RenderNode(node, document, emoji, accountDomain, simple));
+				el.AppendNodes(RenderNode(node, emoji, accountDomain, simple));
 			}
 			catch (NotImplementedException e)
 			{
-				var fallback = document.CreateElement("span");
+				var fallback = CreateElement("span");
 				fallback.TextContent = $"[Node type <{e.Message}> not implemented]";
 				el.AppendNodes(fallback);
 			}
@@ -47,32 +52,32 @@ public static partial class MfmRenderer
 	}
 
 	private static INode RenderNode(
-		IMfmNode node, IDocument document, List<EmojiResponse> emoji, string accountDomain, bool simple
+		IMfmNode node, List<EmojiResponse> emoji, string accountDomain, bool simple
 	)
 	{
 		// Hard wrap makes this impossible to read
 		// @formatter:off
 		var rendered = node switch
 		{
-			MfmCenterNode _                     => MfmCenterNode(document),
-			MfmCodeBlockNode mfmCodeBlockNode   => MfmCodeBlockNode(mfmCodeBlockNode, document),
+			MfmCenterNode _                     => MfmCenterNode(),
+			MfmCodeBlockNode mfmCodeBlockNode   => MfmCodeBlockNode(mfmCodeBlockNode),
 			MfmMathBlockNode mfmMathBlockNode   => throw new NotImplementedException($"{mfmMathBlockNode.GetType()}"),
-			MfmQuoteNode mfmQuoteNode           => MfmQuoteNode(mfmQuoteNode, document),
+			MfmQuoteNode mfmQuoteNode           => MfmQuoteNode(mfmQuoteNode),
 			IMfmBlockNode mfmBlockNode           => throw new NotImplementedException($"{mfmBlockNode.GetType()}"),
-			MfmBoldNode mfmBoldNode             => MfmBoldNode(mfmBoldNode, document),
-			MfmEmojiCodeNode mfmEmojiCodeNode   => MfmEmojiCodeNode(mfmEmojiCodeNode, document, emoji, simple),
-			MfmFnNode mfmFnNode                 => MfmFnNode(mfmFnNode, document),
-			MfmHashtagNode mfmHashtagNode       => MfmHashtagNode(mfmHashtagNode, document),
-			MfmInlineCodeNode mfmInlineCodeNode => MfmInlineCodeNode(mfmInlineCodeNode, document),
-			MfmItalicNode mfmItalicNode         => MfmItalicNode(mfmItalicNode, document),
-			MfmLinkNode mfmLinkNode             => MfmLinkNode(mfmLinkNode, document),
+			MfmBoldNode mfmBoldNode             => MfmBoldNode(mfmBoldNode),
+			MfmEmojiCodeNode mfmEmojiCodeNode   => MfmEmojiCodeNode(mfmEmojiCodeNode, emoji, simple),
+			MfmFnNode mfmFnNode                 => MfmFnNode(mfmFnNode),
+			MfmHashtagNode mfmHashtagNode       => MfmHashtagNode(mfmHashtagNode),
+			MfmInlineCodeNode mfmInlineCodeNode => MfmInlineCodeNode(mfmInlineCodeNode),
+			MfmItalicNode mfmItalicNode         => MfmItalicNode(mfmItalicNode),
+			MfmLinkNode mfmLinkNode             => MfmLinkNode(mfmLinkNode),
 			MfmInlineMathNode mfmInlineMathNode => throw new NotImplementedException($"{mfmInlineMathNode.GetType()}"),
-			MfmMentionNode mfmMentionNode       => MfmMentionNode(mfmMentionNode, document, accountDomain),
-			MfmPlainNode mfmPlainNode           => MfmPlainNode(mfmPlainNode, document),
-			MfmSmallNode _                      => MfmSmallNode(document),
-			MfmStrikeNode mfmStrikeNode         => MfmStrikeNode(mfmStrikeNode, document),
-			MfmTextNode mfmTextNode             => MfmTextNode(mfmTextNode, document),
-			MfmUrlNode mfmUrlNode               => MfmUrlNode(mfmUrlNode, document),
+			MfmMentionNode mfmMentionNode       => MfmMentionNode(mfmMentionNode, accountDomain),
+			MfmPlainNode mfmPlainNode           => MfmPlainNode(mfmPlainNode),
+			MfmSmallNode _                      => MfmSmallNode(),
+			MfmStrikeNode mfmStrikeNode         => MfmStrikeNode(mfmStrikeNode),
+			MfmTextNode mfmTextNode             => MfmTextNode(mfmTextNode),
+			MfmUrlNode mfmUrlNode               => MfmUrlNode(mfmUrlNode),
 			IMfmInlineNode mfmInlineNode         => throw new NotImplementedException($"{mfmInlineNode.GetType()}"),
 			_ => throw new ArgumentOutOfRangeException(nameof(node))
 		};
@@ -84,11 +89,11 @@ public static partial class MfmRenderer
 			{
 				try
 				{
-					rendered.AppendNodes(RenderNode(childNode, document, emoji, accountDomain, simple));
+					rendered.AppendNodes(RenderNode(childNode, emoji, accountDomain, simple));
 				}
 				catch (NotImplementedException e)
 				{
-					var fallback = document.CreateElement("span");
+					var fallback = CreateElement("span");
 					fallback.TextContent = $"[Node type <{e.Message}> not implemented]";
 					rendered.AppendNodes(fallback);
 				}
@@ -98,56 +103,56 @@ public static partial class MfmRenderer
 		return rendered;
 	}
 
-	private static INode MfmPlainNode(MfmPlainNode _, IDocument document)
+	private static INode MfmPlainNode(MfmPlainNode _)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 		el.ClassName = "plain";
 		return el;
 	}
 
-	private static INode MfmCenterNode(IDocument document)
+	private static INode MfmCenterNode()
 	{
-		var el = document.CreateElement("div");
+		var el = CreateElement("div");
 		el.SetAttribute("style", "text-align: center");
 		return el;
 	}
 
-	private static INode MfmCodeBlockNode(MfmCodeBlockNode node, IDocument document)
+	private static INode MfmCodeBlockNode(MfmCodeBlockNode node)
 	{
-		var el = document.CreateElement("pre");
+		var el = CreateElement("pre");
 		el.ClassName = "code-pre";
-		var childEl = document.CreateElement("code");
+		var childEl = CreateElement("code");
 		childEl.TextContent = node.Code;
 		el.AppendChild(childEl);
 		return el;
 	}
 
-	private static INode MfmQuoteNode(MfmQuoteNode _, IDocument document)
+	private static INode MfmQuoteNode(MfmQuoteNode _)
 	{
-		var el = document.CreateElement("blockquote");
+		var el = CreateElement("blockquote");
 		el.ClassName = "quote-node";
 		return el;
 	}
 
-	private static INode MfmInlineCodeNode(MfmInlineCodeNode node, IDocument document)
+	private static INode MfmInlineCodeNode(MfmInlineCodeNode node)
 	{
-		var el = document.CreateElement("code");
+		var el = CreateElement("code");
 		el.TextContent = node.Code;
 		return el;
 	}
 
-	private static INode MfmHashtagNode(MfmHashtagNode node, IDocument document)
+	private static INode MfmHashtagNode(MfmHashtagNode node)
 	{
-		var el = document.CreateElement("a");
+		var el = CreateElement("a");
 		el.SetAttribute("href", $"/tags/{node.Hashtag}");
 		el.ClassName   = "hashtag-node";
 		el.TextContent = "#" + node.Hashtag;
 		return el;
 	}
 
-	private static INode MfmLinkNode(MfmLinkNode node, IDocument document)
+	private static INode MfmLinkNode(MfmLinkNode node)
 	{
-		var el = document.CreateElement("a");
+		var el = CreateElement("a");
 		el.SetAttribute("href", node.Url);
 		el.SetAttribute("target", "_blank");
 		el.ClassName   = "link-node";
@@ -155,18 +160,18 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmItalicNode(MfmItalicNode _, IDocument document)
+	private static INode MfmItalicNode(MfmItalicNode _)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 		el.SetAttribute("style", "font-style: italic");
 		return el;
 	}
 
 	private static INode MfmEmojiCodeNode(
-		MfmEmojiCodeNode node, IDocument document, List<EmojiResponse> emojiList, bool simple
+		MfmEmojiCodeNode node, List<EmojiResponse> emojiList, bool simple
 	)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 		el.ClassName = simple ? "emoji simple" : "emoji";
 
 		var emoji = emojiList.Find(p => p.Name == node.Name);
@@ -176,7 +181,7 @@ public static partial class MfmRenderer
 		}
 		else
 		{
-			var image = document.CreateElement("img");
+			var image = CreateElement("img");
 			image.SetAttribute("src", emoji.PublicUrl);
 			image.SetAttribute("alt", node.Name);
 			image.SetAttribute("title", $":{emoji.Name}:");
@@ -186,9 +191,9 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmUrlNode(MfmUrlNode node, IDocument document)
+	private static INode MfmUrlNode(MfmUrlNode node)
 	{
-		var el = document.CreateElement("a");
+		var el = CreateElement("a");
 		el.SetAttribute("href", node.Url);
 		el.SetAttribute("target", "_blank");
 		el.ClassName   = "url-node";
@@ -196,47 +201,47 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmBoldNode(MfmBoldNode _, IDocument document)
+	private static INode MfmBoldNode(MfmBoldNode _)
 	{
-		var el = document.CreateElement("strong");
+		var el = CreateElement("strong");
 		return el;
 	}
 
-	private static INode MfmSmallNode(IDocument document)
+	private static INode MfmSmallNode()
 	{
-		var el = document.CreateElement("small");
+		var el = CreateElement("small");
 		el.SetAttribute("style", "opacity: 0.7;");
 		return el;
 	}
 
-	private static INode MfmStrikeNode(MfmStrikeNode _, IDocument document)
+	private static INode MfmStrikeNode(MfmStrikeNode _)
 	{
-		var el = document.CreateElement("del");
+		var el = CreateElement("del");
 		return el;
 	}
 
-	private static INode MfmTextNode(MfmTextNode node, IDocument document)
+	private static INode MfmTextNode(MfmTextNode node)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 		el.TextContent = node.Text;
 		return el;
 	}
 
-	private static INode MfmMentionNode(MfmMentionNode node, IDocument document, string accountDomain)
+	private static INode MfmMentionNode(MfmMentionNode node, string accountDomain)
 	{
-		var link = document.CreateElement("a");
+		var link = CreateElement("a");
 		link.SetAttribute("href",
 		                  node.Host != null && node.Host != accountDomain
 			                  ? $"/@{node.Acct}"
 			                  : $"/@{node.User}");
 		link.ClassName = "mention";
-		var userPart = document.CreateElement("span");
+		var userPart = CreateElement("span");
 		userPart.ClassName   = "user";
 		userPart.TextContent = $"@{node.User}";
 		link.AppendChild(userPart);
 		if (node.Host != null && node.Host != accountDomain)
 		{
-			var hostPart = document.CreateElement("span");
+			var hostPart = CreateElement("span");
 			hostPart.ClassName   = "host";
 			hostPart.TextContent = $"@{node.Host}";
 			link.AppendChild(hostPart);
@@ -245,46 +250,46 @@ public static partial class MfmRenderer
 		return link;
 	}
 
-	private static INode MfmFnNode(MfmFnNode node, IDocument document)
+	private static INode MfmFnNode(MfmFnNode node)
 	{
 		// Simplify node.Args structure to make it more readable in below functions
 		var args = node.Args ?? [];
 		
 		return node.Name switch {
-			"flip"     => MfmFnFlip(args, document),
-			"font"     => MfmFnFont(args, document),
-			"x2"       => MfmFnX(node.Name, document),
-			"x3"       => MfmFnX(node.Name, document),
-			"x4"       => MfmFnX(node.Name, document),
-			"blur"     => MfmFnBlur(document),
-			"jelly"    => MfmFnAnimation(node.Name, args, document),
-			"tada"     => MfmFnAnimation(node.Name, args, document),
-			"jump"     => MfmFnAnimation(node.Name, args, document, "0.75s"),
-			"bounce"   => MfmFnAnimation(node.Name, args, document, "0.75s"),
-			"spin"     => MfmFnSpin(args, document),
-			"shake"    => MfmFnAnimation(node.Name, args, document, "0.5s"),
-			"twitch"   => MfmFnAnimation(node.Name, args, document, "0.5s"),
-			"rainbow"  => MfmFnAnimation(node.Name, args, document),
+			"flip"     => MfmFnFlip(args),
+			"font"     => MfmFnFont(args),
+			"x2"       => MfmFnX(node.Name),
+			"x3"       => MfmFnX(node.Name),
+			"x4"       => MfmFnX(node.Name),
+			"blur"     => MfmFnBlur(),
+			"jelly"    => MfmFnAnimation(node.Name, args),
+			"tada"     => MfmFnAnimation(node.Name, args),
+			"jump"     => MfmFnAnimation(node.Name, args, "0.75s"),
+			"bounce"   => MfmFnAnimation(node.Name, args, "0.75s"),
+			"spin"     => MfmFnSpin(args),
+			"shake"    => MfmFnAnimation(node.Name, args, "0.5s"),
+			"twitch"   => MfmFnAnimation(node.Name, args, "0.5s"),
+			"rainbow"  => MfmFnAnimation(node.Name, args),
 			"sparkle"  => throw new NotImplementedException($"{node.Name}"),
-			"rotate"   => MfmFnRotate(args, document),
-			"fade"     => MfmFnFade(args, document),
-			"crop"     => MfmFnCrop(args, document),
-			"position" => MfmFnPosition(args, document),
-			"scale"    => MfmFnScale(args, document),
-			"fg"       => MfmFnFg(args, document),
-			"bg"       => MfmFnBg(args, document),
-			"border"   => MfmFnBorder(args, document),
-			"ruby"     => MfmFnRuby(node, document),
-			"unixtime" => MfmFnUnixtime(node, document),
-			"center"   => MfmCenterNode(document),
-			"small"    => MfmSmallNode(document),
+			"rotate"   => MfmFnRotate(args),
+			"fade"     => MfmFnFade(args),
+			"crop"     => MfmFnCrop(args),
+			"position" => MfmFnPosition(args),
+			"scale"    => MfmFnScale(args),
+			"fg"       => MfmFnFg(args),
+			"bg"       => MfmFnBg(args),
+			"border"   => MfmFnBorder(args),
+			"ruby"     => MfmFnRuby(node),
+			"unixtime" => MfmFnUnixtime(node),
+			"center"   => MfmCenterNode(),
+			"small"    => MfmSmallNode(),
 			_          => throw new NotImplementedException($"{node.Name}")
 		};
 	}
 
-	private static INode MfmFnFlip(Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnFlip(Dictionary<string, string?> args)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		if (args.ContainsKey("h") && args.ContainsKey("v"))
 			el.ClassName = "fn-flip h v";
@@ -296,9 +301,9 @@ public static partial class MfmRenderer
 		return el;
 	}
 	
-	private static INode MfmFnFont(Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnFont(Dictionary<string, string?> args)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		if (args.ContainsKey("serif"))
 			el.SetAttribute("style", "font-family: serif;");
@@ -312,9 +317,9 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmFnX(string name, IDocument document)
+	private static INode MfmFnX(string name)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		var size = name switch
 		{
@@ -328,9 +333,9 @@ public static partial class MfmRenderer
 		return el;
 	}
 	
-	private static INode MfmFnBlur(IDocument document)
+	private static INode MfmFnBlur()
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		el.ClassName = "fn-blur";
 
@@ -338,10 +343,10 @@ public static partial class MfmRenderer
 	}
 
 	private static INode MfmFnAnimation(
-		string name, Dictionary<string, string?> args, IDocument document, string defaultSpeed = "1s"
+		string name, Dictionary<string, string?> args, string defaultSpeed = "1s"
 	)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		el.ClassName = "fn-animation";
 
@@ -358,9 +363,9 @@ public static partial class MfmRenderer
 		return el;
 	}
 	
-	private static INode MfmFnSpin(Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnSpin(Dictionary<string, string?> args)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		el.ClassName = "fn-spin";
 
@@ -385,9 +390,9 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmFnRotate(Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnRotate(Dictionary<string, string?> args)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		var deg = args.GetValueOrDefault("deg") ?? "90";
 
@@ -400,9 +405,9 @@ public static partial class MfmRenderer
 		return el;
 	}
 	
-	private static INode MfmFnFade(Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnFade(Dictionary<string, string?> args)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		el.ClassName = "fn-fade";
 
@@ -417,9 +422,9 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmFnCrop(Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnCrop(Dictionary<string, string?> args)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		var inset = $"{args.GetValueOrDefault("top") ?? "0"}% {args.GetValueOrDefault("right") ?? "0"}% {args.GetValueOrDefault("bottom") ?? "0"}% {args.GetValueOrDefault("left") ?? "0"}%";
 		el.SetAttribute("style", $"display: inline-block; clip-path: inset({inset});");
@@ -427,9 +432,9 @@ public static partial class MfmRenderer
 		return el;
 	}
 	
-	private static INode MfmFnPosition(Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnPosition(Dictionary<string, string?> args)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		var translateX = args.GetValueOrDefault("x") ?? "0";
 		var translateY = args.GetValueOrDefault("y") ?? "0";
@@ -438,9 +443,9 @@ public static partial class MfmRenderer
 		return el;
 	}
 	
-	private static INode MfmFnScale(Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnScale(Dictionary<string, string?> args)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		var scaleX = args.GetValueOrDefault("x") ?? "1";
 		var scaleY = args.GetValueOrDefault("y") ?? "1";
@@ -457,9 +462,9 @@ public static partial class MfmRenderer
 		return color != null && ColorRegex().Match(color).Success;
 	}
 	
-	private static INode MfmFnFg(Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnFg(Dictionary<string, string?> args)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		if (args.TryGetValue("color", out var color) && ValidColor(color))
 			el.SetAttribute("style", $"display: inline-block; color: #{color};");
@@ -467,9 +472,9 @@ public static partial class MfmRenderer
 		return el;
 	}
 	
-	private static INode MfmFnBg(Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnBg(Dictionary<string, string?> args)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		if (args.TryGetValue("color", out var color) && ValidColor(color))
 			el.SetAttribute("style", $"display: inline-block; background-color: #{color};");
@@ -477,9 +482,9 @@ public static partial class MfmRenderer
 		return el;
 	}
 	
-	private static INode MfmFnBorder(Dictionary<string, string?> args, IDocument document)
+	private static INode MfmFnBorder(Dictionary<string, string?> args)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 
 		var width  = args.GetValueOrDefault("width") ?? "1";
 		var radius = args.GetValueOrDefault("radius") ?? "0";
@@ -500,9 +505,9 @@ public static partial class MfmRenderer
 		};
 	}
 
-	private static INode MfmFnRuby(MfmFnNode node, IDocument document)
+	private static INode MfmFnRuby(MfmFnNode node)
 	{
-		var el = document.CreateElement("ruby");
+		var el = CreateElement("ruby");
 
 		if (node.Children.Length != 1) return el;
 		var childText = GetNodeText(node.Children[0]);
@@ -512,24 +517,24 @@ public static partial class MfmRenderer
 		
 		el.TextContent = split[0];
 
-		var rp1 = document.CreateElement("rp");
+		var rp1 = CreateElement("rp");
 		rp1.TextContent = "(";
 		el.AppendChild(rp1);
 
-		var rt = document.CreateElement("rt");
+		var rt = CreateElement("rt");
 		rt.TextContent = split[1];
 		el.AppendChild(rt);
 
-		var rp2 = document.CreateElement("rp");
+		var rp2 = CreateElement("rp");
 		rp1.TextContent = ")";
 		el.AppendChild(rp2);
 
 		return el;
 	}
 
-	private static INode MfmFnUnixtime(MfmFnNode node, IDocument document)
+	private static INode MfmFnUnixtime(MfmFnNode node)
 	{
-		var el = document.CreateElement("time");
+		var el = CreateElement("time");
 
 		if (node.Children.Length != 1) return el;
 		var childText = GetNodeText(node.Children[0]);
