@@ -1,4 +1,3 @@
-@using System.Timers
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
@@ -14,7 +13,7 @@
         else
         {
             <span class="time"><Timestamp Date="CreatedAt"/></span>
-        }       
+        }
         <span class="visibility">
             @switch (Visibility)
             {
@@ -46,44 +45,4 @@
     [Parameter] [EditorRequired] public required NoteVisibility Visibility   { get; set; }
     [Parameter] [EditorRequired] public required string?        InstanceName { get; set; }
     [Parameter]                  public          string?        OpenNoteId   { get; set; }
-
-    protected override void OnInitialized()
-    {
-        ResetTimer();
-    }
-
-    private void UpdateDisplay(object? _, ElapsedEventArgs elapsedEventArgs)
-    {
-        StateHasChanged();
-        ResetTimer();
-    }
-
-    private void ResetTimer()
-    {
-        var diff = DateTime.Now - CreatedAt;
-        if (diff.TotalMinutes < 1) // Default of 2 seconds
-        {
-            SetTimer();
-        }
-        else if (diff.TotalHours < 1)
-        {
-            SetTimer(20000); // 20 seconds
-        }
-        else if (diff.TotalDays < 1 && diff.TotalHours > 1)
-        {
-            SetTimer(600000); // 10 minutes
-        }
-        else
-        {
-            SetTimer(3600000); // 1 hour
-        }
-    }
-
-    private void SetTimer(int duration = 2000)
-    {
-        var timer = new Timer(duration);
-        timer.Elapsed   += UpdateDisplay;
-        timer.AutoReset =  false;
-        timer.Enabled   =  true;
-    }
 }

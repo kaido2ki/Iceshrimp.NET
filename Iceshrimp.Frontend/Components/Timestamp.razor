@@ -1,3 +1,4 @@
+@using System.Timers
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
@@ -5,7 +6,7 @@
 <span title="@Date.ToLocalTime().ToString("G")">@RenderTimestamp()</span>
 
 @code {
-    [Parameter, EditorRequired] public required DateTime Date             { get; set; }
+    [Parameter, EditorRequired] public required DateTime Date { get; set; }
 
     private string RenderTimestamp()
     {
@@ -22,5 +23,45 @@
             { TotalSeconds: >= 5 } => Loc["{0}s", Math.Floor(diff.TotalSeconds)],
             _                      => Loc["now"]
         };
+    }
+
+    protected override void OnInitialized()
+    {
+        ResetTimer();
+    }
+
+    private void UpdateDisplay(object? _, ElapsedEventArgs elapsedEventArgs)
+    {
+        StateHasChanged();
+        ResetTimer();
+    }
+
+    private void ResetTimer()
+    {
+        var diff = DateTime.Now - Date;
+        if (diff.TotalMinutes < 1) // Default of 1 seconds
+        {
+            SetTimer();
+        }
+        else if (diff.TotalHours < 1)
+        {
+            SetTimer(20000); // 20 seconds
+        }
+        else if (diff.TotalDays < 1 && diff.TotalHours > 1)
+        {
+            SetTimer(600000); // 10 minutes
+        }
+        else
+        {
+            SetTimer(3600000); // 1 hour
+        }
+    }
+
+    private void SetTimer(int duration = 1000)
+    {
+        var timer = new Timer(duration);
+        timer.Elapsed   += UpdateDisplay;
+        timer.AutoReset =  false;
+        timer.Enabled   =  true;
     }
 }
