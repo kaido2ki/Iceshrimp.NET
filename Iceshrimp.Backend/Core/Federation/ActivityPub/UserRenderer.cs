@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using Iceshrimp.MfmSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -84,7 +85,7 @@ public class UserRenderer(
 		                         .ToList();
 
 		var summary = profile?.Description != null
-			? (await mfmConverter.ToHtmlAsync(profile.Description, profile.Mentions, user.Host)).Html
+			? mfmConverter.ToHtml(profile.Description, profile.Mentions, user.Host).Html
 			: null;
 
 		var pronouns = profile?.Pronouns != null ? new LDLocalizedString { Values = profile.Pronouns! } : null;

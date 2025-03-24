@@ -27,11 +27,10 @@ public class UserProfileMentionsResolver(
 		             ?? [];
 
 		if (fields is not { Count: > 0 } && (actor.MkSummary ?? actor.Summary) == null) return ([], []);
-		var parsedFields = await fields.SelectMany<ASField, string?>(p => [p.Name, p.Value])
-		                               .Select(async p => await MfmConverter.ExtractMentionsFromHtmlAsync(p))
-		                               .AwaitAllAsync();
+		var parsedFields = fields.SelectMany<ASField, string?>(p => [p.Name, p.Value])
+		                         .Select(MfmConverter.ExtractMentionsFromHtml);
 
-		var parsedBio = actor.MkSummary == null ? await MfmConverter.ExtractMentionsFromHtmlAsync(actor.Summary) : [];
+		var parsedBio = actor.MkSummary == null ? MfmConverter.ExtractMentionsFromHtml(actor.Summary) : [];
 
 		var userUris     = parsedFields.Prepend(parsedBio).SelectMany(p => p).ToList();
 		var mentionNodes = new List<MfmMentionNode>();

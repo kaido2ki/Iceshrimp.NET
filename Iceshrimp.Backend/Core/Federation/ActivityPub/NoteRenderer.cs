@@ -182,7 +182,7 @@ public class NoteRenderer(
 					To           = to,
 					Tags         = tags,
 					Attachments  = attachments,
-					Content      = text != null ? (await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost, media: inlineMedia)).Html : null,
+					Content      = text != null ? mfmConverter.ToHtml(text, mentions, note.UserHost, media: inlineMedia).Html : null,
 					Summary      = note.Cw,
 					Source = rawText != null
 						? new ASNoteSource { Content = rawText, MediaType = "text/x.misskeymarkdown" }
@@ -214,7 +214,7 @@ public class NoteRenderer(
 			To           = to,
 			Tags         = tags,
 			Attachments  = attachments,
-			Content      = text != null ? (await mfmConverter.ToHtmlAsync(text, mentions, note.UserHost, media: inlineMedia)).Html : null,
+			Content      = text != null ? mfmConverter.ToHtml(text, mentions, note.UserHost, media: inlineMedia).Html : null,
 			Summary      = note.Cw,
 			Source = rawText != null
 				? new ASNoteSource { Content = rawText, MediaType = "text/x.misskeymarkdown" }

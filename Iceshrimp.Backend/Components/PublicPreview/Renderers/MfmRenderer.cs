@@ -14,7 +14,7 @@ public readonly record struct MfmRenderData(MarkupString Html, List<MfmInlineMed
 [UsedImplicitly]
 public class MfmRenderer(MfmConverter converter, FlagService flags) : ISingletonService
 {
-	public async Task<MfmRenderData?> RenderAsync(
+	public MfmRenderData? Render(
 		string? text, string? host, List<Note.MentionedUser> mentions, List<Emoji> emoji, string rootElement,
 		List<PreviewAttachment>? media = null
 	)
@@ -27,14 +27,14 @@ public class MfmRenderer(MfmConverter converter, FlagService flags) : ISingleton
 		flags.SupportsInlineMedia.Value = true;
 
 		var mfmInlineMedia = media?.Select(m => new MfmInlineMedia(MfmInlineMedia.GetType(m.MimeType), m.Url, m.Alt)).ToList();
-		var serialized = await converter.ToHtmlAsync(parsed, mentions, host, emoji: emoji, rootElement: rootElement, media: mfmInlineMedia);
+		var serialized = converter.ToHtml(parsed, mentions, host, emoji: emoji, rootElement: rootElement, media: mfmInlineMedia);
 
 		return new MfmRenderData(new MarkupString(serialized.Html), serialized.InlineMedia);
 	}
 
-	public async Task<MarkupString?> RenderSimpleAsync(string? text, string? host, List<Note.MentionedUser> mentions, List<Emoji> emoji, string rootElement)
+	public MarkupString? RenderSimple(string? text, string? host, List<Note.MentionedUser> mentions, List<Emoji> emoji, string rootElement)
 	{
-		var rendered = await RenderAsync(text, host, mentions, emoji, rootElement);
+		var rendered = Render(text, host, mentions, emoji, rootElement);
 		return rendered?.Html;
 	}
 }

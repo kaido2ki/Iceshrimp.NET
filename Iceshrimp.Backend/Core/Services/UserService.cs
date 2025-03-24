@@ -148,16 +148,12 @@ public class UserService(
 
 		var emoji = await emojiSvc.ProcessEmojiAsync(actor.Tags?.OfType<ASEmoji>().ToList(), host);
 
-		var fields = actor.Attachments != null
-			? await actor.Attachments
-			             .OfType<ASField>()
-			             .Where(p => p is { Name: not null, Value: not null })
-			             .Select(async p => new UserProfile.Field
-			             {
-				             Name = p.Name!, Value = (await MfmConverter.FromHtmlAsync(p.Value)).Mfm
-			             })
-			             .AwaitAllAsync()
-			: null;
+		var fields = actor.Attachments?.OfType<ASField>()
+		                  .Where(p => p is { Name: not null, Value: not null })
+		                  .Select(p => new UserProfile.Field
+		                  {
+			                  Name = p.Name!, Value = MfmConverter.FromHtml(p.Value).Mfm
+		                  });
 
 		var pronouns = actor.Pronouns?.Values.ToDictionary(p => p.Key, p => p.Value ?? "");
 
@@ -170,7 +166,7 @@ public class UserService(
 			                      .ToList()
 			                 ?? [];
 
-			bio = (await MfmConverter.FromHtmlAsync(actor.Summary, hashtags: asHashtags)).Mfm;
+			bio = MfmConverter.FromHtml(actor.Summary, hashtags: asHashtags).Mfm;
 		}
 
 		var tags = ResolveHashtags(MfmParser.Parse(bio), actor);
@@ -318,16 +314,12 @@ public class UserService(
 		                                             ?? throw new
 			                                             Exception("User host must not be null at this stage"));
 
-		var fields = actor.Attachments != null
-			? await actor.Attachments
-			             .OfType<ASField>()
-			             .Where(p => p is { Name: not null, Value: not null })
-			             .Select(async p => new UserProfile.Field
-			             {
-				             Name = p.Name!, Value = (await MfmConverter.FromHtmlAsync(p.Value)).Mfm
-			             })
-			             .AwaitAllAsync()
-			: null;
+		var fields = actor.Attachments?.OfType<ASField>()
+		                  .Where(p => p is { Name: not null, Value: not null })
+		                  .Select(p => new UserProfile.Field
+		                  {
+			                  Name = p.Name!, Value = MfmConverter.FromHtml(p.Value).Mfm
+		                  });
 
 		var pronouns = actor.Pronouns?.Values.ToDictionary(p => p.Key, p => p.Value ?? "");
 
@@ -348,7 +340,7 @@ public class UserService(
 			                      .ToList()
 			                 ?? [];
 
-			user.UserProfile.Description = (await MfmConverter.FromHtmlAsync(actor.Summary, hashtags: asHashtags)).Mfm;
+			user.UserProfile.Description = MfmConverter.FromHtml(actor.Summary, hashtags: asHashtags).Mfm;
 		}
 
 		//user.UserProfile.Birthday = TODO;
@@ -1132,21 +1124,17 @@ public class UserService(
 				{
 					var (mentions, splitDomainMapping) =
 						await bgMentionsResolver.ResolveMentionsAsync(actor, bgUser.Host);
-					var fields = actor.Attachments != null
-						? await actor.Attachments
-						             .OfType<ASField>()
-						             .Where(p => p is { Name: not null, Value: not null })
-						             .Select(async p => new UserProfile.Field
-						             {
-							             Name  = p.Name!,
-							             Value = (await MfmConverter.FromHtmlAsync(p.Value, mentions)).Mfm
-						             })
-						             .AwaitAllAsync()
-						: null;
+					var fields = actor.Attachments?.OfType<ASField>()
+					                  .Where(p => p is { Name: not null, Value: not null })
+					                  .Select(p => new UserProfile.Field
+					                  {
+						                  Name  = p.Name!,
+						                  Value = MfmConverter.FromHtml(p.Value, mentions).Mfm
+					                  });
 
 					var description = actor.MkSummary != null
 						? mentionsResolver.ResolveMentions(actor.MkSummary, bgUser.Host, mentions, splitDomainMapping)
-						: (await MfmConverter.FromHtmlAsync(actor.Summary, mentions)).Mfm;
+						: MfmConverter.FromHtml(actor.Summary, mentions).Mfm;
 
 					bgUser.UserProfile.Mentions    = mentions;
 					bgUser.UserProfile.Fields      = fields?.ToArray() ?? [];

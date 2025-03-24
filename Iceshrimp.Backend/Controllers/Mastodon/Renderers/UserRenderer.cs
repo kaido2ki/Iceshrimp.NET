@@ -31,18 +31,15 @@ public class UserRenderer(
 
 		var profileEmoji = data?.Emoji.Where(p => user.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([user]);
 		var mentions     = profile?.Mentions ?? [];
-		var fields = profile != null
-			? await profile.Fields
-			               .Select(async p => new Field
-			               {
-				               Name  = p.Name,
-				               Value = (await mfmConverter.ToHtmlAsync(p.Value, mentions, user.Host)).Html,
-				               VerifiedAt = p.IsVerified.HasValue && p.IsVerified.Value
-					               ? DateTime.Now.ToStringIso8601Like()
-					               : null
-			               })
-			               .AwaitAllAsync()
-			: null;
+		var fields = profile?.Fields
+		                    .Select(p => new Field
+		                    {
+			                    Name  = p.Name,
+			                    Value = (mfmConverter.ToHtml(p.Value, mentions, user.Host)).Html,
+			                    VerifiedAt = p.IsVerified.HasValue && p.IsVerified.Value
+				                    ? DateTime.Now.ToStringIso8601Like()
+				                    : null
+		                    });
 
 		var fieldsSource = source
 			? profile?.Fields.Select(p => new Field { Name = p.Name, Value = p.Value }).ToList() ?? []
@@ -65,7 +62,7 @@ public class UserRenderer(
 			FollowersCount     = user.FollowersCount,
 			FollowingCount     = user.FollowingCount,
 			StatusesCount      = user.NotesCount,
-			Note               = (await mfmConverter.ToHtmlAsync(profile?.Description ?? "", mentions, user.Host)).Html,
+			Note               = mfmConverter.ToHtml(profile?.Description ?? "", mentions, user.Host).Html,
 			Url                = profile?.Url ?? user.Uri ?? user.GetPublicUrl(config.Value),
 			Uri                = user.Uri ?? user.GetPublicUri(config.Value),
 			AvatarStaticUrl    = user.GetAvatarUrl(config.Value), //TODO

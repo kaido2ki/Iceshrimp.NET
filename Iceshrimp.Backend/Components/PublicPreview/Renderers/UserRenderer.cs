@@ -19,10 +19,10 @@ public class UserRenderer(
 	{
 		if (user == null) return null;
 		var emoji = await GetEmojiAsync([user]);
-		return await RenderAsync(user, emoji);
+		return Render(user, emoji);
 	}
 
-	private async Task<PreviewUser> RenderAsync(User user, Dictionary<string, List<Emoji>> emoji)
+	private PreviewUser Render(User user, Dictionary<string, List<Emoji>> emoji)
 	{
 		var mentions = user.UserProfile?.Mentions ?? [];
 
@@ -37,8 +37,8 @@ public class UserRenderer(
 			AvatarUrl      = user.GetAvatarUrl(instance.Value),
 			BannerUrl      = user.GetBannerUrl(instance.Value),
 			RawDisplayName = user.DisplayName,
-			DisplayName    = await mfm.RenderSimpleAsync(user.DisplayName, user.Host, mentions, emoji[user.Id], "span"),
-			Bio            = await mfm.RenderSimpleAsync(user.UserProfile?.Description, user.Host, mentions, emoji[user.Id], "span"),
+			DisplayName    = mfm.RenderSimple(user.DisplayName, user.Host, mentions, emoji[user.Id], "span"),
+			Bio            = mfm.RenderSimple(user.UserProfile?.Description, user.Host, mentions, emoji[user.Id], "span"),
 			MovedToUri     = user.MovedToUri
 		};
 		// @formatter:on
@@ -64,6 +64,6 @@ public class UserRenderer(
 	public async Task<List<PreviewUser>> RenderManyAsync(List<User> users)
 	{
 		var emoji = await GetEmojiAsync(users);
-		return await users.Select(p => RenderAsync(p, emoji)).AwaitAllAsync().ToListAsync();
+		return users.Select(p => Render(p, emoji)).ToList();
 	}
 }

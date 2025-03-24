@@ -1028,7 +1028,7 @@ public class NoteService(
 			                   .ToList()
 			               ?? [];
 
-			(text, htmlInlineMedia) = await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions, hashtags);
+			(text, htmlInlineMedia) = MfmConverter.FromHtml(note.Content, mentionData.Mentions, hashtags);
 		}
 
 		var cw  = note.Summary;
@@ -1128,7 +1128,7 @@ public class NoteService(
 			                   .ToList()
 			               ?? [];
 
-			(text, htmlInlineMedia) = await MfmConverter.FromHtmlAsync(note.Content, mentionData.Mentions, hashtags);
+			(text, htmlInlineMedia) = MfmConverter.FromHtml(note.Content, mentionData.Mentions, hashtags);
 		}
 
 		var cw = note.Summary;

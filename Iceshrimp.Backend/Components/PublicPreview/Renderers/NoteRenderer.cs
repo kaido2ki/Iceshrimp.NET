@@ -30,31 +30,31 @@ public class NoteRenderer(
 		var attachments = await GetAttachmentsAsync(allNotes);
 		var polls       = await GetPollsAsync(allNotes);
 
-		return await RenderAsync(note, users, mentions, emoji, attachments, polls);
+		return Render(note, users, mentions, emoji, attachments, polls);
 	}
 
-	private async Task<PreviewNote> RenderAsync(
+	private PreviewNote Render(
 		Note note, List<PreviewUser> users, Dictionary<string, List<Note.MentionedUser>> mentions,
 		Dictionary<string, List<Emoji>> emoji, Dictionary<string, List<PreviewAttachment>?> attachments,
 		Dictionary<string, PreviewPoll> polls
 	)
 	{
-		var renderedText = await mfm.RenderAsync(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span", attachments[note.Id]);
+		var renderedText = mfm.Render(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span", attachments[note.Id]);
 		var inlineMediaUrls = renderedText?.InlineMedia.Select(m => m.Src).ToArray() ?? [];
 
 		var res = new PreviewNote
 		{
-			User = users.First(p => p.Id == note.User.Id),
-			Text = renderedText?.Html,
-			Cw = note.Cw,
-			RawText = note.Text,
-			Uri = note.Uri ?? note.GetPublicUri(instance.Value),
-			QuoteUrl = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(instance.Value),
+			User              = users.First(p => p.Id == note.User.Id),
+			Text              = renderedText?.Html,
+			Cw                = note.Cw,
+			RawText           = note.Text,
+			Uri               = note.Uri ?? note.GetPublicUri(instance.Value),
+			QuoteUrl          = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(instance.Value),
 			QuoteInaccessible = note.Renote?.VisibilityIsPublicOrHome == false,
-			Attachments = attachments[note.Id]?.Where(p => !inlineMediaUrls.Contains(p.Url)).ToList(),
-			Poll = polls.GetValueOrDefault(note.Id),
-			CreatedAt = note.CreatedAt.ToDisplayStringTz(),
-			UpdatedAt = note.UpdatedAt?.ToDisplayStringTz()
+			Attachments       = attachments[note.Id]?.Where(p => !inlineMediaUrls.Contains(p.Url)).ToList(),
+			Poll              = polls.GetValueOrDefault(note.Id),
+			CreatedAt         = note.CreatedAt.ToDisplayStringTz(),
+			UpdatedAt         = note.UpdatedAt?.ToDisplayStringTz()
 		};
 
 		return res;
@@ -143,8 +143,6 @@ public class NoteRenderer(
 		var emoji       = await GetEmojiAsync(allNotes);
 		var attachments = await GetAttachmentsAsync(allNotes);
 		var polls       = await GetPollsAsync(allNotes);
-		return await notes.Select(p => RenderAsync(p, users, mentions, emoji, attachments, polls))
-		                  .AwaitAllAsync()
-		                  .ToListAsync();
+		return notes.Select(p => Render(p, users, mentions, emoji, attachments, polls)).ToList();
 	}
 }

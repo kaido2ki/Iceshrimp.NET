@@ -153,8 +153,8 @@ public class NoteRenderer(
 		{
 			if (text != null || quoteUri != null || quoteInaccessible || replyInaccessible)
 			{
-				(content, inlineMedia) = await mfmConverter.ToHtmlAsync(text ?? "", mentionedUsers, note.UserHost, quoteUri,
-				                                          quoteInaccessible, replyInaccessible, media: inlineMedia);
+				(content, inlineMedia) = mfmConverter.ToHtml(text ?? "", mentionedUsers, note.UserHost, quoteUri,
+				                                             quoteInaccessible, replyInaccessible, media: inlineMedia);
 
 				attachments.RemoveAll(attachment => inlineMedia.Any(inline => inline.Src == (attachment.RemoteUrl ?? attachment.Url)));
 			}
@@ -258,7 +258,7 @@ public class NoteRenderer(
 				_                                          => MfmInlineMedia.MediaType.Other
 			}, p.RemoteUrl ?? p.Url, p.Description)).ToList();
 
-			(var content, inlineMedia) = await mfmConverter.ToHtmlAsync(edit.Text ?? "", mentionedUsers, note.UserHost, media: inlineMedia);
+			(var content, inlineMedia) = mfmConverter.ToHtml(edit.Text ?? "", mentionedUsers, note.UserHost, media: inlineMedia);
 			files.RemoveAll(attachment => inlineMedia.Any(inline => inline.Src == (attachment.RemoteUrl ?? attachment.Url)));
 
 			var entry = new StatusEdit

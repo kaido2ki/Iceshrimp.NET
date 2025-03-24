@@ -2,13 +2,14 @@ using System.Text;
 using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Dom;
-using AngleSharp.Html.Parser;
+using AngleSharp.Html.Dom;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.MfmSharp;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.MfmSharp.Helpers;
 using Microsoft.Extensions.Options;
 using MfmHtmlParser = Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing.HtmlParser;
 using HtmlParser = AngleSharp.Html.Parser.HtmlParser;
@@ -47,7 +48,15 @@ public class MfmConverter(
 	FlagService flags
 ) : ISingletonService
 {
-	public static async Task<HtmlMfmData> FromHtmlAsync(
+	private static readonly HtmlParser Parser = new();
+
+	private static readonly Lazy<IHtmlDocument> OwnerDocument =
+		new(() => Parser.ParseDocument(ReadOnlyMemory<char>.Empty));
+
+	private static IElement CreateElement(string name)  => OwnerDocument.Value.CreateElement(name);
+	private static IText    CreateTextNode(string data) => OwnerDocument.Value.CreateTextNode(data);
+
+	public static HtmlMfmData FromHtml(
 		string? html, List<Note.MentionedUser>? mentions = null, List<string>? hashtags = null
 	)
 	{
@@ -64,7 +73,7 @@ public class MfmConverter(
 		// Ensure compatibility with AP servers that send CRLF or CR instead of LF-style newlines
 		html = html.ReplaceLineEndings("\n");
 
-		var dom = await new HtmlParser().ParseDocumentAsync(html);
+		var dom = Parser.ParseDocument(html);
 		if (dom.Body == null) return new HtmlMfmData("", media);
 
 		var sb     = new StringBuilder();
@@ -73,7 +82,7 @@ public class MfmConverter(
 		return new HtmlMfmData(sb.ToString().Trim(), media);
 	}
 
-	public static async Task<List<string>> ExtractMentionsFromHtmlAsync(string? html)
+	public static List<string> ExtractMentionsFromHtml(string? html)
 	{
 		if (html == null) return [];
 
@@ -81,7 +90,7 @@ public class MfmConverter(
 		var regex = new Regex(@"<br\s?\/?>\r?\n", RegexOptions.IgnoreCase);
 		html = regex.Replace(html, "\n");
 
-		var dom = await new HtmlParser().ParseDocumentAsync(html);
+		var dom = Parser.ParseDocument(html);
 		if (dom.Body == null) return [];
 
 		var parser = new HtmlMentionsExtractor();
@@ -91,28 +100,26 @@ public class MfmConverter(
 		return parser.Mentions;
 	}
 
-	public async Task<MfmHtmlData> ToHtmlAsync(
+	public MfmHtmlData ToHtml(
 		IMfmNode[] nodes, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
 		bool quoteInaccessible = false, bool replyInaccessible = false, string rootElement = "p",
 		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
-		var context    = BrowsingContext.New();
-		var document   = await context.OpenNewAsync();
-		var element    = document.CreateElement(rootElement);
+		var element    = CreateElement(rootElement);
 		var hasContent = nodes.Length > 0;
 
 		if (replyInaccessible)
 		{
-			var wrapper = document.CreateElement("span");
-			var re      = document.CreateElement("span");
+			var wrapper = CreateElement("span");
+			var re      = CreateElement("span");
 			re.TextContent = "RE: \ud83d\udd12"; // lock emoji
 			wrapper.AppendChild(re);
 
 			if (hasContent)
 			{
-				wrapper.AppendChild(document.CreateElement("br"));
-				wrapper.AppendChild(document.CreateElement("br"));
+				wrapper.AppendChild(CreateElement("br"));
+				wrapper.AppendChild(CreateElement("br"));
 			}
 
 			element.AppendChild(wrapper);
@@ -120,23 +127,23 @@ public class MfmConverter(
 
 		var usedMedia = new List<MfmInlineMedia>();
 		foreach (var node in nodes)
-			element.AppendNodes(FromMfmNode(document, node, mentions, host, usedMedia, emoji, media));
+			element.AppendNodes(FromMfmNode(node, mentions, host, usedMedia, emoji, media));
 
 		if (quoteUri != null)
 		{
-			var a = document.CreateElement("a");
+			var a = CreateElement("a");
 			a.SetAttribute("href", quoteUri);
 			a.TextContent = quoteUri.StartsWith("https://") ? quoteUri[8..] : quoteUri[7..];
-			var quote = document.CreateElement("span");
+			var quote = CreateElement("span");
 			quote.ClassList.Add("quote-inline");
 
 			if (hasContent)
 			{
-				quote.AppendChild(document.CreateElement("br"));
-				quote.AppendChild(document.CreateElement("br"));
+				quote.AppendChild(CreateElement("br"));
+				quote.AppendChild(CreateElement("br"));
 			}
 
-			var re = document.CreateElement("span");
+			var re = CreateElement("span");
 			re.TextContent = "RE: ";
 			quote.AppendChild(re);
 			quote.AppendChild(a);
@@ -144,39 +151,47 @@ public class MfmConverter(
 		}
 		else if (quoteInaccessible)
 		{
-			var wrapper = document.CreateElement("span");
-			var re      = document.CreateElement("span");
+			var wrapper = CreateElement("span");
+			var re      = CreateElement("span");
 			re.TextContent = "RE: \ud83d\udd12"; // lock emoji
 
 			if (hasContent)
 			{
-				wrapper.AppendChild(document.CreateElement("br"));
-				wrapper.AppendChild(document.CreateElement("br"));
+				wrapper.AppendChild(CreateElement("br"));
+				wrapper.AppendChild(CreateElement("br"));
 			}
 
 			wrapper.AppendChild(re);
 			element.AppendChild(wrapper);
 		}
 
-		await using var sw = new StringWriter();
-		await element.ToHtmlAsync(sw);
-		return new MfmHtmlData(sw.ToString(), usedMedia);
+		return new MfmHtmlData(element.ToHtml(), usedMedia);
 	}
 
-	public async Task<MfmHtmlData> ToHtmlAsync(
+	public MfmHtmlData ToHtml(
 		string mfm, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
 		bool quoteInaccessible = false, bool replyInaccessible = false, string rootElement = "p",
 		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
 		var nodes = MfmParser.Parse(mfm);
-		return await ToHtmlAsync(nodes, mentions, host, quoteUri, quoteInaccessible,
-		                         replyInaccessible, rootElement, emoji, media);
+		return ToHtml(nodes, mentions, host, quoteUri, quoteInaccessible, replyInaccessible, rootElement, emoji, media);
+	}
+
+	public string ProfileFieldToHtml(MfmUrlNode node)
+	{
+		var parsed = FromMfmNode(node, [], null, []);
+		if (parsed is not IHtmlAnchorElement el)
+			return parsed.ToHtml();
+
+		el.SetAttribute("rel", "me nofollow noopener");
+		el.SetAttribute("target", "_blank");
+
+		return el.ToHtml();
 	}
 
 	private INode FromMfmNode(
-		IDocument document, IMfmNode node, List<Note.MentionedUser> mentions, string? host,
-		List<MfmInlineMedia> usedMedia,
+		IMfmNode node, List<Note.MentionedUser> mentions, string? host, List<MfmInlineMedia> usedMedia,
 		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
@@ -194,7 +209,7 @@ public class MfmConverter(
 
 						if (!flags.SupportsInlineMedia.Value || current.Type == MfmInlineMedia.MediaType.Other)
 						{
-							var el = document.CreateElement("a");
+							var el = CreateElement("a");
 							el.SetAttribute("href", current.Src);
 
 							if (current.Type == MfmInlineMedia.MediaType.Other)
@@ -221,7 +236,7 @@ public class MfmConverter(
 								_                              => throw new ArgumentOutOfRangeException()
 							};
 
-							var el = document.CreateElement(nodeName);
+							var el = CreateElement(nodeName);
 							el.SetAttribute("src", current.Src);
 							el.SetAttribute("alt", current.Alt);
 							return el;
@@ -230,16 +245,16 @@ public class MfmConverter(
 				}
 
 				{
-					var el = CreateInlineFormattingElement(document, "i");
-					AddHtmlMarkup(document, el, "*");
-					AppendChildren(el, document, node, mentions, host, usedMedia);
-					AddHtmlMarkup(document, el, "*");
+					var el = CreateInlineFormattingElement("i");
+					AddHtmlMarkup(el, "*");
+					AppendChildren(el, node, mentions, host, usedMedia);
+					AddHtmlMarkup(el, "*");
 					return el;
 				}
 			}
 			case MfmFnNode { Name: "unixtime" } fn:
 			{
-				var el = CreateInlineFormattingElement(document, "i");
+				var el = CreateInlineFormattingElement("i");
 
 				if (fn.Children.Length != 1 || fn.Children.FirstOrDefault() is not MfmTextNode textNode)
 					return Fallback();
@@ -254,55 +269,55 @@ public class MfmConverter(
 
 				IElement Fallback()
 				{
-					AddHtmlMarkup(document, el, "*");
-					AppendChildren(el, document, node, mentions, host, usedMedia);
-					AddHtmlMarkup(document, el, "*");
+					AddHtmlMarkup(el, "*");
+					AppendChildren(el, node, mentions, host, usedMedia);
+					AddHtmlMarkup(el, "*");
 					return el;
 				}
 			}
 			case MfmBoldNode:
 			{
-				var el = CreateInlineFormattingElement(document, "b");
-				AddHtmlMarkup(document, el, "**");
-				AppendChildren(el, document, node, mentions, host, usedMedia);
-				AddHtmlMarkup(document, el, "**");
+				var el = CreateInlineFormattingElement("b");
+				AddHtmlMarkup(el, "**");
+				AppendChildren(el, node, mentions, host, usedMedia);
+				AddHtmlMarkup(el, "**");
 				return el;
 			}
 			case MfmSmallNode:
 			{
-				var el = document.CreateElement("small");
-				AppendChildren(el, document, node, mentions, host, usedMedia);
+				var el = CreateElement("small");
+				AppendChildren(el, node, mentions, host, usedMedia);
 				return el;
 			}
 			case MfmStrikeNode:
 			{
-				var el = CreateInlineFormattingElement(document, "del");
-				AddHtmlMarkup(document, el, "~~");
-				AppendChildren(el, document, node, mentions, host, usedMedia);
-				AddHtmlMarkup(document, el, "~~");
+				var el = CreateInlineFormattingElement("del");
+				AddHtmlMarkup(el, "~~");
+				AppendChildren(el, node, mentions, host, usedMedia);
+				AddHtmlMarkup(el, "~~");
 				return el;
 			}
 			case MfmItalicNode:
 			case MfmFnNode:
 			{
-				var el = CreateInlineFormattingElement(document, "i");
-				AddHtmlMarkup(document, el, "*");
-				AppendChildren(el, document, node, mentions, host, usedMedia);
-				AddHtmlMarkup(document, el, "*");
+				var el = CreateInlineFormattingElement("i");
+				AddHtmlMarkup(el, "*");
+				AppendChildren(el, node, mentions, host, usedMedia);
+				AddHtmlMarkup(el, "*");
 				return el;
 			}
 			case MfmCodeBlockNode codeBlockNode:
 			{
-				var el    = CreateInlineFormattingElement(document, "pre");
-				var inner = CreateInlineFormattingElement(document, "code");
+				var el    = CreateInlineFormattingElement("pre");
+				var inner = CreateInlineFormattingElement("code");
 				inner.TextContent = codeBlockNode.Code;
 				el.AppendNodes(inner);
 				return el;
 			}
 			case MfmCenterNode:
 			{
-				var el = document.CreateElement("div");
-				AppendChildren(el, document, node, mentions, host, usedMedia);
+				var el = CreateElement("div");
+				AppendChildren(el, node, mentions, host, usedMedia);
 				return el;
 			}
 			case MfmEmojiCodeNode emojiCodeNode:
@@ -310,8 +325,8 @@ public class MfmConverter(
 				var punyHost = host?.ToPunycodeLower();
 				if (emoji?.FirstOrDefault(p => p.Name == emojiCodeNode.Name && p.Host == punyHost) is { } hit)
 				{
-					var el    = document.CreateElement("span");
-					var inner = document.CreateElement("img");
+					var el    = CreateElement("span");
+					var inner = CreateElement("img");
 					inner.SetAttribute("src", mediaProxy.GetProxyUrl(hit));
 					inner.SetAttribute("alt", hit.Name);
 					el.AppendChild(inner);
@@ -319,11 +334,11 @@ public class MfmConverter(
 					return el;
 				}
 
-				return document.CreateTextNode($"\u200B:{emojiCodeNode.Name}:\u200B");
+				return CreateTextNode($"\u200B:{emojiCodeNode.Name}:\u200B");
 			}
 			case MfmHashtagNode hashtagNode:
 			{
-				var el = document.CreateElement("a");
+				var el = CreateElement("a");
 				el.SetAttribute("href", $"https://{config.Value.WebDomain}/tags/{hashtagNode.Hashtag}");
 				el.TextContent = $"#{hashtagNode.Hashtag}";
 				el.SetAttribute("rel", "tag");
@@ -332,32 +347,32 @@ public class MfmConverter(
 			}
 			case MfmInlineCodeNode inlineCodeNode:
 			{
-				var el = CreateInlineFormattingElement(document, "code");
+				var el = CreateInlineFormattingElement("code");
 				el.TextContent = inlineCodeNode.Code;
 				return el;
 			}
 			case MfmInlineMathNode inlineMathNode:
 			{
-				var el = CreateInlineFormattingElement(document, "code");
+				var el = CreateInlineFormattingElement("code");
 				el.TextContent = inlineMathNode.Formula;
 				return el;
 			}
 			case MfmMathBlockNode mathBlockNode:
 			{
-				var el = CreateInlineFormattingElement(document, "code");
+				var el = CreateInlineFormattingElement("code");
 				el.TextContent = mathBlockNode.Formula;
 				return el;
 			}
 			case MfmLinkNode linkNode:
 			{
-				var el = document.CreateElement("a");
+				var el = CreateElement("a");
 				el.SetAttribute("href", linkNode.Url);
 				el.TextContent = linkNode.Text;
 				return el;
 			}
 			case MfmMentionNode mentionNode:
 			{
-				var el = document.CreateElement("span");
+				var el = CreateElement("span");
 
 				// Fall back to object host, as localpart-only mentions are relative to the instance the note originated from
 				var finalHost = mentionNode.Host ?? host ?? config.Value.AccountDomain;
@@ -378,10 +393,10 @@ public class MfmConverter(
 				{
 					el.ClassList.Add("h-card");
 					el.SetAttribute("translate", "no");
-					var a = document.CreateElement("a");
+					var a = CreateElement("a");
 					a.ClassList.Add("u-url", "mention");
 					a.SetAttribute("href", mention.Url ?? mention.Uri);
-					var span = document.CreateElement("span");
+					var span = CreateElement("span");
 					span.TextContent = $"@{mention.Username}";
 					a.AppendChild(span);
 					el.AppendChild(a);
@@ -391,25 +406,25 @@ public class MfmConverter(
 			}
 			case MfmQuoteNode:
 			{
-				var el = CreateInlineFormattingElement(document, "blockquote");
-				AddHtmlMarkup(document, el, "> ");
-				AppendChildren(el, document, node, mentions, host, usedMedia);
-				AddHtmlMarkupTag(document, el, "br");
-				AddHtmlMarkupTag(document, el, "br");
+				var el = CreateInlineFormattingElement("blockquote");
+				AddHtmlMarkup(el, "> ");
+				AppendChildren(el, node, mentions, host, usedMedia);
+				AddHtmlMarkupTag(el, "br");
+				AddHtmlMarkupTag(el, "br");
 				return el;
 			}
 			case MfmTextNode textNode:
 			{
-				var el = document.CreateElement("span");
+				var el = CreateElement("span");
 				var nodes = textNode.Text.Split("\r\n")
 				                    .SelectMany(p => p.Split('\r'))
 				                    .SelectMany(p => p.Split('\n'))
-				                    .Select(document.CreateTextNode);
+				                    .Select(CreateTextNode);
 
 				foreach (var htmlNode in nodes)
 				{
 					el.AppendNodes(htmlNode);
-					el.AppendNodes(document.CreateElement("br"));
+					el.AppendNodes(CreateElement("br"));
 				}
 
 				if (el.LastChild != null)
@@ -418,17 +433,25 @@ public class MfmConverter(
 			}
 			case MfmUrlNode urlNode:
 			{
-				var el = document.CreateElement("a");
+				if (
+					!Uri.TryCreate(urlNode.Url, UriKind.Absolute, out var uri)
+					|| uri is not { Scheme: "http" or "https" }
+				)
+				{
+					var fallbackEl = CreateElement("span");
+					fallbackEl.TextContent = urlNode.Url;
+					return fallbackEl;
+				}
+
+				var el = CreateElement("a");
 				el.SetAttribute("href", urlNode.Url);
-				var prefix = urlNode.Url.StartsWith("https://") ? "https://" : "http://";
-				var length = prefix.Length;
-				el.TextContent = urlNode.Url[length..];
+				el.TextContent = uri.ToMfmDisplayString();
 				return el;
 			}
 			case MfmPlainNode:
 			{
-				var el = document.CreateElement("span");
-				AppendChildren(el, document, node, mentions, host, usedMedia);
+				var el = CreateElement("span");
+				AppendChildren(el, node, mentions, host, usedMedia);
 				return el;
 			}
 			default:
@@ -439,32 +462,32 @@ public class MfmConverter(
 	}
 
 	private void AppendChildren(
-		INode element, IDocument document, IMfmNode parent,
+		INode element, IMfmNode parent,
 		List<Note.MentionedUser> mentions, string? host, List<MfmInlineMedia> usedMedia,
 		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
 		foreach (var node in parent.Children)
-			element.AppendNodes(FromMfmNode(document, node, mentions, host, usedMedia, emoji, media));
+			element.AppendNodes(FromMfmNode(node, mentions, host, usedMedia, emoji, media));
 	}
 
-	private IElement CreateInlineFormattingElement(IDocument document, string name)
+	private IElement CreateInlineFormattingElement(string name)
 	{
-		return document.CreateElement(flags.SupportsHtmlFormatting.Value ? name : "span");
+		return CreateElement(flags.SupportsHtmlFormatting.Value ? name : "span");
 	}
 
-	private void AddHtmlMarkup(IDocument document, IElement node, string chars)
+	private void AddHtmlMarkup(IElement node, string chars)
 	{
 		if (flags.SupportsHtmlFormatting.Value) return;
-		var el = document.CreateElement("span");
-		el.AppendChild(document.CreateTextNode(chars));
+		var el = CreateElement("span");
+		el.AppendChild(CreateTextNode(chars));
 		node.AppendChild(el);
 	}
 	
-	private void AddHtmlMarkupTag(IDocument document, IElement node, string tag)
+	private void AddHtmlMarkupTag(IElement node, string tag)
 	{
 		if (flags.SupportsHtmlFormatting.Value) return;
-		var el = document.CreateElement(tag);
+		var el = CreateElement(tag);
 		node.AppendChild(el);
 	}
 }
