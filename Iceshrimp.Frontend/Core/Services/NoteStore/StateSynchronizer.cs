@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Iceshrimp.Shared.Schemas.Web;
 
 namespace Iceshrimp.Frontend.Core.Services.NoteStore;
@@ -16,6 +17,8 @@ internal class StateSynchronizer: IAsyncDisposable
 	
 	public void Broadcast(NoteBase note)
 	{
+		// Trace Logging for broadcast note is null;
+		if (note == null) throw new UnreachableException("Note null when not nullable");
 		NoteChanged?.Invoke(this, note);
 	}
 
