@@ -477,17 +477,23 @@ public static partial class MfmRenderer
 
 		return el;
 	}
-	
+
+	private static readonly List<string> MfmFnBorderStyles =
+	[
+		"hidden", "dotted", "dashed", "solid", "double", "groove", "ridge", "inset", "outset"
+	];
+
 	private static INode MfmFnBorder(Dictionary<string, string?> args)
 	{
 		var el = CreateElement("span");
 
 		var width  = args.GetValueOrDefault("width") ?? "1";
 		var radius = args.GetValueOrDefault("radius") ?? "0";
-		var style  = args.GetValueOrDefault("style") ?? "solid";
-		var color  = args.TryGetValue("color", out var c) && ValidColor(c) ? "#" + c : "var(--notice-color)";
-		
-		el.SetAttribute("style", $"display: inline-block; border: {width}px {style} {color}; border-radius: {radius}px; overflow: clip;");
+		var style  = args.TryGetValue("style", out var s) && s != null && MfmFnBorderStyles.Contains(s) ? s : "solid";
+		var color  = args.TryGetValue("color", out var c) && ValidColor(c) ? "#" + c : "var(--accent-primary-color)";
+		var clip   = args.ContainsKey("noclip") ? "" : " overflow: clip;";
+
+		el.SetAttribute("style", $"display: inline-block; border: {width}px {style} {color}; border-radius: {radius}px;{clip}");
 
 		return el;
 	}
