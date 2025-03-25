@@ -460,6 +460,8 @@ public static partial class MfmRenderer
 
 		if (args.TryGetValue("color", out var color) && ValidColor(color))
 			el.SetAttribute("style", $"display: inline-block; color: #{color};");
+		else
+			el.SetAttribute("style", $"display: inline-block; color: #f00;");
 
 		return el;
 	}
@@ -470,6 +472,8 @@ public static partial class MfmRenderer
 
 		if (args.TryGetValue("color", out var color) && ValidColor(color))
 			el.SetAttribute("style", $"display: inline-block; background-color: #{color};");
+		else
+			el.SetAttribute("style", $"display: inline-block; background-color: #f00;");
 
 		return el;
 	}
