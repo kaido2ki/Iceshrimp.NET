@@ -9,14 +9,14 @@
 <div class="name-section">
     <span class="display-name"><UserDisplayName User="@User"/></span>
     <span class="identifier">
+        @if (User.IsBot)
+        {
+            <Icon Name="Icons.Robot" Size="1.3em" title="Automated"/>
+        }
         @@@User.Username
         @if (User.Host != null)
         {
             <span class="host">@@@User.Host</span>
-        }
-        @if (User.IsBot)
-        {
-            <Icon Name="Icons.Robot" Size="1.3em" title="Automated"/>
         }
     </span>
 </div>
