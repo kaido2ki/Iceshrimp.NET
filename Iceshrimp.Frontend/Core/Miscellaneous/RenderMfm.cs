@@ -301,6 +301,10 @@ public static partial class MfmRenderer
 			el.SetAttribute("style", "font-family: cursive;");
 		else if (args.ContainsKey("fantasy"))
 			el.SetAttribute("style", "font-family: fantasy;");
+		else if (args.ContainsKey("emoji"))
+			el.SetAttribute("style", "font-family: emoji;");
+		else if (args.ContainsKey("math"))
+			el.SetAttribute("style", "font-family: math;");
 
 		return el;
 	}
