@@ -8,10 +8,6 @@
         text-overflow: ellipsis;
         overflow: clip;
         white-space: wrap;
-
-        .host {
-            opacity: 0.5;
-        }
     }
     min-width: 2rem;
     overflow: clip;

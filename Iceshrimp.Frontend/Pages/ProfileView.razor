@@ -48,8 +48,7 @@
                             @@@UserResponse.Username
                             @if (UserResponse.Host != null)
                             {
-                                var host = $"@{UserResponse.Host}";
-                                @host
+                                <span class="host">@@@UserResponse.Host</span>
                             }
                             @if (Profile != null && Profile.Relations.HasFlag(Relations.FollowedBy))
                             {

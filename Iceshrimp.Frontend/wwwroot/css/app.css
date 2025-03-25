@@ -348,6 +348,10 @@ pre:has(code) {
     animation: 3s spinner infinite;
 }
 
+.host {
+    opacity: 0.5;
+}
+
 .lazy-component-target-internal.visible {
     transition: min-height 1s ease-in;
     min-height: 0;

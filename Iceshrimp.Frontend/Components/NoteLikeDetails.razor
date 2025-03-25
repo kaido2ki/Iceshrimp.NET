@@ -14,7 +14,13 @@
                 <UserAvatar User="@el"/>
                 <div class="name-section">
                     <div class="displayname"><UserDisplayName User="@el"/></div>
-                    <div class="username">@@@el.Username@(el.Host != null ? $"@{el.Host}" : "")</div>
+                    <div class="username">
+                        @@@el.Username
+                        @if (el.Host != null)
+                        {
+                            <span class="host">@@@el.Host</span>
+                        }
+                    </div>
                 </div>
             </div>
         }

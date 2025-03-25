@@ -20,8 +20,7 @@
                     @@@User.Username
                     @if (User.Host != null)
                     {
-                        var host = $"@{User.Host}";
-                        @host
+                        <span class="host">@@@User.Host</span>
                     }
                 </div>
                 <div class="metadata">
