@@ -37,7 +37,7 @@ internal class RelatedStore : NoteMessageProvider, IDisposable
 				note.Reactions   = noteResponse.Reactions;
 				note.Poll        = noteResponse.Poll;
 
-				NoteChangedHandlers.First(p => p.Key == note.Id).Value.Invoke(this, note);
+				NoteChangedHandlers.FirstOrDefault(p => p.Key == note.Id).Value?.Invoke(this, note);
 				NoteChanged?.Invoke(this, note);
 			}
 		}

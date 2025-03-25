@@ -36,7 +36,7 @@ internal class NoteStore : NoteMessageProvider, IDisposable
 			note.Poll        = noteResponse.Poll;
 			
 			AnyNoteChanged?.Invoke(this, note);
-			NoteChangedHandlers.First(p => p.Key == note.Id).Value.Invoke(this, note);
+			NoteChangedHandlers.FirstOrDefault(p => p.Key == note.Id).Value?.Invoke(this, note);
 		}
 	}
 	public void Delete(string id)
