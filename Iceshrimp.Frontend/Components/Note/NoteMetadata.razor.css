@@ -20,6 +20,11 @@
 
         a.time {
             color: var(--font-color);
+            text-decoration-line: none;
+        }
+
+        a.time:hover {
+            text-decoration-line: underline;
         }
 
         .visibility {
