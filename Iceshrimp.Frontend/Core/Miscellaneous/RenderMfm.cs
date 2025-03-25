@@ -435,8 +435,8 @@ public static partial class MfmRenderer
 	{
 		var el = CreateElement("span");
 
-		var scaleX = args.GetValueOrDefault("x") ?? "1";
-		var scaleY = args.GetValueOrDefault("y") ?? "1";
+		var scaleX = args.TryGetValue("x", out var x) && float.TryParse(x, out var fx) ? Math.Clamp(fx, -5, 5) : 1;
+		var scaleY = args.TryGetValue("y", out var y) && float.TryParse(y, out var fy) ? Math.Clamp(fy, -5, 5) : 1;
 		el.SetAttribute("style", $"display: inline-block; transform: scale({scaleX}, {scaleY});");
 
 		return el;
