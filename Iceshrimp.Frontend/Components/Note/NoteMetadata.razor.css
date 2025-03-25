@@ -5,7 +5,7 @@
     font-size: 0.9em;
     white-space: nowrap;
     margin-left: auto;
-    min-width: 0;
+    min-width: 3rem;
     overflow: clip;
     flex-basis: 30%;
     flex-shrink: 2;
