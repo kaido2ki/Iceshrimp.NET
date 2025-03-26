@@ -85,7 +85,11 @@
     font-size: 0.7em;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1000px) {
+    .poll-options label {
+        padding: 0.5rem 0.5rem;
+    }
+
     .poll-result {
         flex-direction: column;
         align-items: start;
