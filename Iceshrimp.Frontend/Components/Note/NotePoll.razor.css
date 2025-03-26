@@ -19,6 +19,18 @@
     text-wrap: wrap;
     word-break: break-word;
     cursor: pointer;
+    
+    i {
+        display: inline-block;
+        line-height: 1;
+        vertical-align: middle;
+    }
+}
+
+.poll-options label {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 .poll-option label:hover {

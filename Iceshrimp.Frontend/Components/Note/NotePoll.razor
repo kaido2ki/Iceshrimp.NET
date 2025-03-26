@@ -4,6 +4,7 @@
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
 @inject GlobalComponentSvc             Global;
 @inject NoteActions                    NoteActions;
 @inject IStringLocalizer<Localization> Loc;
@@ -24,6 +25,21 @@
                         <input type="radio" @onchange="() => SelectSingle(i)" id="option-@i" name="poll"/>
                     }
                     <label for="option-@i">
+                        @switch (Poll.Multiple, Choices.Contains(i))
+                        {
+                            case (true, true):
+                                <Icon Name="Icons.CheckSquare" Pack="IconStyle.Fill"/>
+                                break;
+                            case (true, false):
+                                <Icon Name="Icons.Square"/>
+                                break;
+                            case (false, true):
+                                <Icon Name="Icons.RadioButton" Pack="IconStyle.Fill"/>
+                                break;
+                            case (false, false):
+                                <Icon Name="Icons.Circle"/>
+                                break;
+                        }
                         <MfmText Text="@choice.Value" Emoji="@Emoji" Simple="true"/>
                     </label>
                 </span>
