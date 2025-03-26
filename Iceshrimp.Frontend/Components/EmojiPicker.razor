@@ -44,10 +44,8 @@
     protected override async Task OnInitializedAsync()
     {
         GlobalComponentSvc.EmojiPicker = this;
-        EmojiList                      = await EmojiService.GetEmojiAsync();
         _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import",
                                                                                         "./Components/EmojiPicker.razor.js");
-        FilterEmojis();
     }
 
     private async Task Select(EmojiResponse emoji)
@@ -61,8 +59,14 @@
         _module.InvokeVoid("closeDialog", EmojiPickerRef);
     }
 
-    public void Open(ElementReference root, EventCallback<EmojiResponse> func)
+    public async Task Open(ElementReference root, EventCallback<EmojiResponse> func)
     {
+        if (EmojiList.Count == 0)
+        {
+            EmojiList = await EmojiService.GetEmojiAsync();
+            FilterEmojis();
+        }
+
         OnEmojiSelect = func;
         var pos = _module.Invoke<List<float>>("getPosition", root);
         _left = pos[0];

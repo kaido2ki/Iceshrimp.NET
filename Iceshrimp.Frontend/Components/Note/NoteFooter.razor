@@ -193,9 +193,9 @@
         NoteActions.DoQuote(Note);
     }
 
-    private void ToggleEmojiPicker()
+    private async Task ToggleEmojiPicker()
     {
-        GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, React));
+        await GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, React))!;
     }
 
     private void React(EmojiResponse emoji)

@@ -512,9 +512,9 @@
         }
     }
 
-    private void ToggleEmojiPicker()
+    private async Task ToggleEmojiPicker()
     {
-        GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji));
+        await GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji))!;
     }
 
     private async Task AddQuote() =>
