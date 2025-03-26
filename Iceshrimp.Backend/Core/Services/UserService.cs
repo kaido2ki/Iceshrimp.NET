@@ -204,12 +204,12 @@ public class UserService(
 		{
 			User        = user,
 			Description = bio,
-			//Birthday = TODO,
-			//Location = TODO,
-			Fields   = fields?.ToArray() ?? [],
-			UserHost = user.Host,
-			Url      = actor.Url?.Link,
-			Pronouns = pronouns
+			Birthday    = actor.Birthday,
+			Location    = actor.Location,
+			Fields      = fields?.ToArray() ?? [],
+			UserHost    = user.Host,
+			Url         = actor.Url?.Link,
+			Pronouns    = pronouns
 		};
 
 		var publicKey = new UserPublickey
@@ -350,8 +350,8 @@ public class UserService(
 			user.UserProfile.Description = MfmConverter.FromHtml(actor.Summary, hashtags: asHashtags).Mfm;
 		}
 
-		//user.UserProfile.Birthday = TODO;
-		//user.UserProfile.Location = TODO;
+		user.UserProfile.Birthday = actor.Birthday;
+		user.UserProfile.Location = actor.Location;
 		user.UserProfile.Fields   = fields?.ToArray() ?? [];
 		user.UserProfile.UserHost = user.Host;
 		user.UserProfile.Url      = actor.Url?.Link;
