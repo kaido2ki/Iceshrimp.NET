@@ -382,6 +382,9 @@
         TextPlaceholder  = AvailablePlaceholders["default"];
         SendButton.State = StateButton.StateEnum.Initial;
         AttachedQuote    = null;
+
+        if (EmojiList.Count == 0)
+            EmojiList = await EmojiService.GetEmojiAsync();
     }
 
     private async Task CloseDialog()
@@ -503,7 +506,6 @@
         {
             _module = await Js.InvokeAsync<IJSObjectReference>("import",
                                                                "./Components/Compose.razor.js");
-            EmojiList = await EmojiService.GetEmojiAsync();
 
             var instance = await MetadataService.Instance.Value;
             NoteLength = instance.Limits.NoteLength;
