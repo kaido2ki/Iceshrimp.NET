@@ -16,6 +16,7 @@ public class UserResponse : IIdentifiable
 	public          string? BannerAlt       { get; set; }
 	public required string? InstanceName    { get; set; }
 	public required string? InstanceIconUrl { get; set; }
+	public          string? InstanceColor   { get; set; }
 
 	public bool                IsBot  { get; set; } = false;
 	public bool                IsCat  { get; set; } = false;

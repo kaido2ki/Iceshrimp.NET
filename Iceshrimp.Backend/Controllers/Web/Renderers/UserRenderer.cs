@@ -15,8 +15,9 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 	{
 		var instance = user.IsRemoteUser ? data.InstanceData.FirstOrDefault(p => p.Host == user.Host) : null;
 
-		var instanceName = user.IsLocalUser ? data.LocalInstanceData.Name : instance?.Name;
-		var instanceIcon = user.IsLocalUser ? data.LocalInstanceData.FaviconUrl : instance?.FaviconUrl;
+		var instanceName  = user.IsLocalUser ? data.LocalInstanceData.Name : instance?.Name;
+		var instanceIcon  = user.IsLocalUser ? data.LocalInstanceData.FaviconUrl : instance?.FaviconUrl;
+		var instanceColor = user.IsLocalUser ? data.LocalInstanceData.ThemeColor : instance?.ThemeColor;
 
 		if (!data.Emojis.TryGetValue(user.Id, out var emoji))
 			throw new Exception("DTO didn't contain emoji for user");
@@ -36,6 +37,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			BannerAlt       = bannerAlt,
 			InstanceName    = instanceName,
 			InstanceIconUrl = instanceIcon,
+			InstanceColor   = instanceColor,
 			Emojis          = emoji,
 			MovedTo         = user.MovedToUri,
 			IsBot           = user.IsBot,
@@ -55,7 +57,12 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			InstanceData      = instanceData,
 			AvatarAlt         = avatarAlt,
 			BannerAlt         = bannerAlt,
-			LocalInstanceData = (await metaSvc.GetAsync(MetaEntity.InstanceName) ?? config.Value.AccountDomain, "/_content/Iceshrimp.Assets.Branding/favicon.png")
+			LocalInstanceData = new LocalInstance
+			{
+				Name       = await metaSvc.GetAsync(MetaEntity.InstanceName) ?? config.Value.AccountDomain,
+				FaviconUrl = null,
+				ThemeColor = await metaSvc.GetAsync(MetaEntity.ThemeColor)
+			}
 		};
 
 		return Render(user, data);
@@ -94,7 +101,12 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			Emojis            = await GetEmojisAsync(userList),
 			AvatarAlt         = await GetAvatarAltAsync(userList),
 			BannerAlt         = await GetBannerAltAsync(userList),
-			LocalInstanceData = (await metaSvc.GetAsync(MetaEntity.InstanceName) ?? config.Value.AccountDomain, "/_content/Iceshrimp.Assets.Branding/favicon.png")
+			LocalInstanceData = new LocalInstance
+			{
+				Name       = await metaSvc.GetAsync(MetaEntity.InstanceName) ?? config.Value.AccountDomain,
+				FaviconUrl = null,
+				ThemeColor = await metaSvc.GetAsync(MetaEntity.ThemeColor)
+			}
 		};
 
 		return userList.Select(p => Render(p, data));
@@ -129,6 +141,13 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		public required Dictionary<string, List<EmojiResponse>> Emojis;
 		public required Dictionary<string, string?>             AvatarAlt;
 		public required Dictionary<string, string?>             BannerAlt;
-		public required (string Name, string? FaviconUrl)       LocalInstanceData;
+		public required LocalInstance                           LocalInstanceData;
+	}
+
+	private class LocalInstance
+	{
+		public required string  Name       { get; set; }
+		public required string? FaviconUrl { get; set; }
+		public required string? ThemeColor { get; set; }
 	}
 }
