@@ -1,4 +1,5 @@
 @page "/admin/metadata"
+@using System.Text.RegularExpressions
 @using Iceshrimp.Backend.Components.Admin
 @using Iceshrimp.Backend.Core.Extensions
 @using Iceshrimp.Backend.Core.Services
@@ -14,6 +15,8 @@
     <InputText @bind-Value="@Model.Name" id="name" placeholder="Shrimp & friends"/>
     <label for="desc">Instance description</label>
     <InputTextArea @bind-Value="@Model.Description" id="desc" placeholder="Welcome to my instance!"/>
+    <label for="theme-color">Theme color</label>
+    <InputText @bind-Value="@Model.ThemeColor" id="theme-color" placeholder="#7b74cc"/>
     <label for="contact">Admin contact email</label>
     <InputText @bind-Value="@Model.AdminContact" type="email" id="contact" placeholder="webmaster@example.org"/>
     <button type="submit">Submit</button>
@@ -29,12 +32,16 @@
         public string? Name         { get; set; }
         public string? Description  { get; set; }
         public string? AdminContact { get; set; }
+        public string? ThemeColor   { get; set; }
 
         public void Canonicalize()
         {
+            var colorRegex = new Regex(@"^#(?:[0-9a-f]{3}){1,2}$", RegexOptions.IgnoreCase);
+
             Name         = Name?.Trim();
             Description  = Description?.Trim();
             AdminContact = AdminContact?.Trim();
+            ThemeColor   = ThemeColor?.Trim();
 
             if (Name?.Length == 0 || Name == "Iceshrimp.NET")
                 Name = null;
@@ -42,6 +49,8 @@
                 Description = null;
             if (AdminContact?.Length == 0)
                 AdminContact = null;
+            if (!colorRegex.IsMatch(ThemeColor ?? ""))
+                ThemeColor = null;
         }
     }
 
@@ -53,8 +62,8 @@
 
     protected override async Task OnGet()
     {
-        (Model.Name, Model.Description, Model.AdminContact) =
-            await Meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
+        (Model.Name, Model.Description, Model.AdminContact, Model.ThemeColor) =
+            await Meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail, MetaEntity.ThemeColor);
     }
 
     async Task OnSubmit()
@@ -63,6 +72,7 @@
         await Meta.SetAsync(MetaEntity.InstanceName, Model.Name);
         await Meta.SetAsync(MetaEntity.InstanceDescription, Model.Description);
         await Meta.SetAsync(MetaEntity.AdminContactEmail, Model.AdminContact);
+        await Meta.SetAsync(MetaEntity.ThemeColor, Model.ThemeColor);
 
         ReloadPage();
     }
