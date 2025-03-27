@@ -1,3 +1,4 @@
+using AngleSharp.Html.Parser;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -63,14 +64,15 @@ public class InstanceService(
 			{
 				instance.InfoUpdatedAt = DateTime.UtcNow;
 				var nodeinfo = await GetNodeInfoAsync(webDomain);
+				var icons    = await GetIconsAsync(webDomain);
 				if (nodeinfo != null)
 				{
 					instance.Name        = nodeinfo.Metadata?.NodeName;
 					instance.Description = nodeinfo.Metadata?.NodeDescription;
-					//instance.FaviconUrl = TODO,
+					instance.FaviconUrl  = icons.FaviconUrl;
 					//instance.FollowersCount = TODO,
 					//instance.FollowingCount = TODO,
-					//instance.IconUrl = TODO,
+					instance.IconUrl           = icons.IconUrl;
 					instance.MaintainerName    = nodeinfo.Metadata?.Maintainer?.Name;
 					instance.MaintainerEmail   = nodeinfo.Metadata?.Maintainer?.Email;
 					instance.OpenRegistrations = nodeinfo.OpenRegistrations;
@@ -90,6 +92,65 @@ public class InstanceService(
 	{
 		if (user.Host == null || user.Uri == null) throw new Exception("Can't fetch instance metadata for local user");
 		return await GetUpdatedInstanceMetadataAsync(user.Host, new Uri(user.Uri).Host);
+	}
+
+	private async Task<(string? FaviconUrl, string? IconUrl)> GetIconsAsync(string webDomain)
+	{
+		try
+		{
+			const int maxLength = 1_000_000;
+			var       res = await httpClient.GetAsync($"https://{webDomain}", HttpCompletionOption.ResponseHeadersRead);
+
+			if (res is not
+			    {
+				    IsSuccessStatusCode: true,
+				    Content.Headers: { ContentType.MediaType: "text/html", ContentLength: null or <= maxLength }
+			    })
+				return (null, null);
+
+			var contentLength = res.Content.Headers.ContentLength;
+			var stream = await res.Content.ReadAsStreamAsync()
+			                      .ContinueWithResult(p => p.GetSafeStreamOrNullAsync(maxLength, contentLength));
+
+			if (stream == Stream.Null) return (null, null);
+
+			var document = await new HtmlParser().ParseDocumentAsync(stream);
+
+			var faviconUrl = document.Head?.Children.Last(e => e.NodeName.ToLower() == "link"
+			                                                   && (e.GetAttribute("rel")
+			                                                        ?.Contains("icon")
+			                                                       ?? false))
+			                         .GetAttribute("href");
+
+			if (faviconUrl == null)
+			{
+				var favicon = await httpClient.GetAsync($"https://{webDomain}/favicon.ico");
+				if (favicon.IsSuccessStatusCode) faviconUrl = $"https://{webDomain}/favicon.ico";
+			}
+
+			var iconUrl = document.Head?.Children.Last(e => e.NodeName.ToLower() == "link"
+			                                                && (e.GetAttribute("rel")
+			                                                     ?.Contains("apple-touch-icon-precomposed")
+			                                                    ?? false)
+			                                                || (e.GetAttribute("rel")
+			                                                     ?.Contains("apple-touch-icon")
+			                                                    ?? false)
+			                                                || (e.GetAttribute("rel")
+			                                                     ?.Contains("icon")
+			                                                    ?? false))
+			                      .GetAttribute("href");
+
+			var baseUri = new Uri($"https://{webDomain}");
+
+			return (
+				faviconUrl != null ? new Uri(baseUri, faviconUrl).ToString() : null,
+				iconUrl != null ? new Uri(baseUri, iconUrl).ToString() : null
+			);
+		}
+		catch (Exception e)
+		{
+			return (null, null);
+		}
 	}
 
 	private async Task<NodeInfoResponse?> GetNodeInfoAsync(string webDomain)
