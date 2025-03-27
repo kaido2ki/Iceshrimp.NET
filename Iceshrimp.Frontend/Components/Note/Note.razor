@@ -9,7 +9,7 @@
                     <UserDisplayName User="@NoteResponse.User"/>
                 </span>
                 <span class="metadata">
-                    <NoteMetadata Visibility="NoteResponse.Visibility" InstanceName="@null" CreatedAt="DateTime.Parse(NoteResponse.CreatedAt)"/>
+                    <NoteMetadata Visibility="NoteResponse.Visibility" CreatedAt="DateTime.Parse(NoteResponse.CreatedAt)"/>
                 </span>
             </div>
             <NoteComponent Note="NoteResponse.Renote" Quote="NoteResponse.Quote" Indented="Indented" OpenNote="@OpenNote"/>

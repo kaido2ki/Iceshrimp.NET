@@ -34,15 +34,23 @@
             }
         </span>
     </span>
-    @if (InstanceName != null)
-    {
-        <span class="instance">@InstanceName</span>
-    }
+    <span class="ticker" title="@InstanceName">
+        @if (InstanceIcon != null)
+        {
+            <img class="icon" src="@InstanceIcon" alt="icon"/>
+        }
+        @if (InstanceName != null)
+        {
+            <span class="instance"  style="@(InstanceColor != null ? "--color: " + InstanceColor + ";" : "")">@InstanceName</span>
+        }
+    </span>
 </div>
 
 @code {
-    [Parameter] [EditorRequired] public required DateTime       CreatedAt    { get; set; }
-    [Parameter] [EditorRequired] public required NoteVisibility Visibility   { get; set; }
-    [Parameter] [EditorRequired] public required string?        InstanceName { get; set; }
-    [Parameter]                  public          string?        OpenNoteId   { get; set; }
+    [Parameter] [EditorRequired] public required DateTime       CreatedAt     { get; set; }
+    [Parameter] [EditorRequired] public required NoteVisibility Visibility    { get; set; }
+    [Parameter]                  public          string?        InstanceName  { get; set; }
+    [Parameter]                  public          string?        InstanceIcon  { get; set; }
+    [Parameter]                  public          string?        InstanceColor { get; set; }
+    [Parameter]                  public          string?        OpenNoteId    { get; set; }
 }

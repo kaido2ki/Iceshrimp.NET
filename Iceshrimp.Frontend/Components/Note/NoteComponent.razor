@@ -14,6 +14,8 @@
             <NoteMetadata
                 Visibility="@Note.Visibility"
                 InstanceName="@Note.User.InstanceName"
+                InstanceIcon="@Note.User.InstanceIconUrl"
+                InstanceColor="@Note.User.InstanceColor"
                 CreatedAt="DateTime.Parse(Note.CreatedAt)"
                 OpenNoteId="@(OpenNote ? Note.Id : null)"
             />
