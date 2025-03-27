@@ -147,7 +147,7 @@ public class InstanceService(
 				iconUrl != null ? new Uri(baseUri, iconUrl).ToString() : null
 			);
 		}
-		catch (Exception e)
+		catch
 		{
 			return (null, null);
 		}
