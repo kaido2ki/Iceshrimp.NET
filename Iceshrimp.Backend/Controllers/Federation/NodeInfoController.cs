@@ -46,9 +46,9 @@ public class NodeInfoController(
 		var localPosts    = await db.Notes.LongCountAsync(p => p.UserHost == null);
 		var maxUploadSize = storageConfig.Value.MaxUploadSizeBytes;
 
-		var (instanceName, instanceDescription, adminContact) =
+		var (instanceName, instanceDescription, adminContact, themeColor) =
 			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription,
-			                        MetaEntity.AdminContactEmail);
+			                        MetaEntity.AdminContactEmail, MetaEntity.ThemeColor);
 		
 		return new NodeInfoResponse
 		{
@@ -88,7 +88,7 @@ public class NodeInfoController(
 				TosUrl                     = "todo",
 				RepositoryUrl              = new Uri(Constants.RepositoryUrl),
 				FeedbackUrl                = new Uri(Constants.IssueTrackerUrl),
-				ThemeColor                 = "#000000",
+				ThemeColor                 = themeColor,
 				DisableRegistration        = true,
 				DisableLocalTimeline       = false,
 				DisableRecommendedTimeline = false,
