@@ -31,6 +31,10 @@
         </details>
     }
 }
+@if (State == State.NotFound)
+{
+    <i>Not found</i>
+}
 
 @code {
     [Parameter] public string?                          NoteId    { get; set; }
@@ -42,7 +46,17 @@
     {
         if (NoteId != null)
         {
-            
+            var noteResponse = await Api.Notes.GetNoteAsync(NoteId);
+
+            if (noteResponse == null)
+            {
+                State = State.NotFound;
+                return;
+            }
+
+            Documents.Add(Loc["Note response"], JsonSerializer.SerializeToDocument(noteResponse));
+
+            State = State.Loaded;
         }
         else if (User != null)
         {
@@ -53,16 +67,15 @@
             if (userResponse is null)
             {
                 State = State.NotFound;
+                return;
             }
-            else
-            {
-                var profileResponse = await Api.Users.GetUserProfileAsync(userResponse.Id);
 
-                Documents.Add(Loc["User response"], JsonSerializer.SerializeToDocument(userResponse));
-                Documents.Add(Loc["Profile response"], JsonSerializer.SerializeToDocument(profileResponse));
+            var profileResponse = await Api.Users.GetUserProfileAsync(userResponse.Id);
 
-                State = State.Loaded;
-            }
+            Documents.Add(Loc["User response"], JsonSerializer.SerializeToDocument(userResponse));
+            Documents.Add(Loc["Profile response"], JsonSerializer.SerializeToDocument(profileResponse));
+
+            State = State.Loaded;
         }
         else
         {
