@@ -12,7 +12,18 @@
             var i = 0;
             @foreach (var item in Element.EnumerateArray())
             {
-                <dt>@i:</dt>
+                @switch (item.ValueKind)
+                {
+                    case JsonValueKind.Array:
+                        <dt>@i: []</dt>
+                        break;
+                    case JsonValueKind.Object:
+                        <dt>@i: {}</dt>
+                        break;
+                    default:
+                        <dt>@i:</dt>
+                        break;
+                }
                 @RenderElement(item)
 
                 i++;
@@ -26,10 +37,10 @@
             @switch (prop.Value.ValueKind)
             {
                 case JsonValueKind.Array:
-                    <dt>@prop.Name []</dt>
+                    <dt>@prop.Name: []</dt>
                     break;
                 case JsonValueKind.Object:
-                    <dt>@prop.Name {}</dt>
+                    <dt>@prop.Name: {}</dt>
                     break;
                 default:
                     <dt>@prop.Name:</dt>
