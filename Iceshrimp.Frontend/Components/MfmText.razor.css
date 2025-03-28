@@ -104,6 +104,13 @@
 }
 
 ::deep {
+    .fallback {
+        text-decoration: 2px dotted underline red;
+        cursor: not-allowed;
+    }
+}
+
+::deep {
     .plain {
         text-decoration: none;
     }

@@ -36,16 +36,7 @@ public static partial class MfmRenderer
 		el.ClassName = "mfm";
 		foreach (var node in nodes)
 		{
-			try
-			{
-				el.AppendNodes(RenderNode(node, emoji, accountDomain, simple));
-			}
-			catch (NotImplementedException e)
-			{
-				var fallback = CreateElement("span");
-				fallback.TextContent = $"[Node type <{e.Message}> not implemented]";
-				el.AppendNodes(fallback);
-			}
+			el.AppendNodes(RenderNode(node, emoji, accountDomain, simple));
 		}
 
 		return el;
@@ -61,9 +52,8 @@ public static partial class MfmRenderer
 		{
 			MfmCenterNode _                     => MfmCenterNode(),
 			MfmCodeBlockNode mfmCodeBlockNode   => MfmCodeBlockNode(mfmCodeBlockNode),
-			MfmMathBlockNode mfmMathBlockNode   => throw new NotImplementedException($"{mfmMathBlockNode.GetType()}"),
+			// MfmMathBlockNode mfmMathBlockNode   => TODO: Implement math block node
 			MfmQuoteNode mfmQuoteNode           => MfmQuoteNode(mfmQuoteNode),
-			IMfmBlockNode mfmBlockNode           => throw new NotImplementedException($"{mfmBlockNode.GetType()}"),
 			MfmBoldNode mfmBoldNode             => MfmBoldNode(mfmBoldNode),
 			MfmEmojiCodeNode mfmEmojiCodeNode   => MfmEmojiCodeNode(mfmEmojiCodeNode, emoji, simple),
 			MfmFnNode mfmFnNode                 => MfmFnNode(mfmFnNode),
@@ -71,15 +61,14 @@ public static partial class MfmRenderer
 			MfmInlineCodeNode mfmInlineCodeNode => MfmInlineCodeNode(mfmInlineCodeNode),
 			MfmItalicNode mfmItalicNode         => MfmItalicNode(mfmItalicNode),
 			MfmLinkNode mfmLinkNode             => MfmLinkNode(mfmLinkNode),
-			MfmInlineMathNode mfmInlineMathNode => throw new NotImplementedException($"{mfmInlineMathNode.GetType()}"),
+			// MfmInlineMathNode mfmInlineMathNode => TODO: Implement inline math
 			MfmMentionNode mfmMentionNode       => MfmMentionNode(mfmMentionNode, accountDomain),
 			MfmPlainNode mfmPlainNode           => MfmPlainNode(mfmPlainNode),
 			MfmSmallNode _                      => MfmSmallNode(),
 			MfmStrikeNode mfmStrikeNode         => MfmStrikeNode(mfmStrikeNode),
 			MfmTextNode mfmTextNode             => MfmTextNode(mfmTextNode),
 			MfmUrlNode mfmUrlNode               => MfmUrlNode(mfmUrlNode),
-			IMfmInlineNode mfmInlineNode         => throw new NotImplementedException($"{mfmInlineNode.GetType()}"),
-			_ => throw new ArgumentOutOfRangeException(nameof(node))
+			_ => MfmFallbackNode(nameof(node))
 		};
 		// @formatter:on
 
@@ -87,20 +76,20 @@ public static partial class MfmRenderer
 		{
 			foreach (var childNode in node.Children)
 			{
-				try
-				{
-					rendered.AppendNodes(RenderNode(childNode, emoji, accountDomain, simple));
-				}
-				catch (NotImplementedException e)
-				{
-					var fallback = CreateElement("span");
-					fallback.TextContent = $"[Node type <{e.Message}> not implemented]";
-					rendered.AppendNodes(fallback);
-				}
+				rendered.AppendNodes(RenderNode(childNode, emoji, accountDomain, simple));
 			}
 		}
 
 		return rendered;
+	}
+
+	private static INode MfmFallbackNode(string nodeName)
+	{
+		var el = CreateElement("span");
+		el.ClassName = "fallback";
+		el.SetAttribute("title", $"Node type <{nodeName}> not implemented");
+
+		return el;
 	}
 
 	private static INode MfmPlainNode(MfmPlainNode _)
@@ -270,7 +259,6 @@ public static partial class MfmRenderer
 			"shake"    => MfmFnAnimation(node.Name, args, "0.5s"),
 			"twitch"   => MfmFnAnimation(node.Name, args, "0.5s"),
 			"rainbow"  => MfmFnAnimation(node.Name, args),
-			"sparkle"  => throw new NotImplementedException($"{node.Name}"),
 			"rotate"   => MfmFnRotate(args),
 			"fade"     => MfmFnFade(args),
 			"crop"     => MfmFnCrop(args),
@@ -283,7 +271,7 @@ public static partial class MfmRenderer
 			"unixtime" => MfmFnUnixtime(node),
 			"center"   => MfmCenterNode(),
 			"small"    => MfmSmallNode(),
-			_          => throw new NotImplementedException($"{node.Name}")
+			_          => MfmFallbackNode($"{node.GetType()}+{node.Name}")
 		};
 	}
 
