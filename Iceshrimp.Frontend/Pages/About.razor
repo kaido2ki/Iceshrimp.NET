@@ -1,5 +1,6 @@
 @page "/notes/{NoteId}/about"
 @page "/{User}/about"
+@using System.Text.Encodings.Web
 @using System.Text.Json
 @using System.Text.RegularExpressions
 @using Iceshrimp.Assets.PhosphorIcons
@@ -7,11 +8,13 @@
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Configuration
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Sections
 @using Microsoft.Extensions.Localization
 @attribute [Authorize]
 @inject ApiService                     Api;
+@inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 @inject SessionService                 SessionSvc;
 
@@ -29,6 +32,10 @@
         <details>
             <summary>@document.Key</summary>
             <JsonViewer Element="document.Value.RootElement"/>
+            <button @onclick="() => CopyToClipboard(document.Value)" class="btn">
+                <Icon Name="Icons.Copy"/>
+                @Loc["Copy contents"]
+            </button>
         </details>
     }
 }
@@ -43,6 +50,16 @@
     private            State                            State     { get; set; }
     private            Dictionary<string, JsonDocument> Documents { get; set; } = [];
 
+    private async Task CopyToClipboard(JsonDocument document)
+    {
+        var options = new JsonSerializerOptions
+        {
+            Encoder       = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            WriteIndented = true
+        };
+        await Js.InvokeVoidAsync("navigator.clipboard.writeText", JsonSerializer.Serialize(document.RootElement, options));
+    }
+
     protected override async Task OnInitializedAsync()
     {
         if (NoteId != null)
@@ -55,7 +72,7 @@
                 return;
             }
 
-            Documents.Add(Loc["Note response"], JsonSerializer.SerializeToDocument(noteResponse));
+            Documents.Add(Loc["Note response"], JsonSerializer.SerializeToDocument(noteResponse, JsonSerialization.Options));
             
             if (SessionSvc.Current?.IsAdmin is true)
             {
@@ -81,8 +98,8 @@
 
             var profileResponse = await Api.Users.GetUserProfileAsync(userResponse.Id);
 
-            Documents.Add(Loc["User response"], JsonSerializer.SerializeToDocument(userResponse));
-            Documents.Add(Loc["Profile response"], JsonSerializer.SerializeToDocument(profileResponse));
+            Documents.Add(Loc["User response"], JsonSerializer.SerializeToDocument(userResponse, JsonSerialization.Options));
+            Documents.Add(Loc["Profile response"], JsonSerializer.SerializeToDocument(profileResponse, JsonSerialization.Options));
 
             if (SessionSvc.Current?.IsAdmin is true)
             {
