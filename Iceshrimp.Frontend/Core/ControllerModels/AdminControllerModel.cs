@@ -1,3 +1,4 @@
+using System.Text.Json.Nodes;
 using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 
@@ -8,6 +9,11 @@ internal class AdminControllerModel(ApiClient api)
 	public Task<InviteResponse> GenerateInviteAsync() =>
 		api.CallAsync<InviteResponse>(HttpMethod.Post, "/invites/generate");
 
-	//TODO: ActivityStreams debug endpoints
+	public Task<JsonObject?> GetActivityByNoteIdAsync(string id) =>
+		api.CallNullableAsync<JsonObject>(HttpMethod.Get, $"/admin/activities/notes/{id}");
+
+	public Task<JsonObject?> GetActivityByUserIdAsync(string id) =>
+		api.CallNullableAsync<JsonObject>(HttpMethod.Get, $"/admin/activities/users/{id}");
+
 	//TODO: other endpoints
 }

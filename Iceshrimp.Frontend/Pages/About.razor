@@ -13,6 +13,7 @@
 @attribute [Authorize]
 @inject ApiService                     Api;
 @inject IStringLocalizer<Localization> Loc;
+@inject SessionService                 SessionSvc;
 
 <HeadTitle Text="@Loc["About"]"/>
 
@@ -55,6 +56,14 @@
             }
 
             Documents.Add(Loc["Note response"], JsonSerializer.SerializeToDocument(noteResponse));
+            
+            if (SessionSvc.Current?.IsAdmin is true)
+            {
+                var activity = await Api.Admin.GetActivityByNoteIdAsync(noteResponse.Id);
+
+                if (activity != null)
+                    Documents.Add(Loc["Activity"], JsonSerializer.SerializeToDocument(activity));
+            }
 
             State = State.Loaded;
         }
@@ -74,6 +83,14 @@
 
             Documents.Add(Loc["User response"], JsonSerializer.SerializeToDocument(userResponse));
             Documents.Add(Loc["Profile response"], JsonSerializer.SerializeToDocument(profileResponse));
+
+            if (SessionSvc.Current?.IsAdmin is true)
+            {
+                var activity = await Api.Admin.GetActivityByUserIdAsync(userResponse.Id);
+
+                if (activity != null)
+                    Documents.Add(Loc["Activity"], JsonSerializer.SerializeToDocument(activity));
+            }
 
             State = State.Loaded;
         }

@@ -53,7 +53,7 @@
                     <JsonViewer Element="element"/>
                 </dd>),
             JsonValueKind.Number => (@<dd><span class="number">@element.GetDouble()</span></dd>),
-            JsonValueKind.String => (element.GetString() is { } s && Uri.TryCreate(s, UriKind.Absolute, out var _)
+            JsonValueKind.String => (element.GetString() is { } s && s.StartsWith("https://") && Uri.TryCreate(s, UriKind.Absolute, out var _)
                 ? @<dd><a href="@s" target="_blank">@s</a></dd>
                 : @<dd><span class="string">"@element.GetString()?.ReplaceLineEndings("\\n")"</span></dd>),
             _ => throw new ArgumentOutOfRangeException()

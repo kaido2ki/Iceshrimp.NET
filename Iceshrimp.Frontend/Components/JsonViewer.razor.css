@@ -1,4 +1,5 @@
 .json {
+    word-break: break-word;
     dt {
         color: #66C3CC;
         font-weight: bold;
