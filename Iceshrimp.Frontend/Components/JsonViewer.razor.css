@@ -1,0 +1,16 @@
+.json {
+    dt {
+        color: #66C3CC;
+        font-weight: bold;
+    }
+    .keyword {
+        color: #6C95EB;
+        font-family: monospace;
+    }
+    .number {
+        color: #ED94C0;
+    }
+    .string {
+        color: #C9A26D;
+    }
+}

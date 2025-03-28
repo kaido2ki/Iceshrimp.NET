@@ -1,0 +1,62 @@
+@using System.Text.Json
+
+<div class="json">
+    @if (Element.ValueKind == JsonValueKind.Array)
+    {
+        @if (Element.GetArrayLength() == 0)
+        {
+            <span class="keyword">Empty</span>
+        }
+        else
+        {
+            var i = 0;
+            @foreach (var item in Element.EnumerateArray())
+            {
+                <dt>@i:</dt>
+                @RenderElement(item)
+
+                i++;
+            }
+        }
+    }
+    else if (Element.ValueKind == JsonValueKind.Object)
+    {
+        @foreach (var prop in Element.EnumerateObject())
+        {
+            @switch (prop.Value.ValueKind)
+            {
+                case JsonValueKind.Array:
+                    <dt>@prop.Name []</dt>
+                    break;
+                case JsonValueKind.Object:
+                    <dt>@prop.Name {}</dt>
+                    break;
+                default:
+                    <dt>@prop.Name:</dt>
+                    break;
+            }
+            @RenderElement(prop.Value)
+        }
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required JsonElement Element { get; set; }
+
+    RenderFragment RenderElement(JsonElement element)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.True or JsonValueKind.False or JsonValueKind.Null or JsonValueKind.Undefined => (@<dd>
+                    <span class="keyword">@element.ValueKind.ToString()</span></dd>),
+            JsonValueKind.Array or JsonValueKind.Object => (@<dd>
+                    <JsonViewer Element="element"/>
+                </dd>),
+            JsonValueKind.Number => (@<dd><span class="number">@element.GetDouble()</span></dd>),
+            JsonValueKind.String => (element.GetString() is { } s && Uri.TryCreate(s, UriKind.Absolute, out var _)
+                ? @<dd><a href="@s" target="_blank">@s</a></dd>
+                : @<dd><span class="string">"@element.GetString()?.ReplaceLineEndings("\\n")"</span></dd>),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+}

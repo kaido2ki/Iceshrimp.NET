@@ -1,0 +1,14 @@
+details {
+    padding: 1rem 1rem;
+    width: 100%;
+}
+
+summary {
+    padding: 0.5rem 1rem;
+    background-color: var(--highlight-color);
+    cursor: pointer;
+}
+
+summary:hover {
+    background-color: var(--hover-color);
+}
