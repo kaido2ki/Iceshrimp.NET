@@ -51,6 +51,10 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		var emojis       = await GetEmojisAsync([user]);
 		var avatarAlt    = await GetAvatarAltAsync([user]);
 		var bannerAlt    = await GetBannerAltAsync([user]);
+
+		var iconId  = await metaSvc.GetAsync(MetaEntity.IconFileId);
+		var favicon = iconId != null ? await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == iconId) : null;
+
 		var data = new UserRendererDto
 		{
 			Emojis            = emojis,
@@ -60,7 +64,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			LocalInstanceData = new LocalInstance
 			{
 				Name       = await metaSvc.GetAsync(MetaEntity.InstanceName) ?? config.Value.AccountDomain,
-				FaviconUrl = null,
+				FaviconUrl = favicon?.PublicUrl,
 				ThemeColor = await metaSvc.GetAsync(MetaEntity.ThemeColor)
 			}
 		};
@@ -94,6 +98,9 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 
 	public async Task<IEnumerable<UserResponse>> RenderManyAsync(IEnumerable<User> users)
 	{
+		var iconId  = await metaSvc.GetAsync(MetaEntity.IconFileId);
+		var favicon = iconId != null ? await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == iconId) : null;
+
 		var userList = users.ToList();
 		var data = new UserRendererDto
 		{
@@ -104,7 +111,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			LocalInstanceData = new LocalInstance
 			{
 				Name       = await metaSvc.GetAsync(MetaEntity.InstanceName) ?? config.Value.AccountDomain,
-				FaviconUrl = null,
+				FaviconUrl = favicon?.PublicUrl,
 				ThemeColor = await metaSvc.GetAsync(MetaEntity.ThemeColor)
 			}
 		};
