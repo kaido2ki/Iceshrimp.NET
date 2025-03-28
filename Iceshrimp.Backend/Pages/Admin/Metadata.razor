@@ -10,7 +10,9 @@
 
 <p>Here you can adjust basic instance metadata. It gets displayed to all users, including guests.</p>
 
-<EditForm FormName="update-metadata" Model="Model" OnSubmit="@OnSubmit">
+<EditForm FormName="update-metadata" Model="Model" OnSubmit="@OnSubmit" enctype="multipart/form-data">
+    <label for="icon">Icon</label>
+    <InputFile name="Model.IconFile" id="icon" accept="image/*"/>
     <label for="name">Instance name</label>
     <InputText @bind-Value="@Model.Name" id="name" placeholder="Shrimp & friends"/>
     <label for="desc">Instance description</label>
@@ -23,16 +25,19 @@
 </EditForm>
 
 @code {
-    [Inject] public required MetaService Meta { get; set; }
+    [Inject] public required DriveService      Drive      { get; set; }
+    [Inject] public required MetaService       Meta       { get; set; }
+    [Inject] public required SystemUserService SystemUser { get; set; }
 
     [SupplyParameterFromForm] private MetadataModel Model { get; set; } = null!;
 
     private class MetadataModel
     {
-        public string? Name         { get; set; }
-        public string? Description  { get; set; }
-        public string? AdminContact { get; set; }
-        public string? ThemeColor   { get; set; }
+        public string?    Name         { get; set; }
+        public string?    Description  { get; set; }
+        public string?    AdminContact { get; set; }
+        public string?    ThemeColor   { get; set; }
+        public IFormFile? IconFile     { get; set; }
 
         public void Canonicalize()
         {
@@ -51,6 +56,8 @@
                 AdminContact = null;
             if (!colorRegex.IsMatch(ThemeColor ?? ""))
                 ThemeColor = null;
+            if (!IconFile?.ContentType.StartsWith("image/") ?? false)
+                IconFile = null;
         }
     }
 
@@ -73,6 +80,15 @@
         await Meta.SetAsync(MetaEntity.InstanceDescription, Model.Description);
         await Meta.SetAsync(MetaEntity.AdminContactEmail, Model.AdminContact);
         await Meta.SetAsync(MetaEntity.ThemeColor, Model.ThemeColor);
+
+        if (Model.IconFile != null)
+        {
+            var ia  = await SystemUser.GetInstanceActorAsync();
+            var req = new DriveFileCreationRequest { Filename = Model.IconFile.Name, IsSensitive = false, MimeType = Model.IconFile.ContentType };
+
+            var file = await Drive.StoreFileAsync(Model.IconFile.OpenReadStream(), ia, req);
+            await Meta.SetAsync(MetaEntity.IconFileId, file.Id);
+        }
 
         ReloadPage();
     }
