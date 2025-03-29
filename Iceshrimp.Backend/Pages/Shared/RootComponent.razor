@@ -72,8 +72,8 @@
     {
         _user = Context.GetUser();
 
-        _instanceName = await Meta.GetAsync(MetaEntity.InstanceName);
-        _instanceIcon = await InstanceSvc.GetInstanceImageAsync();
+        _instanceName      = await Meta.GetAsync(MetaEntity.InstanceName);
+        (_instanceIcon, _) = await InstanceSvc.GetInstanceImageAsync();
 
         if (Context.GetEndpoint()?.Metadata.GetMetadata<RequireAuthorizationAttribute>() == null)
             return;

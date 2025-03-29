@@ -13,6 +13,8 @@
 <EditForm FormName="update-metadata" Model="Model" OnSubmit="@OnSubmit" enctype="multipart/form-data">
     <label for="icon">Icon</label>
     <InputFile name="Model.IconFile" id="icon" accept="image/*"/>
+    <label for="banner">Banner</label>
+    <InputFile name="Model.BannerFile" id="banner" accept="image/*"/>
     <label for="name">Instance name</label>
     <InputText @bind-Value="@Model.Name" id="name" placeholder="Shrimp & friends"/>
     <label for="desc">Instance description</label>
@@ -38,6 +40,7 @@
         public string?    AdminContact { get; set; }
         public string?    ThemeColor   { get; set; }
         public IFormFile? IconFile     { get; set; }
+        public IFormFile? BannerFile   { get; set; }
 
         public void Canonicalize()
         {
@@ -58,6 +61,8 @@
                 ThemeColor = null;
             if (!IconFile?.ContentType.StartsWith("image/") ?? false)
                 IconFile = null;
+            if (!BannerFile?.ContentType.StartsWith("image/") ?? false)
+                BannerFile = null;
         }
     }
 
@@ -81,13 +86,18 @@
         await Meta.SetAsync(MetaEntity.AdminContactEmail, Model.AdminContact);
         await Meta.SetAsync(MetaEntity.ThemeColor, Model.ThemeColor);
 
+        var ia = await SystemUser.GetInstanceActorAsync();
         if (Model.IconFile != null)
         {
-            var ia  = await SystemUser.GetInstanceActorAsync();
-            var req = new DriveFileCreationRequest { Filename = Model.IconFile.Name, IsSensitive = false, MimeType = Model.IconFile.ContentType };
-
+            var req  = new DriveFileCreationRequest { Filename = Model.IconFile.Name, IsSensitive = false, MimeType = Model.IconFile.ContentType };
             var file = await Drive.StoreFileAsync(Model.IconFile.OpenReadStream(), ia, req);
             await Meta.SetAsync(MetaEntity.IconFileId, file.Id);
+        }
+        if (Model.BannerFile != null)
+        {
+            var req  = new DriveFileCreationRequest { Filename = Model.BannerFile.Name, IsSensitive = false, MimeType = Model.BannerFile.ContentType };
+            var file = await Drive.StoreFileAsync(Model.BannerFile.OpenReadStream(), ia, req);
+            await Meta.SetAsync(MetaEntity.BannerFileId, file.Id);
         }
 
         ReloadPage();

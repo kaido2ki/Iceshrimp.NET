@@ -81,6 +81,7 @@ public static class MetaEntity
 	public static readonly NullableStringMeta AdminContactEmail   = new("admin_contact_email");
 	public static readonly NullableStringMeta ThemeColor          = new("theme_color");
 	public static readonly NullableStringMeta IconFileId          = new("icon_file_id");
+	public static readonly NullableStringMeta BannerFileId        = new("banner_file_id");
 }
 
 public class Meta<T>(

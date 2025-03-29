@@ -277,9 +277,10 @@ public class InstanceService(
 		return rule;
 	}
 
-	public async Task<string?> GetInstanceImageAsync()
+	public async Task<(string?, string?)> GetInstanceImageAsync()
 	{
-		var iconId = await meta.GetAsync(MetaEntity.IconFileId);
-		return await db.DriveFiles.Where(p => p.Id == iconId).Select(p => p.RawAccessUrl).FirstOrDefaultAsync();
+		var (iconId, bannerId) = await meta.GetManyAsync(MetaEntity.IconFileId, MetaEntity.BannerFileId);
+		return (await db.DriveFiles.Where(p => p.Id == iconId).Select(p => p.RawAccessUrl).FirstOrDefaultAsync(),
+		        await db.DriveFiles.Where(p => p.Id == bannerId).Select(p => p.RawAccessUrl).FirstOrDefaultAsync());
 	}
 }
