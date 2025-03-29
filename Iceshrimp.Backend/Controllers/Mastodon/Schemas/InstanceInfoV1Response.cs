@@ -40,6 +40,8 @@ public class InstanceInfoV1Response(
 
 	[J("rules")] public required List<RuleEntity> Rules { get; set; }
 
+	[J("thumbnail")] public required string? ThumbnailUrl { get; set; }
+
 	//TODO: add the rest
 }
 

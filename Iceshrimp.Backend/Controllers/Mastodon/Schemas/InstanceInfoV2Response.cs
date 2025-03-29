@@ -30,6 +30,8 @@ public class InstanceInfoV2Response(
 	[J("rules")] public required List<RuleEntity> Rules { get; set; }
 
 	[J("icon")] public required List<InstanceIcon> Icons { get; set; }
+	
+	[J("thumbnail")] public required InstanceThumbnail Thumbnail { get; set; }
 
 	//TODO: add the rest
 }
@@ -84,4 +86,10 @@ public class InstanceIcon(string src, int width, int height)
 {
 	[J("src")]  public string Url  => src;
 	[J("size")] public string Size => $"{width}x{height}";
+}
+
+public class InstanceThumbnail(string url, string? blurhash)
+{
+	[J("url")]      public string  Url      => url;
+	[J("blurhash")] public string? Blurhash => blurhash;
 }

@@ -36,18 +36,23 @@ public class InstanceController(
 		var noteCount     = await db.Notes.LongCountAsync(p => p.UserHost == null);
 		var instanceCount = await db.Instances.LongCountAsync();
 
-		var (instanceName, instanceDescription, adminContact) =
+		var (instanceName, instanceDescription, adminContact, bannerId) =
 			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription,
-			                        MetaEntity.AdminContactEmail);
+			                        MetaEntity.AdminContactEmail, MetaEntity.BannerFileId);
 
 		// can't merge with above call since they're all nullable and this is not.
 		var vapidKey = await meta.GetAsync(MetaEntity.VapidPublicKey);
+
+		var banner = await db.DriveFiles.Where(p => p.Id == bannerId)
+		                     .Select(p => p.PublicUrl ?? p.RawAccessUrl)
+		                     .FirstOrDefaultAsync();
 
 		return new InstanceInfoV1Response(config.Value, instanceName, instanceDescription, adminContact)
 		{
 			Stats   = new InstanceStats(userCount, noteCount, instanceCount),
 			Pleroma = new PleromaInstanceExtensions { VapidPublicKey = vapidKey, Metadata = new InstanceMetadata() },
-			Rules   = await GetRules()
+			Rules   = await GetRules(),
+			ThumbnailUrl = banner
 		};
 	}
 
@@ -61,20 +66,40 @@ public class InstanceController(
 			                                   && !Constants.SystemUsers.Contains(p.UsernameLower)
 			                                   && p.LastActiveDate > cutoff);
 
-		var (instanceName, instanceDescription, adminContact, iconId) =
+		var (instanceName, instanceDescription, adminContact, iconId, bannerId) =
 			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription,
-			                        MetaEntity.AdminContactEmail, MetaEntity.IconFileId);
+			                        MetaEntity.AdminContactEmail, MetaEntity.IconFileId, MetaEntity.BannerFileId);
 
 		var favicon = await db.DriveFiles.Where(p => p.Id == iconId)
 		                      .Select(p => new InstanceIcon(p.PublicUrl ?? p.RawAccessUrl, p.Properties.Width ?? 128,
 		                                                    p.Properties.Height ?? 128))
 		                      .FirstOrDefaultAsync();
+		List<InstanceIcon> icons = favicon != null
+			? [favicon]
+			:
+			[
+				new
+					InstanceIcon($"https://{config.Value.Instance.WebDomain}/_content/Iceshrimp.Assets.Branding/192.png",
+					             192, 192),
+				new
+					InstanceIcon($"https://{config.Value.Instance.WebDomain}/_content/Iceshrimp.Assets.Branding/512.png",
+					             512, 512)
+			];
+
+		// Mastodon expects an instance thumbnail, the mail wordmark isn't ideal but it's the closest thing ww have for a fallback
+		var banner = await db.DriveFiles.Where(p => p.Id == bannerId)
+		                     .Select(p => new InstanceThumbnail(p.PublicUrl ?? p.RawAccessUrl, p.Blurhash))
+		                     .FirstOrDefaultAsync()
+		             ?? new
+			             InstanceThumbnail($"https://{config.Value.Instance.WebDomain}/_content/Iceshrimp.Assets.Branding/mail-wordmark.png",
+			                               null);
 
 		return new InstanceInfoV2Response(config.Value, instanceName, instanceDescription, adminContact)
 		{
 			Usage = new InstanceUsage { Users = new InstanceUsersUsage { ActiveMonth = activeMonth } },
 			Rules = await GetRules(),
-			Icons = favicon != null ? [favicon] : []
+			Icons = icons,
+			Thumbnail = banner
 		};
 	}
 
