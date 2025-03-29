@@ -76,7 +76,7 @@ public class ProfileController(
 		profile.Birthday     = birthday;
 		profile.Fields       = fields.ToArray();
 		profile.FFVisibility = (UserProfile.UserProfileFFVisibility)newProfile.FFVisibility;
-		profile.Pronouns     = newProfile.Pronouns;
+		profile.Pronouns     = newProfile.Pronouns.Count != 0 ? newProfile.Pronouns : null;
 
 		user.DisplayName = string.IsNullOrWhiteSpace(newProfile.DisplayName) ? null : newProfile.DisplayName.Trim();
 
