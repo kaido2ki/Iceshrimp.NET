@@ -36,6 +36,7 @@
 }
 
 .ticker {
+    --color: var(--highlight-color);
     display: inline-flex;
     gap: 0.5em;
     align-items: center;
@@ -43,6 +44,9 @@
     align-self: start;
     /*Margin on the left so non truncated names are aligned to the right*/
     margin-left: auto;
+    padding: 0 0.2rem;
+    background-color: var(--color);
+    border-radius: 4px;
     font-size: 0.9em;
     text-overflow: ellipsis;
     overflow: clip;
@@ -54,8 +58,7 @@
         line-height: 1;
     }
     .instance {
-        --color: var(--font-color);
-        color: var(--color);
+        text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
     }
 }
 

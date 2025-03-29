@@ -34,14 +34,14 @@
             }
         </span>
     </span>
-    <span class="ticker" title="@InstanceName">
+    <span class="ticker"  style="@(InstanceColor != null ? "--color: " + InstanceColor + "CC;" : "")" title="@InstanceName">
         @if (InstanceIcon != null)
         {
             <img class="icon" src="@InstanceIcon" alt="icon"/>
         }
         @if (InstanceName != null)
         {
-            <span class="instance"  style="@(InstanceColor != null ? "--color: " + InstanceColor + ";" : "")">@InstanceName</span>
+            <span class="instance">@InstanceName</span>
         }
     </span>
 </div>
