@@ -29,6 +29,8 @@ public class InstanceInfoV2Response(
 
 	[J("rules")] public required List<RuleEntity> Rules { get; set; }
 
+	[J("icon")] public required List<InstanceIcon> Icons { get; set; }
+
 	//TODO: add the rest
 }
 
@@ -76,4 +78,10 @@ public class InstanceExtendedDescription(string? description)
 
 	[J("content")]
 	public string Content => description ?? "This Iceshrimp.NET instance does not appear to have a description";
+}
+
+public class InstanceIcon(string src, int width, int height)
+{
+	[J("src")]  public string Url  => src;
+	[J("size")] public string Size => $"{width}x{height}";
 }

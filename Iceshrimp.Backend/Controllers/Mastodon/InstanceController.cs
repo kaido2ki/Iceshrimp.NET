@@ -61,14 +61,20 @@ public class InstanceController(
 			                                   && !Constants.SystemUsers.Contains(p.UsernameLower)
 			                                   && p.LastActiveDate > cutoff);
 
-		var (instanceName, instanceDescription, adminContact) =
+		var (instanceName, instanceDescription, adminContact, iconId) =
 			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription,
-			                        MetaEntity.AdminContactEmail);
+			                        MetaEntity.AdminContactEmail, MetaEntity.IconFileId);
+
+		var favicon = await db.DriveFiles.Where(p => p.Id == iconId)
+		                      .Select(p => new InstanceIcon(p.PublicUrl ?? p.RawAccessUrl, p.Properties.Width ?? 128,
+		                                                    p.Properties.Height ?? 128))
+		                      .FirstOrDefaultAsync();
 
 		return new InstanceInfoV2Response(config.Value, instanceName, instanceDescription, adminContact)
 		{
 			Usage = new InstanceUsage { Users = new InstanceUsersUsage { ActiveMonth = activeMonth } },
-			Rules = await GetRules()
+			Rules = await GetRules(),
+			Icons = favicon != null ? [favicon] : []
 		};
 	}
 
