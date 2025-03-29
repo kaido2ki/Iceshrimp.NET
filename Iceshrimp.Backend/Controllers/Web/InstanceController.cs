@@ -135,4 +135,17 @@ public class InstanceController(
 
 		return new StaffResponse { Admins = adminList, Moderators = moderatorList };
 	}
+
+	// This is only used to set the icon for the frontend
+	[HttpGet("/instance-icon")]
+	[ProducesResults(HttpStatusCode.Redirect)]
+	public async Task<RedirectResult> GetInstanceIcon()
+	{
+		var iconId  = await meta.GetAsync(MetaEntity.IconFileId);
+		var iconUrl = iconId != null
+			? await db.DriveFiles.Where(p => p.Id == iconId).Select(p => p.PublicUrl).FirstOrDefaultAsync()
+			: null;
+
+		return new RedirectResult(iconUrl ?? "/_content/Iceshrimp.Assets.Branding/favicon.png");
+	}
 }
