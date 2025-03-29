@@ -8,6 +8,7 @@ public class InstanceResponse
     public required string?       Name          { get; set; }
     public required string?       IconUrl       { get; set; }
     public required string?       BannerUrl     { get; set; }
+    public required string?       ThemeColor    { get; set; }
     public required Limitations   Limits        { get; set; }
 }
 
