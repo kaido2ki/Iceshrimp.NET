@@ -34,12 +34,16 @@ public class InstanceController(
 	{
 		var limits = new Limitations { NoteLength = instanceConfig.Value.CharacterLimit };
 
+		var iconId  = await meta.GetAsync(MetaEntity.IconFileId);
+		var iconUrl = await db.DriveFiles.Where(p => p.Id == iconId).Select(p => p.PublicUrl).FirstOrDefaultAsync();
+
 		return new InstanceResponse
 		{
 			AccountDomain = instanceConfig.Value.AccountDomain,
 			WebDomain     = instanceConfig.Value.WebDomain,
 			Registration  = (Registrations)securityConfig.Value.Registrations,
 			Name          = await meta.GetAsync(MetaEntity.InstanceName),
+			IconUrl       = iconUrl,
 			Limits        = limits
 		};
 	}
