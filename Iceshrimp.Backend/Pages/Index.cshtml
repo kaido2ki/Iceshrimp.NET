@@ -3,8 +3,6 @@
 @* ReSharper disable Html.PathError *@
 @{
     ViewData["title"] = $"Home - {Model.InstanceName}";
-
-    //TODO: logo / banner & favicon
 }
 
 @section head
@@ -16,11 +14,23 @@
 }
 
 <div class="header">
-    <h1>@Model.InstanceName</h1>
+    <span>
+        @if (Model.IconUrl != null)
+        {
+            <img class="icon" src="@Model.IconUrl" alt="icon"/>
+        }
+        <h1>@Model.InstanceName</h1>
+    </span>
     <div class="wordmark">
         <img src="~/_content/Iceshrimp.Assets.Branding/welcome-logo.svg" alt="Iceshrimp"/>
     </div>
 </div>
+
+@if (Model.BannerUrl != null)
+{
+    <img class="banner" src="@Model.BannerUrl" alt="banner"/>
+}
+
 <p>@Model.InstanceDescription</p>
 
 @if (Model.Rules.Count != 0)

@@ -13,6 +13,8 @@ public class IndexModel(MetaService meta, InstanceService instance, IOptionsSnap
 	public string?    ContactEmail;
 	public string     InstanceDescription = null!;
 	public string     InstanceName        = null!;
+	public string?    IconUrl;
+	public string?    BannerUrl;
 	public List<Rule> Rules = [];
 
 	public async Task<IActionResult> OnGet()
@@ -31,6 +33,8 @@ public class IndexModel(MetaService meta, InstanceService instance, IOptionsSnap
 		InstanceDescription =
 			instanceDescription ?? "This Iceshrimp.NET instance does not appear to have a description";
 		ContactEmail = contactEmail;
+
+		(IconUrl, BannerUrl) = await instance.GetInstanceImageAsync();
 
 		Rules = await instance.GetRulesAsync();
 
