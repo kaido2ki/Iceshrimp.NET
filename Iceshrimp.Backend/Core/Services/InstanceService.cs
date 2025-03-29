@@ -12,7 +12,8 @@ namespace Iceshrimp.Backend.Core.Services;
 public class InstanceService(
 	DatabaseContext db,
 	HttpClient httpClient,
-	ILogger<InstanceService> logger
+	ILogger<InstanceService> logger,
+	MetaService meta
 ) : IScopedService
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -274,5 +275,11 @@ public class InstanceService(
 		await db.SaveChangesAsync();
 
 		return rule;
+	}
+
+	public async Task<string?> GetInstanceImageAsync()
+	{
+		var iconId = await meta.GetAsync(MetaEntity.IconFileId);
+		return await db.DriveFiles.Where(p => p.Id == iconId).Select(p => p.RawAccessUrl).FirstOrDefaultAsync();
 	}
 }

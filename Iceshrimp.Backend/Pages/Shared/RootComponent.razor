@@ -18,6 +18,10 @@
     <VersionedLink rel="stylesheet" href="/Iceshrimp.Backend.styles.css"/>
     <VersionedLink rel="stylesheet" href="/css/default.css"/>
     <VersionedLink rel="icon" type="image/png" href="/_content/Iceshrimp.Assets.Branding/favicon.png"/>
+    @if (_instanceIcon != null)
+    {
+        <link rel="icon" href="@_instanceIcon">
+    }
     <HeadOutlet/>
     <PageTitle>@(_instanceName ?? "Iceshrimp.NET")</PageTitle>
 </head>
@@ -54,18 +58,22 @@
 </html>
 
 @code {
-    [Inject] public required MetaService Meta { get; set; }
+    [Inject] public required InstanceService InstanceSvc { get; set; }
+    [Inject] public required MetaService     Meta        { get; set; }
 
     // This is separate from AuthorizationMiddleware.AuthorizeAttribute, as that middleware is meant for API calls.
     public class RequireAuthorizationAttribute : Attribute;
 
     private string? _instanceName;
     private User?   _user;
+    private string? _instanceIcon;
 
     protected override async Task OnParametersSetAsync()
     {
+        _user = Context.GetUser();
+
         _instanceName = await Meta.GetAsync(MetaEntity.InstanceName);
-        _user         = Context.GetUser();
+        _instanceIcon = await InstanceSvc.GetInstanceImageAsync();
 
         if (Context.GetEndpoint()?.Metadata.GetMetadata<RequireAuthorizationAttribute>() == null)
             return;
