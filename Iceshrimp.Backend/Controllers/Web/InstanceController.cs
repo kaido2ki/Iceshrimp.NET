@@ -34,8 +34,14 @@ public class InstanceController(
 	{
 		var limits = new Limitations { NoteLength = instanceConfig.Value.CharacterLimit };
 
-		var iconId  = await meta.GetAsync(MetaEntity.IconFileId);
-		var iconUrl = await db.DriveFiles.Where(p => p.Id == iconId).Select(p => p.PublicUrl).FirstOrDefaultAsync();
+		var (iconId, bannerId) = await meta.GetManyAsync(MetaEntity.IconFileId, MetaEntity.BannerFileId);
+
+		var iconUrl = await db.DriveFiles.Where(p => p.Id == iconId)
+		                      .Select(p => p.PublicUrl ?? p.RawAccessUrl)
+		                      .FirstOrDefaultAsync();
+		var bannerUrl = await db.DriveFiles.Where(p => p.Id == bannerId)
+		                        .Select(p => p.PublicUrl ?? p.RawAccessUrl)
+		                        .FirstOrDefaultAsync();
 
 		return new InstanceResponse
 		{
@@ -44,6 +50,7 @@ public class InstanceController(
 			Registration  = (Registrations)securityConfig.Value.Registrations,
 			Name          = await meta.GetAsync(MetaEntity.InstanceName),
 			IconUrl       = iconUrl,
+			BannerUrl     = bannerUrl,
 			Limits        = limits
 		};
 	}
