@@ -43,6 +43,18 @@
 {
     <i>Not found</i>
 }
+@if (State == State.Loading)
+{
+    <HeadTitle Text="@Loc["Loading"]"/>
+
+    <div class="loading"><LoadingSpinner Scale="2" /></div>
+}
+@if (State == State.Error)
+{
+    <HeadTitle Text="@Loc["Error"]"/>
+
+    <div>Failure</div>
+}
 
 @code {
     [Parameter] public string?                          NoteId    { get; set; }

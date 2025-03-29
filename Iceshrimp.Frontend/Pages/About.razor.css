@@ -12,3 +12,10 @@ summary {
 summary:hover {
     background-color: var(--hover-color);
 }
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 25vh;
+}
