@@ -71,7 +71,7 @@
                 <span class="field-value">@UserProfile.Location</span>
             </div>
         }
-        @if (UserProfile.Pronouns != null)
+        @if (UserProfile.Pronouns != null && UserProfile.Pronouns.Count != 0)
         {
             <div class="pronouns field">
                 <span class="field-name">
