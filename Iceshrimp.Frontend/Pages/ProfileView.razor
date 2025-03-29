@@ -80,6 +80,9 @@
                             </MenuElement>
                         }
                         <hr class="rule"/>
+                        <MenuElement Icon="Icons.Info" OnSelect="OpenAbout">
+                            <Text>@Loc["About"]</Text>
+                        </MenuElement>
                         @if (UserResponse.Host != null && Profile?.Url != null)
                         {
                             <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
@@ -393,6 +396,11 @@
         {
             await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
         }
+    }
+
+    private void OpenAbout()
+    {
+        Nav.NavigateTo($"{Nav.Uri}/about");
     }
 
     private void OpenOriginal()

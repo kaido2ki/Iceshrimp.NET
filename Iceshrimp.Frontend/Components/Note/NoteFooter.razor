@@ -9,6 +9,7 @@
 @inject SessionService                 Session;
 @inject GlobalComponentSvc             GlobalComponentSvc
 @inject MetadataService                MetadataSvc;
+@inject NavigationManager              Nav;
 @inject NoteActions                    NoteActions;
 
 <div class="note-footer">
@@ -106,6 +107,9 @@
                 <Text>@Loc["Mute thread"]</Text>
             </MenuElement>
             <hr class="rule"/>
+            <MenuElement Icon="Icons.Info" OnSelect="OpenAbout">
+                <Text>@Loc["About"]</Text>
+            </MenuElement>
             <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
                 <Text>@Loc["Open original page"]</Text>
             </MenuElement>
@@ -158,6 +162,8 @@
     private void ToggleMenu() => ContextMenu.Toggle(MenuButton);
 
     private void Delete() => _ = NoteActions.DeleteAsync(Note);
+
+    private void OpenAbout() => Nav.NavigateTo($"/notes/{Note.Id}/about");
 
     private void OpenOriginal() => Js.InvokeVoidAsync("open", Note.Url, "_blank");
 
