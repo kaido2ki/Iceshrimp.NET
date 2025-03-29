@@ -138,6 +138,6 @@ public static class LanguageHelper
         "zu"
     ];
 
-    public static Dictionary<string, string> Bcp47Languages =>
+    public static readonly Dictionary<string, string> Bcp47Languages =
         Bcp47.ToDictionary(c => c, c => CultureInfo.GetCultureInfo(c).NativeName);
 }
