@@ -78,6 +78,22 @@ public class AdminController(
 		await db.SaveChangesAsync();
 	}
 
+	[HttpPost("users/{id}/reset-2fa")]
+	[Produces(MediaTypeNames.Application.Json)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task ResetTwoFactor(string id)
+	{
+		var settings = await db.UserSettings.FirstOrDefaultAsync(p => p.UserId == id) ??
+		               throw GracefulException.RecordNotFound();
+
+		settings.TwoFactorEnabled    = false;
+		settings.TwoFactorSecret     = null;
+		settings.TwoFactorTempSecret = null;
+
+		await db.SaveChangesAsync();
+	}
+
 	[HttpGet("instances/allowed")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
