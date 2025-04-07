@@ -17,11 +17,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <VersionedLink rel="stylesheet" href="/Iceshrimp.Backend.styles.css"/>
     <VersionedLink rel="stylesheet" href="/css/default.css"/>
-    <VersionedLink rel="icon" type="image/png" href="/_content/Iceshrimp.Assets.Branding/favicon.png"/>
-    @if (_instanceIcon != null)
-    {
-        <link rel="icon" href="@_instanceIcon">
-    }
+    <link rel="icon" href="instance-icon">
     <HeadOutlet/>
     <PageTitle>@(_instanceName ?? "Iceshrimp.NET")</PageTitle>
 </head>
@@ -66,14 +62,12 @@
 
     private string? _instanceName;
     private User?   _user;
-    private string? _instanceIcon;
 
     protected override async Task OnParametersSetAsync()
     {
         _user = Context.GetUser();
 
-        _instanceName      = await Meta.GetAsync(MetaEntity.InstanceName);
-        (_instanceIcon, _) = await InstanceSvc.GetInstanceImageAsync();
+        _instanceName = await Meta.GetAsync(MetaEntity.InstanceName);
 
         if (Context.GetEndpoint()?.Metadata.GetMetadata<RequireAuthorizationAttribute>() == null)
             return;
