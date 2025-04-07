@@ -128,6 +128,51 @@ public class AdminController(
 		return await q.ToListAsync();
 	}
 
+	[HttpPost("instances/allowed/import")]
+	[ProducesResults(HttpStatusCode.Accepted)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<AcceptedResult> ImportAllowedInstances(IFormFile file)
+	{
+		if (security.Value.FederationMode == Enums.FederationMode.BlockList)
+			throw GracefulException.BadRequest("Federation mode is set to blocklist.");
+
+		var reader = new StreamReader(file.OpenReadStream());
+		var data   = await reader.ReadToEndAsync();
+
+		var hosts = data.ReplaceLineEndings("\n")
+		                .Split('\n')
+		                .Where(p => !string.IsNullOrWhiteSpace(p))
+		                .Select(p => new AllowedInstance { Host = p, IsImported = true })
+		                .ToArray();
+
+		await db.AllowedInstances.UpsertRange(hosts).On(p => p.Host).NoUpdate().RunAsync();
+
+		return Accepted();
+	}
+
+	[HttpPost("instances/blocked/import")]
+	[ProducesResults(HttpStatusCode.Accepted)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<AcceptedResult> ImportBlockedInstances(IFormFile file)
+	{
+		if (security.Value.FederationMode == Enums.FederationMode.AllowList)
+			throw GracefulException.BadRequest("Federation mode is set to allowlist.");
+
+		var reader = new StreamReader(file.OpenReadStream());
+		var data   = await reader.ReadToEndAsync();
+
+		var hosts = data.ReplaceLineEndings("\n")
+		                .Split('\n')
+		                .Where(p => !string.IsNullOrWhiteSpace(p))
+		                .Select(p => new BlockedInstance { Host = p, IsImported = true })
+		                .ToArray();
+
+		await db.BlockedInstances.UpsertRange(hosts).On(p => p.Host).NoUpdate().RunAsync();
+
+		return Accepted();
+	}
+
+
 	[HttpPost("instances/{host}/allow")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
