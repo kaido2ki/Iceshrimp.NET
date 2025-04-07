@@ -15,9 +15,9 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 	{
 		var instance = user.IsRemoteUser ? data.InstanceData.FirstOrDefault(p => p.Host == user.Host) : null;
 
-		var instanceName  = user.IsLocalUser ? data.LocalInstanceData.Name : instance?.Name;
-		var instanceIcon  = user.IsLocalUser ? data.LocalInstanceData.FaviconUrl : instance?.FaviconUrl;
-		var instanceColor = user.IsLocalUser ? data.LocalInstanceData.ThemeColor : instance?.ThemeColor;
+		var instanceName  = user.IsLocalUser ? data.LocalInstanceData!.Name : instance?.Name;
+		var instanceIcon  = user.IsLocalUser ? data.LocalInstanceData!.FaviconUrl : instance?.FaviconUrl;
+		var instanceColor = user.IsLocalUser ? data.LocalInstanceData!.ThemeColor : instance?.ThemeColor;
 
 		if (!data.Emojis.TryGetValue(user.Id, out var emoji))
 			throw new Exception("DTO didn't contain emoji for user");
@@ -52,8 +52,19 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		var avatarAlt    = await GetAvatarAltAsync([user]);
 		var bannerAlt    = await GetBannerAltAsync([user]);
 
-		var iconId  = await metaSvc.GetAsync(MetaEntity.IconFileId);
-		var favicon = iconId != null ? await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == iconId) : null;
+		LocalInstance? localInstance = null;
+		if (user.IsLocalUser)
+		{
+			var iconId  = await metaSvc.GetAsync(MetaEntity.IconFileId);
+			var favicon = iconId != null ? await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == iconId) : null;
+
+			localInstance = new LocalInstance
+			{
+				Name       = await metaSvc.GetAsync(MetaEntity.InstanceName) ?? config.Value.AccountDomain,
+				FaviconUrl = favicon?.PublicUrl ?? favicon?.RawAccessUrl,
+				ThemeColor = await metaSvc.GetAsync(MetaEntity.ThemeColor)
+			};
+		}
 
 		var data = new UserRendererDto
 		{
@@ -61,12 +72,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			InstanceData      = instanceData,
 			AvatarAlt         = avatarAlt,
 			BannerAlt         = bannerAlt,
-			LocalInstanceData = new LocalInstance
-			{
-				Name       = await metaSvc.GetAsync(MetaEntity.InstanceName) ?? config.Value.AccountDomain,
-				FaviconUrl = favicon?.PublicUrl,
-				ThemeColor = await metaSvc.GetAsync(MetaEntity.ThemeColor)
-			}
+			LocalInstanceData = localInstance
 		};
 
 		return Render(user, data);
@@ -98,22 +104,29 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 
 	public async Task<IEnumerable<UserResponse>> RenderManyAsync(IEnumerable<User> users)
 	{
-		var iconId  = await metaSvc.GetAsync(MetaEntity.IconFileId);
-		var favicon = iconId != null ? await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == iconId) : null;
-
 		var userList = users.ToList();
+
+		LocalInstance? localInstance = null;
+		if (userList.Any(p => p.IsLocalUser))
+		{
+			var iconId  = await metaSvc.GetAsync(MetaEntity.IconFileId);
+			var favicon = iconId != null ? await db.DriveFiles.FirstOrDefaultAsync(p => p.Id == iconId) : null;
+
+			localInstance = new LocalInstance
+			{
+				Name       = await metaSvc.GetAsync(MetaEntity.InstanceName) ?? config.Value.AccountDomain,
+				FaviconUrl = favicon?.PublicUrl ?? favicon?.RawAccessUrl,
+				ThemeColor = await metaSvc.GetAsync(MetaEntity.ThemeColor)
+			};
+		}
+
 		var data = new UserRendererDto
 		{
 			InstanceData      = await GetInstanceDataAsync(userList),
 			Emojis            = await GetEmojisAsync(userList),
 			AvatarAlt         = await GetAvatarAltAsync(userList),
 			BannerAlt         = await GetBannerAltAsync(userList),
-			LocalInstanceData = new LocalInstance
-			{
-				Name       = await metaSvc.GetAsync(MetaEntity.InstanceName) ?? config.Value.AccountDomain,
-				FaviconUrl = favicon?.PublicUrl,
-				ThemeColor = await metaSvc.GetAsync(MetaEntity.ThemeColor)
-			}
+			LocalInstanceData = localInstance
 		};
 
 		return userList.Select(p => Render(p, data));
@@ -148,7 +161,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		public required Dictionary<string, List<EmojiResponse>> Emojis;
 		public required Dictionary<string, string?>             AvatarAlt;
 		public required Dictionary<string, string?>             BannerAlt;
-		public required LocalInstance                           LocalInstanceData;
+		public required LocalInstance?                          LocalInstanceData;
 	}
 
 	private class LocalInstance
