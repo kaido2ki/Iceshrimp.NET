@@ -308,10 +308,26 @@ public class MfmConverter(
 			}
 			case MfmCodeBlockNode codeBlockNode:
 			{
-				var el    = CreateInlineFormattingElement("pre");
-				var inner = CreateInlineFormattingElement("code");
-				inner.TextContent = codeBlockNode.Code;
-				el.AppendNodes(inner);
+				var el = CreateInlineFormattingElement("pre");
+
+				if (flags.SupportsHtmlFormatting.Value)
+				{
+					var inner = CreateInlineFormattingElement("code");
+					inner.TextContent = codeBlockNode.Code;
+					el.AppendNodes(inner);
+				}
+				else
+				{
+					var split = codeBlockNode.Code.Split('\n');
+					for (var index = 0; index < split.Length; index++)
+					{
+						var line = split[index];
+						el.AppendNodes(CreateTextNode(line));
+						if (index < split.Length - 1)
+							el.AppendNodes(CreateElement("br"));
+					}
+				}
+
 				return el;
 			}
 			case MfmCenterNode:
