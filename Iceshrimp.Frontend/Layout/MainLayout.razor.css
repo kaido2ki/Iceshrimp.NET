@@ -39,7 +39,7 @@
     top: 0;
     z-index: +6;
 
-    i {
+    .icon-wrapper {
         padding-right: 0.5rem;
     }
 }
@@ -61,11 +61,14 @@
 }
 
 .top-bar {
-    .btn i {
-        display: inline-block;
-        padding-right: 0;
-        vertical-align: middle;
+    .btn {
+        .icon-wrapper {
+            display: inline-block;
+            padding-right: 0;
+            vertical-align: middle;
+        }
     }
+    
 }
 
 .top-bar {

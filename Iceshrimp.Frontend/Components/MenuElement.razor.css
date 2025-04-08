@@ -7,7 +7,7 @@
     align-items: center;
     color: var(--notice-color);
 
-    > i {
+    > .icon-wrapper {
         padding-right: 0.5rem;
     }
 }

@@ -14,7 +14,7 @@
 .button {
     padding: 0.75rem;
     margin: 0.2rem;
-    i {
+    .icon-wrapper {
         padding: 0;
     }
 }

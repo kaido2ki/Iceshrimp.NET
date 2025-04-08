@@ -10,7 +10,7 @@
     padding: 1rem;
     margin-bottom: 0.5rem;
     margin-inline: 1rem;    
-    > i {
+    > .icon-wrapper {
         padding-left: 0.5rem;
     }
 }

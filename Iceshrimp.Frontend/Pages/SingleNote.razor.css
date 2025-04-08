@@ -76,4 +76,7 @@
 
 .cw-button {
     margin-left: auto;
+    .icon-wrapper {
+        padding-right: initial;
+    }
 }

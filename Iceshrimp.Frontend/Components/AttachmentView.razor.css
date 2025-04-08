@@ -55,7 +55,7 @@
     right: 0%;
     background-color: transparent;
     color: white;
-    > i {
+    > .icon-wrapper {
         margin-left: 3rem;
     }
 }
@@ -66,7 +66,7 @@
     left: 0%;
     background-color: transparent;
     color: white;
-    > i {
+    > .icon-wrapper {
         margin-right: 3rem;
     }
 }

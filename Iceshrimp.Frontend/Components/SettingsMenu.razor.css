@@ -11,7 +11,7 @@
     font-size: 0.9em;
     background: var(--foreground-color);
     
-    > i {
+    > .icon-wrapper {
         padding-right: 0.5rem;
     }
 }
