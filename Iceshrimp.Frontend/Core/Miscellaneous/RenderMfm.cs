@@ -46,7 +46,7 @@ public static partial class MfmRenderer
 	}
 
 	private static INode RenderNode(
-		IMfmNode node, IDocument document, List<EmojiResponse> emoji, string accountDomain, bool simple, bool speakAsCat
+		IMfmNode node, List<EmojiResponse> emoji, string accountDomain, bool simple, bool speakAsCat
 	)
 	{
 		// Hard wrap makes this impossible to read
@@ -234,9 +234,9 @@ public static partial class MfmRenderer
 		return text;
 	}
 
-	private static INode MfmTextNode(MfmTextNode node, IDocument document, bool speakAsCat)
+	private static INode MfmTextNode(MfmTextNode node, bool speakAsCat)
 	{
-		var el = document.CreateElement("span");
+		var el = CreateElement("span");
 		el.TextContent = speakAsCat ? MakeCatText(node.Text) : node.Text;
 		return el;
 	}
