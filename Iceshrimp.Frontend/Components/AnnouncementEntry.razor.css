@@ -1,0 +1,26 @@
+.announcement {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 1rem 0.5rem 0;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 45rem;
+    background-color: var(--foreground-color);
+    border-radius: 0.75rem;
+}
+
+.title {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: scale-down;
+}
+
+.metadata {
+    opacity: 0.7;
+}

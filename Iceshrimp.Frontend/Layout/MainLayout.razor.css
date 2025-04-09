@@ -45,6 +45,12 @@
 }
 
 .top-bar {
+    .ph-megaphone {
+        transform: scaleX(-1);
+    }
+}
+
+.top-bar {
     .btn {
         margin-right: 0.5rem;
         padding: 0.2rem 0.4rem;

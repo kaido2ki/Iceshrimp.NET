@@ -87,6 +87,11 @@
     }
 }
 
+::deep .sidebar-btn .ph-megaphone {
+    /* Flip megaphone icon */
+    transform: scaleX(-1);
+}
+
 .sidebar-btn:hover {
     background-color: var(--hover-color);
 }

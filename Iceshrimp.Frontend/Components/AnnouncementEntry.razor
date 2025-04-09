@@ -1,0 +1,41 @@
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
+@inject ApiService                     Api;
+@inject IStringLocalizer<Localization> Loc;
+@inject MetadataService                Meta;
+
+<div class="announcement">
+    <span class="title">@Announcement.Title</span>
+    <MfmText Text="@Announcement.Text" Emoji="[]"/>
+    @if (Announcement.ImageUrl != null)
+    {
+        <img src="@Announcement.ImageUrl" alt="@Loc["Announcement image"]"/>
+    }
+    <span class="metadata">
+        @if (Announcement.UpdatedAt != null)
+        {
+            @Loc["Announced {0} - Updated {1}", Announcement.CreatedAt.ToLocalTime().ToString("G"), Announcement.UpdatedAt.Value.ToLocalTime().ToString("G")]
+        }
+        else
+        {
+            @Announcement.CreatedAt.ToLocalTime().ToString("G")
+        }
+    </span>
+    @if (Moderator)
+    {
+        @if (Announcement.ReadCount != null)
+        {
+            <span class="metadata">
+                @Loc["Users read: {0}/{1}", Announcement.ReadCount, Meta.Instance.Value.Result.UserCount]
+            </span>
+        }
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required AnnouncementResponse Announcement { get; set; }
+    [Parameter]                 public          bool                 Moderator    { get; set; }
+}

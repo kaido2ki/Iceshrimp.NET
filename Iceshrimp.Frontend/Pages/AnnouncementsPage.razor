@@ -1,0 +1,81 @@
+@page "/announcements"
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.Extensions.Localization
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas.Web
+@inject ApiService                     Api;
+@inject IStringLocalizer<Localization> Loc;
+
+<HeadTitle Text="@Loc["Previous announcements"]"/>
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.Megaphone"></Icon>
+    @Loc["Previous announcements"]
+</SectionContent>
+
+@if (State is State.Loaded)
+{
+    <div class="announcement-list">
+        @foreach (var announcement in Announcements)
+        {
+            <AnnouncementEntry Announcement="announcement"/>
+        }
+        @if (PaginationData is { Next: not null })
+        {
+            <ScrollEnd ManualLoad="FetchMore" IntersectionChange="FetchMore"></ScrollEnd>
+        }
+    </div>
+}
+@if (State is State.Empty)
+{
+    <i>@Loc["No announcements have been made"]</i>
+}
+@if (State is State.Loading)
+{
+    <div class="loading">
+        <LoadingSpinner Scale="2"/>
+    </div>
+}
+
+@code {
+    private State                      State          { get; set; }
+    private PaginationData?            PaginationData { get; set; }
+    private List<AnnouncementResponse> Announcements  { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        State = State.Loading;
+
+        try
+        {
+            var res = await Api.Announcements.GetAnnouncementsAsync(false, new PaginationQuery());
+            PaginationData = res.Links;
+            Announcements  = res.Data;
+        }
+        catch (ApiException)
+        {
+            State = State.Error;
+            return;
+        }
+
+        State = Announcements.Count != 0 ? State.Loaded : State.Empty;
+    }
+
+    private async Task FetchMore()
+    {
+        try
+        {
+            var res = await Api.Announcements.GetAnnouncementsAsync(false, new PaginationQuery { MaxId = PaginationData?.Next?.Split('=')[1] });
+            PaginationData = res.Links;
+            Announcements.AddRange(res.Data);
+        }
+        catch (ApiException)
+        {
+            PaginationData!.Next = null;
+        }
+    }
+}
