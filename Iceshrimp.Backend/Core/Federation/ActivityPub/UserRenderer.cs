@@ -5,7 +5,6 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
-using Iceshrimp.MfmSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
