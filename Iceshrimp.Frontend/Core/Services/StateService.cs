@@ -7,4 +7,5 @@ internal class StateService
 	public SingleNote         SingleNote         { get; } = new();
 	public Search             Search             { get; } = new();
 	public NewVirtualScroller NewVirtualScroller { get; } = new();
+	public TimelinePage       TimelinePage       { get; } = new();
 }

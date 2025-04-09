@@ -1,3 +1,7 @@
 .timeline {
     overflow-anchor: none;
 }
+
+.selector {
+    margin-left: auto;
+}

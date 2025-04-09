@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Enums;
 using Iceshrimp.Shared.Schemas.SignalR;
@@ -89,19 +90,31 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 		}
 	}
 
-	private async Task<List<NoteResponse>?> FetchTimelineAsync(string timeline, PaginationQuery pq)
+	private async Task<List<NoteResponse>?> FetchTimelineAsync(
+		Timeline timeline, PaginationQuery pq
+	)
 	{
 		try
 		{
-			var res = await _api.Timelines.GetHomeTimelineAsync(pq);
-			if (Timelines.ContainsKey(timeline) is false)
+			var res = timeline.Enum switch
 			{
-				Timelines.Add(timeline, new TimelineState());
+				TimelineEnum.Home   => await _api.Timelines.GetHomeTimelineAsync(pq),
+				TimelineEnum.Local  => await _api.Timelines.GetLocalTimelineAsync(pq),
+				TimelineEnum.Social => await _api.Timelines.GetSocialTimelineAsync(pq),
+				TimelineEnum.Bubble => await _api.Timelines.GetBubbleTimelineAsync(pq),
+				TimelineEnum.Global => await _api.Timelines.GetGlobalTimelineAsync(pq),
+				TimelineEnum.Remote => await _api.Timelines.GetRemoteTimelineAsync(timeline.Remote!, pq),
+				_                   => throw new ArgumentOutOfRangeException(nameof(timeline), timeline, null)
+			};
+
+			if (Timelines.ContainsKey(timeline.Key) is false)
+			{
+				Timelines.Add(timeline.Key, new TimelineState());
 			}
 
 			foreach (var note in res)
 			{
-				var add = Timelines[timeline].Timeline.TryAdd(note.Id, note);
+				var add = Timelines[timeline.Key].Timeline.TryAdd(note.Id, note);
 				if (add is false) _logger.LogWarning($"Duplicate note: {note.Id}");
 			}
 
@@ -114,8 +127,9 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 		}
 	}
 
-	public async Task<List<NoteResponse>?> GetHomeTimelineAsync(string timeline, Cursor cs)
+	public async Task<List<NoteResponse>?> GetTimelineAsync(Timeline timeline, Cursor cs)
 	{
+		
 		if (cs.Id is null)
 		{
 			return await FetchTimelineAsync(timeline,
@@ -126,10 +140,10 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 		{
 			case DirectionEnum.Newer:
 			{
-				var indexStart = Timelines[timeline].Timeline.IndexOfKey(cs.Id);
+				var indexStart = Timelines[timeline.Key].Timeline.IndexOfKey(cs.Id);
 				if (indexStart != -1 && indexStart - cs.Count > 0)
 				{
-					var res = Timelines[timeline]
+					var res = Timelines[timeline.Key]
 							  .Timeline.Take(new Range(indexStart - cs.Count, indexStart));
 					return res.Select(p => p.Value).ToList();
 				}
@@ -146,7 +160,7 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 			}
 			case DirectionEnum.Older:
 			{
-				if (!Timelines.ContainsKey(timeline))
+				if (!Timelines.ContainsKey(timeline.Key))
 				{
 					return await FetchTimelineAsync(timeline,
 													new PaginationQuery
@@ -155,10 +169,10 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 													});
 				}
 
-				var indexStart = Timelines[timeline].Timeline.IndexOfKey(cs.Id);
-				if (indexStart != -1 && indexStart + cs.Count < Timelines[timeline].Timeline.Count)
+				var indexStart = Timelines[timeline.Key].Timeline.IndexOfKey(cs.Id);
+				if (indexStart != -1 && indexStart + cs.Count < Timelines[timeline.Key].Timeline.Count)
 				{
-					var res = Timelines[timeline]
+					var res = Timelines[timeline.Key]
 							  .Timeline.Take(new Range(indexStart, indexStart + cs.Count));
 					return res.Select(p => p.Value).ToList();
 				}
@@ -176,10 +190,10 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 		throw new InvalidOperationException();
 	}
 
-	public List<NoteResponse> GetIdsFromTimeline(string timeline, List<string> ids)
+	public List<NoteResponse> GetIdsFromTimeline(Timeline timeline, List<string> ids)
 	{
 		List<NoteResponse> list = [];
-		list.AddRange(ids.Select(id => Timelines[timeline].Timeline[id]));
+		list.AddRange(ids.Select(id => Timelines[timeline.Key].Timeline[id]));
 		return list;
 	}
 
@@ -188,7 +202,7 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 		var (timeline, response) = valueTuple;
 		if (timeline == StreamingTimeline.Home)
 		{
-			var success = Timelines.TryGetValue("home", out var home);
+			var success = Timelines.TryGetValue(TimelineEnum.Home.ToString(), out var home);
 			if (success)
 			{
 				var add = home!.Timeline.TryAdd(response.Id, response);
@@ -196,6 +210,11 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 			}
 
 			ItemPublished?.Invoke(this, response);
+		}
+
+		if (timeline == StreamingTimeline.Local)
+		{
+			
 		}
 	}
 
@@ -215,5 +234,37 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 	{
 		await _stateSynchronizer.DisposeAsync();
 		await _streamingService.DisposeAsync();
+	}
+
+	public enum TimelineEnum
+	{
+		Home,
+		Local,
+		Social,
+		Bubble,
+		Global,
+		Remote
+	}
+
+	public class Timeline
+	{
+		public string       Key  { get; }
+		public TimelineEnum Enum { get; }
+		
+		public string? Remote { get; }
+
+		public Timeline(TimelineEnum timelineEnum, string? instance = null)
+		{
+			Enum = timelineEnum;
+			if (timelineEnum == TimelineEnum.Remote)
+			{
+				Key    = $"remote:{timelineEnum.ToString()}";
+				Remote = instance ?? throw new ArgumentException("Cannot create remote key without instance");
+			}
+			else
+			{
+				Key = timelineEnum.ToString();
+			}
+		}
 	}
 }
