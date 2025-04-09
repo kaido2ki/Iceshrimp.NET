@@ -170,7 +170,7 @@ public class MfmConverter(
 
 	public MfmHtmlData ToHtml(
 		string mfm, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
-		bool quoteInaccessible = false, bool replyInaccessible = false, string rootElement = "p",
+		bool quoteInaccessible = false, bool replyInaccessible = false, string rootElement = "div",
 		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
 	)
 	{
