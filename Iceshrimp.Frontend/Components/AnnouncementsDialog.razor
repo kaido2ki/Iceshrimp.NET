@@ -29,6 +29,16 @@
 
                 <span class="title">@current.Title</span>
                 <span>@current.Text</span>
+                <span class="date">
+                    @if (current.UpdatedAt != null)
+                    {
+                        @Loc["Announced {0} - Updated {1}", current.CreatedAt.ToLocalTime().ToString("G"), current.UpdatedAt.Value.ToLocalTime().ToString("G")]
+                    }
+                    else
+                    {
+                        @current.CreatedAt.ToLocalTime().ToString("G")
+                    }
+                </span>
                 
                 @if (current.ImageUrl != null)
                 {
