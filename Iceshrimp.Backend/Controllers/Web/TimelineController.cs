@@ -47,9 +47,12 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IEnumerable<NoteResponse>> GetLocalTimeline(PaginationQuery pq)
 	{
-		var user = HttpContext.GetUserOrFail();
+		//TODO: verify heuristic is accurate and/or even necessary for this query
+		var user      = HttpContext.GetUserOrFail();
+		var heuristic = await QueryableTimelineExtensions.GetHeuristicAsync(user, db, cache);
 		var notes = await db.Notes.IncludeCommonProperties()
 		                    .Where(p => p.UserHost == null)
+		                    .FilterByPublicFollowingAndOwn(user, db, heuristic)
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db)
 		                    .FilterMutedThreads(user, db)
@@ -65,6 +68,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IEnumerable<NoteResponse>> GetSocialTimeline(PaginationQuery pq)
 	{
+		//TODO: verify heuristic is accurate and/or even necessary for this query
 		var user      = HttpContext.GetUserOrFail();
 		var heuristic = await QueryableTimelineExtensions.GetHeuristicAsync(user, db, cache);
 		var notes = await db.Notes.IncludeCommonProperties()
@@ -84,9 +88,12 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IEnumerable<NoteResponse>> GetBubbleTimeline(PaginationQuery pq)
 	{
-		var user  = HttpContext.GetUserOrFail();
+		//TODO: verify heuristic is accurate and/or even necessary for this query
+		var user      = HttpContext.GetUserOrFail();
+		var heuristic = await QueryableTimelineExtensions.GetHeuristicAsync(user, db, cache);
 		var notes = await db.Notes.IncludeCommonProperties()
 		                    .Where(p => db.BubbleInstances.Any(i => i.Host == p.UserHost))
+		                    .FilterByPublicFollowingAndOwn(user, db, heuristic)
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db, filterHiddenListMembers: true)
 		                    .FilterMutedThreads(user, db)
@@ -102,8 +109,11 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IEnumerable<NoteResponse>> GetGlobalTimeline(PaginationQuery pq)
 	{
-		var user = HttpContext.GetUserOrFail();
+		//TODO: verify heuristic is accurate and/or even necessary for this query
+		var user      = HttpContext.GetUserOrFail();
+		var heuristic = await QueryableTimelineExtensions.GetHeuristicAsync(user, db, cache);
 		var notes = await db.Notes.IncludeCommonProperties()
+		                    .FilterByPublicFollowingAndOwn(user, db, heuristic)
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db)
 		                    .FilterMutedThreads(user, db)
@@ -119,9 +129,12 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IEnumerable<NoteResponse>> GetRemoteTimeline(string instance, PaginationQuery pq)
 	{
-		var user = HttpContext.GetUserOrFail();
+		//TODO: verify heuristic is accurate and/or even necessary for this query
+		var user      = HttpContext.GetUserOrFail();
+		var heuristic = await QueryableTimelineExtensions.GetHeuristicAsync(user, db, cache);
 		var notes = await db.Notes.IncludeCommonProperties()
 		                    .Where(p => p.UserHost == instance)
+		                    .FilterByPublicFollowingAndOwn(user, db, heuristic)
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db)
 		                    .FilterMutedThreads(user, db)

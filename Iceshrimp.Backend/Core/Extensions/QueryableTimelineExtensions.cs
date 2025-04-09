@@ -24,13 +24,27 @@ public static class QueryableTimelineExtensions
 			: query.Where(note => note.User == user || note.User.IsFollowedBy(user));
 	}
 
+	public static IQueryable<Note> FilterByPublicFollowingAndOwn(
+		this IQueryable<Note> query, User user, DatabaseContext db, int heuristic
+	)
+	{
+		return heuristic < Cutoff
+			? query.Where(FollowingAndOwnLowFreqExpr(user, db).Or(p => p.Visibility == Note.NoteVisibility.Public))
+			: query.Where(note => note.Visibility == Note.NoteVisibility.Public
+			                      || note.User == user
+			                      || note.User.IsFollowedBy(user));
+	}
+
 	public static IQueryable<Note> FilterByFollowingOwnAndLocal(
 		this IQueryable<Note> query, User user, DatabaseContext db, int heuristic
 	)
 	{
 		return heuristic < Cutoff
-			? query.Where(FollowingAndOwnLowFreqExpr(user, db).Or(p => p.UserHost == null))
-			: query.Where(note => note.User == user || note.User.IsFollowedBy(user));
+			? query.Where(FollowingAndOwnLowFreqExpr(user, db)
+				              .Or(p => p.UserHost == null && p.Visibility == Note.NoteVisibility.Public))
+			: query.Where(note => note.User == user
+			                      || note.User.IsFollowedBy(user)
+			                      || (note.UserHost == null && note.Visibility == Note.NoteVisibility.Public));
 	}
 
 	private static Expression<Func<Note,bool>> FollowingAndOwnLowFreqExpr(User user, DatabaseContext db)
