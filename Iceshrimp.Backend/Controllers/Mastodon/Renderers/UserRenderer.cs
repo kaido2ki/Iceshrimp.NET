@@ -77,9 +77,8 @@ public class UserRenderer(
 			IsDiscoverable     = user.IsExplorable,
 			Fields             = fields?.ToList() ?? [],
 			Emoji              = profileEmoji,
-			Akkoma			   = flags?.IsPleroma.Value == true
-				? new AkkomaInfo()
-					{ PermitFollowback = user.UserSettings?.AutoAcceptFollowed }
+			Akkoma			   = flags.IsPleroma.Value
+				? new AkkomaInfo { PermitFollowback = user.UserSettings?.AutoAcceptFollowed }
 				: null
 		};
 
