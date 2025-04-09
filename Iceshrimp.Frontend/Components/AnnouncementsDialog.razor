@@ -39,8 +39,9 @@
         <div class="buttons">
             @if (Announcements.Count != 1)
             {
-                <button class="button" @onclick="Previous" disabled="@(Current == 0)">
-                    <Icon Name="Icons.CaretLeft"/>
+                <button class="button" @onclick="Previous"
+                        disabled="@(Current == 0 && NextButton?.State != StateButton.StateEnum.Loading)">
+                <Icon Name="Icons.CaretLeft"/>
                     @Loc["Previous"]
                 </button>
             }
@@ -83,13 +84,10 @@
         // Don't display announcement dialog if it hasn't closed
         if (Announcements.Count != 0) return;
 
-        var res = await Api.Announcements.GetAnnouncementsAsync(true, new PaginationQuery());
+        var res = await Api.Announcements.GetAnnouncementsAsync(true, new PaginationQuery { MinId = "0" });
         PaginationData = res.Links;
-        Announcements  = res.Data;
+        Announcements  = res.Data.OrderBy(p => p.Id).ToList();
         Current        = 0;
-
-        // Announcements need to be reverse to display oldes first
-        Announcements.Reverse();
 
         // Don't display announcement dialog if there are no new announcements
         if (Announcements.Count == 0) return;
@@ -103,7 +101,11 @@
 
     private void Previous()
     {
-        if (Current != 0) Current--;
+        if (Current != 0)
+        {
+            Current--;
+            NextButton.State = StateButton.StateEnum.Initial;
+        }
     }
 
     private async Task Next()
@@ -112,6 +114,10 @@
 
         // await Api.Announcements.ReadAnnouncementAsync(Announcements[Current].Id);
 
+        if (NextButton.State == StateButton.StateEnum.Success)
+        {
+            await CloseDialog();
+        }
         if (NextButton.State == StateButton.StateEnum.Initial)
         {
             if (Current != Announcements.Count - 2)
@@ -119,17 +125,20 @@
                 Current++;
                 return;
             }
-
-            if (PaginationData?.Prev == null) return;
+            if (Current == Announcements.Count - 2 && PaginationData?.Prev == null)
+            {
+                Current++;
+                NextButton.State = StateButton.StateEnum.Success;
+                return;
+            }
 
             NextButton.State = StateButton.StateEnum.Loading;
 
-            var pq  = new PaginationQuery { MinId = PaginationData.Prev?.Split('=')[1], Limit = PaginationData.Limit };
+            var pq  = new PaginationQuery { MinId = PaginationData?.Prev?.Split('=')[1], Limit = PaginationData?.Limit };
             var res = await Api.Announcements.GetAnnouncementsAsync(true, pq);
-            res.Data.Reverse();
 
             PaginationData = res.Links;
-            Announcements.AddRange(res.Data);
+            Announcements.AddRange(res.Data.OrderBy(p => p.Id));
 
             NextButton.State = res.Data.Count == 0 ? StateButton.StateEnum.Success : StateButton.StateEnum.Initial;
             Current++;
@@ -140,7 +149,11 @@
     {
         if (e is { Code: "Escape" })
         {
-            await CloseDialog();
+            Previous();
+        }
+        if (e is { Code: "Enter" })
+        {
+            await Next();
         }
     }
 
