@@ -29,6 +29,12 @@
 
                 <span class="title">@current.Title</span>
                 <MfmText Text="@current.Text" Emoji="[]"/>
+
+                @if (current.ImageUrl != null)
+                {
+                    <img src="@current.ImageUrl" alt="@Loc["announcement image"]"/>
+                }
+
                 <span class="date">
                     @if (current.UpdatedAt != null)
                     {
@@ -39,11 +45,6 @@
                         @current.CreatedAt.ToLocalTime().ToString("G")
                     }
                 </span>
-                
-                @if (current.ImageUrl != null)
-                {
-                    <img src="@current.ImageUrl" alt="@Loc["announcement image"]"/>
-                }
             }
         </div>
         <div class="buttons">
