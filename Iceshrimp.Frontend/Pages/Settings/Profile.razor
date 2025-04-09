@@ -4,6 +4,7 @@
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Configuration
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Extensions.Localization
@@ -114,8 +115,8 @@
                 @foreach (var entry in UserProfile.Fields)
                 {
                     <div class="field">
-                        <input class="input" placeholder="@Loc["Name"]" @bind="@entry.Name"/>
-                        <input class="input" placeholder="@Loc["Value"]" @bind="@entry.Value"/>
+                        <input class="input" placeholder="@Loc["Name"]" @bind="@entry.Name" maxlength="@Limits.MaxProfileFieldNameLength"/>
+                        <input class="input" placeholder="@Loc["Value"]" @bind="@entry.Value" maxlength="@Limits.MaxProfileFieldValueLength"/>
                         <button class="button" title="@Loc["Delete Field"]" @onclick="() => DeleteField(entry)">
                             <Icon Name="Icons.Trash"/>
                         </button>
@@ -124,13 +125,16 @@
             </div>
         </div>
 
-        <div class="new-field">
-            <input class="input" placeholder="@Loc["Name"]" @bind="@FieldName"/>
-            <input class="input" placeholder="@Loc["Value"]" @bind="@FieldValue"/>
-            <button class="button" title="@Loc["Add Field"]" @onclick="AddField">
-                <Icon Name="Icons.Plus"/>
-            </button>
-        </div>
+        @if (UserProfile.Fields.Count < Limits.MaxProfileFields)
+        {
+            <div class="new-field">
+                <input class="input" placeholder="@Loc["Name"]" @bind="@FieldName"/>
+                <input class="input" placeholder="@Loc["Value"]" @bind="@FieldValue"/>
+                <button class="button" title="@Loc["Add Field"]" @onclick="AddField">
+                    <Icon Name="Icons.Plus"/>
+                </button>
+            </div>
+        }
 
         <div class="section">
             <h3>@Loc["Other"]</h3>

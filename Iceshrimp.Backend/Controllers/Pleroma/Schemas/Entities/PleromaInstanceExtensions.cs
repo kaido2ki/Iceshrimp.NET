@@ -1,4 +1,4 @@
-using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Shared.Configuration;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
@@ -34,8 +34,8 @@ public class InstanceMetadata
 
 public class FieldsLimits
 {
-	[J("max_fields")]        public int MaxFields       => Constants.MaxProfileFields;
-	[J("max_remote_fields")] public int MaxRemoteFields => Constants.MaxProfileFields;
-	[J("name_length")]       public int NameLength      => Constants.MaxProfileFieldNameLength;
-	[J("value_length")]      public int ValueLength     => Constants.MaxProfileFieldValueLength;
+	[J("max_fields")]        public int MaxFields       => Limits.MaxProfileFields;
+	[J("max_remote_fields")] public int MaxRemoteFields => Limits.MaxProfileFields;
+	[J("name_length")]       public int NameLength      => Limits.MaxProfileFieldNameLength;
+	[J("value_length")]      public int ValueLength     => Limits.MaxProfileFieldValueLength;
 }

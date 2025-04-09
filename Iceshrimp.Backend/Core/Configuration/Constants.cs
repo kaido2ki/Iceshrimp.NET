@@ -63,8 +63,4 @@ public static class Constants
 		"audio/flac",
 		"audio/vnd.wave"
 	];
-
-	public const int MaxProfileFields           = 10;
-	public const int MaxProfileFieldNameLength  = 1000;
-	public const int MaxProfileFieldValueLength = 1000;
 }

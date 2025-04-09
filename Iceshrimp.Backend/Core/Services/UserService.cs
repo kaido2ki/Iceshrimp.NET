@@ -17,6 +17,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.EntityFrameworkCore.Extensions;
 using Iceshrimp.MfmSharp;
+using Iceshrimp.Shared.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -322,10 +323,10 @@ public class UserService(
 		                  })
 		                  .Where(p => p is
 		                  {
-			                  Name.Length: <= Constants.MaxProfileFieldNameLength,
-			                  Value.Length: <= Constants.MaxProfileFieldValueLength
+			                  Name.Length: <= Limits.MaxProfileFieldNameLength,
+			                  Value.Length: <= Limits.MaxProfileFieldValueLength
 		                  })
-		                  .Take(Constants.MaxProfileFields);
+		                  .Take(Limits.MaxProfileFields);
 
 		var pronouns = actor.Pronouns?.Values.ToDictionary(p => p.Key, p => p.Value ?? "");
 
@@ -376,12 +377,12 @@ public class UserService(
 		if (user.UserProfile == null) throw new Exception("user.UserProfile must not be null at this stage");
 
 		// @formatter:off
-		if (user.UserProfile.Fields.Length > Constants.MaxProfileFields)
-			throw GracefulException.BadRequest($"Profile must not contain more than {Constants.MaxProfileFields} fields");
-		if (user.UserProfile.Fields.Any(p => p.Name.Length > Constants.MaxProfileFieldNameLength))
-			throw GracefulException.BadRequest($"Profile must not contain any fields with a name exceeding {Constants.MaxProfileFieldNameLength} characters");
-		if (user.UserProfile.Fields.Any(p => p.Value.Length > Constants.MaxProfileFieldValueLength))
-			throw GracefulException.BadRequest($"Profile must not contain any fields with a value exceeding {Constants.MaxProfileFieldValueLength} characters");
+		if (user.UserProfile.Fields.Length > Limits.MaxProfileFields)
+			throw GracefulException.BadRequest($"Profile must not contain more than {Limits.MaxProfileFields} fields");
+		if (user.UserProfile.Fields.Any(p => p.Name.Length > Limits.MaxProfileFieldNameLength))
+			throw GracefulException.BadRequest($"Profile must not contain any fields with a name exceeding {Limits.MaxProfileFieldNameLength} characters");
+		if (user.UserProfile.Fields.Any(p => p.Value.Length > Limits.MaxProfileFieldValueLength))
+			throw GracefulException.BadRequest($"Profile must not contain any fields with a value exceeding {Limits.MaxProfileFieldValueLength} characters");
 		// @formatter:on
 
 		user.DisplayName             = user.DisplayName?.ReplaceLineEndings("\n").Trim();
