@@ -10,6 +10,7 @@ public class InstanceResponse
     public required string?       BannerUrl     { get; set; }
     public required string?       ThemeColor    { get; set; }
     public required Limitations   Limits        { get; set; }
+    public required int           UserCount     { get; set; }
 }
 
 public class StaffResponse

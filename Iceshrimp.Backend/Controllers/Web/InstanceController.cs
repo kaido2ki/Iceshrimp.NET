@@ -54,7 +54,8 @@ public class InstanceController(
 			IconUrl       = iconUrl,
 			BannerUrl     = bannerUrl,
 			ThemeColor    = themeColor,
-			Limits        = limits
+			Limits        = limits,
+			UserCount     = await db.Users.CountAsync(p => p.Host == null && !p.IsSuspended) - 2 // -2 to remove instance.actor and relay.actor
 		};
 	}
 
