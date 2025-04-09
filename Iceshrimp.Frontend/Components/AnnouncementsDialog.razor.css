@@ -27,6 +27,24 @@
     word-break: break-word;
 }
 
+.header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--notice-color);
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    
+    .title {
+        font-weight: bold;
+    }
+}
+
 .buttons {
     display: flex;
 }

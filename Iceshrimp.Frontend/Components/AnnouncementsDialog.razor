@@ -13,26 +13,45 @@
     <div class="contents">
         <div class="header">
             <Icon Name="Icons.Info" Size="1.3em"/>
-            <span>@Loc["Announcements ({0}/{1})", Current + 1, Announcements.Count]</span>
+            @if (Announcements.Count != 1)
+            {
+                <span>@Loc["Announcements ({0}/{1})", Current + 1, Announcements.Count]</span>
+            }
+            else
+            {
+                <span>@Loc["Announcement"]</span>
+            }
         </div>
         <div class="body">
             @if (Announcements.Count != 0)
             {
                 var current = Announcements[Current];
 
-                <span>@current.Title</span>
+                <span class="title">@current.Title</span>
                 <span>@current.Text</span>
+                
+                @if (current.ImageUrl != null)
+                {
+                    <img src="@current.ImageUrl" alt="@Loc["announcement image"]"/>
+                }
             }
         </div>
         <div class="buttons">
-            <button class="button" @onclick="Previous" disabled="@(Current == 0)">@Loc["Previous"]</button>
+            @if (Announcements.Count != 1)
+            {
+                <button class="button" @onclick="Previous" disabled="@(Current == 0)">
+                    <Icon Name="Icons.CaretLeft"/>
+                    @Loc["Previous"]
+                </button>
+            }
             <StateButton OnClick="Next" ExtraClasses="button confirm-btn" @ref="NextButton">
                 <Initial>
                     <span>@Loc["Next"]</span>
-                    <Icon Name="Icons.Plus"/>
+                    <Icon Name="Icons.CaretRight"/>
                 </Initial>
-                <Success>\
-                    <span>@Loc["Close"]</span></Success>
+                <Success>
+                    <span>@Loc["Close"]</span>
+                </Success>
                 <Loading>
                     <span>@Loc["Loading"]</span>
                     <LoadingSpinner/>
@@ -75,7 +94,7 @@
         // Don't display announcement dialog if there are no new announcements
         if (Announcements.Count == 0) return;
 
-        NextButton.State = StateButton.StateEnum.Initial;
+        NextButton.State = Announcements.Count != 1 ? StateButton.StateEnum.Initial : StateButton.StateEnum.Success;
 
         StateHasChanged();
 
