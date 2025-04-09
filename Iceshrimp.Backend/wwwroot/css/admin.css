@@ -12,6 +12,10 @@ p {
     tab-index: 0;
 }
 
+.width0 {
+    width: 0;
+}
+
 .width30 {
     width: 30ch;
 }

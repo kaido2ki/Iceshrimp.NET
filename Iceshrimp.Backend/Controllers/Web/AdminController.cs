@@ -48,10 +48,12 @@ public class AdminController(
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<InviteResponse> GenerateInvite()
 	{
+		var user = HttpContext.GetUserOrFail();
 		var invite = new RegistrationInvite
 		{
 			Id        = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt = DateTime.UtcNow,
+			CreatedBy = user,
 			Code      = CryptographyHelpers.GenerateRandomString(32)
 		};
 
@@ -59,6 +61,14 @@ public class AdminController(
 		await db.SaveChangesAsync();
 
 		return new InviteResponse { Code = invite.Code };
+	}
+
+	[HttpPost("invites/{code}/revoke")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<OkResult> RevokeInvite(string code)
+	{
+		await db.RegistrationInvites.Where(p => p.Code == code).ExecuteDeleteAsync();
+		return Ok();
 	}
 
 	[HttpPost("users/{id}/reset-password")]

@@ -16,6 +16,13 @@ public class RegistrationInvite
 
 	[Column("createdAt")] public DateTime CreatedAt { get; set; }
 
+	[ForeignKey(nameof(CreatedById))]
+	[Column("createdBy")] public User? CreatedBy { get; set; }
+
+	[Column("createdById")]
+	[StringLength(32)]
+	public string? CreatedById { get; set; }
+
 	[Column("code")] [StringLength(64)] public string Code { get; set; } = null!;
 
 	private class EntityTypeConfiguration : IEntityTypeConfiguration<RegistrationInvite>

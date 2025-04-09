@@ -1,0 +1,101 @@
+@page "/admin/invites"
+@using Iceshrimp.Backend.Components.Admin
+@using Iceshrimp.Backend.Core.Configuration
+@using Iceshrimp.Backend.Core.Database.Tables
+@using Iceshrimp.Backend.Core.Extensions
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Options
+@inject IOptionsSnapshot<Config.SecuritySection> Security
+@inherits AdminComponentBase
+<AdminPageHeader Title="Invites"/>
+@if (Security.Value.Registrations is Enums.Registrations.Open)
+{
+    <div>Registrations are closed. To use this page, set
+        <pre><code>[Security]
+Registrations = Invite</code></pre>
+        in the configuration.
+    </div>
+    return;
+}
+@if (Security.Value.Registrations is Enums.Registrations.Closed)
+{
+    <div>Registrations are closed. To use this page, set
+        <pre><code>[Security]
+Registrations = Invite</code></pre>
+        in the configuration.
+    </div>
+    return;
+}
+<table class="auto-table">
+    <thead>
+    <th class="width0">Code</th>
+    <th>Created at</th>
+    <th>Created by</th>
+    <th>Actions</th>
+    </thead>
+    <tbody>
+    @foreach (var invite in _invites)
+    {
+        var createdBy = invite.CreatedBy?.Username;
+        createdBy = createdBy != null ? $"@{createdBy}" : "unknown";
+
+        <tr>
+            <td><code>@invite.Code</code></td>
+            <td>@invite.CreatedAt.ToDisplayString()</td>
+            <td>@createdBy</td>
+            <td>
+                <a class="fake-link" onclick="revokeInvite('@invite.Code', event.target)">Revoke</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (_invites is [])
+{
+    <p>
+        <i>No invites listed.</i>
+    </p>
+}
+
+<p><a class="fake-link" id="gen-invite" role="button" onclick="generateInviteAndCopy()">Generate invite!</a></p>
+
+<div class="flex">
+    @if (Offset is > 0)
+    {
+        <button role="link" data-target="/admin/federation?offset=@(Math.Max(0, Offset.Value - 50))"
+                onclick="navigate(event)">❮ Previous page
+        </button>
+    }
+    else
+    {
+        <button disabled>❮ Previous page</button>
+    }
+
+    @if (_invites.Length == 50)
+    {
+        <button role="link" data-target="/admin/federation?offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">
+            Next page
+            ❯
+        </button>
+    }
+    else
+    {
+        <button disabled>Next page ❯</button>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public int? Offset { get; set; }
+
+    private RegistrationInvite[] _invites = [];
+
+    protected override async Task OnGet()
+    {
+        _invites = await Database.RegistrationInvites.Include(p => p.CreatedBy)
+                                 .OrderByDescending(p => p.CreatedAt)
+                                 .Skip(Offset ?? 0)
+                                 .Take(50)
+                                 .ToArrayAsync();
+    }
+}

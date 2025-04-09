@@ -34,6 +34,10 @@ async function debubbleInstance(host, target) {
     await confirm(target, () => callApiMethod(`/api/iceshrimp/admin/instances/${host}/debubble`));
 }
 
+async function revokeInvite(code, target) {
+    await confirm(target, () => callApiMethod(`/api/iceshrimp/admin/invites/${code}/revoke`));
+}
+
 async function removeRelay(id, target) {
     await confirm(target, () => callApiMethod(`/api/iceshrimp/admin/relays/${id}`, 'DELETE'));
 }

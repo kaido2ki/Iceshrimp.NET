@@ -3680,10 +3680,17 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("createdAt");
 
+                    b.Property<string>("CreatedById")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("createdById");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
                         .IsUnique();
+
+                    b.HasIndex("CreatedById");
 
                     b.ToTable("registration_invite");
                 });
@@ -5699,6 +5706,15 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Navigation("OauthToken");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.RegistrationInvite", b =>
+                {
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById");
+
+                    b.Navigation("CreatedBy");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.RegistryItem", b =>
