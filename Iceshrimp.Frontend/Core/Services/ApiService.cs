@@ -5,6 +5,7 @@ namespace Iceshrimp.Frontend.Core.Services;
 internal class ApiService(ApiClient client)
 {
 	public readonly AdminControllerModel         Admin          = new(client);
+	public readonly AnnouncementControllerModel  Announcements  = new(client);
 	public readonly AuthControllerModel          Auth           = new(client);
 	public readonly DriveControllerModel         Drive          = new(client);
 	public readonly EmojiControllerModel         Emoji          = new(client);

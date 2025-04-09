@@ -1,0 +1,134 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
+@inject IJSRuntime                     Js;
+@inject IStringLocalizer<Localization> Loc;
+
+<dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
+    <div class="contents">
+        <div class="header">
+            <Icon Name="Icons.Info" Size="1.3em"/>
+            <span>@Loc["Announcements ({0}/{1})", Current + 1, Announcements.Count]</span>
+        </div>
+        <div class="body">
+            @if (Announcements.Count != 0)
+            {
+                var current = Announcements[Current];
+
+                <span>@current.Title</span>
+                <span>@current.Text</span>
+            }
+        </div>
+        <div class="buttons">
+            <button class="button" @onclick="Previous" disabled="@(Current == 0)">@Loc["Previous"]</button>
+            <StateButton OnClick="Next" ExtraClasses="button confirm-btn" @ref="NextButton">
+                <Initial>
+                    <span>@Loc["Next"]</span>
+                    <Icon Name="Icons.Plus"/>
+                </Initial>
+                <Success>\
+                    <span>@Loc["Close"]</span></Success>
+                <Loading>
+                    <span>@Loc["Loading"]</span>
+                    <LoadingSpinner/>
+                </Loading>
+                <Failed>
+                    @Loc["Error"]<Icon Name="Icons.X"/>
+                </Failed>
+            </StateButton>
+        </div>
+    </div>
+</dialog>
+
+@code {
+    private ElementReference           Dialog { get; set; }
+    private IJSObjectReference         _module = null!;
+    private StateButton                NextButton     { get; set; } = null!;
+    private int                        Current        { get; set; }
+    private PaginationData?            PaginationData { get; set; }
+    private List<AnnouncementResponse> Announcements  { get; set; } = [];
+
+    private async Task CloseDialog()
+    {
+        Announcements = [];
+        await _module.InvokeVoidAsync("closeDialog", Dialog);
+    }
+
+    public async Task Display()
+    {
+        // Don't display announcement dialog if it hasn't closed
+        if (Announcements.Count != 0) return;
+
+        var res = await Api.Announcements.GetAnnouncementsAsync(true, new PaginationQuery());
+        PaginationData = res.Links;
+        Announcements  = res.Data;
+        Current        = 0;
+
+        // Announcements need to be reverse to display oldes first
+        Announcements.Reverse();
+
+        // Don't display announcement dialog if there are no new announcements
+        if (Announcements.Count == 0) return;
+
+        NextButton.State = StateButton.StateEnum.Initial;
+
+        StateHasChanged();
+
+        await _module.InvokeVoidAsync("openDialog", Dialog);
+    }
+
+    private void Previous()
+    {
+        if (Current != 0) Current--;
+    }
+
+    private async Task Next()
+    {
+        if (NextButton.State == StateButton.StateEnum.Loading) return;
+
+        // await Api.Announcements.ReadAnnouncementAsync(Announcements[Current].Id);
+
+        if (NextButton.State == StateButton.StateEnum.Initial)
+        {
+            if (Current != Announcements.Count - 2)
+            {
+                Current++;
+                return;
+            }
+
+            if (PaginationData?.Prev == null) return;
+
+            NextButton.State = StateButton.StateEnum.Loading;
+
+            var pq  = new PaginationQuery { MinId = PaginationData.Prev?.Split('=')[1], Limit = PaginationData.Limit };
+            var res = await Api.Announcements.GetAnnouncementsAsync(true, pq);
+            res.Data.Reverse();
+
+            PaginationData = res.Links;
+            Announcements.AddRange(res.Data);
+
+            NextButton.State = res.Data.Count == 0 ? StateButton.StateEnum.Success : StateButton.StateEnum.Initial;
+            Current++;
+        }
+    }
+
+    private async Task HandleKeys(KeyboardEventArgs e)
+    {
+        if (e is { Code: "Escape" })
+        {
+            await CloseDialog();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                           "./Components/AnnouncementsDialog.razor.js");
+        Global.AnnouncementsDialog = this;
+    }
+}
