@@ -112,7 +112,7 @@
     {
         if (NextButton.State == StateButton.StateEnum.Loading) return;
 
-        // await Api.Announcements.ReadAnnouncementAsync(Announcements[Current].Id);
+        await Api.Announcements.ReadAnnouncementAsync(Announcements[Current].Id);
 
         if (NextButton.State == StateButton.StateEnum.Success)
         {
