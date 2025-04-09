@@ -31,6 +31,7 @@ builder.Services.AddSingleton<MetadataService>();
 builder.Services.AddSingleton<VersionService>();
 builder.Services.AddSingleton<GlobalComponentSvc>();
 builder.Services.AddSingleton<UpdateService>();
+builder.Services.AddSingleton<AnnouncementService>();
 builder.Services.AddSingleton<SettingsService>();
 builder.Services.AddSingleton<NoteStore>();
 builder.Services.AddSingleton<TimelineStore>();

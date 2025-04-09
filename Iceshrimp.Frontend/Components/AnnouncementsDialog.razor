@@ -4,8 +4,8 @@
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
+@inject AnnouncementService            AnnouncementService;
 @inject ApiService                     Api;
-@inject GlobalComponentSvc             Global;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 
@@ -171,6 +171,6 @@
     {
         _module = await Js.InvokeAsync<IJSObjectReference>("import",
                                                            "./Components/AnnouncementsDialog.razor.js");
-        Global.AnnouncementsDialog = this;
+        AnnouncementService.AnnouncementsDialog = this;
     }
 }

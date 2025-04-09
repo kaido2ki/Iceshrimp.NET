@@ -11,6 +11,7 @@ internal class UpdateService
 	private readonly ILogger<UpdateService>         _logger;
 	private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
 	private          UpdateStates                   _updateState;
+	public           bool                           DialogOpen { get; set; }
 
 	public EventHandler<UpdateStates>? UpdateStatusEvent { get; set; }
 

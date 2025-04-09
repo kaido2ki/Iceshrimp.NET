@@ -58,6 +58,8 @@
     {
         var module = (IJSInProcessObjectReference)_module;
         module.InvokeVoid("openDialog", Dialog);
+
+        UpdateSvc.DialogOpen = true;
     }
 
     protected override async Task OnInitializedAsync()
