@@ -1,0 +1,121 @@
+@page "/admin/bubble"
+@using Iceshrimp.Backend.Components.Admin
+@using Iceshrimp.Backend.Core.Database.Tables
+@using Iceshrimp.Backend.Core.Extensions
+@using Iceshrimp.Backend.Core.Middleware
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Forms
+@inherits AdminComponentBase
+<AdminPageHeader Title="Bubble instances"/>
+<table>
+    <thead>
+    <th>Host</th>
+    <th>Actions</th>
+    </thead>
+    <tbody>
+    @foreach (var instance in _bubbleInstances)
+    {
+        <tr>
+            @{
+                var host = instance.Host;
+                if (host.StartsWith("xn--"))
+                    host = host.FromPunycode() + $"({instance.Host})";
+            }
+            <td>@host</td>
+            <td>
+                <a class="fake-link" onclick="debubbleInstance('@instance.Host', event.target)">Remove</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (_bubbleInstances is [])
+{
+    <p>
+        <i>No instances listed.</i>
+    </p>
+}
+
+<div class="flex">
+    @if (Offset is > 0)
+    {
+        <button role="link" data-target="/admin/federation?offset=@(Math.Max(0, Offset.Value - 50))"
+                onclick="navigate(event)">❮ Previous page
+        </button>
+    }
+    else
+    {
+        <button disabled>❮ Previous page</button>
+    }
+
+    @if (_bubbleInstances.Length == 50)
+    {
+        <button role="link" data-target="/admin/federation?offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">
+            Next page
+            ❯
+        </button>
+    }
+    else
+    {
+        <button disabled>Next page ❯</button>
+    }
+    <form method="get" class="inline-flex flex-grow">
+        <input type="text" id="search" name="q" placeholder="Search..." class="flex-grow" value="@(Query ?? "")"/>
+    </form>
+</div>
+
+<h3>Add bubble instance</h3>
+<EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
+    <label for="host">Host</label>
+    <InputText @bind-Value="@Model.Host" id="host" placeholder="example.org" required/>
+    <button type="submit">Submit</button>
+</EditForm>
+
+@code {
+    [SupplyParameterFromQuery(Name = "q")] public  string?    Query  { get; set; }
+    [SupplyParameterFromQuery]             public  int?       Offset { get; set; }
+    [SupplyParameterFromForm]              private InputModel Model  { get; set; } = null!;
+
+    private BubbleInstance[] _bubbleInstances = [];
+
+    private class InputModel
+    {
+        public string? Host { get; set; }
+
+        public void Canonicalize()
+        {
+            Host = Host?.Trim().ToPunycodeLower();
+
+            if (Host?.Length == 0)
+                Host = null;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+        Model ??= new InputModel();
+    }
+
+    protected override async Task OnGet()
+    {
+        _bubbleInstances = await Database.BubbleInstances.Where(p => p.Host.ToLower().Contains((Query ?? "").ToLower())).OrderBy(p => p.Host).Skip(Offset ?? 0).Take(50).ToArrayAsync();
+    }
+
+    private async Task OnSubmit()
+    {
+        Model.Canonicalize();
+        if (Model.Host == null)
+            throw GracefulException.BadRequest("Missing host field");
+
+        if (!await Database.BubbleInstances.AnyAsync(p => p.Host == Model.Host))
+        {
+            var newInstance = new BubbleInstance { Host = Model.Host };
+            Database.Add(newInstance);
+        }
+
+        await Database.SaveChangesAsync();
+        ReloadPage();
+    }
+}

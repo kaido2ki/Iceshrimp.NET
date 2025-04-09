@@ -236,6 +236,13 @@ public class AdminController(
 		await db.AllowedInstances.Where(p => p.Host == host.ToPunycodeLower()).ExecuteDeleteAsync();
 	}
 
+	[HttpPost("instances/{host}/debubble")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task DebubbleInstance(string host)
+	{
+		await db.BubbleInstances.Where(p => p.Host == host.ToPunycodeLower()).ExecuteDeleteAsync();
+	}
+
 	[HttpPost("instances/{host}/unblock")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task UnblockInstance(string host)
