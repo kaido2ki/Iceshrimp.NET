@@ -12,7 +12,7 @@
 <dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
     <div class="contents">
         <div class="header">
-            <Icon Name="Icons.Info" Size="1.3em"/>
+            <Icon Name="Icons.Megaphone" Size="1.3em"/>
             @if (Announcements.Count != 1)
             {
                 <span>@Loc["Announcements ({0}/{1})", Current + 1, Announcements.Count]</span>
@@ -28,7 +28,7 @@
                 var current = Announcements[Current];
 
                 <span class="title">@current.Title</span>
-                <span>@current.Text</span>
+                <MfmText Text="@current.Text" Emoji="[]"/>
                 <span class="date">
                     @if (current.UpdatedAt != null)
                     {
