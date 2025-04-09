@@ -9,6 +9,9 @@ public abstract class TimelineSchemas
 		[FromQuery(Name = "local")]      public bool OnlyLocal  { get; set; } = false;
 		[FromQuery(Name = "remote")]     public bool OnlyRemote { get; set; } = false;
 		[FromQuery(Name = "only_media")] public bool OnlyMedia  { get; set; } = false;
+
+		// Akkoma extensions
+		[FromQuery(Name = "bubble")] public bool Bubble { get; set; } = false;
 	}
 
 	public class HashtagTimelineRequest : PublicTimelineRequest

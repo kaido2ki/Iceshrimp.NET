@@ -55,7 +55,28 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		return await db.Notes
 		               .IncludeCommonProperties()
 		               .HasVisibility(Note.NoteVisibility.Public)
-		               .FilterByPublicTimelineRequest(request)
+		               .FilterByPublicTimelineRequest(request, db)
+		               .FilterHidden(user, db)
+		               .FilterMutedThreads(user, db)
+		               .Paginate(query, ControllerContext)
+		               .PrecomputeVisibilities(user)
+		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Public);
+	}
+
+	[Authorize("read:statuses")]
+	[HttpGet("bubble")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<StatusEntity>> GetBubbleTimeline(
+		MastodonPaginationQuery query
+	)
+	{
+		var user    = HttpContext.GetUserOrFail();
+		var request = new TimelineSchemas.PublicTimelineRequest { Bubble = true };
+
+		return await db.Notes
+		               .IncludeCommonProperties()
+		               .HasVisibility(Note.NoteVisibility.Public)
+		               .FilterByPublicTimelineRequest(request, db)
 		               .FilterHidden(user, db)
 		               .FilterMutedThreads(user, db)
 		               .Paginate(query, ControllerContext)
@@ -74,7 +95,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		return await db.Notes
 		               .IncludeCommonProperties()
 		               .Where(p => p.Tags.Contains(hashtag.ToLowerInvariant()))
-		               .FilterByHashtagTimelineRequest(request)
+		               .FilterByHashtagTimelineRequest(request, db)
 		               .FilterHidden(user, db)
 		               .FilterMutedThreads(user, db)
 		               .Paginate(query, ControllerContext)

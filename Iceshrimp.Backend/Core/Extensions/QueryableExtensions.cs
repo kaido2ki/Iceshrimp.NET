@@ -569,7 +569,7 @@ public static class QueryableExtensions
 	}
 
 	public static IQueryable<Note> FilterByPublicTimelineRequest(
-		this IQueryable<Note> query, TimelineSchemas.PublicTimelineRequest request
+		this IQueryable<Note> query, TimelineSchemas.PublicTimelineRequest request, DatabaseContext db
 	)
 	{
 		if (request.OnlyLocal)
@@ -578,12 +578,14 @@ public static class QueryableExtensions
 			query = query.Where(p => p.UserHost != null);
 		if (request.OnlyMedia)
 			query = query.Where(p => p.FileIds.Count != 0);
+		if (request.Bubble)
+			query = query.Where(p => db.BubbleInstances.Any(i => i.Host == p.UserHost));
 
 		return query;
 	}
 
 	public static IQueryable<Note> FilterByHashtagTimelineRequest(
-		this IQueryable<Note> query, TimelineSchemas.HashtagTimelineRequest request
+		this IQueryable<Note> query, TimelineSchemas.HashtagTimelineRequest request, DatabaseContext db
 	)
 	{
 		if (request.Any.Count > 0)
@@ -593,7 +595,7 @@ public static class QueryableExtensions
 		if (request.None.Count > 0)
 			query = query.Where(p => request.None.All(t => !p.Tags.Contains(t)));
 
-		return query.FilterByPublicTimelineRequest(request);
+		return query.FilterByPublicTimelineRequest(request, db);
 	}
 
 	#pragma warning disable CS8602 // Dereference of a possibly null reference.
