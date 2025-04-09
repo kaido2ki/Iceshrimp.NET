@@ -315,11 +315,17 @@ public class UserService(
 			                                             Exception("User host must not be null at this stage"));
 
 		var fields = actor.Attachments?.OfType<ASField>()
-		                  .Where(p => p is { Name: not null, Value: not null })
+		                  .Where(p => p is { Name.Length: > 0, Value.Length: > 0 })
 		                  .Select(p => new UserProfile.Field
 		                  {
 			                  Name = p.Name!, Value = MfmConverter.FromHtml(p.Value).Mfm
-		                  });
+		                  })
+		                  .Where(p => p is
+		                  {
+			                  Name.Length: <= Constants.MaxProfileFieldNameLength,
+			                  Value.Length: <= Constants.MaxProfileFieldValueLength
+		                  })
+		                  .Take(Constants.MaxProfileFields);
 
 		var pronouns = actor.Pronouns?.Values.ToDictionary(p => p.Key, p => p.Value ?? "");
 
@@ -368,6 +374,15 @@ public class UserService(
 	{
 		if (user.IsRemoteUser) throw new Exception("This method is only valid for local users");
 		if (user.UserProfile == null) throw new Exception("user.UserProfile must not be null at this stage");
+
+		// @formatter:off
+		if (user.UserProfile.Fields.Length > Constants.MaxProfileFields)
+			throw GracefulException.BadRequest($"Profile must not contain more than {Constants.MaxProfileFields} fields");
+		if (user.UserProfile.Fields.Any(p => p.Name.Length > Constants.MaxProfileFieldNameLength))
+			throw GracefulException.BadRequest($"Profile must not contain any fields with a name exceeding {Constants.MaxProfileFieldNameLength} characters");
+		if (user.UserProfile.Fields.Any(p => p.Value.Length > Constants.MaxProfileFieldValueLength))
+			throw GracefulException.BadRequest($"Profile must not contain any fields with a value exceeding {Constants.MaxProfileFieldValueLength} characters");
+		// @formatter:on
 
 		user.DisplayName             = user.DisplayName?.ReplaceLineEndings("\n").Trim();
 		user.UserProfile.Description = user.UserProfile.Description?.ReplaceLineEndings("\n").Trim();
