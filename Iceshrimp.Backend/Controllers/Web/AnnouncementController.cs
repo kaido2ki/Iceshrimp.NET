@@ -7,6 +7,8 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.MfmSharp;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +19,12 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Authenticate]
 [Authorize]
 [Route("/api/iceshrimp/announcements")]
-public class AnnouncementController(DatabaseContext db, AnnouncementRenderer renderer) : ControllerBase
+public class AnnouncementController(
+	DatabaseContext db,
+	AnnouncementRenderer renderer,
+	ActivityPub.UserResolver userResolver,
+	EmojiService emojiSvc
+) : ControllerBase
 {
 	[HttpGet]
 	[RestPagination(20, 40)]
@@ -40,14 +47,23 @@ public class AnnouncementController(DatabaseContext db, AnnouncementRenderer ren
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<AnnouncementResponse> CreateAnnouncement(AnnouncementRequest request)
 	{
+		var parsedText = MfmParser.Parse(request.Text.ReplaceLineEndings("\n"));
+		var (mentions, remote) = await GetMentionsAsync(parsedText);
+		var emojis = (await emojiSvc.ResolveEmojiAsync(parsedText)).Select(p => p.Id).ToList();
+		var tags   = GetHashtags(parsedText);
+
 		var announcement = new Announcement
 		{
-			Id        = IdHelpers.GenerateSnowflakeId(),
-			CreatedAt = DateTime.UtcNow,
-			Title     = request.Title,
-			Text      = request.Text,
-			ImageUrl  = request.ImageUrl,
-			ShowPopup = request.ShowPopup
+			Id                   = IdHelpers.GenerateSnowflakeId(),
+			CreatedAt            = DateTime.UtcNow,
+			Title                = request.Title,
+			Text                 = request.Text,
+			ImageUrl             = request.ImageUrl,
+			ShowPopup            = request.ShowPopup,
+			Mentions             = mentions,
+			MentionedRemoteUsers = remote,
+			Emojis               = emojis,
+			Tags                 = tags
 		};
 
 		db.Add(announcement);
@@ -62,14 +78,23 @@ public class AnnouncementController(DatabaseContext db, AnnouncementRenderer ren
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<AnnouncementResponse> UpdateAnnouncement(string id, AnnouncementRequest request)
 	{
+		var parsedText = MfmParser.Parse(request.Text.ReplaceLineEndings("\n"));
+		var (mentions, remote) = await GetMentionsAsync(parsedText);
+		var emojis = (await emojiSvc.ResolveEmojiAsync(parsedText)).Select(p => p.Id).ToList();
+		var tags   = GetHashtags(parsedText);
+
 		var announcement = await db.Announcements.FirstOrDefaultAsync(p => p.Id == id)
 		                   ?? throw GracefulException.RecordNotFound();
-		
-		announcement.UpdatedAt = DateTime.UtcNow;
-		announcement.Title     = request.Title;
-		announcement.Text      = request.Text;
-		announcement.ImageUrl  = request.ImageUrl;
-		announcement.ShowPopup = request.ShowPopup;
+
+		announcement.UpdatedAt            = DateTime.UtcNow;
+		announcement.Title                = request.Title;
+		announcement.Text                 = request.Text;
+		announcement.ImageUrl             = request.ImageUrl;
+		announcement.ShowPopup            = request.ShowPopup;
+		announcement.Mentions             = mentions;
+		announcement.MentionedRemoteUsers = remote;
+		announcement.Emojis               = emojis;
+		announcement.Tags                 = tags;
 
 		db.Update(announcement);
 		await db.SaveChangesAsync();
@@ -114,5 +139,43 @@ public class AnnouncementController(DatabaseContext db, AnnouncementRenderer ren
 		db.Add(read);
 		await db.SaveChangesAsync();
 		await db.ReloadEntityRecursivelyAsync(read);
+	}
+
+	private async Task<(List<string>, List<Note.MentionedUser>)> GetMentionsAsync(IMfmNode[] nodes)
+	{
+		var mentions = nodes
+		               .SelectMany(p => p.Children.Append(p))
+		               .OfType<MfmMentionNode>()
+		               .DistinctBy(p => p.Acct)
+		               .ToArray();
+
+		if (mentions.Length > 100)
+			throw GracefulException.UnprocessableEntity("Refusing to process note with more than 100 mentions");
+
+		var users = await mentions.Select(p => userResolver.ResolveOrNullAsync($"acct:{p.Acct}", ActivityPub.UserResolver.ResolveFlags.Acct))
+		                          .AwaitAllNoConcurrencyAsync();
+		
+		var remoteMentions = users.NotNull()
+		                          .Where(p => p is { IsRemoteUser: true, Uri: not null })
+		                          .Select(p => new Note.MentionedUser
+		                          {
+			                          Host     = p.Host!,
+			                          Uri      = p.Uri!,
+			                          Username = p.Username,
+			                          Url      = p.UserProfile?.Url
+		                          })
+		                          .ToList();
+
+		return (users.NotNull().Select(p => p.Id).Distinct().ToList(), remoteMentions);
+	}
+
+	private List<string> GetHashtags(IMfmNode[] nodes)
+	{
+		return nodes.SelectMany(p => p.Children.Append(p))
+		            .OfType<MfmHashtagNode>()
+		            .Select(p => p.Hashtag.ToLowerInvariant())
+		            .Select(p => p.Trim('#'))
+		            .Distinct()
+		            .ToList();
 	}
 }
