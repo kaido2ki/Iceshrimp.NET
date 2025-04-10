@@ -2,13 +2,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
+using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
-using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +22,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Authenticate]
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
-public class AnnouncementController(DatabaseContext db, MfmConverter mfmConverter) : ControllerBase
+public class AnnouncementController(DatabaseContext db, AnnouncementRenderer renderer) : ControllerBase
 {
 	[HttpGet]
 	[Authorize]
@@ -33,30 +32,14 @@ public class AnnouncementController(DatabaseContext db, MfmConverter mfmConverte
 		[FromQuery(Name = "with_dismissed")] bool withDismissed
 	)
 	{
-		var user          = HttpContext.GetUserOrFail();
-		var announcements = db.Announcements.AsQueryable();
+		var user = HttpContext.GetUserOrFail();
 
-		if (!withDismissed)
-			announcements = announcements.Where(p => p.IsReadBy(user));
+		var announcements = await db.Announcements
+		                            .Where(p => withDismissed || p.IsReadBy(user))
+		                            .OrderByDescending(p => p.UpdatedAt ?? p.CreatedAt)
+		                            .ToListAsync();
 
-		var res = await announcements.OrderByDescending(p => p.UpdatedAt ?? p.CreatedAt)
-		                             .Select(p => new AnnouncementEntity
-		                             {
-			                             Id          = p.Id,
-			                             PublishedAt = p.CreatedAt.ToStringIso8601Like(),
-			                             UpdatedAt   = (p.UpdatedAt ?? p.CreatedAt).ToStringIso8601Like(),
-			                             IsRead      = p.IsReadBy(user),
-			                             Content = $"""
-			                                        **{p.Title}**
-			                                        {p.Text}
-			                                        """,
-			                             Mentions = new List<MentionEntity>(), //TODO
-			                             Emoji    = new List<EmojiEntity>()    //TODO
-		                             })
-		                             .ToListAsync();
-
-		res.ForEach(p => p.Content = mfmConverter.ToHtml(p.Content, [], null).Html);
-		return res;
+		return await renderer.RenderManyAsync(announcements, user);
 	}
 
 	[HttpPost("{id}/dismiss")]
