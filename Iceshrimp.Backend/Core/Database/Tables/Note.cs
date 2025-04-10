@@ -381,6 +381,7 @@ public class Note : IIdentifiable
 			entity.HasIndex(e => e.Mentions, "GIN_note_mentions").HasMethod("gin");
 			entity.HasIndex(e => e.Tags, "GIN_note_tags").HasMethod("gin");
 			entity.HasIndex(e => e.VisibleUserIds, "GIN_note_visibleUserIds").HasMethod("gin");
+			entity.HasIndex(e => e.Emojis, "GIN_note_emojis").HasMethod("gin");
 			entity.HasIndex(e => e.Text, "GIN_TRGM_note_text")
 			      .HasMethod("gin")
 			      .HasOperators("gin_trgm_ops");

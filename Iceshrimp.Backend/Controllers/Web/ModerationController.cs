@@ -2,6 +2,7 @@ using System.Net;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Schemas;
 using Iceshrimp.Backend.Controllers.Web.Renderers;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
@@ -9,6 +10,7 @@ using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
@@ -137,5 +139,32 @@ public class ModerationController(
 
 		report.Forwarded = true;
 		await db.SaveChangesAsync();
+	}
+
+	[HttpPost("emoji/{id}/refetch")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ModerationSchemas.EmojiRefetchResponse> RefetchEmoji(
+		string id, [FromServices] EmojiService emojiSvc, [FromServices] IOptions<Config.InstanceSection> instance
+	)
+	{
+		var emoji = await db.Emojis.FirstOrDefaultAsync(p => p.Id == id)
+		            ?? throw GracefulException.NotFound("Emoji not found");
+
+		var (success, updatedEmoji) = await emojiSvc.UpdateRemoteEmojiAsync(emoji);
+
+		var emojiRes = new EmojiResponse
+		{
+			Id        = updatedEmoji.Id,
+			Name      = updatedEmoji.Name,
+			Uri       = updatedEmoji.Uri,
+			Tags      = updatedEmoji.Tags,
+			Category  = updatedEmoji.Host,
+			PublicUrl = updatedEmoji.GetAccessUrl(instance.Value),
+			License   = updatedEmoji.License,
+			Sensitive = updatedEmoji.Sensitive
+		};
+
+		return new ModerationSchemas.EmojiRefetchResponse { Success = success, Emoji = emojiRes };
 	}
 }

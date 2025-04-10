@@ -18,7 +18,8 @@ public partial class EmojiService(
 	DatabaseContext db,
 	DriveService driveSvc,
 	SystemUserService sysUserSvc,
-	IOptions<Config.InstanceSection> config
+	IOptions<Config.InstanceSection> config,
+	ActivityPub.ActivityFetcherService fetchSvc
 ) : IScopedService
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -295,6 +296,32 @@ public partial class EmojiService(
 		await db.SaveChangesAsync();
 
 		return emoji;
+	}
+
+	public async Task<(bool success, Emoji emoji)> UpdateRemoteEmojiAsync(Emoji emoji)
+	{
+		if (emoji.Host == null) throw new Exception("Refusing to update local emoji as remote");
+		var note = await db.Notes.FirstOrDefaultAsync(p => p.Emojis.Contains(emoji.Id)
+		                                                   && p.VisibilityIsPublicOrHome
+		                                                   && p.User.IsRemoteUser)
+		           ?? await db.Notes.FirstOrDefaultAsync(p => p.Emojis.Contains(emoji.Id) && p.User.IsRemoteUser);
+
+		if (note is not { Uri: not null, UserHost: not null }) return (false, emoji);
+
+		User? user = null;
+		if (!note.VisibilityIsPublicOrHome)
+		{
+			// ReSharper disable once EntityFramework.UnsupportedServerSideFunctionCall
+			user = await db.Users.FirstOrDefaultAsync(p => p.IsFollowing(note.User));
+			if (user == null) return (false, emoji);
+		}
+
+		user ??= await sysUserSvc.GetInstanceActorAsync();
+		var fetchedNote = await fetchSvc.FetchNoteAsync(note.Uri, user);
+		if (fetchedNote is not { Tags: not null }) return (false, emoji);
+
+		var res = await ProcessEmojiAsync(fetchedNote.Tags.OfType<ASEmoji>().ToList(), note.UserHost);
+		return res.FirstOrDefault(p => p.Id == emoji.Id) is { } hit ? (true, hit) : (false, emoji);
 	}
 
 	public static bool IsCustomEmoji(string s) => CustomEmojiRegex.IsMatch(s) || RemoteCustomEmojiRegex.IsMatch(s);
