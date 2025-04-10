@@ -195,6 +195,7 @@
         else
         {
             await Api.Announcements.ReadAnnouncementAsync(res.Id);
+            res.Read = true;
             Announcements.Insert(0, res);
         }
 

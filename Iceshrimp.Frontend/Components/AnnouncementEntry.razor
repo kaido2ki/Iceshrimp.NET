@@ -8,7 +8,7 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject MetadataService                Meta;
 
-<div class="announcement @(Announcement.Read is false ? "unread" : "")">
+<div class="announcement @(Announcement.Read == false ? "unread" : "")">
     <span class="title">@Announcement.Title</span>
     <MfmText Text="@Announcement.Text" Emoji="[]"/>
     @if (Announcement.ImageUrl != null)
@@ -25,6 +25,15 @@
             @Announcement.CreatedAt.ToLocalTime().ToString("G")
         }
     </span>
+    @if (Announcement.Read == false)
+    {
+        <div class="buttons">
+                <span class="button" @onclick="MarkAsReadAsync">
+                    <Icon Name="Icons.Check"/>
+                    @Loc["Mark as read"]
+                </span>
+        </div>
+    }
     @if (Moderator)
     {
         @if (Announcement.ReadCount != null)
@@ -41,15 +50,6 @@
             <span class="button danger" @onclick="DeleteAnnouncementAsync">
                 <Icon Name="Icons.Trash"/>
                 @Loc["Delete"]
-            </span>
-        </div>
-    }
-    else if (Announcement.Read is false)
-    {
-        <div class="buttons">
-            <span class="button" @onclick="MarkAsReadAsync">
-                <Icon Name="Icons.Check"/>
-                @Loc["Mark as read"]
             </span>
         </div>
     }
