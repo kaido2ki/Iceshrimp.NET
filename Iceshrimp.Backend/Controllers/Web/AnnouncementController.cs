@@ -47,7 +47,7 @@ public class AnnouncementController(
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<AnnouncementResponse> CreateAnnouncement(AnnouncementRequest request)
 	{
-		var parsedText = MfmParser.Parse(request.Text.ReplaceLineEndings("\n"));
+		var parsedText = MfmParser.Parse(request.Title + " " + request.Text.ReplaceLineEndings("\n"));
 		var (mentions, remote) = await GetMentionsAsync(parsedText);
 		var emojis = (await emojiSvc.ResolveEmojiAsync(parsedText)).Select(p => p.Id).ToList();
 		var tags   = GetHashtags(parsedText);
@@ -56,8 +56,8 @@ public class AnnouncementController(
 		{
 			Id                   = IdHelpers.GenerateSnowflakeId(),
 			CreatedAt            = DateTime.UtcNow,
-			Title                = request.Title,
-			Text                 = request.Text,
+			Title                = request.Title.Trim(),
+			Text                 = request.Text.Trim(),
 			ImageUrl             = request.ImageUrl,
 			ShowPopup            = request.ShowPopup,
 			Mentions             = mentions,
@@ -78,7 +78,7 @@ public class AnnouncementController(
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<AnnouncementResponse> UpdateAnnouncement(string id, AnnouncementRequest request)
 	{
-		var parsedText = MfmParser.Parse(request.Text.ReplaceLineEndings("\n"));
+		var parsedText = MfmParser.Parse(request.Title + " " + request.Text.ReplaceLineEndings("\n"));
 		var (mentions, remote) = await GetMentionsAsync(parsedText);
 		var emojis = (await emojiSvc.ResolveEmojiAsync(parsedText)).Select(p => p.Id).ToList();
 		var tags   = GetHashtags(parsedText);
@@ -87,8 +87,8 @@ public class AnnouncementController(
 		                   ?? throw GracefulException.RecordNotFound();
 
 		announcement.UpdatedAt            = DateTime.UtcNow;
-		announcement.Title                = request.Title;
-		announcement.Text                 = request.Text;
+		announcement.Title                = request.Title.Trim();
+		announcement.Text                 = request.Text.Trim();
 		announcement.ImageUrl             = request.ImageUrl;
 		announcement.ShowPopup            = request.ShowPopup;
 		announcement.Mentions             = mentions;
