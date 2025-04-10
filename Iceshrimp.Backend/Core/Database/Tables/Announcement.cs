@@ -39,6 +39,18 @@ public class Announcement
 
 	[Column("isGoodNews")] public bool IsGoodNews { get; set; }
 
+	[Column("mentions", TypeName = "character varying(32)[]")]
+	public List<string> Mentions { get; set; } = [];
+
+	[Column("mentionedRemoteUsers", TypeName = "jsonb")]
+	public List<Note.MentionedUser> MentionedRemoteUsers { get; set; } = [];
+
+	[Column("emojis", TypeName = "character varying(128)[]")]
+	public List<string> Emojis { get; set; } = [];
+
+	[Column("tags", TypeName = "character varying(128)[]")]
+	public List<string> Tags { get; set; } = [];
+
 	[InverseProperty(nameof(AnnouncementRead.Announcement))]
 	public virtual ICollection<AnnouncementRead> AnnouncementReads { get; set; } = new List<AnnouncementRead>();
 
@@ -55,6 +67,10 @@ public class Announcement
 			entity.Property(e => e.IsGoodNews).HasDefaultValue(false);
 			entity.Property(e => e.ShowPopup).HasDefaultValue(false);
 			entity.Property(e => e.UpdatedAt).HasComment("The updated date of the Announcement.");
+			entity.Property(e => e.Mentions).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.MentionedRemoteUsers).HasDefaultValueSql("'[]'::jsonb");
+			entity.Property(e => e.Emojis).HasDefaultValueSql("'{}'::character varying[]");
+			entity.Property(e => e.Tags).HasDefaultValueSql("'{}'::character varying[]");
 		}
 	}
 }

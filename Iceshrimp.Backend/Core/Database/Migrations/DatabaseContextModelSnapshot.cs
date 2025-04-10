@@ -66,6 +66,13 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("createdAt")
                         .HasComment("The created date of the Announcement.");
 
+                    b.PrimitiveCollection<List<string>>("Emojis")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("character varying(128)[]")
+                        .HasColumnName("emojis")
+                        .HasDefaultValueSql("'{}'::character varying[]");
+
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(1024)
                         .HasColumnType("character varying(1024)")
@@ -77,11 +84,32 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("isGoodNews");
 
+                    b.Property<List<Note.MentionedUser>>("MentionedRemoteUsers")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("mentionedRemoteUsers")
+                        .HasDefaultValueSql("'[]'::jsonb");
+
+                    b.PrimitiveCollection<List<string>>("Mentions")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("character varying(32)[]")
+                        .HasColumnName("mentions")
+                        .HasDefaultValueSql("'{}'::character varying[]");
+
                     b.Property<bool>("ShowPopup")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
                         .HasColumnName("showPopup");
+
+                    b.PrimitiveCollection<List<string>>("Tags")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("character varying(128)[]")
+                        .HasColumnName("tags")
+                        .HasDefaultValueSql("'{}'::character varying[]");
 
                     b.Property<string>("Text")
                         .IsRequired()
