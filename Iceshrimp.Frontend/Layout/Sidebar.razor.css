@@ -18,6 +18,16 @@
     }
 }
 
+::deep .ph-fill.ph-circle {
+    align-self: end;
+    color: var(--notice-color);
+    line-height: 1;
+}
+
+::deep .sidebar-btn .icon-wrapper:has(.ph-fill.ph-circle) {
+    margin-left: auto;
+}
+
 ::deep {
     .bottom-bar-icon {
         font-size: 20px !important;
@@ -85,6 +95,10 @@
         font-size: 1.5em !important;
         /* why is there a style=“font-size: 16px” in the DOM? remove it !important when it's fixed */
     }
+}
+
+.sidebar-btn:has(.ph-fill.ph-circle) {
+    padding-inline-end: 0.5rem;
 }
 
 ::deep .sidebar-btn .ph-megaphone {

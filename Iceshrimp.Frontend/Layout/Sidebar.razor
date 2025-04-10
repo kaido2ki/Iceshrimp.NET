@@ -3,8 +3,10 @@
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
 @implements IDisposable
+@inject ApiService Api;
 @inject NavigationManager              Navigation;
 @inject SessionService Session;
 
@@ -28,6 +30,11 @@
             <div class="sidebar-btn">
                 <Icon Name="Icons.Bell"/>
                 <span class="text">@Loc["Notifications"]</span>
+                @* TODO: Uncomment when we have a way to mark notifications as read *@
+                @* @if (Status is { UnreadNotifications: true }) *@
+                @* { *@
+                @*     <Icon Name="Icons.Circle" Pack="IconStyle.Fill" Size="0.5em"/> *@
+                @* } *@
             </div>
         </NavLink>
         <NavLink href="/search">
@@ -58,6 +65,10 @@
             <div class="sidebar-btn">
                 <Icon Name="Icons.Megaphone"></Icon>
                 <span class="text">@Loc["Announcements"]</span>
+                @if (Status is { UnreadAnnouncements: true })
+                {
+                    <Icon Name="Icons.Circle" Pack="IconStyle.Fill" Size="0.5em"/>
+                }
             </div>
         </NavLink>
         <NavLink href="/settings/">
@@ -99,6 +110,11 @@
         <NavLink href="/notifications">
             <div class="bottom-bar-btn">
                 <Icon Name="Icons.Bell" class="bottom-bar-icon"/>
+                @* TODO: Uncomment when we have a way to mark notifications as read *@
+                @* @if (Status is { UnreadNotifications: true }) *@
+                @* { *@
+                @*     <Icon Name="Icons.Circle" Pack="IconStyle.Fill" Size="0.5em"/> *@
+                @* } *@
             </div>
         </NavLink>
         <div>
@@ -115,8 +131,31 @@
 @code {
     private Compose          _compose = null!;
     private bool             _open;
+    private ElementReference SidebarElementRef { get; set; }
+    private StatusResponse?  Status            { get; set; }
     private AccountDropdown  _accountDropdown = null!;
     private ElementReference _avatar;
+    private Timer            _timer;
+
+    public Sidebar()
+    {
+        _timer = new Timer(GetStatus, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(60));
+    }
+
+    private void GetStatus(object? caller)
+    {
+        _ = GetStatusAsync();
+    }
+
+    private async Task GetStatusAsync()
+    {
+        var status = await Api.Misc.GetStatusAsync();
+        if (Status != status)
+        {
+            Status = status;
+            StateHasChanged();
+        }
+    }
 
     private void OpenAccountDropdown()
     {

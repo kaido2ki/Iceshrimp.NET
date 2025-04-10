@@ -8,4 +8,7 @@ internal class MiscControllerModel(ApiClient api)
 {
 	public Task<IEnumerable<NoteResponse>> GetMutedThreadsAsync(PaginationQuery pq) =>
 		api.CallAsync<IEnumerable<NoteResponse>>(HttpMethod.Get, "/misc/muted_threads", pq);
+
+	public Task<StatusResponse?> GetStatusAsync() =>
+		api.CallNullableAsync<StatusResponse>(HttpMethod.Get, "/misc/status");
 }

@@ -63,4 +63,17 @@ public class MiscController(DatabaseContext db, NoteRenderer noteRenderer, BiteS
 
 		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user);
 	}
+
+	[HttpGet("status")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<StatusResponse> GetStatus()
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var unreadAnnouncements = await db.Announcements.AnyAsync(p => !p.ReadBy.Any(p => p == user));
+
+		var unreadNotifications = await db.Notifications.AnyAsync(p => p.Notifiee == user && !p.IsRead);
+
+		return new StatusResponse { UnreadAnnouncements = unreadAnnouncements, UnreadNotifications = unreadNotifications };
+	}
 }
