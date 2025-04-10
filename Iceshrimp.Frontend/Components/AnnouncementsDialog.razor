@@ -38,7 +38,7 @@
                 <span class="date">
                     @if (current.UpdatedAt != null)
                     {
-                        @Loc["Announced {0} - Updated {1}", current.CreatedAt.ToLocalTime().ToString("G"), current.UpdatedAt.Value.ToLocalTime().ToString("G")]
+                        @Loc["Announced {0} - Edited {1}", current.CreatedAt.ToLocalTime().ToString("G"), current.UpdatedAt.Value.ToLocalTime().ToString("G")]
                     }
                     else
                     {

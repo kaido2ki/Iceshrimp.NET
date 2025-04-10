@@ -4,6 +4,7 @@
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
 @inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
 @inject IStringLocalizer<Localization> Loc;
 @inject MetadataService                Meta;
 
@@ -17,7 +18,7 @@
     <span class="metadata">
         @if (Announcement.UpdatedAt != null)
         {
-            @Loc["Announced {0} - Updated {1}", Announcement.CreatedAt.ToLocalTime().ToString("G"), Announcement.UpdatedAt.Value.ToLocalTime().ToString("G")]
+            @Loc["Announced {0} - Edited {1}", Announcement.CreatedAt.ToLocalTime().ToString("G"), Announcement.UpdatedAt.Value.ToLocalTime().ToString("G")]
         }
         else
         {
@@ -32,10 +33,30 @@
                 @Loc["Users read: {0}/{1}", Announcement.ReadCount, Meta.Instance.Value.Result.UserCount]
             </span>
         }
+        <div class="buttons">
+            <span class="button" @onclick="() => Edit.InvokeAsync(Announcement.Id)">
+                <Icon Name="Icons.Pencil"/>
+                @Loc["Edit"]
+            </span>
+            <span class="button danger" @onclick="DeleteAnnouncementAsync">
+                <Icon Name="Icons.Trash"/>
+                @Loc["Delete"]
+            </span>
+        </div>
     }
 </div>
 
 @code {
-    [Parameter, EditorRequired] public required AnnouncementResponse Announcement { get; set; }
-    [Parameter]                 public          bool                 Moderator    { get; set; }
+    [Parameter, EditorRequired] public required AnnouncementResponse  Announcement { get; set; }
+    [Parameter]                 public          bool                  Moderator    { get; set; }
+    [Parameter]                 public          EventCallback<string> Edit         { get; set; }
+    [Parameter]                 public          EventCallback<string> Delete       { get; set; }
+
+    private Task DeleteAnnouncementAsync() =>
+        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteAnnouncementCallback), Loc["Delete announcement?"], Icons.Trash, Loc["Delete"])!;
+
+    private async Task DeleteAnnouncementCallback(bool confirm)
+    {
+        if (confirm) await Delete.InvokeAsync(Announcement.Id);
+    }
 }

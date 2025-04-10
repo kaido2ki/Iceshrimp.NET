@@ -14,6 +14,12 @@ internal class AnnouncementControllerModel(ApiClient api)
     public Task<AnnouncementResponse> CreateAnnouncementAsync(AnnouncementRequest request) =>
         api.CallAsync<AnnouncementResponse>(HttpMethod.Post, "/announcements", data: request);
 
+    public Task<AnnouncementResponse> EditAnnouncementAsync(string id, AnnouncementRequest request) =>
+        api.CallAsync<AnnouncementResponse>(HttpMethod.Put, $"/announcements/{id}", data: request);
+
+    public Task DeleteAnnouncementAsync(string id) =>
+        api.CallAsync(HttpMethod.Delete, $"/announcements/{id}");
+
     public Task ReadAnnouncementAsync(string id) =>
         api.CallAsync(HttpMethod.Post, $"/announcements/{id}/read");
 }

@@ -24,3 +24,34 @@ img {
 .metadata {
     opacity: 0.7;
 }
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    height: 2em;
+    margin: 0;
+    padding: 0.75em;
+    background-color: var(--foreground-color);
+    color: var(--notice-color);
+    border: 0.1rem solid var(--foreground-color);
+    width: fit-content;
+    cursor: pointer;
+}
+
+.button.danger {
+    color: var(--danger-color);
+}
+
+.button:hover {
+    transition: 250ms;
+    border-color: var(--notice-color);
+    background-color: var(--hover-color);
+}
+
+.button.danger:hover {
+    border-color: var(--danger-color);
+}
+
+::deep .button .ph {
+    margin-right: 0.5rem;
+}

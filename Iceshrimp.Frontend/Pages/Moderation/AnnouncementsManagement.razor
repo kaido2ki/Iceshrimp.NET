@@ -33,7 +33,7 @@
     <div class="announcement-list">
         @foreach (var announcement in Announcements)
         {
-            <AnnouncementEntry Announcement="announcement" Moderator="true"/>
+            <AnnouncementEntry Announcement="announcement" Moderator="true" Edit="EditAnnouncement" Delete="DeleteAnnouncement"/>
         }
         @if (PaginationData is { Next: not null })
         {
@@ -118,7 +118,7 @@
     private          PaginationData?                PaginationData { get; set; }
     private          List<AnnouncementResponse>     Announcements  { get; set; } = [];
     private          AnnouncementRequest            Draft          { get; set; }
-    private          bool                           Editing        { get; set; }
+    private          string?                        Editing        { get; set; }
     private          bool                           Preview        { get; set; }
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
 
@@ -135,7 +135,20 @@
     private async Task NewAnnouncement()
     {
         Draft            = new AnnouncementRequest { Title = "", Text = "", ImageUrl = null, ShowPopup = true };
-        Editing          = false;
+        Editing          = null;
+        SendButton.State = StateButton.StateEnum.Initial;
+
+        var module = await _moduleTask.Value;
+        await module.InvokeVoidAsync("openDialog", ComposeDialog);
+    }
+
+    private async Task EditAnnouncement(string id)
+    {
+        var existing = Announcements.FirstOrDefault(p => p.Id == id);
+        if (existing == null) return;
+
+        Draft            = new AnnouncementRequest { Title = existing.Title, Text = existing.Text, ImageUrl = existing.ImageUrl, ShowPopup = existing.ShowPopup };
+        Editing          = id;
         SendButton.State = StateButton.StateEnum.Initial;
 
         var module = await _moduleTask.Value;
@@ -154,11 +167,27 @@
 
         SendButton.State = StateButton.StateEnum.Loading;
 
-        var res = await Api.Announcements.CreateAnnouncementAsync(Draft);
-        Announcements.Insert(0, res);
+        var res = Editing != null ? await Api.Announcements.EditAnnouncementAsync(Editing, Draft) : await Api.Announcements.CreateAnnouncementAsync(Draft);
+
+        if (Editing != null)
+        {
+            var i = Announcements.FindIndex(p => p.Id == Editing);
+            Announcements[i] = res;
+        }
+        else
+        {
+            Announcements.Insert(0, res);
+        }
 
         SendButton.State = StateButton.StateEnum.Success;
         await CloseDialog();
+    }
+
+    private async Task DeleteAnnouncement(string id)
+    {
+        await Api.Announcements.DeleteAnnouncementAsync(id);
+
+        Announcements.RemoveAll(p => p.Id == id);
     }
 
     protected override async Task OnInitializedAsync()
