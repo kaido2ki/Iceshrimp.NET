@@ -9,3 +9,7 @@ export function closeDialog(element) {
 export function openUpload(element) {
     element.click();
 }
+
+export function getSelectionStart(element) {
+    return element.selectionStart;
+}

@@ -11,6 +11,7 @@
 @attribute [Authorize(Roles = "moderator")]
 @layout ModerationLayout
 @inject ApiService                     Api;
+@inject EmojiService                   EmojiSvc;
 @inject GlobalComponentSvc             Global;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
@@ -79,8 +80,8 @@
         <input @bind="Draft.Title" @bind:event="oninput" class="input" placeholder="@Loc["Title"]" aria-label="title"
                autofocus="autofocus"/>
         <hr class="separator"/>
-        <textarea @bind="Draft.Text" @bind:event="oninput" class="textarea" placeholder="@Loc["Announcement text"]"
-                  rows="5" cols="35" aria-label="announcement text"></textarea>
+        <textarea @ref="Textarea" @bind="Draft.Text" @bind:event="oninput" class="textarea"
+                  placeholder="@Loc["Announcement text"]" rows="5" cols="35" aria-label="announcement text"></textarea>
         <div class="footer">
             <div class="buttons">
                 <button class="btn" title="@Loc["Upload image"]" @onclick="OpenUploadImage" aria-label="upload">
@@ -95,6 +96,10 @@
                         <Icon Name="Icons.Trash" Size="1.3rem"></Icon>
                     </button>
                 }
+                <button @ref="EmojiButton" class="btn" title="@Loc["Emoji"]" @onclick="ToggleEmojiPicker"
+                        aria-label="emoji">
+                    <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
+                </button>
                 <span>
                     <input type="checkbox" @bind="Draft.ShowPopup" id="announcement-show-popup">
                     <label for="announcement-show-popup">@Loc["Show popup"]</label>
@@ -116,7 +121,7 @@
                 }
                 else
                 {
-                    <MfmText Text="@Draft.Text.ReplaceLineEndings("\n")" Emoji="[]"/>
+                    <MfmText Text="@Draft.Text.ReplaceLineEndings("\n")" Emoji="@EmojiList"/>
                 }
             </div>
         }
@@ -131,10 +136,13 @@
 @code {
     private          State                          State          { get; set; }
     private          ElementReference               ComposeDialog  { get; set; }
+    private          ElementReference               Textarea       { get; set; }
+    private          ElementReference               EmojiButton    { get; set; }
     private          InputFile                      ImageInput     { get; set; } = null!;
     private          StateButton                    SendButton     { get; set; } = null!;
     private          PaginationData?                PaginationData { get; set; }
     private          List<AnnouncementResponse>     Announcements  { get; set; } = [];
+    private          List<EmojiResponse>            EmojiList      { get; set; } = [];
     private          AnnouncementRequest            Draft          { get; set; }
     private          string?                        Editing        { get; set; }
     private          bool                           Preview        { get; set; }
@@ -156,6 +164,9 @@
         Editing          = null;
         SendButton.State = StateButton.StateEnum.Initial;
 
+        if (EmojiList.Count == 0)
+            EmojiList = await EmojiSvc.GetEmojiAsync();
+
         var module = await _moduleTask.Value;
         await module.InvokeVoidAsync("openDialog", ComposeDialog);
     }
@@ -168,6 +179,9 @@
         Draft            = new AnnouncementRequest { Title = existing.Title, Text = existing.Text, ImageUrl = existing.ImageUrl, ShowPopup = existing.ShowPopup };
         Editing          = id;
         SendButton.State = StateButton.StateEnum.Initial;
+
+        if (EmojiList.Count == 0)
+            EmojiList = await EmojiSvc.GetEmojiAsync();
 
         var module = await _moduleTask.Value;
         await module.InvokeVoidAsync("openDialog", ComposeDialog);
@@ -229,6 +243,21 @@
         {
             await Global.NoticeDialog?.Display(exception.Message, NoticeDialog.NoticeType.Error)!;
         }
+    }
+
+    private async Task ToggleEmojiPicker()
+    {
+        await Global.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji))!;
+    }
+
+    private async Task AddEmoji(EmojiResponse emoji)
+    {
+        var module      = await _moduleTask.Value;
+        var pos         = await module.InvokeAsync<int>("getSelectionStart", Textarea);
+        var text        = Draft.Text;
+        var emojiString = $":{emoji.Name}: ";
+        Draft.Text = text.Insert(pos, emojiString);
+        StateHasChanged();
     }
 
     protected override async Task OnInitializedAsync()
