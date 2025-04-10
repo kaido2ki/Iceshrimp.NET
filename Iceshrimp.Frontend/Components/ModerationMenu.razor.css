@@ -19,9 +19,19 @@
     background-color: var(--hover-color);
 }
 
+::deep .sidebar-btn .ph-megaphone {
+    transform: scaleX(-1);
+}
+
 .nav {
     padding-top: 1rem;
     width: 15rem;
+}
+
+.rule {
+    width: 90%;
+    color: var(--highlight-color);
+    border-style: solid;
 }
 
 ::deep {
