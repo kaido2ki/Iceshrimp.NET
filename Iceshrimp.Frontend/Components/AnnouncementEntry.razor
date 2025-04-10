@@ -8,7 +8,7 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject MetadataService                Meta;
 
-<div class="announcement">
+<div class="announcement @(Announcement.Read is false ? "unread" : "")">
     <span class="title">@Announcement.Title</span>
     <MfmText Text="@Announcement.Text" Emoji="[]"/>
     @if (Announcement.ImageUrl != null)
@@ -44,6 +44,15 @@
             </span>
         </div>
     }
+    else if (Announcement.Read is false)
+    {
+        <div class="buttons">
+            <span class="button" @onclick="MarkAsReadAsync">
+                <Icon Name="Icons.Check"/>
+                @Loc["Mark as read"]
+            </span>
+        </div>
+    }
 </div>
 
 @code {
@@ -51,6 +60,12 @@
     [Parameter]                 public          bool                  Moderator    { get; set; }
     [Parameter]                 public          EventCallback<string> Edit         { get; set; }
     [Parameter]                 public          EventCallback<string> Delete       { get; set; }
+
+    private async Task MarkAsReadAsync()
+    {
+        await Api.Announcements.ReadAnnouncementAsync(Announcement.Id);
+        Announcement.Read = true;
+    }
 
     private Task DeleteAnnouncementAsync() =>
         Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteAnnouncementCallback), Loc["Delete announcement?"], Icons.Trash, Loc["Delete"])!;

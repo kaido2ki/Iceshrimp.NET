@@ -10,6 +10,10 @@
     border-radius: 0.75rem;
 }
 
+.announcement.unread {
+    border: 0.05rem solid var(--notice-color);
+}
+
 .title {
     font-size: 1.2rem;
     font-weight: bold;
