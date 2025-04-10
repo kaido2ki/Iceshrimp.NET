@@ -9,8 +9,12 @@
 @inject MetadataService                Meta;
 
 <div class="announcement @(Announcement.Read == false ? "unread" : "")">
-    <span class="title">@Announcement.Title</span>
-    <MfmText Text="@Announcement.Text" Emoji="@Announcement.Emojis"/>
+    <span class="title">
+        <MfmText Text="@Announcement.Title" Emoji="@Announcement.Emojis" Simple/>
+    </span>
+    <span class="text">
+        <MfmText Text="@Announcement.Text" Emoji="@Announcement.Emojis"/>
+    </span>
     @if (Announcement.ImageUrl != null)
     {
         <img src="@Announcement.ImageUrl" alt="@Loc["Announcement image"]"/>

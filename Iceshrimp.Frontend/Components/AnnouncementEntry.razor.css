@@ -21,6 +21,10 @@
     font-weight: bold;
 }
 
+.text {
+    white-space-collapse: preserve;
+}
+
 img {
     width: 100%;
     aspect-ratio: 16/9;

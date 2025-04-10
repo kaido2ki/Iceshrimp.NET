@@ -52,6 +52,10 @@
         font-weight: bold;
     }
     
+    .text {
+        white-space-collapse: preserve;
+    }
+    
     .date {
         opacity: 0.7;
     }
