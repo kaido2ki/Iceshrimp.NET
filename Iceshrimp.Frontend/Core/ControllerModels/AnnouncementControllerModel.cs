@@ -11,6 +11,9 @@ internal class AnnouncementControllerModel(ApiClient api)
                                                                      QueryString.Create("popups", popups ? "true" : "false")
                                                                      + pq);
 
+    public Task<AnnouncementResponse> CreateAnnouncementAsync(AnnouncementRequest request) =>
+        api.CallAsync<AnnouncementResponse>(HttpMethod.Post, "/announcements", data: request);
+
     public Task ReadAnnouncementAsync(string id) =>
         api.CallAsync(HttpMethod.Post, $"/announcements/{id}/read");
 }

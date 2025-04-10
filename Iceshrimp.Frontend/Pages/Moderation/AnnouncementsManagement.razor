@@ -11,6 +11,7 @@
 @attribute [Authorize(Roles = "moderator")]
 @layout ModerationLayout
 @inject ApiService                     Api;
+@inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 
 <HeadTitle Text="@Loc["Manage announcements"]"/>
@@ -20,7 +21,7 @@
     @Loc["Manage announcements"]
     @if (State is State.Empty or State.Loaded)
     {
-        <span class="action btn">
+        <span class="action btn" @onclick="NewAnnouncement">
             <Icon Name="Icons.Plus"/>
             <span>@Loc["New"]</span>
         </span>
@@ -51,10 +52,114 @@
     </div>
 }
 
+<dialog class="dialog" @ref="ComposeDialog">
+    <div class="compose">
+        <div class="header">
+            <button class="btn" title="@Loc["Close"]" @onclick="CloseDialog" aria-label="close">
+                <Icon Name="Icons.X"/>
+            </button>
+            <span>@Loc["Announcement"]</span>
+            <StateButton OnClick="Send" @ref="SendButton" ExtraClasses="announce-btn" AriaLabel="aanounce"
+                         Disabled="@(string.IsNullOrWhiteSpace(Draft.Title) || string.IsNullOrWhiteSpace(Draft.Text))">
+                <Initial>
+                    @Loc["Announce"]<Icon Name="Icons.PaperPlaneRight"/>
+                </Initial>
+                <Loading>
+                    @Loc["Sending"]<LoadingSpinner />
+                </Loading>
+                <Success>
+                    @Loc["Done"]<Icon Name="Icons.Check"/>
+                </Success>
+                <Failed>
+                    @Loc["Retry"]<Icon Name="Icons.X"/>
+                </Failed>
+            </StateButton>
+        </div>
+        <input @bind="Draft.Title" @bind:event="oninput" class="input" placeholder="@Loc["Title"]" aria-label="title"
+               autofocus="autofocus"/>
+        <hr class="separator"/>
+        <textarea @bind="Draft.Text" @bind:event="oninput" class="textarea" placeholder="@Loc["Announcement text"]"
+                  rows="5" cols="35" aria-label="announcement text"></textarea>
+        <div class="footer">
+            <div class="buttons">
+                <span>
+                    <input type="checkbox" @bind="Draft.ShowPopup" id="announcement-show-popup">
+                    <label for="announcement-show-popup">@Loc["Show popup"]</label>
+                </span>
+            </div>
+            <div class="buttons">
+                <button class="btn" title="@Loc["Preview"]" @onclick="() => Preview = !Preview"
+                        aria-label="preview">
+                    <Icon Name="Icons.Binoculars" Size="1.3rem"></Icon>
+                </button>
+            </div>
+        </div>
+        @if (Preview)
+        {
+            <div class="preview">
+                @if (string.IsNullOrWhiteSpace(Draft.Text))
+                {
+                    <span>@Loc["Nothing to preview"]</span>
+                }
+                else
+                {
+                    <MfmText Text="@Draft.Text.ReplaceLineEndings("\n")" Emoji="[]"/>
+                }
+            </div>
+        }
+        <div @onclick="CloseDialog" class="backdrop"></div>
+    </div>
+</dialog>
+
 @code {
-    private State                      State          { get; set; }
-    private PaginationData?            PaginationData { get; set; }
-    private List<AnnouncementResponse> Announcements  { get; set; } = [];
+    private          State                          State          { get; set; }
+    private          ElementReference               ComposeDialog  { get; set; }
+    private          StateButton                    SendButton     { get; set; } = null!;
+    private          PaginationData?                PaginationData { get; set; }
+    private          List<AnnouncementResponse>     Announcements  { get; set; } = [];
+    private          AnnouncementRequest            Draft          { get; set; }
+    private          bool                           Editing        { get; set; }
+    private          bool                           Preview        { get; set; }
+    private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
+
+    public AnnouncementsManagement()
+    {
+        Draft = new AnnouncementRequest { Title = "", Text = "", ImageUrl = null, ShowPopup = true };
+        _moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
+                                                             Js.InvokeAsync<IJSObjectReference>(
+                                                                                                "import",
+                                                                                                "./Pages/Moderation/AnnouncementsManagement.razor.js")
+                                                               .AsTask());
+    }
+
+    private async Task NewAnnouncement()
+    {
+        Draft            = new AnnouncementRequest { Title = "", Text = "", ImageUrl = null, ShowPopup = true };
+        Editing          = false;
+        SendButton.State = StateButton.StateEnum.Initial;
+
+        var module = await _moduleTask.Value;
+        await module.InvokeVoidAsync("openDialog", ComposeDialog);
+    }
+
+    private async Task CloseDialog()
+    {
+        var module = await _moduleTask.Value;
+        await module.InvokeVoidAsync("closeDialog", ComposeDialog);
+    }
+
+    private async Task Send()
+    {
+        if (SendButton.State == StateButton.StateEnum.Loading) return;
+
+        SendButton.State = StateButton.StateEnum.Loading;
+
+        var res = await Api.Announcements.CreateAnnouncementAsync(Draft);
+        Announcements.Insert(0, res);
+
+        SendButton.State = StateButton.StateEnum.Success;
+        await CloseDialog();
+    }
 
     protected override async Task OnInitializedAsync()
     {

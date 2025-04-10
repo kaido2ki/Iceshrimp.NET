@@ -9,3 +9,133 @@
     justify-content: center;
     margin-top: 5rem;
 }
+
+.dialog {
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    position: fixed;
+    margin: auto;
+    background-color: unset;
+    z-index: +11;
+    overflow-y: scroll;
+}
+
+.compose {
+    background-color: var(--background-color);
+    border-radius: 1rem;
+    margin: 10% auto 0;
+    padding: 1rem;
+    max-width: 45rem;
+    color: var(--font-color);
+    border: solid var(--highlight-color) 0.05rem;
+}
+
+.backdrop {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: -2;
+    opacity: 50%;
+    background-color: black;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    gap: 0.5rem;
+    position: relative;
+    margin-bottom: 0.5rem;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+}
+
+.footer .buttons {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+}
+
+.input {
+    display: block;
+    margin: 0;
+    padding: 0.5em;
+    background-color: var(--background-color);
+    border: none;
+    outline: none;
+}
+
+.textarea {
+    display: block;
+    margin: 0;
+    padding: 0.5em;
+    background-color: var(--background-color);
+    border: none;
+    outline: none;
+    resize: vertical;
+}
+
+input[type="checkbox"] {
+    display: inline-block;
+}
+
+.separator {
+    color: var(--highlight-color);
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+    border-style: solid;
+}
+
+::deep {
+    .announce-btn {
+        display: flex;
+        margin-left: auto;
+        align-items: center;
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        background: var(--accent-color);
+        color: var(--font-color);
+        float: right;
+        > .icon-wrapper {
+            padding-left: 0.5rem;
+        }
+    }
+}
+
+::deep {
+    .btn[disabled],
+    .announce-btn[disabled] {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+.btn {
+    padding: 0.5rem 0.75rem;
+    height: max-content;
+    background-color: var(--background-color);
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.btn:hover {
+    background-color: var(--hover-color);
+}
+
+.compose .preview {
+    padding: 0.5rem 0.5em 0;
+    width: 100%;
+    overflow: clip;
+    white-space: pre-wrap;
+}
