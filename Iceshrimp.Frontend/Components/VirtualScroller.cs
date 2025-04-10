@@ -281,7 +281,7 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 		_module.InvokeVoid("SetScrollY", scrollY);
 	}
 
-	private void Save()
+	public void Save()
 	{
 		var scrollY = GetScrollY();
 		var r =

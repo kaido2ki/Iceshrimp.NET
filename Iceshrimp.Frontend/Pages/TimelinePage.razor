@@ -86,7 +86,7 @@
     @if (NoteResponses is not null && _loaded)
     {
         <VirtualScroller InitialItems="NoteResponses" ItemProvider="Provider" StateKey="@CurrentTimeline.Key"
-                         ItemProviderById="ItemProviderById" StreamingItemProvider="Store">
+                         ItemProviderById="ItemProviderById" StreamingItemProvider="Store" @ref="VirtualScroller">
             <ItemTemplate Context="note">
                 <CascadingValue Value="Store" TValue="NoteMessageProvider" Name="Provider">
                     <TimelineNote Note="note"></TimelineNote>
@@ -97,11 +97,12 @@
 </div>
 
 @code {
-    private bool                   _loaded;
-    private List<NoteResponse>?    NoteResponses   { get; set; }
-    private TimelineStore.Timeline CurrentTimeline { get; set; } = null!;
-    private Menu                   MenuRef         { get; set; } = null!;
-    private ElementReference       MenuButton      { get; set; }
+    private bool                           _loaded;
+    private List<NoteResponse>?            NoteResponses   { get; set; }
+    private TimelineStore.Timeline         CurrentTimeline { get; set; } = null!;
+    private Menu                           MenuRef         { get; set; } = null!;
+    private ElementReference               MenuButton      { get; set; }
+    private VirtualScroller<NoteResponse>? VirtualScroller { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -124,6 +125,7 @@
 
     private async Task SwitchTimeline(TimelineStore.TimelineEnum timeline, string? remote = null)
     {
+        VirtualScroller?.Save();
         _loaded = false;
         StateHasChanged();
         NoteResponses   = null;
