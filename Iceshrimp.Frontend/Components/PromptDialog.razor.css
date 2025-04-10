@@ -14,6 +14,7 @@
     align-items: center;
     gap: 0.5rem;
     background-color: var(--background-color);
+    border: 0.05rem solid var(--highlight-color);;
     border-radius: 1rem;
     margin: auto;
     padding: 1rem;
