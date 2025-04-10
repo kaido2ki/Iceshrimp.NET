@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EntityFrameworkCore.Projectables;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,7 +9,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("announcement")]
 [Index(nameof(CreatedAt))]
-public class Announcement
+public class Announcement : IIdentifiable
 {
 	[Key]
 	[Column("id")]

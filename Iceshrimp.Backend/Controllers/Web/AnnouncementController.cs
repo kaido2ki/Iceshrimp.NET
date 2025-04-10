@@ -1,6 +1,7 @@
 using System.Net;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Schemas;
+using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
@@ -16,7 +17,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Authenticate]
 [Authorize]
 [Route("/api/iceshrimp/announcements")]
-public class AnnouncementController(DatabaseContext db) : ControllerBase
+public class AnnouncementController(DatabaseContext db, AnnouncementRenderer renderer) : ControllerBase
 {
 	[HttpGet]
 	[RestPagination(20, 40)]
@@ -28,24 +29,10 @@ public class AnnouncementController(DatabaseContext db) : ControllerBase
 		var announcements = await db.Announcements
 		                            .Include(p => p.AnnouncementReads)
 		                            .Where(p => !popups || (p.ShowPopup && !p.ReadBy.Contains(user)))
-		                            .Select(p => new AnnouncementResponse
-		                            {
-			                            Id        = p.Id,
-			                            CreatedAt = p.CreatedAt,
-			                            UpdatedAt = p.UpdatedAt,
-			                            Title     = p.Title,
-			                            Text      = p.Text,
-			                            ImageUrl  = p.ImageUrl,
-			                            ShowPopup = p.ShowPopup,
-			                            Read      = p.ReadBy.Contains(user),
-			                            ReadCount = user.IsAdmin || user.IsModerator
-				                            ? p.ReadBy.Count()
-				                            : null
-		                            })
 		                            .Paginate(pq, ControllerContext)
 		                            .ToListAsync();
 
-		return HttpContext.CreatePaginationWrapper(pq, announcements);
+		return HttpContext.CreatePaginationWrapper(pq, (await renderer.RenderManyAsync(announcements, user)).ToList());
 	}
 
     [HttpPost]
@@ -66,16 +53,7 @@ public class AnnouncementController(DatabaseContext db) : ControllerBase
 		db.Add(announcement);
 		await db.SaveChangesAsync();
 
-		return new AnnouncementResponse
-		{
-			Id        = announcement.Id,
-			CreatedAt = announcement.CreatedAt,
-			UpdatedAt = null,
-			Title     = announcement.Title,
-			Text      = announcement.Text,
-			ImageUrl  = announcement.ImageUrl,
-			ShowPopup = announcement.ShowPopup
-		};
+		return await renderer.RenderOneAsync(announcement, null);
 	}
 
 	[HttpPut("{id}")]
@@ -96,16 +74,7 @@ public class AnnouncementController(DatabaseContext db) : ControllerBase
 		db.Update(announcement);
 		await db.SaveChangesAsync();
 
-		return new AnnouncementResponse
-		{
-			Id        = announcement.Id,
-			CreatedAt = announcement.CreatedAt,
-			UpdatedAt = announcement.UpdatedAt,
-			Title     = announcement.Title,
-			Text      = announcement.Text,
-			ImageUrl  = announcement.ImageUrl,
-			ShowPopup = announcement.ShowPopup
-		};
+		return await renderer.RenderOneAsync(announcement, null);
 	}
 
 	[HttpDelete("{id}")]
