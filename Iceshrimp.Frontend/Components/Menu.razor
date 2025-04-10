@@ -2,24 +2,26 @@
 
 @if (_display)
 {
-    <div class="menu" style="--top: @(_top)px; --left: @(_left)px">
+    <div class="menu @(Fixed ? "fixed" : "")" style="--top: @(_top)px; --left: @(_left)px">
         @ChildContent
     </div>
 }
 
 @code {
-    [Parameter] [EditorRequired] public required RenderFragment              ChildContent { get; set; }
-    private                                      bool                        _display;
-    private                                      float                       _top;
-    private                                      float                       _left;
-    private                                      IJSInProcessObjectReference _module = null!;
+    [Parameter] [EditorRequired] public required RenderFragment ChildContent { get; set; }
+    [Parameter]                  public          bool           Fixed        { get; set; }
+
+    private bool                        _display;
+    private float                       _top;
+    private float                       _left;
+    private IJSInProcessObjectReference _module = null!;
 
     protected override async Task OnInitializedAsync()
     {
         _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import",
                                                                                         "./Components/Menu.razor.js");
     }
-    
+
     public void Toggle(ElementReference root, bool scrollY = true)
     {
         if (!_display)
@@ -28,6 +30,7 @@
             _left = pos[0];
             _top  = pos[1];
         }
+
         _display = !_display;
         StateHasChanged();
     }

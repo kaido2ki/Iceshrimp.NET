@@ -15,6 +15,9 @@
     left: calc(var(--left) - 7.5rem);
     z-index: +3;
 }
+.fixed {
+    position: fixed;
+}
 
 ::deep .rule {
     align-self: center;
