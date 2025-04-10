@@ -11,6 +11,7 @@
 @attribute [Authorize(Roles = "moderator")]
 @layout ModerationLayout
 @inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 
@@ -82,6 +83,18 @@
                   rows="5" cols="35" aria-label="announcement text"></textarea>
         <div class="footer">
             <div class="buttons">
+                <button class="btn" title="@Loc["Upload image"]" @onclick="OpenUploadImage" aria-label="upload">
+                    <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
+                </button>
+                <div class="file-input">
+                    <InputFile @ref="ImageInput" OnChange="UploadImage" accept="image/*">Upload!</InputFile>
+                </div>
+                @if (Draft.ImageUrl != null)
+                {
+                    <button class="btn" title="@Loc["Remove image"]" @onclick="() => Draft.ImageUrl = null" aria-label="upload">
+                        <Icon Name="Icons.Trash" Size="1.3rem"></Icon>
+                    </button>
+                }
                 <span>
                     <input type="checkbox" @bind="Draft.ShowPopup" id="announcement-show-popup">
                     <label for="announcement-show-popup">@Loc["Show popup"]</label>
@@ -107,6 +120,10 @@
                 }
             </div>
         }
+        @if (Draft.ImageUrl != null)
+        {
+            <img src="@Draft.ImageUrl" alt="@Loc["Attachment image"]"/>
+        }
         <div @onclick="CloseDialog" class="backdrop"></div>
     </div>
 </dialog>
@@ -114,6 +131,7 @@
 @code {
     private          State                          State          { get; set; }
     private          ElementReference               ComposeDialog  { get; set; }
+    private          InputFile                      ImageInput     { get; set; } = null!;
     private          StateButton                    SendButton     { get; set; } = null!;
     private          PaginationData?                PaginationData { get; set; }
     private          List<AnnouncementResponse>     Announcements  { get; set; } = [];
@@ -189,6 +207,27 @@
         await Api.Announcements.DeleteAnnouncementAsync(id);
 
         Announcements.RemoveAll(p => p.Id == id);
+    }
+
+    private async Task OpenUploadImage()
+    {
+        var module = await _moduleTask.Value;
+        await module.InvokeVoidAsync("openUpload", ImageInput.Element);
+    }
+
+    private async Task UploadImage(InputFileChangeEventArgs e)
+    {
+        if (!e.File.ContentType.StartsWith("image/")) return;
+
+        try {
+            var res = await Api.Drive.UploadFileAsync(e.File);
+            Draft.ImageUrl = res.Url;
+            StateHasChanged();
+        }
+        catch (IOException exception)
+        {
+            await Global.NoticeDialog?.Display(exception.Message, NoticeDialog.NoticeType.Error)!;
+        }
     }
 
     protected override async Task OnInitializedAsync()

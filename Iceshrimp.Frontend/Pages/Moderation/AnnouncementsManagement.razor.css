@@ -139,3 +139,13 @@ input[type="checkbox"] {
     overflow: clip;
     white-space: pre-wrap;
 }
+
+.compose img {
+    width: 100%;
+    aspect-ratio: 16/9;
+    object-fit: scale-down;
+}
+
+.file-input {
+    display: none;
+}
