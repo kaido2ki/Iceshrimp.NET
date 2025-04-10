@@ -25,6 +25,7 @@
     text-align: center;
     text-wrap: wrap;
     word-break: break-word;
+    overflow: hidden;
 }
 
 .header {
@@ -32,6 +33,7 @@
     align-items: center;
     gap: 0.5rem;
     color: var(--notice-color);
+    z-index: +1;
     
     .ph-megaphone {
         /* Flip megaphone icon */
@@ -46,6 +48,7 @@
     gap: 0.5rem;
     
     .title {
+        z-index: +1;
         font-weight: bold;
     }
     
@@ -62,6 +65,7 @@
 
 .buttons {
     display: flex;
+    z-index: +1;
 }
 
 .confirm-btn {

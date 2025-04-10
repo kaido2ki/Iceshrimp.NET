@@ -10,7 +10,7 @@
 
 <div class="announcement @(Announcement.Read == false ? "unread" : "")">
     <span class="title">@Announcement.Title</span>
-    <MfmText Text="@Announcement.Text" Emoji="[]"/>
+    <MfmText Text="@Announcement.Text" Emoji="@Announcement.Emojis"/>
     @if (Announcement.ImageUrl != null)
     {
         <img src="@Announcement.ImageUrl" alt="@Loc["Announcement image"]"/>

@@ -8,6 +8,7 @@
     max-width: 45rem;
     background-color: var(--foreground-color);
     border-radius: 0.75rem;
+    overflow: hidden;
 }
 
 .announcement.unread {
@@ -15,6 +16,7 @@
 }
 
 .title {
+    z-index: +1;
     font-size: 1.2rem;
     font-weight: bold;
 }
@@ -27,6 +29,10 @@ img {
 
 .metadata {
     opacity: 0.7;
+}
+
+.buttons {
+    z-index: +1;
 }
 
 .button {

@@ -28,7 +28,7 @@
                 var current = Announcements[Current];
 
                 <span class="title">@current.Title</span>
-                <MfmText Text="@current.Text" Emoji="[]"/>
+                <MfmText Text="@current.Text" Emoji="@current.Emojis"/>
 
                 @if (current.ImageUrl != null)
                 {
