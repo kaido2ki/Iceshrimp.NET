@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Enums;
 using Iceshrimp.Shared.Schemas.SignalR;
