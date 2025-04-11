@@ -35,7 +35,7 @@ public class AnnouncementController(DatabaseContext db, AnnouncementRenderer ren
 		var user = HttpContext.GetUserOrFail();
 
 		var announcements = await db.Announcements
-		                            .Where(p => withDismissed || p.IsReadBy(user))
+		                            .Where(p => withDismissed || !p.IsReadBy(user))
 		                            .OrderByDescending(p => p.UpdatedAt ?? p.CreatedAt)
 		                            .ToListAsync();
 
