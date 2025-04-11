@@ -1,6 +1,9 @@
 @page "/"
+@page "/timeline/{Timeline}"
+@page "/timeline/remote/{Instance}"
 @inject TimelineStore                  Store;
 @inject StateService                   State;
+@using System.Web
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Shared.Schemas.Web
 @using Iceshrimp.Frontend.Core.Services.NoteStore
@@ -15,6 +18,7 @@
 @attribute [Authorize]
 @inject IStringLocalizer<Localization> Loc;
 @inject GlobalComponentSvc             GlobalComponentSvc;
+@inject NavigationManager              Nav;
 @implements IDisposable
 
 <HeadTitle Text="@Loc["Timeline"]"/>
@@ -97,16 +101,42 @@
 </div>
 
 @code {
-    private bool                           _loaded;
-    private List<NoteResponse>?            NoteResponses   { get; set; }
-    private TimelineStore.Timeline         CurrentTimeline { get; set; } = null!;
-    private Menu                           MenuRef         { get; set; } = null!;
-    private ElementReference               MenuButton      { get; set; }
-    private VirtualScroller<NoteResponse>? VirtualScroller { get; set; }
+    [Parameter] public string?                        Timeline { get; set; }
+    [Parameter] public string?                        Instance { get; set; }
+    private     bool                           _loaded;
+    private     List<NoteResponse>?            NoteResponses   { get; set; }
+    private     TimelineStore.Timeline         CurrentTimeline { get; set; } = null!;
+    private     Menu                           MenuRef         { get; set; } = null!;
+    private     ElementReference               MenuButton      { get; set; }
+    private     VirtualScroller<NoteResponse>? VirtualScroller { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        CurrentTimeline = State.TimelinePage.Current ?? new TimelineStore.Timeline(TimelineStore.TimelineEnum.Home);
+        if (Timeline != null)
+        {
+            switch (Timeline)
+            {
+                case "local":
+                    SetTimeline(new TimelineStore.Timeline(TimelineStore.TimelineEnum.Local));
+                    break;
+                    case "social":
+                    SetTimeline(new TimelineStore.Timeline(TimelineStore.TimelineEnum.Social));
+                    break;
+                    case "bubble":
+                    SetTimeline(new TimelineStore.Timeline(TimelineStore.TimelineEnum.Bubble));
+                    break;
+                    case "global":
+                    SetTimeline(new TimelineStore.Timeline(TimelineStore.TimelineEnum.Global));
+                    break;
+                    case "remote":
+                    SetTimeline(new TimelineStore.Timeline(TimelineStore.TimelineEnum.Remote, HttpUtility.UrlEncode(Instance)));
+                    break;
+            }
+        }
+        else
+        {
+            SetTimeline(State.TimelinePage.Current ?? new TimelineStore.Timeline(TimelineStore.TimelineEnum.Home));
+        }
         NoteResponses   = await Store.GetTimelineAsync(CurrentTimeline, new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
         _loaded         = true;
         StateHasChanged();
@@ -129,7 +159,7 @@
         _loaded = false;
         StateHasChanged();
         NoteResponses   = null;
-        CurrentTimeline = new TimelineStore.Timeline(timeline, remote);
+        SetTimeline(new TimelineStore.Timeline(timeline, remote));
         NoteResponses   = await Store.GetTimelineAsync(CurrentTimeline, new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
         _loaded         = true;
         StateHasChanged();
@@ -143,7 +173,36 @@
         if (remote is null) return;
         await SwitchTimeline(TimelineStore.TimelineEnum.Remote, remote);
     }
-    
+
+    private void SetTimeline(TimelineStore.Timeline timeline)
+    {
+        switch (timeline.Enum)
+        {
+            case TimelineStore.TimelineEnum.Home:
+                Nav.NavigateTo("/");
+                break;
+            case TimelineStore.TimelineEnum.Local:
+                Nav.NavigateTo("/timeline/local");
+                break;
+            case TimelineStore.TimelineEnum.Social:
+                Nav.NavigateTo("/timeline/social");
+                break;
+            case TimelineStore.TimelineEnum.Bubble:
+                Nav.NavigateTo("/timeline/bubble");
+                break;
+            case TimelineStore.TimelineEnum.Global:
+                Nav.NavigateTo("/timeline/global");
+                break;
+            case TimelineStore.TimelineEnum.Remote:
+                Nav.NavigateTo($"/timeline/remote/{HttpUtility.UrlEncode(timeline.Remote)}");
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        CurrentTimeline = timeline;
+    }
+
     public void Dispose()
     {
         State.TimelinePage.Current = CurrentTimeline;
