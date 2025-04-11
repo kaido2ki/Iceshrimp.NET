@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -117,5 +119,61 @@ public class SessionController(DatabaseContext db) : ControllerBase
 
 		db.Remove(token);
 		await db.SaveChangesAsync();
+	}
+
+	[HttpPost("mastodon")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<MastodonSessionResponse> CreateMastodonSession([FromBody] MastodonSessionRequest request)
+	{
+		if (!MastodonOauthHelpers.ValidateScopes(request.Scopes))
+			throw GracefulException.BadRequest("Invalid scopes parameter");
+
+		var user = HttpContext.GetUserOrFail();
+
+		var app = new OauthApp
+		{
+			Id           = IdHelpers.GenerateSnowflakeId(),
+			ClientId     = CryptographyHelpers.GenerateRandomString(32),
+			ClientSecret = CryptographyHelpers.GenerateRandomString(32),
+			CreatedAt    = DateTime.UtcNow,
+			Name         = request.AppName,
+			Website      = null,
+			Scopes       = request.Scopes,
+			RedirectUris = ["urn:ietf:wg:oauth:2.0:oob"]
+		};
+
+		var token = new OauthToken
+		{
+			Id                     = IdHelpers.GenerateSnowflakeId(),
+			Active                 = true,
+			Code                   = CryptographyHelpers.GenerateRandomString(32),
+			Token                  = CryptographyHelpers.GenerateRandomString(32),
+			App                    = app,
+			User                   = user,
+			CreatedAt              = DateTime.UtcNow,
+			Scopes                 = request.Scopes,
+			RedirectUri            = "urn:ietf:wg:oauth:2.0:oob",
+			AutoDetectQuotes       = request.Flags.AutoDetectQuotes,
+			SupportsHtmlFormatting = request.Flags.SupportsHtmlFormatting,
+			IsPleroma              = request.Flags.IsPleroma,
+			SupportsInlineMedia    = request.Flags.SupportsInlineMedia,
+		};
+
+		db.Add(token);
+		await db.SaveChangesAsync();
+		await db.Entry(token).ReloadAsync();
+
+		return new CreatedMastodonSessionResponse
+		{
+			Id         = token.Id,
+			Active     = token.Active,
+			CreatedAt  = token.CreatedAt,
+			LastActive = token.LastActiveDate,
+			App        = token.App.Name,
+			Scopes     = token.Scopes,
+			Flags      = request.Flags,
+			Token      = token.Token
+		};
 	}
 }

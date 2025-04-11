@@ -13,6 +13,13 @@ public class SessionSchemas
 		public required DateTime? LastActive { get; set; }
 	}
 
+	public class MastodonSessionRequest
+	{
+		public required string               AppName    { get; set; }
+		public required List<string>         Scopes     { get; set; }
+		public required MastodonSessionFlags Flags      { get; set; }
+	}
+
 	public class MastodonSessionResponse : IIdentifiable
 	{
 		public required string               Id         { get; set; }
@@ -22,6 +29,11 @@ public class SessionSchemas
 		public required string               App        { get; set; }
 		public required List<string>         Scopes     { get; set; }
 		public required MastodonSessionFlags Flags      { get; set; }
+	}
+
+	public class CreatedMastodonSessionResponse : MastodonSessionResponse
+	{
+		public required string Token { get; set; }
 	}
 
 	public class MastodonSessionFlags
