@@ -1,0 +1,70 @@
+@page "/bookmarks"
+@inject TimelineStore                  Store;
+@inject StateService                   State;
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Shared.Schemas.Web
+@using Iceshrimp.Frontend.Core.Services.NoteStore
+@using Iceshrimp.Frontend.Enums
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Sections
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Helpers
+@attribute [Authorize]
+@inject IStringLocalizer<Localization> Loc;
+@implements IDisposable
+
+<HeadTitle Text="@Loc["Bookmarks"]"/>
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.BookmarkSimple"></Icon>
+    @Loc["Bookmarks"]
+</SectionContent>
+
+<div class="timeline">
+    @if (NoteResponses is not null && _loaded)
+    {
+        <VirtualScroller InitialItems="NoteResponses" ItemProvider="Provider" StateKey="@Timeline.Key"
+                         ItemProviderById="ItemProviderById" StreamingItemProvider="Store" @ref="VirtualScroller">
+            <ItemTemplate Context="note">
+                <CascadingValue Value="Store" TValue="NoteMessageProvider" Name="Provider">
+                    <TimelineNote Note="note"></TimelineNote>
+                </CascadingValue>
+            </ItemTemplate>
+        </VirtualScroller>
+    }
+</div>
+
+@code {
+    private bool                           _loaded;
+    private List<NoteResponse>?            NoteResponses   { get; set; }
+    private TimelineStore.Timeline         Timeline        { get; set; } = null!;
+    private VirtualScroller<NoteResponse>? VirtualScroller { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Timeline      = new TimelineStore.Timeline(TimelineEnum.Bookmarks);
+        NoteResponses = await Store.GetTimelineAsync(Timeline, new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
+        _loaded       = true;
+        StateHasChanged();
+    }
+
+    private async Task<List<NoteResponse>?> Provider(DirectionEnum direction, NoteResponse start)
+    {
+        var res = await Store.GetTimelineAsync(Timeline, new TimelineStore.Cursor { Direction = direction, Count = 10, Id = start.Id });
+        return res;
+    }
+
+    private List<NoteResponse> ItemProviderById(List<string> arg)
+    {
+        return Store.GetIdsFromTimeline(Timeline, arg);
+    }
+
+    public void Dispose()
+    {
+        State.TimelinePage.Current = Timeline;
+    }
+}

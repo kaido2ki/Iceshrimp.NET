@@ -100,13 +100,14 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 		{
 			var res = timeline.Enum switch
 			{
-				TimelineEnum.Home   => await _api.Timelines.GetHomeTimelineAsync(pq),
-				TimelineEnum.Local  => await _api.Timelines.GetLocalTimelineAsync(pq),
-				TimelineEnum.Social => await _api.Timelines.GetSocialTimelineAsync(pq),
-				TimelineEnum.Bubble => await _api.Timelines.GetBubbleTimelineAsync(pq),
-				TimelineEnum.Global => await _api.Timelines.GetGlobalTimelineAsync(pq),
-				TimelineEnum.Remote => await _api.Timelines.GetRemoteTimelineAsync(timeline.Remote!, pq),
-				_                   => throw new ArgumentOutOfRangeException(nameof(timeline), timeline, null)
+				TimelineEnum.Home      => await _api.Timelines.GetHomeTimelineAsync(pq),
+				TimelineEnum.Local     => await _api.Timelines.GetLocalTimelineAsync(pq),
+				TimelineEnum.Social    => await _api.Timelines.GetSocialTimelineAsync(pq),
+				TimelineEnum.Bubble    => await _api.Timelines.GetBubbleTimelineAsync(pq),
+				TimelineEnum.Global    => await _api.Timelines.GetGlobalTimelineAsync(pq),
+				TimelineEnum.Bookmarks => await _api.Timelines.GetBookmarksTimelineAsync(pq),
+				TimelineEnum.Remote    => await _api.Timelines.GetRemoteTimelineAsync(timeline.Remote!, pq),
+				_                      => throw new ArgumentOutOfRangeException(nameof(timeline), timeline, null)
 			};
 
 			if (Timelines.ContainsKey(timeline.Key) is false)

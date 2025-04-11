@@ -7,5 +7,6 @@ public enum TimelineEnum
 	Social,
 	Bubble,
 	Global,
+	Bookmarks,
 	Remote
 }
