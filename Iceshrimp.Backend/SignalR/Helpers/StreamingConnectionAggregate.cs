@@ -335,9 +335,10 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	public void Unsubscribe(string connectionId, StreamingTimeline timeline)
 	{
 		if (!_connectionIds.Contains(connectionId)) return;
-		if (timeline == StreamingTimeline.Remote) return;
 		_subscriptions.TryGetValue(connectionId, out var collection);
 		collection?.Remove(timeline);
+		if (timeline == StreamingTimeline.Remote)
+			_remoteFeed = null;
 	}
 
 	public void SubscribeToRemoteFeed(string connectionId, string host)
@@ -345,14 +346,6 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		if (!_connectionIds.Contains(connectionId)) return;
 		_remoteFeed = host;
 		_subscriptions.GetOrAdd(connectionId, []).Add(StreamingTimeline.Remote);
-	}
-
-	public void UnsubscribeFromRemoteFeed(string connectionId)
-	{
-		if (!_connectionIds.Contains(connectionId)) return;
-		_subscriptions.TryGetValue(connectionId, out var collection);
-		collection?.Remove(StreamingTimeline.Remote);
-		_remoteFeed = null;
 	}
 
 	#endregion

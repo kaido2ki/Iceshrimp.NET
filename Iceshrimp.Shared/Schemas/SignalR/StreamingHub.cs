@@ -7,7 +7,6 @@ public interface IStreamingHubServer
 	public Task SubscribeAsync(StreamingTimeline timeline);
 	public Task UnsubscribeAsync(StreamingTimeline timeline);
 	public Task SubscribeToRemoteFeedAsync(string host);
-	public Task UnsubscribeFromRemoteFeedAsync();
 }
 
 public interface IStreamingHubClient

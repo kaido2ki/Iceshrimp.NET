@@ -81,13 +81,6 @@ public sealed class StreamingService : ISingletonService
 		return Task.CompletedTask;
 	}
 
-	public Task UnsubscribeFromRemoteFeedAsync(string userId, string connectionId)
-	{
-		_connections.TryGetValue(userId, out var conn);
-		conn?.UnsubscribeFromRemoteFeed(connectionId);
-		return Task.CompletedTask;
-	}
-
 	private Lazy<Task<NoteResponse>> Render(Note note)
 	{
 		return new Lazy<Task<NoteResponse>>(async () =>
