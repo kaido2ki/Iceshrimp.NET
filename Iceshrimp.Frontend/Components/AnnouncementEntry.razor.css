@@ -36,6 +36,9 @@ img {
 }
 
 .buttons {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
     z-index: +1;
 }
 

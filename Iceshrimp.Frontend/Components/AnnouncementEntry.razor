@@ -29,24 +29,22 @@
             @Announcement.CreatedAt.ToLocalTime().ToString("G")
         }
     </span>
-    @if (Announcement.Read == false)
+    @if (Announcement.ReadCount != null)
     {
-        <div class="buttons">
-                <span class="button" @onclick="MarkAsReadAsync">
-                    <Icon Name="Icons.Check"/>
-                    @Loc["Mark as read"]
-                </span>
-        </div>
+        <span class="metadata">
+            @Loc["Users read: {0}/{1}", Announcement.ReadCount, Meta.Instance.Value.Result.UserCount]
+        </span>
     }
-    @if (Moderator)
-    {
-        @if (Announcement.ReadCount != null)
+    <div class="buttons">
+        @if (Announcement.Read == false)
         {
-            <span class="metadata">
-                @Loc["Users read: {0}/{1}", Announcement.ReadCount, Meta.Instance.Value.Result.UserCount]
-            </span>
+            <span class="button" @onclick="MarkAsReadAsync">
+                    <Icon Name="Icons.Check"/>
+                @Loc["Mark as read"]
+                </span>
         }
-        <div class="buttons">
+        @if (Moderator)
+        {
             <span class="button" @onclick="() => Edit.InvokeAsync(Announcement.Id)">
                 <Icon Name="Icons.Pencil"/>
                 @Loc["Edit"]
@@ -55,8 +53,8 @@
                 <Icon Name="Icons.Trash"/>
                 @Loc["Delete"]
             </span>
-        </div>
-    }
+        }
+    </div>
 </div>
 
 @code {
