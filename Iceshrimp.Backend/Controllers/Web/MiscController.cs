@@ -65,6 +65,7 @@ public class MiscController(DatabaseContext db, NoteRenderer noteRenderer, BiteS
 	}
 
 	[HttpGet("status")]
+	[EnableRateLimiting("sliding")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<StatusResponse> GetStatus()
 	{
