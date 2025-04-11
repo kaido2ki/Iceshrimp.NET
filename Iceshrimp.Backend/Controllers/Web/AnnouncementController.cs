@@ -50,22 +50,21 @@ public class AnnouncementController(
 	public async Task<AnnouncementResponse> CreateAnnouncement(AnnouncementRequest request)
 	{
 		var parsedText = MfmParser.Parse(request.Title + " " + request.Text.ReplaceLineEndings("\n"));
-		var (mentions, remote) = await GetMentionsAsync(parsedText);
-		var emojis = (await emojiSvc.ResolveEmojiAsync(parsedText)).Select(p => p.Id).ToList();
-		var tags   = GetHashtags(parsedText);
+		var mentions   = await GetMentionsAsync(parsedText);
+		var emojis     = (await emojiSvc.ResolveEmojiAsync(parsedText)).Select(p => p.Id).ToList();
+		var tags       = GetHashtags(parsedText);
 
 		var announcement = new Announcement
 		{
-			Id                   = IdHelpers.GenerateSnowflakeId(),
-			CreatedAt            = DateTime.UtcNow,
-			Title                = request.Title.Trim(),
-			Text                 = request.Text.Trim(),
-			ImageUrl             = request.ImageUrl,
-			ShowPopup            = request.ShowPopup,
-			Mentions             = mentions,
-			MentionedRemoteUsers = remote,
-			Emojis               = emojis,
-			Tags                 = tags
+			Id        = IdHelpers.GenerateSnowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			Title     = request.Title.Trim(),
+			Text      = request.Text.Trim(),
+			ImageUrl  = request.ImageUrl,
+			ShowPopup = request.ShowPopup,
+			Mentions  = mentions,
+			Emojis    = emojis,
+			Tags      = tags
 		};
 
 		db.Add(announcement);
@@ -81,22 +80,21 @@ public class AnnouncementController(
 	public async Task<AnnouncementResponse> UpdateAnnouncement(string id, AnnouncementRequest request)
 	{
 		var parsedText = MfmParser.Parse(request.Title + " " + request.Text.ReplaceLineEndings("\n"));
-		var (mentions, remote) = await GetMentionsAsync(parsedText);
-		var emojis = (await emojiSvc.ResolveEmojiAsync(parsedText)).Select(p => p.Id).ToList();
-		var tags   = GetHashtags(parsedText);
+		var mentions   = await GetMentionsAsync(parsedText);
+		var emojis     = (await emojiSvc.ResolveEmojiAsync(parsedText)).Select(p => p.Id).ToList();
+		var tags       = GetHashtags(parsedText);
 
 		var announcement = await db.Announcements.FirstOrDefaultAsync(p => p.Id == id)
 		                   ?? throw GracefulException.RecordNotFound();
 
-		announcement.UpdatedAt            = DateTime.UtcNow;
-		announcement.Title                = request.Title.Trim();
-		announcement.Text                 = request.Text.Trim();
-		announcement.ImageUrl             = request.ImageUrl;
-		announcement.ShowPopup            = request.ShowPopup;
-		announcement.Mentions             = mentions;
-		announcement.MentionedRemoteUsers = remote;
-		announcement.Emojis               = emojis;
-		announcement.Tags                 = tags;
+		announcement.UpdatedAt = DateTime.UtcNow;
+		announcement.Title     = request.Title.Trim();
+		announcement.Text      = request.Text.Trim();
+		announcement.ImageUrl  = request.ImageUrl;
+		announcement.ShowPopup = request.ShowPopup;
+		announcement.Mentions  = mentions;
+		announcement.Emojis    = emojis;
+		announcement.Tags      = tags;
 
 		db.Update(announcement);
 		await db.SaveChangesAsync();
@@ -143,7 +141,7 @@ public class AnnouncementController(
 		await db.ReloadEntityRecursivelyAsync(read);
 	}
 
-	private async Task<(List<string>, List<Note.MentionedUser>)> GetMentionsAsync(IMfmNode[] nodes)
+	private async Task<List<string>> GetMentionsAsync(IMfmNode[] nodes)
 	{
 		var mentions = nodes
 		               .SelectMany(p => p.Children.Append(p))
@@ -156,19 +154,8 @@ public class AnnouncementController(
 
 		var users = await mentions.Select(p => userResolver.ResolveOrNullAsync($"acct:{p.Acct}", ActivityPub.UserResolver.ResolveFlags.Acct))
 		                          .AwaitAllNoConcurrencyAsync();
-		
-		var remoteMentions = users.NotNull()
-		                          .Where(p => p is { IsRemoteUser: true, Uri: not null })
-		                          .Select(p => new Note.MentionedUser
-		                          {
-			                          Host     = p.Host!,
-			                          Uri      = p.Uri!,
-			                          Username = p.Username,
-			                          Url      = p.UserProfile?.Url
-		                          })
-		                          .ToList();
 
-		return (users.NotNull().Select(p => p.Id).Distinct().ToList(), remoteMentions);
+		return users.NotNull().Select(p => p.Id).Distinct().ToList();
 	}
 
 	private List<string> GetHashtags(IMfmNode[] nodes)
