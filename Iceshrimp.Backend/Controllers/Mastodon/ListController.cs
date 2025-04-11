@@ -139,7 +139,7 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 
 		db.Remove(list);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseListMembersUpdated(this, list);
+		eventSvc.RaiseListMembersUpdated(list);
 		return new object();
 	}
 
@@ -205,7 +205,7 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 		await db.AddRangeAsync(memberships);
 		await db.SaveChangesAsync();
 
-		eventSvc.RaiseListMembersUpdated(this, list);
+		eventSvc.RaiseListMembersUpdated(list);
 
 		return new object();
 	}
@@ -229,7 +229,7 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 		        .Where(p => p.UserList == list && request.AccountIds.Contains(p.UserId))
 		        .ExecuteDeleteAsync();
 
-		eventSvc.RaiseListMembersUpdated(this, list);
+		eventSvc.RaiseListMembersUpdated(list);
 
 		return new object();
 	}

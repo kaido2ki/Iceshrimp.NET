@@ -95,7 +95,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 
 		db.Add(filter);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseFilterAdded(this, filter);
+		eventSvc.RaiseFilterAdded(filter);
 
 		if (expiry.HasValue)
 		{
@@ -159,7 +159,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 
 		db.Update(filter);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseFilterUpdated(this, filter);
+		eventSvc.RaiseFilterUpdated(filter);
 
 		if (expiry.HasValue)
 		{
@@ -183,7 +183,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 
 		db.Remove(filter);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseFilterRemoved(this, filter);
+		eventSvc.RaiseFilterRemoved(filter);
 
 		return new object();
 	}
@@ -218,7 +218,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 
 		db.Update(filter);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseFilterUpdated(this, filter);
+		eventSvc.RaiseFilterUpdated(filter);
 
 		return new FilterKeyword(keyword, filter.Id, filter.Keywords.Count - 1);
 	}
@@ -257,7 +257,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 		filter.Keywords[keywordId] = request.WholeWord ? $"\"{request.Keyword}\"" : request.Keyword;
 		db.Update(filter);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseFilterUpdated(this, filter);
+		eventSvc.RaiseFilterUpdated(filter);
 
 		return new FilterKeyword(filter.Keywords[keywordId], filter.Id, keywordId);
 	}
@@ -279,7 +279,7 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 		filter.Keywords.RemoveAt(keywordId);
 		db.Update(filter);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseFilterUpdated(this, filter);
+		eventSvc.RaiseFilterUpdated(filter);
 
 		return new object();
 	}

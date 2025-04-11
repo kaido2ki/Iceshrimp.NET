@@ -37,7 +37,7 @@ public class NotificationService(
 
 		await db.AddRangeAsync(notifications);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotifications(this, notifications);
+		eventSvc.RaiseNotifications(notifications);
 	}
 
 	public async Task GenerateReplyNotificationsAsync(Note note, IReadOnlyCollection<string> mentionedLocalUserIds)
@@ -79,7 +79,7 @@ public class NotificationService(
 
 		await db.AddRangeAsync(notifications);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotifications(this, notifications);
+		eventSvc.RaiseNotifications(notifications);
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall",
@@ -104,7 +104,7 @@ public class NotificationService(
 
 		await db.AddRangeAsync(notifications);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotifications(this, notifications);
+		eventSvc.RaiseNotifications(notifications);
 	}
 
 	public async Task GenerateLikeNotificationAsync(Note note, User user)
@@ -124,7 +124,7 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
+		eventSvc.RaiseNotification(notification);
 	}
 
 	public async Task GenerateReactionNotificationAsync(NoteReaction reaction)
@@ -145,7 +145,7 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
+		eventSvc.RaiseNotification(notification);
 	}
 
 	public async Task GenerateFollowNotificationAsync(User follower, User followee)
@@ -163,8 +163,8 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
-		eventSvc.RaiseUserFollowed(this, follower, followee);
+		eventSvc.RaiseNotification(notification);
+		eventSvc.RaiseUserFollowed(follower, followee);
 	}
 
 	public async Task GenerateFollowRequestReceivedNotificationAsync(FollowRequest followRequest)
@@ -183,7 +183,7 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
+		eventSvc.RaiseNotification(notification);
 	}
 
 	public async Task GenerateFollowRequestAcceptedNotificationAsync(FollowRequest followRequest)
@@ -202,8 +202,8 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
-		eventSvc.RaiseUserFollowed(this, followRequest.Follower, followRequest.Followee);
+		eventSvc.RaiseNotification(notification);
+		eventSvc.RaiseUserFollowed(followRequest.Follower, followRequest.Followee);
 	}
 
 	public async Task GenerateBiteNotificationAsync(Bite bite)
@@ -222,7 +222,7 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
+		eventSvc.RaiseNotification(notification);
 	}
 
 	public async Task GeneratePollEndedNotificationsAsync(Note note)
@@ -260,7 +260,7 @@ public class NotificationService(
 		await db.SaveChangesAsync();
 
 		foreach (var notification in notifications)
-			eventSvc.RaiseNotification(this, notification);
+			eventSvc.RaiseNotification(notification);
 	}
 
 	[SuppressMessage("ReSharper", "EntityFramework.UnsupportedServerSideFunctionCall", Justification = "Projectables")]
@@ -284,6 +284,6 @@ public class NotificationService(
 
 		await db.AddAsync(notification);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseNotification(this, notification);
+		eventSvc.RaiseNotification(notification);
 	}
 }

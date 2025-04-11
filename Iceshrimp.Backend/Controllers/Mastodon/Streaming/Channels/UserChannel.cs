@@ -93,7 +93,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		return rendered;
 	}
 
-	private async void OnNotePublished(object? _, Note note)
+	private async void OnNotePublished(Note note)
 	{
 		try
 		{
@@ -121,7 +121,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		}
 	}
 
-	private async void OnNoteUpdated(object? _, Note note)
+	private async void OnNoteUpdated(Note note)
 	{
 		try
 		{
@@ -147,7 +147,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		}
 	}
 
-	private async void OnNoteDeleted(object? _, Note note)
+	private async void OnNoteDeleted(Note note)
 	{
 		try
 		{
@@ -167,7 +167,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		}
 	}
 
-	private async void OnNotification(object? _, Notification notification)
+	private async void OnNotification(Notification notification)
 	{
 		try
 		{

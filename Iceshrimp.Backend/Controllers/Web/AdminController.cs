@@ -252,7 +252,7 @@ public class AdminController(
 	public async Task DebubbleInstance(string host)
 	{
 		var res = await db.BubbleInstances.Where(p => p.Host == host.ToPunycodeLower()).ExecuteDeleteAsync();
-		if (res > 0) eventSvc.RaiseBubbleInstanceRemoved(this, new BubbleInstance { Host = host });
+		if (res > 0) eventSvc.RaiseBubbleInstanceRemoved(new BubbleInstance { Host = host });
 	}
 
 	[HttpPost("instances/{host}/unblock")]

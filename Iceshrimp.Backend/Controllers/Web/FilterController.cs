@@ -49,7 +49,7 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 
 		db.Add(filter);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseFilterAdded(this, filter);
+		eventSvc.RaiseFilterAdded(filter);
 		return FilterRenderer.RenderOne(filter);
 	}
 
@@ -69,7 +69,7 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 		filter.Contexts = request.Contexts.Cast<Filter.FilterContext>().ToList();
 
 		await db.SaveChangesAsync();
-		eventSvc.RaiseFilterUpdated(this, filter);
+		eventSvc.RaiseFilterUpdated(filter);
 	}
 
 	[HttpDelete("{id:long}")]
@@ -83,6 +83,6 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 
 		db.Remove(filter);
 		await db.SaveChangesAsync();
-		eventSvc.RaiseFilterRemoved(this, filter);
+		eventSvc.RaiseFilterRemoved(filter);
 	}
 }

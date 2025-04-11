@@ -97,7 +97,7 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 		};
 	}
 
-	private async void OnNotePublished(object? _, Note note)
+	private async void OnNotePublished(Note note)
 	{
 		try
 		{
@@ -124,7 +124,7 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 		}
 	}
 
-	private async void OnNoteUpdated(object? _, Note note)
+	private async void OnNoteUpdated(Note note)
 	{
 		try
 		{

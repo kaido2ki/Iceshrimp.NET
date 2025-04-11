@@ -595,7 +595,7 @@ public class ActivityHandlerService(
 			                    && p.Notifier == follower)
 			        .ExecuteDeleteAsync();
 
-			eventSvc.RaiseUserUnfollowed(this, follower, followee);
+			eventSvc.RaiseUserUnfollowed(follower, followee);
 		}
 	}
 

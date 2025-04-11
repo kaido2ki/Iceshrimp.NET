@@ -34,8 +34,8 @@ public sealed class StreamingService : ISingletonService
 		eventSvc.NoteUpdated   += OnNoteUpdated;
 	}
 
-	public event EventHandler<(Note note, Lazy<Task<NoteResponse>> rendered)>? NotePublished;
-	public event EventHandler<(Note note, Lazy<Task<NoteResponse>> rendered)>? NoteUpdated;
+	public event EventService.EventHandler<(Note note, Lazy<Task<NoteResponse>> rendered)>? NotePublished;
+	public event EventService.EventHandler<(Note note, Lazy<Task<NoteResponse>> rendered)>? NoteUpdated;
 
 	public void Connect(string userId, User user, string connectionId)
 	{
@@ -98,11 +98,11 @@ public sealed class StreamingService : ISingletonService
 		});
 	}
 
-	private void OnNotePublished(object? _, Note note)
+	private void OnNotePublished(Note note)
 	{
 		try
 		{
-			NotePublished?.Invoke(this, (note, Render(note)));
+			NotePublished?.Invoke((note, Render(note)));
 		}
 		catch (Exception e)
 		{
@@ -110,11 +110,11 @@ public sealed class StreamingService : ISingletonService
 		}
 	}
 
-	private void OnNoteUpdated(object? _, Note note)
+	private void OnNoteUpdated(Note note)
 	{
 		try
 		{
-			NoteUpdated?.Invoke(this, (note, Render(note)));
+			NoteUpdated?.Invoke((note, Render(note)));
 		}
 		catch (Exception e)
 		{

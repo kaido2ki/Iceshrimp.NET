@@ -68,7 +68,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 
 	private AsyncServiceScope GetTempScope() => _scopeFactory.CreateAsyncScope();
 
-	private async void OnNotification(object? _, Notification notification)
+	private async void OnNotification(Notification notification)
 	{
 		try
 		{
@@ -89,7 +89,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private async void OnNotePublished(object? _, (Note note, Lazy<Task<NoteResponse>> rendered) data)
+	private async void OnNotePublished((Note note, Lazy<Task<NoteResponse>> rendered) data)
 	{
 		try
 		{
@@ -114,7 +114,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private async void OnNoteUpdated(object? _, (Note note, Lazy<Task<NoteResponse>> rendered) data)
+	private async void OnNoteUpdated((Note note, Lazy<Task<NoteResponse>> rendered) data)
 	{
 		try
 		{
@@ -132,7 +132,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private async void OnNoteDeleted(object? _, Note note)
+	private async void OnNoteDeleted(Note note)
 	{
 		try
 		{
@@ -328,12 +328,14 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	public void Subscribe(string connectionId, StreamingTimeline timeline)
 	{
 		if (!_connectionIds.Contains(connectionId)) return;
+		if (timeline == StreamingTimeline.Remote) return;
 		_subscriptions.GetOrAdd(connectionId, []).Add(timeline);
 	}
 
 	public void Unsubscribe(string connectionId, StreamingTimeline timeline)
 	{
 		if (!_connectionIds.Contains(connectionId)) return;
+		if (timeline == StreamingTimeline.Remote) return;
 		_subscriptions.TryGetValue(connectionId, out var collection);
 		collection?.Remove(timeline);
 	}
@@ -357,7 +359,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 
 	#region Relationship change event handlers
 
-	private void OnUserBlock(object? _, UserInteraction interaction)
+	private void OnUserBlock(UserInteraction interaction)
 	{
 		try
 		{
@@ -378,7 +380,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private void OnUserUnblock(object? _, UserInteraction interaction)
+	private void OnUserUnblock(UserInteraction interaction)
 	{
 		try
 		{
@@ -394,7 +396,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private void OnUserMute(object? _, UserInteraction interaction)
+	private void OnUserMute(UserInteraction interaction)
 	{
 		try
 		{
@@ -407,7 +409,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private void OnUserUnmute(object? _, UserInteraction interaction)
+	private void OnUserUnmute(UserInteraction interaction)
 	{
 		try
 		{
@@ -420,7 +422,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private void OnUserFollow(object? _, UserInteraction interaction)
+	private void OnUserFollow(UserInteraction interaction)
 	{
 		try
 		{
@@ -433,7 +435,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private void OnUserUnfollow(object? _, UserInteraction interaction)
+	private void OnUserUnfollow(UserInteraction interaction)
 	{
 		try
 		{
@@ -446,12 +448,12 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private void OnBubbleInstanceAdded(object? _, BubbleInstance instance)
+	private void OnBubbleInstanceAdded(BubbleInstance instance)
 	{
 		_bubble.Add(instance.Host);
 	}
 
-	private void OnBubbleInstanceRemoved(object? _, BubbleInstance instance)
+	private void OnBubbleInstanceRemoved(BubbleInstance instance)
 	{
 		_bubble.Remove(instance.Host);
 	}
@@ -460,7 +462,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 
 	#region Filter event handlers
 
-	private async void OnFilterAdded(object? _, Filter filter)
+	private async void OnFilterAdded(Filter filter)
 	{
 		try
 		{
@@ -473,7 +475,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private async void OnFilterUpdated(object? _, Filter filter)
+	private async void OnFilterUpdated(Filter filter)
 	{
 		try
 		{
@@ -486,7 +488,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		}
 	}
 
-	private async void OnFilterRemoved(object? _, Filter filter)
+	private async void OnFilterRemoved(Filter filter)
 	{
 		try
 		{

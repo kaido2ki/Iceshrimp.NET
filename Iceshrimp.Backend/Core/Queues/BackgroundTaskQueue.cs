@@ -176,7 +176,7 @@ public class BackgroundTaskQueue(int parallelism)
 		db.Remove(muting);
 		await db.SaveChangesAsync(token);
 		var eventSvc = scope.GetRequiredService<EventService>();
-		eventSvc.RaiseUserUnmuted(null, muting.Muter, muting.Mutee);
+		eventSvc.RaiseUserUnmuted(muting.Muter, muting.Mutee);
 	}
 
 	private static async Task ProcessFilterExpiryAsync(

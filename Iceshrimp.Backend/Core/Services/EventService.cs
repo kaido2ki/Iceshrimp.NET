@@ -6,6 +6,8 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public class EventService : ISingletonService
 {
+	public delegate void EventHandler<in TArgs>(TArgs e);
+
 	public event EventHandler<Note>?            NotePublished;
 	public event EventHandler<Note>?            NoteUpdated;
 	public event EventHandler<Note>?            NoteDeleted;
@@ -27,56 +29,47 @@ public class EventService : ISingletonService
 	public event EventHandler<BubbleInstance>?  BubbleInstanceAdded;
 	public event EventHandler<BubbleInstance>?  BubbleInstanceRemoved;
 
-	public void RaiseNotePublished(object? sender, Note note) => NotePublished?.Invoke(sender, note);
-	public void RaiseNoteUpdated(object? sender, Note note)   => NoteUpdated?.Invoke(sender, note);
-	public void RaiseNoteDeleted(object? sender, Note note)   => NoteDeleted?.Invoke(sender, note);
+	public void RaiseNotePublished(Note note)                => NotePublished?.Invoke(note);
+	public void RaiseNoteUpdated(Note note)                  => NoteUpdated?.Invoke(note);
+	public void RaiseNoteDeleted(Note note)                  => NoteDeleted?.Invoke(note);
+	public void RaiseNotification(Notification notification) => Notification?.Invoke(notification);
 
-	public void RaiseNotification(object? sender, Notification notification) =>
-		Notification?.Invoke(sender, notification);
-
-	public void RaiseNotifications(object? sender, IEnumerable<Notification> notifications)
+	public void RaiseNotifications(IEnumerable<Notification> notifications)
 	{
-		foreach (var notification in notifications) Notification?.Invoke(sender, notification);
+		foreach (var notification in notifications) Notification?.Invoke(notification);
 	}
 
-	public void RaiseNoteLiked(object? sender, Note note, User user) =>
-		NoteLiked?.Invoke(sender, new NoteInteraction { Note = note, User = user });
+	public void RaiseNoteLiked(Note note, User user)
+		=> NoteLiked?.Invoke(new NoteInteraction { Note = note, User = user });
 
-	public void RaiseNoteUnliked(object? sender, Note note, User user) =>
-		NoteUnliked?.Invoke(sender, new NoteInteraction { Note = note, User = user });
+	public void RaiseNoteUnliked(Note note, User user)
+		=> NoteUnliked?.Invoke(new NoteInteraction { Note = note, User = user });
 
-	public void RaiseNoteReacted(object? sender, NoteReaction reaction) =>
-		NoteReacted?.Invoke(sender, reaction);
+	public void RaiseNoteReacted(NoteReaction reaction)   => NoteReacted?.Invoke(reaction);
+	public void RaiseNoteUnreacted(NoteReaction reaction) => NoteUnreacted?.Invoke(reaction);
 
-	public void RaiseNoteUnreacted(object? sender, NoteReaction reaction) =>
-		NoteUnreacted?.Invoke(sender, reaction);
+	public void RaiseUserFollowed(User actor, User obj)
+		=> UserFollowed?.Invoke(new UserInteraction { Actor = actor, Object = obj });
 
-	public void RaiseUserFollowed(object? sender, User actor, User obj) =>
-		UserFollowed?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+	public void RaiseUserUnfollowed(User actor, User obj)
+		=> UserUnfollowed?.Invoke(new UserInteraction { Actor = actor, Object = obj });
 
-	public void RaiseUserUnfollowed(object? sender, User actor, User obj) =>
-		UserUnfollowed?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+	public void RaiseUserBlocked(User actor, User obj)
+		=> UserBlocked?.Invoke(new UserInteraction { Actor = actor, Object = obj });
 
-	public void RaiseUserBlocked(object? sender, User actor, User obj) =>
-		UserBlocked?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+	public void RaiseUserUnblocked(User actor, User obj)
+		=> UserUnblocked?.Invoke(new UserInteraction { Actor = actor, Object = obj });
 
-	public void RaiseUserUnblocked(object? sender, User actor, User obj) =>
-		UserUnblocked?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+	public void RaiseUserMuted(User actor, User obj)
+		=> UserMuted?.Invoke(new UserInteraction { Actor = actor, Object = obj });
 
-	public void RaiseUserMuted(object? sender, User actor, User obj) =>
-		UserMuted?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
+	public void RaiseUserUnmuted(User actor, User obj)
+		=> UserUnmuted?.Invoke(new UserInteraction { Actor = actor, Object = obj });
 
-	public void RaiseUserUnmuted(object? sender, User actor, User obj) =>
-		UserUnmuted?.Invoke(sender, new UserInteraction { Actor = actor, Object = obj });
-
-	public void RaiseFilterAdded(object? sender, Filter filter)        => FilterAdded?.Invoke(sender, filter);
-	public void RaiseFilterRemoved(object? sender, Filter filter)      => FilterRemoved?.Invoke(sender, filter);
-	public void RaiseFilterUpdated(object? sender, Filter filter)      => FilterUpdated?.Invoke(sender, filter);
-	public void RaiseListMembersUpdated(object? sender, UserList list) => ListMembersUpdated?.Invoke(sender, list);
-
-	public void RaiseBubbleInstanceAdded(object? sender, BubbleInstance instance)
-		=> BubbleInstanceAdded?.Invoke(sender, instance);
-
-	public void RaiseBubbleInstanceRemoved(object? sender, BubbleInstance instance)
-		=> BubbleInstanceRemoved?.Invoke(sender, instance);
+	public void RaiseFilterAdded(Filter filter)                     => FilterAdded?.Invoke(filter);
+	public void RaiseFilterRemoved(Filter filter)                   => FilterRemoved?.Invoke(filter);
+	public void RaiseFilterUpdated(Filter filter)                   => FilterUpdated?.Invoke(filter);
+	public void RaiseListMembersUpdated(UserList list)              => ListMembersUpdated?.Invoke(list);
+	public void RaiseBubbleInstanceAdded(BubbleInstance instance)   => BubbleInstanceAdded?.Invoke(instance);
+	public void RaiseBubbleInstanceRemoved(BubbleInstance instance) => BubbleInstanceRemoved?.Invoke(instance);
 }

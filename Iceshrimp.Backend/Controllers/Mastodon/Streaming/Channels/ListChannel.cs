@@ -121,7 +121,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 		Payload = payload
 	});
 
-	private async void OnNotePublished(object? _, Note note)
+	private async void OnNotePublished(Note note)
 	{
 		try
 		{
@@ -147,7 +147,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 		}
 	}
 
-	private async void OnNoteUpdated(object? _, Note note)
+	private async void OnNoteUpdated(Note note)
 	{
 		try
 		{
@@ -172,7 +172,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 		}
 	}
 
-	private async void OnNoteDeleted(object? _, Note note)
+	private async void OnNoteDeleted(Note note)
 	{
 		try
 		{
@@ -190,7 +190,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 		}
 	}
 
-	private async void OnListMembersUpdated(object? _, UserList list)
+	private async void OnListMembersUpdated(UserList list)
 	{
 		try
 		{

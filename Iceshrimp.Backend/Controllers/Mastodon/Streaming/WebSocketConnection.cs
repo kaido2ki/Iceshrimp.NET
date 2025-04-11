@@ -196,7 +196,7 @@ public sealed class WebSocketConnection(
 		}
 	}
 
-	private void OnUserBlock(object? _, UserInteraction interaction)
+	private void OnUserBlock(UserInteraction interaction)
 	{
 		try
 		{
@@ -213,7 +213,7 @@ public sealed class WebSocketConnection(
 		}
 	}
 
-	private void OnUserUnblock(object? _, UserInteraction interaction)
+	private void OnUserUnblock(UserInteraction interaction)
 	{
 		try
 		{
@@ -230,7 +230,7 @@ public sealed class WebSocketConnection(
 		}
 	}
 
-	private void OnUserMute(object? _, UserInteraction interaction)
+	private void OnUserMute(UserInteraction interaction)
 	{
 		try
 		{
@@ -244,7 +244,7 @@ public sealed class WebSocketConnection(
 		}
 	}
 
-	private void OnUserUnmute(object? _, UserInteraction interaction)
+	private void OnUserUnmute(UserInteraction interaction)
 	{
 		try
 		{
@@ -258,7 +258,7 @@ public sealed class WebSocketConnection(
 		}
 	}
 
-	private void OnUserFollow(object? _, UserInteraction interaction)
+	private void OnUserFollow(UserInteraction interaction)
 	{
 		try
 		{
@@ -272,7 +272,7 @@ public sealed class WebSocketConnection(
 		}
 	}
 
-	private void OnUserUnfollow(object? _, UserInteraction interaction)
+	private void OnUserUnfollow(UserInteraction interaction)
 	{
 		try
 		{
@@ -286,7 +286,7 @@ public sealed class WebSocketConnection(
 		}
 	}
 
-	private void OnFilterAdded(object? _, Filter filter)
+	private void OnFilterAdded(Filter filter)
 	{
 		try
 		{
@@ -300,7 +300,7 @@ public sealed class WebSocketConnection(
 		}
 	}
 
-	private void OnFilterRemoved(object? _, Filter filter)
+	private void OnFilterRemoved(Filter filter)
 	{
 		try
 		{
@@ -315,7 +315,7 @@ public sealed class WebSocketConnection(
 		}
 	}
 
-	private void OnFilterUpdated(object? _, Filter filter)
+	private void OnFilterUpdated(Filter filter)
 	{
 		try
 		{
@@ -337,7 +337,7 @@ public sealed class WebSocketConnection(
 		}
 	}
 
-	private async void OnListMembersUpdated(object? _, UserList list)
+	private async void OnListMembersUpdated(UserList list)
 	{
 		try
 		{

@@ -31,7 +31,7 @@ public class PushService(
 		return Task.CompletedTask;
 	}
 
-	private async void MastodonPushHandlerAsync(object? _, Notification notification)
+	private async void MastodonPushHandlerAsync(Notification notification)
 	{
 		try
 		{

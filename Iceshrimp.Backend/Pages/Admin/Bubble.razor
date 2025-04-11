@@ -116,7 +116,7 @@
             var newInstance = new BubbleInstance { Host = Model.Host };
             Database.Add(newInstance);
             await Database.SaveChangesAsync();
-            EventService.RaiseBubbleInstanceAdded(this, newInstance);
+            EventService.RaiseBubbleInstanceAdded(newInstance);
         }
 
         ReloadPage();
