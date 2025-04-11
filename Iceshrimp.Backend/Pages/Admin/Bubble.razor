@@ -3,9 +3,11 @@
 @using Iceshrimp.Backend.Core.Database.Tables
 @using Iceshrimp.Backend.Core.Extensions
 @using Iceshrimp.Backend.Core.Middleware
+@using Iceshrimp.Backend.Core.Services
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.Forms
 @inherits AdminComponentBase
+@inject EventService EventService
 <AdminPageHeader Title="Bubble instances"/>
 <table>
     <thead>
@@ -113,9 +115,10 @@
         {
             var newInstance = new BubbleInstance { Host = Model.Host };
             Database.Add(newInstance);
+            await Database.SaveChangesAsync();
+            EventService.RaiseBubbleInstanceAdded(this, newInstance);
         }
 
-        await Database.SaveChangesAsync();
         ReloadPage();
     }
 }

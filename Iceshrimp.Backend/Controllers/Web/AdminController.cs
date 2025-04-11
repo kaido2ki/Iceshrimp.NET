@@ -40,7 +40,8 @@ public class AdminController(
 	IOptionsSnapshot<Config.SecuritySection> security,
 	QueueService queueSvc,
 	RelayService relaySvc,
-	PolicyService policySvc
+	PolicyService policySvc,
+	EventService eventSvc
 ) : ControllerBase
 {
 	[HttpPost("invites/generate")]
@@ -250,7 +251,8 @@ public class AdminController(
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task DebubbleInstance(string host)
 	{
-		await db.BubbleInstances.Where(p => p.Host == host.ToPunycodeLower()).ExecuteDeleteAsync();
+		var res = await db.BubbleInstances.Where(p => p.Host == host.ToPunycodeLower()).ExecuteDeleteAsync();
+		if (res > 0) eventSvc.RaiseBubbleInstanceRemoved(this, new BubbleInstance { Host = host });
 	}
 
 	[HttpPost("instances/{host}/unblock")]

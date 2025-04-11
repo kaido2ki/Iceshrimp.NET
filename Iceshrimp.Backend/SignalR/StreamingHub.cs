@@ -20,6 +20,18 @@ public class StreamingHub(StreamingService streamingService) : Hub<IStreamingHub
 		return streamingService.UnsubscribeAsync(userId, Context.ConnectionId, timeline);
 	}
 
+	public Task SubscribeToRemoteFeedAsync(string host)
+	{
+		var userId = Context.UserIdentifier ?? throw new Exception("UserIdentifier must not be null at this stage");
+		return streamingService.SubscribeToRemoteFeedAsync(userId, Context.ConnectionId, host);
+	}
+
+	public Task UnsubscribeFromRemoteFeedAsync()
+	{
+		var userId = Context.UserIdentifier ?? throw new Exception("UserIdentifier must not be null at this stage");
+		return streamingService.UnsubscribeFromRemoteFeedAsync(userId, Context.ConnectionId);
+	}
+
 	public override async Task OnConnectedAsync()
 	{
 		await base.OnConnectedAsync();

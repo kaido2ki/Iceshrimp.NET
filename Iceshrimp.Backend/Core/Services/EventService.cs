@@ -24,6 +24,8 @@ public class EventService : ISingletonService
 	public event EventHandler<Filter>?          FilterRemoved;
 	public event EventHandler<Filter>?          FilterUpdated;
 	public event EventHandler<UserList>?        ListMembersUpdated;
+	public event EventHandler<BubbleInstance>?  BubbleInstanceAdded;
+	public event EventHandler<BubbleInstance>?  BubbleInstanceRemoved;
 
 	public void RaiseNotePublished(object? sender, Note note) => NotePublished?.Invoke(sender, note);
 	public void RaiseNoteUpdated(object? sender, Note note)   => NoteUpdated?.Invoke(sender, note);
@@ -71,4 +73,10 @@ public class EventService : ISingletonService
 	public void RaiseFilterRemoved(object? sender, Filter filter)      => FilterRemoved?.Invoke(sender, filter);
 	public void RaiseFilterUpdated(object? sender, Filter filter)      => FilterUpdated?.Invoke(sender, filter);
 	public void RaiseListMembersUpdated(object? sender, UserList list) => ListMembersUpdated?.Invoke(sender, list);
+
+	public void RaiseBubbleInstanceAdded(object? sender, BubbleInstance instance)
+		=> BubbleInstanceAdded?.Invoke(sender, instance);
+
+	public void RaiseBubbleInstanceRemoved(object? sender, BubbleInstance instance)
+		=> BubbleInstanceRemoved?.Invoke(sender, instance);
 }

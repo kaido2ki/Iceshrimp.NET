@@ -23,6 +23,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	private readonly WriteLockingHashSet<string> _blocking      = [];
 	private readonly WriteLockingHashSet<string> _following     = [];
 	private readonly WriteLockingHashSet<string> _muting        = [];
+	private readonly WriteLockingHashSet<string> _bubble        = [];
 
 	private readonly IHubContext<StreamingHub, IStreamingHubClient> _hub;
 	private readonly ILogger                                        _logger;
@@ -36,6 +37,8 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	private readonly string                                                            _userId;
 	private          List<string>                                                      _hiddenFromHome = [];
 
+	private string? _remoteFeed;
+
 	public bool HasSubscribers => _connectionIds.Count != 0;
 
 	#region Destruction
@@ -43,19 +46,21 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	public void Dispose()
 	{
 		DisconnectAll();
-		_streamingService.NotePublished -= OnNotePublished;
-		_streamingService.NoteUpdated   -= OnNoteUpdated;
-		_eventService.NoteDeleted       -= OnNoteDeleted;
-		_eventService.Notification      -= OnNotification;
-		_eventService.UserBlocked       -= OnUserBlock;
-		_eventService.UserUnblocked     -= OnUserUnblock;
-		_eventService.UserMuted         -= OnUserMute;
-		_eventService.UserUnmuted       -= OnUserUnmute;
-		_eventService.UserFollowed      -= OnUserFollow;
-		_eventService.UserUnfollowed    -= OnUserUnfollow;
-		_eventService.FilterAdded       -= OnFilterAdded;
-		_eventService.FilterUpdated     -= OnFilterUpdated;
-		_eventService.FilterRemoved     -= OnFilterRemoved;
+		_streamingService.NotePublished     -= OnNotePublished;
+		_streamingService.NoteUpdated       -= OnNoteUpdated;
+		_eventService.NoteDeleted           -= OnNoteDeleted;
+		_eventService.Notification          -= OnNotification;
+		_eventService.UserBlocked           -= OnUserBlock;
+		_eventService.UserUnblocked         -= OnUserUnblock;
+		_eventService.UserMuted             -= OnUserMute;
+		_eventService.UserUnmuted           -= OnUserUnmute;
+		_eventService.UserFollowed          -= OnUserFollow;
+		_eventService.UserUnfollowed        -= OnUserUnfollow;
+		_eventService.FilterAdded           -= OnFilterAdded;
+		_eventService.FilterUpdated         -= OnFilterUpdated;
+		_eventService.FilterRemoved         -= OnFilterRemoved;
+		_eventService.BubbleInstanceAdded   -= OnBubbleInstanceAdded;
+		_eventService.BubbleInstanceRemoved -= OnBubbleInstanceRemoved;
 		_scope.Dispose();
 	}
 
@@ -205,14 +210,23 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		List<StreamingTimeline> timelines = [];
 		if (note.Visibility == Note.NoteVisibility.Public)
 		{
-			timelines.Add(StreamingTimeline.Federated);
+			timelines.Add(StreamingTimeline.Global);
 
 			if (note.UserHost == null)
-				timelines.Add(StreamingTimeline.Local);
+			{
+				timelines.AddRange(StreamingTimeline.Local, StreamingTimeline.Social);
+			}
+			else
+			{
+				if (_bubble.Contains(note.UserHost))
+					timelines.Add(StreamingTimeline.Bubble);
+				if (note.UserHost == _remoteFeed)
+					timelines.Add(StreamingTimeline.Remote);
+			}
 
 			if (IsFollowingOrSelf(note.User) && note.CreatedAt > DateTime.UtcNow - TimeSpan.FromMinutes(5))
 				if (!_hiddenFromHome.Contains(note.UserId))
-					timelines.Add(StreamingTimeline.Home);
+					timelines.AddRangeIfMissing(StreamingTimeline.Home, StreamingTimeline.Social);
 		}
 		else if (note.CreatedAt > DateTime.UtcNow - TimeSpan.FromMinutes(5) && !_hiddenFromHome.Contains(note.UserId))
 		{
@@ -276,6 +290,9 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		_eventService.FilterAdded   += OnFilterAdded;
 		_eventService.FilterUpdated += OnFilterUpdated;
 		_eventService.FilterRemoved += OnFilterRemoved;
+
+		_eventService.BubbleInstanceAdded += OnBubbleInstanceAdded;
+		_eventService.BubbleInstanceRemoved += OnBubbleInstanceRemoved;
 	}
 
 	private async Task InitializeRelationshipsAsync()
@@ -300,6 +317,8 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		                          .Select(p => p.UserId)
 		                          .Distinct()
 		                          .ToListAsync();
+
+		_bubble.AddRange(await db.BubbleInstances.Select(p => p.Host).ToArrayAsync());
 	}
 
 	#endregion
@@ -317,6 +336,21 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		if (!_connectionIds.Contains(connectionId)) return;
 		_subscriptions.TryGetValue(connectionId, out var collection);
 		collection?.Remove(timeline);
+	}
+
+	public void SubscribeToRemoteFeed(string connectionId, string host)
+	{
+		if (!_connectionIds.Contains(connectionId)) return;
+		_remoteFeed = host;
+		_subscriptions.GetOrAdd(connectionId, []).Add(StreamingTimeline.Remote);
+	}
+
+	public void UnsubscribeFromRemoteFeed(string connectionId)
+	{
+		if (!_connectionIds.Contains(connectionId)) return;
+		_subscriptions.TryGetValue(connectionId, out var collection);
+		collection?.Remove(StreamingTimeline.Remote);
+		_remoteFeed = null;
 	}
 
 	#endregion
@@ -410,6 +444,16 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		{
 			_logger.LogError("Event handler OnUserUnfollow threw exception: {e}", e);
 		}
+	}
+
+	private void OnBubbleInstanceAdded(object? _, BubbleInstance instance)
+	{
+		_bubble.Add(instance.Host);
+	}
+
+	private void OnBubbleInstanceRemoved(object? _, BubbleInstance instance)
+	{
+		_bubble.Remove(instance.Host);
 	}
 
 	#endregion
