@@ -24,7 +24,7 @@ public class AnnouncementRenderer(
                    ?? (await GetReadsAsync([announcement], user)).Contains(announcement.Id);
 
         var readCount = data?.ReadCounts?.GetValueOrDefault(announcement.Id)
-                        ?? (await GetReadCountsAsync([announcement], user))?.GetValueOrDefault(announcement.Id);
+                        ?? (await GetReadCountsAsync([announcement], user)).GetValueOrDefault(announcement.Id);
 
         return new AnnouncementResponse
         {
@@ -91,17 +91,21 @@ public class AnnouncementRenderer(
                        .ToListAsync();
     }
 
-    private async Task<Dictionary<string, int>?> GetReadCountsAsync(IEnumerable<Announcement> announcements, User? user)
+    private async Task<Dictionary<string, int>> GetReadCountsAsync(IEnumerable<Announcement> announcements, User? user)
     {
-        if (user is null or { IsAdmin: false, IsModerator: false }) return null;
+        if (user is null or { IsAdmin: false, IsModerator: false }) return [];
 
         var ids = announcements.Select(p => p.Id).ToList();
-        if (ids.Count == 0) return null;
+        if (ids.Count == 0) return [];
 
-        return await db.AnnouncementReads
-                       .Where(p => ids.Contains(p.AnnouncementId))
-                       .GroupBy(p => p.AnnouncementId)
-                       .ToDictionaryAsync(p => p.Key, p => p.Count());
+        var counts = await db.AnnouncementReads
+                             .Where(p => ids.Contains(p.AnnouncementId))
+                             .GroupBy(p => p.AnnouncementId)
+                             .ToDictionaryAsync(p => p.Key, p => p.Count());
+
+        var zeros = ids.Where(p => !counts.Keys.Contains(p)).ToDictionary(p => p, p => 0);
+
+        return counts.Concat(zeros).ToDictionary();
     }
 
     public class AnnouncementRendererDto
