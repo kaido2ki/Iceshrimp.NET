@@ -2571,6 +2571,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "Text" }, "GIN_TRGM_note_text"), "gin");
                     NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "Text" }, "GIN_TRGM_note_text"), new[] { "gin_trgm_ops" });
 
+                    b.HasIndex(new[] { "Emojis" }, "GIN_note_emojis");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "Emojis" }, "GIN_note_emojis"), "gin");
+
                     b.HasIndex(new[] { "Mentions" }, "GIN_note_mentions");
 
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "Mentions" }, "GIN_note_mentions"), "gin");
