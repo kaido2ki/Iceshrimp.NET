@@ -22,13 +22,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                 nullable: false,
                 defaultValueSql: "'{}'::character varying[]");
 
-            migrationBuilder.AddColumn<List<Note.MentionedUser>>(
-                name: "mentionedRemoteUsers",
-                table: "announcement",
-                type: "jsonb",
-                nullable: false,
-                defaultValueSql: "'[]'::jsonb");
-
             migrationBuilder.AddColumn<List<string>>(
                 name: "mentions",
                 table: "announcement",
@@ -49,10 +42,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         {
             migrationBuilder.DropColumn(
                 name: "emojis",
-                table: "announcement");
-
-            migrationBuilder.DropColumn(
-                name: "mentionedRemoteUsers",
                 table: "announcement");
 
             migrationBuilder.DropColumn(

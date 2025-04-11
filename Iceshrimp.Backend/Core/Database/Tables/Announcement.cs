@@ -43,9 +43,6 @@ public class Announcement : IIdentifiable
 	[Column("mentions", TypeName = "character varying(32)[]")]
 	public List<string> Mentions { get; set; } = [];
 
-	[Column("mentionedRemoteUsers", TypeName = "jsonb")]
-	public List<Note.MentionedUser> MentionedRemoteUsers { get; set; } = [];
-
 	[Column("emojis", TypeName = "character varying(128)[]")]
 	public List<string> Emojis { get; set; } = [];
 
@@ -69,7 +66,6 @@ public class Announcement : IIdentifiable
 			entity.Property(e => e.ShowPopup).HasDefaultValue(false);
 			entity.Property(e => e.UpdatedAt).HasComment("The updated date of the Announcement.");
 			entity.Property(e => e.Mentions).HasDefaultValueSql("'{}'::character varying[]");
-			entity.Property(e => e.MentionedRemoteUsers).HasDefaultValueSql("'[]'::jsonb");
 			entity.Property(e => e.Emojis).HasDefaultValueSql("'{}'::character varying[]");
 			entity.Property(e => e.Tags).HasDefaultValueSql("'{}'::character varying[]");
 		}

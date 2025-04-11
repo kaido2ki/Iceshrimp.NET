@@ -84,13 +84,6 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("isGoodNews");
 
-                    b.Property<List<Note.MentionedUser>>("MentionedRemoteUsers")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("mentionedRemoteUsers")
-                        .HasDefaultValueSql("'[]'::jsonb");
-
                     b.PrimitiveCollection<List<string>>("Mentions")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
