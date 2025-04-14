@@ -579,7 +579,7 @@ public static class QueryableExtensions
 		if (request.OnlyMedia)
 			query = query.Where(p => p.FileIds.Count != 0);
 		if (request.Bubble)
-			query = query.Where(p => db.BubbleInstances.Any(i => i.Host == p.UserHost));
+			query = query.Where(p => p.UserHost == null || db.BubbleInstances.Any(i => i.Host == p.UserHost));
 
 		return query;
 	}

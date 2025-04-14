@@ -92,7 +92,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		var user      = HttpContext.GetUserOrFail();
 		var heuristic = await QueryableTimelineExtensions.GetHeuristicAsync(user, db, cache);
 		var notes = await db.Notes.IncludeCommonProperties()
-		                    .Where(p => db.BubbleInstances.Any(i => i.Host == p.UserHost))
+		                    .Where(p => p.UserHost == null || db.BubbleInstances.Any(i => i.Host == p.UserHost))
 		                    .FilterByPublicFollowingAndOwn(user, db, heuristic)
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db, filterHiddenListMembers: true)
