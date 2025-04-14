@@ -29,6 +29,7 @@ public sealed class WebSocketConnection(
 	private readonly WriteLockingHashSet<string> _blocking      = [];
 	private readonly WriteLockingHashSet<string> _muting        = [];
 	public readonly  WriteLockingHashSet<string> Following      = [];
+	public readonly  WriteLockingHashSet<string> Bubble         = [];
 	public readonly  WriteLockingList<Filter>    Filters        = [];
 	public readonly  EventService                EventService   = eventSvc;
 	public readonly  IServiceScope               Scope          = scopeFactory.CreateScope();
@@ -40,16 +41,18 @@ public sealed class WebSocketConnection(
 		foreach (var channel in _channels)
 			channel.Dispose();
 
-		EventService.UserBlocked        -= OnUserUnblock;
-		EventService.UserUnblocked      -= OnUserBlock;
-		EventService.UserMuted          -= OnUserMute;
-		EventService.UserUnmuted        -= OnUserUnmute;
-		EventService.UserFollowed       -= OnUserFollow;
-		EventService.UserUnfollowed     -= OnUserUnfollow;
-		EventService.FilterAdded        -= OnFilterAdded;
-		EventService.FilterRemoved      -= OnFilterRemoved;
-		EventService.FilterUpdated      -= OnFilterUpdated;
-		EventService.ListMembersUpdated -= OnListMembersUpdated;
+		EventService.UserBlocked           -= OnUserUnblock;
+		EventService.UserUnblocked         -= OnUserBlock;
+		EventService.UserMuted             -= OnUserMute;
+		EventService.UserUnmuted           -= OnUserUnmute;
+		EventService.UserFollowed          -= OnUserFollow;
+		EventService.UserUnfollowed        -= OnUserUnfollow;
+		EventService.FilterAdded           -= OnFilterAdded;
+		EventService.FilterRemoved         -= OnFilterRemoved;
+		EventService.FilterUpdated         -= OnFilterUpdated;
+		EventService.ListMembersUpdated    -= OnListMembersUpdated;
+		EventService.BubbleInstanceAdded   -= OnBubbleInstanceAdded;
+		EventService.BubbleInstanceRemoved -= OnBubbleInstanceRemoved;
 
 		Scope.Dispose();
 	}
@@ -64,25 +67,29 @@ public sealed class WebSocketConnection(
 		_channels.Add(new UserChannel(this, false));
 		_channels.Add(new HashtagChannel(this, true));
 		_channels.Add(new HashtagChannel(this, false));
-		_channels.Add(new PublicChannel(this, "public", true, true, false));
-		_channels.Add(new PublicChannel(this, "public:media", true, true, true));
-		_channels.Add(new PublicChannel(this, "public:allow_local_only", true, true, false));
-		_channels.Add(new PublicChannel(this, "public:allow_local_only:media", true, true, true));
-		_channels.Add(new PublicChannel(this, "public:local", true, false, false));
-		_channels.Add(new PublicChannel(this, "public:local:media", true, false, true));
-		_channels.Add(new PublicChannel(this, "public:remote", false, true, false));
-		_channels.Add(new PublicChannel(this, "public:remote:media", false, true, true));
+		_channels.Add(new PublicChannel(this, "public", true, true, false, false));
+		_channels.Add(new PublicChannel(this, "public:media", true, true, false, true));
+		_channels.Add(new PublicChannel(this, "public:allow_local_only", true, true, false, false));
+		_channels.Add(new PublicChannel(this, "public:allow_local_only:media", true, true, false, true));
+		_channels.Add(new PublicChannel(this, "public:local", true, false, false, false));
+		_channels.Add(new PublicChannel(this, "public:local:media", true, false, false, true));
+		_channels.Add(new PublicChannel(this, "public:remote", false, true, false, false));
+		_channels.Add(new PublicChannel(this, "public:remote:media", false, true, false, true));
+		_channels.Add(new PublicChannel(this, "public:bubble", true, true, true, false));
+		_channels.Add(new PublicChannel(this, "public:bubble:media", true, true, true, true));
 
-		EventService.UserBlocked        += OnUserUnblock;
-		EventService.UserUnblocked      += OnUserBlock;
-		EventService.UserMuted          += OnUserMute;
-		EventService.UserUnmuted        += OnUserUnmute;
-		EventService.UserFollowed       += OnUserFollow;
-		EventService.UserUnfollowed     += OnUserUnfollow;
-		EventService.FilterAdded        += OnFilterAdded;
-		EventService.FilterRemoved      += OnFilterRemoved;
-		EventService.FilterUpdated      += OnFilterUpdated;
-		EventService.ListMembersUpdated += OnListMembersUpdated;
+		EventService.UserBlocked            += OnUserUnblock;
+		EventService.UserUnblocked          += OnUserBlock;
+		EventService.UserMuted              += OnUserMute;
+		EventService.UserUnmuted            += OnUserUnmute;
+		EventService.UserFollowed           += OnUserFollow;
+		EventService.UserUnfollowed         += OnUserUnfollow;
+		EventService.FilterAdded            += OnFilterAdded;
+		EventService.FilterRemoved          += OnFilterRemoved;
+		EventService.FilterUpdated          += OnFilterUpdated;
+		EventService.ListMembersUpdated     += OnListMembersUpdated;
+		EventService.BubbleInstanceAdded    += OnBubbleInstanceAdded;
+		EventService.BubbleInstanceRemoved  += OnBubbleInstanceRemoved;
 
 		_ = InitializeRelationshipsAsync();
 	}
@@ -122,6 +129,8 @@ public sealed class WebSocketConnection(
 		                         .Distinct()
 		                         .ToArrayAsync()
 		                         .ContinueWithResult(p => p.ToHashSet());
+
+		Bubble.AddRange(await db.BubbleInstances.Select(p => p.Host).ToArrayAsync());
 	}
 
 	public async Task HandleSocketMessageAsync(string payload)
@@ -357,6 +366,32 @@ public sealed class WebSocketConnection(
 		{
 			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
 			logger.LogError("Event handler OnListMembersUpdated threw exception: {e}", e);
+		}
+	}
+	
+	private void OnBubbleInstanceAdded(BubbleInstance instance)
+	{
+		try
+		{
+			Bubble.Add(instance.Host);
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnBubbleInstanceAdded threw exception: {e}", e);
+		}
+	}
+
+	private void OnBubbleInstanceRemoved(BubbleInstance instance)
+	{
+		try
+		{
+			Bubble.Remove(instance.Host);
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnBubbleInstanceRemoved threw exception: {e}", e);
 		}
 	}
 

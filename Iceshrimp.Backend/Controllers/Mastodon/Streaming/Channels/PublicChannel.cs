@@ -10,6 +10,7 @@ public class PublicChannel(
 	string name,
 	bool local,
 	bool remote,
+	bool bubble,
 	bool onlyMedia
 ) : IChannel
 {
@@ -59,6 +60,7 @@ public class PublicChannel(
 		if (note.Visibility != Note.NoteVisibility.Public) return false;
 		if (!local && note.UserHost == null) return false;
 		if (!remote && note.UserHost != null) return false;
+		if (bubble && note.UserHost != null && !connection.Bubble.Contains(note.UserHost)) return false;
 		return !onlyMedia || note.FileIds.Count != 0;
 	}
 

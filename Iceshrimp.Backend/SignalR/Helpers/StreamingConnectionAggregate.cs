@@ -443,12 +443,26 @@ public sealed class StreamingConnectionAggregate : IDisposable
 
 	private void OnBubbleInstanceAdded(BubbleInstance instance)
 	{
-		_bubble.Add(instance.Host);
+		try
+		{
+			_bubble.Add(instance.Host);
+		}
+		catch (Exception e)
+		{
+			_logger.LogError("Event handler OnBubbleInstanceAdded threw exception: {e}", e);
+		}
 	}
 
 	private void OnBubbleInstanceRemoved(BubbleInstance instance)
 	{
-		_bubble.Remove(instance.Host);
+		try
+		{
+			_bubble.Remove(instance.Host);
+		}
+		catch (Exception e)
+		{
+			_logger.LogError("Event handler OnBubbleInstanceRemoved threw exception: {e}", e);
+		}
 	}
 
 	#endregion
