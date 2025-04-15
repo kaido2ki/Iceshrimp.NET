@@ -49,9 +49,10 @@ public class Bite
 	public static string GetIdFromPublicUri(string uri, Config.InstanceSection config) =>
 		GetIdFromPublicUri(uri, config.WebDomain);
 
-	public static string GetIdFromPublicUri(string uri, string webDomain) => uri.StartsWith(webDomain)
-		? uri["https://{webDomain}/bites/".Length..]
-		: throw new Exception("Bite Uri is not local");
+	public static string GetIdFromPublicUri(string uri, string webDomain)
+		=> uri.StartsWith($"https://{webDomain}/bites/")
+			? uri[$"https://{webDomain}/bites/".Length..]
+			: throw new Exception("Bite Uri is not local");
 
 	public string GetPublicUri(Config.InstanceSection config) => GetPublicUri(config.WebDomain);
 

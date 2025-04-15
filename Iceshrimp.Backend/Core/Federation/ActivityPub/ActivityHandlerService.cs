@@ -401,9 +401,9 @@ public class ActivityHandlerService(
 				Uri       = activity.Id,
 				User      = resolvedActor,
 				UserHost  = resolvedActor.Host,
-				TargetBite =
-					await db.Bites.FirstAsync(p => p.UserHost == null
-					                               && p.Id == Bite.GetIdFromPublicUri(targetBite.Id, config.Value))
+				TargetBite = await db.Bites.IncludeCommonProperties()
+				                     .FirstAsync(p => p.UserHost == null
+				                                      && p.Id == Bite.GetIdFromPublicUri(targetBite.Id, config.Value))
 			},
 			null => throw GracefulException.UnprocessableEntity($"Failed to resolve bite target {activity.Target.Id}"),
 			_ when activity.To?.Id != null => new Bite

@@ -63,6 +63,8 @@ public class ObjectResolver(
 				return new ASActor { Id = baseObj.Id };
 			if (uri.AbsolutePath.StartsWith("/follows/"))
 				return new ASFollow { Id = baseObj.Id };
+			if (uri.AbsolutePath.StartsWith("/bites/"))
+				return new ASBite { Id = baseObj.Id, Target = null!};
 			throw GracefulException
 				.UnprocessableEntity($"Unable to resolve local object of unknown type: {baseObj.Id}");
 		}
