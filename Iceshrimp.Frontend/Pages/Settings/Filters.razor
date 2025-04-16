@@ -88,6 +88,7 @@
                 <span>@Loc["Surround keyword with \" for whole word matching. Surround keyword with / for regex matching."]</span>
                 @if (Keyword.StartsWith('/') && Keyword.EndsWith('/'))
                 {
+                    <br/>
                     <span>@Loc["Complex regex keywords will slow down your timeline. Your filter won't apply if it takes more than 1.5ms to match."]</span>
                 }
                 <button class="button" @onclick="AddKeyword">
