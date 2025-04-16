@@ -30,6 +30,14 @@
     color: var(--notice-color);
 }
 
+.notice-icon:has(.ph-warning-circle) {
+    color: var(--warning-color);
+}
+
+.notice-icon:has(.ph-warning) {
+    color: var(--danger-color);
+}
+
 .confirm-btn {
     background: var(--accent-color);
     color: var(--font-color);
