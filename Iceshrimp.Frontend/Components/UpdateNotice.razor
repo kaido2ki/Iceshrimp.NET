@@ -84,7 +84,7 @@
         if (UpdateSvc.UpdateState == UpdateService.UpdateStates.UpdateInstalled)
         {
             await UpdateSvc.ServiceWorkerSkipWaitingAsync();
-            Nav.NavigateTo("/", true);
+            Nav.Refresh(true);
         }
     }
 }
