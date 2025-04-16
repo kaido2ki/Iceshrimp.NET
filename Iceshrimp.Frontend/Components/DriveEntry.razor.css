@@ -40,6 +40,14 @@
     }
 }
 
+::deep .labels .ph-eye-slash {
+    color: var(--warning-color);
+}
+
+::deep .labels .ph-warning {
+    color: var(--danger-color);
+}
+
 img.thumbnail {
     display: block;
     height: 5em;

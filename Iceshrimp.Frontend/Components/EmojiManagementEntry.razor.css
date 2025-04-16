@@ -41,6 +41,10 @@
     }
 }
 
+::deep .labels .ph-eye-slash {
+    color: var(--warning-color);
+}
+
 @media (max-width: 1000px) {
     .emoji-entry {
         width: 100%;

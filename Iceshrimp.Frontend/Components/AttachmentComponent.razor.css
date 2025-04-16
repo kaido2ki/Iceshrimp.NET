@@ -17,6 +17,10 @@
     line-height: 1;
 }
 
+.alt-btn:has(.ph-warning) {
+    color: var(--danger-color);
+}
+
 .alt-btn:hover {
     background-color: color-mix(in srgb, var(--hover-color) 80%, transparent);
 }
