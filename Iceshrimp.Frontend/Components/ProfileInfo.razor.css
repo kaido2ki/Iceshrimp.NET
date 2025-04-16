@@ -59,23 +59,18 @@
 }
 
 .badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: start;
+    gap: 0.25rem;
     padding: 0 0.5rem;
     background-color: var(--highlight-color);
     border-radius: 0.5rem;
 }
 
 ::deep {
-    .badge .ph {
-        display: inline-block;
-        vertical-align: text-bottom;
-    }
-}
-
-::deep {
     /* For some reason ph-lock aligns differently than the other icons. This fixes that */
-    .badge .ph-lock {
-        vertical-align: middle;
+    .badge .icon-wrapper:has(.ph-lock) {
+        align-self: center;
     }
 }
 
