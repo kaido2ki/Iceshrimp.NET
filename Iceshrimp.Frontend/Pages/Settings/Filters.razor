@@ -84,7 +84,11 @@
                         </button>
                     </div>
                 }
-                <input class="input" type="text" @bind="Keyword"/>
+                <input class="input" type="text" @bind="Keyword" @bind:event="oninput"/>
+                @if (Keyword.StartsWith('/') && Keyword.EndsWith('/'))
+                {
+                    <span>@Loc["Complex regex keywords will slow down your timeline. Your filter won't apply if it takes more than 1.5ms to match."]</span>
+                }
                 <button class="button" @onclick="AddKeyword">
                     <Icon Name="Icons.Plus"/>
                     <span>@Loc["Add"]</span>
