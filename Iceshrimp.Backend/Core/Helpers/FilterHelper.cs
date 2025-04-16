@@ -76,6 +76,22 @@ public static class FilterHelper
 				if (note.Cw != null && regex.IsMatch(note.Cw))
 					return keyword;
 			}
+			else if (keyword.StartsWith('/') && keyword.EndsWith('/'))
+			{
+				var regex = new Regex(keyword[1..^1], RegexOptions.IgnoreCase & RegexOptions.NonBacktracking, TimeSpan.FromMilliseconds(0.75));
+
+				try
+				{
+					if (note.Text != null && regex.IsMatch(note.Text))
+						return keyword;
+					if (note.Cw != null && regex.IsMatch(note.Cw))
+						return keyword;
+				}
+				catch (RegexMatchTimeoutException)
+				{
+					return null;
+				}
+			}
 			else if ((note.Text != null && note.Text.Contains(keyword, StringComparison.InvariantCultureIgnoreCase)) ||
 			         (note.Cw != null && note.Cw.Contains(keyword, StringComparison.InvariantCultureIgnoreCase)))
 			{
