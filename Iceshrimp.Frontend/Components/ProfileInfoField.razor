@@ -4,7 +4,7 @@
     <span class="field-name">
         @if (Field.Verified.GetValueOrDefault())
         {
-            <Icon class="verified" Name="Icons.SealCheck" Size="1.3em"/>
+            <Icon Name="Icons.SealCheck" Size="1.3em"/>
             <span> </span>
         }
         <MfmText Text="@Field.Name.Split('\n')[0]" Emoji="@Emojis" Simple="@true"></MfmText>
