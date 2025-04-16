@@ -91,6 +91,34 @@ input[type="checkbox"] {
     margin-bottom: 0.5rem;
 }
 
+::deep .header {
+    .dropdown-root:has(.ph-globe),
+    .dropdown-menu .dropdown-element:has(.ph-globe) {
+        color: var(--accent-primary-color);
+    }
+}
+
+::deep .header {
+    .dropdown-root:has(.ph-house),
+    .dropdown-menu .dropdown-element:has(.ph-house) {
+        color: var(--notice-color);
+    }
+}
+
+::deep .header {
+    .dropdown-root:has(.ph-lock),
+    .dropdown-menu .dropdown-element:has(.ph-lock) {
+        color: var(--warning-color);
+    }
+}
+
+::deep .header {
+    .dropdown-root:has(.ph-envelope),
+    .dropdown-menu .dropdown-element:has(.ph-envelope) {
+        color: var(--danger-color);
+    }
+}
+
 .footer {
     display: flex;
     align-items: center;

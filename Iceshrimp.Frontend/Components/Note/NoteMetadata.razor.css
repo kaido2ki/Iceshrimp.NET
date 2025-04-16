@@ -62,6 +62,22 @@
     }
 }
 
+.visibility:has(.ph-globe) {
+    color: var(--accent-primary-color);
+}
+
+.visibility:has(.ph-house) {
+    color: var(--notice-color);
+}
+
+.visibility:has(.ph-lock) {
+    color: var(--warning-color);
+}
+
+.visibility:has(.ph-envelope) {
+    color: var(--danger-color);
+}
+
 @media (max-width: 1000px) {
     .metadata {
         flex-basis: 25%;

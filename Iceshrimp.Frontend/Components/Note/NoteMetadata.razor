@@ -15,16 +15,16 @@
             @switch (Visibility)
             {
                 case NoteVisibility.Public:
-                    <Icon Name="Icons.Globe" Size="1.3em"/>
+                    <Icon Name="Icons.Globe" Size="1.3em" title="@Loc["Public"]"/>
                     break;
                 case NoteVisibility.Home:
-                    <Icon Name="Icons.House" Size="1.3em"/>
+                    <Icon Name="Icons.House" Size="1.3em" title="@Loc["Unlisted"]"/>
                     break;
                 case NoteVisibility.Followers:
-                    <Icon Name="Icons.Lock" Size="1.3em"/>
+                    <Icon Name="Icons.Lock" Size="1.3em" title="@Loc["Followers"]"/>
                     break;
                 case NoteVisibility.Specified:
-                    <Icon Name="Icons.Envelope" Size="1.3em"/>
+                    <Icon Name="Icons.Envelope" Size="1.3em" title="@Loc["Direct"]"/>
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
