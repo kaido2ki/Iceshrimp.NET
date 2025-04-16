@@ -2,12 +2,14 @@
     display: flex;
     flex-direction: column;
     padding-left: 0.75em;
+    text-wrap: nowrap;
 
     .identifier {
         font-size: 0.8em;
         text-overflow: ellipsis;
+        text-wrap: nowrap;
         overflow: clip;
-        white-space: wrap;
+        white-space: nowrap;
     }
     min-width: 2rem;
     overflow: clip;
@@ -20,8 +22,8 @@
     overflow: clip;
 }
 
-::deep .identifier .ph {
+::deep .identifier .icon-wrapper {
     display: inline-block;
     margin-right: 0.25em;
-    vertical-align: middle;
+    vertical-align: -0.25em;
 }
