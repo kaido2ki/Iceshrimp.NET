@@ -539,7 +539,14 @@
     {
         PastedText = (pastedText, "");
 
-        if (NoteDraft.RenoteId != null || AttachedQuote != null || !new Url(pastedText).IsAbsolute)
+        if (NoteDraft.RenoteId != null || AttachedQuote != null || !Uri.TryCreate(pastedText, UriKind.Absolute, out var uri))
+        {
+            await InsertPastedText();
+            return;
+        }
+
+        // Check common note paths for Iceshrimp, Mastodon, Akkoma, Wafrn
+        if (uri.Scheme != "https" || !uri.AbsolutePath.StartsWith("/notes/") && !uri.AbsolutePath.StartsWith("/@") && !uri.AbsolutePath.StartsWith("/objects/") && !uri.AbsolutePath.StartsWith("/notice/") && !uri.AbsolutePath.StartsWith("/fediverse/post/"))
         {
             await InsertPastedText();
             return;
