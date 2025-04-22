@@ -78,7 +78,7 @@ public static class FilterHelper
 			}
 			else if (keyword.StartsWith('/') && keyword.EndsWith('/'))
 			{
-				var regex = new Regex(keyword[1..^1], RegexOptions.IgnoreCase & RegexOptions.NonBacktracking, TimeSpan.FromMilliseconds(0.75));
+				var regex = new Regex(keyword[1..^1], RegexOptions.IgnoreCase | RegexOptions.NonBacktracking, TimeSpan.FromMilliseconds(0.75));
 
 				try
 				{
