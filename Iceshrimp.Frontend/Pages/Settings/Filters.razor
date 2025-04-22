@@ -33,14 +33,23 @@
                     </div>
                     <div>
                         <h3>@Loc["Expiry"]</h3>
-                        @el.Expiry.ToString()
+                        @if (el.Expiry != null)
+                        {
+                            @el.Expiry.Value.ToLocalTime().ToString("G")
+                        }
+                        else
+                        {
+                            @Loc["Never"]
+                        }
                     </div>
                     <div>
                         <h3>@Loc["Keywords"]</h3>
-                        @foreach (var keyword in el.Keywords)
-                        {
-                            <span>@keyword</span>
-                        }
+                        <ul>
+                            @foreach (var keyword in el.Keywords)
+                            {
+                                <li>@keyword</li>
+                            }
+                        </ul>
                     </div>
                     <div>
                         <h3>@Loc["Action"]</h3>
@@ -48,10 +57,12 @@
                     </div>
                     <div>
                         <h3>@Loc["Contexts"]</h3>
-                        @foreach (var context in el.Contexts)
-                        {
-                            <span>@context</span>
-                        }
+                        <ul>
+                            @foreach (var context in el.Contexts)
+                            {
+                                <li>@context</li>
+                            }
+                        </ul>
                     </div>
                 </div>
                 <button class="button" @onclick="() => DeleteFilter(el.Id)">@Loc["Delete"]</button>

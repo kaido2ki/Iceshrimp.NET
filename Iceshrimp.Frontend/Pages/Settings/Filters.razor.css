@@ -9,7 +9,18 @@
 }
 
 .filter {
+    padding: 0.5rem;
     border: var(--highlight-color) solid 0.1rem;
+}
+
+.filter ul {
+    margin: 0;
+    padding: 0;
+    
+    li {
+        list-style-type: disc;
+        list-style-position: inside;
+    }
 }
 
 .creature-input:invalid {
