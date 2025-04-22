@@ -174,12 +174,12 @@
                 </button>
             </div>
             <div class="expiry-section">
-                @if (_filterExpiryInvalid)
-                {
-                    <span>@Loc["Expiry is required"]</span>
-                }
                 <h3>@Loc["Filter Expiry"]</h3>
-                <input class="input" @bind="FilterExpiry" type="datetime-local"/>
+                <span>
+                    <input type="checkbox" id="enable-expiry" @bind="TemporaryFilter">
+                    <label for="enable-expiry">@Loc["Enable filter expiration"]</label>
+                </span>
+                <input class="input" @bind="FilterExpiry" type="datetime-local" disabled="@(!TemporaryFilter)"/>
             </div>
             <StateButton OnClick="TryAddFilter" ExtraClasses="button" @ref="ButtonAddFilter">
                 <Initial><Icon Name="Icons.Plus"/><span>@Loc["Add Filter"]</span></Initial>
@@ -201,6 +201,7 @@
     private string                             FilterName         { get; set; } = "";
     private string                             Keyword            { get; set; } = "";
     private List<string>                       FilterKeywords     { get; }      = [];
+    private bool                               TemporaryFilter    { get; set; }
     private DateTime?                          FilterExpiry       { get; set; }
     private FilterResponse.FilterAction        FilterAction       { get; set; }
     private Menu                               MenuFilterAction   { get; set; } = null!;
@@ -214,7 +215,6 @@
 
     private bool _filterNameInvalid;
     private bool _filterKeywordsInvalid;
-    private bool _filterExpiryInvalid;
     private bool _filterContextsInvalid;
 
     protected override async Task OnInitializedAsync()
@@ -259,12 +259,6 @@
             valid                  = false;
         }
 
-        if (FilterExpiry == null)
-        {
-            _filterExpiryInvalid = true;
-            valid                = false;
-        }
-
         if (FilterContexts.Count < 1)
         {
             _filterContextsInvalid = true;
@@ -273,6 +267,10 @@
 
         if (valid)
         {
+            if (!TemporaryFilter)
+            {
+                FilterExpiry = null;
+            }
             if (FilterExpiry is not null)
             {
                 FilterExpiry = new DateTimeOffset((DateTime)FilterExpiry, DateTimeOffset.Now.Offset).UtcDateTime;
