@@ -187,6 +187,7 @@
         {
             case TimelineEnum.Home:
                 _ = Streaming.SubscribeAsync(TimelineEnum.Home);
+                Nav.NavigateTo("/");
                 break;
             case TimelineEnum.Local:
                 _ = Streaming.SubscribeAsync(TimelineEnum.Local);
