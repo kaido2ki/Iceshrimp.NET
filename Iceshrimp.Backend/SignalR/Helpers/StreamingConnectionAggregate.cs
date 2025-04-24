@@ -7,6 +7,7 @@ using Iceshrimp.Backend.Core.Events;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.SignalR;
 using Iceshrimp.Shared.Schemas.Web;
 using JetBrains.Annotations;
@@ -32,7 +33,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	private readonly StreamingService                               _streamingService;
 	private readonly EventService                                   _eventService;
 
-	private readonly ConcurrentDictionary<string, WriteLockingList<StreamingTimeline>> _subscriptions = [];
+	private readonly ConcurrentDictionary<string, WriteLockingList<TimelineEnum>> _subscriptions = [];
 	private readonly User                                                              _user;
 	private readonly string                                                            _userId;
 	private          List<string>                                                      _hiddenFromHome = [];
@@ -205,33 +206,33 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		return wrapped;
 	}
 
-	private (List<string> connectionIds, List<StreamingTimeline> timelines) FindRecipients(Note note)
+	private (List<string> connectionIds, List<TimelineEnum> timelines) FindRecipients(Note note)
 	{
-		List<StreamingTimeline> timelines = [];
+		List<TimelineEnum> timelines = [];
 		if (note.Visibility == Note.NoteVisibility.Public)
 		{
-			timelines.Add(StreamingTimeline.Global);
+			timelines.Add(TimelineEnum.Global);
 
 			if (note.UserHost == null)
 			{
-				timelines.AddRange(StreamingTimeline.Local, StreamingTimeline.Social);
+				timelines.AddRange(TimelineEnum.Local, TimelineEnum.Social);
 			}
 			else
 			{
 				if (_bubble.Contains(note.UserHost))
-					timelines.Add(StreamingTimeline.Bubble);
+					timelines.Add(TimelineEnum.Bubble);
 				if (note.UserHost == _remoteFeed)
-					timelines.Add(StreamingTimeline.Remote);
+					timelines.Add(TimelineEnum.Remote);
 			}
 
 			if (IsFollowingOrSelf(note.User) && note.CreatedAt > DateTime.UtcNow - TimeSpan.FromMinutes(5))
 				if (!_hiddenFromHome.Contains(note.UserId))
-					timelines.AddRangeIfMissing(StreamingTimeline.Home, StreamingTimeline.Social);
+					timelines.AddRangeIfMissing(TimelineEnum.Home, TimelineEnum.Social);
 		}
 		else if (note.CreatedAt > DateTime.UtcNow - TimeSpan.FromMinutes(5) && !_hiddenFromHome.Contains(note.UserId))
 		{
 			// We already enumerated _following in IsApplicable()
-			timelines.Add(StreamingTimeline.Home);
+			timelines.Add(TimelineEnum.Home);
 		}
 
 		var connectionIds = _subscriptions.Where(p => p.Value.Intersects(timelines)).Select(p => p.Key).ToList();
@@ -325,19 +326,19 @@ public sealed class StreamingConnectionAggregate : IDisposable
 
 	#region Channel subscription handlers
 
-	public void Subscribe(string connectionId, StreamingTimeline timeline)
+	public void Subscribe(string connectionId, TimelineEnum timeline)
 	{
 		if (!_connectionIds.Contains(connectionId)) return;
-		if (timeline == StreamingTimeline.Remote) return;
+		if (timeline == TimelineEnum.Remote) return;
 		_subscriptions.GetOrAdd(connectionId, []).Add(timeline);
 	}
 
-	public void Unsubscribe(string connectionId, StreamingTimeline timeline)
+	public void Unsubscribe(string connectionId, TimelineEnum timeline)
 	{
 		if (!_connectionIds.Contains(connectionId)) return;
 		_subscriptions.TryGetValue(connectionId, out var collection);
 		collection?.Remove(timeline);
-		if (timeline == StreamingTimeline.Remote)
+		if (timeline == TimelineEnum.Remote)
 			_remoteFeed = null;
 	}
 
@@ -345,7 +346,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	{
 		if (!_connectionIds.Contains(connectionId)) return;
 		_remoteFeed = host;
-		_subscriptions.GetOrAdd(connectionId, []).Add(StreamingTimeline.Remote);
+		_subscriptions.GetOrAdd(connectionId, []).Add(TimelineEnum.Remote);
 	}
 
 	#endregion

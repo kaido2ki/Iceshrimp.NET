@@ -15,10 +15,12 @@
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Helpers
 @attribute [Authorize]
 @inject IStringLocalizer<Localization> Loc;
 @inject GlobalComponentSvc             GlobalComponentSvc;
 @inject NavigationManager              Nav;
+@inject StreamingService Streaming;
 @implements IDisposable
 
 <HeadTitle Text="@Loc["Timeline"]"/>
@@ -27,52 +29,52 @@
     <Icon Name="Icons.House"></Icon>
     @Loc["Timeline"]
     <button class="button selector" @onclick="() => MenuRef.Toggle(MenuButton, false)" @ref="MenuButton">
-        <div class="current-timeline">@switch (CurrentTimeline.Enum)
+        <div class="current-timeline">@switch (CurrentTimeline!.Enum)
             {
-                case TimelineStore.TimelineEnum.Home:
+                case TimelineEnum.Home:
                     <Icon Name="Icons.House"/>
                     @Loc["Home"]
                     break;
-                case TimelineStore.TimelineEnum.Local:
+                case TimelineEnum.Local:
                     <Icon Name="Icons.Users"/>
                     @Loc["Local"]
                     break;
-                case TimelineStore.TimelineEnum.Social:
+                case TimelineEnum.Social:
                     <Icon Name="Icons.Handshake"/>
                     @Loc["Social"]
                     break;
-                case TimelineStore.TimelineEnum.Bubble:
+                case TimelineEnum.Bubble:
                     <Icon Name="Icons.Hexagon"/>
                     @Loc["Bubble"]
                     break;
-                case TimelineStore.TimelineEnum.Global:
+                case TimelineEnum.Global:
                     <Icon Name="Icons.Globe"/>
                     @Loc["Global"]
                     break;
-                case TimelineStore.TimelineEnum.Remote:
+                case TimelineEnum.Remote:
                     <Icon Name="Icons.Airplane"/>
                     @Loc[$"Remote: {CurrentTimeline.Remote}"]
                     break;
             }
         </div>
         <Menu @ref="MenuRef" Fixed="true">
-            <MenuElement OnSelect="() => SwitchTimeline(TimelineStore.TimelineEnum.Home)">
+            <MenuElement OnSelect="() => SwitchTimeline(TimelineEnum.Home)">
                 <Text>
                     <Icon Name="Icons.House"/>@Loc["Home"]</Text>
             </MenuElement>
-            <MenuElement OnSelect="() => SwitchTimeline(TimelineStore.TimelineEnum.Local)">
+            <MenuElement OnSelect="() => SwitchTimeline(TimelineEnum.Local)">
                 <Text>
                     <Icon Name="Icons.Users"/>@Loc["Local"]</Text>
             </MenuElement>
-            <MenuElement OnSelect="() => SwitchTimeline(TimelineStore.TimelineEnum.Social)">
+            <MenuElement OnSelect="() => SwitchTimeline(TimelineEnum.Social)">
                 <Text>
                     <Icon Name="Icons.Handshake"/>@Loc["Social"]</Text>
             </MenuElement>
-            <MenuElement OnSelect="() => SwitchTimeline(TimelineStore.TimelineEnum.Bubble)">
+            <MenuElement OnSelect="() => SwitchTimeline(TimelineEnum.Bubble)">
                 <Text>
                     <Icon Name="Icons.Hexagon"/>@Loc["Bubble"]</Text>
             </MenuElement>
-            <MenuElement OnSelect="() => SwitchTimeline(TimelineStore.TimelineEnum.Global)">
+            <MenuElement OnSelect="() => SwitchTimeline(TimelineEnum.Global)">
                 <Text>
                     <Icon Name="Icons.Globe"/>@Loc["Global"]</Text>
             </MenuElement>
@@ -89,7 +91,7 @@
 <div class="timeline">
     @if (NoteResponses is not null && _loaded)
     {
-        <VirtualScroller InitialItems="NoteResponses" ItemProvider="Provider" StateKey="@CurrentTimeline.Key"
+        <VirtualScroller InitialItems="NoteResponses" ItemProvider="Provider" StateKey="@CurrentTimeline!.Key"
                          ItemProviderById="ItemProviderById" StreamingItemProvider="Store" @ref="VirtualScroller">
             <ItemTemplate Context="note">
                 <CascadingValue Value="Store" TValue="NoteMessageProvider" Name="Provider">
@@ -103,12 +105,12 @@
 @code {
     [Parameter] public string?                        Timeline { get; set; }
     [Parameter] public string?                        Instance { get; set; }
-    private     bool                           _loaded;
-    private     List<NoteResponse>?            NoteResponses   { get; set; }
-    private     TimelineStore.Timeline         CurrentTimeline { get; set; } = null!;
-    private     Menu                           MenuRef         { get; set; } = null!;
-    private     ElementReference               MenuButton      { get; set; }
-    private     VirtualScroller<NoteResponse>? VirtualScroller { get; set; }
+    private            bool                           _loaded;
+    private            List<NoteResponse>?            NoteResponses   { get; set; }
+    private            TimelineStore.Timeline?        CurrentTimeline { get; set; }
+    private            Menu                           MenuRef         { get; set; } = null!;
+    private            ElementReference               MenuButton      { get; set; }
+    private            VirtualScroller<NoteResponse>? VirtualScroller { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -117,83 +119,93 @@
             switch (Timeline)
             {
                 case "local":
-                    SetTimeline(new TimelineStore.Timeline(TimelineStore.TimelineEnum.Local));
+                     SetTimeline(new TimelineStore.Timeline(TimelineEnum.Local));
                     break;
                     case "social":
-                    SetTimeline(new TimelineStore.Timeline(TimelineStore.TimelineEnum.Social));
+                     SetTimeline(new TimelineStore.Timeline(TimelineEnum.Social));
                     break;
                     case "bubble":
-                    SetTimeline(new TimelineStore.Timeline(TimelineStore.TimelineEnum.Bubble));
+                     SetTimeline(new TimelineStore.Timeline(TimelineEnum.Bubble));
                     break;
                     case "global":
-                    SetTimeline(new TimelineStore.Timeline(TimelineStore.TimelineEnum.Global));
+                     SetTimeline(new TimelineStore.Timeline(TimelineEnum.Global));
                     break;
                     case "remote":
-                    SetTimeline(new TimelineStore.Timeline(TimelineStore.TimelineEnum.Remote, HttpUtility.UrlEncode(Instance)));
+                     SetTimeline(new TimelineStore.Timeline(TimelineEnum.Remote, Instance));
                     break;
             }
         }
         else
         {
-            SetTimeline(State.TimelinePage.Current ?? new TimelineStore.Timeline(TimelineStore.TimelineEnum.Home));
+             SetTimeline(State.TimelinePage.Current ?? new TimelineStore.Timeline(TimelineEnum.Home));
         }
-        NoteResponses   = await Store.GetTimelineAsync(CurrentTimeline, new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
+        NoteResponses   = await Store.GetTimelineAsync(CurrentTimeline!, new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
         _loaded         = true;
         StateHasChanged();
     }
 
     private async Task<List<NoteResponse>?> Provider(DirectionEnum direction, NoteResponse start)
     {
-        var res = await Store.GetTimelineAsync(CurrentTimeline, new TimelineStore.Cursor { Direction = direction, Count = 10, Id = start.Id });
+        var res = await Store.GetTimelineAsync(CurrentTimeline!, new TimelineStore.Cursor { Direction = direction, Count = 10, Id = start.Id });
         return res;
     }
 
     private List<NoteResponse> ItemProviderById(List<string> arg)
     {
-        return Store.GetIdsFromTimeline(CurrentTimeline, arg);
+        return Store.GetIdsFromTimeline(CurrentTimeline!, arg);
     }
 
-    private async Task SwitchTimeline(TimelineStore.TimelineEnum timeline, string? remote = null)
+    private async Task SwitchTimeline(TimelineEnum timeline, string? remote = null)
     {
         VirtualScroller?.Save();
         _loaded = false;
         StateHasChanged();
         NoteResponses   = null;
-        SetTimeline(new TimelineStore.Timeline(timeline, remote));
-        NoteResponses   = await Store.GetTimelineAsync(CurrentTimeline, new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
+         SetTimeline(new TimelineStore.Timeline(timeline, remote));
+        NoteResponses   = await Store.GetTimelineAsync(CurrentTimeline!, new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
         _loaded         = true;
         StateHasChanged();
     }
 
     private async Task PickRemote()
-        => await GlobalComponentSvc.PromptDialog?.Prompt(new EventCallback<string?>(this, AddQuoteCallback), Loc["Remote Instance"], Loc["Instance hostname"], $"{CurrentTimeline.Remote}")!;
+        => await GlobalComponentSvc.PromptDialog?.Prompt(new EventCallback<string?>(this, AddQuoteCallback), Loc["Remote Instance"], Loc["Instance hostname"], $"{CurrentTimeline!.Remote}")!;
 
     private async Task AddQuoteCallback(string? remote)
     {
         if (remote is null) return;
-        await SwitchTimeline(TimelineStore.TimelineEnum.Remote, remote);
+        await SwitchTimeline(TimelineEnum.Remote, remote);
     }
 
     private void SetTimeline(TimelineStore.Timeline timeline)
     {
+        if (CurrentTimeline != null)
+        {
+            _ = Streaming.UnsubscribeAsync(CurrentTimeline.Enum);
+        }
+
         switch (timeline.Enum)
         {
-            case TimelineStore.TimelineEnum.Home:
-                Nav.NavigateTo("/");
+            case TimelineEnum.Home:
+                _ = Streaming.SubscribeAsync(TimelineEnum.Home);
                 break;
-            case TimelineStore.TimelineEnum.Local:
+            case TimelineEnum.Local:
+                _ = Streaming.SubscribeAsync(TimelineEnum.Local);
                 Nav.NavigateTo("/timeline/local");
                 break;
-            case TimelineStore.TimelineEnum.Social:
+            case TimelineEnum.Social:
+                _ = Streaming.SubscribeAsync(TimelineEnum.Social);
                 Nav.NavigateTo("/timeline/social");
                 break;
-            case TimelineStore.TimelineEnum.Bubble:
+            case TimelineEnum.Bubble:
+                _ = Streaming.SubscribeAsync(TimelineEnum.Bubble);
                 Nav.NavigateTo("/timeline/bubble");
                 break;
-            case TimelineStore.TimelineEnum.Global:
+            case TimelineEnum.Global:
+                _ = Streaming.SubscribeAsync(TimelineEnum.Global);
                 Nav.NavigateTo("/timeline/global");
                 break;
-            case TimelineStore.TimelineEnum.Remote:
+            case TimelineEnum.Remote:
+                _ = Streaming.SubscribeToRemoteFeedAsync(timeline.Remote!);
                 Nav.NavigateTo($"/timeline/remote/{HttpUtility.UrlEncode(timeline.Remote)}");
                 break;
             default:

@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.SignalR;
 using Microsoft.AspNetCore.SignalR;
 
@@ -8,13 +9,13 @@ namespace Iceshrimp.Backend.SignalR;
 [Microsoft.AspNetCore.Authorization.Authorize(Policy = "HubAuthorization")]
 public class StreamingHub(StreamingService streamingService) : Hub<IStreamingHubClient>, IStreamingHubServer
 {
-	public Task SubscribeAsync(StreamingTimeline timeline)
+	public Task SubscribeAsync(TimelineEnum timeline)
 	{
 		var userId = Context.UserIdentifier ?? throw new Exception("UserIdentifier must not be null at this stage");
 		return streamingService.SubscribeAsync(userId, Context.ConnectionId, timeline);
 	}
 
-	public Task UnsubscribeAsync(StreamingTimeline timeline)
+	public Task UnsubscribeAsync(TimelineEnum timeline)
 	{
 		var userId = Context.UserIdentifier ?? throw new Exception("UserIdentifier must not be null at this stage");
 		return streamingService.UnsubscribeAsync(userId, Context.ConnectionId, timeline);

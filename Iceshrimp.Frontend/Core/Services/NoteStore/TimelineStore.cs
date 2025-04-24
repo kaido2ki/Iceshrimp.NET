@@ -1,9 +1,9 @@
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Enums;
-using Iceshrimp.Shared.Schemas.SignalR;
+using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.Web;
 using NoteEvent =
-	(Iceshrimp.Shared.Schemas.SignalR.StreamingTimeline timeline, Iceshrimp.Shared.Schemas.Web.NoteResponse note);
+	(Iceshrimp.Shared.Helpers.TimelineEnum timeline, Iceshrimp.Shared.Schemas.Web.NoteResponse note);
 
 namespace Iceshrimp.Frontend.Core.Services.NoteStore;
 
@@ -199,22 +199,25 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 	private void OnNotePublished(object? sender, NoteEvent valueTuple)
 	{
 		var (timeline, response) = valueTuple;
-		if (timeline == StreamingTimeline.Home)
+		var targetTimeline = timeline switch
 		{
-			var success = Timelines.TryGetValue(TimelineEnum.Home.ToString(), out var home);
-			if (success)
-			{
-				var add = home!.Timeline.TryAdd(response.Id, response);
-				if (add is false) _logger.LogWarning($"Duplicate note: {response.Id}");
-			}
-
-			ItemPublished?.Invoke(this, response);
+			TimelineEnum.Home   => new Timeline(TimelineEnum.Home),
+			TimelineEnum.Local  => new Timeline(TimelineEnum.Local),
+			TimelineEnum.Social => new Timeline(TimelineEnum.Social),
+			TimelineEnum.Bubble => new Timeline(TimelineEnum.Social),
+			TimelineEnum.Global => new Timeline(TimelineEnum.Social),
+			TimelineEnum.Remote => new Timeline(TimelineEnum.Remote),
+			_                        => throw new ArgumentOutOfRangeException()
+		};
+		var success = Timelines.TryGetValue(targetTimeline.Key, out var selected);
+		if (success)
+		{
+			var add = selected!.Timeline.TryAdd(response.Id, response);
+			if (add is false) _logger.LogWarning($"Duplicate note: {response.Id}");
 		}
 
-		if (timeline == StreamingTimeline.Local)
-		{
-			
-		}
+		ItemPublished?.Invoke(this, response);
+
 	}
 
 	public class Cursor
@@ -233,16 +236,6 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 	{
 		await _stateSynchronizer.DisposeAsync();
 		await _streamingService.DisposeAsync();
-	}
-
-	public enum TimelineEnum
-	{
-		Home,
-		Local,
-		Social,
-		Bubble,
-		Global,
-		Remote
 	}
 
 	public class Timeline

@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.SignalR;
 using Iceshrimp.Backend.SignalR.Helpers;
+using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.SignalR;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.SignalR;
@@ -60,14 +61,14 @@ public sealed class StreamingService : ISingletonService
 		conn?.Dispose();
 	}
 
-	public Task SubscribeAsync(string userId, string connectionId, StreamingTimeline timeline)
+	public Task SubscribeAsync(string userId, string connectionId, TimelineEnum timeline)
 	{
 		_connections.TryGetValue(userId, out var conn);
 		conn?.Subscribe(connectionId, timeline);
 		return Task.CompletedTask;
 	}
 
-	public Task UnsubscribeAsync(string userId, string connectionId, StreamingTimeline timeline)
+	public Task UnsubscribeAsync(string userId, string connectionId, TimelineEnum timeline)
 	{
 		_connections.TryGetValue(userId, out var conn);
 		conn?.Unsubscribe(connectionId, timeline);

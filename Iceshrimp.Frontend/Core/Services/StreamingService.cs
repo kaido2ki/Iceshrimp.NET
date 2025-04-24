@@ -1,4 +1,5 @@
 using Iceshrimp.Frontend.Core.Schemas;
+using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.SignalR;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components;
@@ -8,7 +9,7 @@ using TypedSignalR.Client;
 
 namespace Iceshrimp.Frontend.Core.Services;
 
-using NoteEvent = (StreamingTimeline timeline, NoteResponse note);
+using NoteEvent = (TimelineEnum timeline, NoteResponse note);
 
 internal class StreamingService(
 	SessionService session,
@@ -52,11 +53,11 @@ internal class StreamingService(
 			return;
 
 		_hubConnection = new HubConnectionBuilder()
-		                 .WithUrl(navigation.ToAbsoluteUri("/hubs/streaming"), Auth)
-		                 .WithAutomaticReconnect()
-		                 .WithStatefulReconnect()
-		                 .AddMessagePackProtocol()
-		                 .Build();
+						 .WithUrl(navigation.ToAbsoluteUri("/hubs/streaming"), Auth)
+						 .WithAutomaticReconnect()
+						 .WithStatefulReconnect()
+						 .AddMessagePackProtocol()
+						 .Build();
 
 		_hub = _hubConnection.CreateHubProxy<IStreamingHubServer>();
 		_hubConnection.Register<IStreamingHubClient>(new StreamingHubClient(this));
@@ -64,7 +65,6 @@ internal class StreamingService(
 		try
 		{
 			await _hubConnection.StartAsync();
-			await _hub.SubscribeAsync(StreamingTimeline.Home);
 		}
 		catch (Exception e)
 		{
@@ -88,6 +88,44 @@ internal class StreamingService(
 
 		if (_hubConnection.State is not HubConnectionState.Disconnected) return;
 		await _hubConnection.StartAsync();
+	}
+
+	public async Task SubscribeAsync(TimelineEnum timeline)
+	{
+		while (_hub == null)
+		{
+			logger.LogInformation("No hub connection, retrying in 2 seconds");
+			await Task.Delay(TimeSpan.FromSeconds(2));
+		}
+
+		await _hub.SubscribeAsync(timeline);
+		logger.LogInformation("Subscribed to timeline: {TimelineEnum}", timeline);
+	}
+
+	public async Task UnsubscribeAsync(TimelineEnum timeline)
+	{
+		while (_hub == null)
+		{
+			logger.LogInformation("No hub connection, retrying in 2 seconds");
+			await Task.Delay(TimeSpan.FromSeconds(2));
+		}
+
+		await _hub.UnsubscribeAsync(timeline);
+		logger.LogInformation("Unsubscribed from timeline: {TimelineEnum}", timeline);
+
+	}
+
+	public async Task SubscribeToRemoteFeedAsync(string host)
+	{
+		while (_hub == null)
+		{
+			logger.LogInformation("No hub connection, retrying in 2 seconds");
+			await Task.Delay(TimeSpan.FromSeconds(2));
+		}
+
+		await _hub.SubscribeToRemoteFeedAsync(host);
+		logger.LogInformation("Subscribed remote timeline: {Host}", host);
+
 	}
 
 	private class StreamingHubClient(StreamingService streaming) : IStreamingHubClient, IHubConnectionObserver
@@ -116,7 +154,7 @@ internal class StreamingService(
 			return Task.CompletedTask;
 		}
 
-		public Task NotePublishedAsync(List<StreamingTimeline> timelines, NoteResponse note)
+		public Task NotePublishedAsync(List<TimelineEnum> timelines, NoteResponse note)
 		{
 			foreach (var timeline in timelines)
 				streaming.NotePublished?.Invoke(this, (timeline, note));
