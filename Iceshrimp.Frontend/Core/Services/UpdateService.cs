@@ -64,8 +64,10 @@ internal class UpdateService
 	private async Task ServiceWorkerCheckWaitingAsync()
 	{
 		var res = await ServiceWorkerCheckStateAsync();
+		_logger.LogInformation("Checking for service worker state.");
 		if (res == ServiceWorkerState.Waiting)
 		{
+			_logger.LogInformation("New service worker found, stopping checks.");
 			CheckWaitingTimer?.Change(Timeout.Infinite, Timeout.Infinite);
 			CheckWaitingTimer?.Dispose();
 			UpdateState = UpdateStates.UpdateInstalled;
@@ -95,6 +97,10 @@ internal class UpdateService
 			null         => UpdateStates.Error,
 			_            => throw new UnreachableException()
 		};
+		if (UpdateState == UpdateStates.UpdateInstalling)
+		{
+			CheckWaitingTimer = new Timer(CheckWaitingCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(2));
+		}
 	}
 
 	private async Task<ServiceWorkerState> ServiceWorkerCheckStateAsync()
@@ -115,7 +121,7 @@ internal class UpdateService
 	public async Task<bool> ServiceWorkerSkipWaitingAsync()
 	{
 		var module = await _moduleTask.Value;
-		var res = await module.InvokeAsync<bool?>("ServiceWorkerSkipWaiting");
+		var res    = await module.InvokeAsync<bool?>("ServiceWorkerSkipWaiting");
 		if (res is null) throw new Exception("Error occured while updating service worker.");
 		return (bool)res;
 	}
