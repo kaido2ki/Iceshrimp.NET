@@ -1,3 +1,12 @@
+## v2025.1-beta5.patch2.security2
+This is a security hotfix release. It's identical to v2025.1-beta5.patch2.security1, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
+
+### Backend
+- Profile fields are now rendered as HTML for federation
+
+### Attribution
+This release was made possible by project contributors: Laura Hausmann
+
 ## v2025.1-beta5.patch2.security1
 This is a security hotfix release. It's identical to v2025.1-beta5.patch2, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
 
