@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
+using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -156,5 +157,45 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 		await db.SaveChangesAsync();
 
 		return new object();
+	}
+	
+	[Authenticate]
+	[HttpGet("/api/oauth_tokens.json")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<List<PleromaOauthTokenEntity>> GetOauthTokens()
+	{
+		var user = HttpContext.GetUserOrFail();
+		var oauthTokens = await db.OauthTokens
+		                          .Where(p => p.User == user)
+		                          .Include(oauthToken => oauthToken.App)
+		                          .ToListAsync();
+
+		List<PleromaOauthTokenEntity> result = [];
+		foreach (var token in oauthTokens)
+		{
+			result.Add(new PleromaOauthTokenEntity()
+			{
+				Id         = token.Id,
+				AppName    = token.App.Name,
+				ValidUntil = token.CreatedAt + TimeSpan.FromDays(365 * 100)
+			});
+		}
+		
+		return result;
+	}
+	
+	[Authenticate]
+	[HttpDelete("/api/oauth_tokens/{id}")]
+	[ProducesResults(HttpStatusCode.Created)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.Forbidden)]
+	public async Task RevokeOauthTokenPleroma(string id)
+	{
+		var token = await db.OauthTokens.FirstOrDefaultAsync(p => p.Id == id) ??
+		            throw GracefulException.Forbidden("You are not authorized to revoke this token");
+
+		db.Remove(token);
+		await db.SaveChangesAsync();
+
+		Response.StatusCode = 201;
 	}
 }
