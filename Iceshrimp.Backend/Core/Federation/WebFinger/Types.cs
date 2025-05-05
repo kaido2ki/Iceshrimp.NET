@@ -143,6 +143,7 @@ public class NodeInfoResponse
 
 		[J("publicTimelineVisibility")] public PleromaPublicTimelineVisibility? PublicTimelineVisibility { get; set; }
 		[J("uploadLimits")]             public PleromaUploadLimits?             UploadLimits             { get; set; }
+		[J("fieldsLimits")]             public PleromaFieldsLimits?             FieldsLimits             { get; set; }
 		[J("suggestions")]              public PleromaSuggestions?              Suggestions              { get; set; }
 		[J("federation")]               public PleromaFederation?               Federation               { get; set; }
 	}
@@ -160,6 +161,11 @@ public class NodeInfoResponse
 		[J("avatar")]     public long? Avatar     { get; set; }
 		[J("background")] public long? Background { get; set; }
 		[J("banner")]     public long? Banner     { get; set; }
+	}
+	
+	public class PleromaFieldsLimits
+	{
+		[J("maxFields")] public int? MaxFields    { get; set; }
 	}
 
 	public class PleromaSuggestions

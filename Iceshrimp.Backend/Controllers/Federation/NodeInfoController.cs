@@ -119,6 +119,10 @@ public class NodeInfoController(
 					Background = maxUploadSize,
 					Banner     = maxUploadSize
 				},
+				FieldsLimits = new NodeInfoResponse.PleromaFieldsLimits
+				{
+					MaxFields = 10
+				},
 				// @formatter:on
 				Suggestions = new NodeInfoResponse.PleromaSuggestions { Enabled = false },
 				Federation  = new NodeInfoResponse.PleromaFederation { Enabled  = true },
