@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -7,6 +8,7 @@ using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Enums = Iceshrimp.Backend.Core.Configuration.Enums;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
@@ -50,6 +52,24 @@ public class UserRenderer(
 		var avatarAlt = data?.AvatarAlt.GetValueOrDefault(user.Id);
 		var bannerAlt = data?.BannerAlt.GetValueOrDefault(user.Id);
 		
+		string? favicon;
+		string? softwareName;
+		string? softwareVersion;
+		if (user.IsRemoteUser)
+		{
+			var instInfo   = data?.Instance.Where(p => p.Host == user.Host).ToList();
+			// hope for the best here as we don't scrape for favicons like other software
+			favicon         = instInfo!.Select(p => p.FaviconUrl).FirstOrDefault() ?? $"https://{user.Host}/favicon.ico";
+			softwareName    = instInfo!.Select(p => p.SoftwareName).FirstOrDefault() ?? "";
+			softwareVersion = instInfo!.Select(p => p.SoftwareVersion).FirstOrDefault() ?? "";
+		}
+		else
+		{
+			favicon         = $"https://{config.Value.WebDomain}/_content/Iceshrimp.Assets.Branding/favicon.png";
+			softwareName    = "iceshrimp";
+			softwareVersion = config.Value.Version;
+		}
+		
 		var res = new AccountEntity
 		{
 			Id                 = user.Id,
@@ -77,9 +97,28 @@ public class UserRenderer(
 			IsDiscoverable     = user.IsExplorable,
 			Fields             = fields?.ToList() ?? [],
 			Emoji              = profileEmoji,
-			Akkoma			   = flags.IsPleroma.Value
-				? new AkkomaInfo { PermitFollowback = user.UserSettings?.AutoAcceptFollowed }
-				: null
+			Pleroma            = flags.IsPleroma.Value
+				? new PleromaUserExtensions
+				{
+					Favicon     = favicon!
+				} : null,
+			Akkoma             = flags.IsPleroma.Value
+				? new AkkomaUserExtensions
+				{
+					Instance = new AkkomaInstanceEntity
+					{
+						Name = user.Host ?? config.Value.AccountDomain,
+						NodeInfo = new AkkomaNodeInfoEntity
+						{
+							Software = new AkkomaNodeInfoSoftwareEntity
+							{
+								Name    = softwareName,
+								Version = softwareVersion
+							}
+						}
+					},
+					PermitFollowback = user.UserSettings?.AutoAcceptFollowed
+				} : null
 		};
 
 		if (localUser is null && security.Value.PublicPreview == Enums.PublicPreview.RestrictedNoMedia) //TODO
@@ -145,6 +184,15 @@ public class UserRenderer(
 		               .Include(p => p.Banner)
 		               .ToDictionaryAsync(p => p.Id, p => p.Banner?.Comment);
 	}
+	
+	private async Task<List<Instance>> GetInstanceAsync(IEnumerable<User> users)
+	{
+		var hosts = users.Select(p => p.Host).ToList();
+		
+		return await db.Instances
+		               .Where(p => hosts.Contains(p.Host))
+		               .ToListAsync();
+	}
 
 	public async Task<AccountEntity> RenderAsync(User user, User? localUser, List<EmojiEntity>? emoji = null)
 	{
@@ -152,7 +200,8 @@ public class UserRenderer(
 		{
 			Emoji     = emoji ?? await GetEmojiAsync([user]),
 			AvatarAlt = await GetAvatarAltAsync([user]),
-			BannerAlt = await GetBannerAltAsync([user])
+			BannerAlt = await GetBannerAltAsync([user]),
+			Instance  = await GetInstanceAsync([user])
 		};
 
 		return await RenderAsync(user, user.UserProfile, localUser, data);
@@ -167,7 +216,8 @@ public class UserRenderer(
 		{
 			Emoji     = await GetEmojiAsync(userList),
 			AvatarAlt = await GetAvatarAltAsync(userList),
-			BannerAlt = await GetBannerAltAsync(userList)
+			BannerAlt = await GetBannerAltAsync(userList),
+			Instance  = await GetInstanceAsync(userList) 
 		};
 
 		return await userList.Select(p => RenderAsync(p, p.UserProfile, localUser, data)).AwaitAllAsync();
@@ -178,5 +228,6 @@ public class UserRenderer(
 		public required List<EmojiEntity>           Emoji;
 		public required Dictionary<string, string?> AvatarAlt;
 		public required Dictionary<string, string?> BannerAlt;
+		public required List<Instance>              Instance;
 	}
 }
