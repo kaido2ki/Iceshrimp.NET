@@ -190,7 +190,9 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.Forbidden)]
 	public async Task RevokeOauthTokenPleroma(string id)
 	{
-		var token = await db.OauthTokens.FirstOrDefaultAsync(p => p.Id == id) ??
+		var token = await db.OauthTokens
+		                    .Where(p => p.User == HttpContext.GetUserOrFail())
+		                    .FirstOrDefaultAsync(p => p.Id == id) ??
 		            throw GracefulException.Forbidden("You are not authorized to revoke this token");
 
 		db.Remove(token);
