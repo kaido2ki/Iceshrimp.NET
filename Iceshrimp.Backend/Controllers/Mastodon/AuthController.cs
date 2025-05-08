@@ -165,23 +165,17 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 	public async Task<List<PleromaOauthTokenEntity>> GetOauthTokens()
 	{
 		var user = HttpContext.GetUserOrFail();
-		var oauthTokens = await db.OauthTokens
-		                          .Where(p => p.User == user)
-		                          .Include(oauthToken => oauthToken.App)
-		                          .ToListAsync();
-
-		List<PleromaOauthTokenEntity> result = [];
-		foreach (var token in oauthTokens)
-		{
-			result.Add(new PleromaOauthTokenEntity()
-			{
-				Id         = token.Id,
-				AppName    = token.App.Name,
-				ValidUntil = token.CreatedAt + TimeSpan.FromDays(365 * 100)
-			});
-		}
 		
-		return result;
+		return await db.OauthTokens
+		               .Where(p => p.User == user)
+		               .Include(oauthToken => oauthToken.App)
+		               .Select(p => new PleromaOauthTokenEntity
+		               {
+			               Id         = p.Id,
+			               AppName    = p.App.Name,
+			               ValidUntil = p.CreatedAt + TimeSpan.FromDays(365 * 100),
+		               })
+		               .ToListAsync();
 	}
 	
 	[Authenticate]
@@ -190,8 +184,10 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.Forbidden)]
 	public async Task RevokeOauthTokenPleroma(string id)
 	{
+		var user = HttpContext.GetUserOrFail();
+		
 		var token = await db.OauthTokens
-		                    .Where(p => p.User == HttpContext.GetUserOrFail())
+		                    .Where(p => p.User == user)
 		                    .FirstOrDefaultAsync(p => p.Id == id) ??
 		            throw GracefulException.Forbidden("You are not authorized to revoke this token");
 
