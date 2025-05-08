@@ -168,7 +168,6 @@ public class AuthController(DatabaseContext db, MetaService meta) : ControllerBa
 		
 		return await db.OauthTokens
 		               .Where(p => p.User == user)
-		               .Include(oauthToken => oauthToken.App)
 		               .Select(p => new PleromaOauthTokenEntity
 		               {
 			               Id         = p.Id,
