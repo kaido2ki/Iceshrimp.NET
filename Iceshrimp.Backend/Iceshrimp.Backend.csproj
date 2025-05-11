@@ -47,7 +47,7 @@
         <PackageReference Include="QRCoder" Version="1.6.0" />
         <PackageReference Include="Scalar.AspNetCore" Version="2.1.0" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.5" />
-        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.8-iceshrimp" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.9-iceshrimp" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
         <PackageReference Include="System.IO.Hashing" Version="9.0.2" />
         <PackageReference Include="System.Linq.Async" Version="6.0.1" />
