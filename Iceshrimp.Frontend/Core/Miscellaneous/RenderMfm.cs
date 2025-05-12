@@ -166,7 +166,7 @@ public static partial class MfmRenderer
 		var emoji = emojiList.Find(p => p.Name == node.Name);
 		if (emoji is null)
 		{
-			el.TextContent = node.Name;
+			el.TextContent = $":{node.Name}:";
 		}
 		else
 		{
