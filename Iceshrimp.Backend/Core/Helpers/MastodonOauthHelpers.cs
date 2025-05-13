@@ -93,7 +93,7 @@ public static class MastodonOauthHelpers
 	{
 		if (scopes.Distinct().Count() < scopes.Count) return false;
 
-		var validScopes = ScopeGroups.Concat(ReadScopes).Concat(WriteScopes).Concat(FollowScopes);
+		var validScopes = ScopeGroups.Concat(ReadScopes).Concat(WriteScopes).Concat(FollowScopes).Append("iceshrimp");
 		return !scopes.Except(validScopes).Any();
 	}
 

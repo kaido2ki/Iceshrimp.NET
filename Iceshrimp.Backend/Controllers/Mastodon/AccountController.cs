@@ -11,6 +11,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Helpers;
@@ -128,6 +129,36 @@ public class AccountController(
 
 		user = await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true);
+	}
+
+	[HttpPost("authorize_iceshrimp")]
+	[Authorize("iceshrimp")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<string> AuthorizeIceshrimpToken()
+	{
+		var user  = HttpContext.GetUserOrFail();
+		var token = HttpContext.GetOauthToken() ?? throw new Exception("Failed to get user from HttpContext");
+
+		var webSession = await db.OauthTokens
+		                         .Where(p => p.Id == token.Id)
+		                         .Select(p => p.WebSession)
+		                         .FirstAsync();
+
+		if (webSession != null) return webSession.Token;
+
+		var session = new Session
+		{
+			Id            = IdHelpers.GenerateSnowflakeId(),
+			UserId        = user.Id,
+			Active        = true,
+			CreatedAt     = DateTime.UtcNow,
+			Token         = CryptographyHelpers.GenerateRandomString(32),
+			MastodonToken = token
+		};
+		await db.AddAsync(session);
+		await db.SaveChangesAsync();
+
+		return session.Token;
 	}
 
 	[HttpDelete("/api/v1/profile/avatar")]
