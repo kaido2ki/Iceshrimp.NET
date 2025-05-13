@@ -2,6 +2,12 @@
     color: #9a92ff;
 }
 
+.iceshrimp_scope_warning {
+    margin-bottom: 1rem;
+    color: orangered;
+    font-weight: bold;
+}
+
 .margin-bottom-5px {
     margin-bottom: 5px;
 }

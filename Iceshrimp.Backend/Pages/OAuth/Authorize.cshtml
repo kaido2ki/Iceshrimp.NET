@@ -17,6 +17,13 @@
             }
         </ul>
 
+        @if (Model.Scopes.Contains("iceshrimp"))
+        {
+            <div class="iceshrimp_scope_warning">
+                This app can use the Iceshrimp API as well as the Mastodon API, giving it full access to your account.
+            </div>
+        }
+
         @if (Model.TwoFactorFormData is { } data)
         {
             <form method="post">
