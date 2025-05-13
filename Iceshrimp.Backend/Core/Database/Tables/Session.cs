@@ -40,8 +40,16 @@ public class Session : IIdentifiable
 	[InverseProperty(nameof(Tables.User.Sessions))]
 	public virtual User User { get; set; } = null!;
 
+	[Column("mastodonTokenId")]
+	[StringLength(32)]
+	public string? MastodonTokenId { get; set; }
+
+	[ForeignKey(nameof(MastodonTokenId))]
+	[InverseProperty(nameof(OauthToken.WebSession))]
+	public virtual OauthToken? MastodonToken { get; set; }
+
 	[Column("lastActiveDate")] public DateTime? LastActiveDate { get; set; }
-	
+
 	private class EntityTypeConfiguration : IEntityTypeConfiguration<Session>
 	{
 		public void Configure(EntityTypeBuilder<Session> entity)
@@ -53,6 +61,10 @@ public class Session : IIdentifiable
 
 			entity.HasOne(d => d.User)
 			      .WithMany(p => p.Sessions)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.MastodonToken)
+			      .WithOne(p => p.WebSession)
 			      .OnDelete(DeleteBehavior.Cascade);
 		}
 	}

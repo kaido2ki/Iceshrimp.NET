@@ -74,6 +74,9 @@ public class OauthToken
 	[Column("isPleroma")]              public bool IsPleroma              { get; set; }
 	[Column("supportsInlineMedia")]    public bool SupportsInlineMedia    { get; set; }
 
+	[InverseProperty(nameof(Session.MastodonToken))]
+	public virtual Session? WebSession { get; set; }
+
 	[Column("lastActiveDate")] public DateTime? LastActiveDate { get; set; }
 	
 	private class EntityTypeConfiguration : IEntityTypeConfiguration<OauthToken>

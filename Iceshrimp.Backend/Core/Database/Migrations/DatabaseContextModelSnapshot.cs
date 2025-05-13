@@ -3951,6 +3951,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("lastActiveDate");
 
+                    b.Property<string>("MastodonTokenId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("mastodonTokenId");
+
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -3965,6 +3970,9 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("userId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MastodonTokenId")
+                        .IsUnique();
 
                     b.HasIndex("Token");
 
@@ -5779,11 +5787,18 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Session", b =>
                 {
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.OauthToken", "MastodonToken")
+                        .WithOne("WebSession")
+                        .HasForeignKey("Iceshrimp.Backend.Core.Database.Tables.Session", "MastodonTokenId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "User")
                         .WithMany("Sessions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("MastodonToken");
 
                     b.Navigation("User");
                 });
@@ -6101,6 +6116,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.OauthToken", b =>
                 {
                     b.Navigation("PushSubscription");
+
+                    b.Navigation("WebSession");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Page", b =>
