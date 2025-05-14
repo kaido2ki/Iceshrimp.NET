@@ -125,8 +125,21 @@ public static class WebApplicationExtensions
 		}
 
 		app.Logger.LogInformation("Verifying database connection...");
+
 		if (!await db.Database.CanConnectAsync())
 		{
+			try
+			{
+				await db.Database.OpenConnectionAsync();
+				await db.Database.CloseConnectionAsync();
+			}
+			catch (Exception e)
+			{
+				app.Logger.LogCritical("Failed to connect to database. Please make sure your configuration is correct.");
+				app.Logger.LogError("Additional information: {e}", e);
+				Environment.Exit(1);
+			}
+
 			app.Logger.LogCritical("Failed to connect to database. Please make sure your configuration is correct.");
 			Environment.Exit(1);
 		}
