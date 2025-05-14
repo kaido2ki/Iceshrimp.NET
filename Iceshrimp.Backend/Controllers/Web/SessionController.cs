@@ -50,13 +50,17 @@ public class SessionController(DatabaseContext db) : ControllerBase
 	public async Task TerminateSession(string id)
 	{
 		var user = HttpContext.GetUserOrFail();
-		var session = await db.Sessions.FirstOrDefaultAsync(p => p.Id == id && p.User == user)
+		var session = await db.Sessions.Include(p => p.MastodonToken)
+		                      .FirstOrDefaultAsync(p => p.Id == id && p.User == user)
 		              ?? throw GracefulException.NotFound("Session not found");
 
 		if (session.Id == HttpContext.GetSessionOrFail().Id)
 			throw GracefulException.BadRequest("Refusing to terminate current session");
 
+		if (session.MastodonToken != null)
+			db.Remove(session.MastodonToken);
 		db.Remove(session);
+
 		await db.SaveChangesAsync();
 	}
 
