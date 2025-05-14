@@ -142,7 +142,7 @@ public class AccountController(
 		var webSession = await db.OauthTokens
 		                         .Where(p => p.Id == token.Id)
 		                         .Select(p => p.WebSession)
-		                         .FirstAsync();
+		                         .FirstOrDefaultAsync();
 
 		if (webSession != null) return webSession.Token;
 
