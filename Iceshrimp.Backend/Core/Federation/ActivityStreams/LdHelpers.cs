@@ -17,6 +17,7 @@ public static class LdHelpers
 	{
 		["https://purl.archive.org/socialweb/webfinger"] = GetPreloadedContext("wf.json"),
 		["https://www.w3.org/ns/activitystreams"]        = GetPreloadedContext("as.json"),
+		["https://purl.archive.org/miscellany"]          = GetPreloadedContext("miscellany.json"),
 		["https://w3id.org/security/v1"]                 = GetPreloadedContext("security.json"),
 		["https://w3id.org/identity/v1"]                 = GetPreloadedContext("identity.json"),
 		["http://joinmastodon.org/ns"]                   = GetPreloadedContext("toot.json"),
@@ -30,6 +31,7 @@ public static class LdHelpers
 	private static readonly JToken FederationContext = GetPreloadedDocument("iceshrimp.json");
 
 	// Nonstandard extensions to the AS context need to be loaded in to fix federation with certain AP implementations
+	// Superset of the ActivityPub Miscellaneous Terms context (miscellany.json)
 	private static readonly JToken ASExtensions = GetPreloadedDocument("as-extensions.json");
 
 	private static readonly JsonLdProcessorOptions Options = new()

@@ -14,12 +14,6 @@
     "sensitive": {
       "@id": "as:sensitive",
       "@type": "xsd:boolean"
-    },
-
-    "featured": {
-      "@id": "http://joinmastodon.org/ns#featured",
-      "@type": "@id"
-    },
-    "EmojiReact": "http://litepub.social/ns#EmojiReact"
+    }
   }
 }
