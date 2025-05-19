@@ -159,6 +159,11 @@ public class ValueObjectConverter : JsonConverter
 			return succeeded ? result : null;
 		}
 
+		if (obj?.Value is DateTime t && objectType == typeof(string))
+		{
+			return t.ToStringIso8601Like();
+		}
+
 		if (objectType == typeof(uint?))
 		{
 			var val = obj?.Value;
