@@ -4,7 +4,7 @@ namespace Iceshrimp.Backend.Core.Helpers;
 
 public static partial class EmojiHelpers
 {
-	/* Generated for Unicode 15.1 by https://iceshrimp.dev/iceshrimp/UnicodeEmojiRegex
+	/* Generated for Unicode 16.0 by https://iceshrimp.dev/iceshrimp/UnicodeEmojiRegex
 	 *
 	 * The regex used is FullyQualifiedEmojisSimplified, since neither AllEmojisSimplified nor PossiblyEmoji know about emoji/text
 	 * representation selectors.
