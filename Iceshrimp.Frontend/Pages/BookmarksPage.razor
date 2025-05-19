@@ -15,7 +15,6 @@
 @using Iceshrimp.Shared.Helpers
 @attribute [Authorize]
 @inject IStringLocalizer<Localization> Loc;
-@implements IDisposable
 
 <HeadTitle Text="@Loc["Bookmarks"]"/>
 
@@ -61,10 +60,5 @@
     private List<NoteResponse> ItemProviderById(List<string> arg)
     {
         return Store.GetIdsFromTimeline(Timeline, arg);
-    }
-
-    public void Dispose()
-    {
-        State.TimelinePage.Current = Timeline;
     }
 }
