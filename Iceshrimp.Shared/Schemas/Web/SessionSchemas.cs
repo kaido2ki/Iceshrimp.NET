@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Iceshrimp.Shared.Helpers;
 
 namespace Iceshrimp.Shared.Schemas.Web;
@@ -11,13 +12,16 @@ public class SessionSchemas
 		public required bool      Active     { get; set; }
 		public required DateTime  CreatedAt  { get; set; }
 		public required DateTime? LastActive { get; set; }
+
+		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public MastodonSessionResponse? LinkedSession { get; set; }
 	}
 
 	public class MastodonSessionRequest
 	{
-		public required string               AppName    { get; set; }
-		public required List<string>         Scopes     { get; set; }
-		public required MastodonSessionFlags Flags      { get; set; }
+		public required string               AppName { get; set; }
+		public required List<string>         Scopes  { get; set; }
+		public required MastodonSessionFlags Flags   { get; set; }
 	}
 
 	public class MastodonSessionResponse : IIdentifiable
@@ -29,6 +33,9 @@ public class SessionSchemas
 		public required string               App        { get; set; }
 		public required List<string>         Scopes     { get; set; }
 		public required MastodonSessionFlags Flags      { get; set; }
+
+		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public SessionResponse? LinkedSession { get; set; }
 	}
 
 	public class CreatedMastodonSessionResponse : MastodonSessionResponse

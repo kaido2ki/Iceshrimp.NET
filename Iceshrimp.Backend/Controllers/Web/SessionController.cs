@@ -29,18 +29,12 @@ public class SessionController(DatabaseContext db) : ControllerBase
 		var       currentId = HttpContext.GetSessionOrFail().Id;
 
 		return await db.Sessions
+		               .Include(p => p.MastodonToken!.App)
 		               .Where(p => p.User == HttpContext.GetUserOrFail())
 		               .OrderByDescending(p => p.LastActiveDate ?? p.CreatedAt)
 		               .Skip(page * pageSize)
 		               .Take(pageSize)
-		               .Select(p => new SessionResponse
-		               {
-			               Id         = p.Id,
-			               Current    = p.Id == currentId,
-			               Active     = p.Active,
-			               CreatedAt  = p.CreatedAt,
-			               LastActive = p.LastActiveDate
-		               })
+		               .Select(p => RenderWebSession(p, currentId, true))
 		               .ToListAsync();
 	}
 
@@ -68,30 +62,17 @@ public class SessionController(DatabaseContext db) : ControllerBase
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<MastodonSessionResponse>> GetMastodonSessions(int page = 0)
 	{
-		const int pageSize = 20;
+		const int pageSize  = 20;
+		var       currentId = HttpContext.GetSessionOrFail().Id;
 
 		return await db.OauthTokens
 		               .Include(p => p.App)
+		               .Include(p => p.WebSession)
 		               .Where(p => p.User == HttpContext.GetUserOrFail())
 		               .OrderByDescending(p => p.LastActiveDate ?? p.CreatedAt)
 		               .Skip(page * pageSize)
 		               .Take(pageSize)
-		               .Select(p => new MastodonSessionResponse
-		               {
-			               Id         = p.Id,
-			               Active     = p.Active,
-			               CreatedAt  = p.CreatedAt,
-			               LastActive = p.LastActiveDate,
-			               App        = p.App.Name,
-			               Scopes     = p.Scopes,
-			               Flags = new MastodonSessionFlags
-			               {
-				               SupportsHtmlFormatting = p.SupportsHtmlFormatting,
-				               AutoDetectQuotes       = p.AutoDetectQuotes,
-				               IsPleroma              = p.IsPleroma,
-				               SupportsInlineMedia    = p.SupportsInlineMedia
-			               }
-		               })
+		               .Select(p => RenderMastoSession(p, currentId, true))
 		               .ToListAsync();
 	}
 
@@ -180,4 +161,36 @@ public class SessionController(DatabaseContext db) : ControllerBase
 			Token      = token.Token
 		};
 	}
+
+	private static MastodonSessionResponse RenderMastoSession(OauthToken token, string currentId, bool recurse) => new()
+	{
+		Id         = token.Id,
+		Active     = token.Active,
+		CreatedAt  = token.CreatedAt,
+		LastActive = token.LastActiveDate,
+		App        = token.App.Name,
+		Scopes     = token.Scopes,
+		Flags = new MastodonSessionFlags
+		{
+			SupportsHtmlFormatting = token.SupportsHtmlFormatting,
+			AutoDetectQuotes       = token.AutoDetectQuotes,
+			IsPleroma              = token.IsPleroma,
+			SupportsInlineMedia    = token.SupportsInlineMedia
+		},
+		LinkedSession = recurse && token.WebSession != null
+			? RenderWebSession(token.WebSession, currentId, recurse: false)
+			: null
+	};
+
+	private static SessionResponse RenderWebSession(Session session, string currentId, bool recurse) => new()
+	{
+		Id         = session.Id,
+		Current    = session.Id == currentId,
+		Active     = session.Active,
+		CreatedAt  = session.CreatedAt,
+		LastActive = session.LastActiveDate,
+		LinkedSession = recurse && session.MastodonToken != null
+			? RenderMastoSession(session.MastodonToken, currentId, recurse: false)
+			: null
+	};
 }
