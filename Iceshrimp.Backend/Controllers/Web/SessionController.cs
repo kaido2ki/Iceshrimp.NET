@@ -111,6 +111,8 @@ public class SessionController(DatabaseContext db) : ControllerBase
 	[ProducesErrors(HttpStatusCode.BadRequest)]
 	public async Task<MastodonSessionResponse> CreateMastodonSession([FromBody] MastodonSessionRequest request)
 	{
+		if (HttpContext.GetSessionOrFail().MastodonTokenId != null)
+			throw GracefulException.Forbidden("Refusing to create a new mastodon session from a linked web session.");
 		if (!MastodonOauthHelpers.ValidateScopes(request.Scopes))
 			throw GracefulException.BadRequest("Invalid scopes parameter");
 
