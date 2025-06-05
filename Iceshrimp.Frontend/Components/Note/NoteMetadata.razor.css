@@ -44,7 +44,7 @@
     align-self: start;
     /*Margin on the left so non truncated names are aligned to the right*/
     margin-left: auto;
-    padding: 0 0.2rem;
+    padding: 0 0.3rem;
     background-color: var(--color);
     border-radius: 4px;
     font-size: 0.9em;
