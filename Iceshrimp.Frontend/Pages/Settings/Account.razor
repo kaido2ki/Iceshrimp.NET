@@ -80,12 +80,16 @@
         
         <h1>@Loc["Change password"]</h1>
         <EditForm OnSubmit="ChangePassword" Model="PasswordForm">
-            <InputText @bind-Value="PasswordForm.OldPassword" type="password" class="input" placeholder="@Loc["Old password"]" required/>
-            <InputText @bind-Value="PasswordForm.NewPassword" type="password" class="input" placeholder="@Loc["New password"]" minlength="8" required/>
+            <label for="old-password">@Loc["Old password"]</label>
+            <InputText @bind-Value="PasswordForm.OldPassword" type="password" class="input" id="old-password" required/>
+            <label for="new-password">@Loc["New password"]</label>
+            <InputText @bind-Value="PasswordForm.NewPassword" type="password" class="input" id="new-password" minlength="8" required/>
+            <label for="confirm-password">@Loc["Confirm password"]</label>
+            <InputText @bind-Value="ConfirmPassword" type="password" class="input" id="confirm-password" minlength="8" required/>
             <StateButton ExtraClasses="button" @ref="@PasswordButton" OnClick="ChangePassword">
                 <Initial>@Loc["Update password"]</Initial>
                 <Success>@Loc["Updated"]</Success>
-                <Loading>@Loc["Loading"]<LoadingSpinner />
+                <Loading>@Loc["Loading"]<LoadingSpinner/>
                 </Loading>
                 <Failed>@Loc["Error"]</Failed>
             </StateButton>
@@ -159,6 +163,7 @@
 @code {
     private          UserSettingsResponse           SettingsForm      { get; set; } = null!;
     private          ChangePasswordRequest          PasswordForm      { get; set; } = null!;
+    private          string                         ConfirmPassword   { get; set; } = "";
     private          State                          State             { get; set; } = State.Loading;
     private          StateButton                    SaveButton        { get; set; } = null!;
     private          StateButton                    PasswordButton    { get; set; } = null!;
@@ -204,7 +209,14 @@
 
     private async Task ChangePassword()
     {
-        if (PasswordButton.State == StateButton.StateEnum.Loading || string.IsNullOrWhiteSpace(PasswordForm.OldPassword) || PasswordForm.NewPassword.Length < 8) return;
+        if (PasswordButton.State == StateButton.StateEnum.Loading || string.IsNullOrWhiteSpace(PasswordForm.OldPassword) || PasswordForm.NewPassword.Length < 8 || ConfirmPassword.Length < 8) return;
+
+        if (!PasswordForm.NewPassword.Equals(ConfirmPassword, StringComparison.Ordinal))
+        {
+            await Global.NoticeDialog?.Display(Loc["Confirm password doesn't match new password"], NoticeDialog.NoticeType.Error)!;
+            PasswordButton.State = StateButton.StateEnum.Failed;
+            return;
+        }
 
         PasswordButton.State = StateButton.StateEnum.Loading;
 
@@ -217,6 +229,9 @@
 
             PasswordForm.OldPassword = "";
             PasswordForm.NewPassword = "";
+            ConfirmPassword          = "";
+
+            await Global.NoticeDialog?.Display(Loc["Password changed successfully"], NoticeDialog.NoticeType.Error)!;
         }
         catch (ApiException e)
         {
