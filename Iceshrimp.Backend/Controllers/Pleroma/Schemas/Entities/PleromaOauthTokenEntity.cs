@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices.JavaScript;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;

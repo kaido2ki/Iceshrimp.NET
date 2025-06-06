@@ -58,8 +58,7 @@ public class UserRenderer(
 		if (user.IsRemoteUser)
 		{
 			var instInfo   = data?.Instance.Where(p => p.Host == user.Host).ToList();
-			// hope for the best here as we don't scrape for favicons like other software
-			favicon         = instInfo!.Select(p => p.FaviconUrl).FirstOrDefault() ?? $"https://{user.Host}/favicon.ico";
+			favicon         = instInfo!.Select(p => p.FaviconUrl).FirstOrDefault() ?? "";
 			softwareName    = instInfo!.Select(p => p.SoftwareName).FirstOrDefault() ?? "";
 			softwareVersion = instInfo!.Select(p => p.SoftwareVersion).FirstOrDefault() ?? "";
 		}
@@ -100,7 +99,7 @@ public class UserRenderer(
 			Pleroma            = flags.IsPleroma.Value
 				? new PleromaUserExtensions
 				{
-					Favicon     = favicon!
+					Favicon     = favicon
 				} : null,
 			Akkoma             = flags.IsPleroma.Value
 				? new AkkomaUserExtensions
