@@ -89,8 +89,8 @@
         var ia = await SystemUser.GetInstanceActorAsync();
         if (Model.IconFile != null)
         {
-            var req  = new DriveFileCreationRequest { Filename = Model.IconFile.Name, IsSensitive = false, MimeType = Model.IconFile.ContentType };
-            var file = await Drive.StoreFileAsync(Model.IconFile.OpenReadStream(), ia, req);
+            var req  = new DriveFileCreationRequest { Filename = Model.IconFile.Name, IsSensitive = false, MimeType = "image/png" };
+            var file = await Drive.StoreFileAsync(Model.IconFile.OpenReadStream(), ia, req, favicon: true);
             await Meta.SetAsync(MetaEntity.IconFileId, file.Id);
         }
         if (Model.BannerFile != null)
