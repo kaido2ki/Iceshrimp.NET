@@ -147,7 +147,7 @@ public class InstanceController(
 	}
 
 	// This is only used to set the icon for the frontend
-	[HttpGet("/instance-icon")]
+	[HttpGet("/favicon.png")]
 	[ProducesResults(HttpStatusCode.Redirect)]
 	public async Task<RedirectResult> GetInstanceIcon()
 	{
