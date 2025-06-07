@@ -91,12 +91,22 @@
         {
             var req  = new DriveFileCreationRequest { Filename = Model.IconFile.Name, IsSensitive = false, MimeType = "image/png" };
             var file = await Drive.StoreFileAsync(Model.IconFile.OpenReadStream(), ia, req, favicon: true);
+
+            var oldId = await Meta.GetAsync(MetaEntity.IconFileId);
+            if (oldId != null)
+                await Drive.RemoveFileAsync(oldId);
+
             await Meta.SetAsync(MetaEntity.IconFileId, file.Id);
         }
         if (Model.BannerFile != null)
         {
             var req  = new DriveFileCreationRequest { Filename = Model.BannerFile.Name, IsSensitive = false, MimeType = Model.BannerFile.ContentType };
             var file = await Drive.StoreFileAsync(Model.BannerFile.OpenReadStream(), ia, req);
+
+            var oldId = await Meta.GetAsync(MetaEntity.BannerFileId);
+            if (oldId != null)
+                await Drive.RemoveFileAsync(oldId);
+
             await Meta.SetAsync(MetaEntity.BannerFileId, file.Id);
         }
 
