@@ -165,7 +165,8 @@ public class DriveService(
 	}
 
 	public async Task<DriveFile> StoreFileAsync(
-		Stream input, User user, DriveFileCreationRequest request, bool skipImageProcessing = false
+		Stream input, User user, DriveFileCreationRequest request, bool skipImageProcessing = false,
+		bool favicon = false
 	)
 	{
 		if (user.IsLocalUser && input.Length > storageConfig.Value.MaxUploadSizeBytes)
@@ -216,7 +217,7 @@ public class DriveService(
 		var digest = await DigestHelpers.Sha256DigestAsync(buf);
 		logger.LogDebug("Storing file {digest} for user {userId}", digest, user.Id);
 		file = await db.DriveFiles.FirstOrDefaultAsync(p => p.Sha256 == digest && (!p.IsLink || p.UserId == user.Id));
-		if (file != null)
+		if (file != null && !favicon)
 		{
 			if (file.UserId == user.Id && file.FolderId == request.FolderId)
 			{
@@ -289,7 +290,7 @@ public class DriveService(
 						skipImageProcessing = true;
 					}
 
-					var formats = GetFormats(user, request, skipImageProcessing);
+					var formats = GetFormats(user, request, skipImageProcessing, favicon);
 
 					var res = imageProcessor.ProcessImage(buf, ident, request, formats);
 					properties = res;
@@ -586,9 +587,19 @@ public class DriveService(
 	}
 
 	private IReadOnlyCollection<ImageVersion> GetFormats(
-		User user, DriveFileCreationRequest request, bool skipImageProcessing
+		User user, DriveFileCreationRequest request, bool skipImageProcessing, bool favicon = false
 	)
 	{
+		if (favicon)
+		{
+			var origFormat = new ImageFormat.Keep(Path.GetExtension(request.Filename).TrimStart('.'), request.MimeType);
+			return
+			[
+				new ImageVersion(KeyEnum.Original, origFormat),
+				new ImageVersion(KeyEnum.Public, new ImageFormat.Png(6, 128))
+			];
+		}
+
 		if (skipImageProcessing)
 		{
 			var origFormat = new ImageFormat.Keep(Path.GetExtension(request.Filename).TrimStart('.'), request.MimeType);
