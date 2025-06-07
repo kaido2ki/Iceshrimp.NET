@@ -87,7 +87,7 @@
         await Meta.SetAsync(MetaEntity.ThemeColor, Model.ThemeColor);
 
         var ia = await SystemUser.GetInstanceActorAsync();
-        if (Model.IconFile != null)
+        if (Model.IconFile != null && Model.IconFile.ContentType.StartsWith("image/"))
         {
             var req  = new DriveFileCreationRequest { Filename = Model.IconFile.Name, IsSensitive = false, MimeType = "image/png" };
             var file = await Drive.StoreFileAsync(Model.IconFile.OpenReadStream(), ia, req, favicon: true);
@@ -98,7 +98,7 @@
 
             await Meta.SetAsync(MetaEntity.IconFileId, file.Id);
         }
-        if (Model.BannerFile != null)
+        if (Model.BannerFile != null && Model.BannerFile.ContentType.StartsWith("image/"))
         {
             var req  = new DriveFileCreationRequest { Filename = Model.BannerFile.Name, IsSensitive = false, MimeType = Model.BannerFile.ContentType };
             var file = await Drive.StoreFileAsync(Model.BannerFile.OpenReadStream(), ia, req);
