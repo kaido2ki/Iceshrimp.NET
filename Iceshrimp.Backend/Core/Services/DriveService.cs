@@ -272,6 +272,11 @@ public class DriveService(
 				{
 					if (ident.IsAnimated)
 					{
+						if (favicon)
+						{
+							throw GracefulException.UnprocessableEntity($"Instance icon cannot be animated.");
+						}
+
 						logger.LogDebug("Image is animated, bypassing image processing...");
 						skipImageProcessing = true;
 					}
