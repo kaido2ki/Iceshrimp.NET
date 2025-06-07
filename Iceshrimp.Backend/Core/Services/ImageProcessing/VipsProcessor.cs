@@ -48,6 +48,7 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 			ImageFormat.Webp => true,
 			ImageFormat.Jxl  => true,
 			ImageFormat.Avif => true,
+			ImageFormat.Png  => true,
 			_                => throw new ArgumentOutOfRangeException(nameof(format), format, null)
 		};
 	}
@@ -59,6 +60,7 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 			ImageFormat.Webp opts => EncodeWebp(input, opts),
 			ImageFormat.Jxl opts  => EncodeJxl(input, opts),
 			ImageFormat.Avif opts => EncodeAvif(input, opts),
+			ImageFormat.Png opts  => EncodePng(input, opts),
 			_                     => throw new ArgumentOutOfRangeException(nameof(format))
 		};
 	}
@@ -116,6 +118,14 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 		var       stream = new MemoryStream();
 		image.JxlsaveStream(stream, q: opts.Quality, lossless: opts.Mode == ImageFormat.Jxl.Compression.Lossless,
 		                    effort: opts.Effort);
+		return stream;
+	}
+
+	private static MemoryStream EncodePng(byte[] buf, ImageFormat.Png opts)
+	{
+		using var image  = Thumbnail(buf, opts.TargetRes);
+		var       stream = new MemoryStream();
+		image.PngsaveStream(stream, opts.CompressionLevel);
 		return stream;
 	}
 

@@ -56,6 +56,7 @@ public class ImageSharpProcessor : ImageProcessorBase, IImageProcessor,
 			ImageFormat.Webp => true,
 			ImageFormat.Jxl  => false,
 			ImageFormat.Avif => false,
+			ImageFormat.Png  => true,
 			_                => throw new ArgumentOutOfRangeException(nameof(format), format, null)
 		};
 	}
@@ -65,6 +66,7 @@ public class ImageSharpProcessor : ImageProcessorBase, IImageProcessor,
 		return format switch
 		{
 			ImageFormat.Webp opts => EncodeWebp(input, ident, opts),
+			ImageFormat.Png opts  => EncodePng(input, ident, opts),
 			_                     => throw new ArgumentOutOfRangeException(nameof(format))
 		};
 	}
@@ -83,6 +85,19 @@ public class ImageSharpProcessor : ImageProcessorBase, IImageProcessor,
 
 		var stream = new MemoryStream();
 		image.SaveAsWebp(stream, thumbEncoder);
+		return stream;
+	}
+
+	private Stream EncodePng(byte[] data, IImageInfo ident, ImageFormat.Png opts)
+	{
+		using var image = GetImage<Rgba32>(data, ident, opts.TargetRes);
+		var thumbEncoder = new PngEncoder
+		{
+			CompressionLevel = (PngCompressionLevel)opts.CompressionLevel
+		};
+
+		var stream = new MemoryStream();
+		image.SaveAsPng(stream, thumbEncoder);
 		return stream;
 	}
 

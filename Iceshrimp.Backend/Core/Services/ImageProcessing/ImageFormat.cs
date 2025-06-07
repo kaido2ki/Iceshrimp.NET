@@ -63,6 +63,14 @@ public abstract record ImageFormat
 			Lossless
 		}
 	}
+
+	/// <summary>
+	/// For instance icon only, not selectable for regular image processing in the configuration 
+	/// </summary>
+	public record Png(
+		[Range(1, 9)] int CompressionLevel,
+		int TargetRes
+	) : ImageFormat("png", "image/png");
 }
 
 public enum ImageFormatEnum
