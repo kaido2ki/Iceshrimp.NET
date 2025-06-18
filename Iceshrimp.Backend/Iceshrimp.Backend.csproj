@@ -45,7 +45,7 @@
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
         <PackageReference Include="Otp.NET" Version="1.4.0" />
         <PackageReference Include="QRCoder" Version="1.6.0" />
-        <PackageReference Include="Scalar.AspNetCore" Version="2.1.0" />
+        <PackageReference Include="Scalar.AspNetCore" Version="2.4.19" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.5" />
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.9-iceshrimp" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
