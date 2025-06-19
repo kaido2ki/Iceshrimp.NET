@@ -111,7 +111,7 @@ public class DailyTrigger : ICronTrigger, IDisposable
 		CancellationToken = cancellationToken;
 		NextTrigger       = DateTime.UtcNow;
 
-		RunningTask = Task.Factory.StartNew(async () =>
+		RunningTask = Task.Run(async () =>
 		{
 			while (!CancellationToken.IsCancellationRequested)
 			{
@@ -119,7 +119,7 @@ public class DailyTrigger : ICronTrigger, IDisposable
 				await Task.Delay(nextTrigger, CancellationToken);
 				OnTrigger?.Invoke(this);
 			}
-		}, CancellationToken, TaskCreationOptions.DenyChildAttach | TaskCreationOptions.LongRunning, TaskScheduler.Default);
+		}, CancellationToken);
 	}
 
 	public TimeSpan UpdateNextTrigger()
@@ -163,7 +163,7 @@ public class IntervalTrigger : ICronTrigger, IDisposable
 		CancellationToken = cancellationToken;
 		NextTrigger       = DateTime.UtcNow + TriggerInterval;
 
-		RunningTask = Task.Factory.StartNew(async () =>
+		RunningTask = Task.Run(async () =>
 		{
 			while (!CancellationToken.IsCancellationRequested)
 			{
@@ -178,7 +178,7 @@ public class IntervalTrigger : ICronTrigger, IDisposable
 
 				OnTrigger?.Invoke(this);
 			}
-		}, CancellationToken, TaskCreationOptions.DenyChildAttach | TaskCreationOptions.LongRunning, TaskScheduler.Default);
+		}, CancellationToken);
 	}
 
 	public TimeSpan UpdateNextTrigger()
