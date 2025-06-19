@@ -66,8 +66,8 @@ public static class WebApplicationExtensions
 			       .AddDocument("federation", "Federation")
 			       .AddDocument("mastodon", "Mastodon")
 			       .WithOpenApiRoutePattern("/openapi/{documentName}.json")
-			       .WithModels(false)
-			       .WithPersistentAuthentication()
+			       .HideModels()
+			       .EnablePersistentAuthentication()
 			       .WithCustomCss("""
 			                      .open-api-client-button, .darklight-reference > .flex > .text-sm { display: none !important; }
 			                      .darklight-reference > .flex > button > div:nth-child(1) { height: 14px !important; }

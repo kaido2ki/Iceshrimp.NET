@@ -50,7 +50,7 @@ public class HttpSignatureTests
 		request.Headers.Date = DateTimeOffset.Now - TimeSpan.FromHours(13);
 
 		var task = request.VerifyAsync(MockObjects.UserKeypair.PublicKey);
-		var e    = await Assert.ThrowsExceptionAsync<GracefulException>(() => task);
+		var e    = await Assert.ThrowsAsync<GracefulException>(() => task);
 		e.StatusCode.Should().Be(HttpStatusCode.Forbidden);
 		e.Message.Should().Be("Request signature is too old");
 		e.Error.Should().Be("Forbidden");
@@ -186,7 +186,7 @@ public class HttpSignatureTests
 		parsed    = HttpSignature.Parse(sigHeader);
 
 		var task = HttpSignature.VerifySignatureAsync(keypair.PublicKey, signingString, parsed, dict, null);
-		var ex   = await Assert.ThrowsExceptionAsync<GracefulException>(() => task);
+		var ex   = await Assert.ThrowsAsync<GracefulException>(() => task);
 		ex.Message.Should().Be("Request signature is expired");
 	}
 
@@ -218,7 +218,7 @@ public class HttpSignatureTests
 		parsed    = HttpSignature.Parse(sigHeader);
 
 		var task = HttpSignature.VerifySignatureAsync(keypair.PublicKey, signingString, parsed, dict, null);
-		var ex   = await Assert.ThrowsExceptionAsync<GracefulException>(() => task);
+		var ex   = await Assert.ThrowsAsync<GracefulException>(() => task);
 		ex.Message.Should().Be("Request signature is too old");
 	}
 }

@@ -79,7 +79,7 @@ public class LdSignatureTests
 
 		data[$"{Constants.W3IdSecurityNs}#signature"]![0]![$"{Constants.W3IdSecurityNs}#signatureValue"]![0]!
 			["@value"] += "test";
-		var e = await Assert.ThrowsExceptionAsync<FormatException>(async () => await LdSignature.VerifyAsync(data, data,
+		var e = await Assert.ThrowsAsync<FormatException>(async () => await LdSignature.VerifyAsync(data, data,
 				                                                            _keypair.ExportRSAPublicKeyPem()));
 
 		e.Message.Should()

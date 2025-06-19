@@ -77,8 +77,8 @@ public class EventTests
 		autoResetEvent.Set();
 		await autoResetEvent.WaitAsync();
 		autoResetEvent.Signaled.Should().BeFalse();
-		await Assert.ThrowsExceptionAsync<TimeoutException>(() => autoResetEvent.WaitAsync()
-			                                                    .WaitAsync(TimeSpan.FromMilliseconds(45)));
+		await Assert.ThrowsAsync<TimeoutException>(() => autoResetEvent.WaitAsync()
+		                                                               .WaitAsync(TimeSpan.FromMilliseconds(45)));
 	}
 
 	[TestMethod]
