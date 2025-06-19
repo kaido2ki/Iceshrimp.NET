@@ -88,7 +88,7 @@ internal class HtmlParser(
 			case "BLOCKQUOTE":
 			{
 				return node.TextContent.Length > 0
-					? $"\n> {string.Join("\n> ", node.TextContent.Split("\n"))}"
+					? $"\n> {string.Join("\n> ", node.TextContent.Trim().Split("\n"))}"
 					: null;
 			}
 
