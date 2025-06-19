@@ -109,11 +109,6 @@
 @code {
     [Parameter] public required NotificationResponse NotificationResponse { get; set; }
 
-    private void OpenFollowRequests()
-    {
-        NavigationManager.NavigateTo("/follow-requests");
-    }
-
     private void OpenProfile()
     {
         var username                                          = $"@{NotificationResponse.User?.Username}";

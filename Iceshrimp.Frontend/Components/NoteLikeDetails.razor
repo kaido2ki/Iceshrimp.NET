@@ -45,7 +45,7 @@
     private                                     State              State      { get; set; }
     private                                     List<UserResponse> LikedBy    { get; set; } = [];
     private                                     PaginationData     Pd         { get; set; } = null!;
-    private                                     bool               EndReached { get; set; } = false;
+    private                                     bool               EndReached { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

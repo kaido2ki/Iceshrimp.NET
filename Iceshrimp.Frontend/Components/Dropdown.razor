@@ -36,7 +36,7 @@
     [Parameter] public EventCallback<TBind>    ValueChanged     { get; set; }
     private            DropdownElement<TBind>? CurrentSelection { get; set; }
     private            RenderFragment?         CurrentIcon      { get; set; }
-    private            bool                    Visible          { get; set; } = false;
+    private            bool                    Visible          { get; set; }
 
     private void UpdateSelected(DropdownElement<TBind> element)
     {

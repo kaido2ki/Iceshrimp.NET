@@ -3,7 +3,6 @@ using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Frontend.Core.Services.StateServicePatterns;
 using Iceshrimp.Frontend.Enums;
 using Iceshrimp.Shared.Helpers;
-using Ljbc1994.Blazor.IntersectionObserver;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Routing;
@@ -15,7 +14,6 @@ namespace Iceshrimp.Frontend.Components;
 public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifiable
 
 {
-	[Inject] private IIntersectionObserverService ObserverService { get; set; } = null!;
 	[Inject] private StateService State { get; set; } = null!;
 	[Inject] private NavigationManager Navigation { get; set; } = null!;
 	[Inject] private ILogger<NewVirtualScroller> Logger { get; set; } = null!;
@@ -39,11 +37,11 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 	private SortedDictionary<string, Child>? _stateItems;
 
 	private float _scrollY;
-	private bool  _setScroll    = false;
-	private bool  _shouldRender = false;
-	private bool  _initialized  = false;
-	private bool  _hideBefore   = true;
-	private bool  _hideAfter    = true;
+	private bool  _setScroll;
+	private bool  _shouldRender;
+	private bool  _initialized;
+	private bool  _hideBefore = true;
+	private bool  _hideAfter  = true;
 
 	private IDisposable? _locationChangeHandlerDisposable;
 

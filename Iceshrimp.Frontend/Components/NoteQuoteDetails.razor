@@ -5,7 +5,6 @@
 @using Iceshrimp.Frontend.Components.Note
 @inject ApiService                Api;
 @inject ILogger<NoteQuoteDetails> Logger;
-@inject NavigationManager         Nav;
 
 @if (State is State.Loaded)
 {
@@ -28,7 +27,7 @@
     private                                     State              State      { get; set; }
     private                                     List<NoteResponse> Quotes     { get; set; } = [];
     private                                     PaginationData     Pd         { get; set; } = null!;
-    private                                     bool               EndReached { get; set; } = false;
+    private                                     bool               EndReached { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

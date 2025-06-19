@@ -62,7 +62,6 @@
 
 @code {
     [Parameter] [EditorRequired] public required Exception                   Exception { get; set; }
-    private                                      IEnumerable<string>         _logs   = [];
     private                                      IJSInProcessObjectReference _module = null!;
     private                                      List<string>                _rawLog = null!;
 

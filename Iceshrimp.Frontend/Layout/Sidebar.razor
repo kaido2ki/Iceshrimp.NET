@@ -9,7 +9,7 @@
 @inject SessionService Session;
 
 <GlobalComponents></GlobalComponents>
-<div @ref="SidebarElementRef" class="sidebar @(_open ? "open" : "")" tabindex="0">
+<div class="sidebar @(_open ? "open" : "")" tabindex="0">
     <div class="header">
         @*ToDo: account dropdown*@
         <div @ref="_avatar" @onclick="OpenAccountDropdown" class="avatar" @onclick:stopPropagation="true" >
@@ -108,8 +108,7 @@
 
 @code {
     private Compose          _compose = null!;
-    private bool             _open    = false;
-    private ElementReference SidebarElementRef { get; set; }
+    private bool             _open;
     private AccountDropdown  _accountDropdown = null!;
     private ElementReference _avatar;
 

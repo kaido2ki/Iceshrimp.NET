@@ -1,11 +1,8 @@
 @* ReSharper disable once RedundantUsingDirective *@
 @using Iceshrimp.Frontend.Components.Note
-@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Core.Services.NoteStore
 @using Iceshrimp.Shared.Schemas.Web
-@inject NavigationManager NavigationManager
-@inject ApiService        Api
-@inject RelatedStore      Store
+@inject RelatedStore Store
 @implements IDisposable
 
 @if (_hidden == false)
@@ -69,8 +66,8 @@
     [Parameter] [EditorRequired] public required NoteResponse Note     { get; set; }
     [Parameter] [EditorRequired] public required int          Depth    { get; set; }
     [Parameter] [EditorRequired] public required int          MaxDepth { get; set; }
-    private                                      bool         _indented           = false;
-    private                                      bool         _hidden             = false;
+    private                                      bool         _indented;
+    private                                      bool         _hidden;
 
     protected override void OnInitialized()
     {

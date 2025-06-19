@@ -7,7 +7,7 @@
 @code {
     [Parameter] [EditorRequired] public required string?             Text       { get; set; }
     [Parameter]                  public          List<EmojiResponse> Emoji      { get; set; } = [];
-    [Parameter]                  public          bool                Simple     { get; set; } = false;
+    [Parameter]                  public          bool                Simple     { get; set; }
     [Parameter]                  public          bool                SpeakAsCat { get; set; }
     private                                      MarkupString        TextBody   { get; set; }
 
@@ -16,7 +16,7 @@
         if (Text != null)
         {
             var instance = await MetadataService.Instance.Value;
-            TextBody = await MfmRenderer.RenderStringAsync(Text, Emoji, instance.AccountDomain, Simple, SpeakAsCat);
+            TextBody = MfmRenderer.RenderString(Text, Emoji, instance.AccountDomain, Simple, SpeakAsCat);
         }
     }
 
@@ -25,7 +25,7 @@
         if (Text != null)
         {
             var instance = await MetadataService.Instance.Value;
-            TextBody = await MfmRenderer.RenderStringAsync(Text, Emoji, instance.AccountDomain, Simple, SpeakAsCat);
+            TextBody = MfmRenderer.RenderString(Text, Emoji, instance.AccountDomain, Simple, SpeakAsCat);
         }
     }
 }

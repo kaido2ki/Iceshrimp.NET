@@ -1,5 +1,4 @@
 using Iceshrimp.Frontend.Core.Miscellaneous;
-using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Frontend.Core.Services.NoteStore;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components;
@@ -10,9 +9,8 @@ public partial class NotificationList : IDisposable
 {
 	private          string?                    _minId;
 	private          State                      _state = State.Loading;
-	[Inject] private NotificationStore           NotificationStore { get; set; } = null!;
-	[Inject] private ApiService                 Api              { get; set; } = null!;
-	private          List<NotificationResponse> Notifications    { get; set; } = [];
+	[Inject] private NotificationStore          NotificationStore { get; set; } = null!;
+	private          List<NotificationResponse> Notifications     { get; set; } = [];
 
 	public void Dispose()
 	{

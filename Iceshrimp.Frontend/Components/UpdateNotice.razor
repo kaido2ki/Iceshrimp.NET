@@ -54,12 +54,6 @@
         StateHasChanged();
     }
 
-    private void CloseDialog()
-    {
-        var module = (IJSInProcessObjectReference)_module;
-        module.InvokeVoid("closeDialog", Dialog);
-    }
-
     private void OpenDialog()
     {
         var module = (IJSInProcessObjectReference)_module;

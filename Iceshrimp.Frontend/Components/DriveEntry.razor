@@ -126,8 +126,8 @@
 }
 
 @code {
-    [Parameter] public DriveFileResponse?   File         { get; set; } = null;
-    [Parameter] public DriveFolderResponse? Folder       { get; set; } = null;
+    [Parameter] public DriveFileResponse?   File         { get; set; }
+    [Parameter] public DriveFolderResponse? Folder       { get; set; }
     private            Menu                 FileMenu     { get; set; } = null!;
     private            Menu                 FolderMenu   { get; set; } = null!;
     private            ElementReference     FileButton   { get; set; }

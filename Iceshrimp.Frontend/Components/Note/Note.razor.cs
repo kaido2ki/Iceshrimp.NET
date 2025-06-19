@@ -12,7 +12,7 @@ public partial class Note
 	[Parameter]                  public          bool         Indented     { get; set; }
 	[Parameter] [EditorRequired] public required bool         OpenNote     { get; set; }
 	[Parameter]                  public          bool         RootNote     { get; set; }
-	private                                      bool         _overrideHide       = false;
+	private                                      bool         _overrideHide;
 	
 	
 	private void ShowNote()

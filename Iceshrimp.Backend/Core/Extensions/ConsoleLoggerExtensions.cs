@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Console;
 
@@ -248,6 +249,7 @@ file sealed class CustomFormatter() : ConsoleFormatter("custom"), ISupportExtern
 		}
 	}
 
+	[SuppressMessage("ReSharper", "RedundantSwitchExpressionArms", Justification = "Clarity")]
 	private static string GetLogLevelString(LogLevel logLevel)
 	{
 		return logLevel switch

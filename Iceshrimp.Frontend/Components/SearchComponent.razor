@@ -27,7 +27,7 @@
 
 @if (_resultType == ResultType.Notes)
 {
-    <div class="note-results" @ref="Scroller">
+    <div class="note-results">
         @if (NoteSearchInstance?.NoteResponses != null)
         {
             foreach (var note in NoteSearchInstance?.NoteResponses!)
@@ -70,7 +70,6 @@
     private NoteSearch?                 NoteSearchInstance { get; set; }
     private UserSearch?                 UserSearchInstance { get; set; }
     private IJSInProcessObjectReference Module             { get; set; } = null!;
-    private ElementReference            Scroller           { get; set; }
     private ResultType                  _resultType;
     private bool                        _setScroll;
     private float                       _scrollTop;
@@ -171,7 +170,6 @@
 
     private enum ResultType
     {
-        Default,
         Notes,
         Users,
         None
@@ -187,11 +185,10 @@
     private class UserSearch(string searchString, ApiService api, List<UserResponse> userResponses)
     {
         internal required string             MinId        = userResponses.Last().Id;
-        internal required string             MaxId        = userResponses.First().Id;
         internal required string             SearchString = searchString;
         internal required ApiService         Api          = api;
         public required   List<UserResponse> UserResponses { get; init; } = userResponses;
-        public            bool               SearchComplete = false;
+        public            bool               SearchComplete;
 
         public async Task FetchOlder()
         {
@@ -214,11 +211,10 @@
     private class NoteSearch(string searchString, ApiService api, List<NoteResponse> noteResponses)
     {
         internal required string             MinId        = noteResponses.Last().Id;
-        internal required string             MaxId        = noteResponses.First().Id;
         public required   string             SearchString = searchString;
         internal required ApiService         Api          = api;
         public required   List<NoteResponse> NoteResponses { get; init; } = noteResponses;
-        public            bool               SearchComplete = false;
+        public            bool               SearchComplete;
 
         public async Task FetchOlder()
         {

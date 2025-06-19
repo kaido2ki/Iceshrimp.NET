@@ -91,10 +91,10 @@
 
     private IJSObjectReference? Module { get; set; }
     private ElementReference    Body   { get; set; }
-    private bool                _showFull   = false;
+    private bool                _showFull;
     private bool                _cwToggle   = true;
-    private bool                _overHeight = false;
-    private bool                _flag       = false;
+    private bool                _overHeight;
+    private bool                _flag;
 
     protected override async Task OnInitializedAsync()
     {

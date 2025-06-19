@@ -12,14 +12,12 @@ namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
 public static partial class MfmRenderer
 {
-	public static async Task<MarkupString> RenderStringAsync(
+	public static MarkupString RenderString(
 		string text, List<EmojiResponse> emoji, string accountDomain, bool simple = false, bool speakAsCat = false
 	)
 	{
 		var res         = MfmParser.Parse(text, simple);
-		var context     = BrowsingContext.New();
-		var document    = await context.OpenNewAsync();
-		var renderedMfm = RenderMultipleNodes(res, document, emoji, accountDomain, simple, speakAsCat);
+		var renderedMfm = RenderMultipleNodes(res, emoji, accountDomain, simple, speakAsCat);
 		var html        = renderedMfm.ToHtml();
 		return new MarkupString(html);
 	}
@@ -30,7 +28,7 @@ public static partial class MfmRenderer
 	private static IElement CreateElement(string name)  => OwnerDocument.Value.CreateElement(name);
 
 	private static INode RenderMultipleNodes(
-		IEnumerable<IMfmNode> nodes, IDocument document, List<EmojiResponse> emoji, string accountDomain, bool simple,
+		IEnumerable<IMfmNode> nodes, List<EmojiResponse> emoji, string accountDomain, bool simple,
 		bool speakAsCat
 	)
 	{

@@ -3,7 +3,6 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using Microsoft.Extensions.Localization
 @inject StreamingService               StreamingService
-@inject GlobalComponentSvc             GlobalComponentSvc
 @inject IStringLocalizer<Localization> Loc
 
 <div class="connection-status @(_hubConnectionState == HubConnectionState.Connected ? "fadeout" : "")">

@@ -165,13 +165,13 @@ internal class NoteActions(
 		}
 	}
 
-	public async Task RenoteAsync(NoteBase note)
+	public async Task RenoteAsync(NoteBase note, NoteVisibility visibility)
 	{
 		note.Renotes++;
 		Broadcast(note);
 		try
 		{
-			await api.Notes.RenoteNoteAsync(note.Id, note.Visibility);
+			await api.Notes.RenoteNoteAsync(note.Id, visibility);
 		}
 		catch (ApiException)
 		{

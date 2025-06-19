@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -12,6 +13,8 @@ using TaskExtensions = Iceshrimp.Backend.Core.Extensions.TaskExtensions;
 
 namespace Iceshrimp.Backend.Core.Services;
 
+[SuppressMessage("ReSharper", "PossiblyMistakenUseOfCancellationToken",
+                 Justification = "Analyzer does not understand the multi stage cancellation algorithm")]
 public class QueueService(
 	IServiceScopeFactory scopeFactory,
 	ILogger<QueueService> logger,
@@ -185,6 +188,8 @@ public interface IPostgresJobQueue
 	public void RaiseJobDelayedEvent();
 }
 
+[SuppressMessage("ReSharper", "PossiblyMistakenUseOfCancellationToken",
+                 Justification = "Analyzer does not understand the multi stage cancellation algorithm")]
 public abstract class PostgresJobQueue<T>(
 	string name,
 	Func<Job, T, IServiceProvider, CancellationToken, Task> handler,
