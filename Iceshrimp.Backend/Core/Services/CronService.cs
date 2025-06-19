@@ -151,8 +151,6 @@ public class DailyTrigger : ICronTrigger, IDisposable
 		RunningTask = null!;
 		GC.SuppressFinalize(this);
 	}
-
-	~DailyTrigger() => Dispose();
 }
 
 public class IntervalTrigger : ICronTrigger, IDisposable
@@ -205,6 +203,4 @@ public class IntervalTrigger : ICronTrigger, IDisposable
 		RunningTask = null!;
 		GC.SuppressFinalize(this);
 	}
-
-	~IntervalTrigger() => Dispose();
 }
