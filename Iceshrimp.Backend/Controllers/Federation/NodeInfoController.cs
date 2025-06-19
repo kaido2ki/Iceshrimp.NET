@@ -49,7 +49,9 @@ public class NodeInfoController(
 		var (instanceName, instanceDescription, adminContact, themeColor) =
 			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription,
 			                        MetaEntity.AdminContactEmail, MetaEntity.ThemeColor);
-		
+
+		var bubbleTimelineEnabled = await db.BubbleInstances.AnyAsync();
+
 		return new NodeInfoResponse
 		{
 			Version = Request.Path.Value?.EndsWith("2.1") ?? false ? "2.1" : "2.0",
@@ -119,7 +121,9 @@ public class NodeInfoController(
 				},
 				// @formatter:on
 				Suggestions = new NodeInfoResponse.PleromaSuggestions { Enabled = false },
-				Federation  = new NodeInfoResponse.PleromaFederation { Enabled  = true }
+				Federation  = new NodeInfoResponse.PleromaFederation { Enabled  = true },
+				// We don't want to leak the list of bubble instances to unauthenticated clients
+				LocalBubbleInstances = bubbleTimelineEnabled ? ["redacted.invalid"] : []
 			},
 			OpenRegistrations = false
 		};

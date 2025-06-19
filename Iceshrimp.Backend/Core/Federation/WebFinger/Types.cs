@@ -136,7 +136,7 @@ public class NodeInfoResponse
 			"pleroma:bites"
 		];
 
-		[J("localBubbleInstances")] public string[] LocalBubbleInstances { get; set; } = [];
+		[J("localBubbleInstances")] public string[]? LocalBubbleInstances { get; set; }
 
 		// TODO: list of ap object ids i believe?
 		[J("staffAccounts")] public string[] StaffAccounts { get; set; } = [];
