@@ -117,6 +117,7 @@ public class NodeInfoResponse
 		[J("enableGithubIntegration")]    public bool?         EnableGithubIntegration    { get; set; }
 		[J("enableDiscordIntegration")]   public bool?         EnableDiscordIntegration   { get; set; }
 		[J("enableEmail")]                public bool?         EnableEmail                { get; set; }
+		[J("federatedTimelineAvailable")] public bool?         FederatedTimelineAvailable { get; set; }
 
 		[J("post_formats")] public string[] PostFormats => ["text/plain", "text/x.misskeymarkdown"];
 

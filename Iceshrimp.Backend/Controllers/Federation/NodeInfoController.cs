@@ -105,6 +105,7 @@ public class NodeInfoController(
 				EnableGithubIntegration    = false,
 				EnableDiscordIntegration   = false,
 				EnableEmail                = false,
+				FederatedTimelineAvailable = true,
 				PublicTimelineVisibility = new NodeInfoResponse.PleromaPublicTimelineVisibility
 				{
 					Bubble    = false,
