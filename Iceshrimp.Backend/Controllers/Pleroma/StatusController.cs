@@ -3,6 +3,7 @@ using System.Net.Mime;
 using System.Text.RegularExpressions;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
@@ -153,5 +154,38 @@ public class StatusController(
 			note.Reactions[res.name] = --value; // we do not want to call save changes after this point
 
 		return await GetNote(id);
+	}
+
+	[HttpGet("{id}/quotes")]
+	[Authenticate("read:statuses")]
+	[LinkPagination(20, 40)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<StatusEntity>> GetNoteQuotes(string id, MastodonPaginationQuery query)
+	{
+		var user = HttpContext.GetUser();
+		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
+		var note = await db.Notes.Where(p => p.Id == id)
+						   .EnsureVisibleFor(user)
+						   .FilterHidden(user, db, filterMutes: false)
+						   .FirstOrDefaultAsync() ??
+				   throw GracefulException.RecordNotFound();
+
+		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
+		var renotes = await db.Notes
+					.Where(p => p.Renote == note && p.IsQuote)
+					.IncludeCommonProperties()
+					.EnsureVisibleFor(user)
+					.FilterHidden(user, db)
+					.Paginate(query, ControllerContext)
+					.PrecomputeVisibilities(user)
+					.ToListAsync();
+
+		HttpContext.SetPaginationData(renotes);
+		return await noteRenderer.RenderManyAsync(renotes.EnforceRenoteReplyVisibility(), user);
 	}
 }

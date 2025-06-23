@@ -2394,6 +2394,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("name");
 
+                    b.Property<short>("QuotesCount")
+                        .HasColumnType("smallint")
+                        .HasColumnName("quotesCount");
+
                     b.Property<Dictionary<string, long>>("Reactions")
                         .IsRequired()
                         .ValueGeneratedOnAdd()

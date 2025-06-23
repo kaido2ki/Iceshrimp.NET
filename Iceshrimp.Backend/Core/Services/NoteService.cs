@@ -505,6 +505,12 @@ public class NoteService(
 			await db.Notes.Where(p => p.Id == note.Reply.Id)
 			        .ExecuteUpdateAsync(p => p.SetProperty(n => n.RepliesCount, n => n.RepliesCount + diff));
 		}
+
+		if (note.IsQuote && note.RenoteId != null)
+		{
+			await db.Notes.Where(p => p.Id == note.RenoteId)
+			        .ExecuteUpdateAsync(p => p.SetProperty(n => n.QuotesCount, n => n.QuotesCount + diff));
+		}
 	}
 
 	private static List<string> GetInlineMediaUrls(Span<IMfmNode> mfm)

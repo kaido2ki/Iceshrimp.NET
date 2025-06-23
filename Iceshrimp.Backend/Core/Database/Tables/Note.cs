@@ -107,6 +107,8 @@ public class Note : IIdentifiable
 
 	[Column("likeCount")] public int LikeCount { get; set; }
 
+	[Column("quotesCount")] public short QuotesCount { get; set; }
+
 	[Column("reactions", TypeName = "jsonb")]
 	public Dictionary<string, long> Reactions { get; set; } = null!;
 

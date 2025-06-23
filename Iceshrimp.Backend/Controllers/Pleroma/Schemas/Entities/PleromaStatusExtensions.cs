@@ -9,4 +9,5 @@ public class PleromaStatusExtensions
 	[J("conversation_id")] public required string               ConversationId { get; set; }
 	[J("local")]           public required bool                 LocalOnly      { get; set; }
 	[J("thread_muted")]    public required bool                 ThreadMuted    { get; set; }
+	[J("quotes_count")]    public required long                 QuotesCount    { get; set; }
 }

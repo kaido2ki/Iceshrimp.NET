@@ -181,7 +181,8 @@ public class NoteRenderer(
 				LocalOnly      = note.LocalOnly,
 				Reactions      = reactions,
 				ConversationId = note.ThreadId,
-				ThreadMuted    = muted
+				ThreadMuted    = muted,
+				QuotesCount    = note.QuotesCount
 			}
 			: null;
 
