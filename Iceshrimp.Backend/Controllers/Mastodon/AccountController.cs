@@ -107,11 +107,23 @@ public class AccountController(
 			{
 				Filename    = request.Avatar.FileName,
 				IsSensitive = false,
-				MimeType    = request.Avatar.ContentType
+				MimeType    = request.Avatar.ContentType,
+				Comment     = request.AvatarDescription?.Trim()
 			};
 			var avatar = await driveSvc.StoreFileAsync(request.Avatar.OpenReadStream(), user, rq);
 			user.Avatar         = avatar;
 			user.AvatarBlurhash = avatar.Blurhash;
+		}
+		else if (request.AvatarDescription != null)
+		{
+			var avatar = await db.DriveFiles
+			                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserAvatar != null);
+
+			if (avatar != null)
+			{
+				user.Avatar         = avatar;
+				user.Avatar.Comment = string.IsNullOrWhiteSpace(request.AvatarDescription) ? null : request.AvatarDescription.Trim();
+			}
 		}
 
 		if (request.Banner != null)
@@ -120,11 +132,23 @@ public class AccountController(
 			{
 				Filename    = request.Banner.FileName,
 				IsSensitive = false,
-				MimeType    = request.Banner.ContentType
+				MimeType    = request.Banner.ContentType,
+				Comment     = request.BannerDescription?.Trim()
 			};
 			var banner = await driveSvc.StoreFileAsync(request.Banner.OpenReadStream(), user, rq);
 			user.Banner         = banner;
 			user.BannerBlurhash = banner.Blurhash;
+		}
+		else if (request.BannerDescription != null)
+		{
+			var banner = await db.DriveFiles
+			                     .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserBanner != null);
+
+			if (banner != null)
+			{
+				user.Banner         = banner;
+				user.Banner.Comment = string.IsNullOrWhiteSpace(request.BannerDescription) ? null : request.BannerDescription.Trim();
+			}
 		}
 
 		user = await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);

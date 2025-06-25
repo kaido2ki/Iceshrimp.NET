@@ -40,7 +40,7 @@ public abstract class AccountSchemas
 		[J("fields_attributes")]
 		[B(Name = "fields_attributes")]
 		public List<AccountUpdateField>? Fields { get; set; }
-		
+
 		[J("permit_followback")]
 		[B(Name = "permit_followback")]
 		public bool? PermitFollowback { get; set; }
@@ -49,6 +49,9 @@ public abstract class AccountSchemas
 
 		[B(Name = "avatar")] public IFormFile? Avatar { get; set; }
 		[B(Name = "header")] public IFormFile? Banner { get; set; }
+
+		[J("avatar_description")] [B(Name = "avatar_description")] public string? AvatarDescription { get; set; }
+		[J("header_description")] [B(Name = "header_description")] public string? BannerDescription { get; set; }
 	}
 
 	public class AccountUpdateField
