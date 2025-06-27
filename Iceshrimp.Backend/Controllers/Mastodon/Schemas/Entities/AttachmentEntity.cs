@@ -15,6 +15,7 @@ public class AttachmentEntity
 	[J("meta")]        public          AttachmentMetadata? Metadata    { get; set; }
 	[J("description")] public          string?             Description { get; set; }
 	[J("blurhash")]    public          string?             Blurhash    { get; set; }
+	[J("pleroma")]     public          PleromaAttachment?  Pleroma     { get; set; }
 
 	[J("type")]
 	public string TypeString => Type switch
@@ -24,6 +25,7 @@ public class AttachmentEntity
 		AttachmentType.Gif     => "image",
 		AttachmentType.Video   => "video",
 		AttachmentType.Audio   => "audio",
+		AttachmentType.Flash   => "flash",
 		_                      => throw new ArgumentOutOfRangeException()
 	};
 
@@ -33,6 +35,7 @@ public class AttachmentEntity
 		if (mime.StartsWith("image/")) return AttachmentType.Image;
 		if (mime.StartsWith("video/")) return AttachmentType.Video;
 		if (mime.StartsWith("audio/")) return AttachmentType.Audio;
+		if (mime.Equals("application/x-shockwave-flash")) return AttachmentType.Flash;
 
 		return AttachmentType.Unknown;
 	}
@@ -44,7 +47,8 @@ public enum AttachmentType
 	Image,
 	Gif,
 	Video,
-	Audio
+	Audio,
+	Flash
 }
 
 public class AttachmentMetadata(int width, int height)
@@ -58,4 +62,9 @@ public class OriginalAttachmentMetadata(int width, int height)
 	[J("height")] public int    Height => height;
 	[J("size")]   public string Size   => $"{width}x{height}";
 	[J("aspect")] public float  Aspect => (float)width / height;
+}
+
+public class PleromaAttachment(string? mime)
+{
+	[J("mime_type")] public string? MimeType => mime;
 }

@@ -64,6 +64,7 @@ public static class Constants
 		"audio/aac",
 		"audio/x-flac",
 		"audio/flac",
-		"audio/vnd.wave"
+		"audio/vnd.wave",
+		"application/x-shockwave-flash"
 	];
 }

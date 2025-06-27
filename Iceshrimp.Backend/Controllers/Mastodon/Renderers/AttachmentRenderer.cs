@@ -5,7 +5,7 @@ using Iceshrimp.Backend.Core.Services;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 
-public class AttachmentRenderer(MediaProxyService mediaProxy) : ISingletonService
+public class AttachmentRenderer(MediaProxyService mediaProxy, FlagService flags) : ISingletonService
 {
 	public AttachmentEntity Render(DriveFile file, bool proxy = true) => new()
 	{
@@ -20,6 +20,7 @@ public class AttachmentRenderer(MediaProxyService mediaProxy) : ISingletonServic
 		//
 		Metadata = file.Properties is { Height: { } height, Width: { } width }
 			? new AttachmentMetadata(width, height)
-			: null
+			: null,
+		Pleroma     = flags.IsPleroma.Value ? new PleromaAttachment(file.Type) : null
 	};
 }
