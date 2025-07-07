@@ -14,6 +14,8 @@ public class ReportService(
 {
 	public async Task ForwardReportAsync(Report report, string? comment)
 	{
+		if (report.Forwarded)
+			return;
 		if (report.TargetUser.IsLocalUser)
 			throw new Exception("Refusing to forward report to local instance");
 
@@ -25,6 +27,8 @@ public class ReportService(
 		            ?? throw new Exception("Target user does not have inbox");
 
 		await deliverSvc.DeliverToAsync(activity, actor, inbox);
+		report.Forwarded = true;
+		await db.SaveChangesAsync();
 	}
 
 	public async Task<Report> CreateReportAsync(User reporter, User target, IEnumerable<Note> notes, string comment)
