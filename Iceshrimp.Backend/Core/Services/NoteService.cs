@@ -60,6 +60,7 @@ public class NoteService(
 		public required Note.NoteVisibility             Visibility;
 		public          string?                         Text;
 		public          IMfmNode[]?                     ParsedText;
+		public          IMfmNode[]?                     ParsedCw;
 		public          string?                         Cw;
 		public          Note?                           Reply;
 		public          Note?                           Renote;
@@ -81,6 +82,7 @@ public class NoteService(
 		public required Note                            Note;
 		public          string?                         Text;
 		public          IMfmNode[]?                     ParsedText;
+		public          IMfmNode[]?                     ParsedCw;
 		public          string?                         Cw;
 		public          IReadOnlyCollection<DriveFile>? Attachments;
 		public          Poll?                           Poll;
@@ -131,6 +133,7 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Polls must have at least two options");
 
 		data.ParsedText = data.Text != null ? MfmParser.Parse(data.Text.ReplaceLineEndings("\n")) : null;
+		data.ParsedCw = data.Cw != null ? MfmParser.Parse(data.Cw.ReplaceLineEndings("\n")) : null;
 		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PreLogic);
 
 		if (!data.LocalOnly && (data.Renote is { LocalOnly: true } || data.Reply is { LocalOnly: true }))
@@ -208,6 +211,15 @@ public class NoteService(
 		if (data.Emoji == null && data.User.IsLocalUser && data.ParsedText != null)
 		{
 			data.Emoji = (await emojiSvc.ResolveEmojiAsync(data.ParsedText)).Select(p => p.Id).ToList();
+		}
+
+		if (data.ParsedCw != null)
+		{
+			var cwEmoji = (await emojiSvc.ResolveEmojiAsync(data.ParsedCw)).Select(p => p.Id).ToList();
+			if (data.Emoji != null)
+				data.Emoji.AddRange(cwEmoji);
+			else
+				data.Emoji = cwEmoji;
 		}
 
 		List<string> visibleUserIds = [];
@@ -558,6 +570,7 @@ public class NoteService(
 		};
 
 		data.ParsedText = data.Text != null ? MfmParser.Parse(data.Text.ReplaceLineEndings("\n")) : null;
+		data.ParsedCw = data.Cw != null ? MfmParser.Parse(data.Cw.ReplaceLineEndings("\n")) : null;
 		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PreLogic);
 
 		var previousMentionedLocalUserIds = await db.Users.Where(p => note.Mentions.Contains(p.Id) && p.IsLocalUser)
@@ -607,6 +620,15 @@ public class NoteService(
 			note.Emojis = data.Emoji;
 		else if (data.Emoji == null && note.Emojis.Count != 0)
 			note.Emojis = [];
+		
+		if (data.ParsedCw != null)
+		{
+			var cwEmoji = (await emojiSvc.ResolveEmojiAsync(data.ParsedCw)).Select(p => p.Id).ToList();
+			if (data.Emoji != null)
+				data.Emoji.AddRange(cwEmoji);
+			else
+				data.Emoji = cwEmoji;
+		}
 
 		if (data.Text is not null)
 		{
