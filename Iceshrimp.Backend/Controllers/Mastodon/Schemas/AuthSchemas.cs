@@ -31,9 +31,9 @@ public abstract class AuthSchemas
 		{
 			get => _scopes;
 			set => _scopes = value.Count == 1
-				? value[0].Contains(' ')
-					? value[0].Split(' ').ToList()
-					: value[0].Split(',').ToList()
+				? value[0].Trim().Contains(' ')
+					? value[0].Trim().Split(' ').ToList()
+					: value[0].Trim().Split(',').ToList()
 				: value;
 		}
 
@@ -79,9 +79,9 @@ public abstract class AuthSchemas
 		{
 			get => Scopes ?? [];
 			set => Scopes = value.Count == 1
-				? value[0].Contains(' ')
-					? value[0].Split(' ').ToList()
-					: value[0].Split(',').ToList()
+				? value[0].Trim().Contains(' ')
+					? value[0].Trim().Split(' ').ToList()
+					: value[0].Trim().Split(',').ToList()
 				: value;
 		}
 
