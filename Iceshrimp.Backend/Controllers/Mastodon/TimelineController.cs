@@ -85,6 +85,25 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 	}
 
 	[Authorize("read:statuses")]
+	[HttpGet("direct")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<StatusEntity>> GetDirectTimeline(
+		MastodonPaginationQuery query
+	)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		return await db.Notes
+		               .IncludeCommonProperties()
+		               .HasVisibility(Note.NoteVisibility.Specified)
+		               .FilterHidden(user, db)
+		               .FilterMutedThreads(user, db)
+		               .Paginate(query, ControllerContext)
+		               .PrecomputeVisibilities(user)
+		               .RenderAllForMastodonAsync(noteRenderer, user);
+	}
+
+	[Authorize("read:statuses")]
 	[HttpGet("tag/{hashtag}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IEnumerable<StatusEntity>> GetHashtagTimeline(
