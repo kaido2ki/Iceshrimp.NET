@@ -3,6 +3,7 @@ on:
   push:
     branches-ignore:
       - 'dev'
+enable-email-notifications: true
 jobs:
   test-build:
     runs-on: docker
