@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Iceshrimp.Backend.Core.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
 
@@ -7,7 +8,10 @@ namespace Iceshrimp.Backend.Core.Middleware;
 
 public class BlazorSsrHandoffMiddleware(RequestDelegate next) : IConditionalMiddleware
 {
-	private static readonly ConcurrentDictionary<Endpoint, bool> Cache = [];
+	private static readonly   ConcurrentDictionary<Endpoint, bool> Cache = [];
+
+	[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_JavaScriptInitializers")]
+	private static extern void SetJsInitializers(RazorComponentsServiceOptions options, string? value);
 
 	public async Task InvokeAsync(HttpContext context)
 	{
@@ -30,11 +34,7 @@ public class BlazorSsrHandoffMiddleware(RequestDelegate next) : IConditionalMidd
 
 	public static void DisableBlazorJsInitializers(RazorComponentsServiceOptions options)
 	{
-		var property =
-			options.GetType().GetProperty("JavaScriptInitializers", BindingFlags.Instance | BindingFlags.NonPublic) ??
-			throw new Exception("Failed to disable Blazor JS initializers");
-
-		property.SetValue(options, null);
+		SetJsInitializers(options, null);
 	}
 }
 
