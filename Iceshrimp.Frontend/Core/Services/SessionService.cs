@@ -165,7 +165,7 @@ internal class SessionService
 		ApiService.SetBearerToken(user.Token);
 		Current = user;
 		LocalStorage.SetItem("last_user", user.Id);
-		var sessionsString = Users.Aggregate("", (current, el) => current + $"{el.Value.Token},").TrimEnd(',');
+		var sessionsString = Users.Aggregate("", (current, el) => current + $"{el.Value.Token}|").TrimEnd('|');
 		((IJSInProcessRuntime)Js).InvokeVoid("eval",
 											 $"document.cookie = \"sessions={sessionsString}; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT; SameSite=Lax\"");
 		if (user.IsAdmin)
