@@ -9,7 +9,7 @@ internal class InMemoryLogService(IOptions<InMemoryLoggerConfiguration> configur
 
 	public void Add(string logline)
 	{
-		_buffer.Add(logline);
+		_buffer.Add(logline + '\n');
 	}
 
 	public List<string> GetLogs()
