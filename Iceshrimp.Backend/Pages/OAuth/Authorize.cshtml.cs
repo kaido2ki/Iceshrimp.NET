@@ -46,7 +46,7 @@ public class AuthorizeModel(DatabaseContext db) : PageModel
 			throw GracefulException.BadRequest("Cannot request redirect_uri not sent during app registration");
 		if (Request.Cookies.TryGetValue("sessions", out var sessions))
 		{
-			var tokens = sessions.Split(',');
+			var tokens = sessions.Split('|');
 			AuthenticatedUsers = await db.Sessions
 			                             .Where(p => tokens.Contains(p.Token) && p.Active)
 			                             .Select(p => p.User)
