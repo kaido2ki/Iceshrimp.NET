@@ -99,7 +99,7 @@
         {
             Folder = await Api.Drive.GetFolderAsync(Id);
         }
-        catch (ApiException e)
+        catch (Exception e)
         {
             Logger.LogWarning($"Failed to load folder '{Id ?? "root"}' due to API Exception: {e.Message}");
             State = State.Error;

@@ -64,7 +64,7 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 
 			return res;
 		}
-		catch (ApiException e)
+		catch (Exception e)
 		{
 			_logger.LogError(e, "Failed to fetch notifications");
 			return null;

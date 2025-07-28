@@ -123,7 +123,7 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 
 			return res;
 		}
-		catch (ApiException e)
+		catch (Exception e)
 		{
 			_logger.LogError(e, "Failed to fetch timeline");
 			return null;
