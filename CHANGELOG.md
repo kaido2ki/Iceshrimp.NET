@@ -1,3 +1,14 @@
+## v2025.1-beta5.patch3.security2
+This is a hotfix release. It's identical to v2025.1-beta5.patch2.security2, except for the bug fixes listed below. Upgrading is strongly recommended for all server operators.
+
+### Blazor Frontend
+- Multiple authenticated sessions no longer cause the frontend to break when running .NET 9.0.7 / SDK 9.0.302 or higher
+- The in-memory logger now correctly separates log messages with newlines
+- Network-related exceptions no longer cause frontend crashes
+
+### Attribution
+This release was made possible by project contributors: Lilian
+
 ## v2025.1-beta5.patch2.security2
 This is a security hotfix release. It's identical to v2025.1-beta5.patch2.security1, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
 
