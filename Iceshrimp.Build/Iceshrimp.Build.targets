@@ -38,4 +38,10 @@
         <RewriteStaticAssetManifest Manifest="$(PublishDir)\Iceshrimp.Backend.staticwebassets.endpoints.json" />
     </Target>
 
+    <!-- Disables static asset compression for the service worker. -->
+    <!-- This is needed because the UpdateServiceWorkerFileWithVersion task runs after the compression stage. -->
+    <PropertyGroup>
+        <CompressionExcludePatterns>$(CompressionExcludePatterns);**/service-worker.js</CompressionExcludePatterns>
+    </PropertyGroup>
+
 </Project>
