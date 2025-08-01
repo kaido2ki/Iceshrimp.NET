@@ -281,8 +281,7 @@ public static class WebApplicationExtensions
 				if (args[0] is "--create-admin-user")
 				{
 					await db.Users
-					        .Where(p => p.Username == username)
-					        .Where(p => p.Host == null)
+					        .Where(p => p.Username == username && p.Host == null)
 					        .ExecuteUpdateAsync(p => p.SetProperty(i => i.IsAdmin, true));
 
 					app.Logger.LogInformation("Successfully created admin user.");
@@ -320,9 +319,7 @@ public static class WebApplicationExtensions
 
 			if (cmd is "--grant-admin")
 			{
-				var user = await db.Users
-				                   .Where(p => p.Host == null)
-				                   .FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant());
+				var user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant() && p.Host == null);
 				if (user == null)
 				{
 					app.Logger.LogError("User {username} not found.", username);
@@ -339,9 +336,7 @@ public static class WebApplicationExtensions
 
 			if (cmd is "--revoke-admin")
 			{
-				var user = await db.Users
-				                   .Where(p => p.Host == null)
-				                   .FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant());
+				var user = await db.Users.FirstOrDefaultAsync(p => p.UsernameLower == username.ToLowerInvariant() && p.Host == null);
 				if (user == null)
 				{
 					app.Logger.LogError("User {username} not found.", username);
