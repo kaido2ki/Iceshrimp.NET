@@ -25,7 +25,6 @@ public class AttachmentEntity
 		AttachmentType.Gif     => "image",
 		AttachmentType.Video   => "video",
 		AttachmentType.Audio   => "audio",
-		AttachmentType.Flash   => "flash",
 		_                      => throw new ArgumentOutOfRangeException()
 	};
 
@@ -35,7 +34,6 @@ public class AttachmentEntity
 		if (mime.StartsWith("image/")) return AttachmentType.Image;
 		if (mime.StartsWith("video/")) return AttachmentType.Video;
 		if (mime.StartsWith("audio/")) return AttachmentType.Audio;
-		if (mime.Equals("application/x-shockwave-flash")) return AttachmentType.Flash;
 
 		return AttachmentType.Unknown;
 	}
@@ -47,8 +45,7 @@ public enum AttachmentType
 	Image,
 	Gif,
 	Video,
-	Audio,
-	Flash
+	Audio
 }
 
 public class AttachmentMetadata(int width, int height)
