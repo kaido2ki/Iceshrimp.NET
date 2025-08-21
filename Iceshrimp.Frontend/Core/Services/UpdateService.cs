@@ -84,6 +84,13 @@ internal class UpdateService
 		_ = ServiceWorkerCheckWaitingAsync();
 	}
 
+	public async Task ServiceWorkerUnregisterAllAsync()
+	{
+		var module = await _moduleTask.Value;
+		var res = await module.InvokeAsync<bool>("UnregisterAll");
+		if (!res) _logger.LogError("Failed to unregister all service workers");
+	}
+
 	public async Task ServiceWorkerUpdateAsync()
 	{
 		var module = await _moduleTask.Value;

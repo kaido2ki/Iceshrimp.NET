@@ -12,6 +12,7 @@
 @inject IJSRuntime                     Js;
 @inject ISyncLocalStorageService       LocalStorage;
 @inject SessionService                 Session;
+@inject UpdateService UpdateService;
 
 <div class="error-ui">
     <h3>@Loc["Unhandled Exception has occured"]</h3>
@@ -56,7 +57,7 @@
     </div>
     <button class="button" @onclick="Reload"><Icon Name="Icons.ArrowsClockwise"/>@Loc["Reload Application"]</button>
     <button class="button" @onclick="DownloadLogs"><Icon Name="Icons.DownloadSimple"/>@Loc["Download Logs"]</button>
-    <button class="button" @onclick="ClearStorage"><Icon Name="Icons.Warning"/>@Loc["Reset local data"]</button>
+    <button class="button" @onclick="ClearData"><Icon Name="Icons.Warning"/>@Loc["Reset local data"]</button>
 
 </div>
 
@@ -82,10 +83,11 @@
         _module.InvokeVoid("DownloadFile", "log.txt", "text/plain", logBytes);
     }
 
-    private void ClearStorage()
+    private async Task ClearData()
     {
         Session.EndSession();
         LocalStorage.Clear();
+        await UpdateService.ServiceWorkerUnregisterAllAsync();
         Navigation.NavigateTo("/", true);
     }
 }

@@ -38,3 +38,12 @@ export async function ServiceWorkerSkipWaiting(){
         return false;
     }
 }
+
+export async function UnregisterAll(){
+    let regs = await navigator.serviceWorker.getRegistrations();
+    for (let i of regs) {
+        await i.unregister();
+    }
+    let newRegs = await navigator.serviceWorker.getRegistrations();
+    return newRegs.length <= 0;
+}
