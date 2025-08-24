@@ -139,7 +139,7 @@
         <div class="section">
             <h3>@Loc["Other"]</h3>
             <div>
-                <input type="checkbox" id="is-bot" @bind="@UserProfile.IsBot">
+                <input type="checkbox" id="is-bot" @bind="@UserProfile.IsBot" @bind:after="AutomatedAccountToggle">
                 <label for="is-bot">@Loc["Mark as an automated (bot) account"]</label>
             </div>
             <div>
@@ -329,4 +329,14 @@
         UserProfile.Description = text.Insert(pos, emojiString);
         StateHasChanged();
     }
+
+    private async Task AutomatedAccountToggle()
+    {
+        if (UserProfile.IsBot)
+        {
+            await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, AutomatedAccountCallback), "Marking your account as automated is an accessibility feature. Enabling this for accounts that are not automated may break your ability to interact with automated accounts or hide your notes for some users.", Icons.Warning)!;
+        }
+    }
+
+    private void AutomatedAccountCallback(bool confirmed) => UserProfile.IsBot = confirmed;
 }
