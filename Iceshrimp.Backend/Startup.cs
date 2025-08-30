@@ -6,6 +6,10 @@ using Iceshrimp.Backend.SignalR;
 using Iceshrimp.Backend.SignalR.Authentication;
 using Microsoft.AspNetCore.HttpOverrides;
 
+// Remove below line when the known proxy / known networks configuration has been implemented
+// See https://github.com/aspnet/Announcements/issues/517 for more information
+AppContext.SetSwitch("Microsoft.AspNetCore.HttpOverrides.IgnoreUnknownProxiesWithoutFor", true);
+
 var options = StartupHelpers.ParseCliArguments(args);
 var builder = WebApplication.CreateBuilder(options);
 
