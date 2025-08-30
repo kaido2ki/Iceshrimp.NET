@@ -145,6 +145,17 @@ public static class WebApplicationExtensions
 			Environment.Exit(1);
 		}
 
+		var unknownMigrations = (await db.Database.GetAppliedMigrationsAsync())
+		                        .Except(db.Database.GetMigrations())
+		                        .ToList();
+
+		if (unknownMigrations.Count > 0)
+		{
+			app.Logger.LogCritical("Database has unknown migrations applied, refusing to continue startup.");
+			app.Logger.LogCritical("If you tried to downgrade, make sure you know what you are doing and revert all migrations applied since the version you are downgrading to.");
+			Environment.Exit(1);
+		}
+
 		// @formatter:off
 		var pendingMigration = (await db.Database.GetPendingMigrationsAsync()).FirstOrDefault();
 		if (args.Contains("--migrate-from-js"))
