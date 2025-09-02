@@ -353,8 +353,8 @@ public sealed class Config
 
 	public sealed class JobRetentionSection
 	{
-		[Range(0, int.MaxValue)] public int Completed { get; init; } = 100;
-		[Range(0, int.MaxValue)] public int Failed    { get; init; } = 10;
+		[Range(-1, int.MaxValue)] public int Completed { get; init; } = 100;
+		[Range(-1, int.MaxValue)] public int Failed    { get; init; } = 10;
 	}
 
 	public sealed class BackfillSection

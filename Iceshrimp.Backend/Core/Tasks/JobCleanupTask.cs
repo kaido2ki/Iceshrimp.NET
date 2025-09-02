@@ -19,15 +19,21 @@ public class JobCleanupTask : ICronTask
 
 		foreach (var name in queue.QueueNames)
 		{
-			await db.Jobs.Where(p => p.Queue == name && p.Status == Job.JobStatus.Completed)
-			        .OrderByDescending(p => p.FinishedAt)
-			        .Skip(retention.Value.Completed)
-			        .ExecuteDeleteAsync();
+			if (retention.Value.Completed >= 0)
+			{
+				await db.Jobs.Where(p => p.Queue == name && p.Status == Job.JobStatus.Completed)
+				        .OrderByDescending(p => p.FinishedAt)
+				        .Skip(retention.Value.Completed)
+				        .ExecuteDeleteAsync();
+			}
 
-			await db.Jobs.Where(p => p.Queue == name && p.Status == Job.JobStatus.Failed)
-			        .OrderByDescending(p => p.FinishedAt)
-			        .Skip(retention.Value.Failed)
-			        .ExecuteDeleteAsync();
+			if (retention.Value.Failed >= 0)
+			{
+				await db.Jobs.Where(p => p.Queue == name && p.Status == Job.JobStatus.Failed)
+				        .OrderByDescending(p => p.FinishedAt)
+				        .Skip(retention.Value.Failed)
+				        .ExecuteDeleteAsync();
+			}
 		}
 	}
 
