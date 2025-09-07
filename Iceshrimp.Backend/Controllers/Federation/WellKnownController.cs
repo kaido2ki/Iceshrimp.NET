@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Backend.Core.Federation.OAuthAuthorizationServer;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Cors;
@@ -126,4 +127,9 @@ public class WellKnownController(IOptions<Config.InstanceSection> config, Databa
 	[Produces("application/jrd+json")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public HostMetaResponse HostMetaJson() => new(config.Value.WebDomain);
+
+	[HttpGet("oauth-authorization-server")]
+	[Produces(MediaTypeNames.Application.Json)]
+	[ProducesResults(HttpStatusCode.OK)]
+	public OAuthAuthorizationServerResponse OAuthAuthorizationServerJson() => new(config.Value.WebDomain);
 }

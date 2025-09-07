@@ -67,6 +67,18 @@ public static class MastodonOauthHelpers
 
 	private static readonly List<string> ForbiddenSchemes = ["javascript", "file", "data", "mailto", "tel"];
 
+	public static List<string> AllScopes =>
+	[
+		..ReadScopes,
+		..AdminReadScopes,
+		..WriteScopes,
+		..AdminWriteScopes,
+		..FollowScopes,
+		..AdminScopeGroups,
+		..ScopeGroups,
+		"iceshrimp"
+	];
+
 	public static IEnumerable<string> ExpandScopes(IEnumerable<string> scopes)
 	{
 		var res = new List<string>();
