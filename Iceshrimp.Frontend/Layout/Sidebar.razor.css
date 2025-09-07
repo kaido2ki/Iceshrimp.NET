@@ -80,6 +80,7 @@
     font-size: 0.9em;
 
     > .icon-wrapper {
+        display: inline;
         padding-right: 0.5rem;
         font-size: 1.5em !important;
         /* why is there a style=“font-size: 16px” in the DOM? remove it !important when it's fixed */
