@@ -1,7 +1,7 @@
 using Iceshrimp.Backend.Core.Helpers;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
-namespace Iceshrimp.Backend.Core.Federation.OAuthAuthorizationServer;
+namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
 public class OAuthAuthorizationServerResponse(string webDomain)
 {

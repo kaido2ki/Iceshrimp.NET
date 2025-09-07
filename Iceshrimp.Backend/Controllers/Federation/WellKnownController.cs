@@ -1,11 +1,11 @@
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Federation.OAuthAuthorizationServer;
 using Iceshrimp.Backend.Core.Federation.WebFinger;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Cors;
