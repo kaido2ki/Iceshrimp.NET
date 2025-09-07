@@ -151,8 +151,9 @@ public static class WebApplicationExtensions
 
 		if (unknownMigrations.Count > 0)
 		{
-			app.Logger.LogCritical("Database has unknown migrations applied, refusing to continue startup.");
+			app.Logger.LogCritical("Database has {Count} unknown migrations applied, refusing to continue startup.", unknownMigrations.Count);
 			app.Logger.LogCritical("If you tried to downgrade, make sure you know what you are doing and revert all migrations applied since the version you are downgrading to.");
+			app.Logger.LogCritical("Unknown Migrations: {}", string.Join(", ", unknownMigrations));
 			Environment.Exit(1);
 		}
 
