@@ -161,7 +161,13 @@
         </div>
         @if (UserPinned.Count > 0)
         {
-            <LabeledRuler Label="@Loc["Pinned notes"]"/>
+            <div class="pins-label">
+                <LabeledRuler Label="@Loc["Pinned notes"]" LeftRule="false"/>
+                @if (UserPinned.Count > 4)
+                {
+                    <button class="button" @onclick="SkipPinnedNotes">@Loc["Skip"]</button>
+                }
+            </div>
             <div class="notes">
                 @foreach (var note in UserPinned)
                 {
@@ -170,10 +176,12 @@
                     </div>
                 }
             </div>
-            <span class="pinned-end">
+            <span @ref="EndPinnedRef" class="pinned-end">
                 <ScrollEnd IntersectionChange="AddPinnedNotes" ManualLoad="AddPinnedNotes" Class="end"/>
             </span>
-            <LabeledRuler Label="@Loc["Latest notes"]"/>
+            <div class="pins-label">
+                <LabeledRuler Label="@Loc["Latest notes"]" LeftRule="false"/>
+            </div>
         }
         @if (UserNotes.Count > 0)
         {
@@ -211,6 +219,8 @@
 @code {
     [Parameter] public string?              User         { get; set; }
     [Parameter] public string?              Host         { get; set; }
+    private            IJSObjectReference   Module       { get; set; } = null!;
+    private            ElementReference     EndPinnedRef { get; set; }
     private            UserResponse         UserResponse { get; set; } = null!;
     private            UserProfileResponse? Profile      { get; set; }
     private            string?              PinnedMinId  { get; set; }
@@ -271,6 +281,11 @@
             await GetNotes(MinId);
             _fetchLock = false;
         }
+    }
+
+    private async Task SkipPinnedNotes()
+    {
+        await Module.InvokeVoidAsync("ScrollIntoView", EndPinnedRef);
     }
 
     private async Task LoadProfile()
@@ -510,6 +525,15 @@
         catch (ApiException e)
         {
             await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                              "./Pages/ProfileView.razor.js");
         }
     }
 }
