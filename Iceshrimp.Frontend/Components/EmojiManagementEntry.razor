@@ -82,11 +82,12 @@
 </div>
 
 @code {
-    [Parameter, EditorRequired] public required EmojiResponse    Emoji       { get; set; }
-    [Parameter]                 public          bool             Remote      { get; set; }
-    [Parameter]                 public          EventCallback    GetEmojis   { get; set; }
-    private                                     ElementReference EmojiButton { get; set; }
-    private                                     Menu             EmojiMenu   { get; set; } = null!;
+    [Parameter, EditorRequired] public required EmojiResponse                Emoji        { get; set; }
+    [Parameter]                 public          bool                         Remote       { get; set; }
+    [Parameter]                 public          EventCallback<EmojiResponse> DeleteEmoji  { get; set; }
+    [Parameter]                 public          EventCallback                FilterEmojis { get; set; }
+    private                                     ElementReference             EmojiButton  { get; set; }
+    private                                     Menu                         EmojiMenu    { get; set; } = null!;
 
     private void SelectEmoji() => EmojiMenu.Toggle(EmojiButton);
 
@@ -187,7 +188,7 @@
             if (res != null)
             {
                 Emoji.Category = res.Category;
-                await GetEmojis.InvokeAsync();
+                await FilterEmojis.InvokeAsync();
             }
         }
         catch (ApiException e)
@@ -227,7 +228,11 @@
         try
         {
             var res = await Api.Emoji.DeleteEmojiAsync(Emoji.Id);
-            if (res) await GetEmojis.InvokeAsync();
+            if (res)
+            {
+                await DeleteEmoji.InvokeAsync(Emoji);
+                await FilterEmojis.InvokeAsync();
+            }
         }
         catch (ApiException e)
         {

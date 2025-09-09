@@ -55,7 +55,7 @@
         <div class="emoji-list">
             @foreach (var emoji in category.Value)
             {
-                <EmojiManagementEntry Emoji="@emoji" GetEmojis="GetEmojis"/>
+                <EmojiManagementEntry Emoji="@emoji" DeleteEmoji="DeleteEmoji" FilterEmojis="FilterEmojis"/>
             }
         </div>
     }
@@ -97,6 +97,7 @@
                      .OrderBy(p => string.IsNullOrEmpty(p.Key))
                      .ThenBy(p => p.Key)
                      .ToDictionary(p => p.Key ?? Loc["Other"], p => p.ToList());
+        StateHasChanged();
     }
 
     private async Task GetEmojis()
@@ -114,6 +115,11 @@
             FilterEmojis();
             State = State.Loaded;
         }
+    }
+
+    private void DeleteEmoji(EmojiResponse emoji)
+    {
+        Emojis.Remove(emoji);
     }
 
     // The <InputFile> Component is hidden, and triggered by a sepperate button.
