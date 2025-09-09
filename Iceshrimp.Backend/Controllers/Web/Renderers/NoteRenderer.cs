@@ -83,6 +83,8 @@ public class NoteRenderer(
 		              ?? await db.Notes.AnyAsync(p => p.Renote == note && p.User == user && p.IsPureRenote);
 		var bookmarked = data?.BookmarkedNotes?.Contains(note.Id)
 		                 ?? await db.NoteBookmarks.AnyAsync(p => p.Note == note && p.User == user);
+		var pinned = data?.PinnedNotes?.Contains(note.Id)
+		                 ?? await db.UserNotePins.AnyAsync(p => p.Note == note && p.User == user);
 		var emoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([note]);
 		var poll  = (data?.Polls ?? await GetPollsAsync([note], user)).FirstOrDefault(p => p.NoteId == note.Id);
 
@@ -103,6 +105,7 @@ public class NoteRenderer(
 			Renotes     = note.RenoteCount,
 			Replies     = note.RepliesCount,
 			Bookmarked  = bookmarked, 
+			Pinned      = pinned,
 			Liked       = liked,
 			Renoted     = renoted,
 			Emoji       = emoji,
@@ -175,6 +178,15 @@ public class NoteRenderer(
 		if (user == null) return [];
 		if (notes.Count == 0) return [];
 		return await db.NoteBookmarks.Where(p => p.User == user && notes.Contains(p.Note))
+		               .Select(p => p.NoteId)
+		               .ToListAsync();
+	}
+
+	private async Task<List<string>> GetPinnedNotesAsync(List<Note> notes, User? user)
+	{
+		if (user == null) return [];
+		if (notes.Count == 0) return [];
+		return await db.UserNotePins.Where(p => p.User == user && notes.Contains(p.Note))
 		               .Select(p => p.NoteId)
 		               .ToListAsync();
 	}
@@ -281,6 +293,7 @@ public class NoteRenderer(
 			Reactions       = await GetReactionsAsync(allNotes, user),
 			Filters         = await GetFiltersAsync(user, filterContext),
 			BookmarkedNotes = await GetBookmarkedNotesAsync(allNotes, user),
+			PinnedNotes     = await GetPinnedNotesAsync(allNotes, user),
 			LikedNotes      = await GetLikedNotesAsync(allNotes, user),
 			Renotes         = await GetRenotesAsync(allNotes, user),
 			Emoji           = await GetEmojiAsync(allNotes),
@@ -297,6 +310,7 @@ public class NoteRenderer(
 		public List<Filter>?             Filters;
 		public List<string>?             BookmarkedNotes;
 		public List<string>?             LikedNotes;
+		public List<string>?             PinnedNotes;
 		public List<string>?             Renotes;
 		public List<NoteReactionSchema>? Reactions;
 		public List<UserResponse>?       Users;
