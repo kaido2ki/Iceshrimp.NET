@@ -149,10 +149,10 @@ else
     {
         var query = Remote
                 ? Database.Users.Where(p => p.IsRemoteUser)
-                          .Where(p => ("@" + p.Username + "@" + p.Host).ToLower().Contains((Query ?? "").ToLower()))
+                          .Where(p => p.Id == Query || ("@" + p.Username + "@" + p.Host).ToLower().Contains((Query ?? "").ToLower()))
                           .OrderBy(p => p.Username + "@" + p.Host)
                 : Database.Users.Where(p => p.IsLocalUser && !p.IsSystemUser)
-                          .Where(p => ("@" + p.Username.ToLower()).Contains((Query ?? "").ToLower()))
+                          .Where(p => p.Id == Query || ("@" + p.Username.ToLower()).Contains((Query ?? "").ToLower()))
                           .OrderBy(p => p.Username);
 
             _users = await query.Skip(Offset ?? 0).Take(50).ToArrayAsync();
