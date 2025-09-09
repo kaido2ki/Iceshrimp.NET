@@ -159,6 +159,22 @@
             </div>
             <ProfileInfo Emojis="@UserResponse.Emojis" User="UserResponse" UserProfile="Profile"/>
         </div>
+        @if (UserPinned.Count > 0)
+        {
+            <LabeledRuler Label="@Loc["Pinned notes"]"/>
+            <div class="notes">
+                @foreach (var note in UserPinned)
+                {
+                    <div class="note-container">
+                        <Note NoteResponse="note" OpenNote="true"/>
+                    </div>
+                }
+            </div>
+            <span class="pinned-end">
+                <ScrollEnd IntersectionChange="AddPinnedNotes" ManualLoad="AddPinnedNotes" Class="end"/>
+            </span>
+            <LabeledRuler Label="@Loc["Latest notes"]"/>
+        }
         @if (UserNotes.Count > 0)
         {
             <div class="notes">
@@ -197,7 +213,9 @@
     [Parameter] public string?              Host         { get; set; }
     private            UserResponse         UserResponse { get; set; } = null!;
     private            UserProfileResponse? Profile      { get; set; }
+    private            string?              PinnedMinId  { get; set; }
     private            string?              MinId        { get; set; }
+    private            List<NoteResponse>   UserPinned   { get; set; } = [];
     private            List<NoteResponse>   UserNotes    { get; set; } = [];
     
     private ElementReference MenuButton  { get; set; }
@@ -220,6 +238,28 @@
             MinId = notes.Last().Id;
             UserNotes.AddRange(notes);
             StateHasChanged();
+        }
+    }
+    
+    private async Task GetPinnedNotes(string? minId)
+    {
+        var pq    = new PaginationQuery { Limit = 10, MaxId = minId };
+        var notes = await Api.Users.GetUserPinnedNotesAsync(UserResponse.Id, pq);
+        if (notes is not null && notes.Count > 0)
+        {
+            PinnedMinId = notes.Last().Id;
+            UserPinned.AddRange(notes);
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddPinnedNotes()
+    {
+        if (_fetchLock == false)
+        {
+            _fetchLock = true;
+            await GetPinnedNotes(PinnedMinId);
+            _fetchLock = false;
         }
     }
 
@@ -254,6 +294,7 @@
                 {
                     UserResponse = userResponse;
                     Profile      = await Api.Users.GetUserProfileAsync(UserResponse.Id);
+                    await GetPinnedNotes(null);
                     await GetNotes(null);
                     _init    = true;
                     _loading = false;
@@ -269,11 +310,13 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        _init     = false;
-        _loading  = true;
-        UserNotes = [];
-        MinId     = null;
-        Profile   = null;
+        _init       = false;
+        _loading    = true;
+        UserPinned  = [];
+        UserNotes   = [];
+        PinnedMinId = null;
+        MinId       = null;
+        Profile     = null;
         StateHasChanged();
         await LoadProfile();
         _instance = await MetadataService.Instance.Value;

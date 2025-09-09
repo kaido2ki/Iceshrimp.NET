@@ -16,6 +16,10 @@ internal class UserControllerModel(ApiClient api)
 	public Task<List<NoteResponse>?> GetUserNotesAsync(string id, PaginationQuery pq) =>
 		api.CallNullableAsync<List<NoteResponse>>(HttpMethod.Get, $"/users/{id}/notes", pq);
 
+	[LinkPagination(20, 80)]
+	public Task<List<NoteResponse>?> GetUserPinnedNotesAsync(string id, PaginationQuery pq) =>
+		api.CallNullableAsync<List<NoteResponse>>(HttpMethod.Get, $"/users/{id}/pinned_notes", pq);
+
 	public Task<UserResponse?> LookupUserAsync(string username, string? host)
 	{
 		var query = new QueryString();

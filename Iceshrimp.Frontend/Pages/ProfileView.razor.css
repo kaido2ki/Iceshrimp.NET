@@ -105,8 +105,19 @@
     overflow: clip;
 }
 
+::deep .labeled-ruler {
+    margin-top: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 45rem;
+}
+
 ::deep .end {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+::deep .pinned-end .end button {
+    display: none;
 }
