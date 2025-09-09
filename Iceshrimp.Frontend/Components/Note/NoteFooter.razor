@@ -112,6 +112,12 @@
             <MenuElement Icon="Icons.BookmarkSimple" OnSelect="Bookmark">
                 <Text>@(Note.Bookmarked ? Loc["Remove bookmark"] : Loc["Add bookmark"])</Text>
             </MenuElement>
+            @if (Note.User.Id == Session.Current?.Id)
+            {
+                <MenuElement Icon="@(Note.Pinned ? Icons.PushPinSlash : Icons.PushPin)" OnSelect="Pin">
+                    <Text>@(Note.Pinned ? Loc["Unpin from profile"] : Loc["Pin to profile"])</Text>
+                </MenuElement>
+            }
             <MenuElement Icon="Icons.SpeakerX" OnSelect="Mute">
                 <Text>@Loc["Mute thread"]</Text>
             </MenuElement>
@@ -197,6 +203,11 @@
     private void Bookmark()
     {
         _ = NoteActions.ToggleBookmarkAsync(Note);
+    }
+
+    private void Pin()
+    {
+        _ = NoteActions.TogglePinnedAsync(Note);
     }
 
     private void Like()

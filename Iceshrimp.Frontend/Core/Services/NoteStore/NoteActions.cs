@@ -87,6 +87,40 @@ internal class NoteActions(
 		}
 	}
 
+	public async Task TogglePinnedAsync(NoteBase note)
+	{
+		if (note.Pinned)
+		{
+			try
+			{
+				note.Pinned = false;
+				Broadcast(note);
+				await api.Notes.UnpinNoteAsync(note.Id);
+			}
+			catch (ApiException e)
+			{
+				logger.LogError(e, "Failed to unpin note");
+				note.Pinned = true;
+				Broadcast(note);
+			}
+		}
+		else
+		{
+			try
+			{
+				note.Pinned = true;
+				Broadcast(note);
+				await api.Notes.PinNoteAsync(note.Id);
+			}
+			catch (ApiException e)
+			{
+				logger.LogError(e, "Failed to pin note");
+				note.Pinned = false;
+				Broadcast(note);
+			}
+		}
+	}
+
 	public async Task ToggleLikeAsync(NoteBase note)
 	{
 		if (note.Liked)

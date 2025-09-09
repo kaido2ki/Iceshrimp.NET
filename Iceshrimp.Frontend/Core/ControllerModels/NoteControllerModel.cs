@@ -40,6 +40,12 @@ internal class NoteControllerModel(ApiClient api)
 	public Task UnbookmarkNoteAsync(string id) =>
 		api.CallAsync(HttpMethod.Post, $"/notes/{id}/unbookmark");
 
+	public Task PinNoteAsync(string id) =>
+		api.CallAsync(HttpMethod.Post, $"/notes/{id}/pin");
+
+	public Task UnpinNoteAsync(string id) =>
+		api.CallAsync(HttpMethod.Post, $"/notes/{id}/unpin");
+
 	public Task<ValueResponse?> LikeNoteAsync(string id) =>
 		api.CallNullableAsync<ValueResponse>(HttpMethod.Post, $"/notes/{id}/like");
 
