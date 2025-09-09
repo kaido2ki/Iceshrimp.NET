@@ -540,6 +540,38 @@ public class NoteController(
 		await db.NoteThreadMutings.Where(p => p.User == user && p.ThreadId == target).ExecuteDeleteAsync();
 	}
 
+	[HttpPost("{id}/pin")]
+	[Authenticate]
+	[Authorize]
+	[EnableRateLimiting("sliding")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task PinNote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var note = await db.Notes.FirstOrDefaultAsync(p => p.Id == id && p.User == user)
+		           ?? throw GracefulException.NotFound("Note not found");
+
+		await noteSvc.PinNoteAsync(note, user);
+	}
+
+	[HttpPost("{id}/unpin")]
+	[Authenticate]
+	[Authorize]
+	[EnableRateLimiting("sliding")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task UnpinNote(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var note = await db.Notes.FirstOrDefaultAsync(p => p.Id == id && p.User == user)
+		           ?? throw GracefulException.NotFound("Note not found");
+
+		await noteSvc.UnpinNoteAsync(note, user);
+	}
+
 	[HttpPost("{id}/vote")]
 	[Authenticate]
 	[Authorize]
