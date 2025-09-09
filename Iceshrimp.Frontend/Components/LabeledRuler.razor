@@ -1,9 +1,19 @@
 <span class="labeled-ruler">
-    <span class="rule"></span>
+    @if (LeftRule)
+    {
+        <span class="rule"></span>
+    }
+
     <span class="label">@Label</span>
-    <span class="rule"></span>
+
+    @if (RightRule)
+    {
+        <span class="rule"></span>
+    }
 </span>
 
 @code {
-    [Parameter, EditorRequired] public required string Label { get; set; }
+    [Parameter, EditorRequired] public required string Label     { get; set; }
+    [Parameter]                 public          bool   LeftRule  { get; set; } = true;
+    [Parameter]                 public          bool   RightRule { get; set; } = true;
 }
