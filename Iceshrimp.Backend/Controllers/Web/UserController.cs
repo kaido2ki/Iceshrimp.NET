@@ -101,6 +101,30 @@ public class UserController(
 		return await noteRenderer.RenderManyAsync(notes, localUser, Filter.FilterContext.Accounts);
 	}
 
+	[HttpGet("{id}/pinned_notes")]
+	[LinkPagination(20, 80)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<NoteResponse>> GetUserPinnedNotes(string id, PaginationQuery pq)
+	{
+		var localUser = HttpContext.GetUserOrFail();
+		var user = await db.Users.FirstOrDefaultAsync(p => p.Id == id) ??
+		           throw GracefulException.NotFound("User not found");
+
+		var notes = await db.Notes
+		                    .IncludeCommonProperties()
+		                    .FilterByUser(user)
+		                    .Where(p => p.User.HasPinned(p))
+		                    .EnsureVisibleFor(localUser)
+		                    .FilterHidden(localUser, db, filterMutes: false)
+		                    .Paginate(pq, ControllerContext)
+		                    .PrecomputeVisibilities(localUser)
+		                    .ToListAsync()
+		                    .ContinueWithResult(res => res.EnforceRenoteReplyVisibility());
+
+		return await noteRenderer.RenderManyAsync(notes, localUser, Filter.FilterContext.Accounts);
+	}
+
 	[HttpPost("{id}/bite")]
 	[Authenticate]
 	[Authorize]
