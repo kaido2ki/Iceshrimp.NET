@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Schemas;
 using Iceshrimp.Backend.Controllers.Web.Schemas;
@@ -120,6 +121,77 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
             Title     = new AtomPlainText { Text = $"Notes by {target.DisplayName ?? target.Username}" },
             UpdatedAt = newestNote?.UpdatedAt ?? newestNote?.CreatedAt ?? target.CreatedAt,
             Entries   = entries
+        };
+    }
+
+    [HttpGet("feed.json")]
+    [LinkPagination(20, 80)]
+    [Produces("application/feed+json", MediaTypeNames.Application.Json)]
+    [ProducesResults(HttpStatusCode.OK)]
+    [ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
+    public async Task<JsonFeed> GetJsonFeed(string id, PaginationQuery pq)
+    {
+        var target = await db.Users.Include(p => p.UserSettings)
+                             .FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser)
+                     ?? throw GracefulException.RecordNotFound();
+
+        // If user is in private mode don't generate an Atom feed
+        if (target.UserSettings?.PrivateMode ?? true)
+            throw GracefulException.Forbidden("Can't view Atom feed for private users");
+
+        var notes = await db.Notes
+                            .IncludeCommonProperties()
+                            .FilterByUser(target)
+                            .Where(p => p.Visibility == Note.NoteVisibility.Public)
+                            .Paginate(pq, ControllerContext)
+                            .ToListAsync();
+
+        var fileIds = notes.SelectMany(p => p.FileIds).Distinct().ToList();
+
+        var files = await db.DriveFiles.Where(p => fileIds.Contains(p.Id))
+                            .ToDictionaryAsync(p => p.Id,
+                                               p => new JsonFeedAttachment
+                                               {
+                                                   Url       = p.RawAccessUrl,
+                                                   MimeType  = p.PublicMimeType ?? p.Type,
+                                                   FileName  = p.Name,
+                                                   SizeBytes = p.Size
+                                               });
+
+        var items = notes.Select(p => new JsonFeedItem
+                         {
+                             Id  = p.GetPublicUri(config.Value),
+                             Url = p.GetPublicUri(config.Value),
+                             ContentHtml = mfmConverter
+                                           .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost)
+                                           .Html,
+                             CreatedAt = p.CreatedAt,
+                             UpdatedAt = p.UpdatedAt,
+                             Attachments = p.FileIds.Count != 0
+                                 ? p.FileIds.Select(i => files[i]).NotNull().ToList()
+                                 : null
+                         })
+                         .ToList();
+
+        var targetUrl = target.GetUriOrPublicUri(config.Value);
+        var iconUrl   = target.GetAvatarUrl(config.Value);
+
+        return new JsonFeed
+        {
+            Title       = $"Notes by {target.DisplayName ?? target.Username}",
+            HomePageUrl = targetUrl,
+            Uri         = $"https://{config.Value.WebDomain}/users/{id}/feed.json",
+            NextUrl     = $"https://{config.Value.WebDomain}/users/{id}/feed.json?max_id={notes.Last().Id}",
+            IconUrl     = iconUrl,
+            FaviconUrl  = iconUrl,
+            Authors =
+            [
+                new JsonFeedAuthor
+                {
+                    Name = target.DisplayName ?? target.Username, AvatarUrl = iconUrl, Url = targetUrl
+                }
+            ],
+            Items = items
         };
     }
 }
