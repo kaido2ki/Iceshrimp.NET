@@ -194,4 +194,65 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
             Items = items
         };
     }
+
+    [HttpGet("feed.rss")]
+    [LinkPagination(20, 80)]
+    [Produces("application/rss+xml")]
+    [ProducesResults(HttpStatusCode.OK)]
+    [ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
+    public async Task<RssFeed> GetRssFeed(string id, PaginationQuery pq)
+    {
+        var target = await db.Users
+                             .Include(p => p.UserProfile)
+                             .Include(p => p.UserSettings)
+                             .FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser)
+                     ?? throw GracefulException.RecordNotFound();
+
+        // If user is in private mode don't generate an Atom feed
+        if (target.UserSettings?.PrivateMode ?? true)
+            throw GracefulException.Forbidden("Can't view Atom feed for private users");
+
+        var notes = await db.Notes
+                            .IncludeCommonProperties()
+                            .FilterByUser(target)
+                            .Where(p => p.Visibility == Note.NoteVisibility.Public)
+                            .Paginate(pq, ControllerContext)
+                            .ToListAsync();
+
+        var fileIds = notes.SelectMany(p => p.FileIds).Distinct().ToList();
+
+        var enclosures = await db.DriveFiles.Where(p => fileIds.Contains(p.Id))
+                                 .ToDictionaryAsync(p => p.Id,
+                                                    p => new RssEnclosure
+                                                    {
+                                                        Url  = p.RawAccessUrl,
+                                                        Size = p.Size,
+                                                        Type = p.PublicMimeType ?? p.Type
+                                                    });
+
+        var items = notes.Select(p => new RssItem
+                         {
+                             Title = $"Note by {target.DisplayName ?? target.Username}",
+                             Link  = p.GetPublicUri(config.Value),
+                             Description = mfmConverter
+                                           .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost)
+                                           .Html,
+                             Enclosures = p.FileIds.Select(i => enclosures[i]).NotNull().ToList(),
+                             Guid       = new RssGuid { IsPermaLink = true, Guid = p.GetPublicUri(config.Value) },
+                             CreatedAt  = p.CreatedAt.ToString("r")
+                         })
+                         .ToList();
+
+        return new RssFeed
+        {
+            Channel = new RssChannel
+            {
+                Title       = $"Notes by {target.DisplayName ?? target.Username}",
+                Link        = target.GetUriOrPublicUri(config.Value),
+                Description = $"Public notes by {target.DisplayName ?? target.Username}",
+                Generator   = $"Iceshrimp.NET {VersionHelpers.VersionInfo.Value.Version}",
+                Items       = items
+            }
+        };
+    }
 }
