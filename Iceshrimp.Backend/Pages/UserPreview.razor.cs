@@ -68,7 +68,11 @@ public partial class UserPreview(
 
 		if (user is { IsLocalUser: true, UserSettings.PrivateMode: false })
 		{
-			_feeds = [("application/atom+xml", $"/users/{user.Id}/feed.atom")];
+			_feeds =
+			[
+				("application/atom+xml", $"/users/{user.Id}/feed.atom"),
+				("application/feed+json", $"/users/{user.Id}/feed.json")
+			];
 		}
 	}
 }
