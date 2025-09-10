@@ -143,6 +143,15 @@ public class NoteRenderer(
 				MediaType = Constants.ASMime
 			});
 		}
+		
+		var interactionPolicy = note.VisibilityIsPublicOrHome ? 
+			new ASInteractionPolicy
+			{
+				CanQuote = new ASInteractionSubPolicy
+				{
+					AutomaticApproval = [new ASObjectBase($"{Constants.ActivityStreamsNs}#Public")]
+				}
+			} : null;
 
 		if (note.HasPoll)
 		{
@@ -190,12 +199,13 @@ public class NoteRenderer(
 					MkQuote     = quoteUri,
 					QuoteUri    = quoteUri,
 					QuoteUrl    = quoteUri,
+					InteractionPolicy = interactionPolicy,
 					EndTime     = endTime,
 					Closed      = closed,
 					AnyOf       = anyOf,
 					OneOf       = oneOf,
 					VotersCount = poll.VotersCount,
-                    HtmlMfm     = true
+                    HtmlMfm     = true,
 				};
 			}
 		}
@@ -223,7 +233,8 @@ public class NoteRenderer(
 			MkQuote  = quoteUri,
 			QuoteUri = quoteUri,
 			QuoteUrl = quoteUri,
-            HtmlMfm  = true
+            HtmlMfm  = true,
+			InteractionPolicy = interactionPolicy
 		};
 	}
 }

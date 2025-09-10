@@ -98,6 +98,10 @@ public class ASNote : ASObjectWithId
 	[J($"{Constants.ActivityStreamsNs}#context")]
 	[JC(typeof(ASCollectionConverter))]
 	public ASCollection? Context { get; set; }
+	
+	[J($"{Constants.GoToSocialNs}#interactionPolicy")]
+	[JC(typeof(ASInteractionPolicyConverter))]
+	public ASInteractionPolicy? InteractionPolicy { get; set; }
 
 	public Note.NoteVisibility GetVisibility(User actor)
 	{

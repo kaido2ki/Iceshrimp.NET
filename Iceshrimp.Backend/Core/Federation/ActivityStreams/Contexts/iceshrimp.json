@@ -6,6 +6,7 @@
       "toot": "http://joinmastodon.org/ns#",
       "misskey": "https://misskey-hub.net/ns#",
       "vcard": "http://www.w3.org/2006/vcard/ns#",
+      "gts": "https://gotosocial.org/ns#",
 
       "movedTo": {
         "@id": "as:movedTo",
@@ -49,7 +50,19 @@
         "@id": "https://ns.pancakes.gay/as#pronouns",
         "@container": "@language"
       },
-      "htmlMfm": "https://w3id.org/fep/c16b#htmlMfm"
+      "htmlMfm": "https://w3id.org/fep/c16b#htmlMfm",
+      "interactionPolicy": {
+        "@id": "gts:interactionPolicy",
+        "@type": "@id"
+      },
+      "canQuote": {
+        "@id": "gts:canQuote",
+        "@type": "@id"
+      },
+      "automaticApproval": {
+        "@id": "gts:automaticApproval",
+        "@type": "@id"
+      }
     }
   ]
 }
