@@ -109,6 +109,9 @@
                             <MenuElement Icon="Icons.BracketsCurly" OnSelect="CopyJsonFeed">
                                 <Text>@Loc["Copy JSON feed"]</Text>
                             </MenuElement>
+                            <MenuElement Icon="Icons.Rss" OnSelect="CopyRssFeed">
+                                <Text>@Loc["Copy RSS feed"]</Text>
+                            </MenuElement>
                         }
                         @if (Profile != null && !Profile.Relations.HasFlag(Relations.Self))
                         {
@@ -437,6 +440,8 @@
     private void CopyAtomFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{UserResponse.Id}/feed.atom");
 
     private void CopyJsonFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{UserResponse.Id}/feed.json");
+    
+    private void CopyRssFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{UserResponse.Id}/feed.rss");
 
     private async Task RefetchUser() =>
         await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RefetchUserCallback), Loc["Refetch {0}'s profile?", UserResponse.DisplayName ?? UserResponse.Username])!;
