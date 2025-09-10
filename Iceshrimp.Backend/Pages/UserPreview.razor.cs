@@ -25,6 +25,8 @@ public partial class UserPreview(
 	private string       _instanceName = "Iceshrimp.NET";
 	private string?      _pronouns;
 
+	private List<(string, string)> _feeds = [];
+
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage")]
 	protected override async Task OnInitializedAsync()
@@ -46,6 +48,7 @@ public partial class UserPreview(
 			host = null;
 
 		var user = await Database.Users
+		                         .Include(p => p.UserSettings)
 		                         .IncludeCommonProperties()
 		                         .FirstOrDefaultAsync(p => p.UsernameLower == username &&
 		                                                   p.Host == host &&
@@ -62,5 +65,10 @@ public partial class UserPreview(
 		_pronouns = user?.UserProfile?.Pronouns != null
 			? string.Join(", ", user.UserProfile.Pronouns.Select(p => $"{p.Value} ({p.Key.ToUpper()})"))
 			: null;
+
+		if (user is { IsLocalUser: true, UserSettings.PrivateMode: false })
+		{
+			_feeds = [("application/atom+xml", $"/users/{user.Id}/feed.atom")];
+		}
 	}
 }

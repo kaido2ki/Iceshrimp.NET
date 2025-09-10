@@ -43,6 +43,10 @@ else
         }
         <meta property="og:image" content="@_user.AvatarUrl">
         <link rel="alternate" type="application/activity+json" href="@_user.Uri">
+        @foreach (var feed in _feeds)
+        {
+            <link rel="alternate" type="@feed.Item1" href="@feed.Item2">
+        }
         <VersionedLink rel="stylesheet" href="/css/public-preview.css"/>
     </HeadContent>
 }
