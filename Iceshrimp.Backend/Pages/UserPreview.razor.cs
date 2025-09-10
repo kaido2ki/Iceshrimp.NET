@@ -71,7 +71,8 @@ public partial class UserPreview(
 			_feeds =
 			[
 				("application/atom+xml", $"/users/{user.Id}/feed.atom"),
-				("application/feed+json", $"/users/{user.Id}/feed.json")
+				("application/feed+json", $"/users/{user.Id}/feed.json"),
+				("application/rss+xml", $"/users/{user.Id}/feed.rss")
 			];
 		}
 	}
