@@ -1,5 +1,8 @@
 using System.Net;
 using System.Net.Mime;
+using System.Text;
+using System.Xml;
+using System.Xml.Serialization;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Schemas;
 using Iceshrimp.Backend.Controllers.Web.Schemas;
@@ -23,12 +26,16 @@ namespace Iceshrimp.Backend.Controllers.Web;
 public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection> config, MfmConverter mfmConverter)
     : ControllerBase
 {
+    private static readonly XmlSerializerNamespaces XmlNamespaces  = new([new XmlQualifiedName("", "")]);
+    private static readonly XmlSerializer           AtomSerializer = new(typeof(AtomFeed));
+    private static readonly XmlSerializer           RssSerializer  = new(typeof(RssFeed));
+
     [HttpGet("feed.atom")]
     [LinkPagination(20, 80)]
     [Produces("application/atom+xml")]
     [ProducesResults(HttpStatusCode.OK)]
     [ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
-    public async Task<AtomFeed> GetAtomFeed(string id, PaginationQuery pq)
+    public async Task<ContentResult> GetAtomFeed(string id, PaginationQuery pq)
     {
         var target = await db.Users.Include(p => p.UserSettings).FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser)
                      ?? throw GracefulException.RecordNotFound();
@@ -99,7 +106,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
             });
         }
 
-        return new AtomFeed
+        var feed = new AtomFeed
         {
             Authors =
             [
@@ -122,6 +129,11 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
             UpdatedAt = newestNote?.UpdatedAt ?? newestNote?.CreatedAt ?? target.CreatedAt,
             Entries   = entries
         };
+
+        // AtomSerializer is used to ensure that no unnecessary namespaces are added and the XML declaration is present
+        using var stream = new MemoryStream();
+        AtomSerializer.Serialize(stream, feed, XmlNamespaces);
+        return Content(Encoding.UTF8.GetString(stream.ToArray()));
     }
 
     [HttpGet("feed.json")]
@@ -200,7 +212,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     [Produces("application/rss+xml")]
     [ProducesResults(HttpStatusCode.OK)]
     [ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
-    public async Task<RssFeed> GetRssFeed(string id, PaginationQuery pq)
+    public async Task<ContentResult> GetRssFeed(string id, PaginationQuery pq)
     {
         var target = await db.Users
                              .Include(p => p.UserProfile)
@@ -243,7 +255,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
                          })
                          .ToList();
 
-        return new RssFeed
+        var feed = new RssFeed
         {
             Channel = new RssChannel
             {
@@ -254,5 +266,10 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
                 Items       = items
             }
         };
+
+        // RssSerializer is used to ensure that no unnecessary namespaces are added and the XML declaration is present
+        using var stream = new MemoryStream();
+        RssSerializer.Serialize(stream, feed, XmlNamespaces);
+        return Content(Encoding.UTF8.GetString(stream.ToArray()));
     }
 }

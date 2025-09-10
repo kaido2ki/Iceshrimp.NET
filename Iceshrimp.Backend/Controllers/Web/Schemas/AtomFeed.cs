@@ -118,7 +118,7 @@ public class AtomEntry : AtomCommonAttributes
 }
 
 [XmlRoot("feed", Namespace = "http://www.w3.org/2005/Atom")]
-public class AtomFeed : AtomCommonAttributes
+public sealed class AtomFeed : AtomCommonAttributes
 {
     [XmlElement("author")]      public required List<AtomPerson>       Authors      { get; set; }
     [XmlElement("category")]    public          List<AtomCategory>?    Categories   { get; set; }

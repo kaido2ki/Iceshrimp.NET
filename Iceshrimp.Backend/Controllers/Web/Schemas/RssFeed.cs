@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 namespace Iceshrimp.Backend.Controllers.Web.Schemas;
 
 [XmlRoot("rss")]
-public class RssFeed
+public sealed class RssFeed
 {
     [XmlAttribute("version")]    public          string     Version { get; set; } = "2.0";
     [XmlElement("channel")]      public required RssChannel Channel { get; set; }
