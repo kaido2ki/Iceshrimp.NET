@@ -101,6 +101,15 @@
                         <MenuElement Icon="Icons.At" OnSelect="CopyUsername">
                             <Text>@Loc["Copy username"]</Text>
                         </MenuElement>
+                        @if (UserResponse.Host == null)
+                        {
+                            <MenuElement Icon="Icons.Atom" OnSelect="CopyAtomFeed">
+                                <Text>@Loc["Copy Atom feed"]</Text>
+                            </MenuElement>
+                            <MenuElement Icon="Icons.BracketsCurly" OnSelect="CopyJsonFeed">
+                                <Text>@Loc["Copy JSON feed"]</Text>
+                            </MenuElement>
+                        }
                         @if (Profile != null && !Profile.Relations.HasFlag(Relations.Self))
                         {
                             <hr class="rule"/>
@@ -194,6 +203,8 @@
     private bool _error;
     private bool _fetchLock;
 
+    private InstanceResponse? _instance;
+
     private async Task GetNotes(string? minId)
     {
         var pq    = new PaginationQuery { Limit = 10, MaxId = minId };
@@ -264,6 +275,7 @@
         Profile   = null;
         StateHasChanged();
         await LoadProfile();
+        _instance = await MetadataService.Instance.Value;
     }
     
     private void ToggleMenu() => ContextMenu.Toggle(MenuButton);
@@ -411,8 +423,7 @@
     
     private async Task CopyLink()
     {
-        var instance = await MetadataService.Instance.Value;
-        await Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{instance.WebDomain}/@{UserResponse.Username}" + (UserResponse.Host != null ? $"@{UserResponse.Host}" : ""));
+        await Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/@{UserResponse.Username}" + (UserResponse.Host != null ? $"@{UserResponse.Host}" : ""));
     }
     
     private void CopyLinkRemote()
@@ -422,6 +433,10 @@
     }
 
     private void CopyUsername() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"@{UserResponse.Username}" + (UserResponse.Host != null ? $"@{UserResponse.Host}" : ""));
+    
+    private void CopyAtomFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{UserResponse.Id}/feed.atom");
+
+    private void CopyJsonFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{UserResponse.Id}/feed.json");
 
     private async Task RefetchUser() =>
         await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RefetchUserCallback), Loc["Refetch {0}'s profile?", UserResponse.DisplayName ?? UserResponse.Username])!;
