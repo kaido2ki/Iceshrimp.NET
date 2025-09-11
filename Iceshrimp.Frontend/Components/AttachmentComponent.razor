@@ -45,18 +45,25 @@
         </div>
     }
 
-    @if (!string.IsNullOrWhiteSpace(Attachment.AltText))
-    {
-        <button @onclick="DisplayAlt" @onclick:stopPropagation="true" class="alt-btn" title="@Attachment.AltText">
-            <Icon Name="Icons.ClosedCaptioning"/>
+    <span class="attachment-buttons">
+        <button @onclick="() => BlurImage = !BlurImage" @onclick:stopPropagation="true"
+                title="@(BlurImage ? Loc["Show content"] : Loc["Hide content"])">
+            <Icon Name="@(BlurImage ? Icons.Eye : Icons.EyeSlash)"/>
         </button>
-    }
-    else
-    {
-        <button @onclick="DisplayAlt" @onclick:stopPropagation="true" class="alt-btn" title="@Loc["No alt text"]">
-            <Icon Name="Icons.Warning"/>
-        </button>
-    }
+
+        @if (!string.IsNullOrWhiteSpace(Attachment.AltText))
+        {
+            <button @onclick="DisplayAlt" @onclick:stopPropagation="true" title="@Attachment.AltText">
+                <Icon Name="Icons.ClosedCaptioning"/>
+            </button>
+        }
+        else
+        {
+            <button @onclick="DisplayAlt" @onclick:stopPropagation="true" title="@Loc["No alt text"]">
+                <Icon Name="Icons.Warning"/>
+            </button>
+        }
+    </span>
 </div>
 
 @code {

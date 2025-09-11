@@ -6,22 +6,29 @@
     aspect-ratio: 3/2;
 }
 
-.alt-btn {
+.attachment-buttons {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
+    z-index: +1;
+}
+
+.attachment-buttons button {
     padding: 0.5rem 0.75rem;
     height: max-content;
-    z-index: +1;
     background-color: color-mix(in srgb, var(--background-color) 80%, transparent);
     line-height: 1;
 }
 
-.alt-btn:has(.ph-warning) {
+.attachment-buttons button + button {
+    margin-left: 0.5rem;
+}
+
+.attachment-buttons button:has(.ph-warning) {
     color: var(--danger-color);
 }
 
-.alt-btn:hover {
+.attachment-buttons button:hover {
     background-color: color-mix(in srgb, var(--hover-color) 80%, transparent);
 }
 
