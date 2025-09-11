@@ -103,7 +103,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
                 new AtomGenerator
                 {
                     Text    = "Iceshrimp.NET",
-                    Uri     = "https://iceshrimp.dev/iceshrimp/Icesrhimp.NET",
+                    Uri     = Constants.ProjectHomepageUrl,
                     Version = VersionHelpers.VersionInfo.Value.Version
                 },
             Icon      = new AtomIcon { Uri = target.GetAvatarUrl(config.Value) },
