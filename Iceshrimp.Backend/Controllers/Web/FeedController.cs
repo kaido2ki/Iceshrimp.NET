@@ -39,10 +39,6 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     {
         var (target, notes) = await GetTargetAndNotes(id, pq);
 
-        var newestNote = await db.Notes.FilterByUser(target)
-                                 .Where(p => p.Visibility == Note.NoteVisibility.Public)
-                                 .FirstOrDefaultAsync();
-
         var entries = notes.Select(p => new AtomEntry
                            {
                                Content = new AtomInlineTextContent
@@ -114,7 +110,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
             Id        = new AtomId { Uri   = $"https://{config.Value.WebDomain}/users/{id}/feed.atom" },
             Links     = links,
             Title     = new AtomPlainText { Text = $"Notes by {target.DisplayName ?? target.Username}" },
-            UpdatedAt = newestNote?.UpdatedAt ?? newestNote?.CreatedAt ?? target.CreatedAt,
+            UpdatedAt = target.LastActiveDate ?? target.CreatedAt,
             Entries   = entries
         };
 
@@ -222,6 +218,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
                 Title       = $"Notes by {target.DisplayName ?? target.Username}",
                 Link        = target.GetUriOrPublicUri(config.Value),
                 Description = $"Public notes by {target.DisplayName ?? target.Username}",
+                PublishedAt = (target.LastActiveDate ?? target.CreatedAt).ToString("r"),
                 Generator   = $"Iceshrimp.NET {VersionHelpers.VersionInfo.Value.Version}",
                 Items       = items
             }
