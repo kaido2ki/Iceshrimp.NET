@@ -37,19 +37,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     [ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
     public async Task<ContentResult> GetAtomFeed(string id, PaginationQuery pq)
     {
-        var target = await db.Users.Include(p => p.UserSettings).FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser)
-                     ?? throw GracefulException.RecordNotFound();
-
-        // If user is in private mode don't generate an Atom feed
-        if (target.UserSettings?.PrivateMode ?? true)
-            throw GracefulException.Forbidden("Can't view Atom feed for private users");
-
-        var notes = await db.Notes
-                            .IncludeCommonProperties()
-                            .FilterByUser(target)
-                            .Where(p => p.Visibility == Note.NoteVisibility.Public)
-                            .Paginate(pq, ControllerContext)
-                            .ToListAsync();
+        var (target, notes) = await GetTargetAndNotes(id, pq);
 
         var newestNote = await db.Notes.FilterByUser(target)
                                  .Where(p => p.Visibility == Note.NoteVisibility.Public)
@@ -143,20 +131,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     [ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
     public async Task<JsonFeed> GetJsonFeed(string id, PaginationQuery pq)
     {
-        var target = await db.Users.Include(p => p.UserSettings)
-                             .FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser)
-                     ?? throw GracefulException.RecordNotFound();
-
-        // If user is in private mode don't generate an Atom feed
-        if (target.UserSettings?.PrivateMode ?? true)
-            throw GracefulException.Forbidden("Can't view Atom feed for private users");
-
-        var notes = await db.Notes
-                            .IncludeCommonProperties()
-                            .FilterByUser(target)
-                            .Where(p => p.Visibility == Note.NoteVisibility.Public)
-                            .Paginate(pq, ControllerContext)
-                            .ToListAsync();
+        var (target, notes) = await GetTargetAndNotes(id, pq);
 
         var fileIds = notes.SelectMany(p => p.FileIds).Distinct().ToList();
 
@@ -214,22 +189,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     [ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
     public async Task<ContentResult> GetRssFeed(string id, PaginationQuery pq)
     {
-        var target = await db.Users
-                             .Include(p => p.UserProfile)
-                             .Include(p => p.UserSettings)
-                             .FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser)
-                     ?? throw GracefulException.RecordNotFound();
-
-        // If user is in private mode don't generate an Atom feed
-        if (target.UserSettings?.PrivateMode ?? true)
-            throw GracefulException.Forbidden("Can't view Atom feed for private users");
-
-        var notes = await db.Notes
-                            .IncludeCommonProperties()
-                            .FilterByUser(target)
-                            .Where(p => p.Visibility == Note.NoteVisibility.Public)
-                            .Paginate(pq, ControllerContext)
-                            .ToListAsync();
+        var (target, notes) = await GetTargetAndNotes(id, pq);
 
         var fileIds = notes.SelectMany(p => p.FileIds).Distinct().ToList();
 
@@ -271,5 +231,27 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
         using var stream = new MemoryStream();
         RssSerializer.Serialize(stream, feed, XmlNamespaces);
         return Content(Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    private async Task<(User, List<Note>)> GetTargetAndNotes(string id, PaginationQuery pq)
+    {
+        var target =
+            await db.Users.Include(p => p.UserProfile)
+                    .Include(p => p.UserSettings)
+                    .FirstOrDefaultAsync(p => p.Id == id && p.IsLocalUser)
+            ?? throw GracefulException.RecordNotFound();
+
+        // If user is in private mode don't generate an Atom feed
+        if (target.UserSettings?.PrivateMode ?? true)
+            throw GracefulException.Forbidden("Can't view Atom feed for private users");
+
+        var notes = await db.Notes
+                            .IncludeCommonProperties()
+                            .FilterByUser(target)
+                            .Where(p => p.Visibility == Note.NoteVisibility.Public)
+                            .Paginate(pq, ControllerContext)
+                            .ToListAsync();
+
+        return (target, notes);
     }
 }
