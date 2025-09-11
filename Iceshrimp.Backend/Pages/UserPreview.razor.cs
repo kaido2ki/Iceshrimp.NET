@@ -25,7 +25,7 @@ public partial class UserPreview(
 	private string       _instanceName = "Iceshrimp.NET";
 	private string?      _pronouns;
 
-	private List<(string, string)> _feeds = [];
+	private Dictionary<string, (string, string)>? _feeds;
 
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataQuery")]
 	[SuppressMessage("ReSharper", "EntityFramework.NPlusOne.IncompleteDataUsage")]
@@ -68,12 +68,12 @@ public partial class UserPreview(
 
 		if (user is { IsLocalUser: true, UserSettings.PrivateMode: false })
 		{
-			_feeds =
-			[
-				("application/atom+xml", $"/users/{user.Id}/feed.atom"),
-				("application/feed+json", $"/users/{user.Id}/feed.json"),
-				("application/rss+xml", $"/users/{user.Id}/feed.rss")
-			];
+			_feeds = new Dictionary<string, (string, string)>
+			{
+				["Atom"] = ("application/atom+xml", $"/users/{user.Id}/feed.atom"),
+				["JSON"] = ("application/feed+json", $"/users/{user.Id}/feed.json"),
+				["RSS"] = ("application/rss+xml", $"/users/{user.Id}/feed.rss")
+			};
 		}
 	}
 }

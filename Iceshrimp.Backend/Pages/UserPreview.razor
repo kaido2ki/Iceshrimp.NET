@@ -31,6 +31,14 @@ else
                 <i>This user has migrated to a <a href="@_user.MovedToUri">different account</a>.</i>
             </div>
         }
+        @if (_feeds != null)
+        {
+            <a href="@_feeds["Atom"].Item2" type="@_feeds["Atom"].Item1">Atom feed</a>
+            <span aria-hidden="true">|</span>
+            <a href="@_feeds["JSON"].Item2" type="@_feeds["JSON"].Item1">JSON feed</a>
+            <span aria-hidden="true">|</span>
+            <a href="@_feeds["RSS"].Item2" type="@_feeds["RSS"].Item1">RSS feed</a>
+        }
     </div>
     <PageTitle>@@@_user.Username - @_instanceName</PageTitle>
     <HeadContent>
@@ -43,9 +51,12 @@ else
         }
         <meta property="og:image" content="@_user.AvatarUrl">
         <link rel="alternate" type="application/activity+json" href="@_user.Uri">
-        @foreach (var feed in _feeds)
+        @if (_feeds != null)
         {
-            <link rel="alternate" type="@feed.Item1" href="@feed.Item2">
+            @foreach (var feed in _feeds.Values)
+            {
+                <link rel="alternate" type="@feed.Item1" href="@feed.Item2">
+            }
         }
         <VersionedLink rel="stylesheet" href="/css/public-preview.css"/>
     </HeadContent>
