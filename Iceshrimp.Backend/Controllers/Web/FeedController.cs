@@ -39,32 +39,37 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     {
         var (target, notes) = await GetTargetAndNotes(id, pq);
 
-        var entries = notes.Select(p => new AtomEntry
-                           {
-                               Content = new AtomInlineTextContent
-                               {
-                                   Type = "html",
-                                   Text =
-                                       mfmConverter
-                                           .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost, null, false, false,
-                                                   "div", null, null)
-                                           .Html
-                               },
-                               Id = new AtomId { Uri = p.GetPublicUri(config.Value) },
-                               Links = new List<AtomLink>
-                               {
-                                   new AtomLink
-                                   {
-                                       Href = p.GetPublicUri(config.Value),
-                                       Rel  = "alternate",
-                                       Type = "text/html"
-                                   }
-                               },
-                               PublishedAt = p.CreatedAt,
-                               Title = new AtomPlainText { Text = $"Note by {target.DisplayName ?? target.Username}" },
-                               UpdatedAt = p.UpdatedAt ?? p.CreatedAt
-                           })
-                           .ToList();
+        var entries = await notes.Select(p => new AtomEntry
+                                 {
+                                     RawId = p.Id,
+                                     Content = new AtomInlineTextContent
+                                     {
+                                         Type = "html",
+                                         Text =
+                                             mfmConverter
+                                                 .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost, null, false,
+                                                         false,
+                                                         "div", null, null)
+                                                 .Html
+                                     },
+                                     Id = new AtomId { Uri = p.GetPublicUri(config.Value) },
+                                     Links = new List<AtomLink>
+                                     {
+                                         new AtomLink
+                                         {
+                                             Href = p.GetPublicUri(config.Value),
+                                             Rel  = "alternate",
+                                             Type = "text/html"
+                                         }
+                                     },
+                                     PublishedAt = p.CreatedAt,
+                                     Title = new AtomPlainText
+                                     {
+                                         Text = $"Note by {target.DisplayName ?? target.Username}"
+                                     },
+                                     UpdatedAt = p.UpdatedAt ?? p.CreatedAt
+                                 })
+                                 .ToListAsync();
 
         List<AtomLink> links =
         [
@@ -76,7 +81,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
             },
             new AtomLink
             {
-                Href = $"https://{config.Value.WebDomain}/users/{id}/feed.atom?max_id={notes.Last().Id}",
+                Href = $"https://{config.Value.WebDomain}/users/{id}/feed.atom?max_id={entries.Last().RawId}",
                 Rel  = "next",
                 Type = "application/atom+xml"
             }
@@ -85,7 +90,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
         {
             links.Add(new AtomLink
             {
-                Href = $"https://{config.Value.WebDomain}/users/{id}/feed.atom?min_id={notes.First().Id}",
+                Href = $"https://{config.Value.WebDomain}/users/{id}/feed.atom?min_id={entries.First().RawId}",
                 Rel  = "prev",
                 Type = "application/atom+xml"
             });

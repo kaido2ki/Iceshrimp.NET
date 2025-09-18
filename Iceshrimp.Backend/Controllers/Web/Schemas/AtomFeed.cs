@@ -103,6 +103,7 @@ public class AtomSource : AtomCommonAttributes
 
 public class AtomEntry : AtomCommonAttributes
 {
+    [XmlIgnore]                 public          string                 RawId        { get; set; } = "";
     [XmlElement("author")]      public          List<AtomPerson>?      Authors      { get; set; }
     [XmlElement("category")]    public          List<AtomCategory>?    Categories   { get; set; }
     [XmlElement("content")]     public          AtomInlineTextContent? Content      { get; set; }
