@@ -62,6 +62,7 @@
 
             if (res.Links.Next is null) EndReached = true;
             LikedBy = res.Data;
+            Pd      = res.Links;
             State   = State.Loaded;
         }
         catch (ApiException e)
