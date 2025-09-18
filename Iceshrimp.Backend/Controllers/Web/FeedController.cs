@@ -249,6 +249,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
 
         var notes = db.Notes
                       .IncludeCommonProperties()
+                      .Where(p => !p.IsPureRenote)
                       .FilterByUser(target)
                       .Where(p => p.Visibility == Note.NoteVisibility.Public)
                       .Paginate(pq, ControllerContext);
