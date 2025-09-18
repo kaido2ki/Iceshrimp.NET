@@ -35,7 +35,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     [Produces("application/atom+xml")]
     [ProducesResults(HttpStatusCode.OK)]
     [ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
-    public async Task<ContentResult> GetAtomFeed(string id, PaginationQuery pq)
+    public async Task<FileStreamResult> GetAtomFeed(string id, PaginationQuery pq)
     {
         var (target, notes) = await GetTargetAndNotes(id, pq);
 
@@ -121,9 +121,10 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
         };
 
         // AtomSerializer is used to ensure that no unnecessary namespaces are added and the XML declaration is present
-        using var stream = new MemoryStream();
+        var stream = new MemoryStream();
         AtomSerializer.Serialize(stream, feed, XmlNamespaces);
-        return Content(Encoding.UTF8.GetString(stream.ToArray()));
+        stream.Seek(0, SeekOrigin.Begin);
+        return new FileStreamResult(stream, "application/atom+xml");
     }
 
     [HttpGet("feed.json")]
@@ -187,7 +188,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     [Produces("application/rss+xml")]
     [ProducesResults(HttpStatusCode.OK)]
     [ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
-    public async Task<ContentResult> GetRssFeed(string id, PaginationQuery pq)
+    public async Task<FileStreamResult> GetRssFeed(string id, PaginationQuery pq)
     {
         var (target, notes) = await GetTargetAndNotes(id, pq);
 
@@ -228,9 +229,10 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
         };
 
         // RssSerializer is used to ensure that no unnecessary namespaces are added and the XML declaration is present
-        using var stream = new MemoryStream();
+        var stream = new MemoryStream();
         RssSerializer.Serialize(stream, feed, XmlNamespaces);
-        return Content(Encoding.UTF8.GetString(stream.ToArray()));
+        stream.Seek(0, SeekOrigin.Begin);
+        return new FileStreamResult(stream, "application/rss+xml");
     }
 
     private async Task<(User, IQueryable<Note>)> GetTargetAndNotes(string id, PaginationQuery pq)
