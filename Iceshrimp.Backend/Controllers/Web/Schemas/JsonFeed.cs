@@ -75,6 +75,9 @@ public class JsonFeedHub
 
 public class JsonFeedItem
 {
+    [JI(Condition = JsonIgnoreCondition.Always)]
+    public string RawId { get; set; } = "";
+
     [J("id")] public required string Id { get; set; }
 
     [J("url")]

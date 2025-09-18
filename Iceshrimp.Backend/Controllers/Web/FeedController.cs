@@ -130,33 +130,29 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     {
         var (target, notes) = await GetTargetAndNotes(id, pq);
 
-        var fileIds = notes.SelectMany(p => p.FileIds).Distinct().ToList();
-
-        var files = await db.DriveFiles.Where(p => fileIds.Contains(p.Id))
-                            .ToDictionaryAsync(p => p.Id,
-                                               p => new JsonFeedAttachment
-                                               {
-                                                   Url       = p.RawAccessUrl,
-                                                   MimeType  = p.PublicMimeType ?? p.Type,
-                                                   FileName  = p.Name,
-                                                   SizeBytes = p.Size
-                                               });
-
-        var items = notes.Select(p => new JsonFeedItem
-                         {
-                             Id  = p.GetPublicUri(config.Value),
-                             Url = p.GetPublicUri(config.Value),
-                             ContentHtml = mfmConverter
-                                           .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost, null, false, false,
-                                                   "div", null, null)
-                                           .Html,
-                             CreatedAt = p.CreatedAt,
-                             UpdatedAt = p.UpdatedAt,
-                             Attachments = p.FileIds.Count != 0
-                                 ? p.FileIds.Select(i => files[i]).NotNull().ToList()
-                                 : null
-                         })
-                         .ToList();
+        var items = await notes.Select(p => new JsonFeedItem
+                               {
+                                   RawId = p.Id,
+                                   Id    = p.GetPublicUri(config.Value),
+                                   Url   = p.GetPublicUri(config.Value),
+                                   ContentHtml = mfmConverter
+                                                 .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost, null, false,
+                                                         false,
+                                                         "div", null, null)
+                                                 .Html,
+                                   CreatedAt = p.CreatedAt,
+                                   UpdatedAt = p.UpdatedAt,
+                                   Attachments = db.DriveFiles.Where(f => p.FileIds.Contains(f.Id))
+                                                   .Select(f => new JsonFeedAttachment
+                                                   {
+                                                       Url       = f.RawAccessUrl,
+                                                       MimeType  = f.PublicMimeType ?? f.Type,
+                                                       FileName  = p.Name,
+                                                       SizeBytes = f.Size
+                                                   })
+                                                   .ToList()
+                               })
+                               .ToListAsync();
 
         var targetUrl = target.GetUriOrPublicUri(config.Value);
         var iconUrl   = target.GetAvatarUrl(config.Value);
@@ -166,9 +162,10 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
             Title       = $"Notes by {target.DisplayName ?? target.Username}",
             HomePageUrl = targetUrl,
             Uri         = $"https://{config.Value.WebDomain}/users/{id}/feed.json",
-            NextUrl     = $"https://{config.Value.WebDomain}/users/{id}/feed.json?max_id={notes.Last().Id}",
-            IconUrl     = iconUrl,
-            FaviconUrl  = iconUrl,
+            NextUrl =
+                $"https://{config.Value.WebDomain}/users/{id}/feed.json?max_id={items.Last().RawId}",
+            IconUrl    = iconUrl,
+            FaviconUrl = iconUrl,
             Authors =
             [
                 new JsonFeedAuthor
@@ -189,30 +186,28 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     {
         var (target, notes) = await GetTargetAndNotes(id, pq);
 
-        var fileIds = notes.SelectMany(p => p.FileIds).Distinct().ToList();
-
-        var enclosures = await db.DriveFiles.Where(p => fileIds.Contains(p.Id))
-                                 .ToDictionaryAsync(p => p.Id,
-                                                    p => new RssEnclosure
-                                                    {
-                                                        Url  = p.RawAccessUrl,
-                                                        Size = p.Size,
-                                                        Type = p.PublicMimeType ?? p.Type
-                                                    });
-
-        var items = notes.Select(p => new RssItem
-                         {
-                             Title = $"Note by {target.DisplayName ?? target.Username}",
-                             Link  = p.GetPublicUri(config.Value),
-                             Description = mfmConverter
-                                           .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost, null, false, false,
-                                                   "div", null, null)
-                                           .Html,
-                             Enclosures = p.FileIds.Select(i => enclosures[i]).NotNull().ToList(),
-                             Guid       = new RssGuid { IsPermaLink = true, Guid = p.GetPublicUri(config.Value) },
-                             CreatedAt  = p.CreatedAt.ToString("r")
-                         })
-                         .ToList();
+        var items = await notes.Select(p => new RssItem
+                               {
+                                   Title = $"Note by {target.DisplayName ?? target.Username}",
+                                   Link  = p.GetPublicUri(config.Value),
+                                   Description = mfmConverter
+                                                 .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost, null, false,
+                                                         false,
+                                                         "div", null, null)
+                                                 .Html,
+                                   Enclosures =
+                                       db.DriveFiles.Where(f => p.FileIds.Contains(f.Id))
+                                         .Select(f => new RssEnclosure
+                                         {
+                                             Url  = f.RawAccessUrl,
+                                             Size = f.Size,
+                                             Type = f.PublicMimeType ?? f.Type
+                                         })
+                                         .ToList(),
+                                   Guid      = new RssGuid { IsPermaLink = true, Guid = p.GetPublicUri(config.Value) },
+                                   CreatedAt = p.CreatedAt.ToString("r")
+                               })
+                               .ToListAsync();
 
         var feed = new RssFeed
         {
