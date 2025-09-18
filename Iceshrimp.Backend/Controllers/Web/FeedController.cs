@@ -46,19 +46,20 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
                                    Type = "html",
                                    Text =
                                        mfmConverter
-                                           .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost)
+                                           .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost, null, false, false,
+                                                   "div", null, null)
                                            .Html
                                },
                                Id = new AtomId { Uri = p.GetPublicUri(config.Value) },
-                               Links =
-                               [
+                               Links = new List<AtomLink>
+                               {
                                    new AtomLink
                                    {
                                        Href = p.GetPublicUri(config.Value),
                                        Rel  = "alternate",
                                        Type = "text/html"
                                    }
-                               ],
+                               },
                                PublishedAt = p.CreatedAt,
                                Title = new AtomPlainText { Text = $"Note by {target.DisplayName ?? target.Username}" },
                                UpdatedAt = p.UpdatedAt ?? p.CreatedAt
@@ -146,7 +147,8 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
                              Id  = p.GetPublicUri(config.Value),
                              Url = p.GetPublicUri(config.Value),
                              ContentHtml = mfmConverter
-                                           .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost)
+                                           .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost, null, false, false,
+                                                   "div", null, null)
                                            .Html,
                              CreatedAt = p.CreatedAt,
                              UpdatedAt = p.UpdatedAt,
@@ -203,7 +205,8 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
                              Title = $"Note by {target.DisplayName ?? target.Username}",
                              Link  = p.GetPublicUri(config.Value),
                              Description = mfmConverter
-                                           .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost)
+                                           .ToHtml(p.Text ?? "", p.MentionedRemoteUsers, p.UserHost, null, false, false,
+                                                   "div", null, null)
                                            .Html,
                              Enclosures = p.FileIds.Select(i => enclosures[i]).NotNull().ToList(),
                              Guid       = new RssGuid { IsPermaLink = true, Guid = p.GetPublicUri(config.Value) },
@@ -230,7 +233,7 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
         return Content(Encoding.UTF8.GetString(stream.ToArray()));
     }
 
-    private async Task<(User, List<Note>)> GetTargetAndNotes(string id, PaginationQuery pq)
+    private async Task<(User, IQueryable<Note>)> GetTargetAndNotes(string id, PaginationQuery pq)
     {
         var target =
             await db.Users.Include(p => p.UserProfile)
@@ -242,12 +245,11 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
         if (target.UserSettings?.PrivateMode ?? true)
             throw GracefulException.Forbidden("Can't view Atom feed for private users");
 
-        var notes = await db.Notes
-                            .IncludeCommonProperties()
-                            .FilterByUser(target)
-                            .Where(p => p.Visibility == Note.NoteVisibility.Public)
-                            .Paginate(pq, ControllerContext)
-                            .ToListAsync();
+        var notes = db.Notes
+                      .IncludeCommonProperties()
+                      .FilterByUser(target)
+                      .Where(p => p.Visibility == Note.NoteVisibility.Public)
+                      .Paginate(pq, ControllerContext);
 
         return (target, notes);
     }
