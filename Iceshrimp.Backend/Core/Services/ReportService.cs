@@ -31,7 +31,9 @@ public class ReportService(
 		await db.SaveChangesAsync();
 	}
 
-	public async Task<Report> CreateReportAsync(User reporter, User target, IEnumerable<Note> notes, string comment)
+	public async Task<Report> CreateReportAsync(
+		User reporter, User target, IEnumerable<Note> notes, IEnumerable<Rule> rules, string comment
+	)
 	{
 		var report = new Report
 		{
@@ -42,6 +44,7 @@ public class ReportService(
 			Reporter       = reporter,
 			ReporterHost   = reporter.Host,
 			Notes          = notes.ToArray(),
+			Rules          = rules.ToArray(),
 			Comment        = comment
 		};
 

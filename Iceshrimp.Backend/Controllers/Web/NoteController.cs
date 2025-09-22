@@ -694,6 +694,6 @@ public class NoteController(
 		var note = await db.Notes.Include(p => p.User).EnsureVisibleFor(user).FirstOrDefaultAsync(p => p.Id == id)
 		           ?? throw GracefulException.NotFound("Note not found");
 
-		await reportSvc.CreateReportAsync(user, note.User, [note], request.Comment);
+		await reportSvc.CreateReportAsync(user, note.User, [note], [], request.Comment);
 	}
 }

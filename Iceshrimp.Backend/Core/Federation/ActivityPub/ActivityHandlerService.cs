@@ -557,7 +557,7 @@ public class ActivityHandlerService(
 		if (noteMatches.Count != 0 && noteMatches.Any(p => p.User != userMatch))
 			throw GracefulException.UnprocessableEntity("Refusing to process ASFlag: note author mismatch");
 
-		await reportSvc.CreateReportAsync(resolvedActor, userMatch, noteMatches, flag.Content ?? "");
+		await reportSvc.CreateReportAsync(resolvedActor, userMatch, noteMatches, [], flag.Content ?? "");
 	}
 
 	private async Task UnfollowAsync(ASActor followeeActor, User follower)
