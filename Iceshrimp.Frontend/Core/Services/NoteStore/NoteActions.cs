@@ -7,7 +7,8 @@ internal class NoteActions(
 	ApiService api,
 	ILogger<NoteActions> logger,
 	StateSynchronizer stateSynchronizer,
-	ComposeService composeService
+	ComposeService composeService,
+	GlobalComponentSvc globalComponentService
 )
 {
 	private void Broadcast(NoteBase note)
@@ -247,5 +248,10 @@ internal class NoteActions(
 	public async Task DeleteAsync(NoteBase note)
 	{
 		await api.Notes.DeleteNoteAsync(note.Id);
+	}
+
+	public async Task ReportAsync(NoteBase note)
+	{
+		await globalComponentService.ReportDialog?.ReportNote(note)!;
 	}
 }

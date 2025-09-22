@@ -83,4 +83,7 @@ internal class NoteControllerModel(ApiClient api)
 
 	public Task MuteNoteAsync(string id) =>
 		api.CallAsync(HttpMethod.Post, $"/notes/{id}/mute");
+
+	public Task ReportNoteAsync(string id, NoteReportRequest request) =>
+		api.CallAsync(HttpMethod.Post, $"/notes/{id}/report", data: request);
 }

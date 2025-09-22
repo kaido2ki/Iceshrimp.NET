@@ -128,14 +128,20 @@
                     <Text>@Loc["Copy contents"]</Text>
                 </MenuElement>
             }
+            <hr class="rule"/>
             @if (Note.User.Id == Session.Current?.Id)
             {
-                <hr class="rule"/>
                 <MenuElement Icon="Icons.Eraser" OnSelect="Redraft" Danger>
                     <Text>@Loc["Delete & redraft"]</Text>
                 </MenuElement>
                 <MenuElement Icon="Icons.Trash" OnSelect="Delete" Danger>
                     <Text>@Loc["Delete"]</Text>
+                </MenuElement>
+            }
+            else
+            {
+                <MenuElement Icon="Icons.WarningCircle" OnSelect="Report" Danger>
+                    <Text>@Loc["Report note"]</Text>
                 </MenuElement>
             }
             <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>
@@ -162,6 +168,8 @@
     private void ToggleMenu() => ContextMenu.Toggle(MenuButton);
 
     private void Delete() => _ = NoteActions.DeleteAsync(Note);
+
+    private void Report() => _ = NoteActions.ReportAsync(Note);
 
     private void OpenAbout() => Nav.NavigateTo($"/notes/{Note.Id}/about");
 

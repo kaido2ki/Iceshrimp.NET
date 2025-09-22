@@ -11,4 +11,5 @@ public class GlobalComponentSvc
     public PromptDialog?    PromptDialog    { get; set; }
     public SelectDialog?    SelectDialog    { get; set; }
     public UserDialog?      UserDialog      { get; set; }
+    public ReportDialog?    ReportDialog    { get; set; }
 }

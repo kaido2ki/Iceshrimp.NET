@@ -1,0 +1,130 @@
+@using Iceshrimp.Frontend.Components.Note
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Localization
+@inject ApiService                     Api;
+@inject GlobalComponentSvc             GlobalComponentSvc;
+@inject IJSRuntime                     Js;
+@inject IStringLocalizer<Localization> Loc;
+
+<dialog class="dialog" @ref="Dialog">
+    <div class="report @(Waiting ? "waiting" : "")">
+        @if (Waiting)
+        {
+            <LoadingSpinner Scale="1.5"/>
+        }
+        else
+        {
+            @if (ReportedNote != null)
+            {
+                <span>@Loc["Report note"]</span>
+                <div class="report-note">
+                    <NoteComponent Note="ReportedNote" AsQuote="true" OpenNote="false"/>
+                </div>
+            }
+            else if (ReportedUser != null)
+            {
+                <span>@Loc["Report user"]</span>
+            }
+
+            @if (Rules.Count != 0)
+            {
+                <span>Rule violations</span>
+
+                <ol class="rules">
+                    @foreach (var rule in Rules)
+                    {
+                        <li>
+                            <input type="checkbox" @onchange="args => UpdateRules(rule.Id, (bool?)args.Value)" id="rule-@rule.Id"/>
+                            <label for="rule-@rule.Id">
+                                @rule.Text
+                            </label>
+                        </li>
+                    }
+                </ol>
+            }
+
+            <textarea class="input" @bind="Comment" @bind:event="oninput" rows="5"
+                      placeholder="@Loc["Report details"]"></textarea>
+            
+            <div class="buttons">
+                <button class="button submit-btn" @onclick="Submit"
+                        disabled="@string.IsNullOrWhiteSpace(Comment)">@Loc["Submit"]</button>
+                <button class="button" @onclick="Cancel">@Loc["Cancel"]</button>
+            </div>
+        }
+    </div>
+</dialog>
+
+@code {
+    private ElementReference   Dialog { get; set; }
+    private IJSObjectReference _module = null!;
+    private List<RuleResponse> Rules        { get; set; } = [];
+    private string             Comment      { get; set; } = "";
+    private List<string>       RuleIds      { get; set; } = [];
+    private List<string>       NoteIds      { get; set; } = [];
+    private NoteBase?          ReportedNote { get; set; }
+    private UserResponse?      ReportedUser { get; set; }
+    private bool               Waiting      { get; set; }
+
+    private async Task CloseDialog()
+    {
+        await _module.InvokeVoidAsync("closeDialog", Dialog);
+    }
+
+    public async Task ReportNote(NoteBase note)
+    {
+        Comment      = "";
+        RuleIds      = [];
+        NoteIds      = [];
+        ReportedNote = note;
+        ReportedUser = null;
+
+        StateHasChanged();
+
+        await _module.InvokeVoidAsync("openDialog", Dialog);
+    }
+
+    public async Task ReportUser(UserResponse user)
+    {
+        Comment      = "";
+        RuleIds      = [];
+        NoteIds      = [];
+        ReportedNote = null;
+        ReportedUser = user;
+
+        StateHasChanged();
+
+        await _module.InvokeVoidAsync("openDialog", Dialog);
+    }
+
+    private async Task Submit()
+    {
+        if (ReportedNote != null)
+        {
+            Waiting = true;
+            await Api.Notes.ReportNoteAsync(ReportedNote.Id, new NoteReportRequest { Comment = Comment, RuleIds = RuleIds });
+            Waiting = false;
+            await CloseDialog();
+        }
+    }
+    
+    private void Cancel() {}
+
+    private void UpdateRules(string id, bool? check)
+    {
+        if (check is true && !RuleIds.Contains(id))
+            RuleIds.Add(id);
+        if (check is false)
+            RuleIds.Remove(id);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _module = await Js.InvokeAsync<IJSObjectReference>("import",
+                                                           "./Components/ReportDialog.razor.js");
+        Rules                           = await Api.Instance.GetRulesAsync();
+        GlobalComponentSvc.ReportDialog = this;
+    }
+}
