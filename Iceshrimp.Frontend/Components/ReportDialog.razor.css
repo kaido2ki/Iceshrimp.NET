@@ -36,6 +36,7 @@
     padding: 0.75rem;
     overflow: clip;
     width: 100%;
+    text-align: left;
 }
 
 .report-user {
@@ -95,7 +96,20 @@ input[type="checkbox"] {
 }
 
 @media (max-width: 1000px) {
-    .report {
+    .dialog {
+        z-index: +25;
+        width: 100%;
         max-width: 100%;
+        min-height: 100vh;
+        margin: 0;
+    }
+
+    .report {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        min-height: 100vh;
+        border: 0;
+        border-radius: 0;
     }
 }
