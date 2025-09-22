@@ -662,6 +662,7 @@ public static class QueryableExtensions
 		return query.Include(p => p.Reporter.UserProfile)
 		            .Include(p => p.TargetUser.UserProfile)
 		            .Include(p => p.Assignee.UserProfile)
+		            .Include(p => p.Rules)
 		            .Include(p => p.Notes)
 		            .ThenInclude(p => p.User.UserProfile);
 	}

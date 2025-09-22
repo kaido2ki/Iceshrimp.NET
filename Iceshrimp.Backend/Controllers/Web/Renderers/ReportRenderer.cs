@@ -9,6 +9,7 @@ public class ReportRenderer(UserRenderer userRenderer, NoteRenderer noteRenderer
 	private static ReportResponse Render(Report report, ReportRendererDto data)
 	{
 		var noteIds = report.Notes.Select(i => i.Id).ToArray();
+		var ruleIds = report.Rules.Select(i => i.Id).ToArray();
 		return new ReportResponse
 		{
 			Id         = report.Id,
@@ -19,7 +20,8 @@ public class ReportRenderer(UserRenderer userRenderer, NoteRenderer noteRenderer
 			Assignee   = data.Users.FirstOrDefault(p => p.Id == report.AssigneeId),
 			TargetUser = data.Users.First(p => p.Id == report.TargetUserId),
 			Reporter   = data.Users.First(p => p.Id == report.ReporterId),
-			Notes      = data.Notes.Where(p => noteIds.Contains(p.Id)).ToArray()
+			Notes      = data.Notes.Where(p => noteIds.Contains(p.Id)).ToArray(),
+			Rules      = data.Rules.Where(p => ruleIds.Contains(p.Id)).ToArray()
 		};
 	}
 
@@ -41,10 +43,14 @@ public class ReportRenderer(UserRenderer userRenderer, NoteRenderer noteRenderer
 	private async Task<NoteResponse[]> GetNotesAsync(IEnumerable<Note> notes)
 		=> await noteRenderer.RenderManyAsync(notes, null).ToArrayAsync();
 
+	private RuleResponse[] GetRules(IEnumerable<Rule> rules) =>
+		rules.Select(p => new RuleResponse { Id = p.Id, Text = p.Text, Description = p.Description }).ToArray();
+
 	private async Task<ReportRendererDto> BuildDtoAsync(params Report[] reports)
 	{
 		var notes = await GetNotesAsync(reports.SelectMany(p => p.Notes));
 		var users = notes.Select(p => p.User).DistinctBy(p => p.Id).ToList();
+		var rules = GetRules(reports.SelectMany(p => p.Rules));
 
 		var missingUsers = reports.Select(p => p.TargetUser)
 		                          .Concat(reports.Select(p => p.Assignee))
@@ -55,12 +61,13 @@ public class ReportRenderer(UserRenderer userRenderer, NoteRenderer noteRenderer
 
 		users.AddRange(await GetUsersAsync(missingUsers));
 
-		return new ReportRendererDto { Users = users.ToArray(), Notes = notes };
+		return new ReportRendererDto { Users = users.ToArray(), Notes = notes, Rules = rules};
 	}
 
 	private class ReportRendererDto
 	{
 		public required UserResponse[] Users;
 		public required NoteResponse[] Notes;
+		public required RuleResponse[] Rules;
 	}
 }
