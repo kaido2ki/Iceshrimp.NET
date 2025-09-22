@@ -149,6 +149,9 @@
                                     <Text>@Loc["Block"]</Text>
                                 </MenuElement>
                             }
+                            <MenuElement Icon="Icons.WarningCircle" OnSelect="Report" Danger>
+                                <Text>@Loc["Report"]</Text>
+                            </MenuElement>
                         }
                         <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>
                     </Menu>
@@ -371,6 +374,9 @@
 
     private void Block() =>
         GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, BlockCallback), Loc["Block {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Block"]);
+
+    private void Report() =>
+        GlobalComponentSvc.ReportDialog?.ReportUser(UserResponse);
 
     private async Task BlockCallback(bool confirm)
     {

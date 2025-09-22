@@ -51,4 +51,7 @@ internal class UserControllerModel(ApiClient api)
 		api.CallNullableAsync(HttpMethod.Post, $"/users/{id}/remove_from_followers");
 
 	public Task<bool> UnfollowUserAsync(string id) => api.CallNullableAsync(HttpMethod.Post, $"/users/{id}/unfollow");
+
+	public Task ReportUserAsync(string id, UserReportRequest request) =>
+		api.CallAsync(HttpMethod.Post, $"/users/{id}/report", data: request);
 }

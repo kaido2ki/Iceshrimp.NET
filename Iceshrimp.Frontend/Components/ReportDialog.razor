@@ -1,4 +1,5 @@
 @using Iceshrimp.Frontend.Components.Note
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
 @using Iceshrimp.Shared.Schemas.Web
@@ -26,11 +27,38 @@
             else if (ReportedUser != null)
             {
                 <span>@Loc["Report user"]</span>
+                <div class="report-user">
+                    <UserAvatar User="ReportedUser" Title="true"/>
+                    <div class="name-section">
+                        <UserDisplayName User="@ReportedUser"/>
+                        <span class="identifier">
+                            @@@ReportedUser.Username
+                            @if (ReportedUser.Host != null)
+                            {
+                                <span class="host">@@@ReportedUser.Host</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+                
+                <span>@Loc["Notes"]</span>
+
+                <div class="note-ids">
+                    @foreach (var id in NoteIds)
+                    {
+                        <a href="/notes/@id" target="_blank">@id</a>
+                    }
+                </div>
+
+                <div class="report-note-add">
+                    <input type="text" @bind="NewNoteId" placeholder="@Loc["Note ID or URL"]"/>
+                    <button @onclick="AddNoteId" class="button">@Loc["Add note"]</button>
+                </div>
             }
 
             @if (Rules.Count != 0)
             {
-                <span>Rule violations</span>
+                <span>@Loc["Rule violations"]</span>
 
                 <ol class="rules">
                     @foreach (var rule in Rules)
@@ -64,6 +92,7 @@
     private string             Comment      { get; set; } = "";
     private List<string>       RuleIds      { get; set; } = [];
     private List<string>       NoteIds      { get; set; } = [];
+    private string             NewNoteId    { get; set; } = "";
     private NoteBase?          ReportedNote { get; set; }
     private UserResponse?      ReportedUser { get; set; }
     private bool               Waiting      { get; set; }
@@ -78,6 +107,7 @@
         Comment      = "";
         RuleIds      = [];
         NoteIds      = [];
+        NewNoteId    = "";
         ReportedNote = note;
         ReportedUser = null;
 
@@ -91,6 +121,7 @@
         Comment      = "";
         RuleIds      = [];
         NoteIds      = [];
+        NewNoteId    = "";
         ReportedNote = null;
         ReportedUser = user;
 
@@ -101,16 +132,34 @@
 
     private async Task Submit()
     {
-        if (ReportedNote != null)
+        try
         {
-            Waiting = true;
-            await Api.Notes.ReportNoteAsync(ReportedNote.Id, new NoteReportRequest { Comment = Comment, RuleIds = RuleIds });
+            if (ReportedNote != null)
+            {
+                Waiting = true;
+                await Api.Notes.ReportNoteAsync(ReportedNote.Id, new NoteReportRequest { Comment = Comment, RuleIds = RuleIds });
+                Waiting = false;
+                await CloseDialog();
+            }
+            else if (ReportedUser != null)
+            {
+                Waiting = true;
+                await Api.Users.ReportUserAsync(ReportedUser.Id, new UserReportRequest { Comment = Comment, RuleIds = RuleIds, NoteIds = NoteIds });
+                Waiting = false;
+                await CloseDialog();
+            }
+        }
+        catch (ApiException e)
+        {
             Waiting = false;
-            await CloseDialog();
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[e.Response.Message ?? "Unable to submit report"], NoticeDialog.NoticeType.Error)!;
         }
     }
-    
-    private void Cancel() {}
+
+    private async Task Cancel()
+    {
+        await CloseDialog();
+    }
 
     private void UpdateRules(string id, bool? check)
     {
@@ -118,6 +167,58 @@
             RuleIds.Add(id);
         if (check is false)
             RuleIds.Remove(id);
+    }
+
+    private async Task AddNoteId()
+    {
+        if (ReportedUser == null) return;
+
+        if (Uri.TryCreate(NewNoteId, UriKind.Absolute, out var uri))
+        {
+            var res = await Api.Search.LookupAsync(NewNoteId);
+
+            if (res != null && res.TargetUrl.StartsWith("/notes/"))
+            {
+                var id = res.TargetUrl.Split('/').Last();
+                if (!NoteIds.Contains(id))
+                    NoteIds.Add(id);
+
+                NewNoteId = "";
+                return;
+            }
+
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Note not found"], NoticeDialog.NoticeType.Error)!;
+            return;
+        }
+
+        NoteResponse? note = null;
+
+        try
+        {
+            note = await Api.Notes.GetNoteAsync(NewNoteId);
+        }
+        catch (ApiException)
+        {
+        }
+
+        if (note != null)
+        {
+            if (note.User.Id == ReportedUser.Id)
+            {
+                if (!NoteIds.Contains(NewNoteId))
+                    NoteIds.Add(NewNoteId);
+
+                NewNoteId = "";
+            }
+            else
+            {
+                await GlobalComponentSvc.NoticeDialog?.Display(Loc["Note doesn't belong to reported user"], NoticeDialog.NoticeType.Error)!;
+            }
+
+            return;
+        }
+
+        await GlobalComponentSvc.NoticeDialog?.Display(Loc["Note not found"], NoticeDialog.NoticeType.Error)!;
     }
 
     protected override async Task OnInitializedAsync()
