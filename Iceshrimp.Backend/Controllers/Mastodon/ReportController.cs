@@ -43,7 +43,9 @@ public class ReportController(ReportService reportSvc, DatabaseContext db, UserR
 		if (notes.Any(p => p.UserId != target.Id))
 			throw GracefulException.BadRequest("Note author does not match target user");
 
-		var report        = await reportSvc.CreateReportAsync(user, target, notes, [], request.Comment);
+		var rules = await db.Rules.Where(p => request.RuleIds.Contains(p.Id)).ToListAsync();
+
+		var report        = await reportSvc.CreateReportAsync(user, target, notes, rules, request.Comment);
 		var targetAccount = await userRenderer.RenderAsync(report.TargetUser, user);
 
 		return new ReportEntity
@@ -55,7 +57,7 @@ public class ReportController(ReportService reportSvc, DatabaseContext db, UserR
 			ActionTaken   = report.Resolved,
 			CreatedAt     = report.CreatedAt.ToStringIso8601Like(),
 			TargetAccount = targetAccount,
-			RuleIds       = null,
+			RuleIds       = request.RuleIds,
 			StatusIds     = request.StatusIds,
 			ActionTakenAt = null
 		};

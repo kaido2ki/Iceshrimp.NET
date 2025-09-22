@@ -17,6 +17,10 @@ public abstract class ReportSchemas
 		[J("status_ids")]
 		public string[] StatusIds { get; set; } = [];
 
+		[B(Name = "rule_ids")]
+		[J("rule_ids")]
+		public string[] RuleIds { get; set; } = [];
+
 		[B(Name = "comment")]
 		[J("comment")]
 		public string Comment { get; set; } = "";
