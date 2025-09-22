@@ -31,6 +31,7 @@ public class UserController(
 	ActivityPub.UserResolver userResolver,
 	UserService userSvc,
 	BiteService biteSvc,
+	ReportService reportSvc,
 	IOptions<Config.InstanceSection> config
 ) : ControllerBase
 {
@@ -157,6 +158,30 @@ public class UserController(
 		              ?? throw GracefulException.RecordNotFound();
 
 		await userSvc.UnblockUserAsync(user, blockee);
+	}
+
+	[HttpPost("{id}/report")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task ReportUser(string id, UserReportRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot report yourself");
+
+		var target = await db.Users.IncludeCommonProperties()
+		                     .FirstOrDefaultAsync(p => p.Id == id)
+		             ?? throw GracefulException.RecordNotFound();
+
+		var notes = await db.Notes.IncludeCommonProperties().Where(p => request.NoteIds.Contains(p.Id)).ToListAsync();
+		var rules = await db.Rules.Where(p => request.RuleIds.Contains(p.Id)).ToListAsync();
+
+		if (notes.Any(p => p.UserId != id))
+			throw GracefulException.BadRequest("One or more notes do not belong to the reported user");
+
+		await reportSvc.CreateReportAsync(user, target, notes, rules, request.Comment);
 	}
 
 	[HttpPost("{id}/follow")]
