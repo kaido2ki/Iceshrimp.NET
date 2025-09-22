@@ -19,7 +19,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "antenna_src_enum", new[] { "home", "all", "users", "list", "group", "instances" });
@@ -5003,6 +5003,21 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.ToTable("reported_note");
                 });
 
+            modelBuilder.Entity("reported_rule", b =>
+                {
+                    b.Property<string>("report_id")
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("rule_id")
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("report_id", "rule_id");
+
+                    b.HasIndex("rule_id");
+
+                    b.ToTable("reported_rule");
+                });
+
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.AnnouncementRead", b =>
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Announcement", "Announcement")
@@ -6038,6 +6053,21 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Report", null)
                         .WithMany()
                         .HasForeignKey("report_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("reported_rule", b =>
+                {
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Report", null)
+                        .WithMany()
+                        .HasForeignKey("report_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Rule", null)
+                        .WithMany()
+                        .HasForeignKey("rule_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

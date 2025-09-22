@@ -75,6 +75,8 @@ public class Report : IIdentifiable
 
 	public virtual ICollection<Note> Notes { get; set; } = new List<Note>();
 
+	public virtual ICollection<Rule> Rules { get; set; } = new List<Rule>();
+
 	private class EntityTypeConfiguration : IEntityTypeConfiguration<Report>
 	{
 		public void Configure(EntityTypeBuilder<Report> entity)
@@ -100,6 +102,10 @@ public class Report : IIdentifiable
 			entity.HasMany(p => p.Notes)
 			      .WithMany()
 			      .UsingEntity("reported_note", "report_id", "note_id", DeleteBehavior.Cascade);
+
+			entity.HasMany(p => p.Rules)
+			      .WithMany()
+			      .UsingEntity("reported_rule", "report_id", "rule_id", DeleteBehavior.Cascade);
 		}
 	}
 }
