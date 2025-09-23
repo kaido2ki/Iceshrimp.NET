@@ -43,8 +43,6 @@
 
         @if (UserProfile != null)
         {
-            <h3>@Loc["User details"]</h3>
-            
             <details>
                 <summary>@Loc["Bio"]</summary>
                 <MfmText Text="@UserProfile.Bio" Emoji="@Report.TargetUser.Emojis"/>
@@ -52,29 +50,55 @@
 
             @if (Report.TargetUser.Host != null)
             {
-                <span>
-                    @Loc["Instance"]:
-                    @(Report.TargetUser.InstanceName != null ? Loc["{0} ({1})", Report.TargetUser.InstanceName, Report.TargetUser.Host] : Report.TargetUser.Host)
-                </span>
+                <div class="field">
+                    <span class="field-name">
+                        @Loc["Instance"]
+                    </span>
+                    <span class="field-value">
+                        @(Report.TargetUser.InstanceName != null ? Loc["{0} ({1})", Report.TargetUser.InstanceName, Report.TargetUser.Host] : Report.TargetUser.Host)
+                    </span>
+                </div>
             }
-            <span>@Loc["Account created"]: @UserProfile.CreatedAt.ToString("G")</span>
+            <div class="field">
+                <span class="field-name">
+                    @Loc["Account created"]
+                </span>
+                <span class="field-value">
+                    @UserProfile.CreatedAt.ToString("G")
+                </span>
+            </div>
             @if (UserProfile.ActiveAt != null)
             {
-                <span>
-                    @Loc["Last active"]:
-                    <Timestamp Date="@(UserProfile.ActiveAt ?? UserProfile.CreatedAt)"/>
-                </span>
+                <div class="field">
+                    <span class="field-name">
+                        @Loc["Last active"]
+                    </span>
+                    <span class="field-value">
+                        <Timestamp Date="@(UserProfile.ActiveAt ?? UserProfile.CreatedAt)"/>
+                    </span>
+                </div>
             }
             @if (UserProfile.Birthday != null)
             {
-                <span>@Loc["Birthday"]: @UserProfile.Birthday</span>
+                <div class="field">
+                    <span class="field-name">
+                        @Loc["Birthday"]
+                    </span>
+                    <span class="field-value">
+                        @UserProfile.Birthday
+                    </span>
+                </div>
             }
             @if (UserProfile.Pronouns != null)
             {
-                <span>
-                    @Loc["Pronouns"]:
-                    @string.Join(", ", UserProfile.Pronouns.Select(p => $"{p.Value} ({LanguageHelper.Bcp47Languages[p.Key]})"))
-                </span>
+                <div class="field">
+                    <span class="field-name">
+                        @Loc["Pronouns"]
+                    </span>
+                    <span class="field-value">
+                        @string.Join(", ", UserProfile.Pronouns.Select(p => $"{p.Value} ({LanguageHelper.Bcp47Languages[p.Key]})"))
+                    </span>
+                </div>
             }
         }
         
