@@ -40,6 +40,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 			InstanceColor   = instanceColor,
 			Emojis          = emoji,
 			MovedTo         = user.MovedToUri,
+			IsSuspended     = user.IsSuspended,
 			IsBot           = user.IsBot,
 			IsCat           = user.IsCat,
 			SpeakAsCat      = user is { IsCat: true, SpeakAsCat: true }

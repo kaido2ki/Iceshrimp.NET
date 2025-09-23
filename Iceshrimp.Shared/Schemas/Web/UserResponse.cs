@@ -18,10 +18,11 @@ public class UserResponse : IIdentifiable
 	public required string? InstanceIconUrl { get; set; }
 	public          string? InstanceColor   { get; set; }
 
-	public bool                IsBot      { get; set; } = false;
-	public bool                IsCat      { get; set; } = false;
-	public bool                SpeakAsCat { get; set; }
-	public List<EmojiResponse> Emojis     { get; set; } = [];
+	public bool                IsSuspended { get; set; }
+	public bool                IsBot       { get; set; } = false;
+	public bool                IsCat       { get; set; } = false;
+	public bool                SpeakAsCat  { get; set; }
+	public List<EmojiResponse> Emojis      { get; set; } = [];
 
 	[JI(Condition = WhenWritingNull)] public string? MovedTo { get; set; }
 }

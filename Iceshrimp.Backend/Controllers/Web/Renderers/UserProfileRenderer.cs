@@ -71,6 +71,8 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 			IsLocked  = user.IsLocked,
 			Url       = url,
 			Lang      = user.UserProfile?.Lang,
+			CreatedAt = user.CreatedAt,
+			ActiveAt  = user.LastActiveDate,
 			Pronouns  = user.UserProfile?.Pronouns
 		};
 	}
