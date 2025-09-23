@@ -1,0 +1,251 @@
+@page "/mod/reports/{Id}"
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Components.Note
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.Extensions.Localization
+@attribute [Authorize(Roles = "moderator")]
+@layout ModerationLayout
+@inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
+@inject IStringLocalizer<Localization> Loc;
+@inject SessionService                 Session;
+
+<HeadTitle Text="@Loc["Report details"]"/>
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.WarningCircle"></Icon>
+    @Loc["Report details"]
+</SectionContent>
+
+@if (State == State.Loaded && Report != null)
+{
+    <div class="report">
+        <div class="report-user">
+            <NoteUserInfo User="Report.TargetUser" Indented="false"/>
+            <div class="report-details">
+                <Timestamp Date="Report.CreatedAt"/>
+                @if (Report.Resolved)
+                {
+                    <span class="report-resolved">@Loc["Resolved"]</span>
+                }
+                else
+                {
+                    <span class="report-unresolved">@Loc["Unresolved"]</span>
+                }
+            </div>
+        </div>
+
+        @if (UserProfile != null)
+        {
+            <h3>@Loc["User details"]</h3>
+            
+            <details>
+                <summary>@Loc["Bio"]</summary>
+                <MfmText Text="@UserProfile.Bio" Emoji="@Report.TargetUser.Emojis"/>
+            </details>
+
+            @if (Report.TargetUser.Host != null)
+            {
+                <span>
+                    @Loc["Instance"]:
+                    @(Report.TargetUser.InstanceName != null ? Loc["{0} ({1})", Report.TargetUser.InstanceName, Report.TargetUser.Host] : Report.TargetUser.Host)
+                </span>
+            }
+            <span>@Loc["Account created"]: @UserProfile.CreatedAt.ToString("G")</span>
+            @if (UserProfile.ActiveAt != null)
+            {
+                <span>
+                    @Loc["Last active"]:
+                    <Timestamp Date="@(UserProfile.ActiveAt ?? UserProfile.CreatedAt)"/>
+                </span>
+            }
+            @if (UserProfile.Birthday != null)
+            {
+                <span>@Loc["Birthday"]: @UserProfile.Birthday</span>
+            }
+            @if (UserProfile.Pronouns != null)
+            {
+                <span>
+                    @Loc["Pronouns"]:
+                    @string.Join(", ", UserProfile.Pronouns.Select(p => $"{p.Value} ({LanguageHelper.Bcp47Languages[p.Key]})"))
+                </span>
+            }
+        }
+        
+        <h3>Report details</h3>
+        <div class="report-user">
+            <NoteUserInfo User="Report.Reporter" Indented="false"/>
+            <div class="report-details">
+                @if (Report.TargetUser.Host != null)
+                {
+                    <span class="report-resolved">@Loc["Remote report"]</span>
+                }
+            </div>
+        </div>
+        <span class="report-comment">@Report.Comment</span>
+
+        @if (Report.Rules.Length != 0)
+        {
+            <h3>@Loc["Rule violations"]</h3>
+
+            <ul class="rules">
+                @foreach (var rule in Report.Rules)
+                {
+                    <li>
+                        @rule.Text
+                        @if (rule.Description != null)
+                        {
+                            <br>
+                            <i>@rule.Description</i>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    @if (Report.Notes.Length != 0)
+    {
+        <div class="notes">
+            @foreach (var note in Report.Notes)
+            {
+                <div class="note-container">
+                    <NoteComponent Note="note" AsQuote="true" OpenNote="true"/>
+                </div>
+            }
+        </div>
+    }
+    
+    <div class="report">
+        <h3>@Loc["Report actions"]</h3>
+        @if (Report.TargetUser.IsSuspended)
+        @if (Report.Resolved && Report.Assignee != null)
+        {
+            <MfmText Text="@Loc["Resolved by {0}", Report.Assignee.DisplayName ?? Report.Assignee.Username]"
+                     Emoji="Report.Assignee.Emojis" Simple="true"/>
+        }
+        <div class="buttons">
+            @if (!Report.Resolved)
+            {
+                
+                @if (Report.Reporter.Host == null && Report.TargetUser.Host != null && !Report.Forwarded)
+                {
+                    <span class="button" @onclick="Forward">
+                        <Icon Name="Icons.PaperPlaneRight"/>
+                        @Loc["Forward to {0}", Report.TargetUser.Host]
+                    </span>
+                }
+                <span class="button" @onclick="Resolve">
+                    <Icon Name="Icons.CheckCircle"/>
+                    @Loc["Mark as resolved"]
+                </span>
+                <span class="button danger" @onclick="Suspend">
+                    <Icon Name="Icons.Gavel"/>
+                    @Loc["Suspend user"]
+                </span>
+            }
+        </div>
+    </div>
+}
+
+@if (State == State.NotFound)
+{
+    <i>@Loc["Not found"]</i>
+}
+
+@if (State == State.Loading)
+{
+    <div class="loading">
+        <LoadingSpinner Scale="2"/>
+    </div>
+}
+
+@code {
+    [Parameter] public string? Id { get; set; }
+
+    private State                State       { get; set; }
+    private ReportResponse?      Report      { get; set; }
+    private UserProfileResponse? UserProfile { get; set; }
+
+    private void Forward() =>
+        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, ForwardCallback), Loc["Forward report?"], Icons.PaperPlaneRight, Loc["Forward"]);
+
+    private async Task ForwardCallback(bool confirm)
+    {
+        if (!confirm || Id == null || Report == null) return;
+
+        try
+        {
+            await Api.Moderation.ForwardReportAsync(Id);
+            Report.Forwarded = true;
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to forward report"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
+    
+    private void Resolve() =>
+        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, ResolveCallback), Loc["Resolve report?"], Icons.CheckCircle, Loc["Resolve"]);
+
+    private async Task ResolveCallback(bool confirm)
+    {
+        if (!confirm || Id == null || Report == null) return;
+
+        try
+        {
+            await Api.Moderation.ResolveReportAsync(Id);
+            Report.Resolved = true;
+            Report.Assignee = Session.Current;
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to resolve report"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
+    
+    private void Suspend() =>
+        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, SuspendCallback), Loc["Suspend {0}?", Report?.TargetUser.DisplayName ?? Report?.TargetUser.Username ?? "user"], Icons.Gavel, Loc["Suspend"]);
+
+    private async Task SuspendCallback(bool confirm)
+    {
+        if (!confirm || Id == null || Report == null) return;
+
+        try
+        {
+            await Api.Moderation.SuspendUserAsync(Report.TargetUser.Id);
+            await ResolveCallback(true);
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to resolve report"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id == null)
+        {
+            State = State.NotFound;
+            return;
+        }
+
+        State  = State.Loading;
+        Report = await Api.Moderation.GetReportAsync(Id);
+
+        if (Report != null)
+        {
+            UserProfile = await Api.Users.GetUserProfileAsync(Report.TargetUser.Id);
+        }
+        
+        State = Report != null ? State.Loaded : State.NotFound;
+    }
+}
