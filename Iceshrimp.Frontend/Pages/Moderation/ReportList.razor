@@ -1,0 +1,118 @@
+@page "/mod/reports"
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Components.Note
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.Extensions.Localization
+@attribute [Authorize(Roles = "moderator")]
+@layout ModerationLayout
+@inject ApiService                     Api;
+@inject IStringLocalizer<Localization> Loc;
+
+<HeadTitle Text="@Loc["Reports"]"/>
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.WarningCircle"></Icon>
+    @Loc["Reports"]
+    @if (State is State.Empty or State.Loaded)
+    {
+        <span class="action btn" @onclick="ToggleResolved">
+            <Icon Name="@(Resolved ? Icons.XCircle : Icons.CheckCircle)"/>
+            <span>@Loc[Resolved ? "Unresolved" : "Resolved"]</span>
+        </span>
+    }
+</SectionContent>
+
+@if (State == State.Loaded)
+{
+    @foreach (var report in Reports)
+    {
+        <div class="report">
+            <div class="report-user">
+                <NoteUserInfo User="report.TargetUser" Indented="false"/>
+                <div class="report-details">
+                    <Timestamp Date="report.CreatedAt"/>
+                    @if (report.Resolved)
+                    {
+                        <span class="report-resolved">@Loc["Resolved"]</span>
+                    }
+                    else
+                    {
+                        <span class="report-unresolved">@Loc["Unresolved"]</span>
+                    }
+                </div>
+            </div>
+            <div>
+                <MfmText Text="@Loc["Reported by {0}", report.Reporter.DisplayName ?? report.Reporter.Username]"
+                         Emoji="@report.Reporter.Emojis" Simple="true"/>
+            </div>
+            <span class="report-comment">@report.Comment</span>
+            <div>
+                @{
+                    var attachments = new List<string>();
+                    if (report is { Forwarded: true, TargetUser.Host: not null })
+                        attachments.Add(Loc["Forwarded to {0}", report.TargetUser.Host]);
+                    if (report.Notes.Length != 0)
+                        attachments.Add(Loc["{0} notes", report.Notes.Length]);
+                    if (report.Rules.Length != 0)
+                        attachments.Add(Loc["{0} rule violations", report.Rules.Length]);
+
+                    @string.Join(", ", attachments)
+                }
+            </div>
+            <a href="/mod/reports/@report.Id">View details</a>
+        </div>
+    }
+
+    <ScrollEnd IntersectionChange="LoadMore" ManualLoad="LoadMore"/>
+}
+
+@if (State == State.Empty)
+{
+    <i>@Loc["No reports"]</i>
+}
+
+@if (State == State.Loading)
+{
+    <div class="loading">
+        <LoadingSpinner Scale="2"/>
+    </div>
+}
+
+@code {
+    private State                State    { get; set; } = State.Loading;
+    private List<ReportResponse> Reports  { get; set; } = [];
+    private string?              MaxId    { get; set; }
+    private bool                 Resolved { get; set; }
+
+    private async Task LoadReports()
+    {
+        State   = State.Loading;
+        Reports = await Api.Moderation.GetReportsAsync(new PaginationQuery(), Resolved);
+        State   = Reports.Count != 0 ? State.Loaded : State.Empty;
+    }
+
+    private async Task LoadMore()
+    {
+        MaxId = Reports.Last().Id;
+        var res = await Api.Moderation.GetReportsAsync(new PaginationQuery { MaxId = MaxId });
+        Reports.AddRange(res);
+        StateHasChanged();
+    }
+
+    private async Task ToggleResolved()
+    {
+        Resolved = !Resolved;
+        await LoadReports();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReports();
+    }
+}

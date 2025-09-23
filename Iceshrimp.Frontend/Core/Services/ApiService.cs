@@ -19,6 +19,7 @@ internal class ApiService(ApiClient client)
 	public readonly FollowRequestControllerModel FollowRequests = new(client);
 	public readonly MigrationControllerModel     Migrations     = new(client);
 	public readonly MiscControllerModel          Misc           = new(client);
+	public readonly ModerationControllerModel    Moderation     = new(client);
 	public readonly ProfileControllerModel       Profile        = new(client);
 	public readonly FilterControllerModel        Filters        = new(client);
 	public readonly VersionControllerModel       Version        = new(client);

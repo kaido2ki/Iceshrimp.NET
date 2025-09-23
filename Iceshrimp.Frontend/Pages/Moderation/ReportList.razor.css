@@ -1,0 +1,43 @@
+.report {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 1rem 0.5rem 0;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 45rem;
+    background-color: var(--foreground-color);
+    border-radius: 0.75rem;
+}
+
+.report-user {
+    display: flex;
+    align-items: center;
+}
+
+.report-details {
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+    text-align: right;
+}
+
+.report-resolved {
+    color: var(--notice-color);
+}
+
+.report-unresolved {
+    color: var(--danger-color);
+}
+
+.report-comment {
+    margin: 8px 0;
+    padding-left: 12px;
+    border-left: solid 4px var(--highlight-color);
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    margin-top: 5rem;
+}
