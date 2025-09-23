@@ -9,6 +9,7 @@ public class ReportService(
 	ActivityPub.ActivityDeliverService deliverSvc,
 	ActivityPub.ActivityRenderer activityRenderer,
 	SystemUserService sysUserSvc,
+	NotificationService notificationSvc,
 	DatabaseContext db
 ) : IScopedService
 {
@@ -51,6 +52,8 @@ public class ReportService(
 		db.Add(report);
 		await db.SaveChangesAsync();
 		await db.ReloadEntityRecursivelyAsync(report);
+
+		await notificationSvc.GenerateReportNotificationsAsync(report);
 		return report;
 	}
 }

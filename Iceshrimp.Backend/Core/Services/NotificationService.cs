@@ -286,4 +286,27 @@ public class NotificationService(
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNotification(notification);
 	}
+
+	public async Task GenerateReportNotificationsAsync(Report report)
+	{
+		var notifications = await db.Users
+		                            .Where(p => p.IsAdmin || p.IsModerator)
+		                            .Select(p => new Notification
+		                            {
+			                            Id         = IdHelpers.GenerateSnowflakeId(DateTime.UtcNow),
+			                            CreatedAt  = DateTime.UtcNow,
+			                            NotifierId = report.ReporterId,
+			                            Notifiee   = p,
+			                            Report     = report,
+			                            Type       = Notification.NotificationType.Report
+		                            })
+		                            .ToListAsync();
+
+		if (notifications.Count == 0)
+			return;
+
+		await db.AddRangeAsync(notifications);
+		await db.SaveChangesAsync();
+		eventSvc.RaiseNotifications(notifications);
+	}
 }
