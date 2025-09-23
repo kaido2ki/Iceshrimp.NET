@@ -80,6 +80,10 @@
                         <span class="notification-icon"><Icon Name="Icons.Timer" Size="0.9em"/></span>
                         <span class="notification-text">@Loc["poll has ended"]</span>
                         break;
+                    case { Type: "report", User: not null }:
+                        <span class="notification-icon"><Icon Name="Icons.WarningCircle" Size="0.9em"/></span>
+                        <span class="notification-text">@Loc["reported a user"]</span>
+                        break;
                     default:
                         <span class="notification-icon"><Icon Name="Icons.Question" Size="0.9em"/></span>
                         <span class="notification-text">
