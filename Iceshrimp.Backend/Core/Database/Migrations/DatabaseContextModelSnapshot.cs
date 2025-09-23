@@ -28,7 +28,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "job_status", new[] { "queued", "delayed", "running", "completed", "failed" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "marker_type_enum", new[] { "home", "notifications" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "note_visibility_enum", new[] { "public", "home", "followers", "specified" });
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "notification_type_enum", new[] { "follow", "mention", "reply", "renote", "quote", "like", "reaction", "pollVote", "pollEnded", "receiveFollowRequest", "followRequestAccepted", "groupInvited", "app", "edit", "bite" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "notification_type_enum", new[] { "follow", "mention", "reply", "renote", "quote", "like", "reaction", "pollVote", "pollEnded", "receiveFollowRequest", "followRequestAccepted", "groupInvited", "app", "edit", "bite", "report" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "page_visibility_enum", new[] { "public", "followers", "specified" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "push_subscription_policy_enum", new[] { "all", "followed", "follower", "none" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "relay_status_enum", new[] { "requesting", "accepted", "rejected" });
@@ -3034,6 +3034,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(128)")
                         .HasColumnName("reaction");
 
+                    b.Property<string>("ReportId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("reportId");
+
                     b.Property<Notification.NotificationType>("Type")
                         .HasColumnType("notification_type_enum")
                         .HasColumnName("type")
@@ -3063,6 +3068,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.HasIndex("NotifieeId");
 
                     b.HasIndex("NotifierId");
+
+                    b.HasIndex("ReportId");
 
                     b.HasIndex("Type");
 
@@ -5596,6 +5603,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasForeignKey("NotifierId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Report", "Report")
+                        .WithMany()
+                        .HasForeignKey("ReportId");
+
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.UserGroupInvitation", "UserGroupInvitation")
                         .WithMany("Notifications")
                         .HasForeignKey("UserGroupInvitationId")
@@ -5610,6 +5621,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Navigation("Notifiee");
 
                     b.Navigation("Notifier");
+
+                    b.Navigation("Report");
 
                     b.Navigation("UserGroupInvitation");
                 });

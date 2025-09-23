@@ -35,7 +35,8 @@ public class Notification : IIdentifiable
 		[PgName("groupInvited")]          GroupInvited,
 		[PgName("app")]                   App,
 		[PgName("edit")]                  Edit,
-		[PgName("bite")]                  Bite
+		[PgName("bite")]                  Bite,
+		[PgName("report")]                Report
 	}
 
 	/// <summary>
@@ -68,6 +69,8 @@ public class Notification : IIdentifiable
 
 	[Column("noteId")] [StringLength(32)] public string? NoteId { get; set; }
 	[Column("biteId")] [StringLength(32)] public string? BiteId { get; set; }
+
+	[Column("reportId")] [StringLength(32)] public string? ReportId { get; set; }
 
 	[Column("reaction")]
 	[StringLength(128)]
@@ -108,6 +111,8 @@ public class Notification : IIdentifiable
 	public virtual Note? Note { get; set; }
 
 	[ForeignKey(nameof(BiteId))] public virtual Bite? Bite { get; set; }
+
+	[ForeignKey(nameof(ReportId))] public virtual Report? Report { get; set; }
 
 	[ForeignKey(nameof(NotifieeId))]
 	[InverseProperty(nameof(User.NotificationNotifiees))]
