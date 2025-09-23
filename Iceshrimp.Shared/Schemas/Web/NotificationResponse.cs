@@ -17,6 +17,9 @@ public class NotificationResponse : IIdentifiable
 	
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public          ReactionResponse? Reaction { get; set; }
+
+	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? ReportId { get; set; }
 	
 	public class BiteResponse
 	{

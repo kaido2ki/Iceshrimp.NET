@@ -47,6 +47,7 @@ public class NotificationRenderer(
 			Note      = note,
 			Bite      = bite,
 			Reaction  = reaction,
+			ReportId  = notification.ReportId,
 			Type      = RenderType(notification.Type)
 		};
 	}
@@ -83,6 +84,7 @@ public class NotificationRenderer(
 		Notification.NotificationType.App                   => "app",
 		Notification.NotificationType.Edit                  => "edit",
 		Notification.NotificationType.Bite                  => "bite",
+		Notification.NotificationType.Report                => "report",
 
 		_ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
 	};
