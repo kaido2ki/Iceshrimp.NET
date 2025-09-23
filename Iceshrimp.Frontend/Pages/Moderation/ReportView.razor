@@ -125,6 +125,10 @@
     <div class="report">
         <h3>@Loc["Report actions"]</h3>
         @if (Report.TargetUser.IsSuspended)
+        {
+            <MfmText Text="@Loc["{0} is suspended", Report.TargetUser.DisplayName ?? Report.TargetUser.Username]"
+                     Emoji="Report.TargetUser.Emojis" Simple="true"/>
+        }
         @if (Report.Resolved && Report.Assignee != null)
         {
             <MfmText Text="@Loc["Resolved by {0}", Report.Assignee.DisplayName ?? Report.Assignee.Username]"
@@ -222,11 +226,12 @@
         try
         {
             await Api.Moderation.SuspendUserAsync(Report.TargetUser.Id);
+            Report.TargetUser.IsSuspended = true;
             await ResolveCallback(true);
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to resolve report"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to suspend user"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
