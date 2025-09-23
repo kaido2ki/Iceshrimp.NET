@@ -105,6 +105,19 @@ public class ModerationController(
 		return await reportRenderer.RenderManyAsync(reports);
 	}
 
+	[HttpGet("reports/{id}")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ReportResponse> GetReport(string id)
+	{
+		var report = await db.Reports
+		                     .IncludeCommonProperties()
+		                     .FirstOrDefaultAsync(p => p.Id == id)
+		             ?? throw GracefulException.RecordNotFound();
+
+		return await reportRenderer.RenderOneAsync(report);
+	}
+
 	[HttpPost("reports/{id}/resolve")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
