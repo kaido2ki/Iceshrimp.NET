@@ -38,7 +38,7 @@ public static class WebSocketHandler
 
 			if (res.Count > buffer.Length)
 			{
-				await socket.CloseAsync(WebSocketCloseStatus.MessageTooBig, null, ct);
+				await socket.CloseOutputAsync(WebSocketCloseStatus.MessageTooBig, null, ct);
 				break;
 			}
 
@@ -52,10 +52,10 @@ public static class WebSocketHandler
 			return;
 
 		if (res?.CloseStatus != null)
-			await socket.CloseAsync(res.CloseStatus.Value, res.CloseStatusDescription, ct);
+			await socket.CloseOutputAsync(res.CloseStatus.Value, res.CloseStatusDescription, ct);
 		else if (!ct.IsCancellationRequested)
-			await socket.CloseAsync(WebSocketCloseStatus.InvalidMessageType, null, ct);
+			await socket.CloseOutputAsync(WebSocketCloseStatus.InvalidMessageType, null, ct);
 		else
-			await socket.CloseAsync(WebSocketCloseStatus.EndpointUnavailable, null, ct);
+			await socket.CloseOutputAsync(WebSocketCloseStatus.EndpointUnavailable, null, ct);
 	}
 }

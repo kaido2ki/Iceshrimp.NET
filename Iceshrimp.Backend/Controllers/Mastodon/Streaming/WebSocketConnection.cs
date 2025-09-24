@@ -437,7 +437,7 @@ public sealed class WebSocketConnection(
 	public async Task CloseAsync(WebSocketCloseStatus status)
 	{
 		Dispose();
-		await socket.CloseAsync(status, null, ct);
+		await socket.CloseOutputAsync(status, null, ct);
 	}
 }
 
