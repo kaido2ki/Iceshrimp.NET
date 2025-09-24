@@ -17,7 +17,7 @@ public static class WebSocketHandler
 
 		WebSocketReceiveResult? res = null;
 
-		connection.InitializeStreamingWorker();
+		await connection.InitializeStreamingWorkerAsync();
 
 		if (stream != null)
 		{

@@ -57,7 +57,7 @@ public sealed class WebSocketConnection(
 		Scope.Dispose();
 	}
 
-	public void InitializeStreamingWorker()
+	public async Task InitializeStreamingWorkerAsync()
 	{
 		InitializeScopeLocalParameters(Scope);
 
@@ -91,7 +91,7 @@ public sealed class WebSocketConnection(
 		EventService.BubbleInstanceAdded    += OnBubbleInstanceAdded;
 		EventService.BubbleInstanceRemoved  += OnBubbleInstanceRemoved;
 
-		_ = InitializeRelationshipsAsync();
+		await InitializeRelationshipsAsync();
 	}
 
 	private async Task InitializeRelationshipsAsync()
