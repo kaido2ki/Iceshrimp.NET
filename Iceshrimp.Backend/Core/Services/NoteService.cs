@@ -623,7 +623,7 @@ public class NoteService(
 		
 		if (data.ParsedCw != null)
 		{
-			var cwEmoji = (await emojiSvc.ResolveEmojiAsync(data.ParsedCw)).Select(p => p.Id).ToList();
+			var cwEmoji = (await emojiSvc.ResolveEmojiAsync(data.ParsedCw)).Select(p => p.Id);
 			if (data.Emoji != null)
 				data.Emoji.AddRange(cwEmoji.Except(data.Emoji));
 			else
