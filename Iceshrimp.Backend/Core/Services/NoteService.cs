@@ -215,11 +215,11 @@ public class NoteService(
 
 		if (data.ParsedCw != null)
 		{
-			var cwEmoji = (await emojiSvc.ResolveEmojiAsync(data.ParsedCw)).Select(p => p.Id).ToList();
+			var cwEmoji = (await emojiSvc.ResolveEmojiAsync(data.ParsedCw)).Select(p => p.Id);
 			if (data.Emoji != null)
-				data.Emoji.AddRange(cwEmoji);
+				data.Emoji.AddRange(cwEmoji.Except(data.Emoji));
 			else
-				data.Emoji = cwEmoji;
+				data.Emoji = cwEmoji.ToList();
 		}
 
 		List<string> visibleUserIds = [];
@@ -625,9 +625,9 @@ public class NoteService(
 		{
 			var cwEmoji = (await emojiSvc.ResolveEmojiAsync(data.ParsedCw)).Select(p => p.Id).ToList();
 			if (data.Emoji != null)
-				data.Emoji.AddRange(cwEmoji);
+				data.Emoji.AddRange(cwEmoji.Except(data.Emoji));
 			else
-				data.Emoji = cwEmoji;
+				data.Emoji = cwEmoji.ToList();
 		}
 
 		if (data.Text is not null)
