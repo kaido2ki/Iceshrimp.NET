@@ -33,8 +33,11 @@ public class FederationList (
     {
         Request.Cookies.TryGetValue("sessions", out var sessions);
         if (sessions == null)
+        {
             IsLoggedIn = false;
+        }
         else
+        {
             foreach (var session in sessions.Split("|"))
             {
                 if (!(await db.Sessions.AnyAsync(p => p.Token == session))) continue;
@@ -42,6 +45,7 @@ public class FederationList (
                 Request.HttpContext.HideFooter();
                 break;
             }
+        }
         
         Request.Cookies.TryGetValue("admin_session", out var admSession);
         if ((await db.Sessions.AnyAsync(p => p.Token == admSession)))
@@ -55,10 +59,18 @@ public class FederationList (
         
         ShouldShowList = (security.Value.ExposeFederationList == Enums.ItemVisibility.Public) || (ListRegOnly && IsLoggedIn) || IsAdmin;
         ShouldShowReasons = (security.Value.ExposeBlockReasons == Enums.ItemVisibility.Public) || (ReasonsRegOnly && IsLoggedIn) || IsAdmin;
-        
+
         if (IsBlocklist)
-            BlockedInstances = await db.BlockedInstances.ToArrayAsync();
+        {
+            BlockedInstances = await db.BlockedInstances
+                                       .Select(p => new BlockedInstance { Host = p.Host, Reason = p.Reason })
+                                       .ToArrayAsync();
+        }
         else
-            AllowedInstances = await db.AllowedInstances.ToArrayAsync();
+        {
+            AllowedInstances = await db.AllowedInstances
+                                       .Select(p => new AllowedInstance { Host = p.Host })
+                                       .ToArrayAsync();
+        }
     }
 }
