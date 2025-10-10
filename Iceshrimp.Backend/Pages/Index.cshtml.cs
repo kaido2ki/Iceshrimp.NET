@@ -8,13 +8,20 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Pages;
 
-public class IndexModel(MetaService meta, InstanceService instance, IOptionsSnapshot<Config.InstanceSection> config) : PageModel
+public class IndexModel(
+	MetaService meta,
+	InstanceService instance,
+	IOptionsSnapshot<Config.InstanceSection> config,
+	IOptionsSnapshot<Config.SecuritySection> security
+) : PageModel
 {
-	public string?    ContactEmail;
-	public string     InstanceDescription = null!;
-	public string     InstanceName        = null!;
-	public string?    IconUrl;
-	public string?    BannerUrl;
+	public string? ContactEmail;
+	public string  InstanceDescription = null!;
+	public string  InstanceName        = null!;
+	public string? IconUrl;
+	public string? BannerUrl;
+	public bool?   ShowFederationList;
+	public string? FederationMode;
 	public List<Rule> Rules = [];
 
 	public async Task<IActionResult> OnGet()
@@ -36,6 +43,9 @@ public class IndexModel(MetaService meta, InstanceService instance, IOptionsSnap
 
 		(IconUrl, BannerUrl) = await instance.GetInstanceImageAsync();
 
+		ShowFederationList = security.Value.ExposeFederationList == Enums.ItemVisibility.Public;
+		FederationMode = security.Value.FederationMode.ToString();
+		
 		Rules = await instance.GetRulesAsync();
 
 		return Page();

@@ -1,0 +1,94 @@
+@page "/federation"
+@using Iceshrimp.Backend.Core.Extensions
+@model Iceshrimp.Backend.Pages.FederationList
+
+<h2>Federation List (@(Model.ModeString) Instances)</h2>
+
+@if (Model.ShouldShowList)
+{
+    @if (Model.IsBlocklist && Model.ReasonsRegOnly && !Model.ShouldShowReasons)
+    {
+        <p>
+            <i>Note: Block reasons are only shown to registered users on this instance.</i>
+        </p>
+    }
+    else if (Model.IsBlocklist && !Model.ShouldShowReasons)
+    {
+        <p>
+            <i>Note: Block reasons are not publicly displayed on this instance.</i>
+        </p>
+    }
+    <table>
+        <thead>
+        <th>Host</th>
+        @if (Model.IsBlocklist && Model.ShouldShowReasons)
+        {
+            <th>Reason</th>
+        }
+        </thead>
+        <tbody>
+        @if (Model.IsBlocklist)
+        {
+            @foreach (var instance in Model.BlockedInstances)
+            {
+                <tr>
+                    @{
+                        var host = instance.Host;
+                        if (host.StartsWith("xn--"))
+                            host = $"{host.FromPunycode()} ({host})";
+                    }
+                    <td>@host</td>
+                
+                    @if (Model.ShouldShowReasons)
+                    {
+                        <td>
+                            @if (instance.Reason is not null)
+                            {
+                                @instance.Reason
+                            }
+                            else
+                            {
+                                <i>No reason set</i>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        }
+        else
+        {
+            @foreach (var instance in Model.AllowedInstances)
+            {
+                <tr>
+                    @{
+                        var host = instance.Host;
+                        if (host.StartsWith("xn--"))
+                            host = host.FromPunycode() + $"({instance.Host})";
+                    }
+                    <td>@host</td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+}
+else if (Model.ListRegOnly)
+{
+    <p>
+        <i>This list is only available to registered users on this instance.</i>
+    </p>
+}
+else
+{
+    <p>
+        <i>This list is not publicly displayed on this instance.</i>
+    </p>
+}
+
+
+@if (Model.BlockedInstances is [] && Model.AllowedInstances is [])
+{
+    <p>
+        <i>No instances @(Model.ModeString?.ToLower()).</i>
+    </p>
+}
