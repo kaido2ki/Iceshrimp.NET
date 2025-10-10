@@ -60,6 +60,8 @@ public class FederationList (
         ShouldShowList = (security.Value.ExposeFederationList == Enums.ItemVisibility.Public) || (ListRegOnly && IsLoggedIn) || IsAdmin;
         ShouldShowReasons = (security.Value.ExposeBlockReasons == Enums.ItemVisibility.Public) || (ReasonsRegOnly && IsLoggedIn) || IsAdmin;
 
+        if (!ShouldShowList) return;
+        
         if (IsBlocklist)
         {
             BlockedInstances = await db.BlockedInstances
