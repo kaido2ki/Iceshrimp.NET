@@ -3,7 +3,7 @@ namespace Iceshrimp.Backend.Core.Configuration;
 public static class Constants
 {
 	// To ensure compliance with the license of this project, adjust the link below if you are distributing a modified copy
-	public const string RepositoryUrl = "https://iceshrimp.dev/kopper/Iceshrimp.NET";
+	public const string RepositoryUrl = "https://iceshrimp.dev/iceshrimp/Iceshrimp.NET";
 
 	// When a git commit ID is appended, this URL should point to the source tree as that commit. Used by Akkoma-FE
 	public const string CommitUrl = $"{RepositoryUrl}/src/commit/";
