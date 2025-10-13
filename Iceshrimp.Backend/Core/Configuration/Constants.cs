@@ -3,7 +3,10 @@ namespace Iceshrimp.Backend.Core.Configuration;
 public static class Constants
 {
 	// To ensure compliance with the license of this project, adjust the link below if you are distributing a modified copy
-	public const string RepositoryUrl = "https://iceshrimp.dev/iceshrimp/Iceshrimp.NET";
+	public const string RepositoryUrl = "https://iceshrimp.dev/kopper/Iceshrimp.NET";
+
+	// When a git commit ID is appended, this URL should point to the source tree as that commit. Used by Akkoma-FE
+	public const string CommitUrl = $"{RepositoryUrl}/src/commit/";
 
 	// Leave this as-is if you're running upstream code, or your fork does not have any meaningful behavioral changes, otherwise please link to your own issue tracker here
 	public const string IssueTrackerUrl = "https://issues.iceshrimp.dev";
@@ -23,8 +26,8 @@ public static class Constants
 	public const           string   FedibirdNs        = "http://fedibird.com/ns";
 	public static readonly string[] SystemUsers       = ["instance.actor", "relay.actor"];
 
-	public const string APMime = "application/activity+json";
-	public const string ASMime = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"";
+	public const string APMime       = "application/activity+json";
+	public const string ASMime       = "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"";
 
 	public static readonly string[] BrowserSafeMimeTypes =
 	[

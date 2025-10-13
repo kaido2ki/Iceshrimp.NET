@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Core.Configuration;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Pleroma.Schemas;
@@ -9,6 +10,7 @@ public class FrontendConfigurationsResponse
 
 public class PleromaFeConfiguration
 {
-	[J("loginMethod")]     public string LoginMethod     => "token";
-	[J("useStreamingApi")] public bool   UseStreamingApi => true;
+	[J("loginMethod")]      public string LoginMethod      => "token";
+	[J("useStreamingApi")]  public bool   UseStreamingApi  => true;
+	[J("backendCommitUrl")] public string BackendCommitUrl => Constants.CommitUrl;
 }
