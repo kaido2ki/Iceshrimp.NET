@@ -506,10 +506,14 @@ public class NoteService(
 			        .ExecuteUpdateAsync(p => p.SetProperty(n => n.RepliesCount, n => n.RepliesCount + diff));
 		}
 
-		if (note.IsQuote && note.RenoteId != null)
+		if (note.IsQuote)
 		{
-			await db.Notes.Where(p => p.Id == note.RenoteId)
-			        .ExecuteUpdateAsync(p => p.SetProperty(n => n.QuotesCount, n => n.QuotesCount + diff));
+			var renoteId = note.RenoteId ?? note.Renote?.Id;
+			if (renoteId != null)
+			{
+				await db.Notes.Where(p => p.Id == renoteId)
+				        .ExecuteUpdateAsync(p => p.SetProperty(n => n.QuotesCount, n => n.QuotesCount + diff));
+			}
 		}
 	}
 
