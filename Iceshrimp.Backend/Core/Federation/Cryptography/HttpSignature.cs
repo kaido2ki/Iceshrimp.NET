@@ -20,12 +20,22 @@ public static class HttpSignature
 		if (!requiredHeaders.All(signature.Headers.Contains))
 			throw new GracefulException(HttpStatusCode.Forbidden, "Request is missing required headers");
 
+		// verify signature with "correct" query string behavior
+		
 		var signingString =
 			GenerateSigningString(signature.Headers, request.Method, request.Path, request.QueryString.Value, request.Headers, null, signature);
 
 		if (request.Body.CanSeek) request.Body.Position = 0;
-		return await VerifySignatureAsync(key, signingString, signature, request.Headers,
+		var ok = await VerifySignatureAsync(key, signingString, signature, request.Headers,
 		                                  request.ContentLength > 0 ? request.Body : null);
+
+		// if invalid and has a query string, re-verify without a query string to accomodate broken implementations
+		if (ok || string.IsNullOrEmpty(request.QueryString.Value)) return ok;
+		
+		signingString = GenerateSigningString(signature.Headers, request.Method, request.Path, "", request.Headers, null, signature);
+		if (request.Body.CanSeek) request.Body.Position = 0;
+		return await VerifySignatureAsync(key, signingString, signature, request.Headers,
+		                                    request.ContentLength > 0 ? request.Body : null);
 	}
 
 	public static async Task<bool> VerifyAsync(this HttpRequestMessage request, string key)
