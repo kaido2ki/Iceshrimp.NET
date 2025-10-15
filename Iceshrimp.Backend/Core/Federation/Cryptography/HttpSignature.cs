@@ -21,7 +21,7 @@ public static class HttpSignature
 			throw new GracefulException(HttpStatusCode.Forbidden, "Request is missing required headers");
 
 		var signingString =
-			GenerateSigningString(signature.Headers, request.Method, request.Path, request.Headers, null, signature);
+			GenerateSigningString(signature.Headers, request.Method, request.Path, request.QueryString.Value, request.Headers, null, signature);
 
 		if (request.Body.CanSeek) request.Body.Position = 0;
 		return await VerifySignatureAsync(key, signingString, signature, request.Headers,
@@ -33,7 +33,7 @@ public static class HttpSignature
 		var signatureHeader = request.Headers.GetValues("Signature").First();
 		var signature       = Parse(signatureHeader);
 		var signingString = GenerateSigningString(signature.Headers, request.Method.Method,
-		                                          request.RequestUri!.AbsolutePath,
+		                                          request.RequestUri!.AbsolutePath, request.RequestUri!.Query,
 		                                          request.Headers.ToHeaderDictionary(),
 		                                          null, signature);
 
@@ -100,7 +100,7 @@ public static class HttpSignature
 
 		var requiredHeadersEnum = requiredHeaders.ToList();
 		var signingString = GenerateSigningString(requiredHeadersEnum, request.Method.Method,
-		                                          request.RequestUri.AbsolutePath,
+		                                          request.RequestUri.AbsolutePath, request.RequestUri.Query,
 		                                          request.Headers.ToHeaderDictionary());
 		var rsa = RSA.Create();
 		rsa.ImportFromPem(key);
@@ -116,7 +116,7 @@ public static class HttpSignature
 	}
 
 	public static string GenerateSigningString(
-		IEnumerable<string> headers, string requestMethod, string requestPath,
+		IEnumerable<string> headers, string requestMethod, string requestPath, string? requestQuery,
 		IHeaderDictionary requestHeaders, string? host = null, HttpSignatureHeader? signature = null
 	)
 	{
@@ -127,7 +127,7 @@ public static class HttpSignature
 			sb.Append($"{header}: ");
 			sb.AppendLineLf(header switch
 			{
-				"(request-target)" => $"{requestMethod.ToLowerInvariant()} {requestPath}",
+				"(request-target)" => $"{requestMethod.ToLowerInvariant()} {requestPath}{requestQuery ?? ""}",
 				"(created)"        => signature?.Created ?? throw new Exception("Signature is missing created param"),
 				"(keyid)"          => signature?.KeyId ?? throw new Exception("Signature is missing keyId param"),
 				"(algorithm)"      => signature?.Algo ?? throw new Exception("Signature is missing algorithm param"),

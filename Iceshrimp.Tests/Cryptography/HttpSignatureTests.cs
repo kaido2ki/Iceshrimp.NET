@@ -136,7 +136,7 @@ public class HttpSignatureTests
 		var parsed = HttpSignature.Parse(sigHeader);
 		var dict   = new HeaderDictionary { { "host", "example.org" } };
 		var signingString =
-			HttpSignature.GenerateSigningString(headers.Split(" "), "GET", "/", dict, "example.org", parsed);
+			HttpSignature.GenerateSigningString(headers.Split(" "), "GET", "/", "", dict, "example.org", parsed);
 
 		var keypair = MockObjects.UserKeypair;
 		var rsa     = RSA.Create();
@@ -175,7 +175,7 @@ public class HttpSignatureTests
 		var parsed = HttpSignature.Parse(sigHeader);
 		var dict   = new HeaderDictionary { { "host", "example.org" } };
 		var signingString =
-			HttpSignature.GenerateSigningString(headers.Split(" "), "GET", "/", dict, "example.org", parsed);
+			HttpSignature.GenerateSigningString(headers.Split(" "), "GET", "/", "", dict, "example.org", parsed);
 
 		var keypair = MockObjects.UserKeypair;
 		var rsa     = RSA.Create();
@@ -207,7 +207,7 @@ public class HttpSignatureTests
 		var parsed = HttpSignature.Parse(sigHeader);
 		var dict   = new HeaderDictionary { { "host", "example.org" } };
 		var signingString =
-			HttpSignature.GenerateSigningString(headers.Split(" "), "GET", "/", dict, "example.org", parsed);
+			HttpSignature.GenerateSigningString(headers.Split(" "), "GET", "/", "", dict, "example.org", parsed);
 
 		var keypair = MockObjects.UserKeypair;
 		var rsa     = RSA.Create();
