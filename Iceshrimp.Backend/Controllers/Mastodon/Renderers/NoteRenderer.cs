@@ -47,14 +47,33 @@ public class NoteRenderer(
 		var renote = note is { Renote: not null, IsQuote: false } && recurse > 1
 			? await RenderAsync(note.Renote, user, null, data, --recurse)
 			: null;
-		var quote = note is { Renote: not null, IsQuote: true } && recurse > 0
-			? await RenderAsync(note.Renote, user, null, data, 0)
-			: null;
-		var     text     = note.Text;
-		string? quoteUri = null;
 
-		if (note is { Renote: not null, IsQuote: true })
+		IMastodonQuotable? quote    = null;
+		var                text     = note.Text;
+		string?            quoteUri = null;
+	
+		if (note is { Renote: not null, IsQuote: true } )
 		{
+			if (flags.IsPleroma.Value)
+			{
+				if (recurse > 0) quote = await RenderAsync(note.Renote, user, null, data, 0);
+			}
+			else
+			{
+				if (recurse > 0)
+				{
+					quote = new Quote
+					{
+						State        = QuoteState.Accepted,
+						QuotedStatus = await RenderAsync(note.Renote, user, null, data, 0)
+					};
+				}
+				else
+				{
+					quote = new ShallowQuote { State = QuoteState.Accepted, QuotedStatusId = note.RenoteId };
+				}
+			}
+			
 			var qUri = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value);
 			var alt  = note.Renote?.Uri;
 			var t    = text ?? "";
@@ -197,8 +216,13 @@ public class NoteRenderer(
 			ReplyUserId      = note.MastoReplyUserId ?? note.ReplyUserId,
 			MastoReplyUserId = note.MastoReplyUserId,
 			Renote           = renote,
+			QuoteApproval    = new QuoteApproval
+			{
+				Automatic = [QuoteAuthorization.Public],
+				Manual = [],
+				CurrentUser = CurrentUserQuoteAuthorization.Automatic
+			},
 			Quote            = quote,
-			QuoteId          = note.IsQuote ? note.RenoteId : null,
 			ContentType      = "text/x.misskeymarkdown",
 			CreatedAt        = note.CreatedAt.ToStringIso8601Like(),
 			EditedAt         = note.UpdatedAt?.ToStringIso8601Like(),
