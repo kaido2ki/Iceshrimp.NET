@@ -100,8 +100,9 @@ internal class HtmlParser(
                 foreach (var rp in node.ChildNodes.QuerySelectorAll("rp"))
                     rp.Remove();
 
-                node.RemoveChild(rt); // so ParseChildren(node) below does not see it
-                return $"$[ruby {ParseChildren(node)} {ParseChildren(rt)}]";
+                var rtChildren = ParseChildren(rt);
+                rt.Remove(); // so ParseChildren(node) below does not see it
+                return $"$[ruby {ParseChildren(node)} {rtChildren}]";
             }
 
             case "VIDEO":
