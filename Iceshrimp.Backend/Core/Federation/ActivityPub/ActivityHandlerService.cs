@@ -29,7 +29,8 @@ public class ActivityHandlerService(
 	EmojiService emojiSvc,
 	EventService eventSvc,
 	RelayService relaySvc,
-	ReportService reportSvc
+	ReportService reportSvc,
+	StampService stampSvc
 ) : IScopedService
 {
 	public async Task PerformActivityAsync(ASActivity activity, string? inboxUserId, string? authenticatedUserId)
@@ -88,6 +89,7 @@ public class ActivityHandlerService(
 			ASUnfollow unfollow => HandleUnfollowAsync(unfollow, resolvedActor),
 			ASUpdate update     => HandleUpdateAsync(update, resolvedActor),
 			ASFlag flag         => HandleFlagAsync(flag, resolvedActor),
+			ASQuoteRequest quoteRequest => HandleQuoteRequestAsync(quoteRequest, resolvedActor),
 
 			// Separated for readability
 			_ => throw GracefulException.UnprocessableEntity($"Activity type {activity.Type} is unknown")
@@ -558,6 +560,31 @@ public class ActivityHandlerService(
 			throw GracefulException.UnprocessableEntity("Refusing to process ASFlag: note author mismatch");
 
 		await reportSvc.CreateReportAsync(resolvedActor, userMatch, noteMatches, [], flag.Content ?? "");
+	}
+
+	private async Task HandleQuoteRequestAsync(ASQuoteRequest quoteRequest, User quoter)
+	{
+		if (quoter.IsLocalUser)
+			throw GracefulException.UnprocessableEntity("Refusing to process locally originating quote request via AP");
+		
+		if (quoteRequest.Object?.Id == null)
+			throw GracefulException.UnprocessableEntity("Object is null");
+		
+		var target = await noteSvc.ResolveNoteAsync(quoteRequest.Object.Id);
+		if (target == null)
+			throw GracefulException.UnprocessableEntity("Refusing to process quote request for missing note");
+		
+		if (!target.User.IsLocalUser)
+			throw GracefulException.UnprocessableEntity("Refusing to process quote request for remote note");
+		
+		if (quoteRequest.Instrument.Id == null)
+			throw GracefulException.UnprocessableEntity("Instrument is null");
+		
+		var quote = await noteSvc.ResolveNoteAsync(quoteRequest.Instrument.Id, quoteRequest.Instrument as ASNote);
+		if (quote == null)
+			throw GracefulException.UnprocessableEntity("Refusing to process quote request for unresolved quote");
+		
+		await stampSvc.AcceptQuoteAsync(target, quote, quoteRequest);
 	}
 
 	private async Task UnfollowAsync(ASActor followeeActor, User follower)

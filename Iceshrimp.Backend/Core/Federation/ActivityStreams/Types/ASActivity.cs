@@ -251,5 +251,5 @@ public class ASQuoteRequest : ASActivity
 	[JR]
 	[J($"{Constants.ActivityStreamsNs}#instrument")]
 	[JC(typeof(ASLinkConverter))]
-	public required ASNote Instrument { get; set; }
+	public required ASObjectBase Instrument { get; set; }
 }

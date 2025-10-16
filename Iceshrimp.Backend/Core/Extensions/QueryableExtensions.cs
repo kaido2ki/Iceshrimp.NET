@@ -669,7 +669,7 @@ public static class QueryableExtensions
 	
 	public static IQueryable<InteractionStamp> IncludeCommonProperties(this IQueryable<InteractionStamp> query)
 	{
-		return query.Include(p => p.Note.User)
+		return query.Include(p => p.Note)
 		            .Include(p => p.TargetNote.User);
 	}
 

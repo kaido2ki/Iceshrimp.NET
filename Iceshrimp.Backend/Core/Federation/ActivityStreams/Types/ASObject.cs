@@ -56,6 +56,7 @@ public class ASObject : ASObjectBase
 						ASActivity.Types.Block             => token.ToObject<ASBlock>(),
 						ASActivity.Types.Move              => token.ToObject<ASMove>(),
 						ASActivity.Types.Flag              => token.ToObject<ASFlag>(),
+						ASActivity.Types.QuoteRequest      => token.ToObject<ASQuoteRequest>(),
 						_                                  => token.ToObject<ASObject>()
 					};
 				case JTokenType.Array:
