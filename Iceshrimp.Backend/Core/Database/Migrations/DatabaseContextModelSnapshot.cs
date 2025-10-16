@@ -25,6 +25,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "antenna_src_enum", new[] { "home", "all", "users", "list", "group", "instances" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "filter_action_enum", new[] { "warn", "hide" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "filter_context_enum", new[] { "home", "lists", "threads", "notifications", "accounts", "public" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "interaction_stamp_type", new[] { "quote" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "job_status", new[] { "queued", "delayed", "running", "completed", "failed" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "marker_type_enum", new[] { "home", "notifications" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "note_visibility_enum", new[] { "public", "home", "followers", "specified" });
@@ -1519,6 +1520,41 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.HasIndex("OutgoingFollows");
 
                     b.ToTable("instance");
+                });
+
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.InteractionStamp", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("id");
+
+                    b.Property<string>("NoteId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("noteId")
+                        .HasComment("The note doing the interaction (quote, reply, whatever)");
+
+                    b.Property<string>("TargetNoteId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("targetNoteId")
+                        .HasComment("The note being interacted with");
+
+                    b.Property<InteractionStamp.InteractionStampType>("Type")
+                        .HasColumnType("interaction_stamp_type")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NoteId")
+                        .IsUnique();
+
+                    b.HasIndex("TargetNoteId");
+
+                    b.ToTable("interaction_stamp");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Job", b =>
@@ -5326,6 +5362,25 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.InteractionStamp", b =>
+                {
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Note", "Note")
+                        .WithMany()
+                        .HasForeignKey("NoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Note", "TargetNote")
+                        .WithMany()
+                        .HasForeignKey("TargetNoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Note");
+
+                    b.Navigation("TargetNote");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Marker", b =>

@@ -132,6 +132,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		dataSourceBuilder.MapEnum<Job.JobStatus>();
 		dataSourceBuilder.MapEnum<Filter.FilterContext>();
 		dataSourceBuilder.MapEnum<Filter.FilterAction>();
+		dataSourceBuilder.MapEnum<InteractionStamp.InteractionStampType>();
 
 		dataSourceBuilder.EnableDynamicJson();
 
