@@ -48,7 +48,8 @@
       "pronouns": {
         "@id": "https://ns.pancakes.gay/as#pronouns",
         "@container": "@language"
-      }
+      },
+      "htmlMfm": "https://w3id.org/fep/c16b#htmlMfm"
     }
   ]
 }

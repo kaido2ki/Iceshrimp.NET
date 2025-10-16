@@ -60,6 +60,7 @@ This document **MAY** alias JSON-LD namespace IRIs to their well-known aliases. 
   + Remote custom emoji reactions are supported if two conditions are met:
     * The `as:content` property is set to `:emoji@remoteinstance.tld:` or `emoji@remoteinstance.tld`
     * The emoji `emoji` is already known from a post or reaction by a user on `remoteinstance.tld`
+- [FEP-c16b: Formatting MFM functions](https://codeberg.org/fediverse/fep/src/branch/main/fep/c16b/fep-c16b.md)
 - [FEP-e232: Object Links](https://codeberg.org/fediverse/fep/src/branch/main/fep/e232/fep-e232.md)
     + Specifically, inline quotes with the following `rel` attributes are supported:
         * `misskey:_misskey_quote`

@@ -312,6 +312,24 @@ public class MfmConverter(
                     return el;
                 }
             }
+            case MfmFnNode fn:
+            {
+                var el = CreateInlineFormattingElement("span");
+                el.ClassList.Add($"mfm-{fn.Name}");
+
+                if (fn.Args != null)
+                {
+                    foreach (var (key, value) in fn.Args)
+                    {
+                        // this should be safe given argument keys only support letters and digits
+                        // https://iceshrimp.dev/iceshrimp/Iceshrimp.MfmSharp/src/branch/dev/Iceshrimp.MfmSharp/MfmParser.cs#L572
+                        el.SetAttribute($"data-mfm-{key}", value);
+                    }
+                }
+                
+                AppendChildren(el, node, mentions, host, usedMedia);
+                return el;
+            }
 			case MfmBoldNode:
 			{
 				var el = CreateInlineFormattingElement("b");
@@ -335,7 +353,6 @@ public class MfmConverter(
 				return el;
 			}
 			case MfmItalicNode:
-			case MfmFnNode:
 			{
 				var el = CreateInlineFormattingElement("i");
 				AddHtmlMarkup(el, "*");

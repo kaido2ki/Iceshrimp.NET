@@ -194,7 +194,8 @@ public class NoteRenderer(
 					Closed      = closed,
 					AnyOf       = anyOf,
 					OneOf       = oneOf,
-					VotersCount = poll.VotersCount
+					VotersCount = poll.VotersCount,
+                    HtmlMfm     = true
 				};
 			}
 		}
@@ -221,7 +222,8 @@ public class NoteRenderer(
 				: null,
 			MkQuote  = quoteUri,
 			QuoteUri = quoteUri,
-			QuoteUrl = quoteUri
+			QuoteUrl = quoteUri,
+            HtmlMfm  = true
 		};
 	}
 }
