@@ -275,6 +275,43 @@ public class MfmConverter(
 					return el;
 				}
 			}
+            case MfmFnNode { Name: "ruby" } fn:
+            {
+                var el = CreateInlineFormattingElement("ruby");
+
+                if (fn.Children.FirstOrDefault() is not {} first)
+                    return Fallback();
+
+                // TODO: this wont work for bold and italic and whatnot, misskey supports those for the first part at least
+                if (fn.Children.Length == 1 && first is MfmTextNode firstText)
+                {
+                    var parts = firstText.Text.Split(' ', count: 3);
+                    if (parts.Length == 0) return Fallback();
+
+                    el.AppendChild(CreateTextNode(parts[0]));
+                    var secondPart = parts.ElementAtOrDefault(1);
+                    if (!string.IsNullOrWhiteSpace(secondPart))
+                    {
+                        var rt = CreateInlineFormattingElement("rt");
+                        rt.AppendChild(CreateTextNode(secondPart));
+                        el.AppendChild(rt);
+                    }
+                }
+                else
+                {
+                    Fallback();
+                }
+
+                return el;
+
+                IElement Fallback()
+                {
+                    AddHtmlMarkup(el, "*");
+                    AppendChildren(el, node, mentions, host, usedMedia);
+                    AddHtmlMarkup(el, "*");
+                    return el;
+                }
+            }
 			case MfmBoldNode:
 			{
 				var el = CreateInlineFormattingElement("b");
