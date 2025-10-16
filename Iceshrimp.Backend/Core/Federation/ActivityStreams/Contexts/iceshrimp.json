@@ -51,6 +51,9 @@
         "@container": "@language"
       },
       "htmlMfm": "https://w3id.org/fep/c16b#htmlMfm",
+
+      "QuoteRequest": "https://w3id.org/fep/044f#QuoteRequest",
+      "QuoteAuthorization": "https://w3id.org/fep/044f#QuoteAuthorization",
       "interactionPolicy": {
         "@id": "gts:interactionPolicy",
         "@type": "@id"
@@ -61,6 +64,14 @@
       },
       "automaticApproval": {
         "@id": "gts:automaticApproval",
+        "@type": "@id"
+      },
+      "interactingObject": {
+        "@id": "gts:interactingObject",
+        "@type": "@id"
+      },
+      "interactionTarget": {
+        "@id": "gts:interactionTarget",
         "@type": "@id"
       }
     }
