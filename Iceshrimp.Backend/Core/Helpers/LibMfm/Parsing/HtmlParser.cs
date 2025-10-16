@@ -91,8 +91,20 @@ internal class HtmlParser(
 					? $"\n> {string.Join("\n> ", node.TextContent.Trim().Split("\n"))}"
 					: null;
 			}
+            case "RUBY":
+            {
+                var rt = node.ChildNodes.QuerySelector("rt");
+                if (rt == null) return ParseChildren(node);
+                
+                // we know how to handle rt, so these aren't necessary
+                foreach (var rp in node.ChildNodes.QuerySelectorAll("rp"))
+                    rp.Remove();
 
-			case "VIDEO":
+                node.RemoveChild(rt); // so ParseChildren(node) below does not see it
+                return $"$[ruby {ParseChildren(node)} {ParseChildren(rt)}]";
+            }
+
+            case "VIDEO":
 			case "AUDIO":
 			case "IMG":
 			{
