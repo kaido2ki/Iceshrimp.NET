@@ -666,6 +666,12 @@ public static class QueryableExtensions
 		            .Include(p => p.Notes)
 		            .ThenInclude(p => p.User.UserProfile);
 	}
+	
+	public static IQueryable<InteractionStamp> IncludeCommonProperties(this IQueryable<InteractionStamp> query)
+	{
+		return query.Include(p => p.Note.User)
+		            .Include(p => p.TargetNote.User);
+	}
 
 	#pragma warning restore CS8602 // Dereference of a possibly null reference.
 }

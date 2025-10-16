@@ -11,7 +11,8 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 public class ActivityRenderer(
 	IOptions<Config.InstanceSection> config,
 	UserRenderer userRenderer,
-	NoteRenderer noteRenderer
+	NoteRenderer noteRenderer,
+	StampRenderer stampRenderer
 ) : IScopedService
 {
 	private string GenerateActivityId() =>
@@ -56,7 +57,22 @@ public class ActivityRenderer(
 		Actor  = userRenderer.RenderLite(followee),
 		Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
 	};
-
+	
+	public ASAccept RenderAcceptStamp(InteractionStamp stamp, ASObject request) => new()
+	{
+		Id     = GenerateActivityId(),
+		Actor  = userRenderer.RenderLite(stamp.TargetNote.User),
+		Object = request,
+		Result = new ASObjectBase(stampRenderer.StampId(stamp)),
+	};
+	
+	public ASReject RenderRejectStamp(InteractionStamp stamp, ASObject request) => new()
+	{
+		Id     = GenerateActivityId(),
+		Actor  = userRenderer.RenderLite(stamp.TargetNote.User),
+		Object = request
+	};
+	
 	public ASLike RenderLike(NoteLike like)
 	{
 		if (like.Note.UserHost == null)

@@ -38,8 +38,9 @@ public class ASActivity : ASObjectWithId
 		public const string Flag     = $"{Ns}#Flag";
 
 		// Extensions
-		public const string Bite       = "https://ns.mia.jetzt/as#Bite";
-		public const string EmojiReact = "http://litepub.social/ns#EmojiReact";
+		public const string Bite         = "https://ns.mia.jetzt/as#Bite";
+		public const string EmojiReact   = "http://litepub.social/ns#EmojiReact";
+		public const string QuoteRequest = $"{Constants.FepNs}/044f#QuoteRequest";
 	}
 }
 
@@ -129,6 +130,10 @@ public class ASUnfollow : ASActivity
 public class ASAccept : ASActivity
 {
 	public ASAccept() => Type = Types.Accept;
+	
+	[J($"{Constants.ActivityStreamsNs}#result")]
+	[JC(typeof(ASObjectConverter))]
+	public ASObjectBase? Result { get; set; }
 }
 
 public class ASReject : ASActivity
@@ -237,4 +242,14 @@ public class ASMove : ASActivity
 	[J($"{Constants.ActivityStreamsNs}#target")]
 	[JC(typeof(ASLinkConverter))]
 	public required ASLink Target { get; set; }
+}
+
+public class ASQuoteRequest : ASActivity
+{
+	public ASQuoteRequest() => Type = Types.QuoteRequest;
+
+	[JR]
+	[J($"{Constants.ActivityStreamsNs}#instrument")]
+	[JC(typeof(ASLinkConverter))]
+	public required ASNote Instrument { get; set; }
 }

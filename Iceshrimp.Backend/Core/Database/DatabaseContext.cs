@@ -37,6 +37,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<GalleryPost>          GalleryPosts          { get; init; } = null!;
 	public virtual DbSet<Hashtag>              Hashtags              { get; init; } = null!;
 	public virtual DbSet<Instance>             Instances             { get; init; } = null!;
+	public virtual DbSet<InteractionStamp>     InteractionStamps     { get; init; } = null!;
 	public virtual DbSet<Marker>               Markers               { get; init; } = null!;
 	public virtual DbSet<MessagingMessage>     MessagingMessages     { get; init; } = null!;
 	public virtual DbSet<Meta>                 Meta                  { get; init; } = null!;
@@ -157,6 +158,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			options.MapEnum<Job.JobStatus>("job_status");
 			options.MapEnum<Filter.FilterContext>("filter_context_enum");
 			options.MapEnum<Filter.FilterAction>("filter_action_enum");
+			options.MapEnum<InteractionStamp.InteractionStampType>("interaction_stamp_type");
 		});
 
 		optionsBuilder.UseProjectables(options => { options.CompatibilityMode(CompatibilityMode.Full); });
@@ -180,6 +182,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			.HasPostgresEnum<Job.JobStatus>()
 			.HasPostgresEnum<Filter.FilterContext>()
 			.HasPostgresEnum<Filter.FilterAction>()
+			.HasPostgresEnum<InteractionStamp.InteractionStampType>()
 			.HasPostgresExtension("pg_trgm");
 
 		modelBuilder

@@ -29,6 +29,7 @@ public class ActivityPubController(
 	QueueService queues,
 	ActivityPub.NoteRenderer noteRenderer,
 	ActivityPub.UserRenderer userRenderer,
+	ActivityPub.StampRenderer stampRenderer,
 	IOptions<Config.InstanceSection> config,
 	IOptionsSnapshot<Config.SecuritySection> security
 ) : ControllerBase, IScopedService
@@ -337,6 +338,22 @@ public class ActivityPubController(
 			Image = new ASImage { Url = new ASLink(emoji.RawPublicUrl), MediaType = emoji.Type }
 		};
 
+		return LdHelpers.Compact(rendered);
+	}
+
+	[HttpGet("/stamp/{id}")]
+	[AuthorizedFetch]
+	[OutputCache(PolicyName = "federation")]
+	[MediaTypeRouteFilter("application/activity+json", "application/ld+json")]
+	[OverrideResultType<ASQuoteAuthorization>]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<ActionResult<JObject>> GetStamp(string id)
+	{
+		var stamp = await db.InteractionStamps.IncludeCommonProperties().FirstOrDefaultAsync(p => p.Id == id);
+		if (stamp == null) throw GracefulException.NotFound("Stamp not found");
+
+		var rendered = stampRenderer.RenderStamp(stamp);
 		return LdHelpers.Compact(rendered);
 	}
 }

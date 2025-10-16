@@ -62,7 +62,7 @@ public class ASNote : ASObjectWithId
 	[JC(typeof(VC))]
 	public DateTime? UpdatedAt { get; set; }
 
-    [J($"https://w3id.org/fep/c16b#htmlMfm")]
+    [J($"{Constants.FepNs}/c16b#htmlMfm")]
     [JC(typeof(VC))]
     public bool? HtmlMfm { get; set; }
 
