@@ -36,15 +36,10 @@ public class FederationList (
         {
             IsLoggedIn = false;
         }
-        else
+        else if (await db.Sessions.AnyAsync(p => sessions.Contains(p.Token)))
         {
-            foreach (var session in sessions.Split("|"))
-            {
-                if (!(await db.Sessions.AnyAsync(p => p.Token == session))) continue;
-                IsLoggedIn = true;
-                Request.HttpContext.HideFooter();
-                break;
-            }
+            IsLoggedIn = true;
+            Request.HttpContext.HideFooter();
         }
         
         Request.Cookies.TryGetValue("admin_session", out var admSession);
