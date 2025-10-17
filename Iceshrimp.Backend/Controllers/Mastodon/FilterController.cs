@@ -141,15 +141,15 @@ public class FilterController(DatabaseContext db, QueueService queueSvc, EventSe
 			? DateTime.UtcNow + TimeSpan.FromSeconds(request.ExpiresIn.Value)
 			: null;
 
-		foreach (var kw in request.Keywords.Where(p => p is { Id: not null, Destroy: false }))
-			filter.Keywords[int.Parse(kw.Id!.Split('-')[1])] = kw.WholeWord ? $"\"{kw.Keyword}\"" : kw.Keyword;
+		foreach (var kw in request.Keywords.Where(p => p is { Id: not null, Keyword: not null, Destroy: false }))
+			filter.Keywords[int.Parse(kw.Id!.Split('-')[1])] = kw.WholeWord ? $"\"{kw.Keyword!}\"" : kw.Keyword!;
 
-		var destroy = request.Keywords.Where(p => p is { Id: not null, Destroy: true }).Select(p => p.Id);
-		var @new = request.Keywords.Where(p => p.Id == null)
-		                  .Select(p => p.WholeWord ? $"\"{p.Keyword}\"" : p.Keyword)
+		var destroy = request.Keywords.Where(p => p is { Id: not null, Destroy: true }).Select(p => int.Parse(p.Id!.Split('-')[1]));
+		var @new = request.Keywords.Where(p => p is { Id: null, Keyword: not null })
+		                  .Select(p => p.WholeWord ? $"\"{p.Keyword!}\"" : p.Keyword!)
 		                  .ToList();
 
-		var keywords = filter.Keywords.Where((_, i) => !destroy.Contains(i.ToString())).Concat(@new).ToList();
+		var keywords = filter.Keywords.Where((_, i) => !destroy.Contains(i)).Concat(@new).ToList();
 
 		filter.Name     = request.Title;
 		filter.Contexts = contextList;

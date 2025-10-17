@@ -53,9 +53,17 @@ public class FilterSchemas
 		public bool WholeWord { get; set; } = false;
 	}
 
-	public class UpdateFilterKeywordsAttributes : FilterKeywordsAttributes
+	public class UpdateFilterKeywordsAttributes
 	{
 		[B(Name = "id")] [J("id")]             public string? Id      { get; set; }
 		[B(Name = "_destroy")] [J("_destroy")] public bool    Destroy { get; set; } = false;
+
+		[B(Name = "keyword")]
+		[J("keyword")]
+		public string? Keyword { get; set; }
+
+		[B(Name = "whole_word")]
+		[J("whole_word")]
+		public bool WholeWord { get; set; } = false;
 	}
 }
