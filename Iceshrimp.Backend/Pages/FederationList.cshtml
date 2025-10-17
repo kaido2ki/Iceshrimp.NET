@@ -15,7 +15,7 @@
     else if (Model.IsBlocklist && !Model.ShouldShowReasons)
     {
         <p>
-            <i>Note: Block reasons are not publicly displayed on this instance.</i>
+            <i>Note: Block reasons are only displayed to admins of this instance.</i>
         </p>
     }
     <table>
@@ -81,12 +81,12 @@ else if (Model.ListRegOnly)
 else
 {
     <p>
-        <i>This list is not publicly displayed on this instance.</i>
+        <i>This list is only displayed to admins of this instance.</i>
     </p>
 }
 
 
-@if (Model.BlockedInstances is [] && Model.AllowedInstances is [])
+@if (Model.ShouldShowList && Model.BlockedInstances is [] && Model.AllowedInstances is [])
 {
     <p>
         <i>No instances @(Model.ModeString?.ToLower()).</i>
