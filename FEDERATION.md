@@ -52,6 +52,8 @@ This document **MAY** alias JSON-LD namespace IRIs to their well-known aliases. 
 
 ## Supported FEPs
 
+- [FEP-044f: Consent-respecting quote posts](https://codeberg.org/fediverse/fep/src/branch/main/fep/044f/fep-044f.md) (partial)
+  - All incoming quote requests are automatically approved, no checks are made for remote quotes.
 - [FEP-f1d5: NodeInfo in Fediverse Software](https://codeberg.org/fediverse/fep/src/branch/main/fep/f1d5/fep-f1d5.md)
 - [FEP-c0e0: Emoji reactions](https://codeberg.org/fediverse/fep/src/branch/main/fep/c0e0/fep-c0e0.md)
   + `litepub:EmojiReact` activities are processed as emoji reactions.
