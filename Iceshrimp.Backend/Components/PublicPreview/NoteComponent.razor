@@ -20,15 +20,18 @@
             <details>
                 <summary>@Note.Cw</summary>
                 @Note.Text
+                <NoteComponentFooter Note="Note" ShowMedia="ShowMedia"/>
             </details>
         }
         else
         {
             @Note.Text
+            <NoteComponentFooter Note="Note" ShowMedia="ShowMedia"/>
         }
     }
 </div>
 
 @code {
-    [Parameter, EditorRequired] public required PreviewNote Note { get; set; }
+    [Parameter, EditorRequired] public required PreviewNote Note      { get; set; }
+    [Parameter, EditorRequired] public required bool        ShowMedia { get; set; }
 }

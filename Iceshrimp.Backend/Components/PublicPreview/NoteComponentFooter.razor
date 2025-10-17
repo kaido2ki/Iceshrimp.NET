@@ -1,0 +1,92 @@
+@using Iceshrimp.Backend.Components.PublicPreview.Schemas
+@if (!HasFooterContent)
+{
+    return;
+}
+
+<div class="footer">
+    @if (Note.QuoteUrl != null)
+    {
+        var displayUrl = Note.QuoteUrl.StartsWith("https://") ? Note.QuoteUrl[8..] : Note.QuoteUrl[7..];
+        <div>
+            @if (Note.QuoteInaccessible)
+            {
+                <i>This note is quoting <a href="@Note.QuoteUrl">@displayUrl</a>, which has either been deleted or is
+                    not
+                    publicly visible.</i>
+            }
+            else
+            {
+                <i>This note is quoting <a href="@Note.QuoteUrl">@displayUrl</a></i>
+            }
+        </div>
+    }
+
+    @if (Note.Poll != null)
+    {
+        var total = Note.Poll.Choices.Sum(p => p.Votes);
+
+        <div class="poll-results">
+            @foreach (var choice in Note.Poll.Choices)
+            {
+                var percentage = total == 0 ? 0 : Math.Floor(choice.Votes / (double)total * 100);
+
+                <span class="poll-result" style="--percentage: @percentage%;">
+                    <span class="poll-value">@choice.Value</span>
+                    <span class="poll-info"><span class="vote-count">@choice.Votes votes</span><span
+                            class="vote-percentage">@percentage%</span></span>
+                </span>
+            }
+        </div>
+
+        List<string> footerText = [];
+        @if (Note.Poll.Multiple)
+            footerText.Add("Multiple choice");
+        @if (Note.Poll.VotersCount != null)
+            footerText.Add($"{Note.Poll.VotersCount} users voted");
+        @if (Note.Poll.ExpiresAt != null)
+            footerText.Add(Note.Poll.ExpiresAt <= DateTime.UtcNow ? "Ended" : $"Ends at {Note.Poll.ExpiresAt.Value.ToLocalTime():G}");
+
+        <span>@string.Join(" - ", footerText)</span>
+    }
+
+    @if (Note.Attachments is { Count: > 0 })
+    {
+        if (!ShowMedia)
+        {
+            <div>
+                <i>This post has attachments, but this server's configuration prevents them from being displayed
+                    here.</i>
+            </div>
+        }
+        else
+        {
+            foreach (var file in Note.Attachments)
+            {
+                if (file.MimeType.StartsWith("image/"))
+                {
+                    <img src="@file.Url" max-width="200px" max-height="200px" alt="@(file.Alt ?? "")"/>
+                }
+                else if (file.MimeType.StartsWith("video/"))
+                {
+                    <video controls max-width="200px" max-height="200px">
+                        <source src="@file.Url" type="@file.MimeType"/>
+                        <p>@(file.Alt ?? "No alt text.")</p>
+                    </video>
+                }
+                else
+                {
+                    <div>Attachment: <a href="@file.Url">@file.Name</a> (@file.MimeType)</div>
+                }
+            }
+        }
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required PreviewNote Note         { get; set; }
+    [Parameter, EditorRequired] public required bool        ShowMedia { get; set; }
+
+    private bool HasFooterContent =>
+        Note.QuoteUrl != null || Note.Poll != null || Note.Attachments is { Count: > 0 };
+}

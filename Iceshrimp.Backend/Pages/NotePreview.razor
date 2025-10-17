@@ -14,77 +14,7 @@
 }
 else
 {
-    <NoteComponent Note="_note"/>
-    if (_note.QuoteUrl != null)
-    {
-        var displayUrl = _note.QuoteUrl.StartsWith("https://") ? _note.QuoteUrl[8..] : _note.QuoteUrl[7..];
-        <p>
-            @if (_note.QuoteInaccessible)
-            {
-                <i>This note is quoting <a href="@_note.QuoteUrl">@displayUrl</a>, which has either been deleted or is not publicly visible.</i>
-            }
-            else
-            {
-                <i>This note is quoting <a href="@_note.QuoteUrl">@displayUrl</a></i>
-            }
-        </p>
-    }
-
-    if (_note.Poll != null)
-    {
-        var total = _note.Poll.Choices.Sum(p => p.Votes);
-
-        <div class="poll-results">
-            @foreach (var choice in _note.Poll.Choices)
-            {
-                var percentage = total == 0 ? 0 : Math.Floor(choice.Votes / (double)total * 100);
-
-                <span class="poll-result" style="--percentage: @percentage%;">
-                    <span class="poll-value">@choice.Value</span>
-                    <span class="poll-info"><span class="vote-count">@choice.Votes votes</span><span class="vote-percentage">@percentage%</span></span>
-                </span>
-            }
-        </div>
-        
-        List<string> footerText = [];
-        @if (_note.Poll.Multiple)
-            footerText.Add("Multiple choice");
-        @if (_note.Poll.VotersCount != null)
-            footerText.Add($"{_note.Poll.VotersCount} users voted");
-        @if (_note.Poll.ExpiresAt != null)
-            footerText.Add(_note.Poll.ExpiresAt <= DateTime.UtcNow ? "Ended" : $"Ends at {_note.Poll.ExpiresAt.Value.ToLocalTime():G}");
-
-        <span>@string.Join(" - ", footerText)</span>
-    }
-
-    if (!ShowMedia && _note.Attachments != null)
-    {
-        <p>
-            <i>This post has attachments, but this server's configuration prevents them from being displayed here.</i>
-        </p>
-    }
-    else if (ShowMedia && _note.Attachments is { Count: > 0 })
-    {
-        foreach (var file in _note.Attachments)
-        {
-            if (file.MimeType.StartsWith("image/"))
-            {
-                <img src="@file.Url" max-width="200px" max-height="200px" alt="@(file.Alt ?? "")"/>
-            }
-            else if (file.MimeType.StartsWith("video/"))
-            {
-                <video controls max-width="200px" max-height="200px">
-                    <source src="@file.Url" type="@file.MimeType"/>
-                    <p>@(file.Alt ?? "No alt text.")</p>
-                </video>
-            }
-            else
-            {
-                <div>Attachment: <a href="@file.Url">@file.Name</a> (@file.MimeType)</div>
-            }
-        }
-    }
-
+    <NoteComponent Note="_note" ShowMedia="ShowMedia"/>
     <PageTitle>Note by @@@_note.User.Username - @_instanceName</PageTitle>
     <HeadContent>
         @{
@@ -92,7 +22,7 @@ else
             var previewImageUrl = _note.User.AvatarUrl;
             if (ShowMedia && _note.Attachments != null)
             {
-                if (_note.Attachments.FirstOrDefault(p => p.MimeType.StartsWith("image/") && !p.Sensitive) is { } img)
+                if (_note.Attachments.FirstOrDefault(p => p.MimeType.StartsWith("image/") && !p.Sensitive && _note.Cw == null) is { } img)
                 {
                     cardType        = "summary_large_image";
                     previewImageUrl = img.Url;
