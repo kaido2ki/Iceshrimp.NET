@@ -47,7 +47,7 @@ public class FederationList (
         }
         
         Request.Cookies.TryGetValue("admin_session", out var admSession);
-        if (admSession != null && (await db.Sessions.AnyAsync(p => p.Token == admSession)))
+        if (admSession != null && await db.Sessions.AnyAsync(p => p.Token == admSession && p.Active && p.User.IsAdmin))
             IsAdmin = true;
         
         IsBlocklist = security.Value.FederationMode == Enums.FederationMode.BlockList;
