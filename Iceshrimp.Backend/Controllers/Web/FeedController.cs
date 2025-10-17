@@ -12,6 +12,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -23,8 +24,12 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [ApiController]
 [EnableRateLimiting("sliding")]
 [Route("/users/{id}")]
-public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection> config, MfmConverter mfmConverter)
-    : ControllerBase
+public class FeedController(
+	DatabaseContext db,
+	IOptions<Config.InstanceSection> config,
+	MfmConverter mfmConverter,
+	FlagService flags
+) : ControllerBase
 {
     private static readonly XmlSerializerNamespaces XmlNamespaces  = new([new XmlQualifiedName("", "")]);
     private static readonly XmlSerializer           AtomSerializer = new(typeof(AtomFeed));
@@ -38,6 +43,9 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     public async Task<FileStreamResult> GetAtomFeed(string id, PaginationQuery pq)
     {
         var (target, notes) = await GetTargetAndNotes(id, pq);
+
+        // Make sure we don't lose inline HTML markup for outgoing federation
+        flags.SupportsHtmlFormatting.Value = true;
 
         var entries = await notes.Select(p => new AtomEntry
                                  {
@@ -136,6 +144,9 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     {
         var (target, notes) = await GetTargetAndNotes(id, pq);
 
+        // Make sure we don't lose inline HTML markup for outgoing federation
+        flags.SupportsHtmlFormatting.Value = true;
+
         var items = await notes.Select(p => new JsonFeedItem
                                {
                                    RawId = p.Id,
@@ -191,6 +202,9 @@ public class FeedController(DatabaseContext db, IOptions<Config.InstanceSection>
     public async Task<FileStreamResult> GetRssFeed(string id, PaginationQuery pq)
     {
         var (target, notes) = await GetTargetAndNotes(id, pq);
+
+        // Make sure we don't lose inline HTML markup for outgoing federation
+        flags.SupportsHtmlFormatting.Value = true;
 
         var items = await notes.Select(p => new RssItem
                                {

@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -13,7 +14,8 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 public class NoteRenderer(
 	IOptions<Config.InstanceSection> config,
 	MfmConverter mfmConverter,
-	DatabaseContext db
+	DatabaseContext db,
+	FlagService flags
 ) : IScopedService
 {
 	/// <summary>
@@ -30,6 +32,9 @@ public class NoteRenderer(
 	{
 		if (note.IsPureRenote)
 			throw GracefulException.BadRequest("Refusing to render pure renote as ASNote");
+
+		// Make sure we don't lose inline HTML markup for outgoing federation
+		flags.SupportsHtmlFormatting.Value = true;
 
 		var id      = note.GetPublicUri(config.Value);
 		var userId  = note.User.GetPublicUri(config.Value);

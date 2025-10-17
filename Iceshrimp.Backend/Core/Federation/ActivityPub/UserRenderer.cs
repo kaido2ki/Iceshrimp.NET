@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.MfmSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -14,7 +15,8 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityPub;
 public class UserRenderer(
 	IOptions<Config.InstanceSection> config,
 	DatabaseContext db,
-	MfmConverter mfmConverter
+	MfmConverter mfmConverter,
+	FlagService flags
 ) : IScopedService
 {
 	/// <summary>
@@ -35,6 +37,9 @@ public class UserRenderer(
 		{
 			return new ASActor { Id = user.Uri ?? throw new Exception("Remote user must have an URI") };
 		}
+
+		// Make sure we don't lose inline HTML markup for outgoing federation
+		flags.SupportsHtmlFormatting.Value = true;
 
 		var profile = await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
 		var keypair = await db.UserKeypairs.FirstOrDefaultAsync(p => p.User == user);
