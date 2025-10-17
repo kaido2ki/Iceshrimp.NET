@@ -31,12 +31,7 @@ public class FederationList (
     
     public async Task OnGet()
     {
-        Request.Cookies.TryGetValue("sessions", out var sessions);
-        if (sessions == null)
-        {
-            IsLoggedIn = false;
-        }
-        else
+        if (Request.Cookies.TryGetValue("sessions", out var sessions))
         {
             var tokens = sessions.Split('|');
             if (await db.Sessions.AnyAsync(p => tokens.Contains(p.Token)))
@@ -45,10 +40,16 @@ public class FederationList (
                 Request.HttpContext.HideFooter();
             }
         }
-        
-        Request.Cookies.TryGetValue("admin_session", out var admSession);
-        if (admSession != null && await db.Sessions.AnyAsync(p => p.Token == admSession && p.Active && p.User.IsAdmin))
+        else
+        {
+            IsLoggedIn = false;
+        }
+
+        if (Request.Cookies.TryGetValue("admin_session", out var admSession)
+            && await db.Sessions.AnyAsync(p => p.Token == admSession && p.Active && p.User.IsAdmin))
+        {
             IsAdmin = true;
+        }
         
         IsBlocklist = security.Value.FederationMode == Enums.FederationMode.BlockList;
         ModeString  = IsBlocklist ? "Blocked" : "Allowed";
