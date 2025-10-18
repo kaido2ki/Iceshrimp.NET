@@ -38,10 +38,19 @@ public class NoteRenderer(
 
 		var id      = note.GetPublicUri(config.Value);
 		var userId  = note.User.GetPublicUri(config.Value);
-		var replies = new ASOrderedCollection($"{id}/replies");
 		var replyId = note.Reply != null
 			? new ASObjectBase(note.Reply.Uri ?? note.Reply.GetPublicUri(config.Value))
 			: null;
+		
+		var replies = new ASOrderedCollection($"{id}/replies");
+		
+		// if we don't have any replies, inline the collection so remote instances can avoid making a secondary request for it
+		if (!await db.Notes.AnyAsync(p => p.ReplyId == note.Id))
+		{
+			replies.Type       = ASOrderedCollection.ObjectType;
+			replies.TotalItems = 0;
+			replies.Items      = [];
+		}
 
 		mentions ??= await db.Users
 		                     .Where(p => note.Mentions.Contains(p.Id))
