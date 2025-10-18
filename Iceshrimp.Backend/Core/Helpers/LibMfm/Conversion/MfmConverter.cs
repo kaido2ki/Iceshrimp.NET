@@ -386,7 +386,7 @@ public class MfmConverter(
 			}
 			case MfmCenterNode:
 			{
-				var el = CreateElement("div");
+				var el = CreateInlineFormattingElement("center");
 				AppendChildren(el, node, mentions, host, usedMedia);
 				return el;
 			}
