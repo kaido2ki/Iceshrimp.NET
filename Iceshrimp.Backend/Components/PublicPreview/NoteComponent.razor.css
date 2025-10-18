@@ -9,3 +9,8 @@
     border-radius: 6px;
     overflow: hidden;
 }
+
+details {
+    width: 100%;
+    box-sizing: border-box;
+}
