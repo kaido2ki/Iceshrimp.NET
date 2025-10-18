@@ -76,11 +76,27 @@ public class NoteRenderer(
 		                      })
 		                      .ToListAsync();
 
-		var contextId = await db.NoteThreads
+		var contextData = await db.NoteThreads
 		                      .Where(p => p.Id == note.ThreadId)
-		                      .Select(p => p.Uri ?? p.GetPublicUri(config.Value))
+		                      .Select(p => new
+		                      {
+			                      Uri = p.Uri ?? p.GetPublicUri(config.Value), 
+			                      HasMore = !p.IsLocal || db.Notes.Any(n => n.Id != note.Id && n.ThreadId == p.Id),
+		                      })
 		                      .FirstOrDefaultAsync();
-		var context = contextId != null ? new ASCollection(contextId) : null;
+		var context = contextData?.Uri != null ? new ASOrderedCollection(contextData.Uri) : null;
+
+		// if we're the only one in this context, inline the collection so remote instances can avoid making a secondary request for it
+		if (context != null && contextData?.HasMore == false)
+		{
+			// this is technically wrong, but we're only inlining local contexts which do work this way, and this saves
+			// the database from doing more work
+			context.AttributedTo = [new ASObjectBase(userId)]; 
+
+			context.Type         = ASOrderedCollection.ObjectType;
+			context.TotalItems   = 1;
+			context.Items        = [new ASObject {Id = id}];
+		}
 
 		var emoji = note.Emojis.Count != 0
 			? await db.Emojis.Where(p => note.Emojis.Contains(p.Id) && p.Host == null).ToListAsync()

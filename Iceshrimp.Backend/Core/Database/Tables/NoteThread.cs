@@ -56,6 +56,9 @@ public class NoteThread : IIdentifiable
 	[SuppressMessage("ReSharper", "MergeIntoPattern", Justification = "Projectables does not support this")]
 	public string? GetPublicUri(Config.InstanceSection config) => User != null && User.IsLocalUser ? $"https://{config.WebDomain}/threads/{Id}" : null;
 	
+	[Projectable]
+	public bool IsLocal => IsResolvable == null;
+
 	private class NoteThreadConfiguration : IEntityTypeConfiguration<NoteThread>
 	{
 		public void Configure(EntityTypeBuilder<NoteThread> entity)
