@@ -9,6 +9,9 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class LDLocalizedString
 {
+	// https://www.rfc-editor.org/rfc/rfc5646.html#:~:text=The%20%27und%27%20%28Undetermined%29%20primary%20language%20subtag
+	public const string UnknownLanguage = "und";
+
 	/// <summary>
 	/// 	key: BCP 47 language code, with empty string meaning "unknown"
 	/// 	value: content, in that language
@@ -27,7 +30,7 @@ public class LDLocalizedString
 		if (value == null) return;
 
 		// this is required to create a non-Map field for non-JsonLD remotes.
-		Values.Add("", value);
+		Values.Add(UnknownLanguage, value);
 
 		if (language != null)
 		{
@@ -95,19 +98,11 @@ public class LDLocalizedString
 		}
 	}
 
-	// Akkoma forces all non-localized text to be in the "und" language by adding { "@language":"und" } to it's context
-	public static bool IsUnknownLanguage(string? lang) => lang == null || lang == "" || lang == "und";
+	public static bool IsUnknownLanguage(string? lang) => lang is null or UnknownLanguage;
+
 	public string? GetUnknownValue()
 	{
-		string? value;
-
-		if (Values.TryGetValue("", out value))
-			return value;
-
-		if (Values.TryGetValue("und", out value))
-			return value;
-
-		return null;
+		return Values.GetValueOrDefault(UnknownLanguage);
 	}
 }
 
@@ -283,7 +278,7 @@ public class LocalizedValueObjectConverter : JsonConverter<LDLocalizedString>
 
 		foreach (var item in list)
 		{
-			localized.Values.TryAdd(item.Language ?? "", item.Value);
+			localized.Values.TryAdd(item.Language ?? LDLocalizedString.UnknownLanguage, item.Value);
 		}
 
 		return localized;
