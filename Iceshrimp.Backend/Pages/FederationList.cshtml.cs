@@ -66,12 +66,14 @@ public class FederationList (
         {
             BlockedInstances = await db.BlockedInstances
                                        .Select(p => new BlockedInstance { Host = p.Host, Reason = p.Reason })
+                                       .OrderBy(p => p.Host)
                                        .ToArrayAsync();
         }
         else
         {
             AllowedInstances = await db.AllowedInstances
                                        .Select(p => new AllowedInstance { Host = p.Host })
+                                       .OrderBy(p => p.Host)
                                        .ToArrayAsync();
         }
     }
