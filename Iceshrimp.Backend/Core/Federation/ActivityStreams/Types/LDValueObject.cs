@@ -283,7 +283,7 @@ public class LocalizedValueObjectConverter : JsonConverter<LDLocalizedString>
 
 		foreach (var item in list)
 		{
-			localized.Values.Add(item.Language ?? "", item.Value);
+			localized.Values.TryAdd(item.Language ?? "", item.Value);
 		}
 
 		return localized;
