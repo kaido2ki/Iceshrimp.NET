@@ -60,6 +60,10 @@ public class NoteRenderer(
         var visibility = flags.IsPleroma.Value && note.LocalOnly
             ? "local"
             : StatusEntity.EncodeVisibility(note.Visibility);
+
+		var renoteUrl = note is { IsPureRenote: true, Renote: not null }
+			? note.Renote.Url ?? note.Renote.Uri ?? $"https://{config.Value.WebDomain}/notes/{note.RenoteId}"
+			: null;
         
         return new ScheduledStatusEntity
         {
@@ -67,14 +71,15 @@ public class NoteRenderer(
             ScheduledAt = note.ScheduledAt ?? DateTime.MinValue,
             Params      = new ScheduledStatusEntity.Param
             {
-                Text = note.Text,
-                MediaIds = attachments.Select(a => a.Id).ToList(),
-                Sensitive = sensitive,
-                Cw = note.Cw,
+                Text       = renoteUrl != null ? $"🔁 {renoteUrl}" : note.Text,
+                MediaIds   = attachments.Select(a => a.Id).ToList(),
+                Sensitive  = sensitive,
+                Cw         = note.Cw,
                 Visibility = visibility,
-                ReplyId = note.ReplyId,
-                LocalOnly = note.LocalOnly,
-                QuoteId = note.IsQuote ? note.RenoteId : null,
+                ReplyId    = note.ReplyId,
+                LocalOnly  = note.LocalOnly,
+                QuoteId    = note.IsQuote ? note.RenoteId : null,
+                ReblogId   = note.IsPureRenote ? note.RenoteId : null,
                 Poll = poll == null ? null : new ScheduledStatusEntity.Param.PollData
                 {
                     ExpiresIn  = (long)(DateTime.UtcNow - pollExpiresIn).TotalSeconds,

@@ -102,6 +102,10 @@ public abstract class StatusSchemas
 		[B(Name = "visibility")]
 		[J("visibility")]
 		public string? Visibility { get; set; }
+
+        [B(Name = "scheduled_at")]
+        [J("scheduled_at")]
+        public DateTime? ScheduledAt { get; set; }
 	}
 
     public class RescheduleRequest

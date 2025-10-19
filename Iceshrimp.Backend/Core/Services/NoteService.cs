@@ -47,7 +47,7 @@ public class NoteService(
 
     // https://misskey-hub.net/en/tools/aid-converter/
     // this seems to be the timestamp for 'zzzzzzzzzzzzzzzz'. anything newer i would expect something to break
-    private static DateTime _scheduleIdTimeLimit = new DateTime(2089, 05, 24);
+    private static readonly DateTime ScheduleIdTimeLimit = new DateTime(2089, 05, 24);
 
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{
@@ -283,7 +283,7 @@ public class NoteService(
         // we need the note ids to sort correctly, but we also don't want to limit clients to a specific time
         // as some clients have "drafts" that are posts scheduled for absurd years. let's assume that if you're scheduling
         // something like that you don't care where it'll be sorted (not that we'll *actually* schedule it anyways, see ScheduleNoteAsync)
-        var idTimestamp = data.ScheduledAt != null && data.ScheduledAt < _scheduleIdTimeLimit
+        var idTimestamp = data.ScheduledAt != null && data.ScheduledAt < ScheduleIdTimeLimit
             ? data.ScheduledAt
             : data.CreatedAt;
 
@@ -535,6 +535,7 @@ public class NoteService(
     {
         scheduledAt = scheduledAt.ToUniversalTime();
 
+        note.CreatedAt   = scheduledAt;
         note.ScheduledAt = scheduledAt;
         await db.SaveChangesAsync();
 
@@ -548,7 +549,7 @@ public class NoteService(
     {
         scheduledAt = scheduledAt.ToUniversalTime();
 
-        note.CreatedAt = scheduledAt;
+        note.CreatedAt   = scheduledAt;
         note.ScheduledAt = scheduledAt;
         await db.SaveChangesAsync();
 
@@ -1657,7 +1658,7 @@ public class NoteService(
 		return true;
 	}
 
-	public async Task<Note?> RenoteNoteAsync(Note note, User user, Note.NoteVisibility? visibility = null)
+	public async Task<Note?> RenoteNoteAsync(Note note, User user, Note.NoteVisibility? visibility = null, DateTime? scheduledAt = null)
 	{
         if (!note.Published)
             throw GracefulException.BadRequest("This note has not been published yet");
@@ -1668,12 +1669,13 @@ public class NoteService(
 		if (note.IsPureRenote)
 			throw GracefulException.BadRequest("Cannot renote a pure renote");
 
-		if (!await db.Notes.AnyAsync(p => p.Renote == note && p.IsPureRenote && p.User == user))
+		if (!await db.Notes.IncludeUnpublished().AnyAsync(p => p.Renote == note && p.IsPureRenote && p.User == user))
 			return await CreateNoteAsync(new NoteCreationData
 			{
-				User       = user,
-				Visibility = visibility.Value,
-				Renote     = note
+                User        = user,
+                Visibility  = visibility.Value,
+                Renote      = note,
+                ScheduledAt = scheduledAt
 			});
 
 		return null;

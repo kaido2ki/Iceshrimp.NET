@@ -178,6 +178,7 @@ public class ScheduledStatusEntity : IIdentifiable, IPostNotePayload
         [J("media_ids")]      public List<string>? MediaIds    { get; set; }
         [J("local_only")]     public bool          LocalOnly   { get; set; } = false;
         [J("quote_id")]       public string?       QuoteId     { get; set; }
+        [J("reblog_id")]      public string?       ReblogId    { get; set; }
         [J("poll")]           public PollData?     Poll        { get; set; }
 
         public class PollData

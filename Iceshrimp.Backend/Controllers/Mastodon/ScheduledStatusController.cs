@@ -23,7 +23,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [EnableCors("mastodon")]
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
-public class ScheduledStatusController(DatabaseContext db, NoteRenderer noteRenderer, NoteService noteService) : ControllerBase, IScopedService
+public class ScheduledStatusController(DatabaseContext db, NoteRenderer noteRenderer, NoteService noteService, IHttpContextAccessor httpContextAccessor) : ControllerBase, IScopedService
 {
     [Authenticate("read:statuses")]
     [LinkPagination(20, 40)]
@@ -48,7 +48,7 @@ public class ScheduledStatusController(DatabaseContext db, NoteRenderer noteRend
     [ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
     public async Task<ScheduledStatusEntity> GetScheduledNote(string id)
     {
-        var user = HttpContext.GetUserOrFail();
+        var user = httpContextAccessor.HttpContext!.GetUserOrFail(); // calling this function as a service breaks otherwise
 
         var note = await db.Notes
                            .IncludeUnpublished()

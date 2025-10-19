@@ -305,10 +305,15 @@ public class StatusController(
 	[Authorize("write:favourites")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
-	public async Task<StatusEntity> Renote(string id, [FromHybrid] StatusSchemas.ReblogRequest? request)
+	public async Task<IPostNotePayload> Renote(string id, [FromHybrid] StatusSchemas.ReblogRequest? request)
 	{
+		var scheduled   = request?.ScheduledAt != null;
+		if (scheduled && request?.ScheduledAt < DateTime.UtcNow.AddMinutes(5))
+			throw GracefulException.UnprocessableEntity("Scheduled note must be at least 5 minutes in the future");
+
 		var user = HttpContext.GetUserOrFail();
-		var renote = await db.Notes.IncludeCommonProperties()
+		var renote = await db.Notes.IncludeUnpublished()
+                             .IncludeCommonProperties()
 		                     .FirstOrDefaultAsync(p => p.RenoteId == id && p.User == user && p.IsPureRenote);
 
 		if (renote == null)
@@ -323,8 +328,10 @@ public class StatusController(
 				? StatusEntity.DecodeVisibility(request.Visibility)
 				: user.UserSettings?.DefaultRenoteVisibility ?? Note.NoteVisibility.Public;
 
-			renote = await noteSvc.RenoteNoteAsync(note, user, renoteVisibility) ??
+			renote = await noteSvc.RenoteNoteAsync(note, user, renoteVisibility, request?.ScheduledAt) ??
 			         throw new Exception("Created renote was null");
+            if (renote.ScheduledAt != null) return await scheduledStatusController.GetScheduledNote(renote.Id);
+
 			note.RenoteCount++; // we do not want to call save changes after this point
 		}
 
