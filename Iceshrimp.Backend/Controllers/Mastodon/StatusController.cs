@@ -308,8 +308,8 @@ public class StatusController(
 	public async Task<IPostNotePayload> Renote(string id, [FromHybrid] StatusSchemas.ReblogRequest? request)
 	{
 		var scheduled   = request?.ScheduledAt != null;
-		if (scheduled && request?.ScheduledAt < DateTime.UtcNow.AddMinutes(5))
-			throw GracefulException.UnprocessableEntity("Scheduled note must be at least 5 minutes in the future");
+		if (scheduled && request?.ScheduledAt?.ToUniversalTime() < DateTime.UtcNow.AddMinutes(1))
+			throw GracefulException.UnprocessableEntity("Scheduled note can not be in the past");
 
 		var user = HttpContext.GetUserOrFail();
 		var renote = await db.Notes.IncludeUnpublished()
@@ -363,8 +363,8 @@ public class StatusController(
 	public async Task<IPostNotePayload> PostNote([FromHybrid] StatusSchemas.PostStatusRequest request)
 	{
         var scheduled   = request.ScheduledAt != null;
-        if (scheduled && request.ScheduledAt < DateTime.UtcNow.AddMinutes(5))
-            throw GracefulException.UnprocessableEntity("Scheduled note must be at least 5 minutes in the future");
+		if (scheduled && request.ScheduledAt?.ToUniversalTime() < DateTime.UtcNow.AddMinutes(1))
+			throw GracefulException.UnprocessableEntity("Scheduled note can not be in the past");
 
 		var token = HttpContext.GetOauthToken() ?? throw new Exception("Token must not be null at this stage");
 		var user  = token.User;
