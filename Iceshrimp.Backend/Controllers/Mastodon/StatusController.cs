@@ -354,16 +354,13 @@ public class StatusController(
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity)]
 	public async Task<StatusEntity> PostNote([FromHybrid] StatusSchemas.PostStatusRequest request)
 	{
-		if (request.Preview)
-			throw GracefulException.UnprocessableEntity("Previewing is not supported yet");
+        //TODO: handle scheduled statuses
+        if (request.ScheduledAt != null)
+            throw GracefulException.UnprocessableEntity("Scheduled statuses are not supported yet");
 
 		var token = HttpContext.GetOauthToken() ?? throw new Exception("Token must not be null at this stage");
 		var user  = token.User;
 
-		if (request.ScheduledAt != null)
-			throw GracefulException.UnprocessableEntity("Scheduled statuses are not supported yet");
-
-		//TODO: handle scheduled statuses
 		Request.Headers.TryGetValue("Idempotency-Key", out var idempotencyKeyHeader);
 		var idempotencyKey = idempotencyKeyHeader.FirstOrDefault();
 		if (idempotencyKey != null)
@@ -450,7 +447,7 @@ public class StatusController(
 			}
 		}
 
-		if (request is { Sensitive: true, MediaIds.Count: > 0 })
+		if (request is { Preview: false, Sensitive: true, MediaIds.Count: > 0 })
 		{
 			await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id) && !p.IsSensitive)
 			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.IsSensitive, _ => true));
@@ -502,10 +499,11 @@ public class StatusController(
 			Renote      = quote,
 			Attachments = attachments,
 			Poll        = poll,
-			LocalOnly   = request.LocalOnly
+			LocalOnly   = request.LocalOnly,
+            Preview     = request.Preview,
 		});
 
-		if (idempotencyKey != null)
+		if (!request.Preview && idempotencyKey != null)
 			await cache.SetAsync($"idempotency:{user.Id}:{idempotencyKey}", note.Id, TimeSpan.FromHours(24));
 
 		return await noteRenderer.RenderAsync(note, user);

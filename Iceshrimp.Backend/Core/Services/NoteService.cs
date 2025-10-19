@@ -75,6 +75,7 @@ public class NoteService(
 		public          ASNote?                         ASNote;
 		public          string?                         ReplyUri;
 		public          string?                         RenoteUri;
+		public          bool                            Preview = false;
 	}
 
 	public class NoteUpdateData
@@ -103,7 +104,11 @@ public class NoteService(
 
 	public async Task<Note> CreateNoteAsync(NoteCreationData data)
 	{
-		logger.LogDebug("Creating note for user {id}", data.User.Id);
+		// !! IMPORTANT !!
+		// Any database writes here MUST be guarded by a check for !data.Preview
+		// !! IMPORTANT !!
+
+		if (!data.Preview) logger.LogDebug("Creating note for user {id}", data.User.Id);
 
 		await policySvc.InitializeAsync();
 
@@ -133,13 +138,13 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Polls must have at least two options");
 
 		data.ParsedText = data.Text != null ? MfmParser.Parse(data.Text.ReplaceLineEndings("\n")) : null;
-		data.ParsedCw = data.Cw != null ? MfmParser.Parse(data.Cw.ReplaceLineEndings("\n")) : null;
+		data.ParsedCw   = data.Cw != null ? MfmParser.Parse(data.Cw.ReplaceLineEndings("\n")) : null;
 		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PreLogic);
 
 		if (!data.LocalOnly && (data.Renote is { LocalOnly: true } || data.Reply is { LocalOnly: true }))
 			data.LocalOnly = true;
 
-		if (data.Renote != null)
+		if (!data.Preview && data.Renote != null)
 		{
 			var pureRenote = data.Text == null && data.Poll == null && data.Attachments is not { Count: > 0 };
 
@@ -165,7 +170,7 @@ public class NoteService(
 			data.ResolvedMentions ?? await ResolveNoteMentionsAsync(data.ParsedText);
 
 		// ReSharper disable once EntityFramework.UnsupportedServerSideFunctionCall
-		if (mentionedUserIds.Count > 0)
+		if (!data.Preview && mentionedUserIds.Count > 0)
 		{
 			var blockAcct = await db.Users
 			                        .Where(p => mentionedUserIds.Contains(p.Id) && p.ProhibitInteractionWith(data.User))
@@ -199,8 +204,12 @@ public class NoteService(
 		)
 		{
 			foreach (var driveFile in data.Attachments.Where(p => !p.IsSensitive)) driveFile.IsSensitive = true;
-			await db.DriveFiles.Where(p => data.Attachments.Select(a => a.Id).Contains(p.Id) && !p.IsSensitive)
-			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.IsSensitive, _ => true));
+
+			if (!data.Preview)
+			{
+				await db.DriveFiles.Where(p => data.Attachments.Select(a => a.Id).Contains(p.Id) && !p.IsSensitive)
+				        .ExecuteUpdateAsync(p => p.SetProperty(i => i.IsSensitive, _ => true));
+			}
 		}
 
 		var tags = ResolveHashtags(data.ParsedText, data.ASNote);
@@ -265,15 +274,24 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Refusing to create a pure renote reply");
 		}
 
-		var noteId   = IdHelpers.GenerateSnowflakeId(data.CreatedAt);
+		var noteId   = data.Preview ? "preview" : IdHelpers.GenerateSnowflakeId(data.CreatedAt);
 		var threadId = data.Reply?.ThreadId ?? noteId;
 
 		var context   = data.ASNote?.Context;
 		var contextId = context?.Id;
 
-		var thread = contextId != null
-			? await db.NoteThreads.Where(t => t.Uri == contextId || t.Id == threadId).FirstOrDefaultAsync()
-			: await db.NoteThreads.Where(t => t.Id == threadId).FirstOrDefaultAsync();
+		NoteThread? thread = null;
+		if (!data.Preview)
+		{
+			if (contextId != null)
+			{
+				thread = await db.NoteThreads.Where(t => t.Uri == contextId || t.Id == threadId).FirstOrDefaultAsync();
+			}
+			else
+			{
+				thread = await db.NoteThreads.Where(t => t.Id == threadId).FirstOrDefaultAsync();
+			}
+		}
 
 		var   contextOwner      = data.User.IsLocalUser ? data.User : null;
 		bool? contextResolvable = data.User.IsLocalUser ? null : false;
@@ -356,9 +374,15 @@ public class NoteService(
 			if (data.Poll.Votes == null! || data.Poll.Votes.Count != data.Poll.Choices.Count)
 				data.Poll.Votes = data.Poll.Choices.Select(_ => 0).ToList();
 
-			await db.AddAsync(data.Poll);
 			note.HasPoll = true;
-			await EnqueuePollExpiryTaskAsync(data.Poll);
+			await db.AddAsync(data.Poll);
+			if (!data.Preview) await EnqueuePollExpiryTaskAsync(data.Poll);
+		}
+
+		if (data.Preview)
+		{
+			db.ChangeTracker.Clear();
+			return note;
 		}
 
 		logger.LogDebug("Inserting created note {noteId} for user {userId} into the database", note.Id, data.User.Id);
