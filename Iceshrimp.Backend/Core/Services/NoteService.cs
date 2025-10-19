@@ -45,6 +45,10 @@ public class NoteService(
 {
 	private const int DefaultRecursionLimit = 100;
 
+    // https://misskey-hub.net/en/tools/aid-converter/
+    // this seems to be the timestamp for 'zzzzzzzzzzzzzzzz'. anything newer i would expect something to break
+    private static DateTime _scheduleIdTimeLimit = new DateTime(2089, 05, 24);
+
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{
 		o.PoolSize        = 100;
@@ -276,7 +280,14 @@ public class NoteService(
 			throw GracefulException.UnprocessableEntity("Refusing to create a pure renote reply");
 		}
 
-		var noteId   = data.Preview ? "preview" : IdHelpers.GenerateSnowflakeId(data.CreatedAt);
+        // we need the note ids to sort correctly, but we also don't want to limit clients to a specific time
+        // as some clients have "drafts" that are posts scheduled for absurd years. let's assume that if you're scheduling
+        // something like that you don't care where it'll be sorted (not that we'll *actually* schedule it anyways, see ScheduleNoteAsync)
+        var idTimestamp = data.ScheduledAt != null && data.ScheduledAt < _scheduleIdTimeLimit
+            ? data.ScheduledAt
+            : data.CreatedAt;
+
+		var noteId   = data.Preview ? "preview" : IdHelpers.GenerateSnowflakeId(idTimestamp);
 		var threadId = data.Reply?.ThreadId ?? noteId;
 
 		var context   = data.ASNote?.Context;
