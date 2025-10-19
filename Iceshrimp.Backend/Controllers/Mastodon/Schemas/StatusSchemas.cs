@@ -30,7 +30,7 @@ public abstract class StatusSchemas
 
 		[B(Name = "scheduled_at")]
 		[J("scheduled_at")]
-		public string? ScheduledAt { get; set; }
+		public DateTime? ScheduledAt { get; set; }
 
 		[B(Name = "media_ids")]
 		[J("media_ids")]
@@ -103,4 +103,12 @@ public abstract class StatusSchemas
 		[J("visibility")]
 		public string? Visibility { get; set; }
 	}
+
+    public class RescheduleRequest
+    {
+        [B(Name = "scheduled_at")]
+        [JR]
+        [J("scheduled_at")]
+        public DateTime ScheduledAt { get; set; }
+    }
 }

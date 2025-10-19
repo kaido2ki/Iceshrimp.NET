@@ -39,7 +39,54 @@ public class NoteRenderer(
 		KeywordMatches = ["RE: \ud83d\udd12"] // lock emoji
 	};
 
-	public async Task<StatusEntity> RenderAsync(
+    public async Task<ScheduledStatusEntity> RenderScheduledAsync(
+        Note note, User? user, NoteRendererDto? data = null, int recurse = 2
+    )
+    {
+        var attachments = data?.Attachments == null
+            ? await GetAttachmentsAsync([note])
+            : [..data.Attachments.Where(p => note.FileIds.Contains(p.Id))];
+        
+        var poll = note.HasPoll
+            ? (data?.Polls ?? await GetPollsAsync([note], user)).FirstOrDefault(p => p.Id == note.Id)
+            : null;
+
+        var pollExpiresIn = (poll?.ExpiresAt != null && DateTime.TryParse(poll.ExpiresAt, out var time))
+            ? time
+            : DateTime.MaxValue;
+        
+        var sensitive = note.Cw != null || attachments.Any(p => p.Sensitive);
+
+        var visibility = flags.IsPleroma.Value && note.LocalOnly
+            ? "local"
+            : StatusEntity.EncodeVisibility(note.Visibility);
+        
+        return new ScheduledStatusEntity
+        {
+            Id          = note.Id,
+            ScheduledAt = note.ScheduledAt ?? DateTime.MinValue,
+            Params      = new ScheduledStatusEntity.Param
+            {
+                Text = note.Text,
+                MediaIds = attachments.Select(a => a.Id).ToList(),
+                Sensitive = sensitive,
+                Cw = note.Cw,
+                Visibility = visibility,
+                ReplyId = note.ReplyId,
+                LocalOnly = note.LocalOnly,
+                QuoteId = note.IsQuote ? note.RenoteId : null,
+                Poll = poll == null ? null : new ScheduledStatusEntity.Param.PollData
+                {
+                    ExpiresIn  = (long)(DateTime.UtcNow - pollExpiresIn).TotalSeconds,
+                    Multiple   = poll.Multiple,
+                    Options    = poll.Options.Select(p => p.Title).ToList(),
+                },
+            },
+            Attachments = attachments
+        };
+    }
+
+    public async Task<StatusEntity> RenderAsync(
 		Note note, User? user, Filter.FilterContext? filterContext = null, NoteRendererDto? data = null, int recurse = 2
 	)
 	{
@@ -507,6 +554,25 @@ public class NoteRenderer(
 
 		return await noteList.Select(p => RenderAsync(p, user, filterContext, data)).AwaitAllAsync();
 	}
+    
+    public async Task<IEnumerable<ScheduledStatusEntity>> RenderManyScheduledAsync(IEnumerable<Note> notes, User? user)
+    {
+        var noteList = notes.ToList();
+        if (noteList.Count == 0) return [];
+
+        var allNotes = noteList.SelectMany<Note, Note?>(p => [p, p.Renote, p.Renote?.Renote])
+                               .OfType<Note>()
+                               .Distinct()
+                               .ToList();
+
+        var data = new NoteRendererDto
+        {
+            Attachments     = await GetAttachmentsAsync(allNotes),
+            Polls           = await GetPollsAsync(allNotes, user),
+        };
+
+        return await noteList.Select(p => RenderScheduledAsync(p, user, data)).AwaitAllAsync();
+    }
 
 	public class NoteRendererDto
 	{

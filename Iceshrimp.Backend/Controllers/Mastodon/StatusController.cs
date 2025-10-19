@@ -37,7 +37,8 @@ public class StatusController(
 	CacheService cache,
 	IOptions<Config.InstanceSection> config,
 	IOptionsSnapshot<Config.SecuritySection> security,
-	UserRenderer userRenderer
+	UserRenderer userRenderer,
+    ScheduledStatusController scheduledStatusController
 ) : ControllerBase
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -352,15 +353,15 @@ public class StatusController(
 	[Authorize("write:statuses")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.UnprocessableEntity)]
-	public async Task<StatusEntity> PostNote([FromHybrid] StatusSchemas.PostStatusRequest request)
+	public async Task<IPostNotePayload> PostNote([FromHybrid] StatusSchemas.PostStatusRequest request)
 	{
-        //TODO: handle scheduled statuses
-        if (request.ScheduledAt != null)
-            throw GracefulException.UnprocessableEntity("Scheduled statuses are not supported yet");
+        var scheduled   = request.ScheduledAt != null;
+        if (scheduled && request.ScheduledAt < DateTime.UtcNow.AddMinutes(5))
+            throw GracefulException.UnprocessableEntity("Scheduled note must be at least 5 minutes in the future");
 
 		var token = HttpContext.GetOauthToken() ?? throw new Exception("Token must not be null at this stage");
 		var user  = token.User;
-
+        
 		Request.Headers.TryGetValue("Idempotency-Key", out var idempotencyKeyHeader);
 		var idempotencyKey = idempotencyKeyHeader.FirstOrDefault();
 		if (idempotencyKey != null)
@@ -384,8 +385,11 @@ public class StatusController(
 						throw GracefulException.RequestTimeout("Failed to resolve idempotency key note within 1000 ms");
 				}
 
-				return await GetNote(hit);
-			}
+                if (scheduled)
+                    return await scheduledStatusController.GetScheduledNote(hit);
+
+                return await GetNote(hit);
+            }
 		}
 
 		if (string.IsNullOrWhiteSpace(request.Text) && request.MediaIds is not { Count: > 0 } && request.Poll == null)
@@ -502,12 +506,20 @@ public class StatusController(
 			Poll        = poll,
 			LocalOnly   = request.LocalOnly,
             Preview     = request.Preview,
+            ScheduledAt = request.ScheduledAt,
 		});
 
 		if (!request.Preview && idempotencyKey != null)
 			await cache.SetAsync($"idempotency:{user.Id}:{idempotencyKey}", note.Id, TimeSpan.FromHours(24));
 
-		return await noteRenderer.RenderAsync(note, user);
+        if (scheduled)
+        {
+            return await noteRenderer.RenderScheduledAsync(note, user);
+        }
+        else
+        {
+            return await noteRenderer.RenderAsync(note, user);
+        }
 	}
 
 	[HttpPut("{id}")]

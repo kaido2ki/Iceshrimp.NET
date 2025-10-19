@@ -259,7 +259,7 @@ public static class QueryableExtensions
 
 		// TODO: name this filter when we update to EF 10
 		// https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10#using-multiple-query-filters
-		public IQueryable<Note> IncludeUnpublished(this IQueryable<Note> query)	=> query.IgnoreQueryFilters();
+		public IQueryable<Note> IncludeUnpublished() => query.IgnoreQueryFilters();
 
 		public IQueryable<Note> FilterByUser(User user)
 		{
@@ -529,6 +529,14 @@ public static class QueryableExtensions
 		           .ToList();
 		return (await renderer.RenderManyAsync(list, user, filterContext)).ToList();
 	}
+    
+    public static async Task<List<ScheduledStatusEntity>> RenderAllScheduledForMastodonAsync(
+        this IQueryable<Note> notes, NoteRenderer renderer, User? user
+    )
+    {
+        var list = await notes.ToListAsync();
+        return (await renderer.RenderManyScheduledAsync(list, user)).ToList();
+    }
 
 	public static async Task<List<AccountEntity>> RenderAllForMastodonAsync(
 		this IQueryable<User> users, UserRenderer renderer, User? localUser
