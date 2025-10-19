@@ -516,12 +516,16 @@ public class NoteService(
 		}
 		else
 		{
-			var updateLastNoteTimestamp = create && (note.User.LastNoteAt == null || note.CreatedAt > note.User.LastNoteAt);
+			var updateLastNoteTimestamp =
+				create && (note.User.LastNoteAt == null || note.CreatedAt > note.User.LastNoteAt);
 
 			await db.Users.Where(p => p.Id == note.User.Id)
 			        .ExecuteUpdateAsync(p => p
 			                                 .SetProperty(u => u.NotesCount, u => u.NotesCount + diff)
-			                                 .SetProperty(u => u.LastNoteAt, u => updateLastNoteTimestamp ? note.CreatedAt : u.LastNoteAt));
+			                                 .SetProperty(u => u.LastNoteAt,
+			                                              u => updateLastNoteTimestamp
+				                                              ? note.CreatedAt
+				                                              : u.LastNoteAt));
 		}
 
 		if (note.Reply != null)
@@ -604,7 +608,7 @@ public class NoteService(
 		};
 
 		data.ParsedText = data.Text != null ? MfmParser.Parse(data.Text.ReplaceLineEndings("\n")) : null;
-		data.ParsedCw = data.Cw != null ? MfmParser.Parse(data.Cw.ReplaceLineEndings("\n")) : null;
+		data.ParsedCw   = data.Cw != null ? MfmParser.Parse(data.Cw.ReplaceLineEndings("\n")) : null;
 		policySvc.CallRewriteHooks(data, IRewritePolicy.HookLocationEnum.PreLogic);
 
 		var previousMentionedLocalUserIds = await db.Users.Where(p => note.Mentions.Contains(p.Id) && p.IsLocalUser)
@@ -654,7 +658,7 @@ public class NoteService(
 			note.Emojis = data.Emoji;
 		else if (data.Emoji == null && note.Emojis.Count != 0)
 			note.Emojis = [];
-		
+
 		if (data.ParsedCw != null)
 		{
 			var cwEmoji = (await emojiSvc.ResolveEmojiAsync(data.ParsedCw)).Select(p => p.Id);
