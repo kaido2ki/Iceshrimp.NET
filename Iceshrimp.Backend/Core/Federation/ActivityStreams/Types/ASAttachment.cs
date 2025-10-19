@@ -99,6 +99,8 @@ public sealed class ASAttachmentConverter : JsonConverter
 		{
 			$"{Constants.ActivityStreamsNs}#Document" => obj.ToObject<ASDocument?>(),
 			$"{Constants.ActivityStreamsNs}#Image"    => obj.ToObject<ASImage?>(),
+			$"{Constants.ActivityStreamsNs}#Audio"    => obj.ToObject<ASDocument?>(), // GoToSocial federates audio files as type "Audio", more software may move to this since AS defines the type
+			$"{Constants.ActivityStreamsNs}#Video"    => obj.ToObject<ASDocument?>(), // "Video" isn't used by any other software yet but is defined by AS, so this is to ensure future compatability
 			$"{Constants.SchemaNs}#PropertyValue"     => obj.ToObject<ASField?>(),
 			_                                         => attachment
 		};
