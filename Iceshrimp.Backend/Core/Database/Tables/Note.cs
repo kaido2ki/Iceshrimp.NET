@@ -224,6 +224,9 @@ public class Note : IIdentifiable
 	[Column("combinedAltText")]
 	public string? CombinedAltText { get; set; }
 
+    [Column("published")] public bool Published { get; set; }
+    [Column("scheduledAt")] public DateTime? ScheduledAt { get; set; }
+    
 	[ForeignKey(nameof(ChannelId))]
 	[InverseProperty(nameof(Tables.Channel.Notes))]
 	public virtual Channel? Channel { get; set; }
@@ -322,6 +325,7 @@ public class Note : IIdentifiable
 	[Projectable]
 	[SuppressMessage("ReSharper", "MergeIntoPattern", Justification = "Projectable chain must not contain patterns")]
 	public bool IsVisibleFor(User? user) =>
+        (ScheduledAt == null || User == user) &&
 		(VisibilityIsPublicOrHome && (!LocalOnly || (user != null && user.IsLocalUser))) ||
 		(user != null && CheckComplexVisibility(user));
 
@@ -445,6 +449,11 @@ public class Note : IIdentifiable
 			entity.HasOne(d => d.User)
 			      .WithMany(p => p.Notes)
 			      .OnDelete(DeleteBehavior.Cascade);
-		}
+
+            // TODO: name this filter when we update to EF 10
+            // https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10#using-multiple-query-filters
+            entity.HasQueryFilter(e => e.Published);
+            entity.Property(e => e.Published).HasDefaultValue(true);
+        }
 	}
 }

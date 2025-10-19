@@ -32,6 +32,7 @@ public class QueueService(
 	public readonly  PreDeliverQueue         PreDeliverQueue     = new(queueConcurrency.Value.PreDeliver);
 	public readonly  BackfillQueue           BackfillQueue       = new(queueConcurrency.Value.Backfill);
 	public readonly  BackfillUserQueue       BackfillUserQueue   = new(queueConcurrency.Value.BackfillUser);
+	public readonly  ScheduledPostQueue      ScheduledPostQueue  = new(queueConcurrency.Value.ScheduledPost);
 
 	public IEnumerable<string> QueueNames => _queues.Select(p => p.Name);
 	
@@ -43,7 +44,7 @@ public class QueueService(
 
 	protected override async Task ExecuteAsync(CancellationToken token)
 	{
-		_queues.AddRange([InboxQueue, PreDeliverQueue, DeliverQueue, BackgroundTaskQueue]);
+		_queues.AddRange([InboxQueue, PreDeliverQueue, DeliverQueue, BackgroundTaskQueue, ScheduledPostQueue]);
 
 		if (backfill.Value.Replies.Enabled)
 			_queues.Add(BackfillQueue);
@@ -626,4 +627,22 @@ public abstract class PostgresJobQueue<T>(
 		await db.Jobs.Upsert(job).On(j => j.Mutex!).NoUpdate().RunAsync();
 		RaiseJobDelayedEvent();
 	}
+
+    public async Task RescheduleAsync(string mutex, DateTime triggerAt)
+    {
+        await using var scope = GetScope();
+        await using var db    = GetDbContext(scope);
+
+        var affectedRows = await db.Jobs.Where(j => j.Mutex == mutex)
+                .ExecuteUpdateAsync(q => q.SetProperty(j => j.DelayedUntil, triggerAt.ToUniversalTime()));
+        if (affectedRows > 0) RaiseJobDelayedEvent();
+    }
+
+    public async Task DequeueAsync(string mutex)
+    {
+        await using var scope = GetScope();
+        await using var db    = GetDbContext(scope);
+
+        await db.Jobs.Where(j => j.Mutex == mutex).ExecuteDeleteAsync();
+    }
 }

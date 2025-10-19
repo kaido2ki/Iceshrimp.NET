@@ -257,6 +257,10 @@ public static class QueryableExtensions
 			return query.Where(note => note.Visibility == visibility);
 		}
 
+		// TODO: name this filter when we update to EF 10
+		// https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10#using-multiple-query-filters
+		public IQueryable<Note> IncludeUnpublished(this IQueryable<Note> query)	=> query.IgnoreQueryFilters();
+
 		public IQueryable<Note> FilterByUser(User user)
 		{
 			return query.Where(note => note.User == user);
@@ -270,7 +274,7 @@ public static class QueryableExtensions
 		public IQueryable<Note> EnsureVisibleFor(User? user)
 		{
 			return user == null
-				? query.Where(note => note.VisibilityIsPublicOrHome && !note.LocalOnly)
+				? query.Where(note => note.VisibilityIsPublicOrHome && !note.LocalOnly && note.ScheduledAt == null)
 				: query.Where(note => note.IsVisibleFor(user));
 		}
 	}

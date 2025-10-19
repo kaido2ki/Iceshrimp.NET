@@ -2439,6 +2439,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("name");
 
+                    b.Property<bool>("Published")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("published");
+
                     b.Property<short>("QuotesCount")
                         .HasColumnType("smallint")
                         .HasColumnName("quotesCount");
@@ -2518,6 +2524,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("replyUserId")
                         .HasComment("[Denormalized]");
+
+                    b.Property<DateTime?>("ScheduledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("scheduledAt");
 
                     b.Property<int>("Score")
                         .ValueGeneratedOnAdd()

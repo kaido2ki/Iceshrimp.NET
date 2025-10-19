@@ -45,6 +45,7 @@ public class ActivityPubController(
 	{
 		var actor = HttpContext.GetActor();
 		var note = await db.Notes
+                           .IncludeUnpublished() // the intention is to reuse this mechanism for interaction controls as well, so let remote instances see unpublished notes
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(actor)
 		                   .FirstOrDefaultAsync(p => p.Id == id);
@@ -65,6 +66,7 @@ public class ActivityPubController(
 		var actor = HttpContext.GetActor();
 
 		var note = await db.Notes
+                           .IncludeUnpublished()
 		                   .IncludeCommonProperties()
 		                   .EnsureVisibleFor(actor)
 		                   .Where(p => p.Id == id && p.UserHost == null)

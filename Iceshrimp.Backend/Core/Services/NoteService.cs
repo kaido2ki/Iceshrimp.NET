@@ -77,7 +77,8 @@ public class NoteService(
 		public          string?                         ReplyUri;
 		public          string?                         RenoteUri;
 		public          bool                            Preview = false;
-	}
+        public          DateTime?                       ScheduledAt;
+    }
 
 	public class NoteUpdateData
 	{
@@ -346,7 +347,7 @@ public class NoteService(
 			RenoteUserId         = data.Renote?.UserId,
 			RenoteUserHost       = data.Renote?.UserHost,
 			User                 = data.User,
-			CreatedAt            = data.CreatedAt ?? DateTime.UtcNow,
+			CreatedAt            = data.ScheduledAt ?? data.CreatedAt ?? DateTime.UtcNow,
 			UserHost             = data.User.Host,
 			Visibility           = data.Visibility,
 			FileIds              = data.Attachments?.Select(p => p.Id).ToList() ?? [],
@@ -390,7 +391,29 @@ public class NoteService(
 
 		await UpdateNoteCountersAsync(note, true);
 		await db.AddAsync(note);
-		await db.SaveChangesAsync();
+
+        if (data.ScheduledAt != null)
+        {
+            await ScheduleNoteAsync(note, data.ScheduledAt.Value);
+        }
+        else
+        {
+            await PublishNoteAsync(note, mentionedLocalUserIds);
+        }
+
+		return note;
+	}
+
+    public async Task PublishNoteAsync(Note note, List<string>? mentionedLocalUserIds = null)
+    {
+        note.Published = true;
+
+        mentionedLocalUserIds ??= await db.Users
+                                        .Where(p => p.IsLocalUser && note.Mentions.Contains(p.Id))
+                                        .Select(p => p.Id)
+                                        .ToListAsync();
+
+        await db.SaveChangesAsync();
 		eventSvc.RaiseNotePublished(note);
 		await notificationSvc.GenerateMentionNotificationsAsync(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateReplyNotificationsAsync(note, mentionedLocalUserIds);
@@ -398,48 +421,48 @@ public class NoteService(
 
 		logger.LogDebug("Note {id} created successfully", note.Id);
 
-		if (data.Uri != null || data.Url != null)
+		if (note.Uri != null || note.Url != null)
 		{
 			_ = followupTaskSvc.ExecuteTaskAsync("ResolvePendingReplyRenoteTargets", async provider =>
 			{
 				var bgDb  = provider.GetRequiredService<DatabaseContext>();
 				var count = 0;
 
-				if (data.Uri != null)
+				if (note.Uri != null)
 				{
 					count +=
-						await bgDb.Notes.Where(p => p.ReplyUri == data.Uri)
+						await bgDb.Notes.Where(p => p.ReplyUri == note.Uri)
 						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.ReplyUri, _ => null)
 						                                    .SetProperty(i => i.ReplyId, _ => note.Id)
 						                                    .SetProperty(i => i.ReplyUserId, _ => note.UserId)
 						                                    .SetProperty(i => i.ReplyUserHost, _ => note.UserHost)
 						                                    .SetProperty(i => i.MastoReplyUserId,
-						                                                 i => i.UserId != data.User.Id
+						                                                 i => i.UserId != note.User.Id
 							                                                 ? i.UserId
-							                                                 : mastoReplyUserId));
+							                                                 : note.MastoReplyUserId));
 
 					count +=
-						await bgDb.Notes.Where(p => p.RenoteUri == data.Uri)
+						await bgDb.Notes.Where(p => p.RenoteUri == note.Uri)
 						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RenoteUri, _ => null)
 						                                    .SetProperty(i => i.RenoteId, _ => note.Id)
 						                                    .SetProperty(i => i.RenoteUserId, _ => note.UserId)
 						                                    .SetProperty(i => i.RenoteUserHost, _ => note.UserHost));
 				}
 
-				if (data.Url != null)
+				if (note.Url != null)
 				{
 					count +=
-						await bgDb.Notes.Where(p => p.ReplyUri == data.Url)
+						await bgDb.Notes.Where(p => p.ReplyUri == note.Url)
 						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.ReplyUri, _ => null)
 						                                    .SetProperty(i => i.ReplyId, _ => note.Id)
 						                                    .SetProperty(i => i.ReplyUserId, _ => note.UserId)
 						                                    .SetProperty(i => i.ReplyUserHost, _ => note.UserHost)
 						                                    .SetProperty(i => i.MastoReplyUserId,
-						                                                 i => i.UserId != data.User.Id
+						                                                 i => i.UserId != note.User.Id
 							                                                 ? i.UserId
-							                                                 : mastoReplyUserId));
+							                                                 : note.MastoReplyUserId));
 					count +=
-						await bgDb.Notes.Where(p => p.RenoteUri == data.Url)
+						await bgDb.Notes.Where(p => p.RenoteUri == note.Url)
 						          .ExecuteUpdateAsync(p => p.SetProperty(i => i.RenoteUri, _ => null)
 						                                    .SetProperty(i => i.RenoteId, _ => note.Id)
 						                                    .SetProperty(i => i.RenoteUserId, _ => note.UserId)
@@ -458,32 +481,32 @@ public class NoteService(
 			});
 		}
 
-		if (data.User.IsRemoteUser)
+		if (note.User.IsRemoteUser)
 		{
 			_ = followupTaskSvc.ExecuteTaskAsync("UpdateInstanceNoteCounter", async provider =>
 			{
 				var bgDb          = provider.GetRequiredService<DatabaseContext>();
 				var bgInstanceSvc = provider.GetRequiredService<InstanceService>();
-				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(data.User);
+				var dbInstance    = await bgInstanceSvc.GetUpdatedInstanceMetadataAsync(note.User);
 				await bgDb.Instances.Where(p => p.Id == dbInstance.Id)
 				          .ExecuteUpdateAsync(p => p.SetProperty(i => i.NotesCount, i => i.NotesCount + 1));
 			});
 
-			return note;
+			return;
 		}
 
-		if (data.LocalOnly) return note;
+		if (note.LocalOnly) return;
 
-		var actor = userRenderer.RenderLite(data.User);
+		var actor = userRenderer.RenderLite(note.User);
 		ASActivity activity = note is { IsPureRenote: true, Renote: not null }
 			? ActivityPub.ActivityRenderer.RenderAnnounce(note.Renote.User == note.User
 				                                              ? await noteRenderer.RenderAsync(note.Renote)
 				                                              : noteRenderer.RenderLite(note.Renote),
 			                                              note.GetPublicUri(config.Value), actor,
 			                                              note.Visibility,
-			                                              data.User.GetPublicUri(config.Value) + "/followers",
+			                                              note.User.GetPublicUri(config.Value) + "/followers",
 			                                              note.CreatedAt)
-			: ActivityPub.ActivityRenderer.RenderCreate(await noteRenderer.RenderAsync(note, mentions), actor);
+			: ActivityPub.ActivityRenderer.RenderCreate(await noteRenderer.RenderAsync(note), actor);
 
 		List<string> additionalUserIds =
 			note is { IsPureRenote: true, Renote: not null, Visibility: < Note.NoteVisibility.Followers }
@@ -493,11 +516,42 @@ public class NoteService(
 		if (note.Reply?.ReplyUserId is { } replyUserId)
 			additionalUserIds.Add(replyUserId);
 
-		var recipientIds = mentionedUserIds.Concat(additionalUserIds);
+		var recipientIds = note.VisibleUserIds.Concat(additionalUserIds);
 		await deliverSvc.DeliverToConditionalAsync(activity, note.User, note, recipientIds);
+    }
 
-		return note;
-	}
+    private async Task ScheduleNoteAsync(Note note, DateTime scheduledAt)
+    {
+        scheduledAt = scheduledAt.ToUniversalTime();
+
+        note.ScheduledAt = scheduledAt;
+        await db.SaveChangesAsync();
+
+        // some clients do "drafts" by scheduling notes into absurd years in the future, don't bother queueing them at all
+        if (scheduledAt >= DateTime.Now.AddYears(10)) return;
+
+        await queueSvc.ScheduledPostQueue.ScheduleAsync(new ScheduledPostJobData { NoteId = note.Id }, scheduledAt, $"schedule:{note.Id}");
+    }
+    
+    public async Task RescheduleNoteAsync(Note note, DateTime scheduledAt)
+    {
+        scheduledAt = scheduledAt.ToUniversalTime();
+
+        note.CreatedAt = scheduledAt;
+        note.ScheduledAt = scheduledAt;
+        await db.SaveChangesAsync();
+
+        // some clients do "drafts" by scheduling notes into absurd years in the future, don't bother queueing them at all
+        if (scheduledAt >= DateTime.Now.AddYears(10)) return;
+
+        await queueSvc.BackgroundTaskQueue.RescheduleAsync($"schedule:{note.Id}", scheduledAt);
+    }
+    
+    public async Task DeleteScheduledNoteAsync(Note note)
+    {
+        await queueSvc.BackgroundTaskQueue.DequeueAsync($"schedule:{note.Id}");
+        await DeleteNoteAsync(note);
+    }
 
 	/// <remarks>
 	///     This needs to be called before SaveChangesAsync on create, and afterwards on delete

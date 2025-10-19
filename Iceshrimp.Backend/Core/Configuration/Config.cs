@@ -357,6 +357,7 @@ public sealed class Config : IServiceConfiguration
 		[Range(1, int.MaxValue)] public int BackgroundTask { get; init; } = 4;
 		[Range(1, int.MaxValue)] public int Backfill       { get; init; } = 10;
 		[Range(1, int.MaxValue)] public int BackfillUser   { get; init; } = 10;
+		[Range(1, int.MaxValue)] public int ScheduledPost   { get; init; } = 20;
 	}
 
 	[ConfigurationSection("Queue")]
