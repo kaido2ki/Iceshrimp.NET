@@ -81,7 +81,7 @@ public class NoteRenderer(
 		var liked = data?.LikedNotes?.Contains(note.Id)
 		            ?? await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
 		var renoted = data?.Renotes?.Contains(note.Id)
-		              ?? await db.Notes.AnyAsync(p => p.Renote == note && p.User == user && p.IsPureRenote);
+		              ?? await db.Notes.IncludeUnpublished().AnyAsync(p => p.Renote == note && p.User == user && p.IsPureRenote);
 		var bookmarked = data?.BookmarkedNotes?.Contains(note.Id)
 		                 ?? await db.NoteBookmarks.AnyAsync(p => p.Note == note && p.User == user);
 		var pinned = data?.PinnedNotes?.Contains(note.Id)
@@ -208,7 +208,8 @@ public class NoteRenderer(
 	{
 		if (user == null) return [];
 		if (notes.Count == 0) return [];
-		return await db.Notes.Where(p => p.User == user && p.IsPureRenote && notes.Contains(p.Renote!))
+		return await db.Notes.IncludeUnpublished()
+		               .Where(p => p.User == user && p.IsPureRenote && notes.Contains(p.Renote!))
 		               .Select(p => p.RenoteId)
 		               .Where(p => p != null)
 		               .Distinct()

@@ -131,7 +131,7 @@ public class NoteRenderer(
 		var pinned = data?.PinnedNotes?.Contains(note.Id) ??
 		             await db.UserNotePins.AnyAsync(p => p.Note == note && p.User == user);
 		var renoted = data?.Renotes?.Contains(note.Id) ??
-		              await db.Notes.AnyAsync(p => p.Renote == note && p.User == user && p.IsPureRenote);
+		              await db.Notes.IncludeUnpublished().AnyAsync(p => p.Renote == note && p.User == user && p.IsPureRenote);
 
 		var noteEmoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([note]);
 
@@ -485,7 +485,8 @@ public class NoteRenderer(
 	{
 		if (user == null) return [];
 		if (notes.Count == 0) return [];
-		return await db.Notes.Where(p => p.User == user && p.IsPureRenote && notes.Contains(p.Renote!))
+		return await db.Notes.IncludeUnpublished()
+		               .Where(p => p.User == user && p.IsPureRenote && notes.Contains(p.Renote!))
 		               .Select(p => p.RenoteId)
 		               .Where(p => p != null)
 		               .Distinct()
