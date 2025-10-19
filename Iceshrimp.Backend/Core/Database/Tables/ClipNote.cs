@@ -52,6 +52,11 @@ public class ClipNote
 			entity.HasOne(d => d.Note)
 			      .WithMany(p => p.ClipNotes)
 			      .OnDelete(DeleteBehavior.Cascade);
+            
+            // Reverse of the filter from Note
+            // TODO: name this filter when we update to EF 10
+            // https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10#using-multiple-query-filters
+            entity.HasQueryFilter(e => e.Note.Published);
 		}
 	}
 }

@@ -50,6 +50,11 @@ public class InteractionStamp
 		{
 			entity.Property(e => e.TargetNoteId).HasComment("The note being interacted with");
 			entity.Property(e => e.NoteId).HasComment("The note doing the interaction (quote, reply, whatever)");
+            
+            // Reverse of the filter from Note
+            // TODO: name this filter when we update to EF 10
+            // https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10#using-multiple-query-filters
+            entity.HasQueryFilter(e => e.Note.Published);
 		}
 	}
 }
