@@ -893,9 +893,9 @@ public class NoteService(
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNoteUpdated(note);
 
-		if (!isEdit) return note;
+        if (!note.Published || !isEdit) return note;
 
-		await notificationSvc.GenerateMentionNotificationsAsync(note, mentionedLocalUserIds);
+        await notificationSvc.GenerateMentionNotificationsAsync(note, mentionedLocalUserIds);
 		await notificationSvc.GenerateEditNotificationsAsync(note);
 
 		if (note.LocalOnly || note.User.IsRemoteUser) return note;
@@ -926,6 +926,8 @@ public class NoteService(
 		eventSvc.RaiseNoteDeleted(note);
 		await db.SaveChangesAsync();
 		await UpdateNoteCountersAsync(note, false);
+
+        if (!note.Published) return;
 
 		if (note.User.IsRemoteUser)
 		{
@@ -1578,6 +1580,9 @@ public class NoteService(
 	{
 		if (note.IsPureRenote)
 			throw GracefulException.BadRequest("Cannot like a pure renote");
+        
+        if (!note.Published)
+            throw GracefulException.BadRequest("This note has not been published yet");
 
 		if (!await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user))
 		{
@@ -1613,6 +1618,9 @@ public class NoteService(
 
 	public async Task<bool> UnlikeNoteAsync(Note note, User user)
 	{
+        if (!note.Published)
+            throw GracefulException.BadRequest("This note has not been published yet");
+
 		var like = await db.NoteLikes.Where(p => p.Note == note && p.User == user).FirstOrDefaultAsync();
 		if (like == null) return false;
 		db.Remove(like);
@@ -1640,6 +1648,9 @@ public class NoteService(
 
 	public async Task<Note?> RenoteNoteAsync(Note note, User user, Note.NoteVisibility? visibility = null)
 	{
+        if (!note.Published)
+            throw GracefulException.BadRequest("This note has not been published yet");
+
 		visibility ??= user.UserSettings?.DefaultRenoteVisibility ?? Note.NoteVisibility.Public;
 		if (visibility == Note.NoteVisibility.Specified)
 			throw GracefulException.BadRequest("Renote visibility must be one of: public, unlisted, private");
@@ -1717,6 +1728,8 @@ public class NoteService(
 	{
 		if (user.IsRemoteUser) throw new Exception("This method is only valid for local users");
 
+        if (!note.Published)
+            throw GracefulException.BadRequest("This note has not been published yet");
 		if (note.IsPureRenote)
 			throw GracefulException.BadRequest("Cannot pin a pure renote");
 		if (note.User != user)
@@ -1752,6 +1765,8 @@ public class NoteService(
 	public async Task UnpinNoteAsync(Note note, User user)
 	{
 		if (user.IsRemoteUser) throw new Exception("This method is only valid for local users");
+        if (!note.Published)
+            throw GracefulException.BadRequest("This note has not been published yet");
 
 		var count = await db.UserNotePins.Where(p => p.Note == note && p.User == user).ExecuteDeleteAsync();
 		if (count == 0) return;
@@ -1821,6 +1836,8 @@ public class NoteService(
 
 	public async Task<(string name, bool success)> ReactToNoteAsync(Note note, User user, string name)
 	{
+        if (!note.Published)
+            throw GracefulException.BadRequest("This note has not been published yet");
 		if (note.IsPureRenote)
 			throw GracefulException.BadRequest("Cannot react to a pure renote");
 
@@ -1870,6 +1887,9 @@ public class NoteService(
 
 	public async Task<(string name, bool success)> RemoveReactionFromNoteAsync(Note note, User user, string name)
 	{
+        if (!note.Published)
+            throw GracefulException.BadRequest("This note has not been published yet");
+
 		name = await emojiSvc.ResolveEmojiNameAsync(name, user.Host);
 
 		var reaction =
