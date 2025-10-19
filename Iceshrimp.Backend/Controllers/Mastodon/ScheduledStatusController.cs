@@ -25,6 +25,7 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 [Produces(MediaTypeNames.Application.Json)]
 public class ScheduledStatusController(DatabaseContext db, NoteRenderer noteRenderer, NoteService noteService, IHttpContextAccessor httpContextAccessor) : ControllerBase, IScopedService
 {
+    [HttpGet]
     [Authenticate("read:statuses")]
     [LinkPagination(20, 40)]
     [ProducesResults(HttpStatusCode.OK)]

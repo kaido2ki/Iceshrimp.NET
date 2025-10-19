@@ -168,20 +168,20 @@ public class ScheduledStatusEntity : IIdentifiable, IPostNotePayload
 
     public class Param
     {
-        [J("text")]           public string?       Text        { get; set; }
-        [J("in_reply_to_id")] public string?       ReplyId     { get; set; }
-        [J("sensitive")]      public bool          Sensitive   { get; set; } = false;
-        [J("spoiler_text")]   public string?       Cw          { get; set; }
-        [J("visibility")]     public string        Visibility  { get; set; } = null!;
-        [J("language")]       public string?       Language    { get; set; }
-        [J("scheduled_at")]   public string?       ScheduledAt { get; set; }
-        [J("media_ids")]      public List<string>? MediaIds    { get; set; }
-        [J("local_only")]     public bool          LocalOnly   { get; set; } = false;
-        [J("quote_id")]       public string?       QuoteId     { get; set; }
-        [J("reblog_id")]      public string?       ReblogId    { get; set; }
-        [J("poll")]           public PollData?     Poll        { get; set; }
+        [J("text")]           public string?            Text        { get; set; }
+        [J("in_reply_to_id")] public string?            ReplyId     { get; set; }
+        [J("sensitive")]      public bool               Sensitive   { get; set; } = false;
+        [J("spoiler_text")]   public string?            Cw          { get; set; }
+        [J("visibility")]     public string             Visibility  { get; set; } = null!;
+        [J("language")]       public string?            Language    { get; set; }
+        [J("scheduled_at")]   public string?            ScheduledAt { get; set; }
+        [J("media_ids")]      public List<string>?      MediaIds    { get; set; }
+        [J("local_only")]     public bool               LocalOnly   { get; set; } = false;
+        [J("quote_id")]       public string?            QuoteId     { get; set; }
+        [J("reblog_id")]      public string?            ReblogId    { get; set; }
+        [J("poll")]           public ScheduledPollData? Poll        { get; set; }
 
-        public class PollData
+        public class ScheduledPollData
         {
             [J("options")]     public List<string> Options    { get; set; } = null!;
             [J("expires_in")]  public long         ExpiresIn  { get; set; }

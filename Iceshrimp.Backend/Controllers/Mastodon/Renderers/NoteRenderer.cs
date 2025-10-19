@@ -80,7 +80,7 @@ public class NoteRenderer(
                 LocalOnly  = note.LocalOnly,
                 QuoteId    = note.IsQuote ? note.RenoteId : null,
                 ReblogId   = note.IsPureRenote ? note.RenoteId : null,
-                Poll = poll == null ? null : new ScheduledStatusEntity.Param.PollData
+                Poll = poll == null ? null : new ScheduledStatusEntity.Param.ScheduledPollData
                 {
                     ExpiresIn  = (long)(DateTime.UtcNow - pollExpiresIn).TotalSeconds,
                     Multiple   = poll.Multiple,
