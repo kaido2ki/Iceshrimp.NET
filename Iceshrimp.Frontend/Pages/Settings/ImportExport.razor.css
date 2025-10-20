@@ -1,7 +1,12 @@
 .export {
     display: flex;
-    gap: 1rem;
+    column-gap: 1rem;
+    row-gap: 0.5rem;
     align-items: center;
+}
+
+.export + .export {
+    margin-top: 1rem;
 }
 
 .export .download {
@@ -10,4 +15,11 @@
     align-items: center;
     text-wrap: wrap;
     word-break: break-word;
+}
+
+@media (max-width: 1000px) {
+    .export {
+        align-items: start;
+        flex-direction: column;
+    }
 }

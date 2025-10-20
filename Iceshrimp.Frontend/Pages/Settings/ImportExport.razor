@@ -49,11 +49,33 @@
             </span>
         }
     </div>
+    
+    <div class="export">
+        <StateButton OnClick="ImportFollowingAsync" ExtraClasses="button" @ref="ImportFollowingButton"
+                     Disabled="@(ImportFollowingFile == null)">
+            <Initial>
+                <Icon Name="Icons.Upload"/>
+                @Loc["Import"]
+            </Initial>
+            <Loading>
+                <LoadingSpinner/>
+            </Loading>
+            <Failed>
+                <Icon Name="Icons.Warning"/>
+            </Failed>
+            <Success>
+                <Icon Name="Icons.Check"/>
+            </Success>
+        </StateButton>
+        <InputFile OnChange="OnFollowingFileChange" accept="text/csv"/>
+    </div>
 </div>
 
 @code {
     private StateButton        ExportFollowingButton { get; set; } = null!;
     private DriveFileResponse? ExportFollowingFile   { get; set; }
+    private StateButton        ImportFollowingButton { get; set; } = null!;
+    private IBrowserFile?      ImportFollowingFile   { get; set; }
 
     private async Task ExportFollowingAsync()
     {
@@ -73,5 +95,30 @@
         }
 
         ExportFollowingButton.State = StateButton.StateEnum.Success;
+    }
+
+    private async Task ImportFollowingAsync()
+    {
+        if (ImportFollowingButton.State != StateButton.StateEnum.Initial || ImportFollowingFile == null) return;
+
+        ImportFollowingButton.State = StateButton.StateEnum.Loading;
+
+        try
+        {
+            await Api.Settings.ImportFollowingAsync(ImportFollowingFile);
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            ImportFollowingButton.State = StateButton.StateEnum.Failed;
+            return;
+        }
+
+        ImportFollowingButton.State = StateButton.StateEnum.Success;
+    }
+
+    private void OnFollowingFileChange(InputFileChangeEventArgs e)
+    {
+        ImportFollowingFile = e.GetMultipleFiles().First(p => p.ContentType == "text/csv");
     }
 }

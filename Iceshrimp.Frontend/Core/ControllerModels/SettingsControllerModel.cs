@@ -1,5 +1,6 @@
 using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Iceshrimp.Frontend.Core.ControllerModels;
 
@@ -22,4 +23,7 @@ internal class SettingsControllerModel(ApiClient api)
 
 	public Task<DriveFileResponse> ExportFollowingAsync() =>
 		api.CallAsync<DriveFileResponse>(HttpMethod.Post, "settings/export/following");
+
+	public Task ImportFollowingAsync(IBrowserFile file) =>
+		api.CallAsync(HttpMethod.Post, "settings/import/following", data: file);
 }
