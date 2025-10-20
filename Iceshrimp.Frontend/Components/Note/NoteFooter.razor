@@ -36,18 +36,27 @@
         {
             <Icon Name="Icons.Repeat" Size="1.3em"/>
             <Menu @ref="RenoteMenu">
-                @if (Note.Visibility == NoteVisibility.Public)
+                @if (!Note.Renoted)
                 {
-                    <MenuElement Icon="Icons.Repeat" OnSelect="() => Renote(NoteVisibility.Public)">
-                        <Text>@Loc["Renote"]</Text>
+                    @if (Note.Visibility == NoteVisibility.Public)
+                    {
+                        <MenuElement Icon="Icons.Repeat" OnSelect="() => Renote(NoteVisibility.Public)">
+                            <Text>@Loc["Renote"]</Text>
+                        </MenuElement>
+                    }
+                    <MenuElement Icon="Icons.House" OnSelect="() => Renote(NoteVisibility.Home)">
+                        <Text>@Loc["Renote (Unlisted)"]</Text>
+                    </MenuElement>
+                    <MenuElement Icon="Icons.Lock" OnSelect="() => Renote(NoteVisibility.Followers)">
+                        <Text>@Loc["Renote (Followers)"]</Text>
                     </MenuElement>
                 }
-                <MenuElement Icon="Icons.House" OnSelect="() => Renote(NoteVisibility.Home)">
-                    <Text>@Loc["Renote (Unlisted)"]</Text>
-                </MenuElement>
-                <MenuElement Icon="Icons.Lock" OnSelect="() => Renote(NoteVisibility.Followers)">
-                    <Text>@Loc["Renote (Followers)"]</Text>
-                </MenuElement>
+                else
+                {
+                    <MenuElement Icon="Icons.Minus" OnSelect="Unrenote">
+                        <Text>@Loc["Unrenote"]</Text>
+                    </MenuElement>
+                }
                 <ClosingBackdrop OnClose="RenoteMenu.Close"></ClosingBackdrop>
             </Menu>
         }
@@ -208,6 +217,11 @@
     private void Renote(NoteVisibility visibility)
     {
         _ = NoteActions.RenoteAsync(Note, visibility);
+    }
+
+    private void Unrenote()
+    {
+        _ = NoteActions.UnrenoteAsync(Note);
     }
 
     private void Quote()

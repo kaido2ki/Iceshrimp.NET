@@ -169,6 +169,7 @@ internal class NoteActions(
 	public async Task RenoteAsync(NoteBase note, NoteVisibility visibility)
 	{
 		note.Renotes++;
+		note.Renoted = true;
 		Broadcast(note);
 		try
 		{
@@ -177,6 +178,24 @@ internal class NoteActions(
 		catch (ApiException)
 		{
 			note.Renotes--;
+			note.Renoted = false;
+			Broadcast(note);
+		}
+	}
+
+	public async Task UnrenoteAsync(NoteBase note)
+	{
+		note.Renotes--;
+		note.Renoted = false;
+		Broadcast(note);
+		try
+		{
+			await api.Notes.UnrenoteNoteAsync(note.Id);
+		}
+		catch (ApiException)
+		{
+			note.Renotes++;
+			note.Renoted = true;
 			Broadcast(note);
 		}
 	}
