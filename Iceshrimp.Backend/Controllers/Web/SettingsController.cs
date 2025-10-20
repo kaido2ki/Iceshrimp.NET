@@ -27,6 +27,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Produces(MediaTypeNames.Application.Json)]
 public class SettingsController(
 	DatabaseContext db,
+	DriveService driveSvc,
 	ImportExportService importExportSvc,
 	MetaService meta,
 	IOptions<Config.InstanceSection> instance
@@ -158,7 +159,7 @@ public class SettingsController(
 	[HttpPost("export/blocking")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task<FileContentResult> ExportBlocking()
+	public async Task<DriveFileResponse> ExportBlocking()
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -169,13 +170,35 @@ public class SettingsController(
 
 		var blocking = await importExportSvc.ExportBlockingAsync(user);
 
-		return File(Encoding.UTF8.GetBytes(blocking), "text/csv", $"blocking-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.csv");
+		using var stream = new MemoryStream();
+		stream.Write(Encoding.UTF8.GetBytes(blocking));
+
+		var file = await driveSvc.StoreFileAsync(stream, user,
+		                                         new DriveFileCreationRequest
+		                                         {
+			                                         Filename    = $"blocking-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.csv",
+			                                         IsSensitive = false,
+			                                         MimeType    = "text/csv"
+		                                         });
+
+		return new DriveFileResponse
+		{
+			Id           = file.Id,
+			Url          = file.RawAccessUrl,
+			ThumbnailUrl = file.RawThumbnailAccessUrl,
+			Filename     = file.Name,
+			ContentType  = file.Type,
+			Sensitive    = file.IsSensitive,
+			Description  = file.Comment,
+			IsAvatar     = false,
+			IsBanner     = false
+		};
 	}
 
 	[HttpPost("export/following")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task<FileContentResult> ExportFollowing()
+	public async Task<DriveFileResponse> ExportFollowing()
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -186,13 +209,35 @@ public class SettingsController(
 
 		var following = await importExportSvc.ExportFollowingAsync(user);
 
-		return File(Encoding.UTF8.GetBytes(following), "text/csv", $"following-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.csv");
+		using var stream = new MemoryStream();
+		stream.Write(Encoding.UTF8.GetBytes(following));
+
+		var file = await driveSvc.StoreFileAsync(stream, user,
+		                                         new DriveFileCreationRequest
+		                                         {
+			                                         Filename    = $"following-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.csv",
+			                                         IsSensitive = false,
+			                                         MimeType    = "text/csv"
+		                                         });
+
+		return new DriveFileResponse
+		{
+			Id           = file.Id,
+			Url          = file.RawAccessUrl,
+			ThumbnailUrl = file.RawThumbnailAccessUrl,
+			Filename     = file.Name,
+			ContentType  = file.Type,
+			Sensitive    = file.IsSensitive,
+			Description  = file.Comment,
+			IsAvatar     = false,
+			IsBanner     = false
+		};
 	}
 
 	[HttpPost("export/muting")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task<FileContentResult> ExportMuting()
+	public async Task<DriveFileResponse> ExportMuting()
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -203,7 +248,29 @@ public class SettingsController(
 
 		var muting = await importExportSvc.ExportMutingAsync(user);
 
-		return File(Encoding.UTF8.GetBytes(muting), "text/csv", $"muting-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.csv");
+		using var stream = new MemoryStream();
+		stream.Write(Encoding.UTF8.GetBytes(muting));
+
+		var file = await driveSvc.StoreFileAsync(stream, user,
+		                                         new DriveFileCreationRequest
+		                                         {
+			                                         Filename    = $"muting-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.csv",
+			                                         IsSensitive = false,
+			                                         MimeType    = "text/csv"
+		                                         });
+
+		return new DriveFileResponse
+		{
+			Id           = file.Id,
+			Url          = file.RawAccessUrl,
+			ThumbnailUrl = file.RawThumbnailAccessUrl,
+			Filename     = file.Name,
+			ContentType  = file.Type,
+			Sensitive    = file.IsSensitive,
+			Description  = file.Comment,
+			IsAvatar     = false,
+			IsBanner     = false
+		};
 	}
 
 	[HttpPost("import/blocking")]
