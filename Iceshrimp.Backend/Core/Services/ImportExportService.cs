@@ -17,6 +17,21 @@ public class ImportExportService(
 	ActivityPub.UserResolver userResolver
 ) : IScopedService
 {
+	public async Task<string> ExportBlockingAsync(User user)
+	{
+		var blockees = await db.Blockings
+		                       .Include(p => p.Blockee)
+		                       .Where(p => p.BlockerId == user.Id)
+		                       .Select(p => p.Blockee)
+		                       .Where(p => !p.IsDeleted && !p.IsSystemUser && p.MovedToUri == null)
+		                       .OrderBy(p => p.Host)
+		                       .ThenBy(p => p.UsernameLower)
+		                       .Select(p => p.GetFqn(instance.Value.AccountDomain))
+		                       .ToListAsync();
+
+		return string.Join("\n", blockees);
+	}
+
 	public async Task<string> ExportFollowingAsync(User user)
 	{
 		var followees = await db.Followings
@@ -30,6 +45,21 @@ public class ImportExportService(
 		                        .ToListAsync();
 
 		return string.Join("\n", followees);
+	}
+
+	public async Task<string> ExportMutingAsync(User user)
+	{
+		var mutees = await db.Mutings
+		                     .Include(p => p.Mutee)
+		                     .Where(p => p.MuterId == user.Id)
+		                     .Select(p => p.Mutee)
+		                     .Where(p => !p.IsDeleted && !p.IsSystemUser && p.MovedToUri == null)
+		                     .OrderBy(p => p.Host)
+		                     .ThenBy(p => p.UsernameLower)
+		                     .Select(p => p.GetFqn(instance.Value.AccountDomain))
+		                     .ToListAsync();
+
+		return string.Join("\n", mutees);
 	}
 
 	public async Task ImportFollowingAsync(User user, List<string> fqns)

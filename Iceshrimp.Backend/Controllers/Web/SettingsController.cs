@@ -155,6 +155,23 @@ public class SettingsController(
 		await db.SaveChangesAsync();
 	}
 
+	[HttpPost("export/blocking")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<FileContentResult> ExportBlocking()
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var existing = await db.Blockings
+		                       .AnyAsync(p => p.BlockerId == user.Id);
+		if (!existing)
+			throw GracefulException.BadRequest("You do not block any users");
+
+		var blocking = await importExportSvc.ExportBlockingAsync(user);
+
+		return File(Encoding.UTF8.GetBytes(blocking), "text/csv", $"blocking-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.csv");
+	}
+
 	[HttpPost("export/following")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -170,6 +187,23 @@ public class SettingsController(
 		var following = await importExportSvc.ExportFollowingAsync(user);
 
 		return File(Encoding.UTF8.GetBytes(following), "text/csv", $"following-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.csv");
+	}
+
+	[HttpPost("export/muting")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<FileContentResult> ExportMuting()
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var existing = await db.Mutings
+		                       .AnyAsync(p => p.MuterId == user.Id);
+		if (!existing)
+			throw GracefulException.BadRequest("You do not mute any users");
+
+		var muting = await importExportSvc.ExportMutingAsync(user);
+
+		return File(Encoding.UTF8.GetBytes(muting), "text/csv", $"muting-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.csv");
 	}
 
 	[HttpPost("import/following")]
