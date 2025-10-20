@@ -1,0 +1,13 @@
+.export {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.export .download {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    text-wrap: wrap;
+    word-break: break-word;
+}

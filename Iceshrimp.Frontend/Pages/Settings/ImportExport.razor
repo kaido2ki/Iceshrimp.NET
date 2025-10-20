@@ -1,0 +1,77 @@
+@page "/settings/import-export"
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.Extensions.Localization
+@attribute [Authorize]
+@layout SettingsLayout
+@inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
+@inject IStringLocalizer<Localization> Loc;
+
+<HeadTitle Text="@Loc["Import/export"]"/>
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.Package"/>
+    @Loc["Import/export"]
+</SectionContent>
+
+<div class="body">
+    <h3>@Loc["Following"]</h3>
+    
+    <div class="export">
+        <StateButton OnClick="ExportFollowingAsync" ExtraClasses="button" @ref="ExportFollowingButton">
+            <Initial>
+                <Icon Name="Icons.Download"/>
+                @Loc["Export"]
+            </Initial>
+            <Loading>
+                <LoadingSpinner/>
+            </Loading>
+            <Failed>
+                <Icon Name="Icons.Warning"/>
+            </Failed>
+            <Success>
+                <Icon Name="Icons.Check"/>
+            </Success>
+        </StateButton>
+
+        @if (ExportFollowingFile != null)
+        {
+            <span class="download">
+                <Icon Name="Icons.FileCsv" Size="1.5em"/>
+                <a href="@ExportFollowingFile.Url" download="@ExportFollowingFile.Filename">@ExportFollowingFile.Filename</a>
+            </span>
+        }
+    </div>
+</div>
+
+@code {
+    private StateButton        ExportFollowingButton { get; set; } = null!;
+    private DriveFileResponse? ExportFollowingFile   { get; set; }
+
+    private async Task ExportFollowingAsync()
+    {
+        if (ExportFollowingButton.State != StateButton.StateEnum.Initial) return;
+
+        ExportFollowingButton.State = StateButton.StateEnum.Loading;
+
+        try
+        {
+            ExportFollowingFile = await Api.Settings.ExportFollowingAsync();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            ExportFollowingButton.State = StateButton.StateEnum.Failed;
+            return;
+        }
+
+        ExportFollowingButton.State = StateButton.StateEnum.Success;
+    }
+}
