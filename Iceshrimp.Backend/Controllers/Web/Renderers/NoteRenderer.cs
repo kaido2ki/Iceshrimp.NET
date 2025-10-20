@@ -79,6 +79,8 @@ public class NoteRenderer(
 		var reactions = (data?.Reactions ?? await GetReactionsAsync([note], user)).Where(p => p.NoteId == note.Id);
 		var liked = data?.LikedNotes?.Contains(note.Id)
 		            ?? await db.NoteLikes.AnyAsync(p => p.Note == note && p.User == user);
+		var renoted = data?.Renotes?.Contains(note.Id)
+		              ?? await db.Notes.AnyAsync(p => p.Renote == note && p.User == user && p.IsPureRenote);
 		var bookmarked = data?.BookmarkedNotes?.Contains(note.Id)
 		                 ?? await db.NoteBookmarks.AnyAsync(p => p.Note == note && p.User == user);
 		var emoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([note]);
@@ -102,6 +104,7 @@ public class NoteRenderer(
 			Replies     = note.RepliesCount,
 			Bookmarked  = bookmarked, 
 			Liked       = liked,
+			Renoted     = renoted,
 			Emoji       = emoji,
 			Poll        = poll
 		};
@@ -182,6 +185,18 @@ public class NoteRenderer(
 		if (notes.Count == 0) return [];
 		return await db.NoteLikes.Where(p => p.User == user && notes.Contains(p.Note))
 		               .Select(p => p.NoteId)
+		               .ToListAsync();
+	}
+
+	private async Task<List<string>> GetRenotesAsync(List<Note> notes, User? user)
+	{
+		if (user == null) return [];
+		if (notes.Count == 0) return [];
+		return await db.Notes.Where(p => p.User == user && p.IsPureRenote && notes.Contains(p.Renote!))
+		               .Select(p => p.RenoteId)
+		               .Where(p => p != null)
+		               .Distinct()
+		               .Cast<string>()
 		               .ToListAsync();
 	}
 
@@ -267,6 +282,7 @@ public class NoteRenderer(
 			Filters         = await GetFiltersAsync(user, filterContext),
 			BookmarkedNotes = await GetBookmarkedNotesAsync(allNotes, user),
 			LikedNotes      = await GetLikedNotesAsync(allNotes, user),
+			Renotes         = await GetRenotesAsync(allNotes, user),
 			Emoji           = await GetEmojiAsync(allNotes),
 			Polls           = await GetPollsAsync(allNotes, user)
 		};
@@ -281,6 +297,7 @@ public class NoteRenderer(
 		public List<Filter>?             Filters;
 		public List<string>?             BookmarkedNotes;
 		public List<string>?             LikedNotes;
+		public List<string>?             Renotes;
 		public List<NoteReactionSchema>? Reactions;
 		public List<UserResponse>?       Users;
 		public List<NotePollSchema>?     Polls;
