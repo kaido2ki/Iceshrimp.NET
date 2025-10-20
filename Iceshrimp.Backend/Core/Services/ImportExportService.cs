@@ -62,6 +62,24 @@ public class ImportExportService(
 		return string.Join("\n", mutees);
 	}
 
+	public async Task ImportBlockingAsync(User user, List<string> fqns)
+	{
+		foreach (var fqn in fqns)
+		{
+			try
+			{
+				var blockee = await userResolver.ResolveAsync($"acct:{fqn}", ResolveFlags.Acct);
+				await userSvc.BlockUserAsync(user, blockee);
+			}
+			catch (Exception e)
+			{
+				logger.LogWarning("Failed to import block {blockee} for user {blocker}: {error}", fqn, user.Id, e);
+			}
+		}
+
+		await QueryableTimelineExtensions.ResetHeuristicAsync(user, cacheSvc);
+	}
+
 	public async Task ImportFollowingAsync(User user, List<string> fqns)
 	{
 		foreach (var fqn in fqns)
@@ -75,6 +93,24 @@ public class ImportExportService(
 			{
 				logger.LogWarning("Failed to import follow {followee} for user {follower}: {error}",
 				                  fqn, user.Id, e);
+			}
+		}
+
+		await QueryableTimelineExtensions.ResetHeuristicAsync(user, cacheSvc);
+	}
+
+	public async Task ImportMutingAsync(User user, List<string> fqns)
+	{
+		foreach (var fqn in fqns)
+		{
+			try
+			{
+				var mutee = await userResolver.ResolveAsync($"acct:{fqn}", ResolveFlags.Acct);
+				await userSvc.MuteUserAsync(user, mutee, null);
+			}
+			catch (Exception e)
+			{
+				logger.LogWarning("Failed to import mute {mutee} for user {muter}: {error}", fqn, user.Id, e);
 			}
 		}
 

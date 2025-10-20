@@ -206,6 +206,28 @@ public class SettingsController(
 		return File(Encoding.UTF8.GetBytes(muting), "text/csv", $"muting-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.csv");
 	}
 
+	[HttpPost("import/blocking")]
+	[EnableRateLimiting("imports")]
+	[ProducesResults(HttpStatusCode.Accepted)]
+	public async Task<AcceptedResult> ImportBlocking(IFormFile file)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var reader   = new StreamReader(file.OpenReadStream());
+		var contents = await reader.ReadToEndAsync();
+
+		var fqns = contents
+		           .Split("\n")
+		           .Where(line => !string.IsNullOrWhiteSpace(line))
+		           .Select(line => line.SplitCommas().First())
+		           .Where(fqn => fqn.Contains('@'))
+		           .ToList();
+
+		await importExportSvc.ImportBlockingAsync(user, fqns);
+
+		return Accepted();
+	}
+
 	[HttpPost("import/following")]
 	[EnableRateLimiting("imports")]
 	[ProducesResults(HttpStatusCode.Accepted)]
@@ -224,6 +246,28 @@ public class SettingsController(
 		           .ToList();
 
 		await importExportSvc.ImportFollowingAsync(user, fqns);
+
+		return Accepted();
+	}
+
+	[HttpPost("import/muting")]
+	[EnableRateLimiting("imports")]
+	[ProducesResults(HttpStatusCode.Accepted)]
+	public async Task<AcceptedResult> ImportMuting(IFormFile file)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var reader   = new StreamReader(file.OpenReadStream());
+		var contents = await reader.ReadToEndAsync();
+
+		var fqns = contents
+		           .Split("\n")
+		           .Where(line => !string.IsNullOrWhiteSpace(line))
+		           .Select(line => line.SplitCommas().First())
+		           .Where(fqn => fqn.Contains('@'))
+		           .ToList();
+
+		await importExportSvc.ImportMutingAsync(user, fqns);
 
 		return Accepted();
 	}
