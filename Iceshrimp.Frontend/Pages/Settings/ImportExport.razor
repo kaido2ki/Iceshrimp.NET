@@ -22,6 +22,54 @@
 </SectionContent>
 
 <div class="body">
+    <h3>@Loc["Blocking"]</h3>
+
+    <div class="export">
+        <StateButton OnClick="ExportBlockingAsync" ExtraClasses="button" @ref="ExportBlockingButton">
+            <Initial>
+                <Icon Name="Icons.Download"/>
+                @Loc["Export"]
+            </Initial>
+            <Loading>
+                <LoadingSpinner/>
+            </Loading>
+            <Failed>
+                <Icon Name="Icons.Warning"/>
+            </Failed>
+            <Success>
+                <Icon Name="Icons.Check"/>
+            </Success>
+        </StateButton>
+
+        @if (ExportBlockingFile != null)
+        {
+            <span class="download">
+                <Icon Name="Icons.FileCsv" Size="1.5em"/>
+                <a href="@ExportBlockingFile.Url" download="@ExportBlockingFile.Filename">@ExportBlockingFile.Filename</a>
+            </span>
+        }
+    </div>
+
+    <div class="export">
+        <StateButton OnClick="ImportBlockingAsync" ExtraClasses="button" @ref="ImportBlockingButton"
+                     Disabled="@(ImportBlockingFile == null)">
+            <Initial>
+                <Icon Name="Icons.Upload"/>
+                @Loc["Import"]
+            </Initial>
+            <Loading>
+                <LoadingSpinner/>
+            </Loading>
+            <Failed>
+                <Icon Name="Icons.Warning"/>
+            </Failed>
+            <Success>
+                <Icon Name="Icons.Check"/>
+            </Success>
+        </StateButton>
+        <InputFile OnChange="OnBlockingFileChange" accept="text/csv"/>
+    </div>
+
     <h3>@Loc["Following"]</h3>
     
     <div class="export">
@@ -72,10 +120,34 @@
 </div>
 
 @code {
+    private StateButton        ExportBlockingButton  { get; set; } = null!;
+    private DriveFileResponse? ExportBlockingFile    { get; set; }
     private StateButton        ExportFollowingButton { get; set; } = null!;
     private DriveFileResponse? ExportFollowingFile   { get; set; }
+    private StateButton        ImportBlockingButton  { get; set; } = null!;
+    private IBrowserFile?      ImportBlockingFile    { get; set; }
     private StateButton        ImportFollowingButton { get; set; } = null!;
     private IBrowserFile?      ImportFollowingFile   { get; set; }
+
+    private async Task ExportBlockingAsync()
+    {
+        if (ExportBlockingButton.State != StateButton.StateEnum.Initial) return;
+
+        ExportBlockingButton.State = StateButton.StateEnum.Loading;
+
+        try
+        {
+            ExportBlockingFile = await Api.Settings.ExportBlockingAsync();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            ExportBlockingButton.State = StateButton.StateEnum.Failed;
+            return;
+        }
+
+        ExportBlockingButton.State = StateButton.StateEnum.Success;
+    }
 
     private async Task ExportFollowingAsync()
     {
@@ -95,6 +167,31 @@
         }
 
         ExportFollowingButton.State = StateButton.StateEnum.Success;
+    }
+
+    private async Task ImportBlockingAsync()
+    {
+        if (ImportBlockingButton.State != StateButton.StateEnum.Initial || ImportBlockingFile == null) return;
+
+        ImportBlockingButton.State = StateButton.StateEnum.Loading;
+
+        try
+        {
+            await Api.Settings.ImportBlockingAsync(ImportBlockingFile);
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            ImportBlockingButton.State = StateButton.StateEnum.Failed;
+            return;
+        }
+
+        ImportBlockingButton.State = StateButton.StateEnum.Success;
+    }
+
+    private void OnBlockingFileChange(InputFileChangeEventArgs e)
+    {
+        ImportBlockingFile = e.GetMultipleFiles().First(p => p.ContentType == "text/csv");
     }
 
     private async Task ImportFollowingAsync()

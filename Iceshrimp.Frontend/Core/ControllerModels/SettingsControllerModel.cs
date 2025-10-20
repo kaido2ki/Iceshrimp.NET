@@ -21,8 +21,14 @@ internal class SettingsControllerModel(ApiClient api)
 	public Task DisableTwoFactorAsync(TwoFactorRequest request) =>
 		api.CallAsync(HttpMethod.Post, "settings/2fa/disable", data: request);
 
+	public Task<DriveFileResponse> ExportBlockingAsync() =>
+		api.CallAsync<DriveFileResponse>(HttpMethod.Post, "settings/export/blocking");
+
 	public Task<DriveFileResponse> ExportFollowingAsync() =>
 		api.CallAsync<DriveFileResponse>(HttpMethod.Post, "settings/export/following");
+
+	public Task ImportBlockingAsync(IBrowserFile file) =>
+		api.CallAsync(HttpMethod.Post, "settings/import/blocking", data: file);
 
 	public Task ImportFollowingAsync(IBrowserFile file) =>
 		api.CallAsync(HttpMethod.Post, "settings/import/following", data: file);
