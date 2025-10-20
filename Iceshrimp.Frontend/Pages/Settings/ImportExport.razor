@@ -70,6 +70,54 @@
         <InputFile OnChange="OnBlockingFileChange" accept="text/csv"/>
     </div>
 
+    <h3>@Loc["Muting"]</h3>
+    
+    <div class="export">
+        <StateButton OnClick="ExportMutingAsync" ExtraClasses="button" @ref="ExportMutingButton">
+            <Initial>
+                <Icon Name="Icons.Download"/>
+                @Loc["Export"]
+            </Initial>
+            <Loading>
+                <LoadingSpinner/>
+            </Loading>
+            <Failed>
+                <Icon Name="Icons.Warning"/>
+            </Failed>
+            <Success>
+                <Icon Name="Icons.Check"/>
+            </Success>
+        </StateButton>
+
+        @if (ExportMutingFile != null)
+        {
+            <span class="download">
+                <Icon Name="Icons.FileCsv" Size="1.5em"/>
+                <a href="@ExportMutingFile.Url" download="@ExportMutingFile.Filename">@ExportMutingFile.Filename</a>
+            </span>
+        }
+    </div>
+    
+    <div class="export">
+        <StateButton OnClick="ImportMutingAsync" ExtraClasses="button" @ref="ImportMutingButton"
+                     Disabled="@(ImportMutingFile == null)">
+            <Initial>
+                <Icon Name="Icons.Upload"/>
+                @Loc["Import"]
+            </Initial>
+            <Loading>
+                <LoadingSpinner/>
+            </Loading>
+            <Failed>
+                <Icon Name="Icons.Warning"/>
+            </Failed>
+            <Success>
+                <Icon Name="Icons.Check"/>
+            </Success>
+        </StateButton>
+        <InputFile OnChange="OnMutingFileChange" accept="text/csv"/>
+    </div>
+
     <h3>@Loc["Following"]</h3>
     
     <div class="export">
@@ -124,10 +172,14 @@
     private DriveFileResponse? ExportBlockingFile    { get; set; }
     private StateButton        ExportFollowingButton { get; set; } = null!;
     private DriveFileResponse? ExportFollowingFile   { get; set; }
+    private StateButton        ExportMutingButton    { get; set; } = null!;
+    private DriveFileResponse? ExportMutingFile      { get; set; }
     private StateButton        ImportBlockingButton  { get; set; } = null!;
     private IBrowserFile?      ImportBlockingFile    { get; set; }
     private StateButton        ImportFollowingButton { get; set; } = null!;
     private IBrowserFile?      ImportFollowingFile   { get; set; }
+    private StateButton        ImportMutingButton    { get; set; } = null!;
+    private IBrowserFile?      ImportMutingFile      { get; set; }
 
     private async Task ExportBlockingAsync()
     {
@@ -167,6 +219,26 @@
         }
 
         ExportFollowingButton.State = StateButton.StateEnum.Success;
+    }
+
+    private async Task ExportMutingAsync()
+    {
+        if (ExportMutingButton.State != StateButton.StateEnum.Initial) return;
+
+        ExportMutingButton.State = StateButton.StateEnum.Loading;
+
+        try
+        {
+            ExportMutingFile = await Api.Settings.ExportMutingAsync();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            ExportMutingButton.State = StateButton.StateEnum.Failed;
+            return;
+        }
+
+        ExportMutingButton.State = StateButton.StateEnum.Success;
     }
 
     private async Task ImportBlockingAsync()
@@ -217,5 +289,30 @@
     private void OnFollowingFileChange(InputFileChangeEventArgs e)
     {
         ImportFollowingFile = e.GetMultipleFiles().First(p => p.ContentType == "text/csv");
+    }
+
+    private async Task ImportMutingAsync()
+    {
+        if (ImportMutingButton.State != StateButton.StateEnum.Initial || ImportMutingFile == null) return;
+
+        ImportMutingButton.State = StateButton.StateEnum.Loading;
+
+        try
+        {
+            await Api.Settings.ImportMutingAsync(ImportMutingFile);
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            ImportMutingButton.State = StateButton.StateEnum.Failed;
+            return;
+        }
+
+        ImportMutingButton.State = StateButton.StateEnum.Success;
+    }
+
+    private void OnMutingFileChange(InputFileChangeEventArgs e)
+    {
+        ImportMutingFile = e.GetMultipleFiles().First(p => p.ContentType == "text/csv");
     }
 }

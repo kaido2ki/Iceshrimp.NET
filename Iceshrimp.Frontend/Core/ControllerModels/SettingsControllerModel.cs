@@ -27,9 +27,15 @@ internal class SettingsControllerModel(ApiClient api)
 	public Task<DriveFileResponse> ExportFollowingAsync() =>
 		api.CallAsync<DriveFileResponse>(HttpMethod.Post, "settings/export/following");
 
+	public Task<DriveFileResponse> ExportMutingAsync() =>
+		api.CallAsync<DriveFileResponse>(HttpMethod.Post, "settings/export/muting");
+
 	public Task ImportBlockingAsync(IBrowserFile file) =>
 		api.CallAsync(HttpMethod.Post, "settings/import/blocking", data: file);
 
 	public Task ImportFollowingAsync(IBrowserFile file) =>
 		api.CallAsync(HttpMethod.Post, "settings/import/following", data: file);
+
+	public Task ImportMutingAsync(IBrowserFile file) =>
+		api.CallAsync(HttpMethod.Post, "settings/import/muting", data: file);
 }
