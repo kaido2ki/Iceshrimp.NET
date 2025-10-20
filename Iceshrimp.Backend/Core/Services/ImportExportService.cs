@@ -20,13 +20,13 @@ public class ImportExportService(
 	public async Task<string> ExportBlockingAsync(User user)
 	{
 		var blockees = await db.Blockings
-		                       .Include(p => p.Blockee)
 		                       .Where(p => p.BlockerId == user.Id)
-		                       .Select(p => p.Blockee)
-		                       .Where(p => !p.IsDeleted && !p.IsSystemUser && p.MovedToUri == null)
-		                       .OrderBy(p => p.Host)
-		                       .ThenBy(p => p.UsernameLower)
-		                       .Select(p => p.GetFqn(instance.Value.AccountDomain))
+		                       .Where(p => !p.Blockee.IsDeleted
+		                                   && !p.Blockee.IsSystemUser
+		                                   && p.Blockee.MovedToUri == null)
+		                       .OrderBy(p => p.Blockee.Host)
+		                       .ThenBy(p => p.Blockee.UsernameLower)
+		                       .Select(p => p.Blockee.GetFqn(instance.Value.AccountDomain))
 		                       .ToListAsync();
 
 		return string.Join("\n", blockees);
@@ -35,13 +35,13 @@ public class ImportExportService(
 	public async Task<string> ExportFollowingAsync(User user)
 	{
 		var followees = await db.Followings
-		                        .Include(p => p.Followee)
 		                        .Where(p => p.FollowerId == user.Id)
-		                        .Select(p => p.Followee)
-		                        .Where(p => !p.IsDeleted && !p.IsSystemUser && p.MovedToUri == null)
-		                        .OrderBy(p => p.Host)
-		                        .ThenBy(p => p.UsernameLower)
-		                        .Select(p => p.GetFqn(instance.Value.AccountDomain))
+		                        .Where(p => !p.Followee.IsDeleted
+		                                    && !p.Followee.IsSystemUser
+		                                    && p.Followee.MovedToUri == null)
+		                        .OrderBy(p => p.Followee.Host)
+		                        .ThenBy(p => p.Followee.UsernameLower)
+		                        .Select(p => p.Followee.GetFqn(instance.Value.AccountDomain))
 		                        .ToListAsync();
 
 		return string.Join("\n", followees);
@@ -50,13 +50,11 @@ public class ImportExportService(
 	public async Task<string> ExportMutingAsync(User user)
 	{
 		var mutees = await db.Mutings
-		                     .Include(p => p.Mutee)
 		                     .Where(p => p.MuterId == user.Id)
-		                     .Select(p => p.Mutee)
-		                     .Where(p => !p.IsDeleted && !p.IsSystemUser && p.MovedToUri == null)
-		                     .OrderBy(p => p.Host)
-		                     .ThenBy(p => p.UsernameLower)
-		                     .Select(p => p.GetFqn(instance.Value.AccountDomain))
+		                     .Where(p => !p.Mutee.IsDeleted && !p.Mutee.IsSystemUser && p.Mutee.MovedToUri == null)
+		                     .OrderBy(p => p.Mutee.Host)
+		                     .ThenBy(p => p.Mutee.UsernameLower)
+		                     .Select(p => p.Mutee.GetFqn(instance.Value.AccountDomain))
 		                     .ToListAsync();
 
 		return string.Join("\n", mutees);
