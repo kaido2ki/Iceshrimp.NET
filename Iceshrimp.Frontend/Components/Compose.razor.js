@@ -16,12 +16,22 @@ export function openUpload(element) {
 
 export function setupPaste(dotnet, textarea, fileInput) {
     textarea.addEventListener('paste', async (e) => {
-        e.preventDefault();
-
         if (e.clipboardData.files.length === 0) {
             const text = e.clipboardData.getData("text");
-            await dotnet.invokeMethodAsync("PasteQuote", text);
+
+            try {
+                const url = new URL(text);
+                url.pathname = url.pathname.toLowerCase();
+
+                // Check common note paths for Iceshrimp, Mastodon, Akkoma, Wafrn
+                if (url.protocol.toLowerCase() === "https:" && (url.pathname.startsWith("/notes/") || url.pathname.startsWith("/@") || url.pathname.startsWith("/notice/") || url.pathname.startsWith("/objects/") || url.pathname.startsWith("/fediverse/post/"))) {
+                    e.preventDefault();
+                    await dotnet.invokeMethodAsync("PasteQuote", text);
+                }
+            } catch {
+            }
         } else {
+            e.preventDefault();
             fileInput.files = e.clipboardData.files;
             const changeEvent = new Event('change', {bubbles: true});
             fileInput.dispatchEvent(changeEvent);
