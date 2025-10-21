@@ -1621,6 +1621,14 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(Job.JobStatus.Queued)
                         .HasColumnName("status");
 
+                    b.Property<string>("TraceParent")
+                        .HasColumnType("text")
+                        .HasColumnName("trace_parent");
+
+                    b.Property<string>("TraceState")
+                        .HasColumnType("text")
+                        .HasColumnName("trace_state");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DelayedUntil");

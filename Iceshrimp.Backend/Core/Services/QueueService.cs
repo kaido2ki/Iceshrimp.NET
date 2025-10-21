@@ -440,6 +440,9 @@ public abstract class PostgresJobQueue<T>(
 		if (await db.GetJob(name).ToListAsync(token) is not [{ } job])
 			return;
 
+		if (activity != null && ActivityContext.TryParse(job.TraceParent, job.TraceState, out var parent))
+			activity.AddLink(new ActivityLink(parent));
+
 		var jobId = job.Id.ToStringLower();
 		activity?.AddTag("messaging.destination.name", name) // these two are otel conventions
 				.AddTag("messaging.message.id", jobId) 
@@ -561,12 +564,14 @@ public abstract class PostgresJobQueue<T>(
 
 		var job = new Job
 		{
-			Id       = id,
-			Mutex    = mutex,
-			Queue    = name,
-			Data     = JsonSerializer.Serialize(jobData),
-			Status   = Job.JobStatus.Queued,
-			QueuedAt = DateTime.UtcNow
+			Id          = id,
+			Mutex       = mutex,
+			Queue       = name,
+			Data        = JsonSerializer.Serialize(jobData),
+			Status      = Job.JobStatus.Queued,
+			QueuedAt    = DateTime.UtcNow,
+			TraceParent = activity?.Id,
+			TraceState  = activity?.TraceStateString,
 		};
 
 		await db.Jobs.Upsert(job).On(j => j.Mutex!).NoUpdate().RunAsync();
@@ -595,7 +600,9 @@ public abstract class PostgresJobQueue<T>(
 			Data         = JsonSerializer.Serialize(jobData),
 			Status       = Job.JobStatus.Delayed,
 			QueuedAt     = DateTime.UtcNow,
-			DelayedUntil = triggerAt.ToUniversalTime()
+			DelayedUntil = triggerAt.ToUniversalTime(),
+			TraceParent  = activity?.Id,
+			TraceState   = activity?.TraceStateString,
 		};
 
 		await db.Jobs.Upsert(job).On(j => j.Mutex!).NoUpdate().RunAsync();

@@ -39,6 +39,8 @@ public class Job
 	[Column("exception")]         public string?   Exception        { get; set; }
 	[Column("data")]              public string    Data             { get; set; } = null!;
 	[Column("mutex")]             public string?   Mutex            { get; set; }
+	[Column("trace_parent")]      public string?   TraceParent      { get; set; }
+	[Column("trace_state")]       public string?   TraceState       { get; set; }
 
 	[NotMapped]
 	public long Duration => ((FinishedAt ?? DateTime.UtcNow) - (StartedAt ?? QueuedAt)).GetTotalMilliseconds();
