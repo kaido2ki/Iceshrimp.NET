@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Services;
 using Npgsql;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -16,6 +17,7 @@ public static class ApplicationBuilderExtensions
 
         builder.Services.AddOpenTelemetry()
                .WithTracing(tracing => tracing
+                                       .AddSource(TraceService.Source)
                                        .AddAspNetCoreInstrumentation(opts =>
                                        {
                                            opts.RecordException = true;

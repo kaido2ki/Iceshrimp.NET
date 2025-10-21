@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Iceshrimp.Backend.Core.Configuration;
@@ -431,12 +432,21 @@ public abstract class PostgresJobQueue<T>(
 
 	private async Task ProcessJobAsync(IServiceScope processorScope, IServiceScope jobScope, CancellationToken token)
 	{
+		var activitySource = processorScope.ServiceProvider.GetRequiredService<TraceService>().ActivitySource;
+		using var activity = activitySource.StartActivity(name: $"process {name}", ActivityKind.Consumer);
+
 		await using var db = GetDbContext(processorScope);
 
 		if (await db.GetJob(name).ToListAsync(token) is not [{ } job])
 			return;
 
-		using var _ = _logger.BeginScope(("JobId", job.Id.ToStringLower()));
+		var jobId = job.Id.ToStringLower();
+		activity?.AddTag("messaging.destination.name", name) // these two are otel conventions
+				.AddTag("messaging.message.id", jobId) 
+		        .AddTag("job.mutex", job.Mutex)
+		        .AddTag("job.retryCount", job.RetryCount);
+		
+		using var _ = _logger.BeginScope(("JobId", jobId));
 		_logger.LogTrace("Begin processing {queue} job", name);
 
 		var data = JsonSerializer.Deserialize<T>(job.Data);
@@ -448,12 +458,15 @@ public abstract class PostgresJobQueue<T>(
 			job.FinishedAt       = DateTime.UtcNow;
 			db.Update(job);
 			await db.SaveChangesAsync(token);
+			activity?.SetStatus(ActivityStatusCode.Error);
+			activity?.AddEvent(new ActivityEvent(job.ExceptionMessage));
 			return;
 		}
 
 		try
 		{
 			await handler(job, data, jobScope.ServiceProvider, token).WaitAsync(timeout, token);
+			activity?.SetStatus(ActivityStatusCode.Ok);
 		}
 		catch (Exception e)
 		{
@@ -463,11 +476,13 @@ public abstract class PostgresJobQueue<T>(
 			job.StackTrace       = e.StackTrace;
 			job.Exception        = e.ToString();
 
+			activity?.SetStatus(ActivityStatusCode.Error)
+			        .AddException(e);
+
 			var queueName = data is BackgroundTaskJobData ? name + $" ({data.GetType().Name})" : name;
 			if (e is GracefulException { Details: not null } ce)
 			{
-				_logger.LogError("Failed to process {queue} job: {error} - {details}",
-				                 queueName, ce.Message, ce.Details);
+				_logger.LogError(ce, "Failed to process {queue} job", queueName);
 			}
 			else if (e is TimeoutException && e.StackTrace is not null && e.StackTrace.StartsWith(_exceptionPrefix))
 			{
@@ -479,7 +494,7 @@ public abstract class PostgresJobQueue<T>(
 			}
 			else
 			{
-				_logger.LogError("Failed to process {queue} job: {error}", queueName, e);
+				_logger.LogError(e, "Failed to process {queue} job", queueName);
 			}
 		}
 
@@ -534,10 +549,19 @@ public abstract class PostgresJobQueue<T>(
 	{
 		await using var scope = GetScope();
 		await using var db    = GetDbContext(scope);
+		
+		var       activitySource = scope.ServiceProvider.GetRequiredService<TraceService>().ActivitySource;
+		using var activity       = activitySource.StartActivity($"schedule {name}", ActivityKind.Producer);
+	
+		var id = Ulid.NewUlid().ToGuid();
+
+		activity?.AddTag("messaging.destination.name", name) // these two are otel conventions
+		        .AddTag("messaging.message.id", id)
+		        .AddTag("job.mutex", mutex);
 
 		var job = new Job
 		{
-			Id       = Ulid.NewUlid().ToGuid(),
+			Id       = id,
 			Mutex    = mutex,
 			Queue    = name,
 			Data     = JsonSerializer.Serialize(jobData),
@@ -554,9 +578,18 @@ public abstract class PostgresJobQueue<T>(
 		await using var scope = GetScope();
 		await using var db    = GetDbContext(scope);
 
+		var       activitySource = scope.ServiceProvider.GetRequiredService<TraceService>().ActivitySource;
+		using var activity       = activitySource.StartActivity($"schedule {name}", ActivityKind.Producer);
+	
+		var id = Ulid.NewUlid().ToGuid();
+
+		activity?.AddTag("messaging.destination.name", name) // these two are otel conventions
+		        .AddTag("messaging.message.id", id)
+		        .AddTag("job.mutex", mutex);
+
 		var job = new Job
 		{
-			Id           = Ulid.NewUlid().ToGuid(),
+			Id           = id,
 			Mutex        = mutex,
 			Queue        = name,
 			Data         = JsonSerializer.Serialize(jobData),
