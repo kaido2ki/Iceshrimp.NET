@@ -524,14 +524,8 @@
         PollChoices.Remove(choice);
     }
 
-    public async Task InsertPastedText()
-    {
-        var pos  = await _module.InvokeAsync<int>("getSelectionStart", Textarea);
-        var text = NoteDraft.Text;
-        NoteDraft.Text = text.Insert(pos, PastedText?.Item1 ?? "");
-        PastedText     = null;
-        StateHasChanged();
-    }
+    private ValueTask InsertTextAsync(string? text) =>
+        _module.InvokeVoidAsync("insertText", Textarea, text);
 
     [JSInvokable]
     public async Task PasteQuote(string pastedText)
@@ -540,7 +534,7 @@
 
         if (NoteDraft.RenoteId != null || AttachedQuote != null)
         {
-            await InsertPastedText();
+            await InsertTextAsync(PastedText?.Item1);
             return;
         }
 
@@ -549,7 +543,7 @@
             var res = await ApiService.Search.LookupAsync(pastedText);
             if (res == null || !res.TargetUrl.StartsWith("/notes/"))
             {
-                await InsertPastedText();
+                await InsertTextAsync(PastedText?.Item1);
                 return;
             }
 
@@ -558,7 +552,7 @@
         }
         catch (ApiException)
         {
-            await InsertPastedText();
+            await InsertTextAsync(PastedText?.Item1);
         }
     }
 
@@ -566,7 +560,7 @@
     {
         if (!confirm)
         {
-            await InsertPastedText();
+            await InsertTextAsync(PastedText?.Item1);
             return;
         }
 
