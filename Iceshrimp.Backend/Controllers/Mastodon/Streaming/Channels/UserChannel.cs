@@ -63,10 +63,12 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 	}
 
 	private bool IsApplicableBool(Note note) =>
-		connection.Following.Prepend(connection.Token.User.Id).Contains(note.UserId) &&
+		connection.Token.UserId == note.UserId || (
+		connection.Following.Contains(note.UserId) &&
 		!connection.HiddenFromHome.Contains(note.UserId) &&
 		(note.Visibility <= Note.NoteVisibility.Followers ||
-		 note.IsVisibleFor(connection.Token.User, connection.Following));
+		 note.IsVisibleFor(connection.Token.User, connection.Following)) &&
+		(note.MastoReplyUserId == null || connection.Following.Contains(note.MastoReplyUserId)));
 
 	private bool IsApplicable(Notification notification) => notification.NotifieeId == connection.Token.User.Id;
 

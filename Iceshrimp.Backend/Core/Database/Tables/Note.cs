@@ -278,6 +278,9 @@ public class Note : IIdentifiable
 	[ForeignKey(nameof(ReplyId))]
 	[InverseProperty(nameof(InverseReply))]
 	public virtual Note? Reply { get; set; }
+
+	[ForeignKey(nameof(MastoReplyUserId))]
+	public virtual User? MastoReplyUser { get; set; }
 	
 	[ForeignKey(nameof(ThreadId))]
 	[InverseProperty(nameof(NoteThread.Notes))]

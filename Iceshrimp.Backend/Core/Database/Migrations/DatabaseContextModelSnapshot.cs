@@ -2592,6 +2592,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasIndex("FileIds");
 
+                    b.HasIndex("MastoReplyUserId");
+
                     b.HasIndex("Mentions");
 
                     b.HasIndex("RenoteId");
@@ -5471,6 +5473,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasForeignKey("ChannelId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "MastoReplyUser")
+                        .WithMany()
+                        .HasForeignKey("MastoReplyUserId");
+
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Note", "Renote")
                         .WithMany("InverseRenote")
                         .HasForeignKey("RenoteId")
@@ -5494,6 +5500,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Channel");
+
+                    b.Navigation("MastoReplyUser");
 
                     b.Navigation("Renote");
 

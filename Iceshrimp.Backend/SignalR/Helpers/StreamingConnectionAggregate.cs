@@ -166,9 +166,10 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	{
 		if (_subscriptions.IsEmpty) return null;
 		if (!note.IsVisibleFor(_user, _following)) return null;
-		if (note.Visibility != Note.NoteVisibility.Public && !IsFollowingOrSelf(note.User)) return null;
+		if (note.Visibility != Note.NoteVisibility.Public && !IsFollowingOrSelf(note.User.Id)) return null;
 		if (IsFiltered(note)) return null;
 		if (note.Reply != null && IsFiltered(note.Reply)) return null;
+		if (note.UserId != _userId && note.MastoReplyUserId != null && !IsFollowingOrSelf(note.MastoReplyUserId)) return null;
 		if (note.Renote != null && IsFiltered(note.Renote)) return null;
 		if (note.Renote?.Renote != null && IsFiltered(note.Renote.Renote)) return null;
 
@@ -193,7 +194,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		_blockedBy.Contains(user.Id) || _blocking.Contains(user.Id) || _muting.Contains(user.Id);
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
-	private bool IsFollowingOrSelf(User user) => user.Id == _userId || _following.Contains(user.Id);
+	private bool IsFollowingOrSelf(string inUserId) => inUserId == _userId || _following.Contains(inUserId);
 
 	private NoteWithVisibilities EnforceRenoteReplyVisibility(Note note)
 	{
@@ -225,7 +226,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 					timelines.Add(TimelineEnum.Remote);
 			}
 
-			if (IsFollowingOrSelf(note.User) && note.CreatedAt > DateTime.UtcNow - TimeSpan.FromMinutes(5))
+			if (IsFollowingOrSelf(note.User.Id) && note.CreatedAt > DateTime.UtcNow - TimeSpan.FromMinutes(5))
 				if (!_hiddenFromHome.Contains(note.UserId))
 					timelines.AddRangeIfMissing(TimelineEnum.Home, TimelineEnum.Social);
 		}
