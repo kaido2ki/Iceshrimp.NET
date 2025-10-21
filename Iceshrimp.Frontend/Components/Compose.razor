@@ -588,11 +588,9 @@
     private async Task AddMentionCallback(UserResponse? user)
     {
         if (user == null) return;
-        
-        var pos           = await _module.InvokeAsync<int>("getSelectionStart", Textarea);
-        var text          = NoteDraft.Text;
+
         var mentionString = user.Host != null ? $"@{user.Username}@{user.Host} " : $"@{user.Username} ";
-        NoteDraft.Text = text.Insert(pos, mentionString);
+        await InsertTextAsync(mentionString);
         StateHasChanged();
     }
 
@@ -630,19 +628,15 @@
 
     private async Task AddEmoji(EmojiResponse emoji)
     {
-        var pos         = await _module.InvokeAsync<int>("getSelectionStart", Textarea);
-        var text        = NoteDraft.Text;
         var emojiString = $":{emoji.Name}: ";
-        NoteDraft.Text = text.Insert(pos, emojiString);
+        await InsertTextAsync(emojiString);
         StateHasChanged();
     }
 
     private async Task AddInlineMedia(string url)
     {
-        var pos         = await _module.InvokeAsync<int>("getSelectionStart", Textarea);
-        var text        = NoteDraft.Text;
         var mediaString = $"$[media {url} ] ";
-        NoteDraft.Text = text.Insert(pos, mediaString);
+        await InsertTextAsync(mediaString);
         StateHasChanged();
     }
 
