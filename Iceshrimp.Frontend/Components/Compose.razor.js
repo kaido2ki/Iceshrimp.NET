@@ -48,12 +48,6 @@ export function setupPaste(dotnet, textarea, fileInput) {
 export function insertText(textarea, text) {
     if (text === null) return;
 
-    // Deprecated method that preserves undo history
-    if (document.queryCommandEnabled("insertText")) {
-        const success = document.execCommand("insertText", false, text);
-        if (success) return;
-    }
-
     // Get the cursor position before inserting
     const pos = textarea.selectionStart;
 
