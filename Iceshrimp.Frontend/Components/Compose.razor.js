@@ -17,6 +17,8 @@ export function openUpload(element) {
 export function setupPaste(dotnet, textarea, fileInput) {
     textarea.addEventListener('paste', async (e) => {
         if (e.clipboardData.files.length === 0) {
+            if (e.target.getAttribute("data-quote") === "True") return;
+
             const text = e.clipboardData.getData("text");
 
             try {

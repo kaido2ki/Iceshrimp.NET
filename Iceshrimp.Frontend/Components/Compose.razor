@@ -54,7 +54,7 @@
         }
         <textarea @ref="Textarea" @bind="NoteDraft.Text" @bind:event="oninput" class="textarea"
                   placeholder="@TextPlaceholder" rows="5"
-                  cols="35" autofocus="autofocus" aria-label="note text"></textarea>
+                  cols="35" autofocus="autofocus" aria-label="note text" data-quote="@((NoteDraft.RenoteId != null || AttachedQuote != null).ToString())"></textarea>
         <div class="footer">
             <div class="buttons">
                 <button class="btn" title="@Loc["Upload file"]" @onclick="OpenUpload" aria-label="upload">
@@ -531,12 +531,6 @@
     public async Task PasteQuote(string pastedText)
     {
         PastedText = (pastedText, "");
-
-        if (NoteDraft.RenoteId != null || AttachedQuote != null)
-        {
-            await InsertTextAsync(PastedText?.Item1);
-            return;
-        }
 
         try
         {
