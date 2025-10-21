@@ -169,9 +169,16 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		if (note.Visibility != Note.NoteVisibility.Public && !IsFollowingOrSelf(note.User.Id)) return null;
 		if (IsFiltered(note)) return null;
 		if (note.Reply != null && IsFiltered(note.Reply)) return null;
-		if (note.UserId != _userId && note.MastoReplyUserId != null && !IsFollowingOrSelf(note.MastoReplyUserId)) return null;
 		if (note.Renote != null && IsFiltered(note.Renote)) return null;
 		if (note.Renote?.Renote != null && IsFiltered(note.Renote.Renote)) return null;
+
+		if (_user.UserSettings?.HideRepliesNotFollowing == true
+		    && note.UserId != _userId 
+		    && note.MastoReplyUserId != null 
+		    && !IsFollowingOrSelf(note.MastoReplyUserId))
+		{
+			return null;
+		}
 
 		var res = EnforceRenoteReplyVisibility(note);
 		return res is not { Note.IsPureRenote: true, Renote: null } ? res : null;

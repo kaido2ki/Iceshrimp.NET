@@ -19,10 +19,14 @@ public static class QueryableTimelineExtensions
 		this IQueryable<Note> query, User user, DatabaseContext db, int heuristic
 	)
 	{
-		return (heuristic < Cutoff
+		var q = heuristic < Cutoff
 			? query.Where(FollowingAndOwnLowFreqExpr(user, db))
-			: query.Where(note => note.User == user || note.User.IsFollowedBy(user)))
-			.Where(note => note.UserId == user.Id || note.MastoReplyUser == null || note.MastoReplyUser.IsFollowedBy(user));
+			: query.Where(note => note.User == user || note.User.IsFollowedBy(user));
+		
+		if (user.UserSettings?.HideRepliesNotFollowing == true)
+			q = q.Where(note => note.User == user || note.MastoReplyUser == null || note.MastoReplyUser.IsFollowedBy(user));
+
+		return q;
 	}
 
 	public static IQueryable<Note> FilterByPublicFollowingAndOwn(

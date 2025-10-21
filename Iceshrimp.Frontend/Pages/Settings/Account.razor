@@ -54,7 +54,10 @@
                 <label>
                     @Loc["Filter replies to inaccessible notes"]
                     <InputCheckbox @bind-Value="SettingsForm.FilterInaccessible"/>
-
+                </label>
+                <label>
+                    @Loc["Filter replies to people you do not follow"]
+                    <InputCheckbox @bind-Value="SettingsForm.HideRepliesNotFollowing"/>
                 </label>
                 <label>
                     @Loc["Manually accept follow requests"]

@@ -23,6 +23,7 @@ public class UserSettings
 	[Column("filterInaccessible")]      public bool                FilterInaccessible      { get; set; }
 	[Column("autoAcceptFollowed")]      public bool                AutoAcceptFollowed      { get; set; }
 	[Column("alwaysMarkNsfw")]          public bool                AlwaysMarkSensitive     { get; set; }
+	[Column("hideRepliesNotFollowing")] public bool                HideRepliesNotFollowing { get; set; } = true;
 
 	// @formatter:off
 
@@ -64,6 +65,7 @@ public class UserSettings
 			entity.Property(e => e.EmailVerified).HasDefaultValue(false);
 			entity.Property(e => e.Password);
 			entity.Property(e => e.TwoFactorEnabled).HasDefaultValue(false);
+			entity.Property(e => e.HideRepliesNotFollowing).HasDefaultValue(true);
 			entity.HasOne(e => e.User).WithOne(e => e.UserSettings);
 		}
 	}

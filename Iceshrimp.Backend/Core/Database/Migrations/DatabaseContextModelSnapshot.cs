@@ -4920,6 +4920,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("filterInaccessible");
 
+                    b.Property<bool>("HideRepliesNotFollowing")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("hideRepliesNotFollowing");
+
                     b.Property<string>("Password")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")

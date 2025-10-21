@@ -49,7 +49,8 @@ public class SettingsController(
 			DefaultNoteVisibility   = (NoteVisibility)settings.DefaultNoteVisibility,
 			DefaultRenoteVisibility = (NoteVisibility)settings.DefaultNoteVisibility,
 			TwoFactorEnrolled       = settings.TwoFactorEnabled,
-			ManuallyAcceptFollows   = user.IsLocked
+			ManuallyAcceptFollows   = user.IsLocked,
+			HideRepliesNotFollowing = settings.HideRepliesNotFollowing
 		};
 	}
 
@@ -67,6 +68,7 @@ public class SettingsController(
 		settings.PrivateMode             = newSettings.PrivateMode;
 		settings.AlwaysMarkSensitive     = newSettings.AlwaysMarkSensitive;
 		settings.AutoAcceptFollowed      = newSettings.AutoAcceptFollowed;
+		settings.HideRepliesNotFollowing = newSettings.HideRepliesNotFollowing;
 		settings.DefaultNoteVisibility   = (Note.NoteVisibility)newSettings.DefaultNoteVisibility;
 		settings.DefaultRenoteVisibility = (Note.NoteVisibility)newSettings.DefaultRenoteVisibility;
 

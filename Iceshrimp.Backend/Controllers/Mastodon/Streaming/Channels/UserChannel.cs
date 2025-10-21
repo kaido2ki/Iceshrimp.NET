@@ -61,14 +61,16 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 		var res = EnforceRenoteReplyVisibility(note);
 		return res is not { Note.IsPureRenote: true, Renote: null } ? res : null;
 	}
-
+	
 	private bool IsApplicableBool(Note note) =>
 		connection.Token.UserId == note.UserId || (
 		connection.Following.Contains(note.UserId) &&
 		!connection.HiddenFromHome.Contains(note.UserId) &&
 		(note.Visibility <= Note.NoteVisibility.Followers ||
 		 note.IsVisibleFor(connection.Token.User, connection.Following)) &&
-		(note.MastoReplyUserId == null || connection.Following.Contains(note.MastoReplyUserId)));
+		(connection.Token.User.UserSettings?.HideRepliesNotFollowing != true ||
+		 note.MastoReplyUserId == null ||
+		 connection.Following.Prepend(connection.Token.User.Id).Contains(note.MastoReplyUserId)));
 
 	private bool IsApplicable(Notification notification) => notification.NotifieeId == connection.Token.User.Id;
 
