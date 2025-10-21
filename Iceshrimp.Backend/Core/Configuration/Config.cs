@@ -14,14 +14,15 @@ namespace Iceshrimp.Backend.Core.Configuration;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public sealed class Config
 {
-	public required InstanceSection    Instance    { get; init; } = new();
-	public required DatabaseSection    Database    { get; init; } = new();
-	public required SecuritySection    Security    { get; init; } = new();
-	public required NetworkSection     Network     { get; init; } = new();
-	public required StorageSection     Storage     { get; init; } = new();
-	public required PerformanceSection Performance { get; init; } = new();
-	public required QueueSection       Queue       { get; init; } = new();
-	public required BackfillSection    Backfill    { get; init; } = new();
+	public required InstanceSection      Instance      { get; init; } = new();
+	public required DatabaseSection      Database      { get; init; } = new();
+	public required SecuritySection      Security      { get; init; } = new();
+	public required NetworkSection       Network       { get; init; } = new();
+	public required StorageSection       Storage       { get; init; } = new();
+	public required PerformanceSection   Performance   { get; init; } = new();
+	public required QueueSection         Queue         { get; init; } = new();
+	public required BackfillSection      Backfill      { get; init; } = new();
+	public required OpenTelemetrySection OpenTelemetry { get; init; } = new();
 
 	public sealed class InstanceSection
 	{
@@ -400,6 +401,11 @@ public sealed class Config
 		}
 
 		public TimeSpan RefreshAfterTimeSpan = TimeSpan.FromDays(30);
+	}
+	
+	public sealed class OpenTelemetrySection
+	{
+		public bool Enabled { get; init; } = false;
 	}
 
 	private static readonly char[] Digits = [..Enumerable.Range(0, 10).Select(p => p.ToString()[0])];

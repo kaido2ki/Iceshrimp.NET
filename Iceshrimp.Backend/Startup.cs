@@ -44,6 +44,7 @@ builder.Services.AddAntiforgery(o => o.Cookie.Name = "CSRF-Token");
 builder.Services.AddMiddleware();
 builder.Services.AddServices(builder.Configuration);
 builder.Services.ConfigureServices(builder.Configuration);
+builder.AddOpenTelemetry();
 
 builder.WebHost.ConfigureKestrel(builder.Configuration);
 builder.WebHost.UseStaticWebAssets();
