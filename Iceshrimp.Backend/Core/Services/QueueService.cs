@@ -433,7 +433,7 @@ public abstract class PostgresJobQueue<T>(
 	private async Task ProcessJobAsync(IServiceScope processorScope, IServiceScope jobScope, CancellationToken token)
 	{
 		var activitySource = processorScope.ServiceProvider.GetRequiredService<TraceService>().ActivitySource;
-		using var activity = activitySource.StartActivity(name: $"process {name}", ActivityKind.Consumer);
+		using var activity = activitySource.StartActivity($"process {name}", ActivityKind.Consumer);
 
 		await using var db = GetDbContext(processorScope);
 

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -6,6 +7,7 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Shared.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
@@ -16,6 +18,8 @@ namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
 public static class LdSignature
 {
+	private static readonly ActivitySource _activitySource = new("Iceshrimp.NET/LdSignature", VersionHelpers.VersionInfo.Value.Version);
+	
 	public static Task<bool> VerifyAsync(JArray activity, JArray rawActivity, string key, string? keyId = null)
 	{
 		if (activity.ToArray() is not [JObject obj])
@@ -27,6 +31,9 @@ public static class LdSignature
 
 	public static async Task<bool> VerifyAsync(JObject activity, JObject rawActivity, string key, string? keyId = null)
 	{
+		using var traceActivity = _activitySource.StartActivity("LD Signature Verify");
+		traceActivity?.AddTag("key", keyId);
+		
 		var options    = activity[$"{Constants.W3IdSecurityNs}#signature"];
 		var rawOptions = rawActivity[$"{Constants.W3IdSecurityNs}#signature"];
 		if (rawOptions is null) return false;
@@ -55,6 +62,8 @@ public static class LdSignature
 
 	public static async Task<JObject> SignAsync(JObject activity, string key, string? creator)
 	{
+		using var _ = _activitySource.StartActivity("LD Sign");
+
 		var options = new SignatureOptions
 		{
 			Created = DateTime.UtcNow,

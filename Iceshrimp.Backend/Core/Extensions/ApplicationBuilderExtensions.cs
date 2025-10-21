@@ -17,7 +17,7 @@ public static class ApplicationBuilderExtensions
 
         builder.Services.AddOpenTelemetry()
                .WithTracing(tracing => tracing
-                                       .AddSource(TraceService.Source)
+                                       .AddSource(TraceService.Source, "Iceshrimp.NET/LdSignature", "Iceshrimp.NET/LdHelpers",  "Iceshrimp.NET/HttpSignature")
                                        .AddAspNetCoreInstrumentation(opts =>
                                        {
                                            opts.RecordException = true;

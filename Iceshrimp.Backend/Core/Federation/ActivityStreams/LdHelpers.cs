@@ -1,9 +1,11 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Shared.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using VDS.RDF.JsonLd;
@@ -13,6 +15,8 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams;
 
 public static class LdHelpers
 {
+	private static readonly ActivitySource _activitySource = new("Iceshrimp.NET/LdHelpers", VersionHelpers.VersionInfo.Value.Version);
+	
 	private static readonly Dictionary<string, RemoteDocument> PreloadedContexts = new()
 	{
 		["https://purl.archive.org/socialweb/webfinger"] = GetPreloadedContext("wf.json"),
@@ -68,6 +72,9 @@ public static class LdHelpers
 
 	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions)
 	{
+		using var activity = _activitySource.StartActivity("Load Context");
+		activity?.AddTag("uri", uri);
+		
 		var key = uri.AbsolutePath == "/schemas/litepub-0.1.jsonld" ? "litepub-0.1" : uri.ToString();
 		if (!PreloadedContexts.TryGetValue(key, out var result))
 			ContextCache.TryGetValue(key, out result);
@@ -133,11 +140,13 @@ public static class LdHelpers
 
 	public static JObject Compact(JToken? json)
 	{
+		using var _ = _activitySource.StartActivity();
 		return JsonLdProcessor.Compact(json, FederationContext, Options);
 	}
 
 	public static JArray Expand(JToken? json)
 	{
+		using var _ = _activitySource.StartActivity();
 		return JsonLdProcessor.Expand(json, Options);
 	}
 

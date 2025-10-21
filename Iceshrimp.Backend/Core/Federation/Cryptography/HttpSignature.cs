@@ -1,9 +1,11 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Shared.Helpers;
 using Microsoft.Extensions.Primitives;
 
 namespace Iceshrimp.Backend.Core.Federation.Cryptography;
@@ -11,6 +13,7 @@ namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 public static class HttpSignature
 {
 	public static readonly TimeSpan MaxClockSkew = TimeSpan.FromMinutes(5);
+	private static readonly ActivitySource _activitySource = new("Iceshrimp.NET/HttpSignature", VersionHelpers.VersionInfo.Value.Version);
 
 	public static async Task<bool> VerifyAsync(
 		HttpRequest request, HttpSignatureHeader signature,
@@ -21,6 +24,8 @@ public static class HttpSignature
 			throw new GracefulException(HttpStatusCode.Forbidden, "Request is missing required headers");
 
 		// verify signature with "correct" query string behavior
+		using var activity = _activitySource.StartActivity("HTTP Signature Verify");
+		activity?.AddTag("key", signature.KeyId);
 		
 		var signingString =
 			GenerateSigningString(signature.Headers, request.Method, request.Path, request.QueryString.Value, request.Headers, null, signature);
@@ -103,6 +108,9 @@ public static class HttpSignature
 		string key, string keyId
 	)
 	{
+		using var activity = _activitySource.StartActivity("HTTP Sign");
+		activity?.AddTag("key", keyId);
+
 		ArgumentNullException.ThrowIfNull(request.RequestUri);
 
 		request.Headers.Date = DateTimeOffset.UtcNow;
