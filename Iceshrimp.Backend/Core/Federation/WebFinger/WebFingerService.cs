@@ -110,7 +110,6 @@ public class WebFingerService(
 	private async Task<string> GetWebFingerUrlAsync(string query, string domain)
 	{
 		var template = await GetWebFingerTemplateFromHostMetaXmlAsync(domain) ??
-		               await GetWebFingerTemplateFromHostMetaJsonAsync(domain) ??
 		               $"https://{domain}/.well-known/webfinger?resource={{uri}}";
 
 		var finalQuery = query.StartsWith('@') ? $"acct:{query[1..]}" : query;
@@ -143,54 +142,5 @@ public class WebFingerService(
 		{
 			return null;
 		}
-	}
-
-	// See above comment as for why jrd+json is commented out.
-	private async Task<string?> GetWebFingerTemplateFromHostMetaJsonAsync(string domain)
-	{
-		try
-		{
-			var hostMetaUrl = $"https://{domain}/.well-known/host-meta.json";
-			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/jrd+json"]),
-			                                       HttpCompletionOption.ResponseHeadersRead);
-			var deserialized = await res.Content.ReadFromJsonAsync<HostMetaResponse>();
-
-			var result = deserialized?.Links.FirstOrDefault(p => p is
-			{
-				Rel: "lrdd",
-				//Type: "application/xrd+xml" or "application/jrd+json",
-				Template: not null
-			});
-
-			if (result?.Template != null)
-				return result.Template;
-		}
-		catch
-		{
-			// ignored
-		}
-
-		try
-		{
-			var hostMetaUrl = $"https://{domain}/.well-known/host-meta";
-			using var res = await client.SendAsync(httpRqSvc.Get(hostMetaUrl, ["application/jrd+json"]),
-			                                       HttpCompletionOption.ResponseHeadersRead);
-			var deserialized = await res.Content.ReadFromJsonAsync<HostMetaResponse>();
-
-			var result = deserialized?.Links.FirstOrDefault(p => p is
-			{
-				Rel: "lrdd",
-				//Type: "application/jrd+json",
-				Template: not null
-			});
-
-			return result?.Template;
-		}
-		catch
-		{
-			// ignored
-		}
-
-		return null;
 	}
 }
