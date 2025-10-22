@@ -78,7 +78,16 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                           .FirstOrDefaultAsync() ??
 		                   throw GracefulException.RecordNotFound();
 
+		string? bittenBack = null;
+		if (notification.Type == NotificationType.Bite)
+		{
+			bittenBack = await db.Bites
+			            .Where(p => p.TargetBiteId != null && p.Id == notification.BiteId)
+			            .Select(p => p.Id)
+			            .FirstOrDefaultAsync();
+		}
+
 		return await notificationRenderer.RenderAsync(notification.EnforceRenoteReplyVisibility(p => p.Note),
-		                                              user, isPleroma);
+		                                              user, isPleroma, bittenBack: bittenBack != null);
 	}
 }

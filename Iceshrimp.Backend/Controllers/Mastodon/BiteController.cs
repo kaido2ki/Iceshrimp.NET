@@ -54,7 +54,7 @@ public class BiteController(DatabaseContext db, BiteService biteSvc) : Controlle
 		await biteSvc.BiteAsync(user, target);
 	}
 
-	[HttpPost("users/{id}/bite_back")]
+	[HttpPost("bites/{id}/bite_back")]
 	[Authenticate("write:bites")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]

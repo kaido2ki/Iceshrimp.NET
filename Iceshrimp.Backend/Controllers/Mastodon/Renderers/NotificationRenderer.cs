@@ -21,7 +21,8 @@ public class NotificationRenderer(
 {
 	public async Task<NotificationEntity> RenderAsync(
 		Notification notification, User user, bool isPleroma, List<AccountEntity>? accounts = null,
-		IEnumerable<StatusEntity>? statuses = null, Dictionary<string, string>? emojiUrls = null
+		IEnumerable<StatusEntity>? statuses = null, Dictionary<string, string>? emojiUrls = null,
+		bool bittenBack = false
 	)
 	{
 		var dbNotifier = notification.Notifier ?? throw new Exception("Notification has no notifier");
@@ -64,6 +65,9 @@ public class NotificationRenderer(
 			CreatedAt = notification.CreatedAt.ToStringIso8601Like(),
 			Emoji     = notification.Reaction,
 			EmojiUrl  = emojiUrl,
+			Bite      = notification.BiteId != null
+				? new BiteEntity { Id = notification.BiteId, BiteBack = bittenBack }
+				: null,
 			Pleroma = flags.IsPleroma.Value
 				? new PleromaNotificationExtensions { IsSeen = notification.IsRead }
 				: null
@@ -119,8 +123,19 @@ public class NotificationRenderer(
 		                        })
 		                        .ToDictionaryAsync(e => e.Name, e => e.Url);
 
+		var bites = notificationList
+		            .Where(p => p.Type == Notification.NotificationType.Bite)
+		            .Select(p => p.BiteId)
+		            .ToList();
+
+		List<string>? bittenBack = null;
+		if (bites.Count > 0) bittenBack = await db.Bites
+		                              .Where(p => p.TargetBiteId != null && bites.Contains(p.Id))
+		                              .Select(p => p.Id)
+		                              .ToListAsync();
+
 		var res = await notificationList
-		                .Select(p => RenderAsync(p, user, isPleroma, accounts, notes, emojiUrls))
+		                .Select(p => RenderAsync(p, user, isPleroma, accounts, notes, emojiUrls, bittenBack?.FirstOrDefault(b => b == p.BiteId) != null))
 		                .AwaitAllAsync();
 
 		return res;
