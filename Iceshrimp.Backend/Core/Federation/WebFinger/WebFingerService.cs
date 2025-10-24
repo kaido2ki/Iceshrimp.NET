@@ -29,7 +29,8 @@ public class WebFingerService(
 	HttpClient client,
 	HttpRequestService httpRqSvc,
 	IHostApplicationLifetime appLifetime,
-	IOptions<Config.InstanceSection> config
+	IOptions<Config.InstanceSection> config,
+	CacheService cache
 ) : ISingletonService
 {
 	private static readonly ImmutableArray<string> Accept =
@@ -125,7 +126,7 @@ public class WebFingerService(
 	}
 
 	// Technically, we should be checking for rel=lrdd *and* type=application/jrd+json, but nearly all implementations break this, so we can't.
-	private async Task<string?> GetWebFingerTemplateFromHostMetaXmlAsync(string domain)
+	private Task<string?> GetWebFingerTemplateFromHostMetaXmlAsync(string domain) => cache.FetchAsync($"host-meta:{domain}", TimeSpan.FromDays(1), async () => 
 	{
 		try
 		{
@@ -149,5 +150,5 @@ public class WebFingerService(
 		{
 			return null;
 		}
-	}
+	});
 }
