@@ -28,11 +28,6 @@ public class InstanceService(
 
 	private async Task<Instance> GetUpdatedInstanceMetadataAsync(string host, string webDomain)
 	{
-		if (host == webDomain)
-			logger.LogDebug("Updating instance metadata for {host}", host);
-		else
-			logger.LogDebug("Updating instance metadata for {host} ({domain})", host, webDomain);
-
 		host = host.ToPunycodeLower();
 		var instance = await db.Instances.FirstOrDefaultAsync(p => p.Host == host);
 		if (instance == null)
@@ -69,6 +64,11 @@ public class InstanceService(
 			{
 				UpdateCounter.Add(1);
 
+				if (host == webDomain)
+					logger.LogDebug("Updating instance metadata for {host}", host);
+				else
+					logger.LogDebug("Updating instance metadata for {host} ({domain})", host, webDomain);
+				
 				instance.InfoUpdatedAt = DateTime.UtcNow;
 				var nodeinfo = await GetNodeInfoAsync(webDomain);
 				var icons    = await GetIconsAsync(webDomain);
