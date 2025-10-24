@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Http.Headers;
 using Iceshrimp.Backend.Core.Configuration;
@@ -6,6 +7,7 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +27,9 @@ public class ActivityFetcherService(
 	FederationControlService fedCtrlSvc
 ) : IScopedService
 {
+	private static readonly Counter<long> FetchCounter =
+		Telemetry.Meter.CreateCounter<long>("activitypub.fetch.count", "object", "number of objects fetched");
+	
 	private static readonly IReadOnlyCollection<string> AcceptableActivityTypes =
 	[
 		"application/activity+json", "application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\""
@@ -91,6 +96,11 @@ public class ActivityFetcherService(
 		{
 			throw new TimeoutException(e.Message);
 		}
+		catch
+		{
+			FetchCounter.Add(1, new("error", true), new("redirect", false));
+			throw;
+		}
 	}
 
 	private async Task<(ASObject? obj, Uri finalUri)> FetchActivityInternalAsync(
@@ -112,6 +122,7 @@ public class ActivityFetcherService(
 
 		if (IsRedirect(response))
 		{
+			FetchCounter.Add(1, new("error", false), new("redirect", true));
 			var location = response.Headers.Location;
 			if (location == null) throw new Exception("Redirection requested but no location header found");
 			if (recurse <= 0) throw new Exception("Redirection requested but recurse counter is at zero");
@@ -125,12 +136,15 @@ public class ActivityFetcherService(
 		{
 			if (response.StatusCode == HttpStatusCode.Gone)
 				throw AuthFetchException.NotFound("The remote user no longer exists.");
+
+			FetchCounter.Add(1, new("error", true), new("redirect", false));
 			logger.LogDebug("Failed to fetch activity: response status was {code}", response.StatusCode);
 			return (null, finalUri);
 		}
 
 		if (!IsValidActivityContentType(response.Content.Headers.ContentType))
 		{
+			FetchCounter.Add(1, new("error", true), new("redirect", false));
 			logger.LogDebug("Failed to fetch activity: content type {type} is invalid",
 			                response.Content.Headers.ContentType);
 			return (null, finalUri);
@@ -151,6 +165,7 @@ public class ActivityFetcherService(
 		if (finalUri.Host == config.Value.WebDomain || finalUri.Host == config.Value.WebDomain)
 			throw GracefulException.UnprocessableEntity("Refusing to process activity from local domain");
 
+		FetchCounter.Add(1, new("error", false), new("redirect", false));
 		return (activity, finalUri);
 	}
 
@@ -178,6 +193,7 @@ public class ActivityFetcherService(
 
 		if (!response.IsSuccessStatusCode)
 		{
+			FetchCounter.Add(1, [new("error", true)]);
 			if (response.StatusCode == HttpStatusCode.Gone)
 				throw AuthFetchException.NotFound("The remote object no longer exists.");
 			logger.LogDebug("Failed to fetch activity: response status was {code}", response.StatusCode);
@@ -186,11 +202,13 @@ public class ActivityFetcherService(
 
 		if (!IsValidActivityContentType(response.Content.Headers.ContentType))
 		{
+			FetchCounter.Add(1, [new("error", true)]);
 			logger.LogDebug("Failed to fetch activity: content type {type} is invalid",
 			                response.Content.Headers.ContentType);
 			return null;
 		}
 
+		FetchCounter.Add(1, [new("error", false)]);
 		return await response.Content.ReadAsStringAsync();
 	}
 

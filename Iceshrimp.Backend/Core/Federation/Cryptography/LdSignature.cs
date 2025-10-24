@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -7,7 +6,6 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
-using Iceshrimp.Shared.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
@@ -31,7 +29,7 @@ public static class LdSignature
 	{
 		// ReSharper disable once ExplicitCallerInfoArgument
 		using var traceActivity = Telemetry.ActivitySource.StartActivity("LD Signature Verify");
-		traceActivity?.AddTag("key", keyId);
+		traceActivity?.AddTag("ld_signatures.key_id", keyId);
 		
 		var options    = activity[$"{Constants.W3IdSecurityNs}#signature"];
 		var rawOptions = rawActivity[$"{Constants.W3IdSecurityNs}#signature"];

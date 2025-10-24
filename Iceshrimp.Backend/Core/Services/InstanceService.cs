@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using AngleSharp.Html.Parser;
 using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Database;
@@ -16,6 +17,9 @@ public class InstanceService(
 	MetaService meta
 ) : IScopedService
 {
+	private static readonly Counter<long> UpdateCounter =
+		Telemetry.Meter.CreateCounter<long>("activitypub.instance_update.count", "request", "number of instance metadata requests sent");
+
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
 	{
 		o.PoolSize        = 100;
@@ -63,6 +67,8 @@ public class InstanceService(
 		{
 			using (await KeyedLocker.LockAsync(host))
 			{
+				UpdateCounter.Add(1);
+
 				instance.InfoUpdatedAt = DateTime.UtcNow;
 				var nodeinfo = await GetNodeInfoAsync(webDomain);
 				var icons    = await GetIconsAsync(webDomain);

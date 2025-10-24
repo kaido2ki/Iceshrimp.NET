@@ -1,7 +1,9 @@
+using System.Diagnostics.Metrics;
 using System.Net;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Newtonsoft.Json.Linq;
@@ -13,6 +15,9 @@ namespace Iceshrimp.Backend.Core.Queues;
 public class InboxQueue(int parallelism)
 	: PostgresJobQueue<InboxJobData>("inbox", InboxQueueProcessorDelegateAsync, parallelism, TimeSpan.FromSeconds(120))
 {
+	private static readonly Counter<long> ActivityCounter =
+		Telemetry.Meter.CreateCounter<long>("activitypub.inbox.count", "activity", "number of activities received");
+	
 	private static async Task InboxQueueProcessorDelegateAsync(
 		Job job,
 		InboxJobData jobData,
@@ -29,6 +34,7 @@ public class InboxQueue(int parallelism)
 		var apHandler = scope.GetRequiredService<ActivityPub.ActivityHandlerService>();
 		try
 		{
+			ActivityCounter.Add(1, [new("activitypub.activity.type", activity.Type)]);
 			await apHandler.PerformActivityAsync(activity, jobData.InboxUserId, jobData.AuthenticatedUserId);
 		}
 		catch (InstanceBlockedException e)

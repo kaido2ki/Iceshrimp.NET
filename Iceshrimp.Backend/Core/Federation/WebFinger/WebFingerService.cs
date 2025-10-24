@@ -1,10 +1,12 @@
 using System.Collections.Immutable;
+using System.Diagnostics.Metrics;
 using System.Net;
 using System.Text.Encodings.Web;
 using System.Xml;
 using System.Xml.Serialization;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.Extensions.Options;
@@ -41,8 +43,13 @@ public class WebFingerService(
 	private static readonly XmlSerializer WebFingerXmlSerializer = new(typeof(WebFingerResponse));
 	private static readonly XmlSerializer HostMetaXmlSerializer  = new(typeof(HostMetaResponse));
 
+	private static readonly Counter<long> QueryCounter =
+		Telemetry.Meter.CreateCounter<long>("activitypub.webfinger.count", "request", "number of webfinger requests sent");
+
 	public async Task<WebFingerResponse?> ResolveAsync(string query)
 	{
+		QueryCounter.Add(1);
+
 		(query, var domain) = ParseQuery(query);
 		if (domain == config.Value.WebDomain || domain == config.Value.AccountDomain)
 			throw new GracefulException(HttpStatusCode.BadRequest, "Can't run WebFinger for local user");

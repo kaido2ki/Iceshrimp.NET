@@ -1,10 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq.Expressions;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -18,6 +20,9 @@ public class PreDeliverQueue(int parallelism)
 	: PostgresJobQueue<PreDeliverJobData>("pre-deliver", PreDeliverQueueProcessorDelegateAsync,
 	                                      parallelism, TimeSpan.FromSeconds(60))
 {
+	private static readonly Counter<long> ActivityCounter =
+		Telemetry.Meter.CreateCounter<long>("activitypub.outbox.count", "activity", "number of unique activities sent");
+	
 	private static async Task PreDeliverQueueProcessorDelegateAsync(
 		Job job, PreDeliverJobData jobData, IServiceProvider scope, CancellationToken token
 	)
@@ -79,6 +84,7 @@ public class PreDeliverQueue(int parallelism)
 			payload = activity.CompactToPayload();
 		}
 
+		ActivityCounter.Add(1, [new("activitypub.activity.type", activity.Type)]);
 		foreach (var inboxQueryResult in inboxQueryResults)
 		{
 			// @formatter:off

@@ -1,7 +1,9 @@
+using System.Diagnostics.Metrics;
 using System.Net;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
@@ -13,6 +15,9 @@ public class DeliverQueue(int parallelism)
 	: PostgresJobQueue<DeliverJobData>("deliver", DeliverQueueProcessorDelegateAsync,
 	                                   parallelism, TimeSpan.FromSeconds(60))
 {
+	private static readonly Counter<long> ActivityCounter =
+		Telemetry.Meter.CreateCounter<long>("activitypub.outbox.total", "activity", "number of activities sent (counts every remote inbox individually)");
+
 	private static async Task DeliverQueueProcessorDelegateAsync(
 		Job job, DeliverJobData jobData, IServiceProvider scope, CancellationToken token
 	)
@@ -68,6 +73,7 @@ public class DeliverQueue(int parallelism)
 			});
 
 			response.EnsureSuccessStatusCode(true, () => new ClientError(response.StatusCode));
+			ActivityCounter.Add(1);
 		}
 		catch (Exception e) when (e is not ClientError)
 		{
