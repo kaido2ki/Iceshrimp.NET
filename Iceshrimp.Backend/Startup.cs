@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Backend.Pages.Shared;
 using Iceshrimp.Backend.SignalR;
 using Iceshrimp.Backend.SignalR.Authentication;
@@ -97,6 +98,14 @@ if (!app.Urls.IsReadOnly)
 
 var elapsed = (DateTime.Now - Process.GetCurrentProcess().StartTime).GetTotalMilliseconds();
 app.Logger.LogInformation("Startup complete after {ms} ms.", elapsed);
-await app.StartAsync();
-app.SetKestrelUnixSocketPermissions();
-await app.WaitForShutdownAsync();
+
+try
+{
+	await app.StartAsync();
+	app.SetKestrelUnixSocketPermissions();
+	await app.WaitForShutdownAsync();
+}
+finally
+{
+	Telemetry.Dispose();
+}

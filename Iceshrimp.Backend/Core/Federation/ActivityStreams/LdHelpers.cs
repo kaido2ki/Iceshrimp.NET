@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
@@ -15,8 +14,6 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams;
 
 public static class LdHelpers
 {
-	private static readonly ActivitySource ActivitySource = new("Iceshrimp.NET/LdHelpers", VersionHelpers.VersionInfo.Value.Version);
-	
 	private static readonly Dictionary<string, RemoteDocument> PreloadedContexts = new()
 	{
 		["https://purl.archive.org/socialweb/webfinger"] = GetPreloadedContext("wf.json"),
@@ -72,8 +69,7 @@ public static class LdHelpers
 
 	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions)
 	{
-		// ReSharper disable once ExplicitCallerInfoArgument
-		using var activity = ActivitySource.StartActivity("Load Context");
+		using var activity = Telemetry.ActivitySource.StartActivity("Load Context");
 		activity?.AddTag("uri", uri);
 		
 		var key = uri.AbsolutePath == "/schemas/litepub-0.1.jsonld" ? "litepub-0.1" : uri.ToString();
@@ -144,13 +140,13 @@ public static class LdHelpers
 
 	public static JObject Compact(JToken? json)
 	{
-		using var _ = ActivitySource.StartActivity();
+		using var _ = Telemetry.ActivitySource.StartActivity();
 		return JsonLdProcessor.Compact(json, FederationContext, Options);
 	}
 
 	public static JArray Expand(JToken? json)
 	{
-		using var _ = ActivitySource.StartActivity();
+		using var _ = Telemetry.ActivitySource.StartActivity();
 		return JsonLdProcessor.Expand(json, Options);
 	}
 

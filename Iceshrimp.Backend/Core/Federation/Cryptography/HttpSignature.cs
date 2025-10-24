@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Shared.Helpers;
 using Microsoft.Extensions.Primitives;
@@ -12,8 +13,7 @@ namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
 public static class HttpSignature
 {
-	private static readonly TimeSpan MaxClockSkew = TimeSpan.FromMinutes(5);
-	private static readonly ActivitySource ActivitySource = new("Iceshrimp.NET/HttpSignature", VersionHelpers.VersionInfo.Value.Version);
+	public static readonly TimeSpan MaxClockSkew = TimeSpan.FromMinutes(5);
 
 	public static async Task<bool> VerifyAsync(
 		HttpRequest request, HttpSignatureHeader signature,
@@ -24,8 +24,9 @@ public static class HttpSignature
 			throw new GracefulException(HttpStatusCode.Forbidden, "Request is missing required headers");
 
 		// verify signature with "correct" query string behavior
+
 		// ReSharper disable once ExplicitCallerInfoArgument
-		using var activity = ActivitySource.StartActivity("HTTP Signature Verify");
+		using var activity = Telemetry.ActivitySource.StartActivity("HTTP Signature Verify");
 		activity?.AddTag("key", signature.KeyId);
 		
 		var signingString =
@@ -110,7 +111,7 @@ public static class HttpSignature
 	)
 	{
 		// ReSharper disable once ExplicitCallerInfoArgument
-		using var activity = ActivitySource.StartActivity("HTTP Sign");
+		using var activity = Telemetry.ActivitySource.StartActivity("HTTP Sign");
 		activity?.AddTag("key", keyId);
 
 		ArgumentNullException.ThrowIfNull(request.RequestUri);

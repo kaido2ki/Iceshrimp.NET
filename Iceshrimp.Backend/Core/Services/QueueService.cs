@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Text.Json;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -33,6 +34,12 @@ public class QueueService(
 	public readonly  BackfillUserQueue       BackfillUserQueue   = new(queueConcurrency.Value.BackfillUser);
 
 	public IEnumerable<string> QueueNames => _queues.Select(p => p.Name);
+	
+	protected internal static readonly Counter<long> DelayedJobCounter =
+		Telemetry.Meter.CreateCounter<long>("queue.jobs.delayed", "jobs", "number of jobs ever delayed (includes the same job if delayed multiple times)");
+
+	protected internal static readonly Counter<long> FinishedJobCounter =
+		Telemetry.Meter.CreateCounter<long>("queue.jobs.finished", "jobs", "number of jobs ever finished");
 
 	protected override async Task ExecuteAsync(CancellationToken token)
 	{
@@ -209,6 +216,12 @@ public abstract class PostgresJobQueue<T>(
 	private readonly string _exceptionPrefix =
 		$"   at {typeof(PostgresJobQueue<T>).Namespace}.{typeof(PostgresJobQueue<T>).Name}";
 
+	private readonly Gauge<long> _queuedJobGauge =
+		Telemetry.Meter.CreateGauge<long>($"queue.jobs.queued.{name.Replace('-', '_')}", "jobs", "number of jobs currently queued");
+
+	private readonly Gauge<long> _activeJobGauge =
+		Telemetry.Meter.CreateGauge<long>($"queue.jobs.active.{name.Replace('-', '_')}", "jobs", "number of jobs currently active");
+	
 	/*
 	 * This is the main queue processor loop. The algorithm aims to only ever have as many workers running as needed,
 	 * conserving resources.
@@ -271,9 +284,11 @@ public abstract class PostgresJobQueue<T>(
 				await using var scope = GetScope();
 				await using var db    = GetDbContext(scope);
 
-				var queuedCount       = await db.GetJobQueuedCountAsync(name, token);
+				var queuedCount = await db.GetJobQueuedCountAsync(name, token);
+				_queuedJobGauge.Record(queuedCount);
+				_activeJobGauge.Record(_semaphore.ActiveCount);
+				
 				var actualParallelism = Math.Min(_semaphore.CurrentCount, queuedCount);
-
 				if (actualParallelism == 0)
 				{
 					// Not doing this causes a TOC/TOU race condition, even if it'd likely only be a couple CPU cycles wide.
@@ -432,8 +447,7 @@ public abstract class PostgresJobQueue<T>(
 
 	private async Task ProcessJobAsync(IServiceScope processorScope, IServiceScope jobScope, CancellationToken token)
 	{
-		var activitySource = processorScope.ServiceProvider.GetRequiredService<TraceService>().ActivitySource;
-		using var activity = activitySource.StartActivity($"process {name}", ActivityKind.Consumer);
+		using var activity = Telemetry.ActivitySource.StartActivity($"process {name}", ActivityKind.Consumer);
 
 		await using var db = GetDbContext(processorScope);
 
@@ -463,6 +477,7 @@ public abstract class PostgresJobQueue<T>(
 			await db.SaveChangesAsync(token);
 			activity?.SetStatus(ActivityStatusCode.Error);
 			activity?.AddEvent(new ActivityEvent(job.ExceptionMessage));
+			QueueService.FinishedJobCounter.Add(1, new("messaging.destination.name", name), new("error", true));
 			return;
 		}
 
@@ -479,8 +494,7 @@ public abstract class PostgresJobQueue<T>(
 			job.StackTrace       = e.StackTrace;
 			job.Exception        = e.ToString();
 
-			activity?.SetStatus(ActivityStatusCode.Error)
-			        .AddException(e);
+			activity?.AddException(e);
 
 			var queueName = data is BackgroundTaskJobData ? name + $" ({data.GetType().Name})" : name;
 			if (e is GracefulException { Details: not null } ce)
@@ -504,6 +518,9 @@ public abstract class PostgresJobQueue<T>(
 		if (job.Status is Job.JobStatus.Failed)
 		{
 			job.FinishedAt = DateTime.UtcNow;
+
+			activity?.SetStatus(ActivityStatusCode.Error);
+			QueueService.FinishedJobCounter.Add(1, new("messaging.destination.name", name), new("error", true));
 		}
 		else if (job.Status is Job.JobStatus.Delayed)
 		{
@@ -519,6 +536,7 @@ public abstract class PostgresJobQueue<T>(
 				_logger.LogTrace("Job in queue {queue} was delayed to {newTime} after {duration} ms, has been queued since {origTime}",
 				                 name, job.DelayedUntil.Value.ToLocalTime().ToStringIso8601Like(), job.Duration,
 				                 job.QueuedAt.ToLocalTime().ToStringIso8601Like());
+				QueueService.DelayedJobCounter.Add(1, [new("messaging.destination.name", name)]);
 				db.ChangeTracker.Clear();
 				db.Update(job);
 				await db.SaveChangesAsync(token);
@@ -530,6 +548,8 @@ public abstract class PostgresJobQueue<T>(
 		{
 			job.Status     = Job.JobStatus.Completed;
 			job.FinishedAt = DateTime.UtcNow;
+
+			QueueService.FinishedJobCounter.Add(1, new("messaging.destination.name", name), new("error", false));
 
 			if (job.QueueDuration < 10_000)
 			{
@@ -550,11 +570,10 @@ public abstract class PostgresJobQueue<T>(
 
 	public async Task EnqueueAsync(T jobData, string? mutex = null)
 	{
+		using var activity = Telemetry.ActivitySource.StartActivity($"schedule {name}", ActivityKind.Producer);
+
 		await using var scope = GetScope();
 		await using var db    = GetDbContext(scope);
-		
-		var       activitySource = scope.ServiceProvider.GetRequiredService<TraceService>().ActivitySource;
-		using var activity       = activitySource.StartActivity($"schedule {name}", ActivityKind.Producer);
 	
 		var id = Ulid.NewUlid().ToGuid();
 
@@ -580,11 +599,10 @@ public abstract class PostgresJobQueue<T>(
 
 	public async Task ScheduleAsync(T jobData, DateTime triggerAt, string? mutex = null)
 	{
+		using var activity = Telemetry.ActivitySource.StartActivity($"schedule {name}", ActivityKind.Producer);
+		
 		await using var scope = GetScope();
 		await using var db    = GetDbContext(scope);
-
-		var       activitySource = scope.ServiceProvider.GetRequiredService<TraceService>().ActivitySource;
-		using var activity       = activitySource.StartActivity($"schedule {name}", ActivityKind.Producer);
 	
 		var id = Ulid.NewUlid().ToGuid();
 

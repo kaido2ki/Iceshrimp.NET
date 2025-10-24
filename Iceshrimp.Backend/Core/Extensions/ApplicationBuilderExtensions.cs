@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Core.Configuration;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
 using Npgsql;
 using OpenTelemetry.Logs;
@@ -17,7 +18,7 @@ public static class ApplicationBuilderExtensions
 
         builder.Services.AddOpenTelemetry()
                .WithTracing(tracing => tracing
-                                       .AddSource(TraceService.Source, "Iceshrimp.NET/LdSignature", "Iceshrimp.NET/LdHelpers",  "Iceshrimp.NET/HttpSignature")
+                                       .AddSource(Telemetry.Source)
                                        .AddAspNetCoreInstrumentation(opts =>
                                        {
                                            opts.RecordException = true;
@@ -33,6 +34,7 @@ public static class ApplicationBuilderExtensions
                                        .AddNpgsql()
                                        .AddOtlpExporter())
                .WithMetrics(metrics => metrics
+                                       .AddMeter(Telemetry.Source)
                                        .AddAspNetCoreInstrumentation()
                                        .AddHttpClientInstrumentation()
                                        .AddNpgsqlInstrumentation()
