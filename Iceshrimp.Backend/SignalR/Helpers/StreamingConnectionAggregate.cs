@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -192,15 +191,12 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		return await db.NoteThreadMutings.AnyAsync(p => p.UserId == _userId && p.ThreadId == note.ThreadId);
 	}
 
-	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
 	private bool IsFiltered(Note note) =>
 		IsFiltered(note.User) || _blocking.Intersects(note.Mentions) || _muting.Intersects(note.Mentions);
 
-	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
 	private bool IsFiltered(User user) =>
 		_blockedBy.Contains(user.Id) || _blocking.Contains(user.Id) || _muting.Contains(user.Id);
 
-	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
 	private bool IsFollowingOrSelf(string inUserId) => inUserId == _userId || _following.Contains(inUserId);
 
 	private NoteWithVisibilities EnforceRenoteReplyVisibility(Note note)
