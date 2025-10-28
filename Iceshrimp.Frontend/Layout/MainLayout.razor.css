@@ -92,6 +92,13 @@
 }
 
 .top-bar {
+    .action[disabled] {
+        opacity: 40%;
+        cursor: not-allowed;
+    }
+}
+
+.top-bar {
     .action + .action {
         margin-left: 0;
     }
