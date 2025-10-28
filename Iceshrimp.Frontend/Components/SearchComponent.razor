@@ -98,6 +98,8 @@
 
     private async Task Search()
     {
+        if (string.IsNullOrWhiteSpace(SearchString)) return;
+
         NoteSearchInstance = null;
         _resultType        = ResultType.None;
         StateHasChanged();
