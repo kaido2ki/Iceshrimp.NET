@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
@@ -231,5 +232,41 @@ public class EmojiController(
 	public async Task DeleteEmoji(string id)
 	{
 		await emojiSvc.DeleteEmojiAsync(id);
+	}
+
+	[HttpPatch("batch")]
+	[Authorize("role:moderator")]
+	[Consumes(MediaTypeNames.Application.Json)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task<List<EmojiResponse>> BatchUpdateEmoji(BatchUpdateEmojiRequest request)
+	{
+		var ids = await db.Emojis.Where(p => request.Ids.Contains(p.Id) && p.Host == null)
+		                  .Select(p => p.Id)
+		                  .ToListAsync();
+
+		if (ids.Count == 0) throw GracefulException.BadRequest("No valid emoji ids were provided");
+
+		var emojis = new List<Emoji>();
+
+		foreach (var id in ids)
+		{
+			var emoji = await emojiSvc.UpdateLocalEmojiAsync(id, null, null, request.Category,
+			                                                 request.License, request.Sensitive);
+			if (emoji != null) emojis.Add(emoji);
+		}
+
+		return emojis.Select(p => new EmojiResponse
+		             {
+			             Id        = p.Id,
+			             Name      = p.Name,
+			             Uri       = p.Uri,
+			             Tags      = p.Tags,
+			             Category  = p.Category,
+			             PublicUrl = p.GetAccessUrl(instance.Value),
+			             License   = p.License,
+			             Sensitive = p.Sensitive
+		             })
+		             .ToList();
 	}
 }
