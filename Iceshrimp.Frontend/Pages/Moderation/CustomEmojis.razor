@@ -22,16 +22,42 @@
     @Loc["Custom Emojis"]
     @if (State is State.Empty or State.Loaded)
     {
-        <span class="action btn" @onclick="OpenUpload">
-            <Icon Name="Icons.Upload"/>
-            <span>@Loc["Upload"]</span>
-        </span>
-        <span class="action btn" @onclick="OpenImport">
-            <Icon Name="Icons.FileArrowUp"/>
-            <span>@Loc["Import pack"]</span>
-        </span>
+        @if (BatchSelection)
+        {
+            <span class="action btn" @onclick="BatchSetCategory" disabled="@(Selected.Count == 0)">
+                <Icon Name="Icons.Folder"/>
+                <span>@Loc["Set category"]</span>
+            </span>
+            <span class="action btn" @onclick="BatchSetLicense" disabled="@(Selected.Count == 0)">
+                <Icon Name="Icons.Article"/>
+                <span>@Loc["Set license"]</span>
+            </span>
+            <span class="action btn" @onclick="BatchDelete" disabled="@(Selected.Count == 0)">
+                <Icon Name="Icons.Trash"/>
+                <span>@Loc["Delete"]</span>
+            </span>
+            <span class="action btn" @onclick="ToggleBatchSelection">
+                <Icon Name="Icons.Selection"/>
+                <span>@Loc["Single select"]</span>
+            </span>
+        }
+        else
+        {
+            <span class="action btn" @onclick="OpenUpload">
+                <Icon Name="Icons.Upload"/>
+                <span>@Loc["Upload"]</span>
+            </span>
+            <span class="action btn" @onclick="OpenImport">
+                <Icon Name="Icons.FileArrowUp"/>
+                <span>@Loc["Import pack"]</span>
+            </span>
+            <span class="action btn" @onclick="ToggleBatchSelection">
+                <Icon Name="Icons.SelectionPlus"/>
+                <span>@Loc["Batch select"]</span>
+            </span>
+        }
     }
-    @if (State is not State.Loading)
+    @if (State is not State.Loading && !BatchSelection)
     {
         <a class="action btn" href="/mod/emojis/remote">
             <Icon Name="Icons.ArrowSquareOut"/>
@@ -55,7 +81,9 @@
         <div class="emoji-list">
             @foreach (var emoji in category.Value)
             {
-                <EmojiManagementEntry Emoji="@emoji" DeleteEmoji="DeleteEmoji" FilterEmojis="FilterEmojis"/>
+                <EmojiManagementEntry Emoji="@emoji" DeleteEmoji="DeleteEmoji"
+                                          FilterEmojis="FilterEmojis" ToggleEmoji="SelectEmoji" BatchSelection="BatchSelection"
+                                          Selected="@(Selected.Contains(emoji))"/>
             }
         </div>
     }
@@ -77,14 +105,16 @@
 </div>
 
 @code {
-    private List<EmojiResponse>                     Emojis      { get; set; } = [];
-    private Dictionary<string, List<EmojiResponse>> Categories  { get; set; } = new();
-    private string                                  EmojiFilter { get; set; } = "";
-    private State                                   State       { get; set; }
-    private InputFile                               UploadInput { get; set; } = null!;
-    private IBrowserFile                            UploadFile  { get; set; } = null!;
-    private InputFile                               ImportInput { get; set; } = null!;
-    private IBrowserFile                            ImportFile  { get; set; } = null!;
+    private List<EmojiResponse>                     Emojis         { get; set; } = [];
+    private Dictionary<string, List<EmojiResponse>> Categories     { get; set; } = new();
+    private string                                  EmojiFilter    { get; set; } = "";
+    private State                                   State          { get; set; }
+    private InputFile                               UploadInput    { get; set; } = null!;
+    private IBrowserFile                            UploadFile     { get; set; } = null!;
+    private InputFile                               ImportInput    { get; set; } = null!;
+    private IBrowserFile                            ImportFile     { get; set; } = null!;
+    private bool                                    BatchSelection { get; set; }
+    private List<EmojiResponse>                     Selected       { get; set; } = [];
     private IJSObjectReference                      _module = null!;
 
     private void FilterEmojis()
@@ -97,6 +127,22 @@
                      .OrderBy(p => string.IsNullOrEmpty(p.Key))
                      .ThenBy(p => p.Key)
                      .ToDictionary(p => p.Key ?? Loc["Other"], p => p.ToList());
+        StateHasChanged();
+    }
+
+    private void SelectEmoji(EmojiResponse emoji)
+    {
+        if (!BatchSelection) return;
+
+        if (Selected.Contains(emoji))
+        {
+            Selected.Remove(emoji);
+        }
+        else
+        {
+            Selected.Add(emoji);
+        }
+
         StateHasChanged();
     }
 
@@ -119,6 +165,7 @@
 
     private void DeleteEmoji(EmojiResponse emoji)
     {
+        Selected.Remove(emoji);
         Emojis.Remove(emoji);
     }
 
@@ -132,6 +179,94 @@
     private async Task OpenImport()
     {
         await _module.InvokeVoidAsync("openUpload", ImportInput.Element);
+    }
+
+    private void ToggleBatchSelection()
+    {
+        BatchSelection = !BatchSelection;
+        if (!BatchSelection) Selected.Clear();
+        StateHasChanged();
+    }
+
+    private async Task BatchSetCategory()
+    {
+        if (!BatchSelection || Selected.Count == 0) return;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, BatchSetCategoryCallback), Loc["Set category for {0} emojis", Selected.Count], "", null, true)!;
+    }
+
+    private async Task BatchSetCategoryCallback(string? category)
+    {
+        if (category == null) return;
+
+        try
+        {
+            var res = await Api.Emoji.BatchUpdateEmojiAsync(new BatchUpdateEmojiRequest { Ids = Selected.Select(p => p.Id).ToList(), Category = category });
+
+            foreach (var emoji in res)
+            {
+                var e = Emojis.First(p => p.Id == emoji.Id);
+                e.Category = emoji.Category;
+            }
+
+            FilterEmojis();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
+
+    private async Task BatchSetLicense()
+    {
+        if (!BatchSelection || Selected.Count == 0) return;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, BatchSetLicenseCallback), Loc["Set license for {0} emojis", Selected.Count], "", null, true, true)!;
+    }
+
+    private async Task BatchSetLicenseCallback(string? license)
+    {
+        if (license == null) return;
+
+        try
+        {
+            var res = await Api.Emoji.BatchUpdateEmojiAsync(new BatchUpdateEmojiRequest { Ids = Selected.Select(p => p.Id).ToList(), License = license });
+
+            foreach (var emoji in res)
+            {
+                var e = Emojis.First(p => p.Id == emoji.Id);
+                e.License = emoji.License;
+            }
+
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
+
+    private async Task BatchDelete()
+    {
+        if (!BatchSelection || Selected.Count == 0) return;
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, BatchDeleteCallback), Loc["Delete {0} emojis?", Selected.Count], Icons.Trash, Loc["Delete"])!;
+    }
+
+    private async Task BatchDeleteCallback(bool delete)
+    {
+        if (!delete) return;
+        try
+        {
+            foreach (var emoji in Selected)
+            {
+                var res = await Api.Emoji.DeleteEmojiAsync(emoji.Id);
+                if (res) DeleteEmoji(emoji);
+            }
+
+            FilterEmojis();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+        }
     }
 
     private async Task Upload(InputFileChangeEventArgs e)

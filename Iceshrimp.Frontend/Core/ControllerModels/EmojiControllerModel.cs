@@ -41,4 +41,7 @@ internal class EmojiControllerModel(ApiClient api)
 
 	public Task<EmojiResponse?> GetEmojiAsync(string id) =>
 		api.CallNullableAsync<EmojiResponse>(HttpMethod.Get, $"/emoji/{id}");
+
+	public Task<List<EmojiResponse>> BatchUpdateEmojiAsync(BatchUpdateEmojiRequest request) =>
+		api.CallAsync<List<EmojiResponse>>(HttpMethod.Patch, $"/emoji/batch", data: request);
 }

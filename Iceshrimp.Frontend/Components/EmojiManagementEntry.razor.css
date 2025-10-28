@@ -9,7 +9,7 @@
     cursor: pointer;
 }
 
-.emoji-entry:hover {
+.emoji-entry:hover, .emoji-entry.batch-selected {
     background-color: var(--hover-color);
 }
 

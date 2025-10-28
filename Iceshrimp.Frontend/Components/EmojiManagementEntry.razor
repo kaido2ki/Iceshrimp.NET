@@ -8,7 +8,7 @@
 @inject GlobalComponentSvc             Global;
 @inject IStringLocalizer<Localization> Loc;
 
-<div @ref="EmojiButton" class="emoji-entry" @onclick="SelectEmoji" @onclick:stopPropagation="true">
+<div @ref="EmojiButton" class="emoji-entry @(Selected ? "batch-selected" : "")" @onclick="SelectEmoji" @onclick:stopPropagation="true">
     <InlineEmoji Name="@Emoji.Name" Url="@Emoji.PublicUrl" Hover="@true" Size="3rem"/>
     <div class="emoji-details">
         <span class="emoji-name">@Emoji.Name</span>
@@ -82,14 +82,27 @@
 </div>
 
 @code {
-    [Parameter, EditorRequired] public required EmojiResponse                Emoji        { get; set; }
-    [Parameter]                 public          bool                         Remote       { get; set; }
-    [Parameter]                 public          EventCallback<EmojiResponse> DeleteEmoji  { get; set; }
-    [Parameter]                 public          EventCallback                FilterEmojis { get; set; }
-    private                                     ElementReference             EmojiButton  { get; set; }
-    private                                     Menu                         EmojiMenu    { get; set; } = null!;
+    [Parameter, EditorRequired] public required EmojiResponse                Emoji          { get; set; }
+    [Parameter]                 public          bool                         Remote         { get; set; }
+    [Parameter]                 public          EventCallback<EmojiResponse> DeleteEmoji    { get; set; }
+    [Parameter]                 public          EventCallback                FilterEmojis   { get; set; }
+    [Parameter]                 public          EventCallback<EmojiResponse> ToggleEmoji    { get; set; }
+    [Parameter]                 public          bool                         BatchSelection { get; set; }
+    [Parameter]                 public          bool                         Selected       { get; set; }
+    private                                     ElementReference             EmojiButton    { get; set; }
+    private                                     Menu                         EmojiMenu      { get; set; } = null!;
 
-    private void SelectEmoji() => EmojiMenu.Toggle(EmojiButton);
+    private async Task SelectEmoji()
+    {
+        if (BatchSelection)
+        {
+            await ToggleEmoji.InvokeAsync(Emoji);
+        }
+        else
+        {
+            EmojiMenu.Toggle(EmojiButton);
+        }
+    }
 
     private async Task Clone() =>
         await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, CloneCallback), @Loc["Clone {0} from {1}?", Emoji.Name, Emoji.Category ?? ""], Icons.Copy, @Loc["Clone"])!;
