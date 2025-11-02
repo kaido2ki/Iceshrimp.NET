@@ -38,12 +38,13 @@ public class InstanceInfoV2Response(
 
 public class InstanceConfigurationV2(Config.InstanceSection config)
 {
-	[J("accounts")]          public InstanceAccountsConfiguration Accounts  => new();
-	[J("statuses")]          public InstanceStatusesConfiguration Statuses  => new(config.CharacterLimit);
-	[J("media_attachments")] public InstanceMediaConfiguration    Media     => new();
-	[J("polls")]             public InstancePollConfiguration     Polls     => new();
-	[J("reactions")]         public InstanceReactionConfiguration Reactions => new();
-	[J("urls")]              public InstanceUrlsV2                Urls      => new(config);
+	[J("accounts")]          public InstanceAccountsConfiguration        Accounts        => new();
+	[J("statuses")]          public InstanceStatusesConfiguration        Statuses        => new(config.CharacterLimit);
+	[J("media_attachments")] public InstanceMediaConfiguration           Media           => new();
+	[J("polls")]             public InstancePollConfiguration            Polls           => new();
+	[J("reactions")]         public InstanceReactionConfiguration        Reactions       => new();
+	[J("urls")]              public InstanceUrlsV2                       Urls            => new(config);
+	[J("timelines_access")]  public InstanceTimelinesAccessConfiguration TimelinesAccess => new();
 }
 
 public class InstanceUrlsV2(Config.InstanceSection config)
@@ -92,4 +93,17 @@ public class InstanceThumbnail(string url, string? blurhash)
 {
 	[J("url")]      public string  Url      => url;
 	[J("blurhash")] public string? Blurhash => blurhash;
+}
+
+public class InstanceTimelinesAccessConfiguration()
+{
+	[J("live_feeds")]          public InstanceTimelineAccessConfiguration LiveFeeds         => new("authenticated");
+	[J("hashtag_feeds")]       public InstanceTimelineAccessConfiguration HashtagFeeds      => new("authenticated");
+	[J("trending_link_feeds")] public InstanceTimelineAccessConfiguration TrendingLinkFeeds => new("disabled");
+}
+
+public class InstanceTimelineAccessConfiguration(string access)
+{
+	[J("local")]  public string InstanceTimelineAccessLocal  => access;
+	[J("remote")] public string InstanceTimelineAccessRemote => access;
 }
