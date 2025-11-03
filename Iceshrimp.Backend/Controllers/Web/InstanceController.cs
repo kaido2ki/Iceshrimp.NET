@@ -157,6 +157,6 @@ public class InstanceController(
 			? await db.DriveFiles.Where(p => p.Id == iconId).Select(p => p.PublicUrl).FirstOrDefaultAsync()
 			: null;
 
-		return new RedirectResult(iconUrl ?? "/_content/Iceshrimp.Assets.Branding/favicon.png");
+		return new RedirectResult(iconUrl ?? $"https://{instanceConfig.Value.WebDomain}/_content/Iceshrimp.Assets.Branding/favicon.png");
 	}
 }
