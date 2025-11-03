@@ -134,6 +134,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .Where(p => p.User == user)
 		                    .IncludeCommonProperties()
 		                    .Select(p => p.Note)
+		                    .EnsureVisibleFor(user)
 		                    .Paginate(pq, ControllerContext)
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
