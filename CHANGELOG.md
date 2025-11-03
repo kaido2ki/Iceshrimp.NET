@@ -1,3 +1,12 @@
+## v2025.1-beta5.patch3.security3
+This is a security hotfix release. It's identical to v2025.1-beta5.patch3.security2, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
+
+### Mastodon client API
+- Note visibility is now checked when listing likes or bookmarks
+
+### Attribution
+This release was made possible by project contributors: pancakes
+
 ## v2025.1-beta5.patch3.security2
 This is a hotfix release. It's identical to v2025.1-beta5.patch2.security2, except for the bug fixes listed below. Upgrading is strongly recommended for all server operators.
 
