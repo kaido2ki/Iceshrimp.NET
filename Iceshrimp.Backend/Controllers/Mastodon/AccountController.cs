@@ -582,6 +582,7 @@ public class AccountController(
 		var likes = await db.NoteLikes
 		                    .Where(p => p.User == user)
 		                    .IncludeCommonProperties()
+		                    .Where(p => p.Note.IsVisibleFor(user))
 		                    .Select(p => new EntityWrapper<Note>
 		                    {
 			                    Id = p.Id, Entity = p.Note.WithPrecomputedVisibilities(user)
@@ -604,6 +605,7 @@ public class AccountController(
 		var bookmarks = await db.NoteBookmarks
 		                        .Where(p => p.User == user)
 		                        .IncludeCommonProperties()
+		                        .Where(p => p.Note.IsVisibleFor(user))
 		                        .Select(p => new EntityWrapper<Note>
 		                        {
 			                        Id = p.Id, Entity = p.Note.WithPrecomputedVisibilities(user)
