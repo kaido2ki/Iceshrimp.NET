@@ -131,6 +131,7 @@ public class NodeInfoResponse
 			"polls",
 			"quote_posting",
 			"editing",
+			"bubble_timeline",
 			"pleroma_emoji_reactions",
 			"exposable_reactions",
 			"custom_emoji_reactions",
