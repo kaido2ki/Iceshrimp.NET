@@ -41,7 +41,6 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.9" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="9.0.9" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
         <PackageReference Include="Npgsql.OpenTelemetry" Version="9.0.4" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.13.1" />
@@ -56,9 +55,6 @@
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.13-iceshrimp" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
         <PackageReference Include="System.IO.Hashing" Version="9.0.9" />
-        <PackageReference Include="System.Linq.Async" Version="6.0.3" />
-        <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
-        <PackageReference Include="System.Text.Json" Version="9.0.9" />
         <PackageReference Include="Ulid" Version="1.4.1" />
         <PackageReference Include="Iceshrimp.Assets.Branding" Version="1.0.1" />
         <PackageReference Include="Iceshrimp.AssemblyUtils" Version="1.0.4" />
@@ -67,11 +63,6 @@
         <PackageReference Include="Iceshrimp.MimeTypes" Version="1.0.1" />
         <PackageReference Include="Iceshrimp.WebPush" Version="2.1.0" />
         <PackageReference Include="NetVips" Version="3.1.0" />
-    </ItemGroup>
-
-    <!-- Transitive dependency version overrides to patch security vulnerabilities -->
-    <ItemGroup>
-        <PackageReference Include="System.Private.Uri" Version="4.3.2" />
     </ItemGroup>
 
     <!-- If the build flag BundleNativeDeps is set, reference the LibVips native dependecy -->
