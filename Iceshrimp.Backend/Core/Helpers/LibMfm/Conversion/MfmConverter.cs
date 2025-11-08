@@ -323,7 +323,7 @@ public class MfmConverter(
                     {
                         // this should be safe given argument keys only support letters and digits
                         // https://iceshrimp.dev/iceshrimp/Iceshrimp.MfmSharp/src/branch/dev/Iceshrimp.MfmSharp/MfmParser.cs#L572
-                        el.SetAttribute($"data-mfm-{key}", value);
+                        el.SetAttribute($"data-mfm-{key}", value ?? "");
                     }
                 }
                 
