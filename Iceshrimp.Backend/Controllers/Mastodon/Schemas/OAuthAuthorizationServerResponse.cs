@@ -19,7 +19,8 @@ public class OAuthAuthorizationServerResponse(string webDomain)
 
     [J("response_modes_supported")] public List<string> ResponseModesSupported => ["query", "form_post"];
 
-    [J("grant_types_supported")] public List<string> GrantTypesSupported => ["client_credentials"];
+    [J("grant_types_supported")]
+    public List<string> GrantTypesSupported => ["authorization_code", "client_credentials"];
 
     [J("token_endpoint_auth_methods_supported")]
     public List<string> TokenEndpointAuthMethodsSupported => ["client_secret_post"];
