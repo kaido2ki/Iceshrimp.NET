@@ -43,11 +43,10 @@ export function setupPaste(dotnet, textarea, fileInput) {
 
 /**
  * @param {HTMLTextAreaElement} textarea
- * @param {string | null} text
+ * @param {string} text
+ * @returns {string} The updated textarea contents
  */
 export function insertText(textarea, text) {
-    if (text === null) return;
-
     // Get the cursor position before inserting
     const pos = textarea.selectionStart;
 
@@ -56,4 +55,6 @@ export function insertText(textarea, text) {
 
     // Move cursor to correct position
     textarea.setSelectionRange(pos + text.length, pos + text.length, "none");
+
+    return textarea.value;
 }

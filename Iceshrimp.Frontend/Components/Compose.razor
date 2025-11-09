@@ -524,8 +524,12 @@
         PollChoices.Remove(choice);
     }
 
-    private ValueTask InsertTextAsync(string? text) =>
-        _module.InvokeVoidAsync("insertText", Textarea, text);
+    private async Task InsertTextAsync(string? text)
+    {
+        if (text == null) return;
+        NoteDraft.Text = await _module.InvokeAsync<string>("insertText", Textarea, text);
+        StateHasChanged();
+    }
 
     [JSInvokable]
     public async Task PasteQuote(string pastedText)
