@@ -24,6 +24,7 @@ public partial class UserPreview(
 	private PreviewUser? _user;
 	private string       _instanceName = "Iceshrimp.NET";
 	private string?      _pronouns;
+	private string       _badges;
 
 	private Dictionary<string, (string, string)>? _feeds;
 
@@ -65,6 +66,12 @@ public partial class UserPreview(
 		_pronouns = user?.UserProfile?.Pronouns != null
 			? string.Join(", ", user.UserProfile.Pronouns.Select(p => $"{p.Value} ({p.Key.ToUpper()})"))
 			: null;
+
+		var badges = new List<string>();
+		if (user?.IsAdmin ?? false) badges.Add("Admin");
+		if (user?.IsModerator ?? false) badges.Add("Moderator");
+		if (user?.IsBot ?? false) badges.Add("Automated");
+		_badges = string.Join(" | ", badges);
 
 		if (user is { IsLocalUser: true, UserSettings.PrivateMode: false })
 		{

@@ -15,4 +15,7 @@ public class PreviewUser
 	public required string        AvatarUrl;
 	public required string?       BannerUrl;
 	public required string?       MovedToUri;
+	public required bool          IsAdmin;
+	public required bool          IsModerator;
+	public required bool          IsBot;
 }

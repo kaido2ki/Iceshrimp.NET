@@ -39,7 +39,10 @@ public class UserRenderer(
 			RawDisplayName = user.DisplayName,
 			DisplayName    = mfm.RenderSimple(user.DisplayName, user.Host, mentions, emoji[user.Id], "span"),
 			Bio            = mfm.RenderSimple(user.UserProfile?.Description, user.Host, mentions, emoji[user.Id], "span"),
-			MovedToUri     = user.MovedToUri
+			MovedToUri     = user.MovedToUri,
+			IsAdmin        = user.IsAdmin,
+			IsModerator    = user.IsModerator,
+			IsBot          = user.IsBot
 		};
 		// @formatter:on
 

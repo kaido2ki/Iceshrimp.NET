@@ -16,6 +16,12 @@ else
 {
     <div class="user">
         <UserComponent User="_user"/>
+        @if (!string.IsNullOrEmpty(_badges))
+        {
+            <div class="badges">
+                @_badges
+            </div>
+        }
         @if (_pronouns != null)
         {
             <div class="pronouns">
