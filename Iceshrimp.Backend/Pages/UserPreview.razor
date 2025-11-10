@@ -14,8 +14,14 @@
 }
 else
 {
+    @if (_user.BannerUrl != null)
+    {
+        <img class="banner" src="@_user.BannerUrl"/>
+    }
     <div class="user">
-        <UserComponent User="_user"/>
+        <div class="user-details @(_user.BannerUrl != null ? "above-banner" : "")">
+            <UserComponent User="_user"/>
+        </div>
         @if (!string.IsNullOrEmpty(_badges))
         {
             <div class="badges">

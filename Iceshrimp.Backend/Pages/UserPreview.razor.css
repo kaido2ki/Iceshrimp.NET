@@ -6,6 +6,30 @@
     overflow: hidden;
 }
 
+.banner {
+    margin-top: 1em;
+    width: 100%;
+    aspect-ratio: 21/9;
+    object-fit: cover;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+.banner + .user {
+    margin-top: -4.5rem;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+/* Add shadow to text if banner is visible */
+::deep .user-details.above-banner span {
+    text-shadow: 0 0 5px black;
+}
+
+.badges {
+    padding-top: 1em;
+}
+
 .bio {
     display: flex;
     flex-direction: column;
