@@ -5,7 +5,7 @@
 else
 {
     <div class="note-container" id="@Note.Id">
-        @if (Note.Reply is not null)
+        @if (Note is { Filtered: null, Reply: not null })
         {
             <div class="ancestor-wrapper">
                 <div class="note-indent">
