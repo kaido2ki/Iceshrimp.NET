@@ -8,8 +8,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Iceshrimp.Backend.Core.Extensions;
@@ -57,15 +56,17 @@ public static class SwaggerGenOptionsExtensions
 	                 Justification = "SwaggerGenOptions.SchemaFilter<T> instantiates this class at runtime")]
 	private class RequireNonNullablePropertiesSchemaFilter : ISchemaFilter
 	{
-		public void Apply(OpenApiSchema model, SchemaFilterContext context)
+		public void Apply(IOpenApiSchema model, SchemaFilterContext context)
 		{
 			var additionalRequiredProps = model.Properties
-			                                   .Where(x => !x.Value.Nullable && !model.Required.Contains(x.Key))
+			                                   ?.Where(x => x.Value.Type?.HasFlag(JsonSchemaType.Null) != true
+			                                                && model.Required?.Contains(x.Key) != true)
 			                                   .Select(x => x.Key);
+
+			if (additionalRequiredProps is null) return;
+
 			foreach (var propKey in additionalRequiredProps)
-			{
-				model.Required.Add(propKey);
-			}
+				model.Required?.Add(propKey);
 		}
 	}
 
@@ -73,11 +74,12 @@ public static class SwaggerGenOptionsExtensions
 	                 Justification = "SwaggerGenOptions.SchemaFilter<T> instantiates this class at runtime")]
 	private class SwaggerBodyExampleSchemaFilter : ISchemaFilter
 	{
-		public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+		public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
 		{
 			var att = context.ParameterInfo?.GetCustomAttribute<SwaggerBodyExampleAttribute>();
-			if (att != null)
-				schema.Example = new OpenApiString(att.Value);
+			if (att == null) return;
+			schema.Examples?.Clear();
+			schema.Examples?.Add(att.Value);
 		}
 	}
 
@@ -117,43 +119,31 @@ public static class SwaggerGenOptionsExtensions
 			}
 			""";
 
-		private static readonly OpenApiString MastoExample401 = new(Masto401);
-		private static readonly OpenApiString MastoExample403 = new(Masto403);
-		private static readonly OpenApiString WebExample401   = new(Web401);
-		private static readonly OpenApiString WebExample403   = new(Web403);
-
-		private static readonly OpenApiReference Ref401 =
-			new() { Type = ReferenceType.Response, Id = "error-401" };
-
-		private static readonly OpenApiReference Ref403 =
-			new() { Type = ReferenceType.Response, Id = "error-403" };
+		private static readonly OpenApiResponseReference Ref401 = new("error-401");
+		private static readonly OpenApiResponseReference Ref403 = new("error-403");
 
 		private static readonly OpenApiResponse MastoRes401 = new()
 		{
-			Reference   = Ref401,
 			Description = "Unauthorized",
-			Content     = { ["application/json"] = new OpenApiMediaType { Example = MastoExample401 } }
+			Content = new Dictionary<string, OpenApiMediaType> { ["application/json"] = new() { Example = Masto401 } }
 		};
 
 		private static readonly OpenApiResponse MastoRes403 = new()
 		{
-			Reference   = Ref403,
 			Description = "Forbidden",
-			Content     = { ["application/json"] = new OpenApiMediaType { Example = MastoExample403 } }
+			Content     = new Dictionary<string, OpenApiMediaType> { ["application/json"] = new() { Example = Masto403 } }
 		};
 
 		private static readonly OpenApiResponse WebRes401 = new()
 		{
-			Reference   = Ref401,
 			Description = "Unauthorized",
-			Content     = { ["application/json"] = new OpenApiMediaType { Example = WebExample401 } }
+			Content     = new Dictionary<string, OpenApiMediaType> { ["application/json"] = new() { Example = Web401 } }
 		};
 
 		private static readonly OpenApiResponse WebRes403 = new()
 		{
-			Reference   = Ref403,
 			Description = "Forbidden",
-			Content     = { ["application/json"] = new OpenApiMediaType { Example = WebExample403 } }
+			Content     = new Dictionary<string, OpenApiMediaType> { ["application/json"] = new() { Example = Web403 } }
 		};
 
 		public void Apply(OpenApiOperation operation, OperationFilterContext context)
@@ -181,40 +171,39 @@ public static class SwaggerGenOptionsExtensions
 			                                .OfType<AuthorizeAttribute>()
 			                                .FirstOrDefault();
 
-			var schema = new OpenApiSecurityScheme
-			{
-				Reference = new OpenApiReference
-				{
-					Type = ReferenceType.SecurityScheme, Id = isMastodonController ? "mastodon" : "iceshrimp"
-				}
-			};
-
-			operation.Security = new List<OpenApiSecurityRequirement> { new() { [schema] = Array.Empty<string>() } };
+			var securitySchemaName = isMastodonController ? "mastodon" : "iceshrimp";
+			var schema             = new OpenApiSecuritySchemeReference(securitySchemaName, context.Document);
+			operation.Security = new List<OpenApiSecurityRequirement> { new() { [schema] = [] } };
 
 			if (authorizeAttribute == null) return;
 
-			operation.Responses.Remove("401");
-			operation.Responses.Add("401", new OpenApiResponse { Reference = Ref401 });
+			operation.Responses?.Remove("401");
+			operation.Responses ??= [];
+			operation.Responses.Add("401", Ref401);
 
 			if (authorizeAttribute is { AdminRole: false, ModeratorRole: false, Scopes.Length: 0 } &&
 			    authenticateAttribute is { AdminRole: false, ModeratorRole: false, Scopes.Length: 0 })
 				return;
 
-			operation.Responses.Remove("403");
-			operation.Responses.Add("403", new OpenApiResponse { Reference = Ref403 });
+			operation.Responses?.Remove("403");
+			operation.Responses ??= [];
+			operation.Responses.Add("403", Ref403);
 		}
 
 		public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
 		{
+			swaggerDoc.Components           ??= new OpenApiComponents();
+			swaggerDoc.Components.Responses ??= new OpenApiResponses();
+
 			if (swaggerDoc.Info.Title == "Mastodon")
 			{
-				swaggerDoc.Components.Responses.Add(Ref401.Id, MastoRes401);
-				swaggerDoc.Components.Responses.Add(Ref403.Id, MastoRes403);
+				swaggerDoc.Components.Responses.Add(Ref401.Reference.Id!, MastoRes401);
+				swaggerDoc.Components.Responses.Add(Ref403.Reference.Id!, MastoRes403);
 			}
 			else
 			{
-				swaggerDoc.Components.Responses.Add(Ref401.Id, WebRes401);
-				swaggerDoc.Components.Responses.Add(Ref403.Id, WebRes403);
+				swaggerDoc.Components.Responses.Add(Ref401.Reference.Id!, WebRes401);
+				swaggerDoc.Components.Responses.Add(Ref403.Reference.Id!, WebRes403);
 			}
 		}
 	}
@@ -249,10 +238,14 @@ public static class SwaggerGenOptionsExtensions
 				var res = new OpenApiResponse
 				{
 					Description = ReasonPhrases.GetReasonPhrase((int)status),
-					Content     = { ["application/json"] = new OpenApiMediaType { Schema = schema } }
+					Content = new Dictionary<string, OpenApiMediaType>
+					{
+						["application/json"] = new() { Schema = schema }
+					}
 				};
 
-				operation.Responses.Remove(((int)status).ToString());
+				operation.Responses?.Remove(((int)status).ToString());
+				operation.Responses ??= [];
 				operation.Responses.Add(((int)status).ToString(), res);
 			}
 		}
@@ -306,7 +299,8 @@ public static class SwaggerGenOptionsExtensions
 					Description = ReasonPhrases.GetReasonPhrase((int)status), Content = content
 				};
 
-				operation.Responses.Remove(((int)status).ToString());
+				operation.Responses?.Remove(((int)status).ToString());
+				operation.Responses ??= [];
 				operation.Responses.Add(((int)status).ToString(), res);
 			}
 		}
@@ -323,7 +317,7 @@ public static class SwaggerGenOptionsExtensions
 
 			operation.RequestBody =
 				GenerateRequestBody(context.ApiDescription, context.SchemaRepository, context.SchemaGenerator);
-			operation.Parameters.Clear();
+			operation.Parameters?.Clear();
 		}
 
 		private static OpenApiRequestBody? GenerateRequestBody(
@@ -371,7 +365,7 @@ public static class SwaggerGenOptionsExtensions
 			};
 		}
 
-		private static OpenApiSchema GenerateSchema(
+		private static IOpenApiSchema GenerateSchema(
 			Type type,
 			SchemaRepository schemaRepository,
 			ISchemaGenerator schemaGenerator,
