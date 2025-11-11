@@ -1,0 +1,52 @@
+<Solution>
+  <Folder Name="/build/">
+    <File Path="Directory.Build.props" />
+    <File Path="global.json" />
+    <File Path="Iceshrimp.Build/Iceshrimp.Build.props" />
+    <File Path="Iceshrimp.Build/Iceshrimp.Build.targets" />
+    <File Path="NuGet.Config" />
+  </Folder>
+  <Folder Name="/build/misc/">
+    <File Path="Dockerfile" />
+    <File Path="Makefile" />
+  </Folder>
+  <Folder Name="/build/misc/ci-workflows/">
+    <File Path=".forgejo/workflows/commit.yaml" />
+    <File Path=".forgejo/workflows/release-artifacts.yaml" />
+    <File Path=".forgejo/workflows/test-build.yaml" />
+  </Folder>
+  <Folder Name="/build/misc/docker/">
+    <File Path=".docker/build.sh" />
+    <File Path=".docker/ci-env-dotnet10-wasm.Dockerfile" />
+    <File Path=".docker/ci-env-dotnet10.Dockerfile" />
+    <File Path=".docker/ci-env-dotnet8-wasm.Dockerfile" />
+    <File Path=".docker/ci-env-dotnet8.Dockerfile" />
+    <File Path=".docker/ci-env-dotnet9-wasm.Dockerfile" />
+    <File Path=".docker/ci-env-dotnet9.Dockerfile" />
+    <File Path=".docker/dotnet-runner-10.0.Dockerfile" />
+    <File Path=".docker/dotnet-runner-8.0.Dockerfile" />
+    <File Path=".docker/dotnet-runner-9.0.Dockerfile" />
+    <File Path=".docker/dotnet-sdk-10.0-alpine-wasm.Dockerfile" />
+    <File Path=".docker/dotnet-sdk-10.0-alpine.Dockerfile" />
+    <File Path=".docker/dotnet-sdk-8.0-alpine.Dockerfile" />
+    <File Path=".docker/dotnet-sdk-8.0-wasm.Dockerfile" />
+    <File Path=".docker/dotnet-sdk-9.0-alpine-wasm.Dockerfile" />
+    <File Path=".docker/dotnet-sdk-9.0-alpine.Dockerfile" />
+  </Folder>
+  <Folder Name="/build/tasks/">
+    <Project Path="Iceshrimp.Build/Iceshrimp.Build.csproj" />
+  </Folder>
+  <Folder Name="/root/">
+    <File Path=".editorconfig" />
+    <File Path="CHANGELOG.md" />
+    <File Path="FEDERATION.md" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="SECURITY.md" />
+  </Folder>
+  <Project Path="Iceshrimp.Backend/Iceshrimp.Backend.csproj" />
+  <Project Path="Iceshrimp.Frontend/Iceshrimp.Frontend.csproj" />
+  <Project Path="Iceshrimp.Parsing/Iceshrimp.Parsing.csproj" />
+  <Project Path="Iceshrimp.Shared/Iceshrimp.Shared.csproj" />
+  <Project Path="Iceshrimp.Tests/Iceshrimp.Tests.csproj" />
+</Solution>
