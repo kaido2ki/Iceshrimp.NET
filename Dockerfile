@@ -7,7 +7,7 @@ ARG AOT=false
 ARG IMAGE=${AOT/true/alpine-wasm}
 ARG IMAGE=${IMAGE/false/alpine}
 
-FROM --platform=$BUILDPLATFORM iceshrimp.dev/iceshrimp/dotnet-sdk:9.0-$IMAGE AS builder
+FROM --platform=$BUILDPLATFORM iceshrimp.dev/iceshrimp/dotnet-sdk:10.0-$IMAGE AS builder
 WORKDIR /src
 ARG BUILDPLATFORM
 ARG AOT=false
@@ -58,7 +58,7 @@ RUN --mount=type=cache,target=/root/.nuget \
 # Enable globalization and time zones:
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
 # final stage/image
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine-composite AS image
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine-composite AS image
 WORKDIR /app
 COPY --from=builder /app .
 USER app
