@@ -8,7 +8,7 @@ jobs:
   test-build:
     runs-on: docker
     container:
-      image: iceshrimp.dev/iceshrimp/ci-env:dotnet9
+      image: iceshrimp.dev/iceshrimp/ci-env:dotnet10
       options: --volume /opt/iceshrimp-cache/nuget:/root/.nuget
     steps:
       - name: Clone repository
