@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 
 namespace Iceshrimp.Backend.Core.Extensions;
@@ -42,7 +43,8 @@ public static class WebApplicationExtensions
 
 	public static IApplicationBuilder UseOpenApiWithOptions(this WebApplication app)
 	{
-		app.MapSwagger("/openapi/{documentName}.{extension:regex(^(json|ya?ml)$)}")
+		app.MapSwagger("/openapi/{documentName}.{extension:regex(^(json|ya?ml)$)}",
+		               o => o.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1)
 		   .CacheOutput(p => p.Expire(TimeSpan.FromHours(12)));
 
 		app.UseSwaggerUI(options =>
