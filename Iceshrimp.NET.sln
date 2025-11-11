@@ -57,6 +57,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{B14D01
 		.docker\build.sh = .docker\build.sh
 		.docker\dotnet-sdk-9.0-alpine-wasm.Dockerfile = .docker\dotnet-sdk-9.0-alpine-wasm.Dockerfile
 		.docker\ci-env-dotnet9.Dockerfile = .docker\ci-env-dotnet9.Dockerfile
+		.docker\ci-env-dotnet10-wasm.Dockerfile = .docker\ci-env-dotnet10-wasm.Dockerfile
+		.docker\ci-env-dotnet10.Dockerfile = .docker\ci-env-dotnet10.Dockerfile
+		.docker\dotnet-runner-10.0.Dockerfile = .docker\dotnet-runner-10.0.Dockerfile
+		.docker\dotnet-sdk-10.0-alpine-wasm.Dockerfile = .docker\dotnet-sdk-10.0-alpine-wasm.Dockerfile
+		.docker\dotnet-sdk-10.0-alpine.Dockerfile = .docker\dotnet-sdk-10.0-alpine.Dockerfile
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Iceshrimp.Parsing", "Iceshrimp.Parsing\Iceshrimp.Parsing.csproj", "{6BB21937-A781-4D2A-B64A-19E985870B38}"
