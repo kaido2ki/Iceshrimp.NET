@@ -223,8 +223,7 @@ public class ActivityFetcherService(
 	{
 		var activity = await FetchActivityAsync(uri, actor, keypair);
 		var note     = activity.OfType<ASNote>().FirstOrDefault();
-		if (note != null)
-			note.VerifiedFetch = true;
+		note?.VerifiedFetch = true;
 		return note;
 	}
 

@@ -543,8 +543,7 @@ public class StatusController(
 			foreach (var attr in request.MediaAttributes)
 			{
 				var file = attachments.FirstOrDefault(p => p.Id == attr.Id);
-				if (file != null)
-					file.Comment = attr.Description;
+				file?.Comment = attr.Description;
 			}
 
 			await db.SaveChangesAsync();
