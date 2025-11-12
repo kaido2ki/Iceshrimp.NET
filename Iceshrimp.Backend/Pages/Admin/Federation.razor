@@ -129,6 +129,16 @@ else
     </EditForm>
 }
 
+<h3>Import/Export</h3>
+@if (IsBlocklist)
+{
+    <button role="link" onclick="exportBlocklist()">Export blocklist</button>
+}
+else
+{
+    <button role="link" onclick="exportAllowlist()">Export allowlist</button>
+}
+
 @code {
     [Inject] public required IOptionsSnapshot<Config.SecuritySection> Options { get; set; }
 

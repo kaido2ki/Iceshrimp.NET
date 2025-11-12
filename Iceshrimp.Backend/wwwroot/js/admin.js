@@ -30,6 +30,30 @@ async function disallowInstance(host, target) {
     await confirm(target, () => callApiMethod(`/api/iceshrimp/admin/instances/${host}/disallow`));
 }
 
+async function downloadFile(blob, filename) {
+    let url = URL.createObjectURL(blob);
+
+    let a = document.createElement('a');
+    a.download = filename;
+    a.href = url;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(() => { URL.revokeObjectURL(url) });
+}
+
+async function exportBlocklist() {
+    let blocks = await callApiMethod("/api/iceshrimp/admin/instances/blocked", "GET").then(res => res.blob());
+    await downloadFile(blocks, "blocklist.json");
+}
+
+async function exportAllowlist() {
+    let allows = await callApiMethod("/api/iceshrimp/admin/instances/allowed", "GET").then(res => res.blob());
+    await downloadFile(allows, "allowlist.json");
+}
+
 async function debubbleInstance(host, target) {
     await confirm(target, () => callApiMethod(`/api/iceshrimp/admin/instances/${host}/debubble`));
 }
