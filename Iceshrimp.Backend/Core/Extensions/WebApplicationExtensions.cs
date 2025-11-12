@@ -50,7 +50,12 @@ public static class WebApplicationExtensions
 		public IApplicationBuilder UseOpenApiWithOptions()
 		{
 			app.MapSwagger("/openapi/{documentName}.{extension:regex(^(json|ya?ml)$)}",
-			               o => o.OpenApiVersion = OpenApiSpecVersion.OpenApi3_1)
+			               o =>
+			               {
+				               // Workaround for https://github.com/domaindrivendev/Swashbuckle.AspNetCore/issues/3649
+				               // Switch to 3_1 when fixed
+				               o.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
+			               })
 			   .CacheOutput(p => p.Expire(TimeSpan.FromHours(12)));
 
 			app.UseSwaggerUI(options =>
