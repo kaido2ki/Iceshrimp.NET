@@ -5,121 +5,142 @@ namespace Iceshrimp.Backend.Core.Extensions;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public static class TaskExtensions
 {
-	public static async Task SafeWaitAsync(this Task task, TimeSpan timeSpan)
+	extension(Task task)
 	{
-		try
+		public async Task SafeWaitAsync(TimeSpan timeSpan)
 		{
-			await task.WaitAsync(timeSpan);
+			try
+			{
+				await task.WaitAsync(timeSpan);
+			}
+			catch (TimeoutException)
+			{
+				// ignored
+			}
 		}
-		catch (TimeoutException)
+
+		public async Task SafeWaitAsync(CancellationToken token)
 		{
-			// ignored
+			try
+			{
+				await task.WaitAsync(token);
+			}
+			catch (TaskCanceledException)
+			{
+				// ignored
+			}
 		}
-	}
 
-	public static async Task SafeWaitAsync(this Task task, CancellationToken token)
-	{
-		try
+		public async Task SafeWaitAsync(CancellationToken token, Action action)
 		{
-			await task.WaitAsync(token);
+			try
+			{
+				await task.WaitAsync(token);
+			}
+			catch (TaskCanceledException)
+			{
+				action();
+			}
 		}
-		catch (TaskCanceledException)
+
+		public async Task SafeWaitAsync(CancellationToken token, Func<Task> action)
 		{
-			// ignored
+			try
+			{
+				await task.WaitAsync(token);
+			}
+			catch (TaskCanceledException)
+			{
+				await action();
+			}
 		}
 	}
 
-	public static async Task SafeWaitAsync(this Task task, CancellationToken token, Action action)
+	extension(Func<Task> factory)
 	{
-		try
+		public List<Task> QueueMany(int n) =>
+			Enumerable.Range(0, n).Select(_ => factory()).ToList();
+	}
+
+	extension<T>(Task<IEnumerable<T>> task)
+	{
+		public async Task<List<T>> ToListAsync()
 		{
-			await task.WaitAsync(token);
+			return (await task).ToList();
 		}
-		catch (TaskCanceledException)
+
+		public async Task<T[]> ToArrayAsync()
 		{
-			action();
+			return (await task).ToArray();
 		}
-	}
 
-	public static async Task SafeWaitAsync(this Task task, CancellationToken token, Func<Task> action)
-	{
-		try
+		public async Task<T?> FirstOrDefaultAsync()
 		{
-			await task.WaitAsync(token);
+			return (await task).FirstOrDefault();
 		}
-		catch (TaskCanceledException)
+	}
+
+	extension(Task task)
+	{
+		public async Task ContinueWithResult(Action continuation)
 		{
-			await action();
+			await task;
+			continuation();
+		}
+
+		public async Task<TNewResult> ContinueWithResult<TNewResult>(
+			Func<TNewResult> continuation
+		)
+		{
+			await task;
+			return continuation();
 		}
 	}
 
-	public static List<Task> QueueMany(this Func<Task> factory, int n) =>
-		Enumerable.Range(0, n).Select(_ => factory()).ToList();
-
-	public static async Task<List<T>> ToListAsync<T>(this Task<IEnumerable<T>> task)
+	extension<TResult>(Task<TResult> task)
 	{
-		return (await task).ToList();
+		public async Task ContinueWithResult(Action<TResult> continuation)
+		{
+			continuation(await task);
+		}
+
+		public async Task<TNewResult> ContinueWithResult<TNewResult>(
+			Func<TResult, TNewResult> continuation
+		)
+		{
+			return continuation(await task);
+		}
 	}
 
-	public static async Task<T[]> ToArrayAsync<T>(this Task<IEnumerable<T>> task)
+	extension(Task task)
 	{
-		return (await task).ToArray();
+		public async Task ContinueWithResult(Func<Task> continuation)
+		{
+			await task;
+			await continuation();
+		}
+
+		public async Task<TNewResult> ContinueWithResult<TNewResult>(
+			Func<Task<TNewResult>> continuation
+		)
+		{
+			await task;
+			return await continuation();
+		}
 	}
 
-	public static async Task<T?> FirstOrDefaultAsync<T>(this Task<IEnumerable<T>> task)
+	extension<TResult>(Task<TResult> task)
 	{
-		return (await task).FirstOrDefault();
-	}
+		public async Task ContinueWithResult(Func<TResult, Task> continuation)
+		{
+			await continuation(await task);
+		}
 
-	public static async Task ContinueWithResult(this Task task, Action continuation)
-	{
-		await task;
-		continuation();
-	}
-
-	public static async Task<TNewResult> ContinueWithResult<TNewResult>(
-		this Task task, Func<TNewResult> continuation
-	)
-	{
-		await task;
-		return continuation();
-	}
-
-	public static async Task ContinueWithResult<TResult>(this Task<TResult> task, Action<TResult> continuation)
-	{
-		continuation(await task);
-	}
-
-	public static async Task<TNewResult> ContinueWithResult<TResult, TNewResult>(
-		this Task<TResult> task, Func<TResult, TNewResult> continuation
-	)
-	{
-		return continuation(await task);
-	}
-
-	public static async Task ContinueWithResult(this Task task, Func<Task> continuation)
-	{
-		await task;
-		await continuation();
-	}
-
-	public static async Task<TNewResult> ContinueWithResult<TNewResult>(
-		this Task task, Func<Task<TNewResult>> continuation
-	)
-	{
-		await task;
-		return await continuation();
-	}
-
-	public static async Task ContinueWithResult<TResult>(this Task<TResult> task, Func<TResult, Task> continuation)
-	{
-		await continuation(await task);
-	}
-
-	public static async Task<TNewResult> ContinueWithResult<TResult, TNewResult>(
-		this Task<TResult> task, Func<TResult, Task<TNewResult>> continuation
-	)
-	{
-		return await continuation(await task);
+		public async Task<TNewResult> ContinueWithResult<TNewResult>(
+			Func<TResult, Task<TNewResult>> continuation
+		)
+		{
+			return await continuation(await task);
+		}
 	}
 }

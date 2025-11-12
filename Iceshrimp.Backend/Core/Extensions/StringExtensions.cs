@@ -10,49 +10,56 @@ public static class StringExtensions
 {
 	private static readonly IdnMapping IdnMapping = new();
 
-	public static bool EqualsInvariant(this string? s1, string? s2) =>
-		string.Equals(s1, s2, StringComparison.InvariantCulture);
-
-	public static bool EqualsIgnoreCase(this string? s1, string s2) =>
-		string.Equals(s1, s2, StringComparison.InvariantCultureIgnoreCase);
-
-	public static string Truncate(this string target, int maxLength)
+	extension(string? s1)
 	{
-		return target[..Math.Min(target.Length, maxLength)];
-	}
-	
-	public static string TruncateEllipsis(this string target, int maxLength)
-	{
-		if (target.Length <= maxLength) return target;
-		return target[..(maxLength-3)] + "...";
+		public bool EqualsInvariant(string? s2) =>
+			string.Equals(s1, s2, StringComparison.InvariantCulture);
+
+		public bool EqualsIgnoreCase(string s2) =>
+			string.Equals(s1, s2, StringComparison.InvariantCultureIgnoreCase);
 	}
 
-	private static string ToPunycode(this string target)
+	extension(string target)
 	{
-		return target.Length > 0 ? IdnMapping.GetAscii(target) : target;
+		public string Truncate(int maxLength)
+		{
+			return target[..Math.Min(target.Length, maxLength)];
+		}
+
+		public string TruncateEllipsis(int maxLength)
+		{
+			if (target.Length <= maxLength) return target;
+			return target[..(maxLength-3)] + "...";
+		}
+
+		private string ToPunycode()
+		{
+			return target.Length > 0 ? IdnMapping.GetAscii(target) : target;
+		}
+
+		public string ToPunycodeLower()
+		{
+			return ToPunycode(target).ToLowerInvariant();
+		}
+
+		public string FromPunycode()
+		{
+			return IdnMapping.GetUnicode(target);
+		}
+
+		public string ToTitleCase() => target switch
+		{
+			null => throw new ArgumentNullException(nameof(target)),
+			""   => throw new ArgumentException(@$"{nameof(target)} cannot be empty", nameof(target)),
+			_    => string.Concat(target[0].ToString().ToUpper(), target.AsSpan(1))
+		};
+
+		public string UrlEncode() => UrlEncoder.Default.Encode(target);
 	}
-
-	public static string ToPunycodeLower(this string target)
-	{
-		return ToPunycode(target).ToLowerInvariant();
-	}
-
-	public static string FromPunycode(this string target)
-	{
-		return IdnMapping.GetUnicode(target);
-	}
-
-	public static string ToTitleCase(this string input) => input switch
-	{
-		null => throw new ArgumentNullException(nameof(input)),
-		""   => throw new ArgumentException(@$"{nameof(input)} cannot be empty", nameof(input)),
-		_    => string.Concat(input[0].ToString().ToUpper(), input.AsSpan(1))
-	};
-
-	public static string UrlEncode(this string input) => UrlEncoder.Default.Encode(input);
 }
 
-[SuppressMessage("ReSharper", "StringCompareToIsCultureSpecific")]
+[SuppressMessage("ReSharper", "StringCompareToIsCultureSpecific", Justification = "SQL")]
+[SuppressMessage("ReSharper", "ConvertToExtensionBlock", Justification = "Projectables")]
 public static class ProjectableStringExtensions
 {
 	[Projectable]
@@ -72,12 +79,15 @@ public static class StringBuilderExtensions
 {
 	private const char NewLineLf = '\n';
 
-	/// <summary>
-	///     Equivalent to .AppendLine, but always uses \n instead of Environment.NewLine
-	/// </summary>
-	public static StringBuilder AppendLineLf(this StringBuilder sb, string? value)
+	extension(StringBuilder sb)
 	{
-		sb.Append(value);
-		return sb.Append(NewLineLf);
+		/// <summary>
+		///     Equivalent to .AppendLine, but always uses \n instead of Environment.NewLine
+		/// </summary>
+		public StringBuilder AppendLineLf(string? value)
+		{
+			sb.Append(value);
+			return sb.Append(NewLineLf);
+		}
 	}
 }

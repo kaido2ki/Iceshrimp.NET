@@ -5,15 +5,18 @@ namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class IPAddressExtensions
 {
-	public static bool IsLoopback(this IPAddress address) => IPAddress.IsLoopback(address);
+	extension(IPAddress address)
+	{
+		public bool IsLoopback() => IPAddress.IsLoopback(address);
 
-	public static bool IsLocalIPv6(this IPAddress address) => address.AddressFamily == AddressFamily.InterNetworkV6 &&
-	                                                          (address.IsIPv6LinkLocal ||
-	                                                           address.IsIPv6SiteLocal ||
-	                                                           address.IsIPv6UniqueLocal);
+		public bool IsLocalIPv6() => address.AddressFamily == AddressFamily.InterNetworkV6 &&
+		                             (address.IsIPv6LinkLocal ||
+		                              address.IsIPv6SiteLocal ||
+		                              address.IsIPv6UniqueLocal);
 
-	public static bool IsLocalIPv4(this IPAddress address) => address.AddressFamily == AddressFamily.InterNetwork &&
-	                                                          IsPrivateIPv4(address.GetAddressBytes());
+		public bool IsLocalIPv4() => address.AddressFamily == AddressFamily.InterNetwork &&
+		                             IsPrivateIPv4(address.GetAddressBytes());
+	}
 
 	private static bool IsPrivateIPv4(byte[] ipv4Bytes)
 	{

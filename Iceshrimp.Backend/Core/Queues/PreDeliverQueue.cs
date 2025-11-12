@@ -163,34 +163,37 @@ file class InboxQueryResult : IEquatable<InboxQueryResult>
 
 file static class QueryableExtensions
 {
-	public static IQueryable<InboxQueryResult> SkipDeadInstances(
-		this IQueryable<InboxQueryResult> query, ASActivity activity, DatabaseContext db
-	)
+	extension(IQueryable<InboxQueryResult> query)
 	{
-		return activity is ASFollow
-			? query.Where(user => !db.Instances.Any(p => p.Host == user.Host && p.IsSuspended))
-			: query.Where(user => !db.Instances.Any(p => p.Host == user.Host &&
-			                                             ((p.IsNotResponding &&
-			                                               p.LastCommunicatedAt <
-			                                               DateTime.UtcNow - TimeSpan.FromDays(7)) ||
-			                                              p.IsSuspended)));
-	}
-
-	public static IQueryable<InboxQueryResult> SkipBlockedInstances(
-		this IQueryable<InboxQueryResult> query, Enums.FederationMode mode, DatabaseContext db
-	)
-	{
-		// @formatter:off
-		Expression<Func<InboxQueryResult, bool>> expr = mode switch
+		public IQueryable<InboxQueryResult> SkipDeadInstances(
+			ASActivity activity, DatabaseContext db
+		)
 		{
-			Enums.FederationMode.BlockList => u => u.Host == null || !db.BlockedInstances.Any(p => u.Host == p.Host || u.Host.EndsWith("." + p.Host)),
-			Enums.FederationMode.AllowList => u => u.Host == null ||  db.AllowedInstances.Any(p => u.Host == p.Host || u.Host.EndsWith("." + p.Host)),
+			return activity is ASFollow
+				? query.Where(user => !db.Instances.Any(p => p.Host == user.Host && p.IsSuspended))
+				: query.Where(user => !db.Instances.Any(p => p.Host == user.Host &&
+				                                             ((p.IsNotResponding &&
+				                                               p.LastCommunicatedAt <
+				                                               DateTime.UtcNow - TimeSpan.FromDays(7)) ||
+				                                              p.IsSuspended)));
+		}
 
-			_ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
-		};
-		// @formatter:on
+		public IQueryable<InboxQueryResult> SkipBlockedInstances(
+			Enums.FederationMode mode, DatabaseContext db
+		)
+		{
+			// @formatter:off
+			Expression<Func<InboxQueryResult, bool>> expr = mode switch
+			{
+				Enums.FederationMode.BlockList => u => u.Host == null || !db.BlockedInstances.Any(p => u.Host == p.Host || u.Host.EndsWith("." + p.Host)),
+				Enums.FederationMode.AllowList => u => u.Host == null ||  db.AllowedInstances.Any(p => u.Host == p.Host || u.Host.EndsWith("." + p.Host)),
 
-		return query.Where(expr);
+				_ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+			};
+			// @formatter:on
+
+			return query.Where(expr);
+		}
 	}
 }
 

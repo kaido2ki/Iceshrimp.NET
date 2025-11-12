@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class EnumerableExtensions
@@ -37,23 +39,27 @@ public static class EnumerableExtensions
 		foreach (var task in tasks) await task;
 	}
 
-	public static bool IsDisjoint<T>(this IEnumerable<T> x, IEnumerable<T> y)
+	extension<T>(IEnumerable<T> x)
 	{
-		return x.All(item => !y.Contains(item));
+		public bool IsDisjoint(IEnumerable<T> y)
+		{
+			return x.All(item => !y.Contains(item));
+		}
+
+		public bool Intersects(IEnumerable<T> y)
+		{
+			return x.Any(y.Contains);
+		}
+
+		public bool IsEquivalent(IEnumerable<T> y)
+		{
+			var xArray = x as T[] ?? x.ToArray();
+			var yArray = y as T[] ?? y.ToArray();
+			return xArray.Length == yArray.Length && xArray.All(yArray.Contains);
+		}
 	}
 
-	public static bool Intersects<T>(this IEnumerable<T> x, IEnumerable<T> y)
-	{
-		return x.Any(y.Contains);
-	}
-
-	public static bool IsEquivalent<T>(this IEnumerable<T> x, IEnumerable<T> y)
-	{
-		var xArray = x as T[] ?? x.ToArray();
-		var yArray = y as T[] ?? y.ToArray();
-		return xArray.Length == yArray.Length && xArray.All(yArray.Contains);
-	}
-
+	[SuppressMessage("ReSharper", "MoveToExtensionBlock", Justification = "Nullability does not match")]
 	public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> @enum) => @enum.OfType<T>();
 
 	public static IEnumerable<T> StructNotNull<T>(this IEnumerable<T?> @enum) where T : struct =>

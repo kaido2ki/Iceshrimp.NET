@@ -171,14 +171,17 @@ public static partial class HttpContextExtensions
 {
 	private const string ActorKey = "auth-fetch-user";
 
-	internal static void SetActor(this HttpContext ctx, User actor)
+	extension(HttpContext ctx)
 	{
-		ctx.Items.Add(ActorKey, actor);
-	}
+		internal void SetActor(User actor)
+		{
+			ctx.Items.Add(ActorKey, actor);
+		}
 
-	public static User? GetActor(this HttpContext ctx)
-	{
-		ctx.Items.TryGetValue(ActorKey, out var actor);
-		return actor as User;
+		public User? GetActor()
+		{
+			ctx.Items.TryGetValue(ActorKey, out var actor);
+			return actor as User;
+		}
 	}
 }

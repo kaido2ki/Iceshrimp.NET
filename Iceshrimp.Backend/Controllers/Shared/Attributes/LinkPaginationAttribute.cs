@@ -89,15 +89,18 @@ public static class HttpContextExtensions
 {
 	private const string Key = "link-pagination";
 
-	internal static void SetPaginationData(this HttpContext ctx, IEnumerable<IIdentifiable> entities)
+	extension(HttpContext ctx)
 	{
-		ctx.Items.Add(Key, entities);
-	}
+		internal void SetPaginationData(IEnumerable<IIdentifiable> entities)
+		{
+			ctx.Items.Add(Key, entities);
+		}
 
-	public static IEnumerable<IIdentifiable>? GetPaginationData(this HttpContext ctx)
-	{
-		ctx.Items.TryGetValue(Key, out var entities);
-		return entities as IEnumerable<IIdentifiable>;
+		public IEnumerable<IIdentifiable>? GetPaginationData()
+		{
+			ctx.Items.TryGetValue(Key, out var entities);
+			return entities as IEnumerable<IIdentifiable>;
+		}
 	}
 }
 

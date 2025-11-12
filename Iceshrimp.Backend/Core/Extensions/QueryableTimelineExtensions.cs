@@ -15,41 +15,44 @@ public static class QueryableTimelineExtensions
 
 	private const string Prefix = "following-query-heuristic";
 
-	public static IQueryable<Note> FilterByFollowingAndOwn(
-		this IQueryable<Note> query, User user, DatabaseContext db, int heuristic
-	)
+	extension(IQueryable<Note> query)
 	{
-		var q = heuristic < Cutoff
-			? query.Where(FollowingAndOwnLowFreqExpr(user, db))
-			: query.Where(note => note.User == user || note.User.IsFollowedBy(user));
+		public IQueryable<Note> FilterByFollowingAndOwn(
+			User user, DatabaseContext db, int heuristic
+		)
+		{
+			var q = heuristic < Cutoff
+				? query.Where(FollowingAndOwnLowFreqExpr(user, db))
+				: query.Where(note => note.User == user || note.User.IsFollowedBy(user));
 		
-		if (user.UserSettings?.HideRepliesNotFollowing == true)
-			q = q.Where(note => note.User == user || note.MastoReplyUser == null || note.MastoReplyUser.IsFollowedBy(user));
+			if (user.UserSettings?.HideRepliesNotFollowing == true)
+				q = q.Where(note => note.User == user || note.MastoReplyUser == null || note.MastoReplyUser.IsFollowedBy(user));
 
-		return q;
-	}
+			return q;
+		}
 
-	public static IQueryable<Note> FilterByPublicFollowingAndOwn(
-		this IQueryable<Note> query, User user, DatabaseContext db, int heuristic
-	)
-	{
-		return heuristic < Cutoff
-			? query.Where(FollowingAndOwnLowFreqExpr(user, db).Or(p => p.Visibility == Note.NoteVisibility.Public))
-			: query.Where(note => note.Visibility == Note.NoteVisibility.Public
-			                      || note.User == user
-			                      || note.User.IsFollowedBy(user));
-	}
+		public IQueryable<Note> FilterByPublicFollowingAndOwn(
+			User user, DatabaseContext db, int heuristic
+		)
+		{
+			return heuristic < Cutoff
+				? query.Where(FollowingAndOwnLowFreqExpr(user, db).Or(p => p.Visibility == Note.NoteVisibility.Public))
+				: query.Where(note => note.Visibility == Note.NoteVisibility.Public
+				                      || note.User == user
+				                      || note.User.IsFollowedBy(user));
+		}
 
-	public static IQueryable<Note> FilterByFollowingOwnAndLocal(
-		this IQueryable<Note> query, User user, DatabaseContext db, int heuristic
-	)
-	{
-		return heuristic < Cutoff
-			? query.Where(FollowingAndOwnLowFreqExpr(user, db)
-				              .Or(p => p.UserHost == null && p.Visibility == Note.NoteVisibility.Public))
-			: query.Where(note => note.User == user
-			                      || note.User.IsFollowedBy(user)
-			                      || (note.UserHost == null && note.Visibility == Note.NoteVisibility.Public));
+		public IQueryable<Note> FilterByFollowingOwnAndLocal(
+			User user, DatabaseContext db, int heuristic
+		)
+		{
+			return heuristic < Cutoff
+				? query.Where(FollowingAndOwnLowFreqExpr(user, db)
+					              .Or(p => p.UserHost == null && p.Visibility == Note.NoteVisibility.Public))
+				: query.Where(note => note.User == user
+				                      || note.User.IsFollowedBy(user)
+				                      || (note.UserHost == null && note.Visibility == Note.NoteVisibility.Public));
+		}
 	}
 
 	private static Expression<Func<Note,bool>> FollowingAndOwnLowFreqExpr(User user, DatabaseContext db)

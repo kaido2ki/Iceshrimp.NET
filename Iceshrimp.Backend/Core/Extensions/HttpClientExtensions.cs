@@ -4,21 +4,24 @@ public static class HttpClientExtensions
 {
 	private static readonly HttpRequestOptionsKey<bool?> AutoRedirectOptionsKey = new("RequestAutoRedirect");
 
-	public static HttpRequestMessage DisableAutoRedirects(this HttpRequestMessage request)
+	extension(HttpRequestMessage request)
 	{
-		request.SetAutoRedirect(false);
-		return request;
-	}
+		public HttpRequestMessage DisableAutoRedirects()
+		{
+			request.SetAutoRedirect(false);
+			return request;
+		}
 
-	private static void SetAutoRedirect(this HttpRequestMessage request, bool autoRedirect)
-	{
-		request.Options.Set(AutoRedirectOptionsKey, autoRedirect);
-	}
+		private void SetAutoRedirect(bool autoRedirect)
+		{
+			request.Options.Set(AutoRedirectOptionsKey, autoRedirect);
+		}
 
-	public static bool? GetAutoRedirect(this HttpRequestMessage request)
-	{
-		request.Options.TryGetValue(AutoRedirectOptionsKey, out var value);
-		return value;
+		public bool? GetAutoRedirect()
+		{
+			request.Options.TryGetValue(AutoRedirectOptionsKey, out var value);
+			return value;
+		}
 	}
 
 	public static HttpMessageHandler? GetMostInnerHandler(this HttpMessageHandler? self)

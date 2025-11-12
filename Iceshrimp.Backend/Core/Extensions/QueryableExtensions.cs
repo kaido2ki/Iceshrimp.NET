@@ -18,265 +18,261 @@ namespace Iceshrimp.Backend.Core.Extensions;
 
 public static class QueryableExtensions
 {
-	public static IQueryable<T> Paginate<T>(
-		this IQueryable<T> query,
-		MastodonPaginationQuery pq,
-		int defaultLimit,
-		int maxLimit
-	) where T : IIdentifiable
+	extension<T>(IQueryable<T> query) where T : IIdentifiable
 	{
-		if (pq.Limit is < 1)
-			throw GracefulException.BadRequest("Limit cannot be less than 1");
-
-		if (pq is { SinceId: not null, MinId: not null })
-			throw GracefulException.BadRequest("Can't use sinceId and minId params simultaneously");
-
-		// @formatter:off
-		query = pq switch
+		public IQueryable<T> Paginate(
+			MastodonPaginationQuery pq,
+			int defaultLimit,
+			int maxLimit
+		)
 		{
-			{ SinceId: not null, MaxId: not null } => query.Where(p => p.Id.IsGreaterThan(pq.SinceId) && p.Id.IsLessThan(pq.MaxId))
-			                                               .OrderByDescending(p => p.Id),
-			{ MinId: not null, MaxId: not null }   => query.Where(p => p.Id.IsGreaterThan(pq.MinId) && p.Id.IsLessThan(pq.MaxId))
-			                                               .OrderBy(p => p.Id),
-			{ SinceId: not null }                  => query.Where(p => p.Id.IsGreaterThan(pq.SinceId))
-			                                               .OrderByDescending(p => p.Id),
-			{ MinId: not null }                    => query.Where(p => p.Id.IsGreaterThan(pq.MinId))
-			                                               .OrderBy(p => p.Id),
-			{ MaxId: not null }                    => query.Where(p => p.Id.IsLessThan(pq.MaxId))
-			                                               .OrderByDescending(p => p.Id),
-			_                                      => query.OrderByDescending(p => p.Id)
-		};
-		// @formatter:on
+			if (pq.Limit is < 1)
+				throw GracefulException.BadRequest("Limit cannot be less than 1");
 
-		return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
-	}
+			if (pq is { SinceId: not null, MinId: not null })
+				throw GracefulException.BadRequest("Can't use sinceId and minId params simultaneously");
 
-	public static IQueryable<T> Paginate<T>(
-		this IQueryable<T> query,
-		Expression<Func<T, string>> predicate,
-		MastodonPaginationQuery pq,
-		int defaultLimit,
-		int maxLimit
-	) where T : IIdentifiable
-	{
-		if (pq.Limit is < 1)
-			throw GracefulException.BadRequest("Limit cannot be less than 1");
+			// @formatter:off
+			query = pq switch
+			{
+				{ SinceId: not null, MaxId: not null } => query.Where(p => p.Id.IsGreaterThan(pq.SinceId) && p.Id.IsLessThan(pq.MaxId))
+				                                               .OrderByDescending(p => p.Id),
+				{ MinId: not null, MaxId: not null }   => query.Where(p => p.Id.IsGreaterThan(pq.MinId) && p.Id.IsLessThan(pq.MaxId))
+				                                               .OrderBy(p => p.Id),
+				{ SinceId: not null }                  => query.Where(p => p.Id.IsGreaterThan(pq.SinceId))
+				                                               .OrderByDescending(p => p.Id),
+				{ MinId: not null }                    => query.Where(p => p.Id.IsGreaterThan(pq.MinId))
+				                                               .OrderBy(p => p.Id),
+				{ MaxId: not null }                    => query.Where(p => p.Id.IsLessThan(pq.MaxId))
+				                                               .OrderByDescending(p => p.Id),
+				_                                      => query.OrderByDescending(p => p.Id)
+			};
+			// @formatter:on
 
-		if (pq is { SinceId: not null, MinId: not null })
-			throw GracefulException.BadRequest("Can't use sinceId and minId params simultaneously");
-
-		// @formatter:off
-		query = pq switch
-		{
-			{ SinceId: not null, MaxId: not null } => query.Where(predicate.Compose(id => id.IsGreaterThan(pq.SinceId) && id.IsLessThan(pq.MaxId)))
-			                                               .OrderByDescending(predicate),
-			{ MinId: not null, MaxId: not null }   => query.Where(predicate.Compose(id => id.IsGreaterThan(pq.MinId) && id.IsLessThan(pq.MaxId)))
-			                                               .OrderBy(predicate),
-			{ SinceId: not null }                  => query.Where(predicate.Compose(id => id.IsGreaterThan(pq.SinceId)))
-			                                               .OrderByDescending(predicate),
-			{ MinId: not null }                    => query.Where(predicate.Compose(id => id.IsGreaterThan(pq.MinId)))
-			                                               .OrderBy(predicate),
-			{ MaxId: not null }                    => query.Where(predicate.Compose(id => id.IsLessThan(pq.MaxId)))
-			                                               .OrderByDescending(predicate),
-			_                                      => query.OrderByDescending(predicate)
-		};
-		// @formatter:on
-
-		return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
-	}
-
-	public static IQueryable<T> Paginate<T>(
-		this IQueryable<T> query,
-		Expression<Func<T, long>> predicate,
-		MastodonPaginationQuery pq,
-		int defaultLimit,
-		int maxLimit
-	) where T : IIdentifiable
-	{
-		if (pq.Limit is < 1)
-			throw GracefulException.BadRequest("Limit cannot be less than 1");
-
-		if (pq is { SinceId: not null, MinId: not null })
-			throw GracefulException.BadRequest("Can't use sinceId and minId params simultaneously");
-
-		long? sinceId = null;
-		long? minId   = null;
-		long? maxId   = null;
-
-		if (pq.SinceId != null)
-		{
-			if (!long.TryParse(pq.SinceId, out var res))
-				throw GracefulException.BadRequest("sinceId must be an integer");
-			sinceId = res;
+			return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
 		}
 
-		if (pq.MinId != null)
+		public IQueryable<T> Paginate(
+			Expression<Func<T, string>> predicate,
+			MastodonPaginationQuery pq,
+			int defaultLimit,
+			int maxLimit
+		)
 		{
-			if (!long.TryParse(pq.MinId, out var res))
-				throw GracefulException.BadRequest("minId must be an integer");
-			minId = res;
+			if (pq.Limit is < 1)
+				throw GracefulException.BadRequest("Limit cannot be less than 1");
+
+			if (pq is { SinceId: not null, MinId: not null })
+				throw GracefulException.BadRequest("Can't use sinceId and minId params simultaneously");
+
+			// @formatter:off
+			query = pq switch
+			{
+				{ SinceId: not null, MaxId: not null } => query.Where(predicate.Compose(id => id.IsGreaterThan(pq.SinceId) && id.IsLessThan(pq.MaxId)))
+				                                               .OrderByDescending(predicate),
+				{ MinId: not null, MaxId: not null }   => query.Where(predicate.Compose(id => id.IsGreaterThan(pq.MinId) && id.IsLessThan(pq.MaxId)))
+				                                               .OrderBy(predicate),
+				{ SinceId: not null }                  => query.Where(predicate.Compose(id => id.IsGreaterThan(pq.SinceId)))
+				                                               .OrderByDescending(predicate),
+				{ MinId: not null }                    => query.Where(predicate.Compose(id => id.IsGreaterThan(pq.MinId)))
+				                                               .OrderBy(predicate),
+				{ MaxId: not null }                    => query.Where(predicate.Compose(id => id.IsLessThan(pq.MaxId)))
+				                                               .OrderByDescending(predicate),
+				_                                      => query.OrderByDescending(predicate)
+			};
+			// @formatter:on
+
+			return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
 		}
 
-		if (pq.MaxId != null)
+		public IQueryable<T> Paginate(
+			Expression<Func<T, long>> predicate,
+			MastodonPaginationQuery pq,
+			int defaultLimit,
+			int maxLimit
+		)
 		{
-			if (!long.TryParse(pq.MaxId, out var res))
-				throw GracefulException.BadRequest("maxId must be an integer");
-			maxId = res;
+			if (pq.Limit is < 1)
+				throw GracefulException.BadRequest("Limit cannot be less than 1");
+
+			if (pq is { SinceId: not null, MinId: not null })
+				throw GracefulException.BadRequest("Can't use sinceId and minId params simultaneously");
+
+			long? sinceId = null;
+			long? minId   = null;
+			long? maxId   = null;
+
+			if (pq.SinceId != null)
+			{
+				if (!long.TryParse(pq.SinceId, out var res))
+					throw GracefulException.BadRequest("sinceId must be an integer");
+				sinceId = res;
+			}
+
+			if (pq.MinId != null)
+			{
+				if (!long.TryParse(pq.MinId, out var res))
+					throw GracefulException.BadRequest("minId must be an integer");
+				minId = res;
+			}
+
+			if (pq.MaxId != null)
+			{
+				if (!long.TryParse(pq.MaxId, out var res))
+					throw GracefulException.BadRequest("maxId must be an integer");
+				maxId = res;
+			}
+
+			// @formatter:off
+			query = pq switch
+			{
+				{ SinceId: not null, MaxId: not null } => query.Where(predicate.Compose(id => id > sinceId && id < maxId))
+				                                               .OrderByDescending(predicate),
+				{ MinId: not null, MaxId: not null }   => query.Where(predicate.Compose(id => id > minId && id < maxId))
+				                                               .OrderBy(predicate),
+				{ SinceId: not null }                  => query.Where(predicate.Compose(id => id > sinceId))
+				                                               .OrderByDescending(predicate),
+				{ MinId: not null }                    => query.Where(predicate.Compose(id => id > minId))
+				                                               .OrderBy(predicate),
+				{ MaxId: not null }                    => query.Where(predicate.Compose(id => id < maxId))
+				                                               .OrderByDescending(predicate),
+				_                                      => query.OrderByDescending(predicate)
+			};
+			// @formatter:on
+
+			return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
 		}
 
-		// @formatter:off
-		query = pq switch
+		public IQueryable<T> Paginate(
+			PaginationQuery pq,
+			int defaultLimit,
+			int maxLimit
+		)
 		{
-			{ SinceId: not null, MaxId: not null } => query.Where(predicate.Compose(id => id > sinceId && id < maxId))
-			                                               .OrderByDescending(predicate),
-			{ MinId: not null, MaxId: not null }   => query.Where(predicate.Compose(id => id > minId && id < maxId))
-			                                               .OrderBy(predicate),
-			{ SinceId: not null }                  => query.Where(predicate.Compose(id => id > sinceId))
-			                                               .OrderByDescending(predicate),
-			{ MinId: not null }                    => query.Where(predicate.Compose(id => id > minId))
-			                                               .OrderBy(predicate),
-			{ MaxId: not null }                    => query.Where(predicate.Compose(id => id < maxId))
-			                                               .OrderByDescending(predicate),
-			_                                      => query.OrderByDescending(predicate)
-		};
-		// @formatter:on
+			if (pq.Limit is < 1)
+				throw GracefulException.BadRequest("Limit cannot be less than 1");
 
-		return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
-	}
+			// @formatter:off
+			query = pq switch
+			{
+				{ MinId: not null, MaxId: not null } => query.Where(p => p.Id.IsGreaterThan(pq.MinId) && p.Id.IsLessThan(pq.MaxId))
+				                                             .OrderBy(p => p.Id),
+				{ MinId: not null }                  => query.Where(p => p.Id.IsGreaterThan(pq.MinId))
+				                                             .OrderBy(p => p.Id),
+				{ MaxId: not null }                  => query.Where(p => p.Id.IsLessThan(pq.MaxId))
+				                                             .OrderByDescending(p => p.Id),
+				_                                    => query.OrderByDescending(p => p.Id)
+			};
+			// @formatter:on
 
-	public static IQueryable<T> Paginate<T>(
-		this IQueryable<T> query,
-		PaginationQuery pq,
-		int defaultLimit,
-		int maxLimit
-	) where T : IIdentifiable
-	{
-		if (pq.Limit is < 1)
-			throw GracefulException.BadRequest("Limit cannot be less than 1");
+			return query.Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
+		}
 
-		// @formatter:off
-		query = pq switch
+		public IQueryable<T> Paginate(
+			MastodonPaginationQuery pq,
+			ControllerContext context
+		)
 		{
-			{ MinId: not null, MaxId: not null } => query.Where(p => p.Id.IsGreaterThan(pq.MinId) && p.Id.IsLessThan(pq.MaxId))
-			                                             .OrderBy(p => p.Id),
-			{ MinId: not null }                  => query.Where(p => p.Id.IsGreaterThan(pq.MinId))
-			                                             .OrderBy(p => p.Id),
-			{ MaxId: not null }                  => query.Where(p => p.Id.IsLessThan(pq.MaxId))
-			                                             .OrderByDescending(p => p.Id),
-			_                                    => query.OrderByDescending(p => p.Id)
-		};
-		// @formatter:on
+			var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
+			if (attr == null)
+				throw new Exception("Route doesn't have a IPaginationAttribute");
 
-		return query.Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
+			return Paginate(query, pq, attr.DefaultLimit, attr.MaxLimit);
+		}
+
+		public IQueryable<T> PaginateByOffset(
+			MastodonPaginationQuery pq,
+			int defaultLimit,
+			int maxLimit
+		)
+		{
+			if (pq.Limit is < 1)
+				throw GracefulException.BadRequest("Limit cannot be less than 1");
+
+			return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
+		}
+
+		public IQueryable<T> PaginateByOffset(
+			MastodonPaginationQuery pq,
+			ControllerContext context
+		)
+		{
+			var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
+			if (attr == null)
+				throw new Exception("Route doesn't have a IPaginationAttribute");
+
+			return PaginateByOffset(query, pq, attr.DefaultLimit, attr.MaxLimit);
+		}
+
+		public IQueryable<T> Paginate(
+			Expression<Func<T, string>> predicate,
+			MastodonPaginationQuery pq,
+			ControllerContext context
+		)
+		{
+			var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
+			if (attr == null)
+				throw new Exception("Route doesn't have a IPaginationAttribute");
+
+			return Paginate(query, predicate, pq, attr.DefaultLimit, attr.MaxLimit);
+		}
+
+		public IQueryable<T> Paginate(
+			Expression<Func<T, long>> predicate,
+			MastodonPaginationQuery pq,
+			ControllerContext context
+		)
+		{
+			var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
+			if (attr == null)
+				throw new Exception("Route doesn't have a IPaginationAttribute");
+
+			return Paginate(query, predicate, pq, attr.DefaultLimit, attr.MaxLimit);
+		}
+
+		public IQueryable<T> Paginate(
+			PaginationQuery pq,
+			ControllerContext context
+		)
+		{
+			var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
+			if (attr == null)
+				throw new Exception("Route doesn't have a IPaginationAttribute");
+
+			return Paginate(query, pq, attr.DefaultLimit, attr.MaxLimit);
+		}
+
+		public IQueryable<EntityWrapper<TResult>> Wrap<TResult>(
+			Expression<Func<T, TResult>> predicate
+		)
+		{
+			return query.Select(p => new EntityWrapper<TResult> { Id = p.Id, Entity = predicate.Compile().Invoke(p) });
+		}
 	}
 
-	public static IQueryable<T> Paginate<T>(
-		this IQueryable<T> query,
-		MastodonPaginationQuery pq,
-		ControllerContext context
-	) where T : IIdentifiable
+	extension(IQueryable<Note> query)
 	{
-		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
-		if (attr == null)
-			throw new Exception("Route doesn't have a IPaginationAttribute");
+		public IQueryable<Note> HasVisibility(Note.NoteVisibility visibility)
+		{
+			return query.Where(note => note.Visibility == visibility);
+		}
 
-		return Paginate(query, pq, attr.DefaultLimit, attr.MaxLimit);
-	}
+		public IQueryable<Note> FilterByUser(User user)
+		{
+			return query.Where(note => note.User == user);
+		}
 
-	public static IQueryable<T> PaginateByOffset<T>(
-		this IQueryable<T> query,
-		MastodonPaginationQuery pq,
-		int defaultLimit,
-		int maxLimit
-	) where T : IIdentifiable
-	{
-		if (pq.Limit is < 1)
-			throw GracefulException.BadRequest("Limit cannot be less than 1");
+		public IQueryable<Note> FilterByUser(string? userId)
+		{
+			return userId != null ? query.Where(note => note.UserId == userId) : query;
+		}
 
-		return query.Skip(pq.Offset ?? 0).Take(Math.Min(pq.Limit ?? defaultLimit, maxLimit));
-	}
-
-	public static IQueryable<T> PaginateByOffset<T>(
-		this IQueryable<T> query,
-		MastodonPaginationQuery pq,
-		ControllerContext context
-	) where T : IIdentifiable
-	{
-		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
-		if (attr == null)
-			throw new Exception("Route doesn't have a IPaginationAttribute");
-
-		return PaginateByOffset(query, pq, attr.DefaultLimit, attr.MaxLimit);
-	}
-
-	public static IQueryable<T> Paginate<T>(
-		this IQueryable<T> query,
-		Expression<Func<T, string>> predicate,
-		MastodonPaginationQuery pq,
-		ControllerContext context
-	) where T : IIdentifiable
-	{
-		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
-		if (attr == null)
-			throw new Exception("Route doesn't have a IPaginationAttribute");
-
-		return Paginate(query, predicate, pq, attr.DefaultLimit, attr.MaxLimit);
-	}
-
-	public static IQueryable<T> Paginate<T>(
-		this IQueryable<T> query,
-		Expression<Func<T, long>> predicate,
-		MastodonPaginationQuery pq,
-		ControllerContext context
-	) where T : IIdentifiable
-	{
-		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
-		if (attr == null)
-			throw new Exception("Route doesn't have a IPaginationAttribute");
-
-		return Paginate(query, predicate, pq, attr.DefaultLimit, attr.MaxLimit);
-	}
-
-	public static IQueryable<T> Paginate<T>(
-		this IQueryable<T> query,
-		PaginationQuery pq,
-		ControllerContext context
-	) where T : IIdentifiable
-	{
-		var attr = context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IPaginationAttribute>();
-		if (attr == null)
-			throw new Exception("Route doesn't have a IPaginationAttribute");
-
-		return Paginate(query, pq, attr.DefaultLimit, attr.MaxLimit);
-	}
-
-	public static IQueryable<EntityWrapper<TResult>> Wrap<TSource, TResult>(
-		this IQueryable<TSource> query, Expression<Func<TSource, TResult>> predicate
-	) where TSource : IIdentifiable
-	{
-		return query.Select(p => new EntityWrapper<TResult> { Id = p.Id, Entity = predicate.Compile().Invoke(p) });
-	}
-
-	public static IQueryable<Note> HasVisibility(this IQueryable<Note> query, Note.NoteVisibility visibility)
-	{
-		return query.Where(note => note.Visibility == visibility);
-	}
-
-	public static IQueryable<Note> FilterByUser(this IQueryable<Note> query, User user)
-	{
-		return query.Where(note => note.User == user);
-	}
-
-	public static IQueryable<Note> FilterByUser(this IQueryable<Note> query, string? userId)
-	{
-		return userId != null ? query.Where(note => note.UserId == userId) : query;
-	}
-
-	public static IQueryable<Note> EnsureVisibleFor(this IQueryable<Note> query, User? user)
-	{
-		return user == null
-			? query.Where(note => note.VisibilityIsPublicOrHome && !note.LocalOnly)
-			: query.Where(note => note.IsVisibleFor(user));
+		public IQueryable<Note> EnsureVisibleFor(User? user)
+		{
+			return user == null
+				? query.Where(note => note.VisibilityIsPublicOrHome && !note.LocalOnly)
+				: query.Where(note => note.IsVisibleFor(user));
+		}
 	}
 
 	public static IQueryable<TSource> EnsureNoteVisibilityFor<TSource>(
@@ -288,21 +284,24 @@ public static class QueryableExtensions
 			                   : predicate.Compose(p => p == null || p.IsVisibleFor(user)));
 	}
 
-	public static IQueryable<Note> PrecomputeVisibilities(this IQueryable<Note> query, User? user)
+	extension(IQueryable<Note> query)
 	{
-		return query.Select(p => p.WithPrecomputedVisibilities(p.Reply != null && p.Reply.IsVisibleFor(user),
-		                                                       p.Renote != null && p.Renote.IsVisibleFor(user),
-		                                                       p.Renote != null &&
-		                                                       p.Renote.Renote != null &&
-		                                                       p.Renote.Renote.IsVisibleFor(user)));
-	}
+		public IQueryable<Note> PrecomputeVisibilities(User? user)
+		{
+			return query.Select(p => p.WithPrecomputedVisibilities(p.Reply != null && p.Reply.IsVisibleFor(user),
+			                                                       p.Renote != null && p.Renote.IsVisibleFor(user),
+			                                                       p.Renote != null &&
+			                                                       p.Renote.Renote != null &&
+			                                                       p.Renote.Renote.IsVisibleFor(user)));
+		}
 
-	public static IQueryable<Note> PrecomputeNoteContextVisibilities(this IQueryable<Note> query, User? user)
-	{
-		return query.Select(p => p.WithPrecomputedVisibilities(p.Reply != null && p.Reply.IsVisibleFor(user),
-		                                                       p.Renote != null && p.Renote.IsVisibleFor(user),
-		                                                       p.Renote != null &&
-		                                                       false));
+		public IQueryable<Note> PrecomputeNoteContextVisibilities(User? user)
+		{
+			return query.Select(p => p.WithPrecomputedVisibilities(p.Reply != null && p.Reply.IsVisibleFor(user),
+			                                                       p.Renote != null && p.Renote.IsVisibleFor(user),
+			                                                       p.Renote != null &&
+			                                                       false));
+		}
 	}
 
 	public static IQueryable<Notification> PrecomputeNoteVisibilities(this IQueryable<Notification> query, User user)
@@ -338,21 +337,24 @@ public static class QueryableExtensions
 		return query.Where(p => !hidden.Contains(p.NotifierId) && (p.Note == null || !hidden.Contains(p.Note.Id)));
 	}
 
-	public static IQueryable<Note> FilterHiddenConversations(this IQueryable<Note> query, User user, DatabaseContext db)
+	extension(IQueryable<Note> query)
 	{
-		//TODO: handle muted instances
+		public IQueryable<Note> FilterHiddenConversations(User user, DatabaseContext db)
+		{
+			//TODO: handle muted instances
 
-		var blocks = db.Blockings.Where(i => i.Blocker == user).Select(p => p.BlockeeId);
-		var mutes  = db.Mutings.Where(i => i.Muter == user).Select(p => p.MuteeId);
-		var hidden = blocks.Concat(mutes);
+			var blocks = db.Blockings.Where(i => i.Blocker == user).Select(p => p.BlockeeId);
+			var mutes  = db.Mutings.Where(i => i.Muter == user).Select(p => p.MuteeId);
+			var hidden = blocks.Concat(mutes);
 
-		return query.Where(p => p.VisibleUserIds.IsDisjoint(hidden));
-	}
+			return query.Where(p => p.VisibleUserIds.IsDisjoint(hidden));
+		}
 
-	public static IQueryable<Note> FilterMutedThreads(this IQueryable<Note> query, User user, DatabaseContext db)
-	{
-		return query.Where(p => p.User == user ||
-		                        !db.NoteThreadMutings.Any(m => m.User == user && m.ThreadId == p.ThreadId));
+		public IQueryable<Note> FilterMutedThreads(User user, DatabaseContext db)
+		{
+			return query.Where(p => p.User == user ||
+			                        !db.NoteThreadMutings.Any(m => m.User == user && m.ThreadId == p.ThreadId));
+		}
 	}
 
 	public static IQueryable<Notification> FilterMutedThreads(
@@ -568,34 +570,37 @@ public static class QueryableExtensions
 		return query;
 	}
 
-	public static IQueryable<Note> FilterByPublicTimelineRequest(
-		this IQueryable<Note> query, TimelineSchemas.PublicTimelineRequest request, DatabaseContext db
-	)
+	extension(IQueryable<Note> query)
 	{
-		if (request.OnlyLocal)
-			query = query.Where(p => p.UserHost == null);
-		if (request.OnlyRemote)
-			query = query.Where(p => p.UserHost != null);
-		if (request.OnlyMedia)
-			query = query.Where(p => p.FileIds.Count != 0);
-		if (request.Bubble)
-			query = query.Where(p => p.UserHost == null || db.BubbleInstances.Any(i => i.Host == p.UserHost));
+		public IQueryable<Note> FilterByPublicTimelineRequest(
+			TimelineSchemas.PublicTimelineRequest request, DatabaseContext db
+		)
+		{
+			if (request.OnlyLocal)
+				query = query.Where(p => p.UserHost == null);
+			if (request.OnlyRemote)
+				query = query.Where(p => p.UserHost != null);
+			if (request.OnlyMedia)
+				query = query.Where(p => p.FileIds.Count != 0);
+			if (request.Bubble)
+				query = query.Where(p => p.UserHost == null || db.BubbleInstances.Any(i => i.Host == p.UserHost));
 
-		return query;
-	}
+			return query;
+		}
 
-	public static IQueryable<Note> FilterByHashtagTimelineRequest(
-		this IQueryable<Note> query, TimelineSchemas.HashtagTimelineRequest request, DatabaseContext db
-	)
-	{
-		if (request.Any.Count > 0)
-			query = query.Where(p => request.Any.Any(t => p.Tags.Contains(t)));
-		if (request.All.Count > 0)
-			query = query.Where(p => request.All.All(t => p.Tags.Contains(t)));
-		if (request.None.Count > 0)
-			query = query.Where(p => request.None.All(t => !p.Tags.Contains(t)));
+		public IQueryable<Note> FilterByHashtagTimelineRequest(
+			TimelineSchemas.HashtagTimelineRequest request, DatabaseContext db
+		)
+		{
+			if (request.Any.Count > 0)
+				query = query.Where(p => request.Any.Any(t => p.Tags.Contains(t)));
+			if (request.All.Count > 0)
+				query = query.Where(p => request.All.All(t => p.Tags.Contains(t)));
+			if (request.None.Count > 0)
+				query = query.Where(p => request.None.All(t => !p.Tags.Contains(t)));
 
-		return query.FilterByPublicTimelineRequest(request, db);
+			return query.FilterByPublicTimelineRequest(request, db);
+		}
 	}
 
 	#pragma warning disable CS8602 // Dereference of a possibly null reference.

@@ -159,53 +159,56 @@ public static partial class HttpContextExtensions
 	private const string MastodonKey   = "masto-session";
 	private const string HideFooterKey = "hide-login-footer";
 
-	internal static void SetSession(this HttpContext ctx, Session session)
+	extension(HttpContext ctx)
 	{
-		ctx.Items.Add(Key, session);
-	}
+		internal void SetSession(Session session)
+		{
+			ctx.Items.Add(Key, session);
+		}
 
-	public static Session? GetSession(this HttpContext ctx)
-	{
-		ctx.Items.TryGetValue(Key, out var session);
-		return session as Session;
-	}
+		public Session? GetSession()
+		{
+			ctx.Items.TryGetValue(Key, out var session);
+			return session as Session;
+		}
 
-	public static Session GetSessionOrFail(this HttpContext ctx)
-	{
-		return ctx.GetSession() ?? throw new Exception("Failed to get session from HttpContext");
-	}
+		public Session GetSessionOrFail()
+		{
+			return ctx.GetSession() ?? throw new Exception("Failed to get session from HttpContext");
+		}
 
-	internal static void SetOauthToken(this HttpContext ctx, OauthToken session)
-	{
-		ctx.Items.Add(MastodonKey, session);
-	}
+		internal void SetOauthToken(OauthToken session)
+		{
+			ctx.Items.Add(MastodonKey, session);
+		}
 
-	public static OauthToken? GetOauthToken(this HttpContext ctx)
-	{
-		ctx.Items.TryGetValue(MastodonKey, out var session);
-		return session as OauthToken;
-	}
+		public OauthToken? GetOauthToken()
+		{
+			ctx.Items.TryGetValue(MastodonKey, out var session);
+			return session as OauthToken;
+		}
 
-	//TODO: Is it faster to check for the MastodonApiControllerAttribute here?
-	public static User? GetUser(this HttpContext ctx)
-	{
-		if (ctx.Items.TryGetValue(Key, out var session))
-			return (session as Session)?.User;
-		return ctx.Items.TryGetValue(MastodonKey, out var token)
-			? (token as OauthToken)?.User
-			: null;
-	}
+		//TODO: Is it faster to check for the MastodonApiControllerAttribute here?
+		public User? GetUser()
+		{
+			if (ctx.Items.TryGetValue(Key, out var session))
+				return (session as Session)?.User;
+			return ctx.Items.TryGetValue(MastodonKey, out var token)
+				? (token as OauthToken)?.User
+				: null;
+		}
 
-	public static User GetUserOrFail(this HttpContext ctx)
-	{
-		return ctx.GetUser() ?? throw new Exception("Failed to get user from HttpContext");
-	}
+		public User GetUserOrFail()
+		{
+			return ctx.GetUser() ?? throw new Exception("Failed to get user from HttpContext");
+		}
 
-	public static bool ShouldHideFooter(this HttpContext ctx)
-	{
-		ctx.Items.TryGetValue(HideFooterKey, out var auth);
-		return auth is true;
-	}
+		public bool ShouldHideFooter()
+		{
+			ctx.Items.TryGetValue(HideFooterKey, out var auth);
+			return auth is true;
+		}
 
-	public static void HideFooter(this HttpContext ctx) => ctx.Items.Add(HideFooterKey, true);
+		public void HideFooter() => ctx.Items.Add(HideFooterKey, true);
+	}
 }
