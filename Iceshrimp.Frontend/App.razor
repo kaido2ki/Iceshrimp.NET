@@ -6,7 +6,7 @@
 @inject UpdateService UpdateSvc;
 <ErrorBoundary>
     <ChildContent>
-        <Router AppAssembly="@typeof(App).Assembly">
+        <Router AppAssembly="@typeof(App).Assembly" NotFoundPage="@typeof(NotFound)">
             <Found Context="routeData">
                 <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
                     <NotAuthorized>
@@ -16,16 +16,10 @@
                 @* <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/> *@
                 <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
             </Found>
-            <NotFound>
-                <PageTitle>Not found</PageTitle>
-                <LayoutView Layout="@typeof(MainLayout)">
-                    <p role="alert">Page not found.</p>
-                </LayoutView>
-            </NotFound>
         </Router>
     </ChildContent>
-    <ErrorContent Context="Exception">
-        <ErrorUi Exception="Exception"></ErrorUi>
+    <ErrorContent Context="exception">
+        <ErrorUi Exception="exception"></ErrorUi>
     </ErrorContent>
 </ErrorBoundary>
 
