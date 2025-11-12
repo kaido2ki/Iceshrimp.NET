@@ -562,6 +562,7 @@ public class ActivityHandlerService(
 		await reportSvc.CreateReportAsync(resolvedActor, userMatch, noteMatches, [], flag.Content ?? "");
 	}
 
+	[SuppressMessage("ReSharper", "ParameterOnlyUsedForPreconditionCheck.Local")]
 	private async Task HandleQuoteRequestAsync(ASQuoteRequest quoteRequest, User quoter)
 	{
 		if (quoter.IsLocalUser)

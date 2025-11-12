@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,7 +13,6 @@ public class ASOrderedCollection : ASCollection
 	[JsonConstructor]
 	public ASOrderedCollection(bool withType = true) => Type = withType ? ObjectType : null;
 
-	[SetsRequiredMembers]
 	public ASOrderedCollection(string id, bool withType = false) : this(withType) => Id = id;
 
 	[J($"{Constants.ActivityStreamsNs}#items")]

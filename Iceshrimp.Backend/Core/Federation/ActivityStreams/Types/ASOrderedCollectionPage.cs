@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Newtonsoft.Json;
 using J = Newtonsoft.Json.JsonPropertyAttribute;
@@ -13,7 +12,6 @@ public class ASOrderedCollectionPage : ASCollectionPage
 	[JsonConstructor]
 	public ASOrderedCollectionPage(bool withType = true) => Type = withType ? ObjectType : null;
 
-	[SetsRequiredMembers]
 	public ASOrderedCollectionPage(string id, bool withType = false) : this(withType) => Id = id;
 
 	[J($"{Constants.ActivityStreamsNs}#items")]

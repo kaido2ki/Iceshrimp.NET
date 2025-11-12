@@ -18,8 +18,8 @@ public class LinkPaginationAttribute(
 
 	public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
 	{
-		ArgumentNullException.ThrowIfNull(context, nameof(context));
-		ArgumentNullException.ThrowIfNull(next, nameof(next));
+		ArgumentNullException.ThrowIfNull(context);
+		ArgumentNullException.ThrowIfNull(next);
 		OnActionExecuting(context);
 		if (context.Result != null) return;
 		var result = await next();

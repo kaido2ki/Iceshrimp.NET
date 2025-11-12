@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Mime;
-using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;

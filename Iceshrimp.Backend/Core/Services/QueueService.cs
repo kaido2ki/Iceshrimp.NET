@@ -516,7 +516,7 @@ public abstract class PostgresJobQueue<T>(
 			}
 			else
 			{
-				_logger.LogTrace("Job in queue {queue} was delayed to {time} after {duration} ms, has been queued since {time}",
+				_logger.LogTrace("Job in queue {queue} was delayed to {newTime} after {duration} ms, has been queued since {origTime}",
 				                 name, job.DelayedUntil.Value.ToLocalTime().ToStringIso8601Like(), job.Duration,
 				                 job.QueuedAt.ToLocalTime().ToStringIso8601Like());
 				db.ChangeTracker.Clear();

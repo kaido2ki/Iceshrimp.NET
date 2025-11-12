@@ -441,7 +441,7 @@ file sealed class EntityFrameworkCoreXmlRepositoryAsync<TContext> : IXmlReposito
 	[DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(DataProtectionKey))]
 	public EntityFrameworkCoreXmlRepositoryAsync(IServiceProvider services, ILoggerFactory loggerFactory)
 	{
-		ArgumentNullException.ThrowIfNull(loggerFactory, nameof(loggerFactory));
+		ArgumentNullException.ThrowIfNull(loggerFactory);
 		_services = services ?? throw new ArgumentNullException(nameof(services));
 	}
 

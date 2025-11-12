@@ -1,4 +1,3 @@
-using Iceshrimp.Shared.Helpers;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;

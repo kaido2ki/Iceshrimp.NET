@@ -229,12 +229,12 @@ public class StorageMaintenanceService(
 
 		if (dryRun)
 		{
-			logger.LogInformation("Finished validating {count} files, of which {count} would have been fixed up.",
+			logger.LogInformation("Finished validating {fileCount} files, of which {fixupCount} would have been fixed up.",
 			                      progress, modified);
 		}
 		else
 		{
-			logger.LogInformation("Finished validating {count} files, of which {count} have been fixed up.",
+			logger.LogInformation("Finished validating {fileCount} files, of which {fixupCount} have been fixed up.",
 			                      progress, modified);
 		}
 	}

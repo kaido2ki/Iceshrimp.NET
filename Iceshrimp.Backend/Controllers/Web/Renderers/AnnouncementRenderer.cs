@@ -103,7 +103,7 @@ public class AnnouncementRenderer(
                              .GroupBy(p => p.AnnouncementId)
                              .ToDictionaryAsync(p => p.Key, p => p.Count());
 
-        var zeros = ids.Where(p => !counts.Keys.Contains(p)).ToDictionary(p => p, p => 0);
+        var zeros = ids.Where(p => !counts.ContainsKey(p)).ToDictionary(p => p, _ => 0);
 
         return counts.Concat(zeros).ToDictionary();
     }

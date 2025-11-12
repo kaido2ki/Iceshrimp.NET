@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -15,7 +14,6 @@ public class ASCollection : ASObject
 	[JsonConstructor]
 	public ASCollection(bool withType = true) => Type = withType ? ObjectType : null;
 
-	[SetsRequiredMembers]
 	public ASCollection(string id, bool withType = false) : this(withType) => Id = id;
 
 	[J($"{Constants.ActivityStreamsNs}#attributedTo")]

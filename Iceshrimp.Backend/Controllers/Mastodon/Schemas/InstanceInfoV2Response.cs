@@ -95,7 +95,7 @@ public class InstanceThumbnail(string url, string? blurhash)
 	[J("blurhash")] public string? Blurhash => blurhash;
 }
 
-public class InstanceTimelinesAccessConfiguration()
+public class InstanceTimelinesAccessConfiguration
 {
 	[J("live_feeds")]          public InstanceTimelineAccessConfiguration LiveFeeds         => new("authenticated");
 	[J("hashtag_feeds")]       public InstanceTimelineAccessConfiguration HashtagFeeds      => new("authenticated");

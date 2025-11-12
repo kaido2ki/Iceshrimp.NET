@@ -18,7 +18,7 @@ namespace Iceshrimp.Backend.Core.Federation.Cryptography;
 
 public static class LdSignature
 {
-	private static readonly ActivitySource _activitySource = new("Iceshrimp.NET/LdSignature", VersionHelpers.VersionInfo.Value.Version);
+	private static readonly ActivitySource ActivitySource = new("Iceshrimp.NET/LdSignature", VersionHelpers.VersionInfo.Value.Version);
 	
 	public static Task<bool> VerifyAsync(JArray activity, JArray rawActivity, string key, string? keyId = null)
 	{
@@ -31,7 +31,8 @@ public static class LdSignature
 
 	public static async Task<bool> VerifyAsync(JObject activity, JObject rawActivity, string key, string? keyId = null)
 	{
-		using var traceActivity = _activitySource.StartActivity("LD Signature Verify");
+		// ReSharper disable once ExplicitCallerInfoArgument
+		using var traceActivity = ActivitySource.StartActivity("LD Signature Verify");
 		traceActivity?.AddTag("key", keyId);
 		
 		var options    = activity[$"{Constants.W3IdSecurityNs}#signature"];
@@ -62,7 +63,8 @@ public static class LdSignature
 
 	public static async Task<JObject> SignAsync(JObject activity, string key, string? creator)
 	{
-		using var _ = _activitySource.StartActivity("LD Sign");
+		// ReSharper disable once ExplicitCallerInfoArgument
+		using var _ = ActivitySource.StartActivity("LD Sign");
 
 		var options = new SignatureOptions
 		{

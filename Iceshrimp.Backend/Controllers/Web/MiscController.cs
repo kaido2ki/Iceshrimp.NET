@@ -71,7 +71,7 @@ public class MiscController(DatabaseContext db, NoteRenderer noteRenderer, BiteS
 	{
 		var user = HttpContext.GetUserOrFail();
 
-		var unreadAnnouncements = await db.Announcements.AnyAsync(p => !p.ReadBy.Any(p => p == user));
+		var unreadAnnouncements = await db.Announcements.AnyAsync(p => p.ReadBy.All(i => i != user));
 
 		var unreadNotifications = await db.Notifications.AnyAsync(p => p.Notifiee == user && !p.IsRead);
 
