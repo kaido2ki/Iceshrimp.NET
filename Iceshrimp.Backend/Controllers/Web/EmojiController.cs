@@ -196,7 +196,7 @@ public class EmojiController(
 	[ProducesResults(HttpStatusCode.Accepted)]
 	public async Task<AcceptedResult> ImportEmoji(IFormFile file)
 	{
-		var zip = await emojiImportSvc.ParseAsync(file.OpenReadStream());
+		var zip = await EmojiImportService.ParseAsync(file.OpenReadStream());
 		await emojiImportSvc.ImportAsync(zip); // TODO: run in background. this will take a while
 		return Accepted();
 	}

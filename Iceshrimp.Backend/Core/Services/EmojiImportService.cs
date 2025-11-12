@@ -33,9 +33,9 @@ public class EmojiImportService(
 	ILogger<EmojiImportService> logger
 ) : IScopedService
 {
-	public static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+	private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
-	public async Task<EmojiZip> ParseAsync(Stream zipStream)
+	public static async Task<EmojiZip> ParseAsync(Stream zipStream)
 	{
 		var archive = new ZipArchive(zipStream, ZipArchiveMode.Read);
 
@@ -48,7 +48,7 @@ public class EmojiImportService(
 			var metaJson = await JsonSerializer.DeserializeAsync<EmojiZipMeta>(meta.Open(), SerializerOptions) ??
 			               throw GracefulException.BadRequest("Invalid emoji zip metadata");
 
-			if (metaJson.MetaVersion < 1 || metaJson.MetaVersion > 2)
+			if (metaJson.MetaVersion is < 1 or > 2)
 				throw GracefulException.BadRequest("Unrecognized metaVersion {version}, expected 1 or 2",
 				                                   metaJson.MetaVersion.ToString());
 
@@ -57,15 +57,15 @@ public class EmojiImportService(
 		catch
 		{
 			// We don't want to dispose of archive on success, as Import will do it when it's done.
-			archive.Dispose();
+			await archive.DisposeAsync();
 			throw;
 		}
 	}
 
 	public async Task ImportAsync(EmojiZip zip)
 	{
-		using var archive             = zip.Archive;
-		var       contentTypeProvider = new FileExtensionContentTypeProvider();
+		await using var archive             = zip.Archive;
+		var             contentTypeProvider = new FileExtensionContentTypeProvider();
 
 		foreach (var emoji in zip.Metadata.Emojis)
 		{
@@ -84,7 +84,7 @@ public class EmojiImportService(
 
 			// DriveService requires a seekable and .Length-able stream, which the DeflateStream from file.Open does not support.
 			using var buffer = new MemoryStream((int)file.Length);
-			await file.Open().CopyToAsync(buffer);
+			await (await file.OpenAsync()).CopyToAsync(buffer);
 			buffer.Seek(0, SeekOrigin.Begin);
 
 			var name = emoji.Emoji.Name ?? emoji.FileName;
