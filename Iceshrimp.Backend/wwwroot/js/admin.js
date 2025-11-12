@@ -54,6 +54,28 @@ async function exportAllowlist() {
     await downloadFile(allows, "allowlist.json");
 }
 
+async function importBlocklist(ev) {
+    ev.preventDefault()
+    let input = document.getElementById('blocklist-import-file');
+    let file = input.files[0];
+    if (file == null) return;
+    let data = new FormData();
+    data.append('file', input.files[0]);
+    await callApiMethod("/api/iceshrimp/admin/instances/blocked/import", "POST", data);
+    window.location.reload();
+}
+
+async function importAllowlist(ev) {
+    ev.preventDefault()
+    let input = document.getElementById('allowlist-import-file');
+    let file = input.files[0];
+    if (file == null) return;
+    let data = new FormData();
+    data.append('file', input.files[0]);
+    await callApiMethod("/api/iceshrimp/admin/instances/allowed/import", "POST", data);
+    window.location.reload();
+}
+
 async function debubbleInstance(host, target) {
     await confirm(target, () => callApiMethod(`/api/iceshrimp/admin/instances/${host}/debubble`));
 }
@@ -109,11 +131,12 @@ async function generateInviteAndCopy() {
     }, 2500);
 }
 
-async function callApiMethod(route, method) {
+async function callApiMethod(route, method, data) {
     const cookie = getCookie('admin_session');
     if (cookie == null) throw new Error('Failed to get admin_session cookie');
     return await fetch(route, {
         method: method ?? 'POST',
+        body: data,
         headers: {
             'Authorization': `Bearer ${cookie}`
         }

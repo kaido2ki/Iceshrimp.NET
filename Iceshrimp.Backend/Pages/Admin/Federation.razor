@@ -132,11 +132,23 @@ else
 <h3>Import/Export</h3>
 @if (IsBlocklist)
 {
-    <button role="link" onclick="exportBlocklist()">Export blocklist</button>
+    <div class="inline-flex flex-grow">
+        <form onsubmit="importBlocklist(event)" class="inline-flex">
+            <input type="file" id="blocklist-import-file"/>
+            <button type="submit">Import blocklist</button>
+        </form>
+        <button role="link" onclick="exportBlocklist()">Export blocklist</button>
+    </div>
 }
 else
 {
-    <button role="link" onclick="exportAllowlist()">Export allowlist</button>
+    <div class="inline-flex flex-grow">
+        <form onsubmit="importAllowlist(event)" class="inline-flex">
+            <input type="file" id="allowlist-import-file"/>
+            <button type="submit">Import allowlist</button>
+        </form>
+        <button role="link" onclick="exportAllowlist()">Export allowlist</button>
+    </div>
 }
 
 @code {

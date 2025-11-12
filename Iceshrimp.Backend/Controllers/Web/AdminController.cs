@@ -148,13 +148,28 @@ public class AdminController(
 			throw GracefulException.BadRequest("Federation mode is set to blocklist.");
 
 		var reader = new StreamReader(file.OpenReadStream());
-		var data   = await reader.ReadToEndAsync();
+		var data   = await reader.ReadToEndAsync().ContinueWithResult(res => res.Trim());
 
-		var hosts = data.ReplaceLineEndings("\n")
-		                .Split('\n')
-		                .Where(p => !string.IsNullOrWhiteSpace(p))
-		                .Select(p => new AllowedInstance { Host = p, IsImported = true })
-		                .ToArray();
+		AllowedInstance[]? hosts = null;
+		if (data.StartsWith('[') && data.EndsWith(']'))
+		{
+			try
+			{
+				hosts = JsonSerializer.Deserialize<AllowedInstance[]>(data, JsonSerialization.Options);
+				foreach (var instance in hosts ?? [])
+					instance.IsImported = true;
+			}
+			catch
+			{
+				// ignored
+			}
+		}
+
+		hosts ??= data.ReplaceLineEndings("\n")
+		              .Split('\n')
+		              .Where(p => !string.IsNullOrWhiteSpace(p))
+		              .Select(p => new AllowedInstance { Host = p.ToPunycodeLower(), IsImported = true })
+		              .ToArray();
 
 		await db.AllowedInstances.UpsertRange(hosts).On(p => p.Host).NoUpdate().RunAsync();
 
@@ -170,13 +185,28 @@ public class AdminController(
 			throw GracefulException.BadRequest("Federation mode is set to allowlist.");
 
 		var reader = new StreamReader(file.OpenReadStream());
-		var data   = await reader.ReadToEndAsync();
+		var data   = await reader.ReadToEndAsync().ContinueWithResult(res => res.Trim());
 
-		var hosts = data.ReplaceLineEndings("\n")
-		                .Split('\n')
-		                .Where(p => !string.IsNullOrWhiteSpace(p))
-		                .Select(p => new BlockedInstance { Host = p, IsImported = true })
-		                .ToArray();
+		BlockedInstance[]? hosts = null;
+		if (data.StartsWith('[') && data.EndsWith(']'))
+		{
+			try
+			{
+				hosts = JsonSerializer.Deserialize<BlockedInstance[]>(data, JsonSerialization.Options);
+				foreach (var instance in hosts ?? [])
+					instance.IsImported = true;
+			}
+			catch
+			{
+				// ignored
+			}
+		}
+
+		hosts ??= data.ReplaceLineEndings("\n")
+		              .Split('\n')
+		              .Where(p => !string.IsNullOrWhiteSpace(p))
+		              .Select(p => new BlockedInstance { Host = p.ToPunycodeLower(), IsImported = true })
+		              .ToArray();
 
 		await db.BlockedInstances.UpsertRange(hosts).On(p => p.Host).NoUpdate().RunAsync();
 
