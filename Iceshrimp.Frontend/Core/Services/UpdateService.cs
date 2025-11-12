@@ -10,19 +10,18 @@ internal class UpdateService
 	private readonly ApiService                     _api;
 	private readonly ILogger<UpdateService>         _logger;
 	private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
-	private          UpdateStates                   _updateState;
 	public           bool                           DialogOpen { get; set; }
 
 	public EventHandler<UpdateStates>? UpdateStatusEvent { get; set; }
 
 	public UpdateStates UpdateState
 	{
-		get => _updateState;
+		get;
 		private set
 		{
 			UpdateStatusEvent?.Invoke(this, value);
 			_logger.LogInformation($"Invoked Update Status Event: {value}");
-			_updateState = value;
+			field = value;
 		}
 	}
 

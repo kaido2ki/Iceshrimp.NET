@@ -86,7 +86,6 @@ public class ForceCwRewritePolicy(
 
 public class ForceCwRewritePolicyConfiguration : IPolicyConfiguration<ForceCwRewritePolicy>
 {
-	private string[]             _instances = [];
 	public  ForceCwRewritePolicy Apply() => new(Enabled, Priority, Cw, Words, Instances);
 	IPolicy IPolicyConfiguration.Apply() => Apply();
 
@@ -97,7 +96,7 @@ public class ForceCwRewritePolicyConfiguration : IPolicyConfiguration<ForceCwRew
 
 	public string[] Instances
 	{
-		get => _instances;
-		set => _instances = value.Select(p => p.ToLowerInvariant()).ToArray();
-	}
+		get;
+		set => field = value.Select(p => p.ToLowerInvariant()).ToArray();
+	} = [];
 }

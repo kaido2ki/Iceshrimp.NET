@@ -119,23 +119,21 @@ public class RewriteStaticAssetManifest : Microsoft.Build.Utilities.Task
 
 	private sealed class StaticAssetDescriptor
 	{
-		private string?                         _route;
-		private string?                         _assetFile;
 		private List<StaticAssetSelector>       _selectors          = [];
 		private List<StaticAssetProperty>       _endpointProperties = [];
 		private List<StaticAssetResponseHeader> _responseHeaders    = [];
 
 		public required string Route
 		{
-			get => _route ?? throw new InvalidOperationException("Route is required");
-			set => _route = value;
+			get => field ?? throw new InvalidOperationException("Route is required");
+			set;
 		}
 
 		[JsonPropertyName("AssetFile")]
 		public required string AssetPath
 		{
-			get => _assetFile ?? throw new InvalidOperationException("AssetPath is required");
-			set => _assetFile = value;
+			get => field ?? throw new InvalidOperationException("AssetPath is required");
+			set;
 		}
 
 		[JsonPropertyName("Selectors")]

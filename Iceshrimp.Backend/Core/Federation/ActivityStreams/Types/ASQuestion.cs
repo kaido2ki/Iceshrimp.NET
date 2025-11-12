@@ -7,22 +7,20 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASQuestion : ASNote
 {
-	private List<ASQuestionOption>? _anyOf;
-	private List<ASQuestionOption>? _oneOf;
 	public ASQuestion() => Type = Types.Question;
 
 	[J($"{Constants.ActivityStreamsNs}#oneOf")]
 	public List<ASQuestionOption>? OneOf
 	{
-		get => _oneOf;
-		set => _oneOf = value?[..Math.Min(10, value.Count)];
+		get;
+		set => field = value?[..Math.Min(10, value.Count)];
 	}
 
 	[J($"{Constants.ActivityStreamsNs}#anyOf")]
 	public List<ASQuestionOption>? AnyOf
 	{
-		get => _anyOf;
-		set => _anyOf = value?[..Math.Min(10, value.Count)];
+		get;
+		set => field = value?[..Math.Min(10, value.Count)];
 	}
 
 	[J($"{Constants.ActivityStreamsNs}#endTime")]

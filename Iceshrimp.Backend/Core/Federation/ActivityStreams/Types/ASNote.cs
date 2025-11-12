@@ -9,8 +9,6 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASNote : ASObjectWithId
 {
-	private string? _mkContent;
-
 	[JI] public bool VerifiedFetch = false;
 	public ASNote(bool withType = true) => Type = withType ? Types.Note : null;
 
@@ -18,8 +16,8 @@ public class ASNote : ASObjectWithId
 	[JC(typeof(VC))]
 	public string? MkContent
 	{
-		get => _mkContent ?? (Source?.MediaType == "text/x.misskeymarkdown" ? Source?.Content : null);
-		set => _mkContent = value;
+		get => field ?? (Source?.MediaType == "text/x.misskeymarkdown" ? Source?.Content : null);
+		set;
 	}
 
 	[J("https://misskey-hub.net/ns#_misskey_quote")]

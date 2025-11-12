@@ -21,7 +21,6 @@ public abstract class AuthSchemas
 
 	public class RegisterAppRequest
 	{
-		private List<string> _scopes      = ["read"];
 		public  List<string> RedirectUris = [];
 
 		[B(Name = "scopes")]
@@ -29,13 +28,13 @@ public abstract class AuthSchemas
 		[JC(typeof(EnsureArrayConverter))]
 		public List<string> Scopes
 		{
-			get => _scopes;
-			set => _scopes = value.Count == 1
+			get;
+			set => field = value.Count == 1
 				? value[0].Trim().Contains(' ')
 					? value[0].Trim().Split(' ').ToList()
 					: value[0].Trim().Split(',').ToList()
 				: value;
-		}
+		} = ["read"];
 
 		[B(Name = "client_name")]
 		[J("client_name")]

@@ -29,7 +29,6 @@ public class ForceFollowerOnlyRewritePolicy(bool enabled, int priority, string[]
 
 public class ForceFollowerOnlyRewritePolicyConfiguration : IPolicyConfiguration<ForceFollowerOnlyRewritePolicy>
 {
-	private string[]                       _instances = [];
 	public  ForceFollowerOnlyRewritePolicy Apply() => new(Enabled, Priority, Instances);
 	IPolicy IPolicyConfiguration.          Apply() => Apply();
 
@@ -38,7 +37,7 @@ public class ForceFollowerOnlyRewritePolicyConfiguration : IPolicyConfiguration<
 
 	public string[] Instances
 	{
-		get => _instances;
-		set => _instances = value.Select(p => p.ToLowerInvariant()).ToArray();
-	}
+		get;
+		set => field = value.Select(p => p.ToLowerInvariant()).ToArray();
+	} = [];
 }

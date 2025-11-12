@@ -41,7 +41,6 @@ public class ForceMediaSensitiveRewritePolicy(
 
 public class ForceMediaSensitivePolicyConfiguration : IPolicyConfiguration<ForceMediaSensitiveRewritePolicy>
 {
-	private string[]                         _instances = [];
 	public  ForceMediaSensitiveRewritePolicy Apply() => new(Enabled, Priority, Instances);
 	IPolicy IPolicyConfiguration.            Apply() => Apply();
 
@@ -50,7 +49,7 @@ public class ForceMediaSensitivePolicyConfiguration : IPolicyConfiguration<Force
 
 	public string[] Instances
 	{
-		get => _instances;
-		set => _instances = value.Select(p => p.ToLowerInvariant()).ToArray();
-	}
+		get;
+		set => field = value.Select(p => p.ToLowerInvariant()).ToArray();
+	} = [];
 }

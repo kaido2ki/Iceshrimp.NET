@@ -41,7 +41,6 @@ public class StripMediaRewritePolicy(
 
 public class StripMediaRewritePolicyConfiguration : IPolicyConfiguration<StripMediaRewritePolicy>
 {
-	private string[]                _instances = [];
 	public  StripMediaRewritePolicy Apply() => new(Enabled, Priority, Instances);
 	IPolicy IPolicyConfiguration.   Apply() => Apply();
 
@@ -50,7 +49,7 @@ public class StripMediaRewritePolicyConfiguration : IPolicyConfiguration<StripMe
 
 	public string[] Instances
 	{
-		get => _instances;
-		set => _instances = value.Select(p => p.ToLowerInvariant()).ToArray();
-	}
+		get;
+		set => field = value.Select(p => p.ToLowerInvariant()).ToArray();
+	} = [];
 }

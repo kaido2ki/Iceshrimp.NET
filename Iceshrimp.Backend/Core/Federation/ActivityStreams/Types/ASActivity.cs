@@ -46,16 +46,14 @@ public class ASActivity : ASObjectWithId
 
 public class ASActivityWithObjectArray : ASActivity
 {
-	private ASObject[]? _object;
-
 	[J($"{Constants.ActivityStreamsNs}#object")]
 	[JC(typeof(ASObjectArrayConverter))]
 	public new ASObject[]? Object
 	{
-		get => _object;
+		get;
 		set
 		{
-			_object     = value;
+			field       = value;
 			base.Object = value?.FirstOrDefault();
 		}
 	}
