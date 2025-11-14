@@ -397,6 +397,8 @@
 
         if (EmojiList.Count == 0)
             EmojiList = await EmojiService.GetEmojiAsync();
+
+        await _module.InvokeVoidAsync("setupPaste", _objRef, Textarea, UploadInput.Element);
     }
 
     private async Task CloseDialog()
@@ -574,8 +576,6 @@
 
             var instance = await MetadataService.Instance.Value;
             NoteLength = instance.Limits.NoteLength;
-
-            await _module.InvokeVoidAsync("setupPaste", _objRef, Textarea, UploadInput.Element);
 
             ComposeService.ComposeDialog = this;
         }

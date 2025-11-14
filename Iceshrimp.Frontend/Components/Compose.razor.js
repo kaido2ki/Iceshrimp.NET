@@ -14,7 +14,19 @@ export function openUpload(element) {
     element.click();
 }
 
+/**
+ * Sets up paste handling in the main compose textarea to allow pasting quotes and media attachments.
+ * Is called by Blazor when the compose dialog is opened.
+ * @param dotnet
+ * @param {HTMLTextAreaElement} textarea
+ * @param {HTMLInputElement} fileInput
+ */
 export function setupPaste(dotnet, textarea, fileInput) {
+    // Exit early if the textarea is somehow null to prevent a crash
+    if (!textarea) return;
+    // Exit early if the paste handling event listener is already set up
+    if (textarea.hasAttribute("data-paste")) return;
+
     textarea.addEventListener('paste', async (e) => {
         if (e.clipboardData.files.length === 0) {
             if (e.target.getAttribute("data-quote") === "True") return;
@@ -39,6 +51,9 @@ export function setupPaste(dotnet, textarea, fileInput) {
             fileInput.dispatchEvent(changeEvent);
         }
     });
+
+    // Add attribute indicating paste handling is setup
+    textarea.setAttribute("data-paste", true);
 }
 
 /**
