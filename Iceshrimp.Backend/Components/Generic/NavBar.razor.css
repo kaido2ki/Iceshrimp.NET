@@ -103,6 +103,16 @@
 
 ul.dropdown-menu li {
     background-color: var(--background-color);
+    border-left: 0.05rem solid var(--highlight-color);
+    border-right: 0.05rem solid var(--highlight-color);
+}
+
+ul.dropdown-menu li:first-of-type {
+    border-top: 0.05rem solid var(--highlight-color);
+}
+
+ul.dropdown-menu li:last-of-type {
+    border-bottom: 0.05rem solid var(--highlight-color);
 }
 
 li.dropdown-spacer,
