@@ -57,10 +57,14 @@
     gap: 4pt;
 }
 
-.navbar ::deep a.active,
 .navbar ul ::deep a:hover,
+.navbar .brand:hover {
+    background-color: var(--hover-color);
+    text-decoration: none;
+}
+
+.navbar ::deep a.active,
 .navbar ul ::deep a:focus,
-.navbar .brand:hover,
 .navbar .brand:focus {
     background-color: var(--highlight-color);
     text-decoration: none;
