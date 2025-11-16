@@ -157,6 +157,49 @@ textarea {
     max-width: 100%;
 }
 
+.fake-link {
+    color: var(--link);
+    cursor: pointer;
+    tab-index: 0;
+    text-decoration-line: none;
+}
+
+.fake-link:hover {
+    text-decoration: underline;
+}
+
+table {
+    background-color: var(--background-color);
+    border-collapse: collapse;
+    margin-bottom: 0.5rem;
+    width: 100%;
+    table-layout: fixed;
+}
+
+table caption {
+    text-align: left;
+}
+
+td,
+th {
+    padding: 0.4rem;
+    text-align: left;
+    vertical-align: top;
+    word-wrap: break-word;
+}
+
+thead {
+    border-bottom: 1px solid var(--highlight-color);
+}
+
+tfoot {
+    border-top: 1px solid var(--highlight-color);
+}
+
+tbody tr:nth-child(even) {
+    background-color: var(--foreground-color);
+}
+
 
 /*Blazor stuff, Fix Later*/
 .validation-message {

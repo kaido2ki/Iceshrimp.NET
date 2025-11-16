@@ -91,11 +91,6 @@ body > footer {
     width: 23ch;
 }
 
-.fake-link {
-    cursor: pointer;
-    tab-index: 0;
-}
-
 .justify-right {
     text-align: right;
 }

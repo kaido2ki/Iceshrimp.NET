@@ -75,7 +75,7 @@ else
     <p>
         @if (!Remote)
         {
-            <i>Listing @_count <a href="/admin/users?remote=true">local</a> users. </i>
+            <i>Listing @_count <a class="fake-link" href="/admin/users?remote=true">local</a> users. </i>
 
             @if (Options.Value.Registrations == Enums.Registrations.Invite)
             {
@@ -94,7 +94,7 @@ else
         }
         else
         {
-            <i>Listing @_count <a href="/admin/users">remote</a> users.</i>
+            <i>Listing @_count <a class="fake-link" href="/admin/users">remote</a> users.</i>
         }
     </p>
 }

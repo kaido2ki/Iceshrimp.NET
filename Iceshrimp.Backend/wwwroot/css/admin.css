@@ -7,11 +7,6 @@ p {
     margin-bottom: 12px;
 }
 
-.fake-link {
-    cursor: pointer;
-    tab-index: 0;
-}
-
 .width0 {
     width: 0;
 }
