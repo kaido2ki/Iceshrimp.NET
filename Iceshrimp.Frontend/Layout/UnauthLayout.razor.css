@@ -13,3 +13,9 @@
     object-fit: contain;
     height: 2rem
 }
+
+@media screen and (prefers-color-scheme: light) {
+    .logo {
+        filter: invert();
+    }
+}
