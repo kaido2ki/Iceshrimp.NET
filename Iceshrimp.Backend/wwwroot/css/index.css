@@ -25,3 +25,9 @@ details {
     background-color: var(--foreground-color);
     border-radius: 0.75rem;
 }
+
+@media screen and (prefers-color-scheme: light) {
+    .wordmark {
+        filter: invert();
+    }
+}
