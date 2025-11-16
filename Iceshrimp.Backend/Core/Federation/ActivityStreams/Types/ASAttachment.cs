@@ -33,6 +33,10 @@ public class ASDocument : ASAttachment
 	[J($"{Constants.ActivityStreamsNs}#name")]
 	[JC(typeof(ValueObjectConverter))]
 	public string? Description { get; set; }
+	
+	[J($"{Constants.ActivityStreamsNs}#summary")] // used by GTS instead of 'name'
+	[JC(typeof(ValueObjectConverter))]
+	public string? SummaryDescription { get; set; }
 }
 
 public class ASImage : ASDocument

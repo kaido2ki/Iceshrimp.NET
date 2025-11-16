@@ -1374,7 +1374,7 @@ public class NoteService(
 		if (allAttachments is not { Count: > 0 }) return [];
 		var result = await allAttachments
 		                   .Select(p => driveSvc.StoreFileAsync(p.Url?.Id, user, p.Sensitive ?? sensitive,
-		                                                        p.Description, p.MediaType, logExisting))
+		                                                        p.SummaryDescription ?? p.Description, p.MediaType, logExisting))
 		                   .AwaitAllNoConcurrencyAsync();
 
 		return result.Where(p => p != null).Cast<DriveFile>().ToList();
