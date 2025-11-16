@@ -63,25 +63,25 @@ Registrations = Invite</code></pre>
 <div class="flex">
     @if (Offset is > 0)
     {
-        <button role="link" data-target="/admin/federation?offset=@(Math.Max(0, Offset.Value - 50))"
+        <button class="button" role="link" data-target="/admin/federation?offset=@(Math.Max(0, Offset.Value - 50))"
                 onclick="navigate(event)">❮ Previous page
         </button>
     }
     else
     {
-        <button disabled>❮ Previous page</button>
+        <button class="button" disabled>❮ Previous page</button>
     }
 
     @if (_invites.Length == 50)
     {
-        <button role="link" data-target="/admin/federation?offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">
+        <button class="button" role="link" data-target="/admin/federation?offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">
             Next page
             ❯
         </button>
     }
     else
     {
-        <button disabled>Next page ❯</button>
+        <button class="button" disabled>Next page ❯</button>
     }
 </div>
 

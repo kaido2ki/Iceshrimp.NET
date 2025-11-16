@@ -102,24 +102,24 @@ else
 <div class="flex">
     @if (Offset is > 0)
     {
-        <button role="link" data-target="/admin/users?@(_prevPageParams)" onclick="navigate(event)">
+        <button class="button" role="link" data-target="/admin/users?@(_prevPageParams)" onclick="navigate(event)">
             ❮ Previous page
         </button>
     }
     else
     {
-        <button disabled>❮ Previous page</button>
+        <button class="button" disabled>❮ Previous page</button>
     }
 
     @if (_users.Length == 50)
     {
-        <button role="link" data-target="/admin/users?@(_nextPageParams)" onclick="navigate(event)">
+        <button class="button" role="link" data-target="/admin/users?@(_nextPageParams)" onclick="navigate(event)">
             Next page ❯
         </button>
     }
     else
     {
-        <button disabled>Next page ❯</button>
+        <button class="button" disabled>Next page ❯</button>
     }
 
     <form method="get" class="inline-flex flex-grow">

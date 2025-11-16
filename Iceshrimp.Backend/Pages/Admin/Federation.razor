@@ -84,25 +84,25 @@
 <div class="flex">
     @if (Offset is > 0)
     {
-        <button role="link" data-target="/admin/federation?offset=@(Math.Max(0, Offset.Value - 50))"
+        <button class="button" role="link" data-target="/admin/federation?offset=@(Math.Max(0, Offset.Value - 50))"
                 onclick="navigate(event)">❮ Previous page
         </button>
     }
     else
     {
-        <button disabled>❮ Previous page</button>
+        <button class="button" disabled>❮ Previous page</button>
     }
 
     @if (_blockedInstances.Length == 50 || _allowedInstances.Length == 50)
     {
-        <button role="link" data-target="/admin/federation?offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">
+        <button class="button" role="link" data-target="/admin/federation?offset=@((Offset ?? 0) + 50)" onclick="navigate(event)">
             Next page
             ❯
         </button>
     }
     else
     {
-        <button disabled>Next page ❯</button>
+        <button class="button" disabled>Next page ❯</button>
     }
     <form method="get" class="inline-flex flex-grow">
         <input type="text" id="search" name="q" placeholder="Search..." class="flex-grow" value="@(Query ?? "")"/>
@@ -117,7 +117,7 @@
         <InputText @bind-Value="@Model.Host" id="host" placeholder="example.org" required/>
         <label for="reason">Reason</label>
         <InputText @bind-Value="@Model.Reason" id="reason" placeholder="Bad vibes"/>
-        <button type="submit">Submit</button>
+        <button class="button" type="submit">Submit</button>
     </EditForm>
 }
 else
@@ -125,7 +125,7 @@ else
     <EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
         <label for="host">Host</label>
         <InputText @bind-Value="@Model.Host" id="host" placeholder="example.org" required/>
-        <button type="submit">Submit</button>
+        <button class="button" type="submit">Submit</button>
     </EditForm>
 }
 
@@ -135,9 +135,9 @@ else
     <div class="inline-flex flex-grow">
         <form onsubmit="importBlocklist(event)" class="inline-flex">
             <input type="file" id="blocklist-import-file"/>
-            <button type="submit">Import blocklist</button>
+            <button class="button" type="submit">Import blocklist</button>
         </form>
-        <button role="link" onclick="exportBlocklist()">Export blocklist</button>
+        <button class="button" role="link" onclick="exportBlocklist()">Export blocklist</button>
     </div>
 }
 else
@@ -145,9 +145,9 @@ else
     <div class="inline-flex flex-grow">
         <form onsubmit="importAllowlist(event)" class="inline-flex">
             <input type="file" id="allowlist-import-file"/>
-            <button type="submit">Import allowlist</button>
+            <button class="button" type="submit">Import allowlist</button>
         </form>
-        <button role="link" onclick="exportAllowlist()">Export allowlist</button>
+        <button class="button" role="link" onclick="exportAllowlist()">Export allowlist</button>
     </div>
 }
 

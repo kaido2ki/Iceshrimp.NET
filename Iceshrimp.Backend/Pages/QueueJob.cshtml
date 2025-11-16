@@ -20,7 +20,7 @@
 
 <h1>Queue Dashboard</h1>
 
-<button role="link" data-target="/queue/@Model.Job.Queue" onclick="navigate(event)">Return to job list</button>
+<button class="button" role="link" data-target="/queue/@Model.Job.Queue" onclick="navigate(event)">Return to job list</button>
 
 <h2>Job details</h2>
 
@@ -127,13 +127,13 @@
 {
     <h3>Exception stack trace</h3>
     <pre><code id="exceptionStackTrace">@Model.Job.StackTrace</code></pre>
-    <button onclick="copyElementToClipboard('exceptionStackTrace')">Copy to clipboard</button>
+    <button class="button" onclick="copyElementToClipboard('exceptionStackTrace')">Copy to clipboard</button>
 }
 @if (Model.Job.Exception != null)
 {
     <h3>Exception details</h3>
     <pre><code id="exceptionDetails">@Model.Job.Exception</code></pre>
-    <button onclick="copyElementToClipboard('exceptionDetails')">Copy to clipboard</button>
+    <button class="button" onclick="copyElementToClipboard('exceptionDetails')">Copy to clipboard</button>
 }
 
 <h3>Job data</h3>
@@ -169,4 +169,4 @@
     }
 }
 
-<button onclick="copyElementToClipboard('payload');">Copy to clipboard</button>
+<button class="button" onclick="copyElementToClipboard('payload');">Copy to clipboard</button>

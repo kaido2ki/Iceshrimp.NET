@@ -48,7 +48,7 @@
 <EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
     <label for="inbox">Inbox URI</label>
     <InputText @bind-Value="@Model.InboxUri" id="inbox" placeholder="https://relay.example.org/inbox" class="width30" required/>
-    <button type="submit">Submit</button>
+    <button class="button" type="submit">Submit</button>
 </EditForm>
 
 @code {

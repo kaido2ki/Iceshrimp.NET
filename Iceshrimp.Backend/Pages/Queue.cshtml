@@ -22,11 +22,11 @@
 }
 
 <h1>Queue Dashboard</h1>
-<button role="link" data-target="/queue" onclick="navigate(event)">overview</button>
+<button class="button" role="link" data-target="/queue" onclick="navigate(event)">overview</button>
 @foreach (var queue in QueueSvc.QueueNames)
 {
     //asd
-    <button role="link" data-target="/queue/@queue" onclick="navigate(event)">@queue</button>
+    <button class="button" role="link" data-target="/queue/@queue" onclick="navigate(event)">@queue</button>
 }
 <br/>
 
@@ -36,7 +36,7 @@
 
     <form onsubmit="return lookupJob(event)">
         <input type="text" id="lookup" placeholder="Lookup job by id" minlength="36" maxlength="36" class="inline"/>
-        <button type="submit">Submit</button>
+        <button class="button" type="submit">Submit</button>
     </form>
 
     <h3>Queue status &mdash; <span id="update-status" class="status-delayed">Connecting...</span></h3>
@@ -179,32 +179,32 @@ else
         {
             if (Model.Filter.HasValue)
             {
-                <button role="link" data-target="/queue/@Model.Queue/@Model.PrevPage/@Model.Filter.Value.ToString().ToLowerInvariant()" onclick="navigate">❮ Previous page</button>
+                <button class="button" role="link" data-target="/queue/@Model.Queue/@Model.PrevPage/@Model.Filter.Value.ToString().ToLowerInvariant()" onclick="navigate">❮ Previous page</button>
             }
             else
             {
-                <button role="link" data-target="/queue/@Model.Queue/@Model.PrevPage" onclick="navigate(event)">❮ Previous page</button>
+                <button class="button" role="link" data-target="/queue/@Model.Queue/@Model.PrevPage" onclick="navigate(event)">❮ Previous page</button>
             }
         }
         else
         {
-            <button disabled>❮ Previous page</button>
+            <button class="button" disabled>❮ Previous page</button>
         }
 
         @if (Model.NextPage != null)
         {
             if (Model.Filter.HasValue)
             {
-                <button role="link" data-target="/queue/@Model.Queue/@Model.NextPage/@Model.Filter.Value.ToString().ToLowerInvariant()" onclick="navigate(event)">Next page ❯</button>
+                <button class="button" role="link" data-target="/queue/@Model.Queue/@Model.NextPage/@Model.Filter.Value.ToString().ToLowerInvariant()" onclick="navigate(event)">Next page ❯</button>
             }
             else
             {
-                <button role="link" data-target="/queue/@Model.Queue/@Model.NextPage" onclick="navigate(event)">Next page ❯</button>
+                <button class="button" role="link" data-target="/queue/@Model.Queue/@Model.NextPage" onclick="navigate(event)">Next page ❯</button>
             }
         }
         else
         {
-            <button disabled>Next page ❯</button>
+            <button class="button" disabled>Next page ❯</button>
         }
 
         <select onchange="filter('@Model.Queue')" id="filter" class="inline-flex">

@@ -128,7 +128,7 @@ button {
     background-color: var(--hover-color);
 }
 
-.button[disabled] {
+button[disabled], .button[disabled] {
     opacity: 40%;
     cursor: not-allowed;
 }
