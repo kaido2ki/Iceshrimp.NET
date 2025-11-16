@@ -1,7 +1,7 @@
 .bio {
     margin-top: 0.5rem;
     padding-bottom: 1rem;
-    border-bottom: 0.1rem solid var(--highlight-color);
+    border-bottom: 0.1rem solid var(--border-color);
     white-space: pre-wrap;
     word-break: break-word;
 }
@@ -14,7 +14,7 @@
     display: flex;
     justify-content: space-evenly;
     padding-top: 1rem;
-    border-top: 0.1rem solid var(--highlight-color);
+    border-top: 0.1rem solid var(--border-color);
 }
 
 ::deep {

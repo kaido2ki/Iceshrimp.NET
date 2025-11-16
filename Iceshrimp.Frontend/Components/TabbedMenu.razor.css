@@ -3,7 +3,7 @@
 }
 
 .buttons {
-    border-bottom: solid var(--highlight-color) 0.1rem;
+    border-bottom: solid var(--border-color) 0.1rem;
 }
 
 .active {

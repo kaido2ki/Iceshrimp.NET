@@ -27,7 +27,7 @@
 ::deep {
     .active {
         > .sidebar-btn {
-            background: var(--highlight-color);
+            background: var(--border-color);
         }
     }
 }

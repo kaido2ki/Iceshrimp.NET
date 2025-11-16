@@ -29,7 +29,7 @@
     @media (max-width: 1000px) {
         padding: 1.25rem 1rem 1rem;
     }
-    border-top: solid var(--highlight-color) 0.1rem;
+    border-top: solid var(--border-color) 0.1rem;
     width: 100%;
 }
 

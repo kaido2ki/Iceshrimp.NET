@@ -3,7 +3,7 @@
     --left: 0px;
     position: absolute;
     background-color: var(--foreground-color);
-    border: var(--highlight-color) solid 0.1rem;
+    border: var(--border-color) solid 0.1rem;
     padding: 1rem;
     border-radius: 1rem;
     min-width: 15rem;

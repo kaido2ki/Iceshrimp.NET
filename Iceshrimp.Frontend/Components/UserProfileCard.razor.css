@@ -62,7 +62,7 @@
 }
 
 .bio {
-    border-top: 0.1rem var(--highlight-color) solid;
+    border-top: 0.1rem var(--border-color) solid;
     padding-top: 0.5rem;
     margin-top: 0.5rem;
 }

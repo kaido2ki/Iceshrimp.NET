@@ -56,7 +56,7 @@
     flex-direction: column;
     align-items: center;
     background-color: var(--background-color);
-    border: solid var(--highlight-color) 0.05rem;
+    border: solid var(--border-color) 0.05rem;
 }
 
 .header {
@@ -90,7 +90,7 @@
     display: flex;
     flex-direction: column;
     margin: 0.5rem;
-    border: 0.1rem var(--highlight-color) solid;
+    border: 0.1rem var(--border-color) solid;
     border-radius: 1rem;
     padding: 0.5rem;
     cursor: pointer;

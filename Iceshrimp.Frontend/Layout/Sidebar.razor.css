@@ -160,7 +160,7 @@
         position: sticky;
         top: 0;
         background-color: var(--background-color);
-        border-right: var(--highlight-color) solid 0.05rem;
+        border-right: var(--border-color) solid 0.05rem;
     }
 
     .bottom-bar {
@@ -180,7 +180,7 @@
         left: 0;
         background-color: var(--background-color);
         z-index: +24;
-        border-top: 0.1rem var(--highlight-color) solid;
+        border-top: 0.1rem var(--border-color) solid;
         padding-bottom: env(safe-area-inset-bottom);
     }
 }

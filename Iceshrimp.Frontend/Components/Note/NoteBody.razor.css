@@ -80,7 +80,7 @@
 
 .quote {
     border-style: solid;
-    border-color: var(--highlight-color);
+    border-color: var(--border-color);
     border-width: 0.2rem;
     border-radius: 1.25rem;
     padding: 1rem;

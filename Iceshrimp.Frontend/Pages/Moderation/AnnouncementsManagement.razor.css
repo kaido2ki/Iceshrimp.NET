@@ -29,7 +29,7 @@
     padding: 1rem;
     max-width: 45rem;
     color: var(--font-color);
-    border: solid var(--highlight-color) 0.05rem;
+    border: solid var(--border-color) 0.05rem;
 }
 
 .backdrop {

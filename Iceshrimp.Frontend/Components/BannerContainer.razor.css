@@ -3,7 +3,7 @@
     top: 4rem;
     right: 1rem;
     background-color: var(--background-color);
-    border: solid var(--highlight-color) 0.05rem;
+    border: solid var(--border-color) 0.05rem;
     border-radius: 1.5rem;
     padding: 0.25rem 0.5rem;
     z-index: +7;
@@ -17,7 +17,7 @@
     width: 100%;
 }
 .banner {
-    border: solid var(--highlight-color) 0.05rem;
+    border: solid var(--border-color) 0.05rem;
     border-radius: 1rem;
     padding: 0.25rem 0.5rem;
     display: flex;

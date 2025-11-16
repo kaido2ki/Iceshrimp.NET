@@ -14,7 +14,7 @@
     align-items: center;
     gap: 0.5rem;
     background-color: var(--background-color);
-    border: 0.05rem solid var(--highlight-color);;
+    border: 0.05rem solid var(--border-color);;
     border-radius: 1rem;
     margin: auto;
     padding: 1rem;
@@ -25,7 +25,7 @@
     text-align: center;
     text-wrap: wrap;
     word-break: break-word;
-    border-color: var(--highlight-color);
+    border-color: var(--border-color);
 }
 
 .version {

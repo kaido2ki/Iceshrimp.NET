@@ -1,4 +1,4 @@
 .end {
-    stroke: var(--highlight-color);
+    stroke: var(--border-color);
     stroke-width: 0.55rem;
 }
