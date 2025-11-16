@@ -4,6 +4,10 @@
 
 <h3>Iceshrimp.NET OAuth</h3>
 
+@section head {
+    <link rel="stylesheet" href="~/css/oauth.css"/>
+}
+
 @if (Model.Token == null)
 {
     <div>
@@ -87,7 +91,7 @@
                 <input type="hidden" name="password" value="@data.Password"/>
                 <input type="text" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code"
                        placeholder="TOTP" name="totp" required/>
-                <button type="submit">Submit</button>
+                <button class="button" type="submit">Submit</button>
             </form>
         }
         else
@@ -117,7 +121,7 @@
                     <div class="margin-top-5px">
                         @foreach (var user in Model.AuthenticatedUsers)
                         {
-                            <button type="submit" name="userId" value="@user.Id">Log in as @@@user.Username</button>
+                            <button class="button" type="submit" name="userId" value="@user.Id">Log in as @@@user.Username</button>
                         }
                     </div>
                     <div class="margin-bottom-5px margin-top-5px">
@@ -137,7 +141,7 @@
                 }
                 <input type="text" autocomplete="one-time-code" placeholder="TOTP" name="totp" class="hidden-input"
                        tabindex="-1" aria-hidden="true"/>
-                <button type="submit">Submit</button>
+                <button class="button" type="submit">Submit</button>
             </form>
         }
     </div>
