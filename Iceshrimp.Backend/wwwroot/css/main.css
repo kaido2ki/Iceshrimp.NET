@@ -13,21 +13,41 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
-    --background-color: #0b0a0f;
-    --foreground-color: #17151e;
-    --highlight-color: #2e2b4c;
-    --hover-color: #3d3a66;
+    /* Light theme colors */
+    --background-color: #e7edff;
+    --foreground-color: #f0f3ff;
+    --highlight-color: #c5c3ef;
+    --hover-color: #aeaad2;
+    --font-color: #0b0a0f;
+    --notice-color: #2e89ff;
+    --warning-color: #ffc229;
+    --danger-color: #ff2929;
+    --link: #6b6bff;
+
+    /* Other colors */
     --accent-primary-color: #685bc4;
     --accent-secondary-color: #7b74cc;
     --accent-color: linear-gradient(to right, var(--accent-primary-color), var(--accent-secondary-color));
-    --notice-color: #92c1ff;
-    --warning-color: #ffdf91;
-    --danger-color: #ff9191;
-    --font-color: #e7edff;
-    --link: #9E9EFF;
+
+    /* Other variables */
     --btn-radius: 1.25rem;
 
     overscroll-behavior-y: none;
+}
+
+/* Dark theme colors */
+@media screen and (prefers-color-scheme: dark) {
+    :root {
+        --background-color: #0b0a0f;
+        --foreground-color: #17151e;
+        --highlight-color: #2e2b4c;
+        --hover-color: #3d3a66;
+        --font-color: #e7edff;
+        --notice-color: #92c1ff;
+        --warning-color: #ffdf91;
+        --danger-color: #ff9191;
+        --link: #9E9EFF;
+    }
 }
 
 
