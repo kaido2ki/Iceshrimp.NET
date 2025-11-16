@@ -7,6 +7,23 @@
     --failed-color: #FF5151;
 }
 
+body {
+    max-width: 800px;
+    margin: 1.2rem auto;
+    padding: 0 0.5rem;
+    background-color: var(--background-color);
+}
+
+footer {
+    border-top: 1px solid var(--highlight-color);
+    padding-top: 0.5rem;
+    color: var(--hover-color);
+}
+
+body > footer {
+    margin-top: 1rem;
+}
+
 .status-queued {
     color: var(--queued-color);
 }

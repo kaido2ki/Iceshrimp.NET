@@ -89,6 +89,10 @@ menu {
     padding: 0;
 }
 
+hr {
+    border-color: var(--highlight-color);
+}
+
 dialog {
     border: 0;
     margin: 0;
