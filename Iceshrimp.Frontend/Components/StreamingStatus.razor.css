@@ -41,8 +41,8 @@ svg {
     border-width: 2px;
     border-color: transparent;
     background-color: transparent;
-    border-right-color: white;
-    border-top-color: white;
+    border-right-color: var(--accent-primary-color);
+    border-top-color: var(--accent-primary-color);
     border-style: solid;
     margin-right: 0.5rem;
 }
