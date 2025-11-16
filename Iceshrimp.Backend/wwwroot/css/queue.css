@@ -110,5 +110,5 @@ body > footer {
 }
 
 .color-fg {
-    color: var(--text-main);
+    color: var(--font-color);
 }

@@ -27,12 +27,9 @@ p {
     flex-grow: 1;
 }
 
-.text-muted {
-    color: var(--text-muted);
-}
-
 .text-dim {
-    color: var(--text-dim);
+    color: var(--font-color);
+    opacity: 0.5;
 }
 
 .auto-table {
