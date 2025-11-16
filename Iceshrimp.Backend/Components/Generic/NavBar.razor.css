@@ -9,19 +9,19 @@
     right: 0;
     height: 50px;
     padding: 0;
-    background-color: var(--button-base);
     display: flex;
     align-items: center;
     white-space: nowrap;
     vertical-align: middle;
+    border-bottom: 0.05rem solid var(--highlight-color);
 }
 
-a {
+::deep a {
     text-decoration: none;
 }
 
 .navbar ::deep a {
-    color: var(--text-main);
+    color: var(--font-color);
 }
 
 .navbar ul {
@@ -34,7 +34,7 @@ a {
 }
 
 .navbar .brand {
-    color: var(--text-bright);
+    color: var(--accent-primary-color);
     padding: 0 15px;
     font-weight: bold;
 }
@@ -48,7 +48,7 @@ a {
 }
 
 .navbar ul li ::deep a {
-    color: var(--text-main);
+    color: var(--font-color);
     padding: 0 12px;
     height: 100%;
     display: flex;
@@ -62,7 +62,7 @@ a {
 .navbar ul ::deep a:focus,
 .navbar .brand:hover,
 .navbar .brand:focus {
-    background-color: var(--button-hover);
+    background-color: var(--highlight-color);
     text-decoration: none;
 }
 
@@ -98,13 +98,13 @@ a {
 }
 
 ul.dropdown-menu li {
-    background-color: var(--button-base);
+    background-color: var(--background-color);
 }
 
 li.dropdown-spacer,
 li.hamburger-spacer {
     height: 1px !important;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--highlight-color);
     filter: brightness(65%);
 }
 
@@ -126,7 +126,7 @@ li.hamburger-spacer {
 
 ul.hamburger-menu li {
     display: block !important;
-    background-color: var(--button-base);
+    background-color: var(--background-color);
 }
 
 .navbar-lg {
