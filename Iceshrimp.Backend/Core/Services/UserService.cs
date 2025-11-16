@@ -502,7 +502,7 @@ public class UserService(
 		var avatar = await driveSvc.StoreFileAsync(actor.Avatar?.Url?.Link, user, actor.Avatar?.Sensitive ?? false,
 		                                           actor.Avatar?.SummaryDescription ?? actor.Avatar?.Description, logExisting: false);
 		var banner = await driveSvc.StoreFileAsync(actor.Banner?.Url?.Link, user, actor.Banner?.Sensitive ?? false,
-		                                           actor.Banner?.SummaryDescription ?? actor.Avatar?.Description, logExisting: false);
+		                                           actor.Banner?.SummaryDescription ?? actor.Banner?.Description, logExisting: false);
 
 		var prevAvatarId = user.AvatarId;
 		var prevBannerId = user.BannerId;
