@@ -1,10 +1,10 @@
 :root {
-    --queued-color: #9958FC;
-    --delayed-color: #FFCD59;
-    --scheduled-color: #FFE4A5;
-    --running-color: #59D5FF;
-    --completed-color: #92EF5F;
-    --failed-color: #FF5151;
+    --queued-color: var(--accent-primary-color);
+    --delayed-color: var(--warning-color);
+    --scheduled-color: color-mix(in srgb, var(--warning-color) 70%, var(--font-color));
+    --running-color: var(--notice-color);
+    --completed-color: var(--success-color);
+    --failed-color: var(--danger-color);
 }
 
 body {

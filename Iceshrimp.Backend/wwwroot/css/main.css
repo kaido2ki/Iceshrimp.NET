@@ -19,8 +19,9 @@
     --hover-color: light-dark(oklch(0.833 0.061 287.073 / 75%), #3d3a66);
     --border-color: light-dark(#c5c3ef, #2e2b4c);
     --font-color: light-dark(#0b0a0f, #e7edff);
+    --success-color: light-dark(#7eff2e, #b3ff92);
     --notice-color: light-dark(#2e89ff, #92c1ff);
-    --warning-color: light-dark(#ffc229, #ff9191);
+    --warning-color: light-dark(#ffc229, #ffdf91);
     --danger-color: light-dark(#ff2929, #ff9191);
     --link: light-dark(#6b6bff, #9E9EFF);
     --accent-primary-color: #685bc4;
