@@ -200,6 +200,10 @@ tbody tr:nth-child(even) {
     background-color: var(--foreground-color);
 }
 
+details > summary {
+    cursor: pointer;
+}
+
 
 /*Blazor stuff, Fix Later*/
 .validation-message {
