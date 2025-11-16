@@ -17,6 +17,7 @@
     --foreground-color: light-dark(#f0f3ff, #17151e);
     --highlight-color: light-dark(oklch(0.833 0.061 287.073 / 50%), #2e2b4c);
     --hover-color: light-dark(oklch(0.833 0.061 287.073 / 75%), #3d3a66);
+    --border-color: light-dark(#c5c3ef, #2e2b4c);
     --font-color: light-dark(#0b0a0f, #e7edff);
     --notice-color: light-dark(#2e89ff, #92c1ff);
     --warning-color: light-dark(#ffc229, #ff9191);
@@ -91,7 +92,7 @@ menu {
 }
 
 hr {
-    border-color: var(--highlight-color);
+    border-color: var(--border-color);
 }
 
 dialog {
@@ -137,7 +138,7 @@ button[disabled], .button[disabled] {
 input, textarea, select {
     display: block;
     background-color: var(--foreground-color);
-    border: solid var(--highlight-color) 0.05rem;
+    border: solid var(--border-color) 0.05rem;
     outline: none;
     max-width: 50em;
     border-radius: 0.5em;
@@ -190,11 +191,11 @@ th {
 }
 
 thead {
-    border-bottom: 1px solid var(--highlight-color);
+    border-bottom: 1px solid var(--border-color);
 }
 
 tfoot {
-    border-top: 1px solid var(--highlight-color);
+    border-top: 1px solid var(--border-color);
 }
 
 tbody tr:nth-child(even) {
