@@ -122,7 +122,7 @@ public class NodeInfoResponse
 		[J("post_formats")] public string[] PostFormats => ["text/plain", "text/x.misskeymarkdown"];
 
 		[J("features")]
-		public string[] Features =>
+		public List<string> Features { get; }  =
 		[
 			"pleroma_api",
 			"akkoma_api",

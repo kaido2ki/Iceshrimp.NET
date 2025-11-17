@@ -52,6 +52,62 @@ public class NodeInfoController(
 
 		var bubbleTimelineEnabled = await db.BubbleInstances.AnyAsync();
 
+		var metadata = new NodeInfoResponse.NodeInfoMetadata
+		{
+			//FIXME Implement members
+			NodeName                   = instanceName,
+			NodeDescription            = instanceDescription,
+			Maintainer                 = new NodeInfoResponse.Maintainer { Name = "todo", Email = adminContact },
+			Languages                  = [],
+			TosUrl                     = "todo",
+			RepositoryUrl              = new Uri(Constants.RepositoryUrl),
+			FeedbackUrl                = new Uri(Constants.IssueTrackerUrl),
+			ThemeColor                 = themeColor,
+			DisableRegistration        = true,
+			DisableLocalTimeline       = false,
+			DisableRecommendedTimeline = false,
+			DisableGlobalTimeline      = false,
+			EmailRequiredForSignup     = false,
+			PostEditing                = false,
+			PostImports                = false,
+			EnableHCaptcha             = false,
+			EnableRecaptcha            = false,
+			MaxNoteTextLength          = 0,
+			MaxCaptionTextLength       = 0,
+			EnableGithubIntegration    = false,
+			EnableDiscordIntegration   = false,
+			EnableEmail                = false,
+			FederatedTimelineAvailable = true,
+			PublicTimelineVisibility = new NodeInfoResponse.PleromaPublicTimelineVisibility
+			{
+				Bubble    = false,
+				Federated = false,
+				Local     = false
+			},
+			// @formatter:off
+			UploadLimits = new NodeInfoResponse.PleromaUploadLimits
+			{
+				General    = maxUploadSize,
+				Avatar     = maxUploadSize,
+				Background = maxUploadSize,
+				Banner     = maxUploadSize
+			},
+			FieldsLimits = new NodeInfoResponse.PleromaFieldsLimits
+			{
+				MaxFields = 10
+			},
+			// @formatter:on
+			Suggestions = new NodeInfoResponse.PleromaSuggestions { Enabled = false },
+			Federation  = new NodeInfoResponse.PleromaFederation { Enabled  = true },
+			// We don't want to leak the list of bubble instances to unauthenticated clients
+			LocalBubbleInstances = bubbleTimelineEnabled ? ["redacted.invalid"] : []
+		};
+
+		if (storageConfig.Value.ProxyRemoteMedia)
+		{
+			metadata.Features.Add("media_proxy");
+		}
+		
 		return new NodeInfoResponse
 		{
 			Version = Request.Path.Value?.EndsWith("2.1") ?? false ? "2.1" : "2.0",
@@ -80,56 +136,7 @@ public class NodeInfoController(
 				LocalComments = 0,
 				LocalPosts    = localPosts
 			},
-			Metadata = new NodeInfoResponse.NodeInfoMetadata
-			{
-				//FIXME Implement members
-				NodeName                   = instanceName,
-				NodeDescription            = instanceDescription,
-				Maintainer                 = new NodeInfoResponse.Maintainer { Name = "todo", Email = adminContact },
-				Languages                  = [],
-				TosUrl                     = "todo",
-				RepositoryUrl              = new Uri(Constants.RepositoryUrl),
-				FeedbackUrl                = new Uri(Constants.IssueTrackerUrl),
-				ThemeColor                 = themeColor,
-				DisableRegistration        = true,
-				DisableLocalTimeline       = false,
-				DisableRecommendedTimeline = false,
-				DisableGlobalTimeline      = false,
-				EmailRequiredForSignup     = false,
-				PostEditing                = false,
-				PostImports                = false,
-				EnableHCaptcha             = false,
-				EnableRecaptcha            = false,
-				MaxNoteTextLength          = 0,
-				MaxCaptionTextLength       = 0,
-				EnableGithubIntegration    = false,
-				EnableDiscordIntegration   = false,
-				EnableEmail                = false,
-				FederatedTimelineAvailable = true,
-				PublicTimelineVisibility = new NodeInfoResponse.PleromaPublicTimelineVisibility
-				{
-					Bubble    = false,
-					Federated = false,
-					Local     = false
-				},
-				// @formatter:off
-				UploadLimits = new NodeInfoResponse.PleromaUploadLimits
-				{
-					General    = maxUploadSize,
-					Avatar     = maxUploadSize,
-					Background = maxUploadSize,
-					Banner     = maxUploadSize
-				},
-				FieldsLimits = new NodeInfoResponse.PleromaFieldsLimits
-				{
-					MaxFields = 10
-				},
-				// @formatter:on
-				Suggestions = new NodeInfoResponse.PleromaSuggestions { Enabled = false },
-				Federation  = new NodeInfoResponse.PleromaFederation { Enabled  = true },
-				// We don't want to leak the list of bubble instances to unauthenticated clients
-				LocalBubbleInstances = bubbleTimelineEnabled ? ["redacted.invalid"] : []
-			},
+			Metadata = metadata,
 			OpenRegistrations = false
 		};
 	}
