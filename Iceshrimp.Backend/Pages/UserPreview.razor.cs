@@ -47,8 +47,6 @@ public partial class UserPreview(
 
 		_instanceName = await meta.GetAsync(MetaEntity.InstanceName) ?? _instanceName;
 
-		//TODO: user note view (respect public preview settings - don't show renotes of remote notes if set to restricted or lower)
-
 		var split = Acct.Split("@");
 		if (split.Length > 2) throw GracefulException.BadRequest("Invalid acct");
 		var username = split[0].ToLowerInvariant();
@@ -75,6 +73,7 @@ public partial class UserPreview(
 		{
 			var pinnedNotes = await Database.UserNotePins
 			                                .Where(p => p.UserId == user.Id && p.Note.VisibilityIsPublicOrHome)
+			                                .OrderByDescending(p => p.Id)
 			                                .Select(p => p.Note)
 			                                .ToListAsync();
 			_pinnedNotes = await noteRenderer.RenderManyAsync(pinnedNotes);
@@ -84,6 +83,7 @@ public partial class UserPreview(
 		{
 			var notes = await Database.Notes
 			                          .Where(p => p.UserId == user.Id && !p.IsPureRenote && p.VisibilityIsPublicOrHome)
+			                          .OrderByDescending(p => p.Id)
 			                          .Skip(Offset ?? 0)
 			                          .Take(20)
 			                          .ToListAsync();
