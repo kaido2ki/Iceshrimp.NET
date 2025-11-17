@@ -104,6 +104,7 @@ public partial class UserPreview(
 		if (user?.IsAdmin ?? false) badges.Add("Admin");
 		if (user?.IsModerator ?? false) badges.Add("Moderator");
 		if (user?.IsBot ?? false) badges.Add("Automated");
+		if (user?.IsLocked ?? false) badges.Add("Private");
 		_badges = string.Join(" | ", badges);
 
 		if (user is { IsLocalUser: true, UserSettings.PrivateMode: false })
