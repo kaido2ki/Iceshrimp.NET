@@ -1,0 +1,16 @@
+.labeled-ruler {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.labeled-ruler .label {
+    flex-shrink: 0;
+}
+
+.labeled-ruler .rule {
+    flex-grow: 1;
+    border: 1px solid var(--border-color);
+}

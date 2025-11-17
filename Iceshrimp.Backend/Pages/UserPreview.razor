@@ -1,4 +1,5 @@
 @page "/User"
+@using Iceshrimp.Backend.Components.Generic
 @using Iceshrimp.Backend.Components.PublicPreview.Attributes
 @attribute [Route("/@{Acct}")]
 @attribute [PublicPreviewRouteFilter]
@@ -52,6 +53,15 @@ else
             <a href="@_feeds["RSS"].Item2" type="@_feeds["RSS"].Item1">RSS feed</a>
         }
     </div>
+    @if (_pinnedNotes.Count != 0)
+    {
+        <LabeledRuler Label="Pinned notes"/>
+    }
+    @foreach (var note in _pinnedNotes)
+    {
+        <NoteComponent Note="note" ShowMedia="false"/>
+    }
+
     <PageTitle>@@@_user.Username - @_instanceName</PageTitle>
     <HeadContent>
         <meta name="twitter:card" content="summary">

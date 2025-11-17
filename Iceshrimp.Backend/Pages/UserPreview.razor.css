@@ -44,17 +44,3 @@
     align-items: flex-start;
     padding-top: inherit;
 }
-
-.note {
-    margin: 1em 0;
-    padding: 12px;
-    border-radius: 6px;
-    background-color: var(--background-alt);
-}
-
-::deep {
-    .note .content {
-        padding: 0;
-        margin-bottom: 0;
-    }
-}

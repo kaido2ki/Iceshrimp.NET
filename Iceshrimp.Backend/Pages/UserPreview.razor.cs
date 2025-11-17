@@ -14,6 +14,7 @@ namespace Iceshrimp.Backend.Pages;
 
 public partial class UserPreview(
 	UserRenderer renderer,
+	NoteRenderer noteRenderer,
 	MetaService meta,
 	IOptions<Config.InstanceSection> instance,
 	IOptionsSnapshot<Config.SecuritySection> security
@@ -24,7 +25,9 @@ public partial class UserPreview(
 	private PreviewUser? _user;
 	private string       _instanceName = "Iceshrimp.NET";
 	private string?      _pronouns;
-	private string       _badges;
+	private string       _badges = "";
+
+	private List<PreviewNote> _pinnedNotes = [];
 
 	private Dictionary<string, (string, string)>? _feeds;
 
@@ -37,7 +40,6 @@ public partial class UserPreview(
 
 		_instanceName = await meta.GetAsync(MetaEntity.InstanceName) ?? _instanceName;
 
-		//TODO: user banner
 		//TODO: user note view (respect public preview settings - don't show renotes of remote notes if set to restricted or lower)
 
 		var split = Acct.Split("@");
@@ -60,6 +62,15 @@ public partial class UserPreview(
 			var target = user.UserProfile?.Url ?? user.Uri ?? throw new Exception("User is remote but has no uri");
 			Redirect(target);
 			return;
+		}
+
+		if (user != null && security.Value.PublicPreview != Enums.PublicPreview.Lockdown)
+		{
+			var pinnedNotes = await Database.UserNotePins
+			                                .Where(p => p.UserId == user.Id && p.Note.VisibilityIsPublicOrHome)
+			                                .Select(p => p.Note)
+			                                .ToListAsync();
+			_pinnedNotes = await noteRenderer.RenderManyAsync(pinnedNotes);
 		}
 
 		_user     = await renderer.RenderOne(user);
