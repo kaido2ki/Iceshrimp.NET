@@ -11,12 +11,12 @@
     width: 100%;
     aspect-ratio: 21/9;
     object-fit: cover;
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
 }
 
 .banner + .user {
-    margin-top: -4.5rem;
+    margin-top: -7.5rem;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 }
@@ -24,6 +24,14 @@
 /* Add shadow to text if banner is visible */
 ::deep .user-details.above-banner span {
     text-shadow: 0 0 5px black;
+}
+
+.user ::deep .name-section .display-name {
+    font-size: 1.25rem;
+}
+
+.user ::deep .name-section .acct {
+    font-size: 1rem;
 }
 
 .badges {
@@ -35,4 +43,18 @@
     flex-direction: column;
     align-items: flex-start;
     padding-top: inherit;
+}
+
+.note {
+    margin: 1em 0;
+    padding: 12px;
+    border-radius: 6px;
+    background-color: var(--background-alt);
+}
+
+::deep {
+    .note .content {
+        padding: 0;
+        margin-bottom: 0;
+    }
 }

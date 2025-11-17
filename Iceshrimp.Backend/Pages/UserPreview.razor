@@ -16,11 +16,11 @@ else
 {
     @if (_user.BannerUrl != null)
     {
-        <img class="banner" src="@_user.BannerUrl"/>
+        <img class="banner" src="@_user.BannerUrl" draggable="false"/>
     }
     <div class="user">
         <div class="user-details @(_user.BannerUrl != null ? "above-banner" : "")">
-            <UserComponent User="_user"/>
+            <UserComponent User="_user" Large/>
         </div>
         @if (!string.IsNullOrEmpty(_badges))
         {

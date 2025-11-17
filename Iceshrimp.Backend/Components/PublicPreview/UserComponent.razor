@@ -4,9 +4,9 @@
 {
     <div class="user">
         <a href="@User.Url">
-            <img src="@User.AvatarUrl" class="avatar" alt="User avatar"/>
+            <img src="@User.AvatarUrl" class="avatar@(Large ? " large" : "")" alt="User avatar"/>
         </a>
-        <div class="title">
+        <div class="name-section">
             <a class="display-name" href="@User.Url">
                 @if (User.DisplayName != null)
                 {
@@ -17,8 +17,8 @@
                     @User.Username
                 }
             </a>
+            <span class="acct">@@@User.Username<span class="host">@@@User.Host</span></span>
         </div>
-        <span class="acct">@@@User.Username<span class="host">@@@User.Host</span></span>
     </div>
 }
 else
@@ -27,6 +27,7 @@ else
 }
 
 @code {
-    [Parameter, EditorRequired] public required PreviewUser User   { get; set; }
-    [Parameter]                 public          bool        Link   { get; set; } = true;
+    [Parameter, EditorRequired] public required PreviewUser User  { get; set; }
+    [Parameter]                 public          bool        Link  { get; set; } = true;
+    [Parameter]                 public          bool        Large { get; set; }
 }
