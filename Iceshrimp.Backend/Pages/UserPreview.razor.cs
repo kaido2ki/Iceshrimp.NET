@@ -26,6 +26,10 @@ public partial class UserPreview(
 	private string       _instanceName = "Iceshrimp.NET";
 	private string?      _pronouns;
 	private string       _badges = "";
+	private string?      _location;
+	private string?      _birthday;
+
+	private List<(string Name, string Value, bool? IsVerified)> _fields = [];
 
 	private List<PreviewNote> _pinnedNotes = [];
 
@@ -77,6 +81,11 @@ public partial class UserPreview(
 		_pronouns = user?.UserProfile?.Pronouns != null
 			? string.Join(", ", user.UserProfile.Pronouns.Select(p => $"{p.Value} ({p.Key.ToUpper()})"))
 			: null;
+		_location = user?.UserProfile?.Location;
+		_birthday = user?.UserProfile?.Birthday;
+
+		if (user is { UserProfile: not null })
+			_fields = user.UserProfile.Fields.Select(p => (p.Name, p.Value, p.IsVerified)).ToList();
 
 		var badges = new List<string>();
 		if (user?.IsAdmin ?? false) badges.Add("Admin");
