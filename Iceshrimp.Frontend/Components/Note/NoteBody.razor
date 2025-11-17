@@ -68,6 +68,13 @@
                 <NoteComponent Note="Quote" AsQuote="true" OpenNote="false"></NoteComponent>
             </div>
         }
+        else if (NoteBase.QuoteId != null)
+        {
+            <div @onclick="OpenQuote" @onclick:stopPropagation="true" class="quote">
+                <Icon Name="Icons.Quotes"/>
+                @Loc["Click to view quoted note"]
+            </div>
+        }
     </div>
     @if (_overHeight & _showFull)
     {
@@ -168,6 +175,6 @@
 
     private void OpenQuote()
     {
-        Nav.NavigateTo($"/notes/{Quote!.Id}");
+        Nav.NavigateTo($"/notes/{Quote?.Id ?? NoteBase.QuoteId ?? NoteBase.Id}");
     }
 }
