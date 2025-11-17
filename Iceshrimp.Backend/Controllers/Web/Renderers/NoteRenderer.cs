@@ -98,6 +98,7 @@ public class NoteRenderer(
 			Cw          = note.Cw,
 			Visibility  = (NoteVisibility)note.Visibility,
 			LocalOnly   = note.LocalOnly,
+			QuoteId     = note.IsQuote ? note.RenoteId : null,
 			User        = noteUser,
 			Attachments = attachments.ToList(),
 			Reactions   = reactions.ToList(),

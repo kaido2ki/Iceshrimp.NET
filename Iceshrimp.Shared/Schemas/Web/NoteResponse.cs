@@ -24,7 +24,6 @@ public class NoteResponse : NoteWithQuote, ICloneable, IIdentifiable
 public class NoteWithQuote : NoteBase
 {
 	public NoteBase? Quote             { get; set; }
-	public string?   QuoteId           { get; set; }
 	public bool?     QuoteInaccessible { get; set; }
 }
 
@@ -39,6 +38,7 @@ public class NoteBase
 	public required List<EmojiResponse>      Emoji       { get; set; }
 	public required NoteVisibility           Visibility  { get; set; }
 	public required bool                     LocalOnly   { get; set; }
+	public required string?                  QuoteId     { get; set; }
 	public required bool                     Bookmarked  { get; set; }
 	public required bool                     Pinned      { get; set; }
 	public required bool                     Liked       { get; set; }
