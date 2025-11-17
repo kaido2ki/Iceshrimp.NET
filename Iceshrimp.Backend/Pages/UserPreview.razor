@@ -116,9 +116,9 @@ else
     <div class="pagination">
         @if (Offset is > 0)
         {
-            <button class="button" role="link" data-target="/@@@Acct?offset=@(Math.Max(0, Offset.Value - 20))"
-                    onclick="navigate(event)">❮ Previous page
-            </button>
+            <a class="button" href="/@@@Acct?offset=@(Math.Max(0, Offset.Value - 20))">
+                ❮ Previous page
+            </a>
         }
         else
         {
@@ -127,9 +127,9 @@ else
 
         @if (_notes.Count == 20)
         {
-            <button class="button" role="link" data-target="/@@@Acct?offset=@((Offset ?? 0) + 20)" onclick="navigate(event)">
+            <a class="button" href="/@@@Acct?offset=@((Offset ?? 0) + 20)">
                 Next page ❯
-            </button>
+            </a>
         }
         else
         {

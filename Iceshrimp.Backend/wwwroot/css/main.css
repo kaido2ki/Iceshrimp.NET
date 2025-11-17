@@ -127,6 +127,15 @@ button {
     align-items: center;
 }
 
+a.button {
+    cursor: pointer;
+    width: fit-content;
+    height: fit-content;
+    background-color: var(--foreground-color);
+    color: var(--notice-color);
+    text-decoration: none;
+}
+
 .button:hover {
     background-color: var(--hover-color);
 }
