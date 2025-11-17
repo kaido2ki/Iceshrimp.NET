@@ -44,6 +44,7 @@ public class NoteRenderer(
 
 		var res = new PreviewNote
 		{
+			Id                = note.Id,
 			User              = users.First(p => p.Id == note.User.Id),
 			Text              = renderedText?.Html,
 			Cw                = note.Cw,
@@ -53,8 +54,8 @@ public class NoteRenderer(
 			QuoteInaccessible = note.Renote?.VisibilityIsPublicOrHome == false,
 			Attachments       = attachments[note.Id]?.Where(p => !inlineMediaUrls.Contains(p.Url)).ToList(),
 			Poll              = polls.GetValueOrDefault(note.Id),
-			CreatedAt         = note.CreatedAt.ToDisplayStringTz(),
-			UpdatedAt         = note.UpdatedAt?.ToDisplayStringTz()
+			CreatedAt         = note.CreatedAt,
+			UpdatedAt         = note.UpdatedAt
 		};
 
 		return res;

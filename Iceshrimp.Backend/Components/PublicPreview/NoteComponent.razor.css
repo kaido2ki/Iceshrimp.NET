@@ -5,6 +5,13 @@
     border-radius: 0.75rem;
 }
 
+.note-details {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
 .content {
     display: flex;
     flex-direction: column;

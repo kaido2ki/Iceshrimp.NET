@@ -4,6 +4,7 @@ namespace Iceshrimp.Backend.Components.PublicPreview.Schemas;
 
 public class PreviewNote
 {
+	public required string                   Id;
 	public required PreviewUser              User;
 	public required string?                  RawText;
 	public required MarkupString?            Text;
@@ -13,8 +14,8 @@ public class PreviewNote
 	public required bool                     QuoteInaccessible;
 	public required List<PreviewAttachment>? Attachments;
 	public required PreviewPoll?             Poll;
-	public required string                   CreatedAt;
-	public required string?                  UpdatedAt;
+	public required DateTime                 CreatedAt;
+	public required DateTime?                UpdatedAt;
 }
 
 public class PreviewAttachment

@@ -1,16 +1,13 @@
+@using Iceshrimp.Backend.Components.Generic
 @using Iceshrimp.Backend.Components.PublicPreview.Schemas
 
 <div class="note">
-    <UserComponent User="Note.User" Link="true"/>
-
-    <!-- TODO: figure out a better place to put this
-<small>Published at: @Note.CreatedAt</small>
-@if (Note.UpdatedAt != null)
-{
-    <br/>
-    <small>Edited at: @Note.UpdatedAt</small>
-}
--->
+    <div class="note-details">
+        <UserComponent User="Note.User" Link="true"/>
+        <a href="/notes/@Note.Id">
+            <Timestamp Date="@Note.CreatedAt"/>
+        </a>
+    </div>
 
     <div class="content">
         @if (Note.Cw != null)

@@ -1,0 +1,24 @@
+@using Iceshrimp.Backend.Core.Extensions
+
+<span title="@Date.ToDisplayStringTz()">@RenderTimestamp()</span>
+
+@code {
+    [Parameter, EditorRequired] public required DateTime Date { get; set; }
+    
+    private string RenderTimestamp()
+    {
+        var diff = DateTime.UtcNow - Date.ToUniversalTime();
+
+        return diff switch
+        {
+            { TotalDays: >= 365 }  => $"{Math.Floor(diff.TotalDays / 365)}y",
+            { TotalDays: >= 30 }   => $"{Math.Floor(diff.TotalDays / 30)}mo",
+            { TotalDays: >= 7 }    => $"{Math.Floor(diff.TotalDays / 7)}w",
+            { TotalDays: >= 1 }    => $"{Math.Floor(diff.TotalDays)}d",
+            { TotalHours: >= 1 }   => $"{Math.Floor(diff.TotalHours)}h",
+            { TotalMinutes: >= 1 } => $"{Math.Floor(diff.TotalMinutes)}m",
+            { TotalSeconds: >= 5 } => $"{Math.Floor(diff.TotalSeconds)}s",
+            _                      => "now"
+        };
+    }
+}
