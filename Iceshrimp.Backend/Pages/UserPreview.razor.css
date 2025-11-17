@@ -73,3 +73,9 @@
     width: calc(100% - 10.5rem);
     word-wrap: break-word;
 }
+
+.pagination {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}

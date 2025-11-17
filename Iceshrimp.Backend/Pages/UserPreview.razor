@@ -104,6 +104,38 @@ else
     {
         <NoteComponent Note="note" ShowMedia="false"/>
     }
+    @if (_pinnedNotes.Count != 0 && _notes.Count != 0)
+    {
+        <LabeledRuler Label="Latest notes"/>
+    }
+    @foreach (var note in _notes)
+    {
+        <NoteComponent Note="note" ShowMedia="false"/>
+    }
+
+    <div class="pagination">
+        @if (Offset is > 0)
+        {
+            <button class="button" role="link" data-target="/@@@Acct?offset=@(Math.Max(0, Offset.Value - 20))"
+                    onclick="navigate(event)">❮ Previous page
+            </button>
+        }
+        else
+        {
+            <button class="button" disabled>❮ Previous page</button>
+        }
+
+        @if (_notes.Count == 20)
+        {
+            <button class="button" role="link" data-target="/@@@Acct?offset=@((Offset ?? 0) + 20)" onclick="navigate(event)">
+                Next page ❯
+            </button>
+        }
+        else
+        {
+            <button class="button" disabled>Next page ❯</button>
+        }
+    </div>
 
     <PageTitle>@@@_user.Username - @_instanceName</PageTitle>
     <HeadContent>
@@ -125,5 +157,6 @@ else
         }
         <VersionedLink rel="stylesheet" href="/_content/Iceshrimp.Assets.PhosphorIcons/css/ph-regular.css"/>
         <VersionedLink rel="stylesheet" href="/css/public-preview.css"/>
+        <VersionedScript src="/js/user-preview.js"/>
     </HeadContent>
 }

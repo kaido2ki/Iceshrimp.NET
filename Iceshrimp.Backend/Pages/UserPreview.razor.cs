@@ -22,6 +22,8 @@ public partial class UserPreview(
 {
 	[Parameter] public required string Acct { get; set; }
 
+	[SupplyParameterFromQuery] public int? Offset { get; set; }
+
 	private PreviewUser? _user;
 	private string       _instanceName = "Iceshrimp.NET";
 	private string?      _pronouns;
@@ -32,6 +34,7 @@ public partial class UserPreview(
 	private List<(string Name, string Value, bool? IsVerified)> _fields = [];
 
 	private List<PreviewNote> _pinnedNotes = [];
+	private List<PreviewNote> _notes = [];
 
 	private Dictionary<string, (string, string)>? _feeds;
 
@@ -68,13 +71,23 @@ public partial class UserPreview(
 			return;
 		}
 
-		if (user != null && security.Value.PublicPreview != Enums.PublicPreview.Lockdown)
+		if (user != null && Offset is 0 or null && security.Value.PublicPreview != Enums.PublicPreview.Lockdown)
 		{
 			var pinnedNotes = await Database.UserNotePins
 			                                .Where(p => p.UserId == user.Id && p.Note.VisibilityIsPublicOrHome)
 			                                .Select(p => p.Note)
 			                                .ToListAsync();
 			_pinnedNotes = await noteRenderer.RenderManyAsync(pinnedNotes);
+		}
+
+		if (user != null && security.Value.PublicPreview != Enums.PublicPreview.Lockdown)
+		{
+			var notes = await Database.Notes
+			                          .Where(p => p.UserId == user.Id && !p.IsPureRenote && p.VisibilityIsPublicOrHome)
+			                          .Skip(Offset ?? 0)
+			                          .Take(20)
+			                          .ToListAsync();
+			_notes = await noteRenderer.RenderManyAsync(notes);
 		}
 
 		_user     = await renderer.RenderOne(user);
