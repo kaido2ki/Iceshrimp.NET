@@ -5682,7 +5682,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Report", "Report")
                         .WithMany()
-                        .HasForeignKey("ReportId");
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.UserGroupInvitation", "UserGroupInvitation")
                         .WithMany("Notifications")

@@ -172,6 +172,10 @@ public class Notification : IIdentifiable
 			entity.HasOne(d => d.UserGroupInvitation)
 			      .WithMany(p => p.Notifications)
 			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Report)
+			      .WithMany()
+			      .OnDelete(DeleteBehavior.Cascade);
 		}
 	}
 }
