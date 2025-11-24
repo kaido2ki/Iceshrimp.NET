@@ -22,7 +22,8 @@
 }
 
 /* Add shadow to text if banner is visible */
-::deep .user-details.above-banner span {
+.user-details.above-banner ::deep .name-section span {
+    color: var(--light-color);
     text-shadow: 0 0 5px black;
 }
 
