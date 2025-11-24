@@ -13,12 +13,14 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 
+    --light-color: #e7edff;
+    --dark-color: #0b0a0f;
     --background-color: light-dark(#e7edff, #0b0a0f);
     --foreground-color: light-dark(#f0f3ff, #17151e);
     --highlight-color: light-dark(oklch(0.833 0.061 287.073 / 50%), #2e2b4c);
     --hover-color: light-dark(oklch(0.833 0.061 287.073 / 75%), #3d3a66);
     --border-color: light-dark(#c5c3ef, #2e2b4c);
-    --font-color: light-dark(#0b0a0f, #e7edff);
+    --font-color: light-dark(var(--dark-color), var(--light-color));
     --success-color: light-dark(#74e82c, #b3ff92);
     --notice-color: light-dark(#2e89ff, #92c1ff);
     --warning-color: light-dark(#ffc229, #ffdf91);
