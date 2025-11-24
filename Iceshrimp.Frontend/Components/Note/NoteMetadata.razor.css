@@ -58,7 +58,7 @@
         line-height: 1;
     }
     .instance {
-        color: white;
+        color: var(--light-color);
         text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
     }
 }

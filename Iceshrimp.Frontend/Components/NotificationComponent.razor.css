@@ -56,14 +56,17 @@
     margin-top: 1rem;
 }
 
-::deep .notification-note {
-    .metadata {
-        flex-basis: 20%;
-    }
-    
+.notification ::deep .note-wrapper .ticker {
+    padding: 0;
+    background-color: unset;
+
     .instance {
         display: none;
     }
+}
+
+.notification ::deep .note-wrapper .metadata {
+    flex-basis: 25%;
 }
 
 ::deep .notification-header .avatar {
