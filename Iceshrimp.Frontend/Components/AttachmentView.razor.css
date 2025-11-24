@@ -46,7 +46,7 @@
     top: 0%;
     right: 0%;
     background-color: transparent;
-    color: white;
+    color: var(--light-color);
 }
 
 .next {
@@ -54,7 +54,7 @@
     top: 50%;
     right: 0%;
     background-color: transparent;
-    color: white;
+    color: var(--light-color);
     > .icon-wrapper {
         margin-left: 3rem;
     }
@@ -65,7 +65,7 @@
     top: 50%;
     left: 0%;
     background-color: transparent;
-    color: white;
+    color: var(--light-color);
     > .icon-wrapper {
         margin-right: 3rem;
     }
@@ -80,6 +80,7 @@
     margin-right: auto;
     margin-bottom: auto;
     background-color: rgb(0 0 0 / 0.5);
+    color: var(--light-color);
     padding: 1rem;
     border-radius: 0.5rem;
 }
