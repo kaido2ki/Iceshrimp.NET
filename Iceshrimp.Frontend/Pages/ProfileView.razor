@@ -8,6 +8,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.Components.Sections
 @using Microsoft.Extensions.Localization
 @attribute [Authorize]
 @inject ApiService                     Api
@@ -16,6 +17,18 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject MetadataService                MetadataService
 @inject NavigationManager              Nav;
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.User"/>
+    @if (_init)
+    {
+        <UserDisplayName User="@UserResponse"/>
+    }
+    else
+    {
+        @Loc["Profile"]
+    }
+</SectionContent>
 
 @if (_init)
 {
