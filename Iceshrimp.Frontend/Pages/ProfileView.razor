@@ -44,12 +44,14 @@
                         <div class="name">
                             <UserDisplayName User="@UserResponse"/>
                         </div>
-                        <div class="identifier">
-                            @@@UserResponse.Username
-                            @if (UserResponse.Host != null)
-                            {
-                                <span class="host">@@@UserResponse.Host</span>
-                            }
+                        <div>
+                            <span class="identifier">
+                                @@@UserResponse.Username
+                                @if (UserResponse.Host != null)
+                                {
+                                    <span class="host">@@@UserResponse.Host</span>
+                                }
+                            </span>
                             @if (Profile != null && Profile.Relations.HasFlag(Relations.FollowedBy))
                             {
                                 <span class="follows-badge">Follows you</span>

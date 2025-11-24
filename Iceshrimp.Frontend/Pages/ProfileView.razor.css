@@ -20,7 +20,6 @@
 .name-section {
     margin-left: 1rem;
     word-break: break-word;
-    text-shadow: 0 0 5px #000;
 }
 
 .name {
@@ -82,6 +81,13 @@
     margin: 1rem auto -7em auto;
     border-top-left-radius: 1rem;
     border-top-right-radius: 1rem;
+}
+
+.container:has(.banner) .name-section {
+    .name, .identifier {
+        color: var(--light-color);
+        text-shadow: 0 0 5px #000;
+    }
 }
 
 .notes {
