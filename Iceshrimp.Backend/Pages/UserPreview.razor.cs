@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Iceshrimp.Assets.PhosphorIcons;
 using Iceshrimp.Backend.Components.Helpers;
 using Iceshrimp.Backend.Components.PublicPreview.Renderers;
 using Iceshrimp.Backend.Components.PublicPreview.Schemas;
@@ -27,10 +28,10 @@ public partial class UserPreview(
 	private PreviewUser? _user;
 	private string       _instanceName = "Iceshrimp.NET";
 	private string?      _pronouns;
-	private string       _badges = "";
 	private string?      _location;
 	private string?      _birthday;
 
+	private List<(IconName Icon, string Label)>                 _badges = [];
 	private List<(string Name, string Value, bool? IsVerified)> _fields = [];
 
 	private List<PreviewNote> _pinnedNotes = [];
@@ -100,12 +101,10 @@ public partial class UserPreview(
 		if (user is { UserProfile: not null })
 			_fields = user.UserProfile.Fields.Select(p => (p.Name, p.Value, p.IsVerified)).ToList();
 
-		var badges = new List<string>();
-		if (user?.IsAdmin ?? false) badges.Add("Admin");
-		if (user?.IsModerator ?? false) badges.Add("Moderator");
-		if (user?.IsBot ?? false) badges.Add("Automated");
-		if (user?.IsLocked ?? false) badges.Add("Private");
-		_badges = string.Join(" | ", badges);
+		if (user?.IsAdmin ?? false) _badges.Add((Icons.ShieldStar, "Admin"));
+		if (user?.IsModerator ?? false) _badges.Add((Icons.Shield, "Moderator"));
+		if (user?.IsBot ?? false) _badges.Add((Icons.Robot, "Automated"));
+		if (user?.IsLocked ?? false) _badges.Add((Icons.Lock, "Private"));
 
 		if (user is { IsLocalUser: true, UserSettings.PrivateMode: false })
 		{

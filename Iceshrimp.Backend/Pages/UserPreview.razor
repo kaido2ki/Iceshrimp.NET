@@ -24,12 +24,34 @@ else
         <div class="user-details @(_user.BannerUrl != null ? "above-banner" : "")">
             <UserComponent User="_user" Large/>
         </div>
-        @if (!string.IsNullOrEmpty(_badges))
-        {
-            <div class="badges">
-                @_badges
-            </div>
-        }
+        <div class="data badge-feed">
+            @if (_badges.Count != 0)
+            {
+                <div class="badges">
+                    @foreach (var badge in _badges)
+                    {
+                        <span class="badge">
+                            <Icon Name="badge.Icon" Size="1.3em"/>
+                            @badge.Label
+                        </span>
+                    }
+                </div>
+            }
+            @if (_feeds != null)
+            {
+                <div class="feeds">
+                    <a href="@_feeds["Atom"].Item2" type="@_feeds["Atom"].Item1" title="Atom Feed">
+                        <Icon Name="Icons.Atom" Size="1.3em"/>
+                    </a>
+                    <a href="@_feeds["JSON"].Item2" type="@_feeds["JSON"].Item1" title="JSON Feed">
+                        <Icon Name="Icons.BracketsCurly" Size="1.3em"/>
+                    </a>
+                    <a href="@_feeds["RSS"].Item2" type="@_feeds["RSS"].Item1" title="RSS Feed">
+                        <Icon Name="Icons.Rss" Size="1.3em"/>
+                    </a>
+                </div>
+            }
+        </div>
         <div class="bio">
             @(_user.Bio ?? new MarkupString("<i>This user hasn't added a bio yet.</i>"))
         </div>
@@ -83,16 +105,6 @@ else
         {
             <div class="bio">
                 <i>This user has migrated to a <a href="@_user.MovedToUri">different account</a>.</i>
-            </div>
-        }
-        @if (_feeds != null)
-        {
-            <div class="data">
-                <a href="@_feeds["Atom"].Item2" type="@_feeds["Atom"].Item1">Atom feed</a>
-                <span aria-hidden="true">|</span>
-                <a href="@_feeds["JSON"].Item2" type="@_feeds["JSON"].Item1">JSON feed</a>
-                <span aria-hidden="true">|</span>
-                <a href="@_feeds["RSS"].Item2" type="@_feeds["RSS"].Item1">RSS feed</a>
             </div>
         }
     </div>
