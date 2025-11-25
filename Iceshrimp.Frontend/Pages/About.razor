@@ -85,7 +85,7 @@
             
             if (SessionSvc.Current?.IsAdmin is true)
             {
-                var activity = await Api.Admin.GetActivityByNoteIdAsync(noteResponse.Id);
+                var activity = noteResponse.User.Host != null ? await Api.Admin.GetActivityAsync(noteResponse.Url, SessionSvc.Current.Id) : await Api.Admin.GetActivityByNoteIdAsync(noteResponse.Id);
 
                 if (activity != null)
                     Documents.Add(Loc["Activity"], JsonSerializer.SerializeToDocument(activity));
@@ -112,7 +112,7 @@
 
             if (SessionSvc.Current?.IsAdmin is true)
             {
-                var activity = await Api.Admin.GetActivityByUserIdAsync(userResponse.Id);
+                var activity = userResponse.Host != null && profileResponse?.Url != null ? await Api.Admin.GetActivityAsync(profileResponse.Url, SessionSvc.Current.Id) : await Api.Admin.GetActivityByUserIdAsync(userResponse.Id);
 
                 if (activity != null)
                     Documents.Add(Loc["Activity"], JsonSerializer.SerializeToDocument(activity));
