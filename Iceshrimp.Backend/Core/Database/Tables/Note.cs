@@ -450,9 +450,7 @@ public class Note : IIdentifiable
 			      .WithMany(p => p.Notes)
 			      .OnDelete(DeleteBehavior.Cascade);
 
-            // TODO: name this filter when we update to EF 10
-            // https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10#using-multiple-query-filters
-            entity.HasQueryFilter(e => e.Published);
+            entity.HasQueryFilter("Unpublished", e => e.Published);
             entity.Property(e => e.Published).HasDefaultValue(true);
         }
 	}

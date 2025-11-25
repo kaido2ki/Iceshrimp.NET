@@ -44,9 +44,7 @@ public class NoteLike : IIdentifiable
 			      .OnDelete(DeleteBehavior.Cascade);
             
             // Reverse of the filter from Note
-            // TODO: name this filter when we update to EF 10
-            // https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10#using-multiple-query-filters
-            entity.HasQueryFilter(e => e.Note.Published);
+            entity.HasQueryFilter("Unpublished", e => e.Note.Published);
 		}
 	}
 }

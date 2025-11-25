@@ -257,9 +257,7 @@ public static class QueryableExtensions
 			return query.Where(note => note.Visibility == visibility);
 		}
 
-		// TODO: name this filter when we update to EF 10
-		// https://learn.microsoft.com/en-us/ef/core/querying/filters?tabs=ef10#using-multiple-query-filters
-		public IQueryable<Note> IncludeUnpublished() => query.IgnoreQueryFilters();
+		public IQueryable<Note> IncludeUnpublished() => query.IgnoreQueryFilters(["Unpublished"]);
 
 		public IQueryable<Note> FilterByUser(User user)
 		{
