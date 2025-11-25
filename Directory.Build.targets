@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <Target Name="EnsureBuildDirValidity" BeforeTargets="BeforeBuild">
+    <Target Name="EnsureBuildDirValidity" BeforeTargets="BeforeBuild" Condition="'$(_IsPublishing)' == 'true'">
         <Error Text="You are trying to build/publish the entire solution. Please build the Iceshrimp.Backend project directly instead." Condition="'$(SolutionDir)'!='' and '$(SolutionDir)'!='*Undefined*'"/>
     </Target>
 </Project>
