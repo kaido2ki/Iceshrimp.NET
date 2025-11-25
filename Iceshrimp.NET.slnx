@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/build/">
     <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
     <File Path="global.json" />
     <File Path="Iceshrimp.Build/Iceshrimp.Build.props" />
     <File Path="Iceshrimp.Build/Iceshrimp.Build.targets" />
