@@ -1,14 +1,12 @@
 using System.Diagnostics;
+using System.Net;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Pages.Shared;
 using Iceshrimp.Backend.SignalR;
 using Iceshrimp.Backend.SignalR.Authentication;
 using Microsoft.AspNetCore.HttpOverrides;
-
-// Remove below line when the known proxy / known networks configuration has been implemented
-// See https://github.com/aspnet/Announcements/issues/517 for more information
-AppContext.SetSwitch("Microsoft.AspNetCore.HttpOverrides.IgnoreUnknownProxiesWithoutFor", true);
+using IPNetwork = System.Net.IPNetwork;
 
 var options = StartupHelpers.ParseCliArguments(args);
 var builder = WebApplication.CreateBuilder(options);
@@ -64,7 +62,12 @@ else
 app.UseResponseCompression();
 #endif
 
-app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedProto });
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+	// The X-Forwarded-Proto value gets validated in RequestVerificationMiddleware so we can trust any proxy
+	ForwardedHeaders = ForwardedHeaders.XForwardedProto,
+	KnownIPNetworks = { new IPNetwork(IPAddress.Any, 0), new IPNetwork(IPAddress.IPv6Any, 0) }
+});
 app.UseRouting();
 app.UseOpenApiWithOptions();
 app.UseCors();

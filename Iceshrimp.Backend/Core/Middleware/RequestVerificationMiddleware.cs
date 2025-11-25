@@ -24,6 +24,14 @@ public class RequestVerificationMiddleware(
 
 	public bool IsValid(HttpRequest rq)
 	{
+		// Mitigate malicious X-Forwarded-Proto values (https://github.com/greenpau/caddy-security/issues/270)
+		if (!rq.Scheme.EqualsIgnoreCase("http") && !rq.Scheme.EqualsIgnoreCase("https"))
+		{
+			logger.LogWarning("Received request with invalid scheme: '{scheme}', please check your reverse proxy configuration",
+			                  rq.Scheme);
+			return false;
+		}
+
 		if (rq.Host.Host == config.Value.WebDomain) return true;
 		if (config.Value.AdditionalDomainsArray.Contains(rq.Host.Host)) return true;
 		if (rq.Host.Host == config.Value.AccountDomain && rq.Path.StartsWithSegments("/.well-known"))
