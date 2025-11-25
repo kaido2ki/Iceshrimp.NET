@@ -22,7 +22,7 @@ endif
 
 PUBLISH_CMD       = ${TL_ENV} ${DOTNET_CMD} publish ${BUILD_PROJECT} -c ${CONFIGURATION} -noLogo
 BUILD_CMD         = ${TL_ENV} ${DOTNET_CMD} build -noLogo
-TEST_CMD          = ${TL_ENV} ${DOTNET_CMD} test --no-build --nologo
+TEST_CMD          = ${TL_ENV} ${DOTNET_CMD} test --no-build
 
 BUILD_FLAGS       = -p:EnableLibVips=${VIPS} -p:BundleNativeDeps=${BUNDLE_NATIVE} -p:DependencyVulnsAsError=${DEP_VULN_WERROR}
 PUBLISH_FLAGS     = -p:EnableAOT=${AOT} -p:DeterministicSourcePaths=true -p:ContinuousIntegrationBuild=true ${BUILD_FLAGS}
