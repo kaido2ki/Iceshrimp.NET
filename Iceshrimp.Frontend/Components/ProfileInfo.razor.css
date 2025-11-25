@@ -1,3 +1,7 @@
+.profile-info {
+    overflow: hidden;
+}
+
 .bio {
     margin-top: 0.5rem;
     padding-bottom: 1rem;
