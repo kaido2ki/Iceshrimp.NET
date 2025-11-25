@@ -8,8 +8,6 @@
     border: var(--notice-color) solid 0.1rem;
     padding-inline: 1rem;
     padding: 1rem;
-    margin-bottom: 0.5rem;
-    margin-inline: 1rem;    
     > .icon-wrapper {
         padding-left: 0.5rem;
     }
@@ -29,7 +27,6 @@
 .follow-button {
     display: flex;
     align-items: center;
-    margin-left: auto;
 }
 ::deep {.icon {
     vertical-align: text-bottom;

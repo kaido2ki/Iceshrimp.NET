@@ -12,11 +12,8 @@
 @using Microsoft.Extensions.Localization
 @attribute [Authorize]
 @inject ApiService                     Api
-@inject GlobalComponentSvc             GlobalComponentSvc;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
-@inject MetadataService                MetadataService
-@inject NavigationManager              Nav;
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.User"/>
@@ -72,105 +69,6 @@
                         </div>
                     </div>
                 </div>
-                <FollowButton User="UserResponse" UserProfile="Profile"/>
-                <button @ref="MenuButton" class="context-button" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">
-                    <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
-                    <Menu @ref="ContextMenu">
-                        @if (Profile != null && Profile.Relations.HasFlag(Relations.Self))
-                        {
-                            <MenuElement Icon="Icons.Pencil" OnSelect="EditProfile">
-                                <Text>@Loc["Edit profile"]</Text>
-                            </MenuElement>
-                        }
-                        else
-                        {
-                            <MenuElement Icon="Icons.Tooth" OnSelect="Bite">
-                                <Text>@Loc["Bite"]</Text>
-                            </MenuElement>
-                        }
-                        @if (UserResponse.Host != null)
-                        {
-                            <MenuElement Icon="Icons.ArrowsClockwise" OnSelect="RefetchUser">
-                                <Text>@Loc["Refetch"]</Text>
-                            </MenuElement>
-                        }
-                        <hr class="rule"/>
-                        <MenuElement Icon="Icons.Info" OnSelect="OpenAbout">
-                            <Text>@Loc["About"]</Text>
-                        </MenuElement>
-                        @if (UserResponse.Host != null && Profile?.Url != null)
-                        {
-                            <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
-                                <Text>@Loc["Open original page"]</Text>
-                            </MenuElement>
-                        }
-                        <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
-                            <Text>@Loc["Copy link"]</Text>
-                        </MenuElement>
-                        @if (UserResponse.Host != null && Profile?.Url != null)
-                        {
-                            <MenuElement Icon="Icons.ShareNetwork" OnSelect="CopyLinkRemote">
-                                <Text>@Loc["Copy link (remote)"]</Text>
-                            </MenuElement>
-                        }
-                        <MenuElement Icon="Icons.At" OnSelect="CopyUsername">
-                            <Text>@Loc["Copy username"]</Text>
-                        </MenuElement>
-                        @if (UserResponse.Host == null)
-                        {
-                            <MenuElement Icon="Icons.Atom" OnSelect="CopyAtomFeed">
-                                <Text>@Loc["Copy Atom feed"]</Text>
-                            </MenuElement>
-                            <MenuElement Icon="Icons.BracketsCurly" OnSelect="CopyJsonFeed">
-                                <Text>@Loc["Copy JSON feed"]</Text>
-                            </MenuElement>
-                            <MenuElement Icon="Icons.Rss" OnSelect="CopyRssFeed">
-                                <Text>@Loc["Copy RSS feed"]</Text>
-                            </MenuElement>
-                        }
-                        @if (Profile != null && !Profile.Relations.HasFlag(Relations.Self))
-                        {
-                            <hr class="rule"/>
-                            @if (Profile != null && Profile.Relations.HasFlag(Relations.Muting))
-                            {
-                                <MenuElement Icon="Icons.Eye" OnSelect="Unmute">
-                                    <Text>@Loc["Unmute"]</Text>
-                                </MenuElement>
-                            }
-                            else
-                            {
-                                <MenuElement Icon="Icons.EyeSlash" OnSelect="Mute">
-                                    <Text>@Loc["Mute"]</Text>
-                                </MenuElement>
-                                <MenuElement Icon="Icons.Timer" OnSelect="TemporaryMute">
-                                    <Text>@Loc["Temporary mute"]</Text>
-                                </MenuElement>
-                            }
-                            @if (Profile != null && Profile.Relations.HasFlag(Relations.FollowedBy))
-                            {
-                                <MenuElement Icon="Icons.LinkBreak" OnSelect="RemoveFromFollowers" Danger>
-                                    <Text>@Loc["Remove follower"]</Text>
-                                </MenuElement>
-                            }
-                            @if (Profile != null && Profile.Relations.HasFlag(Relations.Blocking))
-                            {
-                                <MenuElement Icon="Icons.Prohibit" OnSelect="Unblock" Danger>
-                                    <Text>@Loc["Unblock"]</Text>
-                                </MenuElement>
-                            }
-                            else
-                            {
-                                <MenuElement Icon="Icons.Prohibit" OnSelect="Block" Danger>
-                                    <Text>@Loc["Block"]</Text>
-                                </MenuElement>
-                            }
-                            <MenuElement Icon="Icons.WarningCircle" OnSelect="Report" Danger>
-                                <Text>@Loc["Report"]</Text>
-                            </MenuElement>
-                        }
-                        <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>
-                    </Menu>
-                </button>
             </div>
             <ProfileInfo Emojis="@UserResponse.Emojis" User="UserResponse" UserProfile="Profile"/>
         </div>
@@ -242,17 +140,12 @@
     private            string?              MinId        { get; set; }
     private            List<NoteResponse>   UserPinned   { get; set; } = [];
     private            List<NoteResponse>   UserNotes    { get; set; } = [];
-    
-    private ElementReference MenuButton  { get; set; }
-    private Menu             ContextMenu { get; set; } = null!;
 
     private bool _loading = true;
     private bool _init;
     private bool _notFound;
     private bool _error;
     private bool _fetchLock;
-
-    private InstanceResponse? _instance;
 
     private async Task GetNotes(string? minId)
     {
@@ -349,198 +242,6 @@
         Profile     = null;
         StateHasChanged();
         await LoadProfile();
-        _instance = await MetadataService.Instance.Value;
-    }
-    
-    private void ToggleMenu() => ContextMenu.Toggle(MenuButton);
-    
-    private void EditProfile() => Nav.NavigateTo("/settings/profile");
-
-    private void Bite() => Api.Users.BiteUserAsync(UserResponse.Id);
-
-    private async Task RemoveFromFollowersAction(bool confirm)
-    {
-        if (!confirm) return;
-
-        var removed = await Api.Users.RemoveUserFromFollowersAsync(UserResponse.Id);
-        if (!removed) return;
-
-        await GlobalComponentSvc.NoticeDialog?.Display(Loc["Removed {0} from followers", UserResponse.DisplayName ?? UserResponse.Username])!;
-
-        Profile!.Relations &= ~Relations.FollowedBy;
-        StateHasChanged();
-    }
-
-    private void RemoveFromFollowers() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RemoveFromFollowersAction), Loc["Remove {0} from followers?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Remove follower"]);
-
-    private void Mute() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, MuteCallback), Loc["Mute {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Mute"]);
-
-    private async Task MuteCallback(bool confirm)
-    {
-        if (!confirm) return;
-
-        try
-        {
-            await Api.Users.MuteUserAsync(UserResponse.Id, null);
-
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Muted {0}", UserResponse.DisplayName ?? UserResponse.Username])!;
-
-            Profile!.Relations += (int)Relations.Muting;
-            StateHasChanged();
-        }
-        catch (ApiException e)
-        {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
-        }
-    }
-
-    private void TemporaryMute() =>
-        GlobalComponentSvc.SelectDialog?.Select(new EventCallback<object?>(this, TemporaryMuteCallback), Loc["Mute {0}?", UserResponse.DisplayName ?? UserResponse.Username], [(Loc["For 1 hour"], (object)DateTime.Now.AddHours(1)), (Loc["For {0} hours", 3], (object)DateTime.Now.AddHours(3)), (Loc["For {0} hours", 8], (object)DateTime.Now.AddHours(8)), (Loc["For 1 day"], (object)DateTime.Now.AddDays(1)), (Loc["For 1 week"], (object)DateTime.Now.AddDays(7))], Loc["Mute"]);
-
-    private async Task TemporaryMuteCallback(object? value)
-    {
-        if (value is not DateTime expires) return;
-
-        try
-        {
-            await Api.Users.MuteUserAsync(UserResponse.Id, expires);
-
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Muted {0}", UserResponse.DisplayName ?? UserResponse.Username])!;
-
-            Profile!.Relations += (int)Relations.Muting;
-            StateHasChanged();
-        }
-        catch (ApiException e)
-        {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
-        }
-    }
-
-    private void Unmute() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnmuteCallback), Loc["Unmute {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Unmute"]);
-
-    private async Task UnmuteCallback(bool confirm)
-    {
-        if (!confirm) return;
-
-        try
-        {
-            await Api.Users.UnmuteUserAsync(UserResponse.Id);
-
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Unmuted {0}", UserResponse.DisplayName ?? UserResponse.Username])!;
-
-            Profile!.Relations -= (int)Relations.Muting;
-            StateHasChanged();
-        }
-        catch (ApiException e)
-        {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
-        }
-    }
-
-    private void Block() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, BlockCallback), Loc["Block {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Block"]);
-
-    private void Report() =>
-        GlobalComponentSvc.ReportDialog?.ReportUser(UserResponse);
-
-    private async Task BlockCallback(bool confirm)
-    {
-        if (!confirm) return;
-
-        try
-        {
-            await Api.Users.BlockUserAsync(UserResponse.Id);
-
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Blocked {0}", UserResponse.DisplayName ?? UserResponse.Username])!;
-
-            Profile!.Relations += (int)Relations.Blocking;
-            StateHasChanged();
-        }
-        catch (ApiException e)
-        {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
-        }
-    }
-
-    private void Unblock() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnblockCallback), Loc["Unblock {0}?", UserResponse.DisplayName ?? UserResponse.Username], buttonText: Loc["Unblock"]);
-
-    private async Task UnblockCallback(bool confirm)
-    {
-        if (!confirm) return;
-
-        try
-        {
-            await Api.Users.UnblockUserAsync(UserResponse.Id);
-
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Unblocked {0}", UserResponse.DisplayName ?? UserResponse.Username])!;
-
-            Profile!.Relations -= (int)Relations.Blocking;
-            StateHasChanged();
-        }
-        catch (ApiException e)
-        {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
-        }
-    }
-
-    private void OpenAbout()
-    {
-        Nav.NavigateTo($"{Nav.Uri}/about");
-    }
-
-    private void OpenOriginal()
-    {
-        if (Profile?.Url != null)
-            Js.InvokeVoidAsync("open", Profile.Url, "_blank");
-    }
-    
-    private async Task CopyLink()
-    {
-        await Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/@{UserResponse.Username}" + (UserResponse.Host != null ? $"@{UserResponse.Host}" : ""));
-    }
-    
-    private void CopyLinkRemote()
-    {
-        if (Profile?.Url != null)
-            Js.InvokeVoidAsync("navigator.clipboard.writeText", Profile.Url);
-    }
-
-    private void CopyUsername() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"@{UserResponse.Username}" + (UserResponse.Host != null ? $"@{UserResponse.Host}" : ""));
-    
-    private void CopyAtomFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{UserResponse.Id}/feed.atom");
-
-    private void CopyJsonFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{UserResponse.Id}/feed.json");
-    
-    private void CopyRssFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{UserResponse.Id}/feed.rss");
-
-    private async Task RefetchUser() =>
-        await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RefetchUserCallback), Loc["Refetch {0}'s profile?", UserResponse.DisplayName ?? UserResponse.Username])!;
-
-    private async Task RefetchUserCallback(bool refetch)
-    {
-        if (!refetch) return;
-
-        try
-        {
-            var res = await Api.Users.RefetchUserAsync(UserResponse.Id);
-            if (res != null)
-            {
-                UserResponse = res;
-                var newProfile = await Api.Users.GetUserProfileAsync(UserResponse.Id);
-                if (newProfile != null)
-                    Profile = newProfile;
-                StateHasChanged();
-                await GlobalComponentSvc.NoticeDialog?.Display(Loc["Successfully refetched {0}'s profile", UserResponse.DisplayName ?? UserResponse.Username])!;
-            }
-        }
-        catch (ApiException e)
-        {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
-        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

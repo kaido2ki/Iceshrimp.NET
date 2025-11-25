@@ -51,11 +51,19 @@
     }
 }
 
-.badges {
+.top-row {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1rem 0;
+}
+
+.badges, .profile-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin: 1rem 0;
+    align-items: start;
 }
 
 .badge {
@@ -74,7 +82,24 @@
     }
 }
 
-@media (max-width: 640px) {
+.profile-buttons {
+    align-items: center;
+}
+
+.context-button {
+    margin: 0;
+}
+
+@media (max-width: 1000px) {
+    .top-row {
+        flex-direction: column;
+        align-items: start;
+    }
+
+    .profile-buttons {
+        align-self: end;
+    }
+
     ::deep .field {
         flex-direction: column;
         
