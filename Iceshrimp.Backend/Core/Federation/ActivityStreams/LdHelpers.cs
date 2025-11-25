@@ -4,7 +4,6 @@ using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
 using Iceshrimp.Backend.Core.Helpers;
-using Iceshrimp.Shared.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using VDS.RDF.JsonLd;

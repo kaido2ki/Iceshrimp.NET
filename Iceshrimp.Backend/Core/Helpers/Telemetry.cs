@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Shared.Helpers;
 
 namespace Iceshrimp.Backend.Core.Helpers;
@@ -10,14 +11,14 @@ namespace Iceshrimp.Backend.Core.Helpers;
 /// It is recommended to use a custom type to hold references for ActivitySource.
 /// This avoids possible type collisions with other components in the DI container.
 /// </summary>
-public static class Telemetry
+public sealed class Telemetry : IDisposable, ISingletonService
 {
     public const string Source = "Iceshrimp.NET";
 
     public static ActivitySource ActivitySource { get; } = new(Source, VersionHelpers.VersionInfo.Value.Version);
     public static Meter          Meter          { get; } = new(Source, VersionHelpers.VersionInfo.Value.Version);
 
-    public static void Dispose()
+    public void Dispose()
     {
         ActivitySource.Dispose();
         Meter.Dispose();

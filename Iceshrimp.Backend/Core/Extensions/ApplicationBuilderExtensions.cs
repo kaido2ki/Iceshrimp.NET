@@ -1,6 +1,5 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Helpers;
-using Iceshrimp.Backend.Core.Services;
 using Npgsql;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
