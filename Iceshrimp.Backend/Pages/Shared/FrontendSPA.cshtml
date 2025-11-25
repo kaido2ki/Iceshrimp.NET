@@ -1,4 +1,5 @@
 @page
+@inject IWebHostEnvironment Env
 @{
     Layout = null;
 }
@@ -41,7 +42,13 @@
     <a class="dismiss">🗙</a>
 </div>
 
-<script src="~/_framework/blazor.webassembly.js"></script>
+@* Switch this back to autostart (and remove the script below & the injected service) after switching to a Blazor Web App *@
+<script src="~/_framework/blazor.webassembly.js" autostart="false"></script>
+<script>
+  Blazor.start({
+    environment: "@Env.EnvironmentName"
+  });
+</script>
 <script src="~/Utility.js"></script>
 <script>navigator.serviceWorker.register('service-worker.js');</script>
 </body>
