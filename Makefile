@@ -21,7 +21,7 @@ else
 endif
 
 PUBLISH_CMD       = ${TL_ENV} ${DOTNET_CMD} publish ${BUILD_PROJECT} -c ${CONFIGURATION} -noLogo
-BUILD_CMD         = ${TL_ENV} ${DOTNET_CMD} build -noLogo
+BUILD_CMD         = ${TL_ENV} ${DOTNET_CMD} build ${BUILD_PROJECT} -noLogo
 TEST_CMD          = ${TL_ENV} ${DOTNET_CMD} test --no-build
 
 BUILD_FLAGS       = -p:EnableLibVips=${VIPS} -p:BundleNativeDeps=${BUNDLE_NATIVE} -p:DependencyVulnsAsError=${DEP_VULN_WERROR}
