@@ -37,6 +37,10 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.0" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
         <PackageReference Include="Npgsql.OpenTelemetry" Version="10.0.0" />
@@ -60,14 +64,6 @@
         <PackageReference Include="Iceshrimp.MimeTypes" Version="1.0.1" />
         <PackageReference Include="Iceshrimp.WebPush" Version="2.2.0" />
         <PackageReference Include="NetVips" Version="3.1.0" />
-    </ItemGroup>
-
-    <!-- Only include design-time dependencies during regular builds -->
-    <ItemGroup Condition=" '$(_IsPublishing)' != 'true' ">
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
     </ItemGroup>
 
     <!-- If the build flag BundleNativeDeps is set, reference the LibVips native dependecy -->
