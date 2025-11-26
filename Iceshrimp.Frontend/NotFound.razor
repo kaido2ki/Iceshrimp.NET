@@ -1,5 +1,31 @@
 @page "/not-found"
-<PageTitle>Not found</PageTitle>
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Localization.Localization> Loc;
+@inject NavigationManager                           Nav;
+
+<HeadTitle Text="@Loc["Not found"]"/>
+
 <LayoutView Layout="@typeof(MainLayout)">
-    <p role="alert">Page not found.</p>
+    <SectionContent SectionName="top-bar">
+        <Icon Name="Icons.TriangleDashed"/>
+        @Loc["Not found"]
+    </SectionContent>
+
+    <div class="not-found">
+        <Icon Name="Icons.TriangleDashed" Size="3em"/>
+        <h2>@Loc["Not found"]</h2>
+        <p>@Loc["This page does not exist or you cannot access it."]</p>
+        <button class="button" @onclick="NavHome">
+            <Icon Name="Icons.House"/>
+            @Loc["Go home"]
+        </button>
+    </div>
 </LayoutView>
+
+@code
+{
+    private void NavHome() => Nav.NavigateTo("/");
+}
