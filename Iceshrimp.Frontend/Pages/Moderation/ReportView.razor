@@ -271,7 +271,9 @@
             UserProfile = await Api.Users.GetUserProfileAsync(Report.TargetUser.Id);
             State       = State.Loaded;
         }
-        
-        Nav.NotFound();
+        else
+        {
+            Nav.NotFound();
+        }
     }
 }
