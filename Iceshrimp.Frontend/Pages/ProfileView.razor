@@ -14,10 +14,11 @@
 @inject ApiService                     Api
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
+@inject NavigationManager              Nav;
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.User"/>
-    @if (_init)
+    @if (State == State.Loaded)
     {
         <UserDisplayName User="@UserResponse"/>
     }
@@ -27,7 +28,7 @@
     }
 </SectionContent>
 
-@if (_init)
+@if (State == State.Loaded)
 {
     <HeadTitle Text="@(UserResponse.DisplayName ?? UserResponse.Username)"/>
 
@@ -110,19 +111,13 @@
         }
     </div>
 }
-@if (_loading)
+@if (State == State.Loading)
 {
     <HeadTitle Text="@Loc["Loading"]"/>
 
     <div class="loading"><LoadingSpinner Scale="2" /></div>
 }
-@if (_notFound)
-{
-    <HeadTitle Text="@Loc["User not found"]"/>
-
-    <div>User does not exist!</div>
-}
-@if (_error)
+@if (State == State.Error)
 {
     <HeadTitle Text="@Loc["Error"]"/>
 
@@ -140,11 +135,8 @@
     private            string?              MinId        { get; set; }
     private            List<NoteResponse>   UserPinned   { get; set; } = [];
     private            List<NoteResponse>   UserNotes    { get; set; } = [];
+    private            State                State        { get; set; }
 
-    private bool _loading = true;
-    private bool _init;
-    private bool _notFound;
-    private bool _error;
     private bool _fetchLock;
 
     private async Task GetNotes(string? minId)
@@ -198,11 +190,12 @@
 
     private async Task LoadProfile()
     {
+        State = State.Loading;
         try
         {
             if (User is null)
             {
-                _notFound = true;
+                Nav.NotFound();
             }
             else
             {
@@ -211,7 +204,7 @@
                 var userResponse = await Api.Users.LookupUserAsync(matches.Groups[1].Value, matches.Groups[2].Value);
                 if (userResponse is null)
                 {
-                    _notFound = true;
+                    Nav.NotFound();
                 }
                 else
                 {
@@ -219,22 +212,18 @@
                     Profile      = await Api.Users.GetUserProfileAsync(UserResponse.Id);
                     await GetPinnedNotes(null);
                     await GetNotes(null);
-                    _init    = true;
-                    _loading = false;
+                    State = State.Loaded;
                 }
             }
         }
         catch (ApiException)
         {
-            _loading = false;
-            _error   = true;
+            State = State.Error;
         }
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        _init       = false;
-        _loading    = true;
         UserPinned  = [];
         UserNotes   = [];
         PinnedMinId = null;
