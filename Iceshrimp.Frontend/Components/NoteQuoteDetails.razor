@@ -36,7 +36,7 @@
             var res = await Api.Notes.GetQuotesAsync(NoteId, new PaginationQuery { Limit = 20 });
             if (res is null)
             {
-                State = State.NotFound;
+                State = State.Empty;
                 Logger.LogWarning($"Quotes for '{NoteId}' not found.");
                 return;
             }

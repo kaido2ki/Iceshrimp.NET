@@ -55,7 +55,7 @@
             var res = await Api.Notes.GetRenotesAsync(NoteId, pq);
             if (res is null)
             {
-                State = State.NotFound;
+                State = State.Empty;
                 Logger.LogWarning($"Renotes for '{NoteId}' not found.");
                 return;
             }

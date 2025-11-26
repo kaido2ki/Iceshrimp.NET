@@ -16,6 +16,7 @@
 @inject ApiService                     Api;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
+@inject NavigationManager              Nav;
 @inject SessionService                 SessionSvc;
 
 <HeadTitle Text="@Loc["About"]"/>
@@ -38,10 +39,6 @@
             </button>
         </details>
     }
-}
-@if (State == State.NotFound)
-{
-    <i>Not found</i>
 }
 @if (State == State.Loading)
 {
@@ -80,7 +77,7 @@
 
             if (noteResponse == null)
             {
-                State = State.NotFound;
+                Nav.NotFound();
                 return;
             }
 
@@ -104,7 +101,7 @@
 
             if (userResponse is null)
             {
-                State = State.NotFound;
+                Nav.NotFound();
                 return;
             }
 
@@ -125,7 +122,7 @@
         }
         else
         {
-            State = State.NotFound;
+            Nav.NotFound();
         }
     }
 }

@@ -14,6 +14,7 @@
 @inject ApiService                     Api;
 @inject GlobalComponentSvc             Global;
 @inject IStringLocalizer<Localization> Loc;
+@inject NavigationManager              Nav;
 @inject SessionService                 Session;
 
 <HeadTitle Text="@Loc["Report details"]"/>
@@ -182,11 +183,6 @@
     </div>
 }
 
-@if (State == State.NotFound)
-{
-    <i>@Loc["Not found"]</i>
-}
-
 @if (State == State.Loading)
 {
     <div class="loading">
@@ -263,7 +259,7 @@
     {
         if (Id == null)
         {
-            State = State.NotFound;
+            Nav.NotFound();
             return;
         }
 
@@ -273,8 +269,9 @@
         if (Report != null)
         {
             UserProfile = await Api.Users.GetUserProfileAsync(Report.TargetUser.Id);
+            State       = State.Loaded;
         }
         
-        State = Report != null ? State.Loaded : State.NotFound;
+        Nav.NotFound();
     }
 }

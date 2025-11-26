@@ -55,7 +55,7 @@
             var res = await Api.Notes.GetNoteLikesAsync(NoteId, pq);
             if (res is null)
             {
-                State = State.NotFound;
+                State = State.Empty;
                 Logger.LogWarning($"Likes for '{NoteId}' not found.");
                 return;
             }

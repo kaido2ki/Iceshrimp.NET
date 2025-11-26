@@ -146,12 +146,6 @@
         <LoadingSpinner Scale="2"/>
     </div>
 }
-@if (_componentState == State.NotFound)
-{
-    <HeadTitle Text="@Loc["Note not found"]"/>
-
-    <div>This note does not exist!</div>
-}
 @if (_componentState == State.Empty)
 {
     <HeadTitle Text="@Loc["Deleted"]"/>
@@ -187,7 +181,7 @@
         _componentState = State.Loading;
         if (NoteId == null)
         {
-            _componentState = State.NotFound;
+            Navigation.NotFound();
             return;
         }
 
@@ -209,7 +203,7 @@
 
         if (RootNote == null)
         {
-            _componentState = State.NotFound;
+            Navigation.NotFound();
             return;
         }
 
