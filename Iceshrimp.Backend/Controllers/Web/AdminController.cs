@@ -440,9 +440,8 @@ public class AdminController(
 	[HttpPut("policy/{name}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
-	public async Task UpdateWordRejectPolicy(
-		string name, [SwaggerBodyExample("{\n  \"enabled\": true\n}")] JsonDocument body
-	)
+	[OverrideRequestBodyExample("{\n  \"enabled\": true\n}")]
+	public async Task UpdateWordRejectPolicy(string name, JsonDocument body)
 	{
 		var type = await policySvc.GetConfigurationTypeAsync(name) ??
 		           throw GracefulException.NotFound("Policy not found");

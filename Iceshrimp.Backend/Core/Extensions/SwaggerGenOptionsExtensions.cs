@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Text.Json.Nodes;
 using Iceshrimp.Backend.Controllers.Federation.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
@@ -18,7 +19,6 @@ public static class SwaggerGenOptionsExtensions
 	public static void AddFilters(this SwaggerGenOptions options)
 	{
 		options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
-		options.SchemaFilter<SwaggerBodyExampleSchemaFilter>();
 		options.SupportNonNullableReferenceTypes(); // Sets Nullable flags appropriately.              
 		options.UseAllOfToExtendReferenceSchemas(); // Allows $ref enums to be nullable
 		options.UseAllOfForInheritance();           // Allows $ref objects to be nullable
@@ -26,6 +26,7 @@ public static class SwaggerGenOptionsExtensions
 		options.OperationFilter<HybridRequestOperationFilter>();
 		options.OperationFilter<PossibleErrorsOperationFilter>();
 		options.OperationFilter<PossibleResultsOperationFilter>();
+		options.OperationFilter<OverrideRequestBodyExampleOperationFilter>();
 		options.DocumentFilter<AuthorizeCheckOperationDocumentFilter>();
 		options.DocInclusionPredicate(DocInclusionPredicate);
 	}
@@ -72,14 +73,25 @@ public static class SwaggerGenOptionsExtensions
 
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local",
 	                 Justification = "SwaggerGenOptions.SchemaFilter<T> instantiates this class at runtime")]
-	private class SwaggerBodyExampleSchemaFilter : ISchemaFilter
+	private class OverrideRequestBodyExampleOperationFilter : IOperationFilter
 	{
-		public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
+		public void Apply(OpenApiOperation operation, OperationFilterContext context)
 		{
-			var att = context.ParameterInfo?.GetCustomAttribute<SwaggerBodyExampleAttribute>();
-			if (att == null) return;
-			schema.Examples?.Clear();
-			schema.Examples?.Add(att.Value);
+			if (context.MethodInfo.GetCustomAttribute<OverrideRequestBodyExampleAttribute>() is not { } attr)
+				return;
+			operation.RequestBody = new OpenApiRequestBody
+			{
+				Content = new Dictionary<string, OpenApiMediaType>
+				{
+					["application/json"] = new()
+					{
+						Examples = new Dictionary<string, IOpenApiExample>
+						{
+							["example"] = new OpenApiExample { Value = JsonNode.Parse(attr.Value)! }
+						}
+					}
+				}
+			};
 		}
 	}
 
@@ -386,7 +398,7 @@ public static class SwaggerGenOptionsExtensions
 		}
 	}
 
-	public class SwaggerBodyExampleAttribute(string value) : Attribute
+	public class OverrideRequestBodyExampleAttribute(string value) : Attribute
 	{
 		public string Value => value;
 	}
