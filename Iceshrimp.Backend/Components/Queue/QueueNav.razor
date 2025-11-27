@@ -1,0 +1,36 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Backend.Components.Generic
+@using Iceshrimp.Backend.Core.Services
+@inject QueueService Queue;
+
+<NavBar Brand="_brand" Links="_links" Right="_right" MaxItemsLg="7" MaxItemsMd="3"/>
+
+@code {
+    private NavBar.NavLink _brand = new("/queue", "Queue Dashboard");
+
+    private Dictionary<string, IconName> _icons = new Dictionary<string, IconName>()
+    {
+        {"inbox", Icons.Envelope},
+        {"pre-deliver", Icons.Package},
+        {"deliver", Icons.Truck},
+        {"background-task", Icons.ListChecks},
+        {"backfill", Icons.Archive},
+        {"backfill-user", Icons.FolderUser}
+    };
+
+    private List<NavBar.NavLink> _links =
+    [
+        new("/queue", "Overview", Icons.ChartLine)
+    ];
+
+    private List<NavBar.NavLink> _right = [
+        new("/admin", "Admin Dashboard", IconRight: Icons.ArrowSquareOut, NewTab: true),
+        new("/mod", "Moderation Dashboard", IconRight: Icons.ArrowSquareOut, NewTab: true)
+    ];
+
+    protected override void OnParametersSet()
+    {
+        var links = Queue.QueueNames.Select(p => new NavBar.NavLink($"/queue/{p}", p, _icons.GetValueOrDefault(p)));
+        _links = _links.Concat(links).ToList();
+    }
+}

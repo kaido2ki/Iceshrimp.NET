@@ -1,45 +1,20 @@
-@page "/queue/{queue?}/{pagination:int?}/{status?}"
-@inject QueueService                         QueueSvc
+@page "/queue/{Name?}/{Pagination:int?}/{Status?}"
+@using Iceshrimp.Backend.Components.Queue
 @using Iceshrimp.Backend.Core.Database.Tables
 @using Iceshrimp.Backend.Core.Extensions
-@using Iceshrimp.Backend.Core.Services
-@model QueueModel
+@inherits AdminComponentBase
 
-@{
-    ViewData["title"] = $"Queue dashboard - {Model.InstanceName}";
-}
+<QueueHead Title="@(Name ?? "Overview")" QueueIndex="@(Name == null)"/>
 
-@section head {
-    <link rel="stylesheet" href="~/css/queue.css"/>
-}
-
-@section scripts {
-    <script src="~/js/queue.js"></script>
-    @if (Model.Queue == null)
-    {
-        <script src="~/js/queue-index.js"></script>
-    }
-}
-
-<h1>Queue Dashboard</h1>
-<button class="button" role="link" data-target="/queue" onclick="navigate(event)">overview</button>
-@foreach (var queue in QueueSvc.QueueNames)
+@if (Name == null)
 {
-    //asd
-    <button class="button" role="link" data-target="/queue/@queue" onclick="navigate(event)">@queue</button>
-}
-<br/>
-
-@if (Model.Queue == null)
-{
-    <p>Please pick a queue.</p>
-
     <form onsubmit="return lookupJob(event)">
         <input type="text" id="lookup" placeholder="Lookup job by id" minlength="36" maxlength="36" class="inline"/>
         <button class="button" type="submit">Submit</button>
     </form>
 
     <h3>Queue status &mdash; <span id="update-status" class="status-delayed">Connecting...</span></h3>
+
     <table class="auto-table" id="queue-status">
         <thead>
         <th>Name</th>
@@ -50,9 +25,9 @@
         }
         </thead>
         <tbody>
-        @foreach (var queue in Model.QueueStatuses ?? throw new Exception("Model.QueueStatuses must not be null here"))
+        @foreach (var queue in QueueStatuses ?? throw new Exception("QueueStatuses must not be null here"))
         {
-            var isScheduled = QueueModel.ScheduledQueues.Contains(queue.Name);
+            var isScheduled = ScheduledQueues.Contains(queue.Name);
             var scheduled   = isScheduled ? queue.JobCounts[Job.JobStatus.Delayed].ToString() : "-";
             var delayed     = !isScheduled ? queue.JobCounts[Job.JobStatus.Delayed].ToString() : "-";
 
@@ -104,9 +79,10 @@
         <th>Actions</th>
         </thead>
         <tbody>
-        @foreach (var job in Model.Jobs)
+        @foreach (var job in Jobs)
         {
-            await RenderJobAsync(job, true);
+            @RenderJob(job, true)
+            ;
         }
         </tbody>
     </table>
@@ -118,7 +94,7 @@
         <th>Count</th>
         </thead>
         <tbody>
-        @foreach (var instance in Model.TopDelayed)
+        @foreach (var instance in TopDelayed)
         {
             <tr>
                 <td>@instance.Host</td>
@@ -127,35 +103,38 @@
         }
         </tbody>
     </table>
-    @if (Model.TopDelayed is [])
+    @if (TopDelayed is [])
     {
         <i>No delayed jobs found.</i>
     }
 
-    var last        = Model.Jobs.FirstOrDefault();
+    var last        = Jobs.FirstOrDefault();
     var lastUpdated = last != null ? new DateTimeOffset(last.LastUpdatedAt).ToUnixTimeMilliseconds() : 0;
 
     <div class="display-none" id="last-updated">@lastUpdated</div>
 }
-
 else
 {
-    var delayedStr = QueueModel.ScheduledQueues.Contains(Model.Queue) ? "scheduled" : "delayed";
-    if (Model.Filter == null)
+    var delayedStr = ScheduledQueues.Contains(Name) ? "scheduled" : "delayed";
+    if (Filter == null)
     {
-        <p>Listing @Model.TotalCount <b>@Model.Queue</b> jobs, out of which <span class="status-running">@Model.RunningCount</span> are <span class="status-running">running</span>, <span class="status-queued">@Model.QueuedCount</span> are <span class="status-queued">queued</span> and <span class="status-@delayedStr">@Model.DelayedCount</span> are <span class="status-@delayedStr">@delayedStr</span>.</p>
+        <p>Listing @TotalCount <b>@Name</b> jobs, out of which <span class="status-running">@RunningCount</span> are
+            <span class="status-running">running</span>, <span class="status-queued">@QueuedCount</span> are <span
+                class="status-queued">queued</span> and <span class="status-@delayedStr">@DelayedCount</span> are <span
+                class="status-@delayedStr">@delayedStr</span>.</p>
     }
     else
     {
-        var filterStr = Model.Filter.Value == Job.JobStatus.Delayed && QueueModel.ScheduledQueues.Contains(Model.Queue)
+        var filterStr = Filter.Value == Job.JobStatus.Delayed && ScheduledQueues.Contains(Name)
             ? "scheduled"
-            : Model.Filter.Value.ToString().ToLowerInvariant();
+            : Filter.Value.ToString().ToLowerInvariant();
 
         <p>
-            Listing @Model.TotalCount <span class="status-@filterStr">@filterStr</span> <b>@Model.Queue</b> jobs.
-            @if (Model.Filter is Job.JobStatus.Failed)
+            Listing @TotalCount <span class="status-@filterStr">@filterStr</span> <b>@Name</b> jobs.
+            @if (Filter is Job.JobStatus.Failed)
             {
-                <span>Batch retry: <a class="fake-link" onclick="retryAllFailed('@Model.Queue')">all failed</a> / <a class="fake-link" onclick="retryAllOnPage('@Model.Queue')">all on this page</a></span>
+                <span>Batch retry: <a class="fake-link" onclick="retryAllFailed('@Name')">all failed</a> / <a
+                        class="fake-link" onclick="retryAllOnPage('@Name')">all on this page</a></span>
             }
         </p>
     }
@@ -167,23 +146,29 @@ else
         <th>Actions</th>
         </thead>
         <tbody>
-        @foreach (var job in Model.Jobs)
+        @foreach (var job in Jobs)
         {
-            await RenderJobAsync(job);
+            @RenderJob(job)
+            ;
         }
         </tbody>
     </table>
 
     <div class="flex">
-        @if (Model.PrevPage != null)
+        @if (PrevPage != null)
         {
-            if (Model.Filter.HasValue)
+            if (Filter.HasValue)
             {
-                <button class="button" role="link" data-target="/queue/@Model.Queue/@Model.PrevPage/@Model.Filter.Value.ToString().ToLowerInvariant()" onclick="navigate">❮ Previous page</button>
+                <button class="button" role="link"
+                        data-target="/queue/@Name/@PrevPage/@Filter.Value.ToString().ToLowerInvariant()"
+                        onclick="navigate">❮ Previous page
+                </button>
             }
             else
             {
-                <button class="button" role="link" data-target="/queue/@Model.Queue/@Model.PrevPage" onclick="navigate(event)">❮ Previous page</button>
+                <button class="button" role="link" data-target="/queue/@Name/@PrevPage" onclick="navigate(event)">❮
+                    Previous page
+                </button>
             }
         }
         else
@@ -191,15 +176,20 @@ else
             <button class="button" disabled>❮ Previous page</button>
         }
 
-        @if (Model.NextPage != null)
+        @if (NextPage != null)
         {
-            if (Model.Filter.HasValue)
+            if (Filter.HasValue)
             {
-                <button class="button" role="link" data-target="/queue/@Model.Queue/@Model.NextPage/@Model.Filter.Value.ToString().ToLowerInvariant()" onclick="navigate(event)">Next page ❯</button>
+                <button class="button" role="link"
+                        data-target="/queue/@Name/@NextPage/@Filter.Value.ToString().ToLowerInvariant()"
+                        onclick="navigate(event)">Next page ❯
+                </button>
             }
             else
             {
-                <button class="button" role="link" data-target="/queue/@Model.Queue/@Model.NextPage" onclick="navigate(event)">Next page ❯</button>
+                <button class="button" role="link" data-target="/queue/@Name/@NextPage" onclick="navigate(event)">Next
+                    page ❯
+                </button>
             }
         }
         else
@@ -207,8 +197,8 @@ else
             <button class="button" disabled>Next page ❯</button>
         }
 
-        <select onchange="filter('@Model.Queue')" id="filter" class="inline-flex">
-            @if (Model.Filter == null)
+        <select onchange="filter('@Name')" id="filter" class="inline-flex">
+            @if (Filter == null)
             {
                 <option value="all" selected>All</option>
             }
@@ -218,11 +208,11 @@ else
             }
             @foreach (var status in Enum.GetValues<Job.JobStatus>())
             {
-                var statusStr = status == Job.JobStatus.Delayed && QueueModel.ScheduledQueues.Contains(Model.Queue)
+                var statusStr = status == Job.JobStatus.Delayed && ScheduledQueues.Contains(Name)
                     ? "Scheduled"
                     : status.ToString();
 
-                if (Model.Filter.Equals(status))
+                if (Filter.Equals(status))
                 {
                     <option value="@status.ToString().ToLowerInvariant()" selected>@statusStr</option>
                 }
@@ -234,13 +224,14 @@ else
         </select>
 
         <form onsubmit="return lookupJob(event)" class="inline-flex flex-grow">
-            <input type="text" id="lookup" placeholder="Lookup job by id" minlength="36" maxlength="36" class="flex-grow"/>
+            <input type="text" id="lookup" placeholder="Lookup job by id" minlength="36" maxlength="36"
+                   class="flex-grow"/>
         </form>
     </div>
 }
 
-@{
-    async Task RenderJobAsync(Job job, bool withQueue = false)
+@code {
+    private RenderFragment RenderJob(Job job, bool withQueue = false)
     {
         var id = job.Id.ToStringLower();
         var additional = job.Status switch
@@ -255,27 +246,28 @@ else
             _                       => throw new ArgumentOutOfRangeException()
         };
 
-        var classes = Model.Last != null && new DateTimeOffset(job.LastUpdatedAt).ToUnixTimeMilliseconds() > Model.Last
+        var classes = Last != null && new DateTimeOffset(job.LastUpdatedAt).ToUnixTimeMilliseconds() > Last
             ? "new-item"
             : "";
 
         var status = job is { Status: Job.JobStatus.Delayed, RetryCount: 0 } ? "Scheduled" : job.Status.ToString();
 
-        <tr class="@classes">
-            @if (withQueue)
-            {
-                <td class="uuid-abbrev">@id[..8]...@id[24..]</td>
-                <td>@job.Queue</td>
-            }
-            else
-            {
-                <td class="uuid">@id</td>
-            }
-            <td class="status-@status.ToLowerInvariant()">
-            <b>@status</b> <small>@additional</small>
-            <td>
-                <a href="/queue/job/@id">View details</a>
-            </td>
-        </tr>
+        return @<tr class="@classes">
+                   @if (withQueue)
+                   {
+                       <td class="uuid-abbrev">@id[..8]...@id[24..]</td>
+                       <td>@job.Queue</td>
+                   }
+                   else
+                   {
+                       <td class="uuid">@id</td>
+                   }
+                   <td class="status-@status.ToLowerInvariant()">
+                       <b>@status</b> <small>@additional</small>
+                   </td>
+                   <td>
+                       <a href="/queue/job/@id">View details</a>
+                   </td>
+               </tr>;
     }
 }

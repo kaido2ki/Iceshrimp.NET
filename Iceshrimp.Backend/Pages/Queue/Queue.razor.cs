@@ -1,52 +1,50 @@
 using System.Collections.Immutable;
+using Iceshrimp.Backend.Components.Helpers;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using static Iceshrimp.Backend.Core.Database.DatabaseContext;
 
-namespace Iceshrimp.Backend.Pages;
+namespace Iceshrimp.Backend.Pages.Queue;
 
-public class QueueModel(DatabaseContext db, QueueService queueSvc, MetaService meta, CacheService cache) : PageModel
+public partial class Queue(DatabaseContext db, QueueService queueSvc, CacheService cache) : AdminComponentBase
 {
-	private NamedCache _cache = cache.GetNamedCache("admin:queue-dash");
+    [Parameter] public string? Name       { get; set; }
+    [Parameter] public int?    Pagination { get; set; }
+    [Parameter] public string? Status     { get; set; }
 
-	public int?                       DelayedCount;
-	public Job.JobStatus?             Filter;
-	public List<Job>                  Jobs = [];
-	public int?                       NextPage;
-	public int?                       PrevPage;
-	public string?                    Queue;
-	public int?                       QueuedCount;
-	public int?                       RunningCount;
-	public int?                       TotalCount;
-	public List<QueueStatus>?         QueueStatuses;
-	public List<DelayedDeliverTarget> TopDelayed = [];
-	public long?                      Last;
-	public string                     InstanceName = "Iceshrimp.NET";
+    private int?                       DelayedCount  { get; set; }
+    private int?                       QueuedCount   { get; set; }
+    private int?                       RunningCount  { get; set; }
+    private int?                       TotalCount    { get; set; }
+    private Job.JobStatus?             Filter        { get; set; }
+    private List<Job>                  Jobs          { get; set; } = [];
+    private int?                       PrevPage      { get; set; }
+    private int?                       NextPage      { get; set; }
+    private List<QueueStatus>?         QueueStatuses { get; set; }
+    private List<DelayedDeliverTarget> TopDelayed    { get; set; } = [];
+    private long?                      Last          { get; set; }
 
-	public static readonly ImmutableArray<string> ScheduledQueues = ["background-task", "backfill"];
+    private NamedCache _cache = cache.GetNamedCache("admin:queue-dash");
 
-	public async Task<IActionResult> OnGet(
-		[FromRoute] string? queue, [FromRoute(Name = "pagination")] int? page, [FromRoute] string? status
-	)
-	{
-		if (!Request.Cookies.TryGetValue("admin_session", out var cookie))
-			return Redirect("/login");
-		if (!await db.Sessions.AnyAsync(p => p.Token == cookie && p.Active && p.User.IsAdmin))
-			return Redirect("/login");
+    private static readonly ImmutableArray<string> ScheduledQueues = ["background-task", "backfill"];
 
-		Request.HttpContext.HideFooter();
-		InstanceName = await meta.GetAsync(MetaEntity.InstanceName) ?? InstanceName;
+    private class QueueStatus
+    {
+        public required string                                  Name      { get; init; }
+        public required IReadOnlyDictionary<Job.JobStatus, int> JobCounts { get; init; }
+    }
 
-		if (queue == null)
+    protected override async Task OnInitializedAsync()
+    {
+        if (Name == null)
 		{
 			// Should be 15, but the table styles look more pleasing with even numbers
 			Jobs = await db.Jobs.OrderByDescending(p => p.LastUpdatedAt).Take(16).ToListAsync();
-			if (Request.Query.TryGetValue("last", out var last) && long.TryParse(last, out var parsed))
+			if (Context.Request.Query.TryGetValue("last", out var last) && long.TryParse(last, out var parsed))
 				Last = parsed;
 
 			//TODO: write an expression generator for the job count calculation
@@ -91,37 +89,35 @@ public class QueueModel(DatabaseContext db, QueueService queueSvc, MetaService m
 			TopDelayed = await _cache.FetchAsync("top-delayed", TimeSpan.FromSeconds(60),
 			                                     () => db.GetDelayedDeliverTargets().ToListAsync());
 
-			return Page();
+			return;
 		}
 
-		if (!queueSvc.QueueNames.Contains(queue))
-			throw GracefulException.BadRequest($"Unknown queue: {queue}");
+		if (!queueSvc.QueueNames.Contains(Name))
+			throw GracefulException.BadRequest($"Unknown queue: {Name}");
 
-		Queue = queue;
+		if (Pagination is null or < 1)
+			Pagination = 1;
 
-		if (page is null or < 1)
-			page = 1;
-
-		var query = db.Jobs.Where(p => p.Queue == queue);
-		if (status is { Length: > 0 })
+		var query = db.Jobs.Where(p => p.Queue == Name);
+		if (Status is { Length: > 0 })
 		{
-			if (!Enum.TryParse<Job.JobStatus>(status, true, out var jobStatus))
-				throw GracefulException.BadRequest($"Unknown status: {status}");
+			if (!Enum.TryParse<Job.JobStatus>(Status, true, out var jobStatus))
+				throw GracefulException.BadRequest($"Unknown status: {Status}");
 			query  = query.Where(p => p.Status == jobStatus);
 			Filter = jobStatus;
 		}
 
 		Jobs = await query.OrderByDescending(p => p.Id)
-		                  .Skip((page.Value - 1) * 50)
+		                  .Skip((Pagination.Value - 1) * 50)
 		                  .Take(50)
 		                  .ToListAsync();
 
 		if (Filter == null)
 		{
-			TotalCount   = await db.Jobs.CountAsync(p => p.Queue == queue);
-			QueuedCount  = await db.Jobs.CountAsync(p => p.Queue == queue && p.Status == Job.JobStatus.Queued);
-			RunningCount = await db.Jobs.CountAsync(p => p.Queue == queue && p.Status == Job.JobStatus.Running);
-			DelayedCount = await db.Jobs.CountAsync(p => p.Queue == queue && p.Status == Job.JobStatus.Delayed);
+			TotalCount   = await db.Jobs.CountAsync(p => p.Queue == Name);
+			QueuedCount  = await db.Jobs.CountAsync(p => p.Queue == Name && p.Status == Job.JobStatus.Queued);
+			RunningCount = await db.Jobs.CountAsync(p => p.Queue == Name && p.Status == Job.JobStatus.Running);
+			DelayedCount = await db.Jobs.CountAsync(p => p.Queue == Name && p.Status == Job.JobStatus.Delayed);
 		}
 		else
 		{
@@ -129,15 +125,9 @@ public class QueueModel(DatabaseContext db, QueueService queueSvc, MetaService m
 		}
 
 		if (Jobs.Count >= 50)
-			NextPage = page + 1;
-		if (page is > 1)
-			PrevPage = page - 1;
-		return Page();
-	}
-
-	public class QueueStatus
-	{
-		public required string                                  Name      { get; init; }
-		public required IReadOnlyDictionary<Job.JobStatus, int> JobCounts { get; init; }
-	}
+			NextPage = Pagination + 1;
+		if (Pagination is > 1)
+			PrevPage = Pagination - 1;
+    }
 }
+
