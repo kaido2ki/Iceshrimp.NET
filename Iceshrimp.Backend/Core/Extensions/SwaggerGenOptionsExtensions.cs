@@ -151,25 +151,24 @@ public static class SwaggerGenOptionsExtensions
 			if (context.MethodInfo.DeclaringType is null)
 				return;
 
-			var authenticateAttribute = context.MethodInfo.GetCustomAttributes(true)
-			                                   .OfType<AuthenticateAttribute>()
-			                                   .FirstOrDefault() ??
-			                            context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                                   .OfType<AuthenticateAttribute>()
-			                                   .FirstOrDefault();
+			var authenticateAttribute = context.MethodInfo
+			                                   .GetCustomAttributes<AuthenticateAttribute>(true)
+			                                   .FirstOrDefault()
+			                            ?? context.MethodInfo
+			                                      .DeclaringType
+			                                      .GetCustomAttributes<AuthenticateAttribute>(true)
+			                                      .FirstOrDefault();
 
 			if (authenticateAttribute == null) return;
 
-			var isMastodonController = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                                  .OfType<MastodonApiControllerAttribute>()
+			var isMastodonController = context.MethodInfo.DeclaringType
+			                                  .GetCustomAttributes<MastodonApiControllerAttribute>(true)
 			                                  .Any();
 
-			var authorizeAttribute = context.MethodInfo.GetCustomAttributes(true)
-			                                .OfType<AuthorizeAttribute>()
-			                                .FirstOrDefault() ??
-			                         context.MethodInfo.DeclaringType.GetCustomAttributes(true)
-			                                .OfType<AuthorizeAttribute>()
-			                                .FirstOrDefault();
+			var authorizeAttribute = context.MethodInfo.GetCustomAttributes<AuthorizeAttribute>(true)
+			                                .FirstOrDefault()
+			                         ?? context.MethodInfo.DeclaringType.GetCustomAttributes<AuthorizeAttribute>(true)
+			                                   .FirstOrDefault();
 
 			var securitySchemaName = isMastodonController ? "mastodon" : "iceshrimp";
 			var schema             = new OpenApiSecuritySchemeReference(securitySchemaName, context.Document);
