@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using Iceshrimp.Backend.Components.Helpers;
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
@@ -10,7 +9,7 @@ using static Iceshrimp.Backend.Core.Database.DatabaseContext;
 
 namespace Iceshrimp.Backend.Pages.Queue;
 
-public partial class Queue(DatabaseContext db, QueueService queueSvc, CacheService cache) : AdminComponentBase
+public partial class Queue(QueueService queueSvc, CacheService cache) : AdminComponentBase
 {
     [Parameter] public string? Name       { get; set; }
     [Parameter] public int?    Pagination { get; set; }
@@ -43,12 +42,12 @@ public partial class Queue(DatabaseContext db, QueueService queueSvc, CacheServi
         if (Name == null)
 		{
 			// Should be 15, but the table styles look more pleasing with even numbers
-			Jobs = await db.Jobs.OrderByDescending(p => p.LastUpdatedAt).Take(16).ToListAsync();
+			Jobs = await Database.Jobs.OrderByDescending(p => p.LastUpdatedAt).Take(16).ToListAsync();
 			if (Context.Request.Query.TryGetValue("last", out var last) && long.TryParse(last, out var parsed))
 				Last = parsed;
 
 			//TODO: write an expression generator for the job count calculation
-			QueueStatuses = await db.Jobs
+			QueueStatuses = await Database.Jobs
 			                        .GroupBy(job => job.Queue)
 			                        .OrderBy(p => p.Key)
 			                        .Select(p => p.Key)
@@ -58,26 +57,26 @@ public partial class Queue(DatabaseContext db, QueueService queueSvc, CacheServi
 				                        JobCounts = new Dictionary<Job.JobStatus, int>
 				                        {
 					                        {
-						                        Job.JobStatus.Queued, db.Jobs.Count(job =>
+						                        Job.JobStatus.Queued, Database.Jobs.Count(job =>
 							                        job.Queue == queueName
 							                        && job.Status
 							                        == Job.JobStatus.Queued)
 					                        },
 					                        {
-						                        Job.JobStatus.Delayed, db.Jobs.Count(job =>
+						                        Job.JobStatus.Delayed, Database.Jobs.Count(job =>
 							                        job.Queue == queueName && job.Status == Job.JobStatus.Delayed)
 					                        },
 					                        {
-						                        Job.JobStatus.Running, db.Jobs.Count(job =>
+						                        Job.JobStatus.Running, Database.Jobs.Count(job =>
 							                        job.Queue == queueName && job.Status == Job.JobStatus.Running)
 					                        },
 					                        {
-						                        Job.JobStatus.Completed, db.Jobs.Count(job =>
+						                        Job.JobStatus.Completed, Database.Jobs.Count(job =>
 							                        job.Queue == queueName
 							                        && job.Status == Job.JobStatus.Completed)
 					                        },
 					                        {
-						                        Job.JobStatus.Failed, db.Jobs.Count(job =>
+						                        Job.JobStatus.Failed, Database.Jobs.Count(job =>
 							                        job.Queue == queueName
 							                        && job.Status
 							                        == Job.JobStatus.Failed)
@@ -87,7 +86,7 @@ public partial class Queue(DatabaseContext db, QueueService queueSvc, CacheServi
 			                        .ToListAsync();
 
 			TopDelayed = await _cache.FetchAsync("top-delayed", TimeSpan.FromSeconds(60),
-			                                     () => db.GetDelayedDeliverTargets().ToListAsync());
+			                                     () => Database.GetDelayedDeliverTargets().ToListAsync());
 
 			return;
 		}
@@ -98,7 +97,7 @@ public partial class Queue(DatabaseContext db, QueueService queueSvc, CacheServi
 		if (Pagination is null or < 1)
 			Pagination = 1;
 
-		var query = db.Jobs.Where(p => p.Queue == Name);
+		var query = Database.Jobs.Where(p => p.Queue == Name);
 		if (Status is { Length: > 0 })
 		{
 			if (!Enum.TryParse<Job.JobStatus>(Status, true, out var jobStatus))
@@ -114,10 +113,10 @@ public partial class Queue(DatabaseContext db, QueueService queueSvc, CacheServi
 
 		if (Filter == null)
 		{
-			TotalCount   = await db.Jobs.CountAsync(p => p.Queue == Name);
-			QueuedCount  = await db.Jobs.CountAsync(p => p.Queue == Name && p.Status == Job.JobStatus.Queued);
-			RunningCount = await db.Jobs.CountAsync(p => p.Queue == Name && p.Status == Job.JobStatus.Running);
-			DelayedCount = await db.Jobs.CountAsync(p => p.Queue == Name && p.Status == Job.JobStatus.Delayed);
+			TotalCount   = await Database.Jobs.CountAsync(p => p.Queue == Name);
+			QueuedCount  = await Database.Jobs.CountAsync(p => p.Queue == Name && p.Status == Job.JobStatus.Queued);
+			RunningCount = await Database.Jobs.CountAsync(p => p.Queue == Name && p.Status == Job.JobStatus.Running);
+			DelayedCount = await Database.Jobs.CountAsync(p => p.Queue == Name && p.Status == Job.JobStatus.Delayed);
 		}
 		else
 		{

@@ -1,5 +1,4 @@
 using Iceshrimp.Backend.Components.Helpers;
-using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Components;
@@ -7,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Pages.Queue;
 
-public partial class QueueJob(DatabaseContext db) : AdminComponentBase
+public partial class QueueJob : AdminComponentBase
 {
     [Parameter] public required Guid Id { get; set; }
 
@@ -22,7 +21,7 @@ public partial class QueueJob(DatabaseContext db) : AdminComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        JobDetails = await db.Jobs.FirstOrDefaultAsync(p => p.Id == Id) ??
+        JobDetails = await Database.Jobs.FirstOrDefaultAsync(p => p.Id == Id) ??
                      throw GracefulException.NotFound($"Job {Id} not found");
     }
 }
