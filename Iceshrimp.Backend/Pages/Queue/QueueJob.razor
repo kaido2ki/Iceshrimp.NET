@@ -1,0 +1,159 @@
+@page "/queue/job/{Id::guid:required}"
+@using System.Text.Json
+@using System.Text.Json.Nodes
+@using System.Text.Json.Serialization
+@using Iceshrimp.Backend.Components.Queue
+@using Iceshrimp.Backend.Core.Database.Tables
+@using Iceshrimp.Backend.Core.Extensions
+@inherits AdminComponentBase
+
+<QueueHead Title="@($"Job {Id.ToStringLower()}")"/>
+
+<h2>Job details</h2>
+
+<table>
+    <tbody>
+    <tr>
+        <td class="width20">ID</td>
+        <td>@JobDetails.Id.ToStringLower()</td>
+    </tr>
+    <tr>
+        <td>Queue</td>
+        <td>@JobDetails.Queue</td>
+    </tr>
+    <tr>
+        @{
+            var status = JobDetails is { Status: Job.JobStatus.Delayed, RetryCount: 0 } ? "Scheduled" : JobDetails.Status.ToString();
+        }
+        <td>Status</td>
+        <td class="status-@status.ToLowerInvariant()">@status</td>
+    </tr>
+    @if (JobDetails.Status.Equals(Job.JobStatus.Failed))
+    {
+        <tr>
+            <td>Actions</td>
+            <td>
+                <a class="fake-link" onclick="retry('@JobDetails.Id.ToStringLower()')">Retry</a>
+            </td>
+        </tr>
+    }
+    else if (JobDetails.Status.Equals(Job.JobStatus.Delayed))
+    {
+        var abandonName = JobDetails.RetryCount == 0 ? "Deschedule" : "Abandon";
+        <tr>
+            <td>Actions</td>
+            <td>
+                <a class="fake-link" onclick="abandon('@JobDetails.Id.ToStringLower()', event.target)">@abandonName</a>
+            </td>
+        </tr>
+    }
+    <tr>
+        <td>Queued at</td>
+        <td>@JobDetails.QueuedAt.ToLocalTime().ToDisplayStringTz()</td>
+    </tr>
+    @if (JobDetails.Status is not Job.JobStatus.Queued and not Job.JobStatus.Delayed)
+    {
+        <tr>
+            <td>Started at</td>
+            <td>@(JobDetails.StartedAt?.ToLocalTime().ToDisplayStringTz() ?? "<unknown>")</td>
+        </tr>
+    }
+    @if (JobDetails.Status is Job.JobStatus.Completed or Job.JobStatus.Failed)
+    {
+        <tr>
+            <td>Finished at</td>
+            <td>@(JobDetails.FinishedAt?.ToLocalTime().ToDisplayStringTz() ?? "<unknown>")</td>
+        </tr>
+    }
+    @if (JobDetails.Status == Job.JobStatus.Delayed)
+    {
+        <tr>
+            <td>Delayed until</td>
+            <td>@(JobDetails.DelayedUntil?.ToLocalTime().ToDisplayStringTz() ?? "<unknown>")</td>
+        </tr>
+    }
+    @if (TimeSpan.FromMilliseconds(JobDetails.Duration).TotalHours <= 72)
+    {
+        <tr>
+            <td>Duration</td>
+            <td>@JobDetails.Duration.ToDurationDisplayString()</td>
+        </tr>
+    }
+    @if (TimeSpan.FromMilliseconds(JobDetails.QueueDuration).TotalHours <= 72)
+    {
+        <tr>
+            <td>Queue duration</td>
+            <td>@JobDetails.QueueDuration.ToDurationDisplayString()</td>
+        </tr>
+    }
+    @if (JobDetails.RetryCount > 0)
+    {
+        <tr>
+            <td>Retry count</td>
+            <td>@JobDetails.RetryCount</td>
+        </tr>
+    }
+    @if (JobDetails is { ExceptionMessage: not null, Exception: null })
+    {
+        <tr>
+            <td>Exception message</td>
+            <td>@JobDetails.ExceptionMessage</td>
+        </tr>
+    }
+    @if (JobDetails is { ExceptionSource: not null, Exception: null })
+    {
+        <tr>
+            <td>Exception source</td>
+            <td>@JobDetails.ExceptionSource</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (JobDetails is { StackTrace: not null, Exception: null })
+{
+    <h3>Exception stack trace</h3>
+    <pre><code id="exceptionStackTrace">@JobDetails.StackTrace</code></pre>
+    <button class="button" onclick="copyElementToClipboard('exceptionStackTrace')">Copy to clipboard</button>
+}
+@if (JobDetails.Exception != null)
+{
+    <h3>Exception details</h3>
+    <pre><code id="exceptionDetails">@JobDetails.Exception</code></pre>
+    <button class="button" onclick="copyElementToClipboard('exceptionDetails')">Copy to clipboard</button>
+}
+
+<h3>Job data</h3>
+
+@{
+    var dataOpts    = new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+    var payloadOpts = new JsonSerializerOptions { WriteIndented = true };
+
+    if (Lookup.TryGetValue(JobDetails.Queue, out var payloadKey))
+    {
+        var data = JsonNode.Parse(JobDetails.Data)?.AsObject() ??
+                   throw new Exception($"Failed to deserialize {JobDetails.Queue} job data");
+        var payloadElem = data[payloadKey];
+        var payload = payloadElem?.GetValue<string>() ??
+                      throw new Exception($"Failed to deserialize {JobDetails.Queue} job data");
+        var payloadJson = JsonNode.Parse(payload)?.ToJsonString(payloadOpts) ??
+                          throw new Exception($"Failed to serialize {JobDetails.Queue} job data");
+
+        data.Remove(payloadKey);
+        foreach (var item in data.Where(p => p.Value?.GetValueKind() is null or JsonValueKind.Null).ToList())
+            data.Remove(item.Key);
+
+        var dataJson = data.ToJsonString(dataOpts);
+        <pre><code>@dataJson</code></pre>
+        <h3>Job payload</h3>
+        <pre><code id="payload">@payloadJson</code></pre>
+    }
+    else
+    {
+        var json = JsonNode.Parse(JobDetails.Data)?.ToJsonString(payloadOpts) ??
+                   throw new Exception($"Failed to serialize {JobDetails.Queue} job data");
+        <pre><code id="payload">@json</code></pre>
+    }
+}
+
+<button class="button" onclick="copyElementToClipboard('payload');">Copy to clipboard</button>
