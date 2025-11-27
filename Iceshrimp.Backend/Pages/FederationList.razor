@@ -1,0 +1,107 @@
+@page "/federation"
+@using Iceshrimp.Backend.Core.Configuration
+@inherits AsyncComponentBase
+
+@if (IsAllowList)
+{
+    <PageTitle>Allowed Instances - @(InstanceName ?? "Iceshrimp.NET")</PageTitle>
+    @if (List.Count != 0)
+    {
+        <h2>Federation List (@(List.Count) Allowed Instances)</h2>
+    }
+    else
+    {
+        <h2>Federation List (Allowed Instances)</h2>
+    }
+}
+else
+{
+    <PageTitle>Blocked Instances - @(InstanceName ?? "Iceshrimp.NET")</PageTitle>
+    @if (List.Count != 0)
+    {
+        <h2>Federation List (@(List.Count) Blocked Instances)</h2>
+    }
+    else
+    {
+        <h2>Federation List (Blocked Instances)</h2>
+    }
+}
+
+@if (DisplayList == Enums.ItemVisibility.Registered && !IsLoggedIn)
+{
+    <p>
+        <i>This list is only available to registered users on this instance.</i>
+    </p>
+
+    return;
+}
+@if (DisplayList == Enums.ItemVisibility.Hide && !IsAdmin)
+{
+    <p>
+        <i>This list is only displayed to admins of this instance.</i>
+    </p>
+
+    return;
+}
+
+@if (DisplayReasons == Enums.ItemVisibility.Registered && !IsLoggedIn)
+{
+    <p>
+        <i>Note: Block reasons are only shown to registered users on this instance.</i>
+    </p>
+}
+else if (DisplayReasons == Enums.ItemVisibility.Hide && !IsAdmin)
+{
+    <p>
+        <i>Note: Block reasons are only displayed to the admins of this instance.</i>
+    </p>
+}
+
+<table>
+    <thead>
+    <tr>
+        <th>Host</th>
+        @if (!IsAllowList && !HideReasons)
+        {
+            <th>Reason</th>
+        }
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var entry in List)
+    {
+        <tr>
+            <td>@entry.Key</td>
+            @if (!IsAllowList && !HideReasons)
+            {
+                <td>
+                    @if (string.IsNullOrWhiteSpace(entry.Value))
+                    {
+                        <i>No reason set</i>
+                    }
+                    else
+                    {
+                        @entry.Value
+                    }
+                </td>
+            }
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (List.Count == 0)
+{
+    @if (IsAllowList)
+    {
+        <p>
+            <i>This instance does not allow any instances.</i>
+        </p>
+    }
+    else
+    {
+        <p>
+            <i>This instance does not block any instances.</i>
+        </p>
+    }
+}
