@@ -18,13 +18,15 @@ else
 {
     @if (_user.BannerUrl != null)
     {
-        <img class="banner" src="@_user.BannerUrl" draggable="false"/>
+        <div class="banner">
+            <img class="banner" src="@_user.BannerUrl" alt="@_user.Username's banner" draggable="false"/>
+        </div>
     }
     <div class="user">
         <div class="user-details @(_user.BannerUrl != null ? "above-banner" : "")">
             <UserComponent User="_user" Large/>
         </div>
-        <div class="data badge-feed">
+        <div class="badge-feed">
             @if (_badges.Count != 0)
             {
                 <div class="badges">
