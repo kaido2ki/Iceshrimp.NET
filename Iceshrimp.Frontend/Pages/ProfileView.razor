@@ -40,9 +40,11 @@
 
         @if (UserResponse.BannerUrl != null)
         {
-            <img class="banner" src="@UserResponse.BannerUrl"
-                 alt="@(UserResponse.BannerAlt ?? Loc["{0}'s banner", UserResponse.DisplayName ?? UserResponse.Username])"
-                 title="@(UserResponse.BannerAlt ?? Loc["{0}'s banner", UserResponse.DisplayName ?? UserResponse.Username])"/>
+            <div class="banner">
+                <img class="banner" src="@UserResponse.BannerUrl"
+                     alt="@(UserResponse.BannerAlt ?? Loc["{0}'s banner", UserResponse.DisplayName ?? UserResponse.Username])"
+                     title="@(UserResponse.BannerAlt ?? Loc["{0}'s banner", UserResponse.DisplayName ?? UserResponse.Username])"/>
+            </div>
         }
 
         <div class="profile-card">
