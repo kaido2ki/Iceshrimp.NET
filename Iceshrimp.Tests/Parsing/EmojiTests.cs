@@ -24,7 +24,7 @@ public class EmojiTests
 	[DataRow("\ud83e\ude75")] // light blue heart (E15.0)
 	[DataRow("\ud83d\ude42\u200d\u2194\ufe0f")] // head shaking horizontally (E15.1)
 	[DataRow("\ud83e\udee9")] // face with bags under eyes (E16.0)
-	[DataRow("\ud83e\udeea")] // face with bags under eyes (E17.0)
+	[DataRow("\ud83e\udeea")] // distorted face (E17.0)
 	public void TestEmojiRegexEmoji(string input) => TestEmojiRegexTemplate(input, true);
 
 	[TestMethod]
