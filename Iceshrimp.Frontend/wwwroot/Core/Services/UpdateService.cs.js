@@ -11,6 +11,7 @@ export async function RegisterSWUpdateCallback(dotNetHelper){
 export async function ServiceWorkerCheckRegistration(){
     if (navigator.serviceWorker == null) return null;
     const registration = await navigator.serviceWorker.getRegistration();
+    if (!registration) return null;
     if (registration.installing) return "installing";
     if (registration.waiting) return "waiting";
     if (registration.active) return "active";
@@ -20,6 +21,7 @@ export async function ServiceWorkerCheckRegistration(){
 export async function ServiceWorkerUpdate(){
     if (navigator.serviceWorker == null) return null;
     const registration = await navigator.serviceWorker.getRegistration();
+    if (!registration) return null;
     var res = await registration.update();
     if (res.installing) return "installing";
     if (res.waiting) return "waiting";
@@ -30,7 +32,7 @@ export async function ServiceWorkerUpdate(){
 export async function ServiceWorkerSkipWaiting(){
     if (navigator.serviceWorker == null) return null;
     const registration = await navigator.serviceWorker.getRegistration();
-    if (registration.waiting){
+    if (registration?.waiting){
         registration.waiting.postMessage({ type: 'SKIP_WAITING' })
         return true;
     }
