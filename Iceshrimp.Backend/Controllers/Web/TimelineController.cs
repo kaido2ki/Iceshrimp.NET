@@ -142,6 +142,27 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user);
 	}
 
+	[HttpGet("list/{id}")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<NoteResponse>> GetListTimeline(string id, PaginationQuery pq)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		if (!await db.UserLists.AnyAsync(p => p.Id == id && p.User == user))
+			throw GracefulException.NotFound("List not found");
+
+		var notes = await db.Notes.IncludeCommonProperties()
+		                    .Where(p => db.UserListMembers.Any(l => l.UserListId == id && l.UserId == p.UserId))
+		                    .EnsureVisibleFor(user)
+		                    .FilterHidden(user, db)
+		                    .FilterMutedThreads(user, db)
+		                    .Paginate(pq, ControllerContext)
+		                    .PrecomputeVisibilities(user)
+		                    .ToListAsync();
+
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user);
+	}
+
 	[HttpGet("remote/{instance}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IEnumerable<NoteResponse>> GetRemoteTimeline(string instance, PaginationQuery pq)
