@@ -1,0 +1,21 @@
+body {
+    min-height: unset;
+    max-width: 800px;
+    margin: 10px auto;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 4px 8px;
+    flex-wrap: wrap;
+}
+
+footer {
+    border-top: 1px solid var(--border-color);
+    padding-top: 0.5rem;
+}
+
+body > footer {
+    margin-top: 1rem;
+}

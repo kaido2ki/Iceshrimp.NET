@@ -157,7 +157,6 @@ public static partial class HttpContextExtensions
 {
 	private const string Key           = "session";
 	private const string MastodonKey   = "masto-session";
-	private const string HideFooterKey = "hide-login-footer";
 
 	extension(HttpContext ctx)
 	{
@@ -202,13 +201,5 @@ public static partial class HttpContextExtensions
 		{
 			return ctx.GetUser() ?? throw new Exception("Failed to get user from HttpContext");
 		}
-
-		public bool ShouldHideFooter()
-		{
-			ctx.Items.TryGetValue(HideFooterKey, out var auth);
-			return auth is true;
-		}
-
-		public void HideFooter() => ctx.Items.Add(HideFooterKey, true);
 	}
 }

@@ -39,3 +39,20 @@
     aspect-ratio: 21/9;
     border-radius: 1rem;
 }
+
+ol > li {
+    list-style-type: decimal;
+}
+
+details {
+    margin: 1rem auto;
+    padding: 1rem;
+    background-color: var(--foreground-color);
+    border-radius: 0.75rem;
+}
+
+@media screen and (prefers-color-scheme: light) {
+    .wordmark {
+        filter: invert();
+    }
+}

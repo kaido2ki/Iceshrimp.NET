@@ -1,0 +1,105 @@
+@page "/"
+@using Iceshrimp.Backend.Components.PublicPreview.Attributes
+@using Iceshrimp.Backend.Core.Configuration
+@using Iceshrimp.Backend.Core.Database.Tables
+@using Iceshrimp.Backend.Core.Extensions
+@using Iceshrimp.Backend.Core.Services
+@using Microsoft.Extensions.Options
+@attribute [PublicPreviewRouteFilter]
+@inherits AsyncComponentBase
+<PageTitle>Home - @(InstanceName ?? "Iceshrimp.NET")</PageTitle>
+<HeadContent>
+    <meta name="twitter:card" content="summary">
+    <meta property="og:title" content="Home - @InstanceName">
+    <meta property="og:description" content="@_instanceDescription">
+    <meta property="og:site_name" content="@InstanceName">
+</HeadContent>
+
+<div class="header">
+    <span>
+        @if (_iconUrl != null)
+        {
+            <img class="icon" src="@_iconUrl" alt="icon"/>
+        }
+        <h1>@InstanceName</h1>
+    </span>
+    <div class="wordmark">
+        <img src="/@Assets["_content/Iceshrimp.Assets.Branding/welcome-logo.svg"]" alt="Iceshrimp"/>
+    </div>
+</div>
+
+@if (_bannerUrl != null)
+{
+    <img class="banner" src="@_bannerUrl" alt="banner"/>
+}
+
+<p>@_instanceDescription</p>
+
+@if (_rules.Count != 0)
+{
+    <details>
+        <summary>Rules</summary>
+        <ol>
+            @foreach (var rule in _rules)
+            {
+                <li>
+                    @rule.Text
+                    @if (rule.Description != null)
+                    {
+                        <br>
+                        <i>@rule.Description</i>
+                    }
+                </li>
+            }
+        </ol>
+    </details>
+}
+
+@if (_contactEmail != null)
+{
+    <span>| <a href="mailto:@_contactEmail">Contact instance administrators</a></span>
+}
+
+@if (_showFederationList == true)
+{
+    <span>| <a href="/federation">View Federation List (@_federationMode)</a></span>
+}
+
+@code {
+    [CascadingParameter(Name = "InstanceName")]
+    public required string? InstanceName { get; set; }
+
+    [Inject] public required InstanceService                          Instance { get; set; }
+    [Inject] public required MetaService                              Meta     { get; set; }
+    [Inject] public required IOptionsSnapshot<Config.InstanceSection> Config   { get; set; }
+    [Inject] public required IOptionsSnapshot<Config.SecuritySection> Security { get; set; }
+
+    private string     _instanceDescription = null!;
+    private string?    _contactEmail;
+    private string?    _iconUrl;
+    private string?    _bannerUrl;
+    private bool?      _showFederationList;
+    private string?    _federationMode;
+    private List<Rule> _rules = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Config.Value.RedirectIndexTo is { } dest)
+        {
+            Redirect(dest);
+            return;
+        }
+        
+        var (instanceDescription, contactEmail) = await Meta.GetManyAsync(MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
+
+        _instanceDescription = instanceDescription ?? "This Iceshrimp.NET instance does not appear to have a description";
+        _contactEmail        = contactEmail;
+
+        (_iconUrl, _bannerUrl) = await Instance.GetInstanceImageAsync();
+
+        _showFederationList = Security.Value.ExposeFederationList == Enums.ItemVisibility.Public;
+        _federationMode     = Security.Value.FederationMode.ToString();
+
+        _rules = await Instance.GetRulesAsync();
+    }
+}

@@ -6,9 +6,9 @@ using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
-using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Backend.Pages.Shared;
 using Iceshrimp.Shared.Schemas.Web;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Middleware;
@@ -17,7 +17,8 @@ public class ErrorHandlerMiddleware(
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameterInConstructor")]
 	IOptionsMonitor<Config.SecuritySection> options,
 	ILoggerFactory loggerFactory,
-	RazorViewRenderService razor
+	EndpointDataSource endpointData,
+	IServiceScopeFactory scopeFactory
 ) : IMiddlewareService
 {
 	public static ServiceLifetime Lifetime => ServiceLifetime.Singleton;
@@ -165,11 +166,24 @@ public class ErrorHandlerMiddleware(
 					}
 					case ResponseType.Html:
 					{
-						var model = new ErrorPageModel(payload);
-						ctx.Response.ContentType = "text/html; charset=utf8";
-						var stream = ctx.Response.BodyWriter.AsStream();
-						await razor.RenderToStreamAsync("Shared/ErrorPage.cshtml", model, stream);
-						return;
+						await using var scope = scopeFactory.CreateAsyncScope();
+
+						// Creates a new temporary service provider for error handling purposes.
+						// This is necessary to make HTML error pages work when the Blazor SSR pipeline has already been used for this request.
+						var oldServices = ctx.RequestServices;
+						ctx.RequestServices = scope.ServiceProvider;
+						ctx.Response.Headers.Remove("blazor-enhanced-nav");
+
+						// This is necessary to make static assets work when using RazorComponentResult in middleware
+						var index = endpointData.Endpoints.First(p => p is RouteEndpoint { RoutePattern.RawText: "/" });
+						ctx.SetEndpoint(index);
+
+						// Render the error page statically
+						await new RazorComponentResult<ErrorPage>(new { Error = payload }).ExecuteAsync(ctx);
+
+						// Restore old service provider in case the response pipeline needs it
+						ctx.RequestServices = oldServices;
+						break;
 					}
 					default:
 						throw new ArgumentOutOfRangeException(nameof(resType));

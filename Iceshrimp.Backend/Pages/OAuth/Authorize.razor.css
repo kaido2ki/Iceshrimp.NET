@@ -1,4 +1,4 @@
-﻿.app_name {
+.app_name {
     color: var(--notice-color);
 }
 
@@ -20,7 +20,15 @@
     margin-top: 10px;
 }
 
-.hidden-input {
+ul > li {
+    list-style-type: disc;
+}
+
+::deep input[type="checkbox"] {
+    display: inline-block;
+}
+
+::deep .hidden-input {
     position: absolute;
     top: -10px;
     left: -10px;

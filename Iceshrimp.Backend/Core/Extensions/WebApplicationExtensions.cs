@@ -9,6 +9,9 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Backend.Core.Services.ImageProcessing;
 using Iceshrimp.WebPush;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.StaticAssets.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration.Ini;
@@ -43,7 +46,6 @@ public static class WebApplicationExtensions
 		private IApplicationBuilder UseMiddleware<T>() where T : IConditionalMiddleware
 			=> app.UseWhen(T.Predicate, builder => UseMiddlewareExtensions.UseMiddleware<T>(builder));
 	}
-
 
 	extension(WebApplication app)
 	{
@@ -89,13 +91,6 @@ public static class WebApplicationExtensions
 			});
 
 			return app;
-		}
-
-		public void MapFrontendRoutes(string page)
-		{
-			app.MapFallbackToPage(page).WithOrder(int.MaxValue - 2);
-			app.MapFallbackToPage("/@{user}", page).WithOrder(int.MaxValue - 1);
-			app.MapFallbackToPage("/@{user}@{host}", page);
 		}
 
 		public async Task<Config.InstanceSection> InitializeAsync(string[] args)
@@ -477,6 +472,86 @@ public static class WebApplicationExtensions
 			[DllImport("libc")]
 			static extern int chmod(string pathname, int mode);
 		}
+	}
+
+	extension(IEndpointRouteBuilder endpoints)
+	{
+		public void MapFrontendRoutes<TComponent>() where TComponent : IComponent
+		{
+			endpoints = endpoints.WithStaticAssets();
+			endpoints.MapFallbackToRazorComponent<TComponent>("/@{user}").CacheOutput().WithOrder(int.MaxValue - 1);
+			endpoints.MapFallbackToRazorComponent<TComponent>().CacheOutput().WithOrder(int.MaxValue - 2);
+			endpoints.MapFallbackToRazorComponent<TComponent>("/@{user}@{host}").CacheOutput().WithOrder(int.MaxValue);
+		}
+
+		public IEndpointConventionBuilder MapFallbackToRazorComponent<TComponent>(
+			[StringSyntax("Route")] string? route = null
+		) where TComponent : IComponent
+		{
+			return route == null
+				? endpoints.MapFallback(() => new RazorComponentResult<TComponent>())
+				: endpoints.MapFallback(route, () => new RazorComponentResult<TComponent>());
+		}
+
+		// Temporary fix until https://github.com/dotnet/aspnetcore/issues/63398 is merged upstream
+        public RouteGroupBuilder WithStaticAssets(string? staticAssetsManifestPath = null)
+        {
+            endpoints.MapStaticAssets(staticAssetsManifestPath);
+
+            var resources = new List<ResourceAsset>();
+
+            foreach (var descriptor in StaticAssetsEndpointDataSourceHelper.ResolveStaticAssetDescriptors(endpoints, null))
+            {
+                string? label     = null;
+                string? integrity = null;
+
+                if (descriptor.Selectors.Count != 0)
+                {
+                    continue;
+                }
+
+                var foundProperties = 0;
+
+                foreach (var property in descriptor.Properties)
+                {
+                    if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
+                    {
+                        label = property.Value;
+                        foundProperties++;
+                    }
+                    else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
+                    {
+                        integrity = property.Value;
+                        foundProperties++;
+                    }
+                }
+
+                if (label != null || integrity != null)
+                {
+                    var properties = new ResourceAssetProperty[foundProperties];
+                    var index      = 0;
+                    if (label != null)
+                    {
+                        properties[index++] = new("label", label);
+                    }
+
+                    if (integrity != null)
+                    {
+                        properties[index] = new("integrity", integrity);
+                    }
+
+                    resources.Add(new ResourceAsset(descriptor.Route, properties));
+                }
+                else
+                {
+                    resources.Add(new ResourceAsset(descriptor.Route));
+                }
+            }
+
+            resources.Sort((a, b) => string.Compare(a.Url, b.Url, StringComparison.Ordinal));
+
+            return endpoints.MapGroup(string.Empty).WithMetadata(new ResourceAssetCollection(new ResourceAssetCollection(resources)));
+        }
 	}
 }
 

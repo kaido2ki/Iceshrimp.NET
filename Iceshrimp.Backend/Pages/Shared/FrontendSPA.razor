@@ -1,9 +1,5 @@
-@page
 @inject IWebHostEnvironment Env
-@{
-    Layout = null;
-}
-@* ReSharper disable Html.PathError *@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,15 +8,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
     <title>Iceshrimp.Frontend</title>
     <base href="/"/>
-    <link rel="stylesheet" href="~/css/main.css"/>
-    <link rel="stylesheet" href="~/_content/Iceshrimp.Assets.PhosphorIcons/css/ph-regular.css"/>
-    <link rel="stylesheet" href="~/_content/Iceshrimp.Assets.PhosphorIcons/css/ph-fill.css"/>
+    <link rel="stylesheet" href="/@Assets["css/main.css"]"/>
+    <link rel="stylesheet" href="/@Assets["_content/Iceshrimp.Assets.PhosphorIcons/css/ph-regular.css"]"/>
+    <link rel="stylesheet" href="/@Assets["_content/Iceshrimp.Assets.PhosphorIcons/css/ph-fill.css"]"/>
     <link rel="icon" type="image/png" href="/favicon.png">
-    <link rel="stylesheet" href="~/Iceshrimp.Frontend.styles.css"/>
-    <link href="manifest.webmanifest" rel="manifest"/>
-    <link rel="apple-touch-icon" sizes="512x512" href="~/_content/Iceshrimp.Assets.Branding/512.png"/>
-    <link rel="apple-touch-icon" sizes="192x192" href="~/_content/Iceshrimp.Assets.Branding/192.png"/>
-    <link rel="stylesheet" href="~/_content/Iceshrimp.Assets.Fonts/fonts/inter/inter.css" />
+    <link rel="stylesheet" href="/@Assets["Iceshrimp.Frontend.styles.css"]"/>
+    <link href="/manifest.webmanifest" rel="manifest"/>
+    <link rel="apple-touch-icon" sizes="512x512" href="/@Assets["_content/Iceshrimp.Assets.Branding/512.png"]"/>
+    <link rel="apple-touch-icon" sizes="192x192" href="/@Assets["_content/Iceshrimp.Assets.Branding/192.png"]"/>
+    <link rel="stylesheet" href="/@Assets["_content/Iceshrimp.Assets.Fonts/fonts/inter/inter.css"]" />
 </head>
 
 <body>
@@ -43,15 +39,20 @@
 </div>
 
 @* Switch this back to autostart (and remove the script below & the injected service) after switching to a Blazor Web App *@
-<script src="~/_framework/blazor.webassembly.js" autostart="false"></script>
+<script src="/@Assets["_framework/blazor.webassembly.js"]" autostart="false"></script>
 <script>
   Blazor.start({
     environment: "@Env.EnvironmentName"
   });
 </script>
-<script src="~/Utility.js"></script>
+<script src="/@Assets["Utility.js"]"></script>
 <script>navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });</script>
 </body>
 
 </html>
-@* ReSharper restore Html.PathError *@
+
+@code {
+    [Parameter] public string? Route { get; set; }
+    [Parameter] public string? User  { get; set; }
+    [Parameter] public string? Host  { get; set; }
+}

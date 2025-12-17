@@ -1,0 +1,262 @@
+@page "/oauth/authorize"
+@using Iceshrimp.Backend.Core.Database.Tables
+@using Iceshrimp.Backend.Core.Helpers
+@using Iceshrimp.Backend.Core.Middleware
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.EntityFrameworkCore
+@attribute [HideRequestDuration]
+@attribute [Authenticate]
+@inherits AsyncComponentBase
+<PageTitle>Iceshrimp.NET OAuth</PageTitle>
+<h3>Iceshrimp.NET OAuth</h3>
+
+@if (Token != null)
+{
+	if (Token.RedirectUri == "urn:ietf:wg:oauth:2.0:oob")
+	{
+		<div>
+			Your code is:
+			<pre>@Token.Code</pre>
+		</div>
+	}
+	else
+	{
+		var uri   = new Uri(Token.RedirectUri);
+		var query = QueryHelpers.ParseQuery(uri.Query);
+		query.Add("code", Token.Code);
+		if (State != null)
+			query.Add("state", State);
+		uri = new Uri(QueryHelpers.AddQueryString(Token.RedirectUri, query));
+		Redirect(uri.ToString());
+		<div>
+			Click <a href="@uri.ToString()">here</a> to be redirected back to your application
+		</div>
+	}
+	return;
+}
+The app <span class="app_name">@App.Name</span> requests the following permissions:
+
+<ul>
+	@foreach (var scope in Scopes)
+	{
+		<li>@scope</li>
+	}
+</ul>
+
+@if (Scopes.Contains("iceshrimp"))
+{
+	<div class="iceshrimp_scope_warning">
+		This app can use the Iceshrimp API as well as the Mastodon API, giving it full access to your account.
+	</div>
+}
+
+@* We need to wrap EditForm in a div for ::deep styles to work *@
+<div>
+	<EditForm FormName="oauth-authorize" Model="Model" OnSubmit="OnSubmit">
+		<div class="margin-bottom-5px">
+			Feature flags:
+		</div>
+		<div>
+			<InputCheckbox @bind-Value="@Model.SupportsHtmlFormatting" id="supportsHtmlFormatting"/>
+			<label for="supportsHtmlFormatting">This app supports HTML formatting</label>
+		</div>
+		<div>
+			<InputCheckbox @bind-Value="@Model.SupportsInlineMedia" id="supportsInlineMedia"/>
+			<label for="supportsInlineMedia">This app supports inline media</label>
+		</div>
+		<div>
+			<InputCheckbox @bind-Value="@Model.AutoDetectQuotes" id="autoDetectQuotes"/>
+			<label for="autoDetectQuotes">Automatically detect quotes</label>
+		</div>
+		<div>
+			<InputCheckbox @bind-Value="@Model.IsPleroma" id="isPleroma"/>
+			<label for="isPleroma">This app is intended for Pleroma or Akkoma</label>
+		</div>
+		@if (Model is { Username.Length: > 0, Password.Length: > 0 })
+		{
+			<div class="margin-bottom-5px margin-top-10px">
+				Log in below to confirm this:
+			</div>
+			<InputText @bind-Value="@Model.Username" placeholder="Username" autocomplete="username" required/>
+			<InputText @bind-Value="@Model.Password" type="password" placeholder="Password" autocomplete="current-password" required/>
+			<InputText @bind-Value="@Model.OneTimePassword" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code"
+			       placeholder="TOTP" required/>
+		}
+		else if (AuthenticatedUsers.Count > 0)
+		{
+			<div class="margin-top-5px">
+				@foreach (var user in AuthenticatedUsers)
+				{
+					<button class="button" type="submit" name="@nameof(Model).@nameof(Model.UserId)" value="@user.Id">Log in
+						as @@@user.Username</button>
+				}
+			</div>
+			<div class="margin-bottom-5px margin-top-5px">
+				Alternatively, sign in with to a different account below:
+			</div>
+			<InputText @bind-Value="@Model.Username" placeholder="Username" autocomplete="username"/>
+			<InputText @bind-Value="@Model.Password" type="password" placeholder="Password" autocomplete="current-password"/>
+			<InputText @bind-Value="@Model.OneTimePassword" autocomplete="one-time-code" placeholder="TOTP" class="hidden-input"
+			           tabindex="-1" aria-hidden="true"/>
+		}
+		else
+		{
+			<div class="margin-bottom-5px margin-top-10px">
+				Log in below to confirm this:
+			</div>
+			<InputText @bind-Value="@Model.Username" placeholder="Username" autocomplete="username" required/>
+			<InputText @bind-Value="@Model.Password" type="password" placeholder="Password" autocomplete="current-password" required/>
+			<InputText @bind-Value="@Model.OneTimePassword" autocomplete="one-time-code" placeholder="TOTP" class="hidden-input"
+			       tabindex="-1" aria-hidden="true"/>
+		}
+		<button class="button" type="submit">Submit</button>
+	</EditForm>
+	</div>
+
+	@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "response_type")]
+    public string ResponseType { get; set; } = null!;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "client_id")]
+    public string ClientId { get; set; } = null!;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "redirect_uri")]
+    public string RedirectUri { get; set; } = null!;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "force_login")]
+    public bool ForceLogin { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "lang")]
+    public string? Language { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "scope")]
+    public string Scope { get; set; } = null!;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "state")]
+    public string? State { get; set; }
+
+    private OauthApp     App    = null!;
+    private List<string> Scopes = [];
+    private OauthToken?  Token;
+    private List<User>   AuthenticatedUsers = [];
+
+    [SupplyParameterFromForm] private InputModel Model { get; set; } = null!;
+
+    protected override void OnParametersSet()
+    {
+	    // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+	    Model ??= new InputModel();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Scopes = Scope.Split(' ').ToList();
+        if (ResponseType == null || ClientId == null || RedirectUri == null)
+            throw GracefulException.BadRequest("Required parameters are missing or invalid");
+        App = await Database.OauthApps.FirstOrDefaultAsync(p => p.ClientId == ClientId.Replace(' ', '+')) ??
+              throw GracefulException.BadRequest("Invalid client_id");
+        if (MastodonOauthHelpers.ExpandScopes(Scopes).Except(MastodonOauthHelpers.ExpandScopes(App.Scopes)).Any())
+            throw GracefulException.BadRequest("Cannot request more scopes than app");
+        if (ResponseType != "code")
+            throw GracefulException.BadRequest("Invalid response_type");
+        if (!App.RedirectUris.Contains(RedirectUri))
+            throw GracefulException.BadRequest("Cannot request redirect_uri not sent during app registration");
+        if (Context.Request.Cookies.TryGetValue("sessions", out var sessions))
+        {
+            var tokens = sessions.Split('|');
+            AuthenticatedUsers = await Database.Sessions
+                                               .Where(p => tokens.Contains(p.Token) && p.Active)
+                                               .Select(p => p.User)
+                                               .ToListAsync();
+        }
+    }
+
+    private async Task OnSubmit()
+	{
+		var user = AuthenticatedUsers.FirstOrDefault(p => p.Id == Model.UserId);
+
+		if (user == null)
+		{
+			Exception Forbidden() => GracefulException.Forbidden("Invalid username or password");
+			if (Model.Username == null || Model.Password == null)
+				throw Forbidden();
+
+			user = await Database.Users.FirstOrDefaultAsync(p => p.IsLocalUser && p.UsernameLower == Model.Username.ToLowerInvariant())
+			       ?? throw Forbidden();
+			if (user.IsSystemUser) throw GracefulException.BadRequest("Cannot log in as system user");
+			var userSettings = await Database.UserSettings.FirstOrDefaultAsync(p => p.User == user);
+			if (userSettings?.Password == null)
+				throw Forbidden();
+			if (!AuthHelpers.ComparePassword(Model.Password, userSettings.Password))
+				throw Forbidden();
+
+			if (userSettings.TwoFactorEnabled)
+			{
+				if (!string.IsNullOrWhiteSpace(Model.OneTimePassword))
+				{
+					if (userSettings.TwoFactorSecret == null)
+						throw new Exception("2FA is enabled but secret is null");
+					if (!TotpHelper.Validate(userSettings.TwoFactorSecret, Model.OneTimePassword))
+					{
+						SetTwoFactorFormHeaders();
+						return;
+					}
+				}
+				else
+				{
+					SetTwoFactorFormHeaders();
+					return;
+				}
+			}
+		}
+
+		var token = new OauthToken
+		{
+			Id                     = IdHelpers.GenerateSnowflakeId(),
+			Active                 = false,
+			Code                   = CryptographyHelpers.GenerateRandomString(32),
+			Token                  = CryptographyHelpers.GenerateRandomString(32),
+			App                    = App,
+			User                   = user,
+			CreatedAt              = DateTime.UtcNow,
+			Scopes                 = Scopes,
+			RedirectUri            = RedirectUri,
+			AutoDetectQuotes       = Model.AutoDetectQuotes,
+			SupportsHtmlFormatting = Model.SupportsHtmlFormatting,
+			IsPleroma              = Model.IsPleroma,
+			SupportsInlineMedia    = Model.SupportsInlineMedia,
+		};
+
+		await Database.AddAsync(token);
+		await Database.SaveChangesAsync();
+
+		Token = token;
+		return;
+
+		void SetTwoFactorFormHeaders()
+		{
+			Context.Response.Headers.CacheControl = "private, no-store, no-cache";
+			Context.Response.Headers.Pragma       = "no-cache";
+		}
+	}
+
+	private class InputModel
+	{
+		public string UserId                 { get; set; } = "";
+		public string Username               { get; set; } = "";
+		public string Password               { get; set; } = "";
+		public string OneTimePassword        { get; set; } = "";
+		public bool   SupportsHtmlFormatting { get; set; }
+		public bool   AutoDetectQuotes       { get; set; }
+		public bool   IsPleroma              { get; set; }
+		public bool   SupportsInlineMedia    { get; set; }
+	}
+}

@@ -1,0 +1,78 @@
+@using Iceshrimp.Backend.Core.Configuration
+@using Iceshrimp.Backend.Core.Extensions
+@using Iceshrimp.Backend.Core.Middleware
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.Extensions.Options
+@inject IOptions<Config.InstanceSection>         Instance
+@inject IOptionsSnapshot<Config.SecuritySection> Security
+@inject IHttpContextAccessor                     ContextAccessor
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Error @Error.StatusCode - Iceshrimp.NET</title>
+    <link rel="stylesheet" href="/@Assets["Iceshrimp.Backend.styles.css"]"/>
+    <link rel="stylesheet" href="/@Assets["css/main.css"]"/>
+    <link rel="icon" type="image/png" href="/favicon.png"/>
+</head>
+<body>
+<h2>Error @Error.StatusCode: @Error.Error</h2>
+@if (Error.Message != null)
+{
+    <p>
+        <strong>Message:</strong> @Error.Message
+    </p>
+}
+@if (Error.Details != null)
+{
+    <p>
+        <strong>Details:</strong> @Error.Details
+    </p>
+}
+@if (Error.Errors is { Count: > 0 } errors)
+{
+    @foreach (var error in errors)
+    {
+        <strong>@error.Key</strong>
+        <ul>
+            @foreach (var val in error.Value)
+            {
+                <li>@val</li>
+            }
+        </ul>
+    }
+}
+@if (Error.Source != null)
+{
+    <p>
+        <strong>Source:</strong>
+        <code>@Error.Source</code>
+    </p>
+}
+<p>
+    <strong>Request ID:</strong>
+    <code>@Error.RequestId</code>
+</p>
+
+@if (Security.Value.ExceptionVerbosity >= ExceptionVerbosity.Debug)
+{
+    <pre><code>@Error.Exception.ToString()</code></pre>
+}
+
+<footer>
+    <span class="footer">
+        <span>
+            <strong>Iceshrimp.NET</strong> v@(Instance.Value.Version)
+        </span>
+        @if (Error.Exception is PublicPreviewDisabledException)
+        {
+            <a href="/login?rd=@(ContextAccessor.HttpContext!.Request.Path.ToString().UrlEncode())">Login</a>
+        }
+    </span>
+</footer>
+</body>
+</html>
+
+@code {
+    [Parameter] public required ErrorResponse Error { get; set; }
+}
