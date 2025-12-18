@@ -96,6 +96,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		return await db.Notes
 		               .IncludeCommonProperties()
 		               .HasVisibility(Note.NoteVisibility.Specified)
+		               .EnsureVisibleFor(user)
 		               .FilterHidden(user, db)
 		               .FilterMutedThreads(user, db)
 		               .Paginate(query, ControllerContext)
@@ -114,6 +115,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		return await db.Notes
 		               .IncludeCommonProperties()
 		               .Where(p => p.Tags.Contains(hashtag.ToLowerInvariant()))
+		               .EnsureVisibleFor(user)
 		               .FilterByHashtagTimelineRequest(request, db)
 		               .FilterHidden(user, db)
 		               .FilterMutedThreads(user, db)
