@@ -1,9 +1,8 @@
-@page "/User"
+@page "/{acct:acct}"
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Backend.Components.Generic
 @using Iceshrimp.Backend.Components.PublicPreview.Attributes
 @using Iceshrimp.Backend.Core.Middleware
-@attribute [Route("/@{Acct}")]
 @attribute [PublicPreviewRouteFilter]
 @inherits AsyncComponentBase
 
@@ -125,7 +124,7 @@
 <div class="pagination">
     @if (Offset is > 0)
     {
-        <a class="button" href="/@@@(Acct)?offset=@Math.Max(0, Offset.Value - 20)">
+        <a class="button" href="/@Acct?offset=@Math.Max(0, Offset.Value - 20)">
             ❮ Previous page
         </a>
     }
@@ -136,7 +135,7 @@
 
     @if (_notes.Count == 20)
     {
-        <a class="button" href="/@@@(Acct)?offset=@((Offset ?? 0) + 20)">
+        <a class="button" href="/@Acct?offset=@((Offset ?? 0) + 20)">
             Next page ❯
         </a>
     }

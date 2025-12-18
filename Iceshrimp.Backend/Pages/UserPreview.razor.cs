@@ -48,7 +48,7 @@ public partial class UserPreview(
 
 		_instanceName = await meta.GetAsync(MetaEntity.InstanceName) ?? _instanceName;
 
-		var split = Acct.Split("@");
+		var split = Acct[1..].Split("@");
 		if (split.Length > 2) throw GracefulException.BadRequest("Invalid acct");
 		var username = split[0].ToLowerInvariant();
 		var host     = split.Length == 2 ? split[1].ToPunycodeLower() : null;

@@ -2,6 +2,7 @@ using System.Buffers;
 using System.Net;
 using System.Text.Encodings.Web;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -17,6 +18,7 @@ public static class MvcBuilderExtensions
 {
 	public static IMvcBuilder AddControllersWithOptions(this IServiceCollection services)
 	{
+		services.AddRouting(o => o.ConstraintMap.Add("acct", typeof(AcctRouteConstraint)));
 		services.AddSingleton<OutputFormatterSelector, AcceptHeaderOutputFormatterSelector>();
 
 		return services.AddControllers(opts =>
