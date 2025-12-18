@@ -1,71 +1,73 @@
 @page "/notes/{id}"
 @using Iceshrimp.Backend.Components.PublicPreview.Attributes
 @using Iceshrimp.Backend.Core.Extensions
+@using Iceshrimp.Backend.Core.Middleware
 @attribute [PublicPreviewRouteFilter]
 @inherits AsyncComponentBase
 
 @if (_note is null)
-{
-    Context.Response.StatusCode = 404;
-    <div>
-        <h2>Not found</h2>
-        <p>This note either doesn't exist or is only accessible to authenticated users</p>
-    </div>
+{ 
+    throw GracefulException.NotFound("This note either doesn't exist or is only accessible to authenticated users");
 }
-else
-{
-    <NoteComponent Note="_note" ShowMedia="ShowMedia"/>
-    <PageTitle>Note by @@@_note.User.Username - @_instanceName</PageTitle>
-    <HeadContent>
-        @{
-            var cardType        = "summary";
-            var previewImageUrl = _note.User.AvatarUrl;
-            if (ShowMedia && _note.Attachments != null)
-            {
-                if (_note.Attachments.FirstOrDefault(p => p.MimeType.StartsWith("image/") && !p.Sensitive && _note.Cw == null) is { } img)
-                {
-                    cardType        = "summary_large_image";
-                    previewImageUrl = img.Url;
-                }
-            }
-
-            string description;
-            if (_note.Cw is { } cw)
-            {
-                description = $"Content warning: {cw}";
-            }
-            else
-            {
-                var text = _note.RawText?.TruncateEllipsis(280);
-                if (_note.Attachments is { Count: > 0 })
-                {
-                    var attachmentText = $"({_note.Attachments.Count} attachments)";
-                    text = text is null
-                        ? attachmentText
-                        : text + $"\n{attachmentText}";
-                }
-
-                description = text + (_note.QuoteUrl != null ? $"\n\nRE: {_note.QuoteUrl}" : "");
-            }
-
-            var username = _note.User.Username;
-            var title    = _note.User.RawDisplayName is { } name ? $"{name} (@{username})" : $"@{username}";
-        }
-
-        <meta name="twitter:card" content="@cardType">
-        <meta property="og:site_name" content="@_instanceName">
-        <meta property="og:title" content="@title">
-        <meta property="og:image" content="@previewImageUrl">
-        <meta property="og:description" content="@description">
-        <link rel="alternate" type="application/activity+json" href="@_note.Uri">
-
-        <VersionedLink rel="stylesheet" href="/css/public-preview.css"/>
-    </HeadContent>
-
-    if (!ShowRemoteReplies)
-    {
-        <p>
-            <i>This server's configuration is preventing remotely originating content from being shown. This view may therefore be incomplete.</i>
-        </p>
+<NoteComponent Note="_note" ShowMedia="ShowMedia"/>
+<PageTitle>Note by @@@(_note.User.Username) - @_instanceName</PageTitle>
+<HeadContent>
+    @{
+        var cardType        = "summary";
     }
+              
+    @{
+        var previewImageUrl = _note.User.AvatarUrl;
+        if (ShowMedia && _note.Attachments != null)
+        {
+            if (_note.Attachments.FirstOrDefault(p => p.MimeType.StartsWith("image/") && !p.Sensitive && _note.Cw == null) is { } img)
+            {
+                cardType        = "summary_large_image";
+                previewImageUrl = img.Url;
+            }
+        }
+    }
+    @{
+        string description;
+        if (_note.Cw is { } cw)
+        {
+            description = $"Content warning: {cw}";
+        }
+        else
+        {
+            var text = _note.RawText?.TruncateEllipsis(280);
+            if (_note.Attachments is { Count: > 0 })
+            {
+                var attachmentText = $"({_note.Attachments.Count} attachments)";
+                text = text is null
+                    ? attachmentText
+                    : text + $"\n{attachmentText}";
+            }
+
+            description = text + (_note.QuoteUrl != null ? $"\n\nRE: {_note.QuoteUrl}" : "");
+        }
+    }
+    @{
+        var username = _note.User.Username;
+    }
+              
+    @{
+        var title    = _note.User.RawDisplayName is { } name ? $"{name} (@{username})" : $"@{username}";
+    } 
+
+    <meta name="twitter:card" content="@cardType">
+    <meta property="og:site_name" content="@_instanceName">
+    <meta property="og:title" content="@title">
+    <meta property="og:image" content="@previewImageUrl">
+    <meta property="og:description" content="@description">
+    <link rel="alternate" type="application/activity+json" href="@_note.Uri">
+
+    <VersionedLink rel="stylesheet" href="/css/public-preview.css"/>
+</HeadContent>
+
+@if (!ShowRemoteReplies)
+{
+    <p>
+        <i>This server's configuration is preventing remotely originating content from being shown. This view may therefore be incomplete.</i>
+    </p>
 }
