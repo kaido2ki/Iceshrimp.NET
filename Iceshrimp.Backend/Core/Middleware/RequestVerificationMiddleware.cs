@@ -25,7 +25,7 @@ public class RequestVerificationMiddleware(
 	public bool IsValid(HttpRequest rq)
 	{
 		// Mitigate malicious X-Forwarded-Proto values (https://github.com/greenpau/caddy-security/issues/270)
-		if (!rq.Scheme.EqualsIgnoreCase("http") && !rq.Scheme.EqualsIgnoreCase("https"))
+		if (!rq.Scheme.EqualsIgnoreCase("http") && !rq.Scheme.EqualsIgnoreCase("https") && !rq.Scheme.EqualsIgnoreCase("ws") && !rq.Scheme.EqualsIgnoreCase("wss"))
 		{
 			logger.LogWarning("Received request with invalid scheme: '{scheme}', please check your reverse proxy configuration",
 			                  rq.Scheme);
