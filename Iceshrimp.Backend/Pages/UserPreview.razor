@@ -2,175 +2,169 @@
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Backend.Components.Generic
 @using Iceshrimp.Backend.Components.PublicPreview.Attributes
+@using Iceshrimp.Backend.Core.Middleware
 @attribute [Route("/@{Acct}")]
 @attribute [PublicPreviewRouteFilter]
 @inherits AsyncComponentBase
 
 @if (_user is null)
 {
-    Context.Response.StatusCode = 404;
-    <div>
-        <h2>Not found</h2>
-        <p>This user doesn't appear to exist on this server</p>
+    throw GracefulException.NotFound("This user doesn't appear to exist on this server");
+}
+@if (_user.BannerUrl != null)
+{
+    <div class="banner">
+        <img class="banner" src="@_user.BannerUrl" alt="@_user.Username's banner" draggable="false"/>
     </div>
 }
-else
-{
-    @if (_user.BannerUrl != null)
-    {
-        <div class="banner">
-            <img class="banner" src="@_user.BannerUrl" alt="@_user.Username's banner" draggable="false"/>
-        </div>
-    }
-    <div class="user">
-        <div class="user-details @(_user.BannerUrl != null ? "above-banner" : "")">
-            <UserComponent User="_user" Large/>
-        </div>
-        <div class="badge-feed">
-            @if (_badges.Count != 0)
-            {
-                <div class="badges">
-                    @foreach (var badge in _badges)
-                    {
-                        <span class="badge">
-                            <Icon Name="badge.Icon" Size="1.3em"/>
-                            @badge.Label
-                        </span>
-                    }
-                </div>
-            }
-            @if (_feeds != null)
-            {
-                <div class="feeds">
-                    <a href="@_feeds["Atom"].Item2" type="@_feeds["Atom"].Item1" title="Atom Feed">
-                        <Icon Name="Icons.Atom" Size="1.3em"/>
-                    </a>
-                    <a href="@_feeds["JSON"].Item2" type="@_feeds["JSON"].Item1" title="JSON Feed">
-                        <Icon Name="Icons.BracketsCurly" Size="1.3em"/>
-                    </a>
-                    <a href="@_feeds["RSS"].Item2" type="@_feeds["RSS"].Item1" title="RSS Feed">
-                        <Icon Name="Icons.Rss" Size="1.3em"/>
-                    </a>
-                </div>
-            }
-        </div>
-        <div class="bio">
-            @(_user.Bio ?? new MarkupString("<i>This user hasn't added a bio yet.</i>"))
-        </div>
-        <div class="data">
-            @if (_location != null)
-            {
-                <div class="field">
-                    <span class="field-name">
-                        <Icon Name="Icons.MapPin"/>
-                        Location
-                    </span>
-                    <span class="field-value">@_location</span>
-                </div>
-            }
-            @if (_birthday != null)
-            {
-                <div class="field">
-                    <span class="field-name">
-                        <Icon Name="Icons.Balloon"/>
-                        Birthday
-                    </span>
-                    <span class="field-value">@_birthday</span>
-                </div>
-            }
-            @if (_pronouns != null)
-            {
-                <div class="field">
-                    <span class="field-name">
-                        <Icon Name="Icons.IdentificationCard"/>
-                        Pronouns
-                    </span>
-                    <span class="field-value">@_pronouns</span>
-                </div>
-            }
-            @foreach (var field in _fields)
-            {
-                <div class="field">
-                    <span class="field-name@(field.IsVerified is true ? " verified" : "")">
-                        @if (field.IsVerified is true)
-                        {
-                            <Icon Name="Icons.SealCheck"/>
-                            <span> </span>
-                        }
-                        @field.Name
-                    </span>
-                    <span class="field-value">@field.Value</span>
-                </div>
-            }
-        </div>
-        @if (_user.MovedToUri != null)
+<div class="user">
+    <div class="user-details @(_user.BannerUrl != null ? "above-banner" : "")">
+        <UserComponent User="_user" Large/>
+    </div>
+    <div class="badge-feed">
+        @if (_badges.Count != 0)
         {
-            <div class="bio">
-                <i>This user has migrated to a <a href="@_user.MovedToUri">different account</a>.</i>
+            <div class="badges">
+                @foreach (var badge in _badges)
+                {
+                    <span class="badge">
+                        <Icon Name="badge.Icon" Size="1.3em"/>
+                        @badge.Label
+                    </span>
+                }
+            </div>
+        }
+        @if (_feeds != null)
+        {
+            <div class="feeds">
+                <a href="@_feeds["Atom"].Item2" type="@_feeds["Atom"].Item1" title="Atom Feed">
+                    <Icon Name="Icons.Atom" Size="1.3em"/>
+                </a>
+                <a href="@_feeds["JSON"].Item2" type="@_feeds["JSON"].Item1" title="JSON Feed">
+                    <Icon Name="Icons.BracketsCurly" Size="1.3em"/>
+                </a>
+                <a href="@_feeds["RSS"].Item2" type="@_feeds["RSS"].Item1" title="RSS Feed">
+                    <Icon Name="Icons.Rss" Size="1.3em"/>
+                </a>
             </div>
         }
     </div>
-    @if (_pinnedNotes.Count != 0)
-    {
-        <LabeledRuler Label="Pinned notes"/>
-    }
-    @foreach (var note in _pinnedNotes)
-    {
-        <NoteComponent Note="note" ShowMedia="false"/>
-    }
-    @if (_pinnedNotes.Count != 0 && _notes.Count != 0)
-    {
-        <LabeledRuler Label="Latest notes"/>
-    }
-    @foreach (var note in _notes)
-    {
-        <NoteComponent Note="note" ShowMedia="false"/>
-    }
-
-    <div class="pagination">
-        @if (Offset is > 0)
+    <div class="bio">
+        @(_user.Bio ?? new MarkupString("<i>This user hasn't added a bio yet.</i>"))
+    </div>
+    <div class="data">
+        @if (_location != null)
         {
-            <a class="button" href="/@@@Acct?offset=@(Math.Max(0, Offset.Value - 20))">
-                ❮ Previous page
-            </a>
+            <div class="field">
+                <span class="field-name">
+                    <Icon Name="Icons.MapPin"/>
+                    Location
+                </span>
+                <span class="field-value">@_location</span>
+            </div>
         }
-        else
+        @if (_birthday != null)
         {
-            <button class="button" disabled>❮ Previous page</button>
+            <div class="field">
+                <span class="field-name">
+                    <Icon Name="Icons.Balloon"/>
+                    Birthday
+                </span>
+                <span class="field-value">@_birthday</span>
+            </div>
         }
-
-        @if (_notes.Count == 20)
+        @if (_pronouns != null)
         {
-            <a class="button" href="/@@@Acct?offset=@((Offset ?? 0) + 20)">
-                Next page ❯
-            </a>
+            <div class="field">
+                <span class="field-name">
+                    <Icon Name="Icons.IdentificationCard"/>
+                    Pronouns
+                </span>
+                <span class="field-value">@_pronouns</span>
+            </div>
         }
-        else
+        @foreach (var field in _fields)
         {
-            <button class="button" disabled>Next page ❯</button>
+            <div class="field">
+                <span class="field-name@(field.IsVerified is true ? " verified" : "")">
+                    @if (field.IsVerified is true)
+                    {
+                        <Icon Name="Icons.SealCheck"/>
+                        <span> </span>
+                    }
+                    @field.Name
+                </span>
+                <span class="field-value">@field.Value</span>
+            </div>
         }
     </div>
-
-    <PageTitle>@@@_user.Username - @_instanceName</PageTitle>
-    <HeadContent>
-        <meta name="twitter:card" content="summary">
-        <meta property="og:site_name" content="@_instanceName">
-        <meta property="og:title" content="@@@_user.Username">
-        @if (_user.Bio is { } bio)
-        {
-            <meta property="og:description" content="@bio">
-        }
-        <meta property="og:image" content="@_user.AvatarUrl">
-        <link rel="alternate" type="application/activity+json" href="@_user.Uri">
-        @if (_feeds != null)
-        {
-            @foreach (var feed in _feeds.Values)
-            {
-                <link rel="alternate" type="@feed.Item1" href="@feed.Item2">
-            }
-        }
-        <VersionedLink rel="stylesheet" href="/_content/Iceshrimp.Assets.PhosphorIcons/css/ph-regular.css"/>
-        <VersionedLink rel="stylesheet" href="/css/public-preview.css"/>
-        <VersionedScript src="/js/user-preview.js"/>
-    </HeadContent>
+    @if (_user.MovedToUri != null)
+    {
+        <div class="bio">
+            <i>This user has migrated to a <a href="@_user.MovedToUri">different account</a>.</i>
+        </div>
+    }
+</div>
+@if (_pinnedNotes.Count != 0)
+{
+    <LabeledRuler Label="Pinned notes"/>
 }
+@foreach (var note in _pinnedNotes)
+{
+    <NoteComponent Note="note" ShowMedia="false"/>
+}
+@if (_pinnedNotes.Count != 0 && _notes.Count != 0)
+{
+    <LabeledRuler Label="Latest notes"/>
+}
+@foreach (var note in _notes)
+{
+    <NoteComponent Note="note" ShowMedia="false"/>
+}
+
+<div class="pagination">
+    @if (Offset is > 0)
+    {
+        <a class="button" href="/@@@(Acct)?offset=@Math.Max(0, Offset.Value - 20)">
+            ❮ Previous page
+        </a>
+    }
+    else
+    {
+        <button class="button" disabled>❮ Previous page</button>
+    }
+
+    @if (_notes.Count == 20)
+    {
+        <a class="button" href="/@@@(Acct)?offset=@((Offset ?? 0) + 20)">
+            Next page ❯
+        </a>
+    }
+    else
+    {
+        <button class="button" disabled>Next page ❯</button>
+    }
+</div>
+
+<PageTitle>@@@(_user.Username) - @_instanceName</PageTitle>
+<HeadContent>
+    <meta name="twitter:card" content="summary">
+    <meta property="og:site_name" content="@_instanceName">
+    <meta property="og:title" content="@@@(_user.Username)">
+    @if (_user.Bio is { } bio)
+    {
+        @:<meta property="og:description" content="@bio">
+    }
+    <meta property="og:image" content="@_user.AvatarUrl">
+    <link rel="alternate" type="application/activity+json" href="@_user.Uri">
+    @if (_feeds != null)
+    {
+        foreach (var feed in _feeds.Values)
+        {
+            @:<link rel="alternate" type="@feed.Item1" href="@feed.Item2">
+        }
+    }
+    <VersionedLink rel="stylesheet" href="/_content/Iceshrimp.Assets.PhosphorIcons/css/ph-regular.css"/>
+    <VersionedLink rel="stylesheet" href="/css/public-preview.css"/>
+    <VersionedScript src="/js/user-preview.js"/>
+</HeadContent>
