@@ -11,23 +11,23 @@
 <PageTitle>Iceshrimp.NET OAuth</PageTitle>
 <h3>Iceshrimp.NET OAuth</h3>
 
-@if (Token != null)
+@if (_token != null)
 {
-	if (Token.RedirectUri == "urn:ietf:wg:oauth:2.0:oob")
+	if (_token.RedirectUri == "urn:ietf:wg:oauth:2.0:oob")
 	{
 		<div>
 			Your code is:
-			<pre>@Token.Code</pre>
+			<pre>@_token.Code</pre>
 		</div>
 	}
 	else
 	{
-		var uri   = new Uri(Token.RedirectUri);
+		var uri   = new Uri(_token.RedirectUri);
 		var query = QueryHelpers.ParseQuery(uri.Query);
-		query.Add("code", Token.Code);
+		query.Add("code", _token.Code);
 		if (State != null)
 			query.Add("state", State);
-		uri = new Uri(QueryHelpers.AddQueryString(Token.RedirectUri, query));
+		uri = new Uri(QueryHelpers.AddQueryString(_token.RedirectUri, query));
 		Redirect(uri.ToString());
 		<div>
 			Click <a href="@uri.ToString()">here</a> to be redirected back to your application
@@ -35,16 +35,16 @@
 	}
 	return;
 }
-The app <span class="app_name">@App.Name</span> requests the following permissions:
+The app <span class="app_name">@_app.Name</span> requests the following permissions:
 
 <ul>
-	@foreach (var scope in Scopes)
+	@foreach (var scope in _scopes)
 	{
 		<li>@scope</li>
 	}
 </ul>
 
-@if (Scopes.Contains("iceshrimp"))
+@if (_scopes.Contains("iceshrimp"))
 {
 	<div class="iceshrimp_scope_warning">
 		This app can use the Iceshrimp API as well as the Mastodon API, giving it full access to your account.
@@ -83,10 +83,10 @@ The app <span class="app_name">@App.Name</span> requests the following permissio
 			<InputText @bind-Value="@Model.OneTimePassword" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code"
 			       placeholder="TOTP" required/>
 		}
-		else if (AuthenticatedUsers.Count > 0)
+		else if (_authenticatedUsers.Count > 0)
 		{
 			<div class="margin-top-5px">
-				@foreach (var user in AuthenticatedUsers)
+				@foreach (var user in _authenticatedUsers)
 				{
 					<button class="button" type="submit" name="@nameof(Model).@nameof(Model.UserId)" value="@user.Id">Log in
 						as @@@user.Username</button>
@@ -143,10 +143,10 @@ The app <span class="app_name">@App.Name</span> requests the following permissio
     [SupplyParameterFromQuery(Name = "state")]
     public string? State { get; set; }
 
-    private OauthApp     App    = null!;
-    private List<string> Scopes = [];
-    private OauthToken?  Token;
-    private List<User>   AuthenticatedUsers = [];
+    private OauthApp     _app    = null!;
+    private List<string> _scopes = [];
+    private OauthToken?  _token;
+    private List<User>   _authenticatedUsers = [];
 
     [SupplyParameterFromForm] private InputModel Model { get; set; } = null!;
 
@@ -158,21 +158,21 @@ The app <span class="app_name">@App.Name</span> requests the following permissio
 
     protected override async Task OnInitializedAsync()
     {
-        Scopes = Scope.Split(' ').ToList();
+        _scopes = Scope.Split(' ').ToList();
         if (ResponseType == null || ClientId == null || RedirectUri == null)
             throw GracefulException.BadRequest("Required parameters are missing or invalid");
-        App = await Database.OauthApps.FirstOrDefaultAsync(p => p.ClientId == ClientId.Replace(' ', '+')) ??
+        _app = await Database.OauthApps.FirstOrDefaultAsync(p => p.ClientId == ClientId.Replace(' ', '+')) ??
               throw GracefulException.BadRequest("Invalid client_id");
-        if (MastodonOauthHelpers.ExpandScopes(Scopes).Except(MastodonOauthHelpers.ExpandScopes(App.Scopes)).Any())
+        if (MastodonOauthHelpers.ExpandScopes(_scopes).Except(MastodonOauthHelpers.ExpandScopes(_app.Scopes)).Any())
             throw GracefulException.BadRequest("Cannot request more scopes than app");
         if (ResponseType != "code")
             throw GracefulException.BadRequest("Invalid response_type");
-        if (!App.RedirectUris.Contains(RedirectUri))
+        if (!_app.RedirectUris.Contains(RedirectUri))
             throw GracefulException.BadRequest("Cannot request redirect_uri not sent during app registration");
         if (Context.Request.Cookies.TryGetValue("sessions", out var sessions))
         {
             var tokens = sessions.Split('|');
-            AuthenticatedUsers = await Database.Sessions
+            _authenticatedUsers = await Database.Sessions
                                                .Where(p => tokens.Contains(p.Token) && p.Active)
                                                .Select(p => p.User)
                                                .ToListAsync();
@@ -181,7 +181,7 @@ The app <span class="app_name">@App.Name</span> requests the following permissio
 
     private async Task OnSubmit()
 	{
-		var user = AuthenticatedUsers.FirstOrDefault(p => p.Id == Model.UserId);
+		var user = _authenticatedUsers.FirstOrDefault(p => p.Id == Model.UserId);
 
 		if (user == null)
 		{
@@ -224,10 +224,10 @@ The app <span class="app_name">@App.Name</span> requests the following permissio
 			Active                 = false,
 			Code                   = CryptographyHelpers.GenerateRandomString(32),
 			Token                  = CryptographyHelpers.GenerateRandomString(32),
-			App                    = App,
+			App                    = _app,
 			User                   = user,
 			CreatedAt              = DateTime.UtcNow,
-			Scopes                 = Scopes,
+			Scopes                 = _scopes,
 			RedirectUri            = RedirectUri,
 			AutoDetectQuotes       = Model.AutoDetectQuotes,
 			SupportsHtmlFormatting = Model.SupportsHtmlFormatting,
@@ -238,7 +238,7 @@ The app <span class="app_name">@App.Name</span> requests the following permissio
 		await Database.AddAsync(token);
 		await Database.SaveChangesAsync();
 
-		Token = token;
+		_token = token;
 		return;
 
 		void SetTwoFactorFormHeaders()
