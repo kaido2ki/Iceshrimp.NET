@@ -55,7 +55,7 @@
             @if (Announcements.Count != 1)
             {
                 <button class="button" @onclick="Previous"
-                        disabled="@(Current == 0 && NextButton.State != StateButton.StateEnum.Loading)">
+                        disabled="@(Current == 0 && NextButton?.State != StateButton.StateEnum.Loading)">
                 <Icon Name="Icons.CaretLeft"/>
                     @Loc["Previous"]
                 </button>
@@ -83,7 +83,7 @@
 @code {
     private ElementReference           Dialog { get; set; }
     private IJSObjectReference         _module = null!;
-    private StateButton                NextButton     { get; set; } = null!;
+    private StateButton?               NextButton     { get; set; }
     private int                        Current        { get; set; }
     private PaginationData?            PaginationData { get; set; }
     private List<AnnouncementResponse> Announcements  { get; set; } = [];
@@ -107,7 +107,7 @@
         // Don't display announcement dialog if there are no new announcements
         if (Announcements.Count == 0) return;
 
-        NextButton.State = Announcements.Count != 1 ? StateButton.StateEnum.Initial : StateButton.StateEnum.Success;
+        NextButton?.State = Announcements.Count != 1 ? StateButton.StateEnum.Initial : StateButton.StateEnum.Success;
 
         StateHasChanged();
 
@@ -119,21 +119,21 @@
         if (Current != 0)
         {
             Current--;
-            NextButton.State = StateButton.StateEnum.Initial;
+            NextButton?.State = StateButton.StateEnum.Initial;
         }
     }
 
     private async Task Next()
     {
-        if (NextButton.State == StateButton.StateEnum.Loading) return;
+        if (NextButton?.State == StateButton.StateEnum.Loading) return;
 
         await Api.Announcements.ReadAnnouncementAsync(Announcements[Current].Id);
 
-        if (NextButton.State == StateButton.StateEnum.Success)
+        if (NextButton?.State == StateButton.StateEnum.Success)
         {
             await CloseDialog();
         }
-        if (NextButton.State == StateButton.StateEnum.Initial)
+        if (NextButton?.State == StateButton.StateEnum.Initial)
         {
             if (Current != Announcements.Count - 2)
             {
