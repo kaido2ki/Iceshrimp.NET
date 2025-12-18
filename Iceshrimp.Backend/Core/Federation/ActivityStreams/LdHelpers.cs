@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
@@ -66,6 +67,7 @@ public static class LdHelpers
 		Document = GetPreloadedDocument(filename)
 	};
 
+	[SuppressMessage("ReSharper", "ExplicitCallerInfoArgument", Justification = "CustomLoader is not clear enough")]
 	private static RemoteDocument CustomLoader(Uri uri, JsonLdLoaderOptions jsonLdLoaderOptions)
 	{
 		using var activity = Telemetry.ActivitySource.StartActivity("Load Context");

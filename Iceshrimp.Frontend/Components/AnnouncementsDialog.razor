@@ -55,7 +55,7 @@
             @if (Announcements.Count != 1)
             {
                 <button class="button" @onclick="Previous"
-                        disabled="@(Current == 0 && NextButton?.State != StateButton.StateEnum.Loading)">
+                        disabled="@(Current == 0 && NextButton.State != StateButton.StateEnum.Loading)">
                 <Icon Name="Icons.CaretLeft"/>
                     @Loc["Previous"]
                 </button>

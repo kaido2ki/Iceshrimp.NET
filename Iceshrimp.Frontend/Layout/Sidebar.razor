@@ -129,13 +129,12 @@
 <Compose @ref="_compose"/>
 
 @code {
-    private Compose          _compose = null!;
-    private bool             _open;
-    private ElementReference SidebarElementRef { get; set; }
-    private StatusResponse?  Status            { get; set; }
-    private AccountDropdown  _accountDropdown = null!;
-    private ElementReference _avatar;
-    private Timer            _timer;
+    private          Compose          _compose = null!;
+    private          bool             _open;
+    private          StatusResponse?  Status            { get; set; }
+    private          AccountDropdown  _accountDropdown = null!;
+    private          ElementReference _avatar;
+    private readonly Timer            _timer;
 
     public Sidebar()
     {
@@ -193,5 +192,6 @@
     public void Dispose()
     {
         Navigation.LocationChanged -= HandleLocationChanged;
+        _timer.Dispose();
     }
 }

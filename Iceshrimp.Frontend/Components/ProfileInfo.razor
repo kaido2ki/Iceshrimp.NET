@@ -86,7 +86,7 @@
                     <MenuElement Icon="Icons.Info" OnSelect="OpenAbout">
                         <Text>@Loc["About"]</Text>
                     </MenuElement>
-                    @if (User.Host != null && UserProfile?.Url != null)
+                    @if (User.Host != null && UserProfile.Url != null)
                     {
                         <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
                             <Text>@Loc["Open original page"]</Text>
@@ -95,7 +95,7 @@
                     <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
                         <Text>@Loc["Copy link"]</Text>
                     </MenuElement>
-                    @if (User.Host != null && UserProfile?.Url != null)
+                    @if (User.Host != null && UserProfile.Url != null)
                     {
                         <MenuElement Icon="Icons.ShareNetwork" OnSelect="CopyLinkRemote">
                             <Text>@Loc["Copy link (remote)"]</Text>
@@ -116,7 +116,7 @@
                             <Text>@Loc["Copy RSS feed"]</Text>
                         </MenuElement>
                     }
-                    @if (UserProfile != null && !UserProfile.Relations.HasFlag(Relations.Self))
+                    @if (!UserProfile.Relations.HasFlag(Relations.Self))
                     {
                         <hr class="rule"/>
                         @if (UserProfile.Relations.HasFlag(Relations.Muting))
@@ -287,7 +287,7 @@
     }
 
     private void TemporaryMute() =>
-        GlobalComponentSvc.SelectDialog?.Select(new EventCallback<object?>(this, TemporaryMuteCallback), Loc["Mute {0}?", User.DisplayName ?? User.Username], [(Loc["For 1 hour"], (object)DateTime.Now.AddHours(1)), (Loc["For {0} hours", 3], (object)DateTime.Now.AddHours(3)), (Loc["For {0} hours", 8], (object)DateTime.Now.AddHours(8)), (Loc["For 1 day"], (object)DateTime.Now.AddDays(1)), (Loc["For 1 week"], (object)DateTime.Now.AddDays(7))], Loc["Mute"]);
+        GlobalComponentSvc.SelectDialog?.Select(new EventCallback<object?>(this, TemporaryMuteCallback), Loc["Mute {0}?", User.DisplayName ?? User.Username], [(Loc["For 1 hour"], DateTime.Now.AddHours(1)), (Loc["For {0} hours", 3], DateTime.Now.AddHours(3)), (Loc["For {0} hours", 8], DateTime.Now.AddHours(8)), (Loc["For 1 day"], DateTime.Now.AddDays(1)), (Loc["For 1 week"], DateTime.Now.AddDays(7))], Loc["Mute"]);
 
     private async Task TemporaryMuteCallback(object? value)
     {

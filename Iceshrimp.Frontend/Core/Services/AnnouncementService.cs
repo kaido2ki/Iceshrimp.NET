@@ -1,13 +1,12 @@
 using Iceshrimp.Frontend.Components;
-using Microsoft.AspNetCore.Components;
 
 namespace Iceshrimp.Frontend.Core.Services;
 
-internal class AnnouncementService
+internal class AnnouncementService : IDisposable, IAsyncDisposable
 {
-    public  AnnouncementsDialog? AnnouncementsDialog { get; set; }
-    private UpdateService        _update;
-    private Timer                _timer;
+    public           AnnouncementsDialog? AnnouncementsDialog { get; set; }
+    private readonly UpdateService        _update;
+    private          Timer                _timer;
 
     public AnnouncementService(UpdateService updateService)
     {
@@ -25,5 +24,15 @@ internal class AnnouncementService
         // Don't show announcements if updates are available
         if (_update.DialogOpen) return;
         await AnnouncementsDialog?.Display()!;
+    }
+
+    public void Dispose()
+    {
+        _timer.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _timer.DisposeAsync();
     }
 }

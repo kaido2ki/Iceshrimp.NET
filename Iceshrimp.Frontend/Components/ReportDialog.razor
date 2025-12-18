@@ -173,7 +173,7 @@
     {
         if (ReportedUser == null) return;
 
-        if (Uri.TryCreate(NewNoteId, UriKind.Absolute, out var uri))
+        if (Uri.TryCreate(NewNoteId, UriKind.Absolute, out _))
         {
             var res = await Api.Search.LookupAsync(NewNoteId);
 

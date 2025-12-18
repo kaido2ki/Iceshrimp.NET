@@ -52,7 +52,7 @@ public partial class FederationList(IOptionsSnapshot<Config.SecuritySection> sec
         {
             List = await Database.AllowedInstances
                                  .OrderBy(p => p.Host)
-                                 .ToDictionaryAsync(p => p.Host, p => "");
+                                 .ToDictionaryAsync(p => p.Host, _ => "");
         }
         else
         {
