@@ -7,6 +7,8 @@ This is a security hotfix release. It's identical to v2025.1-beta5.patch3.securi
 ### Attribution
 This release was made possible by project contributors: Laura Hausmann
 
+Furthermore, I want to give special thanks to Max Lunaris for the vulnerability disclosure.
+
 ## v2025.1-beta5.patch3.security3
 This is a security hotfix release. It's identical to v2025.1-beta5.patch3.security2, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
 
