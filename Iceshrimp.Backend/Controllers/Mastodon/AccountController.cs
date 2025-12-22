@@ -745,7 +745,7 @@ public class AccountController(
 		return await userRenderer.RenderAsync(user, localUser);
 	}
 
-	private RelationshipEntity RenderRelationship(User u)
+	private static RelationshipEntity RenderRelationship(User u)
 	{
 		return new RelationshipEntity
 		{
