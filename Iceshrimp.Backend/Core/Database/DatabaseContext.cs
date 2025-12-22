@@ -95,6 +95,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<PolicyConfiguration>  PolicyConfiguration   { get; init; } = null!;
 	public virtual DbSet<BubbleInstance>       BubbleInstances       { get; init; } = null!;
 	public virtual DbSet<DataProtectionKey>    DataProtectionKeys    { get; init; } = null!;
+	public virtual DbSet<UserMemo>             UserMemos             { get; init; } = null!;
 
 	public static NpgsqlDataSource GetDataSource(Config.DatabaseSection config)
 	{
