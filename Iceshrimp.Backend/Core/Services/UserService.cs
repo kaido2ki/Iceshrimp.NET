@@ -1417,6 +1417,29 @@ public class UserService(
 			await deliverSvc.DeliverToAsync(activity, blocker, blockee);
 		}
 	}
+	
+	public async Task SetUserMemoAsync(User user, User target, string memoText)
+	{
+		var existingMemo = await db.UserMemos.FirstOrDefaultAsync(p => p.ByUserId == user.Id && p.TargetUserId == target.Id);
+		if (existingMemo != null)
+		{
+			existingMemo.Text = memoText;
+		}
+		else
+		{
+			var memo = new UserMemo()
+			{
+				Id           = IdHelpers.GenerateSnowflakeId(),
+				ByUserId     = user.Id,
+				TargetUserId = target.Id,
+				Text         = memoText
+			};
+			
+			await db.AddAsync(memo);
+		}
+
+		await db.SaveChangesAsync();
+	}
 
 	public async Task AddAliasAsync(User user, User alias)
 	{
@@ -1531,7 +1554,7 @@ public class UserService(
 		var followers = db.Followings
 		                  .Where(p => p.Followee == source && p.Follower.IsLocalUser)
 		                  .Select(p => p.Follower)
-		                  .AsChunkedAsyncEnumerable(50, p => p.Id, hook: p => p.PrecomputeRelationshipData(source));
+		                  .AsChunkedAsyncEnumerable(50, p => p.Id, hook: p => p.PrecomputeRelationshipData(source, db));
 
 		await foreach (var follower in followers)
 		{
@@ -1557,7 +1580,7 @@ public class UserService(
 		var blocks = db.Blockings
 		               .Where(p => p.Blockee == source)
 		               .Select(p => p.Blocker)
-		               .AsChunkedAsyncEnumerable(50, p => p.Id, p => p.PrecomputeRelationshipData(source));
+		               .AsChunkedAsyncEnumerable(50, p => p.Id, p => p.PrecomputeRelationshipData(source, db));
 
 		await foreach (var blocker in blocks)
 		{
@@ -1579,7 +1602,7 @@ public class UserService(
 		var mutes = db.Mutings
 		               .Where(p => p.Mutee == source && p.ExpiresAt == null)
 		               .Select(p => p.Muter)
-		               .AsChunkedAsyncEnumerable(50, p => p.Id, p => p.PrecomputeRelationshipData(source));
+		               .AsChunkedAsyncEnumerable(50, p => p.Id, p => p.PrecomputeRelationshipData(source, db));
 
 		await foreach (var muter in mutes)
 		{
@@ -1603,7 +1626,7 @@ public class UserService(
 		var following = db.Followings
 		                  .Where(p => p.Follower == source)
 		                  .Select(p => p.Follower)
-		                  .AsChunkedAsyncEnumerable(50, p => p.Id, hook: p => p.PrecomputeRelationshipData(source));
+		                  .AsChunkedAsyncEnumerable(50, p => p.Id, hook: p => p.PrecomputeRelationshipData(source, db));
 
 		await foreach (var followee in following)
 		{
@@ -1622,7 +1645,7 @@ public class UserService(
 		blocks = db.Blockings
 		           .Where(p => p.Blocker == source)
 		           .Select(p => p.Blockee)
-		           .AsChunkedAsyncEnumerable(50, p => p.Id, p => p.PrecomputeRelationshipData(source));
+		           .AsChunkedAsyncEnumerable(50, p => p.Id, p => p.PrecomputeRelationshipData(source, db));
 
 		await foreach (var blockee in blocks)
 		{
@@ -1641,7 +1664,7 @@ public class UserService(
 		mutes = db.Mutings
 		           .Where(p => p.Muter == source && p.ExpiresAt == null)
 		           .Select(p => p.Mutee)
-		           .AsChunkedAsyncEnumerable(50, p => p.Id, p => p.PrecomputeRelationshipData(source));
+		           .AsChunkedAsyncEnumerable(50, p => p.Id, p => p.PrecomputeRelationshipData(source, db));
 
 		await foreach (var mutee in mutes)
 		{

@@ -78,4 +78,11 @@ public abstract class AccountSchemas
 
 		[J("duration")] [B(Name = "duration")] public long Duration { get; set; } = 0;
 	}
+
+	public class AccountMemoRequest
+	{
+		[J("comment")]
+		[B(Name = "comment")]
+		public required string Comment { get; set; }
+	}
 }

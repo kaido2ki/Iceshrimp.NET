@@ -278,7 +278,7 @@ public class AccountController(
 
 		var followee = await db.Users.IncludeCommonProperties()
 		                       .Where(p => p.Id == id)
-		                       .PrecomputeRelationshipData(user)
+		                       .PrecomputeRelationshipData(user, db)
 		                       .FirstOrDefaultAsync()
 		               ?? throw GracefulException.RecordNotFound();
 
@@ -311,7 +311,7 @@ public class AccountController(
 		var followee = await db.Users
 		                       .Where(p => p.Id == id)
 		                       .IncludeCommonProperties()
-		                       .PrecomputeRelationshipData(user)
+		                       .PrecomputeRelationshipData(user, db)
 		                       .FirstOrDefaultAsync()
 		               ?? throw GracefulException.RecordNotFound();
 
@@ -332,7 +332,7 @@ public class AccountController(
 		var follower = await db.Followings
 		                       .Where(p => p.FolloweeId == user.Id && p.FollowerId == id)
 		                       .Select(p => p.Follower)
-		                       .PrecomputeRelationshipData(user)
+		                       .PrecomputeRelationshipData(user, db)
 		                       .FirstOrDefaultAsync()
 		               ?? throw GracefulException.RecordNotFound();
 
@@ -353,7 +353,7 @@ public class AccountController(
 		var mutee = await db.Users
 		                    .Where(p => p.Id == id)
 		                    .IncludeCommonProperties()
-		                    .PrecomputeRelationshipData(user)
+		                    .PrecomputeRelationshipData(user, db)
 		                    .FirstOrDefaultAsync()
 		            ?? throw GracefulException.RecordNotFound();
 
@@ -376,7 +376,7 @@ public class AccountController(
 		var mutee = await db.Users
 		                    .Where(p => p.Id == id)
 		                    .IncludeCommonProperties()
-		                    .PrecomputeRelationshipData(user)
+		                    .PrecomputeRelationshipData(user, db)
 		                    .FirstOrDefaultAsync()
 		            ?? throw GracefulException.RecordNotFound();
 
@@ -397,7 +397,7 @@ public class AccountController(
 		var blockee = await db.Users
 		                      .Where(p => p.Id == id)
 		                      .IncludeCommonProperties()
-		                      .PrecomputeRelationshipData(user)
+		                      .PrecomputeRelationshipData(user, db)
 		                      .FirstOrDefaultAsync()
 		              ?? throw GracefulException.RecordNotFound();
 
@@ -418,7 +418,7 @@ public class AccountController(
 		var blockee = await db.Users
 		                      .Where(p => p.Id == id)
 		                      .IncludeCommonProperties()
-		                      .PrecomputeRelationshipData(user)
+		                      .PrecomputeRelationshipData(user, db)
 		                      .FirstOrDefaultAsync()
 		              ?? throw GracefulException.RecordNotFound();
 
@@ -436,7 +436,7 @@ public class AccountController(
 		var users = await db.Users
 		                    .Where(p => ids.Contains(p.Id))
 		                    .IncludeCommonProperties()
-		                    .PrecomputeRelationshipData(user)
+		                    .PrecomputeRelationshipData(user, db)
 		                    .ToListAsync();
 
 		return users.Select(RenderRelationship);
@@ -551,6 +551,36 @@ public class AccountController(
 		    ?? throw GracefulException.RecordNotFound();
 
 		return [];
+	}
+	
+	[HttpPost("{id}/note")]
+	[Authorize("write:accounts")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<RelationshipEntity> SetUserMemo(string id, [FromHybrid] AccountSchemas.AccountMemoRequest form)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot set a note on yourself");
+		
+		var memoTarget = await db.Users
+		                       .Where(p => p.Id == id)
+		                       .IncludeCommonProperties()
+		                       .FirstOrDefaultAsync()
+		               ?? throw GracefulException.RecordNotFound();
+		
+		await userSvc.SetUserMemoAsync(user, memoTarget, form.Comment);
+		
+		// get the target user again with the memo computed
+		// if this is done beforehand then the value returned would've been what the memo previously was
+		memoTarget = await db.Users
+		                     .Where(p => p.Id == id)
+		                     .IncludeCommonProperties()
+		                     .PrecomputeRelationshipData(user, db)
+		                     .FirstOrDefaultAsync()
+		             ?? throw GracefulException.RecordNotFound();
+		
+		return RenderRelationship(memoTarget);
 	}
 
 	[HttpGet("/api/v1/follow_requests")]
@@ -672,7 +702,7 @@ public class AccountController(
 
 		return await db.Users.Where(p => id == p.Id)
 		               .IncludeCommonProperties()
-		               .PrecomputeRelationshipData(user)
+		               .PrecomputeRelationshipData(user, db)
 		               .Select(u => RenderRelationship(u))
 		               .FirstOrDefaultAsync()
 		       ?? throw GracefulException.RecordNotFound();
@@ -695,7 +725,7 @@ public class AccountController(
 
 		return await db.Users.Where(p => id == p.Id)
 		               .IncludeCommonProperties()
-		               .PrecomputeRelationshipData(user)
+		               .PrecomputeRelationshipData(user, db)
 		               .Select(u => RenderRelationship(u))
 		               .FirstOrDefaultAsync()
 		       ?? throw GracefulException.RecordNotFound();
@@ -715,7 +745,7 @@ public class AccountController(
 		return await userRenderer.RenderAsync(user, localUser);
 	}
 
-	private static RelationshipEntity RenderRelationship(User u)
+	private RelationshipEntity RenderRelationship(User u)
 	{
 		return new RelationshipEntity
 		{
@@ -728,7 +758,7 @@ public class AccountController(
 			RequestedBy         = u.PrecomputedIsRequested ?? false,
 			Muting              = u.PrecomputedIsMutedBy ?? false,
 			Endorsed            = false, //FIXME
-			Note                = "",    //FIXME
+			Note                = u.PrecomputedMemo ?? "",
 			Notifying           = false, //FIXME
 			DomainBlocking      = false, //FIXME
 			MutingNotifications = false, //FIXME

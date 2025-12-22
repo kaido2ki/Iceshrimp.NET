@@ -158,7 +158,7 @@ public class UserController(
 		var blockee = await db.Users
 		                      .Where(p => p.Id == id)
 		                      .IncludeCommonProperties()
-		                      .PrecomputeRelationshipData(user)
+		                      .PrecomputeRelationshipData(user, db)
 		                      .FirstOrDefaultAsync()
 		              ?? throw GracefulException.RecordNotFound();
 
@@ -179,7 +179,7 @@ public class UserController(
 		var blockee = await db.Users
 		                      .Where(p => p.Id == id)
 		                      .IncludeCommonProperties()
-		                      .PrecomputeRelationshipData(user)
+		                      .PrecomputeRelationshipData(user, db)
 		                      .FirstOrDefaultAsync()
 		              ?? throw GracefulException.RecordNotFound();
 
@@ -223,7 +223,7 @@ public class UserController(
 
 		var followee = await db.Users.IncludeCommonProperties()
 		                       .Where(p => p.Id == id)
-		                       .PrecomputeRelationshipData(user)
+		                       .PrecomputeRelationshipData(user, db)
 		                       .FirstOrDefaultAsync() ??
 		               throw GracefulException.NotFound("User not found");
 
@@ -251,7 +251,7 @@ public class UserController(
 		var mutee = await db.Users
 		                    .Where(p => p.Id == id)
 		                    .IncludeCommonProperties()
-		                    .PrecomputeRelationshipData(user)
+		                    .PrecomputeRelationshipData(user, db)
 		                    .FirstOrDefaultAsync()
 		            ?? throw GracefulException.RecordNotFound();
 
@@ -272,7 +272,7 @@ public class UserController(
 		var mutee = await db.Users
 		                    .Where(p => p.Id == id)
 		                    .IncludeCommonProperties()
-		                    .PrecomputeRelationshipData(user)
+		                    .PrecomputeRelationshipData(user, db)
 		                    .FirstOrDefaultAsync()
 		            ?? throw GracefulException.RecordNotFound();
 
@@ -310,7 +310,7 @@ public class UserController(
 		var follower = await db.Followings
 		                       .Where(p => p.FolloweeId == user.Id && p.FollowerId == id)
 		                       .Select(p => p.Follower)
-		                       .PrecomputeRelationshipData(user)
+		                       .PrecomputeRelationshipData(user, db)
 		                       .FirstOrDefaultAsync() ??
 		               throw GracefulException.RecordNotFound();
 
@@ -329,7 +329,7 @@ public class UserController(
 		var followee = await db.Users
 		                       .Where(p => p.Id == id)
 		                       .IncludeCommonProperties()
-		                       .PrecomputeRelationshipData(user)
+		                       .PrecomputeRelationshipData(user, db)
 		                       .FirstOrDefaultAsync() ??
 		               throw GracefulException.RecordNotFound();
 

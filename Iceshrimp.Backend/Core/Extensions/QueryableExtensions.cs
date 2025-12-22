@@ -318,9 +318,13 @@ public static class QueryableExtensions
 		                                                           p.Note.Renote.Renote.IsVisibleFor(user)));
 	}
 
-	public static IQueryable<User> PrecomputeRelationshipData(this IQueryable<User> query, User user)
+	public static IQueryable<User> PrecomputeRelationshipData(this IQueryable<User> query, User user, DatabaseContext db)
 	{
-		return query.Select(p => p.WithPrecomputedBlockStatus(p.IsBlocking(user), p.IsBlockedBy(user))
+		var id = query.Select(p => p.Id);
+		var memo = db.UserMemos.Where(m => m.ByUserId == user.Id && m.TargetUserId == id.FirstOrDefault())
+		             .Select(m => m.Text);
+		return query.Select(p => p.WithPrecomputedMemo(memo.FirstOrDefault() ?? "")
+		                          .WithPrecomputedBlockStatus(p.IsBlocking(user), p.IsBlockedBy(user))
 		                          .WithPrecomputedMuteStatus(p.IsMuting(user), p.IsMutedBy(user))
 		                          .WithPrecomputedFollowStatus(p.IsFollowing(user), p.IsFollowedBy(user),
 		                                                       p.IsRequested(user), p.IsRequestedBy(user)));

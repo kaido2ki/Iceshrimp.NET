@@ -491,6 +491,8 @@ public class User : IIdentifiable
 
 	[NotMapped] public bool? PrecomputedIsRequested   { get; set; }
 	[NotMapped] public bool? PrecomputedIsRequestedBy { get; set; }
+	
+	[NotMapped] public string? PrecomputedMemo { get; set; }
 
 	[Projectable] public bool   IsLocalUser      => Host == null;
 	[Projectable] public bool   IsRemoteUser     => Host != null;
@@ -608,6 +610,13 @@ public class User : IIdentifiable
 		PrecomputedIsRequested   = requested;
 		PrecomputedIsRequestedBy = requestedBy;
 
+		return this;
+	}
+
+	public User WithPrecomputedMemo(string memo)
+	{
+		PrecomputedMemo = memo;
+		
 		return this;
 	}
 
