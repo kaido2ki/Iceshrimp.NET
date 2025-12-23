@@ -321,8 +321,11 @@ public static class QueryableExtensions
 	public static IQueryable<User> PrecomputeRelationshipData(this IQueryable<User> query, User user, DatabaseContext db)
 	{
 		var id = query.Select(p => p.Id);
-		var memo = db.UserMemos.Where(m => m.ByUserId == user.Id && m.TargetUserId == id.FirstOrDefault())
+		var memo = db.UserMemos
+		             .Where(m => m.ByUserId == user.Id && m.TargetUserId == id.FirstOrDefault())
 		             .Select(m => m.Text);
+		// note to anyone reading messing with this in the future:
+		// the memo.FirstOrDefault is inside this Select so it's not run synchronously - please keep it in there!
 		return query.Select(p => p.WithPrecomputedMemo(memo.FirstOrDefault() ?? "")
 		                          .WithPrecomputedBlockStatus(p.IsBlocking(user), p.IsBlockedBy(user))
 		                          .WithPrecomputedMuteStatus(p.IsMuting(user), p.IsMutedBy(user))

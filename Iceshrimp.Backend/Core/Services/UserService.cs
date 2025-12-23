@@ -1435,7 +1435,7 @@ public class UserService(
 				Text         = memoText
 			};
 			
-			await db.AddAsync(memo);
+			db.Add(memo);
 		}
 
 		await db.SaveChangesAsync();
