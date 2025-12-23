@@ -4651,7 +4651,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
                     b.Property<string>("Text")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(100000)
+                        .HasColumnType("character varying(100000)")
                         .HasColumnName("text");
 
                     b.HasKey("Id");

@@ -20,5 +20,6 @@ public class UserMemo
 	public string TargetUserId { get; set; } = null!;
 	
 	[Column("text")]
+	[StringLength(100000)]
 	public string Text { get; set; } = null!;
 }
