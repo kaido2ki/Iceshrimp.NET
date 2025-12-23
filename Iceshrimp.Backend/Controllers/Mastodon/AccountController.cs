@@ -560,8 +560,6 @@ public class AccountController(
 	public async Task<RelationshipEntity> SetUserMemo(string id, [FromHybrid] AccountSchemas.AccountMemoRequest form)
 	{
 		var user = HttpContext.GetUserOrFail();
-		if (user.Id == id)
-			throw GracefulException.BadRequest("You cannot set a note on yourself");
 		
 		var memoTarget = await db.Users
 		                       .Where(p => p.Id == id)
