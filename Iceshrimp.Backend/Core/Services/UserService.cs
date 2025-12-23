@@ -1420,6 +1420,9 @@ public class UserService(
 	
 	public async Task SetUserMemoAsync(User user, User target, string memoText)
 	{
+		if (memoText.Length > instance.Value.CharacterLimit)
+			throw GracefulException.UnprocessableEntity($"Memo text cannot exceed {instance.Value.CharacterLimit} characters");
+		
 		var existingMemo = await db.UserMemos.FirstOrDefaultAsync(p => p.ByUserId == user.Id && p.TargetUserId == target.Id);
 		if (existingMemo != null)
 		{
