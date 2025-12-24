@@ -3,15 +3,26 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
 
-<img class="avatar"
-     style="--size: @Size;"
-     src="@(LoadError ? $"/identicon/{User.Id}" : User.AvatarUrl)"
-     alt="@(User.AvatarAlt ?? FallbackAlt())"
-     title="@(Title ? User.AvatarAlt ?? FallbackAlt() : "")"
-     role="@Role"
-     loading="lazy"
-     @onclick="OnClick"
-     @onerror="() => { LoadError = true; }"/>
+<div class="avatar-container">
+    @if (User.IsCat)
+    {
+        <div class="cat-ears">
+            <div class="cat-ears-left"></div>
+            <div class="cat-ears-right"></div>
+        </div>
+    }
+    
+    <img class="avatar"
+         style="--size: @Size;"
+         src="@(LoadError ? $"/identicon/{User.Id}" : User.AvatarUrl)"
+         alt="@(User.AvatarAlt ?? FallbackAlt())"
+         title="@(Title ? User.AvatarAlt ?? FallbackAlt() : "")"
+         role="@Role"
+         loading="lazy"
+         @onclick="OnClick"
+         @onerror="() => { LoadError = true; }"/>
+</div>
+
 
 @code {
     [Parameter, EditorRequired] public required UserResponse  User      { get; set; }
