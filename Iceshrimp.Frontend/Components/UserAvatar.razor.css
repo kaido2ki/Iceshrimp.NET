@@ -92,6 +92,7 @@
         transform: rotate(37.6deg) skew(30deg);
     }
 }
+
 @keyframes earwiggleright {
     from {
         transform: rotate(-37.6deg) skew(-30deg);
@@ -113,6 +114,7 @@
         transform: rotate(-37.6deg) skew(-30deg);
     }
 }
+
 @keyframes eartightleft {
     from {
         transform: rotate(37.6deg) skew(30deg);
@@ -126,6 +128,7 @@
         transform: rotate(37.6deg) skew(30deg);
     }
 }
+
 @keyframes eartightright {
     from {
         transform: rotate(-37.6deg) skew(-30deg);
