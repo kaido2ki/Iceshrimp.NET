@@ -31,7 +31,7 @@ public class WebFingerService(
 	IHostApplicationLifetime appLifetime,
 	IOptions<Config.InstanceSection> config,
 	CacheService cache
-) : ISingletonService
+) : IScopedService
 {
 	private static readonly ImmutableArray<string> Accept =
 	[
