@@ -1,12 +1,4 @@
-.avatar-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    width: min-content;
-}
-
-.avatar-container .avatar {
+.avatar {
     --size: 3em;
     border-radius: 8px;
     object-fit: cover;
@@ -17,18 +9,21 @@
     overflow: clip;
     color: transparent;
     z-index: 1;
+    position: sticky;
+    cursor: pointer;
 }
-
-.avatar-container .cat-ears {
+ 
+.cat-ears {
+    --size: 5em;
     position: absolute;
     display: flex;
-    width: 100%;
-    height: 100%;
+    width: var(--size);
+    height: var(--size);
     pointer-events: none;
 }
 
-.avatar-container .cat-ears .cat-ears-left,
-.avatar-container .cat-ears .cat-ears-right {
+.cat-ears .cat-ears-left,
+.cat-ears .cat-ears-right {
     contain: strict;
     display: inline-block;
     height: 50%;
@@ -36,8 +31,8 @@
     background: currentColor;
 }
 
-.avatar-container .cat-ears .cat-ears-left::after,
-.avatar-container .cat-ears .cat-ears-right::after {
+.cat-ears .cat-ears-left::after,
+.cat-ears .cat-ears-right::after {
     contain: strict;
     content: "";
     display: block;
@@ -47,28 +42,20 @@
     background: #df548f;
 }
 
-.avatar-container .cat-ears .cat-ears-left {
+.cat-ears .cat-ears-left {
     transform: rotate(37.5deg) skew(30deg);
 }
 
-.avatar-container .cat-ears .cat-ears-left, .avatar-container .cat-ears .cat-ears-left::after {
+.cat-ears .cat-ears-left,  .cat-ears .cat-ears-left::after {
     border-radius: 25% 75% 75%;
 }
 
-.avatar-container .cat-ears .cat-ears-right {
+.cat-ears .cat-ears-right {
     transform: rotate(-37.5deg) skew(-30deg);
 }
 
-.avatar-container .cat-ears .cat-ears-right, .avatar-container .cat-ears .cat-ears-right::after {
+.cat-ears .cat-ears-right, .cat-ears .cat-ears-right::after {
     border-radius: 75% 25% 75% 75%;
-}
-
-.avatar-container:hover .cat-ears .cat-ears-left {
-    animation: earwiggleleft 1s infinite;
-}
-
-.avatar-container:hover .cat-ears .cat-ears-right {
-    animation: earwiggleright 1s infinite;
 }
 
 @keyframes earwiggleleft {
@@ -113,6 +100,15 @@
     to {
         transform: rotate(-37.6deg) skew(-30deg);
     }
+}
+
+
+div:has(> .avatar:hover) .cat-ears .cat-ears-left {
+    animation: earwiggleleft 1s infinite;
+}
+
+div:has(> .avatar:hover) .cat-ears .cat-ears-right {
+    animation: earwiggleright 1s infinite;
 }
 
 @keyframes eartightleft {
