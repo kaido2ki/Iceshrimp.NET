@@ -1,0 +1,15 @@
+@using Iceshrimp.Backend.Components.Helpers
+@using Iceshrimp.Backend.Components.Queue
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.AspNetCore.Components.Web
+@inherits LayoutComponentBase
+
+<QueueNav/>
+
+<HeadContent>
+    <VersionedLink rel="stylesheet" href="/css/queue.css"/>
+    <VersionedScript src="/js/queue.js"/>
+    <SectionOutlet SectionName="QueueIndex"/>
+</HeadContent>
+
+@Body

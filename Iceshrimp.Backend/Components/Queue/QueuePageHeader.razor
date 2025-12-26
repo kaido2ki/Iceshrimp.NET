@@ -1,0 +1,10 @@
+@using Microsoft.AspNetCore.Components.Web
+
+<PageTitle>@Title - Queue - @(InstanceName ?? "Iceshrimp.NET")</PageTitle>
+
+@code {
+    [Parameter, EditorRequired] public required string Title      { get; set; }
+
+    [CascadingParameter(Name = "InstanceName")]
+    public required string? InstanceName { get; set; }
+}

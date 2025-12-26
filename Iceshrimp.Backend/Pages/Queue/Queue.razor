@@ -2,12 +2,17 @@
 @using Iceshrimp.Backend.Components.Queue
 @using Iceshrimp.Backend.Core.Database.Tables
 @using Iceshrimp.Backend.Core.Extensions
+@using Microsoft.AspNetCore.Components.Sections
 @inherits AdminComponentBase
 
-<QueueHead Title="@(Name ?? "Overview")" QueueIndex="@(Name == null)"/>
+<QueuePageHeader Title="@(Name ?? "Overview")"/>
 
 @if (Name == null)
 {
+    <SectionContent SectionName="QueueIndex">
+        <VersionedScript src="/js/queue-index.js"/>
+    </SectionContent>
+
     <form onsubmit="return lookupJob(event)">
         <input type="text" id="lookup" placeholder="Lookup job by id" minlength="36" maxlength="36" class="inline"/>
         <button class="button" type="submit">Submit</button>
