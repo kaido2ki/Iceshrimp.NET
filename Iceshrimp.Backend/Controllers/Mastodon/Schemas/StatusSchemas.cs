@@ -24,8 +24,7 @@ public abstract class StatusSchemas
 
 		[B(Name = "visibility")]
 		[J("visibility")]
-		[JR]
-		public string Visibility { get; set; } = null!;
+		public string Visibility { get; set; } = "public";
 
 		[B(Name = "language")] [J("language")] public string? Language { get; set; }
 
