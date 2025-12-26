@@ -21,6 +21,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableRateLimiting("sliding")]
 [Produces(MediaTypeNames.Application.Json)]
 [Route("/api/iceshrimp/auth")]
+[EnableCors("iceshrimp-trusted")]
 public class AuthController(DatabaseContext db, UserService userSvc, UserRenderer userRenderer) : ControllerBase
 {
 	[HttpGet]

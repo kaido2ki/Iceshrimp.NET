@@ -31,7 +31,7 @@ builder.Services.AddOutputCacheWithOptions();
 builder.Services.AddLogging(logging => logging.AddCustomConsoleFormatter());
 builder.Services.AddDatabaseContext(builder.Configuration);
 builder.Services.AddSlidingWindowRateLimiter();
-builder.Services.AddCorsPolicies();
+builder.Services.AddCorsPolicies(builder.Configuration);
 builder.Services.AddAuthorizationPolicies();
 builder.Services.AddAuthenticationServices();
 builder.Services.AddSignalR().AddMessagePackProtocol();

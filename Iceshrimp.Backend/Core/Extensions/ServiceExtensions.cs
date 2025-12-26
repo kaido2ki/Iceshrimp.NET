@@ -284,8 +284,11 @@ public static class ServiceExtensions
 			});
 		}
 
-		public void AddCorsPolicies()
+		public void AddCorsPolicies(IConfiguration configuration)
 		{
+			var config = configuration.GetSection("Instance").Get<Config.InstanceSection>() ??
+			             throw new Exception("Failed to initialize CORS policies: Failed to load configuration");
+
 			services.AddCors(options =>
 			{
 				options.AddPolicy("well-known", policy =>
@@ -303,6 +306,13 @@ public static class ServiceExtensions
 				options.AddPolicy("iceshrimp", policy =>
 				{
 					policy.WithOrigins("*")
+					      .WithMethods("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "CONNECT")
+					      .WithHeaders("Authorization", "Content-Type", "Idempotency-Key")
+					      .WithExposedHeaders("Link", "Connection", "Sec-Websocket-Accept", "Upgrade");
+				});
+				options.AddPolicy("iceshrimp-trusted", policy =>
+				{
+					policy.WithOrigins(config.AdditionalDomainsArray)
 					      .WithMethods("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "CONNECT")
 					      .WithHeaders("Authorization", "Content-Type", "Idempotency-Key")
 					      .WithExposedHeaders("Link", "Connection", "Sec-Websocket-Accept", "Upgrade");
