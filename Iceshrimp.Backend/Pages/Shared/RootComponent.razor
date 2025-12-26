@@ -1,6 +1,6 @@
+@using Iceshrimp.Backend.Components.Layout
 @using Iceshrimp.Backend.Core.Configuration
 @using Iceshrimp.Backend.Core.Database.Tables
-@using Iceshrimp.Backend.Core.Extensions
 @using Iceshrimp.Backend.Core.Middleware
 @using Iceshrimp.Backend.Core.Services
 @using Microsoft.Extensions.Options
@@ -27,7 +27,7 @@
     <Found Context="routeData">
         <CascadingValue Value="_user">
             <CascadingValue Value="_instanceName" Name="InstanceName">
-                <RouteView RouteData="@routeData"/>
+                <RouteView RouteData="@routeData" DefaultLayout="typeof(MainLayout)"/>
             </CascadingValue>
         </CascadingValue>
         <footer>

@@ -5,8 +5,6 @@
 @attribute [PublicPreviewRouteFilter]
 @inherits AsyncComponentBase
 
-<GenericNav/>
-
 @if (_user is null)
 {
     throw GracefulException.NotFound("This user doesn't appear to exist on this server");
