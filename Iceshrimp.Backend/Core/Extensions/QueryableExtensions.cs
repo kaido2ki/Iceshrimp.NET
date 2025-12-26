@@ -322,11 +322,13 @@ public static class QueryableExtensions
 	{
 		var id = query.Select(p => p.Id);
 		var memo = db.UserMemos
-		             .Where(m => m.ByUserId == user.Id && m.TargetUserId == id.FirstOrDefault())
-		             .Select(m => m.Text);
+		             .Where(m => m.ByUserId == user.Id && id.Contains(m.TargetUserId));
 		// note to anyone reading messing with this in the future:
 		// the memo.FirstOrDefault is inside this Select so it's not run synchronously - please keep it in there!
-		return query.Select(p => p.WithPrecomputedMemo(memo.FirstOrDefault() ?? "")
+		return query.Select(p => p.WithPrecomputedMemo(memo
+		                                               .Where(m => m.TargetUserId == p.Id)
+		                                               .Select(m => m.Text)
+		                                               .FirstOrDefault() ?? "")
 		                          .WithPrecomputedBlockStatus(p.IsBlocking(user), p.IsBlockedBy(user))
 		                          .WithPrecomputedMuteStatus(p.IsMuting(user), p.IsMutedBy(user))
 		                          .WithPrecomputedFollowStatus(p.IsFollowing(user), p.IsFollowedBy(user),
