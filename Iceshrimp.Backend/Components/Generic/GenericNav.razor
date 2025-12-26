@@ -1,6 +1,7 @@
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Backend.Core.Configuration
 @using Iceshrimp.Backend.Core.Extensions
+@using Iceshrimp.Backend.Core.Middleware
 @using Microsoft.Extensions.Options
 @inject IOptionsSnapshot<Config.SecuritySection> Security;
 
@@ -13,17 +14,40 @@
     [CascadingParameter(Name = "InstanceName")]
     public required string? InstanceName { get; set; }
 
-    private List<NavBar.NavLink> _links = [new("/", "Instance", Icons.Info), new("/federation", "Federation", Icons.Graph)];
+    private List<NavBar.NavLink> _links = [new("/federation", "Federation", Icons.Graph)];
 
     private List<NavBar.NavLink> _right = [];
 
     protected override void OnParametersSet()
     {
-        if (Security.Value.Registrations != Enums.Registrations.Closed)
-        {
-            _right.Add(new NavBar.NavLink("/register", "Register", IconRight: Icons.UserPlus));
-        }
+        var user = Context.GetUser();
 
-        _right.Add(new NavBar.NavLink($"/login?rd={(Context.Request.Path.Value ?? "/").UrlEncode()}", "Login", IconRight: Icons.User));
+        if (user != null)
+        {
+            _links.Insert(0, new NavBar.NavLink("/", "Home", Icons.House));
+
+            _right.Add(new NavBar.NavLink($"/@{user.Username}", $"{user.Username}", IconRight: Icons.User));
+
+            if (user.IsAdmin)
+            {
+                _right.AddRange([new NavBar.NavLink("/admin", "Admin Dashboard", IconRight: Icons.ArrowSquareOut, NewTab: true), new NavBar.NavLink("/mod", "Moderation Dashboard", IconRight: Icons.ArrowSquareOut, NewTab: true)]);
+            }
+
+            if (user.IsModerator)
+            {
+                _right.Add(new NavBar.NavLink("/mod", "Moderation Dashboard", IconRight: Icons.ArrowSquareOut, NewTab: true));
+            }
+        }
+        else
+        {
+            _links.Insert(0, new NavBar.NavLink("/", "Instance", Icons.Info));
+
+            if (Security.Value.Registrations != Enums.Registrations.Closed)
+            {
+                _right.Add(new NavBar.NavLink("/register", "Register", IconRight: Icons.UserPlus));
+            }
+
+            _right.Add(new NavBar.NavLink($"/login?rd={(Context.Request.Path.Value ?? "/").UrlEncode()}", "Login", IconRight: Icons.User));
+        }
     }
 }

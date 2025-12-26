@@ -1,5 +1,7 @@
 @page "/federation"
 @using Iceshrimp.Backend.Core.Configuration
+@using Iceshrimp.Backend.Core.Middleware
+@attribute [Authenticate]
 @inherits AsyncComponentBase
 
 <GenericNav/>
