@@ -453,12 +453,13 @@ public class StatusController(
 			        .ExecuteUpdateAsync(p => p.SetProperty(i => i.IsSensitive, _ => true));
 		}
 
-		var quote = request.QuoteId != null
+		var quoteId = request.QuotedStatusId ?? request.QuoteId;
+		var quote = quoteId != null
 			? await db.Notes
 			          .IncludeCommonProperties()
 			          .EnsureVisibleFor(user)
 			          .FilterHidden(user, db, filterMutes: false)
-			          .FirstOrDefaultAsync(p => p.Id == request.QuoteId) ??
+			          .FirstOrDefaultAsync(p => p.Id == quoteId) ??
 			  throw GracefulException.BadRequest("Quote target is nonexistent or inaccessible")
 			: null;
 

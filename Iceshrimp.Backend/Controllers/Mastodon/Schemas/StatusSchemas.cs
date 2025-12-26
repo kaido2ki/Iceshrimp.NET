@@ -42,6 +42,7 @@ public abstract class StatusSchemas
 		public bool LocalOnly { get; set; } = false;
 
 		[B(Name = "quote_id")] [J("quote_id")] public string? QuoteId { get; set; }
+		[B(Name = "quoted_status_id")] [J("quoted_status_id")] public string? QuotedStatusId { get; set; }
 
 		[B(Name = "poll")] [J("poll")] public PollData? Poll { get; set; }
 
