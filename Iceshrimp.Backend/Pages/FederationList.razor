@@ -2,6 +2,8 @@
 @using Iceshrimp.Backend.Core.Configuration
 @inherits AsyncComponentBase
 
+<GenericNav/>
+
 @if (IsAllowList)
 {
     <PageTitle>Allowed Instances - @(InstanceName ?? "Iceshrimp.NET")</PageTitle>

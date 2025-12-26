@@ -20,11 +20,14 @@
                     <Icon Name="Icons.DotsThree" Size="20pt"/>
                 </a>
                 <ul class="dropdown-menu">
-                    @foreach (var link in Links[MaxItemsLg..])
+                    @if (Links.Count >= MaxItemsLg)
                     {
-                        <li>
-                            <NavBarLink Link="link"/>
-                        </li>
+                        @foreach (var link in Links[MaxItemsLg..])
+                        {
+                            <li>
+                                <NavBarLink Link="link"/>
+                            </li>
+                        }
                     }
                     @if (Right is { Count: > 0 })
                     {
@@ -32,6 +35,7 @@
                         {
                             <li class="dropdown-spacer"></li>
                         }
+
                         @foreach (var link in Right)
                         {
                             <li>
@@ -78,11 +82,14 @@
                     <Icon Name="Icons.DotsThree" Size="20pt"/>
                 </a>
                 <ul class="dropdown-menu">
-                    @foreach (var link in Links[MaxItemsMd..])
+                    @if (Links.Count >= MaxItemsMd)
                     {
-                        <li>
-                            <NavBarLink Link="link"/>
-                        </li>
+                        @foreach (var link in Links[MaxItemsMd..])
+                        {
+                            <li>
+                                <NavBarLink Link="link"/>
+                            </li>
+                        }
                     }
                     @if (Right is { Count: > 0 })
                     {
@@ -90,6 +97,7 @@
                         {
                             <li class="dropdown-spacer"></li>
                         }
+
                         @foreach (var link in Right)
                         {
                             <li>

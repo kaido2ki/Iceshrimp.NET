@@ -1,0 +1,29 @@
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Backend.Core.Configuration
+@using Iceshrimp.Backend.Core.Extensions
+@using Microsoft.Extensions.Options
+@inject IOptionsSnapshot<Config.SecuritySection> Security;
+
+<NavBar Brand="@(new NavBar.NavLink("/", InstanceName ?? "Iceshrimp.NET"))" Links="_links" Right="_right" MaxItemsLg="7"
+        MaxItemsMd="3"/>
+
+@code {
+    [CascadingParameter] public required HttpContext Context { get; set; }
+
+    [CascadingParameter(Name = "InstanceName")]
+    public required string? InstanceName { get; set; }
+
+    private List<NavBar.NavLink> _links = [new("/", "Instance", Icons.Info), new("/federation", "Federation", Icons.Graph)];
+
+    private List<NavBar.NavLink> _right = [];
+
+    protected override void OnParametersSet()
+    {
+        if (Security.Value.Registrations != Enums.Registrations.Closed)
+        {
+            _right.Add(new NavBar.NavLink("/register", "Register", IconRight: Icons.UserPlus));
+        }
+
+        _right.Add(new NavBar.NavLink($"/login?rd={(Context.Request.Path.Value ?? "/").UrlEncode()}", "Login", IconRight: Icons.User));
+    }
+}

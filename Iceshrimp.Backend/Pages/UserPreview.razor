@@ -1,10 +1,11 @@
 @page "/{acct:acct}"
 @using Iceshrimp.Assets.PhosphorIcons
-@using Iceshrimp.Backend.Components.Generic
 @using Iceshrimp.Backend.Components.PublicPreview.Attributes
 @using Iceshrimp.Backend.Core.Middleware
 @attribute [PublicPreviewRouteFilter]
 @inherits AsyncComponentBase
+
+<GenericNav/>
 
 @if (_user is null)
 {

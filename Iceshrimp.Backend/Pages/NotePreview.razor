@@ -9,6 +9,7 @@
 { 
     throw GracefulException.NotFound("This note either doesn't exist or is only accessible to authenticated users");
 }
+<GenericNav/>
 <NoteComponent Note="_note" ShowMedia="ShowMedia"/>
 <PageTitle>Note by @@@(_note.User.Username) - @_instanceName</PageTitle>
 <HeadContent>
