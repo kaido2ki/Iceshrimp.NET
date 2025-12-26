@@ -9,6 +9,7 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 	[HttpGet]
 	[Authenticate(AllowInactive = true)]
 	[ProducesResults(HttpStatusCode.OK)]
+	[EnableCors("iceshrimp")]
 	public async Task<AuthResponse> GetAuthStatus()
 	{
 		var session = HttpContext.GetSession();

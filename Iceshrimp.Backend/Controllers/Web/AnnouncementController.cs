@@ -10,6 +10,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.MfmSharp;
 using Iceshrimp.Shared.Schemas.Web;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Authorize]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/announcements")]
+[EnableCors("iceshrimp")]
 public class AnnouncementController(
 	DatabaseContext db,
 	AnnouncementRenderer renderer,

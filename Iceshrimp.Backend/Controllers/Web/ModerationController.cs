@@ -8,6 +8,7 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -18,6 +19,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Authorize("role:moderator")]
 [ApiController]
 [Route("/api/iceshrimp/moderation")]
+[EnableCors("iceshrimp")]
 public class ModerationController(
 	DatabaseContext db,
 	NoteService noteSvc,

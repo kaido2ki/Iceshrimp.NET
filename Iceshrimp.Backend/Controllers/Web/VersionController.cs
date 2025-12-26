@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.Web;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -14,6 +15,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/version")]
 [Produces(MediaTypeNames.Application.Json)]
+[EnableCors("iceshrimp")]
 public class VersionController : ControllerBase
 {
 	[HttpGet]

@@ -21,6 +21,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 
 [ApiController]
 [Route("/api/iceshrimp/drive")]
+[EnableCors("iceshrimp")]
 public class DriveController(
 	DatabaseContext db,
 	ObjectStorageService objectStorage,

@@ -17,6 +17,7 @@ using Iceshrimp.Backend.Core.Tasks;
 using Iceshrimp.EntityFrameworkCore.Extensions;
 using Iceshrimp.Shared.Configuration;
 using Iceshrimp.Shared.Schemas.Web;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -29,6 +30,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Authorize("role:admin")]
 [ApiController]
 [Route("/api/iceshrimp/admin")]
+[EnableCors("iceshrimp")]
 public class AdminController(
 	DatabaseContext db,
 	ActivityPubController apController,

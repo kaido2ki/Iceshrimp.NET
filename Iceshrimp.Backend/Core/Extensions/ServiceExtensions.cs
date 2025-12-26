@@ -300,6 +300,13 @@ public static class ServiceExtensions
 					policy.WithOrigins("*")
 					      .WithMethods("GET", "HEAD");
 				});
+				options.AddPolicy("iceshrimp", policy =>
+				{
+					policy.WithOrigins("*")
+					      .WithMethods("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "CONNECT")
+					      .WithHeaders("Authorization", "Content-Type", "Idempotency-Key")
+					      .WithExposedHeaders("Link", "Connection", "Sec-Websocket-Accept", "Upgrade");
+				});
 				options.AddPolicy("mastodon", policy =>
 				{
 					policy.WithOrigins("*")

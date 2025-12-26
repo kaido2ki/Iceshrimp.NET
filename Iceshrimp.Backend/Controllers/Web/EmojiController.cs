@@ -10,6 +10,7 @@ using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.Web;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Authorize]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/emoji")]
+[EnableCors("iceshrimp")]
 [Produces(MediaTypeNames.Application.Json)]
 public class EmojiController(
 	IOptions<Config.InstanceSection> instance,
