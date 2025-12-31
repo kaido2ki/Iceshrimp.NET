@@ -33,7 +33,7 @@
                 _right.AddRange([new NavBar.NavLink("/admin", "Admin Dashboard", IconRight: Icons.ArrowSquareOut, NewTab: true), new NavBar.NavLink("/mod", "Moderation Dashboard", IconRight: Icons.ArrowSquareOut, NewTab: true)]);
             }
 
-            if (user.IsModerator)
+            if (user is { IsModerator: true, IsAdmin: false })
             {
                 _right.Add(new NavBar.NavLink("/mod", "Moderation Dashboard", IconRight: Icons.ArrowSquareOut, NewTab: true));
             }
