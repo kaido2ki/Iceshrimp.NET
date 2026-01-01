@@ -956,7 +956,7 @@ public class UserService(
 	}
 
 	/// <remarks>
-	///     Make sure to call .PrecomputeRelationshipData(user) on the database query for the followee
+	///     Make sure to call .PrecomputeRelationshipData(user, db) on the database query for the followee
 	/// </remarks>
 	public async Task RemoveFromFollowersAsync(User user, User follower)
 	{
@@ -1006,7 +1006,7 @@ public class UserService(
 	}
 
 	/// <remarks>
-	///     Make sure to call .PrecomputeRelationshipData(user) on the database query for the followee
+	///     Make sure to call .PrecomputeRelationshipData(user, db) on the database query for the followee
 	/// </remarks>
 	public async Task UnfollowUserAsync(User user, User followee)
 	{
