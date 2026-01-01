@@ -60,11 +60,6 @@
     <span>| <a href="mailto:@_contactEmail">Contact instance administrators</a></span>
 }
 
-@if (_showFederationList == true)
-{
-    <span>| <a href="/federation">View Federation List (@_federationMode)</a></span>
-}
-
 @code {
     [CascadingParameter(Name = "InstanceName")]
     public required string? InstanceName { get; set; }
