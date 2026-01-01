@@ -78,8 +78,11 @@
                 case ButtonType.FollowBack:
                     await Follow();
                     break;
-                case ButtonType.Unfollow or ButtonType.CancelRequest:
+                case ButtonType.Unfollow:
                     await Unfollow();
+                    break;
+                case ButtonType.CancelRequest:
+                    await CancelRequest();
                     break;
                 case ButtonType.Blocking:
                     await Unblock();
@@ -96,6 +99,14 @@
     {
         await Api.Users.UnfollowUserAsync(User.Id);
         UserProfile.Relations -= (int)Relations.Following;
+        ChooseButton();
+        StateHasChanged();
+    }
+    
+    private async Task CancelRequest()
+    {
+        await Api.Users.UnfollowUserAsync(User.Id);
+        UserProfile.Relations -= (int)Relations.Requested;
         ChooseButton();
         StateHasChanged();
     }
