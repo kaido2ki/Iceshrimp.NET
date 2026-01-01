@@ -151,7 +151,7 @@
     <meta property="og:title" content="@@@(_user.Username)">
     @if (_user.Bio is { } bio)
     {
-        @:<meta property="og:description" content="@bio">
+        @:<meta property="og:description" content="@bio.Value">
     }
     <meta property="og:image" content="@_user.AvatarUrl">
     <link rel="alternate" type="application/activity+json" href="@_user.Uri">
