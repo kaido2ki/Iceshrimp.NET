@@ -126,7 +126,8 @@ public class InstanceService(
 			var faviconUrl = document.Head?.Children.Last(e => e.NodeName.ToLower() == "link"
 			                                                   && (e.GetAttribute("rel")
 			                                                        ?.Contains("icon")
-			                                                       ?? false))
+			                                                       ?? false)
+			                                                   && !e.HasAttribute("color"))
 			                         .GetAttribute("href");
 
 			if (faviconUrl == null)
