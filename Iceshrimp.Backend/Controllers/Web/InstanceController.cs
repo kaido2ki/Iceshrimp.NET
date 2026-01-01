@@ -134,15 +134,17 @@ public class InstanceController(
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<StaffResponse> GetStaff()
 	{
-		var admins = db.Users
+		var admins = await db.Users
 					   .Where(p => p.IsAdmin == true)
-					   .OrderBy(p => p.UsernameLower);
+					   .OrderBy(p => p.UsernameLower)
+					   .ToListAsync();
 		var adminList = await userRenderer.RenderManyAsync(admins)
 										  .ToListAsync();
 
-		var moderators = db.Users
+		var moderators = await db.Users
 						   .Where(p => p.IsAdmin == false && p.IsModerator == true)
-						   .OrderBy(p => p.UsernameLower);
+						   .OrderBy(p => p.UsernameLower)
+						   .ToListAsync();
 		var moderatorList = await userRenderer.RenderManyAsync(moderators)
 											  .ToListAsync();
 
