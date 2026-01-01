@@ -208,7 +208,7 @@ public class DriveController(
 
 		file.Name        = request.Filename ?? file.Name;
 		file.IsSensitive = request.Sensitive ?? file.IsSensitive;
-		file.Comment     = request.Description;
+		file.Comment     = request.Description ?? file.Comment;
 		await db.SaveChangesAsync();
 
 		return await GetFileById(id);
