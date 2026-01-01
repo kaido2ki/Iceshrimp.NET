@@ -127,7 +127,9 @@ public class InstanceService(
 			                                                   && (e.GetAttribute("rel")
 			                                                        ?.Contains("icon")
 			                                                       ?? false)
-			                                                   && !e.HasAttribute("color"))
+			                                                   && (!e.GetAttribute("rel")
+			                                                         ?.Contains("mask-icon")
+			                                                         ?? false))
 			                         .GetAttribute("href");
 
 			if (faviconUrl == null)
