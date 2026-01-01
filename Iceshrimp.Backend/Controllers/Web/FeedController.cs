@@ -85,14 +85,17 @@ public class FeedController(
                 Href = $"https://{config.Value.WebDomain}/users/{id}/feed.atom",
                 Rel  = "self",
                 Type = "application/atom+xml"
-            },
-            new AtomLink
-            {
-                Href = $"https://{config.Value.WebDomain}/users/{id}/feed.atom?max_id={entries.Last().RawId}",
-                Rel  = "next",
-                Type = "application/atom+xml"
             }
         ];
+        if (entries.Count > 0)
+        {
+            links.Add(new AtomLink
+              {
+                  Href = $"https://{config.Value.WebDomain}/users/{id}/feed.atom?max_id={entries.Last().RawId}",
+                  Rel  = "next",
+                  Type = "application/atom+xml"
+              });
+        }
         if (pq.MaxId != null)
         {
             links.Add(new AtomLink
@@ -173,15 +176,18 @@ public class FeedController(
         var targetUrl = target.GetUriOrPublicUri(config.Value);
         var iconUrl   = target.GetAvatarUrl(config.Value);
 
+        var nextUrl = items.Count > 0
+            ? $"https://{config.Value.WebDomain}/users/{id}/feed.json?max_id={items.Last().RawId}"
+            : null;
+
         return new JsonFeed
         {
             Title       = $"Notes by {target.DisplayName ?? target.Username}",
             HomePageUrl = targetUrl,
             Uri         = $"https://{config.Value.WebDomain}/users/{id}/feed.json",
-            NextUrl =
-                $"https://{config.Value.WebDomain}/users/{id}/feed.json?max_id={items.Last().RawId}",
-            IconUrl    = iconUrl,
-            FaviconUrl = iconUrl,
+            NextUrl     = nextUrl,
+            IconUrl     = iconUrl,
+            FaviconUrl  = iconUrl,
             Authors =
             [
                 new JsonFeedAuthor
