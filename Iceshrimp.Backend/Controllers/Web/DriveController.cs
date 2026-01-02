@@ -62,6 +62,25 @@ public class DriveController(
 
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
+	[HttpGet("/media/favicon/{id}")]
+	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.Redirect)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<IActionResult> GetFaviconByInstanceId(string id)
+	{
+		var instance = await db.Instances.FirstOrDefaultAsync(p => p.Id == id)
+		               ?? throw GracefulException.NotFound("Instance not found");
+
+		if (instance.FaviconUrl == null)
+			return NoContent();
+
+		if (!options.Value.ProxyRemoteMedia)
+			return Redirect(instance.FaviconUrl);
+
+		return await ProxyAsync(instance.FaviconUrl, null, null);
+	}
+
+	[EnableCors("drive")]
+	[EnableRateLimiting("proxy")]
 	[HttpGet("/avatars/{userId}/{version}")]
 	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.Redirect)]
 	[ProducesErrors(HttpStatusCode.NotFound)]

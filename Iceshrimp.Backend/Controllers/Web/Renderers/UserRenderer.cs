@@ -16,8 +16,10 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 		var instance = user.IsRemoteUser ? data.InstanceData.FirstOrDefault(p => p.Host == user.Host) : null;
 
 		var instanceName  = user.IsLocalUser ? data.LocalInstanceData!.Name : instance?.Name;
-		var instanceIcon  = user.IsLocalUser ? data.LocalInstanceData!.FaviconUrl : instance?.FaviconUrl;
 		var instanceColor = user.IsLocalUser ? data.LocalInstanceData!.ThemeColor : instance?.ThemeColor;
+		var instanceIcon = user.IsLocalUser
+			? data.LocalInstanceData!.FaviconUrl
+			: instance?.GetFaviconAccessUrl(config.Value);
 
 		if (!data.Emojis.TryGetValue(user.Id, out var emoji))
 			throw new Exception("DTO didn't contain emoji for user");

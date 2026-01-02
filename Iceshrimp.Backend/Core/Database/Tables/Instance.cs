@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using EntityFrameworkCore.Projectables;
+using Iceshrimp.Backend.Core.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -104,7 +105,10 @@ public class Instance
 	[NotMapped]
 	[Projectable]
 	public bool NeedsUpdate => InfoUpdatedAt == null || InfoUpdatedAt < DateTime.Now - TimeSpan.FromHours(24);
-	
+
+	public string? GetFaviconAccessUrl(Config.InstanceSection config)
+		=> FaviconUrl != null ? $"https://{config.WebDomain}/media/favicon/{Id}" : null;
+
 	private class EntityTypeConfiguration : IEntityTypeConfiguration<Instance>
 	{
 		public void Configure(EntityTypeBuilder<Instance> entity)
