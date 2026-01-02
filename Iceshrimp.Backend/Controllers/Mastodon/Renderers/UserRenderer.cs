@@ -58,7 +58,7 @@ public class UserRenderer(
 		if (user.IsRemoteUser)
 		{
 			var instInfo   = data?.Instance.Where(p => p.Host == user.Host).ToList();
-			favicon         = instInfo!.Select(p => p.FaviconUrl).FirstOrDefault() ?? "";
+			favicon         = instInfo!.Select(p => p.GetFaviconAccessUrl(config.Value)).FirstOrDefault() ?? "";
 			softwareName    = instInfo!.Select(p => p.SoftwareName).FirstOrDefault() ?? "";
 			softwareVersion = instInfo!.Select(p => p.SoftwareVersion).FirstOrDefault() ?? "";
 		}
