@@ -1432,7 +1432,6 @@ public class UserService(
 		{
 			var memo = new UserMemo()
 			{
-				Id           = IdHelpers.GenerateSnowflakeId(),
 				ByUserId     = user.Id,
 				TargetUserId = target.Id,
 				Text         = memoText

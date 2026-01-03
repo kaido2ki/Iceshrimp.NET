@@ -4632,19 +4632,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.UserMemo", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("id");
-
                     b.Property<string>("ByUserId")
-                        .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
                         .HasColumnName("by_user_id");
 
                     b.Property<string>("TargetUserId")
-                        .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
                         .HasColumnName("target_user_id");
@@ -4655,7 +4648,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(100000)")
                         .HasColumnName("text");
 
-                    b.HasKey("Id");
+                    b.HasKey("ByUserId", "TargetUserId");
 
                     b.ToTable("user_memo");
                 });

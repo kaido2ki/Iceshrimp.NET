@@ -1,16 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
+[PrimaryKey(nameof(ByUserId), nameof(TargetUserId))]
 [Table("user_memo")]
 public class UserMemo
 {
-	[Key]
-	[Column("id")]
-	[StringLength(32)]
-	public string Id { get; set; } = null!;
-	
 	[Column("by_user_id")]
 	[StringLength(32)]
 	public string ByUserId { get; set; } = null!;
