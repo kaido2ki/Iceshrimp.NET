@@ -63,12 +63,12 @@
         <PackageReference Include="Iceshrimp.Utils.Common" Version="1.3.0" />
         <PackageReference Include="Iceshrimp.MimeTypes" Version="1.0.1" />
         <PackageReference Include="Iceshrimp.WebPush" Version="2.2.0" />
-        <PackageReference Include="NetVips" Version="3.1.0" />
+        <PackageReference Include="NetVips" Version="3.2.0" />
     </ItemGroup>
 
     <!-- If the build flag BundleNativeDeps is set, reference the LibVips native dependecy -->
     <ItemGroup Condition=" '$(BundleNativeDeps)' == 'true' ">
-        <PackageReference Include="NetVips.Native" Version="8.17.3-iceshrimp" />
+        <PackageReference Include="NetVips.Native" Version="8.18.0-iceshrimp" />
     </ItemGroup>
 
     <!-- This makes sure configuration.ini & the preloaded AS contexts are added to the assembly as embedded resources -->
