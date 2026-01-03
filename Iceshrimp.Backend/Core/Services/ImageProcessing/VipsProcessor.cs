@@ -75,8 +75,8 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 		using var blurhashImageFlattened = blurhashImage.HasAlpha() ? blurhashImage.Flatten() : blurhashImage;
 		using var blurhashImageActual    = blurhashImageFlattened.Cast(Enums.BandFormat.Uchar);
 
-		var blurBuf    = blurhashImageActual.WriteToMemory();
-		var blurPixels = MemoryMarshal.Cast<byte, Rgb24>(blurBuf).AsSpan2D(blurhashImage.Height, blurhashImage.Width);
+		var blurBuf    = blurhashImageActual.WriteToMemory<Rgb24>();
+		var blurPixels = blurBuf.AsSpan2D(blurhashImage.Height, blurhashImage.Width);
 		return BlurhashHelper.Encode(blurPixels, 7, 7);
 	}
 
