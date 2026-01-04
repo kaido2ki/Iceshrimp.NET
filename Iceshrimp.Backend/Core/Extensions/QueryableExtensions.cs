@@ -320,6 +320,8 @@ public static class QueryableExtensions
 
 	public static IQueryable<User> PrecomputeRelationshipData(this IQueryable<User> query, User user, DatabaseContext db)
 	{
+		// TODO: make the memo query more efficient, see discussion:
+		// https://iceshrimp.dev/iceshrimp/Iceshrimp.NET/pulls/259#issuecomment-7560
 		var id = query.Select(p => p.Id);
 		var memo = db.UserMemos
 		             .Where(m => m.ByUserId == user.Id && id.Contains(m.TargetUserId));
