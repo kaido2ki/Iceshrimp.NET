@@ -170,6 +170,22 @@
             <MfmText Text="@UserProfile.Bio" Emoji="@Emojis"/>
         </div>
     }
+    @if (!UserProfile.Relations.HasFlag(Relations.Self))
+    {
+        <details class="memo-details">
+            <summary>@Loc["Private memo"]</summary>
+            <EditForm OnSubmit="SetMemo" Model="MemoForm">
+                <textarea class="input memo" @bind="@MemoForm.Text" @bind:event="oninput" @bind:after="ResetMemoButton" rows="5"></textarea>
+                <StateButton ExtraClasses="button" @ref="@MemoButton" OnClick="SetMemo">
+                    <Initial>@Loc["Update"]</Initial>
+                    <Success>@Loc["Updated"]</Success>
+                    <Loading>@Loc["Loading"]<LoadingSpinner/>
+                    </Loading>
+                    <Failed>@Loc["Error"]</Failed>
+                </StateButton>
+            </EditForm>
+        </details>
+    }
     <div class="data">
         @if (UserProfile.Birthday != null)
         {
@@ -238,6 +254,8 @@
 
     private ElementReference  MenuButton  { get; set; }
     private Menu              ContextMenu { get; set; } = null!;
+    private UserMemoRequest   MemoForm    { get; set; } = null!;
+    private StateButton       MemoButton  { get; set; } = null!;
     private InstanceResponse? _instance;
 
     private Dictionary<string, string> _languages = LanguageHelper.Bcp47Languages;
@@ -433,8 +451,39 @@
         }
     }
 
+    private async Task SetMemo()
+    {
+        if (MemoButton.State == StateButton.StateEnum.Loading || (UserProfile.Memo ?? "") == MemoForm.Text) return;
+
+        MemoButton.State = StateButton.StateEnum.Loading;
+
+        try
+        {
+            await Api.Users.SetMemoAsync(UserProfile.Id, MemoForm);
+        }
+        catch (ApiException)
+        {
+            MemoButton.State = StateButton.StateEnum.Failed;
+        }
+
+        UserProfile.Memo = MemoForm.Text;
+        MemoButton.State = StateButton.StateEnum.Success;
+
+        StateHasChanged();
+    }
+
+    private void ResetMemoButton()
+    {
+        if (MemoButton.State == StateButton.StateEnum.Success)
+        {
+            MemoButton.State = StateButton.StateEnum.Initial;
+            StateHasChanged();
+        }
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         _instance = await MetadataService.Instance.Value;
+        MemoForm  = new UserMemoRequest { Text = UserProfile.Memo ?? "" };
     }
 }

@@ -58,4 +58,7 @@ internal class UserControllerModel(ApiClient api)
 
 	public Task ReportUserAsync(string id, UserReportRequest request) =>
 		api.CallAsync(HttpMethod.Post, $"/users/{id}/report", data: request);
+
+	public Task SetMemoAsync(string id, UserMemoRequest request) =>
+		api.CallAsync(HttpMethod.Put, $"/users/{id}/memo", data: request);
 }
