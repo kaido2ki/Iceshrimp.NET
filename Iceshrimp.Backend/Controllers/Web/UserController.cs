@@ -210,6 +210,20 @@ public class UserController(
 		await reportSvc.CreateReportAsync(user, target, notes, rules, request.Comment);
 	}
 
+	[HttpPut("{id}/memo")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task SetMemo(string id, UserMemoRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var target = await db.Users.FirstOrDefaultAsync(p => p.Id == id) ?? throw GracefulException.RecordNotFound();
+
+		await userSvc.SetUserMemoAsync(user, target, request.Text);
+	}
+
 	[HttpPost("{id}/follow")]
 	[Authenticate]
 	[Authorize]
