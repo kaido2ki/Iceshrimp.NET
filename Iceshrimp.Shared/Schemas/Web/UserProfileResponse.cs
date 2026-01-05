@@ -18,6 +18,7 @@ public class UserProfileResponse : IIdentifiable
 	public required string?                 Lang      { get; set; }
 	public required DateTime                CreatedAt { get; set; }
 	public required DateTime?               ActiveAt  { get; set; }
+	public required string?                 Memo      { get; set; }
 
 	public required Dictionary<string, string>? Pronouns { get; set; }
 }

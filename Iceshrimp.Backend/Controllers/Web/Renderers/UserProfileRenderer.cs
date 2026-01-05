@@ -57,6 +57,8 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 
 		var url = user.Host != null ? user.UserProfile?.Url ?? user.Uri : user.GetPublicUrl(instance.Value);
 
+		(data?.Memos ?? await GetMemosAsync([user], localUser)).TryGetValue(user.Id, out var memo);
+
 		return new UserProfileResponse
 		{
 			Id        = user.Id,
@@ -73,6 +75,7 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 			Lang      = user.UserProfile?.Lang,
 			CreatedAt = user.CreatedAt,
 			ActiveAt  = user.LastActiveDate,
+			Memo      = memo,
 			Pronouns  = user.UserProfile?.Pronouns
 		};
 	}
@@ -99,10 +102,25 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 		               .ToDictionaryAsync(p => p.UserId, p => p);
 	}
 
+	private async Task<Dictionary<string, string>> GetMemosAsync(IEnumerable<User> users, User? localUser)
+	{
+		var ids = users.Select(p => p.Id).ToList();
+		if (ids.Count == 0) return [];
+		if (localUser == null) return [];
+
+		return await db.UserMemos
+		               .Where(p => p.ByUserId == localUser.Id && ids.Contains(p.TargetUserId))
+		               .ToDictionaryAsync(p => p.TargetUserId, p => p.Text);
+	}
+
 	public async Task<IEnumerable<UserProfileResponse>> RenderManyAsync(IEnumerable<User> users, User? localUser)
 	{
 		var userList = users.ToList();
-		var data     = new UserRendererDto { Relations = await GetRelationsAsync(userList, localUser) };
+		var data = new UserRendererDto
+		{
+			Relations = await GetRelationsAsync(userList, localUser),
+			Memos     = await GetMemosAsync(userList, localUser)
+		};
 		return await userList.Select(p => RenderOne(p, localUser, data)).AwaitAllAsync();
 	}
 
@@ -134,5 +152,6 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 	public class UserRendererDto
 	{
 		public Dictionary<string, RelationData>? Relations;
+		public Dictionary<string, string>?       Memos;
 	}
 }
