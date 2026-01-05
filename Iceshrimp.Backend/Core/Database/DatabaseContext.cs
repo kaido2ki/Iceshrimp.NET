@@ -111,7 +111,9 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 				MaxPoolSize     = config.MaxConnections,
 				Multiplexing    = config.Multiplexing,
 				Options         = "-c jit=off",
-				ApplicationName = "Iceshrimp.NET"
+				ApplicationName = "Iceshrimp.NET",
+				// Suppress errors about missing libgssapi_krb5.so.2 shared library
+				GssEncryptionMode = GssEncryptionMode.Disable
 			}
 		};
 
