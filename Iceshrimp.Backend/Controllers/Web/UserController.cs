@@ -18,6 +18,9 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for getting information from and interacting with users.
+/// </summary>
 [ApiController]
 [Authenticate]
 [Authorize]
@@ -37,6 +40,11 @@ public class UserController(
 	IOptions<Config.InstanceSection> config
 ) : ControllerBase
 {
+	/// <summary>
+	/// Get user by ID
+	/// </summary>
+	/// <param name="id">The user's ID</param>
+	/// <response code="200">User</response>
 	[HttpGet("{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -49,6 +57,12 @@ public class UserController(
 		return await userRenderer.RenderOne(await userResolver.GetUpdatedUserAsync(user));
 	}
 
+	/// <summary>
+	/// Get user by handle
+	/// </summary>
+	/// <param name="username">The user's username</param>
+	/// <param name="host">The user's instance domain name or <c>null</c> for <b>local</b> users.</param>
+	/// <response code="200">User</response>
 	[HttpGet("lookup")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -67,6 +81,11 @@ public class UserController(
 		return await userRenderer.RenderOne(await userResolver.GetUpdatedUserAsync(user));
 	}
 
+	/// <summary>
+	/// Get profile
+	/// </summary>
+	/// <param name="id">The user's ID</param>
+	/// <response code="200">User profile</response>
 	[HttpGet("{id}/profile")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -80,6 +99,13 @@ public class UserController(
 		return await userProfileRenderer.RenderOne(await userResolver.GetUpdatedUserAsync(user), localUser);
 	}
 
+	/// <summary>
+	/// Get notes
+	/// </summary>
+	/// <returns>Returns a paginated list of the user's notes.</returns>
+	/// <param name="id">The user's ID</param>
+	/// <param name="pq">Pagination query</param>
+	/// <response code="200">Paginated list of notes</response>
 	[HttpGet("{id}/notes")]
 	[LinkPagination(20, 80)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -103,6 +129,13 @@ public class UserController(
 		return await noteRenderer.RenderManyAsync(notes, localUser, Filter.FilterContext.Accounts);
 	}
 
+	/// <summary>
+	/// Get pinned notes
+	/// </summary>
+	/// <returns>Returns a paginated list of the user's pinned notes.</returns>
+	/// <param name="id">The user's ID</param>
+	/// <param name="pq">Pagination query</param>
+	/// <response code="200">Paginated list of notes</response>
 	[HttpGet("{id}/pinned_notes")]
 	[LinkPagination(20, 80)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -127,6 +160,11 @@ public class UserController(
 		return await noteRenderer.RenderManyAsync(notes, localUser, Filter.FilterContext.Accounts);
 	}
 
+	/// <summary>
+	/// Bite user
+	/// </summary>
+	/// <param name="id">The user's ID</param>
+	/// <response code="400">You cannot bite yourself.</response>
 	[HttpPost("{id}/bite")]
 	[Authenticate]
 	[Authorize]
@@ -144,6 +182,11 @@ public class UserController(
 		await biteSvc.BiteAsync(user, target);
 	}
 
+	/// <summary>
+	/// Block user
+	/// </summary>
+	/// <param name="id">The user's ID</param>
+	/// <response code="400">You cannot block yourself.</response>
 	[HttpPost("{id}/block")]
 	[Authenticate]
 	[Authorize]
@@ -164,7 +207,12 @@ public class UserController(
 
 		await userSvc.BlockUserAsync(user, blockee);
 	}
-	
+
+	/// <summary>
+	/// Unblock user
+	/// </summary>
+	/// <param name="id">The user's ID</param>
+	/// <response code="400">You cannot unblock yourself.</response>
 	[HttpPost("{id}/unblock")]
 	[Authenticate]
 	[Authorize]
@@ -186,6 +234,12 @@ public class UserController(
 		await userSvc.UnblockUserAsync(user, blockee);
 	}
 
+	/// <summary>
+	/// Report user
+	/// </summary>
+	/// <param name="id">The user's ID</param>
+	/// <param name="request">Report details</param>
+	/// <response code="400">You cannot report yourself.</response>
 	[HttpPost("{id}/report")]
 	[Authenticate]
 	[Authorize]
@@ -210,6 +264,12 @@ public class UserController(
 		await reportSvc.CreateReportAsync(user, target, notes, rules, request.Comment);
 	}
 
+	/// <summary>
+	/// Update memo
+	/// </summary>
+	/// <remarks>Update the private memo for another user. Private memos are only visible to the authors.</remarks>
+	/// <param name="id">The user's ID</param>
+	/// <param name="request">Memo contents</param>
 	[HttpPut("{id}/memo")]
 	[Authenticate]
 	[Authorize]
@@ -224,6 +284,11 @@ public class UserController(
 		await userSvc.SetUserMemoAsync(user, target, request.Text);
 	}
 
+	/// <summary>
+	/// Follow user
+	/// </summary>
+	/// <param name="id">The user's ID</param>
+	/// <response code="400">You cannot follow yourself.</response>
 	[HttpPost("{id}/follow")]
 	[Authenticate]
 	[Authorize]
@@ -248,6 +313,11 @@ public class UserController(
 			await userSvc.FollowUserAsync(user, followee);
 	}
 
+	/// <summary>
+	/// Mute user
+	/// </summary>
+	/// <param name="id">The user's ID</param>
+	/// <param name="expires">Date and time for a temporary mute</param>
 	[HttpPost("{id}/mute")]
 	[Authenticate]
 	[Authorize]
@@ -272,6 +342,11 @@ public class UserController(
 		await userSvc.MuteUserAsync(user, mutee, expires?.ToUniversalTime());
 	}
 
+	/// <summary>
+	/// Unmute user
+	/// </summary>
+	/// <param name="id">The user's ID</param>
+	/// <response code="400">You cannot unmute yourself.</response>
 	[HttpPost("{id}/unmute")]
 	[Authenticate]
 	[Authorize]
@@ -293,6 +368,12 @@ public class UserController(
 		await userSvc.UnmuteUserAsync(user, mutee);
 	}
 
+	/// <summary>
+	/// Refetch user
+	/// </summary>
+	/// <remarks>Attempt to refetch a <b>remote</b> user and their profile.</remarks>
+	/// <param name="id">The user's ID</param>
+	/// <response code="200">Refetched user</response>
 	[HttpPost("{id}/refetch")]
 	[Authenticate]
 	[Authorize]
@@ -312,6 +393,12 @@ public class UserController(
 		return await userRenderer.RenderOne(user);
 	}
 
+	/// <summary>
+	/// Remove from followers
+	/// </summary>
+	/// <remarks>Remove a user from your followers list.</remarks>
+	/// <param name="id">The user's ID</param>
+	/// <response code="400">You cannot unfollow yourself.</response>
 	[HttpPost("{id}/remove_from_followers")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -331,6 +418,11 @@ public class UserController(
 		await userSvc.RemoveFromFollowersAsync(user, follower);
 	}
 
+	/// <summary>
+	/// Unfollow user
+	/// </summary>
+	/// <param name="id">The user's ID</param>
+	/// <response code="400">You cannot unfollow yourself.</response>
 	[HttpPost("{id}/unfollow")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
