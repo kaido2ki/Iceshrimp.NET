@@ -16,7 +16,11 @@
 
     <!-- Except low and medium severity vulnerable dependency warnings from TreatWarningsAsErrors, leaving high and critical severity ones intact -->
     <PropertyGroup>
-        <WarningsNotAsErrors>$(WarningsNotAsErrors),NU1901,NU1902</WarningsNotAsErrors>
+        <WarningsNotAsErrors>$(WarningsNotAsErrors),NU1901,NU1902,CS1573,CS1591</WarningsNotAsErrors>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <NoWarn>$(NoWarn),CS1591</NoWarn>
     </PropertyGroup>
 
     <!-- When DependencyVulnsAsError is not set, also suppress the remaining dependency vulnerability warnings -->

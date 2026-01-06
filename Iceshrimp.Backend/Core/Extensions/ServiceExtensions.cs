@@ -102,6 +102,8 @@ public static class ServiceExtensions
 				                              });
 
 				options.AddFilters();
+
+				options.IncludeXmlComments(Assembly.GetExecutingAssembly());
 			});
 		}
 

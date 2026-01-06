@@ -7,6 +7,8 @@
         <PublishTrimmed>false</PublishTrimmed>
         <!-- Makes sure that we compile against the correct native dependency -->
         <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
+        <!-- Generate OpenAPI documentation from XML comments -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <Import Project="..\Iceshrimp.Build\Iceshrimp.Build.props" />
