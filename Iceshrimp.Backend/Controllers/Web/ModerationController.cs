@@ -15,6 +15,10 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// <para>Operations for performing actions required for instance moderation.</para>
+/// <para>Requires role: <b>Moderator</b></para>
+/// </summary>
 [Authenticate]
 [Authorize("role:moderator")]
 [ApiController]
@@ -28,6 +32,11 @@ public class ModerationController(
 	ReportService reportSvc
 ) : ControllerBase
 {
+	/// <summary>
+	/// Delete note
+	/// </summary>
+	/// <remarks>Delete a note from any user and removes it from federation where possible.</remarks>
+	/// <param name="id">The note's ID</param>
 	[HttpPost("notes/{id}/delete")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -39,6 +48,10 @@ public class ModerationController(
 		await noteSvc.DeleteNoteAsync(note);
 	}
 
+	/// <summary>
+	/// Suspend user
+	/// </summary>
+	/// <param name="id">The user's ID</param>
 	[HttpPost("users/{id}/suspend")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -53,6 +66,10 @@ public class ModerationController(
 		await userSvc.SuspendUserAsync(user);
 	}
 
+	/// <summary>
+	/// Unsuspend user
+	/// </summary>
+	/// <param name="id">The user's ID</param>
 	[HttpPost("users/{id}/unsuspend")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -67,6 +84,11 @@ public class ModerationController(
 		await userSvc.UnsuspendUserAsync(user);
 	}
 
+	/// <summary>
+	/// Delete user
+	/// </summary>
+	/// <remarks><b>This action cannot be undone.</b></remarks>
+	/// <param name="id">The user's ID</param>
 	[HttpPost("users/{id}/delete")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -81,6 +103,14 @@ public class ModerationController(
 		await userSvc.DeleteUserAsync(user);
 	}
 
+	/// <summary>
+	/// Purge user
+	/// </summary>
+	/// <remarks>
+	/// <para>Delete all Drive files and notes from a user and removes them from federation where possible.</para>
+	/// <para><b>This action cannot be undone.</b></para>
+	/// </remarks>
+	/// <param name="id">The user's ID.</param>
 	[HttpPost("users/{id}/purge")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -92,6 +122,13 @@ public class ModerationController(
 		await userSvc.PurgeUserAsync(user);
 	}
 
+	/// <summary>
+	/// List reports
+	/// </summary>
+	/// <remarks>Returns a paginated list of user reports.</remarks>
+	/// <param name="pq">Pagination query</param>
+	/// <param name="resolved">Include resolved reports</param>
+	/// <response code="200">Paginated list of user reports</response>
 	[HttpGet("reports")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -107,6 +144,11 @@ public class ModerationController(
 		return await reportRenderer.RenderManyAsync(reports);
 	}
 
+	/// <summary>
+	/// Get report
+	/// </summary>
+	/// <param name="id">The report's ID</param>
+	/// <response code="200">User report</response>
 	[HttpGet("reports/{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -120,6 +162,10 @@ public class ModerationController(
 		return await reportRenderer.RenderOneAsync(report);
 	}
 
+	/// <summary>
+	/// Mark report as resolved
+	/// </summary>
+	/// <param name="id">The report's ID</param>
 	[HttpPost("reports/{id}/resolve")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -134,6 +180,13 @@ public class ModerationController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Forward report
+	/// </summary>
+	/// <remarks>Forward report of a <b>remote</b> user to the staff of their instance.</remarks>
+	/// <param name="id">The report's ID</param>
+	/// <param name="request">Forward report request</param>
+	/// <response code="400">Cannot forward report to local instance</response>
 	[HttpPost("reports/{id}/forward")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -156,6 +209,11 @@ public class ModerationController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Refetch emoji
+	/// </summary>
+	/// <remarks>Attempt to refetch a <b>remote</b> emoji if it is broken. This is not supported on most instance software.</remarks>
+	/// <param name="id">The emoji's ID</param>
 	[HttpPost("emoji/{id}/refetch")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
