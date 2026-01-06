@@ -10,6 +10,11 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+#if DEBUG
+[ApiExplorerSettings(IgnoreApi = false)]
+#else
+[ApiExplorerSettings(IgnoreApi = true)]
+#endif  
 [ApiController]
 [Authenticate]
 [EnableRateLimiting("sliding")]

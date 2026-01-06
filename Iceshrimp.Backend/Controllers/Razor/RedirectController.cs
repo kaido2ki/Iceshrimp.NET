@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Razor;
 
+[ApiExplorerSettings(IgnoreApi = true)]
 [ApiController]
 [Authenticate]
 [EnableRateLimiting("sliding")]
