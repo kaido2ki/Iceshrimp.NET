@@ -20,6 +20,9 @@ using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for searching for content.
+/// </summary>
 [ApiController]
 [Authenticate]
 [Authorize]
@@ -36,6 +39,13 @@ public class SearchController(
 	IOptions<Config.InstanceSection> config
 ) : ControllerBase
 {
+	/// <summary>
+	/// Search notes
+	/// </summary>
+	/// <remarks>Returns a paginated list of notes that match <c>q</c>.</remarks>
+	/// <param name="query">Search query with support for filters (see <see href="https://iceshrimp.net/help/fts">Full Text Search</see>)</param>
+	/// <param name="pagination">Pagination query</param>
+	/// <response code="200">Paginated list of notes</response>
 	[HttpGet("notes")]
 	[LinkPagination(20, 80)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -56,6 +66,13 @@ public class SearchController(
 		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user);
 	}
 
+	/// <summary>
+	/// Search users
+	/// </summary>
+	/// <remarks>Returns a paginated list of users that match <c>q</c>.</remarks>
+	/// <param name="query">Search query</param>
+	/// <param name="pagination">Pagination query</param>
+	/// <response code="200">Paginated list of users</response>
 	[HttpGet("users")]
 	[LinkPagination(20, 80)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -76,6 +93,12 @@ public class SearchController(
 		return await userRenderer.RenderManyAsync(users);
 	}
 
+	/// <summary>
+	/// Look up
+	/// </summary>
+	/// <remarks>Look up notes and users by their identifiers.</remarks>
+	/// <param name="target" example="@username@example.org">User handle or user/note URI</param>
+	/// <response code="200">Note or user URL</response>
 	[HttpGet("lookup")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -140,6 +163,13 @@ public class SearchController(
 		throw GracefulException.BadRequest("Invalid lookup target");
 	}
 
+	/// <summary>
+	/// Search users by handle
+	/// </summary>
+	/// <remarks>Returns a list of users that match <c>username</c> and <c>host</c>.</remarks>
+	/// <param name="username">Username query</param>
+	/// <param name="host">Domain name query</param>
+	/// <response code="200">List of users</response>
 	[HttpGet("acct")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IEnumerable<UserResponse>> SearchUserByMention(
