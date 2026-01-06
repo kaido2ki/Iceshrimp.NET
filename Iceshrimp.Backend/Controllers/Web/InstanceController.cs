@@ -30,6 +30,11 @@ public class InstanceController(
 	InstanceService instanceSvc
 ) : ControllerBase
 {
+	/// <summary>
+	/// Get metadata
+	/// </summary>
+	/// <remarks>Returns metadata about the instance.</remarks>
+	/// <response code="200">Instance metadata</response>
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<InstanceResponse> GetInfo()
@@ -61,6 +66,11 @@ public class InstanceController(
 		};
 	}
 
+	/// <summary>
+	/// List rules
+	/// </summary>
+	/// <remarks>Returns a list of rules defined by the admins.</remarks>
+	/// <response code="200">List of rules</response>
 	[HttpGet("rules")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<RuleResponse>> GetRules()
@@ -72,6 +82,12 @@ public class InstanceController(
 		               .ToListAsync();
 	}
 
+	/// <summary>
+	/// Create rule
+	/// </summary>
+	/// <remarks>Requires role: <b>Admin</b></remarks>
+	/// <param name="request">Create rule request</param>
+	/// <response code="200">New rule</response>
 	[HttpPost("rules")]
 	[Authenticate]
 	[Authorize("role:admin")]
@@ -83,6 +99,13 @@ public class InstanceController(
 		return new RuleResponse { Id = rule.Id, Text = rule.Text, Description = rule.Description };
 	}
 
+	/// <summary>
+	/// Update rule
+	/// </summary>
+	/// <remarks>Requires role: <b>Admin</b></remarks>
+	/// <param name="id">The rule's ID</param>
+	/// <param name="request">Update rule request. Fields that are not present are not updated. Fields that are empty are reset.</param>
+	/// <response code="200">Updated rule</response>
 	[HttpPatch("rules/{id}")]
 	[Authenticate]
 	[Authorize("role:admin")]
@@ -106,6 +129,11 @@ public class InstanceController(
 		return new RuleResponse { Id = res.Id, Text = res.Text, Description = res.Description };
 	}
 
+	/// <summary>
+	/// Delete rule
+	/// </summary>
+	/// <remarks>Requires role: <b>Admin</b></remarks>
+	/// <param name="id">The rule's ID</param>
 	[HttpDelete("rules/{id}")]
 	[Authenticate]
 	[Authorize("role:admin")]
@@ -128,6 +156,11 @@ public class InstanceController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Get staff
+	/// </summary>
+	/// <remarks>Returns a list of admins and a list of moderators on the instance.</remarks>
+	/// <response code="200">Staff information</response>
 	[HttpGet("staff")]
 	[Authenticate]
 	[Authorize]
@@ -152,6 +185,7 @@ public class InstanceController(
 	}
 
 	// This is only used to set the icon for the frontend
+	[ApiExplorerSettings(IgnoreApi = true)]
 	[HttpGet("/favicon.png")]
 	[ProducesResults(HttpStatusCode.Redirect)]
 	public async Task<RedirectResult> GetInstanceIcon()
