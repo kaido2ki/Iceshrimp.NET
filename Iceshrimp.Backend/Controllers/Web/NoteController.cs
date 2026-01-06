@@ -20,6 +20,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for performing actions on the user's own notes or interacting with other users' notes.
+/// </summary>
 [ApiController]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/notes")]
@@ -42,6 +45,12 @@ public class NoteController(
 		o.PoolInitialFill = 5;
 	});
 
+	/// <summary>
+	/// Get note
+	/// </summary>
+	/// <param name="id">The note's ID</param>
+	/// <response code="200">Note</response>
+	/// <response code="404">Not Found or not visible to the user</response>
 	[HttpGet("{id}")]
 	[Authenticate]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -60,6 +69,14 @@ public class NoteController(
 		return await noteRenderer.RenderOne(note.EnforceRenoteReplyVisibility(), user);
 	}
 
+	/// <summary>
+	/// Delete note
+	/// </summary>
+	/// <remarks>
+	/// <para>Deletes the note and removes it from federation where possible.</para>
+	/// <para><b>This action cannot be undone.</b></para>
+	/// </remarks>
+	/// <param name="id">The note's ID</param>
 	[HttpDelete("{id}")]
 	[Authenticate]
 	[Authorize]
@@ -74,6 +91,13 @@ public class NoteController(
 		await noteSvc.DeleteNoteAsync(note);
 	}
 
+	/// <summary>
+	/// List note parents
+	/// </summary>
+	/// <remarks>Returns a list of notes that appear before this note in the thread.</remarks>
+	/// <param name="id">The note's ID</param>
+	/// <param name="limit">Number of parents</param>
+	/// <response code="200">List of notes</response>
 	[HttpGet("{id}/ascendants")]
 	[Authenticate]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -109,6 +133,13 @@ public class NoteController(
 		return res.OrderAncestors();
 	}
 
+	/// <summary>
+	/// List note replies
+	/// </summary>
+	/// <remarks>Returns a list of notes that are in reply to this note.</remarks>
+	/// <param name="id">The note's ID</param>
+	/// <param name="depth">Depth of replies</param>
+	/// <response code="200">List of notes</response>
 	[HttpGet("{id}/descendants")]
 	[Authenticate]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -146,6 +177,13 @@ public class NoteController(
 		return res.OrderDescendants();
 	}
 
+	/// <summary>
+	/// List reaction users
+	/// </summary>
+	/// <remarks>Returns a list of users who reacted with a specific emoji.</remarks>
+	/// <param name="id">The note's ID</param>
+	/// <param name="name">The emoji's name</param>
+	/// <response code="200">List of users</response>
 	[HttpGet("{id}/reactions/{name}")]
 	[Authenticate]
 	[Authorize]
@@ -172,6 +210,10 @@ public class NoteController(
 		return await userRenderer.RenderManyAsync(users);
 	}
 
+	/// <summary>
+	/// Bite note
+	/// </summary>
+	/// <param name="id">The note's ID</param>
 	[HttpPost("{id}/bite")]
 	[Authenticate]
 	[Authorize]
@@ -193,6 +235,10 @@ public class NoteController(
 		await biteSvc.BiteAsync(user, target);
 	}
 
+	/// <summary>
+	/// Add bookmark
+	/// </summary>
+	/// <param name="id">The note's ID</param>
 	[HttpPost("{id}/bookmark")]
 	[Authenticate]
 	[Authorize]
@@ -211,6 +257,10 @@ public class NoteController(
 		await noteSvc.BookmarkNoteAsync(note, user);
 	}
 
+	/// <summary>
+	/// Remove bookmark
+	/// </summary>
+	/// <param name="id">The note's ID</param>
 	[HttpPost("{id}/unbookmark")]
 	[Authenticate]
 	[Authorize]
@@ -229,6 +279,11 @@ public class NoteController(
 		await noteSvc.UnbookmarkNoteAsync(note, user);
 	}
 
+	/// <summary>
+	/// Add like
+	/// </summary>
+	/// <param name="id">The note's ID</param>
+	/// <response code="200">Like count</response>
 	[HttpPost("{id}/like")]
 	[Authenticate]
 	[Authorize]
@@ -249,6 +304,11 @@ public class NoteController(
 		return new ValueResponse(success ? ++note.LikeCount : note.LikeCount);
 	}
 
+	/// <summary>
+	/// Remove like
+	/// </summary>
+	/// <param name="id">The note's ID</param>
+	/// <response code="200">Like count</response>
 	[HttpPost("{id}/unlike")]
 	[Authenticate]
 	[Authorize]
@@ -269,6 +329,13 @@ public class NoteController(
 		return new ValueResponse(success ? --note.LikeCount : note.LikeCount);
 	}
 
+	/// <summary>
+	/// List likes
+	/// </summary>
+	/// <remarks>Returns a paginated list of users who liked the note.</remarks>
+	/// <param name="id">The note's ID</param>
+	/// <param name="pq">Pagination query</param>
+	/// <response code="200">Paginated list of users</response>
 	[HttpGet("{id}/likes")]
 	[Authenticate]
 	[Authorize]
@@ -295,6 +362,12 @@ public class NoteController(
 		return HttpContext.CreatePaginationWrapper(pq, users, res);
 	}
 
+	/// <summary>
+	/// Add renote
+	/// </summary>
+	/// <param name="id">The note's ID</param>
+	/// <param name="visibility">Visibility of the renote</param>
+	/// <response code="200">Renote count</response>
 	[HttpPost("{id}/renote")]
 	[Authenticate]
 	[Authorize]
@@ -314,6 +387,11 @@ public class NoteController(
 		return new ValueResponse(success != null ? ++note.RenoteCount : note.RenoteCount);
 	}
 
+	/// <summary>
+	/// Remove renote
+	/// </summary>
+	/// <param name="id">The note's ID</param>
+	/// <response code="200">Renote count</response>
 	[HttpPost("{id}/unrenote")]
 	[Authenticate]
 	[Authorize]
@@ -333,6 +411,13 @@ public class NoteController(
 		return new ValueResponse(note.RenoteCount - count);
 	}
 
+	/// <summary>
+	/// List renotes
+	/// </summary>
+	/// <remarks>Returns a paginated list of users who renoted the note.</remarks>
+	/// <param name="id">The note's ID</param>
+	/// <param name="pq">Pagination query</param>
+	/// <response code="200">Paginated list of users</response>
 	[HttpGet("{id}/renotes")]
 	[Authenticate]
 	[Authorize]
@@ -361,6 +446,13 @@ public class NoteController(
 		return HttpContext.CreatePaginationWrapper(pq, users, res);
 	}
 
+	/// <summary>
+	/// List quotes
+	/// </summary>
+	/// <remarks>Returns a paginated list of users who quoted the note.</remarks>
+	/// <param name="id">The note's ID</param>
+	/// <param name="pq">Pagination query</param>
+	/// <response code="200">List of users</response>
 	[HttpGet("{id}/quotes")]
 	[Authenticate]
 	[Authorize]
@@ -390,6 +482,12 @@ public class NoteController(
 		return HttpContext.CreatePaginationWrapper(pq, renotes, res);
 	}
 
+	/// <summary>
+	/// Add reaction
+	/// </summary>
+	/// <param name="id">The note's ID</param>
+	/// <param name="name">The emoji's name</param>
+	/// <response code="200">Reaction count for emoji</response>
 	[HttpPost("{id}/react/{name}")]
 	[Authenticate]
 	[Authorize]
@@ -410,6 +508,12 @@ public class NoteController(
 		return new ValueResponse(res.success ? ++count : count);
 	}
 
+	/// <summary>
+	/// Remove reaction
+	/// </summary>
+	/// <param name="id">The note's ID</param>
+	/// <param name="name">The emoji's name</param>
+	/// <response code="200">Reaction count for emoji</response>
 	[HttpPost("{id}/unreact/{name}")]
 	[Authenticate]
 	[Authorize]
@@ -429,6 +533,12 @@ public class NoteController(
 		return new ValueResponse(res.success ? --count : count);
 	}
 
+	/// <summary>
+	/// Refetch note
+	/// </summary>
+	/// <remarks>Refetch the contents of a <b>remote</b> note.</remarks>
+	/// <param name="id">The note's ID</param>
+	/// <response code="200">Refetched note and errors</response>
 	[HttpPost("{id}/refetch")]
 	[Authenticate]
 	[Authorize]
@@ -498,6 +608,10 @@ public class NoteController(
 		};
 	}
 
+	/// <summary>
+	/// Mute thread
+	/// </summary>
+	/// <param name="id">The note's ID</param>
 	[HttpPost("{id}/mute")]
 	[Authenticate]
 	[Authorize]
@@ -524,6 +638,10 @@ public class NoteController(
 		await db.NoteThreadMutings.Upsert(mute).On(p => new { p.UserId, p.ThreadId }).NoUpdate().RunAsync();
 	}
 
+	/// <summary>
+	/// Unmute thread
+	/// </summary>
+	/// <param name="id">The note's ID</param>
 	[HttpPost("{id}/unmute")]
 	[Authenticate]
 	[Authorize]
@@ -542,6 +660,11 @@ public class NoteController(
 		await db.NoteThreadMutings.Where(p => p.User == user && p.ThreadId == target).ExecuteDeleteAsync();
 	}
 
+	/// <summary>
+	/// Add pinned note
+	/// </summary>
+	/// <remarks>Add note belonging to the user to their pinned notes section.</remarks>
+	/// <param name="id">The note's ID</param>
 	[HttpPost("{id}/pin")]
 	[Authenticate]
 	[Authorize]
@@ -558,6 +681,10 @@ public class NoteController(
 		await noteSvc.PinNoteAsync(note, user);
 	}
 
+	/// <summary>
+	/// Unpin note
+	/// </summary>
+	/// <param name="id">The note's ID</param>
 	[HttpPost("{id}/unpin")]
 	[Authenticate]
 	[Authorize]
@@ -574,6 +701,12 @@ public class NoteController(
 		await noteSvc.UnpinNoteAsync(note, user);
 	}
 
+	/// <summary>
+	/// Vote in poll
+	/// </summary>
+	/// <param name="id">The note's ID</param>
+	/// <param name="request">Exactly one choice number for single choice polls. One or more choice numbers for multiple choice polls.</param>
+	/// <response code="200">Updated note poll</response>
 	[HttpPost("{id}/vote")]
 	[Authenticate]
 	[Authorize]
@@ -632,6 +765,11 @@ public class NoteController(
 		return res.Poll!;
 	}
 
+	/// <summary>
+	/// Create note
+	/// </summary>
+	/// <param name="request">Create note request</param>
+	/// <response code="200">New note</response>
 	[HttpPost]
 	[Authenticate]
 	[Authorize]
@@ -759,6 +897,12 @@ public class NoteController(
 		return await noteRenderer.RenderOne(note, user);
 	}
 
+	/// <summary>
+	/// Report note
+	/// </summary>
+	/// <remarks>Reports the note to the <b>local</b> instance staff.</remarks>
+	/// <param name="id">The note's ID</param>
+	/// <param name="request">Report note request</param>
 	[HttpPost("{id}/report")]
 	[Authenticate]
 	[Authorize]
