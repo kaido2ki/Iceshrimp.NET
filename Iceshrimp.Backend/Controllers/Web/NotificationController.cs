@@ -14,6 +14,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for managing notifications.
+/// </summary>
 [ApiController]
 [Authenticate]
 [Authorize]
@@ -23,6 +26,12 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableCors("iceshrimp")]
 public class NotificationController(DatabaseContext db, NotificationRenderer notificationRenderer) : ControllerBase
 {
+	/// <summary>
+	/// List notifications
+	/// </summary>
+	/// <remarks>Returns a paginated list of notifications.</remarks>
+	/// <param name="query">Pagination query</param>
+	/// <response code="200">Paginated list of notifications</response>
 	[HttpGet]
 	[LinkPagination(20, 80)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -42,6 +51,10 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		                                                  user);
 	}
 
+	/// <summary>
+	/// Mark as read
+	/// </summary>
+	/// <param name="id">The notification's ID</param>
 	[HttpPost("{id}/read")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -58,6 +71,9 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		}
 	}
 
+	/// <summary>
+	/// Mark all as read
+	/// </summary>
 	[HttpPost("read")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task MarkAllNotificationsAsRead()
@@ -67,6 +83,10 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		        .ExecuteUpdateAsync(p => p.SetProperty(n => n.IsRead, true));
 	}
 
+	/// <summary>
+	/// Remove notification
+	/// </summary>
+	/// <param name="id">The notification's ID</param>
 	[HttpDelete("{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -80,6 +100,9 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Remove all notifications
+	/// </summary>
 	[HttpDelete]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task DeleteAllNotifications()
