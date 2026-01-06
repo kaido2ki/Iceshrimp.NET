@@ -19,9 +19,14 @@ public class SessionSchemas
 
 	public class MastodonSessionRequest
 	{
-		public required string               AppName { get; set; }
-		public required List<string>         Scopes  { get; set; }
-		public required MastodonSessionFlags Flags   { get; set; }
+		public required string AppName { get; set; }
+
+		/// <summary>
+		/// See <see href="https://docs.joinmastodon.org/api/oauth-scopes/#granular-scopes">OAuth Scopes - Mastodon</see>
+		/// </summary>
+		public required List<string> Scopes { get; set; }
+
+		public required MastodonSessionFlags Flags { get; set; }
 	}
 
 	public class MastodonSessionResponse : IIdentifiable

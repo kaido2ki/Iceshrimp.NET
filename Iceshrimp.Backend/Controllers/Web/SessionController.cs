@@ -13,6 +13,9 @@ using static Iceshrimp.Shared.Schemas.Web.SessionSchemas;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for managing sessions.
+/// </summary>
 [ApiController]
 [Authenticate]
 [Authorize]
@@ -23,6 +26,12 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableCors("iceshrimp")]
 public class SessionController(DatabaseContext db) : ControllerBase
 {
+	/// <summary>
+	/// List Iceshrimp.NET sessions
+	/// </summary>
+	/// <remarks>Returns a list of Iceshrimp.NET API sessions.</remarks>
+	/// <param name="page">Pagination page number</param>
+	/// <response code="200">List of sessions</response>
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<SessionResponse>> GetSessions(int page = 0)
@@ -40,6 +49,11 @@ public class SessionController(DatabaseContext db) : ControllerBase
 		               .ToListAsync();
 	}
 
+	/// <summary>
+	/// Terminate Iceshrimp.NET session
+	/// </summary>
+	/// <remarks>Terminate the session, preventing it from accessing the Iceshrimp.NET API.</remarks>
+	/// <param name="id">The session's ID</param>
 	[HttpDelete("{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -60,6 +74,12 @@ public class SessionController(DatabaseContext db) : ControllerBase
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// List Mastodon sessions
+	/// </summary>
+	/// <remarks>Returns a list of Mastodon API sessions.</remarks>
+	/// <param name="page">Pagination page number</param>
+	/// <response code="200">List of sessions</response>
 	[HttpGet("mastodon")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<MastodonSessionResponse>> GetMastodonSessions(int page = 0)
@@ -78,6 +98,11 @@ public class SessionController(DatabaseContext db) : ControllerBase
 		               .ToListAsync();
 	}
 
+	/// <summary>
+	/// Update Mastodon session
+	/// </summary>
+	/// <param name="id">The session's ID</param>
+	/// <param name="flags">Mastodon session flags</param>
 	[HttpPatch("mastodon/{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -95,6 +120,11 @@ public class SessionController(DatabaseContext db) : ControllerBase
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Terminate Mastodon session
+	/// </summary>
+	/// <remarks>Terminate the session, preventing it from accessing the Mastodon API.</remarks>
+	/// <param name="id">The session's ID</param>
 	[HttpDelete("mastodon/{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -108,6 +138,12 @@ public class SessionController(DatabaseContext db) : ControllerBase
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Create Mastodon session
+	/// </summary>
+	/// <remarks>Create a Mastodon app and session.</remarks>
+	/// <param name="request">Mastodon app details</param>
+	/// <response code="200">New Mastodon session</response>
 	[HttpPost("mastodon")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
