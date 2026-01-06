@@ -28,6 +28,12 @@ public class FollowRequestController(
 	UserService userSvc
 ) : ControllerBase
 {
+	/// <summary>
+	/// List incoming follow requests
+	/// </summary>
+	/// <remarks>Returns a paginated list of follow requests.</remarks>
+	/// <param name="pq">Pagination query</param>
+	/// <response code="200">Paginated list of follow requests</response>
 	[HttpGet]
 	[LinkPagination(20, 40)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -50,6 +56,12 @@ public class FollowRequestController(
 		});
 	}
 
+	/// <summary>
+	/// List outgoing follow requests
+	/// </summary>
+	/// <remarks>Returns a paginated list of follow requests.</remarks>
+	/// <param name="pq">Pagination query</param>
+	/// <response code="200">Paginated list of follow requests</response>
 	[HttpGet("outgoing")]
 	[LinkPagination(20, 40)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -72,6 +84,10 @@ public class FollowRequestController(
 		});
 	}
 
+	/// <summary>
+	/// Accept follow request
+	/// </summary>
+	/// <param name="id">The follow request's ID</param>
 	[HttpPost("{id}/accept")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -86,6 +102,10 @@ public class FollowRequestController(
 		await userSvc.AcceptFollowRequestAsync(request);
 	}
 
+	/// <summary>
+	/// Reject follow request
+	/// </summary>
+	/// <param name="id">The follow request's ID</param>
 	[HttpPost("{id}/reject")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
