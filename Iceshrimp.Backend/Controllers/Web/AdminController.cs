@@ -46,6 +46,13 @@ public class AdminController(
 	EventService eventSvc
 ) : ControllerBase
 {
+	/// <summary>
+	/// Generate invite code
+	/// </summary>
+	/// <remarks>
+	/// Generate an invite code which can be used to register an account if <c>[Security] Registrations = Invite</c>.
+	/// </remarks>
+	/// <response code="200">Generated invite code</response>
 	[HttpPost("invites/generate")]
 	[Produces(MediaTypeNames.Application.Json)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -66,6 +73,13 @@ public class AdminController(
 		return new InviteResponse { Code = invite.Code };
 	}
 
+	/// <summary>
+	/// Revoke invite code
+	/// </summary>
+	/// <remarks>
+	/// Revoke an invite code so it can no longer be used to register accounts.
+	/// </remarks>
+	/// <param name="code">Invite code to revoke</param>
 	[HttpPost("invites/{code}/revoke")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<OkResult> RevokeInvite(string code)
@@ -74,6 +88,15 @@ public class AdminController(
 		return Ok();
 	}
 
+	/// <summary>
+	/// Reset user password
+	/// </summary>
+	/// <remarks>
+	/// Reset a user's password to a provided value so they can regain access to their account.
+	/// </remarks>
+	/// <param name="id">The user's ID</param>
+	/// <param name="request">Reset password request</param>
+	/// <response code="400">Password must be at least 8 characters long</response>
 	[HttpPost("users/{id}/reset-password")]
 	[Produces(MediaTypeNames.Application.Json)]
 	[Consumes(MediaTypeNames.Application.Json)]
@@ -91,6 +114,13 @@ public class AdminController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Reset two-factor authentication
+	/// </summary>
+	/// <remarks>
+	/// Reset a user's two-factor authentication so they can regain access to their account.
+	/// </remarks>
+	/// <param name="id">The user's ID</param>
 	[HttpPost("users/{id}/reset-2fa")]
 	[Produces(MediaTypeNames.Application.Json)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -107,6 +137,13 @@ public class AdminController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// List allowed instances
+	/// </summary>
+	/// <remarks>If <c>[Security] FederationMode = AllowList</c>, returns the list of instances which are allowed to federate.</remarks>
+	/// <param name="limit">Pagination limit</param>
+	/// <param name="offset">Pagination offset</param>
+	/// <response code="400">Federation mode is set to blocklist.</response>
 	[HttpGet("instances/allowed")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -124,6 +161,13 @@ public class AdminController(
 		return await q.ToListAsync();
 	}
 
+	/// <summary>
+	/// List blocked instances
+	/// </summary>
+	/// <remarks>If <c>[Security] FederationMode = BlockList</c>, returns the list of instances which are blocked from federating and the block reasons.</remarks>
+	/// <param name="limit">Pagination limit</param>
+	/// <param name="offset">Pagination offset</param>
+	/// <response code="400">Federation mode is set to allowlist.</response>
 	[HttpGet("instances/blocked")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -141,6 +185,15 @@ public class AdminController(
 		return await q.ToListAsync();
 	}
 
+	/// <summary>
+	/// Import allowed instances
+	/// </summary>
+	/// <remarks>
+	/// Import a list of instances that are allowed to federate if <c>[Security] FederationMode = AllowList</c>.
+	/// <code>instance</code>
+	/// </remarks>
+	/// <param name="file">CSV file containing a list of instances</param>
+	/// <response code="400">Federation mode is set to blocklist.</response>
 	[HttpPost("instances/allowed/import")]
 	[ProducesResults(HttpStatusCode.Accepted)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -178,6 +231,15 @@ public class AdminController(
 		return Accepted();
 	}
 
+	/// <summary>
+	/// Import blocked instances
+	/// </summary>
+	/// <remarks>
+	/// Import a list of instances that are not allowed to federate if <c>[Security] FederationMode = BlockList</c>.
+	/// <code>instance,reason</code>
+	/// </remarks>
+	/// <param name="file">CSV file containing a list of instances and reasons</param>
+	/// <response code="400">Federation mode is set to allowlist.</response>
 	[HttpPost("instances/blocked/import")]
 	[ProducesResults(HttpStatusCode.Accepted)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -215,7 +277,15 @@ public class AdminController(
 		return Accepted();
 	}
 
-
+	/// <summary>
+	/// Allow instance
+	/// </summary>
+	/// <remarks>
+	/// Adds or updates an instance in the allow list. It is recommended to use the root domain (e.g. <c>example.org</c> instead of <c>shrimp.example.org</c>) when adding new instances.
+	/// </remarks>
+	/// <param name="host" example="example.org">Instance domain name</param>
+	/// <param name="imported">Imported flag</param>
+	/// <response code="400">Federation mode is set to blocklist.</response>
 	[HttpPost("instances/{host}/allow")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -240,6 +310,16 @@ public class AdminController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Block instance
+	/// </summary>
+	/// <remarks>
+	/// Adds or updates an instance in the block list. It is recommended to use the root domain (e.g. <c>example.org</c> instead of <c>shrimp.example.org</c>) when adding new instances.
+	/// </remarks>
+	/// <param name="host" example="example.org">Instance domain name</param>
+	/// <param name="imported">Imported flag</param>
+	/// <param name="reason">Reason for the block</param>
+	/// <response code="400">Federation mode is set to allowlist.</response>
 	[HttpPost("instances/{host}/block")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -269,6 +349,13 @@ public class AdminController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Disallow instance
+	/// </summary>
+	/// <remarks>
+	/// Removes an instance from the allow list.
+	/// </remarks>
+	/// <param name="host" example="example.org">Instance domain name</param>
 	[HttpPost("instances/{host}/disallow")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task DisallowInstance(string host)
@@ -279,6 +366,13 @@ public class AdminController(
 		await db.AllowedInstances.Where(p => p.Host == host.ToPunycodeLower()).ExecuteDeleteAsync();
 	}
 
+	/// <summary>
+	/// Remove bubble instance
+	/// </summary>
+	/// <remarks>
+	/// Removes an instance from the bubble.
+	/// </remarks>
+	/// <param name="host" example="example.org">Instance domain name</param>
 	[HttpPost("instances/{host}/debubble")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task DebubbleInstance(string host)
@@ -287,6 +381,13 @@ public class AdminController(
 		if (res > 0) eventSvc.RaiseBubbleInstanceRemoved(new BubbleInstance { Host = host });
 	}
 
+	/// <summary>
+	/// Unblock instance
+	/// </summary>
+	/// <remarks>
+	/// Removes an instance from the block list.
+	/// </remarks>
+	/// <param name="host" example="example.org">Instance domain name</param>
 	[HttpPost("instances/{host}/unblock")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task UnblockInstance(string host)
@@ -297,6 +398,11 @@ public class AdminController(
 		await db.BlockedInstances.Where(p => p.Host == host.ToPunycodeLower()).ExecuteDeleteAsync();
 	}
 
+	/// <summary>
+	/// Override instance status
+	/// </summary>
+	/// <param name="host" example="example.org">Instance domain name</param>
+	/// <param name="state">State the instance should be set to</param>
 	[HttpPost("instances/{host}/force-state/{state}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -323,6 +429,10 @@ public class AdminController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Retry job
+	/// </summary>
+	/// <param name="id">The job's ID</param>
 	[HttpPost("queue/jobs/{id::guid}/retry")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -334,6 +444,11 @@ public class AdminController(
 		await queueSvc.RetryJobAsync(job);
 	}
 
+	/// <summary>
+	/// Retry all jobs
+	/// </summary>
+	/// <remarks>Retry all jobs in a queue.</remarks>
+	/// <param name="queue">Name of the queue</param>
 	[HttpPost("queue/{queue}/retry-all")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task RetryFailedJobs(string queue)
@@ -346,6 +461,13 @@ public class AdminController(
 			await queueSvc.RetryJobAsync(job);
 	}
 
+	/// <summary>
+	/// Retry jobs
+	/// </summary>
+	/// <remarks>Retry a range of jobs in a queue.</remarks>
+	/// <param name="queue">Name of the queue</param>
+	/// <param name="from">Inclusive range start</param>
+	/// <param name="to">Inclusive range end</param>
 	[HttpPost("queue/{queue}/retry-range/{from::guid}/{to::guid}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task RetryRange(string queue, Guid from, Guid to)
@@ -359,6 +481,10 @@ public class AdminController(
 			await queueSvc.RetryJobAsync(job);
 	}
 
+	/// <summary>
+	/// Abandon job
+	/// </summary>
+	/// <param name="id">The job's ID</param>
 	[HttpPost("queue/jobs/{id::guid}/abandon")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -370,6 +496,10 @@ public class AdminController(
 		await queueSvc.AbandonJobAsync(job);
 	}
 
+	/// <summary>
+	/// List relays
+	/// </summary>
+	/// <remarks>Returns a list of ActivityPub relays and their statuses.</remarks>
 	[HttpGet("relays")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<RelaySchemas.RelayResponse>> GetRelays()
@@ -385,6 +515,11 @@ public class AdminController(
 		                                             .ToList());
 	}
 
+	/// <summary>
+	/// Add relay
+	/// </summary>
+	/// <remarks>Adds an ActivityPub relay.</remarks>
+	/// <param name="rq">Relay request</param>
 	[HttpPost("relays")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task SubscribeToRelay(RelaySchemas.RelayRequest rq)
@@ -392,6 +527,10 @@ public class AdminController(
 		await relaySvc.SubscribeToRelayAsync(rq.Inbox);
 	}
 
+	/// <summary>
+	/// Remove relay
+	/// </summary>
+	/// <param name="id">The relay's ID.</param>
 	[HttpDelete("relays/{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -402,6 +541,10 @@ public class AdminController(
 		await relaySvc.UnsubscribeFromRelayAsync(relay);
 	}
 
+	/// <summary>
+	/// Prune expired media
+	/// </summary>
+	/// <remarks>Delete all files from the Drive that have expired.</remarks>
 	[HttpPost("drive/prune-expired-media")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task PruneExpiredMedia([FromServices] IServiceScopeFactory factory)
@@ -410,6 +553,10 @@ public class AdminController(
 		await new MediaCleanupTask().InvokeAsync(scope.ServiceProvider);
 	}
 
+	/// <summary>
+	/// Run cron task
+	/// </summary>
+	/// <param name="id">The task's ID.</param>
 	[HttpPost("tasks/{id}/run")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -426,10 +573,22 @@ public class AdminController(
 		         CancellationToken.None);
 	}
 
+	/// <summary>
+	/// List policies
+	/// </summary>
+	/// <remarks>
+	/// Returns a list of available policy names. Policies are Iceshrimp.NET's message rewrite facility. They allow instances admins to modify incoming notes as they are federated.
+	/// </remarks>
 	[HttpGet("policy")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<string>> GetAvailablePolicies() => await policySvc.GetAvailablePoliciesAsync();
 
+	/// <summary>
+	/// Get policy
+	/// </summary>
+	/// <remarks>Returns the configuration for a policy.</remarks>
+	/// <param name="name" example="WordRejectPolicy">The policy's name</param>
+	/// <response code="200">The policy's configuration</response>
 	[HttpGet("policy/{name}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -439,6 +598,12 @@ public class AdminController(
 		return await policySvc.GetConfigurationAsync(name, raw) ?? throw GracefulException.NotFound("Policy not found");
 	}
 
+	/// <summary>
+	/// Set policy
+	/// </summary>
+	/// <remarks>Updates the configuration of a policy.</remarks>
+	/// <param name="name" example="WordRejectPolicy">The policy's name</param>
+	/// <param name="body">Policy configuration</param>
 	[HttpPut("policy/{name}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -459,6 +624,14 @@ public class AdminController(
 		await policySvc.UpdateAsync();
 	}
 
+	/// <summary>
+	/// Get note activity
+	/// </summary>
+	/// <remarks>
+	/// Returns the ActivityPub representation of a local note.
+	/// </remarks>
+	/// <param name="id">The note's ID</param>
+	/// <response code="200">Note Activity</response>
 	[UseNewtonsoftJson]
 	[HttpGet("activities/notes/{id}")]
 	[OverrideResultType<ASNote>]
@@ -475,6 +648,14 @@ public class AdminController(
 		return rendered.Compact() ?? throw new Exception("Failed to compact JSON-LD payload");
 	}
 
+	/// <summary>
+	/// Get announce activity
+	/// </summary>
+	/// <remarks>
+	/// Returns the ActivityPub representation of a local renote.
+	/// </remarks>
+	/// <param name="id">The renote's ID</param>
+	/// <response code="200">Announce Activity</response>
 	[UseNewtonsoftJson]
 	[HttpGet("activities/notes/{id}/activity")]
 	[OverrideResultType<ASAnnounce>]
@@ -501,6 +682,14 @@ public class AdminController(
 		                  .Compact();
 	}
 
+	/// <summary>
+	/// Get person activity by ID
+	/// </summary>
+	/// <remarks>
+	/// Returns the ActivityPub representation of a user.
+	/// </remarks>
+	/// <param name="id">The user's ID</param>
+	/// <response code="200">Person Activity</response>
 	[UseNewtonsoftJson]
 	[HttpGet("activities/users/{id}")]
 	[OverrideResultType<ASActor>]
@@ -512,6 +701,14 @@ public class AdminController(
 		return await apController.GetUser(id);
 	}
 
+	/// <summary>
+	/// Get featured notes activity
+	/// </summary>
+	/// <remarks>
+	/// Returns the ActivityPub representation of a local user's pinned notes.
+	/// </remarks>
+	/// <param name="id">The user's ID</param>
+	/// <response code="200">OrderedCollection Activity</response>
 	[UseNewtonsoftJson]
 	[HttpGet("activities/users/{id}/collections/featured")]
 	[OverrideResultType<ASOrderedCollection>]
@@ -522,6 +719,14 @@ public class AdminController(
 		return await apController.GetUserFeatured(id);
 	}
 
+	/// <summary>
+	/// Get person activity by username
+	/// </summary>
+	/// <remarks>
+	/// Returns the ActivityPub representation of a user.
+	/// </remarks>
+	/// <param name="acct" example="username@example.org">The user's username</param>
+	/// <response code="200">Person Activity</response>
 	[UseNewtonsoftJson]
 	[HttpGet("activities/users/@{acct}")]
 	[OverrideResultType<ASActor>]
@@ -532,6 +737,12 @@ public class AdminController(
 		return await apController.GetUserByUsername(acct);
 	}
 
+	/// <summary>
+	/// Get activity
+	/// </summary>
+	/// <remarks>Returns an ActivityPub Activity.</remarks>
+	/// <param name="uri">The object's URI</param>
+	/// <param name="userId">The viewing user's ID (if the Activity is not public)</param>
 	[UseNewtonsoftJson]
 	[HttpGet("activities/fetch")]
 	[OverrideResultType<ASObject>]
@@ -545,6 +756,12 @@ public class AdminController(
 		return Ok(LdHelpers.Compact(activity));
 	}
 
+	/// <summary>
+	/// Get raw activity
+	/// </summary>
+	/// <remarks>Returns an ActivityPub Activity.</remarks>
+	/// <param name="uri">The object's URI</param>
+	/// <param name="userId">The viewing user's ID (if the Activity is not public)</param>
 	[UseNewtonsoftJson]
 	[HttpGet("activities/fetch-raw")]
 	[OverrideResultType<ASObject>]
