@@ -18,6 +18,9 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for getting and managing emojis.
+/// </summary>
 [ApiController]
 [Authenticate]
 [Authorize]
@@ -169,7 +172,7 @@ public class EmojiController(
 	/// Upload emoji
 	/// </summary>
 	/// <remarks>Requires role: <b>Moderator</b></remarks>
-	/// <param name="file">File contents</param>
+	/// <param name="file">Image file</param>
 	/// <param name="name">Emoji name</param>
 	/// <response code="200">Emoji</response>
 	/// <response code="409">An emoji with that name already exists</response>

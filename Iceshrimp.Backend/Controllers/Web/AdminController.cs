@@ -26,6 +26,15 @@ using static Iceshrimp.Backend.Core.Extensions.SwaggerGenOptionsExtensions;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// <para>Operations for performing actions required for instance administration.</para>
+/// <para>Allow list and block list operations are available depending on if <c>[Security] FederationMode</c> is set to <c>AllowList</c> or <c>BlockList</c>. Allow list and block list CSV files are formatted as one host per line. JSON allow list files are formatted as a list of objects with a <c>host</c> parameter. JSON block list files are formatted as a list of objects with a <c>host</c> parameter and optional <c>reason</c> parameter.</para>
+/// <para>Queue jobs are background tasks that are queued up, then completed once or retried a certain amount of times until they succeed.</para>
+/// <para>Relays are a tool built on ActivityPub that allow instances to "increase" their federation by following a <c>@relay.actor</c> user which silently renotes every public note from instances that follow the same relay.</para>
+/// <para>Cron tasks are background tasks that run on a consistent schedule.</para>
+/// <para>Policies are Iceshrimp.NET's message rewrite facility. They allow instance admins to modify incoming notes as they are federated. When working with policies, first list the policies, then get the configuration for the policy you want, then finally set the policy based on the configuration structure you got previously.</para>
+/// <para>Requires role: <b>Admin</b></para>
+/// </summary>
 [Authenticate]
 [Authorize("role:admin")]
 [ApiController]
@@ -140,7 +149,7 @@ public class AdminController(
 	/// <summary>
 	/// List allowed instances
 	/// </summary>
-	/// <remarks>If <c>[Security] FederationMode = AllowList</c>, returns the list of instances which are allowed to federate.</remarks>
+	/// <remarks>Returns the list of instances which are allowed to federate.</remarks>
 	/// <param name="limit">Pagination limit</param>
 	/// <param name="offset">Pagination offset</param>
 	/// <response code="400">Federation mode is set to blocklist.</response>
@@ -164,7 +173,7 @@ public class AdminController(
 	/// <summary>
 	/// List blocked instances
 	/// </summary>
-	/// <remarks>If <c>[Security] FederationMode = BlockList</c>, returns the list of instances which are blocked from federating and the block reasons.</remarks>
+	/// <remarks>Returns the list of instances which are blocked from federating and the block reasons.</remarks>
 	/// <param name="limit">Pagination limit</param>
 	/// <param name="offset">Pagination offset</param>
 	/// <response code="400">Federation mode is set to allowlist.</response>
@@ -189,10 +198,9 @@ public class AdminController(
 	/// Import allowed instances
 	/// </summary>
 	/// <remarks>
-	/// Import a list of instances that are allowed to federate if <c>[Security] FederationMode = AllowList</c>.
-	/// <code>instance</code>
+	/// Import a list of instances that are allowed to federate.
 	/// </remarks>
-	/// <param name="file">CSV file containing a list of instances</param>
+	/// <param name="file">CSV or JSON allow list file</param>
 	/// <response code="400">Federation mode is set to blocklist.</response>
 	[HttpPost("instances/allowed/import")]
 	[ProducesResults(HttpStatusCode.Accepted)]
@@ -235,10 +243,9 @@ public class AdminController(
 	/// Import blocked instances
 	/// </summary>
 	/// <remarks>
-	/// Import a list of instances that are not allowed to federate if <c>[Security] FederationMode = BlockList</c>.
-	/// <code>instance,reason</code>
+	/// Import a list of instances that are not allowed to federate.
 	/// </remarks>
-	/// <param name="file">CSV file containing a list of instances and reasons</param>
+	/// <param name="file">CSV or JSON block list file</param>
 	/// <response code="400">Federation mode is set to allowlist.</response>
 	[HttpPost("instances/blocked/import")]
 	[ProducesResults(HttpStatusCode.Accepted)]
@@ -577,7 +584,7 @@ public class AdminController(
 	/// List policies
 	/// </summary>
 	/// <remarks>
-	/// Returns a list of available policy names. Policies are Iceshrimp.NET's message rewrite facility. They allow instances admins to modify incoming notes as they are federated.
+	/// Returns a list of available policy names.
 	/// </remarks>
 	[HttpGet("policy")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -628,7 +635,7 @@ public class AdminController(
 	/// Get note activity
 	/// </summary>
 	/// <remarks>
-	/// Returns the ActivityPub representation of a local note.
+	/// Returns the ActivityPub representation of a <b>local</b> note.
 	/// </remarks>
 	/// <param name="id">The note's ID</param>
 	/// <response code="200">Note Activity</response>
@@ -652,7 +659,7 @@ public class AdminController(
 	/// Get announce activity
 	/// </summary>
 	/// <remarks>
-	/// Returns the ActivityPub representation of a local renote.
+	/// Returns the ActivityPub representation of a <b>local</b> renote.
 	/// </remarks>
 	/// <param name="id">The renote's ID</param>
 	/// <response code="200">Announce Activity</response>
@@ -705,7 +712,7 @@ public class AdminController(
 	/// Get featured notes activity
 	/// </summary>
 	/// <remarks>
-	/// Returns the ActivityPub representation of a local user's pinned notes.
+	/// Returns the ActivityPub representation of a <b>local</b> user's pinned notes.
 	/// </remarks>
 	/// <param name="id">The user's ID</param>
 	/// <response code="200">OrderedCollection Activity</response>

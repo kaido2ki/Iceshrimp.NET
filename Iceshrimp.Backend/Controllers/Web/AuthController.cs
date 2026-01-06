@@ -16,6 +16,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for user authentication. Iceshrimp.NET's API uses Bearer tokens in the <c>Authorization</c> header for authentication.
+/// </summary>
 [ApiController]
 [Tags("Authentication")]
 [EnableRateLimiting("sliding")]

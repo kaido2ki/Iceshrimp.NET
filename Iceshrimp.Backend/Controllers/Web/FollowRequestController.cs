@@ -15,6 +15,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for viewing and managing follow requests.
+/// </summary>
+[Tags("Follow Request")]
 [ApiController]
 [Authenticate]
 [Authorize]

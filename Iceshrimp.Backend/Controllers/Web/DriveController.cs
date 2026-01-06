@@ -19,6 +19,9 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for fetching media and interacting with the user's Drive. Iceshrimp.NET's Drive allows users to store many files, mainly for note attachments, avatars and banners. The <c>@instance.actor</c> user's Drive is used internally for storing emojis and other instance-wide media.
+/// </summary>
 [ApiController]
 [Route("/api/iceshrimp/drive")]
 [EnableCors("iceshrimp")]
@@ -195,7 +198,7 @@ public class DriveController(
 	/// Upload file
 	/// </summary>
 	/// <remarks>Upload a file to the user's Drive.</remarks>
-	/// <param name="file">File contents</param>
+	/// <param name="file">Browser-safe file</param>
 	/// <param name="folderId">Drive folder ID</param>
 	/// <response code="200">Drive file metadata</response>
 	[HttpPost]

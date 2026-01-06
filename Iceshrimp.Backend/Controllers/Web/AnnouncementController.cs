@@ -17,6 +17,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for interacting with and managing announcements.
+/// </summary>
 [ApiController]
 [Authenticate]
 [Authorize]
@@ -56,7 +59,10 @@ public class AnnouncementController(
 	/// <summary>
 	/// Create announcement
 	/// </summary>
-	/// <remarks>Create a new announcement.</remarks>
+	/// <remarks>
+	/// <para>Create a new announcement.</para>
+	/// <para>Requires role: <b>Moderator</b></para>
+	/// </remarks>
 	/// <param name="request">Announcement request</param>
 	/// <response code="200">Created announcement</response>
     [HttpPost]
@@ -91,7 +97,10 @@ public class AnnouncementController(
 	/// <summary>
 	/// Update announcement
 	/// </summary>
-	/// <remarks>Update the content of an announcement.</remarks>
+	/// <remarks>
+	/// <para>Update the content of an announcement.</para>
+	/// <para>Requires role: <b>Moderator</b></para>
+	/// </remarks>
 	/// <param name="id">The announcement's ID</param>
 	/// <param name="request">Announcement request</param>
 	/// <response code="200">Updated announcement</response>
@@ -127,6 +136,7 @@ public class AnnouncementController(
 	/// <summary>
 	/// Remove announcement
 	/// </summary>
+	/// <remarks>Requires role: <b>Moderator</b></remarks>
 	/// <param name="id">The announcement's ID</param>
 	[HttpDelete("{id}")]
 	[Authorize("role:moderator")]

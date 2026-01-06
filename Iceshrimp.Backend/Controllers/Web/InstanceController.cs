@@ -16,6 +16,9 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for getting metadata from the instance.
+/// </summary>
 [ApiController]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/instance")]

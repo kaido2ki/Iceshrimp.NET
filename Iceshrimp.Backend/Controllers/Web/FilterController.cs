@@ -14,6 +14,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for managing filters. Filters are used to hide or remove notes from their respective contexts.
+/// </summary>
 [ApiController]
 [Authenticate]
 [Authorize]
@@ -26,7 +29,7 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 	/// <summary>
 	/// List filters
 	/// </summary>
-	/// <remarks>Returns a list of filters. Filters are used to hide or remove notes from their respective contexts.</remarks>
+	/// <remarks>Returns a list of filters.</remarks>
 	/// <response code="200">List of filters</response>
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]

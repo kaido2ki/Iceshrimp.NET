@@ -17,6 +17,13 @@ using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for managing account migrations.
+/// </summary>
+/// <param name="db"></param>
+/// <param name="userSvc"></param>
+/// <param name="userResolver"></param>
+/// <param name="config"></param>
 [ApiController]
 [Authenticate]
 [Authorize]
