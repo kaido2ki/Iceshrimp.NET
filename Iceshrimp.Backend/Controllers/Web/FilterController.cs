@@ -23,6 +23,11 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableCors("iceshrimp")]
 public class FilterController(DatabaseContext db, EventService eventSvc) : ControllerBase
 {
+	/// <summary>
+	/// List filters
+	/// </summary>
+	/// <remarks>Returns a list of filters. Filters are used to hide or remove notes from their respective contexts.</remarks>
+	/// <response code="200">List of filters</response>
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IEnumerable<FilterResponse>> GetFilters()
@@ -32,9 +37,13 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 		return FilterRenderer.RenderMany(filters);
 	}
 
+	/// <summary>
+	/// Create filter
+	/// </summary>
+	/// <param name="request">Create filter request</param>
+	/// <response code="200">New filter</response>
 	[HttpPost]
 	[ProducesResults(HttpStatusCode.OK)]
-	[ProducesErrors(HttpStatusCode.BadRequest)]
 	public async Task<FilterResponse> CreateFilter(FilterRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -55,9 +64,15 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 		return FilterRenderer.RenderOne(filter);
 	}
 
+	/// <summary>
+	/// Update filter
+	/// </summary>
+	/// <param name="id">The filter's ID</param>
+	/// <param name="request">Update filter request</param>
+	/// <response code="200">Updated filter</response>
 	[HttpPut("{id:long}")]
 	[ProducesResults(HttpStatusCode.OK)]
-	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task UpdateFilter(long id, FilterRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
@@ -74,9 +89,13 @@ public class FilterController(DatabaseContext db, EventService eventSvc) : Contr
 		eventSvc.RaiseFilterUpdated(filter);
 	}
 
+	/// <summary>
+	/// Remove filter
+	/// </summary>
+	/// <param name="id">The filter's ID</param>
 	[HttpDelete("{id:long}")]
 	[ProducesResults(HttpStatusCode.OK)]
-	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task DeleteFilter(long id)
 	{
 		var user = HttpContext.GetUserOrFail();
