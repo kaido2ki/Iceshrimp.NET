@@ -30,6 +30,13 @@ public class AnnouncementController(
 	EmojiService emojiSvc
 ) : ControllerBase
 {
+	/// <summary>
+	/// List announcements
+	/// </summary>
+	/// <remarks>Returns a paginated list of announcements.</remarks>
+	/// <param name="popups">Only show unread popup announcements</param>
+	/// <param name="pq">Pagination query</param>
+	/// <response code="200">Paginated list of announcements</response>
 	[HttpGet]
 	[RestPagination(20, 40)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -46,6 +53,12 @@ public class AnnouncementController(
 		return HttpContext.CreatePaginationWrapper(pq, (await renderer.RenderManyAsync(announcements, user)).ToList());
 	}
 
+	/// <summary>
+	/// Create announcement
+	/// </summary>
+	/// <remarks>Create a new announcement.</remarks>
+	/// <param name="request">Announcement request</param>
+	/// <response code="200">Created announcement</response>
     [HttpPost]
     [Authorize("role:moderator")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -75,6 +88,13 @@ public class AnnouncementController(
 		return await renderer.RenderOneAsync(announcement, null);
 	}
 
+	/// <summary>
+	/// Update announcement
+	/// </summary>
+	/// <remarks>Update the content of an announcement.</remarks>
+	/// <param name="id">The announcement's ID</param>
+	/// <param name="request">Announcement request</param>
+	/// <response code="200">Updated announcement</response>
 	[HttpPut("{id}")]
 	[Authorize("role:moderator")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -104,6 +124,10 @@ public class AnnouncementController(
 		return await renderer.RenderOneAsync(announcement, null);
 	}
 
+	/// <summary>
+	/// Remove announcement
+	/// </summary>
+	/// <param name="id">The announcement's ID</param>
 	[HttpDelete("{id}")]
 	[Authorize("role:moderator")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -117,6 +141,11 @@ public class AnnouncementController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Mark as read
+	/// </summary>
+	/// <remarks>Mark an announcement as read. Popup announcements that are marked as read won't pop up in the frontend.</remarks>
+	/// <param name="id">The announcement's ID</param>
 	[HttpPost("{id}/read")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
