@@ -32,6 +32,11 @@ public class EmojiController(
 	EmojiImportService emojiImportSvc
 ) : ControllerBase
 {
+	/// <summary>
+	/// List emojis
+	/// </summary>
+	/// <remarks>Returns a list of <b>local</b> emojis.</remarks>
+	/// <response code="200">List of emojis</response>
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IEnumerable<EmojiResponse>> GetAllEmoji()
@@ -52,6 +57,17 @@ public class EmojiController(
 		               .ToListAsync();
 	}
 
+	/// <summary>
+	/// Search remote emojis
+	/// </summary>
+	/// <remarks>
+	/// <para>Returns a paginated list of remote emojis matching the search.</para>
+	/// <para>Requires role: <b>Moderator</b></para>
+	/// </remarks>
+	/// <param name="name">Name search</param>
+	/// <param name="host">Instance domain name search</param>
+	/// <param name="pq">Pagination query</param>
+	/// <response code="200">Paginated list of emojis</response>
 	[HttpGet("remote")]
 	[Authorize("role:moderator")]
 	[RestPagination(100, 500)]
@@ -123,6 +139,11 @@ public class EmojiController(
 		return res;
 	}
 
+	/// <summary>
+	/// Get emoji
+	/// </summary>
+	/// <param name="id">The emoji's ID</param>
+	/// <response code="200">Emoji</response>
 	[HttpGet("{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -144,6 +165,14 @@ public class EmojiController(
 		};
 	}
 
+	/// <summary>
+	/// Upload emoji
+	/// </summary>
+	/// <remarks>Requires role: <b>Moderator</b></remarks>
+	/// <param name="file">File contents</param>
+	/// <param name="name">Emoji name</param>
+	/// <response code="200">Emoji</response>
+	/// <response code="409">An emoji with that name already exists</response>
 	[HttpPost]
 	[Authorize("role:moderator")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -166,6 +195,17 @@ public class EmojiController(
 		};
 	}
 
+	/// <summary>
+	/// Clone remote emoji
+	/// </summary>
+	/// <remarks>
+	/// <para>Create a <b>local</b> copy of a <b>remote</b> emoji.</para>
+	/// <para>Requires role: <b>Moderator</b></para>
+	/// </remarks>
+	/// <param name="name">Emoji name</param>
+	/// <param name="host">Instance domain name</param>
+	/// <response code="200">Emoji</response>
+	/// <response code="409">An emoji with that name already exists</response>
 	[HttpPost("clone/{name}@{host}")]
 	[Authorize("role:moderator")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -192,6 +232,15 @@ public class EmojiController(
 		};
 	}
 
+	/// <summary>
+	/// Import emoji pack
+	/// </summary>
+	/// <remarks>
+	/// <para>Import a Misskey-style emoji pack.</para>
+	/// <para>Requires role: <b>Moderator</b></para>
+	/// </remarks>
+	/// <param name="file">Emoji pack ZIP file</param>
+	/// <response code="202">Import started</response>
 	[HttpPost("import")]
 	[Authorize("role:moderator")]
 	[NoRequestSizeLimit]
@@ -203,6 +252,13 @@ public class EmojiController(
 		return Accepted();
 	}
 
+	/// <summary>
+	/// Update emoji
+	/// </summary>
+	/// <remarks>Requires role: <b>Moderator</b></remarks>
+	/// <param name="id">The emoji's ID</param>
+	/// <param name="request">Update emoji request. Fields that are not present are not updated. Fields that are empty are reset.</param>
+	/// <response code="200">Updated emoji</response>
 	[HttpPatch("{id}")]
 	[Authorize("role:moderator")]
 	[Consumes(MediaTypeNames.Application.Json)]
@@ -227,6 +283,11 @@ public class EmojiController(
 		};
 	}
 
+	/// <summary>
+	/// Delete emoji
+	/// </summary>
+	/// <remarks>Requires role: <b>Moderator</b></remarks>
+	/// <param name="id">The emoji's ID</param>
 	[HttpDelete("{id}")]
 	[Authorize("role:moderator")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -236,6 +297,15 @@ public class EmojiController(
 		await emojiSvc.DeleteEmojiAsync(id);
 	}
 
+	/// <summary>
+	/// Batch update emojis
+	/// </summary>
+	/// <remarks>
+	/// <para>Update a group of emojis at once.</para>
+	/// <para>Requires role: <b>Moderator</b></para>
+	/// </remarks>
+	/// <param name="request">Batch update emoji request. Fields that are not present are not updated. Fields that are empty are reset.</param>
+	/// <response code="200">List of updated emoji</response>
 	[HttpPatch("batch")]
 	[Authorize("role:moderator")]
 	[Consumes(MediaTypeNames.Application.Json)]
