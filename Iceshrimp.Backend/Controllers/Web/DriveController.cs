@@ -35,6 +35,13 @@ public class DriveController(
 	private const string ImmutableCacheControl = "max-age=31536000, immutable";
 	private const string TemporaryCacheControl = "max-age=3600";
 
+	/// <summary>
+	/// Get file by access key
+	/// </summary>
+	/// <param name="accessKey">The Drive file's access key</param>
+	/// <param name="version" example="thumbnail">File version</param>
+	/// <response code="200">Drive or proxied file contents</response>
+	/// <response code="302">Remote file contents</response>
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/files/{accessKey}/{version?}")]
@@ -45,6 +52,12 @@ public class DriveController(
 		return await GetFileByAccessKey(accessKey, version, null);
 	}
 
+	/// <summary>
+	/// Get emoji file
+	/// </summary>
+	/// <param name="id">The emoji's ID</param>
+	/// <response code="200">Drive or proxied file contents</response>
+	/// <response code="302">Remote file contents</response>
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/media/emoji/{id}")]
@@ -64,6 +77,12 @@ public class DriveController(
 		return await ProxyAsync(emoji.RawPublicUrl, null, null);
 	}
 
+	/// <summary>
+	/// Get instance favicon file
+	/// </summary>
+	/// <param name="id">The instance's ID (not domain name)</param>
+	/// <response code="200">Drive or proxied file contents</response>
+	/// <response code="302">Remote file contents</response>
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/media/favicon/{id}")]
@@ -89,6 +108,13 @@ public class DriveController(
 		return await ProxyAsync(instance.FaviconUrl, null, null);
 	}
 
+	/// <summary>
+	/// Get user avatar file
+	/// </summary>
+	/// <param name="userId">The user's ID</param>
+	/// <param name="version" example="thumbnail">File version</param>
+	/// <response code="200">Drive or proxied file contents</response>
+	/// <response code="302">Remote file contents</response>
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/avatars/{userId}/{version}")]
@@ -115,6 +141,13 @@ public class DriveController(
 		return await GetFileByAccessKey(user.Avatar.AccessKey, "thumbnail", user.Avatar);
 	}
 
+	/// <summary>
+	/// Get user banner file
+	/// </summary>
+	/// <param name="userId">The user's ID</param>
+	/// <param name="version" example="thumbnail">File version</param>
+	/// <response code="200">Drive or proxied file contents</response>
+	/// <response code="302">Remote file contents</response>
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/banners/{userId}/{version}")]
@@ -139,13 +172,18 @@ public class DriveController(
 
 		return await GetFileByAccessKey(user.Banner.AccessKey, "thumbnail", user.Banner);
 	}
-	
+
+	/// <summary>
+	/// Get user fallback avatar file
+	/// </summary>
+	/// <param name="userId">The user's ID</param>
+	/// <response code="200">Drive or proxied file contents</response>
+	/// <response code="302">Remote file contents</response>
 	[EnableCors("drive")]
 	[HttpGet("/identicon/{userId}")]
 	[HttpGet("/identicon/{userId}.png")]
 	[Produces(MediaTypeNames.Image.Png)]
-	[ProducesResults(HttpStatusCode.OK, HttpStatusCode.Redirect)]
-	[ProducesErrors(HttpStatusCode.NotFound)]
+	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<IActionResult> GetIdenticonByUserId(string userId)
 	{
 		var stream = await IdenticonHelper.GetIdenticonAsync(userId);
@@ -153,6 +191,13 @@ public class DriveController(
 		return new InlineFileStreamResult(stream, "image/png", $"{userId}.png", false);
 	}
 
+	/// <summary>
+	/// Upload file
+	/// </summary>
+	/// <remarks>Upload a file to the user's Drive.</remarks>
+	/// <param name="file">File contents</param>
+	/// <param name="folderId">Drive folder ID</param>
+	/// <response code="200">Drive file metadata</response>
 	[HttpPost]
 	[Authenticate]
 	[Authorize]
@@ -173,6 +218,12 @@ public class DriveController(
 		return await GetFileById(res.Id);
 	}
 
+	/// <summary>
+	/// Get file by ID
+	/// </summary>
+	/// <remarks>Returns a file's metadata from the user's Drive.</remarks>
+	/// <param name="id">The Drive file's ID</param>
+	/// <response code="200">Drive file metadata</response>
 	[HttpGet("{id}")]
 	[Authenticate]
 	[Authorize]
@@ -202,6 +253,12 @@ public class DriveController(
 		};
 	}
 
+	/// <summary>
+	/// Get file by hash
+	/// </summary>
+	/// <remarks>Returns a file's metadata from the user's Drive.</remarks>
+	/// <param name="sha256">The Drive file's SHA-256 hash</param>
+	/// <response code="200">Drive file metadata</response>
 	[HttpGet("/by-hash/{sha256}")]
 	[Authenticate]
 	[Authorize]
@@ -231,6 +288,13 @@ public class DriveController(
 		};
 	}
 
+	/// <summary>
+	/// Update file
+	/// </summary>
+	/// <remarks>Update a file's metadata.</remarks>
+	/// <param name="id">The Drive file's ID</param>
+	/// <param name="request">Update Drive file request</param>
+	/// <response code="200">Drive file metadata</response>
 	[HttpPatch("{id}")]
 	[Authenticate]
 	[Authorize]
@@ -252,6 +316,12 @@ public class DriveController(
 		return await GetFileById(id);
 	}
 
+	/// <summary>
+	/// Delete file
+	/// </summary>
+	/// <remarks>Delete a file from the user's Drive.</remarks>
+	/// <param name="id">The Drive file's ID</param>
+	/// <response code="422">Unable to delete file</response>
 	[HttpDelete("{id}")]
 	[Authenticate]
 	[Authorize]
@@ -275,7 +345,14 @@ public class DriveController(
 
 		return StatusCode(StatusCodes.Status202Accepted);
 	}
-	
+
+	/// <summary>
+	/// Move file
+	/// </summary>
+	/// <remarks>Move a file to a different folder in the user's Drive.</remarks>
+	/// <param name="id">The Drive file's ID</param>
+	/// <param name="request">Move file request</param>
+	/// <response code="200">Drive file metadata</response>
 	[HttpPost("{id}/move")]
 	[Authenticate]
 	[Authorize]
@@ -303,6 +380,11 @@ public class DriveController(
 		return await GetFileById(file.Id);
 	}
 
+	/// <summary>
+	/// Get root folder
+	/// </summary>
+	/// <remarks>Returns the root folder of the user's Drive.</remarks>
+	/// <response code="200">Root folder</response>
 	[HttpGet("folder")]
 	[Authenticate]
 	[Authorize]
@@ -312,6 +394,14 @@ public class DriveController(
 		return await GetFolder(null);
 	}
 
+	/// <summary>
+	/// Create folder
+	/// </summary>
+	/// <remarks>Creates a folder in the user's Drive.</remarks>
+	/// <param name="request">Drive folder request</param>
+	/// <response code="200">New Drive folder</response>
+	/// <response code="400">Folder name cannot be empty</response>
+	/// <response code="409">A folder with this name already exists</response>
 	[HttpPost("folder")]
 	[Authenticate]
 	[Authorize]
@@ -342,6 +432,12 @@ public class DriveController(
 		};
 	}
 
+	/// <summary>
+	/// Get folder
+	/// </summary>
+	/// <remarks>Returns a folder from the user's Drive.</remarks>
+	/// <param name="id">The Drive folder's ID or null for the root folder</param>
+	/// <response code="200">Drive folder</response>
 	[HttpGet("folder/{id}")]
 	[Authenticate]
 	[Authorize]
@@ -419,6 +515,15 @@ public class DriveController(
 		};
 	}
 
+	/// <summary>
+	/// Rename folder
+	/// </summary>
+	/// <remarks>Update a folder's name.</remarks>
+	/// <param name="id">The Drive folder's ID</param>
+	/// <param name="name">New name</param>
+	/// <response code="200">Drive folder</response>
+	/// <response code="400">Folder name cannot be empty</response>
+	/// <response code="409">A folder with this name already exists</response>
 	[HttpPut("folder/{id}")]
 	[Authenticate]
 	[Authorize]
@@ -449,6 +554,13 @@ public class DriveController(
 		return new DriveFolderResponse { Id = folder.Id, Name = folder.Name, ParentId = folder.ParentId };
 	}
 
+	/// <summary>
+	/// Delete folder
+	/// </summary>
+	/// <remarks>Delete a folder from the user's Drive.</remarks>
+	/// <param name="id">The Drive folder's ID</param>
+	/// <response code="400">Cannot delete root folder</response>
+	/// <response code="409">Cannot delete a non-empty folder</response>
 	[HttpDelete("folder/{id}")]
 	[Authenticate]
 	[Authorize]
@@ -477,6 +589,15 @@ public class DriveController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Move folder
+	/// </summary>
+	/// <remarks>Move a folder to a different parent folder in the user's Drive.</remarks>
+	/// <param name="id">The Drive file's ID</param>
+	/// <param name="request">Move folder request</param>
+	/// <response code="200">Drive folder</response>
+	/// <response code="400">Cannot move a folder into itself</response>
+	/// <response code="409">A folder with this name already exists in the new parent folder</response>
 	[HttpPost("folder/{id}/move")]
 	[Authenticate]
 	[Authorize]
