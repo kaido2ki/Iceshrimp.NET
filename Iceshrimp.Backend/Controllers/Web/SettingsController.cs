@@ -20,6 +20,9 @@ using QRCoder;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for managing the user's settings and other data.
+/// </summary>
 [ApiController]
 [Authenticate]
 [Authorize]
@@ -35,6 +38,10 @@ public class SettingsController(
 	IOptions<Config.InstanceSection> instance
 ) : ControllerBase
 {
+	/// <summary>
+	/// Get settings
+	/// </summary>
+	/// <response code="200">User settings</response>
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<UserSettingsResponse> GetSettings()
@@ -56,6 +63,10 @@ public class SettingsController(
 		};
 	}
 
+	/// <summary>
+	/// Update settings
+	/// </summary>
+	/// <param name="newSettings">New settings</param>
 	[HttpPut]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -82,6 +93,11 @@ public class SettingsController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Enrol two-factor authentication
+	/// </summary>
+	/// <remarks>Enrol a two-factor authenticator.</remarks>
+	/// <response code="200">Two-factor authentication enrolment information</response>
 	[HttpPost("2fa/enroll")]
 	[EnableRateLimiting("auth")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -97,6 +113,12 @@ public class SettingsController(
 		return await EnrollNewTwoFactorSecret(settings, user);
 	}
 
+	/// <summary>
+	/// Re-enrol two-factor authentication
+	/// </summary>
+	/// <remarks>Replace the current two-factor authenticator with a new authenticator.</remarks>
+	/// <param name="request">Two-factor authentication</param>
+	/// <response code="200">Two-factor authentication enrolment information</response>
 	[HttpPost("2fa/reenroll")]
 	[EnableRateLimiting("auth")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -116,6 +138,11 @@ public class SettingsController(
 		return await EnrollNewTwoFactorSecret(settings, user);
 	}
 
+	/// <summary>
+	/// Confirm two-factor authentication
+	/// </summary>
+	/// <remarks>Confirm that the two-factor authentication enrolment is valid.</remarks>
+	/// <param name="request">Two-factor authentication</param>
 	[HttpPost("2fa/confirm")]
 	[EnableRateLimiting("auth")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -137,6 +164,10 @@ public class SettingsController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Disable two-factor authentication
+	/// </summary>
+	/// <param name="request">Two-factor authentication</param>
 	[HttpPost("2fa/disable")]
 	[EnableRateLimiting("auth")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -160,6 +191,14 @@ public class SettingsController(
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Export blocking list
+	/// </summary>
+	/// <remarks>
+	/// Exports the list of users that are blocked as a CSV file in the user's Drive. Formatted as:
+	/// <code>@username@host</code>
+	/// </remarks>
+	/// <response code="200">Drive file metadata</response>
 	[HttpPost("export/blocking")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -199,6 +238,14 @@ public class SettingsController(
 		};
 	}
 
+	/// <summary>
+	/// Export following list
+	/// </summary>
+	/// <remarks>
+	/// Exports the list of users that are being followed as a CSV file in the user's Drive. Formatted as:
+	/// <code>@username@host</code>
+	/// </remarks>
+	/// <response code="200">Drive file metadata</response>
 	[HttpPost("export/following")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -238,6 +285,14 @@ public class SettingsController(
 		};
 	}
 
+	/// <summary>
+	/// Export muting list
+	/// </summary>
+	/// <remarks>
+	/// Exports the list of users that are muted as a CSV file in the user's Drive. Formatted as:
+	/// <code>@username@host</code>
+	/// </remarks>
+	/// <response code="200">Drive file metadata</response>
 	[HttpPost("export/muting")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -277,6 +332,14 @@ public class SettingsController(
 		};
 	}
 
+	/// <summary>
+	/// Import blocking list
+	/// </summary>
+	/// <remarks>
+	/// Import a list of users that should be blocked from a CSV file. Formatted as:
+	/// <code>@username@host</code>
+	/// </remarks>
+	/// <response code="202">Started import</response>
 	[HttpPost("import/blocking")]
 	[EnableRateLimiting("imports")]
 	[ProducesResults(HttpStatusCode.Accepted)]
@@ -299,6 +362,14 @@ public class SettingsController(
 		return Accepted();
 	}
 
+	/// <summary>
+	/// Import following list
+	/// </summary>
+	/// <remarks>
+	/// Import a list of users that should be followed from a CSV file. Formatted as:
+	/// <code>@username@host</code>
+	/// </remarks>
+	/// <response code="202">Started import</response>
 	[HttpPost("import/following")]
 	[EnableRateLimiting("imports")]
 	[ProducesResults(HttpStatusCode.Accepted)]
@@ -321,6 +392,14 @@ public class SettingsController(
 		return Accepted();
 	}
 
+	/// <summary>
+	/// Import muting list
+	/// </summary>
+	/// <remarks>
+	/// Import a list of users that should be muted from a CSV file. Formatted as:
+	/// <code>@username@host</code>
+	/// </remarks>
+	/// <response code="202">Started import</response>
 	[HttpPost("import/muting")]
 	[EnableRateLimiting("imports")]
 	[ProducesResults(HttpStatusCode.Accepted)]
