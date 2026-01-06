@@ -104,7 +104,7 @@ public static class ServiceExtensions
 				options.AddFilters();
 
 				// Include XML comments from Iceshrimp.Backend
-				options.IncludeXmlComments(Assembly.GetExecutingAssembly());
+				options.IncludeXmlComments(Assembly.GetExecutingAssembly(), true);
 				// Include XML comments from Iceshrimp.Shared
 				options.IncludeXmlComments(typeof(AuthResponse).Assembly);
 			});
