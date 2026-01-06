@@ -214,6 +214,8 @@ public class ModerationController(
 	/// </summary>
 	/// <remarks>Attempt to refetch a <b>remote</b> emoji if it is broken. This is not supported on most instance software.</remarks>
 	/// <param name="id">The emoji's ID</param>
+	/// <param name="emojiSvc">DI</param>
+	/// <param name="instance">DI</param>
 	[HttpPost("emoji/{id}/refetch")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]

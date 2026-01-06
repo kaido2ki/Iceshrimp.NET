@@ -563,6 +563,7 @@ public class AdminController(
 	/// <summary>
 	/// Run cron task
 	/// </summary>
+	/// <param name="cronSvc">DI</param>
 	/// <param name="id">The task's ID.</param>
 	[HttpPost("tasks/{id}/run")]
 	[ProducesResults(HttpStatusCode.OK)]
