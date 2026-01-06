@@ -31,6 +31,11 @@ public class MigrationController(
 	IOptions<Config.InstanceSection> config
 ) : ControllerBase
 {
+	/// <summary>
+	/// Get migration status
+	/// </summary>
+	/// <remarks>Returns the list of aliases (old accounts) and the URI of the new account if the user has migrated.</remarks>
+	/// <response code="200">Migration status</response>
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
 	public MigrationSchemas.MigrationStatusResponse GetMigrationStatus()
@@ -42,6 +47,12 @@ public class MigrationController(
 		};
 	}
 
+	/// <summary>
+	/// Add alias
+	/// </summary>
+	/// <remarks>Add an alias of an old account so that it can migrate to this account. Do this <b>BEFORE</b> migrating from the old account.</remarks>
+	/// <param name="rq">Either the user ID or user URI of the old account</param>
+	/// <response code="400">You cannot add an alias to yourself</response>
 	[HttpPost("aliases")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -60,6 +71,10 @@ public class MigrationController(
 		await userSvc.AddAliasAsync(user, aliasUser);
 	}
 
+	/// <summary>
+	/// Remove alias
+	/// </summary>
+	/// <param name="rq">Either the user ID or user URI of the old account</param>
 	[HttpDelete("aliases")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -80,6 +95,12 @@ public class MigrationController(
 		await userSvc.RemoveAliasAsync(user, aliasUri);
 	}
 
+	/// <summary>
+	/// Start migration
+	/// </summary>
+	/// <remarks>Migrate the current account to a new account. Do this <b>AFTER</b> the current account is added as an alias on the new account.</remarks>
+	/// <param name="rq">Either the user ID or user URI of the new account</param>
+	/// <response code="400"></response>
 	[HttpPost("move")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
@@ -98,6 +119,10 @@ public class MigrationController(
 		await userSvc.MoveToUserAsync(user, targetUser);
 	}
 
+	/// <summary>
+	/// Undo migration
+	/// </summary>
+	/// <remarks>Remove the flag indicating this account has migrated to a new account. This does not reverse the affects of migrating.</remarks>
 	[HttpDelete("move")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task UndoMove()
