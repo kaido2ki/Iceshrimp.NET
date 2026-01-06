@@ -13,6 +13,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations for managing the user's profile.
+/// </summary>
 [ApiController]
 [Authenticate]
 [Authorize]
@@ -26,6 +29,10 @@ public class ProfileController(
 	DatabaseContext db
 ) : ControllerBase
 {
+	/// <summary>
+	/// Get profile
+	/// </summary>
+	/// <response code="200">User profile</response>
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
 	public UserProfileEntity GetProfile()
@@ -50,6 +57,10 @@ public class ProfileController(
 		};
 	}
 
+	/// <summary>
+	/// Update profile
+	/// </summary>
+	/// <param name="newProfile">New profile details</param>
 	[HttpPut]
 	[Consumes(MediaTypeNames.Application.Json)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -113,6 +124,10 @@ public class ProfileController(
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
 
+	/// <summary>
+	/// Get avatar file
+	/// </summary>
+	/// <response code="200">Drive file metadata</response>
 	[HttpGet("avatar")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -140,6 +155,11 @@ public class ProfileController(
 		};
 	}
 
+	/// <summary>
+	/// Update avatar
+	/// </summary>
+	/// <param name="file">Image file</param>
+	/// <param name="altText">Alt text</param>
 	[HttpPost("avatar")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -170,6 +190,9 @@ public class ProfileController(
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
 
+	/// <summary>
+	/// Remove avatar
+	/// </summary>
 	[HttpDelete("avatar")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task DeleteAvatar()
@@ -187,6 +210,10 @@ public class ProfileController(
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
 
+	/// <summary>
+	/// Get banner file
+	/// </summary>
+	/// <response code="200">Drive file metadata</response>
 	[HttpGet("banner")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
@@ -214,6 +241,11 @@ public class ProfileController(
 		};
 	}
 
+	/// <summary>
+	/// Update banner
+	/// </summary>
+	/// <param name="file">Image file</param>
+	/// <param name="altText">Alt text</param>
 	[HttpPost("banner")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
@@ -244,6 +276,9 @@ public class ProfileController(
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
 
+	/// <summary>
+	/// Remove banner
+	/// </summary>
 	[HttpDelete("banner")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task DeleteBanner()

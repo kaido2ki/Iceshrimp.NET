@@ -8,23 +8,31 @@ public class UserProfileEntity
 	[MaxLength(2048)] public string? Description { get; set; }
 	[MaxLength(128)]  public string? Location    { get; set; }
 
-	/// <remarks>
-	///     Accepts YYYY-MM-DD format, empty string, or null.
-	/// </remarks>
+	/// <summary>
+	/// Accepts YYYY-MM-DD format, empty string, or null.
+	/// </summary>
 	public string? Birthday { get; set; }
 
 	//TODO: public string? Lang { get; set; }
 
-	public required List<Field>      Fields       { get; set; }
+	public required List<Field> Fields { get; set; }
+
+	/// <summary>
+	/// Follower/following count visibility
+	/// </summary>
 	public required FFVisibilityEnum FFVisibility { get; set; }
-	public required string           DisplayName  { get; set; }
-	public          string?          AvatarAlt    { get; set; }
-	public          string?          BannerAlt    { get; set; }
+
+	public required string  DisplayName { get; set; }
+	public          string? AvatarAlt   { get; set; }
+	public          string? BannerAlt   { get; set; }
 
 	public required bool IsBot      { get; set; }
 	public required bool IsCat      { get; set; }
 	public required bool SpeakAsCat { get; set; }
 
+	/// <summary>
+	/// Key-value pair of IETF BCP 47 language tags and pronouns in that language
+	/// </summary>
 	public required Dictionary<string, string> Pronouns { get; set; }
 
 	[SuppressMessage("ReSharper", "UnusedMember.Global")]
