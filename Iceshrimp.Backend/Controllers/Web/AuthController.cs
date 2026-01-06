@@ -24,6 +24,11 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableCors("iceshrimp-trusted")]
 public class AuthController(DatabaseContext db, UserService userSvc, UserRenderer userRenderer) : ControllerBase
 {
+	/// <summary>
+	/// Get authentication status
+	/// </summary>
+	/// <remarks>Returns the authentication status for the current session (token).</remarks>
+	/// <response code="200">Current authentication status</response>
 	[HttpGet]
 	[Authenticate(AllowInactive = true)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -36,6 +41,13 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		return await GetAuthResponse(session, session.User);
 	}
 
+	/// <summary>
+	/// Log in
+	/// </summary>
+	/// <remarks>Log in and request a new token.</remarks>
+	/// <param name="request">Authentication request</param>
+	/// <response code="200">New authentication status</response>
+	/// <response code="403">Invalid username or password</response>
 	[HttpPost("login")]
 	[HideRequestDuration]
 	[EnableRateLimiting("auth")]
@@ -76,6 +88,12 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		return await GetAuthResponse(session, user);
 	}
 
+	/// <summary>
+	/// Register account
+	/// </summary>
+	/// <remarks>Register a new account and request a token.</remarks>
+	/// <param name="request">Registration request</param>
+	/// <response code="200">New authentication status</response>
 	[HttpPost("register")]
 	[EnableRateLimiting("auth")]
 	[Consumes(MediaTypeNames.Application.Json)]
@@ -89,6 +107,14 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		return await Login(request);
 	}
 
+	/// <summary>
+	/// Two-factor authentication
+	/// </summary>
+	/// <remarks>Authenticate a session that has its <c>status</c> as <c>two_factor</c>.</remarks>
+	/// <param name="request">Two-factor authentication request</param>
+	/// <response code="200">New authentication status</response>
+	/// <response code="400">Two-factor authentication is disabled</response>
+	/// <response code="403">Two-factor authentication code is invalid</response>
 	[HttpPost("2fa")]
 	[Authenticate(AllowInactive = true)]
 	[Authorize(AllowInactive = true)]
@@ -117,6 +143,10 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		return await GetAuthResponse(session, user);
 	}
 
+	/// <summary>
+	/// Log out
+	/// </summary>
+	/// <response code="200">Logged out</response>
 	[HttpPost("logout")]
 	[Authenticate]
 	[Authorize]
@@ -128,6 +158,11 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		await db.SaveChangesAsync();
 	}
 
+	/// <summary>
+	/// Change password
+	/// </summary>
+	/// <param name="request">Change password request</param>
+	/// <response code="200">New authentication status</response>
 	[HttpPost("change-password")]
 	[Authenticate]
 	[Authorize]

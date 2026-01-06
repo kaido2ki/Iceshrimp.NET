@@ -8,6 +8,9 @@ public class AuthRequest
 
 public class RegistrationRequest : AuthRequest
 {
+	/// <summary>
+	/// Invite code
+	/// </summary>
 	public string? Invite { get; set; }
 }
 
@@ -24,5 +27,8 @@ public class ResetPasswordRequest
 
 public class TwoFactorRequest
 {
+	/// <summary>
+	/// Two-factor authentication code from the associated authenticator
+	/// </summary>
 	public required string Code { get; set; }
 }
