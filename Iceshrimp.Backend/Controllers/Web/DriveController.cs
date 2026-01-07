@@ -115,7 +115,7 @@ public class DriveController(
 	/// Get user avatar file
 	/// </summary>
 	/// <param name="userId">The user's ID</param>
-	/// <param name="version" example="thumbnail">File version</param>
+	/// <param name="version">This parameter is only used by the client, as it is needed due to the immutable caching policy set on the image data returned from the endpoint.</param>
 	/// <response code="200">Drive or proxied file contents</response>
 	/// <response code="302">Remote file contents</response>
 	[EnableCors("drive")]
@@ -148,7 +148,7 @@ public class DriveController(
 	/// Get user banner file
 	/// </summary>
 	/// <param name="userId">The user's ID</param>
-	/// <param name="version" example="thumbnail">File version</param>
+	/// <param name="version">This parameter is only used by the client, as it is needed due to the immutable caching policy set on the image data returned from the endpoint.</param>
 	/// <response code="200">Drive or proxied file contents</response>
 	/// <response code="302">Remote file contents</response>
 	[EnableCors("drive")]
