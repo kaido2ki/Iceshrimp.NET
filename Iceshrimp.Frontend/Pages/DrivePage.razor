@@ -16,6 +16,7 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject ILogger<DrivePage>             Logger;
 @inject NavigationManager              Nav;
+@inject SessionService                 Session;
 
 <HeadTitle Text="@Loc["Drive"]"/>
 
@@ -72,7 +73,7 @@
                 @if (Folder.Path.Count == 0 || Folder.Path.First().ParentId == null)
                 {
                     <li class="path-entry">
-                        <a href="/drive">@Loc["Drive"]</a>
+                        <a href="/drive">@(Session.Current?.Username ?? Loc["Drive"])</a>
                     </li>
                 }
                 else
@@ -86,7 +87,7 @@
                     <a href="/drive/@entry.Id">@entry.Name</a>
                 </li>
             }
-            <li>@(Folder.Name ?? Loc["Drive"])</li>
+            <li>@(Folder.Name ?? Session.Current?.Username ?? Loc["Drive"])</li>
         </ol>
         <span>@Loc["({0} folders, {1} files)", Folder.Folders.Count, Folder.Files.Count]</span>
     </div>
