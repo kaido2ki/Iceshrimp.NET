@@ -26,6 +26,11 @@
     padding: 0;
 }
 
+.path-icon {
+    line-height: 1;
+    align-self: center;
+}
+
 .path-entry a:visited {
     color: var(--link);
 }
