@@ -24,7 +24,10 @@
                     throw new ArgumentOutOfRangeException();
             }
         </span>
-        <span>@Text</span>
+        @foreach (var line in Text)
+        {
+            <p class="text">@line</p>
+        }
         <button class="button confirm-btn" @onclick="CloseDialog">@Loc["OK"]</button>
     </div>
 </dialog>
@@ -33,7 +36,7 @@
     private ElementReference   Dialog { get; set; }
     private IJSObjectReference _module = null!;
     private NoticeType         Type { get; set; }
-    private string             Text { get; set; } = "";
+    private string[]           Text { get; set; } = [];
 
     public enum NoticeType
     {
@@ -50,7 +53,7 @@
     public async Task Display(string text, NoticeType type = NoticeType.Notice)
     {
         Type = type;
-        Text = text;
+        Text = text.Split('\n');
 
         StateHasChanged();
         

@@ -39,6 +39,10 @@
     color: var(--danger-color);
 }
 
+.text {
+    margin-top: 0;
+}
+
 .confirm-btn {
     background: var(--accent-color);
     color: var(--font-color);
