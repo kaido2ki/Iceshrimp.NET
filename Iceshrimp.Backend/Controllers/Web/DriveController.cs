@@ -365,11 +365,36 @@ public class DriveController(
 		                           })
 		                           .ToListAsync();
 
+		const int pathLimit = 10;
+
+		List<DrivePathEntry>? path = null;
+		if (folder != null)
+		{
+			path = await db.DriveFolders.FromSql($"""
+			                                      SELECT * FROM drive_folder WHERE id IN (
+			                                          WITH RECURSIVE path(id, "parentId", depth) AS (
+			                                              SELECT id, "parentId", 1
+			                                              FROM drive_folder
+			                                              WHERE id = {folder.ParentId}
+			                                              UNION ALL
+			                                              SELECT f.id, f."parentId", p.depth + 1
+			                                              FROM path p, drive_folder f
+			                                              WHERE f.id = p."parentId" AND p.depth < {pathLimit}
+			                                          )
+			                                          SELECT id
+			                                          FROM path
+			                                      )
+			                                      """)
+			               .Select(p => new DrivePathEntry {Id = p.Id, Name = p.Name, ParentId = p.ParentId })
+			               .ToListAsync();
+		}
+
 		return new DriveFolderResponse
 		{
 			Id       = folder?.Id,
 			Name     = folder?.Name,
 			ParentId = folder?.ParentId,
+			Path     = path,
 			Files    = driveFiles,
 			Folders  = driveFolders
 		};

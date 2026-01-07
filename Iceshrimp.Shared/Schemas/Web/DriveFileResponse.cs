@@ -17,9 +17,22 @@ public class DriveFileResponse : IIdentifiable
 
 public class DriveFolderResponse
 {
-	public required string?                   Id       { get; set; }
-	public required string?                   Name     { get; set; }
-	public required string?                   ParentId { get; set; }
-	public          List<DriveFileResponse>   Files    { get; set; } = [];
-	public          List<DriveFolderResponse> Folders  { get; set; } = [];
+	public required string? Id       { get; set; }
+	public required string? Name     { get; set; }
+	public required string? ParentId { get; set; }
+
+	/// <summary>
+	/// Folder path excluding the root and current folder. If the first <c>parentId</c> isn't <c>null</c> then the path has been truncated.
+	/// </summary>
+	public List<DrivePathEntry>? Path { get; set; }
+
+	public List<DriveFileResponse>   Files         { get; set; } = [];
+	public List<DriveFolderResponse> Folders       { get; set; } = [];
+}
+
+public class DrivePathEntry
+{
+	public required string  Id       { get; set; }
+	public required string  Name     { get; set; }
+	public required string? ParentId { get; set; }
 }
