@@ -39,4 +39,7 @@ internal class DriveControllerModel(ApiClient api)
 
 	public Task<DriveFolderResponse?> UpdateFolderParentAsync(string id, string? folderId) =>
 		api.CallNullableAsync<DriveFolderResponse>(HttpMethod.Post, $"/drive/folder/{id}/move", data: new DriveMoveRequest { FolderId = folderId });
+
+	public Task<DriveStatusResponse> GetDriveStatusAsync() =>
+		api.CallAsync<DriveStatusResponse>(HttpMethod.Get, "/drive/status");
 }
