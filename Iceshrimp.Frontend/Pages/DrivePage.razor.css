@@ -9,6 +9,32 @@
     padding-top: 25vh;
 }
 
+.folder-details {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.folder-path {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+}
+
+.path-entry a:visited {
+    color: var(--link);
+}
+
+.path-entry::after {
+    content: "/";
+    margin-left: 0.5rem;
+}
+
 .drive-files {
     display: flex;
     flex-wrap: wrap;

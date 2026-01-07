@@ -25,13 +25,12 @@
         <span class="btn" @onclick="NavigateToParent">
             <Icon Name="Icons.ArrowLeft"/>
         </span>
-        @Folder.Name
     }
     else
     {
         <Icon Name="Icons.Cloud"/>
-        @Loc["Drive"]
     }
+    @Loc["Drive"]
     @if (State == State.Loaded && Folder is not null)
     {
         <span class="action btn" @onclick="CreateFolder" title="@Loc["Create folder"]">
@@ -55,6 +54,32 @@
 
 @if (State == State.Loaded && Folder != null)
 {
+    <div class="folder-details">
+        <ol class="folder-path">
+            <li><Icon Name="Icons.Folder"/></li>
+            @if (Folder.Path != null)
+            {
+                @if (Folder.Path.Count == 0 || Folder.Path.First().ParentId == null)
+                {
+                    <li class="path-entry">
+                        <a href="/drive">@Loc["Drive"]</a>
+                    </li>
+                }
+                else
+                {
+                    <li class="path-entry">&hellip;</li>
+                }
+            }
+            @foreach (var entry in Folder.Path ?? [])
+            {
+                <li class="path-entry">
+                    <a href="/drive/@entry.Id">@entry.Name</a>
+                </li>
+            }
+            <li>@(Folder.Name ?? Loc["Drive"])</li>
+        </ol>
+        <span>@Loc["({0} folders, {1} files)", Folder.Folders.Count, Folder.Files.Count]</span>
+    </div>
     <ol class="drive-files">
         @foreach (var el in Folder.Folders)
         {
