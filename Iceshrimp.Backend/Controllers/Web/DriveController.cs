@@ -496,6 +496,26 @@ public class DriveController(
 		return new DriveFolderResponse { Id = folder.Id, Name = folder.Name, ParentId = folder.ParentId, };
 	}
 
+	/// <summary>
+	/// Get status
+	/// </summary>
+	/// <remarks>Returns the usage statistics of the user's Drive.</remarks>
+	/// <response code="200">Drive status</response>
+	[HttpGet("status")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<DriveStatusResponse> GetDriveStatus()
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var fileCount = await db.DriveFiles.CountAsync(p => p.User == user && !p.IsLink);
+
+		var usedSize = await db.DriveFiles.Where(p => p.User == user && !p.IsLink).Select(p => (long)p.Size).SumAsync();
+
+		return new DriveStatusResponse { FileCount = fileCount, UsedSize = usedSize };
+	}
+
 	private async Task<IActionResult> GetFileByAccessKey(string accessKey, string? version, DriveFile? file)
 	{
 		file ??= await db.DriveFiles.FirstOrDefaultAsync(p => p.AccessKey == accessKey
