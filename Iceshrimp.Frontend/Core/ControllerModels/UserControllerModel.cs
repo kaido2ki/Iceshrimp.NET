@@ -24,7 +24,8 @@ internal class UserControllerModel(ApiClient api)
 	{
 		var query = new QueryString();
 		query = query.Add("username", username);
-		if (host != null) query = query.Add("host", host);
+		if (host != null)
+			query = query.Add("host", host);
 		return api.CallNullableAsync<UserResponse>(HttpMethod.Get, "/users/lookup", query);
 	}
 

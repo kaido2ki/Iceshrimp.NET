@@ -19,8 +19,9 @@ internal class AdminControllerModel(ApiClient api)
 	public Task<JsonObject?> GetActivityAsync(string uri, string? userId)
 	{
 		var query = new QueryString();
-		query.Add("uri", uri);
-		if (userId != null) query.Add("userId", userId);
+		query = query.Add("uri", uri);
+		if (userId != null)
+			query = query.Add("userId", userId);
 		return api.CallNullableAsync<JsonObject>(HttpMethod.Get, $"/admin/activities/fetch", query);
 	}
 

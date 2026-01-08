@@ -17,14 +17,16 @@ internal class NoteControllerModel(ApiClient api)
 	public Task<List<NoteResponse>?> GetNoteAscendantsAsync(string id, [DefaultValue(20)] [Range(1, 100)] int? limit)
 	{
 		var query = new QueryString();
-		if (limit.HasValue) query.Add("limit", limit.Value.ToString());
+		if (limit.HasValue)
+			query = query.Add("limit", limit.Value.ToString());
 		return api.CallNullableAsync<List<NoteResponse>>(HttpMethod.Get, $"/notes/{id}/ascendants", query);
 	}
 
 	public Task<List<NoteResponse>?> GetNoteDescendantsAsync(string id, [DefaultValue(20)] [Range(1, 100)] int? depth)
 	{
 		var query = new QueryString();
-		if (depth.HasValue) query.Add("depth", depth.Value.ToString());
+		if (depth.HasValue)
+			query = query.Add("depth", depth.Value.ToString());
 		return api.CallNullableAsync<List<NoteResponse>>(HttpMethod.Get, $"/notes/{id}/descendants", query);
 	}
 
@@ -58,7 +60,8 @@ internal class NoteControllerModel(ApiClient api)
 	public Task<ValueResponse?> RenoteNoteAsync(string id, NoteVisibility? visibility = null)
 	{
 		var query = new QueryString();
-		if (visibility.HasValue) query.Add("visibility", ((int)visibility.Value).ToString().ToLowerInvariant());
+		if (visibility.HasValue)
+			query = query.Add("visibility", ((int)visibility.Value).ToString().ToLowerInvariant());
 		return api.CallNullableAsync<ValueResponse>(HttpMethod.Post, $"/notes/{id}/renote", query);
 	}
 
