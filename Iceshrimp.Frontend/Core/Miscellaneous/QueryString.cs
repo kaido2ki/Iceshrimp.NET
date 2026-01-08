@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Primitives;
@@ -174,6 +175,7 @@ public readonly struct QueryString : IEquatable<QueryString>
 	/// </summary>
 	/// <param name="other">The <see cref="QueryString" /> to concatenate.</param>
 	/// <returns>The concatenated <see cref="QueryString" />.</returns>
+	[Pure]
 	public QueryString Add(QueryString other)
 	{
 		if (!HasValue || Value.Equals("?", StringComparison.Ordinal))
@@ -197,6 +199,7 @@ public readonly struct QueryString : IEquatable<QueryString>
 	/// <param name="name">The name of the query string to concatenate.</param>
 	/// <param name="value">The value of the query string to concatenate.</param>
 	/// <returns>The concatenated <see cref="QueryString" />.</returns>
+	[Pure]
 	public QueryString Add(string name, string value)
 	{
 		ArgumentNullException.ThrowIfNull(name);
