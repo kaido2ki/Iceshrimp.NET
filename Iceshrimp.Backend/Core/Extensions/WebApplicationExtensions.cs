@@ -58,7 +58,8 @@ public static class WebApplicationExtensions
 				               // Switch to 3_1 when fixed
 				               o.OpenApiVersion = OpenApiSpecVersion.OpenApi3_0;
 			               })
-			   .CacheOutput(p => p.Expire(TimeSpan.FromHours(12)));
+			   .CacheOutput(p => p.Expire(TimeSpan.FromHours(12)))
+			   .RequireCors("openapi");
 
 			app.UseSwaggerUI(options =>
 			{

@@ -331,6 +331,11 @@ public static class ServiceExtensions
 					      .WithHeaders("Authorization", "Content-Type", "Idempotency-Key")
 					      .WithExposedHeaders("Link", "Connection", "Sec-Websocket-Accept", "Upgrade");
 				});
+				options.AddPolicy("openapi", policy =>
+				{
+					policy.WithOrigins("*")
+					      .WithMethods("GET");
+				});
 			});
 		}
 
